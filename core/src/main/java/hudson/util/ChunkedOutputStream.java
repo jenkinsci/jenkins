@@ -33,8 +33,6 @@ package hudson.util;
 import java.io.IOException;
 import java.io.OutputStream;
 
-import org.apache.commons.httpclient.util.EncodingUtil;
-
 /**
  * Implements HTTP chunking support. Writes are buffered to an internal buffer (2048 default size).
  * Chunks are guaranteed to be at least as large as the buffer size (except for the last chunk).
@@ -94,8 +92,7 @@ public class ChunkedOutputStream extends OutputStream {
      */
     protected void flushCache() throws IOException {
         if (cachePosition > 0) {
-            byte chunkHeader[] = EncodingUtil.getAsciiBytes(
-                    Integer.toHexString(cachePosition) + "\r\n");
+            byte chunkHeader[] = (Integer.toHexString(cachePosition) + "\r\n").getBytes("US-ASCII");
             stream.write(chunkHeader, 0, chunkHeader.length);
             stream.write(cache, 0, cachePosition);
             stream.write(ENDCHUNK, 0, ENDCHUNK.length);
@@ -114,8 +111,7 @@ public class ChunkedOutputStream extends OutputStream {
      * @since 3.0
      */
     protected void flushCacheWithAppend(byte bufferToAppend[], int off, int len) throws IOException {
-        byte chunkHeader[] = EncodingUtil.getAsciiBytes(
-                Integer.toHexString(cachePosition + len) + "\r\n");
+        byte chunkHeader[] = (Integer.toHexString(cachePosition + len) + "\r\n").getBytes("US-ASCII");
         stream.write(chunkHeader, 0, chunkHeader.length);
         stream.write(cache, 0, cachePosition);
         stream.write(bufferToAppend, off, len);
