@@ -30,14 +30,10 @@
 
 package hudson.util;
 
-import org.apache.commons.httpclient.HttpMethod;
-import org.apache.commons.httpclient.util.EncodingUtil;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.logging.Logger;
 
 
 /**
@@ -81,7 +77,7 @@ public class ChunkedInputStream extends InputStream {
     private boolean closed = false;
 
     /** Log object for this class. */
-    private static final Log LOG = LogFactory.getLog(ChunkedInputStream.class);
+    private static final Logger LOGGER = Logger.getLogger(ChunkedInputStream.class.getName());
 
     /**
      * ChunkedInputStream constructor
@@ -111,8 +107,6 @@ public class ChunkedInputStream extends InputStream {
      * @return -1 of the end of the stream has been reached or the next data
      * byte
      * @throws IOException If an IO problem occurs
-     *
-     * @see HttpMethod#getResponseFooters()
      */
     public int read() throws IOException {
 
@@ -270,7 +264,7 @@ public class ChunkedInputStream extends InputStream {
         }
 
         //parse data
-        String dataString = EncodingUtil.getAsciiString(baos.toByteArray());
+        String dataString = new String(baos.toByteArray(),"US-ASCII");
         int separator = dataString.indexOf(';');
         dataString = (separator > 0)
             ? dataString.substring(0, separator).trim()
