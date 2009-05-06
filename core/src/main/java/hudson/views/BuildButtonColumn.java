@@ -50,7 +50,7 @@ public class BuildButtonColumn extends ListViewColumn {
 
         @Override
         public String getDisplayName() {
-            return "Build Button";
+            return Messages.BuildButtonColumn_DisplayName();
         }
     }
 }

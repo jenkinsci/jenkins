@@ -48,7 +48,7 @@ public class WeatherColumn extends ListViewColumn {
 
         @Override
         public String getDisplayName() {
-            return "Weather";
+            return Messages.WeatherColumn_DisplayName();
         }
     }
 

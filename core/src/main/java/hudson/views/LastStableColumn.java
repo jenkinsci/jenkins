@@ -52,7 +52,7 @@ public class LastStableColumn extends ListViewColumn {
 
         @Override
         public String getDisplayName() {
-            return "Last Stable";
+            return Messages.LastStableColumn_DisplayName();
         }
 
     }

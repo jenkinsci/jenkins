@@ -47,7 +47,7 @@ public class LastDurationColumn extends ListViewColumn {
 
         @Override
         public String getDisplayName() {
-            return "Last Duration";
+            return Messages.LastDurationColumn_DisplayName();
         }
     }
 }
