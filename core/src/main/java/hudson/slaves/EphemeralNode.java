@@ -26,7 +26,7 @@ package hudson.slaves;
 import hudson.model.Node;
 
 /**
- * {@link Node}s that are created by {@link Cloud} and hence not persisted as configuration by itself.
+ * {@link Node}s that are not persisted as configuration by itself.
  *
  * @author Kohsuke Kawaguchi
  */
@@ -35,12 +35,4 @@ public interface EphemeralNode {
      * Type-safe cast.
      */
     Node asNode();
-
-    /**
-     * Gets the {@link Cloud} that created this {@link EphemeralNode}.
-     *
-     * @return
-     *      never null.
-     */
-    Cloud getCloud();
 }
