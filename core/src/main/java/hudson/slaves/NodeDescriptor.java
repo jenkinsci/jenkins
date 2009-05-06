@@ -31,6 +31,9 @@ import hudson.util.DescriptorList;
 import hudson.Extension;
 import hudson.DescriptorExtensionList;
 
+import java.util.List;
+import java.util.ArrayList;
+
 /**
  * {@link Descriptor} for {@link Slave}.
  *
@@ -49,6 +52,15 @@ public abstract class NodeDescriptor extends Descriptor<Node> {
     }
 
     protected NodeDescriptor() {
+    }
+
+    /**
+     * Can the administrator create this type of nodes from UI?
+     *
+     * Return false if it only makes sense for programs to create it, not through the "new node" UI.
+     */
+    public boolean isInstanciable() {
+        return true;
     }
 
     public final String newInstanceDetailPage() {
@@ -73,4 +85,12 @@ public abstract class NodeDescriptor extends Descriptor<Node> {
      *      Use {@link #all()} for read access, and {@link Extension} for registration.
      */
     public static final DescriptorList<Node> ALL = new DescriptorList<Node>(Node.class);
+
+    public static List<NodeDescriptor> allInstanciable() {
+        List<NodeDescriptor> r = new ArrayList<NodeDescriptor>();
+        for (NodeDescriptor d : all())
+            if(d.isInstanciable())
+                r.add(d);
+        return r;
+    }
 }
