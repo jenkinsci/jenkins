@@ -1482,7 +1482,12 @@ function applySafeRedirector(url) {
                 }
             },
             onSuccess: function(rsp) {
-                window.location.replace(url);
+                if(rsp.status!=200) {
+                    // if connection fails, somehow Prototype thinks it's a success
+                    window.setTimeout(statusChecker,5000);
+                } else {
+                    window.location.replace(url);
+                }
             }
         });
     }, 5000);
