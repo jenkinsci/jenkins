@@ -84,6 +84,8 @@ public class Engine extends Thread {
      */
     private String tunnel;
 
+    private boolean noReconnect;
+
     public Engine(EngineListener listener, List<URL> hudsonUrls, String secretKey, String slaveName) {
         this.listener = listener;
         this.candidateUrls = hudsonUrls;
@@ -101,10 +103,22 @@ public class Engine extends Thread {
         this.tunnel = tunnel;
     }
 
+    public void setNoReconnect(boolean noReconnect) {
+        this.noReconnect = noReconnect;
+    }
+
     @Override
     public void run() {
         try {
+            boolean first = true;
             while(true) {
+                if(first) {
+                    first = false;
+                } else {
+                    if(!noReconnect)
+                        return; // exit
+                }
+
                 listener.status("Locating server among " + candidateUrls);
                 Throwable firstError=null;
                 String port=null;

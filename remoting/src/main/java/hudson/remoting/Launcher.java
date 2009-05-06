@@ -181,7 +181,7 @@ public class Launcher {
     /**
      * Parses the connection arguments from JNLP file given in the URL.
      */
-    private List<String> parseJnlpArguments() throws ParserConfigurationException, SAXException, IOException, InterruptedException {
+    public List<String> parseJnlpArguments() throws ParserConfigurationException, SAXException, IOException, InterruptedException {
         while (true) {
             try {
                 URLConnection con = slaveJnlpURL.openConnection();
