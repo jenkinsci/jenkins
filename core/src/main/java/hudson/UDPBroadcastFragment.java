@@ -12,6 +12,7 @@ import java.net.SocketAddress;
  * 
  * @author Kohsuke Kawaguchi
  * @since 1.304
+ * @see UDPBroadcastThread
  */
 public abstract class UDPBroadcastFragment implements ExtensionPoint {
     /**
