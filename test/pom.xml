@@ -44,9 +44,8 @@ THE SOFTWARE.
         <configuration>
           <!-- override with -DforkMode=pertest if you have "unable to create thread problems" on Windows -->
           <forkMode>once</forkMode>
-          <!--<forkMode>once</forkMode>--><!-- fork is necessary for redirectTestOutputToFile -->
           <!--<reportFormat>plain</reportFormat>-->
-          <!--<redirectTestOutputToFile>true</redirectTestOutputToFile>-->
+          <redirectTestOutputToFile>true</redirectTestOutputToFile>
         </configuration>
       </plugin>
       <plugin>
