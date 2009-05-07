@@ -26,6 +26,7 @@ package hudson.cli;
 import hudson.ExtensionPoint;
 import hudson.Extension;
 import hudson.ExtensionList;
+import hudson.AbortException;
 import hudson.remoting.Channel;
 import hudson.remoting.Callable;
 import hudson.model.Hudson;
@@ -142,6 +143,10 @@ public abstract class CLICommand implements ExtensionPoint, Cloneable {
             stderr.println(e.getMessage());
             printUsage(stderr, p);
             return -1;
+        } catch (AbortException e) {
+            // signals an error without stack trace
+            stderr.println(e.getMessage());
+            return -1;
         } catch (Exception e) {
             e.printStackTrace(stderr);
             return -1;
@@ -153,6 +158,12 @@ public abstract class CLICommand implements ExtensionPoint, Cloneable {
      *
      * @return
      *      0 to indicate a success, otherwise an error code.
+     * @throws AbortException
+     *      If the processing should be aborted. Hudson will report the error message
+     *      without stack trace, and then exits this command.
+     * @throws Exception
+     *      All the other exceptions cause the stack trace to be dumped, and then
+     *      the command exits with an error code.
      */
     protected abstract int run() throws Exception;
 
