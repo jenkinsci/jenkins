@@ -26,8 +26,12 @@ package hudson.remoting;
 /**
  * Internally used to mark methods on {@link Channel} that are exported to remote.
  *
+ * <p>
+ * Behaviors of the methods are explained in {@link Channel}.
+ *
  * @author Kohsuke Kawaguchi
  */
 interface IChannel {
     Object getProperty(Object key);
+    Object waitForProperty(Object key) throws InterruptedException;
 }
