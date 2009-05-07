@@ -84,7 +84,7 @@ public abstract class CLICommand implements ExtensionPoint, Cloneable {
      * (In contrast, calling {@code System.out.println(...)} would print out
      * the message to the server log file, which is probably not what you want.
      */
-    protected PrintStream stdout,stderr;
+    protected transient PrintStream stdout,stderr;
 
     /**
      * Connected to stdin of the CLI agent.
@@ -92,13 +92,13 @@ public abstract class CLICommand implements ExtensionPoint, Cloneable {
      * <p>
      * This input stream is buffered to hide the latency in the remoting.
      */
-    protected InputStream stdin;
+    protected transient InputStream stdin;
 
     /**
      * {@link Channel} that represents the CLI JVM. You can use this to
      * execute {@link Callable} on the CLI JVM, among other things.
      */
-    protected Channel channel;
+    protected transient Channel channel;
 
 
     /**
@@ -142,6 +142,9 @@ public abstract class CLICommand implements ExtensionPoint, Cloneable {
             stderr.println(e.getMessage());
             printUsage(stderr, p);
             return -1;
+        } catch (Exception e) {
+            e.printStackTrace(stderr);
+            return -1;
         }
     }
 
@@ -151,7 +154,7 @@ public abstract class CLICommand implements ExtensionPoint, Cloneable {
      * @return
      *      0 to indicate a success, otherwise an error code.
      */
-    protected abstract int run();
+    protected abstract int run() throws Exception;
 
     protected void printUsage(PrintStream stderr, CmdLineParser p) {
         stderr.println("java -jar hudson-cli.jar "+getName()+" args...");
