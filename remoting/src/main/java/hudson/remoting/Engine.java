@@ -178,6 +178,8 @@ public class Engine extends Thread {
                 listener.status("Terminated");
                 listener.onDisconnect();
 
+                if(!noReconnect)
+                    return; // exit
                 // try to connect back to the server every 10 secs.
                 waitForServerToBack();
             }
