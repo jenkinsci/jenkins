@@ -48,7 +48,6 @@ import hudson.tasks.BuildTrigger;
 import hudson.tasks.Mailer;
 import hudson.tasks.Publisher;
 import hudson.tasks.BuildStepDescriptor;
-import hudson.tasks.BuildWrapper;
 import hudson.tasks.BuildWrapperDescriptor;
 import hudson.triggers.SCMTrigger;
 import hudson.triggers.Trigger;
@@ -411,10 +410,32 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
                 if(newChildProjects.isEmpty()) {
                     pl.remove(BuildTrigger.class);
                 } else {
-                    BuildTrigger existing = pl.get(BuildTrigger.class);
+                    // here, we just need to replace the old one with the new one,
+                    // but there was a regression (we don't know when it started) that put multiple BuildTriggers
+                    // into the list.
+                    // for us not to lose the data, we need to merge them all.
+                    List<BuildTrigger> existingList = pl.getAll(BuildTrigger.class);
+                    BuildTrigger existing;
+                    switch (existingList.size()) {
+                    case 0:
+                        existing = null;
+                        break;
+                    case 1:
+                        existing = existingList.get(0);
+                        break;
+                    default:
+                        pl.removeAll(BuildTrigger.class);
+                        Set<AbstractProject> combinedChildren = new HashSet<AbstractProject>();
+                        for (BuildTrigger bt : existingList)
+                            combinedChildren.addAll(bt.getChildProjects());
+                        existing = new BuildTrigger(new ArrayList<AbstractProject>(combinedChildren),existingList.get(0).getThreshold());
+                        pl.add(existing);
+                        break;
+                    }
+
                     if(existing!=null && existing.hasSame(newChildProjects))
                         continue;   // no need to touch
-                    pl.add(new BuildTrigger(newChildProjects,
+                    pl.replace(new BuildTrigger(newChildProjects,
                         existing==null?Result.SUCCESS:existing.getThreshold()));
                 }
             }

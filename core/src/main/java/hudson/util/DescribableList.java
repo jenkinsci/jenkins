@@ -97,6 +97,15 @@ public class DescribableList<T extends Describable<T>, D extends Descriptor<T>> 
         onModified();
     }
 
+    /**
+     * Removes all instances of the same type, then add the new one.
+     */
+    public void replace(T item) throws IOException {
+        removeAll((Class)item.getClass());
+        data.add(item);
+        onModified();
+    }
+
     public void replaceBy(Collection<? extends T> col) throws IOException {
         data.replaceBy(col);
         onModified();
@@ -114,6 +123,17 @@ public class DescribableList<T extends Describable<T>, D extends Descriptor<T>> 
             if(type.isInstance(t))
                 return type.cast(t);
         return null;
+    }
+
+    /**
+     * Gets all instances that matches the given type.
+     */
+    public <U extends T> List<U> getAll(Class<U> type) {
+        List<U> r = new ArrayList<U>();
+        for (T t : data)
+            if(type.isInstance(t))
+                r.add(type.cast(t));
+        return r;
     }
 
     public boolean contains(D d) {
@@ -135,6 +155,18 @@ public class DescribableList<T extends Describable<T>, D extends Descriptor<T>> 
                 return;
             }
         }
+    }
+
+    public void removeAll(Class<? extends T> type) throws IOException {
+        boolean modified=false;
+        for (T t : data) {
+            if(t.getClass()==type) {
+                data.remove(t);
+                modified=true;
+            }
+        }
+        if(modified)
+            onModified();
     }
 
     public void remove(D descriptor) throws IOException {
