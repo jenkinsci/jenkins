@@ -55,24 +55,26 @@ THE SOFTWARE.
   <j:set var="targetType" value="${attrs.targetType ?: it.class}"/>
   <j:set var="instances" value="${attrs.instances ?: instance[field]}"/>
 
-  <f:section title="${attrs.title}" name="${attrs.field?:attrs.name}">
-    <j:if test="${attrs.field!=null}">
-      <tr>
-        <td>
-          <input type="hidden" name="stapler-class-bag" value="true" />
-        </td>
-      </tr>
-    </j:if>
+  <j:if test="${!empty(descriptors) or context['org.apache.commons.jelly.body']!=null}">
+    <f:section title="${attrs.title}" name="${attrs.field?:attrs.name}">
+      <j:if test="${attrs.field!=null}">
+        <tr>
+          <td>
+            <input type="hidden" name="stapler-class-bag" value="true" />
+          </td>
+        </tr>
+      </j:if>
 
-    <d:invokeBody />
-    <j:forEach var="d" items="${descriptors}">
-      <f:optionalBlock name="${d.jsonSafeClassName}" help="${d.helpFile}"
-        title="${d.displayName}" checked="${instances.get(d)!=null}">
+      <d:invokeBody />
+      <j:forEach var="d" items="${descriptors}">
+        <f:optionalBlock name="${d.jsonSafeClassName}" help="${d.helpFile}"
+          title="${d.displayName}" checked="${instances.get(d)!=null}">
 
-        <j:set var="descriptor" value="${d}" />
-        <j:set var="instance" value="${instances.get(d)}" />
-        <st:include from="${d}" page="${d.configPage}" optional="true" />
-      </f:optionalBlock>
-    </j:forEach>
-	</f:section>
+          <j:set var="descriptor" value="${d}" />
+          <j:set var="instance" value="${instances.get(d)}" />
+          <st:include from="${d}" page="${d.configPage}" optional="true" />
+        </f:optionalBlock>
+      </j:forEach>
+    </f:section>
+  </j:if>
 </j:jelly>
