@@ -26,9 +26,9 @@ package hudson.os.windows;
 import hudson.lifecycle.WindowsSlaveInstaller;
 import hudson.model.Descriptor;
 import hudson.model.Hudson;
+import hudson.model.TaskListener;
 import hudson.slaves.ComputerLauncher;
 import hudson.slaves.SlaveComputer;
-import hudson.util.StreamTaskListener;
 import hudson.util.Secret;
 import hudson.util.jna.DotNet;
 import hudson.remoting.Channel;
@@ -96,7 +96,7 @@ public class ManagedWindowsServiceLauncher extends ComputerLauncher {
         return new NtlmPasswordAuthentication(auth.getDomain(), auth.getUserName(), auth.getPassword());
     }
 
-    public void launch(final SlaveComputer computer, final StreamTaskListener listener) throws IOException, InterruptedException {
+    public void launch(final SlaveComputer computer, final TaskListener listener) throws IOException, InterruptedException {
         try {
             PrintStream logger = listener.getLogger();
 
@@ -205,7 +205,7 @@ public class ManagedWindowsServiceLauncher extends ComputerLauncher {
     }
 
     @Override
-    public void afterDisconnect(SlaveComputer computer, StreamTaskListener listener) {
+    public void afterDisconnect(SlaveComputer computer, TaskListener listener) {
         try {
             JIDefaultAuthInfoImpl auth = createAuth();
             JISession session = JISession.createSession(auth);

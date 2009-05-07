@@ -29,6 +29,7 @@ import hudson.model.Computer;
 import hudson.model.Describable;
 import hudson.model.Descriptor;
 import hudson.model.Hudson;
+import hudson.model.TaskListener;
 import hudson.remoting.Channel.Listener;
 import hudson.util.DescriptorList;
 import hudson.util.StreamTaskListener;
@@ -85,10 +86,28 @@ public abstract class ComputerLauncher implements Describable<ComputerLauncher>,
      *      a failure and the stack trace is reported into the listener. This handling is just so that the implementation
      *      of this method doesn't have to dilligently catch those exceptions.
      */
-    public abstract void launch(SlaveComputer computer, StreamTaskListener listener) throws IOException , InterruptedException;
+    public void launch(SlaveComputer computer, TaskListener listener) throws IOException , InterruptedException {
+        launch(computer,cast(listener));
+    }
+
+    /**
+     * @deprecated as of 1.304
+     *  Use {@link #launch(SlaveComputer, TaskListener)}
+     */
+    public void launch(SlaveComputer computer, StreamTaskListener listener) throws IOException , InterruptedException {
+        throw new UnsupportedOperationException(getClass()+" must implement the launch method");
+    }
 
     /**
      * Allows the {@link ComputerLauncher} to tidy-up after a disconnect.
+     */
+    public void afterDisconnect(SlaveComputer computer, TaskListener listener) {
+        afterDisconnect(computer,cast(listener));
+    }
+
+    /**
+     * @deprecated as of 1.304
+     *  Use {@link #afterDisconnect(SlaveComputer, TaskListener)}
      */
     public void afterDisconnect(SlaveComputer computer, StreamTaskListener listener) {
     }
@@ -96,7 +115,21 @@ public abstract class ComputerLauncher implements Describable<ComputerLauncher>,
     /**
      * Allows the {@link ComputerLauncher} to prepare for a disconnect.
      */
+    public void beforeDisconnect(SlaveComputer computer, TaskListener listener) {
+        beforeDisconnect(computer,cast(listener));
+    }
+
+    /**
+     * @deprecated as of 1.304
+     *  Use {@link #beforeDisconnect(SlaveComputer, TaskListener)} 
+     */
     public void beforeDisconnect(SlaveComputer computer, StreamTaskListener listener) {
+    }
+
+    private StreamTaskListener cast(TaskListener listener) {
+        if (listener instanceof StreamTaskListener)
+            return (StreamTaskListener) listener;
+        return new StreamTaskListener(listener.getLogger());
     }
 
     public Descriptor<ComputerLauncher> getDescriptor() {

@@ -164,7 +164,7 @@ public class SlaveComputer extends Computer {
             public Object call() throws Exception {
                 // do this on another thread so that the lengthy launch operation
                 // (which is typical) won't block UI thread.
-                StreamTaskListener listener = new StreamTaskListener(openLogFile());
+                TaskListener listener = new StreamTaskListener(openLogFile());
                 try {
                     launcher.launch(SlaveComputer.this, listener);
                     return null;
@@ -267,18 +267,19 @@ public class SlaveComputer extends Computer {
         if(this.channel!=null)
             throw new IllegalStateException("Already connected");
 
+        PrintWriter log = new PrintWriter(launchLog,true);
+        final TaskListener taskListener = new StreamTaskListener(log);
+
         Channel channel = new Channel(nodeName,threadPoolForRemoting, Channel.Mode.NEGOTIATE,
             in,out, launchLog);
         channel.addListener(new Channel.Listener() {
             public void onClosed(Channel c,IOException cause) {
                 SlaveComputer.this.channel = null;
+                launcher.afterDisconnect(SlaveComputer.this, taskListener);
             }
         });
         if(listener!=null)
             channel.addListener(listener);
-
-        PrintWriter log = new PrintWriter(launchLog,true);
-        TaskListener taskListener = new StreamTaskListener(log);
 
         boolean _isUnix = channel.call(new DetectOS());
         log.println(_isUnix? hudson.model.Messages.Slave_UnixSlave():hudson.model.Messages.Slave_WindowsSlave());
@@ -349,7 +350,7 @@ public class SlaveComputer extends Computer {
             public void run() {
                 // do this on another thread so that any lengthy disconnect operation
                 // (which could be typical) won't block UI thread.
-                StreamTaskListener listener = new StreamTaskListener(openLogFile());
+                TaskListener listener = new StreamTaskListener(openLogFile());
                 launcher.beforeDisconnect(SlaveComputer.this, listener);
                 closeChannel();
                 launcher.afterDisconnect(SlaveComputer.this, listener);

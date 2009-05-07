@@ -27,10 +27,10 @@ import hudson.EnvVars;
 import hudson.Util;
 import hudson.Extension;
 import hudson.model.Descriptor;
+import hudson.model.TaskListener;
 import hudson.remoting.Channel;
 import hudson.util.ProcessTreeKiller;
 import hudson.util.StreamCopyThread;
-import hudson.util.StreamTaskListener;
 import hudson.util.FormValidation;
 
 import java.io.IOException;
@@ -82,7 +82,7 @@ public class CommandLauncher extends ComputerLauncher {
     }
 
     @Override
-    public void launch(SlaveComputer computer, final StreamTaskListener listener) {
+    public void launch(SlaveComputer computer, final TaskListener listener) {
         EnvVars _cookie = null;
         Process _proc = null;
         try {
