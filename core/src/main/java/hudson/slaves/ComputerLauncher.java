@@ -87,6 +87,7 @@ public abstract class ComputerLauncher implements Describable<ComputerLauncher>,
      *      of this method doesn't have to dilligently catch those exceptions.
      */
     public void launch(SlaveComputer computer, TaskListener listener) throws IOException , InterruptedException {
+        // to remain compatible with the legacy implementation that overrides the old signature
         launch(computer,cast(listener));
     }
 
@@ -102,6 +103,7 @@ public abstract class ComputerLauncher implements Describable<ComputerLauncher>,
      * Allows the {@link ComputerLauncher} to tidy-up after a disconnect.
      */
     public void afterDisconnect(SlaveComputer computer, TaskListener listener) {
+        // to remain compatible with the legacy implementation that overrides the old signature
         afterDisconnect(computer,cast(listener));
     }
 
@@ -116,6 +118,7 @@ public abstract class ComputerLauncher implements Describable<ComputerLauncher>,
      * Allows the {@link ComputerLauncher} to prepare for a disconnect.
      */
     public void beforeDisconnect(SlaveComputer computer, TaskListener listener) {
+        // to remain compatible with the legacy implementation that overrides the old signature
         beforeDisconnect(computer,cast(listener));
     }
 
