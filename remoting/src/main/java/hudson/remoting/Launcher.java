@@ -146,7 +146,7 @@ public class Launcher {
         });
     }
 
-    public static void main(String[] args) throws Exception {
+    public static void main(String... args) throws Exception {
         Launcher launcher = new Launcher();
         CmdLineParser parser = new CmdLineParser(launcher);
         try {
@@ -181,7 +181,7 @@ public class Launcher {
     /**
      * Parses the connection arguments from JNLP file given in the URL.
      */
-    private List<String> parseJnlpArguments() throws ParserConfigurationException, SAXException, IOException, InterruptedException {
+    public List<String> parseJnlpArguments() throws ParserConfigurationException, SAXException, IOException, InterruptedException {
         while (true) {
             try {
                 URLConnection con = slaveJnlpURL.openConnection();

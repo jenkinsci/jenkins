@@ -69,6 +69,10 @@ public class UDPBroadcastThread extends Thread {
                     tag(buf,"version",Hudson.VERSION);
                     tag(buf,"url",hudson.getRootUrl());
                     tag(buf,"slave-port",tal==null?null:tal.getPort());
+
+                    for (UDPBroadcastFragment f : UDPBroadcastFragment.all())
+                        f.buildFragment(buf,sender);
+
                     buf.append("</hudson>");
 
                     b.clear();

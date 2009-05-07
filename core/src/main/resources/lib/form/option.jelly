@@ -33,7 +33,6 @@ THE SOFTWARE.
       If true, the option value appears as selected.
     </st:attribute>
   </st:documentation>
-  <option value="${attrs.value}" selected="${attrs.selected?'true':null}">
-    <d:invokeBody/>
-  </option>
+  <j:set var="optionBody"><d:invokeBody/></j:set>
+  <option value="${attrs.value!=null?attrs.value:optionBody}" selected="${attrs.selected?'true':null}">${optionBody}</option>
 </j:jelly>

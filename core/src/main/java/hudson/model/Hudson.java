@@ -2750,21 +2750,36 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
 
     /**
      * Perform a restart of Hudson, if we can.
+     *
+     * This first replaces "app" to {@link HudsonIsRestarting}
      */
     public void doRestart(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
-        requirePOST();
         checkPermission(ADMINISTER);
-        try {
-            Lifecycle.get().restart();
-            servletContext.setAttribute("app",new HudsonIsRestarting());
-            rsp.sendRedirect2(".");
-        } catch (UnsupportedOperationException e) {
-            sendError("Restart is not supported in this running mode.",req,rsp);
-        } catch (IOException e) {
-            sendError(e,req,rsp);
-        } catch (InterruptedException e) {
-            sendError(e,req,rsp);
+        if(Stapler.getCurrentRequest().getMethod().equals("GET")) {
+            req.getView(this,"_restart.jelly").forward(req,rsp);
+            return;
         }
+
+        final Lifecycle lifecycle = Lifecycle.get();
+        if(!lifecycle.canRestart())
+            sendError("Restart is not supported in this running mode.",req,rsp);
+        servletContext.setAttribute("app",new HudsonIsRestarting());
+        rsp.sendRedirect2(".");
+
+        new Thread("restart thread") {
+            @Override
+            public void run() {
+                try {
+                    // give some time for the browser to load the "reloading" page
+                    Thread.sleep(5000);
+                    lifecycle.restart();
+                } catch (InterruptedException e) {
+                    LOGGER.log(Level.WARNING, "Failed to restart Hudson",e);
+                } catch (IOException e) {
+                    LOGGER.log(Level.WARNING, "Failed to restart Hudson",e);
+                }
+            }
+        }.start();
     }
 
     /**

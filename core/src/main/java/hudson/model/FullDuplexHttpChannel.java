@@ -26,6 +26,8 @@ package hudson.model;
 import hudson.remoting.Channel;
 import hudson.remoting.PingThread;
 import hudson.remoting.Channel.Mode;
+import hudson.util.ChunkedOutputStream;
+import hudson.util.ChunkedInputStream;
 import org.apache.commons.io.IOUtils;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
@@ -34,6 +36,8 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.PipedInputStream;
 import java.io.PipedOutputStream;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.UUID;
 import java.util.logging.Logger;
 
@@ -67,8 +71,11 @@ abstract class FullDuplexHttpChannel {
         // server->client channel.
         // this is created first, and this controls the lifespan of the channel
         rsp.addHeader("Transfer-Encoding", "chunked");
+        OutputStream out = rsp.getOutputStream();
+        if (DIY_CHUNKING) out = new ChunkedOutputStream(out);
+
         channel = new Channel("HTTP full-duplex channel " + uuid,
-                Computer.threadPoolForRemoting, Mode.BINARY, new PipedInputStream(pipe), rsp.getOutputStream(), null, restricted);
+                Computer.threadPoolForRemoting, Mode.BINARY, new PipedInputStream(pipe), out, null, restricted);
 
         // so that we can detect dead clients, periodically send something
         PingThread ping = new PingThread(channel) {
@@ -97,7 +104,9 @@ abstract class FullDuplexHttpChannel {
      */
     public void upload(StaplerRequest req, StaplerResponse rsp) throws InterruptedException, IOException {
         rsp.setStatus(HttpServletResponse.SC_OK);
-        IOUtils.copy(req.getInputStream(),pipe);
+        InputStream in = req.getInputStream();
+        if(DIY_CHUNKING)    in = new ChunkedInputStream(in);
+        IOUtils.copy(in,pipe);
     }
 
     public Channel getChannel() {
@@ -105,4 +114,9 @@ abstract class FullDuplexHttpChannel {
     }
 
     private static final Logger LOGGER = Logger.getLogger(FullDuplexHttpChannel.class.getName());
+
+    /**
+     * Set to true if the servlet container doesn't support chunked encoding.
+     */
+    public static boolean DIY_CHUNKING = Boolean.getBoolean("hudson.diyChunking");
 }

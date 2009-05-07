@@ -47,7 +47,7 @@ public class LastFailureColumn extends ListViewColumn {
 
         @Override
         public String getDisplayName() {
-            return "Last Failure";
+            return Messages.LastFailureColumn_DisplayName();
         }
     }
 }

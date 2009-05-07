@@ -108,10 +108,6 @@ public class NodeListTest extends TestCase {
 		}
     }
     static class EphemeralNode extends DummyNode implements hudson.slaves.EphemeralNode {
-        public Cloud getCloud() {
-            throw new UnsupportedOperationException();
-        }
-
         public Node asNode() {
             return this;
         }

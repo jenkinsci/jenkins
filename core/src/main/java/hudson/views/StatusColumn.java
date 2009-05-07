@@ -48,7 +48,7 @@ public class StatusColumn extends ListViewColumn {
 
         @Override
         public String getDisplayName() {
-            return "Status";
+            return Messages.StatusColumn_DisplayName();
         }
     }
 

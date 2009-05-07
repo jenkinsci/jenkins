@@ -1,8 +1,7 @@
-<?xml version="1.0" encoding="UTF-8"?>
 <!--
 The MIT License
 
-Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi
+Copyright (c) 2004-2009, Sun Microsystems, Inc.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -23,16 +22,15 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 -->
 
-<!--
-  Sun One Java Application Server and Glassfish (as of 2007/4) makes
-  old Ant classes visible to the web application classloader, and
-  that causes https://hudson.dev.java.net/issues/show_bug.cgi?id=458
-
-  So change the delegation order to make sure we pick up Ant from
-  Hudson. See http://docs.sun.com/app/docs/doc/819-2634/6n4tl5kp3?a=view#abxhy
--->
-<sun-web-app>
-  <!-- without this, we end up loading Ant from Glassfish -->
-  <class-loader delegate="false"/>
-  <parameter-encoding default-charset="UTF-8" />
-</sun-web-app>
+<!-- Delete view -->
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
+	<l:layout title="Restart Hudson">
+		<st:include page="sidepanel.jelly" />
+		<l:main-panel>
+		  <form method="post" action="restart">
+		    ${%Are you sure about restarting Hudson?}
+		    <f:submit value="${%Yes}" />
+		  </form>
+		</l:main-panel>
+	</l:layout>
+</j:jelly>

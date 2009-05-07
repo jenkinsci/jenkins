@@ -47,7 +47,7 @@ public class LastSuccessColumn extends ListViewColumn {
 
         @Override
         public String getDisplayName() {
-            return "Last Success";
+            return Messages.LastSuccessColumn_DisplayName();
         }
     }
 }

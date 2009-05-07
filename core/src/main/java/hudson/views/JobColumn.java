@@ -47,7 +47,7 @@ public class JobColumn extends ListViewColumn {
 
         @Override
         public String getDisplayName() {
-            return "Job";
+            return Messages.JobColumn_DisplayName();
         }
     }
 
