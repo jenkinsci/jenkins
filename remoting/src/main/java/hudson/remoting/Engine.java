@@ -115,7 +115,7 @@ public class Engine extends Thread {
                 if(first) {
                     first = false;
                 } else {
-                    if(!noReconnect)
+                    if(noReconnect)
                         return; // exit
                 }
 
@@ -178,7 +178,7 @@ public class Engine extends Thread {
                 listener.status("Terminated");
                 listener.onDisconnect();
 
-                if(!noReconnect)
+                if(noReconnect)
                     return; // exit
                 // try to connect back to the server every 10 secs.
                 waitForServerToBack();
