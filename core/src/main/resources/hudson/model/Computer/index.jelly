@@ -83,6 +83,7 @@ THE SOFTWARE.
         </j:otherwise>
       </j:choose>
 
+      <st:include page="main.jelly" optional="true"/>
     </l:main-panel>
   </l:layout>
 </j:jelly>
