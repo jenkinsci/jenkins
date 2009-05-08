@@ -307,6 +307,35 @@ public abstract class FormValidation extends IOException implements HttpResponse
     }
 
     /**
+     * Makes sure that the given string is a base64 encoded text.
+     *
+     * @param allowWhitespace
+     *      if you allow whitespace (CR,LF,etc) in base64 encoding
+     * @param allowEmpty
+     *      Is empty string allowed?
+     * @param errorMessage
+     *      Error message.
+     * @since 1.305
+     */
+    public static FormValidation validateBase64(String value, boolean allowWhitespace, boolean allowEmpty, String errorMessage) {
+        try {
+            String v = value;
+            if(!allowWhitespace) {
+                if(v.indexOf(' ')>=0 || v.indexOf('\n')>=0)
+                    return error(errorMessage);
+            }
+            v=v.trim();
+            if(!allowEmpty && v.length()==0)
+                return error(errorMessage);
+
+            com.trilead.ssh2.crypto.Base64.decode(v.toCharArray());
+            return ok();
+        } catch (IOException e) {
+            return error(errorMessage);
+        }
+    }
+
+    /**
      * Convenient base class for checking the validity of URLs.
      *
      * <p>
