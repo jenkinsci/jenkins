@@ -31,9 +31,8 @@ THE SOFTWARE.
     <f:textbox field="nodeDescription" />
   </f:entry>
 
-  <f:entry title="${%# of executors}"
-           help="/help/system-config/master-slave/numExecutors.html">
-    <f:textbox field="numExecutors" />
+  <f:entry title="${%# of executors}" field="numExecutors">
+    <f:textbox />
   </f:entry>
 
   <f:entry title="${%Remote FS root}" help="/help/system-config/master-slave/remoteFS.html">

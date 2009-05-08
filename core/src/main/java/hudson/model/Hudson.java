@@ -44,6 +44,7 @@ import hudson.ExtensionList;
 import hudson.ExtensionPoint;
 import hudson.DescriptorExtensionList;
 import hudson.ExtensionListView;
+import hudson.Extension;
 import hudson.cli.CliEntryPoint;
 import hudson.cli.CLICommand;
 import hudson.cli.HelpCommand;
@@ -1397,6 +1398,7 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
     }
 
     public static final class DescriptorImpl extends NodeDescriptor {
+        @Extension
         public static final DescriptorImpl INSTANCE = new DescriptorImpl();
 
         public String getDisplayName() {

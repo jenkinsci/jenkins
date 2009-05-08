@@ -30,15 +30,17 @@ THE SOFTWARE.
   <st:include page="sidepanel.jelly" />
   <l:main-panel xmlns:local="local">
     <f:form method="post" name="config" action="configSubmit">
+      <j:set var="instance" value="${it}" />
+      <j:set var="descriptor" value="${instance.descriptor}" />
+
       <f:entry title="${%Home directory}" help="/help/system-config/homeDirectory.html">
         ${it.rootDir}
       </f:entry>
       <f:entry title="${%System Message}" help="/help/system-config/systemMessage.html">
         <f:textarea name="system_message" value="${it.systemMessage}" />
       </f:entry>
-      <f:entry title="${%# of executors}" help="/help/system-config/numExecutors.html">
-        <input type="text" name="numExecutors" class="setting-input number"
-               value="${it.numExecutors}"/>
+      <f:entry title="${%# of executors}" field="numExecutors">
+        <f:textbox />
       </f:entry>
       <j:if test="${!empty(it.slaves)}">
         <f:entry title="${%Labels}" help="/help/system-config/master-slave/label.html">
