@@ -43,8 +43,8 @@ THE SOFTWARE.
         <f:textbox />
       </f:entry>
       <j:if test="${!empty(it.slaves)}">
-        <f:entry title="${%Labels}" help="/help/system-config/master-slave/label.html">
-          <f:textbox name="label" value="${it.labelString}"/>
+        <f:entry title="${%Labels}" field="labelString">
+          <f:textbox />
         </f:entry>
         <f:slave-mode name="master.mode" node="${it}" />
       </j:if>

@@ -132,24 +132,24 @@ public abstract class Slave extends Node implements Serializable {
 
     @DataBoundConstructor
     public Slave(String name, String nodeDescription, String remoteFS, String numExecutors,
-                 Mode mode, String label, ComputerLauncher launcher, RetentionStrategy retentionStrategy, List<? extends NodeProperty<?>> nodeProperties) throws FormException, IOException {
-        this(name,nodeDescription,remoteFS,Util.tryParseNumber(numExecutors, 1).intValue(),mode,label,launcher,retentionStrategy, nodeProperties);
+                 Mode mode, String labelString, ComputerLauncher launcher, RetentionStrategy retentionStrategy, List<? extends NodeProperty<?>> nodeProperties) throws FormException, IOException {
+        this(name,nodeDescription,remoteFS,Util.tryParseNumber(numExecutors, 1).intValue(),mode,labelString,launcher,retentionStrategy, nodeProperties);
     }
 
     @Deprecated
     public Slave(String name, String nodeDescription, String remoteFS, int numExecutors,
-            Mode mode, String label, ComputerLauncher launcher, RetentionStrategy retentionStrategy) throws FormException, IOException {
-    	this(name, nodeDescription, remoteFS, numExecutors, mode, label, launcher, retentionStrategy, new ArrayList());
+            Mode mode, String labelString, ComputerLauncher launcher, RetentionStrategy retentionStrategy) throws FormException, IOException {
+    	this(name, nodeDescription, remoteFS, numExecutors, mode, labelString, launcher, retentionStrategy, new ArrayList());
     }
     
     public Slave(String name, String nodeDescription, String remoteFS, int numExecutors,
-                 Mode mode, String label, ComputerLauncher launcher, RetentionStrategy retentionStrategy, List<? extends NodeProperty<?>> nodeProperties) throws FormException, IOException {
+                 Mode mode, String labelString, ComputerLauncher launcher, RetentionStrategy retentionStrategy, List<? extends NodeProperty<?>> nodeProperties) throws FormException, IOException {
         this.name = name;
         this.description = nodeDescription;
         this.numExecutors = numExecutors;
         this.mode = mode;
         this.remoteFS = remoteFS;
-        this.label = Util.fixNull(label).trim();
+        this.label = Util.fixNull(labelString).trim();
         this.launcher = launcher;
         this.retentionStrategy = retentionStrategy;
         getAssignedLabels();    // compute labels now

@@ -2169,13 +2169,13 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
                 }
             }
 
-            numExecutors = Integer.parseInt(req.getParameter("numExecutors"));
+            numExecutors = Integer.parseInt(req.getParameter("_.numExecutors"));
             if(req.hasParameter("master.mode"))
                 mode = Mode.valueOf(req.getParameter("master.mode"));
             else
                 mode = Mode.NORMAL;
 
-            label = Util.fixNull(req.getParameter("label"));
+            label = Util.fixNull(req.getParameter("_.labelString"));
             labelSet=null;
 
             quietPeriod = Integer.parseInt(req.getParameter("quiet_period"));

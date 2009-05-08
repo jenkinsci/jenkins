@@ -137,6 +137,12 @@ public abstract class Node extends AbstractModelObject implements Describable<No
      */
     public abstract Set<Label> getAssignedLabels();
 
+    /**
+     * The same as {@link #getAssignedLabels()} but returns labels as a single text.
+     * Mainly for form binding.
+     */
+    public abstract String getLabelString();
+
     /*
      * Returns the possibly empty set of labels that it has been determined as supported by this node.
      * @see hudson.tasks.LabelFinder
