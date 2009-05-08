@@ -131,6 +131,7 @@ function findPrevious(src,filter) {
 
     while(src!=null) {
         src = prev(src);
+        if(src==null)   break;
         if(filter(src))
             return src;
     }
@@ -141,7 +142,7 @@ function findPrevious(src,filter) {
  */
 function findPreviousFormItem(src,name) {
     var name2 = "_."+name; // handles <textbox field="..." /> notation silently
-    return findPrevious(src,function(e){ return e.tagName=="INPUT" && (e.name==name || e.name==name2); });
+    return findPrevious(src,function(e){ return (e.tagName=="INPUT" || e.tagName=="TEXTAREA") && (e.name==name || e.name==name2); });
 }
 
 
@@ -1515,6 +1516,13 @@ function validateButton(checkUrl,paramList,button) {
       onComplete: function(rsp) {
           spinner.style.display="none";
           target.innerHTML = rsp.responseText;
+          var s = rsp.getResponseHeader("script");
+          if(s!=null)
+            try {
+              eval(s);
+            } catch(e) {
+              window.alert("failed to evaluate "+s+"\n"+e.message);
+            }
       }
   });
 }
