@@ -28,11 +28,15 @@ import hudson.model.Slave;
 import hudson.model.Node;
 import hudson.model.Hudson;
 import hudson.util.DescriptorList;
+import hudson.util.FormValidation;
 import hudson.Extension;
 import hudson.DescriptorExtensionList;
+import hudson.Util;
 
 import java.util.List;
 import java.util.ArrayList;
+
+import org.kohsuke.stapler.QueryParameter;
 
 /**
  * {@link Descriptor} for {@link Slave}.
@@ -70,6 +74,13 @@ public abstract class NodeDescriptor extends Descriptor<Node> {
     @Override
     public String getConfigPage() {
         return getViewPage(clazz, "configure-entries.jelly");
+    }
+
+    public FormValidation doCheckName(@QueryParameter String value ) {
+        if(Util.fixEmptyAndTrim(value)==null)
+            return FormValidation.error("Name is mandatory");
+        else
+            return FormValidation.ok();
     }
 
     /**

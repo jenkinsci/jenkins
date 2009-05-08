@@ -367,25 +367,28 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable {
      * The help files are assumed to be at "help/FIELDNAME.html" with possible
      * locale variations.
      */
-    public String getHelpFile(String fieldName) {
-        String page = "/descriptor/" + clazz.getName() + "/help";
-        if(fieldName==null) {
-            fieldName="";
-        } else {
-            page += '/'+fieldName;
-            fieldName='-'+fieldName;
-        }
+    public String getHelpFile(final String fieldName) {
+        for(Class c=clazz; c!=null; c=c.getSuperclass()) {
+            String page = "/descriptor/" + clazz.getName() + "/help";
+            String suffix;
+            if(fieldName==null) {
+                suffix="";
+            } else {
+                page += '/'+fieldName;
+                suffix='-'+fieldName;
+            }
 
-        try {
-            if(Stapler.getCurrentRequest().getView(clazz,"help"+fieldName)!=null)
-                return page;
-        } catch (IOException e) {
-            throw new Error(e);
-        }
+            try {
+                if(Stapler.getCurrentRequest().getView(c,"help"+suffix)!=null)
+                    return page;
+            } catch (IOException e) {
+                throw new Error(e);
+            }
 
-        InputStream in = getHelpStream(fieldName);
-        IOUtils.closeQuietly(in);
-        if(in!=null)    return page;
+            InputStream in = getHelpStream(c,suffix);
+            IOUtils.closeQuietly(in);
+            if(in!=null)    return page;
+        }
         return null;
     }
 
@@ -514,40 +517,43 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable {
 
         path = path.replace('/','-');
 
-        RequestDispatcher rd = Stapler.getCurrentRequest().getView(clazz, "help"+path);
-        if(rd!=null) {// Jelly-generated help page
-            rd.forward(req,rsp);
-            return;
-        }
+        for (Class c=clazz; c!=null; c=c.getSuperclass()) {
+            RequestDispatcher rd = Stapler.getCurrentRequest().getView(c, "help"+path);
+            if(rd!=null) {// Jelly-generated help page
+                rd.forward(req,rsp);
+                return;
+            }
 
-        InputStream in = getHelpStream(path);
-        if(in==null) {
-            rsp.sendError(SC_NOT_FOUND);
-            return;
+            InputStream in = getHelpStream(c,path);
+            if(in!=null) {
+                // TODO: generalize macro expansion and perhaps even support JEXL
+                rsp.setContentType("text/html;charset=UTF-8");
+                String literal = IOUtils.toString(in,"UTF-8");
+                rsp.getWriter().println(Util.replaceMacro(literal, Collections.singletonMap("rootURL",req.getContextPath())));
+                in.close();
+                return;
+            }
         }
-
-        // TODO: generalize macro expansion and perhaps even support JEXL
-        rsp.setContentType("text/html;charset=UTF-8");
-        String literal = IOUtils.toString(in,"UTF-8");
-        rsp.getWriter().println(Util.replaceMacro(literal, Collections.singletonMap("rootURL",req.getContextPath())));
-        in.close();
+        rsp.sendError(SC_NOT_FOUND);
     }
 
-    private InputStream getHelpStream(String suffix) {
+    private InputStream getHelpStream(Class c, String suffix) {
         Locale locale = Stapler.getCurrentRequest().getLocale();
+        String base = c.getName().replace('.', '/') + "/help"+suffix;
 
-        String base = clazz.getName().replace('.', '/') + "/help"+suffix;
-
+        ClassLoader cl = c.getClassLoader();
+        if(cl==null)    return null;
+        
         InputStream in;
-        in = clazz.getClassLoader().getResourceAsStream(base + '_' + locale.getLanguage() + '_' + locale.getCountry() + '_' + locale.getVariant() + ".html");
+        in = cl.getResourceAsStream(base + '_' + locale.getLanguage() + '_' + locale.getCountry() + '_' + locale.getVariant() + ".html");
         if(in!=null)    return in;
-        in = clazz.getClassLoader().getResourceAsStream(base + '_' + locale.getLanguage() + '_' + locale.getCountry() + ".html");
+        in = cl.getResourceAsStream(base + '_' + locale.getLanguage() + '_' + locale.getCountry() + ".html");
         if(in!=null)    return in;
-        in = clazz.getClassLoader().getResourceAsStream(base + '_' + locale.getLanguage() + ".html");
+        in = cl.getResourceAsStream(base + '_' + locale.getLanguage() + ".html");
         if(in!=null)    return in;
 
         // default
-        return clazz.getClassLoader().getResourceAsStream(base+".html");
+        return cl.getResourceAsStream(base+".html");
     }
 
 
