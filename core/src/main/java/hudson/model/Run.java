@@ -545,6 +545,12 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
         return nextBuild;
     }
 
+    /**
+     * Returns the URL of this {@link Run}, relative to the context root of Hudson.
+     *
+     * @return
+     *      String like "job/foo/32/" with trailing slash but no leading slash. 
+     */
     // I really messed this up. I'm hoping to fix this some time
     // it shouldn't have trailing '/', and instead it should have leading '/'
     public String getUrl() {
