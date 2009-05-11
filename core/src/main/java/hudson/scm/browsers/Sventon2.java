@@ -45,13 +45,13 @@ import java.net.URL;
 import java.net.URLEncoder;
 
 /**
- * {@link RepositoryBrowser} for Sventon 1.x.
+ * {@link RepositoryBrowser} for Sventon 2.x.
  *
  * @author Stephen Connolly
  */
-public class Sventon extends SubversionRepositoryBrowser {
+public class Sventon2 extends SubversionRepositoryBrowser {
     /**
-     * The URL of the Sventon 1.x repository.
+     * The URL of the Sventon 2.x repository.
      *
      * This is normally like <tt>http://somehost.com/svn/</tt>
      * Normalized to have '/' at the tail.
@@ -69,7 +69,7 @@ public class Sventon extends SubversionRepositoryBrowser {
     private static final String URL_CHARSET = "UTF-8";
 
     @DataBoundConstructor
-    public Sventon(URL url, String repositoryInstance) throws MalformedURLException {
+    public Sventon2(URL url, String repositoryInstance) throws MalformedURLException {
         this.url = normalizeToEndWithSlash(url);
 
         // normalize
@@ -87,8 +87,8 @@ public class Sventon extends SubversionRepositoryBrowser {
         if(path.getEditType()!= EditType.EDIT)
             return null;    // no diff if this is not an edit change
         int r = path.getLogEntry().getRevision();
-        return new URL(url, String.format("diffprev.svn?name=%s&commitrev=%d&committedRevision=%d&revision=%d&path=%s",
-                repositoryInstance,r,r,r,URLEncoder.encode(getPath(path), URL_CHARSET)));
+        return new URL(url, String.format("repos/%s/diff/%s?revision=%d",
+                repositoryInstance,URLEncoder.encode(getPath(path), URL_CHARSET), r));
     }
 
     @Override
@@ -96,8 +96,8 @@ public class Sventon extends SubversionRepositoryBrowser {
         if (path.getEditType() == EditType.DELETE)
            return null; // no file if it's gone
         int r = path.getLogEntry().getRevision();
-        return new URL(url, String.format("goto.svn?name=%s&revision=%d&path=%s",
-                repositoryInstance,r,URLEncoder.encode(getPath(path), URL_CHARSET)));
+        return new URL(url, String.format("repos/%s/goto/%s?revision=%d",
+                repositoryInstance,URLEncoder.encode(getPath(path), URL_CHARSET), r));
     }
 
     /**
@@ -112,14 +112,14 @@ public class Sventon extends SubversionRepositoryBrowser {
 
     @Override
     public URL getChangeSetLink(LogEntry changeSet) throws IOException {
-        return new URL(url, String.format("revinfo.svn?name=%s&revision=%d",
+        return new URL(url, String.format("repos/%s/info?revision=%d",
                 repositoryInstance,changeSet.getRevision()));
     }
 
     @Extension
     public static class DescriptorImpl extends Descriptor<RepositoryBrowser<?>> {
         public String getDisplayName() {
-            return "Sventon 1.x";
+            return "Sventon 2.x";
         }
 
         /**
@@ -138,10 +138,10 @@ public class Sventon extends SubversionRepositoryBrowser {
                     if(!v.endsWith("/")) v+='/';
 
                     try {
-                        if (findText(open(new URL(v)),"sventon 1")) {
+                        if (findText(open(new URL(v)),"sventon 2")) {
                             return FormValidation.ok();
                         } else if (findText(open(new URL(v)),"sventon")) {
-                            return FormValidation.error("This is a valid Sventon URL but it doesn't look like Sventon 1.x");
+                            return FormValidation.error("This is a valid Sventon URL but it doesn't look like Sventon 2.x");
                         } else{
                             return FormValidation.error("This is a valid URL but it doesn't look like Sventon");
                         }
