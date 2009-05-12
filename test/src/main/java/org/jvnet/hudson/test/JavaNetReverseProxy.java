@@ -76,7 +76,7 @@ public class JavaNetReverseProxy extends HttpServlet {
 
     @Override
     protected void service(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        String path = req.getPathInfo();
+        String path = req.getServletPath();
         String d = Util.getDigestOf(path);
 
         File cache = new File(cacheFolder, d);
@@ -85,8 +85,16 @@ public class JavaNetReverseProxy extends HttpServlet {
             FileUtils.copyURLToFile(url,cache);
         }
 
-        resp.setContentType(getServletContext().getMimeType(path));
+        resp.setContentType(getMimeType(path));
         IOUtils.copy(new FileInputStream(cache),resp.getOutputStream());
+    }
+
+    private String getMimeType(String path) {
+        int idx = path.indexOf('?');
+        if(idx>=0)
+            path = path.substring(0,idx);
+        if(path.endsWith(".json"))  return "text/javascript";
+        return getServletContext().getMimeType(path);
     }
 
     private static volatile JavaNetReverseProxy INSTANCE;
