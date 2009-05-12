@@ -50,6 +50,7 @@ import hudson.model.Saveable;
 import hudson.model.TaskListener;
 import hudson.model.UpdateCenter;
 import hudson.model.AbstractProject;
+import hudson.model.UpdateCenter.UpdateCenterConfiguration;
 import hudson.model.Node.Mode;
 import hudson.scm.SubversionSCM;
 import hudson.slaves.CommandLauncher;
@@ -192,6 +193,7 @@ public abstract class HudsonTestCase extends TestCase {
         recipe();
         AbstractProject.WORKSPACE.toString();
 
+
         hudson = newHudson();
         hudson.setNoUsageStatistics(true); // collecting usage stats from tests are pointless.
         hudson.servletContext.setAttribute("app",hudson);
@@ -200,6 +202,14 @@ public abstract class HudsonTestCase extends TestCase {
 
         // set a default JDK to be the one that the harness is using.
         hudson.getJDKs().add(new JDK("default",System.getProperty("java.home")));
+
+        // load updates from local proxy to avoid network traffic.
+        final String updateCenterUrl = "http://localhost:"+JavaNetReverseProxy.getInstance().localPort+"/";
+        hudson.getUpdateCenter().configure(new UpdateCenterConfiguration() {
+            public String getUpdateCenterUrl() {
+                return updateCenterUrl;
+            }
+        });
 
         // cause all the descriptors to reload.
         // ideally we'd like to reset them to properly emulate the behavior, but that's not possible.
