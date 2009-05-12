@@ -35,19 +35,21 @@ public class DownloadService extends PageDecorator {
      */
     public String generateFragment() {
         StringBuilder buf = new StringBuilder();
-        long now = System.currentTimeMillis();
-        for (Downloadable d : Downloadable.all()) {
-            if(d.getDue()<now) {
-                buf.append("<script>downloadService.download(")
-                   .append(QuotedStringTokenizer.quote(d.getId()))
-                   .append(',')
-                   .append(QuotedStringTokenizer.quote(d.getUrl()))
-                   .append(',')
-                   .append("{version:"+QuotedStringTokenizer.quote(Hudson.VERSION)+'}')
-                   .append(',')
-                   .append(QuotedStringTokenizer.quote(Stapler.getCurrentRequest().getContextPath()+'/'+getUrl()+"/byId/"+d.getId()+"/postBack"))
-                   .append(',')
-                   .append("null);</script>");
+        if(Hudson.getInstance().hasPermission(Hudson.READ)) {
+            long now = System.currentTimeMillis();
+            for (Downloadable d : Downloadable.all()) {
+                if(d.getDue()<now) {
+                    buf.append("<script>downloadService.download(")
+                       .append(QuotedStringTokenizer.quote(d.getId()))
+                       .append(',')
+                       .append(QuotedStringTokenizer.quote(d.getUrl()))
+                       .append(',')
+                       .append("{version:"+QuotedStringTokenizer.quote(Hudson.VERSION)+'}')
+                       .append(',')
+                       .append(QuotedStringTokenizer.quote(Stapler.getCurrentRequest().getContextPath()+'/'+getUrl()+"/byId/"+d.getId()+"/postBack"))
+                       .append(',')
+                       .append("null);</script>");
+                }
             }
         }
         return buf.toString();
