@@ -40,7 +40,7 @@ import hudson.remoting.RemoteInputStream;
 import hudson.util.IOException2;
 import hudson.util.HeadBufferingStream;
 import hudson.util.FormValidation;
-import hudson.util.jna.GNUCLibrary;
+import static hudson.util.jna.GNUCLibrary.LIBC;
 import static hudson.Util.fixEmpty;
 import static hudson.FilePath.TarCompression.GZIP;
 import org.apache.tools.ant.BuildException;
@@ -87,6 +87,8 @@ import java.util.concurrent.TimeoutException;
 import java.util.zip.GZIPOutputStream;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.ZipInputStream;
+
+import com.sun.jna.Native;
 
 /**
  * {@link File} like object with remoting support.
@@ -192,6 +194,11 @@ public final class FilePath implements Serializable {
         this.remote = localPath.getPath();
     }
 
+    /**
+     * Construct a path starting with a base location.
+     * @param base starting point for resolution, and defines channel
+     * @param rel a path which if relative will be resolved against base
+     */
     public FilePath(FilePath base, String rel) {
         this.channel = base.channel;
         if(isAbsolute(rel)) {
@@ -382,7 +389,7 @@ public final class FilePath implements Serializable {
 
     private void unzip(File dir, InputStream in) throws IOException {
         dir = dir.getAbsoluteFile();    // without absolutization, getParentFile below seems to fail
-        ZipInputStream zip = new ZipInputStream(in);
+        ZipInputStream zip = new ZipInputStream(new BufferedInputStream(in));
         java.util.zip.ZipEntry e;
 
         try {
@@ -406,6 +413,17 @@ public final class FilePath implements Serializable {
         } finally {
             zip.close();
         }
+    }
+
+    /**
+     * Absolutizes this {@link FilePath} and returns the new one.
+     */
+    public FilePath absolutize() throws IOException, InterruptedException {
+        return new FilePath(channel,act(new FileCallable<String>() {
+            public String invoke(File f, VirtualChannel channel) throws IOException {
+                return f.getAbsolutePath();
+            }
+        }));
     }
 
     /**
@@ -472,10 +490,11 @@ public final class FilePath implements Serializable {
      * that supports upgrade and downgrade. Specifically,
      *
      * <ul>
-     * <li>If the target directory doesn't exit {@linkplain #mkdirs() it'll be created}.
+     * <li>If the target directory doesn't exist {@linkplain #mkdirs() it'll be created}.
      * <li>The timestamp of the .tgz file is left in the installation directory upon extraction.
      * <li>If the timestamp left in the directory doesn't match with the timestamp of the current archive file,
      *     the directory contents will be discarded and the archive file will be re-extracted.
+     * <li>If the connection is refused but the target directory already exists, it is left alone.
      * </ul>
      *
      * @param archive
@@ -490,7 +509,21 @@ public final class FilePath implements Serializable {
      * @since 1.299
      */
     public boolean installIfNecessaryFrom(URL archive, TaskListener listener, String message) throws IOException, InterruptedException {
-        URLConnection con = archive.openConnection();
+        URLConnection con;
+        try {
+            con = archive.openConnection();
+            con.connect();
+        } catch (IOException x) {
+            if (this.exists()) {
+                // Cannot connect now, so assume whatever was last unpacked is still OK.
+                if (listener != null) {
+                    listener.getLogger().println("Skipping installation of " + archive + " to " + remote + ": " + x);
+                }
+                return false;
+            } else {
+                throw x;
+            }
+        }
         long sourceTimestamp = con.getLastModified();
         FilePath timestamp = this.child(".timestamp");
 
@@ -591,6 +624,8 @@ public final class FilePath implements Serializable {
             // run this on a remote system
             try {
                 return channel.call(new FileCallableWrapper<T>(callable));
+            } catch (AbortException e) {
+                throw e;    // pass through so that the caller can catch it as AbortException
             } catch (IOException e) {
                 // wrap it into a new IOException so that we get the caller's stack trace as well.
                 throw new IOException2("remote file operation failed",e);
@@ -709,7 +744,9 @@ public final class FilePath implements Serializable {
     }
 
     /**
-     * The same as {@code new FilePath(this,rel)} but more OO.
+     * The same as {@link FilePath#FilePath(FilePath,String)} but more OO.
+     * @param rel a relative or absolute path
+     * @return a file on the same channel
      */
     public FilePath child(String rel) {
         return new FilePath(this,rel);
@@ -860,6 +897,24 @@ public final class FilePath implements Serializable {
         return act(new FileCallable<Long>() {
             public Long invoke(File f, VirtualChannel channel) throws IOException {
                 return f.length();
+            }
+        });
+    }
+
+    /**
+     * Sets the file permission.
+     *
+     * On Windows, no-op.
+     *
+     * @since 1.303
+     */
+    public void chmod(final int mask) throws IOException, InterruptedException {
+        if(!isUnix())   return;
+        act(new FileCallable<Void>() {
+            public Void invoke(File f, VirtualChannel channel) throws IOException {
+                if(LIBC.chmod(f.getAbsolutePath(),mask)!=0)
+                    throw new IOException("Failed to chmod "+f+" : "+LIBC.strerror(Native.getLastError()));
+                return null;
             }
         });
     }
@@ -1265,7 +1320,7 @@ public final class FilePath implements Serializable {
                     f.setLastModified(te.getModTime().getTime());
                     int mode = te.getMode()&0777;
                     if(mode!=0 && !Hudson.isWindows()) // be defensive
-                        GNUCLibrary.LIBC.chmod(f.getPath(),mode);
+                        LIBC.chmod(f.getPath(),mode);
                 }
             }
         } catch(IOException e) {

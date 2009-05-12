@@ -2182,17 +2182,8 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
 
             systemMessage = Util.nullify(req.getParameter("system_message"));
 
-            {// update JDK installations
-                jdks.clear();
-                String[] names = req.getParameterValues("jdk_name");
-                String[] homes = req.getParameterValues("jdk_home");
-                if(names!=null && homes!=null) {
-                    int len = Math.min(names.length,homes.length);
-                    for(int i=0;i<len;i++) {
-                        jdks.add(new JDK(names[i],homes[i]));
-                    }
-                }
-            }
+            jdks.clear();
+            jdks.addAll(req.bindJSONToList(JDK.class,json.get("jdks")));
 
             boolean result = true;
 
@@ -2218,7 +2209,7 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
                 result &= configureDescriptor(req,json,d);
 
             for( JSONObject o : StructuredForm.toList(json,"plugin"))
-                pluginManager.getPlugin(o.getString("name")).getPlugin().configure(o);
+                pluginManager.getPlugin(o.getString("name")).getPlugin().configure(req, o);
 
             clouds.rebuildHetero(req,json, Cloud.all(), "cloud");
 
@@ -2903,24 +2894,6 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
     }
 
     /**
-     * Checks if the JAVA_HOME is a valid JAVA_HOME path.
-     */
-    public FormValidation doJavaHomeCheck(@QueryParameter File value) {
-        // this can be used to check the existence of a file on the server, so needs to be protected
-        checkPermission(ADMINISTER);
-
-        if(!value.isDirectory())
-            return FormValidation.error(Messages.Hudson_NotADirectory(value));
-
-        File toolsJar = new File(value,"lib/tools.jar");
-        File mac = new File(value,"lib/dt.jar");
-        if(!toolsJar.exists() && !mac.exists())
-            return FormValidation.error(Messages.Hudson_NotJDKDir(value));
-
-        return FormValidation.ok();
-    }
-
-    /**
      * If the user chose the default JDK, make sure we got 'java' in PATH.
      */
     public FormValidation doDefaultJDKCheck(StaplerRequest request, @QueryParameter String value) {
@@ -3338,7 +3311,7 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
         context.setAttribute("version",ver);
         VERSION_HASH = Util.getDigestOf(ver).substring(0, 8);
 
-        if(ver.equals("?"))
+        if(ver.equals("?") || Boolean.getBoolean("hudson.script.noCache"))
             RESOURCE_PATH = "";
         else
             RESOURCE_PATH = "/static/"+VERSION_HASH;

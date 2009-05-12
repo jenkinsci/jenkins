@@ -311,7 +311,7 @@ public final class MavenModuleSetBuild extends AbstractBuild<MavenModuleSet,Mave
         protected Result doRun(final BuildListener listener) throws Exception {
             PrintStream logger = listener.getLogger();
             try {
-                EnvVars envVars = getEnvironment();
+                EnvVars envVars = getEnvironment(listener);
                 parsePoms(listener, logger, envVars);
 
                 if(!project.isAggregatorStyleBuild()) {
@@ -419,7 +419,7 @@ public final class MavenModuleSetBuild extends AbstractBuild<MavenModuleSet,Mave
                 throw new AbortException("A Maven installation needs to be available for this project to be built.\n"+
                 "Either your server has no Maven installations defined, or the requested Maven version does not exist.");
 
-            mvn = mvn.forEnvironment(envVars).forNode(Computer.currentComputer().getNode());
+            mvn = mvn.forEnvironment(envVars).forNode(Computer.currentComputer().getNode(), listener);
 
             List<PomInfo> poms;
             try {

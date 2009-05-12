@@ -260,7 +260,7 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable {
         StaplerRequest req = Stapler.getCurrentRequest();
         Ancestor a = req.findAncestor(DescriptorByNameOwner.class);
         // a is always non-null because we already have Hudson as the sentinel
-        return singleQuote(a.getUrl()+"/descriptorByName/"+clazz.getName()+"/check"+capitalizedFieldName+"?value=")+"+encode(this.value)";
+        return singleQuote(a.getUrl()+"/descriptorByName/"+clazz.getName()+"/check"+capitalizedFieldName+"?value=")+"+toValue(this)";
     }
 
     /**

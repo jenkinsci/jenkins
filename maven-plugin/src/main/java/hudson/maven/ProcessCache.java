@@ -26,6 +26,7 @@ package hudson.maven;
 import hudson.Util;
 import hudson.model.BuildListener;
 import hudson.model.JDK;
+import hudson.model.TaskListener;
 import hudson.remoting.Callable;
 import hudson.remoting.Channel;
 import hudson.remoting.VirtualChannel;
@@ -61,8 +62,8 @@ public final class ProcessCache {
          */
         Channel newProcess(BuildListener listener,OutputStream out) throws IOException, InterruptedException;
         String getMavenOpts();
-        MavenInstallation getMavenInstallation();
-        JDK getJava();
+        MavenInstallation getMavenInstallation(TaskListener listener) throws IOException, InterruptedException;
+        JDK getJava(TaskListener listener) throws IOException, InterruptedException;
     }
 
     class MavenProcess {
@@ -161,8 +162,8 @@ public final class ProcessCache {
      */
     public MavenProcess get(VirtualChannel owner, BuildListener listener, Factory factory) throws InterruptedException, IOException {
         String mavenOpts = factory.getMavenOpts();
-        MavenInstallation installation = factory.getMavenInstallation();
-        JDK jdk = factory.getJava();
+        MavenInstallation installation = factory.getMavenInstallation(listener);
+        JDK jdk = factory.getJava(listener);
 
         PerChannel list = get(owner);
         synchronized(list.processes) {

@@ -436,8 +436,8 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
     }
 
     @Override
-    public EnvVars getEnvironment() throws IOException, InterruptedException {
-        EnvVars env = super.getEnvironment();
+    public EnvVars getEnvironment(TaskListener log) throws IOException, InterruptedException {
+        EnvVars env = super.getEnvironment(log);
         env.put("WORKSPACE", getProject().getWorkspace().getRemote());
         // servlet container may have set CLASSPATH in its launch script,
         // so don't let that inherit to the new child process.
@@ -448,7 +448,7 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
         if(jdk != null) {
             Computer computer = Computer.currentComputer();
             if (computer != null) { // just in case were not in a build
-                jdk = jdk.forNode(computer.getNode());            
+                jdk = jdk.forNode(computer.getNode(), log);
             }
             jdk.buildEnvVars(env);
         }

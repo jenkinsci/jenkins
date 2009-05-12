@@ -29,6 +29,8 @@ import hudson.scm.CVSChangeLogSet.File;
 import hudson.slaves.NodeSpecific;
 import hudson.model.Hudson;
 import hudson.model.Node;
+import hudson.model.TaskListener;
+import java.io.IOException;
 
 /**
  * This Hudson-wide extension points can participate in determining the actual node-specific path
@@ -61,7 +63,7 @@ public abstract class ToolLocationTranslator implements ExtensionPoint {
      * Otherwise return null to let other {@link ToolLocationTranslator}s a chance to do translations
      * on their own. 
      */
-    public abstract String getToolHome(Node node, ToolInstallation installation);
+    public abstract String getToolHome(Node node, ToolInstallation installation, TaskListener log) throws IOException, InterruptedException;
 
     /**
      * Returns all the registered {@link ToolLocationTranslator}s.

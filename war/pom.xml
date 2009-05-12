@@ -111,7 +111,7 @@ THE SOFTWARE.
 
                 <!-- bundled plugins -->
                 <resolveArtifact groupId="${project.groupId}" artifactId="maven-plugin" version="${project.version}" type="hpi" tofile="${basedir}/target/generated-resources/WEB-INF/plugins/maven-plugin.hpi" />
-                <resolveArtifact groupId="org.jvnet.hudson.plugins" artifactId="ssh-slaves" version="0.5" type="hpi" tofile="${basedir}/target/generated-resources/WEB-INF/plugins/ssh-slaves.hpi" />
+                <resolveArtifact groupId="org.jvnet.hudson.plugins" artifactId="ssh-slaves" version="0.5.2" type="hpi" tofile="${basedir}/target/generated-resources/WEB-INF/plugins/ssh-slaves.hpi" />
               </tasks>
             </configuration>
           </execution>
@@ -156,6 +156,11 @@ THE SOFTWARE.
             <systemProperty>
               <!-- show the stapler evaluation during execution -->
               <name>stapler.trace</name>
+              <value>true</value>
+            </systemProperty>
+            <systemProperty>
+              <!-- always reload scripts during debugging -->
+              <name>hudson.script.noCache</name>
               <value>true</value>
             </systemProperty>
             <systemProperty>

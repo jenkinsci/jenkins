@@ -93,6 +93,17 @@ public abstract class PageDecorator extends Descriptor<PageDecorator> implements
     }
 
     /**
+     * Obtains the URL of this object, excluding the context path.
+     *
+     * <p>
+     * Every {@link PageDecorator} is bound to URL via {@link Hudson#getDescriptor()}.
+     * This method returns such an URL.
+     */
+    public final String getUrl() {
+        return "descriptor/"+clazz.getName();
+    }
+
+    /**
      * All the registered instances.
      * @deprecated as of 1.286
      *      Use {@link #all()} for read access, and use {@link Extension} for registration.

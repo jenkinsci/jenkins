@@ -133,13 +133,13 @@ public class Ant extends Builder {
         
         ArgumentListBuilder args = new ArgumentListBuilder();
 
-        EnvVars env = build.getEnvironment();
+        EnvVars env = build.getEnvironment(listener);
         
         AntInstallation ai = getAnt();
         if(ai==null) {
             args.add(launcher.isUnix() ? "ant" : "ant.bat");
         } else {
-            ai = ai.forNode(Computer.currentComputer().getNode());
+            ai = ai.forNode(Computer.currentComputer().getNode(), listener);
             ai = ai.forEnvironment(env);
             String exe = ai.getExecutable(launcher);
             if (exe==null) {
@@ -391,8 +391,8 @@ public class Ant extends Builder {
 			return new AntInstallation(getName(), environment.expand(antHome));
 		}
 
-        public AntInstallation forNode(Node node) {
-            return new AntInstallation(getName(),translateFor(node));
+        public AntInstallation forNode(Node node, TaskListener log) throws IOException, InterruptedException {
+            return new AntInstallation(getName(), translateFor(node, log));
         }
 
         @Extension

@@ -88,7 +88,7 @@ public class HudsonTest extends HudsonTestCase {
 
     private void assertJDK(JDK jdk, String name, String home) {
         assertEquals(jdk.getName(),name);
-        assertEquals(jdk.getJavaHome(),home);
+        assertEquals(jdk.getHome(),home);
     }
 
     /**

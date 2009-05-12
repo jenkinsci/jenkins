@@ -41,13 +41,11 @@ import hudson.security.ACL;
 import hudson.security.AccessControlled;
 import hudson.security.Permission;
 import hudson.security.PermissionGroup;
-import hudson.tasks.BuildStep;
-import hudson.tasks.BuildWrapper;
 import hudson.tasks.LogRotator;
 import hudson.tasks.Mailer;
 import hudson.tasks.test.AbstractTestResultAction;
 import hudson.util.IOException2;
-import hudson.util.ProcessTreeKiller;
+import hudson.util.LogTaskListener;
 import hudson.util.XStream2;
 
 import java.io.BufferedReader;
@@ -1275,6 +1273,13 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
     }
 
     /**
+     * @deprecated as of XXX use {@link #getEnvironment(TaskListener)}
+     */
+    public EnvVars getEnvironment() throws IOException, InterruptedException {
+        return getEnvironment(new LogTaskListener(LOGGER, Level.INFO));
+    }
+
+    /**
      * Returns the map that contains environmental variables to be used for launching
      * processes for this build.
      *
@@ -1287,7 +1292,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
      * Unlike earlier {@link #getEnvVars()}, this map contains the whole environment,
      * not just the overrides, so one can introspect values to change its behavior.
      */
-    public EnvVars getEnvironment() throws IOException, InterruptedException {
+    public EnvVars getEnvironment(TaskListener log) throws IOException, InterruptedException {
         EnvVars env = Computer.currentComputer().getEnvironment().overrideAll(getCharacteristicEnvVars());
         String rootUrl = Hudson.getInstance().getRootUrl();
         if(rootUrl!=null)

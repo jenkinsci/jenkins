@@ -100,28 +100,9 @@ THE SOFTWARE.
       <f:section title="${%JDKs}">
         <f:entry title="${%JDK installations}"
                  description="${%List of JDK installations on this system}">
-          <f:repeatable var="inst" items="${it.JDKs}" name="jdks">
-            <table width="100%">
-              <f:entry title="${%name}">
-                <input class="setting-input" name="jdk_name"
-                  type="text" value="${inst.name}" />
-              </f:entry>
-
-              <j:set var="status" value="${null}" />
-              <j:if test="${inst!=null and !inst.exists and inst.name!=''}">
-                <j:set var="status" value="${%no.such.JDK}" />
-              </j:if>
-              <f:entry title="JAVA_HOME" description="${status}">
-                <input class="setting-input validated" name="jdk_home"
-                  type="text" value="${inst.javaHome}"
-                  checkUrl="'javaHomeCheck?value='+escape(this.value)"/>
-              </f:entry>
-              <f:entry title="">
-                <div align="right">
-                  <f:repeatableDeleteButton />
-                </div>
-              </f:entry>
-            </table>
+          <f:repeatable var="instance" items="${it.JDKs}" name="jdks" add="${%Add JDK}">
+            <j:set var="descriptor" value="${h.getJDKDescriptor()}" />
+            <st:include page="${descriptor.configPage}" from="${descriptor}" />
           </f:repeatable>
         </f:entry>
       </f:section>

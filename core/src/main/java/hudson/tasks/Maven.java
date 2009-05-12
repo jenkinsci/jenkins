@@ -38,12 +38,12 @@ import hudson.model.Computer;
 import hudson.model.EnvironmentSpecific;
 import hudson.model.Node;
 import hudson.model.Hudson;
+import hudson.model.TaskListener;
 import hudson.remoting.Callable;
 import hudson.remoting.VirtualChannel;
 import hudson.slaves.NodeSpecific;
 import hudson.tools.ToolDescriptor;
 import hudson.tools.ToolInstallation;
-import hudson.tools.ToolLocationNodeProperty;
 import hudson.util.ArgumentListBuilder;
 import hudson.util.NullStream;
 import hudson.util.StreamTaskListener;
@@ -178,7 +178,7 @@ public class Maven extends Builder {
 
         VariableResolver<String> vr = build.getBuildVariableResolver();
 
-        EnvVars env = build.getEnvironment();
+        EnvVars env = build.getEnvironment(listener);
 
         String targets = Util.replaceMacro(this.targets,vr);
         targets = env.expand(targets);
@@ -205,7 +205,7 @@ public class Maven extends Builder {
                 String execName = proj.getWorkspace().act(new DecideDefaultMavenCommand(normalizedTarget));
                 args.add(execName);
             } else {
-                mi = mi.forNode(Computer.currentComputer().getNode());
+                mi = mi.forNode(Computer.currentComputer().getNode(), listener);
             	mi = mi.forEnvironment(env);
                 String exec = mi.getExecutable(launcher);
                 if(exec==null) {
@@ -409,8 +409,8 @@ public class Maven extends Builder {
 			return new MavenInstallation(getName(), environment.expand(getHome()));
 		}
 
-        public MavenInstallation forNode(Node node) {
-            return new MavenInstallation(getName(),translateFor(node));
+        public MavenInstallation forNode(Node node, TaskListener log) throws IOException, InterruptedException {
+            return new MavenInstallation(getName(), translateFor(node, log));
         }
 
         @Extension

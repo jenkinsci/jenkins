@@ -36,7 +36,6 @@ import hudson.tasks.Builder;
 
 import java.io.IOException;
 import java.util.List;
-import java.util.ArrayList;
 
 /**
  * Extensible property of {@link Node}.
@@ -106,12 +105,6 @@ public abstract class NodeProperty<N extends Node> implements Describable<NodePr
      * given project.
      */
     public static List<NodePropertyDescriptor> for_(Node node) {
-        List<NodePropertyDescriptor> result = new ArrayList<NodePropertyDescriptor>();
-        for (NodePropertyDescriptor npd : all()) {
-            if (npd.isApplicable(node.getClass())) {
-                result.add(npd);
-            }
-        }
-        return result;
+        return NodePropertyDescriptor.for_(all(),node);
     }
 }

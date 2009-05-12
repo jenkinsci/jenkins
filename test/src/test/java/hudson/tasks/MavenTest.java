@@ -95,7 +95,7 @@ public class MavenTest extends HudsonTestCase {
         hudson.getDescriptorByType(Maven.DescriptorImpl.class).setInstallations(maven, varMaven);
 
         JDK jdk = hudson.getJDK("default");
-        String javaHome = jdk.getJavaHome();
+        String javaHome = jdk.getHome();
         String javaHomeVar = "${VAR_JAVA}" + javaHome.substring(3);
         String javaVar = javaHome.substring(0, 3);
         JDK varJDK = new JDK("varJDK", javaHomeVar);

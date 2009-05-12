@@ -25,6 +25,11 @@
 package hudson.tools;
 
 import hudson.model.Descriptor;
+import hudson.util.DescribableList;
+
+import java.util.Collections;
+import java.util.List;
+import java.io.IOException;
 
 /**
  * {@link Descriptor} for {@link ToolInstallation}.
@@ -39,20 +44,53 @@ public abstract class ToolDescriptor<T extends ToolInstallation> extends Descrip
     /**
      * Configured instances of {@link ToolInstallation}s.
      *
-     * @return
-     *      can be empty but never null. Treat this as a read-only copy, do not mutate.
+     * @return read-only list of installations;
+     *      can be empty but never null.
      */
     public T[] getInstallations() {
-        return installations;
+        return installations.clone();
     }
 
     /**
      * Overwrites {@link ToolInstallation}s.
      *
-     * @return
+     * @param installations list of installations;
      *      can be empty but never null.
      */
-    public void setInstallations(T[] installations) {
-        this.installations = installations;
+    public void setInstallations(T... installations) {
+        this.installations = installations.clone();
     }
+
+    /**
+     * Lists up {@link ToolPropertyDescriptor}s that are applicable to this {@link ToolInstallation}.
+     */
+    public List<ToolPropertyDescriptor> getPropertyDescriptors() {
+        return PropertyDescriptor.for_(ToolProperty.all(),clazz);
+    }
+
+    /**
+     * Optional list of installers to be configured by default for new tools of this type.
+     * If there are popular versions of the tool available using generic installation techniques,
+     * they can be returned here for the user's convenience.
+     * @since XXX
+     */
+    public List<? extends ToolInstaller> getDefaultInstallers() {
+        return Collections.emptyList();
+    }
+
+    /**
+     * Default value for {@link ToolInstallation#getProperties()} used in the form binding.
+     * @since XXX
+     */
+    public DescribableList<ToolProperty<?>,ToolPropertyDescriptor> getDefaultProperties() throws IOException {
+        DescribableList<ToolProperty<?>,ToolPropertyDescriptor> r
+                = new DescribableList<ToolProperty<?>, ToolPropertyDescriptor>(NOOP);
+
+        List<? extends ToolInstaller> installers = getDefaultInstallers();
+        if(!installers.isEmpty())
+            r.add(new InstallSourceProperty(installers));
+
+        return r;
+    }
+
 }

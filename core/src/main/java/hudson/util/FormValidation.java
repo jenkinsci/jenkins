@@ -88,7 +88,7 @@ import java.net.URLConnection;
  * ...
  *
  * public void {@linkplain Builder#perform(AbstractBuild, Launcher, BuildListener) perform}(...) {
- *     String version = getAntVersin(antHome);
+ *     String version = getAntVersion(antHome);
  *     ...
  * }
  * </pre>

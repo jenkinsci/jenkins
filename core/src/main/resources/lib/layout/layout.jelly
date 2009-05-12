@@ -209,6 +209,17 @@ THE SOFTWARE.
           <div id="navigation">
             <j:set var="mode" value="side-panel" />
             <d:invokeBody />
+
+            <!-- add YUI logger if debugging YUI -->
+            <j:if test="${h.yuiSuffix=='debug'}">
+              <div id="yui-logreader" style="margin-top:1em"/>
+              <script>
+                Behaviour.addLoadEvent(function(){
+                  var logReader = new YAHOO.widget.LogReader("yui-logreader");
+                  logReader.collapse();
+                });
+              </script>
+            </j:if>
           </div>
         </td>
         <td id="main-panel" width="80%" height="100%">

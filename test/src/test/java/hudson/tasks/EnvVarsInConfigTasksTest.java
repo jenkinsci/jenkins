@@ -28,7 +28,7 @@ public class EnvVarsInConfigTasksTest extends HudsonTestCase {
 		super.setUp();
 
 		JDK defaultJDK = hudson.getJDK(null);
-		JDK varJDK = new JDK("varJDK", withVariable(defaultJDK.getJavaHome()));
+		JDK varJDK = new JDK("varJDK", withVariable(defaultJDK.getHome()));
 		hudson.getJDKs().add(varJDK);
 
 		// Maven with a variable in its path

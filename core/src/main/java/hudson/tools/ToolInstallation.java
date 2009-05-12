@@ -25,16 +25,23 @@
 package hudson.tools;
 
 import hudson.DescriptorExtensionList;
+import hudson.EnvVars;
 import hudson.Extension;
 import hudson.ExtensionPoint;
-import hudson.EnvVars;
 import hudson.model.Describable;
 import hudson.model.EnvironmentSpecific;
 import hudson.model.Hudson;
 import hudson.model.Node;
+import hudson.model.Saveable;
+import hudson.model.TaskListener;
 import hudson.slaves.NodeSpecific;
+import hudson.util.DescribableList;
 
 import java.io.Serializable;
+import java.io.IOException;
+import java.util.List;
+
+import com.thoughtworks.xstream.annotations.XStreamSerializable;
 
 /**
  * Formalization of a tool installed in nodes used for builds
@@ -55,7 +62,7 @@ import java.io.Serializable;
  *
  * <p>
  * Implementations of this class are strongly encouraged to also implement {@link NodeSpecific}
- * (by using {@link #translateFor(Node)}) and
+ * (by using {@link #translateFor(Node, TaskListener)}) and
  * {@link EnvironmentSpecific} (by using {@link EnvVars#expand(String)}.)
  *
  * <p>
@@ -65,13 +72,42 @@ import java.io.Serializable;
  * @since 1.286
  */
 public abstract class ToolInstallation implements Serializable, Describable<ToolInstallation>, ExtensionPoint {
-
     private final String name;
     private final String home;
 
+    /**
+     * {@link ToolProperty}s that are associated with this tool.
+     */
+    @XStreamSerializable
+    private transient /*almost final*/ DescribableList<ToolProperty<?>,ToolPropertyDescriptor> properties
+            = new DescribableList<ToolProperty<?>,ToolPropertyDescriptor>(Saveable.NOOP);
+
+    /**
+     * @deprecated
+     *      as of 1.302. Use {@link #ToolInstallation(String, String, List)} 
+     */
     public ToolInstallation(String name, String home) {
         this.name = name;
         this.home = home;
+    }
+
+    public ToolInstallation(String name, String home, List<? extends ToolProperty<?>> properties) {
+        this.name = name;
+        this.home = home;
+        if(properties!=null) {
+            try {
+                this.properties.replaceBy(properties);
+                for (ToolProperty<?> p : properties)
+                    _setTool(p,this);
+            } catch (IOException e) {
+                throw new AssertionError(e); // no Saveable, so can't happen
+            }
+        }
+    }
+
+    // helper function necessary to avoid a warning
+    private <T extends ToolInstallation> void _setTool(ToolProperty<T> prop, ToolInstallation t) {
+        prop.setTool(prop.type().cast(t));
     }
 
     /**
@@ -91,23 +127,43 @@ public abstract class ToolInstallation implements Serializable, Describable<Tool
         return home;
     }
 
+    public DescribableList<ToolProperty<?>,ToolPropertyDescriptor> getProperties() {
+        assert properties!=null;
+        return properties;
+    }
+
     public ToolDescriptor<?> getDescriptor() {
         return (ToolDescriptor) Hudson.getInstance().getDescriptor(getClass());
     }
 
     /**
+     * Finds a tool on a node.
      * Checks if the location of the tool is overridden for the given node, and if so,
-     * return the node-specific home directory. Otherwise return {@code installation.getHome()}
+     * return the node-specific home directory.
+     * Also checks available {@link ToolLocationTranslator}s.
+     * Otherwise returns {@code installation.getHome()}.
      *
      * <p>
-     * This is the core logic behind {@link NodeSpecific#forNode(Node)} for {@link ToolInstallation},
+     * This is the core logic behind {@link NodeSpecific#forNode(Node, TaskListener)} for {@link ToolInstallation},
      * and meant to be used by the {@code forNode} implementations.
      *
      * @return
      *      never null.
      */
-    protected String translateFor(Node node) {
-        return ToolLocationNodeProperty.getToolHome(node,this);
+    @SuppressWarnings("deprecation")
+    protected String translateFor(Node node, TaskListener log) throws IOException, InterruptedException {
+        return ToolLocationNodeProperty.getToolHome(node, this, log);
+    }
+
+    /**
+     * Invoked by XStream when this object is read into memory.
+     */
+    private Object readResolve() {
+        if(properties==null)
+            properties = new DescribableList<ToolProperty<?>,ToolPropertyDescriptor>(Saveable.NOOP);
+        for (ToolProperty<?> p : properties)
+            _setTool(p, this);
+        return this;
     }
 
     /**

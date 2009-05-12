@@ -62,6 +62,7 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketTimeoutException;
 import java.util.Arrays;
+import java.util.jar.JarFile;
 import java.util.logging.Logger;
 
 
@@ -228,7 +229,7 @@ final class MavenProcessFactory implements ProcessCache.Factory {
      * UGLY.
      */
     private ArgumentListBuilder buildMavenCmdLine(BuildListener listener,int tcpPort) throws IOException, InterruptedException {
-        MavenInstallation mvn = getMavenInstallation();
+        MavenInstallation mvn = getMavenInstallation(listener);
         if(mvn==null) {
             listener.error("Maven version is not configured for this project. Can't determine which Maven to run");
             throw new RunnerAbortedException();
@@ -247,7 +248,7 @@ final class MavenProcessFactory implements ProcessCache.Factory {
             slaveRoot = getCurrentNode().getRootPath();
 
         ArgumentListBuilder args = new ArgumentListBuilder();
-        JDK jdk = getJava();
+        JDK jdk = getJava(listener);
         if(jdk==null) {
             args.add("java");
         } else {
@@ -290,16 +291,16 @@ final class MavenProcessFactory implements ProcessCache.Factory {
         return envVars.expand(mms.getMavenOpts());
     }
 
-    public MavenInstallation getMavenInstallation() {
+    public MavenInstallation getMavenInstallation(TaskListener log) throws IOException, InterruptedException {
         MavenInstallation mi = mms.getMaven();
-        if (mi != null) mi = mi.forNode(getCurrentNode()).forEnvironment(envVars);
+        if (mi != null) mi = mi.forNode(getCurrentNode(), log).forEnvironment(envVars);
         return mi;
 
     }
 
-    public JDK getJava() {
+    public JDK getJava(TaskListener log) throws IOException, InterruptedException {
         JDK jdk = mms.getJDK();
-        if (jdk != null) jdk = jdk.forNode(getCurrentNode()).forEnvironment(envVars);
+        if (jdk != null) jdk = jdk.forNode(getCurrentNode(), log).forEnvironment(envVars);
         return jdk;
     }
 

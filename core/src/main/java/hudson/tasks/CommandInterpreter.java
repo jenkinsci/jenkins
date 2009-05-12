@@ -75,7 +75,7 @@ public abstract class CommandInterpreter extends Builder {
 
             int r;
             try {
-                EnvVars envVars = build.getEnvironment();
+                EnvVars envVars = build.getEnvironment(listener);
                 // on Windows environment variables are converted to all upper case,
                 // but no such conversions are done on Unix, so to make this cross-platform,
                 // convert variables to all upper cases.
