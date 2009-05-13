@@ -35,6 +35,7 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Vector;
+import java.util.Comparator;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 /**
@@ -199,6 +200,20 @@ public class ExtensionList<T> extends AbstractList<T> {
      * The implementation should copy a list, do a sort, and return the new instance.
      */
     protected List<T> sort(List<T> r) {
+        r = new ArrayList<T>(r);
+        Collections.sort(r,new Comparator<T>() {
+            public int compare(T lhs, T rhs) {
+                Extension el = lhs.getClass().getAnnotation(Extension.class);
+                Extension er = rhs.getClass().getAnnotation(Extension.class);
+                // Extension used to be Retention.SOURCE, and we may also end up loading extensions from other places
+                // like Plexus that don't have any annotations, so we need to be defensive
+                double l = el!=null ? el.ordinal() : 0;
+                double r = er!=null ? er.ordinal() : 0;
+                if(l>r) return -1;
+                if(l<r) return 1;
+                return 0;
+            }
+        });
         return r;
     }
 

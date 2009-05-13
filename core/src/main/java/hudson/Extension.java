@@ -68,4 +68,13 @@ import java.lang.annotation.Target;
 @Target({TYPE, FIELD, METHOD})
 @Documented
 public @interface Extension {
+    /**
+     * Used for sorting extensions.
+     *
+     * Extensions will be sorted in the descending order of the ordinal.
+     * This is a rather poor approach to the problem, so its use is generally discouraged.
+     *
+     * @since 1.306
+     */
+    double ordinal() default 0;
 }
