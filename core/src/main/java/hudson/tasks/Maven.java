@@ -38,12 +38,12 @@ import hudson.model.Computer;
 import hudson.model.EnvironmentSpecific;
 import hudson.model.Node;
 import hudson.model.Hudson;
+import hudson.model.TaskListener;
 import hudson.remoting.Callable;
 import hudson.remoting.VirtualChannel;
 import hudson.slaves.NodeSpecific;
 import hudson.tools.ToolDescriptor;
 import hudson.tools.ToolInstallation;
-import hudson.tools.ToolLocationNodeProperty;
 import hudson.util.ArgumentListBuilder;
 import hudson.util.NullStream;
 import hudson.util.StreamTaskListener;
@@ -56,9 +56,13 @@ import org.kohsuke.stapler.QueryParameter;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.FilenameFilter;
 import java.util.Map;
 import java.util.Properties;
 import java.util.StringTokenizer;
+import java.util.regex.Pattern;
+import java.util.regex.MatchResult;
+import java.util.regex.Matcher;
 
 /**
  * Build by using Maven.
@@ -178,7 +182,7 @@ public class Maven extends Builder {
 
         VariableResolver<String> vr = build.getBuildVariableResolver();
 
-        EnvVars env = build.getEnvironment();
+        EnvVars env = build.getEnvironment(listener);
 
         String targets = Util.replaceMacro(this.targets,vr);
         targets = env.expand(targets);
@@ -205,7 +209,7 @@ public class Maven extends Builder {
                 String execName = proj.getWorkspace().act(new DecideDefaultMavenCommand(normalizedTarget));
                 args.add(execName);
             } else {
-                mi = mi.forNode(Computer.currentComputer().getNode());
+                mi = mi.forNode(Computer.currentComputer().getNode(), listener);
             	mi = mi.forEnvironment(env);
                 String exec = mi.getExecutable(launcher);
                 if(exec==null) {
@@ -365,6 +369,25 @@ public class Maven extends Builder {
         }
 
         /**
+         * Is this Maven 2.1.x?
+         *
+         * @param launcher
+         *      Represents the node on which we evaluate the path.
+         */
+        public boolean isMaven2_1(Launcher launcher) throws IOException, InterruptedException {
+            return launcher.getChannel().call(new Callable<Boolean,IOException>() {
+                public Boolean call() throws IOException {
+                    File[] jars = new File(getHomeDir(),"lib").listFiles();
+                    if(jars!=null) // be defensive
+                        for (File jar : jars)
+                            if(jar.getName().startsWith("maven-2.1.") && jar.getName().endsWith("-uber.jar"))
+                                return true;
+                    return false;
+                }
+            });
+        }
+
+        /**
          * Gets the executable path of this maven on the given target system.
          */
         public String getExecutable(Launcher launcher) throws IOException, InterruptedException {
@@ -409,8 +432,8 @@ public class Maven extends Builder {
 			return new MavenInstallation(getName(), environment.expand(getHome()));
 		}
 
-        public MavenInstallation forNode(Node node) {
-            return new MavenInstallation(getName(),translateFor(node));
+        public MavenInstallation forNode(Node node, TaskListener log) throws IOException, InterruptedException {
+            return new MavenInstallation(getName(), translateFor(node, log));
         }
 
         @Extension

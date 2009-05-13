@@ -22,7 +22,7 @@
  * THE SOFTWARE.
  */
 //
-initOptionalBlock//
+//
 // JavaScript for Hudson
 //     See http://www.ibm.com/developerworks/web/library/wa-memleak/?ca=dgr-lnxw97JavascriptLeaks
 //     for memory leak patterns and how to prevent them.
@@ -94,6 +94,14 @@ var FormChecker = {
     }
 }
 
+function toValue(e) {
+    // compute the form validation value to be sent to the server
+    var type = e.getAttribute("type");
+    if(type!=null && type.toLowerCase()=="checkbox")
+        return e.checked;
+    return encode(e.value);
+}
+
 // find the nearest ancestor node that has the given tag name
 function findAncestor(e, tagName) {
     do {
@@ -131,6 +139,7 @@ function findPrevious(src,filter) {
 
     while(src!=null) {
         src = prev(src);
+        if(src==null)   break;
         if(filter(src))
             return src;
     }
@@ -141,7 +150,7 @@ function findPrevious(src,filter) {
  */
 function findPreviousFormItem(src,name) {
     var name2 = "_."+name; // handles <textbox field="..." /> notation silently
-    return findPrevious(src,function(e){ return e.tagName=="INPUT" && (e.name==name || e.name==name2); });
+    return findPrevious(src,function(e){ return (e.tagName=="INPUT" || e.tagName=="TEXTAREA") && (e.name==name || e.name==name2); });
 }
 
 
@@ -206,6 +215,14 @@ function makeButton(e,onclick) {
     return btn;
 }
 
+/*
+    If we are inside 'to-be-removed' class, some HTML altering behaviors interact badly, because
+    the behavior re-executes when the removed master copy gets reinserted later.
+ */
+function isInsideRemovable(e) {
+    return Element.ancestors(e).find(function(f){return f.hasClassName("to-be-removed");});
+}
+
 var hudsonRules = {
     "BODY" : function() {
         tooltip = new YAHOO.widget.Tooltip("tt", {context:[], zindex:999});
@@ -215,6 +232,8 @@ var hudsonRules = {
 // other behavior rules change them (like YUI buttons.)
 
     "DIV.hetero-list-container" : function(e) {
+        if(isInsideRemovable(e))    return;
+
         // components for the add button
         var menu = document.createElement("SELECT");
         var btn = findElementsBySelector(e,"INPUT.hetero-list-add")[0];
@@ -278,6 +297,8 @@ var hudsonRules = {
     },
 
     "DIV.repeated-container" : function(e) {
+        if(isInsideRemovable(e))    return;
+
         // compute the insertion point
         var ip = e.lastChild;
         while (!Element.hasClassName(ip, "repeatable-insertion-point"))
@@ -515,6 +536,38 @@ var hudsonRules = {
         makeButton(e);
     },
 
+    "TR.optional-block-start": function(e) { // see optionalBlock.jelly
+        // set start.ref to checkbox in preparation of row-set-end processing
+        var checkbox = e.firstChild.firstChild;
+        e.setAttribute("ref", checkbox.id = "cb"+(iota++));
+    },
+
+    "TR.row-set-end": function(e) { // see rowSet.jelly and optionalBlock.jelly
+        // figure out the corresponding start block
+        var end = e;
+
+        for( var depth=0; ; e=e.previousSibling) {
+            if(Element.hasClassName(e,"row-set-end"))        depth++;
+            if(Element.hasClassName(e,"row-set-start"))      depth--;
+            if(depth==0)    break;
+        }
+        var start = e;
+
+        var ref = start.getAttribute("ref");
+        if(ref==null)
+            start.id = ref = "rowSetStart"+(iota++);
+
+        applyNameRef(start,end,ref);
+    },
+
+    "BODY TR.optional-block-start": function(e) { // see optionalBlock.jelly
+        // this is prefixed by a pointless BODY so that two processing for optional-block-start
+        // can sandwitch row-set-end
+        // this requires "TR.row-set-end" to mark rows
+        var checkbox = e.firstChild.firstChild;
+        updateOptionalBlock(checkbox,false);
+    },
+
     // image that shows [+] or [-], with hover effect.
     // oncollapsed and onexpanded will be called when the button is triggered.
     "IMG.fold-control" : function(e) {
@@ -595,11 +648,6 @@ function applyNameRef(s,e,id) {
         if(x.getAttribute("nameRef")==null)
             x.setAttribute("nameRef",id);
     }
-}
-
-function initOptionalBlock(sid, eid, cid) {
-    applyNameRef($(sid),$(eid),cid);
-    updateOptionalBlock($(cid),false);
 }
 
 // used by optionalBlock.jelly to update the form status
@@ -1431,6 +1479,29 @@ function loadScript(href) {
     document.getElementsByTagName("HEAD")[0].appendChild(s);
 }
 
+var downloadService = {
+    continuations: {},
+
+    download : function(id,url,info, postBack,completionHandler) {
+        this.continuations[id] = {postBack:postBack,completionHandler:completionHandler};
+        loadScript(url+"?"+Hash.toQueryString(info));
+    },
+
+    post : function(id,data) {
+        var o = this.continuations[id];
+        new Ajax.Request(o.postBack, {
+            method:"post",
+            parameters:{json:Object.toJSON(data)},
+            onSuccess: function() {
+                if(o.completionHandler!=null)
+                    o.completionHandler();
+            }
+        });
+    }
+};
+
+// update center service. for historical reasons,
+// this is separate from downloadSerivce
 var updateCenter = {
     postBackURL : null,
     info: {},
@@ -1515,6 +1586,13 @@ function validateButton(checkUrl,paramList,button) {
       onComplete: function(rsp) {
           spinner.style.display="none";
           target.innerHTML = rsp.responseText;
+          var s = rsp.getResponseHeader("script");
+          if(s!=null)
+            try {
+              eval(s);
+            } catch(e) {
+              window.alert("failed to evaluate "+s+"\n"+e.message);
+            }
       }
   });
 }

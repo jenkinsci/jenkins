@@ -473,7 +473,7 @@ public class MavenBuild extends AbstractBuild<MavenModule,MavenBuild> {
                 buildEnvironments.add(e);
             }
 
-            EnvVars envVars = getEnvironment(); // buildEnvironments should be set up first
+            EnvVars envVars = getEnvironment(listener); // buildEnvironments should be set up first
             
             ProcessCache.MavenProcess process = mavenProcessCache.get(launcher.getChannel(), listener,
                 new MavenProcessFactory(getParent().getParent(),launcher,envVars,null));

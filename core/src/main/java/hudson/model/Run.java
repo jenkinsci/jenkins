@@ -41,13 +41,11 @@ import hudson.security.ACL;
 import hudson.security.AccessControlled;
 import hudson.security.Permission;
 import hudson.security.PermissionGroup;
-import hudson.tasks.BuildStep;
-import hudson.tasks.BuildWrapper;
 import hudson.tasks.LogRotator;
 import hudson.tasks.Mailer;
 import hudson.tasks.test.AbstractTestResultAction;
 import hudson.util.IOException2;
-import hudson.util.ProcessTreeKiller;
+import hudson.util.LogTaskListener;
 import hudson.util.XStream2;
 
 import java.io.BufferedReader;
@@ -545,6 +543,12 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
         return nextBuild;
     }
 
+    /**
+     * Returns the URL of this {@link Run}, relative to the context root of Hudson.
+     *
+     * @return
+     *      String like "job/foo/32/" with trailing slash but no leading slash. 
+     */
     // I really messed this up. I'm hoping to fix this some time
     // it shouldn't have trailing '/', and instead it should have leading '/'
     public String getUrl() {
@@ -1269,6 +1273,13 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
     }
 
     /**
+     * @deprecated as of XXX use {@link #getEnvironment(TaskListener)}
+     */
+    public EnvVars getEnvironment() throws IOException, InterruptedException {
+        return getEnvironment(new LogTaskListener(LOGGER, Level.INFO));
+    }
+
+    /**
      * Returns the map that contains environmental variables to be used for launching
      * processes for this build.
      *
@@ -1281,7 +1292,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
      * Unlike earlier {@link #getEnvVars()}, this map contains the whole environment,
      * not just the overrides, so one can introspect values to change its behavior.
      */
-    public EnvVars getEnvironment() throws IOException, InterruptedException {
+    public EnvVars getEnvironment(TaskListener log) throws IOException, InterruptedException {
         EnvVars env = Computer.currentComputer().getEnvironment().overrideAll(getCharacteristicEnvVars());
         String rootUrl = Hudson.getInstance().getRootUrl();
         if(rootUrl!=null)

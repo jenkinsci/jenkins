@@ -29,9 +29,11 @@ import hudson.Extension;
 import hudson.model.Descriptor;
 import hudson.model.Hudson;
 import hudson.model.Node;
+import hudson.model.TaskListener;
 import hudson.slaves.NodeProperty;
 import hudson.slaves.NodePropertyDescriptor;
 import hudson.slaves.NodeSpecific;
+import java.io.IOException;
 import org.kohsuke.stapler.DataBoundConstructor;
 
 import java.util.Arrays;
@@ -84,7 +86,7 @@ public class ToolLocationNodeProperty extends NodeProperty<Node> {
      * @deprecated
      *      Use {@link ToolInstallation#translateFor(Node)} 
      */
-    public static String getToolHome(Node node, ToolInstallation installation) {
+    public static String getToolHome(Node node, ToolInstallation installation, TaskListener log) throws IOException, InterruptedException {
         String result = null;
 
         // node-specific configuration takes precedence
@@ -94,7 +96,7 @@ public class ToolLocationNodeProperty extends NodeProperty<Node> {
 
         // consult translators
         for( ToolLocationTranslator t : ToolLocationTranslator.all() ) {
-            result = t.getToolHome(node,installation);
+            result = t.getToolHome(node, installation, log);
             if(result!=null)    return result;
         }
 

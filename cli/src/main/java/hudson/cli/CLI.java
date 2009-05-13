@@ -79,7 +79,7 @@ public class CLI {
         // execute the command
         int r=-1;
         try {
-            CliEntryPoint cli = (CliEntryPoint)channel.getRemoteProperty(CliEntryPoint.class.getName());
+            CliEntryPoint cli = (CliEntryPoint)channel.waitForRemoteProperty(CliEntryPoint.class.getName());
             if(cli.protocolVersion()!=CliEntryPoint.VERSION) {
                 System.err.println(Messages.CLI_VersionMismatch());
             } else {

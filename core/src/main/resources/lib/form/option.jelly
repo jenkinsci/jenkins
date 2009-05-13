@@ -29,6 +29,11 @@ THE SOFTWARE.
   <st:documentation>
     &lt;option> tag for the &lt;select> element.
 
+    <st:attribute name="value" use="required">
+      The value to be sent when the form is submitted.
+      Due to the browser incompatibility between IE and Firefox,
+      this parameter is mandatory.
+    </st:attribute>
     <st:attribute name="selected" type="boolean">
       If true, the option value appears as selected.
     </st:attribute>

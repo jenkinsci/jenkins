@@ -42,16 +42,9 @@ THE SOFTWARE.
       <d:invokeBody />
     </j:when>
     <j:otherwise>
-      <j:set var="id" value="${h.generateId()}" />
-      <j:set var="head" value="rowGroupStart${id}"/>
-      <j:set var="ref" value="${attrs.ref?:head}"/>
-
-      <tr id="${head}" style="display:none" name="${attrs.name}" />
+      <tr ref="${attrs.ref}" class="row-set-start" style="display:none" name="${attrs.name}" />
       <d:invokeBody />
-      <tr id="rowGroupEnd${id}" style="display:none" />
-      <script>
-        applyNameRef($$('${head}') , $$('rowGroupEnd${id}') , '${ref}')
-      </script>
+      <tr class="row-set-end" />
     </j:otherwise>
   </j:choose>
 </j:jelly>

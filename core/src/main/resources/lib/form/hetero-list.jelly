@@ -66,6 +66,7 @@ THE SOFTWARE.
         <st:include from="${descriptor}" page="${descriptor.configPage}" />
         <f:block>
           <div align="right">
+            <input type="hidden" name="stapler-class" value="${descriptor.clazz.name}" />
             <f:repeatableDeleteButton value="${attrs.deleteCaption}" />
           </div>
         </f:block>
@@ -86,7 +87,7 @@ THE SOFTWARE.
     </j:forEach>
 
     <div class="repeatable-insertion-point" />
-    <div class="prototypes" style="display:none">
+    <div class="prototypes to-be-removed">
       <!-- render one prototype for each type -->
       <j:set var="instance" value="${null}" />
       <j:forEach var="descriptor" items="${attrs.descriptors}" varStatus="loop">

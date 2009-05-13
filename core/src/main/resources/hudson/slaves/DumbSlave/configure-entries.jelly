@@ -31,17 +31,16 @@ THE SOFTWARE.
     <f:textbox field="nodeDescription" />
   </f:entry>
 
-  <f:entry title="${%# of executors}"
-           help="/help/system-config/master-slave/numExecutors.html">
-    <f:textbox field="numExecutors" />
+  <f:entry title="${%# of executors}" field="numExecutors">
+    <f:textbox />
   </f:entry>
 
-  <f:entry title="${%Remote FS root}" help="/help/system-config/master-slave/remoteFS.html">
-    <f:textbox field="remoteFS" />
+  <f:entry title="${%Remote FS root}" field="remoteFS">
+    <f:textbox />
   </f:entry>
 
-  <f:entry title="${%Labels}" help="/help/system-config/master-slave/label.html">
-    <f:textbox name="label" value="${it.labelString}"/>
+  <f:entry title="${%Labels}" field="labelString">
+    <f:textbox />
   </f:entry>
 
   <f:slave-mode name="mode" node="${it}" />

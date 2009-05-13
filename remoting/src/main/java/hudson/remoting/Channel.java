@@ -443,7 +443,7 @@ public class Channel implements VirtualChannel, IChannel {
      *
      * <p>
      * This is a performance improvement method that can be safely
-     * ignored if your goal is to make things working.
+     * ignored if your goal is just to make things working.
      *
      * <p>
      * Normally, classes are transferred over the network one at a time,
@@ -689,12 +689,33 @@ public class Channel implements VirtualChannel, IChannel {
         return properties.get(key);
     }
 
+    /**
+     * Works like {@link #getProperty(Object)} but wait until some value is set by someone.
+     */
+    public Object waitForProperty(Object key) throws InterruptedException {
+        synchronized (properties) {
+            while(true) {
+                Object v = properties.get(key);
+                if(v!=null) return v;
+                properties.wait();
+            }
+        }
+    }
+
     public Object setProperty(Object key, Object value) {
-        return properties.put(key,value);
+        synchronized (properties) {
+            Object old = properties.put(key, value);
+            properties.notifyAll();
+            return old;
+        }
     }
 
     public Object getRemoteProperty(Object key) {
         return remoteChannel.getProperty(key);
+    }
+
+    public Object waitForRemoteProperty(Object key) throws InterruptedException {
+        return remoteChannel.waitForProperty(key);
     }
 
     public String toString() {

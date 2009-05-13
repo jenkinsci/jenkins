@@ -582,6 +582,8 @@ public abstract class FormFieldValidator {
      * Verifies that the 'value' parameter is correct base64 encoded text.
      *
      * @since 1.257
+     * @deprecated as of 1.305
+     *      Use {@link FormValidation#validateBase64(String, boolean, boolean, String)} instead.
      */
     public static class Base64 extends FormFieldValidator {
         private final boolean allowWhitespace;

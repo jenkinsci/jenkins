@@ -81,6 +81,9 @@ THE SOFTWARE.
       true if the default 'add' button (that adds a new copy) shouldn't be displayed.
       When you use this attribute,
     </st:attribute>
+    <st:attribute name="add">
+      If specified, this text will replace the standard "Add" text.
+    </st:attribute>
     <st:attribute name="minimum">
       At least provide this number of copies initially.
       minimum="1" is useful to make sure there's always at least one entry for the user to fill in.
@@ -107,7 +110,7 @@ THE SOFTWARE.
 
   <div class="repeated-container">
     <!-- The first DIV is the master copy. -->
-    <div class="repeated-chunk" style="display:none" name="${name}">
+    <div class="repeated-chunk to-be-removed" name="${name}">
       <d:invokeBody />
     </div>
     <!-- then populate them for each item -->
@@ -130,7 +133,7 @@ THE SOFTWARE.
 
     <div class="repeatable-insertion-point" />
     <j:if test="${!attrs.noAddButton}">
-      <input type="button" value="${%Add}" class="repeatable-add" />
+      <input type="button" value="${attrs.add?:'%Add'}" class="repeatable-add" />
     </j:if>
   </div>
 </j:jelly>

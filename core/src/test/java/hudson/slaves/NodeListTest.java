@@ -82,6 +82,10 @@ public class NodeListTest extends TestCase {
             throw new UnsupportedOperationException();
         }
 
+        public String getLabelString() {
+            throw new UnsupportedOperationException();
+        }
+
         public Set<Label> getDynamicLabels() {
             throw new UnsupportedOperationException();
         }

@@ -27,7 +27,6 @@ import hudson.ExtensionPoint;
 import hudson.FilePath;
 import hudson.FileSystemProvisioner;
 import hudson.Launcher;
-import hudson.tools.ToolLocationNodeProperty;
 import hudson.node_monitors.NodeMonitor;
 import hudson.remoting.VirtualChannel;
 import hudson.security.ACL;
@@ -136,6 +135,12 @@ public abstract class Node extends AbstractModelObject implements Describable<No
      * including the automatic {@link #getSelfLabel() self label}.
      */
     public abstract Set<Label> getAssignedLabels();
+
+    /**
+     * The same as {@link #getAssignedLabels()} but returns labels as a single text.
+     * Mainly for form binding.
+     */
+    public abstract String getLabelString();
 
     /*
      * Returns the possibly empty set of labels that it has been determined as supported by this node.

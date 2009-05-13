@@ -50,7 +50,7 @@ public class CaptureEnvironmentBuilder extends Builder {
 	}
 
 	public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
-    	envVars = build.getEnvironment();
+    	envVars = build.getEnvironment(listener);
         return true;
     }
 

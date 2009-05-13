@@ -146,6 +146,13 @@ public abstract class Plugin implements Saveable {
     }
 
     /**
+     * @since 1.233
+     * @deprecated override {@link #configure(StaplerRequest,JSONObject)} instead
+     */
+    public void configure(JSONObject formData) throws IOException, ServletException, FormException {
+    }
+
+    /**
      * Handles the submission for the system configuration.
      *
      * <p>
@@ -170,10 +177,10 @@ public abstract class Plugin implements Saveable {
      * <p>
      * If you are using this method, you'll likely be interested in
      * using {@link #save()} and {@link #load()}.
-     *
-     * @since 1.233
+     * @since XXX
      */
-    public void configure(JSONObject formData) throws IOException, ServletException, FormException {
+    public void configure(StaplerRequest req, JSONObject formData) throws IOException, ServletException, FormException {
+        configure(formData);
     }
 
     /**

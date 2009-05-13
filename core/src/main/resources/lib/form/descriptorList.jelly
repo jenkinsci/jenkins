@@ -53,7 +53,7 @@ THE SOFTWARE.
   </st:documentation>
 
   <j:set var="targetType" value="${attrs.targetType ?: it.class}"/>
-  <j:set var="instances" value="${attrs.instances ?: instance[field]}"/>
+  <j:set var="instances" value="${attrs.instances ?: instance[field] ?: descriptor['default'+h.capitalize(field)]}"/>
 
   <j:if test="${!empty(descriptors) or context['org.apache.commons.jelly.body']!=null}">
     <f:section title="${attrs.title}" name="${attrs.field?:attrs.name}">

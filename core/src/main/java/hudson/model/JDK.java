@@ -25,18 +25,25 @@ package hudson.model;
 
 import hudson.util.StreamTaskListener;
 import hudson.util.NullStream;
+import hudson.util.FormValidation;
 import hudson.Launcher;
 import hudson.Extension;
 import hudson.EnvVars;
 import hudson.slaves.NodeSpecific;
 import hudson.tools.ToolInstallation;
 import hudson.tools.ToolDescriptor;
-import hudson.tools.ToolLocationNodeProperty;
+import hudson.tools.ToolProperty;
+import hudson.tools.JDKInstaller;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.Map;
 import java.util.List;
+import java.util.Arrays;
+import java.util.Collections;
+
+import org.kohsuke.stapler.DataBoundConstructor;
+import org.kohsuke.stapler.QueryParameter;
 
 /**
  * Information about JDK installation.
@@ -48,17 +55,26 @@ public final class JDK extends ToolInstallation implements NodeSpecific<JDK>, En
     private String javaHome;
 
     public JDK(String name, String javaHome) {
-        super(name, javaHome);
+        super(name, javaHome, Collections.<ToolProperty<?>>emptyList());
+    }
+
+    @DataBoundConstructor
+    public JDK(String name, String home, List<? extends ToolProperty<?>> properties) {
+        super(name, home, properties);
     }
 
     /**
      * install directory.
+     *
+     * @deprecated as of 1.304
+     *      Use {@link #getHome()}
      */
     public String getJavaHome() {
         return getHome();
     }
 
-    public String getHome() {
+    @SuppressWarnings({"deprecation"})
+    public @Override String getHome() {
         if (javaHome != null) return javaHome;
         return super.getHome();
     }
@@ -67,7 +83,7 @@ public final class JDK extends ToolInstallation implements NodeSpecific<JDK>, En
      * Gets the path to the bin directory.
      */
     public File getBinDir() {
-        return new File(getJavaHome(),"bin");
+        return new File(getHome(),"bin");
     }
     /**
      * Gets the path to 'java'.
@@ -79,7 +95,7 @@ public final class JDK extends ToolInstallation implements NodeSpecific<JDK>, En
         else
             execName = "java";
 
-        return new File(getJavaHome(),"bin/"+execName);
+        return new File(getHome(),"bin/"+execName);
     }
 
     /**
@@ -95,11 +111,11 @@ public final class JDK extends ToolInstallation implements NodeSpecific<JDK>, En
     public void buildEnvVars(Map<String,String> env) {
         // see EnvVars javadoc for why this adss PATH.
         env.put("PATH+JDK",getBinDir().getPath());
-        env.put("JAVA_HOME",getJavaHome());
+        env.put("JAVA_HOME",getHome());
     }
 
-    public JDK forNode(Node node) {
-        return new JDK(getName(),translateFor(node));
+    public JDK forNode(Node node, TaskListener log) throws IOException, InterruptedException {
+        return new JDK(getName(), translateFor(node, log));
     }
 
     public JDK forEnvironment(EnvVars environment) {
@@ -132,16 +148,38 @@ public final class JDK extends ToolInstallation implements NodeSpecific<JDK>, En
             return "Java Development Kit";
         }
 
-        public JDK[] getInstallations() {
+        public @Override JDK[] getInstallations() {
             return Hudson.getInstance().getJDKs().toArray(new JDK[0]);
         }
 
         // this isn't really synchronized well since the list is Hudson.jdks :(
-        public synchronized void setInstallations(JDK... jdks) {
+        public @Override synchronized void setInstallations(JDK... jdks) {
             List<JDK> list = Hudson.getInstance().getJDKs();
             list.clear();
-            for (JDK jdk: jdks) list.add(jdk);
+            list.addAll(Arrays.asList(jdks));
         }
 
+        @Override
+        public List<JDKInstaller> getDefaultInstallers() {
+            return Collections.singletonList(new JDKInstaller(null,false));
+        }
+
+        /**
+         * Checks if the JAVA_HOME is a valid JAVA_HOME path.
+         */
+        public FormValidation doCheckHome(@QueryParameter File value) {
+            // this can be used to check the existence of a file on the server, so needs to be protected
+            Hudson.getInstance().checkPermission(Hudson.ADMINISTER);
+
+            if(value.exists() && !value.isDirectory())
+                return FormValidation.error(Messages.Hudson_NotADirectory(value));
+
+            File toolsJar = new File(value,"lib/tools.jar");
+            File mac = new File(value,"lib/dt.jar");
+            if(!toolsJar.exists() && !mac.exists())
+                return FormValidation.error(Messages.Hudson_NotJDKDir(value));
+
+            return FormValidation.ok();
+        }
     }
 }
