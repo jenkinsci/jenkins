@@ -2,11 +2,14 @@ package hudson.model;
 
 import hudson.util.StreamTaskListener;
 import hudson.util.NullStream;
+import hudson.security.ACL;
 
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.logging.Level;
+
+import org.acegisecurity.context.SecurityContextHolder;
 
 /**
  * {@link PeriodicWork} that takes a long time to run.
@@ -46,6 +49,8 @@ public abstract class AsyncPeriodicWork extends PeriodicWork {
 
                     StreamTaskListener l = createListener();
                     try {
+                        SecurityContextHolder.getContext().setAuthentication(ACL.SYSTEM);
+                        
                         execute(l);
                     } catch (IOException e) {
                         e.printStackTrace(l.fatalError(e.getMessage()));
