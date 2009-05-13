@@ -59,7 +59,8 @@ public class Main {
     private static Launcher launcher;
 
     public static void main(String[] args) throws Exception {
-        main(new File(args[0]),new File(args[1]),new File(args[2]),Integer.parseInt(args[3]));
+        main(new File(args[0]),new File(args[1]),new File(args[2]),Integer.parseInt(args[3]),
+                args.length==4?null:new File(args[4]));
     }
 
     /**
@@ -73,8 +74,10 @@ public class Main {
      * @param tcpPort
      *      TCP socket that the launching Hudson will be listening to.
      *      This is used for the remoting communication.
+     * @param interceptorOverrideJar
+     *      Possibly null override jar to be placed in front of maven-interceptor.jar
      */
-    public static void main(File m2Home, File remotingJar, File interceptorJar, int tcpPort) throws Exception {
+    public static void main(File m2Home, File remotingJar, File interceptorJar, int tcpPort, File interceptorOverrideJar) throws Exception {
         // Unix master with Windows slave ends up passing path in Unix format,
         // so convert it to Windows format now so that no one chokes with the path format later.
         try {
@@ -93,6 +96,9 @@ public class Main {
         // expose variables used in the classworlds configuration
         System.setProperty("maven.home",m2Home.getPath());
         System.setProperty("maven.interceptor",interceptorJar.getPath());
+        System.setProperty("maven.interceptor.override",
+                // I don't know how classworlds react to undefined variable, so 
+                (interceptorOverrideJar!=null?interceptorOverrideJar:interceptorJar).getPath());
 
         boolean is206OrLater = !new File(m2Home,"core").exists();
 

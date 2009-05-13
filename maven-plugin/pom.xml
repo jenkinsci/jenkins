@@ -56,6 +56,11 @@ THE SOFTWARE.
           <version>${project.version}</version>
         </dependency>
         <dependency>
+          <groupId>org.jvnet.hudson</groupId>
+          <artifactId>maven2.1-interceptor</artifactId>
+          <version>1.0</version>
+        </dependency>
+        <dependency>
           <groupId>org.apache.maven</groupId>
           <artifactId>maven-embedder</artifactId>
           <version>${maven.embedder.version}</version>

@@ -31,6 +31,8 @@ import hudson.EnvVars;
 import hudson.slaves.Channels;
 import static hudson.Util.fixNull;
 import hudson.maven.agent.Main;
+import hudson.maven.agent.Maven21Interceptor;
+import hudson.maven.agent.PluginManagerInterceptor;
 import hudson.model.BuildListener;
 import hudson.model.Computer;
 import hudson.model.Executor;
@@ -62,7 +64,6 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketTimeoutException;
 import java.util.Arrays;
-import java.util.jar.JarFile;
 import java.util.logging.Logger;
 
 
@@ -281,9 +282,19 @@ final class MavenProcessFactory implements ProcessCache.Factory {
 
         // interceptor.jar
         args.add(isMaster?
-            Which.jarFile(hudson.maven.agent.PluginManagerInterceptor.class).getAbsolutePath():
+            Which.jarFile(PluginManagerInterceptor.class).getAbsolutePath():
             slaveRoot.child("maven-interceptor.jar").getRemote());
+
+        // TCP/IP port to establish the remoting infrastructure
         args.add(tcpPort);
+
+        // if this is Maven 2.1, interceptor override
+        if(mvn.isMaven2_1(launcher)) {
+            args.add(isMaster?
+                Which.jarFile(Maven21Interceptor.class).getAbsolutePath():
+                slaveRoot.child("maven2.1-interceptor.jar").getRemote());
+        }
+
         return args;
     }
 

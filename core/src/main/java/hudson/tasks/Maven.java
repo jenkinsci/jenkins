@@ -56,9 +56,13 @@ import org.kohsuke.stapler.QueryParameter;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.FilenameFilter;
 import java.util.Map;
 import java.util.Properties;
 import java.util.StringTokenizer;
+import java.util.regex.Pattern;
+import java.util.regex.MatchResult;
+import java.util.regex.Matcher;
 
 /**
  * Build by using Maven.
@@ -362,6 +366,25 @@ public class Maven extends Builder {
         public String getHome() {
             if (mavenHome != null) return mavenHome;
             return super.getHome();
+        }
+
+        /**
+         * Is this Maven 2.1.x?
+         *
+         * @param launcher
+         *      Represents the node on which we evaluate the path.
+         */
+        public boolean isMaven2_1(Launcher launcher) throws IOException, InterruptedException {
+            return launcher.getChannel().call(new Callable<Boolean,IOException>() {
+                public Boolean call() throws IOException {
+                    File[] jars = new File(getHomeDir(),"lib").listFiles();
+                    if(jars!=null) // be defensive
+                        for (File jar : jars)
+                            if(jar.getName().startsWith("maven-2.1.") && jar.getName().endsWith("-uber.jar"))
+                                return true;
+                    return false;
+                }
+            });
         }
 
         /**

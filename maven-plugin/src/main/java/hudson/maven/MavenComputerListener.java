@@ -27,6 +27,7 @@ import hudson.Extension;
 import hudson.FilePath;
 import hudson.maven.agent.Main;
 import hudson.maven.agent.PluginManagerInterceptor;
+import hudson.maven.agent.Maven21Interceptor;
 import hudson.model.Computer;
 import hudson.model.TaskListener;
 import hudson.remoting.Channel;
@@ -39,6 +40,7 @@ import java.io.PrintStream;
 
 import org.apache.tools.ant.taskdefs.Zip;
 import org.apache.tools.ant.Project;
+import sun.tools.jar.resources.jar;
 
 /**
  * When a slave is connected, copy <tt>maven-agent.jar</tt> and <tt>maven-intercepter.jar</tt>
@@ -52,6 +54,7 @@ public class MavenComputerListener extends ComputerListener {
         PrintStream logger = listener.getLogger();
         copyJar(logger, root, Main.class, "maven-agent");
         copyJar(logger, root, PluginManagerInterceptor.class, "maven-interceptor");
+        copyJar(logger, root, Maven21Interceptor.class, "maven2.1-interceptor.jar");
     }
 
     /**
