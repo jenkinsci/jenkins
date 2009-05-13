@@ -155,11 +155,8 @@ public abstract class MavenBuilder implements DelegatingCallable<Result,IOExcept
 
             System.getProperties().putAll(systemProps);
 
-            List<String> args = new ArrayList<String>(goals.size()+1);
-            args.add("-B"); // run Maven in the non-interactive mode
-            args.addAll(goals);
-            listener.getLogger().println(formatArgs(args));
-            int r = Main.launch(args.toArray(new String[args.size()]));
+            listener.getLogger().println(formatArgs(goals));
+            int r = Main.launch(goals.toArray(new String[goals.size()]));
 
             // now check the completion status of async ops
             boolean messageReported = false;
