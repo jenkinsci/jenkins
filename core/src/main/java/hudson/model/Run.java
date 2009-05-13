@@ -1273,7 +1273,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
     }
 
     /**
-     * @deprecated as of XXX use {@link #getEnvironment(TaskListener)}
+     * @deprecated as of 1.305 use {@link #getEnvironment(TaskListener)}
      */
     public EnvVars getEnvironment() throws IOException, InterruptedException {
         return getEnvironment(new LogTaskListener(LOGGER, Level.INFO));
