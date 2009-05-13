@@ -32,6 +32,10 @@ package hudson.remoting;
  */
 public interface EngineListener {
     void status(String msg);
+
+    /**
+     * Fatal error that's non recoverable. 
+     */
     void error(Throwable t);
 
     /**
