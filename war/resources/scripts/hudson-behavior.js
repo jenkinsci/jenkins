@@ -96,7 +96,8 @@ var FormChecker = {
 
 function toValue(e) {
     // compute the form validation value to be sent to the server
-    if(e.getAttribute("type").toLowerCase()=="checkbox")
+    var type = e.getAttribute("type");
+    if(type!=null && type.toLowerCase()=="checkbox")
         return e.checked;
     return encode(e.value);
 }
