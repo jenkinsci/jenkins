@@ -31,8 +31,6 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-import hudson.ExtensionFinder.Sezpoz;
-
 /**
  * Marks a field, a method, or a class for automatic discovery, so that Hudson can locate
  * implementations of {@link ExtensionPoint}s automatically.
