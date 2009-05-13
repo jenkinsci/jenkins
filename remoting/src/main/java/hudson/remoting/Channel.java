@@ -443,7 +443,7 @@ public class Channel implements VirtualChannel, IChannel {
      *
      * <p>
      * This is a performance improvement method that can be safely
-     * ignored if your goal is to make things working.
+     * ignored if your goal is just to make things working.
      *
      * <p>
      * Normally, classes are transferred over the network one at a time,
