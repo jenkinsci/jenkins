@@ -90,6 +90,7 @@ public class Main {
 
         versionCheck();
 
+        // expose variables used in the classworlds configuration
         System.setProperty("maven.home",m2Home.getPath());
         System.setProperty("maven.interceptor",interceptorJar.getPath());
 
