@@ -33,7 +33,7 @@ THE SOFTWARE.
   <l:layout norefresh="true" permission="${app.ADMINISTER}">
     <st:include page="sidepanel.jelly" />
     <l:main-panel>
-      <j:invokeStatic var="slaves" className="hudson.slaves.NodeDescriptor" method="allInstanciable" />
+      <j:invokeStatic var="slaves" className="hudson.slaves.NodeDescriptor" method="allInstantiable" />
       <n:form nameTitle="${%Node name}" copyTitle="${%Copy Existing Node}" copyNames="${it._slaveNames}"
               descriptors="${slaves}" checkUrl="computer/checkName" xmlns:n="/lib/hudson/newFromList" />
     </l:main-panel>

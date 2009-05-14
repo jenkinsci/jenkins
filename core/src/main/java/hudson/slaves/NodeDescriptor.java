@@ -63,7 +63,7 @@ public abstract class NodeDescriptor extends Descriptor<Node> {
      *
      * Return false if it only makes sense for programs to create it, not through the "new node" UI.
      */
-    public boolean isInstanciable() {
+    public boolean isInstantiable() {
         return true;
     }
 
@@ -97,10 +97,10 @@ public abstract class NodeDescriptor extends Descriptor<Node> {
      */
     public static final DescriptorList<Node> ALL = new DescriptorList<Node>(Node.class);
 
-    public static List<NodeDescriptor> allInstanciable() {
+    public static List<NodeDescriptor> allInstantiable() {
         List<NodeDescriptor> r = new ArrayList<NodeDescriptor>();
         for (NodeDescriptor d : all())
-            if(d.isInstanciable())
+            if(d.isInstantiable())
                 r.add(d);
         return r;
     }
