@@ -62,7 +62,7 @@ public class InstallSourceProperty extends ToolProperty<ToolInstallation> {
     @Extension
    public static class DescriptorImpl extends ToolPropertyDescriptor {
         public String getDisplayName() {
-            return "Install automatically";
+            return Messages.InstallSourceProperty_DescriptorImpl_displayName();
         }
     }
 }
