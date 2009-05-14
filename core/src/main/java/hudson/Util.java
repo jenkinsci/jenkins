@@ -583,7 +583,6 @@ public class Util {
      * {@link #rawEncode(String)} should generally be used instead, though be careful to pass only
      * a single path component to that method (it will encode /, but this method does not).
      */
-    @Deprecated
     public static String encode(String s) {
         try {
             boolean escaped = false;
