@@ -37,6 +37,7 @@ import org.kohsuke.stapler.QueryParameter;
 
 /**
  * Installs a tool by running an arbitrary shell command.
+ * @since 1.305
  */
 public class CommandInstaller extends ToolInstaller {
 

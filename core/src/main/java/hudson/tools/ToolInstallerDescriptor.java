@@ -33,6 +33,7 @@ import java.util.ArrayList;
 
 /**
  * Descriptor for a {@link ToolInstaller}.
+ * @since 1.305
  */
 public abstract class ToolInstallerDescriptor<T extends ToolInstaller> extends Descriptor<ToolInstaller> {
 

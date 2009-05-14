@@ -34,6 +34,7 @@ import java.util.concurrent.Semaphore;
 
 /**
  * Actually runs installations.
+ * @since 1.305
  */
 @Extension
 public class InstallerTranslator extends ToolLocationTranslator {

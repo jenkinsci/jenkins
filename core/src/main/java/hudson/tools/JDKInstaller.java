@@ -69,6 +69,7 @@ import net.sf.json.JSONObject;
  * Install JDKs from java.sun.com.
  *
  * @author Kohsuke Kawaguchi
+ * @since 1.305
  */
 public class JDKInstaller extends ToolInstaller {
     /**

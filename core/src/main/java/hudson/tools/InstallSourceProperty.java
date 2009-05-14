@@ -36,6 +36,7 @@ import java.io.IOException;
  * {@link ToolProperty} that shows auto installation options.
  *
  * @author Kohsuke Kawaguchi
+ * @since 1.305
  */
 public class InstallSourceProperty extends ToolProperty<ToolInstallation> {
     // TODO: get the proper Saveable

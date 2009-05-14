@@ -43,6 +43,7 @@ import org.kohsuke.stapler.QueryParameter;
 
 /**
  * Installs a tool into the Hudson working area by downloading and unpacking a ZIP file.
+ * @since 1.305
  */
 public class ZipExtractionInstaller extends ToolInstaller {
 
@@ -121,7 +122,7 @@ public class ZipExtractionInstaller extends ToolInstaller {
         }
         private void process(File f) {
             if (f.isFile()) {
-                f.setExecutable(true, false); // XXX JDK 6-specific
+                f.setExecutable(true, false); // XXX JDK 6-specific, use FilePath.chmod instead
             } else {
                 File[] kids = f.listFiles();
                 if (kids != null) {

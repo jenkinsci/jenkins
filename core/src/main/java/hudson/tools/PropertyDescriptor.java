@@ -15,6 +15,7 @@ import java.util.List;
  * @param <T>
  *      Type of the {@code Xyz}, that the property attaches to. Called 'target type'
  * @author Kohsuke Kawaguchi
+ * @since 1.305
  */
 public abstract class PropertyDescriptor<P extends Describable<P>,T> extends Descriptor<P> {
     protected PropertyDescriptor(Class<? extends P> clazz) {
