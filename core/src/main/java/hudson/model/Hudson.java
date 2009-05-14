@@ -1476,14 +1476,10 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
      * such as "http://localhost/hudson/".
      *
      * <p>
-     * Also note that when serving user requests from HTTP, you should always use
-     * {@link HttpServletRequest} to determine the full URL, instead of using this
-     * (this is because one host may have multiple names, and {@link HttpServletRequest}
-     * accurately represents what the current user used.)
-     *
-     * <p>
-     * This information is rather only meant to be useful for sending out messages
-     * via non-HTTP channels, like SMTP or IRC, with a link back to Hudson website.
+     * This method first tries to use the manually configured value, then
+     * fall back to {@link StaplerRequest#getRootPath()}.
+     * It is done in this order so that it can work correctly even in the face
+     * of a reverse proxy.
      *
      * @return
      *      This method returns null if this parameter is not configured by the user.
