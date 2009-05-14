@@ -24,12 +24,16 @@
 package hudson.maven;
 
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
+import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
 import hudson.model.Descriptor;
 import hudson.tasks.ArtifactArchiver;
 import hudson.tasks.Maven.MavenInstallation;
 import org.jvnet.hudson.test.ExtractResourceSCM;
 import org.jvnet.hudson.test.HudsonTestCase;
 import org.jvnet.hudson.test.Bug;
+import org.xml.sax.SAXException;
+
+import java.io.IOException;
 
 /**
  * @author huybrechts
@@ -74,13 +78,23 @@ public class MavenProjectTest extends HudsonTestCase {
     }
 
     /**
-     * Attempt to reproduce #2154, but this appears to work.
+     * Check if the generated site is linked correctly.
      */
-    @Bug(2154)
+    @Bug(3497)
     public void testSiteBuild() throws Exception {
         MavenModuleSet project = createSimpleProject();
         project.setGoals("site");
 
         assertBuildStatusSuccess(project.scheduleBuild2(0).get());
+
+        // this should succeed
+        HudsonTestCase.WebClient wc = new WebClient();
+        wc.getPage(project,"site");
+        try {
+            wc.getPage(project,"site/no-such-file");
+            fail("should have resulted in 404");
+        } catch (FailingHttpStatusCodeException e) {
+            assertEquals(404,e.getStatusCode());
+        }
     }
 }

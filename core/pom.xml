@@ -331,7 +331,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.kohsuke.stapler</groupId>
       <artifactId>stapler-jelly</artifactId>
-      <version>1.103</version>
+      <version>1.104</version>
       <exclusions>
         <exclusion>
           <groupId>dom4j</groupId>
@@ -345,16 +345,7 @@ THE SOFTWARE.
           <groupId>commons-jexl</groupId>
           <artifactId>commons-jexl</artifactId>
         </exclusion>
-        <exclusion><!-- excluded until stapler revs up -->
-              <groupId>org.kohsuke.stapler</groupId>
-              <artifactId>json-lib</artifactId>
-        </exclusion>
       </exclusions>
-    </dependency>
-    <dependency><!-- manually specified until stapler 1.104 -->
-      <groupId>org.kohsuke.stapler</groupId>
-      <artifactId>json-lib</artifactId>
-      <version>2.1-rev2</version>
     </dependency>
     <dependency>
       <groupId>args4j</groupId>
