@@ -33,6 +33,7 @@ import org.apache.maven.embedder.MavenEmbedderException;
 import org.apache.maven.embedder.MavenEmbedderLogger;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.project.ProjectBuildingException;
+import org.apache.commons.io.IOUtils;
 
 import java.io.File;
 import java.io.IOException;
@@ -42,6 +43,7 @@ import java.util.Enumeration;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.logging.Logger;
 
 /**
  * @author Kohsuke Kawaguchi
@@ -49,7 +51,7 @@ import java.util.Properties;
 public class MavenUtil {
     /**
      * @deprecated
-     *      Use {@link MavenInstallation#createEmbedder(BuildListener, String, Properties)} 
+     *      Use {@link #createEmbedder(TaskListener, File, String, Properties)}  
      *      or other overloaded versions that infers maven home.
      */
     public static MavenEmbedder createEmbedder(TaskListener listener, String profiles) throws MavenEmbedderException, IOException {
@@ -95,6 +97,13 @@ public class MavenUtil {
         if(debugMavenEmbedder)  logger.setThreshold(MavenEmbedderLogger.LEVEL_DEBUG);
         maven.setLogger(logger);
 
+        {
+            Enumeration<URL> e = cl.getResources("META-INF/plexus/components.xml");
+            while (e.hasMoreElements()) {
+                URL url = e.nextElement();
+                LOGGER.fine("components.xml from "+url);
+            }
+        }
         // make sure ~/.m2 exists to avoid http://www.nabble.com/BUG-Report-tf3401736.html
         File m2Home = new File(MavenEmbedder.userHome, ".m2");
         m2Home.mkdirs();
@@ -188,9 +197,25 @@ public class MavenUtil {
                 private void fetch() {
                     while(next==null && e.hasMoreElements()) {
                         next = e.nextElement();
-                        if(next.toExternalForm().contains("maven-plugin-tools-api"))
+                        if(shouldBeIgnored(next))
                             next = null;
                     }
+                }
+
+                private boolean shouldBeIgnored(URL url) {
+                    String s = url.toExternalForm();
+                    if(s.contains("maven-plugin-tools-api"))
+                        return true;
+                    if(s.endsWith("plexus/components.xml")) {
+                        try {
+                            // is this designated for interception purpose? If so, don't load them in the MavenEmbedder
+                            IOUtils.closeQuietly(new URL(s + ".interception").openStream());
+                            return true;
+                        } catch (IOException _) {
+                            // no such resource exists
+                        }
+                    }
+                    return false;
                 }
             };
         }
@@ -200,4 +225,6 @@ public class MavenUtil {
      * If set to true, maximize the logging level of Maven embedder.
      */
     public static boolean debugMavenEmbedder = false;
+
+    private static final Logger LOGGER = Logger.getLogger(MavenUtil.class.getName());
 }
