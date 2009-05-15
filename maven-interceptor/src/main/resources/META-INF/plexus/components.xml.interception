@@ -1,0 +1,2 @@
+This file marks components.xml as "interceptor only", so that
+Maven embedder won't pick it up.
