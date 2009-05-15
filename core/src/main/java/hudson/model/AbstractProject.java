@@ -1246,10 +1246,16 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
     /**
      * Wipes out the workspace.
      */
-    public void doDoWipeOutWorkspace(StaplerResponse rsp) throws IOException, InterruptedException {
+    public void doDoWipeOutWorkspace(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException, InterruptedException {
         checkPermission(BUILD);
-        getWorkspace().deleteRecursive();
-        rsp.sendRedirect2(".");
+        if (getScm().processWorkspaceBeforeDeletion(this, getWorkspace(), null)) {
+            getWorkspace().deleteRecursive();
+            rsp.sendRedirect2(".");
+        }
+        // If we get here, that means the SCM blocked the workspace deletion.
+        else {
+            req.getView(this, "wipeOutWorkspaceBlocked.jelly").forward(req, rsp);
+        }
     }
 
     public void doDisable(StaplerResponse rsp) throws IOException, ServletException {
