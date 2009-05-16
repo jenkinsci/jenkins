@@ -28,10 +28,14 @@ import hudson.Extension;
 import hudson.FilePath;
 import hudson.FilePath.FileCallable;
 import hudson.Util;
+import hudson.Functions;
 import hudson.model.Node;
 import hudson.model.TaskListener;
+import hudson.model.Hudson;
 import hudson.remoting.VirtualChannel;
 import hudson.util.FormValidation;
+import hudson.util.jna.GNUCLibrary;
+
 import java.io.File;
 import java.io.IOException;
 import java.net.HttpURLConnection;
@@ -40,6 +44,7 @@ import java.net.URL;
 import java.net.URLConnection;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.QueryParameter;
+import org.jvnet.animal_sniffer.IgnoreJRERequirement;
 
 /**
  * Installs a tool into the Hudson working area by downloading and unpacking a ZIP file.
@@ -116,12 +121,17 @@ public class ZipExtractionInstaller extends ToolInstaller {
     private static class ChmodRecAPlusX implements FileCallable<Void> {
         private static final long serialVersionUID = 1L;
         public Void invoke(File d, VirtualChannel channel) throws IOException {
-            process(d);
+            if(!Hudson.isWindows())
+                process(d);
             return null;
         }
+        @IgnoreJRERequirement
         private void process(File f) {
             if (f.isFile()) {
-                f.setExecutable(true, false); // XXX JDK 6-specific
+                if(Functions.isMustangOrAbove())
+                    f.setExecutable(true, false);
+                else
+                    GNUCLibrary.LIBC.chmod(f.getAbsolutePath(),0755);
             } else {
                 File[] kids = f.listFiles();
                 if (kids != null) {
