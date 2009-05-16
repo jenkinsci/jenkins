@@ -411,12 +411,12 @@ public class JDKInstaller extends ToolInstaller {
     @Extension
     public static final class DescriptorImpl extends ToolInstallerDescriptor<JDKInstaller> {
         public String getDisplayName() {
-            return "Install from java.sun.com"; // XXX I18N
+            return Messages.JDKInstaller_DescriptorImpl_displayName();
         }
 
         public FormValidation doCheckId(@QueryParameter String value) {
             if (Util.fixEmpty(value) == null) {
-                return FormValidation.error("Define JDK ID"); // XXX I18N and improve message
+                return FormValidation.error(Messages.JDKInstaller_DescriptorImpl_doCheckId()); // improve message
             } else {
                 // XXX further checks? 
                 return FormValidation.ok();
@@ -435,7 +435,7 @@ public class JDKInstaller extends ToolInstaller {
             if (value) {
                 return FormValidation.ok();
             } else {
-                return FormValidation.error("You must agree to the license to download the JDK."); // XXX I18N
+                return FormValidation.error(Messages.JDKInstaller_DescriptorImpl_doCheckAcceptLicense()); 
             }
         }
     }
