@@ -66,6 +66,15 @@ public class DownloadService extends PageDecorator {
         return null;
     }
 
+    /**
+     * Represents a periodically updated JSON data file obtained from a remote URL.
+     *
+     * <p>
+     * This meachanism is one of the basis of the update center, which involves in fetching
+     * up-to-date data file.
+     *
+     * @since 1.305
+     */
     public static abstract class Downloadable implements ExtensionPoint {
         private final String id;
         private final String url;
