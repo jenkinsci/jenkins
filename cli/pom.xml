@@ -4,7 +4,7 @@
   <parent>
     <artifactId>pom</artifactId>
     <groupId>org.jvnet.hudson.main</groupId>
-    <version>1.306-SNAPSHOT</version>
+    <version>1.305-SNAPSHOT</version>
   </parent>
   <artifactId>cli</artifactId>
   <name>Hudson CLI</name>
