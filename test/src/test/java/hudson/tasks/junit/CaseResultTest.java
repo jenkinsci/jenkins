@@ -26,9 +26,19 @@ package hudson.tasks.junit;
 import hudson.maven.MavenModuleSet;
 import hudson.maven.MavenModuleSetBuild;
 import static hudson.model.Result.UNSTABLE;
+import hudson.model.FreeStyleProject;
+import hudson.model.AbstractBuild;
+import hudson.model.BuildListener;
+import hudson.model.Result;
+import hudson.model.FreeStyleBuild;
 import hudson.scm.SubversionSCM;
 import hudson.tasks.test.AbstractTestResultAction;
+import hudson.Launcher;
 import org.jvnet.hudson.test.HudsonTestCase;
+import org.jvnet.hudson.test.Email;
+import org.jvnet.hudson.test.TestBuilder;
+
+import java.io.IOException;
 
 /**
  * @author Kohsuke Kawaguchi
@@ -49,5 +59,25 @@ public class CaseResultTest extends HudsonTestCase {
         CaseResult tc = t.getFailedTests().get(0);
         assertTrue(tc.getStderr().contains("stderr"));
         assertTrue(tc.getStdout().contains("stdout"));
+    }
+
+    @Email("http://www.nabble.com/NPE-%28Fatal%3A-Null%29-in-recording-junit-test-results-td23562964.html")
+    public void testIssue20090516() throws Exception {
+        FreeStyleProject p = createFreeStyleProject();
+        p.getBuildersList().add(new TestBuilder() {
+            public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
+                build.getProject().getWorkspace().child("junit.xml").copyFrom(
+                    getClass().getResource("junit-report-20090516.xml"));
+                return true;
+            }
+        });
+        p.getPublishersList().add(new JUnitResultArchiver("*.xml"));
+        FreeStyleBuild b = assertBuildStatus(Result.UNSTABLE, p.scheduleBuild2(0).get());
+        TestResult tr = b.getAction(TestResultAction.class).getResult();
+        assertEquals(3,tr.getFailedTests().size());
+        CaseResult cr = tr.getFailedTests().get(0);
+        assertEquals("org.twia.vendor.VendorManagerTest",cr.getClassName());
+        assertEquals("testGetVendorFirmKeyForVendorRep",cr.getName());
+
     }
 }

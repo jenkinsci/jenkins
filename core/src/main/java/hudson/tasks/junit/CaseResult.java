@@ -38,7 +38,14 @@ import java.text.ParseException;
  */
 public final class CaseResult extends TestObject implements Comparable<CaseResult> {
     private final float duration;
+    /**
+     * In JUnit, a test is a method of a class. This field holds the fully qualified class name
+     * that the test was in.
+     */
     private final String className;
+    /**
+     * This field retains the method name.
+     */
     private final String testName;
     private final boolean skipped;
     private final String errorStackTrace;
@@ -91,8 +98,20 @@ public final class CaseResult extends TestObject implements Comparable<CaseResul
         //    // Maven seems to skip classname, and that shows up in testSuite/@name
         //    cn = parent.getName();
 
+
+        /*
+            According to http://www.nabble.com/NPE-(Fatal%3A-Null)-in-recording-junit-test-results-td23562964.html
+            there's some odd-ball cases where testClassName is null but
+            @name contains fully qualified name.
+         */
+        String nameAttr = testCase.attributeValue("name");
+        if(testClassName==null && nameAttr.contains(".")) {
+            testClassName = nameAttr.substring(0,nameAttr.lastIndexOf('.'));
+            nameAttr = nameAttr.substring(nameAttr.lastIndexOf('.')+1);
+        }
+
         className = testClassName;
-        testName = testCase.attributeValue("name");
+        testName = nameAttr;
         errorStackTrace = getError(testCase);
         errorDetails = getErrorMessage(testCase);
         this.parent = parent;
