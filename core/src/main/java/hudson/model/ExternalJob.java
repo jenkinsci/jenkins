@@ -32,7 +32,6 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletResponse;
 import java.io.File;
 import java.io.IOException;
-import java.util.logging.Logger;
 
 /**
  * Job that runs outside Hudson whose result is submitted to Hudson
@@ -89,7 +88,7 @@ public class ExternalJob extends ViewJob<ExternalJob,ExternalRun> implements Top
     /**
      * Used to check if this is an external job and ready to accept a build result.
      */
-    public void doAcceptBuildResult( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
+    public void doAcceptBuildResult(StaplerResponse rsp) throws IOException, ServletException {
         rsp.setStatus(HttpServletResponse.SC_OK);
     }
 
@@ -102,9 +101,6 @@ public class ExternalJob extends ViewJob<ExternalJob,ExternalRun> implements Top
         run.acceptRemoteSubmission(req.getReader());
         rsp.setStatus(HttpServletResponse.SC_OK);
     }
-
-
-    private static final Logger logger = Logger.getLogger(ExternalJob.class.getName());
 
     public TopLevelItemDescriptor getDescriptor() {
         return DESCRIPTOR;

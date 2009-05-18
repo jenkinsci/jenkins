@@ -37,6 +37,7 @@ import java.net.URL;
 import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.List;
+import java.nio.charset.Charset;
 
 /**
  * Entry point to Hudson from command line.
@@ -107,7 +108,7 @@ public class Main {
 
         Writer w = new OutputStreamWriter(os,"UTF-8");
         w.write("<?xml version='1.0' encoding='UTF-8'?>");
-        w.write("<run><log encoding='hexBinary'>");
+        w.write("<run><log encoding='hexBinary' content-encoding='"+Charset.defaultCharset().name()+"'>");
         w.flush();
 
         // run the command

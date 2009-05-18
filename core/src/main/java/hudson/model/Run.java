@@ -180,7 +180,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
      * @see #getCharset()
      * @since 1.257
      */
-    private String charset;
+    protected String charset;
 
     /**
      * Keeps this log entries.

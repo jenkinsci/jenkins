@@ -99,6 +99,7 @@ public class ExternalRun extends Run<ExternalJob,ExternalRun> {
                 xpp.setInput(in);
                 xpp.nextTag();  // get to the <run>
                 xpp.nextTag();  // get to the <log>
+                charset=xpp.getAttributeValue(null,"content-encoding");
                 while(xpp.nextToken()!=XmlPullParser.END_TAG) {
                     int type = xpp.getEventType();
                     if(type==XmlPullParser.TEXT
