@@ -54,7 +54,7 @@ public class MavenComputerListener extends ComputerListener {
         PrintStream logger = listener.getLogger();
         copyJar(logger, root, Main.class, "maven-agent");
         copyJar(logger, root, PluginManagerInterceptor.class, "maven-interceptor");
-        copyJar(logger, root, Maven21Interceptor.class, "maven2.1-interceptor.jar");
+        copyJar(logger, root, Maven21Interceptor.class, "maven2.1-interceptor");
     }
 
     /**
