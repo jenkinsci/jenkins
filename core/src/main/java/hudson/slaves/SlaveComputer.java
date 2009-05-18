@@ -34,6 +34,7 @@ import hudson.util.Futures;
 import hudson.FilePath;
 import hudson.lifecycle.WindowsSlaveInstaller;
 import hudson.Util;
+import hudson.AbortException;
 
 import java.io.File;
 import java.io.OutputStream;
@@ -168,6 +169,9 @@ public class SlaveComputer extends Computer {
                 try {
                     launcher.launch(SlaveComputer.this, listener);
                     return null;
+                } catch (AbortException e) {
+                    listener.error(e.getMessage());
+                    throw e;
                 } catch (IOException e) {
                     Util.displayIOException(e,listener);
                     e.printStackTrace(listener.error(Messages.ComputerLauncher_unexpectedError()));
