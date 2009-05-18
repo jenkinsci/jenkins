@@ -1405,6 +1405,11 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
             throw new UnsupportedOperationException();
         }
 
+        @Override
+        public boolean isInstantiable() {
+            return false;
+        }
+
         // to route /descriptor/FQCN/xxx to getDescriptor(FQCN).xxx
         public Object getDynamic(String token, StaplerRequest req, StaplerResponse rsp) {
             return Hudson.getInstance().getDescriptor(token);
