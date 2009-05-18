@@ -31,6 +31,7 @@ import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 
 import javax.servlet.ServletException;
+import javax.servlet.ServletContext;
 import static javax.servlet.http.HttpServletResponse.SC_INTERNAL_SERVER_ERROR;
 import java.io.File;
 import java.io.IOException;
@@ -38,6 +39,7 @@ import java.util.Random;
 import java.util.logging.Logger;
 import java.util.logging.Level;
 import java.lang.management.ManagementFactory;
+import java.lang.reflect.Method;
 
 /**
  * Makes sure that no other Hudson uses our <tt>HUDSON_HOME</tt> directory,
@@ -119,10 +121,18 @@ public class DoubleLaunchChecker {
      * Figures out a string that identifies this instance of Hudson.
      */
     public String getId() {
-        // FIXME: is there any way for us to obtain a servlet context path, so that
-        // we can help people distinguish two webapps running in the same container?
+        Hudson h = Hudson.getInstance();
 
-        return Hudson.getInstance().hashCode()+" at "+ManagementFactory.getRuntimeMXBean().getName();
+        // in servlet 2.5, we can get the context path
+        String contextPath="";
+        try {
+            Method m = ServletContext.class.getMethod("getContextPath");
+            contextPath=(String)m.invoke(h.servletContext);
+        } catch (Exception e) {
+            // maybe running with Servlet 2.4
+        }
+
+        return h.hashCode()+contextPath+" at "+ManagementFactory.getRuntimeMXBean().getName();
     }
 
     public String getCollidingId() {
