@@ -180,7 +180,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
      * @see #getCharset()
      * @since 1.257
      */
-    private String charset;
+    protected String charset;
 
     /**
      * Keeps this log entries.
@@ -1273,7 +1273,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
     }
 
     /**
-     * @deprecated as of XXX use {@link #getEnvironment(TaskListener)}
+     * @deprecated as of 1.305 use {@link #getEnvironment(TaskListener)}
      */
     public EnvVars getEnvironment() throws IOException, InterruptedException {
         return getEnvironment(new LogTaskListener(LOGGER, Level.INFO));
@@ -1291,6 +1291,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
      * <p>
      * Unlike earlier {@link #getEnvVars()}, this map contains the whole environment,
      * not just the overrides, so one can introspect values to change its behavior.
+     * @since 1.305
      */
     public EnvVars getEnvironment(TaskListener log) throws IOException, InterruptedException {
         EnvVars env = Computer.currentComputer().getEnvironment().overrideAll(getCharacteristicEnvVars());

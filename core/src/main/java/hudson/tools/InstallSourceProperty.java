@@ -36,6 +36,7 @@ import java.io.IOException;
  * {@link ToolProperty} that shows auto installation options.
  *
  * @author Kohsuke Kawaguchi
+ * @since 1.305
  */
 public class InstallSourceProperty extends ToolProperty<ToolInstallation> {
     // TODO: get the proper Saveable
@@ -61,7 +62,7 @@ public class InstallSourceProperty extends ToolProperty<ToolInstallation> {
     @Extension
    public static class DescriptorImpl extends ToolPropertyDescriptor {
         public String getDisplayName() {
-            return "Install automatically";
+            return Messages.InstallSourceProperty_DescriptorImpl_displayName();
         }
     }
 }

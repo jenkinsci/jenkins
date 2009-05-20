@@ -181,8 +181,19 @@ public final class MavenArtifact implements Serializable {
     public void archive(MavenBuildProxy build, File file, BuildListener listener) throws IOException, InterruptedException {
         FilePath target = getArtifactArchivePath(build,groupId,artifactId,version);
         listener.getLogger().println("[HUDSON] Archiving "+ file+" to "+target);
-        new FilePath(file).copyTo(target);
-        /* debug probe to investigate "missing artifact" problem typically seen like this:
+        FilePath origin = new FilePath(file);
+        if (!target.exists()) {
+            origin.copyTo(target);
+        }
+        else if (!origin.digest().equals(target.digest())) {
+            listener.getLogger().println("[HUDSON] Re-archiving...");
+            origin.copyTo(target);
+        }
+        else {
+            listener.getLogger().println("[HUDSON] Not actually archiving due to digest match");
+        }
+
+            /* debug probe to investigate "missing artifact" problem typically seen like this:
 
             ERROR: Asynchronous execution failure
             java.util.concurrent.ExecutionException: java.io.IOException: Archived artifact is missing: /files/hudson/server/jobs/glassfish-v3/modules/org.glassfish.build$maven-glassfish-extension/builds/2008-04-02_10-17-15/archive/org.glassfish.build/maven-glassfish-extension/1.0-SNAPSHOT/maven-glassfish-extension-1.0-SNAPSHOT.jar

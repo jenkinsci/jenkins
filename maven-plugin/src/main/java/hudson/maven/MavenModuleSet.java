@@ -649,7 +649,7 @@ public final class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,Ma
         return DESCRIPTOR;
     }
 
-    @Extension
+    @Extension(ordinal=900)
     public static final DescriptorImpl DESCRIPTOR = new DescriptorImpl();
 
     public static final class DescriptorImpl extends AbstractProjectDescriptor {

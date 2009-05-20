@@ -407,7 +407,7 @@ public class CVSSCM extends SCM implements Serializable {
         dir.deleteContents();
 
         ArgumentListBuilder cmd = new ArgumentListBuilder();
-        cmd.add(getDescriptor().getCvsExeOrDefault(), debug ?"-t":"-Q",compression(),"-d",cvsroot,"co","-P");
+        cmd.add(getDescriptor().getCvsExeOrDefault(), noQuiet?null:(debug ?"-t":"-Q"),compression(),"-d",cvsroot,"co","-P");
         if(branch!=null)
             cmd.add("-r",branch);
         if(flatten)
@@ -1567,6 +1567,9 @@ public class CVSSCM extends SCM implements Serializable {
      * Setting this property to true would cause <tt>cvs log</tt> to dump a lot of messages.
      */
     public static boolean debug = false;
+
+    // probe to figure out the CVS hang problem
+    public static boolean noQuiet = Boolean.getBoolean(CVSSCM.class.getName()+".noQuiet");
 
     private static final long serialVersionUID = 1L;
 

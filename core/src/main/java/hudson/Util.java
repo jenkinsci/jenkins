@@ -576,11 +576,13 @@ public class Util {
 
     /**
      * Escapes non-ASCII characters in URL.
-     * @deprecated Only escapes non-ASCII but leaves other URL-unsafe characters.
-     * Util.rawEncode should generally be used instead, though be careful to pass only
+     *
+     * <p>
+     * Note that this methods only escapes non-ASCII but leaves other URL-unsafe characters,
+     * such as '#'.
+     * {@link #rawEncode(String)} should generally be used instead, though be careful to pass only
      * a single path component to that method (it will encode /, but this method does not).
      */
-    @Deprecated
     public static String encode(String s) {
         try {
             boolean escaped = false;

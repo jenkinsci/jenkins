@@ -70,7 +70,7 @@ public class DownloadService extends PageDecorator {
      * Represents a periodically updated JSON data file obtained from a remote URL.
      *
      * <p>
-     * This meachanism is one of the basis of the update center, which involves in fetching
+     * This mechanism is one of the basis of the update center, which involves fetching
      * up-to-date data file.
      *
      * @since 1.305

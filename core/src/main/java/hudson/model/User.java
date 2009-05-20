@@ -166,7 +166,7 @@ public class User extends AbstractModelObject implements AccessControlled, Savea
      */
     @Exported(visibility=999)
     public String getAbsoluteUrl() {
-        return Stapler.getCurrentRequest().getRootPath()+'/'+getUrl();
+        return Hudson.getInstance().getRootUrl()+getUrl();
     }
 
     /**

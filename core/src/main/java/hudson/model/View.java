@@ -220,7 +220,7 @@ public abstract class View extends AbstractModelObject implements AccessControll
      */
     @Exported(visibility=2,name="url")
     public String getAbsoluteUrl() {
-        return Stapler.getCurrentRequest().getRootPath()+'/'+getUrl();
+        return Hudson.getInstance().getRootUrl()+getUrl();
     }
 
     public Api getApi() {

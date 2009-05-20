@@ -34,6 +34,7 @@ import hudson.util.Futures;
 import hudson.FilePath;
 import hudson.lifecycle.WindowsSlaveInstaller;
 import hudson.Util;
+import hudson.AbortException;
 
 import java.io.File;
 import java.io.OutputStream;
@@ -41,7 +42,7 @@ import java.io.FileOutputStream;
 import java.io.FileNotFoundException;
 import java.io.InputStream;
 import java.io.IOException;
-import java.io.PrintWriter;
+import java.io.PrintStream;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
@@ -168,6 +169,9 @@ public class SlaveComputer extends Computer {
                 try {
                     launcher.launch(SlaveComputer.this, listener);
                     return null;
+                } catch (AbortException e) {
+                    listener.error(e.getMessage());
+                    throw e;
                 } catch (IOException e) {
                     Util.displayIOException(e,listener);
                     e.printStackTrace(listener.error(Messages.ComputerLauncher_unexpectedError()));
@@ -267,8 +271,8 @@ public class SlaveComputer extends Computer {
         if(this.channel!=null)
             throw new IllegalStateException("Already connected");
 
-        PrintWriter log = new PrintWriter(launchLog,true);
-        final TaskListener taskListener = new StreamTaskListener(log);
+        final TaskListener taskListener = new StreamTaskListener(launchLog);
+        PrintStream log = taskListener.getLogger();
 
         Channel channel = new Channel(nodeName,threadPoolForRemoting, Channel.Mode.NEGOTIATE,
             in,out, launchLog);

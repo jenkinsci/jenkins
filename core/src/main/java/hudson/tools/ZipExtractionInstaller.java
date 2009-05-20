@@ -48,6 +48,7 @@ import org.jvnet.animal_sniffer.IgnoreJRERequirement;
 
 /**
  * Installs a tool into the Hudson working area by downloading and unpacking a ZIP file.
+ * @since 1.305
  */
 public class ZipExtractionInstaller extends ToolInstaller {
 
