@@ -1320,7 +1320,11 @@ public final class FilePath implements Serializable {
                     f.setLastModified(te.getModTime().getTime());
                     int mode = te.getMode()&0777;
                     if(mode!=0 && !Hudson.isWindows()) // be defensive
-                        LIBC.chmod(f.getPath(),mode);
+                        try {
+                            LIBC.chmod(f.getPath(),mode);
+                        } catch (NoClassDefFoundError e) {
+                            // be defensive. see http://www.nabble.com/-3.0.6--Site-copy-problem%3A-hudson.util.IOException2%3A--java.lang.NoClassDefFoundError%3A-Could-not-initialize-class--hudson.util.jna.GNUCLibrary-td23588879.html
+                        }
                 }
             }
         } catch(IOException e) {
