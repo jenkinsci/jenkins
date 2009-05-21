@@ -620,6 +620,9 @@ public class UpdateCenter extends AbstractModelObject {
         /**
          * Returns the URL of the server that hosts the update-center.json
          * file.
+         *
+         * @return
+         *      Absolute URL that ends with '/'.
          */
         public String getUpdateCenterUrl() {
             return "https://hudson.dev.java.net/";
