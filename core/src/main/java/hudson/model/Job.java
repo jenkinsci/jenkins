@@ -913,9 +913,6 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
                     .getPropertyDescriptors(Job.this.getClass())) {
                 String name = "jobProperty" + (i++);
                 JSONObject config = json.getJSONObject(name);
-                if (config.isNullObject()) {
-                    throw new JSONException("Null parameter " + name + " at index " + i + " working on " + d);
-                }
                 JobProperty prop = d.newInstance(req, config);
                 if (prop != null) {
                     prop.setOwner(this);
