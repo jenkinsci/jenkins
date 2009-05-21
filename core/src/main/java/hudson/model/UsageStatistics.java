@@ -229,5 +229,5 @@ public class UsageStatistics extends PageDecorator {
 
     private static final long DAY = DAYS.toMillis(1);
 
-    public static boolean DISABLED = Boolean.getBoolean(UsageStatistics.class.getName()+".disable");
+    public static boolean DISABLED = Boolean.getBoolean(UsageStatistics.class.getName()+".disabled");
 }

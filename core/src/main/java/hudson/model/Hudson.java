@@ -45,6 +45,8 @@ import hudson.ExtensionPoint;
 import hudson.DescriptorExtensionList;
 import hudson.ExtensionListView;
 import hudson.Extension;
+import hudson.tools.ToolInstallation;
+import hudson.tools.ToolDescriptor;
 import hudson.cli.CliEntryPoint;
 import hudson.cli.CLICommand;
 import hudson.cli.HelpCommand;
@@ -2207,6 +2209,9 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
                 result &= configureDescriptor(req,json,d);
 
             for( PageDecorator d : PageDecorator.all() )
+                result &= configureDescriptor(req,json,d);
+
+            for( ToolDescriptor d : ToolInstallation.all() )
                 result &= configureDescriptor(req,json,d);
 
             for( JSONObject o : StructuredForm.toList(json,"plugin"))

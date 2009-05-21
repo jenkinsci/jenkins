@@ -122,7 +122,7 @@ THE SOFTWARE.
       <d:taglib uri="local">
         <!-- display global config pages for the given descriptors -->
         <d:tag name="globalConfig">
-          <j:getStatic var="descriptors" className="${className}" field="${field}" />
+          <j:invokeStatic var="descriptors" className="${className}" method="all" />
           <j:forEach var="idx" begin="0" end="${size(descriptors)-1}">
             <j:set var="descriptor" value="${descriptors[idx]}" />
             <j:set var="instance" value="${descriptor}" /><!-- this makes the <f:textbox field=.../> work -->
@@ -133,13 +133,14 @@ THE SOFTWARE.
         </d:tag>
       </d:taglib>
 
-      <local:globalConfig className="hudson.triggers.Triggers" field="TRIGGERS" />
-      <local:globalConfig className="hudson.tasks.BuildWrappers" field="WRAPPERS" />
-      <local:globalConfig className="hudson.tasks.BuildStep" field="BUILDERS" />
-      <local:globalConfig className="hudson.scm.SCMS" field="SCMS" />
-      <local:globalConfig className="hudson.tasks.BuildStep" field="PUBLISHERS" />
-      <local:globalConfig className="hudson.model.Jobs" field="PROPERTIES" />
-      <local:globalConfig className="hudson.model.PageDecorator" field="ALL" />
+      <local:globalConfig className="hudson.tools.ToolInstallation" />
+      <local:globalConfig className="hudson.triggers.Trigger" />
+      <local:globalConfig className="hudson.tasks.BuildWrapper" />
+      <local:globalConfig className="hudson.tasks.Builder"  />
+      <local:globalConfig className="hudson.scm.SCM" />
+      <local:globalConfig className="hudson.tasks.Publisher" />
+      <local:globalConfig className="hudson.model.JobPropertyDescriptor" />
+      <local:globalConfig className="hudson.model.PageDecorator" />
 
       <j:if test="${!empty(h.getCloudDescriptors())}">
         <f:section title="${%Cloud}">

@@ -34,15 +34,12 @@ import hudson.Extension;
 import hudson.FilePath;
 import hudson.Util;
 import hudson.util.FormValidation;
-import hudson.util.TimeUnit2;
 import hudson.util.ArgumentListBuilder;
-import hudson.FilePath.FileCallable;
 import hudson.model.Node;
 import hudson.model.TaskListener;
 import hudson.model.DownloadService.Downloadable;
 import static hudson.tools.JDKInstaller.Preference.*;
 import hudson.remoting.Callable;
-import hudson.remoting.VirtualChannel;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.QueryParameter;
 import org.apache.commons.io.IOUtils;
@@ -128,11 +125,8 @@ public class JDKInstaller extends ToolInstaller {
                 if(paths.size()!=1)
                     throw new AbortException("Failed to find the extracted JDKs: "+paths);
 
-                paths.get(0).act(PULLUP_DIRECTORY);
-
-                // clean up
-                paths.get(0).delete();
-
+                // remove the intermediate directory 
+                paths.get(0).moveAllChildrenTo(expectedLocation);
                 break;
             case WINDOWS:
                 /*
@@ -215,21 +209,6 @@ public class JDKInstaller extends ToolInstaller {
     private static final FileFilter JDK_FINDER = new FileFilter() {
         public boolean accept(File f) {
             return f.isDirectory() && f.getName().startsWith("jdk");
-        }
-    };
-
-    /**
-     * Moves all the contents of this directory into ".."
-     */
-    private static final FileCallable<Void> PULLUP_DIRECTORY = new FileCallable<Void>() {
-        public Void invoke(File f, VirtualChannel channel) throws IOException {
-            File p = f.getParentFile();
-            for(File child : f.listFiles()) {
-                File target = new File(p, child.getName());
-                if(!child.renameTo(target))
-                    throw new IOException("Failed to rename "+child+" to "+target);
-            }
-            return null;
         }
     };
 
@@ -446,7 +425,7 @@ public class JDKInstaller extends ToolInstaller {
     @Extension
     public static final class JDKList extends Downloadable {
         public JDKList() {
-            super(JDKInstaller.class.getName(), "jdk.json", TimeUnit2.DAYS.toMillis(1));
+            super(JDKInstaller.class);
         }
 
         public JDKFamilyList toList() throws IOException {

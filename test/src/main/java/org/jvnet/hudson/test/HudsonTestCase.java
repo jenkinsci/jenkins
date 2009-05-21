@@ -618,6 +618,14 @@ public abstract class HudsonTestCase extends TestCase {
         }
     }
 
+    /**
+     * Gets the descriptor instance of the current Hudson by its type.
+     */
+    protected <T extends Descriptor<?>> T get(Class<T> d) {
+        return hudson.getDescriptorByType(d);
+    }
+
+
 
 //
 // recipe methods. Control the test environments.

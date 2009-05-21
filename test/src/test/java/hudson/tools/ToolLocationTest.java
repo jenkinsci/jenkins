@@ -31,7 +31,6 @@ public class ToolLocationTest extends HudsonTestCase {
         Ant.AntInstallation[] ant = Hudson.getInstance().getDescriptorByType(Ant.DescriptorImpl.class).getInstallations();
         assertEquals(ant.length, 1);
         assertEquals(ant[0].getHome(), "foo");
-        assertEquals(ant[0].getAntHome(), "foo");
         assertEquals(ant[0].getName(), "Ant 1");
 
         JDK[] jdk = Hudson.getInstance().getDescriptorByType(JDK.DescriptorImpl.class).getInstallations();

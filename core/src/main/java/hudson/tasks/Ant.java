@@ -41,6 +41,9 @@ import hudson.remoting.Callable;
 import hudson.slaves.NodeSpecific;
 import hudson.tools.ToolDescriptor;
 import hudson.tools.ToolInstallation;
+import hudson.tools.DownloadFromUrlInstaller;
+import hudson.tools.ToolInstaller;
+import hudson.tools.ToolProperty;
 import hudson.util.ArgumentListBuilder;
 import hudson.util.VariableResolver;
 import hudson.util.FormValidation;
@@ -53,6 +56,8 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Map;
 import java.util.Properties;
+import java.util.List;
+import java.util.Collections;
 
 /**
  * Ant launcher.
@@ -185,7 +190,7 @@ public class Ant extends Builder {
         args.addTokenized(targets.replaceAll("[\t\r\n]+"," "));
 
         if(ai!=null)
-            env.put("ANT_HOME",ai.getAntHome());
+            env.put("ANT_HOME",ai.getHome());
         if(antOpts!=null)
             env.put("ANT_OPTS",env.expand(antOpts));
 
@@ -253,12 +258,19 @@ public class Ant extends Builder {
             load();
         }
 
-        public boolean isApplicable(Class<? extends AbstractProject> jobType) {
-            return true;
-        }
-
         protected DescriptorImpl(Class<? extends Ant> clazz) {
             super(clazz);
+        }
+
+        /**
+         * Obtains the {@link AntInstallation.DescriptorImpl} instance.
+         */
+        public AntInstallation.DescriptorImpl getToolDescriptor() {
+            return ToolInstallation.all().get(AntInstallation.DescriptorImpl.class);
+        }
+
+        public boolean isApplicable(Class<? extends AbstractProject> jobType) {
+            return true;
         }
 
         protected void convert(Map<String,Object> oldPropertyBag) {
@@ -278,56 +290,36 @@ public class Ant extends Builder {
             return installations;
         }
 
-        @Override
-        public boolean configure(StaplerRequest req, JSONObject json) throws FormException {
-            installations = req.bindJSONToList(
-                    AntInstallation.class, json.get("ant")).toArray(new AntInstallation[0]);
-            save();
-            return true;
-        }
-
         public Ant newInstance(StaplerRequest req, JSONObject formData) throws FormException {
             return (Ant)req.bindJSON(clazz,formData);
         }
 
-    //
-    // web methods
-    //
-        /**
-         * Checks if the ANT_HOME is valid.
-         */
-        public FormValidation doCheckAntHome(@QueryParameter File value) {
-            // this can be used to check the existence of a file on the server, so needs to be protected
-            if(!Hudson.getInstance().hasPermission(Hudson.ADMINISTER))
-                return FormValidation.ok();
-
-            if(!value.isDirectory())
-                return FormValidation.error(Messages.Ant_NotADirectory(value));
-
-            File antJar = new File(value,"lib/ant.jar");
-            if(!antJar.exists())
-                return FormValidation.error(Messages.Ant_NotAntDirectory(value));
-
-        return FormValidation.ok();
-    }
-
 		public void setInstallations(AntInstallation... antInstallations) {
 			this.installations = antInstallations;
+            save();
 		}
     }
 
+    /**
+     * Represents the Ant installation on the system.
+     */
     public static final class AntInstallation extends ToolInstallation implements
             EnvironmentSpecific<AntInstallation>, NodeSpecific<AntInstallation> {
+        // to remain backward compatible with earlier Hudson that stored this field here.
         private final String antHome;
 
         @DataBoundConstructor
+        public AntInstallation(String name, String home, List<? extends ToolProperty<?>> properties) {
+            super(name, launderHome(home), properties);
+            this.antHome = super.getHome();
+        }
+
+        /**
+         * @deprecated as of 1.308
+         *      Use {@link #AntInstallation(String, String, List)}
+         */
         public AntInstallation(String name, String home) {
-            super(name, launderHome(home));
-            if(home.endsWith("/") || home.endsWith("\\"))
-                // see https://issues.apache.org/bugzilla/show_bug.cgi?id=26947
-                // Ant doesn't like the trailing slash, especially on Windows
-                home = home.substring(0,home.length()-1);
-            this.antHome = home;
+            this(name,home,Collections.<ToolProperty<?>>emptyList());
         }
 
         private static String launderHome(String home) {
@@ -342,6 +334,8 @@ public class Ant extends Builder {
 
         /**
          * install directory.
+         *
+         * @deprecated as of 1.307. Use {@link #getHome()}.
          */
         public String getAntHome() {
             return getHome();
@@ -388,11 +382,11 @@ public class Ant extends Builder {
         private static final long serialVersionUID = 1L;
 
 		public AntInstallation forEnvironment(EnvVars environment) {
-			return new AntInstallation(getName(), environment.expand(antHome));
+			return new AntInstallation(getName(), environment.expand(antHome), getProperties().toList());
 		}
 
         public AntInstallation forNode(Node node, TaskListener log) throws IOException, InterruptedException {
-            return new AntInstallation(getName(), translateFor(node, log));
+            return new AntInstallation(getName(), translateFor(node, log), getProperties().toList());
         }
 
         @Extension
@@ -403,6 +397,7 @@ public class Ant extends Builder {
                 return "Ant";
             }
 
+            // for compatibility reasons, the persistence is done by Ant.DescriptorImpl  
             @Override
             public AntInstallation[] getInstallations() {
                 return Hudson.getInstance().getDescriptorByType(Ant.DescriptorImpl.class).getInstallations();
@@ -412,7 +407,58 @@ public class Ant extends Builder {
             public void setInstallations(AntInstallation... installations) {
                 Hudson.getInstance().getDescriptorByType(Ant.DescriptorImpl.class).setInstallations(installations);
             }
+
+            @Override
+            public List<? extends ToolInstaller> getDefaultInstallers() {
+                return Collections.singletonList(new AntInstaller(null));
+            }
+
+            @Override
+            public boolean configure(StaplerRequest req, JSONObject json) throws FormException {
+                setInstallations(req.bindJSONToList(
+                        AntInstallation.class, json.get("ant")).toArray(new AntInstallation[0]));
+                return true;
+            }
+
+            /**
+             * Checks if the ANT_HOME is valid.
+             */
+            public FormValidation doCheckHome(@QueryParameter File value) {
+                // this can be used to check the existence of a file on the server, so needs to be protected
+                if(!Hudson.getInstance().hasPermission(Hudson.ADMINISTER))
+                    return FormValidation.ok();
+
+                if(!value.isDirectory())
+                    return FormValidation.error(Messages.Ant_NotADirectory(value));
+
+                File antJar = new File(value,"lib/ant.jar");
+                if(!antJar.exists())
+                    return FormValidation.error(Messages.Ant_NotAntDirectory(value));
+
+                return FormValidation.ok();
+            }
+        }
+    }
+
+    /**
+     * Automatic Ant installer from apache.org.
+     */
+    public static class AntInstaller extends DownloadFromUrlInstaller {
+        @DataBoundConstructor
+        public AntInstaller(String id) {
+            super(id);
         }
 
-     }
+        @Extension
+        public static final class DescriptorImpl extends DownloadFromUrlInstaller.DescriptorImpl<AntInstaller> {
+            public String getDisplayName() {
+                return "Install from Apache";
+            }
+
+            @Override
+            public boolean isApplicable(Class<? extends ToolInstallation> toolType) {
+                return toolType==AntInstallation.class;
+            }
+        }
+    }
 }
