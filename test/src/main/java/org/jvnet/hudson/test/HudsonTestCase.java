@@ -30,6 +30,7 @@ import hudson.WebAppMain;
 import hudson.EnvVars;
 import hudson.ExtensionList;
 import hudson.DescriptorExtensionList;
+import hudson.tools.ToolProperty;
 import hudson.remoting.Which;
 import hudson.Launcher.LocalLauncher;
 import hudson.matrix.MatrixProject;
@@ -84,6 +85,7 @@ import java.util.Enumeration;
 import java.util.List;
 import java.util.Locale;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.jar.Manifest;
 import java.util.logging.Filter;
 import java.util.logging.Level;
@@ -132,6 +134,7 @@ import com.gargoylesoftware.htmlunit.html.HtmlButton;
 import com.gargoylesoftware.htmlunit.html.HtmlForm;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import com.gargoylesoftware.htmlunit.html.HtmlElement;
+import com.gargoylesoftware.htmlunit.html.HtmlInput;
 import com.gargoylesoftware.htmlunit.javascript.JavaScriptEngine;
 import com.gargoylesoftware.htmlunit.javascript.host.Stylesheet;
 import com.gargoylesoftware.htmlunit.javascript.host.XMLHttpRequest;
@@ -323,7 +326,7 @@ public abstract class HudsonTestCase extends TestCase {
         // first if we are running inside Maven, pick that Maven.
         String home = System.getProperty("maven.home");
         if(home!=null) {
-            MavenInstallation mavenInstallation = new MavenInstallation("default",home);
+            MavenInstallation mavenInstallation = new MavenInstallation("default",home, NO_PROPERTIES);
 			hudson.getDescriptorByType(Maven.DescriptorImpl.class).setInstallations(mavenInstallation);
             return mavenInstallation;
         }
@@ -346,7 +349,7 @@ public abstract class HudsonTestCase extends TestCase {
             GNUCLibrary.LIBC.chmod(new File(mvnHome,"maven-2.0.7/bin/mvn").getPath(),0755);
 
         MavenInstallation mavenInstallation = new MavenInstallation("default",
-                new File(mvnHome,"maven-2.0.7").getAbsolutePath());
+                new File(mvnHome,"maven-2.0.7").getAbsolutePath(), NO_PROPERTIES);
 		hudson.getDescriptorByType(Maven.DescriptorImpl.class).setInstallations(mavenInstallation);
 		return mavenInstallation;
     }
@@ -357,7 +360,7 @@ public abstract class HudsonTestCase extends TestCase {
     protected Ant.AntInstallation configureDefaultAnt() throws Exception {
         Ant.AntInstallation antInstallation;
         if (System.getenv("ANT_HOME") != null) {
-            antInstallation = new AntInstallation("default", System.getenv("ANT_HOME"));
+            antInstallation = new AntInstallation("default", System.getenv("ANT_HOME"), NO_PROPERTIES);
         } else {
             LOGGER.warning("Extracting a copy of Ant bundled in the test harness. " +
                     "To avoid a performance hit, set the environment variable ANT_HOME to point to an  Ant installation.");
@@ -374,7 +377,7 @@ public abstract class HudsonTestCase extends TestCase {
             if(!Hudson.isWindows())
                 GNUCLibrary.LIBC.chmod(new File(antHome,"apache-ant-1.7.1/bin/ant").getPath(),0755);
 
-            antInstallation = new AntInstallation("default", new File(antHome,"apache-ant-1.7.1").getAbsolutePath());
+            antInstallation = new AntInstallation("default", new File(antHome,"apache-ant-1.7.1").getAbsolutePath(),NO_PROPERTIES);
         }
 		hudson.getDescriptorByType(Ant.DescriptorImpl.class).setInstallations(antInstallation);
 		return antInstallation;
@@ -561,6 +564,18 @@ public abstract class HudsonTestCase extends TestCase {
                 return (HtmlPage)form.submit((HtmlButton)e);
         }
         throw new AssertionError("No such submit button with the name "+name);
+    }
+
+    protected HtmlInput findPreviousInputElement(HtmlElement current, String name) {
+        return (HtmlInput)current.selectSingleNode("(preceding::input[@name='_."+name+"'])[last()]");
+    }
+
+    protected HtmlButton getButtonByCaption(HtmlForm f, String s) {
+        for (HtmlElement b : f.getHtmlElementsByTagName("button")) {
+            if(b.getTextContent().trim().equals(s))
+                return (HtmlButton)b;
+        }
+        return null;
     }
 
     /**
@@ -969,4 +984,6 @@ public abstract class HudsonTestCase extends TestCase {
     }
 
     private static final Logger LOGGER = Logger.getLogger(HudsonTestCase.class.getName());
+
+    protected static final List<ToolProperty<?>> NO_PROPERTIES = Collections.<ToolProperty<?>>emptyList();
 }

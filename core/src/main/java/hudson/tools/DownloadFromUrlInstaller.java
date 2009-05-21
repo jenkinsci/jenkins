@@ -17,6 +17,9 @@ import java.net.URL;
  * Partial convenience implementation of {@link ToolInstaller} that just downloads
  * an archive from the URL and extracts it.
  *
+ * <p>
+ * Each instance of this is configured to download from a specific URL identified by an ID.
+ *
  * @author Kohsuke Kawaguchi
  * @since 1.308
  */
@@ -154,6 +157,9 @@ public abstract class DownloadFromUrlInstaller extends ToolInstaller {
         public Installable[] list = new Installable[0];
     }
 
+    /**
+     * Downloadable and installable tool.
+     */
     public static class Installable {
         /**
          * Used internally to uniquely identify the name.

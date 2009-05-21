@@ -26,21 +26,21 @@ THE SOFTWARE.
   <f:section title="${%Maven}">
     <f:entry title="${%Maven installation}"
       description="${%List of Maven installations on this system. Both maven 1 and 2 are supported.}">
-      <f:repeatable var="maven" items="${descriptor.installations}">
+      <f:repeatable name="maven" var="instance" items="${descriptor.installations}" add="${%Add Maven}">
         <table width="100%">
-          <f:entry title="${%name}">
-            <input class="setting-input" name="maven.name"
-              type="text" value="${maven.name}"/>
+          <f:entry title="${%name}" field="name">
+            <f:textbox />
           </f:entry>
 
-          <f:entry title="MAVEN_HOME">
-            <input class="setting-input validated" name="maven.home"
-              type="text" value="${maven.mavenHome}"
-              checkUrl="'builder/Maven/checkMavenHome?value='+escape(this.value)"/>
+          <f:entry title="MAVEN_HOME" field="home">
+            <f:textbox />
           </f:entry>
+
+          <f:descriptorList descriptors="${descriptor.propertyDescriptors}" field="properties" />
+          
           <f:entry title="">
             <div align="right">
-              <f:repeatableDeleteButton />
+              <f:repeatableDeleteButton value="${%Delete Maven}"/>
             </div>
           </f:entry>
         </table>

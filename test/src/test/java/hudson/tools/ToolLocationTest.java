@@ -24,7 +24,6 @@ public class ToolLocationTest extends HudsonTestCase {
         Maven.MavenInstallation[] maven = Hudson.getInstance().getDescriptorByType(Maven.DescriptorImpl.class).getInstallations();
         assertEquals(maven.length, 1);
         assertEquals(maven[0].getHome(), "bar");
-        assertEquals(maven[0].getMavenHome(), "bar");
         assertEquals(maven[0].getName(), "Maven 1");
 
 

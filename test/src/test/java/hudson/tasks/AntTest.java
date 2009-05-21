@@ -72,8 +72,8 @@ public class AntTest extends HudsonTestCase {
         HtmlForm f = p.getFormByName("config");
         HtmlButton b = getButtonByCaption(f, "Add Ant");
         b.click();
-        ((HtmlInput)b.selectSingleNode("(preceding::input[@name='_.name'])[last()]")).setValueAttribute("myAnt");
-        ((HtmlInput)b.selectSingleNode("(preceding::input[@name='_.home'])[last()]")).setValueAttribute("/tmp/foo");
+        findPreviousInputElement(b,"name").setValueAttribute("myAnt");
+        findPreviousInputElement(b,"home").setValueAttribute("/tmp/foo");
         submit(f);
         verify();
 
@@ -87,7 +87,7 @@ public class AntTest extends HudsonTestCase {
     private void verify() throws Exception {
         AntInstallation[] l = get(DescriptorImpl.class).getInstallations();
         assertEquals(1,l.length);
-        assertEqualBeans(l[0],new AntInstallation("myAnt","/tmp/foo"),"name,home");
+        assertEqualBeans(l[0],new AntInstallation("myAnt","/tmp/foo",NO_PROPERTIES),"name,home");
 
         // by default we should get the auto installer
         DescribableList<ToolProperty<?>,ToolPropertyDescriptor> props = l[0].getProperties();
@@ -95,13 +95,5 @@ public class AntTest extends HudsonTestCase {
         InstallSourceProperty isp = props.get(InstallSourceProperty.class);
         assertEquals(1,isp.installers.size());
         assertNotNull(isp.installers.get(AntInstaller.class));
-    }
-
-    private HtmlButton getButtonByCaption(HtmlForm f, String s) {
-        for (HtmlElement b : f.getHtmlElementsByTagName("button")) {
-            if(b.getTextContent().trim().equals(s))
-                return (HtmlButton)b;
-        }
-        return null;
     }
 }
