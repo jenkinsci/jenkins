@@ -115,8 +115,20 @@ public class Sventon2 extends SubversionRepositoryBrowser {
         throws UnsupportedEncodingException
     {
         StringBuilder buf = new StringBuilder( );
+        if (path.startsWith("/")) {
+            buf.append('/');
+        }
+        boolean first = true;
         for (String pathElement: path.split( "/" )) {
+            if (first) {
+                first = false;
+            } else {
+                buf.append('/');
+            }
             buf.append(URLEncoder.encode(pathElement, URL_CHARSET));
+        }
+        if (path.endsWith("/")) {
+           buf.append('/');
         }
         return buf.toString();
     }
