@@ -930,6 +930,22 @@ public final class FilePath implements Serializable {
     }
 
     /**
+     * List up subdirectories.
+     *
+     * @return can be empty but never null. Doesn't contain "." and ".."
+     */
+    public List<FilePath> listDirectories() throws IOException, InterruptedException {
+        return list(new DirectoryFilter());
+    }
+
+    private static final class DirectoryFilter implements FileFilter, Serializable {
+        public boolean accept(File f) {
+            return f.isDirectory();
+        }
+        private static final long serialVersionUID = 1L;
+    }
+
+    /**
      * List up files in this directory, just like {@link File#listFiles(FileFilter)}.
      *
      * @param filter
@@ -1016,6 +1032,18 @@ public final class FilePath implements Serializable {
     }
 
     /**
+     * Reads this file into a string, by using the current system encoding.
+     */
+    public String readToString() throws IOException {
+        InputStream in = read();
+        try {
+            return IOUtils.toString(in);
+        } finally {
+            in.close();
+        }
+    }
+
+    /**
      * Writes to this file.
      * If this file already exists, it will be overwritten.
      * If the directory doesn't exist, it will be created.
@@ -1082,6 +1110,30 @@ public final class FilePath implements Serializable {
         act(new FileCallable<Void>() {
             public Void invoke(File f, VirtualChannel channel) throws IOException {
             	f.renameTo(new File(target.remote));
+                return null;
+            }
+        });
+    }
+
+    /**
+     * Moves all the contents of this directory into the specified directory, then delete this directory itself.
+     *
+     * @since 1.308.
+     */
+    public void moveAllChildrenTo(final FilePath target) throws IOException, InterruptedException {
+        if(this.channel != target.channel) {
+            throw new IOException("pullUpTo target must be on the same host");
+        }
+        act(new FileCallable<Void>() {
+            public Void invoke(File f, VirtualChannel channel) throws IOException {
+                File t = new File(target.getRemote());
+                
+                for(File child : f.listFiles()) {
+                    File target = new File(t, child.getName());
+                    if(!child.renameTo(target))
+                        throw new IOException("Failed to rename "+child+" to "+target);
+                }
+                f.delete();
                 return null;
             }
         });
