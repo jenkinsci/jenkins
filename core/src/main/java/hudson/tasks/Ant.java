@@ -452,7 +452,7 @@ public class Ant extends Builder {
         @Extension
         public static final class DescriptorImpl extends DownloadFromUrlInstaller.DescriptorImpl<AntInstaller> {
             public String getDisplayName() {
-                return "Install from Apache";
+                return Messages.InstallFromApache();
             }
 
             @Override
