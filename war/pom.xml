@@ -173,6 +173,11 @@ THE SOFTWARE.
               <name>hudson.bundled.plugins</name>
               <value>${basedir}/../maven-plugin/target/test-classes/the.hpl</value>
             </systemProperty>
+            <systemProperty>
+              <!-- stat collection pointless -->
+              <name>hudson.model.UsageStatistics.disabled</name>
+              <value>true</value>
+            </systemProperty>
           </systemProperties>
         </configuration>
       </plugin>
