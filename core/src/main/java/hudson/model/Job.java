@@ -912,7 +912,11 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
             for (JobPropertyDescriptor d : JobPropertyDescriptor
                     .getPropertyDescriptors(Job.this.getClass())) {
                 String name = "jobProperty" + (i++);
-                JobProperty prop = d.newInstance(req, json.getJSONObject(name));
+                JSONObject config = json.getJSONObject(name);
+                if (config.isNullObject()) {
+                    throw new JSONException("Null parameter " + name + " at index " + i + " working on " + d);
+                }
+                JobProperty prop = d.newInstance(req, config);
                 if (prop != null) {
                     prop.setOwner(this);
                     properties.add(prop);
@@ -942,8 +946,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
         } catch (JSONException e) {
             StringWriter sw = new StringWriter();
             PrintWriter pw = new PrintWriter(sw);
-            pw
-                    .println("Failed to parse form data. Please report this probelm as a bug");
+            pw.println("Failed to parse form data. Please report this problem as a bug");
             pw.println("JSON=" + req.getSubmittedForm());
             pw.println();
             e.printStackTrace(pw);
