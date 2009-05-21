@@ -40,6 +40,7 @@ import org.kohsuke.stapler.QueryParameter;
 
 import javax.servlet.ServletException;
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLEncoder;
@@ -88,7 +89,7 @@ public class Sventon2 extends SubversionRepositoryBrowser {
             return null;    // no diff if this is not an edit change
         int r = path.getLogEntry().getRevision();
         return new URL(url, String.format("repos/%s/diff/%s?revision=%d",
-                repositoryInstance,URLEncoder.encode(getPath(path), URL_CHARSET), r));
+                repositoryInstance,encodePath(getPath(path)), r));
     }
 
     @Override
@@ -97,7 +98,7 @@ public class Sventon2 extends SubversionRepositoryBrowser {
            return null; // no file if it's gone
         int r = path.getLogEntry().getRevision();
         return new URL(url, String.format("repos/%s/goto/%s?revision=%d",
-                repositoryInstance,URLEncoder.encode(getPath(path), URL_CHARSET), r));
+                repositoryInstance,encodePath(getPath(path)), r));
     }
 
     /**
@@ -110,6 +111,16 @@ public class Sventon2 extends SubversionRepositoryBrowser {
         return s;
     }
 
+    private static String encodePath(String path)
+        throws UnsupportedEncodingException
+    {
+        StringBuilder buf = new StringBuilder( );
+        for (String pathElement: path.split( "/" )) {
+            buf.append(URLEncoder.encode(pathElement, URL_CHARSET));
+        }
+        return buf.toString();
+    }
+    
     @Override
     public URL getChangeSetLink(LogEntry changeSet) throws IOException {
         return new URL(url, String.format("repos/%s/info?revision=%d",
