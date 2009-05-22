@@ -294,10 +294,10 @@ public class Ant extends Builder {
             return (Ant)req.bindJSON(clazz,formData);
         }
 
-		public void setInstallations(AntInstallation... antInstallations) {
-			this.installations = antInstallations;
+        public void setInstallations(AntInstallation... antInstallations) {
+            this.installations = antInstallations;
             save();
-		}
+        }
     }
 
     /**
@@ -381,9 +381,9 @@ public class Ant extends Builder {
 
         private static final long serialVersionUID = 1L;
 
-		public AntInstallation forEnvironment(EnvVars environment) {
-			return new AntInstallation(getName(), environment.expand(antHome), getProperties().toList());
-		}
+        public AntInstallation forEnvironment(EnvVars environment) {
+            return new AntInstallation(getName(), environment.expand(antHome), getProperties().toList());
+        }
 
         public AntInstallation forNode(Node node, TaskListener log) throws IOException, InterruptedException {
             return new AntInstallation(getName(), translateFor(node, log), getProperties().toList());
