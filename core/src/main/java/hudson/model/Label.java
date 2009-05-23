@@ -35,6 +35,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.Collection;
 
 import com.thoughtworks.xstream.converters.Converter;
 import com.thoughtworks.xstream.converters.MarshallingContext;
@@ -228,22 +229,31 @@ public class Label implements Comparable<Label>, ModelObject {
     @Exported
     public String getDescription() {
         Set<Node> nodes = getNodes();
-        if(nodes.isEmpty())
-            return "invalid label";
+        if(nodes.isEmpty()) {
+            Set<Cloud> clouds = getClouds();
+            if(clouds.isEmpty())
+                return "invalid label";
+
+            return toString(clouds, new StringBuilder("Provisioned from "));
+        }
+
         if(nodes.size()==1) {
             return nodes.iterator().next().getNodeDescription();
         }
 
-        StringBuilder buf = new StringBuilder("group of ");
+        return toString(nodes,new StringBuilder("group of "));
+    }
+
+    private String toString(Collection<? extends ModelObject> model, StringBuilder buf) {
         boolean first=true;
-        for (Node n : nodes) {
+        for (ModelObject c : model) {
             if(buf.length()>80) {
                 buf.append(",...");
                 break;
             }
             if(!first)  buf.append(',');
             else        first=false;
-            buf.append(n.getNodeName());
+            buf.append(c.getDisplayName());
         }
         return buf.toString();
     }
