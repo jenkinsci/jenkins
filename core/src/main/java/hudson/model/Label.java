@@ -135,17 +135,34 @@ public class Label implements Comparable<Label>, ModelObject {
     }
     
     /**
+     * Can jobs be assigned to this label?
+     * <p>
+     * The answer is yes if there is a reasonable basis to believe that Hudson can have
+     * an executor under this label, given the current configuration. This includes
+     * situations such as (1) there are offline slaves that have this label (2) clouds exist
+     * that can provision slaves that have this label.
+     */
+    public boolean isAssignable() {
+        for (Node n : getNodes())
+            if(n.getNumExecutors()>0)
+                return true;
+        return !getClouds().isEmpty();
+    }
+
+    /**
      * Number of total {@link Executor}s that belong to this label.
      * <p>
-     * This includes executors that belong to offline nodes.
+     * This includes executors that belong to offline nodes, so the result
+     * can be thought of as a potential capacity, whereas {@link #getTotalExecutors()}
+     * is the currently functioning total number of executors.
+     * <p>
+     * This method doesn't take the dynamically allocatable nodes (via {@link Cloud})
+     * into account. If you just want to test if there's some executors, use {@link #isAssignable()}.
      */
     public int getTotalConfiguredExecutors() {
         int r=0;
-        for (Node n : getNodes()) {
-            Computer c = n.toComputer();
-            if(c!=null)
-                r += c.countExecutors();
-        }
+        for (Node n : getNodes())
+            r += n.getNumExecutors();
         return r;
     }
 
