@@ -583,7 +583,7 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
             File initScript = new File(getRootDir(),"init.groovy");
             if(initScript.exists()) {
                 LOGGER.info("Executing "+initScript);
-                GroovyShell shell = new GroovyShell();
+                GroovyShell shell = new GroovyShell(pluginManager.uberClassLoader);
                 try {
                     shell.evaluate(initScript);
                 } catch (Throwable t) {
