@@ -232,20 +232,20 @@ public class Label implements Comparable<Label>, ModelObject {
         if(nodes.isEmpty()) {
             Set<Cloud> clouds = getClouds();
             if(clouds.isEmpty())
-                return "invalid label";
+                return Messages.Label_InvalidLabel();
 
-            return toString(clouds, new StringBuilder("Provisioned from "));
+            return Messages.Label_ProvisionedFrom(toString(clouds));
         }
 
-        if(nodes.size()==1) {
+        if(nodes.size()==1)
             return nodes.iterator().next().getNodeDescription();
-        }
 
-        return toString(nodes,new StringBuilder("group of "));
+        return Messages.Label_GroupOf(toString(nodes));
     }
 
-    private String toString(Collection<? extends ModelObject> model, StringBuilder buf) {
+    private String toString(Collection<? extends ModelObject> model) {
         boolean first=true;
+        StringBuilder buf = new StringBuilder();
         for (ModelObject c : model) {
             if(buf.length()>80) {
                 buf.append(",...");
