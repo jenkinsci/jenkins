@@ -1074,13 +1074,8 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
             ItemGroup<?> parent = q.pop();
             for (Item i : parent.getItems()) {
                 if(type.isInstance(i)) {
-                    if (i instanceof AccessControlled) {
-                    	if (((AccessControlled)i).hasPermission(Item.READ))
-                    		r.add(type.cast(i));
-                    }
-                    else {
-                    	r.add(type.cast(i));
-                    }
+                    if (i.hasPermission(Item.READ))
+                        r.add(type.cast(i));
                 }
                 if(i instanceof ItemGroup)
                     q.push((ItemGroup)i);
@@ -1217,7 +1212,7 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
      * Gets the label that exists on this system by the name.
      *
      * @return null if no such label exists.
-     * @see #parseLabels(String)
+     * @see Label#parse(String)
      */
     public Label getLabel(String name) {
         if(name==null)  return null;
@@ -1291,7 +1286,7 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
      * Gets the slave node of the give name, hooked under this Hudson.
      */
     public Node getNode(String name) {
-        for (Node s : getSlaves()) {
+        for (Node s : getNodes()) {
             if(s.getNodeName().equals(name))
                 return s;
         }
@@ -1414,7 +1409,7 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
         }
 
         // to route /descriptor/FQCN/xxx to getDescriptor(FQCN).xxx
-        public Object getDynamic(String token, StaplerRequest req, StaplerResponse rsp) {
+        public Object getDynamic(String token) {
             return Hudson.getInstance().getDescriptor(token);
         }
     }
@@ -1717,11 +1712,8 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
      */
     public TopLevelItem getItem(String name) {
     	TopLevelItem item = items.get(name);
-        if (item instanceof AccessControlled) {
-        	if (!((AccessControlled) item).hasPermission(Item.READ)) {
-        		return null;
-        	}
-        }
+        if (!item.hasPermission(Item.READ))
+            return null;
         return item;
     }
 
@@ -2096,7 +2088,7 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
         theInstance = null;
     }
 
-    public Object getDynamic(String token, StaplerRequest req, StaplerResponse rsp) {
+    public Object getDynamic(String token) {
         for (Action a : getActions())
             if(a.getUrlName().equals(token) || a.getUrlName().equals('/'+token))
                 return a;
@@ -2264,7 +2256,7 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
             else
                 mode = Mode.NORMAL;
 
-            setSlaves(req.bindJSONToList(Slave.class,json.get("slaves")));
+            setNodes(req.bindJSONToList(Slave.class,json.get("slaves")));
         } finally {
             bc.commit();
         }
@@ -2474,7 +2466,7 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
     }
 
     private static String toPrintableName(String name) {
-        StringBuffer printableName = new StringBuffer();
+        StringBuilder printableName = new StringBuilder();
         for( int i=0; i<name.length(); i++ ) {
             char ch = name.charAt(i);
             if(Character.isISOControl(ch))
