@@ -37,6 +37,7 @@ import hudson.StructuredForm;
 import hudson.TcpSlaveAgentListener;
 import hudson.Util;
 import static hudson.Util.fixEmpty;
+import static hudson.Util.fixNull;
 import hudson.WebAppMain;
 import hudson.XmlFile;
 import hudson.UDPBroadcastThread;
@@ -1216,6 +1217,7 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
      * Gets the label that exists on this system by the name.
      *
      * @return null if no such label exists.
+     * @see #parseLabels(String)
      */
     public Label getLabel(String name) {
         if(name==null)  return null;
@@ -1227,6 +1229,24 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
             // non-existent
             labels.putIfAbsent(name,new Label(name));
         }
+    }
+
+    /**
+     * Convers a whitespace-separate list of tokens into a set of {@link Label}s.
+     *
+     * @param labels
+     *      Strings like "abc def ghi". Can be empty or null.
+     * @return
+     *      Can be empty but never null. A new writable set is always returned,
+     *      so that the caller can add more to the set.
+     */
+    public Set<Label> parseLabels(String labels) {
+        Set<Label> r = new HashSet<Label>();
+        labels = fixNull(labels);
+        if(labels.length()>0)
+            for( String l : labels.split(" +"))
+                r.add(getLabel(l));
+        return r;
     }
 
     /**
@@ -1870,17 +1890,13 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
     }
 
     public String getLabelString() {
-        return Util.fixNull(label).trim();
+        return fixNull(label).trim();
     }
 
     public Set<Label> getAssignedLabels() {
         Set<Label> lset = labelSet; // labelSet may be set by another thread while we are in this method, so capture it.
         if (lset == null) {
-            Set<Label> r = new HashSet<Label>();
-            String ls = getLabelString();
-            if(ls.length()>0)
-                for( String l : ls.split(" +"))
-                    r.add(Hudson.getInstance().getLabel(l));
+            Set<Label> r = parseLabels(getLabelString());
             r.addAll(getDynamicLabels());
             r.add(getSelfLabel());
             this.labelSet = lset = Collections.unmodifiableSet(r);
@@ -2177,7 +2193,7 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
             else
                 mode = Mode.NORMAL;
 
-            label = Util.fixNull(req.getParameter("_.labelString"));
+            label = fixNull(req.getParameter("_.labelString"));
             labelSet=null;
 
             quietPeriod = Integer.parseInt(req.getParameter("quiet_period"));
