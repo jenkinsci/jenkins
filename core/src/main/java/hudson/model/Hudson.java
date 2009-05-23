@@ -141,7 +141,6 @@ import org.xml.sax.InputSource;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.http.Cookie;
-import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import static javax.servlet.http.HttpServletResponse.SC_BAD_REQUEST;
 import static javax.servlet.http.HttpServletResponse.SC_NOT_FOUND;
@@ -2000,10 +1999,10 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
         }
         rebuildDependencyGraph();
 
-        // recompute label objects
-        if (null != slaves) { // only if we have slaves
+        {// recompute label objects
             for (Node slave : slaves)
                 slave.getAssignedLabels();
+            getAssignedLabels();
         }
 
         // initialize views by inserting the default view if necessary
