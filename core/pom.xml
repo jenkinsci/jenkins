@@ -706,6 +706,12 @@ THE SOFTWARE.
       <groupId>org.jvnet.hudson</groupId>
       <artifactId>htmlunit</artifactId>
       <version>2.2-hudson-9</version>
+      <exclusions>
+        <exclusion>
+          <groupId>xalan</groupId>
+          <artifactId>xalan</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
 
     <!-- offline profiler API to put in the classpath if we need it -->
