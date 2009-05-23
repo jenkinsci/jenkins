@@ -1232,24 +1232,6 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
     }
 
     /**
-     * Convers a whitespace-separate list of tokens into a set of {@link Label}s.
-     *
-     * @param labels
-     *      Strings like "abc def ghi". Can be empty or null.
-     * @return
-     *      Can be empty but never null. A new writable set is always returned,
-     *      so that the caller can add more to the set.
-     */
-    public Set<Label> parseLabels(String labels) {
-        Set<Label> r = new HashSet<Label>();
-        labels = fixNull(labels);
-        if(labels.length()>0)
-            for( String l : labels.split(" +"))
-                r.add(getLabel(l));
-        return r;
-    }
-
-    /**
      * Gets all the active labels in the current system.
      */
     public Set<Label> getLabels() {
@@ -1896,7 +1878,7 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
     public Set<Label> getAssignedLabels() {
         Set<Label> lset = labelSet; // labelSet may be set by another thread while we are in this method, so capture it.
         if (lset == null) {
-            Set<Label> r = parseLabels(getLabelString());
+            Set<Label> r = Label.parse(getLabelString());
             r.addAll(getDynamicLabels());
             r.add(getSelfLabel());
             this.labelSet = lset = Collections.unmodifiableSet(r);

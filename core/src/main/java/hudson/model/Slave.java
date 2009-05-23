@@ -227,7 +227,7 @@ public abstract class Slave extends Node implements Serializable {
     public Set<Label> getAssignedLabels() {
         // todo refactor to make dynamic labels a bit less hacky
         if(labels==null || isChangedDynamicLabels()) {
-            Set<Label> r = Hudson.getInstance().parseLabels(getLabelString());
+            Set<Label> r = Label.parse(getLabelString());
             r.add(getSelfLabel());
             r.addAll(getDynamicLabels());
             this.labels = Collections.unmodifiableSet(r);

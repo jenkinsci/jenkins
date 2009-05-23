@@ -24,6 +24,7 @@
 package hudson.model;
 
 import hudson.Util;
+import static hudson.Util.fixNull;
 import hudson.slaves.NodeProvisioner;
 import hudson.slaves.Cloud;
 import org.kohsuke.stapler.export.Exported;
@@ -304,5 +305,24 @@ public class Label implements Comparable<Label>, ModelObject {
         public Object unmarshal(HierarchicalStreamReader reader, final UnmarshallingContext context) {
             return Hudson.getInstance().getLabel(reader.getValue());
         }
+    }
+
+    /**
+     * Convers a whitespace-separate list of tokens into a set of {@link Label}s.
+     *
+     * @param labels
+     *      Strings like "abc def ghi". Can be empty or null.
+     * @return
+     *      Can be empty but never null. A new writable set is always returned,
+     *      so that the caller can add more to the set.
+     * @since 1.308
+     */
+    public static Set<Label> parse(String labels) {
+        Set<Label> r = new HashSet<Label>();
+        labels = fixNull(labels);
+        if(labels.length()>0)
+            for( String l : labels.split(" +"))
+                r.add(Hudson.getInstance().getLabel(l));
+        return r;
     }
 }
