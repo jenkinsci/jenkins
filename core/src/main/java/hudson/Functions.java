@@ -77,6 +77,8 @@ import org.kohsuke.stapler.Stapler;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 import org.kohsuke.stapler.jelly.CustomTagLibrary.StaplerDynamicTag;
+import org.kohsuke.stapler.jelly.InternationalizedStringExpressionListener;
+import org.kohsuke.stapler.jelly.InternationalizedStringExpression;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.Cookie;
@@ -420,6 +422,14 @@ public class Functions {
      *      with auto refresh. On those pages, disable auto-refresh.
      */
     public static void configureAutoRefresh(HttpServletRequest request, HttpServletResponse response, boolean noAutoRefresh) {
+        // TEST
+        if(request.getParameter("l10n")!=null)
+            request.setAttribute(InternationalizedStringExpressionListener.class.getName(),new InternationalizedStringExpressionListener() {
+                public void onUsed(InternationalizedStringExpression exp, Object[] args) {
+                    System.out.println(exp.key);
+                }
+            });
+
         if(noAutoRefresh)
             return;
 

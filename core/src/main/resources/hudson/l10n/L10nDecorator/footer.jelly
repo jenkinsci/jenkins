@@ -1,0 +1,113 @@
+<!--
+The MIT License
+
+Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, Daniel Dyer, Seiji Sogabe, Tom Huybrechts
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+THE SOFTWARE.
+-->
+
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout">
+  <j:if test="${request.getParameter('l10n')!=null}">
+    <div id="l10n-dialog" class="dialog">
+      <l:yui module="resize" suffix="-beta" />
+      <style>
+        #l10n-dialog label {
+          display: block;
+          float: left;
+          width: 45%;
+          clear: left;
+        }
+        #l10n-dialog .clear {
+          clear: both;
+        }
+      </style>
+      <div class="hd">Please enter your information</div>
+      <div class="bd">
+        <form method="POST" action="http://www.g">
+          <label for="firstname">First Name:</label>
+          <input type="textbox" name="firstname"/>
+
+          <label for="lastname">Last Name:</label>
+          <input type="textbox" name="lastname"/>
+          <label for="email">E-mail:</label>
+          <input type="textbox" name="email"/>
+
+          <label for="state[]">State:</label>
+          <select name="state[]">
+            <option value="California">California</option>
+            <option value="New Jersey">New Jersey</option>
+            <option value="New York">New York</option>
+
+          </select>
+
+          <div class="clear"></div>
+
+          <label for="radiobuttons">Radio buttons:</label>
+          <input type="radio" name="radiobuttons[]" value="1" checked="true"/>
+          1
+          <input type="radio" name="radiobuttons[]" value="2"/>
+          2
+
+          <div class="clear"></div>
+
+          <label for="check">Single checkbox:</label>
+          <input type="checkbox" name="check" value="1"/>
+          1
+
+          <div class="clear"></div>
+
+
+          <label for="textarea">Text area:</label>
+          <textarea name="textarea"></textarea>
+
+          <div class="clear"></div>
+
+          <label for="cbarray">Multi checkbox:</label>
+          <input type="checkbox" name="cbarray[]" value="1"/>
+          1
+          <input type="checkbox" name="cbarray[]" value="2"/>
+          2
+        </form>
+      </div>
+    </div>
+    <script>
+      // Instantiate the Dialog
+      var dialog1 = new YAHOO.widget.Dialog("l10n-dialog",
+                  { width : "32em", height: "32em",
+                    visible : false,
+                    draggable: true,
+                    buttons : [ { text:"Submit", handler:function() {this.submit()}, isDefault:true },
+                          { text:"Cancel", handler:function() {this.cancel()} } ]
+                  });
+      var resize = new YAHOO.util.Resize("l10n-dialog", {
+            handles: ['br'],
+            autoRatio: false,
+            status: false
+      });
+      resize.on('resize', function(args) {
+          var panelHeight = args.height;
+          this.cfg.setProperty("height", panelHeight + "px");
+      }, dialog1, true);
+
+      dialog1.render();
+
+    </script>
+    <a href='#' onclick="dialog1.center();dialog1.show()">show dialog</a>
+  </j:if>
+</j:jelly>
