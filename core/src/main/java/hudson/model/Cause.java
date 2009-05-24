@@ -88,7 +88,7 @@ public abstract class Cause {
 		
 		@Override
 		public String getShortDescription() {
-			return Messages.Cause_UpstreamCause_ShortDescription(upstreamProject, upstreamBuild);
+			return Messages.Cause_UpstreamCause_ShortDescription(upstreamProject, Integer.toString(upstreamBuild));
 		}
 		
 		private Object readResolve() {
