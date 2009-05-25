@@ -422,14 +422,6 @@ public class Functions {
      *      with auto refresh. On those pages, disable auto-refresh.
      */
     public static void configureAutoRefresh(HttpServletRequest request, HttpServletResponse response, boolean noAutoRefresh) {
-        // TEST
-        if(request.getParameter("l10n")!=null)
-            request.setAttribute(InternationalizedStringExpressionListener.class.getName(),new InternationalizedStringExpressionListener() {
-                public void onUsed(InternationalizedStringExpression exp, Object[] args) {
-                    System.out.println(exp.key);
-                }
-            });
-
         if(noAutoRefresh)
             return;
 
