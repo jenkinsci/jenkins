@@ -156,8 +156,11 @@ import java.io.InputStream;
 import java.io.Serializable;
 import java.io.PrintStream;
 import java.io.OutputStream;
+import java.io.UnsupportedEncodingException;
 import java.net.URL;
 import java.security.SecureRandom;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.text.NumberFormat;
 import java.text.ParseException;
 import java.text.Collator;
@@ -197,6 +200,8 @@ import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import java.nio.charset.Charset;
 import javax.servlet.RequestDispatcher;
+import javax.crypto.spec.SecretKeySpec;
+import javax.crypto.SecretKey;
 
 import groovy.lang.GroovyShell;
 
@@ -683,6 +688,14 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
      */
     public String getSecretKey() {
         return secretKey;
+    }
+
+    /**
+     * Gets {@linkplain #getSecretKey() the secret key} as a key for AES-128.
+     * @since 1.308
+     */
+    public SecretKey getSecretKeyAsAES128() {
+        return Util.toAes128Key(secretKey);
     }
 
     /**
