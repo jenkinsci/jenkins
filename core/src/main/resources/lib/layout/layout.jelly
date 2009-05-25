@@ -80,7 +80,7 @@ THE SOFTWARE.
     <link rel="shortcut icon" href="${resURL}/favicon.ico" type="image/vnd.microsoft.icon" />
 
     <!-- are we running as an unit test? -->
-    <script>var isRunAsTest=${h.isUnitTest};</script>
+    <script>var isRunAsTest=${h.isUnitTest}; var rootURL="${rootURL}";</script>
 
     <script src="${resURL}/scripts/prototype.js" type="text/javascript"></script>
     <script src="${resURL}/scripts/behavior.js" type="text/javascript"></script>
