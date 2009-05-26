@@ -331,7 +331,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.kohsuke.stapler</groupId>
       <artifactId>stapler-jelly</artifactId>
-      <version>1.105</version>
+      <version>1.106</version>
       <exclusions>
         <exclusion>
           <groupId>dom4j</groupId>
