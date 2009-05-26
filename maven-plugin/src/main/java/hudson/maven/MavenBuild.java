@@ -501,10 +501,17 @@ public class MavenBuild extends AbstractBuild<MavenModule,MavenBuild> {
             } finally {
                 if(normalExit)  process.recycle();
                 else            process.discard();
-                for (int i = buildEnvironments.size() - 1; i >= 0; i--) {
-                    buildEnvironments.get(i).tearDown(MavenBuild.this, listener);
-                    buildEnvironments = null;
+
+                // tear down in reverse order
+                boolean failed=false;
+                for( int i=buildEnvironments.size()-1; i>=0; i-- ) {
+                    if (!buildEnvironments.get(i).tearDown(MavenBuild.this,listener)) {
+                        failed=true;
+                    }                    
                 }
+                buildEnvironments = null;
+                // WARNING The return in the finally clause will trump any return before
+                if (failed) return Result.FAILURE;
             }
         }
 
