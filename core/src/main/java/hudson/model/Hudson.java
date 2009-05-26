@@ -1725,7 +1725,7 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
      */
     public TopLevelItem getItem(String name) {
     	TopLevelItem item = items.get(name);
-        if (!item.hasPermission(Item.READ))
+        if (item==null || !item.hasPermission(Item.READ))
             return null;
         return item;
     }
