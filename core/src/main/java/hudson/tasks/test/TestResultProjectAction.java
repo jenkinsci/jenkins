@@ -71,7 +71,7 @@ public class TestResultProjectAction implements Action {
         return "test";
     }
 
-    protected AbstractTestResultAction getLastTestResultAction() {
+    public AbstractTestResultAction getLastTestResultAction() {
         final AbstractBuild<?,?> tb = project.getLastSuccessfulBuild();
 
         AbstractBuild<?,?> b=project.getLastBuild();

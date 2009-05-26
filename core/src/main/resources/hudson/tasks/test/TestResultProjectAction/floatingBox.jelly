@@ -23,7 +23,7 @@ THE SOFTWARE.
 -->
 
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt" xmlns:local="local">
-  <j:set var="tr" value="${it.lastSuccessfulBuild.testResultAction}" />
+  <j:set var="tr" value="${action.lastTestResultAction}" />
   <j:if test="${tr.previousResult!=null}">
     <!-- at least two data points are required for a trend report -->
     <div align="right">
