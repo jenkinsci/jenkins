@@ -63,7 +63,7 @@ THE SOFTWARE.
                     </j:if>
                   </div>
                 </td>
-                <td class="center pane" style="white-space:no-wrap">
+                <td class="center pane" style="white-space:nowrap">
                   ${p.version}
                 </td>
               </tr>
@@ -92,8 +92,13 @@ THE SOFTWARE.
           </div>
         </div>
       </j:if>
-      <div class="error" id="needRestart" style="display:none; margin: 1em; height: 1em">
-        ${%Changes will take effect when you restart Hudson}
+      <div class="warning" id="needRestart" style="display:none; margin: 1em; height: 1em">
+        <form method="post" action="${rootURL}/restart">
+          ${%Changes will take effect when you restart Hudson}
+          <j:if test="${app.lifecycle.canRestart()}">
+            <s:submit value="${%Restart Now}" />
+          </j:if>
+        </form>
       </div>
 
 
