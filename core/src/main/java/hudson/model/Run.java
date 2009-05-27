@@ -428,7 +428,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
 
         String truncDesc = description;
         
-        if (lastTruncatablePoint != -1) {
+        if (displayChars >= maxDescrLength) {
             truncDesc = truncDesc.substring(0, lastTruncatablePoint) + ending;
         }
         
