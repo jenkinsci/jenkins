@@ -37,6 +37,8 @@ import org.apache.commons.io.IOUtils;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Enumeration;
@@ -206,13 +208,23 @@ public class MavenUtil {
                     String s = url.toExternalForm();
                     if(s.contains("maven-plugin-tools-api"))
                         return true;
-                    if(s.endsWith("plexus/components.xml")) {
+                    // because RemoteClassLoader mangles the path, we can't check for plexus/components.xml,
+                    // which would have otherwise made the test cheaper.
+                    if(s.endsWith("components.xml")) {
+                        BufferedReader r=null;
                         try {
                             // is this designated for interception purpose? If so, don't load them in the MavenEmbedder
-                            IOUtils.closeQuietly(new URL(s + ".interception").openStream());
-                            return true;
+                            // earlier I tried to use a marker file in the same directory, but that won't work
+                            r = new BufferedReader(new InputStreamReader(url.openStream()));
+                            for (int i=0; i<2; i++) {
+                                String l = r.readLine();
+                                if(l!=null && l.contains("MAVEN-INTERCEPTION-TO-BE-MASKED"))
+                                    return true;
+                            }
                         } catch (IOException _) {
-                            // no such resource exists
+                            // let whoever requesting this resource re-discover an error and report it
+                        } finally {
+                            IOUtils.closeQuietly(r);
                         }
                     }
                     return false;
