@@ -98,7 +98,7 @@ THE SOFTWARE.
     </div>
 
     <div>
-      <input type="button" value="${attrs.addCaption?:'Add'}" class="hetero-list-add" />
+      <input type="button" value="${attrs.addCaption?:'%Add'}" class="hetero-list-add" />
     </div>
   </div>
 </j:jelly>

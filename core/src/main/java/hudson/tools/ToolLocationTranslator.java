@@ -47,12 +47,12 @@ import java.io.IOException;
  *
  * @author Kohsuke Kawaguchi
  * @since 1.299
- * @see ToolInstallation#translateFor(Node)
+ * @see ToolInstallation#translateFor(Node, TaskListener)
  */
 public abstract class ToolLocationTranslator implements ExtensionPoint {
     /**
-     * Called for each {@link ToolInstallation#translateFor(Node)} invocations
-     * (which normally means it's invoked for each {@link NodeSpecific#forNode(Node)})
+     * Called for each {@link ToolInstallation#translateFor(Node, TaskListener)} invocations
+     * (which normally means it's invoked for each {@link NodeSpecific#forNode(Node, TaskListener)})
      * to translate the tool location into the node specific location.
      *
      * <p>

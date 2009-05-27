@@ -29,7 +29,7 @@ THE SOFTWARE.
   <p:config-disableBuild/>
 
   <j:set var="jdks" value="${app.JDKs}" />
-  <j:if test="${jdks.size() &gt; 1}">
+  <j:if test="${jdks.size() gt 1}">
     <!-- if there's only one JDK configured, always use that. -->
     <f:entry title="JDK"
              description="${%JDK to be used for this project}">
@@ -43,13 +43,13 @@ THE SOFTWARE.
   </j:if>
 
   <!-- master/slave -->
-  <j:if test="${!empty(app.slaves) || (it.assignedLabel!=null and it.assignedLabel!=app.selfLabel)}">
+  <j:if test="${app.labels.size() gt 1 || (it.assignedLabel!=null and it.assignedLabel!=app.selfLabel)}">
     <f:optionalBlock name="hasSlaveAffinity" title="${%Tie this project to a node}" checked="${it.assignedLabel!=null}"
         help="/help/project-config/slave.html">
       <f:entry title="${%Node}">
         <select class="setting-input" name="slave">
           <j:forEach var="s" items="${app.labels}">
-            <j:if test="${s.totalConfiguredExecutors &gt; 0}">
+            <j:if test="${s.isAssignable()}">
               <f:option selected="${s==it.assignedLabel}" value="${s.name}"
                 >${s.name} <j:if test="${!empty(s.description)}">(${s.description})</j:if></f:option>
             </j:if>

@@ -37,6 +37,7 @@ import hudson.StructuredForm;
 import hudson.TcpSlaveAgentListener;
 import hudson.Util;
 import static hudson.Util.fixEmpty;
+import static hudson.Util.fixNull;
 import hudson.WebAppMain;
 import hudson.XmlFile;
 import hudson.UDPBroadcastThread;
@@ -45,6 +46,8 @@ import hudson.ExtensionPoint;
 import hudson.DescriptorExtensionList;
 import hudson.ExtensionListView;
 import hudson.Extension;
+import hudson.tools.ToolInstallation;
+import hudson.tools.ToolDescriptor;
 import hudson.cli.CliEntryPoint;
 import hudson.cli.CLICommand;
 import hudson.cli.HelpCommand;
@@ -139,7 +142,6 @@ import org.xml.sax.InputSource;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.http.Cookie;
-import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import static javax.servlet.http.HttpServletResponse.SC_BAD_REQUEST;
 import static javax.servlet.http.HttpServletResponse.SC_NOT_FOUND;
@@ -154,8 +156,11 @@ import java.io.InputStream;
 import java.io.Serializable;
 import java.io.PrintStream;
 import java.io.OutputStream;
+import java.io.UnsupportedEncodingException;
 import java.net.URL;
 import java.security.SecureRandom;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.text.NumberFormat;
 import java.text.ParseException;
 import java.text.Collator;
@@ -195,6 +200,8 @@ import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import java.nio.charset.Charset;
 import javax.servlet.RequestDispatcher;
+import javax.crypto.spec.SecretKeySpec;
+import javax.crypto.SecretKey;
 
 import groovy.lang.GroovyShell;
 
@@ -581,7 +588,7 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
             File initScript = new File(getRootDir(),"init.groovy");
             if(initScript.exists()) {
                 LOGGER.info("Executing "+initScript);
-                GroovyShell shell = new GroovyShell();
+                GroovyShell shell = new GroovyShell(pluginManager.uberClassLoader);
                 try {
                     shell.evaluate(initScript);
                 } catch (Throwable t) {
@@ -681,6 +688,14 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
      */
     public String getSecretKey() {
         return secretKey;
+    }
+
+    /**
+     * Gets {@linkplain #getSecretKey() the secret key} as a key for AES-128.
+     * @since 1.308
+     */
+    public SecretKey getSecretKeyAsAES128() {
+        return Util.toAes128Key(secretKey);
     }
 
     /**
@@ -1072,13 +1087,8 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
             ItemGroup<?> parent = q.pop();
             for (Item i : parent.getItems()) {
                 if(type.isInstance(i)) {
-                    if (i instanceof AccessControlled) {
-                    	if (((AccessControlled)i).hasPermission(Item.READ))
-                    		r.add(type.cast(i));
-                    }
-                    else {
-                    	r.add(type.cast(i));
-                    }
+                    if (i.hasPermission(Item.READ))
+                        r.add(type.cast(i));
                 }
                 if(i instanceof ItemGroup)
                     q.push((ItemGroup)i);
@@ -1215,6 +1225,7 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
      * Gets the label that exists on this system by the name.
      *
      * @return null if no such label exists.
+     * @see Label#parse(String)
      */
     public Label getLabel(String name) {
         if(name==null)  return null;
@@ -1288,7 +1299,7 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
      * Gets the slave node of the give name, hooked under this Hudson.
      */
     public Node getNode(String name) {
-        for (Node s : getSlaves()) {
+        for (Node s : getNodes()) {
             if(s.getNodeName().equals(name))
                 return s;
         }
@@ -1411,7 +1422,7 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
         }
 
         // to route /descriptor/FQCN/xxx to getDescriptor(FQCN).xxx
-        public Object getDynamic(String token, StaplerRequest req, StaplerResponse rsp) {
+        public Object getDynamic(String token) {
             return Hudson.getInstance().getDescriptor(token);
         }
     }
@@ -1714,11 +1725,8 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
      */
     public TopLevelItem getItem(String name) {
     	TopLevelItem item = items.get(name);
-        if (item instanceof AccessControlled) {
-        	if (!((AccessControlled) item).hasPermission(Item.READ)) {
-        		return null;
-        	}
-        }
+        if (item==null || !item.hasPermission(Item.READ))
+            return null;
         return item;
     }
 
@@ -1869,17 +1877,13 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
     }
 
     public String getLabelString() {
-        return Util.fixNull(label).trim();
+        return fixNull(label).trim();
     }
 
     public Set<Label> getAssignedLabels() {
         Set<Label> lset = labelSet; // labelSet may be set by another thread while we are in this method, so capture it.
         if (lset == null) {
-            Set<Label> r = new HashSet<Label>();
-            String ls = getLabelString();
-            if(ls.length()>0)
-                for( String l : ls.split(" +"))
-                    r.add(Hudson.getInstance().getLabel(l));
+            Set<Label> r = Label.parse(getLabelString());
             r.addAll(getDynamicLabels());
             r.add(getSelfLabel());
             this.labelSet = lset = Collections.unmodifiableSet(r);
@@ -1998,10 +2002,10 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
         }
         rebuildDependencyGraph();
 
-        // recompute label objects
-        if (null != slaves) { // only if we have slaves
+        {// recompute label objects
             for (Node slave : slaves)
                 slave.getAssignedLabels();
+            getAssignedLabels();
         }
 
         // initialize views by inserting the default view if necessary
@@ -2097,7 +2101,7 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
         theInstance = null;
     }
 
-    public Object getDynamic(String token, StaplerRequest req, StaplerResponse rsp) {
+    public Object getDynamic(String token) {
         for (Action a : getActions())
             if(a.getUrlName().equals(token) || a.getUrlName().equals('/'+token))
                 return a;
@@ -2176,7 +2180,7 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
             else
                 mode = Mode.NORMAL;
 
-            label = Util.fixNull(req.getParameter("_.labelString"));
+            label = fixNull(req.getParameter("_.labelString"));
             labelSet=null;
 
             quietPeriod = Integer.parseInt(req.getParameter("quiet_period"));
@@ -2207,6 +2211,9 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
                 result &= configureDescriptor(req,json,d);
 
             for( PageDecorator d : PageDecorator.all() )
+                result &= configureDescriptor(req,json,d);
+
+            for( ToolDescriptor d : ToolInstallation.all() )
                 result &= configureDescriptor(req,json,d);
 
             for( JSONObject o : StructuredForm.toList(json,"plugin"))
@@ -2262,7 +2269,7 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
             else
                 mode = Mode.NORMAL;
 
-            setSlaves(req.bindJSONToList(Slave.class,json.get("slaves")));
+            setNodes(req.bindJSONToList(Slave.class,json.get("slaves")));
         } finally {
             bc.commit();
         }
@@ -2472,7 +2479,7 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
     }
 
     private static String toPrintableName(String name) {
-        StringBuffer printableName = new StringBuffer();
+        StringBuilder printableName = new StringBuilder();
         for( int i=0; i<name.length(); i++ ) {
             char ch = name.charAt(i);
             if(Character.isISOControl(ch))

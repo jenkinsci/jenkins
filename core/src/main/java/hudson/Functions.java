@@ -77,6 +77,8 @@ import org.kohsuke.stapler.Stapler;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 import org.kohsuke.stapler.jelly.CustomTagLibrary.StaplerDynamicTag;
+import org.kohsuke.stapler.jelly.InternationalizedStringExpressionListener;
+import org.kohsuke.stapler.jelly.InternationalizedStringExpression;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.Cookie;

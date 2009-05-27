@@ -83,7 +83,7 @@ public class HudsonTest extends HudsonTestCase {
 
     private void assertAnt(AntInstallation ant, String name, String home) {
         assertEquals(ant.getName(),name);
-        assertEquals(ant.getAntHome(),home);
+        assertEquals(ant.getHome(),home);
     }
 
     private void assertJDK(JDK jdk, String name, String home) {

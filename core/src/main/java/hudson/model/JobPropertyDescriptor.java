@@ -62,6 +62,10 @@ public abstract class JobPropertyDescriptor extends Descriptor<JobProperty<?>> {
      *      null to avoid setting an instance of {@link JobProperty} to the target project.
      */
     public JobProperty<?> newInstance(StaplerRequest req, JSONObject formData) throws FormException {
+        // JobPropertyDescriptors are bit different in that we allow them even without any user-visible configuration parameter,
+        // so replace the lack of form data by an empty one. 
+        if(formData.isNullObject()) formData=new JSONObject();
+
         return super.newInstance(req, formData);
     }
 

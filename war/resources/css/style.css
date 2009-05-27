@@ -853,3 +853,23 @@ table.progress-bar.red tr.unknown {
 table.progress-bar.red td.progress-bar-done {
   background-color: #cc0000;
 }
+
+/* ========================= YUI dialog ========================= */
+
+.dialog .hd {
+    font-size: 12px !important;
+}
+/* discovered this margin fix by a trial and error. This can very well be a totally wrong fix, or perhaps updating
+ to the latest YUI will fix this? */
+.dialog .hd {
+    margin: 0 !important;
+}
+
+.dialog .bd {
+    margin: 0 !important;
+}
+
+.dialog .ft {
+    margin: 0 !important;
+}
+

@@ -24,6 +24,7 @@
 package hudson.model;
 
 import hudson.Util;
+import static hudson.Util.fixNull;
 import hudson.slaves.NodeProvisioner;
 import hudson.slaves.Cloud;
 import org.kohsuke.stapler.export.Exported;
@@ -34,6 +35,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.Collection;
 
 import com.thoughtworks.xstream.converters.Converter;
 import com.thoughtworks.xstream.converters.MarshallingContext;
@@ -134,17 +136,34 @@ public class Label implements Comparable<Label>, ModelObject {
     }
     
     /**
+     * Can jobs be assigned to this label?
+     * <p>
+     * The answer is yes if there is a reasonable basis to believe that Hudson can have
+     * an executor under this label, given the current configuration. This includes
+     * situations such as (1) there are offline slaves that have this label (2) clouds exist
+     * that can provision slaves that have this label.
+     */
+    public boolean isAssignable() {
+        for (Node n : getNodes())
+            if(n.getNumExecutors()>0)
+                return true;
+        return !getClouds().isEmpty();
+    }
+
+    /**
      * Number of total {@link Executor}s that belong to this label.
      * <p>
-     * This includes executors that belong to offline nodes.
+     * This includes executors that belong to offline nodes, so the result
+     * can be thought of as a potential capacity, whereas {@link #getTotalExecutors()}
+     * is the currently functioning total number of executors.
+     * <p>
+     * This method doesn't take the dynamically allocatable nodes (via {@link Cloud})
+     * into account. If you just want to test if there's some executors, use {@link #isAssignable()}.
      */
     public int getTotalConfiguredExecutors() {
         int r=0;
-        for (Node n : getNodes()) {
-            Computer c = n.toComputer();
-            if(c!=null)
-                r += c.countExecutors();
-        }
+        for (Node n : getNodes())
+            r += n.getNumExecutors();
         return r;
     }
 
@@ -210,22 +229,31 @@ public class Label implements Comparable<Label>, ModelObject {
     @Exported
     public String getDescription() {
         Set<Node> nodes = getNodes();
-        if(nodes.isEmpty())
-            return "invalid label";
-        if(nodes.size()==1) {
-            return nodes.iterator().next().getNodeDescription();
+        if(nodes.isEmpty()) {
+            Set<Cloud> clouds = getClouds();
+            if(clouds.isEmpty())
+                return Messages.Label_InvalidLabel();
+
+            return Messages.Label_ProvisionedFrom(toString(clouds));
         }
 
-        StringBuilder buf = new StringBuilder("group of ");
+        if(nodes.size()==1)
+            return nodes.iterator().next().getNodeDescription();
+
+        return Messages.Label_GroupOf(toString(nodes));
+    }
+
+    private String toString(Collection<? extends ModelObject> model) {
         boolean first=true;
-        for (Node n : nodes) {
+        StringBuilder buf = new StringBuilder();
+        for (ModelObject c : model) {
             if(buf.length()>80) {
                 buf.append(",...");
                 break;
             }
             if(!first)  buf.append(',');
             else        first=false;
-            buf.append(n.getNodeName());
+            buf.append(c.getDisplayName());
         }
         return buf.toString();
     }
@@ -304,5 +332,24 @@ public class Label implements Comparable<Label>, ModelObject {
         public Object unmarshal(HierarchicalStreamReader reader, final UnmarshallingContext context) {
             return Hudson.getInstance().getLabel(reader.getValue());
         }
+    }
+
+    /**
+     * Convers a whitespace-separate list of tokens into a set of {@link Label}s.
+     *
+     * @param labels
+     *      Strings like "abc def ghi". Can be empty or null.
+     * @return
+     *      Can be empty but never null. A new writable set is always returned,
+     *      so that the caller can add more to the set.
+     * @since 1.308
+     */
+    public static Set<Label> parse(String labels) {
+        Set<Label> r = new HashSet<Label>();
+        labels = fixNull(labels);
+        if(labels.length()>0)
+            for( String l : labels.split(" +"))
+                r.add(Hudson.getInstance().getLabel(l));
+        return r;
     }
 }

@@ -331,7 +331,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.kohsuke.stapler</groupId>
       <artifactId>stapler-jelly</artifactId>
-      <version>1.104</version>
+      <version>1.106</version>
       <exclusions>
         <exclusion>
           <groupId>dom4j</groupId>
@@ -685,7 +685,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.jvnet.libzfs</groupId>
       <artifactId>libzfs</artifactId>
-      <version>0.4</version>
+      <version>0.5</version>
     </dependency>
     <dependency>
       <groupId>com.sun.solaris</groupId>
@@ -706,6 +706,12 @@ THE SOFTWARE.
       <groupId>org.jvnet.hudson</groupId>
       <artifactId>htmlunit</artifactId>
       <version>2.2-hudson-9</version>
+      <exclusions>
+        <exclusion>
+          <groupId>xalan</groupId>
+          <artifactId>xalan</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
 
     <!-- offline profiler API to put in the classpath if we need it -->

@@ -16,6 +16,8 @@ import org.apache.commons.lang.time.FastDateFormat;
 import org.kohsuke.stapler.Stapler;
 import org.jvnet.animal_sniffer.IgnoreJRERequirement;
 
+import javax.crypto.SecretKey;
+import javax.crypto.spec.SecretKeySpec;
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -30,6 +32,7 @@ import java.io.Writer;
 import java.io.PrintStream;
 import java.io.InputStreamReader;
 import java.io.FileInputStream;
+import java.io.UnsupportedEncodingException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.net.URI;
@@ -454,6 +457,26 @@ public class Util {
         try {
             return getDigestOf(new ByteArrayInputStream(text.getBytes("UTF-8")));
         } catch (IOException e) {
+            throw new Error(e);
+        }
+    }
+
+    /**
+     * Covnerts a string into 128-bit AES key.
+     * @since 1.308
+     */
+    public static SecretKey toAes128Key(String s) {
+        try {
+            // turn secretKey into 256 bit hash
+            MessageDigest digest = MessageDigest.getInstance("SHA-256");
+            digest.reset();
+            digest.update(s.getBytes("UTF-8"));
+
+            // Due to the stupid US export restriction JDK only ships 128bit version.
+            return new SecretKeySpec(digest.digest(),0,128/8, "AES");
+        } catch (NoSuchAlgorithmException e) {
+            throw new Error(e);
+        } catch (UnsupportedEncodingException e) {
             throw new Error(e);
         }
     }

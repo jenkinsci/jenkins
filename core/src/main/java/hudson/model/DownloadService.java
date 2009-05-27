@@ -5,6 +5,7 @@ import hudson.ExtensionList;
 import hudson.ExtensionPoint;
 import hudson.util.QuotedStringTokenizer;
 import hudson.util.TextFile;
+import hudson.util.TimeUnit2;
 import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.Stapler;
 
@@ -39,7 +40,7 @@ public class DownloadService extends PageDecorator {
             long now = System.currentTimeMillis();
             for (Downloadable d : Downloadable.all()) {
                 if(d.getDue()<now) {
-                    buf.append("<script>downloadService.download(")
+                     buf.append("<script>downloadService.download(")
                        .append(QuotedStringTokenizer.quote(d.getId()))
                        .append(',')
                        .append(QuotedStringTokenizer.quote(d.getUrl()))
@@ -75,7 +76,7 @@ public class DownloadService extends PageDecorator {
      *
      * @since 1.305
      */
-    public static abstract class Downloadable implements ExtensionPoint {
+    public static class Downloadable implements ExtensionPoint {
         private final String id;
         private final String url;
         private final long interval;
@@ -91,10 +92,25 @@ public class DownloadService extends PageDecorator {
          *      For security and privacy reasons, we don't allow the retrieval
          *      from random locations.
          */
-        protected Downloadable(String id, String url, long interval) {
+        public Downloadable(String id, String url, long interval) {
             this.id = id;
             this.url = url;
             this.interval = interval;
+        }
+
+        /**
+         * Uses the class name as an ID.
+         */
+        public Downloadable(Class id) {
+            this(id.getName().replace('$','.'));
+        }
+
+        public Downloadable(String id) {
+            this(id,id+".json");
+        }
+
+        public Downloadable(String id, String url) {
+            this(id,url,TimeUnit2.DAYS.toMillis(1));
         }
 
         public String getId() {
@@ -105,7 +121,7 @@ public class DownloadService extends PageDecorator {
          * URL to download.
          */
         public String getUrl() {
-            return Hudson.getInstance().getUpdateCenter().getUrl()+url;
+            return Hudson.getInstance().getUpdateCenter().getUrl()+"updates/"+url;
         }
 
         /**
@@ -165,6 +181,17 @@ public class DownloadService extends PageDecorator {
          */
         public static ExtensionList<Downloadable> all() {
             return Hudson.getInstance().getExtensionList(Downloadable.class);
+        }
+
+        /**
+         * Returns the {@link Downloadable} that has the given ID.
+         */
+        public static Downloadable get(String id) {
+            for (Downloadable d : all()) {
+                if(d.id.equals(id))
+                    return d;
+            }
+            return null;
         }
 
         private static final Logger LOGGER = Logger.getLogger(Downloadable.class.getName());

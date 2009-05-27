@@ -235,13 +235,13 @@ final class MavenProcessFactory implements ProcessCache.Factory {
             listener.error("Maven version is not configured for this project. Can't determine which Maven to run");
             throw new RunnerAbortedException();
         }
-        if(mvn.getMavenHome()==null) {
+        if(mvn.getHome()==null) {
             listener.error("Maven '%s' doesn't have its home set",mvn.getName());
             throw new RunnerAbortedException();
         }
 
         // find classworlds.jar
-        String classWorldsJar = launcher.getChannel().call(new GetClassWorldsJar(mvn.getMavenHome(),listener));
+        String classWorldsJar = launcher.getChannel().call(new GetClassWorldsJar(mvn.getHome(),listener));
 
         boolean isMaster = getCurrentNode()== Hudson.getInstance();
         FilePath slaveRoot=null;
@@ -270,7 +270,7 @@ final class MavenProcessFactory implements ProcessCache.Factory {
         args.add(Main.class.getName());
 
         // M2_HOME
-        args.add(mvn.getMavenHome());
+        args.add(mvn.getHome());
 
         // remoting.jar
         String remotingJar = launcher.getChannel().call(new GetRemotingJar());

@@ -30,14 +30,13 @@ import com.thoughtworks.xstream.io.HierarchicalStreamReader;
 import com.thoughtworks.xstream.io.HierarchicalStreamWriter;
 import com.trilead.ssh2.crypto.Base64;
 import hudson.model.Hudson;
+import hudson.Util;
 
 import javax.crypto.SecretKey;
 import javax.crypto.Cipher;
-import javax.crypto.spec.SecretKeySpec;
 import java.io.UnsupportedEncodingException;
 import java.io.IOException;
 import java.security.GeneralSecurityException;
-import java.security.MessageDigest;
 
 /**
  * Glorified {@link String} that uses encryption in the persisted form, to avoid accidental exposure of a secret.
@@ -80,15 +79,8 @@ public final class Secret {
      */
     private static SecretKey getKey() throws UnsupportedEncodingException, GeneralSecurityException {
         String secret = SECRET;
-        if(secret==null)    secret = Hudson.getInstance().getSecretKey();
-
-        // turn secretKey into 256 bit hash
-        MessageDigest digest = MessageDigest.getInstance("SHA-256");
-        digest.reset();
-        digest.update(secret.getBytes("UTF-8"));
-
-        // Due to the stupid US export restriction JDK only ships 128bit version.
-        return new SecretKeySpec(digest.digest(),0,128/8, "AES");
+        if(secret==null)    return Hudson.getInstance().getSecretKeyAsAES128();
+        return Util.toAes128Key(secret);
     }
 
     /**

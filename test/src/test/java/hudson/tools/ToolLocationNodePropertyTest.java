@@ -34,7 +34,6 @@ import hudson.tasks.Ant.AntInstallation;
 import hudson.tasks.Maven.MavenInstallation;
 import hudson.EnvVars;
 import hudson.maven.MavenModuleSet;
-import hudson.maven.MavenModuleSetBuild;
 
 import java.io.IOException;
 
@@ -60,9 +59,9 @@ public class ToolLocationNodePropertyTest extends HudsonTestCase {
     public void testFormRoundTrip() throws Exception {
 
         MavenInstallation.DescriptorImpl mavenDescriptor = hudson.getDescriptorByType(MavenInstallation.DescriptorImpl.class);
-        mavenDescriptor.setInstallations(new MavenInstallation("maven", "XXX"));
+        mavenDescriptor.setInstallations(new MavenInstallation("maven", "XXX", NO_PROPERTIES));
         AntInstallation.DescriptorImpl antDescriptor = hudson.getDescriptorByType(AntInstallation.DescriptorImpl.class);
-        antDescriptor.setInstallations(new AntInstallation("ant", "XXX"));
+        antDescriptor.setInstallations(new AntInstallation("ant", "XXX", NO_PROPERTIES));
         JDK.DescriptorImpl jdkDescriptor = hudson.getDescriptorByType(JDK.DescriptorImpl.class);
         jdkDescriptor.setInstallations(new JDK("jdk", "XXX"));
 
@@ -101,7 +100,7 @@ public class ToolLocationNodePropertyTest extends HudsonTestCase {
     public void testMaven() throws Exception {
         MavenInstallation maven = configureDefaultMaven();
         String mavenPath = maven.getHome();
-        Hudson.getInstance().getDescriptorByType(Maven.DescriptorImpl.class).setInstallations(new MavenInstallation("maven", "THIS IS WRONG"));
+        Hudson.getInstance().getDescriptorByType(Maven.DescriptorImpl.class).setInstallations(new MavenInstallation("maven", "THIS IS WRONG", NO_PROPERTIES));
 
         project.getBuildersList().add(new Maven("--version", "maven"));
         configureDumpEnvBuilder();
@@ -148,7 +147,7 @@ public class ToolLocationNodePropertyTest extends HudsonTestCase {
     public void testNativeMaven() throws Exception {
         MavenInstallation maven = configureDefaultMaven();
         String mavenPath = maven.getHome();
-        Hudson.getInstance().getDescriptorByType(Maven.DescriptorImpl.class).setInstallations(new MavenInstallation("maven", "THIS IS WRONG"));
+        Hudson.getInstance().getDescriptorByType(Maven.DescriptorImpl.class).setInstallations(new MavenInstallation("maven", "THIS IS WRONG", NO_PROPERTIES));
 
         MavenModuleSet project = createMavenProject();
         project.setScm(new ExtractResourceSCM(getClass().getResource(
@@ -186,6 +185,4 @@ public class ToolLocationNodePropertyTest extends HudsonTestCase {
         project = createFreeStyleProject();
         project.setAssignedLabel(slave.getSelfLabel());
     }
-
-
 }

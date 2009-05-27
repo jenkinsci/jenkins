@@ -22,10 +22,13 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 -->
 
-<!--
-  Delete button for the <repeatable> tag.
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
+  <st:documentation>
+    Delete button for the &lt;repeatable> tag.
 
-  As of 1.91, left for backward compatibility.
--->
-<input type="button" value="${attrs.value ?: '%Delete'}"
-       class="repeatable-delete" />
+    <st:attribute name="value">
+      Caption of the button. Defaults to 'Delete'.
+    </st:attribute>
+  </st:documentation>
+  <input type="button" value="${attrs.value ?: '%Delete'}" class="repeatable-delete" />
+</j:jelly>
