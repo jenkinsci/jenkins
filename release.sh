@@ -45,7 +45,6 @@ case $id in
 	exit 1
 	;;
 esac
-#./publish-javadoc.sh
 javanettasks uploadFile hudson /releases/$id                "`date +"%Y/%m/%d"` release" Stable target/checkout/war/target/hudson.war | tee target/war-upload.log
 warUrl=$(cat target/war-upload.log | grep "^Posted" | sed -e "s/Posted //g")
 javanettasks uploadFile hudson /releases/source-bundles/$id "`date +"%Y/%m/%d"` release" Stable target/checkout/target/hudson-$id-src.zip
