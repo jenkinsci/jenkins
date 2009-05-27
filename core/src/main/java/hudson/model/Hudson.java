@@ -1346,6 +1346,7 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
      * Adds one more {@link Node} to Hudson.
      */
     public synchronized void addNode(Node n) throws IOException {
+        if(n==null)     throw new IllegalArgumentException();
         ArrayList<Node> nl = new ArrayList<Node>(this.slaves);
         if(!nl.contains(n)) // defensive check
             nl.add(n);
