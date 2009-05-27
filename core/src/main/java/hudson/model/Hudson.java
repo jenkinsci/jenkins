@@ -1347,7 +1347,8 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
      */
     public synchronized void addNode(Node n) throws IOException {
         ArrayList<Node> nl = new ArrayList<Node>(this.slaves);
-        nl.add(n);
+        if(!nl.contains(n)) // defensive check
+            nl.add(n);
         setNodes(nl);
     }
 
