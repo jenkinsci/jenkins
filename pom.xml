@@ -89,6 +89,10 @@ THE SOFTWARE.
           <artifactId>maven-antrun-extended-plugin</artifactId>
           <version>1.39</version>
         </plugin>
+	<plugin>
+	  <artifactId>maven-javadoc-plugin</artifactId>
+	  <version>2.5</version>
+	</plugin>
       </plugins>
     </pluginManagement>
     
@@ -103,7 +107,7 @@ THE SOFTWARE.
             also run assembly during the release.
             http://www.nabble.com/Release-Plugin%3A-Include-assemblies-for-deploying-tf2642295s177.html#a7377938
            -->
-          <goals>-DskipTests install javadoc:javadoc animal-sniffer:check assembly:attached deploy</goals>
+          <goals>-DskipTests install javadoc:javadoc animal-sniffer:check assembly:attached deploy javadoc:aggregate</goals>
           <remoteTagging>true</remoteTagging><!-- work around http://jira.codehaus.org/browse/SCM-406 -->
         </configuration>
       </plugin>
