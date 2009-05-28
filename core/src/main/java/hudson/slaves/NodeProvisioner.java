@@ -31,8 +31,6 @@ import hudson.model.Label;
 import hudson.model.PeriodicWork;
 import static hudson.model.LoadStatistics.DECAY;
 import hudson.model.MultiStageTimeSeries.TimeScale;
-import hudson.triggers.SafeTimerTask;
-import hudson.triggers.Trigger;
 import hudson.Extension;
 
 import java.util.concurrent.Future;
@@ -43,6 +41,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.logging.Logger;
 import java.util.logging.Level;
+import java.io.IOException;
 
 /**
  * Uses the {@link LoadStatistics} and determines when we need to allocate
@@ -107,13 +106,15 @@ public class NodeProvisioner {
         for (Iterator<PlannedNode> itr = pendingLaunches.iterator(); itr.hasNext();) {
             PlannedNode f = itr.next();
             if(f.future.isDone()) {
-                LOGGER.info(f.displayName+" provisioning completed. We have now "+hudson.getComputers().length+" computer(s)");
                 try {
-                    f.future.get();
+                    hudson.addNode(f.future.get());
+                    LOGGER.info(f.displayName+" provisioning successfully completed. We have now "+hudson.getComputers().length+" computer(s)");
                 } catch (InterruptedException e) {
                     throw new AssertionError(e); // since we confirmed that the future is already done
                 } catch (ExecutionException e) {
-                    LOGGER.log(Level.WARNING, "Provisioned slave failed to launch",e.getCause());
+                    LOGGER.log(Level.WARNING, "Provisioned slave "+f.displayName+" failed to launch",e.getCause());
+                } catch (IOException e) {
+                    LOGGER.log(Level.WARNING, "Provisioned slave "+f.displayName+" failed to launch",e);
                 }
                 itr.remove();
             } else

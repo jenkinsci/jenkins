@@ -108,7 +108,10 @@ public abstract class Cloud extends AbstractModelObject implements ExtensionPoin
      *
      * @return
      *      {@link PlannedNode}s that represent asynchronous {@link Node}
-     *      launch operations. Can be empty but must not be null.
+     *      provisioning operations. Can be empty but must not be null.
+     *      {@link NodeProvisioner} will be responsible for adding the resulting {@link Node}
+     *      into Hudson via {@link Hudson#addNode(Node)}, so a {@link Cloud} implementation
+     *      just needs to create a new node object.
      */
     public abstract Collection<PlannedNode> provision(Label label, int excessWorkload);
 
