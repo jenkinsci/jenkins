@@ -29,14 +29,7 @@ import hudson.Extension;
 import hudson.FilePath;
 import hudson.Launcher;
 import hudson.Util;
-import hudson.model.AbstractBuild;
-import hudson.model.AbstractProject;
-import hudson.model.BuildListener;
-import hudson.model.Computer;
-import hudson.model.EnvironmentSpecific;
-import hudson.model.Hudson;
-import hudson.model.Node;
-import hudson.model.TaskListener;
+import hudson.model.*;
 import hudson.remoting.Callable;
 import hudson.slaves.NodeSpecific;
 import hudson.tools.ToolDescriptor;
@@ -428,8 +421,12 @@ public class Ant extends Builder {
                 if(!Hudson.getInstance().hasPermission(Hudson.ADMINISTER))
                     return FormValidation.ok();
 
-                if(!value.isDirectory())
+                if(value.exists() && !value.isDirectory())
                     return FormValidation.error(Messages.Ant_NotADirectory(value));
+
+                if(!value.exists())
+                    // no such directory yet. perhaps it's meant to be created?
+                    return FormValidation.ok();
 
                 File antJar = new File(value,"lib/ant.jar");
                 if(!antJar.exists())

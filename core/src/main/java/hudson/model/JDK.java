@@ -174,6 +174,10 @@ public final class JDK extends ToolInstallation implements NodeSpecific<JDK>, En
             if(value.exists() && !value.isDirectory())
                 return FormValidation.error(Messages.Hudson_NotADirectory(value));
 
+            if(!value.exists())
+                // no such directory yet. perhaps it's meant to be created?
+                return FormValidation.ok();
+
             File toolsJar = new File(value,"lib/tools.jar");
             File mac = new File(value,"lib/dt.jar");
             if(!toolsJar.exists() && !mac.exists())
