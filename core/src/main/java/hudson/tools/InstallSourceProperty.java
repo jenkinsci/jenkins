@@ -45,7 +45,9 @@ public class InstallSourceProperty extends ToolProperty<ToolInstallation> {
 
     @DataBoundConstructor
     public InstallSourceProperty(List<? extends ToolInstaller> installers) throws IOException {
-        this.installers.replaceBy(installers);
+        if (installers != null) {
+            this.installers.replaceBy(installers);
+        }
     }
 
     @Override
