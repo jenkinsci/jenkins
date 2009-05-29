@@ -578,8 +578,15 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
         for( String address : getChannel().call(new ListPossibleNames())) {
             try {
                 InetAddress ia = InetAddress.getByName(address);
-                if(ia.isReachable(500) && ia instanceof Inet4Address)
-                    return ia.getCanonicalHostName();
+                if(!(ia instanceof Inet4Address)) {
+                    LOGGER.fine(address+" is not an IPv4 address");
+                    continue;
+                }
+                if(!ia.isReachable(500)) {
+                    LOGGER.fine(address+" didn't respond to ping");
+                    continue;
+                }
+                return ia.getCanonicalHostName();
             } catch (IOException e) {
                 // if a given name fails to parse on this host, we get this error
                 LOGGER.log(Level.FINE, "Failed to parse "+address,e);
@@ -595,11 +602,21 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
             Enumeration<NetworkInterface> nis = NetworkInterface.getNetworkInterfaces();
             while (nis.hasMoreElements()) {
                 NetworkInterface ni =  nis.nextElement();
+                LOGGER.fine("Listing up IP addresses for "+ni.getDisplayName());
                 Enumeration<InetAddress> e = ni.getInetAddresses();
                 while (e.hasMoreElements()) {
                     InetAddress ia =  e.nextElement();
-                    if(ia.isLoopbackAddress())  continue;
-                    if(!(ia instanceof Inet4Address))   continue;
+                    if(ia.isLoopbackAddress()) {
+                        LOGGER.fine(ia+" is a loopback address");
+                        continue;
+                    }
+
+                    if(!(ia instanceof Inet4Address)) {
+                        LOGGER.fine(ia+" is not an IPv4 address");
+                        continue;
+                    }
+
+                    LOGGER.fine(ia+" is a viable candidate");
                     names.add(ia.getHostAddress());
                 }
             }
