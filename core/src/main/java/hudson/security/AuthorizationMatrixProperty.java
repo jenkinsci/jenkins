@@ -162,7 +162,7 @@ public class AuthorizationMatrixProperty extends JobProperty<Job<?, ?>> {
             return p!=Item.CREATE;
         }
 
-        public FormValidation doCheckName(@AncestorInPath AbstractProject project, @QueryParameter String value) throws IOException, ServletException {
+        public FormValidation doCheckName(@AncestorInPath Job project, @QueryParameter String value) throws IOException, ServletException {
             return GlobalMatrixAuthorizationStrategy.DESCRIPTOR.doCheckName(value, project, AbstractProject.CONFIGURE);
         }
     }
