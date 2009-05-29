@@ -171,12 +171,11 @@ public final class JDK extends ToolInstallation implements NodeSpecific<JDK>, En
             // this can be used to check the existence of a file on the server, so needs to be protected
             Hudson.getInstance().checkPermission(Hudson.ADMINISTER);
 
-            if(value.exists() && !value.isDirectory())
-                return FormValidation.error(Messages.Hudson_NotADirectory(value));
-
-            if(!value.exists())
-                // no such directory yet. perhaps it's meant to be created?
+            if(value.getPath().equals(""))
                 return FormValidation.ok();
+
+            if(!value.isDirectory())
+                return FormValidation.error(Messages.Hudson_NotADirectory(value));
 
             File toolsJar = new File(value,"lib/tools.jar");
             File mac = new File(value,"lib/dt.jar");

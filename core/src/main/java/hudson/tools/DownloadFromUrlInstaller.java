@@ -40,7 +40,7 @@ public abstract class DownloadFromUrlInstaller extends ToolInstaller {
      * This check needs to run fairly efficiently. The current implementation uses the souce URL of {@link Installable},
      * based on the assumption that released bits do not change its content.
      */
-    protected boolean isUpToDate(FilePath expectedLocation, Installable i, ToolInstallation tool, Node node, TaskListener log) throws IOException, InterruptedException {
+    protected boolean isUpToDate(FilePath expectedLocation, Installable i) throws IOException, InterruptedException {
         FilePath marker = expectedLocation.child(".installedFrom");
         return marker.exists() && marker.readToString().equals(i.url);
     }
@@ -58,7 +58,7 @@ public abstract class DownloadFromUrlInstaller extends ToolInstaller {
     }
 
     public FilePath performInstallation(ToolInstallation tool, Node node, TaskListener log) throws IOException, InterruptedException {
-        FilePath expected = node.createPath(tool.getHome());
+        FilePath expected = preferredLocation(tool, node);
 
         Installable inst = getInstallable();
         if(inst==null) {
@@ -66,7 +66,7 @@ public abstract class DownloadFromUrlInstaller extends ToolInstaller {
             return expected;
         }
 
-        if(isUpToDate(expected,inst,tool,node,log))
+        if(isUpToDate(expected,inst))
             return expected;
 
         if(expected.installIfNecessaryFrom(new URL(inst.url), log, "Unpacking " + inst.url + " to " + expected + " on " + node.getDisplayName())) {
@@ -76,6 +76,7 @@ public abstract class DownloadFromUrlInstaller extends ToolInstaller {
                 base.moveAllChildrenTo(expected);
             // leave a record for the next up-to-date check
             expected.child(".installedFrom").write(inst.url,"UTF-8");
+            expected.act(new ZipExtractionInstaller.ChmodRecAPlusX());
         }
 
         return expected;
@@ -116,6 +117,8 @@ public abstract class DownloadFromUrlInstaller extends ToolInstaller {
     }
 
     public static abstract class DescriptorImpl<T extends DownloadFromUrlInstaller> extends ToolInstallerDescriptor<T> {
+        
+        @SuppressWarnings("deprecation") // intentionally adding dynamic item here
         protected DescriptorImpl() {
             Downloadable.all().add(createDownloadable());
         }
@@ -175,4 +178,3 @@ public abstract class DownloadFromUrlInstaller extends ToolInstaller {
         public String url;
     }
 }
-

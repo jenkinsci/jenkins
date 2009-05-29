@@ -93,7 +93,7 @@ public class JDKInstaller extends ToolInstaller {
     }
 
     public FilePath performInstallation(ToolInstallation tool, Node node, TaskListener log) throws IOException, InterruptedException {
-        FilePath expectedLocation = node.createPath(tool.getHome());
+        FilePath expectedLocation = preferredLocation(tool, node);
         PrintStream out = log.getLogger();
         try {
             if(!acceptLicense) {

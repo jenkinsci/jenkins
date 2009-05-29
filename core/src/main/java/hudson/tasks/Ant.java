@@ -421,12 +421,11 @@ public class Ant extends Builder {
                 if(!Hudson.getInstance().hasPermission(Hudson.ADMINISTER))
                     return FormValidation.ok();
 
-                if(value.exists() && !value.isDirectory())
-                    return FormValidation.error(Messages.Ant_NotADirectory(value));
-
-                if(!value.exists())
-                    // no such directory yet. perhaps it's meant to be created?
+                if(value.getPath().equals(""))
                     return FormValidation.ok();
+
+                if(!value.isDirectory())
+                    return FormValidation.error(Messages.Ant_NotADirectory(value));
 
                 File antJar = new File(value,"lib/ant.jar");
                 if(!antJar.exists())

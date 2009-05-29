@@ -67,20 +67,19 @@ public class CommandInstaller extends ToolInstaller {
     }
 
     public FilePath performInstallation(ToolInstallation tool, Node node, TaskListener log) throws IOException, InterruptedException {
-        FilePath tools = node.getRootPath().child("tools");
+        FilePath dir = preferredLocation(tool, node);
         // XXX support Windows batch scripts, Unix scripts with interpreter line, etc. (see CommandInterpreter subclasses)
-        FilePath script = tools.createTextTempFile("hudson", ".sh", command);
+        FilePath script = dir.createTextTempFile("hudson", ".sh", command);
         try {
             String[] cmd = {"sh", "-e", script.getRemote()};
-            // XXX it always logs at least: "INFO: [tools] $ sh -e /hudson/tools/hudson8889216416382058262.sh"
-            int r = node.createLauncher(log).launch(cmd, Collections.<String,String>emptyMap(), log.getLogger(), tools).join();
+            int r = node.createLauncher(log).launch(cmd, Collections.<String,String>emptyMap(), log.getLogger(), dir).join();
             if (r != 0) {
                 throw new IOException("Command returned status " + r);
             }
         } finally {
             script.delete();
         }
-        return tools.child(toolHome);
+        return dir.child(toolHome);
     }
 
     @Extension
