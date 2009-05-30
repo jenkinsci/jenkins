@@ -955,6 +955,9 @@ public final class FilePath implements Serializable {
      *      the filter object will be executed on the remote machine.
      */
     public List<FilePath> list(final FileFilter filter) throws IOException, InterruptedException {
+        if (filter != null && !(filter instanceof Serializable)) {
+            throw new IllegalArgumentException("Non-serializable filter of " + filter.getClass());
+        }
         return act(new FileCallable<List<FilePath>>() {
             public List<FilePath> invoke(File f, VirtualChannel channel) throws IOException {
                 File[] children = f.listFiles(filter);

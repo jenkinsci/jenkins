@@ -51,6 +51,7 @@ import java.io.PrintStream;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
+import java.io.Serializable;
 import java.net.URL;
 import java.net.HttpURLConnection;
 import java.net.URLEncoder;
@@ -124,7 +125,7 @@ public class JDKInstaller extends ToolInstaller {
                     throw new AbortException("Failed to install JDK");
 
                 // JDK creates its own sub-directory, so pull them up
-                List<FilePath> paths = expectedLocation.list(JDK_FINDER);
+                List<FilePath> paths = expectedLocation.list(new JdkFinder());
                 if(paths.size()!=1)
                     throw new AbortException("Failed to find the extracted JDKs: "+paths);
 
@@ -209,7 +210,8 @@ public class JDKInstaller extends ToolInstaller {
     /**
      * Finds the directory that JDK has created.
      */
-    private static final FileFilter JDK_FINDER = new FileFilter() {
+    private static class JdkFinder implements FileFilter, Serializable {
+        private static final long serialVersionUID = 1L;
         public boolean accept(File f) {
             return f.isDirectory() && f.getName().startsWith("jdk");
         }
