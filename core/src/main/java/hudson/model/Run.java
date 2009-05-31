@@ -47,6 +47,7 @@ import hudson.tasks.test.AbstractTestResultAction;
 import hudson.util.IOException2;
 import hudson.util.LogTaskListener;
 import hudson.util.XStream2;
+import hudson.util.ProcessTreeKiller;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -702,7 +703,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
          * Combines last N token into the "a/b/c" form.
          */
         private String combineLast(String[] token, int n) {
-            StringBuffer buf = new StringBuffer();
+            StringBuilder buf = new StringBuilder();
             for( int i=Math.max(0,token.length-n); i<token.length; i++ ) {
                 if(buf.length()>0)  buf.append('/');
                 buf.append(token[i]);
