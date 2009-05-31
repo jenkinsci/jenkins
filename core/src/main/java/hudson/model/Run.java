@@ -1305,6 +1305,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
         if (t instanceof Executor) {
             Executor e = (Executor) t;
             env.put("EXECUTOR_NUMBER",String.valueOf(e.getNumber()));
+            env.put("NODE_NAME",e.getOwner().getName());
         }
 
         return env;
