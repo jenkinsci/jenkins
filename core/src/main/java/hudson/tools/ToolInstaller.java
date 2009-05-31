@@ -101,7 +101,7 @@ public abstract class ToolInstaller implements Describable<ToolInstaller>, Exten
      * @param node the computer on which to install the tool
      * @return {@link ToolInstallation#getHome} if specified, else a path within the local
      *         Hudson work area named according to {@link ToolInstallation#getName}
-     * @since 1.309
+     * @since 1.310
      */
     protected final FilePath preferredLocation(ToolInstallation tool, Node node) {
         String home = Util.fixEmptyAndTrim(tool.getHome());
