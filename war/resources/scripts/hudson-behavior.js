@@ -1640,6 +1640,8 @@ function createComboBox(id,valueFunction) {
           return items; // equiv to: comboBox.setItems(items);
         };
 
-        new ComboBox(id,callback);
+        if (document.getElementById(id) != null) {
+          new ComboBox(id,callback);
+        }
     });
 }
