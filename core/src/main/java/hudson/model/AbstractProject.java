@@ -606,14 +606,6 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
     }
 
     /**
-     * Returns true if a build of this project is in progress.
-     */
-    public boolean isBuilding() {
-        R b = getLastBuild();
-        return b!=null && b.isBuilding();
-    }
-
-    /**
      * Gets the JDK that this project is configured with, or null.
      */
     public JDK getJDK() {

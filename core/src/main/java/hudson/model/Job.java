@@ -211,6 +211,14 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
     }
 
     /**
+     * Returns true if a build of this project is in progress.
+     */
+    public boolean isBuilding() {
+        RunT b = getLastBuild();
+        return b!=null && b.isBuilding();
+    }
+
+    /**
      * Get the term used in the UI to represent this kind of
      * {@link AbstractProject}. Must start with a capital letter.
      */
@@ -1192,6 +1200,12 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
             Hudson.checkGoodName(newName);
         } catch (ParseException e) {
             sendError(e, req, rsp);
+            return;
+        }
+
+        if (isBuilding()) {
+            // redirect to page explaining that we can't rename now
+            rsp.sendRedirect("rename?newName=" + newName);
             return;
         }
 
