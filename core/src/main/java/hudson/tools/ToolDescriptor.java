@@ -30,6 +30,9 @@ import hudson.util.DescribableList;
 import java.util.Collections;
 import java.util.List;
 import java.io.IOException;
+import java.lang.reflect.Array;
+import net.sf.json.JSONObject;
+import org.kohsuke.stapler.StaplerRequest;
 
 /**
  * {@link Descriptor} for {@link ToolInstallation}.
@@ -91,6 +94,13 @@ public abstract class ToolDescriptor<T extends ToolInstallation> extends Descrip
             r.add(new InstallSourceProperty(installers));
 
         return r;
+    }
+
+    @Override
+    @SuppressWarnings("unchecked") // cast to T[]
+    public boolean configure(StaplerRequest req, JSONObject json) throws FormException {
+        setInstallations(req.bindJSONToList(clazz, json.get("tool")).toArray((T[]) Array.newInstance(clazz, 0)));
+        return true;
     }
 
 }

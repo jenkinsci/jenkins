@@ -145,7 +145,7 @@ public final class JDK extends ToolInstallation implements NodeSpecific<JDK>, En
     public static class DescriptorImpl extends ToolDescriptor<JDK> {
 
         public String getDisplayName() {
-            return "Java Development Kit";
+            return "JDK"; // XXX I18N
         }
 
         public @Override JDK[] getInstallations() {

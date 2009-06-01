@@ -97,16 +97,6 @@ THE SOFTWARE.
                           descriptors="${h.getNodePropertyDescriptors(it.class)}"
                           instances="${it.globalNodeProperties}" />
 
-      <f:section title="${%JDKs}">
-        <f:entry title="${%JDK installations}"
-                 description="${%List of JDK installations on this system}">
-          <f:repeatable var="instance" items="${it.JDKs}" name="jdks" add="${%Add JDK}">
-            <j:set var="descriptor" value="${h.getJDKDescriptor()}" />
-            <st:include page="${descriptor.configPage}" from="${descriptor}" />
-          </f:repeatable>
-        </f:entry>
-      </f:section>
-
       <!-- list config pages from plugins, if any -->
       <j:forEach var="p" items="${it.pluginManager.plugins}">
         <j:if test="${h.hasView(p.plugin,'config.jelly')}">
