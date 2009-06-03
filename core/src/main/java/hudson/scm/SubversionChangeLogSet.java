@@ -240,6 +240,14 @@ public final class SubversionChangeLogSet extends ChangeLogSet<LogEntry> {
         public List<Path> getPaths() {
             return paths;
         }
+        
+        @Override
+        public Collection<AffectedFile> getAffectedFiles() {
+	        // can't cast List<Path> to Collection<AffectedFile>, don't know why!!??
+	        Collection<AffectedFile> coll = new ArrayList<AffectedFile>();
+	        coll.addAll(paths);
+	        return coll;
+        }
     }
 
     /**
@@ -249,7 +257,7 @@ public final class SubversionChangeLogSet extends ChangeLogSet<LogEntry> {
      * So please consider this object read-only.
      */
     @ExportedBean(defaultVisibility=999)
-    public static class Path {
+    public static class Path implements AffectedFile {
         private LogEntry entry;
         private char action;
         private String value;
@@ -280,6 +288,13 @@ public final class SubversionChangeLogSet extends ChangeLogSet<LogEntry> {
             return value;
         }
 
+        /**
+         * Inherited from AffectedFile
+         */
+        public String getPath() {
+	        return getValue();
+        }
+        
         public void setValue(String value) {
             this.value = value;
         }

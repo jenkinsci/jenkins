@@ -67,7 +67,7 @@ public abstract class ChangeLogSet<T extends ChangeLogSet.Entry> implements Iter
     public abstract boolean isEmptySet();
 
     /**
-     * All changes in the change set.
+     * All changes in this change set. 
      */
     // method for the remote API.
     @Exported
@@ -140,6 +140,30 @@ public abstract class ChangeLogSet<T extends ChangeLogSet.Entry> implements Iter
          * @return never null.
          */
         public abstract Collection<String> getAffectedPaths();
+        
+        /**
+         * Returns a set of paths in the workspace that was
+         * affected by this change.
+         * <p>
+         * Noted: since this is a new interface, some of the SCMs may not have 
+         * implemented this interface. The default implementation for this 
+         * interface is throw UnsupportedOperationException
+         * <p>
+         * It doesn't throw NoSuchMethodException because I rather to throw a 
+         * runtime exception
+         *
+         * @return AffectedFile never null.
+         * @since 1.309
+         */
+        public Collection<AffectedFile> getAffectedFiles() {
+	        String scm = "this SCM";
+	        ChangeLogSet parent = getParent();
+	        if ( null != parent ) {
+		        String kind = parent.getKind();
+		        if ( null != kind && kind.trim().length() > 0 ) scm = kind;
+	        }
+	        throw new UnsupportedOperationException("getAffectedFiles() is not implemented by " + scm);
+        }
 
         /**
          * Gets the text fully marked up by {@link ChangeLogAnnotator}.
@@ -158,5 +182,34 @@ public abstract class ChangeLogSet<T extends ChangeLogSet.Entry> implements Iter
         public String getMsgEscaped() {
             return Util.escape(getMsg());
         }
+    }
+    
+    /**
+     * Represents a file change. Contains filename, edit type, etc.
+     * 
+     * I checked the API names against some some major SCMs and most SCMs
+     * can adapt to this interface with very little changes
+     *
+     * @see ChangeLogSet.Entry#getAffectedFiles()
+     */
+    public interface AffectedFile {
+        /**
+         * The path in the workspace that was affected
+         * <p>
+         * Contains string like 'foo/bar/zot'. No leading/trailing '/',
+         * and separator must be normalized to '/'.
+         *
+         * @return never null.
+         */
+	    public String getPath();
+	    
+	    
+	    /**
+	     * Return whether the file is new/modified/deleted
+	     *
+	     * @return EditType
+	     * @see EditType
+	     */
+	    public EditType getEditType();
     }
 }
