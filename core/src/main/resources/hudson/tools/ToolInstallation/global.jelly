@@ -22,21 +22,20 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 -->
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
-    <!-- XXX I18N throughout -->
     <f:section title="${descriptor.displayName}">
-        <f:entry title="${descriptor.displayName} installations" description="List of ${descriptor.displayName} installations on this system">
-            <f:repeatable name="tool" var="instance" items="${descriptor.installations}" add="Add ${descriptor.displayName}">
+        <f:entry title="${%title(descriptor.displayName)}" description="${%description(descriptor.displayName)}">
+            <f:repeatable name="tool" var="instance" items="${descriptor.installations}" add="${%label.add(descriptor.displayName)}">
                 <table width="100%">
-                    <f:entry title="Name" field="name">
+                    <f:entry title="${%Name}" field="name">
                         <f:textbox/>
                     </f:entry>
-                    <f:entry title="Installation directory" field="home">
+                    <f:entry title="${%Installation directory}" field="home">
                         <f:textbox/>
                     </f:entry>
                     <f:descriptorList descriptors="${descriptor.propertyDescriptors}" field="properties"/>
                     <f:entry title="">
                         <div align="right">
-                            <f:repeatableDeleteButton value="Delete ${descriptor.displayName}"/>
+                            <f:repeatableDeleteButton value="${%label.delete(descriptor.displayName)}"/>
                         </div>
                     </f:entry>
                 </table>

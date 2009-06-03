@@ -45,6 +45,6 @@ THE SOFTWARE.
   </f:entry>
   <f:entry title="" field="acceptLicense">
     <f:checkbox/>
-    <label class="attach-previous">I agree to the Java SE Development Kit License Agreement</label>
+    <label class="attach-previous">${%I agree to the Java SE Development Kit License Agreement}</label>
   </f:entry>
 </j:jelly>
