@@ -2231,6 +2231,7 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
             version = VERSION;
 
             save();
+            updateComputerList();
             if(result)
                 rsp.sendRedirect(req.getContextPath()+'/');  // go to the top page
             else
