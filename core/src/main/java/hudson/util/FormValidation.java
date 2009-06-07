@@ -299,6 +299,19 @@ public abstract class FormValidation extends IOException implements HttpResponse
     public static FormValidation validateNonNegativeInteger(String value) {
         try {
             if(Integer.parseInt(value)<0)
+                return error(hudson.model.Messages.Hudson_NotANonNegativeNumber());
+            return ok();
+        } catch (NumberFormatException e) {
+            return error(hudson.model.Messages.Hudson_NotANumber());
+        }
+    }
+
+    /**
+     * Makes sure that the given string is a positive integer.
+     */
+    public static FormValidation validatePositiveInteger(String value) {
+        try {
+            if(Integer.parseInt(value)<=0)
                 return error(hudson.model.Messages.Hudson_NotAPositiveNumber());
             return ok();
         } catch (NumberFormatException e) {

@@ -1423,6 +1423,10 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
             return false;
         }
 
+        public FormValidation doCheckNumExecutors(@QueryParameter String value) {
+            return FormValidation.validateNonNegativeInteger(value);
+        }
+
         // to route /descriptor/FQCN/xxx to getDescriptor(FQCN).xxx
         public Object getDynamic(String token) {
             return Hudson.getInstance().getDescriptor(token);
