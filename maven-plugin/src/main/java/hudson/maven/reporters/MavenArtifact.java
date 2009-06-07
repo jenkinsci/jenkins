@@ -136,7 +136,8 @@ public final class MavenArtifact implements Serializable {
         // in the repository during deployment. So simulate that behavior if that's necessary.
         final String canonicalExtension = canonicalName.substring(canonicalName.lastIndexOf('.')+1);
         ArtifactHandler ah = handlerManager.getArtifactHandler(type);
-        if(!ah.getExtension().equals(canonicalExtension)) {
+        // Fix for HUDSON-3814 - changed from comparing against canonical extension to canonicalName.endsWith.
+        if(!canonicalName.endsWith(ah.getExtension())) {
             handlerManager.addHandlers(Collections.singletonMap(type,
                     new DefaultArtifactHandler(type) {
                         public String getExtension() {
