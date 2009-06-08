@@ -23,12 +23,6 @@
  */
 package hudson.tools;
 
-import com.gargoylesoftware.htmlunit.WebClient;
-import com.gargoylesoftware.htmlunit.html.HtmlForm;
-import com.gargoylesoftware.htmlunit.html.HtmlInput;
-import com.gargoylesoftware.htmlunit.html.HtmlOption;
-import com.gargoylesoftware.htmlunit.html.HtmlPage;
-import com.gargoylesoftware.htmlunit.html.HtmlSelect;
 import hudson.AbortException;
 import hudson.Extension;
 import hudson.FilePath;
@@ -44,6 +38,11 @@ import hudson.remoting.Callable;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.QueryParameter;
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.io.output.NullWriter;
+import org.w3c.tidy.Tidy;
+import org.dom4j.io.DOMReader;
+import org.dom4j.Document;
+import org.dom4j.Element;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
@@ -53,7 +52,11 @@ import java.io.PrintStream;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.io.Serializable;
+import java.io.PrintWriter;
 import java.net.URL;
+import java.net.HttpURLConnection;
+import java.net.URLEncoder;
+import java.net.MalformedURLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
@@ -219,44 +222,90 @@ public class JDKInstaller extends ToolInstaller {
      * Performs a license click through and obtains the one-time URL for downloading bits.
      *
      */
-    private URL locate(TaskListener log, Platform platform, CPU cpu) throws IOException {
-        final PrintStream out = log.getLogger();
+    /*package*/ URL locate(TaskListener log, Platform platform, CPU cpu) throws IOException {
+        HttpURLConnection con = locateStage1(platform, cpu);
+        String page = IOUtils.toString(con.getInputStream());
+        return locateStage2(log, page);
+    }
 
-        final WebClient wc = new WebClient();
-        wc.setJavaScriptEnabled(false);
-        wc.setCssEnabled(false);
+    private HttpURLConnection locateStage1(Platform platform, CPU cpu) throws IOException {
+        URL url = new URL("https://cds.sun.com/is-bin/INTERSHOP.enfinity/WFS/CDS-CDS_Developer-Site/en_US/-/USD/ViewProductDetail-Start?ProductRef="+id);
+        HttpURLConnection con = (HttpURLConnection) url.openConnection();
+        String cookie = con.getHeaderField("Set-Cookie");
+        LOGGER.fine("Cookie="+cookie);
 
-        out.println("Visiting http://cds.sun.com/ for download");
-        HtmlPage p = (HtmlPage)wc.getPage("https://cds.sun.com/is-bin/INTERSHOP.enfinity/WFS/CDS-CDS_Developer-Site/en_US/-/USD/ViewProductDetail-Start?ProductRef="+id);
-        HtmlForm form = p.getFormByName("aForm");
-        ((HtmlInput)p.getElementById("dnld_license")).click();
+        Tidy tidy = new Tidy();
+        tidy.setErrout(new PrintWriter(new NullWriter()));
+        DOMReader domReader = new DOMReader();
+        Document dom = domReader.read(tidy.parseDOM(con.getInputStream(), null));
 
-        // pick the right download. to  make the comparison more robust, we do it in the upper case
-        HtmlOption primary=null,secondary=null;
-        HtmlSelect platformChoice = (HtmlSelect) p.getElementById("dnld_platform");
-        for(HtmlOption opt : platformChoice.getOptions()) {
-            String value = opt.getValueAttribute().toUpperCase(Locale.ENGLISH);
-            if(!platform.is(value)) continue;
-            switch (cpu.accept(value)) {
-            case PRIMARY:   primary = opt;break;
-            case SECONDARY: secondary=opt;break;
+        Element form=null;
+        for (Element e : (List<Element>)dom.selectNodes("//form")) {
+            String action = e.attributeValue("action");
+            LOGGER.fine("Found form:"+action);
+            if(action.contains("ViewFilteredProducts")) {
+                form = e;
+                break;
+            }
+        }
+
+        con = (HttpURLConnection) new URL(form.attributeValue("action")).openConnection();
+        con.setRequestMethod("POST");
+        con.setDoOutput(true);
+        con.setRequestProperty("Cookie",cookie);
+        con.setRequestProperty("Content-Type","application/x-www-form-urlencoded");
+        PrintStream os = new PrintStream(con.getOutputStream());
+
+        // select platform
+        String primary=null,secondary=null;
+        Element p = (Element)form.selectSingleNode(".//select[@id='dnld_platform']");
+        for (Element opt : (List<Element>)p.elements("option")) {
+            String value = opt.attributeValue("value");
+            String vcap = value.toUpperCase(Locale.ENGLISH);
+            if(!platform.is(vcap))  continue;
+            switch (cpu.accept(vcap)) {
+            case PRIMARY:   primary = value;break;
+            case SECONDARY: secondary=value;break;
             case UNACCEPTABLE:  break;
             }
         }
         if(primary==null)   primary=secondary;
         if(primary==null)
             throw new AbortException("Couldn't find the right download for "+platform+" and "+ cpu +" combination");
-        ((HtmlSelect)p.getElementById("dnld_platform")).setSelectedAttribute(primary,true);
-        p = (HtmlPage)form.submit();
+        os.print(p.attributeValue("name")+'='+primary);
+        LOGGER.fine("Platform choice:"+primary);
 
-        out.println("Choosing the download bundle");
+        // select language
+        Element l = (Element)form.selectSingleNode(".//select[@id='dnld_language']");
+        os.print("&"+l.attributeValue("name")+"="+l.element("option").attributeValue("value"));
+
+        // the rest
+        for (Element e : (List<Element>)form.selectNodes(".//input")) {
+            os.print('&');
+            os.print(e.attributeValue("name"));
+            os.print('=');
+            String value = e.attributeValue("value");
+            if(value==null)
+                os.print("on"); // assume this is a checkbox
+            else
+                os.print(URLEncoder.encode(value,"UTF-8"));
+        }
+        os.close();
+        return con;
+    }
+
+    private URL locateStage2(TaskListener log, String page) throws MalformedURLException {
+        Pattern HREF = Pattern.compile("<a href=\"(http://cds.sun.com/[^\"]+/VerifyItem-Start[^\"]+)\"");
+        Matcher m = HREF.matcher(page);
+        // this page contains a missing --> that confuses dom4j/jtidy
+
+        log.getLogger().println("Choosing the download bundle");
         List<String> urls = new ArrayList<String>();
 
-        // for some reason, the <style> tag in the middle of the page confuses HtmlUnit,
-        // so reverting to text parsing.
-        Matcher m = Pattern.compile("<a href=\"(http://cds.sun.com/[^\"]+/VerifyItem-Start[^\"]+)\"").matcher(p.getDocumentElement().getTextContent());
         while(m.find()) {
             String url = m.group(1);
+            LOGGER.fine("Considering a download link:"+ url);
+
             // still more options to choose from.
             // avoid rpm bundles, and avoid tar.Z bundle
             if(url.contains("rpm"))  continue;
@@ -265,7 +314,7 @@ public class JDKInstaller extends ToolInstaller {
             if(url.contains("sparcv9"))  continue;
 
             urls.add(url);
-            LOGGER.fine("Found a download candidate: "+url);
+            LOGGER.fine("Found a download candidate: "+ url);
         }
 
         // prefer the first match because sometimes "optional downloads" follow the main bundle

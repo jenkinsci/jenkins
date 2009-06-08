@@ -27,7 +27,7 @@ THE SOFTWARE.
   <parent>
     <groupId>org.jvnet.hudson.main</groupId>
     <artifactId>pom</artifactId>
-    <version>1.309-SNAPSHOT</version>
+    <version>1.310-SNAPSHOT</version>
     <relativePath>../pom.xml</relativePath>
   </parent>
 
@@ -701,17 +701,6 @@ THE SOFTWARE.
       <groupId>org.jvnet.hudson</groupId>
       <artifactId>jinterop-wmi</artifactId>
       <version>1.0</version>
-    </dependency>
-    <dependency>
-      <groupId>org.jvnet.hudson</groupId>
-      <artifactId>htmlunit</artifactId>
-      <version>2.2-hudson-9</version>
-      <exclusions>
-        <exclusion>
-          <groupId>xalan</groupId>
-          <artifactId>xalan</artifactId>
-        </exclusion>
-      </exclusions>
     </dependency>
 
     <!-- offline profiler API to put in the classpath if we need it -->
