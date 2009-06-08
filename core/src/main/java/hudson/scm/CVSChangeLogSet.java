@@ -234,11 +234,8 @@ public final class CVSChangeLogSet extends ChangeLogSet<CVSChangeLog> {
         }
         
         @Override
-        public Collection<AffectedFile> getAffectedFiles() {
-	        // can't cast List<File> to Collection<AffectedFile>, don't know why!!??
-	        Collection<AffectedFile> coll = new ArrayList<AffectedFile>();
-	        coll.addAll(files);
-	        return coll;
+        public Collection<File> getAffectedFiles() {
+	        return files;
         }
     }
 

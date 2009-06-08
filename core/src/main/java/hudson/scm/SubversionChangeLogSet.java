@@ -242,11 +242,8 @@ public final class SubversionChangeLogSet extends ChangeLogSet<LogEntry> {
         }
         
         @Override
-        public Collection<AffectedFile> getAffectedFiles() {
-	        // can't cast List<Path> to Collection<AffectedFile>, don't know why!!??
-	        Collection<AffectedFile> coll = new ArrayList<AffectedFile>();
-	        coll.addAll(paths);
-	        return coll;
+        public Collection<Path> getAffectedFiles() {
+	        return paths;
         }
     }
 

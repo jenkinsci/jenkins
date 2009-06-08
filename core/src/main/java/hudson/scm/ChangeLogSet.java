@@ -155,7 +155,7 @@ public abstract class ChangeLogSet<T extends ChangeLogSet.Entry> implements Iter
          * @return AffectedFile never null.
          * @since 1.309
          */
-        public Collection<AffectedFile> getAffectedFiles() {
+        public Collection<? extends AffectedFile> getAffectedFiles() {
 	        String scm = "this SCM";
 	        ChangeLogSet parent = getParent();
 	        if ( null != parent ) {
