@@ -1,7 +1,7 @@
 /*
  * The MIT License
  * 
- * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, Erik Ramfelt, Koichi Fujikawa, Red Hat, Inc., Seiji Sogabe, Stephen Connolly, Tom Huybrechts
+ * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, Erik Ramfelt, Koichi Fujikawa, Red Hat, Inc., Seiji Sogabe, Stephen Connolly, Tom Huybrechts, Yahoo! Inc.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -79,6 +79,9 @@ import hudson.security.Permission;
 import hudson.security.PermissionGroup;
 import hudson.security.SecurityMode;
 import hudson.security.SecurityRealm;
+import hudson.security.csrf.CrumbFilter;
+import hudson.security.csrf.CrumbIssuer;
+import hudson.security.csrf.CrumbIssuerDescriptor;
 import hudson.slaves.ComputerListener;
 import hudson.slaves.NodeProperty;
 import hudson.slaves.NodePropertyDescriptor;
@@ -416,6 +419,13 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
      */
     private String label="";
 
+    private Boolean useCrumbs;
+    
+    /**
+     * {@link hudson.security.csrf.CrumbIssuer}
+     */
+    private volatile CrumbIssuer crumbIssuer;
+    
     /**
      * All labels known to Hudson. This allows us to reuse the same label instances
      * as much as possible, even though that's not a strict requirement.
@@ -1582,6 +1592,10 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
         return securityRealm!=SecurityRealm.NO_AUTHENTICATION || authorizationStrategy!=AuthorizationStrategy.UNSECURED;
     }
 
+    public boolean isUseCrumbs() {
+        return (useCrumbs != null) && useCrumbs;
+    }
+    
     /**
      * Returns the constant that captures the three basic security modes
      * in Hudson.
@@ -2047,6 +2061,9 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
             setSecurityRealm(SecurityRealm.NO_AUTHENTICATION);
         }
 
+        // Initialize the filter with the crumb issuer
+        setCrumbIssuer(crumbIssuer);
+        
         LOGGER.info(String.format("Took %s ms to load",System.currentTimeMillis()-startTime));
         if(KILL_AFTER_LOAD)
             System.exit(0);
@@ -2149,6 +2166,15 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
                 authorizationStrategy = AuthorizationStrategy.UNSECURED;
             }
 
+            if (json.has("csrf")) {
+            	useCrumbs = true;
+            	JSONObject csrf = json.getJSONObject("csrf");
+            	setCrumbIssuer(CrumbIssuer.all().newInstanceFromRadioList(csrf, "issuer"));
+            } else {
+            	useCrumbs = null;
+            	setCrumbIssuer(null);
+            }
+            
             noUsageStatistics = json.has("usageStatisticsCollected") ? null : true;
 
             {
@@ -2219,6 +2245,9 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
             for( PageDecorator d : PageDecorator.all() )
                 result &= configureDescriptor(req,json,d);
 
+            for( Descriptor<CrumbIssuer> d : CrumbIssuer.all() )
+                result &= configureDescriptor(req,json, d);
+            
             for( ToolDescriptor d : ToolInstallation.all() )
                 result &= configureDescriptor(req,json,d);
 
@@ -2247,6 +2276,19 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
         }
     }
 
+    public CrumbIssuer getCrumbIssuer() {
+        return crumbIssuer;
+    }
+    
+    public void setCrumbIssuer(CrumbIssuer issuer) {
+        crumbIssuer = issuer;
+        CrumbFilter.get(servletContext).setCrumbIssuer(issuer);
+    }
+
+    public void setUseCrumbs(Boolean use) {
+        useCrumbs = use;
+    }
+    
     public synchronized void doTestPost( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
         JSONObject form = req.getSubmittedForm();
         rsp.sendRedirect("foo");
@@ -2608,6 +2650,9 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
     public void doDoFingerprintCheck( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
         // Parse the request
         MultipartFormDataParser p = new MultipartFormDataParser(req);
+        if(Hudson.getInstance().isUseCrumbs() && !Hudson.getInstance().getCrumbIssuer().validateCrumb(req, p)) {
+            rsp.sendError(HttpServletResponse.SC_FORBIDDEN,"No crumb found");                
+        }
         try {
             rsp.sendRedirect2(req.getContextPath()+"/fingerprint/"+
                 Util.getDigestOf(p.getFileItem("name").getInputStream())+'/');

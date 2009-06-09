@@ -1,7 +1,7 @@
 <!--
 The MIT License
 
-Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, Yahoo! Inc.
+Copyright (c) 2008-2009, Yahoo! Inc.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -22,20 +22,15 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 -->
 
-<j:jelly xmlns:j="jelly:core" xmlns:s="jelly:stapler" xmlns:d="jelly:define" xmlns:f="/lib/form">
-  <s:documentation>
-    Submit button themed by YUI. This should be always
-    used instead of the plain &lt;input tag.
-
-    <s:attribute name="name">
-      If specified, becomes the value of the name attribute.
-      When you have more than one submit button on the form, this can be used to determine
-      which button is pressed, as the server will get a parameter by this name.
-    </s:attribute>
-    <s:attribute name="value" use="required">
-      The text of the submit button. Something like "submit", "OK", etc.
-    </s:attribute>
-  </s:documentation>
-  <f:crumb/>
-  <input type="submit" name="${attrs.name ?: 'Submit'}" value="${attrs.value}" class="submit-button" />
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
+    <f:entry title="${%Salt}" help="/help/security/csrf/salt.html">
+        <f:textbox name="csrf_crumbSalt" value="${descriptor.crumbSalt}" />
+    </f:entry>
+    <f:entry title="${%Request Field}" help="/help/security/csrf/field.html">
+        <f:textbox name="csrf_crumbField" value="${descriptor.crumbRequestField}" />
+    </f:entry>
+    
+    <j:if test="${!empty(descriptor.subConfigPage)}">
+        <st:include from="${descriptor}" page="${descriptor.subConfigPage}" optional="true" />
+    </j:if>
 </j:jelly>

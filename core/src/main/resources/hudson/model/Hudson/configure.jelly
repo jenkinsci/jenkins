@@ -1,7 +1,7 @@
 <!--
 The MIT License
 
-Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, Erik Ramfelt, Jean-Baptiste Quenot, Stephen Connolly, Tom Huybrechts
+Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, Erik Ramfelt, Jean-Baptiste Quenot, Stephen Connolly, Tom Huybrechts, Yahoo! Inc.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -88,6 +88,19 @@ THE SOFTWARE.
         </f:entry>
       </f:optionalBlock>
 
+      <j:if test="${!empty(h.crumbIssuerDescriptors)}">
+	    <f:optionalBlock name="csrf" title="${%Prevent Cross Site Request Forgery exploits}"
+	                     checked="${it.useCrumbs}" help="/help/system-config/csrf.html">
+	      <f:entry title="${Crumbs}">
+	        <table style="width:100%">
+	          <f:descriptorRadioList title="${%Crumb Algorithm}" varName="issuer"
+	                                 instance="${it.crumbIssuer}"
+	                                 descriptors="${h.crumbIssuerDescriptors}"/>
+	        </table>
+	      </f:entry>
+	    </f:optionalBlock>
+      </j:if>
+      
       <f:optionalBlock name="usageStatisticsCollected" checked="${it.usageStatisticsCollected}"
                        title="${%statsBlurb}"
                        help="/help/system-config/usage-statistics.html" />

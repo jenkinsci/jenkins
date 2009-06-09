@@ -2,7 +2,7 @@
 <!--
 The MIT License
 
-Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, Tom Huybrechts, id:digerata
+Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, Tom Huybrechts, id:digerata, Yahoo! Inc.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -49,6 +49,11 @@ THE SOFTWARE.
     <filter-class>hudson.security.HudsonFilter</filter-class>
   </filter>
 
+  <filter>
+    <filter-name>csrf-filter</filter-name>
+    <filter-class>hudson.security.csrf.CrumbFilter</filter-class>
+  </filter>
+  
   <!--
 	The Headers filter allows us to to override headers sent by the container
 	that may be in conflict with what we want.  For example, Tomcat will set
@@ -82,7 +87,11 @@ THE SOFTWARE.
     <filter-name>authentication-filter</filter-name>
     <url-pattern>/*</url-pattern>
   </filter-mapping>
-
+  <filter-mapping>
+    <filter-name>csrf-filter</filter-name>
+    <url-pattern>/*</url-pattern>
+  </filter-mapping>
+  
   <filter>
     <filter-name>plugins-filter</filter-name>
     <filter-class>hudson.util.PluginServletFilter</filter-class>

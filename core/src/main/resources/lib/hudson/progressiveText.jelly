@@ -1,7 +1,7 @@
 <!--
 The MIT License
 
-Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi
+Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, Yahoo! Inc.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -44,7 +44,7 @@ THE SOFTWARE.
 	    function fetchNext(e,href) {
 	      new Ajax.Request(href,{
 	          method: "post",
-	          parameters: "start="+e.fetchedBytes,
+	          parameters: {"start":e.fetchedBytes,"${h.getCrumbRequestField()}":"${h.getCrumb(request)}"},
 	          onComplete: function(rsp,_) {
               <!-- append text and do autoscroll if applicable-->
               var stickToBottom = scroller.isSticking();

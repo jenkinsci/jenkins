@@ -1,7 +1,7 @@
 <!--
 The MIT License
 
-Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, id:cactusman
+Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, id:cactusman, Yahoo! Inc.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -55,6 +55,7 @@ THE SOFTWARE.
         </j:forEach>
 
         <f:block>
+          <f:crumb />
           <input type="submit" name="Submit" value="OK" id="ok" style="margin-left:5em" />
         </f:block>
       </f:form>

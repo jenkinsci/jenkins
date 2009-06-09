@@ -54,6 +54,8 @@ import hudson.model.AbstractProject;
 import hudson.model.UpdateCenter.UpdateCenterConfiguration;
 import hudson.model.Node.Mode;
 import hudson.scm.SubversionSCM;
+import hudson.security.csrf.CrumbIssuer;
+import hudson.security.csrf.CrumbIssuerDescriptor;
 import hudson.slaves.CommandLauncher;
 import hudson.slaves.DumbSlave;
 import hudson.slaves.RetentionStrategy;
@@ -98,6 +100,7 @@ import javax.servlet.ServletContextEvent;
 
 import junit.framework.TestCase;
 
+import org.apache.commons.httpclient.NameValuePair;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.beanutils.PropertyUtils;
@@ -128,8 +131,10 @@ import org.xml.sax.SAXException;
 import com.gargoylesoftware.htmlunit.AjaxController;
 import com.gargoylesoftware.htmlunit.BrowserVersion;
 import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
+import com.gargoylesoftware.htmlunit.HttpMethod;
 import com.gargoylesoftware.htmlunit.Page;
 import com.gargoylesoftware.htmlunit.WebRequestSettings;
+import com.gargoylesoftware.htmlunit.html.DomNode;
 import com.gargoylesoftware.htmlunit.html.HtmlButton;
 import com.gargoylesoftware.htmlunit.html.HtmlForm;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
@@ -199,6 +204,10 @@ public abstract class HudsonTestCase extends TestCase {
 
         hudson = newHudson();
         hudson.setNoUsageStatistics(true); // collecting usage stats from tests are pointless.
+        
+        hudson.setUseCrumbs(true);
+        hudson.setCrumbIssuer(((CrumbIssuerDescriptor<CrumbIssuer>)Hudson.getInstance().getDescriptor(TestCrumbIssuer.class)).newInstance(null,null));
+
         hudson.servletContext.setAttribute("app",hudson);
         hudson.servletContext.setAttribute("version","?");
         WebAppMain.installExpressionFactory(new ServletContextEvent(hudson.servletContext));
@@ -917,6 +926,30 @@ public abstract class HudsonTestCase extends TestCase {
          */
         public String getContextPath() {
             return "http://localhost:"+localPort+contextPath;
+        }
+        
+        /**
+         * Adds a security crumb to the quest
+         */
+        public WebRequestSettings addCrumb(WebRequestSettings req) {
+            NameValuePair crumb[] = { new NameValuePair() };
+            
+            crumb[0].setName(hudson.getCrumbIssuer().getDescriptor().getCrumbRequestField());
+            crumb[0].setValue(hudson.getCrumbIssuer().getCrumb( null ));
+            
+            req.setRequestParameters(Arrays.asList( crumb ));
+            return req;
+        }
+        
+        /**
+         * Creates a URL with crumb parameters relative to {{@link #getContextPath()}
+         */
+        public URL createCrumbedUrl(String relativePath) throws MalformedURLException {
+            CrumbIssuer issuer = hudson.getCrumbIssuer();
+            String crumbName = issuer.getDescriptor().getCrumbRequestField();
+            String crumb = issuer.getCrumb(null);
+            
+            return new URL(getContextPath()+relativePath+"?"+crumbName+"="+crumb);
         }
     }
 

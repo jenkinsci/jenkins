@@ -1,7 +1,7 @@
 <!--
 The MIT License
 
-Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, Tom Huybrechts
+Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, Tom Huybrechts, Yahoo! Inc.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -82,7 +82,7 @@ THE SOFTWARE.
     <!-- schedule updates only for the full page reload -->
     <j:if test="${ajax==null and !h.isAutoRefresh(request) and h.hasPermission(app.READ)}">
       <script defer="defer">
-        refreshPart('buildQueue',"${h.hasView(it,'ajaxBuildQueue')?'.':rootURL}/ajaxBuildQueue");
+        refreshPart('buildQueue',"${h.hasView(it,'ajaxBuildQueue')?'.':rootURL}/ajaxBuildQueue", "${h.getCrumbRequestField()}", "${h.getCrumb(request)}");
       </script>
     </j:if>
   </l:pane>
