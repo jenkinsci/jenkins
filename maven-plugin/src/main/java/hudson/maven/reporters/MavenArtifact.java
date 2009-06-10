@@ -39,6 +39,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.Collections;
+import java.util.logging.Logger;
 
 /**
  * Captures information about an artifact created by Maven and archived by
@@ -181,17 +182,15 @@ public final class MavenArtifact implements Serializable {
      */
     public void archive(MavenBuildProxy build, File file, BuildListener listener) throws IOException, InterruptedException {
         FilePath target = getArtifactArchivePath(build,groupId,artifactId,version);
-        listener.getLogger().println("[HUDSON] Archiving "+ file+" to "+target);
         FilePath origin = new FilePath(file);
         if (!target.exists()) {
+            listener.getLogger().println("[HUDSON] Archiving "+ file+" to "+target);
             origin.copyTo(target);
-        }
-        else if (!origin.digest().equals(target.digest())) {
+        } else if (!origin.digest().equals(target.digest())) {
             listener.getLogger().println("[HUDSON] Re-archiving...");
             origin.copyTo(target);
-        }
-        else {
-            listener.getLogger().println("[HUDSON] Not actually archiving due to digest match");
+        } else {
+            LOGGER.fine("Not actually archiving "+origin+" due to digest match");
         }
 
             /* debug probe to investigate "missing artifact" problem typically seen like this:
@@ -248,6 +247,7 @@ public final class MavenArtifact implements Serializable {
         }
     }
 
+    private static final Logger LOGGER = Logger.getLogger(MavenArtifact.class.getName());
 
     private static final long serialVersionUID = 1L;
 }
