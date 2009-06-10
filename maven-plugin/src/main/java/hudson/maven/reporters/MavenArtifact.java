@@ -187,7 +187,7 @@ public final class MavenArtifact implements Serializable {
             listener.getLogger().println("[HUDSON] Archiving "+ file+" to "+target);
             origin.copyTo(target);
         } else if (!origin.digest().equals(target.digest())) {
-            listener.getLogger().println("[HUDSON] Re-archiving...");
+            listener.getLogger().println("[HUDSON] Re-archiving "+file);
             origin.copyTo(target);
         } else {
             LOGGER.fine("Not actually archiving "+origin+" due to digest match");
