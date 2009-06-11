@@ -1317,7 +1317,14 @@ public final class FilePath implements Serializable {
 
         byte[] buf = new byte[8192];
 
-        TarOutputStream tar = new TarOutputStream(new BufferedOutputStream(out));
+        TarOutputStream tar = new TarOutputStream(new BufferedOutputStream(out) {
+            // TarOutputStream uses TarBuffer internally,
+            // which flushes the stream for each block. this creates unnecessary
+            // data stream fragmentation, and flush request to a remote, which slows things down.
+            public void flush() throws IOException {
+                // so don't do anything in flush
+            }
+        });
         tar.setLongFileMode(TarOutputStream.LONGFILE_GNU);
         String[] files;
         if(baseDir.exists()) {

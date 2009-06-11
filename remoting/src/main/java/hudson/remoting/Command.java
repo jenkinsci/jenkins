@@ -44,7 +44,20 @@ abstract class Command implements Serializable {
 
 
     protected Command() {
-        this.createdAt = new Source();
+        this(true);
+    }
+
+    /**
+     * @param recordCreatedAt
+     *      If false, skip the recording of where the command is created. This makes the trouble-shooting
+     *      and cause/effect correlation hard in case of a failure, but it will reduce the amount of the data
+     *      transferred.
+     */
+    protected Command(boolean recordCreatedAt) {
+        if(recordCreatedAt)
+            this.createdAt = new Source();
+        else
+            this.createdAt = null;
     }
 
     /**
