@@ -259,7 +259,7 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
 
             launcher = createLauncher(listener);
             if(!Hudson.getInstance().getNodes().isEmpty())
-                listener.getLogger().println(Messages.AbstractBuild_BuildingRemotely(node.getNodeName()));
+                listener.getLogger().println(node instanceof Hudson ? Messages.AbstractBuild_BuildingOnMaster() : Messages.AbstractBuild_BuildingRemotely(builtOn));
 
             node.getFileSystemProvisioner().prepareWorkspace(AbstractBuild.this,project.getWorkspace(),listener);
 

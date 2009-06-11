@@ -232,16 +232,28 @@ public final class CVSChangeLogSet extends ChangeLogSet<CVSChangeLog> {
         public List<File> getFiles() {
             return files;
         }
+        
+        @Override
+        public Collection<File> getAffectedFiles() {
+	        return files;
+        }
     }
 
     @ExportedBean(defaultVisibility=999)
-    public static class File {
+    public static class File implements AffectedFile {
         private String name;
         private String fullName;
         private String revision;
         private String prevrevision;
         private boolean dead;
         private CVSChangeLog parent;
+
+        /**
+         * Inherited from AffectedFile
+         */        
+        public String getPath() {
+	        return getName();
+        }
 
         /**
          * Gets the path name in the CVS repository, like

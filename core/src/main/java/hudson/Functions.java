@@ -47,6 +47,7 @@ import hudson.security.AccessControlled;
 import hudson.security.AuthorizationStrategy;
 import hudson.security.Permission;
 import hudson.security.SecurityRealm;
+import hudson.security.csrf.CrumbIssuer;
 import hudson.slaves.Cloud;
 import hudson.slaves.ComputerLauncher;
 import hudson.slaves.NodeProperty;
@@ -1132,6 +1133,56 @@ public class Functions {
         return body;
     }
 
+    public static List<Descriptor<CrumbIssuer>> getCrumbIssuerDescriptors() {
+        return CrumbIssuer.all();
+    }
+    
+    public static String getCrumb(StaplerRequest req) {
+        CrumbIssuer issuer = Hudson.getInstance().getCrumbIssuer();
+        if (issuer != null) {
+            return issuer.getCrumb(req);
+        }
+        
+        return "";
+    }
+    
+    public static String getCrumbRequestField() {
+        CrumbIssuer issuer = Hudson.getInstance().getCrumbIssuer();
+        if (issuer != null) {
+            return issuer.getDescriptor().getCrumbRequestField();
+        }
+        
+        return "";
+    }
+    
+    public static String getCrumbAsJSONParameterBlock(StaplerRequest req) {
+        StringBuilder builder = new StringBuilder();
+        if (Hudson.getInstance().isUseCrumbs()) {
+            builder.append("parameters:{\"");
+            builder.append(getCrumbRequestField());
+            builder.append("\":\"");
+            builder.append(getCrumb(req));
+            builder.append("\"}");
+        }
+        return builder.toString();
+    }
+    
+    public static String getReplaceDescriptionInvoker(StaplerRequest req) {
+    	StringBuilder builder = new StringBuilder();
+    	if (isAutoRefresh(req)) {
+    		builder.append("null");
+    	} else {
+    		builder.append("'return replaceDescription(");
+    		builder.append("\\'");
+    		builder.append(getCrumbRequestField());
+    		builder.append("\\',\\'");
+    		builder.append(getCrumb(req));
+    		builder.append("\\'");
+    		builder.append(");'");
+    	}
+    	return builder.toString();
+    }
+    
     private static final Pattern SCHEME = Pattern.compile("[a-z]+://.+");
 
     /**

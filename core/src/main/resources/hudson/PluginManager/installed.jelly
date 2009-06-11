@@ -1,7 +1,7 @@
 <!--
 The MIT License
 
-Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, Seiji Sogabe
+Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, Seiji Sogabe, Yahoo! Inc.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -110,6 +110,9 @@ THE SOFTWARE.
 
           <!-- trigger -->
           new Ajax.Request(btn.getAttribute('url')+"/make"+(btn.checked?"Enable":"Disable")+"d", {
+            <j:if test="${app.useCrumbs}">
+            parameters : { "${h.getCrumbRequestField()}": "${h.getCrumb(request)}" },
+            </j:if>
             onFailure : function(req,o) {
               $('needRestart').innerHTML = req.responseText;
             }

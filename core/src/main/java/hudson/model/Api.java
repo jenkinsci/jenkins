@@ -109,29 +109,34 @@ public class Api extends AbstractModelObject {
                     }
                 }
             }
-
-            List list = dom.selectNodes(xpath);
-            if (wrapper!=null) {
-                Element root = DocumentFactory.getInstance().createElement(wrapper);
-                for (Object o : list) {
-                    if (o instanceof String) {
-                        root.addText(o.toString());
-                    } else {
-                        root.add(((org.dom4j.Node)o).detach());
-                    }
-                }
-                result = root;
-            } else if (list.isEmpty()) {
-                rsp.setStatus(HttpServletResponse.SC_NOT_FOUND);
-                rsp.getWriter().print(Messages.Api_NoXPathMatch(xpath));
-                return;
-            } else if (list.size() > 1) {
-                rsp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-                rsp.getWriter().print(Messages.Api_MultipleMatch(xpath,list.size()));
-                return;
+            
+            if(xpath==null) {
+            	result = dom;
             } else {
-                result = list.get(0);
+                List list = dom.selectNodes(xpath);
+                if (wrapper!=null) {
+                    Element root = DocumentFactory.getInstance().createElement(wrapper);
+                    for (Object o : list) {
+                        if (o instanceof String) {
+                            root.addText(o.toString());
+                        } else {
+                            root.add(((org.dom4j.Node)o).detach());
+                        }
+                    }
+                    result = root;
+                } else if (list.isEmpty()) {
+                    rsp.setStatus(HttpServletResponse.SC_NOT_FOUND);
+                    rsp.getWriter().print(Messages.Api_NoXPathMatch(xpath));
+                    return;
+                } else if (list.size() > 1) {
+                    rsp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+                    rsp.getWriter().print(Messages.Api_MultipleMatch(xpath,list.size()));
+                    return;
+                } else {
+                    result = list.get(0);
+                }
             }
+
         } catch (DocumentException e) {
             throw new IOException2(e);
         }

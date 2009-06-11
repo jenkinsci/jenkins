@@ -106,7 +106,7 @@ function toValue(e) {
 function findAncestor(e, tagName) {
     do {
         e = e.parentNode;
-    } while(e.tagName!=tagName);
+    } while (e != null && e.tagName != tagName);
     return e;
 }
 
@@ -623,13 +623,16 @@ function xor(a,b) {
 }
 
 // used by editableDescription.jelly to replace the description field with a form
-function replaceDescription() {
+function replaceDescription(crumbName,crumb) {
     var d = document.getElementById("description");
     d.firstChild.nextSibling.innerHTML = "<div class='spinner-right'>loading...</div>";
+    var params = new Array(1);
+    params[crumbName] = crumb;
     new Ajax.Request(
         "./descriptionForm",
         {
           method : 'post',
+          parameters : params,
           onComplete : function(x) {
             d.innerHTML = x.responseText;
             Behaviour.applySubtree(d);
@@ -691,6 +694,17 @@ function updateOptionalBlock(c,scroll) {
         var r = D.getRegion(s);
         if(lastRow!=null)   r = r.union(D.getRegion(lastRow));
         scrollIntoView(r);
+    }
+
+    if (c.name == 'hudson-tools-InstallSourceProperty') {
+        // Hack to hide tool home when "Install automatically" is checked.
+        var homeField = findPreviousFormItem(c, 'home');
+        if (homeField != null && homeField.value == '') {
+            var tr = findAncestor(homeField, 'TR');
+            if (tr != null) {
+                tr.style.display = c.checked ? 'none' : '';
+            }
+        }
     }
 }
 
@@ -792,10 +806,13 @@ function expandTextArea(button,id) {
 
 // refresh a part of the HTML specified by the given ID,
 // by using the contents fetched from the given URL.
-function refreshPart(id,url) {
+function refreshPart(id,url,crumbName,crumb) {
     var f = function() {
+    	var params = new Array(1);
+    	params[crumbName] = crumb;
         new Ajax.Request(url, {
             method: "post",
+            parameters: params,
             onSuccess: function(rsp) {
                 var hist = $(id);
                 var p = hist.parentNode;
@@ -811,7 +828,7 @@ function refreshPart(id,url) {
                 Behaviour.applySubtree(node);
 
                 if(isRunAsTest) return;
-                refreshPart(id,url);
+                refreshPart(id,url,crumbName,crumb);
             }
         });
     };
@@ -979,6 +996,14 @@ var repeatableSupport = {
         while(n.tag==null)
             n = n.parentNode;
         n.tag.expand();
+        // Hack to hide tool home when a new tool has some installers.
+        var inputs = n.getElementsByTagName('INPUT');
+        for (var i = 0; i < inputs.length; i++) {
+            var input = inputs[i];
+            if (input.name == 'hudson-tools-InstallSourceProperty') {
+                updateOptionalBlock(input, false);
+            }
+        }
     }
 };
 
@@ -1055,14 +1080,18 @@ function addRadioBlock(id) {
 }
 
 
-function updateBuildHistory(ajaxUrl,nBuild) {
+function updateBuildHistory(ajaxUrl,nBuild,crumbName,crumb) {
     if(isRunAsTest) return;
     $('buildHistory').headers = ["n",nBuild];
 
     function updateBuilds() {
         var bh = $('buildHistory');
+    	var params = new Array(1);
+    	params[crumbName] = crumb;
         new Ajax.Request(ajaxUrl, {
             requestHeaders: bh.headers,
+            method: "post",
+            parameters: params,
             onSuccess: function(rsp) {
                 var rows = bh.rows;
 
@@ -1092,9 +1121,12 @@ function updateBuildHistory(ajaxUrl,nBuild) {
 
 // send async request to the given URL (which will send back serialized ListBoxModel object),
 // then use the result to fill the list box.
-function updateListBox(listBox,url) {
+function updateListBox(listBox,url,crumbName,crumb) {
+	var params = new Array(1);
+	params[crumbName] = crumb;
     new Ajax.Request(url, {
         method: "post",
+        parameters: params,
         onSuccess: function(rsp) {
             var l = $(listBox);
             while(l.length>0)   l.options[0] = null;
@@ -1481,6 +1513,8 @@ function loadScript(href) {
 
 var downloadService = {
     continuations: {},
+    crumbName: null,
+    crumb: null,
 
     download : function(id,url,info, postBack,completionHandler) {
         this.continuations[id] = {postBack:postBack,completionHandler:completionHandler};
@@ -1489,9 +1523,12 @@ var downloadService = {
 
     post : function(id,data) {
         var o = this.continuations[id];
+        var params = new Array(2);
+        params["json"] = Object.toJSON(data);
+        params[downloadService.crumbName] = downloadService.crumb;
         new Ajax.Request(o.postBack, {
             method:"post",
-            parameters:{json:Object.toJSON(data)},
+            parameters:params,
             onSuccess: function() {
                 if(o.completionHandler!=null)
                     o.completionHandler();
@@ -1506,6 +1543,8 @@ var updateCenter = {
     postBackURL : null,
     info: {},
     completionHandler: null,
+    crumbName: null,
+    crumb: null,
     url: "https://hudson.dev.java.net/",
 
     checkUpdates : function() {
@@ -1513,9 +1552,12 @@ var updateCenter = {
     },
 
     post : function(data) {
+    	var params = new Array(2);
+    	params["json"] = Object.toJSON(data);
+    	params[updateCenter.crumbName] = updateCenter.crumb;
         new Ajax.Request(updateCenter.postBackURL, {
             method:"post",
-            parameters:{json:Object.toJSON(data)},
+            parameters:params,
             onSuccess: function() {
                 if(updateCenter.completionHandler!=null)
                     updateCenter.completionHandler();
@@ -1621,6 +1663,8 @@ function createComboBox(id,valueFunction) {
           return items; // equiv to: comboBox.setItems(items);
         };
 
-        new ComboBox(id,callback);
+        if (document.getElementById(id) != null) {
+          new ComboBox(id,callback);
+        }
     });
 }

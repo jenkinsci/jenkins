@@ -77,8 +77,7 @@ public class ZipExtractionInstaller extends ToolInstaller {
     }
 
     public FilePath performInstallation(ToolInstallation tool, Node node, TaskListener log) throws IOException, InterruptedException {
-        String dirname = tool.getName().replaceAll("[^A-Za-z0-9_.-]+", "_");
-        FilePath dir = node.getRootPath().child("tools").child(dirname);
+        FilePath dir = preferredLocation(tool, node);
         if (dir.installIfNecessaryFrom(new URL(url), log, "Unpacking " + url + " to " + dir + " on " + node.getDisplayName())) {
             dir.act(new ChmodRecAPlusX());
         }
@@ -119,7 +118,7 @@ public class ZipExtractionInstaller extends ToolInstaller {
      * Sets execute permission on all files, since unzip etc. might not do this.
      * Hackish, is there a better way?
      */
-    private static class ChmodRecAPlusX implements FileCallable<Void> {
+    static class ChmodRecAPlusX implements FileCallable<Void> {
         private static final long serialVersionUID = 1L;
         public Void invoke(File d, VirtualChannel channel) throws IOException {
             if(!Hudson.isWindows())

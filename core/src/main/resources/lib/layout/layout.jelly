@@ -181,7 +181,7 @@ THE SOFTWARE.
                   <j:whitespace> &#187; </j:whitespace>
                 </j:if>
                 <a href="${anc.url}/">
-                  ${anc.object.displayName}
+                  ${h.escape(anc.object.displayName)}
                 </a>
               </j:if>
             </j:if>

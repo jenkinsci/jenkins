@@ -1,7 +1,7 @@
 /*
  * The MIT License
  * 
- * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi
+ * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, Yahoo! Inc.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -43,7 +43,7 @@ import org.jvnet.hudson.test.Email;
 import org.jvnet.hudson.test.HudsonTestCase;
 import org.jvnet.hudson.test.recipes.LocalData;
 
-import static javax.servlet.http.HttpServletResponse.SC_BAD_REQUEST;
+import static javax.servlet.http.HttpServletResponse.SC_FORBIDDEN;
 import java.net.URL;
 import java.util.List;
 
@@ -140,7 +140,7 @@ public class HudsonTest extends HudsonTestCase {
             wc.getPage(req);
             fail("Error code expected");
         } catch (FailingHttpStatusCodeException e) {
-            assertEquals(SC_BAD_REQUEST,e.getStatusCode());
+            assertEquals(SC_FORBIDDEN,e.getStatusCode());
         }
 
         // the master computer object should be still here

@@ -1,7 +1,7 @@
 <!--
 The MIT License
 
-Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi
+Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, Yahoo! Inc.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -22,7 +22,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 -->
 
-<j:jelly xmlns:j="jelly:core" xmlns:s="jelly:stapler" xmlns:d="jelly:define">
+<j:jelly xmlns:j="jelly:core" xmlns:s="jelly:stapler" xmlns:d="jelly:define" xmlns:f="/lib/form">
   <s:documentation>
     Submit button themed by YUI. This should be always
     used instead of the plain &lt;input tag.
@@ -36,5 +36,6 @@ THE SOFTWARE.
       The text of the submit button. Something like "submit", "OK", etc.
     </s:attribute>
   </s:documentation>
+  <f:crumb/>
   <input type="submit" name="${attrs.name ?: 'Submit'}" value="${attrs.value}" class="submit-button" />
 </j:jelly>

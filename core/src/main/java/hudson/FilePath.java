@@ -620,10 +620,14 @@ public final class FilePath implements Serializable {
      * so that one can perform local file operations.
      */
     public <T> T act(final FileCallable<T> callable) throws IOException, InterruptedException {
+        return act(callable,callable.getClass().getClassLoader());
+    }
+
+    private <T> T act(final FileCallable<T> callable, ClassLoader cl) throws IOException, InterruptedException {
         if(channel!=null) {
             // run this on a remote system
             try {
-                return channel.call(new FileCallableWrapper<T>(callable));
+                return channel.call(new FileCallableWrapper<T>(callable,cl));
             } catch (AbortException e) {
                 throw e;    // pass through so that the caller can catch it as AbortException
             } catch (IOException e) {
@@ -969,7 +973,7 @@ public final class FilePath implements Serializable {
 
                 return r;
             }
-        });
+        }, (filter!=null?filter:this).getClass().getClassLoader());
     }
 
     /**
@@ -1688,9 +1692,16 @@ public final class FilePath implements Serializable {
      */
     private class FileCallableWrapper<T> implements DelegatingCallable<T,IOException> {
         private final FileCallable<T> callable;
+        private transient ClassLoader classLoader;
 
         public FileCallableWrapper(FileCallable<T> callable) {
             this.callable = callable;
+            this.classLoader = callable.getClass().getClassLoader();
+        }
+
+        private FileCallableWrapper(FileCallable<T> callable, ClassLoader classLoader) {
+            this.callable = callable;
+            this.classLoader = classLoader;
         }
 
         public T call() throws IOException {
@@ -1698,7 +1709,7 @@ public final class FilePath implements Serializable {
         }
 
         public ClassLoader getClassLoader() {
-            return callable.getClass().getClassLoader();
+            return classLoader;
         }
 
         private static final long serialVersionUID = 1L;

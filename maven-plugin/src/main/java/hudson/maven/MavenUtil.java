@@ -144,7 +144,10 @@ public class MavenUtil {
         List<MavenProject> modules = new ArrayList<MavenProject>();
 
         for (String modulePath : (List<String>) project.getModules()) {
-            File moduleFile = new File(new File(basedir, modulePath),"pom.xml");
+            File moduleFile = new File(basedir, modulePath);
+            if (moduleFile.exists() && moduleFile.isDirectory()) {
+                moduleFile = new File(basedir, modulePath + "/pom.xml");
+            }
             if(!moduleFile.exists())
                 throw new AbortException(moduleFile+" is referenced from "+project.getFile()+" but it doesn't exist");
 

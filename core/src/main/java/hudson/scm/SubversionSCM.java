@@ -96,6 +96,7 @@ import org.tmatesoft.svn.core.wc.SVNWCUtil;
 import org.tmatesoft.svn.core.wc.SVNLogClient;
 
 import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletResponse;
 import javax.xml.transform.stream.StreamResult;
 import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
@@ -1286,6 +1287,10 @@ public class SubversionSCM extends SCM implements Serializable {
 
             MultipartFormDataParser parser = new MultipartFormDataParser(req);
 
+            if(Hudson.getInstance().isUseCrumbs() && !Hudson.getInstance().getCrumbIssuer().validateCrumb(req, parser)) {
+                rsp.sendError(HttpServletResponse.SC_FORBIDDEN,"No crumb found");                
+            }
+            
             String url = parser.get("url");
 
             String kind = parser.get("kind");

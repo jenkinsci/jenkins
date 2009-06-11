@@ -455,13 +455,10 @@ public class Maven extends Builder {
                     return FormValidation.ok();
 
                 if(value.getPath().equals(""))
-                    return FormValidation.error(Messages.Maven_MavenHomeRequired());
-                if(value.exists() && !value.isDirectory())
-                    return FormValidation.error(Messages.Maven_NotADirectory(value));
-
-                if(!value.exists())
-                    // no such directory yet. perhaps it's meant to be created?
                     return FormValidation.ok();
+
+                if(!value.isDirectory())
+                    return FormValidation.error(Messages.Maven_NotADirectory(value));
 
                 File maven1File = new File(value,MAVEN_1_INSTALLATION_COMMON_FILE);
                 File maven2File = new File(value,MAVEN_2_INSTALLATION_COMMON_FILE);

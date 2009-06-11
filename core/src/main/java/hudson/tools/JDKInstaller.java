@@ -32,6 +32,7 @@ import hudson.util.ArgumentListBuilder;
 import hudson.model.Node;
 import hudson.model.TaskListener;
 import hudson.model.DownloadService.Downloadable;
+import hudson.model.JDK;
 import static hudson.tools.JDKInstaller.Preference.*;
 import hudson.remoting.Callable;
 import org.kohsuke.stapler.DataBoundConstructor;
@@ -50,8 +51,8 @@ import java.io.IOException;
 import java.io.PrintStream;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
-import java.io.PrintWriter;
 import java.io.Serializable;
+import java.io.PrintWriter;
 import java.net.URL;
 import java.net.HttpURLConnection;
 import java.net.URLEncoder;
@@ -96,7 +97,7 @@ public class JDKInstaller extends ToolInstaller {
     }
 
     public FilePath performInstallation(ToolInstallation tool, Node node, TaskListener log) throws IOException, InterruptedException {
-        FilePath expectedLocation = node.createPath(tool.getHome());
+        FilePath expectedLocation = preferredLocation(tool, node);
         PrintStream out = log.getLogger();
         try {
             if(!acceptLicense) {
@@ -442,6 +443,11 @@ public class JDKInstaller extends ToolInstaller {
     public static final class DescriptorImpl extends ToolInstallerDescriptor<JDKInstaller> {
         public String getDisplayName() {
             return Messages.JDKInstaller_DescriptorImpl_displayName();
+        }
+
+        @Override
+        public boolean isApplicable(Class<? extends ToolInstallation> toolType) {
+            return toolType==JDK.class;
         }
 
         public FormValidation doCheckId(@QueryParameter String value) {

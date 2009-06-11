@@ -268,7 +268,7 @@ public class User extends AbstractModelObject implements AccessControlled, Savea
     public static User get(String id, boolean create) {
         if(id==null)
             return null;
-        id = id.replace('\\', '_').replace('/', '_');
+        id = id.replace('\\', '_').replace('/', '_').replace('<','_');
         
         synchronized(byName) {
             User u = byName.get(id);

@@ -1,0 +1,8 @@
+<div>
+  The salt value is taken as an input to the crumb generation algorithm. It acts
+  as further randomization to complicate dictionary style attacks against the
+  algorithm. In the context of CSRF exploits against Hudson servers, each Hudson
+  server should use a different salt value. If multiple Hudson servers all use
+  a crumb generation algorithm that gets broken, the salt prevents an attacker
+  from running CSRF exploits against all these servers.
+</div>

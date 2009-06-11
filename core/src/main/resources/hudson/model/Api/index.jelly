@@ -79,7 +79,7 @@ THE SOFTWARE.
         <a href="http://hudson.gotdns.com/wiki/display/HUDSON/Remote+access+API">the documentation</a>.
       </p>
 
-      <h2>Controling the amount of data you fetch</h2>
+      <h2>Controlling the amount of data you fetch</h2>
       <p>
         In both formats, the <tt>depth</tt> query parameter can be used to control the amount of data
         you'll receive. The default is <tt>depth=0</tt>, but by increasing this value you can get

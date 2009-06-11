@@ -34,7 +34,7 @@ THE SOFTWARE.
   <h2>Copy Job</h2>
   <p>
     To copy a job, send a POST request to <a href="../createItem">this URL</a> with
-    three query parameters <tt>name=<i>NEWJOBNAME</i>&amp;mode=copyJob&amp;from=<i>FROMJOBNAME</i></tt>
+    three query parameters <tt>name=<i>NEWJOBNAME</i>&amp;mode=copy&amp;from=<i>FROMJOBNAME</i></tt>
   </p>
 
   <h2>Build Queue</h2>
