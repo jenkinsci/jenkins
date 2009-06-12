@@ -438,7 +438,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
     }
 
     /**
-     * Gets the string that says how long since this build has scheduled.
+     * Gets the string that says how long since this build has started.
      *
      * @return
      *      string like "3 minutes" "1 day" etc.
