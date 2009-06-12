@@ -32,9 +32,16 @@ public interface ResourceActivity {
     /**
      * Gets the list of {@link Resource}s that this task requires.
      * Used to make sure no two conflicting tasks run concurrently.
+     *
      * <p>
      * This method must always return the {@link ResourceList}
      * that contains the exact same set of {@link Resource}s.
+     *
+     * <p>
+     * If the activity doesn't lock any resources, just
+     * return {@code new ResourceList()}.
+     *
+     * @return never null 
      */
     ResourceList getResourceList();
     
