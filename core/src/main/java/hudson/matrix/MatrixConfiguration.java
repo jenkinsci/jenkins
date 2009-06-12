@@ -303,7 +303,7 @@ public class MatrixConfiguration extends Project<MatrixConfiguration,MatrixRun> 
     }
     
 	public boolean scheduleBuild(ParametersAction parameters, Cause c) {
-        return Hudson.getInstance().getQueue().add(this, getQuietPeriod(), parameters, new CauseAction(c));
+        return Hudson.getInstance().getQueue().schedule(this, getQuietPeriod(), parameters, new CauseAction(c))!=null;
 	}
 	
 }

@@ -127,8 +127,10 @@ public class Executor extends Thread implements ModelObject {
                 } finally {
                     finishTime = System.currentTimeMillis();
                     if (problems == null) {
+                        queueItem.future.set(executable);
                         owner.taskCompleted(this, task, finishTime - startTime);
                     } else {
+                        queueItem.future.set(problems);
                         owner.taskCompletedWithProblems(this, task, finishTime - startTime, problems);
                     }
                 }

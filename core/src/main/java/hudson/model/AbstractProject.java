@@ -35,6 +35,7 @@ import hudson.model.Descriptor.FormException;
 import hudson.model.Fingerprint.RangeSet;
 import hudson.model.RunMap.Constructor;
 import hudson.model.listeners.RunListener;
+import hudson.model.Queue.WaitingItem;
 import hudson.remoting.AsyncFutureImpl;
 import hudson.scm.ChangeLogSet;
 import hudson.scm.ChangeLogSet.Entry;
@@ -493,8 +494,16 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
      * @return whether the build was actually scheduled
      */
     public boolean scheduleBuild(int quietPeriod, Cause c, Action... actions) {
+        return scheduleBuild2(quietPeriod,c,actions)!=null;
+    }
+
+    /**
+     * Schedules a build of this project, and returns a {@link Future} object
+     * to wait for the completion of the build.
+     */
+    public Future<R> scheduleBuild2(int quietPeriod, Cause c, Action... actions) {
         if (isDisabled())
-            return false;
+            return null;
 
         List<Action> queueActions = new ArrayList(Arrays.asList(actions));
         if (isParameterized() && Util.filter(queueActions, ParametersAction.class).isEmpty()) {
@@ -505,10 +514,10 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
             queueActions.add(new CauseAction(c));
         }
 
-        return Hudson.getInstance().getQueue().add(
-                this,
-                quietPeriod,
-                queueActions.toArray(new Action[queueActions.size()]));
+        WaitingItem i = Hudson.getInstance().getQueue().schedule(this, quietPeriod, queueActions);
+        if(i!=null)
+            return (Future)i.getFuture();
+        return null;
     }
 
     private List<ParameterValue> getDefaultParametersValues() {
@@ -551,34 +560,6 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
      */
     public Future<R> scheduleBuild2(int quietPeriod, Cause c) {
         return scheduleBuild2(quietPeriod, c, new Action[0]);
-    }
-
-    /**
-     * Schedules a build of this project, and returns a {@link Future} object
-     * to wait for the completion of the build.
-     */
-    public Future<R> scheduleBuild2(int quietPeriod, Cause c, Action... actions) {
-        R lastBuild = getLastBuild();
-        final int n;
-        if(lastBuild!=null) n = lastBuild.getNumber();
-        else                n = -1;
-
-        Future<R> f = new AsyncFutureImpl<R>() {
-            final RunListener r = new RunListener<AbstractBuild>(AbstractBuild.class) {
-                public void onFinalized(AbstractBuild r) {
-                    if(r.getProject()==AbstractProject.this && r.getNumber()>n) {
-                        set((R)r);
-                        unregister();
-                    }
-                }
-            };
-
-            { r.register(); }
-        };
-
-        scheduleBuild(quietPeriod, c, actions);
-
-        return f;
     }
 
     /**
@@ -1108,7 +1089,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
                     // TODO: more unit handling
                     if(delay.endsWith("sec"))   delay=delay.substring(0,delay.length()-3);
                     if(delay.endsWith("secs"))  delay=delay.substring(0,delay.length()-4);
-                    Hudson.getInstance().getQueue().add(this, Integer.parseInt(delay), 
+                    Hudson.getInstance().getQueue().schedule(this, Integer.parseInt(delay),
                     		new CauseAction(cause));
                 } catch (NumberFormatException e) {
                     throw new ServletException("Invalid delay parameter value: "+delay);

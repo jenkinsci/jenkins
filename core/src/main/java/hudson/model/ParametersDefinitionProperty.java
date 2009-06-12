@@ -103,7 +103,7 @@ public class ParametersDefinitionProperty extends JobProperty<AbstractProject<?,
             values.add(parameterValue);
         }
 
-    	Hudson.getInstance().getQueue().add(
+    	Hudson.getInstance().getQueue().schedule(
     			owner, 0, new ParametersAction(values), new CauseAction(new Cause.UserCause()));
 
         // send the user back to the job top page.
@@ -121,7 +121,7 @@ public class ParametersDefinitionProperty extends JobProperty<AbstractProject<?,
         	}
         }
 
-    	Hudson.getInstance().getQueue().add(
+    	Hudson.getInstance().getQueue().schedule(
     			owner, 0, new ParametersAction(values), new CauseAction(new Cause.UserCause()));
 
         // send the user back to the job top page.
