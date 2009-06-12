@@ -91,7 +91,7 @@ THE SOFTWARE.
       <j:if test="${!empty(h.crumbIssuerDescriptors)}">
 	    <f:optionalBlock name="csrf" title="${%Prevent Cross Site Request Forgery exploits}"
 	                     checked="${it.useCrumbs}" help="/help/system-config/csrf.html">
-	      <f:entry title="${Crumbs}">
+	      <f:entry title="${%Crumbs}">
 	        <table style="width:100%">
 	          <f:descriptorRadioList title="${%Crumb Algorithm}" varName="issuer"
 	                                 instance="${it.crumbIssuer}"
