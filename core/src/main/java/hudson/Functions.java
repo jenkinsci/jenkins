@@ -1167,16 +1167,6 @@ public class Functions {
         return builder.toString();
     }
     
-    public static String getReplaceDescriptionInvoker(StaplerRequest req) {
-    	StringBuilder builder = new StringBuilder();
-    	if (isAutoRefresh(req)) {
-    		builder.append("null");
-    	} else {
-    		builder.append("'return replaceDescription();'");
-    	}
-    	return builder.toString();
-    }
-    
     private static final Pattern SCHEME = Pattern.compile("[a-z]+://.+");
 
     /**
