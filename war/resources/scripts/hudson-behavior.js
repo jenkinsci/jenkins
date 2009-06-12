@@ -55,6 +55,16 @@ var crumb = {
         if(this.fieldName!=null)
             hash[this.fieldName]=this.value;
         return hash;
+    },
+
+    /**
+     * Puts a hidden input field to the form so that the form submission will have the crumb value
+     */
+    appendToForm : function(form) {
+        if(this.fieldName==null)    return; // noop
+        var div = document.createElement("div");
+        div.innerHTML = "<input type=hidden name='"+this.fieldName+"' value='"+this.value+"'>";
+        form.appendChild(div);
     }
 }
 
@@ -531,6 +541,7 @@ var hudsonRules = {
 
     // structured form submission
     "FORM" : function(form) {
+        crumb.appendToForm(form);
         if(Element.hasClassName("no-json"))
             return;
         // add the hidden 'json' input field, which receives the form structure in JSON
@@ -538,7 +549,7 @@ var hudsonRules = {
         div.innerHTML = "<input type=hidden name=json value=init>";
         form.appendChild(div);
         
-        form.onsubmit = function() { buildFormTree(this) };
+        form.onsubmit = function() { buildFormTree(this); };
         form = null; // memory leak prevention
     },
 
