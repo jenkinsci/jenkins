@@ -1172,13 +1172,7 @@ public class Functions {
     	if (isAutoRefresh(req)) {
     		builder.append("null");
     	} else {
-    		builder.append("'return replaceDescription(");
-    		builder.append("\\'");
-    		builder.append(getCrumbRequestField());
-    		builder.append("\\',\\'");
-    		builder.append(getCrumb(req));
-    		builder.append("\\'");
-    		builder.append(");'");
+    		builder.append("'return replaceDescription();'");
     	}
     	return builder.toString();
     }

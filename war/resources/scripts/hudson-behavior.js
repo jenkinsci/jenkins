@@ -38,6 +38,17 @@ function object(o) {
 // id generator
 var iota = 0;
 
+// crumb information
+var crumb = {
+    fieldName: null,
+    value: null,
+
+    init: function(crumbField, crumbValue) {
+        this.fieldName = crumbField;
+        this.value = crumbValue;
+    }
+}
+
 // Form check code
 //========================================================
 var FormChecker = {
@@ -72,6 +83,7 @@ var FormChecker = {
         if (params.method == "post") {
             var idx = url.indexOf('?');
             params.parameters = url.substring(idx + 1);
+            params.parameters[crumb.fieldName] = crumb.value;
             url = url.substring(0, idx);
         }
         new Ajax.Request(url, params);
@@ -623,11 +635,11 @@ function xor(a,b) {
 }
 
 // used by editableDescription.jelly to replace the description field with a form
-function replaceDescription(crumbName,crumb) {
+function replaceDescription() {
     var d = document.getElementById("description");
     d.firstChild.nextSibling.innerHTML = "<div class='spinner-right'>loading...</div>";
     var params = new Array(1);
-    params[crumbName] = crumb;
+    params[crumb.fieldName] = crumb.value;
     new Ajax.Request(
         "./descriptionForm",
         {
@@ -806,10 +818,10 @@ function expandTextArea(button,id) {
 
 // refresh a part of the HTML specified by the given ID,
 // by using the contents fetched from the given URL.
-function refreshPart(id,url,crumbName,crumb) {
+function refreshPart(id,url) {
     var f = function() {
     	var params = new Array(1);
-    	params[crumbName] = crumb;
+    	params[crumb.fieldName] = crumb.value;
         new Ajax.Request(url, {
             method: "post",
             parameters: params,
@@ -828,7 +840,7 @@ function refreshPart(id,url,crumbName,crumb) {
                 Behaviour.applySubtree(node);
 
                 if(isRunAsTest) return;
-                refreshPart(id,url,crumbName,crumb);
+                refreshPart(id,url);
             }
         });
     };
@@ -1080,14 +1092,14 @@ function addRadioBlock(id) {
 }
 
 
-function updateBuildHistory(ajaxUrl,nBuild,crumbName,crumb) {
+function updateBuildHistory(ajaxUrl,nBuild) {
     if(isRunAsTest) return;
     $('buildHistory').headers = ["n",nBuild];
 
     function updateBuilds() {
         var bh = $('buildHistory');
     	var params = new Array(1);
-    	params[crumbName] = crumb;
+    	params[crumb.fieldName] = crumb.value;
         new Ajax.Request(ajaxUrl, {
             requestHeaders: bh.headers,
             method: "post",
@@ -1121,9 +1133,9 @@ function updateBuildHistory(ajaxUrl,nBuild,crumbName,crumb) {
 
 // send async request to the given URL (which will send back serialized ListBoxModel object),
 // then use the result to fill the list box.
-function updateListBox(listBox,url,crumbName,crumb) {
-	var params = new Array(1);
-	params[crumbName] = crumb;
+function updateListBox(listBox,url) {
+    var params = new Array(1);
+    params[crumb.fieldName] = crumb.value;
     new Ajax.Request(url, {
         method: "post",
         parameters: params,
@@ -1513,8 +1525,6 @@ function loadScript(href) {
 
 var downloadService = {
     continuations: {},
-    crumbName: null,
-    crumb: null,
 
     download : function(id,url,info, postBack,completionHandler) {
         this.continuations[id] = {postBack:postBack,completionHandler:completionHandler};
@@ -1525,7 +1535,7 @@ var downloadService = {
         var o = this.continuations[id];
         var params = new Array(2);
         params["json"] = Object.toJSON(data);
-        params[downloadService.crumbName] = downloadService.crumb;
+        params[crumb.fieldName] = crumb.value;
         new Ajax.Request(o.postBack, {
             method:"post",
             parameters:params,
@@ -1543,8 +1553,6 @@ var updateCenter = {
     postBackURL : null,
     info: {},
     completionHandler: null,
-    crumbName: null,
-    crumb: null,
     url: "https://hudson.dev.java.net/",
 
     checkUpdates : function() {
@@ -1554,7 +1562,7 @@ var updateCenter = {
     post : function(data) {
     	var params = new Array(2);
     	params["json"] = Object.toJSON(data);
-    	params[updateCenter.crumbName] = updateCenter.crumb;
+    	params[crumb.fieldName] = crumb.value;
         new Ajax.Request(updateCenter.postBackURL, {
             method:"post",
             parameters:params,
@@ -1612,6 +1620,7 @@ function validateButton(checkUrl,paramList,button) {
 
   var parameters = {};
 
+  parameters[crumb.fieldName] = crumb.value;
   paramList.split(',').each(function(name) {
       var p = findPreviousFormItem(button,name);
       if(p!=null)

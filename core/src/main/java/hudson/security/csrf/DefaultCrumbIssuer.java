@@ -58,8 +58,7 @@ public class DefaultCrumbIssuer extends CrumbIssuer {
                 buffer.append(req.getRemoteAddr());
 
                 md.update(buffer.toString().getBytes());
-                md.update(salt.getBytes());
-                byte[] crumbBytes = md.digest(Hudson.getInstance().getSecretKey().getBytes());
+                byte[] crumbBytes = md.digest(salt.getBytes());
 
                 StringBuilder hexString = new StringBuilder();
                 for (int i = 0; i < crumbBytes.length; i++) {
@@ -93,13 +92,13 @@ public class DefaultCrumbIssuer extends CrumbIssuer {
     public static final class DescriptorImpl extends CrumbIssuerDescriptor<DefaultCrumbIssuer> implements ModelObject {
 
         public DescriptorImpl() {
-            super(null, null);
+            super(Hudson.getInstance().getSecretKey(), System.getProperty("hudson.security.csrf.requestfield", ".crumb"));
             load();
         }
 
         @Override
         public String getDisplayName() {
-            return "Default Crumb Issuer";
+            return Messages.DefaultCrumbIssuer_DisplayName();
         }
 
         public DefaultCrumbIssuer newInstance(StaplerRequest req, JSONObject formData) throws FormException {

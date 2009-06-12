@@ -35,8 +35,6 @@ THE SOFTWARE.
       updateCenter.postBackURL = "${rootURL}/updateCenter/postBack";
       updateCenter.info = { version:"${h.version}" }; 
       updateCenter.url = "${h.updateCenterUrl}";
-      updateCenter.crumbName = "${h.getCrumbRequestField()}";
-      updateCenter.crumb = "${h.getCrumb(request)}";
       Behaviour.addLoadEvent(updateCenter.checkUpdates);
     </script>
   </j:if>

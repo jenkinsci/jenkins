@@ -94,7 +94,7 @@ THE SOFTWARE.
     </j:choose>
     <j:if test="${ajax==null and attrs.autoRefresh and !h.isAutoRefresh(request)}">
       <script defer="defer">
-        refreshPart('matrix',"./ajaxMatrix","${h.getCrumbRequestField()}","${h.getCrumb(request)}");
+        refreshPart('matrix',"./ajaxMatrix");
       </script>
     </j:if>
   </div>

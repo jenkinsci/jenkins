@@ -75,43 +75,4 @@ public abstract class CrumbIssuerDescriptor<T extends CrumbIssuer> extends Descr
             crumbRequestField = requestField;
         }
     }
-
-    @Override
-    public boolean configure(StaplerRequest request) {
-        setCrumbSalt(request.getParameter("csrf_crumbSalt"));
-        setCrumbRequestField(request.getParameter("csrf_crumbRequestField"));
-        save();
-
-        return true;
-    }
-
-    /**
-     * Returns the Jelly script that contains common configuration.
-     */
-    @Override
-    public final String getConfigPage() {
-        return getViewPage(CrumbIssuer.class, "config.jelly");
-    }
-
-    /**
-     * Returns a subclass specific configuration page. The base CrumbIssuerDescriptor
-     * class provides configuration options that are common to all crumb issuers.
-     * Implementations may provide additional configuration options which are
-     * kept in Jelly script file tied to the subclass.
-     * <p>
-     * By default, an empty string is returned, which signifies no additional
-     * configuration is needed for a crumb issuer. Override this method if your
-     * crumb issuer has additional configuration options.
-     * <p>
-     * A typical implementation of this method would look like:
-     * <p>
-     * <code>
-     * return getViewPage(clazz, "config.jelly");
-     * </code>
-     *
-     * @return An empty string, signifying no additional configuration.
-     */
-    public String getSubConfigPage() {
-        return "";
-    }
 }
