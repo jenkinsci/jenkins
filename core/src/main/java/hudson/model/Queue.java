@@ -967,6 +967,11 @@ public class Queue extends ResourceController implements Saveable {
          * Called by {@link Executor} to perform the task
          */
         void run();
+
+        /**
+         * Used to render the HTML. Should be a human readable text of what this executable is.
+         */
+        String toString();
     }
 
     /**
