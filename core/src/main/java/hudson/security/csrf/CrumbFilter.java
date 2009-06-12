@@ -93,7 +93,8 @@ public class CrumbFilter implements Filter {
                 chain.doFilter(request, response);
             } else {
                 LOGGER.warning("No valid crumb was included in request for " + httpRequest.getRequestURI() + ".  Returning " + HttpServletResponse.SC_FORBIDDEN + ".");
-                ((HttpServletResponse) response).sendError(HttpServletResponse.SC_FORBIDDEN);
+                HttpServletResponse httpResponse = (HttpServletResponse) response;
+                httpResponse.sendError(HttpServletResponse.SC_FORBIDDEN,"No valid crumb was included in the request");
             }
         } else {
             chain.doFilter(request, response);
