@@ -92,7 +92,6 @@ var FormChecker = {
         if (params.method == "post") {
             var idx = url.indexOf('?');
             params.parameters = url.substring(idx + 1);
-            params.parameters[crumb.fieldName] = crumb.value;
             url = url.substring(0, idx);
         }
         new Ajax.Request(url, params);
@@ -647,13 +646,9 @@ function xor(a,b) {
 function replaceDescription() {
     var d = document.getElementById("description");
     d.firstChild.nextSibling.innerHTML = "<div class='spinner-right'>loading...</div>";
-    var params = new Array(1);
-    params[crumb.fieldName] = crumb.value;
     new Ajax.Request(
         "./descriptionForm",
         {
-          method : 'post',
-          parameters : params,
           onComplete : function(x) {
             d.innerHTML = x.responseText;
             Behaviour.applySubtree(d);
@@ -829,11 +824,7 @@ function expandTextArea(button,id) {
 // by using the contents fetched from the given URL.
 function refreshPart(id,url) {
     var f = function() {
-    	var params = new Array(1);
-    	params[crumb.fieldName] = crumb.value;
         new Ajax.Request(url, {
-            method: "post",
-            parameters: params,
             onSuccess: function(rsp) {
                 var hist = $(id);
                 var p = hist.parentNode;
@@ -1107,12 +1098,8 @@ function updateBuildHistory(ajaxUrl,nBuild) {
 
     function updateBuilds() {
         var bh = $('buildHistory');
-    	var params = new Array(1);
-    	params[crumb.fieldName] = crumb.value;
         new Ajax.Request(ajaxUrl, {
             requestHeaders: bh.headers,
-            method: "post",
-            parameters: params,
             onSuccess: function(rsp) {
                 var rows = bh.rows;
 
@@ -1143,11 +1130,7 @@ function updateBuildHistory(ajaxUrl,nBuild) {
 // send async request to the given URL (which will send back serialized ListBoxModel object),
 // then use the result to fill the list box.
 function updateListBox(listBox,url) {
-    var params = new Array(1);
-    params[crumb.fieldName] = crumb.value;
     new Ajax.Request(url, {
-        method: "post",
-        parameters: params,
         onSuccess: function(rsp) {
             var l = $(listBox);
             while(l.length>0)   l.options[0] = null;
@@ -1542,12 +1525,8 @@ var downloadService = {
 
     post : function(id,data) {
         var o = this.continuations[id];
-        var params = new Array(2);
-        params["json"] = Object.toJSON(data);
-        params[crumb.fieldName] = crumb.value;
         new Ajax.Request(o.postBack, {
-            method:"post",
-            parameters:params,
+            parameters:{json:Object.toJSON(data)},
             onSuccess: function() {
                 if(o.completionHandler!=null)
                     o.completionHandler();
@@ -1569,12 +1548,8 @@ var updateCenter = {
     },
 
     post : function(data) {
-    	var params = new Array(2);
-    	params["json"] = Object.toJSON(data);
-    	params[crumb.fieldName] = crumb.value;
         new Ajax.Request(updateCenter.postBackURL, {
-            method:"post",
-            parameters:params,
+            parameters:{json:Object.toJSON(data)},
             onSuccess: function() {
                 if(updateCenter.completionHandler!=null)
                     updateCenter.completionHandler();
@@ -1629,7 +1604,6 @@ function validateButton(checkUrl,paramList,button) {
 
   var parameters = {};
 
-  parameters[crumb.fieldName] = crumb.value;
   paramList.split(',').each(function(name) {
       var p = findPreviousFormItem(button,name);
       if(p!=null)
@@ -1641,7 +1615,6 @@ function validateButton(checkUrl,paramList,button) {
   spinner.style.display="block";
 
   new Ajax.Request(checkUrl, {
-      method: "post",
       parameters: parameters,
       onComplete: function(rsp) {
           spinner.style.display="none";

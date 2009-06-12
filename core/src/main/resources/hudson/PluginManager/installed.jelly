@@ -110,7 +110,6 @@ THE SOFTWARE.
 
           <!-- trigger -->
           new Ajax.Request(btn.getAttribute('url')+"/make"+(btn.checked?"Enable":"Disable")+"d", {
-            parameters: crumb.wrap({}),
             onFailure : function(req,o) {
               $('needRestart').innerHTML = req.responseText;
             }
