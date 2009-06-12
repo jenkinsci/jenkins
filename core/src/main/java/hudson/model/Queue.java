@@ -225,29 +225,29 @@ public class Queue extends ResourceController implements Saveable {
                 queueFile = getXMLQueueFile();
                 if (queueFile.exists()) {
                     List list = (List) new XmlFile(XSTREAM, queueFile).read();
-                    if (!list.isEmpty()) {
-                    	if (list.get(0) instanceof Queue.Task) {
-                    		// backward compatiblity
-                    		for (Task task : (List<Task>) list) {
-                    			add(task, 0);
-                    		}
-                    	} else if (list.get(0) instanceof Item) {
-                    		int maxId = 0;
-                    		for (Item item: (List<Item>) list) {
-                    			maxId = Math.max(maxId, item.id);
-                    			if (item instanceof WaitingItem) {
-                    				waitingList.add((WaitingItem) item);
-                    			} else if (item instanceof BlockedItem) {
-                    				blockedProjects.put(item.task, (BlockedItem) item);
-                    			} else if (item instanceof BuildableItem) {
-                    				buildables.add((BuildableItem) item);
-                    			} else {
-                    				throw new IllegalStateException("Unknown item type! " + item);
-                    			}
-                    		}
-                    		WaitingItem.COUNTER.set(maxId);
-                    	}
+                    int maxId = 0;
+                    for (Object o : list) {
+                        if (o instanceof Task) {
+                            // backward compatiblity
+                            add((Task)o, 0);
+                        } else if (o instanceof Item) {
+                            Item item = (Item)o;
+                            if(item.task==null)
+                                continue;   // botched persistence. throw this one away
+
+                            maxId = Math.max(maxId, item.id);
+                            if (item instanceof WaitingItem) {
+                                waitingList.add((WaitingItem) item);
+                            } else if (item instanceof BlockedItem) {
+                                blockedProjects.put(item.task, (BlockedItem) item);
+                            } else if (item instanceof BuildableItem) {
+                                buildables.add((BuildableItem) item);
+                            } else {
+                                throw new IllegalStateException("Unknown item type! " + item);
+                            }
+                        } // this conveniently ignores null
                     }
+                    WaitingItem.COUNTER.set(maxId);
 
                     // I just had an incident where all the executors are dead at AbstractProject._getRuns()
                     // because runs is null. Debugger revealed that this is caused by a MatrixConfiguration
@@ -274,9 +274,10 @@ public class Queue extends ResourceController implements Saveable {
         // write out the tasks on the queue
     	ArrayList<Queue.Item> items = new ArrayList<Queue.Item>();
     	for (Item item: getItems()) {
+            if(item.task instanceof TransientTask)  continue;
     	    items.add(item);
     	}
-    	
+
         try {
             new XmlFile(XSTREAM, getXMLQueueFile()).write(items);
         } catch (IOException e) {
@@ -801,6 +802,12 @@ public class Queue extends ResourceController implements Saveable {
     }
 
     /**
+     * Marks {@link Task}s that are not persisted.
+     * @since 1.311
+     */
+    public interface TransientTask extends Task {}
+
+    /**
      * Task whose execution is controlled by the queue.
      *
      * <p>
@@ -810,7 +817,8 @@ public class Queue extends ResourceController implements Saveable {
      *
      * <p>
      * Pending {@link Task}s are persisted when Hudson shuts down, so
-     * it needs to be persistable.
+     * it needs to be persistable via XStream. To create a non-persisted
+     * transient Task, extend {@link TransientTask} marker interface.
      */
     public interface Task extends ModelObject, ResourceActivity {
         /**
