@@ -1032,7 +1032,7 @@ Ajax.Request.prototype = Object.extend(new Ajax.Base(), {
     this.setOptions(options);
     // KK patch -- handle crumb for POST automatically
     if(this.options.method=="post")
-      crumb.wrap(this.options);
+      crumb.wrap(this.options.parameters);
     // KK patch until here
     this.request(url);
   },
