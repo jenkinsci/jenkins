@@ -47,7 +47,7 @@ THE SOFTWARE.
           window.setTimeout(function() {
               new Ajax.Request("./body", {
                   method: "post",
-                  ${h.getCrumbAsJSONParameterBlock(request)},
+                  parameters: crumb.wrap({}),
                   onSuccess: function(rsp) {
                       var div = document.createElement('div');
                       div.innerHTML = rsp.responseText;

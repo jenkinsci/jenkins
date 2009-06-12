@@ -46,6 +46,15 @@ var crumb = {
     init: function(crumbField, crumbValue) {
         this.fieldName = crumbField;
         this.value = crumbValue;
+    },
+
+    /**
+     * Adds the crumb value into the given hash and returns the hash.
+     */
+    wrap: function(hash) {
+        if(this.fieldName!=null)
+            hash[this.fieldName]=this.value;
+        return hash;
     }
 }
 
