@@ -99,7 +99,7 @@ THE SOFTWARE.
                   <j:choose>
                     <j:when test="${h.hasPermission(e.currentExecutable.parent,e.currentExecutable.parent.READ)}">
                       <a href="${rootURL}/${e.currentExecutable.url}">${e.currentExecutable}</a>
-                      <t:buildProgressBar build="${e.currentExecutable}"/>
+                      <t:buildProgressBar build="${e.currentExecutable}" executor="${e}"/>
                     </j:when>
                     <j:otherwise>
                       <span>${%Unknown Task}</span>
