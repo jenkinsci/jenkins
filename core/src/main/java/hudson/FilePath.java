@@ -828,6 +828,25 @@ public final class FilePath implements Serializable {
     }
 
     /**
+     * Creates a temporary directory inside the directory represented by 'this'
+     * @since 1.311
+     */
+    public FilePath createTempDir(final String prefix, final String suffix) throws IOException, InterruptedException {
+        try {
+            return new FilePath(this,act(new FileCallable<String>() {
+                public String invoke(File dir, VirtualChannel channel) throws IOException {
+                    File f = File.createTempFile(prefix, suffix, dir);
+                    f.delete();
+                    f.mkdir();
+                    return f.getName();
+                }
+            }));
+        } catch (IOException e) {
+            throw new IOException2("Failed to create a temp directory on "+remote,e);
+        }
+    }
+
+    /**
      * Deletes this file.
      */
     public boolean delete() throws IOException, InterruptedException {
