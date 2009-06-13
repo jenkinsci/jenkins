@@ -28,8 +28,6 @@ import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.OutputStream;
-import java.io.PipedInputStream;
-import java.io.PipedOutputStream;
 import java.io.Serializable;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -109,7 +107,7 @@ public final class Pipe implements Serializable {
      */
     public static Pipe createRemoteToLocal() {
         // OutputStream will be created on the target
-        return new Pipe(new PipedInputStream(),null);
+        return new Pipe(new FastPipedInputStream(),null);
     }
 
     /**
@@ -122,7 +120,7 @@ public final class Pipe implements Serializable {
     private void writeObject(ObjectOutputStream oos) throws IOException {
         if(in!=null && out==null) {
             // remote will write to local
-            PipedOutputStream pos = new PipedOutputStream((PipedInputStream)in);
+            FastPipedOutputStream pos = new FastPipedOutputStream((FastPipedInputStream)in);
             int oid = Channel.current().export(pos,false);  // this export is unexported in ProxyOutputStream.finalize() 
 
             oos.writeBoolean(true); // marker
@@ -152,8 +150,8 @@ public final class Pipe implements Serializable {
             final int oidRos = ois.readInt();
 
             // we want 'oidRos' to send data to this PipedOutputStream
-            PipedOutputStream pos = new PipedOutputStream();
-            PipedInputStream pis = new PipedInputStream(pos);
+            FastPipedOutputStream pos = new FastPipedOutputStream();
+            FastPipedInputStream pis = new FastPipedInputStream(pos);
             final int oidPos = channel.export(pos);
 
             // tell 'ros' to connect to our 'pos'.

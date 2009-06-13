@@ -43,6 +43,8 @@ import hudson.model.TaskListener;
 import hudson.remoting.Callable;
 import hudson.remoting.Channel;
 import hudson.remoting.VirtualChannel;
+import hudson.remoting.FastPipedInputStream;
+import hudson.remoting.FastPipedOutputStream;
 import hudson.triggers.SCMTrigger;
 import hudson.util.EditDistance;
 import hudson.util.IOException2;
@@ -105,8 +107,6 @@ import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.io.PipedInputStream;
-import java.io.PipedOutputStream;
 import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.io.Serializable;
@@ -535,8 +535,8 @@ public class SubversionSCM extends SCM implements Serializable {
 
                     // buffer the output by a separate thread so that the update operation
                     // won't be blocked by the remoting of the data
-                    PipedOutputStream pos = new PipedOutputStream();
-                    StreamCopyThread sct = new StreamCopyThread("svn log copier", new PipedInputStream(pos), listener.getLogger());
+                    FastPipedOutputStream pos = new FastPipedOutputStream();
+                    StreamCopyThread sct = new StreamCopyThread("svn log copier", new FastPipedInputStream(pos), listener.getLogger());
                     sct.start();
 
                     for (final ModuleLocation l : locations) {
