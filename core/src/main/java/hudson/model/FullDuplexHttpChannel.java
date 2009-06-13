@@ -81,31 +81,33 @@ abstract class FullDuplexHttpChannel {
         while(upload==null)
             wait();
 
-        channel = new Channel("HTTP full-duplex channel " + uuid,
-                Computer.threadPoolForRemoting, Mode.BINARY, upload, out, null, restricted);
+        try {
+            channel = new Channel("HTTP full-duplex channel " + uuid,
+                    Computer.threadPoolForRemoting, Mode.BINARY, upload, out, null, restricted);
 
-        // so that we can detect dead clients, periodically send something
-        PingThread ping = new PingThread(channel) {
-            @Override
-            protected void onDead() {
-                LOGGER.info("Duplex-HTTP session " + uuid + " is terminated");
-                // this will cause the channel to abort and subsequently clean up
-                try {
-                    upload.close();
-                } catch (IOException e) {
-                    // this can never happen
-                    throw new AssertionError(e);
+            // so that we can detect dead clients, periodically send something
+            PingThread ping = new PingThread(channel) {
+                @Override
+                protected void onDead() {
+                    LOGGER.info("Duplex-HTTP session " + uuid + " is terminated");
+                    // this will cause the channel to abort and subsequently clean up
+                    try {
+                        upload.close();
+                    } catch (IOException e) {
+                        // this can never happen
+                        throw new AssertionError(e);
+                    }
                 }
-            }
-        };
-        ping.start();
-        main(channel);
-        channel.join();
-        ping.interrupt();
-
-        // publish that we are done
-        completed=true;
-        notify();
+            };
+            ping.start();
+            main(channel);
+            channel.join();
+            ping.interrupt();
+        } finally {
+            // publish that we are done
+            completed=true;
+            notify();
+        }
     }
 
     protected abstract void main(Channel channel) throws IOException, InterruptedException;
