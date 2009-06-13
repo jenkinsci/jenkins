@@ -793,4 +793,44 @@ public class Channel implements VirtualChannel, IChannel {
     private static final ThreadLocal<Channel> CURRENT = new ThreadLocal<Channel>();
 
     private static final Logger logger = Logger.getLogger(Channel.class.getName());
+
+//    static {
+//        ConsoleHandler h = new ConsoleHandler();
+//        h.setFormatter(new Formatter(){
+//            public synchronized String format(LogRecord record) {
+//                StringBuilder sb = new StringBuilder();
+//                sb.append((record.getMillis()%100000)+100000);
+//                sb.append(" ");
+//                if (record.getSourceClassName() != null) {
+//                    sb.append(record.getSourceClassName());
+//                } else {
+//                    sb.append(record.getLoggerName());
+//                }
+//                if (record.getSourceMethodName() != null) {
+//                    sb.append(" ");
+//                    sb.append(record.getSourceMethodName());
+//                }
+//                sb.append('\n');
+//                String message = formatMessage(record);
+//                sb.append(record.getLevel().getLocalizedName());
+//                sb.append(": ");
+//                sb.append(message);
+//                sb.append('\n');
+//                if (record.getThrown() != null) {
+//                    try {
+//                        StringWriter sw = new StringWriter();
+//                        PrintWriter pw = new PrintWriter(sw);
+//                        record.getThrown().printStackTrace(pw);
+//                        pw.close();
+//                        sb.append(sw.toString());
+//                    } catch (Exception ex) {
+//                    }
+//                }
+//                return sb.toString();
+//            }
+//        });
+//        h.setLevel(Level.FINE);
+//        logger.addHandler(h);
+//        logger.setLevel(Level.FINE);
+//    }
 }
