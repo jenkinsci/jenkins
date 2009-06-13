@@ -27,7 +27,7 @@ THE SOFTWARE.
   <parent>
     <groupId>org.jvnet.hudson.main</groupId>
     <artifactId>pom</artifactId>
-    <version>1.310-SNAPSHOT</version>
+    <version>1.310</version>
     <relativePath>../pom.xml</relativePath>
   </parent>
   
@@ -247,6 +247,7 @@ THE SOFTWARE.
               </execution>
             </executions>
             <configuration>
+              <python>python2.5</python>
               <proto>../ips/proto.py</proto>
             </configuration>
           </plugin>
