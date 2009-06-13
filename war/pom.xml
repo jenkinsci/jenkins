@@ -247,6 +247,7 @@ THE SOFTWARE.
               </execution>
             </executions>
             <configuration>
+              <python>python2.5</python>
               <proto>../ips/proto.py</proto>
             </configuration>
           </plugin>
