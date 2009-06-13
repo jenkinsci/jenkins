@@ -66,7 +66,7 @@ public abstract class CrumbIssuer implements Describable<CrumbIssuer>, Extension
         if (crumb == null) {
             crumb = issueCrumb(request, getDescriptor().getCrumbSalt());
             if (request != null) {
-                if ((crumb != null) && !crumb.isEmpty()) {
+                if ((crumb != null) && crumb.length()>0) {
                     request.setAttribute(CRUMB_ATTRIBUTE, crumb);
                 } else {
                     request.removeAttribute(CRUMB_ATTRIBUTE);
