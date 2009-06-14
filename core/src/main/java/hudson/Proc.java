@@ -133,7 +133,7 @@ public abstract class Proc {
             copier = new StreamCopyThread(name+": stdout copier", proc.getInputStream(), out);
             copier.start();
             if(in!=null)
-                new ByteCopier(name+": stdin copier",in,proc.getOutputStream()).start();
+                new StdinCopyThread(name+": stdin copier",in,proc.getOutputStream()).start();
             else
                 proc.getOutputStream().close();
         }
@@ -204,11 +204,15 @@ public abstract class Proc {
             ProcessTreeKiller.get().kill(proc,cookie);
         }
 
-        private static class ByteCopier extends Thread {
+        /**
+         * {@link Process#getOutputStream()} is buffered, so we need to eagerly flash
+         * the stream to push bytes to the process.
+         */
+        private static class StdinCopyThread extends Thread {
             private final InputStream in;
             private final OutputStream out;
 
-            public ByteCopier(String threadName, InputStream in, OutputStream out) {
+            public StdinCopyThread(String threadName, InputStream in, OutputStream out) {
                 super(threadName);
                 this.in = in;
                 this.out = out;
@@ -216,13 +220,17 @@ public abstract class Proc {
 
             public void run() {
                 try {
-                    while(true) {
-                        int ch = in.read();
-                        if(ch==-1)  break;
-                        out.write(ch);
+                    try {
+                        byte[] buf = new byte[8192];
+                        int len;
+                        while ((len = in.read(buf)) > 0) {
+                            out.write(buf, 0, len);
+                            out.flush();
+                        }
+                    } finally {
+                        in.close();
+                        out.close();
                     }
-                    in.close();
-                    out.close();
                 } catch (IOException e) {
                     // TODO: what to do?
                 }
