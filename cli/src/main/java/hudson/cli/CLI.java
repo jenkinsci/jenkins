@@ -56,6 +56,11 @@ public class CLI implements Closeable {
     }
 
     public CLI(URL hudson, ExecutorService exec) throws IOException, InterruptedException {
+        String url = hudson.toExternalForm();
+        if(!url.endsWith("/"))  url+='/';
+        url+="cli";
+        hudson = new URL(url);
+
         FullDuplexHttpStream con = new FullDuplexHttpStream(hudson);
         ownsPool = exec==null;
         pool = exec!=null ? exec : Executors.newCachedThreadPool();
@@ -107,8 +112,6 @@ public class CLI implements Closeable {
             printUsageAndExit(Messages.CLI_NoURL());
             return;
         }
-        if(!url.endsWith("/"))  url+='/';
-        url+="cli";
 
         if(args.isEmpty())
             args = Arrays.asList("help"); // default to help
