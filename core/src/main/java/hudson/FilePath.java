@@ -43,6 +43,7 @@ import hudson.util.FormValidation;
 import static hudson.util.jna.GNUCLibrary.LIBC;
 import static hudson.Util.fixEmpty;
 import static hudson.FilePath.TarCompression.GZIP;
+import hudson.os.PosixAPI;
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.DirectoryScanner;
 import org.apache.tools.ant.Project;
@@ -938,15 +939,36 @@ public final class FilePath implements Serializable {
      *
      * On Windows, no-op.
      *
+     * @param mask
+     *      File permission mask. To simplify the permission copying,
+     *      if the parameter is -1, this method becomes no-op.
      * @since 1.303
+     * @see #mode()
      */
     public void chmod(final int mask) throws IOException, InterruptedException {
-        if(!isUnix())   return;
+        if(!isUnix() || mask==-1)   return;
         act(new FileCallable<Void>() {
             public Void invoke(File f, VirtualChannel channel) throws IOException {
                 if(LIBC.chmod(f.getAbsolutePath(),mask)!=0)
                     throw new IOException("Failed to chmod "+f+" : "+LIBC.strerror(Native.getLastError()));
                 return null;
+            }
+        });
+    }
+
+    /**
+     * Gets the file permission bit mask.
+     *
+     * @return
+     *      -1 on Windows, since such a concept doesn't make sense.
+     * @since 1.311
+     * @see #chmod(int)
+     */
+    public int mode() throws IOException, InterruptedException {
+        if(!isUnix())   return -1;
+        return act(new FileCallable<Integer>() {
+            public Integer invoke(File f, VirtualChannel channel) throws IOException {
+                return PosixAPI.get().stat(f.getPath()).mode();
             }
         });
     }
@@ -1184,6 +1206,16 @@ public final class FilePath implements Serializable {
         } finally {
             out.close();
         }
+    }
+
+    /**
+     * Copies this file to the specified target, with file permissions intact.
+     * @since 1.311
+     */
+    public void copyToWithPermission(FilePath target) throws IOException, InterruptedException {
+        copyToWithPermission(target);
+        // copy file permission
+        target.chmod(mode());
     }
 
     /**
