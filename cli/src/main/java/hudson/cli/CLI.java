@@ -49,10 +49,16 @@ public class CLI implements Closeable {
     private final ExecutorService pool;
     private final Channel channel;
     private final CliEntryPoint entryPoint;
+    private final boolean ownsPool;
 
     public CLI(URL hudson) throws IOException, InterruptedException {
+        this(hudson,null);
+    }
+
+    public CLI(URL hudson, ExecutorService exec) throws IOException, InterruptedException {
         FullDuplexHttpStream con = new FullDuplexHttpStream(hudson);
-        pool = Executors.newCachedThreadPool();
+        ownsPool = exec==null;
+        pool = exec!=null ? exec : Executors.newCachedThreadPool();
         channel = new Channel("Chunked connection to "+hudson,
                 pool,con.getInputStream(),con.getOutputStream());
         new PingThread(channel,30*1000) {
@@ -71,7 +77,8 @@ public class CLI implements Closeable {
 
     public void close() throws IOException {
         channel.close();
-        pool.shutdown();
+        if(ownsPool)
+            pool.shutdown();
     }
 
     public int execute(List<String> args, InputStream stdin, OutputStream stdout, OutputStream stderr) {
