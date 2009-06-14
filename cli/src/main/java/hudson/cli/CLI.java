@@ -35,6 +35,9 @@ import java.util.Locale;
 import java.util.ArrayList;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 
 /**
  * CLI entry point to Hudson.
@@ -42,6 +45,41 @@ import java.util.concurrent.Executors;
  * @author Kohsuke Kawaguchi
  */
 public class CLI {
+    private final ExecutorService pool;
+    private final Channel channel;
+    private final CliEntryPoint entryPoint;
+
+    public CLI(URL hudson) throws IOException, InterruptedException {
+        FullDuplexHttpStream con = new FullDuplexHttpStream(hudson);
+        pool = Executors.newCachedThreadPool();
+        channel = new Channel("Chunked connection to "+hudson,
+                pool,con.getInputStream(),con.getOutputStream());
+        new PingThread(channel,30*1000) {
+            protected void onDead() {
+                // noop. the point of ping is to keep the connection alive
+                // as most HTTP servers have a rather short read time out
+            }
+        }.start();
+
+        // execute the command
+        entryPoint = (CliEntryPoint)channel.waitForRemoteProperty(CliEntryPoint.class.getName());
+
+        if(entryPoint.protocolVersion()!=CliEntryPoint.VERSION)
+            throw new IOException(Messages.CLI_VersionMismatch());
+    }
+
+    public void close() throws IOException {
+        channel.close();
+        pool.shutdown();
+    }
+
+    public int execute(List<String> args, InputStream stdin, OutputStream stdout, OutputStream stderr) {
+        return entryPoint.main(args,Locale.getDefault(),
+                new RemoteInputStream(stdin),
+                new RemoteOutputStream(stdout),
+                new RemoteOutputStream(stderr));
+    }
+
     public static void main(final String[] _args) throws Exception {
         List<String> args = Arrays.asList(_args);
 
@@ -57,43 +95,25 @@ public class CLI {
             break;
         }
         
-        if(url==null)
+        if(url==null) {
             printUsageAndExit(Messages.CLI_NoURL());
+            return;
+        }
         if(!url.endsWith("/"))  url+='/';
         url+="cli";
 
         if(args.isEmpty())
             args = Arrays.asList("help"); // default to help
 
-        FullDuplexHttpStream con = new FullDuplexHttpStream(new URL(url));
-        ExecutorService pool = Executors.newCachedThreadPool();
-        Channel channel = new Channel("Chunked connection to "+url,
-                pool,con.getInputStream(),con.getOutputStream());
-        new PingThread(channel,30*1000) {
-            protected void onDead() {
-                // noop. the point of ping is to keep the connection alive
-                // as most HTTP servers have a rather short read time out
-            }
-        }.start();
-
-        // execute the command
-        int r=-1;
+        CLI cli = new CLI(new URL(url));
         try {
-            CliEntryPoint cli = (CliEntryPoint)channel.waitForRemoteProperty(CliEntryPoint.class.getName());
-            if(cli.protocolVersion()!=CliEntryPoint.VERSION) {
-                System.err.println(Messages.CLI_VersionMismatch());
-            } else {
-                // Arrays.asList is not serializable --- see 6835580
-                args = new ArrayList<String>(args);
-                r = cli.main(args, Locale.getDefault(), new RemoteInputStream(System.in),
-                        new RemoteOutputStream(System.out), new RemoteOutputStream(System.err));
-            }
+            // execute the command
+            // Arrays.asList is not serializable --- see 6835580
+            args = new ArrayList<String>(args);
+            System.exit(cli.execute(args, System.in, System.out, System.err));
         } finally {
-            channel.close();
-            pool.shutdown();
+            cli.close();
         }
-
-        System.exit(r);
     }
 
     private static void printUsageAndExit(String msg) {
