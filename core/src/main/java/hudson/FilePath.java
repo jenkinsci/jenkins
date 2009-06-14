@@ -573,6 +573,15 @@ public final class FilePath implements Serializable {
     }
 
     /**
+     * Conveniene method to call {@link FilePath#copyTo(FilePath)}.
+     * 
+     * @since 1.311
+     */
+    public void copyFrom(FilePath src) throws IOException, InterruptedException {
+        src.copyTo(this);
+    }
+
+    /**
      * Place the data from {@link FileItem} into the file location specified by this {@link FilePath} object.
      */
     public void copyFrom(FileItem file) throws IOException, InterruptedException {
