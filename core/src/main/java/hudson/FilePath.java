@@ -1213,7 +1213,7 @@ public final class FilePath implements Serializable {
      * @since 1.311
      */
     public void copyToWithPermission(FilePath target) throws IOException, InterruptedException {
-        copyToWithPermission(target);
+        copyTo(target);
         // copy file permission
         target.chmod(mode());
     }
