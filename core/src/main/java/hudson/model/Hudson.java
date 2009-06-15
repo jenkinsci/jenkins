@@ -2063,6 +2063,9 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
 
         // Initialize the filter with the crumb issuer
         setCrumbIssuer(crumbIssuer);
+
+        // auto register root actions
+        actions.addAll(getExtensionList(RootAction.class));
         
         LOGGER.info(String.format("Took %s ms to load",System.currentTimeMillis()-startTime));
         if(KILL_AFTER_LOAD)
