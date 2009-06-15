@@ -262,7 +262,7 @@ public class SubversionSCMTest extends HudsonTestCase {
         ModuleLocation[] rl = rhs.getLocations();
         assertEquals(ll.length, rl.length);
         for(int i=0; i<ll.length; i++) {
-            assertEquals(ll[i].local, rl[i].local);
+            assertEquals(ll[i].getLocalDir(), rl[i].getLocalDir());
             assertEquals(ll[i].remote, rl[i].remote);
         }
 
