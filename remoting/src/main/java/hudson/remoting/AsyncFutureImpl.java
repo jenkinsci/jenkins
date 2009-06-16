@@ -48,11 +48,6 @@ public class AsyncFutureImpl<V> implements Future<V> {
     private Throwable problem;
     private boolean cancelled;
 
-    /**
-     * @deprecated
-     *      Not externally cancellable, since this class doesn't know where the computation is actually happening.
-     *      So you shouldn't be calling this method.
-     */
     public boolean cancel(boolean mayInterruptIfRunning) {
         return false;
     }

@@ -36,8 +36,6 @@ import javax.servlet.ServletException;
 import java.io.IOException;
 import java.util.logging.Logger;
 import java.util.logging.Level;
-import java.util.concurrent.TimeUnit;
-import java.util.GregorianCalendar;
 
 
 /**
@@ -112,6 +110,7 @@ public class Executor extends Thread implements ModelObject {
 
                         startTime = System.currentTimeMillis();
                         executable = task.createExecutable();
+                        queueItem.future.startExecuting(this);
                         if (executable instanceof Actionable) {
                         	for (Action action: queueItem.getActions()) {
                         		((Actionable) executable).addAction(action);

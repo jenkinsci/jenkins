@@ -974,6 +974,35 @@ public class Queue extends ResourceController implements Saveable {
         String toString();
     }
 
+    /*package*/ static final class FutureImpl extends AsyncFutureImpl<Executable> {
+        private final Task task;
+        /**
+         * If the computation has started, set to {@link Executor} that's running the build.
+         */
+        private volatile Executor executor;
+
+        private FutureImpl(Task task) {
+            this.task = task;
+        }
+
+        @Override
+        public boolean cancel(boolean mayInterruptIfRunning) {
+            Queue q = Hudson.getInstance().getQueue();
+            synchronized (q) {
+                if(executor!=null) {
+                    if(mayInterruptIfRunning)
+                        executor.interrupt();
+                    return mayInterruptIfRunning;
+                }
+                return q.cancel(task);
+            }
+        }
+
+        /*package*/ void startExecuting(Executor executor) {
+            this.executor = executor;
+        }
+    }
+
     /**
      * Item in a queue.
      */
@@ -991,7 +1020,7 @@ public class Queue extends ResourceController implements Saveable {
         @Exported
         public final Task task;
 
-        /*package almost final*/ transient AsyncFutureImpl<Executable> future;
+        /*package almost final*/ transient FutureImpl future;
 
         /**
          * Build is blocked because another build is in progress,
@@ -1022,7 +1051,7 @@ public class Queue extends ResourceController implements Saveable {
          */
         public Future<Executable> getFuture() { return future; }
 
-        protected Item(Task task, List<Action> actions, int id, AsyncFutureImpl<Executable> future) {
+        protected Item(Task task, List<Action> actions, int id, FutureImpl future) {
             this.task = task;
             this.id = id;
             this.future = future;
@@ -1069,7 +1098,7 @@ public class Queue extends ResourceController implements Saveable {
         }
 
         private Object readResolve() {
-            this.future = new AsyncFutureImpl<Executable>();
+            this.future = new FutureImpl(task);
             return this;
         }
     }
@@ -1099,7 +1128,7 @@ public class Queue extends ResourceController implements Saveable {
         public Calendar timestamp;
 
         WaitingItem(Calendar timestamp, Task project, List<Action> actions) {
-            super(project, actions, COUNTER.incrementAndGet(), new AsyncFutureImpl<Executable>());
+            super(project, actions, COUNTER.incrementAndGet(), new FutureImpl(project));
             this.timestamp = timestamp;
         }
         
