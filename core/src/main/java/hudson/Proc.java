@@ -168,8 +168,8 @@ public abstract class Proc {
                 // problems like that shows up as inifinite wait in join(), which confuses great many users.
                 // So let's do a timed wait here and try to diagnose the problem
                 copier.join(10*1000);
-                copier2.join(10*1000);
-                if(copier.isAlive() || copier2.isAlive()) {
+                if(copier2!=null)   copier2.join(10*1000);
+                if(copier.isAlive() || (copier2!=null && copier2.isAlive())) {
                     // looks like handles are leaking.
                     // closing these handles should terminate the threads.
                     String msg = "Process leaked file descriptors. See http://hudson.gotdns.com/wiki/display/HUDSON/Spawning+processes+from+build for more information";
