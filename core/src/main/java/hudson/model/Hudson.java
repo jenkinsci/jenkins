@@ -65,7 +65,6 @@ import hudson.scm.CVSSCM;
 import hudson.scm.RepositoryBrowser;
 import hudson.scm.SCM;
 import hudson.scm.SCMDescriptor;
-import hudson.scm.SubversionSCM;
 import hudson.search.CollectionSearchIndex;
 import hudson.search.SearchIndexBuilder;
 import hudson.security.ACL;
@@ -551,9 +550,6 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
             } catch (IOException e) {
                 LOGGER.log(Level.SEVERE, "Failed to load proxy configuration", e);
             }
-
-            // run the init code of SubversionSCM before we load plugins so that plugins can change SubversionWorkspaceSelector.
-            SubversionSCM.init();
 
             // load plugins.
             pluginManager = new PluginManager(context);
