@@ -26,7 +26,6 @@ package hudson.model;
 import hudson.FilePath;
 import hudson.Util;
 import hudson.Extension;
-import hudson.util.StreamTaskListener;
 
 import java.io.File;
 import java.io.FileFilter;
@@ -34,7 +33,6 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.util.Date;
 import java.util.List;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
