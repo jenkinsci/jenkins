@@ -62,6 +62,11 @@ public class WorkspaceCleanupThread extends AsyncPeriodicWork {
 
     protected void execute(TaskListener listener) throws InterruptedException, IOException {
         try {
+            if(disabled) {
+                LOGGER.fine("Disabled. Skipping execution");
+                return;
+            }
+            
             this.listener = listener;
 
             Hudson h = Hudson.getInstance();
@@ -165,4 +170,9 @@ public class WorkspaceCleanupThread extends AsyncPeriodicWork {
     private static final long DAY = 1000*60*60*24;
 
     private static final Logger LOGGER = Logger.getLogger(WorkspaceCleanupThread.class.getName());
+
+    /**
+     * Can be used to disable workspace clean up.
+     */
+    public static boolean disabled = Boolean.getBoolean(WorkspaceCleanupThread.class.getName()+".disabled");
 }
