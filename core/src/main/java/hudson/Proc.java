@@ -238,7 +238,7 @@ public abstract class Proc {
         }
 
         private static String calcName(String[] cmd) {
-            StringBuffer buf = new StringBuffer();
+            StringBuilder buf = new StringBuilder();
             for (String token : cmd) {
                 if(buf.length()>0)  buf.append(' ');
                 buf.append(token);
