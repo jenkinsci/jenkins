@@ -500,6 +500,11 @@ public abstract class Launcher {
      * @param workDir The work dir.
      */
     protected final void maskedPrintCommandLine(List<String> cmd, boolean[] mask, FilePath workDir) {
+        if(mask==null) {
+            printCommandLine(cmd.toArray(new String[cmd.size()]),workDir);
+            return;
+        }
+        
         assert mask.length == cmd.size();
         final String[] masked = new String[cmd.size()];
         for (int i = 0; i < cmd.size(); i++) {
