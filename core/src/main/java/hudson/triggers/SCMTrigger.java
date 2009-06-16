@@ -136,7 +136,7 @@ public class SCMTrigger extends Trigger<SCMedItem> {
     }
 
     @Extension
-    public static final class DescriptorImpl extends TriggerDescriptor {
+    public static class DescriptorImpl extends TriggerDescriptor {
         /**
          * Used to control the execution of the polling tasks.
          */
