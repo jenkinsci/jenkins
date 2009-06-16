@@ -72,7 +72,7 @@ public class CommandInstaller extends ToolInstaller {
         FilePath script = dir.createTextTempFile("hudson", ".sh", command);
         try {
             String[] cmd = {"sh", "-e", script.getRemote()};
-            int r = node.createLauncher(log).launch(cmd, Collections.<String,String>emptyMap(), log.getLogger(), dir).join();
+            int r = node.createLauncher(log).launch().cmds(cmd).stdout(log).pwd(dir).join();
             if (r != 0) {
                 throw new IOException("Command returned status " + r);
             }

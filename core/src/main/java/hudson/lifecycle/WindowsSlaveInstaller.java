@@ -127,7 +127,7 @@ public class WindowsSlaveInstaller implements Callable<Void,RuntimeException>, A
             // install as a service
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
             StreamTaskListener task = new StreamTaskListener(baos);
-            r = new LocalLauncher(task).launch(new String[]{slaveExe.getPath(), "install"}, new String[0], task.getLogger(), new FilePath(dir)).join();
+            r = new LocalLauncher(task).launch().cmds(slaveExe, "install").stdout(task).pwd(dir).join();
             if(r!=0) {
                 JOptionPane.showMessageDialog(
                     dialog,baos.toString(),"Error",
@@ -147,7 +147,7 @@ public class WindowsSlaveInstaller implements Callable<Void,RuntimeException>, A
                 public void run() {
                     try {
                         StreamTaskListener task = new StreamTaskListener(System.out);
-                        int r = new LocalLauncher(task).launch(new String[]{slaveExe.getPath(), "start"}, new String[0], task.getLogger(), new FilePath(dir)).join();
+                        int r = new LocalLauncher(task).launch().cmds(slaveExe, "start").stdout(task).pwd(dir).join();
                         task.getLogger().println(r==0?"Successfully started":"start service failed. Exit code="+r);
                     } catch (IOException e) {
                         e.printStackTrace();

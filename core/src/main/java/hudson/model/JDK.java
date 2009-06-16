@@ -133,7 +133,7 @@ public final class JDK extends ToolInstallation implements NodeSpecific<JDK>, En
         try {
             TaskListener listener = new StreamTaskListener(new NullStream());
             Launcher launcher = n.createLauncher(listener);
-            return launcher.launch("java -fullversion",new String[0],listener.getLogger(),null).join()==0;
+            return launcher.launch().cmds("java","-fullversion").stdout(listener).join()==0;
         } catch (IOException e) {
             return false;
         } catch (InterruptedException e) {

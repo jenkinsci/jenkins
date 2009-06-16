@@ -25,7 +25,6 @@ package hudson.os.solaris;
 
 import com.sun.akuma.Daemon;
 import com.sun.akuma.JavaVMArguments;
-import hudson.FilePath;
 import hudson.Launcher.LocalLauncher;
 import hudson.Util;
 import hudson.Extension;
@@ -383,7 +382,7 @@ public class ZFSInstaller extends AdministrativeMonitor implements Serializable 
     }
 
     private static int system(File pwd, TaskListener listener, String... args) throws IOException, InterruptedException {
-        return new LocalLauncher(listener).launch(args, new String[0], System.out, new FilePath(pwd)).join();
+        return new LocalLauncher(listener).launch().cmds(args).stdout(System.out).pwd(pwd).join();
     }
 
     private static String computeHudsonFileSystemName(LibZFS zfs, ZFSFileSystem top) {

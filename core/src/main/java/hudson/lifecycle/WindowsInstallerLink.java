@@ -127,7 +127,9 @@ public class WindowsInstallerLink extends ManagementLink {
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
             StreamTaskListener task = new StreamTaskListener(baos);
             task.getLogger().println("Installing a service");
-            int r = new LocalLauncher(task).launch(new String[]{new File(dir, "hudson.exe").getPath(), "install"}, new String[0], task.getLogger(), new FilePath(dir)).join();
+            int r = new LocalLauncher(task).launch()
+                .cmds(new File(dir, "hudson.exe").getPath(), "install")
+                .stdout(task.getLogger()).pwd(dir).join();
             if(r!=0) {
                 sendError(baos.toString(),req,rsp);
                 return;
@@ -195,7 +197,8 @@ public class WindowsInstallerLink extends ManagementLink {
                                 }
                                 LOGGER.info("Starting a Windows service");
                                 StreamTaskListener task = new StreamTaskListener(System.out);
-                                int r = new LocalLauncher(task).launch(new String[]{new File(installationDir, "hudson.exe").getPath(), "start"}, new String[0], task.getLogger(), new FilePath(installationDir)).join();
+                                int r = new LocalLauncher(task).launch().cmds(new File(installationDir, "hudson.exe"), "start")
+                                        .stdout(task).pwd(installationDir).join();
                                 task.getLogger().println(r==0?"Successfully started":"start service failed. Exit code="+r);
                             } catch (IOException e) {
                                 e.printStackTrace();

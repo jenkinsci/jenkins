@@ -81,7 +81,7 @@ public abstract class CommandInterpreter extends Builder {
                 // convert variables to all upper cases.
                 for(Map.Entry<String,String> e : build.getBuildVariables().entrySet())
                     envVars.put(e.getKey(),e.getValue());
-                r = launcher.launch(cmd,envVars,listener.getLogger(),ws).join();
+                r = launcher.launch().cmds(cmd).envs(envVars).stdout(listener).pwd(ws).join();
             } catch (IOException e) {
                 Util.displayIOException(e,listener);
                 e.printStackTrace(listener.fatalError(Messages.CommandInterpreter_CommandFailed()));

@@ -25,7 +25,6 @@ package hudson.slaves;
 
 import com.gargoylesoftware.htmlunit.html.HtmlAnchor;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
-import hudson.FilePath;
 import hudson.Proc;
 import hudson.Util;
 import hudson.model.Computer;
@@ -84,8 +83,7 @@ public class JNLPLauncherTest extends HudsonTestCase {
      * Launches the JNLP slave agent and asserts its basic operations.
      */
     private void launchJnlpAndVerify(Computer c, ArgumentListBuilder args) throws Exception {
-        Proc proc = createLocalLauncher().launch(args.toCommandArray(),
-                new String[0], System.out, new FilePath(new File(".")));
+        Proc proc = createLocalLauncher().launch().cmds(args).stdout(System.out).pwd(".").start();
 
         try {
             // verify that the connection is established, up to 10 secs

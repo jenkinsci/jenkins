@@ -103,7 +103,8 @@ public class WindowsServiceLifecycle extends Lifecycle {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         StreamTaskListener task = new StreamTaskListener(baos);
         task.getLogger().println("Restarting a service");
-        int r = new LocalLauncher(task).launch(new String[]{new File(home, "hudson.exe").getPath(), "restart"}, new String[0], task.getLogger(), new FilePath(home)).join();
+        int r = new LocalLauncher(task).launch().cmds(new File(home, "hudson.exe"), "restart")
+                .stdout(task).pwd(home).join();
         if(r!=0)
             throw new IOException(baos.toString());
     }
