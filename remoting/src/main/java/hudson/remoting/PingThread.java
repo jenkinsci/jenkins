@@ -55,6 +55,7 @@ public abstract class PingThread extends Thread {
         super("Ping thread for channel "+channel);
         this.channel = channel;
         this.interval = interval;
+        setDaemon(true);
     }
 
     public PingThread(Channel channel) {
