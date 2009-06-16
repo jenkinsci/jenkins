@@ -784,9 +784,11 @@ public abstract class Launcher {
     private static EnvVars inherit(String[] env) {
         // convert String[] to Map first
         EnvVars m = new EnvVars();
-        for (String e : env) {
-            int index = e.indexOf('=');
-            m.put(e.substring(0,index), e.substring(index+1));
+        if(env!=null) {
+            for (String e : env) {
+                int index = e.indexOf('=');
+                m.put(e.substring(0,index), e.substring(index+1));
+            }
         }
         // then do the inheritance
         return inherit(m);
