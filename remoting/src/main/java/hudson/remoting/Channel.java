@@ -37,9 +37,7 @@ import java.util.Collections;
 import java.util.Hashtable;
 import java.util.Map;
 import java.util.Vector;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Executor;
-import java.util.concurrent.ExecutorService;
+import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
@@ -555,6 +553,13 @@ public class Channel implements VirtualChannel, IChannel {
                 for (Request<?,?> req : pendingCalls.values())
                     req.abort(e);
                 pendingCalls.clear();
+            }
+            synchronized (executingCalls) {
+                for (Request<?, ?> r : executingCalls.values()) {
+                    java.util.concurrent.Future<?> f = r.future;
+                    if(f!=null) f.cancel(true);
+                }
+                executingCalls.clear();
             }
         } finally {
             notifyAll();

@@ -69,7 +69,7 @@ abstract class Request<RSP extends Serializable,EXC extends Throwable> extends C
     /**
      * While executing the call this is set to the handle of the execution.
      */
-    private volatile transient Future<?> future;
+    protected volatile transient Future<?> future;
 
 
     protected Request() {
