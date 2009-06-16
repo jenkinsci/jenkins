@@ -91,6 +91,11 @@ public class Executor extends Thread implements ModelObject {
                     }
                 }
 
+                // clear the interrupt flag as a precaution.
+                // sometime an interrupt aborts a build but without clearing the flag.
+                // see issue #1583
+                Thread.interrupted();
+
                 Queue.Item queueItem;
                 try {
                 	queueItem = queue.pop();
@@ -103,14 +108,8 @@ public class Executor extends Thread implements ModelObject {
                 owner.taskAccepted(this, task);
                 try {
                     try {
-                        // clear the interrupt flag as a precaution.
-                        // sometime an interrupt aborts a build but without clearing the flag.
-                        // see issue #1583
-                        Thread.interrupted();
-
                         startTime = System.currentTimeMillis();
                         executable = task.createExecutable();
-                        queueItem.future.startExecuting(this);
                         if (executable instanceof Actionable) {
                         	for (Action action: queueItem.getActions()) {
                         		((Actionable) executable).addAction(action);

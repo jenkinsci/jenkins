@@ -690,8 +690,9 @@ public class Queue extends ResourceController implements Saveable {
 
                     // am I woken up because I have a project to build?
                     if (offer.item != null) {
-                        LOGGER.fine("Pop returning " + offer.item + " for " + exec.getName());
                         // if so, just build it
+                        LOGGER.fine("Pop returning " + offer.item + " for " + exec.getName());
+                        offer.item.future.startExecuting(exec);
                         return offer.item;
                     }
                     // otherwise run a queue maintenance
@@ -998,7 +999,7 @@ public class Queue extends ResourceController implements Saveable {
             }
         }
 
-        /*package*/ void startExecuting(Executor executor) {
+        private void startExecuting(Executor executor) {
             this.executor = executor;
         }
     }
