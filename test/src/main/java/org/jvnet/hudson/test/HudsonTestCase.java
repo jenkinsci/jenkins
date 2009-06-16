@@ -53,7 +53,6 @@ import hudson.model.UpdateCenter;
 import hudson.model.AbstractProject;
 import hudson.model.UpdateCenter.UpdateCenterConfiguration;
 import hudson.model.Node.Mode;
-import hudson.scm.SubversionSCM;
 import hudson.security.csrf.CrumbIssuer;
 import hudson.security.csrf.CrumbIssuerDescriptor;
 import hudson.slaves.CommandLauncher;
@@ -122,7 +121,6 @@ import org.mortbay.jetty.webapp.WebAppContext;
 import org.mortbay.jetty.webapp.WebXmlConfiguration;
 import org.mozilla.javascript.Context;
 import org.mozilla.javascript.ContextFactory;
-import org.tmatesoft.svn.core.SVNException;
 import org.w3c.css.sac.CSSException;
 import org.w3c.css.sac.CSSParseException;
 import org.w3c.css.sac.ErrorHandler;
@@ -320,13 +318,13 @@ public abstract class HudsonTestCase extends TestCase {
         return realm;
     }
 
-    /**
-     * Sets guest credentials to access java.net Subversion repo.
-     */
-    protected void setJavaNetCredential() throws SVNException, IOException {
-        // set the credential to access svn.dev.java.net
-        hudson.getDescriptorByType(SubversionSCM.DescriptorImpl.class).postCredential("https://svn.dev.java.net/svn/hudson/","guest","",null,new PrintWriter(new NullStream()));
-    }
+//    /**
+//     * Sets guest credentials to access java.net Subversion repo.
+//     */
+//    protected void setJavaNetCredential() throws SVNException, IOException {
+//        // set the credential to access svn.dev.java.net
+//        hudson.getDescriptorByType(SubversionSCM.DescriptorImpl.class).postCredential("https://svn.dev.java.net/svn/hudson/","guest","",null,new PrintWriter(new NullStream()));
+//    }
 
     /**
      * Locates Maven2 and configure that as the only Maven in the system.

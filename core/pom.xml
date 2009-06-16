@@ -324,11 +324,6 @@ THE SOFTWARE.
       <version>1.0.1</version>
     </dependency>
     <dependency>
-      <groupId>org.jvnet.hudson.svnkit</groupId>
-      <artifactId>svnkit</artifactId>
-      <version>1.3.0-hudson-1</version>
-    </dependency>
-    <dependency>
       <groupId>org.kohsuke</groupId>
       <artifactId>trilead-putty-extension</artifactId>
       <version>1.0</version>
