@@ -38,14 +38,13 @@ import java.util.concurrent.Executors;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.io.Closeable;
 
 /**
  * CLI entry point to Hudson.
  * 
  * @author Kohsuke Kawaguchi
  */
-public class CLI implements Closeable {
+public class CLI {
     private final ExecutorService pool;
     private final Channel channel;
     private final CliEntryPoint entryPoint;
@@ -80,8 +79,9 @@ public class CLI implements Closeable {
             throw new IOException(Messages.CLI_VersionMismatch());
     }
 
-    public void close() throws IOException {
+    public void close() throws IOException, InterruptedException {
         channel.close();
+        channel.join();
         if(ownsPool)
             pool.shutdown();
     }
