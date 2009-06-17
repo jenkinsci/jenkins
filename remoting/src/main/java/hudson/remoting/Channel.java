@@ -356,6 +356,10 @@ public class Channel implements VirtualChannel, IChannel {
         public void onClosed(Channel channel, IOException cause) {}
     }
 
+    /*package*/ boolean isOutClosed() {
+        return outClosed;
+    }
+
     /**
      * Sends a command to the remote end and executes it there.
      *
