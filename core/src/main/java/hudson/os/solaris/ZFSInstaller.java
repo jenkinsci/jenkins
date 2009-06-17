@@ -88,7 +88,7 @@ public class ZFSInstaller extends AdministrativeMonitor implements Serializable 
     }
 
     private boolean shouldBeActive() {
-        if(!System.getProperty("os.name").equals("SunOS"))
+        if(!System.getProperty("os.name").equals("SunOS") || disabled)
             // on systems that don't have ZFS, we don't need this monitor
             return false;
 
@@ -424,4 +424,9 @@ public class ZFSInstaller extends AdministrativeMonitor implements Serializable 
     }
 
     private static final Logger LOGGER = Logger.getLogger(ZFSInstaller.class.getName());
+
+    /**
+     * Escape hatch in case JNI calls fatally crash, like in HUDSON-3733.
+     */
+    public static boolean disabled = Boolean.getBoolean(ZFSInstaller.class.getName()+".disabled");
 }
