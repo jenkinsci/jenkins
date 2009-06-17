@@ -2281,7 +2281,6 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
     
     public void setCrumbIssuer(CrumbIssuer issuer) {
         crumbIssuer = issuer;
-        CrumbFilter.get(servletContext).setCrumbIssuer(issuer);
     }
 
     public void setUseCrumbs(Boolean use) {
