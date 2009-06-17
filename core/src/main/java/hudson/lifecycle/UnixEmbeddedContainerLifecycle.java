@@ -50,6 +50,8 @@ public class UnixEmbeddedContainerLifecycle extends Lifecycle {
             args = JavaVMArguments.current();
         } catch (UnsupportedOperationException e) {
             // can't restart
+        } catch (LinkageError e) {
+            // see HUDSON-3875
         }
     }
 
