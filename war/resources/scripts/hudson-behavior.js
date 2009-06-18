@@ -38,6 +38,36 @@ function object(o) {
 // id generator
 var iota = 0;
 
+// crumb information
+var crumb = {
+    fieldName: null,
+    value: null,
+
+    init: function(crumbField, crumbValue) {
+        this.fieldName = crumbField;
+        this.value = crumbValue;
+    },
+
+    /**
+     * Adds the crumb value into the given hash and returns the hash.
+     */
+    wrap: function(hash) {
+        if(this.fieldName!=null)
+            hash[this.fieldName]=this.value;
+        return hash;
+    },
+
+    /**
+     * Puts a hidden input field to the form so that the form submission will have the crumb value
+     */
+    appendToForm : function(form) {
+        if(this.fieldName==null)    return; // noop
+        var div = document.createElement("div");
+        div.innerHTML = "<input type=hidden name='"+this.fieldName+"' value='"+this.value+"'>";
+        form.appendChild(div);
+    }
+}
+
 // Form check code
 //========================================================
 var FormChecker = {
@@ -511,6 +541,7 @@ var hudsonRules = {
 
     // structured form submission
     "FORM" : function(form) {
+        crumb.appendToForm(form);
         if(Element.hasClassName("no-json"))
             return;
         // add the hidden 'json' input field, which receives the form structure in JSON
@@ -518,7 +549,7 @@ var hudsonRules = {
         div.innerHTML = "<input type=hidden name=json value=init>";
         form.appendChild(div);
         
-        form.onsubmit = function() { buildFormTree(this) };
+        form.onsubmit = function() { buildFormTree(this); };
         form = null; // memory leak prevention
     },
 
@@ -623,16 +654,12 @@ function xor(a,b) {
 }
 
 // used by editableDescription.jelly to replace the description field with a form
-function replaceDescription(crumbName,crumb) {
+function replaceDescription() {
     var d = document.getElementById("description");
     d.firstChild.nextSibling.innerHTML = "<div class='spinner-right'>loading...</div>";
-    var params = new Array(1);
-    params[crumbName] = crumb;
     new Ajax.Request(
         "./descriptionForm",
         {
-          method : 'post',
-          parameters : params,
           onComplete : function(x) {
             d.innerHTML = x.responseText;
             Behaviour.applySubtree(d);
@@ -806,13 +833,9 @@ function expandTextArea(button,id) {
 
 // refresh a part of the HTML specified by the given ID,
 // by using the contents fetched from the given URL.
-function refreshPart(id,url,crumbName,crumb) {
+function refreshPart(id,url) {
     var f = function() {
-    	var params = new Array(1);
-    	params[crumbName] = crumb;
         new Ajax.Request(url, {
-            method: "post",
-            parameters: params,
             onSuccess: function(rsp) {
                 var hist = $(id);
                 var p = hist.parentNode;
@@ -828,7 +851,7 @@ function refreshPart(id,url,crumbName,crumb) {
                 Behaviour.applySubtree(node);
 
                 if(isRunAsTest) return;
-                refreshPart(id,url,crumbName,crumb);
+                refreshPart(id,url);
             }
         });
     };
@@ -1080,18 +1103,14 @@ function addRadioBlock(id) {
 }
 
 
-function updateBuildHistory(ajaxUrl,nBuild,crumbName,crumb) {
+function updateBuildHistory(ajaxUrl,nBuild) {
     if(isRunAsTest) return;
     $('buildHistory').headers = ["n",nBuild];
 
     function updateBuilds() {
         var bh = $('buildHistory');
-    	var params = new Array(1);
-    	params[crumbName] = crumb;
         new Ajax.Request(ajaxUrl, {
             requestHeaders: bh.headers,
-            method: "post",
-            parameters: params,
             onSuccess: function(rsp) {
                 var rows = bh.rows;
 
@@ -1121,12 +1140,8 @@ function updateBuildHistory(ajaxUrl,nBuild,crumbName,crumb) {
 
 // send async request to the given URL (which will send back serialized ListBoxModel object),
 // then use the result to fill the list box.
-function updateListBox(listBox,url,crumbName,crumb) {
-	var params = new Array(1);
-	params[crumbName] = crumb;
+function updateListBox(listBox,url) {
     new Ajax.Request(url, {
-        method: "post",
-        parameters: params,
         onSuccess: function(rsp) {
             var l = $(listBox);
             while(l.length>0)   l.options[0] = null;
@@ -1513,8 +1528,6 @@ function loadScript(href) {
 
 var downloadService = {
     continuations: {},
-    crumbName: null,
-    crumb: null,
 
     download : function(id,url,info, postBack,completionHandler) {
         this.continuations[id] = {postBack:postBack,completionHandler:completionHandler};
@@ -1523,12 +1536,8 @@ var downloadService = {
 
     post : function(id,data) {
         var o = this.continuations[id];
-        var params = new Array(2);
-        params["json"] = Object.toJSON(data);
-        params[downloadService.crumbName] = downloadService.crumb;
         new Ajax.Request(o.postBack, {
-            method:"post",
-            parameters:params,
+            parameters:{json:Object.toJSON(data)},
             onSuccess: function() {
                 if(o.completionHandler!=null)
                     o.completionHandler();
@@ -1543,8 +1552,6 @@ var updateCenter = {
     postBackURL : null,
     info: {},
     completionHandler: null,
-    crumbName: null,
-    crumb: null,
     url: "https://hudson.dev.java.net/",
 
     checkUpdates : function() {
@@ -1552,12 +1559,8 @@ var updateCenter = {
     },
 
     post : function(data) {
-    	var params = new Array(2);
-    	params["json"] = Object.toJSON(data);
-    	params[updateCenter.crumbName] = updateCenter.crumb;
         new Ajax.Request(updateCenter.postBackURL, {
-            method:"post",
-            parameters:params,
+            parameters:{json:Object.toJSON(data)},
             onSuccess: function() {
                 if(updateCenter.completionHandler!=null)
                     updateCenter.completionHandler();
@@ -1623,7 +1626,6 @@ function validateButton(checkUrl,paramList,button) {
   spinner.style.display="block";
 
   new Ajax.Request(checkUrl, {
-      method: "post",
       parameters: parameters,
       onComplete: function(rsp) {
           spinner.style.display="none";

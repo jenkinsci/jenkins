@@ -46,8 +46,6 @@ THE SOFTWARE.
       function refresh() {
           window.setTimeout(function() {
               new Ajax.Request("./body", {
-                  method: "post",
-                  ${h.getCrumbAsJSONParameterBlock(request)},
                   onSuccess: function(rsp) {
                       var div = document.createElement('div');
                       div.innerHTML = rsp.responseText;

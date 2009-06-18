@@ -3,7 +3,6 @@ package hudson.model;
 import hudson.Extension;
 import hudson.ExtensionList;
 import hudson.ExtensionPoint;
-import hudson.security.csrf.CrumbIssuer;
 import hudson.util.QuotedStringTokenizer;
 import hudson.util.TextFile;
 import hudson.util.TimeUnit2;
@@ -39,22 +38,9 @@ public class DownloadService extends PageDecorator {
         StringBuilder buf = new StringBuilder();
         if(Hudson.getInstance().hasPermission(Hudson.READ)) {
             long now = System.currentTimeMillis();
-            CrumbIssuer ci = Hudson.getInstance().getCrumbIssuer();
-            String crumbName = null;
-            String crumb = null;
-            if(ci!=null) {
-                crumbName = ci.getCrumbRequestField();
-                crumb = ci.getCrumb();
-            }
             for (Downloadable d : Downloadable.all()) {
                 if(d.getDue()<now) {
-                    buf.append("<script>");
-                    if(ci!=null) {
-                        buf.append("downloadService.crumbName="+QuotedStringTokenizer.quote(crumbName))
-                           .append(";downloadService.crumb="+QuotedStringTokenizer.quote(crumb))
-                           .append(';');
-                    }
-                    buf.append("downloadService.download(")
+                    buf.append("<script>downloadService.download(")
                        .append(QuotedStringTokenizer.quote(d.getId()))
                        .append(',')
                        .append(QuotedStringTokenizer.quote(d.getUrl()))

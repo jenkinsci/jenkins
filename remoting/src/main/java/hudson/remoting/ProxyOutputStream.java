@@ -150,6 +150,10 @@ final class ProxyOutputStream extends OutputStream {
         private final byte[] buf;
 
         public Chunk(int oid, byte[] buf) {
+            // to improve the performance when a channel is used purely as a pipe,
+            // don't record the stack trace. On FilePath.writeToTar case, the stack trace and the OOS header
+            // takes up about 1.5K.
+            super(false);
             this.oid = oid;
             this.buf = buf;
         }
@@ -177,6 +181,7 @@ final class ProxyOutputStream extends OutputStream {
         private final int oid;
 
         public Flush(int oid) {
+            super(false);
             this.oid = oid;
         }
 

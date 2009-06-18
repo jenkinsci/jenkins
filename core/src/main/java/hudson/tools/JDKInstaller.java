@@ -122,7 +122,8 @@ public class JDKInstaller extends ToolInstaller {
             case LINUX:
             case SOLARIS:
                 file.chmod(0755);
-                if(node.createLauncher(log).launch(new String[]{file.getRemote(),"-noregister"},new String[0],new ByteArrayInputStream("yes".getBytes()),out,expectedLocation).join()!=0)
+                if(node.createLauncher(log).launch().cmds(file.getRemote(),"-noregister")
+                    .stdin(new ByteArrayInputStream("yes".getBytes())).stdout(out).pwd(expectedLocation).join()!=0)
                     throw new AbortException("Failed to install JDK");
 
                 // JDK creates its own sub-directory, so pull them up
@@ -166,7 +167,7 @@ public class JDKInstaller extends ToolInstaller {
                 args.add("/s");
                 args.add("/v/qn REBOOT=Suppress INSTALLDIR="+normalizedPath+" /L "+logFile.getRemote());
                 
-                if(node.createLauncher(log).launch(args.toCommandArray(),new String[0],out,expectedLocation).join()!=0) {
+                if(node.createLauncher(log).launch().cmds(args).stdout(out).pwd(expectedLocation).join()!=0) {
                     out.println("Failed to install JDK");
                     // log file is in UTF-16
                     InputStreamReader in = new InputStreamReader(logFile.read(), "UTF-16");

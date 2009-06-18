@@ -69,7 +69,6 @@ THE SOFTWARE.
        -->
       <input type="radio" name="mode" value="dummy1" style="display:none" />
       <input type="radio" name="mode" value="dummy2" style="display:none" />
-      <s:crumb />
       <input type="submit" name="Submit" value="OK" id="ok" style="margin-left:5em" />
     </s:block>
   </s:form>

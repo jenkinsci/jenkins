@@ -36,7 +36,6 @@ import javax.servlet.ServletException;
 import java.io.IOException;
 import java.util.logging.Logger;
 import java.util.logging.Level;
-import java.util.concurrent.TimeUnit;
 
 
 /**
@@ -92,6 +91,11 @@ public class Executor extends Thread implements ModelObject {
                     }
                 }
 
+                // clear the interrupt flag as a precaution.
+                // sometime an interrupt aborts a build but without clearing the flag.
+                // see issue #1583
+                Thread.interrupted();
+
                 Queue.Item queueItem;
                 try {
                 	queueItem = queue.pop();
@@ -104,11 +108,6 @@ public class Executor extends Thread implements ModelObject {
                 owner.taskAccepted(this, task);
                 try {
                     try {
-                        // clear the interrupt flag as a precaution.
-                        // sometime an interrupt aborts a build but without clearing the flag.
-                        // see issue #1583
-                        Thread.interrupted();
-
                         startTime = System.currentTimeMillis();
                         executable = task.createExecutable();
                         if (executable instanceof Actionable) {
@@ -127,8 +126,10 @@ public class Executor extends Thread implements ModelObject {
                 } finally {
                     finishTime = System.currentTimeMillis();
                     if (problems == null) {
+                        queueItem.future.set(executable);
                         owner.taskCompleted(this, task, finishTime - startTime);
                     } else {
+                        queueItem.future.set(problems);
                         owner.taskCompletedWithProblems(this, task, finishTime - startTime, problems);
                     }
                 }
@@ -211,7 +212,7 @@ public class Executor extends Thread implements ModelObject {
         long d = e.getParent().getEstimatedDuration();
         if(d<0)         return -1;
 
-        int num = (int)((System.currentTimeMillis()-startTime)*100/d);
+        int num = (int)(getElapsedTime()*100/d);
         if(num>=100)    num=99;
         return num;
     }
@@ -228,7 +229,7 @@ public class Executor extends Thread implements ModelObject {
         Queue.Executable e = executable;
         if(e==null)     return false;
 
-        long elapsed = System.currentTimeMillis() - startTime;
+        long elapsed = getElapsedTime();
         long d = e.getParent().getEstimatedDuration();
         if(d>=0) {
             // if it's taking 10 times longer than ETA, consider it stuck
@@ -237,6 +238,20 @@ public class Executor extends Thread implements ModelObject {
             // if no ETA is available, a build taking longer than a day is considered stuck
             return TimeUnit2.MILLISECONDS.toHours(elapsed)>24;
         }
+    }
+
+    public long getElapsedTime() {
+        return System.currentTimeMillis() - startTime;
+    }
+
+    /**
+     * Gets the string that says how long since this build has started.
+     *
+     * @return
+     *      string like "3 minutes" "1 day" etc.
+     */
+    public String getTimestampString() {
+        return Util.getPastTimeString(getElapsedTime());
     }
 
     /**
@@ -250,7 +265,7 @@ public class Executor extends Thread implements ModelObject {
         long d = e.getParent().getEstimatedDuration();
         if(d<0)         return Messages.Executor_NotAvailable();
 
-        long eta = d-(System.currentTimeMillis()-startTime);
+        long eta = d-getElapsedTime();
         if(eta<=0)      return Messages.Executor_NotAvailable();
 
         return Util.getTimeSpanString(eta);
@@ -267,7 +282,7 @@ public class Executor extends Thread implements ModelObject {
         long d = e.getParent().getEstimatedDuration();
         if(d<0)         return -1;
 
-        long eta = d-(System.currentTimeMillis()-startTime);
+        long eta = d-getElapsedTime();
         if(eta<=0)      return -1;
 
         return eta;

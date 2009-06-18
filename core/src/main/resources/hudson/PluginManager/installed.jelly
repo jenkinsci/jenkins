@@ -110,9 +110,6 @@ THE SOFTWARE.
 
           <!-- trigger -->
           new Ajax.Request(btn.getAttribute('url')+"/make"+(btn.checked?"Enable":"Disable")+"d", {
-            <j:if test="${app.useCrumbs}">
-            parameters : { "${h.getCrumbRequestField()}": "${h.getCrumb(request)}" },
-            </j:if>
             onFailure : function(req,o) {
               $('needRestart').innerHTML = req.responseText;
             }

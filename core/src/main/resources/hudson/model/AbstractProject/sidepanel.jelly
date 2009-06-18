@@ -46,7 +46,7 @@ THE SOFTWARE.
                   onclick="${it.parameterized?null:'return build(this)'}" permission="${it.BUILD}" />
           <script>
             function build(a) {
-              new Ajax.Request(a.href,{method:"post",${h.getCrumbAsJSONParameterBlock(request)} });
+              new Ajax.Request(a.href);
               
               hoverNotification('${%Build scheduled}',a.parentNode);
               return false;

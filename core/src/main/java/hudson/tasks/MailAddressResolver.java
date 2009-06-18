@@ -32,7 +32,6 @@ import hudson.model.Hudson;
 import hudson.model.User;
 import hudson.scm.CVSSCM;
 import hudson.scm.SCM;
-import hudson.scm.SubversionSCM;
 
 import java.util.HashMap;
 import java.util.List;
@@ -154,13 +153,6 @@ public abstract class MailAddressResolver implements ExtensionPoint {
                     String s = findMailAddressFor(u,cvsscm.getCvsRoot());
                     if(s!=null) return s;
                 }
-                if (scm instanceof SubversionSCM) {
-                    SubversionSCM svn = (SubversionSCM) scm;
-                    for (SubversionSCM.ModuleLocation loc : svn.getLocations(p.getLastBuild())) {
-                        String s = findMailAddressFor(u,loc.remote);
-                        if(s!=null) return s;
-                    }
-                }
             }
 
             // didn't hit any known rules
@@ -183,21 +175,16 @@ public abstract class MailAddressResolver implements ExtensionPoint {
 
         static {
             {// java.net
-                Pattern svnurl = Pattern.compile("https://[^.]+.dev.java.net/svn/([^/]+)(/.*)?");
-
                 String username = "([A-Za-z0-9_\\-])+";
                 String host = "(.*.dev.java.net|kohsuke.sfbay.*)";
                 Pattern cvsUrl = Pattern.compile(":pserver:"+username+"@"+host+":/cvs");
 
-                RULE_TABLE.put(svnurl,"@dev.java.net");
                 RULE_TABLE.put(cvsUrl,"@dev.java.net");
             }
 
             {// source forge
-                Pattern svnUrl = Pattern.compile("(http|https)://[^.]+.svn.(sourceforge|sf).net/svnroot/([^/]+)(/.*)?");
                 Pattern cvsUrl = Pattern.compile(":(pserver|ext):([^@]+)@([^.]+).cvs.(sourceforge|sf).net:.+");
 
-                RULE_TABLE.put(svnUrl,"@users.sourceforge.net");
                 RULE_TABLE.put(cvsUrl,"@users.sourceforge.net");
             }
 

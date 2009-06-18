@@ -78,8 +78,6 @@ import org.kohsuke.stapler.Stapler;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 import org.kohsuke.stapler.jelly.CustomTagLibrary.StaplerDynamicTag;
-import org.kohsuke.stapler.jelly.InternationalizedStringExpressionListener;
-import org.kohsuke.stapler.jelly.InternationalizedStringExpression;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.Cookie;
@@ -1153,34 +1151,6 @@ public class Functions {
         }
         
         return "";
-    }
-    
-    public static String getCrumbAsJSONParameterBlock(StaplerRequest req) {
-        StringBuilder builder = new StringBuilder();
-        if (Hudson.getInstance().isUseCrumbs()) {
-            builder.append("parameters:{\"");
-            builder.append(getCrumbRequestField());
-            builder.append("\":\"");
-            builder.append(getCrumb(req));
-            builder.append("\"}");
-        }
-        return builder.toString();
-    }
-    
-    public static String getReplaceDescriptionInvoker(StaplerRequest req) {
-    	StringBuilder builder = new StringBuilder();
-    	if (isAutoRefresh(req)) {
-    		builder.append("null");
-    	} else {
-    		builder.append("'return replaceDescription(");
-    		builder.append("\\'");
-    		builder.append(getCrumbRequestField());
-    		builder.append("\\',\\'");
-    		builder.append(getCrumb(req));
-    		builder.append("\\'");
-    		builder.append(");'");
-    	}
-    	return builder.toString();
     }
     
     private static final Pattern SCHEME = Pattern.compile("[a-z]+://.+");

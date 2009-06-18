@@ -167,13 +167,13 @@ public class Channels {
         args.add("-connectTo","localhost:"+serverSocket.getLocalPort());
 
         listener.getLogger().println("Starting "+displayName);
-        Proc p = new LocalLauncher(listener).launch(args.toCommandArray(), new String[0], listener.getLogger(), workDir);
+        Proc p = new LocalLauncher(listener).launch().cmds(args).stdout(listener).pwd(workDir).start();
 
         Socket s = serverSocket.accept();
         serverSocket.close();
 
         return forProcess("Channel to "+displayName, Computer.threadPoolForRemoting,
-                new BufferedInputStream(s.getInputStream()), new BufferedOutputStream(s.getOutputStream()), p);
+                new BufferedInputStream(s.getInputStream()), new BufferedOutputStream(s.getOutputStream()),null,p);
     }
 
     private static final Logger LOGGER = Logger.getLogger(Channels.class.getName());

@@ -194,7 +194,7 @@ final class MavenProcessFactory implements ProcessCache.Factory {
 
             final ArgumentListBuilder cmdLine = buildMavenCmdLine(listener,acceptor.getPort());
             String[] cmds = cmdLine.toCommandArray();
-            final Proc proc = launcher.launch(cmds, envVars, out, workDir);
+            final Proc proc = launcher.launch().cmds(cmds).envs(envVars).stdout(out).pwd(workDir).start();
 
             Connection con;
             try {
@@ -209,7 +209,7 @@ final class MavenProcessFactory implements ProcessCache.Factory {
             }
 
             return Channels.forProcess("Channel to Maven "+ Arrays.toString(cmds),
-                Computer.threadPoolForRemoting, new BufferedInputStream(con.in), new BufferedOutputStream(con.out),proc);
+                Computer.threadPoolForRemoting, new BufferedInputStream(con.in), new BufferedOutputStream(con.out), listener.getLogger(), proc);
 
 //            return launcher.launchChannel(buildMavenCmdLine(listener).toCommandArray(),
 //                out, workDir, envVars);

@@ -44,7 +44,7 @@ THE SOFTWARE.
 	    function fetchNext(e,href) {
 	      new Ajax.Request(href,{
 	          method: "post",
-	          parameters: {"start":e.fetchedBytes,"${h.getCrumbRequestField()}":"${h.getCrumb(request)}"},
+	          parameters: {"start":e.fetchedBytes},
 	          onComplete: function(rsp,_) {
               <!-- append text and do autoscroll if applicable-->
               var stickToBottom = scroller.isSticking();

@@ -167,6 +167,13 @@ public class ClassicPluginStrategy implements PluginStrategy {
             optionalDependencies.add(new PluginWrapper.Dependency("maven-plugin:" + Hudson.VERSION));
         }
 
+        // subversion support was split off into a plugin in 1.311, so plugins built before that should automatically get
+        // subversion plugin as a dependency
+        if (!"subversion".equals(shortName) &&
+                (hudsonVersion == null || hudsonVersion.equals("null") || hudsonVersion.compareTo("1.310") <= 0)) {
+            optionalDependencies.add(new PluginWrapper.Dependency("subversion:1.0"));
+        }
+
 		ClassLoader dependencyLoader = new DependencyClassLoader(getClass()
 				.getClassLoader(), Util.join(dependencies,optionalDependencies));
 		ClassLoader classLoader = new URLClassLoader(paths.toArray(new URL[paths.size()]),

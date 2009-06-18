@@ -5,6 +5,8 @@
  */
 package hudson.security.csrf;
 
+import hudson.model.Hudson;
+
 import java.io.IOException;
 import java.util.Enumeration;
 import java.util.logging.Logger;
@@ -27,38 +29,21 @@ import javax.servlet.http.HttpServletResponse;
  *
  */
 public class CrumbFilter implements Filter {
-
-    private volatile CrumbIssuer crumbIssuer;
-
+    /**
+     * Because servlet containers generally don't specify the ordering of the initialization
+     * (and different implementations indeed do this differently --- See HUDSON-3878),
+     * we cannot use Hudson to the CrumbIssuer into CrumbFilter eagerly.
+     */
     public CrumbIssuer getCrumbIssuer() {
-        return crumbIssuer;
+        return Hudson.getInstance().getCrumbIssuer();
     }
 
-    public void setCrumbIssuer(CrumbIssuer issuer) {
-        crumbIssuer = issuer;
-    }
-
-    /**
-     * Gets the {@link CrumbFilter} created for the given {@link ServletContext}.
-     */
-    public static CrumbFilter get(ServletContext context) {
-        return (CrumbFilter) context.getAttribute(CrumbFilter.class.getName());
-    }
-
-    /**
-     * {@inheritDoc}
-     */
     public void init(FilterConfig filterConfig) throws ServletException {
-        // this is how we make us available to the rest of Hudson.
-        filterConfig.getServletContext().setAttribute(CrumbFilter.class.getName(), this);
     }
 
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException, ServletException {
-        if (crumbIssuer == null) {
-            chain.doFilter(request, response);
-            return;
-        }
-        if (!(request instanceof HttpServletRequest)) {
+        CrumbIssuer crumbIssuer = getCrumbIssuer();
+        if (crumbIssuer == null || !(request instanceof HttpServletRequest)) {
             chain.doFilter(request, response);
             return;
         }
@@ -93,7 +78,8 @@ public class CrumbFilter implements Filter {
                 chain.doFilter(request, response);
             } else {
                 LOGGER.warning("No valid crumb was included in request for " + httpRequest.getRequestURI() + ".  Returning " + HttpServletResponse.SC_FORBIDDEN + ".");
-                ((HttpServletResponse) response).sendError(HttpServletResponse.SC_FORBIDDEN);
+                HttpServletResponse httpResponse = (HttpServletResponse) response;
+                httpResponse.sendError(HttpServletResponse.SC_FORBIDDEN,"No valid crumb was included in the request");
             }
         } else {
             chain.doFilter(request, response);

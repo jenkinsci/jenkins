@@ -206,7 +206,7 @@ public class Ant extends Builder {
 
         long startTime = System.currentTimeMillis();
         try {
-            int r = launcher.launch(args.toCommandArray(),env,listener.getLogger(),buildFilePath.getParent()).join();
+            int r = launcher.launch().cmds(args).envs(env).stdout(listener).pwd(buildFilePath.getParent()).join();
             return r==0;
         } catch (IOException e) {
             Util.displayIOException(e,listener);

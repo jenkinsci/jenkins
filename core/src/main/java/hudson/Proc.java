@@ -82,7 +82,7 @@ public abstract class Proc {
      */
     public static final class LocalProc extends Proc {
         private final Process proc;
-        private final Thread copier;
+        private final Thread copier,copier2;
         private final OutputStream out;
         private final EnvVars cookie;
 
@@ -107,9 +107,22 @@ public abstract class Proc {
         }
 
         public LocalProc(String[] cmd,String[] env,InputStream in,OutputStream out, File workDir) throws IOException {
+            this(cmd,env,in,out,null,workDir);
+        }
+
+        /**
+         * @param err
+         *      null to redirect stderr to stdout.
+         */
+        public LocalProc(String[] cmd,String[] env,InputStream in,OutputStream out,OutputStream err,File workDir) throws IOException {
             this( calcName(cmd),
-                  environment(new ProcessBuilder(cmd),env).directory(workDir).redirectErrorStream(true),
-                  in, out );
+                  stderr(environment(new ProcessBuilder(cmd),env).directory(workDir),err),
+                  in, out, err );
+        }
+
+        private static ProcessBuilder stderr(ProcessBuilder pb, OutputStream stderr) {
+            if(stderr==null)    pb.redirectErrorStream(true);
+            return pb;
         }
 
         private static ProcessBuilder environment(ProcessBuilder pb, String[] env) {
@@ -124,7 +137,7 @@ public abstract class Proc {
             return pb;
         }
 
-        private LocalProc( String name, ProcessBuilder procBuilder, InputStream in, OutputStream out ) throws IOException {
+        private LocalProc( String name, ProcessBuilder procBuilder, InputStream in, OutputStream out, OutputStream err ) throws IOException {
             Logger.getLogger(Proc.class.getName()).log(Level.FINE, "Running: {0}", name);
             this.out = out;
             this.cookie = ProcessTreeKiller.createCookie();
@@ -133,9 +146,15 @@ public abstract class Proc {
             copier = new StreamCopyThread(name+": stdout copier", proc.getInputStream(), out);
             copier.start();
             if(in!=null)
-                new ByteCopier(name+": stdin copier",in,proc.getOutputStream()).start();
+                new StdinCopyThread(name+": stdin copier",in,proc.getOutputStream()).start();
             else
                 proc.getOutputStream().close();
+            if(err!=null) {
+                copier2 = new StreamCopyThread(name+": stderr copier", proc.getErrorStream(), err);
+                copier2.start();
+            } else {
+                copier2 = null;
+            }
         }
 
         /**
@@ -149,7 +168,8 @@ public abstract class Proc {
                 // problems like that shows up as inifinite wait in join(), which confuses great many users.
                 // So let's do a timed wait here and try to diagnose the problem
                 copier.join(10*1000);
-                if(copier.isAlive()) {
+                if(copier2!=null)   copier2.join(10*1000);
+                if(copier.isAlive() || (copier2!=null && copier2.isAlive())) {
                     // looks like handles are leaking.
                     // closing these handles should terminate the threads.
                     String msg = "Process leaked file descriptors. See http://hudson.gotdns.com/wiki/display/HUDSON/Spawning+processes+from+build for more information";
@@ -204,11 +224,15 @@ public abstract class Proc {
             ProcessTreeKiller.get().kill(proc,cookie);
         }
 
-        private static class ByteCopier extends Thread {
+        /**
+         * {@link Process#getOutputStream()} is buffered, so we need to eagerly flash
+         * the stream to push bytes to the process.
+         */
+        private static class StdinCopyThread extends Thread {
             private final InputStream in;
             private final OutputStream out;
 
-            public ByteCopier(String threadName, InputStream in, OutputStream out) {
+            public StdinCopyThread(String threadName, InputStream in, OutputStream out) {
                 super(threadName);
                 this.in = in;
                 this.out = out;
@@ -216,13 +240,17 @@ public abstract class Proc {
 
             public void run() {
                 try {
-                    while(true) {
-                        int ch = in.read();
-                        if(ch==-1)  break;
-                        out.write(ch);
+                    try {
+                        byte[] buf = new byte[8192];
+                        int len;
+                        while ((len = in.read(buf)) > 0) {
+                            out.write(buf, 0, len);
+                            out.flush();
+                        }
+                    } finally {
+                        in.close();
+                        out.close();
                     }
-                    in.close();
-                    out.close();
                 } catch (IOException e) {
                     // TODO: what to do?
                 }
@@ -230,7 +258,7 @@ public abstract class Proc {
         }
 
         private static String calcName(String[] cmd) {
-            StringBuffer buf = new StringBuffer();
+            StringBuilder buf = new StringBuilder();
             for (String token : cmd) {
                 if(buf.length()>0)  buf.append(' ');
                 buf.append(token);

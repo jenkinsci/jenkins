@@ -244,7 +244,7 @@ public class Maven extends Builder {
                 env.put("MAVEN_OPTS",jvmOptions);
 
             try {
-                int r = launcher.launch(args.toCommandArray(),env,listener.getLogger(),proj.getModuleRoot()).join();
+                int r = launcher.launch().cmds(args).envs(env).stdout(listener).pwd(proj.getModuleRoot()).join();
                 if (0 != r) {
                     return false;
                 }

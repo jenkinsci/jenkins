@@ -37,9 +37,7 @@ import java.util.Collections;
 import java.util.Hashtable;
 import java.util.Map;
 import java.util.Vector;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Executor;
-import java.util.concurrent.ExecutorService;
+import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
@@ -358,6 +356,10 @@ public class Channel implements VirtualChannel, IChannel {
         public void onClosed(Channel channel, IOException cause) {}
     }
 
+    /*package*/ boolean isOutClosed() {
+        return outClosed;
+    }
+
     /**
      * Sends a command to the remote end and executes it there.
      *
@@ -555,6 +557,13 @@ public class Channel implements VirtualChannel, IChannel {
                 for (Request<?,?> req : pendingCalls.values())
                     req.abort(e);
                 pendingCalls.clear();
+            }
+            synchronized (executingCalls) {
+                for (Request<?, ?> r : executingCalls.values()) {
+                    java.util.concurrent.Future<?> f = r.future;
+                    if(f!=null) f.cancel(true);
+                }
+                executingCalls.clear();
             }
         } finally {
             notifyAll();
@@ -793,4 +802,44 @@ public class Channel implements VirtualChannel, IChannel {
     private static final ThreadLocal<Channel> CURRENT = new ThreadLocal<Channel>();
 
     private static final Logger logger = Logger.getLogger(Channel.class.getName());
+
+//    static {
+//        ConsoleHandler h = new ConsoleHandler();
+//        h.setFormatter(new Formatter(){
+//            public synchronized String format(LogRecord record) {
+//                StringBuilder sb = new StringBuilder();
+//                sb.append((record.getMillis()%100000)+100000);
+//                sb.append(" ");
+//                if (record.getSourceClassName() != null) {
+//                    sb.append(record.getSourceClassName());
+//                } else {
+//                    sb.append(record.getLoggerName());
+//                }
+//                if (record.getSourceMethodName() != null) {
+//                    sb.append(" ");
+//                    sb.append(record.getSourceMethodName());
+//                }
+//                sb.append('\n');
+//                String message = formatMessage(record);
+//                sb.append(record.getLevel().getLocalizedName());
+//                sb.append(": ");
+//                sb.append(message);
+//                sb.append('\n');
+//                if (record.getThrown() != null) {
+//                    try {
+//                        StringWriter sw = new StringWriter();
+//                        PrintWriter pw = new PrintWriter(sw);
+//                        record.getThrown().printStackTrace(pw);
+//                        pw.close();
+//                        sb.append(sw.toString());
+//                    } catch (Exception ex) {
+//                    }
+//                }
+//                return sb.toString();
+//            }
+//        });
+//        h.setLevel(Level.FINE);
+//        logger.addHandler(h);
+//        logger.setLevel(Level.FINE);
+//    }
 }

@@ -56,6 +56,9 @@ import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.text.DateFormat;
+
+import net.sf.json.JSONObject;
 
 /**
  * {@link Trigger} that checks for SCM updates periodically.
@@ -133,7 +136,7 @@ public class SCMTrigger extends Trigger<SCMedItem> {
     }
 
     @Extension
-    public static final class DescriptorImpl extends TriggerDescriptor {
+    public static class DescriptorImpl extends TriggerDescriptor {
         /**
          * Used to control the execution of the polling tasks.
          */
@@ -262,7 +265,7 @@ public class SCMTrigger extends Trigger<SCMedItem> {
                 old.shutdown();
         }
 
-        public boolean configure(StaplerRequest req) throws FormException {
+        public boolean configure(StaplerRequest req, JSONObject json) throws FormException {
             String t = req.getParameter("poll_scm_threads");
             if(t==null || t.length()==0)
                 setPollingThreadCount(0);
@@ -272,7 +275,7 @@ public class SCMTrigger extends Trigger<SCMedItem> {
             // Save configuration
             save();
 
-            return super.configure(req);
+            return true;
         }
     }
 
@@ -378,7 +381,7 @@ public class SCMTrigger extends Trigger<SCMedItem> {
                 try {
                     PrintStream logger = listener.getLogger();
                     long start = System.currentTimeMillis();
-                    logger.println("Started on "+new Date().toLocaleString());
+                    logger.println("Started on "+ DateFormat.getDateTimeInstance().format(new Date()));
                     boolean result = job.pollSCMChanges(listener);
                     logger.println("Done. Took "+ Util.getTimeSpanString(System.currentTimeMillis()-start));
                     if(result)

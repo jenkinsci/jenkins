@@ -205,7 +205,8 @@ public class JavadocArchiver extends Recorder {
          * Performs on-the-fly validation on the file mask wildcard.
          */
         public FormValidation doCheck(@AncestorInPath AbstractProject project, @QueryParameter String value) throws IOException, ServletException {
-            return project.getWorkspace().validateRelativeDirectory(value);
+            FilePath ws = project.getWorkspace();
+            return ws != null ? ws.validateRelativeDirectory(value) : FormValidation.ok();
         }
 
         public boolean isApplicable(Class<? extends AbstractProject> jobType) {

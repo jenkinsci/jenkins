@@ -69,7 +69,7 @@ abstract class Request<RSP extends Serializable,EXC extends Throwable> extends C
     /**
      * While executing the call this is set to the handle of the execution.
      */
-    private volatile transient Future<?> future;
+    protected volatile transient Future<?> future;
 
 
     protected Request() {
@@ -231,16 +231,17 @@ abstract class Request<RSP extends Serializable,EXC extends Throwable> extends C
         future = channel.executor.submit(new Runnable() {
             public void run() {
                 try {
-                    RSP rsp;
+                    Command rsp;
                     try {
-                        rsp = Request.this.perform(channel);
+                        RSP r = Request.this.perform(channel);
+                        // normal completion
+                        rsp = new Response<RSP,EXC>(id,r);
                     } catch (Throwable t) {
                         // error return
-                        channel.send(new Response<RSP,Throwable>(id,t));
-                        return;
+                        rsp = new Response<RSP,Throwable>(id,t);
                     }
-                    // normal completion
-                    channel.send(new Response<RSP,EXC>(id,rsp));
+                    if(!channel.isOutClosed())
+                        channel.send(rsp);
                 } catch (IOException e) {
                     // communication error.
                     // this means the caller will block forever

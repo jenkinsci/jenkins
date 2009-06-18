@@ -40,7 +40,6 @@ import hudson.model.ModelObject;
 import hudson.model.Run;
 import hudson.model.TaskListener;
 import hudson.model.TaskThread;
-import hudson.model.Item;
 import hudson.org.apache.tools.ant.taskdefs.cvslib.ChangeLogTask;
 import hudson.remoting.Future;
 import hudson.remoting.RemoteOutputStream;
@@ -60,7 +59,6 @@ import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.QueryParameter;
-import org.kohsuke.stapler.AncestorInPath;
 import org.kohsuke.stapler.framework.io.ByteBuffer;
 
 import javax.servlet.ServletException;
@@ -950,7 +948,7 @@ public class CVSSCM extends SCM implements Serializable {
     protected final boolean run(Launcher launcher, ArgumentListBuilder cmd, TaskListener listener, FilePath dir, OutputStream out) throws IOException, InterruptedException {
         Map<String,String> env = createEnvVarMap(true);
 
-        int r = launcher.launch(cmd.toCommandArray(),env,out,dir).join();
+        int r = launcher.launch().cmds(cmd).envs(env).stdout(out).pwd(dir).join();
         if(r!=0)
             listener.fatalError(getDescriptor().getDisplayName()+" failed. exit code="+r);
 
@@ -1153,9 +1151,8 @@ public class CVSSCM extends SCM implements Serializable {
         public void doVersion(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException, InterruptedException {
             ByteBuffer baos = new ByteBuffer();
             try {
-                Proc proc = Hudson.getInstance().createLauncher(TaskListener.NULL).launch(
-                    new String[]{getCvsExeOrDefault(), "--version"}, new String[0], baos, null);
-                proc.join();
+                Hudson.getInstance().createLauncher(TaskListener.NULL).launch()
+                        .cmds(getCvsExeOrDefault(), "--version").stdout(baos).join();
                 rsp.setContentType("text/plain");
                 baos.writeTo(rsp.getOutputStream());
             } catch (IOException e) {
@@ -1285,10 +1282,10 @@ public class CVSSCM extends SCM implements Serializable {
             }
 
             rsp.setContentType("text/plain");
-            Proc proc = Hudson.getInstance().createLauncher(TaskListener.NULL).launch(
-                new String[]{getCvsExeOrDefault(), "-d",cvsroot,"login"}, new String[0],
-                new ByteArrayInputStream((password+"\n").getBytes()),
-                rsp.getOutputStream());
+            Proc proc = Hudson.getInstance().createLauncher(TaskListener.NULL).launch()
+                    .cmds(getCvsExeOrDefault(), "-d",cvsroot,"login")
+                    .stdin(new ByteArrayInputStream((password+"\n").getBytes()))
+                    .stdout(rsp.getOutputStream()).start();
             proc.join();
         }
     }

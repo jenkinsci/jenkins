@@ -55,7 +55,6 @@ THE SOFTWARE.
         </j:forEach>
 
         <f:block>
-          <f:crumb />
           <input type="submit" name="Submit" value="OK" id="ok" style="margin-left:5em" />
         </f:block>
       </f:form>

@@ -25,7 +25,6 @@ package hudson.os.solaris;
 
 import com.sun.akuma.Daemon;
 import com.sun.akuma.JavaVMArguments;
-import hudson.FilePath;
 import hudson.Launcher.LocalLauncher;
 import hudson.Util;
 import hudson.Extension;
@@ -89,7 +88,7 @@ public class ZFSInstaller extends AdministrativeMonitor implements Serializable 
     }
 
     private boolean shouldBeActive() {
-        if(!System.getProperty("os.name").equals("SunOS"))
+        if(!System.getProperty("os.name").equals("SunOS") || disabled)
             // on systems that don't have ZFS, we don't need this monitor
             return false;
 
@@ -383,7 +382,7 @@ public class ZFSInstaller extends AdministrativeMonitor implements Serializable 
     }
 
     private static int system(File pwd, TaskListener listener, String... args) throws IOException, InterruptedException {
-        return new LocalLauncher(listener).launch(args, new String[0], System.out, new FilePath(pwd)).join();
+        return new LocalLauncher(listener).launch().cmds(args).stdout(System.out).pwd(pwd).join();
     }
 
     private static String computeHudsonFileSystemName(LibZFS zfs, ZFSFileSystem top) {
@@ -425,4 +424,9 @@ public class ZFSInstaller extends AdministrativeMonitor implements Serializable 
     }
 
     private static final Logger LOGGER = Logger.getLogger(ZFSInstaller.class.getName());
+
+    /**
+     * Escape hatch in case JNI calls fatally crash, like in HUDSON-3733.
+     */
+    public static boolean disabled = Boolean.getBoolean(ZFSInstaller.class.getName()+".disabled");
 }

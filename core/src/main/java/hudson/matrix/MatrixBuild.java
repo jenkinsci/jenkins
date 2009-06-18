@@ -92,7 +92,8 @@ public class MatrixBuild extends AbstractBuild<MatrixProject,MatrixBuild> {
     }
 
     public Layouter<RunPtr> getLayouter() {
-        return new Layouter<RunPtr>(axes) {
+        // axes can be null if build page is access right when build starts
+        return axes == null ? null : new Layouter<RunPtr>(axes) {
             protected RunPtr getT(Combination c) {
                 return new RunPtr(c);
             }

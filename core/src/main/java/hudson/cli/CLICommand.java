@@ -186,8 +186,10 @@ public abstract class CLICommand implements ExtensionPoint, Cloneable {
         for (CLICommand cmd : all()) {
             if(name.equals(cmd.getName())) {
                 try {
-                    return (CLICommand)cmd.clone();
-                } catch (CloneNotSupportedException e) {
+                    return cmd.getClass().newInstance();
+                } catch (IllegalAccessException e) {
+                    throw new AssertionError(e);
+                } catch (InstantiationException e) {
                     throw new AssertionError(e);
                 }
             }
