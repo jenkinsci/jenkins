@@ -73,10 +73,10 @@ public abstract class Lifecycle implements ExtensionPoint {
                     throw x;
                 }
             } else {
-                // if run on embedded container, attempt to use UnixEmbeddedContainerLifecycle 
-                if(System.getProperty("executable-war")!=null && !Hudson.isWindows()) {
+                // if run on Unix, we can do restart 
+                if(!Hudson.isWindows()) {
                     try {
-                        INSTANCE = new UnixEmbeddedContainerLifecycle();
+                        INSTANCE = new UnixLifecycle();
                     } catch (IOException e) {
                         LOGGER.log(Level.WARNING, "Failed to install embedded lifecycle implementation",e);
                     }
@@ -84,8 +84,7 @@ public abstract class Lifecycle implements ExtensionPoint {
 
                 // use the default one. final fallback.
                 if(INSTANCE==null)
-                    INSTANCE = new Lifecycle() {
-                    };
+                    INSTANCE = new Lifecycle() {};
             }
         }
 
