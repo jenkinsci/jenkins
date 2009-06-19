@@ -161,6 +161,10 @@ public class MatrixConfiguration extends Project<MatrixConfiguration,MatrixRun> 
     public int getQuietPeriod() {
         return 0;
     }
+    @Override
+    public int getRetryCount() {
+        return 5;
+    }
 
     @Override
     public boolean isConfigurable() {
