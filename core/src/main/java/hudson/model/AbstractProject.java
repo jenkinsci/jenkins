@@ -55,12 +55,15 @@ import hudson.triggers.Trigger;
 import hudson.triggers.TriggerDescriptor;
 import hudson.util.DescribableList;
 import hudson.util.EditDistance;
+import hudson.util.FormValidation;
 import hudson.widgets.BuildHistoryWidget;
 import hudson.widgets.HistoryWidget;
 import net.sf.json.JSONObject;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 import org.kohsuke.stapler.export.Exported;
+import org.kohsuke.stapler.QueryParameter;
+
 
 import javax.servlet.ServletException;
 import java.io.File;
@@ -109,6 +112,11 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
      * The quiet period. Null to delegate to the system default.
      */
     private volatile Integer quietPeriod = null;
+    
+    /**
+     * The Retry Count. Null to delegate to the system default.
+     */
+    private volatile Integer retryCount = null;
 
     /**
      * If this project is configured to be only built on a certain label,
@@ -300,10 +308,18 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
     public int getQuietPeriod() {
         return quietPeriod!=null ? quietPeriod : Hudson.getInstance().getQuietPeriod();
     }
+    
+    public int getRetryCount() {
+        return retryCount!=null ? retryCount : Hudson.getInstance().getRetryCount();
+    }
 
     // ugly name because of EL
     public boolean getHasCustomQuietPeriod() {
         return quietPeriod!=null;
+    }
+    
+    public boolean getHasCustomRetryCount(){
+    	return  retryCount != null;
     }
 
     public final boolean isBuildable() {
@@ -320,6 +336,19 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
 
     public boolean isDisabled() {
         return disabled;
+    }
+    
+    /**
+     * Validates the retry count Regex
+     */
+    public FormValidation doCheckRetryCount(@QueryParameter String value)throws IOException,ServletException{
+    	// retry count is optional so this is ok
+    	if(value == null || value.trim().equals(""))
+        	return FormValidation.ok();
+    	if (!value.matches("[0-9]*")) {
+    		return FormValidation.error("Invalid retry count");
+    	} 
+    	return FormValidation.ok();
     }
 
     /**
@@ -1148,6 +1177,11 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
             quietPeriod = Integer.parseInt(req.getParameter("quiet_period"));
         } else {
             quietPeriod = null;
+        }
+        if(req.getParameter("hasCustomRetryCount")!=null) {
+            retryCount = Integer.parseInt(req.getParameter("retry_count"));
+        } else {
+        	retryCount = null;
         }
 
         if(req.getParameter("hasSlaveAffinity")!=null) {

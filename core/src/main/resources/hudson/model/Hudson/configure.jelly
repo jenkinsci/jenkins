@@ -52,6 +52,10 @@ THE SOFTWARE.
         <input class="setting-input number" name="quiet_period"
           type="text" value="${it.quietPeriod}"/>
       </f:entry>
+      <f:entry title="${%Retry Count}" help="/help/project-config/retryCount.html">
+        <input class="setting-input number" name="retry_count"
+          type="text" value="${it.retryCount}"/>
+      </f:entry>
       <f:optionalBlock name="use_security" title="${%Enable security}"
                        checked="${it.useSecurity}" help="/help/system-config/enableSecurity.html">
         <f:entry title="${%TCP port for JNLP slave agents}"

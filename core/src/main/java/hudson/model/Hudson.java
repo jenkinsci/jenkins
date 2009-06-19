@@ -365,6 +365,13 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
      * This is {@link Integer} so that we can initialize it to '5' for upgrading users.
      */
     /*package*/ Integer quietPeriod;
+    
+    /**
+     * Retry Count.
+     *
+     * This is {@link Integer} so that we can initialize it to '5' for upgrading users.
+     */
+    /*package*/ Integer retryCount;
 
     /**
      * {@link View}s.
@@ -1445,6 +1452,15 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
     public int getQuietPeriod() {
         return quietPeriod!=null ? quietPeriod : 5;
     }
+    
+    /**
+     * Gets the system default Retry Count period.
+     */
+    public int getRetryCount() {
+        return retryCount !=null ? retryCount : 5;
+    }
+    
+    
 
     /**
      * @deprecated
@@ -2215,6 +2231,8 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
             labelSet=null;
 
             quietPeriod = Integer.parseInt(req.getParameter("quiet_period"));
+            
+            retryCount = Integer.parseInt(req.getParameter("retry_count"));
 
             systemMessage = Util.nullify(req.getParameter("system_message"));
 
