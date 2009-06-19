@@ -30,6 +30,7 @@ import java.io.FilterInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.ByteArrayOutputStream;
 
 /**
  * The TarInputStream reads a UNIX tar archive as an InputStream.
@@ -257,11 +258,11 @@ public class TarInputStream extends FilterInputStream {
 
         if (this.currEntry != null && this.currEntry.isGNULongNameEntry()) {
             // read in the name
-            StringBuffer longName = new StringBuffer();
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
             byte[] buf = new byte[256];
-            int length = 0;
+            int length;
             while ((length = read(buf)) >= 0) {
-                longName.append(new String(buf, 0, length));
+                baos.write(buf,0,length);
             }
             getNextEntry();
             if (this.currEntry == null) {
@@ -269,12 +270,13 @@ public class TarInputStream extends FilterInputStream {
                 // Malformed tar file - long entry name not followed by entry
                 return null;
             }
+            String longName = baos.toString("UTF-8");
             // remove trailing null terminator
             if (longName.length() > 0
                 && longName.charAt(longName.length() - 1) == 0) {
-                longName.deleteCharAt(longName.length() - 1);
+                longName = longName.substring(0,longName.length()-1);
             }
-            this.currEntry.setName(longName.toString());
+            this.currEntry.setName(longName);
         }
 
         return this.currEntry;

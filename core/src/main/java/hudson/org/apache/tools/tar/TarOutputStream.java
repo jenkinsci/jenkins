@@ -183,9 +183,10 @@ public class TarOutputStream extends FilterOutputStream {
                 TarEntry longLinkEntry = new TarEntry(TarConstants.GNU_LONGLINK,
                                                       TarConstants.LF_GNUTYPE_LONGNAME);
 
-                longLinkEntry.setSize(entry.getName().length() + 1);
+                byte[] name = entry.getName().getBytes("UTF-8");
+                longLinkEntry.setSize(name.length + 1);
                 putNextEntry(longLinkEntry);
-                write(entry.getName().getBytes());
+                write(name);
                 write(0);
                 closeEntry();
             } else if (longFileMode != LONGFILE_TRUNCATE) {
