@@ -115,6 +115,7 @@ import hudson.util.Memoizer;
 import hudson.util.Iterators;
 import hudson.util.FormValidation;
 import hudson.util.VersionNumber;
+import hudson.util.StreamTaskListener;
 import hudson.widgets.Widget;
 import net.sf.json.JSONObject;
 import org.acegisecurity.*;
@@ -515,7 +516,7 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
      */
     private transient final LogRecorderManager log = new LogRecorderManager();
 
-    public Hudson(File root, ServletContext context) throws IOException {
+    public Hudson(File root, ServletContext context) throws IOException, InterruptedException {
     	// As hudson is starting, grant this process full controll
     	SecurityContextHolder.getContext().setAuthentication(ACL.SYSTEM);
         try {
@@ -591,6 +592,10 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
             udpBroadcastThread.start();
 
             updateComputerList();
+
+            // master is online now
+            for (ComputerListener cl : ComputerListener.all())
+                cl.onOnline(toComputer(),new StreamTaskListener(System.out));
 
             getQueue().load();
 
