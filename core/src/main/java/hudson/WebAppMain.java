@@ -187,11 +187,7 @@ public final class WebAppMain implements ServletContextListener {
             new Thread("hudson initialization thread") {
                 public void run() {
                     try {
-                        try {
-                            context.setAttribute(APP,new Hudson(home,context));
-                        } catch( IOException e ) {
-                            throw new Error(e);
-                        }
+                        context.setAttribute(APP,new Hudson(home,context));
 
                         // trigger the loading of changelogs in the background,
                         // but give the system 10 seconds so that the first page
@@ -205,10 +201,9 @@ public final class WebAppMain implements ServletContextListener {
                         LOGGER.log(Level.SEVERE, "Failed to initialize Hudson",e);
                         context.setAttribute(APP,new HudsonFailedToLoad(e));
                         throw e;
-                    } catch (RuntimeException e) {
+                    } catch (Exception e) {
                         LOGGER.log(Level.SEVERE, "Failed to initialize Hudson",e);
                         context.setAttribute(APP,new HudsonFailedToLoad(e));
-                        throw e;
                     }
                 }
             }.start();
