@@ -109,6 +109,7 @@ THE SOFTWARE.
            -->
           <goals>-DskipTests install javadoc:javadoc animal-sniffer:check assembly:attached deploy javadoc:aggregate</goals>
           <remoteTagging>true</remoteTagging><!-- work around http://jira.codehaus.org/browse/SCM-406 -->
+          <tagBase>https://svn.dev.java.net/svn/hudson/tags</tagBase>
         </configuration>
       </plugin>
       <plugin>
