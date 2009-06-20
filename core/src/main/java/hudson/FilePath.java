@@ -1254,6 +1254,14 @@ public final class FilePath implements Serializable {
         void close() throws IOException;
     }
 
+    /**
+     * Copies the contents of this directory recursively into the specified target directory.
+     * @since 1.312 
+     */
+    public int copyRecursiveTo(FilePath target) throws IOException, InterruptedException {
+        return copyRecursiveTo("**/*",target);
+    }
+
     public int copyRecursiveTo(String fileMask, FilePath target) throws IOException, InterruptedException {
         return copyRecursiveTo(fileMask,null,target);
     }
