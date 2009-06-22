@@ -163,9 +163,17 @@ public abstract class Launcher {
             return this;
         }
 
+        public List<String> cmds() {
+            return commands;
+        }
+
         public ProcStarter masks(boolean... masks) {
             this.masks = masks;
             return this;
+        }
+
+        public boolean[] masks() {
+            return masks;
         }
 
         public ProcStarter pwd(FilePath workDir) {
@@ -181,6 +189,10 @@ public abstract class Launcher {
             return pwd(new File(workDir));
         }
 
+        public FilePath pwd() {
+            return pwd;
+        }
+
         public ProcStarter stdout(OutputStream out) {
             this.stdout = out;
             return this;
@@ -193,6 +205,10 @@ public abstract class Launcher {
             return stdout(out.getLogger());
         }
 
+        public OutputStream stdout() {
+            return stdout;
+        }
+
         /**
          * Controls where the stderr of the process goes.
          * By default, it's bundled into stdout.
@@ -202,6 +218,10 @@ public abstract class Launcher {
             return this;
         }
 
+        public OutputStream stderr() {
+            return stderr;
+        }
+
         /**
          * Controls where the stdin of the process comes from.
          * By default, <tt>/dev/null</tt>.
@@ -209,6 +229,10 @@ public abstract class Launcher {
         public ProcStarter stdin(InputStream in) {
             this.stdin = in;
             return this;
+        }
+
+        public InputStream stdin() {
+            return stdin;
         }
 
         /**
@@ -232,6 +256,10 @@ public abstract class Launcher {
             return this;
         }
 
+        public String[] envs() {
+            return envs;
+        }
+
         /**
          * Starts the new process as configured.
          */
@@ -244,6 +272,13 @@ public abstract class Launcher {
          */
         public int join() throws IOException, InterruptedException {
             return start().join();
+        }
+
+        /**
+         * Copies a {@link ProcStarter}.
+         */
+        public ProcStarter copy() {
+            return new ProcStarter().cmds(commands).pwd(pwd).masks(masks).stdin(stdin).stdout(stdout).stderr(stderr).envs(envs);
         }
     }
 
@@ -428,9 +463,9 @@ public abstract class Launcher {
     }
 
     /**
-     * Invoked from {@link ProcStarter#start()}
+     * Primarily invoked from {@link ProcStarter#start()} to start a process with a specific launcher.
      */
-    protected abstract Proc launch(ProcStarter starter) throws IOException;
+    public abstract Proc launch(ProcStarter starter) throws IOException;
 
     /**
      * Launches a specified process and connects its input/output to a {@link Channel}, then
@@ -540,7 +575,7 @@ public abstract class Launcher {
         final Launcher outer = this;
         return new Launcher(outer) {
             @Override
-            protected Proc launch(ProcStarter starter) throws IOException {
+            public Proc launch(ProcStarter starter) throws IOException {
                 starter.commands.addAll(0,Arrays.asList(prefix));
                 starter.masks = prefix(starter.masks);
                 return outer.launch(starter);
@@ -584,7 +619,7 @@ public abstract class Launcher {
         }
 
         @Override
-        protected Proc launch(ProcStarter ps) throws IOException {
+        public Proc launch(ProcStarter ps) throws IOException {
             maskedPrintCommandLine(ps.commands, ps.masks, ps.pwd);
 
             EnvVars jobEnv = inherit(ps.envs);
@@ -664,7 +699,7 @@ public abstract class Launcher {
             this.isUnix = isUnix;
         }
 
-        protected Proc launch(ProcStarter ps) throws IOException {
+        public Proc launch(ProcStarter ps) throws IOException {
             final OutputStream out = new RemoteOutputStream(new CloseProofOutputStream(ps.stdout));
             final OutputStream err = ps.stderr==null ? null : new RemoteOutputStream(new CloseProofOutputStream(ps.stderr));
             final InputStream  in  = ps.stdin==null ? null : new RemoteInputStream(ps.stdin);
