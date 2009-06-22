@@ -32,6 +32,13 @@ import hudson.remoting.Callable;
 import hudson.model.Hudson;
 import org.kohsuke.args4j.CmdLineParser;
 import org.kohsuke.args4j.CmdLineException;
+import org.kohsuke.args4j.spi.OptionHandler;
+import org.jvnet.tiger_types.Types;
+import org.apache.commons.discovery.resource.classes.DiscoverClasses;
+import org.apache.commons.discovery.resource.ClassLoaders;
+import org.apache.commons.discovery.resource.names.DiscoverServiceNames;
+import org.apache.commons.discovery.ResourceClassIterator;
+import org.apache.commons.discovery.ResourceNameIterator;
 
 import java.io.PrintStream;
 import java.io.InputStream;
@@ -195,5 +202,22 @@ public abstract class CLICommand implements ExtensionPoint, Cloneable {
             }
         }
         return null;
+    }
+
+    static {
+        // register option handlers that are defined
+        ClassLoaders cls = new ClassLoaders();
+        cls.put(Hudson.getInstance().getPluginManager().uberClassLoader);
+
+        ResourceNameIterator servicesIter =
+            new DiscoverServiceNames(cls).findResourceNames(OptionHandler.class.getName());
+        final ResourceClassIterator itr =
+            new DiscoverClasses(cls).findResourceClasses(servicesIter);
+
+        while(itr.hasNext()) {
+            Class h = itr.nextResourceClass().loadClass();
+            Class c = Types.erasure(Types.getTypeArgument(Types.getBaseClass(h, OptionHandler.class), 0));
+            CmdLineParser.registerHandler(c,h);
+        }
     }
 }

@@ -186,6 +186,11 @@ public interface Item extends PersistenceRoot, SearchableModelObject, AccessCont
      */
     public void save() throws IOException;
 
+    /**
+     * Deletes this item.
+     */
+    public void delete() throws IOException, InterruptedException;
+
     public static final PermissionGroup PERMISSIONS = new PermissionGroup(Item.class,Messages._Item_Permissions_Title());
     public static final Permission CREATE = new Permission(PERMISSIONS,"Create", Permission.CREATE);
     public static final Permission DELETE = new Permission(PERMISSIONS,"Delete", Permission.DELETE);

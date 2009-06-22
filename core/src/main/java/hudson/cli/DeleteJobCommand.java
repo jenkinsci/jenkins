@@ -23,40 +23,26 @@
  */
 package hudson.cli;
 
-import hudson.model.AbstractProject;
-import hudson.model.Hudson;
 import hudson.model.TopLevelItem;
 import hudson.Extension;
 import org.kohsuke.args4j.Argument;
 
-import java.io.Serializable;
-
 /**
- * Copies a job from CLI.
- * 
+ * Deletes a job.
  * @author Kohsuke Kawaguchi
  */
 @Extension
-public class CopyJobCommand extends CLICommand {
+public class DeleteJobCommand extends CLICommand {
     @Override
     public String getShortDescription() {
-        return "Copies a job";
+        return "Deletes a job";
     }
 
-    @Argument(metaVar="SRC",usage="Name of the job to copy")
-    public TopLevelItem src;
-
-    @Argument(metaVar="DST",usage="Name of the new job to be created.",index=1)
-    public String dst;
+    @Argument
+    public TopLevelItem job;
 
     protected int run() throws Exception {
-        Hudson h = Hudson.getInstance();
-        if (h.getItem(dst)!=null) {
-            stderr.println("Job '"+dst+"' already exists");
-            return -1;
-        }
-        
-        h.copy(src,dst);
+        job.delete();
         return 0;
     }
 }

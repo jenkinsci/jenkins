@@ -21,43 +21,43 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package hudson.cli;
+package hudson.cli.handlers;
 
 import hudson.model.AbstractProject;
 import hudson.model.Hudson;
-import hudson.model.TopLevelItem;
-import hudson.Extension;
-import org.kohsuke.args4j.Argument;
-
-import java.io.Serializable;
+import org.kohsuke.args4j.CmdLineException;
+import org.kohsuke.args4j.CmdLineParser;
+import org.kohsuke.args4j.OptionDef;
+import org.kohsuke.args4j.spi.OptionHandler;
+import org.kohsuke.args4j.spi.Parameters;
+import org.kohsuke.args4j.spi.Setter;
+import org.kohsuke.MetaInfServices;
 
 /**
- * Copies a job from CLI.
- * 
+ * Refer to {@link AbstractProject} by its name.
+ *
  * @author Kohsuke Kawaguchi
  */
-@Extension
-public class CopyJobCommand extends CLICommand {
-    @Override
-    public String getShortDescription() {
-        return "Copies a job";
+@MetaInfServices
+public class AbstractProjectOptionHandler extends OptionHandler<AbstractProject> {
+    public AbstractProjectOptionHandler(CmdLineParser parser, OptionDef option, Setter<AbstractProject> setter) {
+        super(parser, option, setter);
     }
 
-    @Argument(metaVar="SRC",usage="Name of the job to copy")
-    public TopLevelItem src;
-
-    @Argument(metaVar="DST",usage="Name of the new job to be created.",index=1)
-    public String dst;
-
-    protected int run() throws Exception {
+    @Override
+    public int parseArguments(Parameters params) throws CmdLineException {
         Hudson h = Hudson.getInstance();
-        if (h.getItem(dst)!=null) {
-            stderr.println("Job '"+dst+"' already exists");
-            return -1;
-        }
-        
-        h.copy(src,dst);
-        return 0;
+        String src = params.getParameter(0);
+
+        AbstractProject s = h.getItemByFullName(src,AbstractProject.class);
+        if (s==null)
+            throw new CmdLineException("No such job '"+src+"' perhaps you meant "+ AbstractProject.findNearest(src)+"?");
+        setter.addValue(s);
+        return 1;
+    }
+
+    @Override
+    public String getDefaultMetaVariable() {
+        return "JOB";
     }
 }
-
