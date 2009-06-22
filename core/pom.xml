@@ -281,18 +281,6 @@ THE SOFTWARE.
         </plugins>
       </build>
     </profile>
-    <profile>
-      <id>sorcerer</id>
-      <reporting>
-        <plugins>
-          <plugin>
-            <groupId>org.jvnet.sorcerer</groupId>
-            <artifactId>maven-sorcerer-plugin</artifactId>
-            <version>0.7-SNAPSHOT</version>
-          </plugin>
-        </plugins>
-      </reporting>
-    </profile>
   </profiles>
 
   <dependencies>
