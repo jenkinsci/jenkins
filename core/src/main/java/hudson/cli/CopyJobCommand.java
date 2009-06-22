@@ -3,6 +3,7 @@ package hudson.cli;
 import hudson.model.AbstractProject;
 import hudson.model.Hudson;
 import hudson.model.TopLevelItem;
+import hudson.Extension;
 import org.kohsuke.args4j.Argument;
 
 import java.io.Serializable;
@@ -12,6 +13,7 @@ import java.io.Serializable;
  * 
  * @author Kohsuke Kawaguchi
  */
+@Extension
 public class CopyJobCommand extends CLICommand implements Serializable {
     @Override
     public String getShortDescription() {
