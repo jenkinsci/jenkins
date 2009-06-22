@@ -29,7 +29,7 @@ import org.kohsuke.stapler.StaplerRequest;
  *
  */
 public class DefaultCrumbIssuer extends CrumbIssuer {
-
+    
     private MessageDigest md;
 
     DefaultCrumbIssuer() {
@@ -55,7 +55,7 @@ public class DefaultCrumbIssuer extends CrumbIssuer {
                     buffer.append(a.getName());
                 }
                 buffer.append(';');
-                buffer.append(req.getRemoteAddr());
+                buffer.append(getClientIP(req));
 
                 md.update(buffer.toString().getBytes());
                 byte[] crumbBytes = md.digest(salt.getBytes());
@@ -88,6 +88,20 @@ public class DefaultCrumbIssuer extends CrumbIssuer {
         return false;
     }
 
+    private final String PROXY_HEADER = "X-Forwarded-For";
+
+    private String getClientIP(HttpServletRequest req) {
+        String defaultAddress = req.getRemoteAddr();
+        String forwarded = req.getHeader(PROXY_HEADER);
+        if (forwarded != null) {
+	        String[] hopList = forwarded.split(",");
+            if (hopList.length >= 1) {
+                return hopList[0];
+            }
+        }
+        return defaultAddress;
+    }
+    
     @Extension
     public static final class DescriptorImpl extends CrumbIssuerDescriptor<DefaultCrumbIssuer> implements ModelObject {
 
