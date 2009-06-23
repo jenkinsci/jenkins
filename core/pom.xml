@@ -348,7 +348,6 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.kohsuke</groupId>
       <artifactId>graph-layouter</artifactId>
-      <classifier>jdk14</classifier>
       <version>1.0</version>
     </dependency>
     <dependency>

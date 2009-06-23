@@ -78,9 +78,7 @@ import hudson.security.Permission;
 import hudson.security.PermissionGroup;
 import hudson.security.SecurityMode;
 import hudson.security.SecurityRealm;
-import hudson.security.csrf.CrumbFilter;
 import hudson.security.csrf.CrumbIssuer;
-import hudson.security.csrf.CrumbIssuerDescriptor;
 import hudson.slaves.ComputerListener;
 import hudson.slaves.NodeProperty;
 import hudson.slaves.NodePropertyDescriptor;
@@ -159,11 +157,8 @@ import java.io.InputStream;
 import java.io.Serializable;
 import java.io.PrintStream;
 import java.io.OutputStream;
-import java.io.UnsupportedEncodingException;
 import java.net.URL;
 import java.security.SecureRandom;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 import java.text.NumberFormat;
 import java.text.ParseException;
 import java.text.Collator;
@@ -203,7 +198,6 @@ import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import java.nio.charset.Charset;
 import javax.servlet.RequestDispatcher;
-import javax.crypto.spec.SecretKeySpec;
 import javax.crypto.SecretKey;
 
 import groovy.lang.GroovyShell;
@@ -368,11 +362,9 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
     /*package*/ Integer quietPeriod;
     
     /**
-     * Retry Count.
-     *
-     * This is {@link Integer} so that we can initialize it to '5' for upgrading users.
+     * Global default for {@link AbstractProject#getScmCheckoutRetryCount()}  
      */
-    /*package*/ Integer retryCount;
+    /*package*/ int scmCheckoutRetryCount;
 
     /**
      * {@link View}s.
@@ -1459,10 +1451,10 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
     }
     
     /**
-     * Gets the system default Retry Count period.
+     * Gets the global SCM check out retry count.
      */
-    public int getRetryCount() {
-        return retryCount !=null ? retryCount : 5;
+    public int getScmCheckoutRetryCount() {
+        return scmCheckoutRetryCount;
     }
     
     
@@ -2237,7 +2229,7 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
 
             quietPeriod = Integer.parseInt(req.getParameter("quiet_period"));
             
-            retryCount = Integer.parseInt(req.getParameter("retry_count"));
+            scmCheckoutRetryCount = Integer.parseInt(req.getParameter("retry_count"));
 
             systemMessage = Util.nullify(req.getParameter("system_message"));
 

@@ -262,7 +262,7 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
                 listener.getLogger().println(node instanceof Hudson ? Messages.AbstractBuild_BuildingOnMaster() : Messages.AbstractBuild_BuildingRemotely(builtOn));
 
             node.getFileSystemProvisioner().prepareWorkspace(AbstractBuild.this,project.getWorkspace(),listener);
-            int retryCount = getProject().getRetryCount();
+            int retryCount = getProject().getScmCheckoutRetryCount();
             listener.error("Retry Count.........."+retryCount);
             boolean checkoutStatus = true;
             while (retryCount > 0) {

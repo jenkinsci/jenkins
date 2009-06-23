@@ -34,9 +34,7 @@ import hudson.model.Cause.RemoteCause;
 import hudson.model.Descriptor.FormException;
 import hudson.model.Fingerprint.RangeSet;
 import hudson.model.RunMap.Constructor;
-import hudson.model.listeners.RunListener;
 import hudson.model.Queue.WaitingItem;
-import hudson.remoting.AsyncFutureImpl;
 import hudson.scm.ChangeLogSet;
 import hudson.scm.ChangeLogSet.Entry;
 import hudson.scm.NullSCM;
@@ -114,9 +112,9 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
     private volatile Integer quietPeriod = null;
     
     /**
-     * The Retry Count. Null to delegate to the system default.
+     * The retry count. Null to delegate to the system default.
      */
-    private volatile Integer retryCount = null;
+    private volatile Integer scmCheckoutRetryCount = null;
 
     /**
      * If this project is configured to be only built on a certain label,
@@ -309,8 +307,8 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
         return quietPeriod!=null ? quietPeriod : Hudson.getInstance().getQuietPeriod();
     }
     
-    public int getRetryCount() {
-        return retryCount!=null ? retryCount : Hudson.getInstance().getRetryCount();
+    public int getScmCheckoutRetryCount() {
+        return scmCheckoutRetryCount !=null ? scmCheckoutRetryCount : Hudson.getInstance().getScmCheckoutRetryCount();
     }
 
     // ugly name because of EL
@@ -318,8 +316,8 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
         return quietPeriod!=null;
     }
     
-    public boolean getHasCustomRetryCount(){
-    	return  retryCount != null;
+    public boolean hasCustomScmCheckoutRetryCount(){
+    	return scmCheckoutRetryCount != null;
     }
 
     public final boolean isBuildable() {
@@ -1178,10 +1176,10 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
         } else {
             quietPeriod = null;
         }
-        if(req.getParameter("hasCustomRetryCount")!=null) {
-            retryCount = Integer.parseInt(req.getParameter("retry_count"));
+        if(req.getParameter("hasCustomScmCheckoutRetryCount")!=null) {
+            scmCheckoutRetryCount = Integer.parseInt(req.getParameter("scmCheckoutRetryCount"));
         } else {
-        	retryCount = null;
+        	scmCheckoutRetryCount = null;
         }
 
         if(req.getParameter("hasSlaveAffinity")!=null) {
