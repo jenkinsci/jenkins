@@ -161,9 +161,13 @@ public class MatrixConfiguration extends Project<MatrixConfiguration,MatrixRun> 
     public int getQuietPeriod() {
         return 0;
     }
+
+    /**
+     * Inherit the value from the parent.
+     */
     @Override
-    public int getRetryCount() {
-        return 5;
+    public int getScmCheckoutRetryCount() {
+        return getParent().getScmCheckoutRetryCount();
     }
 
     @Override
