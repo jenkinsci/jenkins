@@ -32,6 +32,7 @@ THE SOFTWARE.
       the list.
     </st:attribute>
   </st:documentation>
+  <t:setIconSize/>
   <l:pane title="${%Build Queue}" width="2" id="buildQueue">
     <j:if test="${app.quietingDown}">
       <tr>
@@ -60,10 +61,14 @@ THE SOFTWARE.
               <j:set var="stuck" value="${item.isStuck()}"/>
               <j:choose>
                 <j:when test="${h.hasPermission(item.task,item.task.READ)}">
-                  <a href="${rootURL}/${item.task.url}" style="${stuck?'color:#ef2929':null}">
+                  <a href="${rootURL}/${item.task.url}">
                     ${item.task.fullDisplayName}
-                    <j:if test="${stuck}">(${%appears to be stuck})</j:if>
                   </a>
+                  <j:if test="${stuck}">
+                    <span title="${%Starving for a free executor. Time to add more slaves!}">
+                      &#160;<img src="${imagesURL}/${subIconSize}/hourglass.gif" />
+                    </span>
+                  </j:if>
                 </j:when>
                 <j:otherwise>
                   <span>${%Unknown Task}</span>

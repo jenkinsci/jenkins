@@ -1,0 +1,217 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   xmlns:a="http://ns.adobe.com/AdobeSVGViewerExtensions/3.0/"
+   xmlns:i="http://ns.adobe.com/AdobeIllustrator/10.0/"
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:xlink="http://www.w3.org/1999/xlink"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   enable-background="new 0 0 30.253 50.243"
+   height="50.243"
+   i:pageBounds="0 48 60 -12"
+   i:rulerOrigin="0 12"
+   i:viewOrigin="17.0342 43.8057"
+   overflow="visible"
+   space="preserve"
+   viewBox="0 0 30.253 50.243"
+   width="30.253"
+   id="svg2"
+   sodipodi:version="0.32"
+   inkscape:version="0.46"
+   sodipodi:docname="hourglass.svg"
+   sodipodi:docbase="/Users/marco/Desktop"
+   inkscape:output_extension="org.inkscape.output.svg.inkscape">
+  <defs
+     id="defs25">
+    <inkscape:perspective
+       sodipodi:type="inkscape:persp3d"
+       inkscape:vp_x="0 : 25.1215 : 1"
+       inkscape:vp_y="0 : 1000 : 0"
+       inkscape:vp_z="30.253 : 25.1215 : 1"
+       inkscape:persp3d-origin="15.1265 : 16.747667 : 1"
+       id="perspective2421" />
+    <linearGradient
+       y2="542.4121"
+       y1="542.4121"
+       x2="-316.7146"
+       x1="-317.2578"
+       id="rect1511_1_"
+       gradientUnits="userSpaceOnUse"
+       gradientTransform="matrix(29.4937, 0, 0, -4.0625, 9368.05, 2205.97)">
+      <stop
+         id="stop11"
+         style="stop-color:#e4e200;stop-opacity:1;"
+         offset="0" />
+      <stop
+         id="stop13"
+         style="stop-color:#aeac00;stop-opacity:1;"
+         offset="1" />
+      <a:midPointStop
+         style="stop-color:#A7873D"
+         offset="0" />
+      <a:midPointStop
+         style="stop-color:#A7873D"
+         offset="0.5" />
+      <a:midPointStop
+         style="stop-color:#663624"
+         offset="1" />
+    </linearGradient>
+    <linearGradient
+       y2="542.41022"
+       y1="542.41022"
+       x2="-316.71561"
+       x1="-317.25879"
+       id="rect1512_1_"
+       gradientUnits="userSpaceOnUse"
+       gradientTransform="matrix(29.4937, 0, 0, -4.0625, 9368.05, 2251.38)"
+       xlink:href="#rect1511_1_">
+      <stop
+         id="stop17"
+         style="stop-color: rgb(167, 135, 61);"
+         offset="0" />
+      <stop
+         id="stop19"
+         style="stop-color: rgb(102, 54, 36);"
+         offset="1" />
+      <a:midPointStop
+         style="stop-color:#A7873D"
+         offset="0" />
+      <a:midPointStop
+         style="stop-color:#A7873D"
+         offset="0.5" />
+      <a:midPointStop
+         style="stop-color:#663624"
+         offset="1" />
+    </linearGradient>
+    <linearGradient
+       inkscape:collect="always"
+       xlink:href="#rect1511_1_"
+       id="linearGradient3163"
+       gradientUnits="userSpaceOnUse"
+       gradientTransform="matrix(29.4937, 0, 0, -4.0625, 9368.08, 2251.54)"
+       x1="-317.2578"
+       y1="542.4121"
+       x2="-316.7146"
+       y2="542.4121" />
+  </defs>
+  <sodipodi:namedview
+     inkscape:window-height="1000"
+     inkscape:window-width="1400"
+     inkscape:pageshadow="2"
+     inkscape:pageopacity="0.0"
+     guidetolerance="10.0"
+     gridtolerance="10.0"
+     objecttolerance="10.0"
+     borderopacity="1.0"
+     bordercolor="#666666"
+     pagecolor="#ffffff"
+     id="base"
+     inkscape:zoom="10.639745"
+     inkscape:cx="15.674101"
+     inkscape:cy="24.043262"
+     inkscape:window-x="0"
+     inkscape:window-y="0"
+     inkscape:current-layer="svg2"
+     showgrid="false" />
+  <metadata
+     id="metadata4">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:title>Sand glass</dc:title>
+        <dc:description />
+        <dc:subject>
+          <rdf:Bag>
+            <rdf:li>openclipart</rdf:li>
+            <rdf:li>icon</rdf:li>
+            <rdf:li>clock</rdf:li>
+            <rdf:li>computer</rdf:li>
+            <rdf:li>appicon</rdf:li>
+          </rdf:Bag>
+        </dc:subject>
+        <dc:publisher>
+          <cc:Agent
+             rdf:about="http://www.openclipart.org/">
+            <dc:title>Open Clip Art Library</dc:title>
+          </cc:Agent>
+        </dc:publisher>
+        <dc:creator>
+          <cc:Agent>
+            <dc:title>Fr  d  ric Moser</dc:title>
+          </cc:Agent>
+        </dc:creator>
+        <dc:rights>
+          <cc:Agent>
+            <dc:title>Fr  d  ric Moser</dc:title>
+          </cc:Agent>
+        </dc:rights>
+        <dc:date />
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <cc:license
+           rdf:resource="http://web.resource.org/cc/PublicDomain" />
+        <dc:language>en</dc:language>
+        <dc:contributor>
+          <cc:Agent>
+            <dc:title>edited by Jesse Glick (colors)</dc:title>
+          </cc:Agent>
+        </dc:contributor>
+      </cc:Work>
+      <cc:License
+         rdf:about="http://web.resource.org/cc/PublicDomain">
+        <cc:permits
+           rdf:resource="http://web.resource.org/cc/Reproduction" />
+        <cc:permits
+           rdf:resource="http://web.resource.org/cc/Distribution" />
+        <cc:permits
+           rdf:resource="http://web.resource.org/cc/DerivativeWorks" />
+      </cc:License>
+    </rdf:RDF>
+  </metadata>
+  <path
+     style="fill:rgb(221, 221, 221);stroke:rgb(0, 0, 0);stroke-width:1.038;stroke-miterlimit:4;stroke-dasharray:none"
+     id="path1508"
+     d="M 0.697,4.347 C 0.697,19.895 14.037,17.569 14.037,25.159 C 14.037,32.138 0.70908201,29.332918 0.70908201,46.104918 L 29.565082,46.104918 C 29.565082,29.392918 15.923,32.236 15.923,25.159 C 15.923,17.625 29.528,17.625 29.624,4.347 L 0.697,4.347 L 0.697,4.347 z "
+     sodipodi:nodetypes="csccsccc" />
+  <path
+     style="fill: rgb(181, 171, 147);"
+     id="path1509"
+     d="M 1.956,44.819 C 4.12,44.886 26.85,44.886 28.541,44.886 C 28.608,44.346 28.406,40.896 26.984,37.513 C 25.428,37.513 3.579,37.446 3.579,37.446 C 1.82,41.099 1.889,44.955 1.956,44.819 z " />
+  <path
+     style="fill: rgb(181, 171, 147);"
+     id="path1510"
+     d="M 4.797,13.973 C 10.209,14.312 18.665,14.514 24.009,14.04 C 23.873,15.935 15.011,19.385 14.944,23.645 C 14.876,19.385 5.338,16.475 4.797,13.973 z " />
+  <rect
+     style="fill: url(#rect1511_1_) rgb(0, 0, 0); stroke: rgb(0, 0, 0); stroke-width: 0.7594;"
+     y="0.38"
+     x="0.38"
+     width="29.493"
+     id="rect1511"
+     height="4.0619998" />
+  <path
+     style="opacity:0.6;fill:#ffffff"
+     id="path1513"
+     i:knockout="Off"
+     i:isolated="yes"
+     enable-background="new    "
+     d="M 2.1232558,6.3959488 L 8.2112558,6.3959488 C 8.2112558,17.327949 12.898256,17.648949 13.384256,23.749949 C 11.298256,16.458949 2.8092558,16.385949 2.1232558,6.3959488 z" />
+  <path
+     style="opacity: 0.6; fill: rgb(255, 255, 255);"
+     id="path1514"
+     i:knockout="Off"
+     i:isolated="yes"
+     enable-background="new    "
+     d="M 3.722,45.108 L 9.81,45.108 C 8.147,33.92 14.497,34.435 14.982,26.906 C 12.896,34.197 2.863,32.046 3.722,45.108 z " />
+  <rect
+     style="fill: url(#linearGradient3163) rgb(0, 0, 0); stroke: rgb(0, 0, 0); stroke-width: 0.7594;"
+     y="45.952393"
+     x="0.40614974"
+     width="29.493"
+     id="rect3161"
+     height="4.0619998" />
+</svg>
