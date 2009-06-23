@@ -245,7 +245,7 @@ public final class DirectoryBrowserSupport implements HttpResponse {
 
             // convert a directory service request to a single file service request by serving
             // 'index.html'
-            baseFile = baseFile.child("index.html");
+            baseFile = baseFile.child(getIndexFileName());
         }
 
         //serve a single file
@@ -276,6 +276,14 @@ public final class DirectoryBrowserSupport implements HttpResponse {
         } else {
             rsp.serveFile(req, in, ci.lastModified, -1, ci.contentLength, baseFile.getName() );
         }
+    }
+
+    /**
+     * Default welcome file to serve when a directory is requested.
+     * @since 1.312
+     */
+    protected String getIndexFileName() {
+        return "index.html";
     }
 
     private String getPath(StaplerRequest req) {
