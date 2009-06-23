@@ -69,6 +69,7 @@ public final class DirectoryBrowserSupport implements HttpResponse {
     private final FilePath base;
     private final String icon;
     private final boolean serveDirIndex;
+    private String indexFileName = "index.html";
 
     /**
      * @deprecated
@@ -113,6 +114,15 @@ public final class DirectoryBrowserSupport implements HttpResponse {
         } catch (InterruptedException e) {
             throw new IOException2("interrupted",e);
         }
+    }
+
+    /**
+     * If the directory is requested but the directory listing is disabled, a file of this name
+     * is served. By default it's "index.html".
+     * @since 1.312
+     */
+    public void setIndexFileName(String fileName) {
+        this.indexFileName = fileName;
     }
 
     /**
@@ -245,7 +255,7 @@ public final class DirectoryBrowserSupport implements HttpResponse {
 
             // convert a directory service request to a single file service request by serving
             // 'index.html'
-            baseFile = baseFile.child("index.html");
+            baseFile = baseFile.child(indexFileName);
         }
 
         //serve a single file
