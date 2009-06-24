@@ -52,9 +52,9 @@ THE SOFTWARE.
         <input class="setting-input number" name="quiet_period"
           type="text" value="${it.quietPeriod}"/>
       </f:entry>
-      <f:entry title="${%Retry Count}" help="/help/project-config/retryCount.html">
+      <f:entry title="${%SCM checkout retry count}" help="/help/project-config/scmCheckoutRetryCount.html">
         <input class="setting-input number" name="retry_count"
-          type="text" value="${it.retryCount}"/>
+          type="text" value="${it.scmCheckoutRetryCount}"/>
       </f:entry>
       <f:optionalBlock name="use_security" title="${%Enable security}"
                        checked="${it.useSecurity}" help="/help/system-config/enableSecurity.html">
