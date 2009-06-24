@@ -262,26 +262,8 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
                 listener.getLogger().println(node instanceof Hudson ? Messages.AbstractBuild_BuildingOnMaster() : Messages.AbstractBuild_BuildingRemotely(builtOn));
 
             node.getFileSystemProvisioner().prepareWorkspace(AbstractBuild.this,project.getWorkspace(),listener);
-            int retryCount = getProject().getScmCheckoutRetryCount();
-            listener.error("Retry Count.........."+retryCount);
-            boolean checkoutStatus = true;
-            while (retryCount > 0) {
-            	retryCount--;
-            	listener.error("retrying.........."+retryCount);
-            	checkoutStatus = checkout(listener);
-            	if(checkoutStatus)
-            		continue;
-            	else
-            		break;
-				
-			}
-                
-            
-            if(checkoutStatus)
-            	return Result.FAILURE;
-            	
 
-            
+            checkout(listener);
 
             if(!preBuild(listener,project.getProperties()))
                 return Result.FAILURE;
@@ -322,23 +304,36 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
             Util.createSymlink(getProject().getBuildDir(),"builds/"+getId(),"../"+name,listener);
         }
 
-        private boolean checkout(BuildListener listener) throws Exception {
-            // for historical reasons, null in the scm field means CVS, so we need to explicitly set this to something
-            // in case check out fails and leaves a broken changelog.xml behind.
-            // see http://www.nabble.com/CVSChangeLogSet.parse-yields-SAXParseExceptions-when-parsing-bad-*AccuRev*-changelog.xml-files-td22213663.html
-            AbstractBuild.this.scm = new NullChangeLogParser();
+        private void checkout(BuildListener listener) throws Exception {
+            for (int retryCount=project.getScmCheckoutRetryCount(); retryCount>=0; retryCount--) {
+                // for historical reasons, null in the scm field means CVS, so we need to explicitly set this to something
+                // in case check out fails and leaves a broken changelog.xml behind.
+                // see http://www.nabble.com/CVSChangeLogSet.parse-yields-SAXParseExceptions-when-parsing-bad-*AccuRev*-changelog.xml-files-td22213663.html
+                AbstractBuild.this.scm = new NullChangeLogParser();
 
-            if(!project.checkout(AbstractBuild.this,launcher,listener,new File(getRootDir(),"changelog.xml")))
-                return true;
+                if(!project.checkout(AbstractBuild.this,launcher,listener,new File(getRootDir(),"changelog.xml"))) {
+                    // check out failed.
+                    if(retryCount>0) {
+                        listener.getLogger().println("Retrying after 10 seconds");
+                        Thread.sleep(10000);
+                        continue;
+                    } else {
+                        throw new RunnerAbortedException();
+                    }
+                }
 
-            SCM scm = project.getScm();
+                SCM scm = project.getScm();
 
-            AbstractBuild.this.scm = scm.createChangeLogParser();
-            AbstractBuild.this.changeSet = AbstractBuild.this.calcChangeSet();
+                AbstractBuild.this.scm = scm.createChangeLogParser();
+                AbstractBuild.this.changeSet = AbstractBuild.this.calcChangeSet();
 
-            for (SCMListener l : Hudson.getInstance().getSCMListeners())
-                l.onChangeLogParsed(AbstractBuild.this,listener,changeSet);
-            return false;
+                for (SCMListener l : Hudson.getInstance().getSCMListeners())
+                    l.onChangeLogParsed(AbstractBuild.this,listener,changeSet);
+                return;
+            }
+
+            // impossible
+            throw new AssertionError();
         }
 
         /**
