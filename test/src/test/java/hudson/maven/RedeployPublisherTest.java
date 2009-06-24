@@ -54,5 +54,18 @@ public class RedeployPublisherTest extends HudsonTestCase {
         System.out.println(repo);
     }
 
-
+//    /**
+//     * Makes sure that the webdav wagon component we bundle is compatible.
+//     */
+//    public void testWebDavDeployment() throws Exception {
+//        configureDefaultMaven();
+//        MavenModuleSet m2 = createMavenProject();
+//
+//        // a fake build
+//        m2.setScm(new SingleFileSCM("pom.xml",getClass().getResource("big-artifact.pom")));
+//        m2.getPublishersList().add(new RedeployPublisher("","dav:http://localhost/dav/",true));
+//
+//        MavenModuleSetBuild b = m2.scheduleBuild2(0).get();
+//        assertBuildStatus(Result.SUCCESS, b);
+//    }
 }
