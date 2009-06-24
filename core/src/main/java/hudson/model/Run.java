@@ -23,7 +23,6 @@
  */
 package hudson.model;
 
-import static hudson.Util.combine;
 import hudson.AbortException;
 import hudson.BulkChange;
 import hudson.CloseProofOutputStream;
@@ -1128,22 +1127,22 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
 
         if(getResult()==Result.SUCCESS) {
             if(prev==null || prev.getResult()== Result.SUCCESS)
-                return new Summary(false,"stable");
+                return new Summary(false, Messages.Run_Summary_Stable());
             else
-                return new Summary(false,"back to normal");
+                return new Summary(false, Messages.Run_Summary_BackToNormal());
         }
 
         if(getResult()==Result.FAILURE) {
             RunT since = getPreviousNotFailedBuild();
             if(since==null)
-                return new Summary(false,"broken for a long time");
+                return new Summary(false, Messages.Run_Summary_BrokenForALongTime());
             if(since==prev)
-                return new Summary(true,"broken since this build");
-            return new Summary(false,"broken since "+since.getDisplayName());
+                return new Summary(true, Messages.Run_Summary_BrokenSinceThisBuild());
+            return new Summary(false, Messages.Run_Summary_BrokenSince(since.getDisplayName()));
         }
 
         if(getResult()==Result.ABORTED)
-            return new Summary(false,"aborted");
+            return new Summary(false, Messages.Run_Summary_Aborted());
 
         if(getResult()==Result.UNSTABLE) {
             if(((Run)this) instanceof Build) {
@@ -1151,24 +1150,22 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
                 AbstractTestResultAction trP = prev==null ? null : ((Build) prev).getTestResultAction();
                 if(trP==null) {
                     if(trN!=null && trN.getFailCount()>0)
-                        return new Summary(false,combine(trN.getFailCount(),"test failure"));
+                        return new Summary(false, Messages.Run_Summary_TestFailures(trN.getFailCount()));
                     else // ???
-                        return new Summary(false,"unstable");
+                        return new Summary(false, Messages.Run_Summary_Unstable());
                 }
                 if(trP.getFailCount()==0)
-                    return new Summary(true,combine(trN.getFailCount(),"test")+" started to fail");
+                    return new Summary(true, Messages.Run_Summary_TestsStartedToFail(trN.getFailCount()));
                 if(trP.getFailCount() < trN.getFailCount())
-                    return new Summary(true,combine(trN.getFailCount()-trP.getFailCount(),"more test")
-                        +" are failing ("+trN.getFailCount()+" total)");
+                    return new Summary(true, Messages.Run_Summary_MoreTestsFailing(trN.getFailCount()-trP.getFailCount(), trN.getFailCount()));
                 if(trP.getFailCount() > trN.getFailCount())
-                    return new Summary(false,combine(trP.getFailCount()-trN.getFailCount(),"less test")
-                        +" are failing ("+trN.getFailCount()+" total)");
+                    return new Summary(false, Messages.Run_Summary_LessTestsFailing(trP.getFailCount()-trN.getFailCount(), trN.getFailCount()));
 
-                return new Summary(false,combine(trN.getFailCount(),"test")+" are still failing");
+                return new Summary(false, Messages.Run_Summary_TestsStillFailing(trN.getFailCount()));
             }
         }
 
-        return new Summary(false,"?");
+        return new Summary(false, Messages.Run_Summary_Unknown());
     }
 
     /**

@@ -18,6 +18,7 @@ import org.jvnet.animal_sniffer.IgnoreJRERequirement;
 
 import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
+
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -339,7 +340,7 @@ public class Util {
     }
 
     /**
-     * Gets a human readable mesasge for the given Win32 error code.
+     * Gets a human readable message for the given Win32 error code.
      *
      * @return
      *      null if no such message is available.
@@ -462,7 +463,7 @@ public class Util {
     }
 
     /**
-     * Covnerts a string into 128-bit AES key.
+     * Converts a string into 128-bit AES key.
      * @since 1.308
      */
     public static SecretKey toAes128Key(String s) {
@@ -547,9 +548,9 @@ public class Util {
 
 
     /**
-     * Create a string representation of a time duration.  If the quanity of
+     * Create a string representation of a time duration.  If the quantity of
      * the most significant unit is big (>=10), then we use only that most
-     * significant unit in the string represenation. If the quantity of the
+     * significant unit in the string representation. If the quantity of the
      * most significant unit is small (a single-digit value), then we also
      * use a secondary, smaller unit for increased precision.
      * So 13 minutes and 43 seconds returns just "13 minutes", but 3 minutes
@@ -568,7 +569,7 @@ public class Util {
 
     /**
      * Get a human readable string representing strings like "xxx days ago",
-     * which should be used to point to the occurence of an event in the past.
+     * which should be used to point to the occurrence of an event in the past.
      */
     public static String getPastTimeString(long duration) {
         return Messages.Util_pastTime(getTimeSpanString(duration));
@@ -577,11 +578,17 @@ public class Util {
 
     /**
      * Combines number and unit, with a plural suffix if needed.
+     * 
+     * @deprecated 
+     *   Use individual localization methods instead. 
+     *   See {@link #Messages.Util_year(long)} for an example.
+     *   Deprecated since 2009-06-24, remove method after 2009-12-24.
      */
     public static String combine(long n, String suffix) {
         String s = Long.toString(n)+' '+suffix;
         if(n!=1)
-            s += Messages.Util_countSuffix();
+        	// Just adding an 's' won't work in most natural languages, even English has exception to the rule (e.g. copy/copies).
+            s += "s";
         return s;
     }
 
