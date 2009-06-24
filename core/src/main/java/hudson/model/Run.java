@@ -43,6 +43,8 @@ import hudson.security.Permission;
 import hudson.security.PermissionGroup;
 import hudson.tasks.LogRotator;
 import hudson.tasks.Mailer;
+import hudson.tasks.BuildWrapper;
+import hudson.tasks.BuildStep;
 import hudson.tasks.test.AbstractTestResultAction;
 import hudson.util.IOException2;
 import hudson.util.LogTaskListener;
