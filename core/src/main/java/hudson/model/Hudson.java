@@ -1597,10 +1597,16 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
      * A convenience method to check if there's some security
      * restrictions in place.
      */
+    @Exported
     public boolean isUseSecurity() {
         return securityRealm!=SecurityRealm.NO_AUTHENTICATION || authorizationStrategy!=AuthorizationStrategy.UNSECURED;
     }
 
+    /**
+     * If true, all the POST requests to Hudson would have to have crumb in it to protect
+     * Hudson from CSRF vulnerabilities.
+     */
+    @Exported
     public boolean isUseCrumbs() {
         return (useCrumbs != null) && useCrumbs;
     }
