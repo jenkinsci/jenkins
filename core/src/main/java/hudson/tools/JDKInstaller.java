@@ -278,7 +278,9 @@ public class JDKInstaller extends ToolInstaller {
 
         // select language
         Element l = (Element)form.selectSingleNode(".//select[@id='dnld_language']");
-        os.print("&"+l.attributeValue("name")+"="+l.element("option").attributeValue("value"));
+        if (l != null) {
+            os.print("&"+l.attributeValue("name")+"="+l.element("option").attributeValue("value"));
+        }
 
         // the rest
         for (Element e : (List<Element>)form.selectNodes(".//input")) {
