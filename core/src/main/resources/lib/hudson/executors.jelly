@@ -117,11 +117,11 @@ THE SOFTWARE.
 	      </tr>
 	    </j:forEach>
 	  </j:forEach>
+	</l:pane>
     <!-- schedule updates only for the full page reload -->
     <j:if test="${ajax==null and !h.isAutoRefresh(request) and h.hasPermission(app.READ)}">
       <script defer="defer">
         refreshPart('executors',"${h.hasView(it,'ajaxExecutors')?'.':rootURL}/ajaxExecutors");
       </script>
     </j:if>
-	</l:pane>
 </j:jelly>

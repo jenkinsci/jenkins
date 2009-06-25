@@ -84,11 +84,11 @@ THE SOFTWARE.
         </j:forEach>
       </j:otherwise>
     </j:choose>
-    <!-- schedule updates only for the full page reload -->
-    <j:if test="${ajax==null and !h.isAutoRefresh(request) and h.hasPermission(app.READ)}">
-      <script defer="defer">
-        refreshPart('buildQueue',"${h.hasView(it,'ajaxBuildQueue')?'.':rootURL}/ajaxBuildQueue");
-      </script>
-    </j:if>
   </l:pane>
+  <!-- schedule updates only for the full page reload -->
+  <j:if test="${ajax==null and !h.isAutoRefresh(request) and h.hasPermission(app.READ)}">
+    <script defer="defer">
+      refreshPart('buildQueue',"${h.hasView(it,'ajaxBuildQueue')?'.':rootURL}/ajaxBuildQueue");
+    </script>
+  </j:if>
 </j:jelly>
