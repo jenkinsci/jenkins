@@ -65,9 +65,10 @@ THE SOFTWARE.
                     ${item.task.fullDisplayName}
                   </a>
                   <j:if test="${stuck}">
-                    <span title="${%Starving for a free executor. Time to add more slaves!}">
-                      &#160;<img src="${imagesURL}/${subIconSize}/hourglass.gif" />
-                    </span>
+                    &#160;
+                    <a href="http://wiki.hudson-ci.org/display/HUDSON/Executor+Starvation">
+                      <img src="${imagesURL}/16x16/hourglass.gif"  />
+                    </a>
                   </j:if>
                 </j:when>
                 <j:otherwise>
