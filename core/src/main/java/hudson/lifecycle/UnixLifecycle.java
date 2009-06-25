@@ -42,10 +42,10 @@ import static hudson.util.jna.GNUCLibrary.*;
  * @author Kohsuke Kawaguchi
  * @since 1.304
  */
-public class UnixEmbeddedContainerLifecycle extends Lifecycle {
+public class UnixLifecycle extends Lifecycle {
     private JavaVMArguments args;
 
-    public UnixEmbeddedContainerLifecycle() throws IOException {
+    public UnixLifecycle() throws IOException {
         try {
             args = JavaVMArguments.current();
         } catch (UnsupportedOperationException e) {

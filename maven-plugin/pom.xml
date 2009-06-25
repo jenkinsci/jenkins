@@ -100,6 +100,11 @@ THE SOFTWARE.
               <groupId>xml-apis</groupId>
               <artifactId>xml-apis</artifactId>
             </exclusion>
+            <exclusion>
+              <!-- we bundle our own version below --> 
+              <groupId>org.apache.maven.wagon</groupId>
+              <artifactId>wagon-webdav</artifactId>
+            </exclusion>
           </exclusions>
         </dependency>
 

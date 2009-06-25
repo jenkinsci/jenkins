@@ -1,7 +1,7 @@
 <div>
-    バイナリ形式でツールをダウンロードするURLです。
-    ZIPかGzipで圧縮したTARファイルのいずれかの形式である必要があります。
-    サーバーにあるアーカイブのタイムスタンプと、(もしあれば)ローカルのファイルのタイムスタンプを比較するので、
-    容易にアップデートを配布できます。
-    URLはマスターからアクセス可能でなければなりませんが、スレーブからはアクセス可能である必要はありません。
+    URL from which to download the tool in binary form.
+    Should be either a ZIP or a GZip-compressed TAR file.
+    The timestamp on the server will be compared to the local version (if any)
+    so you can publish updates easily.
+    The URL must be accessible from the Hudson master but need not be accessible from slaves.
 </div>

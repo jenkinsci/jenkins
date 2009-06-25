@@ -44,14 +44,14 @@ import static hudson.util.jna.GNUCLibrary.LIBC;
 import static hudson.Util.fixEmpty;
 import static hudson.FilePath.TarCompression.GZIP;
 import hudson.os.PosixAPI;
+import hudson.org.apache.tools.tar.TarOutputStream;
+import hudson.org.apache.tools.tar.TarInputStream;
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.DirectoryScanner;
 import org.apache.tools.ant.Project;
 import org.apache.tools.ant.taskdefs.Copy;
 import org.apache.tools.ant.types.FileSet;
 import org.apache.tools.tar.TarEntry;
-import org.apache.tools.tar.TarOutputStream;
-import org.apache.tools.tar.TarInputStream;
 import org.apache.tools.zip.ZipOutputStream;
 import org.apache.tools.zip.ZipEntry;
 import org.apache.commons.io.IOUtils;
@@ -1252,6 +1252,14 @@ public final class FilePath implements Serializable {
         void open(String fileName) throws IOException;
         void write(byte[] buf, int len) throws IOException;
         void close() throws IOException;
+    }
+
+    /**
+     * Copies the contents of this directory recursively into the specified target directory.
+     * @since 1.312 
+     */
+    public int copyRecursiveTo(FilePath target) throws IOException, InterruptedException {
+        return copyRecursiveTo("**/*",target);
     }
 
     public int copyRecursiveTo(String fileMask, FilePath target) throws IOException, InterruptedException {

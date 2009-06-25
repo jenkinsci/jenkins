@@ -59,9 +59,10 @@ THE SOFTWARE.
     </f:optionalBlock>
   </j:if>
 
-  <f:section title="${%Advanced Project Options}">
+  <f:section title="${%Advanced Project Options configure-common}">
     <f:advanced>
       <p:config-quietPeriod />
+      <p:config-retryCount />
       <st:include page="configure-advanced.jelly" optional="true" />
     </f:advanced>
   </f:section>

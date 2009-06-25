@@ -281,18 +281,6 @@ THE SOFTWARE.
         </plugins>
       </build>
     </profile>
-    <profile>
-      <id>sorcerer</id>
-      <reporting>
-        <plugins>
-          <plugin>
-            <groupId>org.jvnet.sorcerer</groupId>
-            <artifactId>maven-sorcerer-plugin</artifactId>
-            <version>0.7-SNAPSHOT</version>
-          </plugin>
-        </plugins>
-      </reporting>
-    </profile>
   </profiles>
 
   <dependencies>
@@ -360,7 +348,6 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.kohsuke</groupId>
       <artifactId>graph-layouter</artifactId>
-      <classifier>jdk14</classifier>
       <version>1.0</version>
     </dependency>
     <dependency>
@@ -706,6 +693,12 @@ THE SOFTWARE.
       <groupId>org.jvnet.hudson</groupId>
       <artifactId>jinterop-wmi</artifactId>
       <version>1.0</version>
+    </dependency>
+    <dependency>
+      <groupId>org.kohsuke.metainf-services</groupId>
+      <artifactId>metainf-services</artifactId>
+      <version>1.1</version>
+      <optional>true</optional>
     </dependency>
 
     <!-- offline profiler API to put in the classpath if we need it -->

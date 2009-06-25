@@ -36,7 +36,7 @@ THE SOFTWARE.
       </j:if>
     </d:tag>
 
-    <d:tag name="list"> <!-- @title and @items -->
+    <d:tag name="list"> <!-- @title, @items and @up -->
       <j:if test="${!empty(items)}">
         <h2>${title}</h2>
         <ul style="list-style-type: none;">
@@ -44,7 +44,7 @@ THE SOFTWARE.
           <j:if test="${h.hasPermission(item,item.READ)}">
             <li>
               <t:jobLink job="${item}"/>
-              <local:relationship lhs="${item}" rhs="${it}"/>
+              <local:relationship lhs="${up ? item : it}" rhs="${up ? it : item}"/>
             </li>
             </j:if>
           </j:forEach>
@@ -53,7 +53,6 @@ THE SOFTWARE.
     </d:tag>
   </d:taglib>
 
-  <j:set var="upstream" value="${it.upstreamProjects}" />
-  <local:list title="${%Upstream Projects}" items="${it.upstreamProjects}" />
-  <local:list title="${%Downstream Projects}" items="${it.downstreamProjects}" />
+  <local:list title="${%Upstream Projects}" items="${it.upstreamProjects}" up="true" />
+  <local:list title="${%Downstream Projects}" items="${it.downstreamProjects}" up="false" />
 </j:jelly>

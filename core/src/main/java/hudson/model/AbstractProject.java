@@ -34,9 +34,7 @@ import hudson.model.Cause.RemoteCause;
 import hudson.model.Descriptor.FormException;
 import hudson.model.Fingerprint.RangeSet;
 import hudson.model.RunMap.Constructor;
-import hudson.model.listeners.RunListener;
 import hudson.model.Queue.WaitingItem;
-import hudson.remoting.AsyncFutureImpl;
 import hudson.scm.ChangeLogSet;
 import hudson.scm.ChangeLogSet.Entry;
 import hudson.scm.NullSCM;
@@ -55,12 +53,15 @@ import hudson.triggers.Trigger;
 import hudson.triggers.TriggerDescriptor;
 import hudson.util.DescribableList;
 import hudson.util.EditDistance;
+import hudson.util.FormValidation;
 import hudson.widgets.BuildHistoryWidget;
 import hudson.widgets.HistoryWidget;
 import net.sf.json.JSONObject;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 import org.kohsuke.stapler.export.Exported;
+import org.kohsuke.stapler.QueryParameter;
+
 
 import javax.servlet.ServletException;
 import java.io.File;
@@ -109,6 +110,11 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
      * The quiet period. Null to delegate to the system default.
      */
     private volatile Integer quietPeriod = null;
+    
+    /**
+     * The retry count. Null to delegate to the system default.
+     */
+    private volatile Integer scmCheckoutRetryCount = null;
 
     /**
      * If this project is configured to be only built on a certain label,
@@ -300,10 +306,18 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
     public int getQuietPeriod() {
         return quietPeriod!=null ? quietPeriod : Hudson.getInstance().getQuietPeriod();
     }
+    
+    public int getScmCheckoutRetryCount() {
+        return scmCheckoutRetryCount !=null ? scmCheckoutRetryCount : Hudson.getInstance().getScmCheckoutRetryCount();
+    }
 
     // ugly name because of EL
     public boolean getHasCustomQuietPeriod() {
         return quietPeriod!=null;
+    }
+    
+    public boolean hasCustomScmCheckoutRetryCount(){
+    	return scmCheckoutRetryCount != null;
     }
 
     public final boolean isBuildable() {
@@ -320,6 +334,19 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
 
     public boolean isDisabled() {
         return disabled;
+    }
+    
+    /**
+     * Validates the retry count Regex
+     */
+    public FormValidation doCheckRetryCount(@QueryParameter String value)throws IOException,ServletException{
+    	// retry count is optional so this is ok
+    	if(value == null || value.trim().equals(""))
+        	return FormValidation.ok();
+    	if (!value.matches("[0-9]*")) {
+    		return FormValidation.error("Invalid retry count");
+    	} 
+    	return FormValidation.ok();
     }
 
     /**
@@ -1148,6 +1175,11 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
             quietPeriod = Integer.parseInt(req.getParameter("quiet_period"));
         } else {
             quietPeriod = null;
+        }
+        if(req.getParameter("hasCustomScmCheckoutRetryCount")!=null) {
+            scmCheckoutRetryCount = Integer.parseInt(req.getParameter("scmCheckoutRetryCount"));
+        } else {
+        	scmCheckoutRetryCount = null;
         }
 
         if(req.getParameter("hasSlaveAffinity")!=null) {

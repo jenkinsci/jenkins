@@ -94,6 +94,9 @@ public abstract class ComputerListener implements ExtensionPoint {
      * This enables you to do some work on all the slaves
      * as they get connected.
      *
+     * <p>
+     * Starting Hudson 1.312, this method is also invoked for the master, not just for slaves.
+     *
      * @param listener
      *      This is connected to the launch log of the computer.
      *      Since this method is called synchronously from the thread
@@ -108,7 +111,7 @@ public abstract class ComputerListener implements ExtensionPoint {
      *      Exceptions will be recorded to the listener. Note that
      *      throwing an exception doesn't put the computer offline.
      *
-     * @see #preOnline(Computer, TaskListener)
+     * @see #preOnline(Computer, Channel, FilePath, TaskListener)
      */
     public void onOnline(Computer c, TaskListener listener) throws IOException, InterruptedException {
         // compatibility
