@@ -581,6 +581,15 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
     public String getId() {
         return ID_FORMATTER.get().format(new Date(timestamp));
     }
+    
+    /**
+     * Get the date formatter used to convert the directory name in to a timestamp
+     * This is nasty exposure of private data, but needed all the time the directory
+     * containing the build is used as it's timestamp.
+     */
+    public static DateFormat getIDFormatter() {
+    	return ID_FORMATTER.get();
+    }
 
     public Descriptor getDescriptorByName(String className) {
         return Hudson.getInstance().getDescriptorByName(className);
