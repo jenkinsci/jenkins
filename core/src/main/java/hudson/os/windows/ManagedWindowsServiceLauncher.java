@@ -117,8 +117,9 @@ public class ManagedWindowsServiceLauncher extends ComputerLauncher {
                     logger.println(Messages.ManagedWindowsServiceLauncher_DotNetRequired());
                     return;
                 }
-    
-                remoteRoot.mkdirs();
+
+                if(!remoteRoot.exists())
+                    remoteRoot.mkdirs();
 
                 // copy exe
                 logger.println(Messages.ManagedWindowsServiceLauncher_CopyingSlaveExe());
