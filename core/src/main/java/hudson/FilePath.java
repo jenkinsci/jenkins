@@ -73,6 +73,7 @@ import java.io.OutputStream;
 import java.io.Serializable;
 import java.io.Writer;
 import java.io.OutputStreamWriter;
+import java.io.Closeable;
 import java.net.URI;
 import java.net.URL;
 import java.net.URLConnection;
@@ -246,44 +247,31 @@ public final class FilePath implements Serializable {
      * Creates a zip file from this directory or a file and sends that to the given output stream.
      */
     public void createZipArchive(OutputStream os) throws IOException, InterruptedException {
+        createZipArchive(os,(FileFilter)null);
+    }
+
+    /**
+     * Creates a zip file from this directory by using the specified filter,
+     * and sends the result to the given output stream.
+     *
+     * @param filter
+     *      Must be serializable since it may be executed remotely. Can be null to add all files.
+     *
+     * @since 1.314
+     */
+    public void createZipArchive(OutputStream os, final FileFilter filter) throws IOException, InterruptedException {
         final OutputStream out = (channel!=null)?new RemoteOutputStream(os):os;
         act(new FileCallable<Void>() {
-            private transient byte[] buf;
             public Void invoke(File f, VirtualChannel channel) throws IOException {
-                buf = new byte[8192];
-
-                ZipOutputStream zip = new ZipOutputStream(out);
-                zip.setEncoding(System.getProperty("file.encoding"));
-                scan(f,zip,"");
-                zip.close();
+                ZipWriter zw = new ZipWriter(out);
+                try {
+                    accept(f,zw.with(filter));
+                } finally {
+                    zw.close();
+                }
                 return null;
             }
 
-            private void scan(File f, ZipOutputStream zip, String path) throws IOException {
-                // Bitmask indicating directories in 'external attributes' of a ZIP archive entry.
-                final long BITMASK_IS_DIRECTORY = 1<<4;
-              
-                if (f.canRead()) {
-                    if(f.isDirectory()) {
-                        ZipEntry dirZipEntry = new ZipEntry(path+f.getName()+'/');
-                        // Setting this bit explicitly is needed by some unzipping applications (see HUDSON-3294).
-                        dirZipEntry.setExternalAttributes(BITMASK_IS_DIRECTORY);
-                        zip.putNextEntry(dirZipEntry);
-                        zip.closeEntry();
-                        for( File child : f.listFiles() )
-                            scan(child,zip,path+f.getName()+'/');
-                    } else {
-                        zip.putNextEntry(new ZipEntry(path+f.getName()));
-                        FileInputStream in = new FileInputStream(f);
-                        int len;
-                        while((len=in.read(buf))>0)
-                            zip.write(buf,0,len);
-                        in.close();
-                        zip.closeEntry();
-                    }
-                }
-            }
-            
             private static final long serialVersionUID = 1L;
         });
     }
@@ -306,24 +294,12 @@ public final class FilePath implements Serializable {
         final OutputStream out = (channel!=null)?new RemoteOutputStream(os):os;
         act(new FileCallable<Void>() {
             public Void invoke(File dir, VirtualChannel channel) throws IOException {
-                byte[] buf = new byte[8192];
-
-                ZipOutputStream zip = new ZipOutputStream(out);
-                zip.setEncoding(System.getProperty("file.encoding"));
-                for( String entry : glob(dir,glob) ) {
-                    File file = new File(dir,entry);
-                    if (file.canRead()) {
-                        zip.putNextEntry(new ZipEntry(dir.getName()+'/'+entry));
-                        FileInputStream in = new FileInputStream(file);
-                        int len;
-                        while((len=in.read(buf))>0)
-                            zip.write(buf,0,len);
-                        in.close();
-                        zip.closeEntry();
-                    }
+                ZipWriter zw = new ZipWriter(out);
+                try {
+                    accept(dir,glob,null,zw);
+                } finally {
+                    zw.close();
                 }
-
-                zip.close();
                 return null;
             }
 
@@ -1375,39 +1351,69 @@ public final class FilePath implements Serializable {
     }
 
     /**
-     * Writes to a tar stream and stores obtained files to the base dir.
-     *
-     * @return
-     *      number of files/directories that are written.
+     * Visits files in a directory recursively.
+     * Primarily used for building an archive with various filtering.
      */
-    private Integer writeToTar(File baseDir, String fileMask, String excludes, OutputStream out) throws IOException {
-        FileSet fs = Util.createFileSet(baseDir,fileMask,excludes);
+    private static abstract class FileVisitor {
+        abstract void visit(File f, String relativePath) throws IOException;
 
-        byte[] buf = new byte[8192];
-
-        TarOutputStream tar = new TarOutputStream(new BufferedOutputStream(out) {
-            // TarOutputStream uses TarBuffer internally,
-            // which flushes the stream for each block. this creates unnecessary
-            // data stream fragmentation, and flush request to a remote, which slows things down.
-            public void flush() throws IOException {
-                // so don't do anything in flush
-            }
-        });
-        tar.setLongFileMode(TarOutputStream.LONGFILE_GNU);
-        String[] files;
-        if(baseDir.exists()) {
-            DirectoryScanner ds = fs.getDirectoryScanner(new org.apache.tools.ant.Project());
-            files = ds.getIncludedFiles();
-        } else {
-            files = new String[0];
+        /**
+         * Decorates by a given filter.
+         */
+        FileVisitor with(FileFilter f) {
+            if(f==null) return this;
+            return new FilterFileVisitor(f,this);
         }
-        for( String f : files) {
+    }
+
+    private static final class FilterFileVisitor extends FileVisitor implements Serializable {
+        private final FileFilter filter;
+        private final FileVisitor visitor;
+
+        private FilterFileVisitor(FileFilter filter, FileVisitor visitor) {
+            this.filter = filter!=null ? filter : PASS_THROUGH;
+            this.visitor = visitor;
+        }
+
+        public void visit(File f, String relativePath) throws IOException {
+            if(f.isDirectory() || filter.accept(f))
+                visitor.visit(f,relativePath);
+        }
+
+        private static final FileFilter PASS_THROUGH = new FileFilter() {
+            public boolean accept(File pathname) {
+                return true;
+            }
+        };
+
+        private static final long serialVersionUID = 1L;
+    }
+
+    /**
+     * {@link FileVisitor} that creates a tar archive.
+     */
+    private static final class TarWriter extends FileVisitor implements Closeable {
+        private final byte[] buf = new byte[8192];
+        private final TarOutputStream tar;
+        int filesWritten=0;
+
+        private TarWriter(OutputStream out) {
+            tar = new TarOutputStream(new BufferedOutputStream(out) {
+                // TarOutputStream uses TarBuffer internally,
+                // which flushes the stream for each block. this creates unnecessary
+                // data stream fragmentation, and flush request to a remote, which slows things down.
+                public void flush() throws IOException {
+                    // so don't do anything in flush
+                }
+            });
+            tar.setLongFileMode(TarOutputStream.LONGFILE_GNU);
+        }
+
+        public void visit(File file, String relativePath) throws IOException {
             if(Functions.isWindows())
-                f = f.replace('\\','/');
+                relativePath = relativePath.replace('\\','/');
 
-            File file = new File(baseDir, f);
-
-            TarEntry te = new TarEntry(f);
+            TarEntry te = new TarEntry(relativePath);
             te.setModTime(file.lastModified());
             if(!file.isDirectory())
                 te.setSize(file.length());
@@ -1423,11 +1429,129 @@ public final class FilePath implements Serializable {
             }
 
             tar.closeEntry();
+            filesWritten++;
         }
 
-        tar.close();
+        public void close() throws IOException {
+            tar.close();
+        }
+    }
 
-        return files.length;
+    /**
+     * {@link FileVisitor} that creates a zip archive.
+     */
+    private static final class ZipWriter extends FileVisitor implements Closeable {
+        private final byte[] buf = new byte[8192];
+        private final ZipOutputStream zip;
+
+        private ZipWriter(OutputStream out) {
+            zip = new ZipOutputStream(out);
+            zip.setEncoding(System.getProperty("file.encoding"));
+        }
+
+        public void visit(File f, String relativePath) throws IOException {
+            if(f.isDirectory()) {
+                ZipEntry dirZipEntry = new ZipEntry(relativePath+'/');
+                // Setting this bit explicitly is needed by some unzipping applications (see HUDSON-3294).
+                dirZipEntry.setExternalAttributes(BITMASK_IS_DIRECTORY);
+                zip.putNextEntry(dirZipEntry);
+                zip.closeEntry();
+            } else {
+                zip.putNextEntry(new ZipEntry(relativePath));
+                FileInputStream in = new FileInputStream(f);
+                int len;
+                while((len=in.read(buf))>0)
+                    zip.write(buf,0,len);
+                in.close();
+                zip.closeEntry();
+            }
+        }
+
+        public void close() throws IOException {
+            zip.close();
+        }
+
+        // Bitmask indicating directories in 'external attributes' of a ZIP archive entry.
+        private static final long BITMASK_IS_DIRECTORY = 1<<4;
+    }
+
+    /**
+     * Scans the given base directory with a GLOB and exclusion mask, and calls visitor.
+     */
+    private void accept(File baseDir, String fileMask, String excludes, FileVisitor visitor) throws IOException {
+        if(fileMask==null || excludes==null) {
+            // optimization
+            accept(baseDir,visitor);
+            return;
+        }
+
+        FileSet fs = Util.createFileSet(baseDir,fileMask,excludes);
+
+        if(baseDir.exists()) {
+            DirectoryScanner ds = fs.getDirectoryScanner(new org.apache.tools.ant.Project());
+            for( String f : ds.getIncludedFiles()) {
+                File file = new File(baseDir, f);
+                visitor.visit(file,f);
+            }
+        }
+    }
+
+    /**
+     * Scans the given directory tree recursively and calls visitor.
+     */
+    private void accept(final File baseDir, final FileVisitor visitor) throws IOException {
+        class Scanner {
+            public void run() throws IOException {
+                scan(baseDir,"");
+            }
+
+            private void scan(File f, String path) throws IOException {
+                if (f.canRead()) {
+                    visitor.visit(f,path+f.getName());
+                    if(f.isDirectory()) {
+                        for( File child : f.listFiles() )
+                            scan(child,path+f.getName()+'/');
+                    }
+                }
+            }
+        }
+        new Scanner().run();
+    }
+
+
+    /**
+     * Writes files in 'this' directory to a tar stream.
+     *
+     * @param glob
+     *      Ant file pattern mask, like "**&#x2F;*.java".
+     */
+    public int tar(OutputStream out, final String glob) throws IOException, InterruptedException {
+        final OutputStream o = new RemoteOutputStream(out);
+        try {
+            return act(new FileCallable<Integer>() {
+                public Integer invoke(File f, VirtualChannel channel) throws IOException {
+                    return writeToTar(f,glob,null,o);
+                }
+            });
+        } finally {
+            out.close();
+        }
+    }
+
+    /**
+     * Writes to a tar stream and stores obtained files to the base dir.
+     *
+     * @return
+     *      number of files/directories that are written.
+     */
+    private Integer writeToTar(File baseDir, String fileMask, String excludes, OutputStream out) throws IOException {
+        TarWriter tw = new TarWriter(out);
+        try {
+            accept(baseDir,fileMask,excludes,tw);
+        } finally {
+            tw.close();
+        }
+        return tw.filesWritten;
     }
 
     /**
