@@ -88,13 +88,13 @@ public abstract class MailAddressResolver implements ExtensionPoint {
         }
 
         // fall back logic
-        String extractedAddress = extractAddressFromId(u.getId());
+        String extractedAddress = extractAddressFromId(u.getFullName());
         if (extractedAddress != null)
                 return extractedAddress;
 
-        if(u.getId().contains("@"))
+        if(u.getFullName().contains("@"))
             // this already looks like an e-mail ID
-            return u.getId();
+            return u.getFullName();
 
         String ds = Mailer.descriptor().getDefaultSuffix();
         if(ds!=null)

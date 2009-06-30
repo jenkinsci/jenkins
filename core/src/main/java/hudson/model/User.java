@@ -40,7 +40,6 @@ import net.sf.json.JSONObject;
 
 import org.acegisecurity.Authentication;
 import org.acegisecurity.providers.anonymous.AnonymousAuthenticationToken;
-import org.kohsuke.stapler.Stapler;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 import org.kohsuke.stapler.export.Exported;
@@ -104,9 +103,9 @@ public class User extends AbstractModelObject implements AccessControlled, Savea
     private volatile List<UserProperty> properties = new ArrayList<UserProperty>();
 
 
-    private User(String id) {
+    private User(String id, String fullName) {
         this.id = id;
-        this.fullName = id;   // fullName defaults to name
+        this.fullName = fullName;
         load();
     }
 
@@ -257,7 +256,7 @@ public class User extends AbstractModelObject implements AccessControlled, Savea
     }
 
     /**
-     * Gets the {@link User} object by its id.
+     * Gets the {@link User} object by its id or full name.
      *
      * @param create
      *      If true, this method will never return null for valid input
@@ -265,15 +264,15 @@ public class User extends AbstractModelObject implements AccessControlled, Savea
      *      If false, this method will return null if {@link User} object
      *      with the given name doesn't exist.
      */
-    public static User get(String id, boolean create) {
-        if(id==null)
+    public static User get(String idOrFullName, boolean create) {
+        if(idOrFullName==null)
             return null;
-        id = id.replace('\\', '_').replace('/', '_').replace('<','_');
+        String id = idOrFullName.replace('\\', '_').replace('/', '_').replace('<','_');
         
         synchronized(byName) {
             User u = byName.get(id);
             if(u==null && create) {
-                u = new User(id);
+                u = new User(id, idOrFullName);
                 byName.put(id,u);
             }
             return u;
@@ -281,10 +280,10 @@ public class User extends AbstractModelObject implements AccessControlled, Savea
     }
 
     /**
-     * Gets the {@link User} object by its id.
+     * Gets the {@link User} object by its id or full name.
      */
-    public static User get(String id) {
-        return get(id,true);
+    public static User get(String idOrFullName) {
+        return get(idOrFullName,true);
     }
 
     /**
@@ -370,7 +369,7 @@ public class User extends AbstractModelObject implements AccessControlled, Savea
         return r;
     }
 
-    public String toString() {
+    public @Override String toString() {
         return fullName;
     }
 
