@@ -49,6 +49,7 @@ import hudson.util.ArgumentListBuilder;
 import hudson.util.ForkOutputStream;
 import hudson.util.IOException2;
 import hudson.util.FormValidation;
+import hudson.util.AtomicFileWriter;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.tools.ant.BuildException;
@@ -1010,6 +1011,13 @@ public class CVSSCM extends SCM implements Serializable {
 
             if(modified) {
                 // write it back
+                AtomicFileWriter w = new AtomicFileWriter(entries);
+                try {
+                    w.write(newContents.toString());
+                    w.commit();
+                } finally {
+                    w.abort();
+                }
                 File tmp = new File(f, "CVS/Entries.tmp");
                 FileUtils.writeStringToFile(tmp,newContents.toString());
                 entries.delete();
