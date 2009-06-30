@@ -1018,10 +1018,6 @@ public class CVSSCM extends SCM implements Serializable {
                 } finally {
                     w.abort();
                 }
-                File tmp = new File(f, "CVS/Entries.tmp");
-                FileUtils.writeStringToFile(tmp,newContents.toString());
-                entries.delete();
-                tmp.renameTo(entries);
             }
 
             // recursively process children
