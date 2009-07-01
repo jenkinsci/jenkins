@@ -182,7 +182,11 @@ public class ManagedWindowsServiceLauncher extends ComputerLauncher {
         } catch (SmbException e) {
             e.printStackTrace(listener.error(e.getMessage()));
         } catch (JIException e) {
-            e.printStackTrace(listener.error(e.getMessage()));
+            if(e.getErrorCode()==5)
+                // access denied error
+                e.printStackTrace(listener.error(Messages.ManagedWindowsServiceLauncher_AccessDenied()));
+            else
+                e.printStackTrace(listener.error(e.getMessage()));
         } catch (DocumentException e) {
             e.printStackTrace(listener.error(e.getMessage()));
         }
