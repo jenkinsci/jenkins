@@ -671,7 +671,6 @@ public final class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,Ma
         }
 
         private static final Set<Class> NOT_APPLICABLE_TYPES = new HashSet<Class>(Arrays.asList(
-            ArtifactArchiver.class, // this happens automatically
             Fingerprinter.class,    // this kicks in automatically
             JavadocArchiver.class,  // this kicks in automatically
             Mailer.class,           // for historical reasons, Maven uses MavenMailer
