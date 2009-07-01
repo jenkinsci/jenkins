@@ -2603,20 +2603,10 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
     }
 
     /**
-     * Called once the user logs in. Just forward to the top page.
+     * Logs out the user.
      */
-    public void doLogout( StaplerRequest req, StaplerResponse rsp ) throws IOException {
-        HttpSession session = req.getSession(false);
-        if(session!=null)
-            session.invalidate();
-        SecurityContextHolder.clearContext();
-
-        // reset remember-me cookie
-        Cookie cookie = new Cookie(ACEGI_SECURITY_HASHED_REMEMBER_ME_COOKIE_KEY,"");
-        cookie.setPath(req.getContextPath().length()>0 ? req.getContextPath() : "/");
-        rsp.addCookie(cookie);
-
-        rsp.sendRedirect2(req.getContextPath()+"/");
+    public void doLogout( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
+        securityRealm.doLogout(req,rsp);
     }
 
     /**
