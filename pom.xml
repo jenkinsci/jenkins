@@ -225,7 +225,7 @@ THE SOFTWARE.
           <plugin>
             <groupId>org.jvnet.sorcerer</groupId>
             <artifactId>maven-sorcerer-plugin</artifactId>
-            <version>0.7-SNAPSHOT</version>
+            <version>0.7</version>
           </plugin>
         </plugins>
       </reporting>
@@ -234,7 +234,7 @@ THE SOFTWARE.
           <plugin>
             <groupId>org.jvnet.sorcerer</groupId>
             <artifactId>maven-sorcerer-plugin</artifactId>
-            <version>0.7-SNAPSHOT</version>
+            <version>0.7</version>
           </plugin>
         </plugins>
       </build>
