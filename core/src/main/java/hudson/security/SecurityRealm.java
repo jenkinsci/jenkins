@@ -40,7 +40,9 @@ import org.acegisecurity.AuthenticationManager;
 import org.acegisecurity.GrantedAuthorityImpl;
 import org.acegisecurity.GrantedAuthority;
 import org.acegisecurity.context.SecurityContext;
+import org.acegisecurity.context.SecurityContextHolder;
 import org.acegisecurity.ui.rememberme.RememberMeServices;
+import static org.acegisecurity.ui.rememberme.TokenBasedRememberMeServices.ACEGI_SECURITY_HASHED_REMEMBER_ME_COOKIE_KEY;
 import org.acegisecurity.userdetails.UserDetailsService;
 import org.acegisecurity.userdetails.UserDetails;
 import org.acegisecurity.userdetails.UsernameNotFoundException;
@@ -54,6 +56,9 @@ import org.springframework.dao.DataAccessException;
 import javax.imageio.ImageIO;
 import javax.servlet.Filter;
 import javax.servlet.FilterConfig;
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpSession;
+import javax.servlet.http.Cookie;
 import java.io.IOException;
 import java.util.Map;
 import java.util.logging.Level;
@@ -182,6 +187,50 @@ public abstract class SecurityRealm implements Describable<SecurityRealm>, Exten
      */
     public boolean canLogOut() {
         return true;
+    }
+
+    /**
+     * Controls where the user is sent to after a logout. By default, it's the top page
+     * of Hudson, but you can return arbitrary URL.
+     *
+     * @param req
+     *      {@link StaplerRequest} that represents the current request. Primarily so that
+     *      you can get the context path. By the time this method is called, the session
+     *      is already invalidated. Never null.
+     * @param auth
+     *      The {@link Authentication} object that represents the user that was logging in.
+     *      This parameter allows you to redirect people to different pages depending on who they are.
+     * @return
+     *      never null.
+     * @since 1.314
+     * @see #doLogout(StaplerRequest, StaplerResponse) 
+     */
+    protected String getPostLogOutUrl(StaplerRequest req, Authentication auth) {
+        return req.getContextPath()+"/";
+    }
+
+    /**
+     * Handles the logout processing.
+     *
+     * <p>
+     * The default implementation erases the session and do a few other clean up, then
+     * redirect the user to the URL specified by {@link #getPostLogOutUrl(StaplerRequest, Authentication)}.
+     *
+     * @since 1.314
+     */
+    public void doLogout(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
+        HttpSession session = req.getSession(false);
+        if(session!=null)
+            session.invalidate();
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        SecurityContextHolder.clearContext();
+
+        // reset remember-me cookie
+        Cookie cookie = new Cookie(ACEGI_SECURITY_HASHED_REMEMBER_ME_COOKIE_KEY,"");
+        cookie.setPath(req.getContextPath().length()>0 ? req.getContextPath() : "/");
+        rsp.addCookie(cookie);
+
+        rsp.sendRedirect2(getPostLogOutUrl(req,auth));
     }
 
     /**

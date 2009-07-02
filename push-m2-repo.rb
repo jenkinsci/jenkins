@@ -70,6 +70,9 @@ Dir.chdir("../plugins") do
     next unless File.exists?(name+"/pom.xml")
     updatePom(name+"/pom.xml",prev,ver)
   end
+  # in case anyone gets out of sync, this will bring them back to the current version,
+  # except that this only works for children nominated in the <module> section.
+  system "mvn -N versions:update-child-modules" or fail
   system "svn commit -m 'bumping up POM version'" or fail
   system "mvn -N deploy" or fail
 end

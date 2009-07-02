@@ -49,8 +49,7 @@ import hudson.Extension;
 import hudson.tools.ToolInstallation;
 import hudson.tools.ToolDescriptor;
 import hudson.cli.CliEntryPoint;
-import hudson.cli.CLICommand;
-import hudson.cli.HelpCommand;
+import hudson.cli.CliManagerImpl;
 import hudson.logging.LogRecorderManager;
 import hudson.lifecycle.Lifecycle;
 import hudson.model.Descriptor.FormException;
@@ -1597,10 +1596,16 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
      * A convenience method to check if there's some security
      * restrictions in place.
      */
+    @Exported
     public boolean isUseSecurity() {
         return securityRealm!=SecurityRealm.NO_AUTHENTICATION || authorizationStrategy!=AuthorizationStrategy.UNSECURED;
     }
 
+    /**
+     * If true, all the POST requests to Hudson would have to have crumb in it to protect
+     * Hudson from CSRF vulnerabilities.
+     */
+    @Exported
     public boolean isUseCrumbs() {
         return (useCrumbs != null) && useCrumbs;
     }
@@ -2598,20 +2603,10 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
     }
 
     /**
-     * Called once the user logs in. Just forward to the top page.
+     * Logs out the user.
      */
-    public void doLogout( StaplerRequest req, StaplerResponse rsp ) throws IOException {
-        HttpSession session = req.getSession(false);
-        if(session!=null)
-            session.invalidate();
-        SecurityContextHolder.clearContext();
-
-        // reset remember-me cookie
-        Cookie cookie = new Cookie(ACEGI_SECURITY_HASHED_REMEMBER_ME_COOKIE_KEY,"");
-        cookie.setPath(req.getContextPath().length()>0 ? req.getContextPath() : "/");
-        rsp.addCookie(cookie);
-
-        rsp.sendRedirect2(req.getContextPath()+"/");
+    public void doLogout( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
+        securityRealm.doLogout(req,rsp);
     }
 
     /**
@@ -2724,55 +2719,6 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
         rsp.getWriter().println("GCed");
     }
 
-    /**
-     * {@link CliEntryPoint} implementation exposed to the remote CLI.
-     */
-    private final class CliManager implements CliEntryPoint, Serializable {
-        /**
-         * CLI should be executed under this credential.
-         */
-        private final Authentication auth;
-
-        private CliManager(Authentication auth) {
-            this.auth = auth;
-        }
-
-        public int main(List<String> args, Locale locale, InputStream stdin, OutputStream stdout, OutputStream stderr) {
-            // remoting sets the context classloader to the RemoteClassLoader,
-            // which slows down the classloading. we don't load anything from CLI,
-            // so counter that effect.
-            Thread.currentThread().setContextClassLoader(getClass().getClassLoader());
-
-            PrintStream out = new PrintStream(stdout);
-            PrintStream err = new PrintStream(stderr);
-
-            String subCmd = args.get(0);
-            CLICommand cmd = CLICommand.clone(subCmd);
-            if(cmd!=null) {
-                Authentication old = SecurityContextHolder.getContext().getAuthentication();
-                SecurityContextHolder.getContext().setAuthentication(auth);
-                try {
-                    // execute the command, do so with the originator of the request as the principal
-                    return cmd.main(args.subList(1,args.size()),stdin, out, err);
-                } finally {
-                    SecurityContextHolder.getContext().setAuthentication(old);
-                }
-            }
-
-            err.println("No such command: "+subCmd);
-            new HelpCommand().main(Collections.<String>emptyList(), stdin, out, err);
-            return -1;
-        }
-
-        public int protocolVersion() {
-            return VERSION;
-        }
-
-        private Object writeReplace() {
-            return Channel.current().export(CliEntryPoint.class,this);
-        }
-    }
-
     private transient final Map<UUID,FullDuplexHttpChannel> duplexChannels = new HashMap<UUID, FullDuplexHttpChannel>();
 
     /**
@@ -2794,7 +2740,7 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
         if(req.getHeader("Side").equals("download")) {
             duplexChannels.put(uuid,server=new FullDuplexHttpChannel(uuid, !hasPermission(ADMINISTER)) {
                 protected void main(Channel channel) throws IOException, InterruptedException {
-                    channel.setProperty(CliEntryPoint.class.getName(),new CliManager(auth));
+                    channel.setProperty(CliEntryPoint.class.getName(),new CliManagerImpl(auth));
                 }
             });
             try {

@@ -49,6 +49,7 @@ import hudson.util.ArgumentListBuilder;
 import hudson.util.ForkOutputStream;
 import hudson.util.IOException2;
 import hudson.util.FormValidation;
+import hudson.util.AtomicFileWriter;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.tools.ant.BuildException;
@@ -91,6 +92,9 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.TimeZone;
 import java.util.TreeSet;
+import java.util.logging.Logger;
+import java.util.logging.Level;
+import static java.util.logging.Level.INFO;
 import java.util.concurrent.ExecutionException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -990,7 +994,15 @@ public class CVSSCM extends SCM implements Serializable {
                 return; // not a CVS-controlled directory. No point in recursing
 
             boolean modified = false;
-            String contents = FileUtils.readFileToString(entries);
+            String contents = null;
+            try {
+                contents = FileUtils.readFileToString(entries);
+            } catch (IOException e) {
+                // reports like http://www.nabble.com/Exception-while-checking-out-from-CVS-td24256117.html
+                // indicates that CVS/Entries may contain something more than we know of. leave them as is
+                LOGGER.log(INFO, "Failed to parse "+entries,e);
+                return;
+            }
             StringBuilder newContents = new StringBuilder(contents.length());
             String[] lines = contents.split("\n");
             
@@ -1010,10 +1022,13 @@ public class CVSSCM extends SCM implements Serializable {
 
             if(modified) {
                 // write it back
-                File tmp = new File(f, "CVS/Entries.tmp");
-                FileUtils.writeStringToFile(tmp,newContents.toString());
-                entries.delete();
-                tmp.renameTo(entries);
+                AtomicFileWriter w = new AtomicFileWriter(entries);
+                try {
+                    w.write(newContents.toString());
+                    w.commit();
+                } finally {
+                    w.abort();
+                }
             }
 
             // recursively process children
@@ -1575,4 +1590,6 @@ public class CVSSCM extends SCM implements Serializable {
      * the -d option in the log command. See #1346.
      */
     public static boolean skipChangeLog = Boolean.getBoolean(CVSSCM.class.getName()+".skipChangeLog");
+
+    private static final Logger LOGGER = Logger.getLogger(CVSSCM.class.getName());
 }
