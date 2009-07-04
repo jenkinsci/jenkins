@@ -43,40 +43,41 @@ public class ForwarderFactory {
     /**
      * Creates a connector on the remote side that connects to the speicied host and port.
      */
-    public static Forwarder create(VirtualChannel channel, String remoteHost, int remotePort) throws IOException, InterruptedException {
-        return channel.call(new Exporter(remoteHost, remotePort));
+    public static Forwarder create(VirtualChannel channel, final String remoteHost, final int remotePort) throws IOException, InterruptedException {
+        return channel.call(new Callable<Forwarder,IOException>() {
+            public Forwarder call() throws IOException {
+                return new ForwarderImpl(remoteHost,remotePort);
+            }
+
+            private static final long serialVersionUID = 1L;
+        });
     }
 
-    /**
-     * Creates a remote {@link Forwarder} instance and returns it.
-     */
-    private static final class Exporter implements Callable<Forwarder,IOException> {
+    public static Forwarder create(String remoteHost, int remotePort) {
+        return new ForwarderImpl(remoteHost,remotePort);
+    }
+
+    private static class ForwarderImpl implements Forwarder {
         private final String remoteHost;
         private final int remotePort;
 
-        private Exporter(String remoteHost, int remotePort) {
+        private ForwarderImpl(String remoteHost, int remotePort) {
             this.remoteHost = remoteHost;
             this.remotePort = remotePort;
         }
 
-        public Forwarder call() throws IOException {
-            return new Forwarder() {
-                public OutputStream connect(OutputStream out) throws IOException {
-                    Socket s = new Socket(remoteHost, remotePort);
-                    new CopyThread(String.format("Copier to %s:%d",remoteHost,remotePort),
-                        new SocketInputStream(s), out).start();
-                    return new RemoteOutputStream(new SocketOutputStream(s));
-                }
-
-                /**
-                 * When sent to the remote node, send a proxy.
-                 */
-                private Object writeReplace() {
-                    return Channel.current().export(Forwarder.class, this);
-                }
-            };
+        public OutputStream connect(OutputStream out) throws IOException {
+            Socket s = new Socket(remoteHost, remotePort);
+            new CopyThread(String.format("Copier to %s:%d", remoteHost, remotePort),
+                new SocketInputStream(s), out).start();
+            return new RemoteOutputStream(new SocketOutputStream(s));
         }
 
-        private static final long serialVersionUID = 1L;
+        /**
+         * When sent to the remote node, send a proxy.
+         */
+        private Object writeReplace() {
+            return Channel.current().export(Forwarder.class, this);
+        }
     }
 }

@@ -44,7 +44,7 @@ import java.util.logging.Logger;
  * @author Kohsuke Kawaguchi
  * @since 1.315
  */
-public class PortForwarder extends Thread implements Closeable {
+public class PortForwarder extends Thread implements Closeable, ListeningPort {
     private final Forwarder forwarder;
     private final ServerSocket socket;
 
@@ -52,6 +52,13 @@ public class PortForwarder extends Thread implements Closeable {
         super(String.format("Port forwarder %d",localPort));
         this.forwarder = forwarder;
         this.socket = new ServerSocket(localPort);
+        // mark as a daemon thread by default.
+        // the caller can explicitly cancel this by doing "setDaemon(false)"
+        setDaemon(true);
+    }
+
+    public int getPort() {
+        return socket.getLocalPort();
     }
 
     @Override
@@ -96,15 +103,15 @@ public class PortForwarder extends Thread implements Closeable {
      * @return
      *      A {@link Closeable} that can be used to shut the port forwarding down.
      */
-    public static Closeable create(VirtualChannel ch, final int acceptingPort, Forwarder forwarder) throws IOException, InterruptedException {
+    public static ListeningPort create(VirtualChannel ch, final int acceptingPort, Forwarder forwarder) throws IOException, InterruptedException {
         // need a remotable reference
         final Forwarder proxy = ch.export(Forwarder.class, forwarder);
 
-        return ch.call(new Callable<Closeable,IOException>() {
-            public Closeable call() throws IOException {
+        return ch.call(new Callable<ListeningPort,IOException>() {
+            public ListeningPort call() throws IOException {
                 PortForwarder t = new PortForwarder(acceptingPort, proxy);
                 t.start();
-                return Channel.current().export(Closeable.class,t);
+                return Channel.current().export(ListeningPort.class,t);
             }
         });
     }
