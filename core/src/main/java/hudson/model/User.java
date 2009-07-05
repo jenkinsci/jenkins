@@ -271,9 +271,11 @@ public class User extends AbstractModelObject implements AccessControlled, Savea
         
         synchronized(byName) {
             User u = byName.get(id);
-            if(u==null && create) {
-                u = new User(id, idOrFullName);
-                byName.put(id,u);
+            if(u==null) {
+                User tmp = new User(id, idOrFullName);
+                if (create || tmp.getConfigFile().exists()) {
+                    byName.put(id,u=tmp);
+                }
             }
             return u;
         }
