@@ -60,7 +60,8 @@ public class MatrixRun extends Build<MatrixConfiguration,MatrixRun> {
             List<Ancestor> ancs = req.getAncestors();
             for( int i=1; i<ancs.size(); i++) {
                 if(ancs.get(i).getObject()==this) {
-                    if(ancs.get(i-1).getObject() instanceof MatrixBuild) {
+                    Object parentObj = ancs.get(i-1).getObject();
+                    if(parentObj instanceof MatrixBuild || parentObj instanceof MatrixConfiguration) {
                         return ancs.get(i-1).getUrl()+'/';
                     }
                 }
@@ -104,7 +105,7 @@ public class MatrixRun extends Build<MatrixConfiguration,MatrixRun> {
     }
 
     /**
-     * If the parent {@link MatrixRun} is kept, keep this record, too.
+     * If the parent {@link MatrixBuild} is kept, keep this record too.
      */
     @Override
     public String getWhyKeepLog() {
