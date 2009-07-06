@@ -77,7 +77,7 @@ public abstract class ProcessTree implements Iterable<OSProcess> {
     /**
      * To be filled in the constructor of the derived type.
      */
-    private final Map<Integer/*pid*/, OSProcess> processes = new HashMap<Integer, OSProcess>();
+    protected final Map<Integer/*pid*/, OSProcess> processes = new HashMap<Integer, OSProcess>();
 
     // instantiation only allowed for subtypes in this class
     private ProcessTree() {}
@@ -158,11 +158,10 @@ public abstract class ProcessTree implements Iterable<OSProcess> {
             return r;
         }
 
-        // TODO: pending new Winp
-//        /**
-//         * Kills this process.
-//         */
-//        public abstract void kill();
+        /**
+         * Kills this process.
+         */
+        public abstract void kill();
 
         /**
          * Kills this process and all the descendants.
@@ -266,6 +265,10 @@ public abstract class ProcessTree implements Iterable<OSProcess> {
                     proc.destroy();
                 }
 
+                public void kill() {
+                    proc.destroy();
+                }
+
                 public List<String> getArguments() {
                     return Collections.emptyList();
                 }
@@ -300,6 +303,10 @@ public abstract class ProcessTree implements Iterable<OSProcess> {
 
                     public void killRecursively() {
                         p.killRecursively();
+                    }
+
+                    public void kill() {
+                        p.kill();
                     }
 
                     @Override
