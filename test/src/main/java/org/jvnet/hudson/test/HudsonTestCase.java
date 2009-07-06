@@ -63,9 +63,7 @@ import hudson.tasks.Maven;
 import hudson.tasks.Ant;
 import hudson.tasks.Ant.AntInstallation;
 import hudson.tasks.Maven.MavenInstallation;
-import hudson.util.NullStream;
 import hudson.util.StreamTaskListener;
-import hudson.util.ProcessTree;
 import hudson.util.jna.GNUCLibrary;
 
 import java.io.BufferedReader;

@@ -29,7 +29,6 @@ import hudson.Extension;
 import hudson.model.Descriptor;
 import hudson.model.TaskListener;
 import hudson.remoting.Channel;
-import hudson.util.ProcessTreeKiller;
 import hudson.util.StreamCopyThread;
 import hudson.util.FormValidation;
 import hudson.util.ProcessTree;

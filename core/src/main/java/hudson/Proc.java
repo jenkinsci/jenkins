@@ -25,7 +25,6 @@ package hudson;
 
 import hudson.remoting.Channel;
 import hudson.util.IOException2;
-import hudson.util.ProcessTreeKiller;
 import hudson.util.StreamCopyThread;
 import hudson.util.ProcessTree;
 

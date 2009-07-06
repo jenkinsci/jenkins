@@ -48,7 +48,6 @@ import hudson.tasks.test.AbstractTestResultAction;
 import hudson.util.IOException2;
 import hudson.util.LogTaskListener;
 import hudson.util.XStream2;
-import hudson.util.ProcessTreeKiller;
 import hudson.util.ProcessTree;
 
 import java.io.BufferedReader;
