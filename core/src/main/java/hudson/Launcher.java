@@ -38,6 +38,7 @@ import hudson.remoting.VirtualChannel;
 import hudson.util.ProcessTreeKiller;
 import hudson.util.StreamCopyThread;
 import hudson.util.ArgumentListBuilder;
+import hudson.util.ProcessTree;
 
 import java.io.BufferedOutputStream;
 import java.io.File;
@@ -494,7 +495,7 @@ public abstract class Launcher {
     }
 
     /**
-     * Calls {@link ProcessTreeKiller#kill(Map)} to kill processes.
+     * Calls {@link ProcessTree#killAll(Map)} to kill processes.
      */
     public abstract void kill(Map<String,String> modelEnvVars) throws IOException, InterruptedException;
 
@@ -647,7 +648,7 @@ public abstract class Launcher {
 
         @Override
         public void kill(Map<String, String> modelEnvVars) {
-            ProcessTreeKiller.get().kill(modelEnvVars);
+            ProcessTree.get().killAll(modelEnvVars);
         }
 
         /**
@@ -655,7 +656,7 @@ public abstract class Launcher {
          *      Where the stderr from the launched process will be sent.
          */
         public Channel launchChannel(OutputStream out, ProcessBuilder pb) throws IOException {
-            final EnvVars cookie = ProcessTreeKiller.createCookie();
+            final EnvVars cookie = EnvVars.createCookie();
             pb.environment().putAll(cookie);
 
             final Process proc = pb.start();
@@ -671,7 +672,8 @@ public abstract class Launcher {
                  */
                 protected synchronized void terminate(IOException e) {
                     super.terminate(e);
-                    ProcessTreeKiller.get().kill(proc,cookie);
+                    ProcessTree pt = ProcessTree.get();
+                    pt.killAll(proc,cookie);
                 }
 
                 public synchronized void close() throws IOException {
@@ -738,7 +740,7 @@ public abstract class Launcher {
             }
 
             public Void call() throws RuntimeException {
-                ProcessTreeKiller.get().kill(modelEnvVars);
+                ProcessTree.get().killAll(modelEnvVars);
                 return null;
             }
 

@@ -32,6 +32,7 @@ import hudson.remoting.Channel;
 import hudson.util.ProcessTreeKiller;
 import hudson.util.StreamCopyThread;
 import hudson.util.FormValidation;
+import hudson.util.ProcessTree;
 
 import java.io.IOException;
 import java.util.Date;
@@ -94,7 +95,7 @@ public class CommandLauncher extends ComputerLauncher {
             listener.getLogger().println("$ " + getCommand());
 
             ProcessBuilder pb = new ProcessBuilder(Util.tokenize(getCommand()));
-            final EnvVars cookie = _cookie = ProcessTreeKiller.createCookie();
+            final EnvVars cookie = _cookie = EnvVars.createCookie();
             pb.environment().putAll(cookie);
             
             if (env != null) {
@@ -114,7 +115,7 @@ public class CommandLauncher extends ComputerLauncher {
                         cause.printStackTrace(
                             listener.error(hudson.model.Messages.Slave_Terminated(getTimestamp())));
                     }
-                    ProcessTreeKiller.get().kill(proc, cookie);
+                    ProcessTree.get().killAll(proc, cookie);
                 }
             });
 
@@ -139,7 +140,7 @@ public class CommandLauncher extends ComputerLauncher {
             e.printStackTrace(listener.error(msg));
 
             if(_proc!=null)
-                ProcessTreeKiller.get().kill(_proc, _cookie);
+                ProcessTree.get().killAll(_proc, _cookie);
         }
     }
 

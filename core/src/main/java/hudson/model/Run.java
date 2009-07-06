@@ -49,6 +49,7 @@ import hudson.util.IOException2;
 import hudson.util.LogTaskListener;
 import hudson.util.XStream2;
 import hudson.util.ProcessTreeKiller;
+import hudson.util.ProcessTree;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -1322,7 +1323,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
 
     /**
      * Builds up the environment variable map that's sufficient to identify a process
-     * as ours. This is used to kill run-away processes via {@link ProcessTreeKiller}.
+     * as ours. This is used to kill run-away processes via {@link ProcessTree#killAll(Map)}.
      */
     protected final EnvVars getCharacteristicEnvVars() {
         EnvVars env = new EnvVars();

@@ -32,6 +32,7 @@ import java.io.IOException;
 import java.util.Map;
 import java.util.TreeMap;
 import java.util.Arrays;
+import java.util.UUID;
 
 /**
  * Environment variables.
@@ -154,6 +155,14 @@ public class EnvVars extends TreeMap<String,String> {
      */
     public String expand(String s) {
         return Util.replaceMacro(s, this);
+    }
+
+    /**
+     * Creates a magic cookie that can be used as the model environment variable
+     * when we later kill the processes.
+     */
+    public static EnvVars createCookie() {
+        return new EnvVars("HUDSON_COOKIE", UUID.randomUUID().toString());
     }
 
     /**

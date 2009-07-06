@@ -64,8 +64,8 @@ import hudson.tasks.Ant;
 import hudson.tasks.Ant.AntInstallation;
 import hudson.tasks.Maven.MavenInstallation;
 import hudson.util.NullStream;
-import hudson.util.ProcessTreeKiller;
 import hudson.util.StreamTaskListener;
+import hudson.util.ProcessTree;
 import hudson.util.jna.GNUCLibrary;
 
 import java.io.BufferedReader;
@@ -73,7 +73,6 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
-import java.io.PrintWriter;
 import java.lang.annotation.Annotation;
 import java.lang.ref.WeakReference;
 import java.lang.reflect.Method;
@@ -129,10 +128,8 @@ import org.xml.sax.SAXException;
 import com.gargoylesoftware.htmlunit.AjaxController;
 import com.gargoylesoftware.htmlunit.BrowserVersion;
 import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
-import com.gargoylesoftware.htmlunit.HttpMethod;
 import com.gargoylesoftware.htmlunit.Page;
 import com.gargoylesoftware.htmlunit.WebRequestSettings;
-import com.gargoylesoftware.htmlunit.html.DomNode;
 import com.gargoylesoftware.htmlunit.html.HtmlButton;
 import com.gargoylesoftware.htmlunit.html.HtmlForm;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
@@ -996,9 +993,6 @@ public abstract class HudsonTestCase extends TestCase {
                 return e.getURI().contains("/yui/");
             }
         };
-
-        // clean up run-away processes extra hard
-        ProcessTreeKiller.enabled = true;
 
         // suppress INFO output from Spring, which is verbose
         Logger.getLogger("org.springframework").setLevel(Level.WARNING);

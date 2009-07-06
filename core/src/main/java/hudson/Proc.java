@@ -27,6 +27,7 @@ import hudson.remoting.Channel;
 import hudson.util.IOException2;
 import hudson.util.ProcessTreeKiller;
 import hudson.util.StreamCopyThread;
+import hudson.util.ProcessTree;
 
 import java.io.File;
 import java.io.IOException;
@@ -140,7 +141,7 @@ public abstract class Proc {
         private LocalProc( String name, ProcessBuilder procBuilder, InputStream in, OutputStream out, OutputStream err ) throws IOException {
             Logger.getLogger(Proc.class.getName()).log(Level.FINE, "Running: {0}", name);
             this.out = out;
-            this.cookie = ProcessTreeKiller.createCookie();
+            this.cookie = EnvVars.createCookie();
             procBuilder.environment().putAll(cookie);
             this.proc = procBuilder.start();
             copier = new StreamCopyThread(name+": stdout copier", proc.getInputStream(), out);
@@ -221,7 +222,7 @@ public abstract class Proc {
          * Destroys the child process without join.
          */
         private void destroy() {
-            ProcessTreeKiller.get().kill(proc,cookie);
+            ProcessTree.get().killAll(proc,cookie);
         }
 
         /**

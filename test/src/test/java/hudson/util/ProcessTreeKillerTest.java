@@ -12,7 +12,7 @@ import org.kohsuke.stapler.StaplerResponse;
 public class ProcessTreeKillerTest extends HudsonTestCase {
 
 	public void testManualAbortProcess() throws Exception {
-		ProcessTreeKiller.enabled = true;
+		ProcessTree.enabled = true;
 		FreeStyleProject project = createFreeStyleProject();
 		
 		// this contains a maven project with a single test that sleeps 5s.
