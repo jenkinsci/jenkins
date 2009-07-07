@@ -8,6 +8,7 @@ import hudson.tasks.Shell;
 
 import java.io.File;
 import java.util.Arrays;
+import org.jvnet.hudson.test.Bug;
 
 /**
  * @author Kohsuke Kawaguchi
@@ -34,13 +35,21 @@ public class JDKInstallerTest extends HudsonTestCase {
     /**
      * Tests the auto installation.
      */
-    public void testAutoInstallation() throws Exception {
+    public void testAutoInstallation6u13() throws Exception {
+        doTestAutoInstallation("jdk-6u13-oth-JPR@CDS-CDS_Developer", "1.6.0_13-b03");
+    }
+    @Bug(3989)
+    public void testAutoInstallation142_17() throws Exception {
+        doTestAutoInstallation("j2sdk-1.4.2_17-oth-JPR@CDS-CDS_Developer", "1.4.2_17-b06");
+    }
+
+    private void doTestAutoInstallation(String id, String fullversion) throws Exception {
         // this is a really time consuming test, so only run it when we really want
         if(!Boolean.getBoolean("hudson.sunTests"))
             return;
 
         File tmp = env.temporaryDirectoryAllocator.allocate();
-        JDKInstaller installer = new JDKInstaller("jdk-6u13-oth-JPR@CDS-CDS_Developer", true);
+        JDKInstaller installer = new JDKInstaller(id, true);
 
         JDK jdk = new JDK("test", tmp.getAbsolutePath(), Arrays.asList(
                 new InstallSourceProperty(Arrays.<ToolInstaller>asList(installer))));
@@ -51,9 +60,11 @@ public class JDKInstallerTest extends HudsonTestCase {
         p.setJDK(jdk);
         p.getBuildersList().add(new Shell("java -fullversion\necho $JAVA_HOME"));
         FreeStyleBuild b = assertBuildStatusSuccess(p.scheduleBuild2(0).get());
-        System.out.println(b.getLog());
+        @SuppressWarnings("deprecation") String log = b.getLog();
+        System.out.println(log);
         // make sure it runs with the JDK that just got installed
-        assertTrue(b.getLog().contains("1.6.0_13-b03"));
-        assertTrue(b.getLog().contains(tmp.getAbsolutePath()));
+        assertTrue(log.contains(fullversion));
+        assertTrue(log.contains(tmp.getAbsolutePath()));
     }
+
 }
