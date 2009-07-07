@@ -33,15 +33,18 @@ import java.io.FileInputStream;
 import java.io.FileReader;
 import java.io.FilenameFilter;
 import java.io.IOException;
+import java.io.Closeable;
 import java.net.URL;
-import java.net.URLClassLoader;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.jar.Manifest;
 import java.util.logging.Logger;
 
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.Project;
+import org.apache.tools.ant.AntClassLoader;
 import org.apache.tools.ant.taskdefs.Expand;
 import org.apache.tools.ant.types.FileSet;
 
@@ -115,7 +118,7 @@ public class ClassicPluginStrategy implements PluginStrategy {
 		// TODO: define a mechanism to hide classes
 		// String export = manifest.getMainAttributes().getValue("Export");
 
-		List<URL> paths = new ArrayList<URL>();
+		List<File> paths = new ArrayList<File>();
 		if (isLinked) {
 			parseClassPath(manifest, archive, paths, "Libraries", ",");
 			parseClassPath(manifest, archive, paths, "Class-Path", " +"); // backward 
@@ -127,13 +130,11 @@ public class ClassicPluginStrategy implements PluginStrategy {
 		} else {
 			File classes = new File(expandDir, "WEB-INF/classes");
 			if (classes.exists())
-				paths.add(classes.toURI().toURL());
+				paths.add(classes);
 			File lib = new File(expandDir, "WEB-INF/lib");
 			File[] libs = lib.listFiles(JAR_FILTER);
-			if (libs != null) {
-				for (File jar : libs)
-					paths.add(jar.toURI().toURL());
-			}
+			if (libs != null)
+                paths.addAll(Arrays.asList(libs));
 
 			baseResourceURL = expandDir.toURI().toURL();
 		}
@@ -176,8 +177,10 @@ public class ClassicPluginStrategy implements PluginStrategy {
 
 		ClassLoader dependencyLoader = new DependencyClassLoader(getClass()
 				.getClassLoader(), Util.join(dependencies,optionalDependencies));
-		ClassLoader classLoader = new URLClassLoader(paths.toArray(new URL[paths.size()]),
-				dependencyLoader);
+
+        // using AntClassLoader with Closeable so that we can predictably release jar files opened by URLClassLoader
+        AntClassLoader2 classLoader = new AntClassLoader2(dependencyLoader);
+        classLoader.addPathFiles(paths);
 
 		return new PluginWrapper(archive, manifest, baseResourceURL,
 				classLoader, disableFile, dependencies, optionalDependencies);
@@ -247,7 +250,7 @@ public class ClassicPluginStrategy implements PluginStrategy {
             return new File(base.getParentFile(),relative);
     }
 
-    private static void parseClassPath(Manifest manifest, File archive, List<URL> paths, String attributeName, String separator) throws IOException {
+    private static void parseClassPath(Manifest manifest, File archive, List<File> paths, String attributeName, String separator) throws IOException {
         String classPath = manifest.getMainAttributes().getValue(attributeName);
         if(classPath==null) return; // attribute not found
         for (String s : classPath.split(separator)) {
@@ -259,12 +262,12 @@ public class ClassicPluginStrategy implements PluginStrategy {
                 fs.setDir(dir);
                 fs.setIncludes(file.getName());
                 for( String included : fs.getDirectoryScanner(new Project()).getIncludedFiles() ) {
-                    paths.add(new File(dir,included).toURI().toURL());
+                    paths.add(new File(dir,included));
                 }
             } else {
                 if(!file.exists())
                     throw new IOException("No such file: "+file);
-                paths.add(file.toURI().toURL());
+                paths.add(file);
             }
         }
     }
@@ -358,5 +361,23 @@ public class ClassicPluginStrategy implements PluginStrategy {
         }
 
         // TODO: delegate resources? watch out for diamond dependencies
+    }
+
+    /**
+     * {@link AntClassLoader} with a few methods exposed and {@link Closeable} support.
+     */
+    private static final class AntClassLoader2 extends AntClassLoader implements Closeable {
+        private AntClassLoader2(ClassLoader parent) {
+            super(parent,true);
+        }
+
+        public void addPathFiles(Collection<File> paths) throws IOException {
+            for (File f : paths)
+                addPathFile(f);
+        }
+
+        public void close() throws IOException {
+            cleanup();
+        }
     }
 }
