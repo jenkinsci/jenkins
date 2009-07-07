@@ -478,8 +478,7 @@ public class MavenBuild extends AbstractBuild<MavenModule,MavenBuild> {
             ProcessCache.MavenProcess process = mavenProcessCache.get(launcher.getChannel(), listener,
                 new MavenProcessFactory(getParent().getParent(),launcher,envVars,null));
 
-            ArgumentListBuilder margs = new ArgumentListBuilder();
-            margs.add("-N").add("-B");
+            ArgumentListBuilder margs = new ArgumentListBuilder("-N","-B");
             if(mms.usesPrivateRepository())
                 // use the per-project repository. should it be per-module? But that would cost too much in terms of disk
                 // the workspace must be on this node, so getRemote() is safe.

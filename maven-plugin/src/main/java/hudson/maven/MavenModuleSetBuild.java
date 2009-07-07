@@ -360,8 +360,7 @@ public final class MavenModuleSetBuild extends AbstractBuild<MavenModuleSet,Mave
                         ProcessCache.MavenProcess process = MavenBuild.mavenProcessCache.get(launcher.getChannel(), slistener,
                             new MavenProcessFactory(project,launcher,envVars,pom.getParent()));
 
-                        ArgumentListBuilder margs = new ArgumentListBuilder();
-                        margs.add("-B").add("-f", pom.getRemote());
+                        ArgumentListBuilder margs = new ArgumentListBuilder().add("-B").add("-f", pom.getRemote());
                         if(project.usesPrivateRepository())
                             margs.add("-Dmaven.repo.local="+project.getWorkspace().child(".repository"));
                         margs.addTokenized(envVars.expand(project.getGoals()));
