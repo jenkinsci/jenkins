@@ -42,6 +42,7 @@ import hudson.model.Hudson;
 import hudson.model.ParametersAction;
 import hudson.model.Result;
 import hudson.model.Computer;
+import hudson.model.TaskListener;
 import hudson.model.Cause.UpstreamCause;
 import hudson.remoting.Channel;
 import hudson.remoting.VirtualChannel;
@@ -109,6 +110,21 @@ public final class MavenModuleSetBuild extends AbstractBuild<MavenModuleSet,Mave
 
     public MavenModuleSetBuild(MavenModuleSet project, File buildDir) throws IOException {
         super(project, buildDir);
+    }
+
+    /**
+     * Exposes {@code MAVEN_OPTS} to forked processes.
+     *
+     * When we fork Maven, we do so directly by executing Java, thus this environment variable
+     * is pointless (we have to tweak JVM launch option correctly instead, which can be seen in
+     * {@link MavenProcessFactory}), but setting the environment variable explicitly is still
+     * useful in case this Maven forks other Maven processes via normal way. See HUDSON-3644.
+     */
+    @Override
+    public EnvVars getEnvironment(TaskListener log) throws IOException, InterruptedException {
+        EnvVars envs = super.getEnvironment(log);
+        envs.put("MAVEN_OPTS",project.getMavenOpts());
+        return envs;
     }
 
     /**

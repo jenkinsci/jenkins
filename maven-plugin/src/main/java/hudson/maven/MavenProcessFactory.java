@@ -253,7 +253,7 @@ final class MavenProcessFactory implements ProcessCache.Factory {
         if(jdk==null) {
             args.add("java");
         } else {
-            args.add(jdk.getJavaHome()+"/bin/java"); // use JDK.getExecutable() here ?
+            args.add(jdk.getHome()+"/bin/java"); // use JDK.getExecutable() here ?
         }
 
         if(debugPort!=0)
