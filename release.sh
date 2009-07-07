@@ -82,6 +82,10 @@ ruby push-m2-repo.rb $id
 chmod u+x publish-javadoc.sh
 ./publish-javadoc.sh
 
+# update index
+./javadocReverseIndex.groovy > .htaccess
+scp .htaccess hudson-ci.org:~/www/hudson-ci.org/javadoc/byShortName
+
 # create and publish debian package
 chmod u+x release-debian.sh
 ./release-debian.sh $id
