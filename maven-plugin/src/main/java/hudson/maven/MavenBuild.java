@@ -180,7 +180,7 @@ public class MavenBuild extends AbstractBuild<MavenModule,MavenBuild> {
     @Override
     public EnvVars getEnvironment(TaskListener log) throws IOException, InterruptedException {
         EnvVars envs = super.getEnvironment(log);
-        String opts = project.getMavenOpts();
+        String opts = project.getParent().getMavenOpts();
         if(opts!=null)
             envs.put("MAVEN_OPTS", opts);
         return envs;
