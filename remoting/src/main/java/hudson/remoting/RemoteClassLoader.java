@@ -137,7 +137,7 @@ final class RemoteClassLoader extends URLClassLoader {
                 if(f.exists())
                     // be defensive against external factors that might have deleted this file, since we use /tmp
                     // see http://www.nabble.com/Surefire-reports-tt17554215.html
-                    return f.toURL();
+                    return f.toURI().toURL();
             }
 
             long startTime = System.nanoTime();
@@ -151,7 +151,7 @@ final class RemoteClassLoader extends URLClassLoader {
     
             File res = makeResource(name, image);
             resourceMap.put(name,res);
-            return res.toURL();
+            return res.toURI().toURL();
         } catch (IOException e) {
             throw new Error("Unable to load resource "+name,e);
         }
@@ -161,7 +161,7 @@ final class RemoteClassLoader extends URLClassLoader {
         Vector<URL> r = new Vector<URL>(files.size());
         for (File f : files) {
             if(!f.exists()) return null;    // abort
-            r.add(f.toURL());
+            r.add(f.toURI().toURL());
         }
         return r;
     }

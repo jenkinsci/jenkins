@@ -65,7 +65,7 @@ public interface HudsonHomeLoader {
          * Either a zip file or a directory that contains the home image.
          */
         public CopyExisting(File source) throws MalformedURLException {
-            this(source.toURL());
+            this(source.toURI().toURL());
         }
 
         /**

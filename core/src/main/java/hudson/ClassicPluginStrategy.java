@@ -123,19 +123,19 @@ public class ClassicPluginStrategy implements PluginStrategy {
 
 			baseResourceURL = resolve(archive,
 					manifest.getMainAttributes().getValue("Resource-Path"))
-					.toURL();
+					.toURI().toURL();
 		} else {
 			File classes = new File(expandDir, "WEB-INF/classes");
 			if (classes.exists())
-				paths.add(classes.toURL());
+				paths.add(classes.toURI().toURL());
 			File lib = new File(expandDir, "WEB-INF/lib");
 			File[] libs = lib.listFiles(JAR_FILTER);
 			if (libs != null) {
 				for (File jar : libs)
-					paths.add(jar.toURL());
+					paths.add(jar.toURI().toURL());
 			}
 
-			baseResourceURL = expandDir.toURL();
+			baseResourceURL = expandDir.toURI().toURL();
 		}
 		File disableFile = new File(archive.getPath() + ".disabled");
 		if (disableFile.exists()) {
@@ -259,12 +259,12 @@ public class ClassicPluginStrategy implements PluginStrategy {
                 fs.setDir(dir);
                 fs.setIncludes(file.getName());
                 for( String included : fs.getDirectoryScanner(new Project()).getIncludedFiles() ) {
-                    paths.add(new File(dir,included).toURL());
+                    paths.add(new File(dir,included).toURI().toURL());
                 }
             } else {
                 if(!file.exists())
                     throw new IOException("No such file: "+file);
-                paths.add(file.toURL());
+                paths.add(file.toURI().toURL());
             }
         }
     }

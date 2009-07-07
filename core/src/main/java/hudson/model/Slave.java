@@ -356,7 +356,7 @@ public abstract class Slave extends Node implements Serializable {
             URL res = Hudson.getInstance().servletContext.getResource("/WEB-INF/" + fileName);
             if(res==null) {
                 // during the development this path doesn't have the files.
-                res = new URL(new File(".").getAbsoluteFile().toURL(),"target/generated-resources/WEB-INF/"+fileName);
+                res = new URL(new File(".").getAbsoluteFile().toURI().toURL(),"target/generated-resources/WEB-INF/"+fileName);
             }
             return res;
         }

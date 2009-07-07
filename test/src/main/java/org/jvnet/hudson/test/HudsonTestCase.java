@@ -963,7 +963,7 @@ public abstract class HudsonTestCase extends TestCase {
             if(dir.exists() && MetaClassLoader.debugLoader==null)
                 try {
                     MetaClassLoader.debugLoader = new MetaClassLoader(
-                        new URLClassLoader(new URL[]{dir.toURL()}));
+                        new URLClassLoader(new URL[]{dir.toURI().toURL()}));
                 } catch (MalformedURLException e) {
                     throw new AssertionError(e);
                 }
