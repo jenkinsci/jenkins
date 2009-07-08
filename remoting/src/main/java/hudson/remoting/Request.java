@@ -240,6 +240,9 @@ abstract class Request<RSP extends Serializable,EXC extends Throwable> extends C
                         // error return
                         rsp = new Response<RSP,Throwable>(id,t);
                     }
+                    if(chainCause)
+                        rsp.createdAt.initCause(createdAt);
+
                     if(!channel.isOutClosed())
                         channel.send(rsp);
                 } catch (IOException e) {
@@ -261,6 +264,12 @@ abstract class Request<RSP extends Serializable,EXC extends Throwable> extends C
     private static final long serialVersionUID = 1L;
 
     private static final Logger logger = Logger.getLogger(Request.class.getName());
+
+    /**
+     * Set to true to chain {@link Command#createdAt} to track request/response relationship.
+     * This will substantially increase the network traffic, but useful for debugging.
+     */
+    public static boolean chainCause = Boolean.getBoolean(Request.class.getName()+".chainCause");
 
     //private static final Unsafe unsafe = getUnsafe();
 
