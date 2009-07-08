@@ -262,12 +262,7 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
                 listener.getLogger().println(node instanceof Hudson ? Messages.AbstractBuild_BuildingOnMaster() : Messages.AbstractBuild_BuildingRemotely(builtOn));
 
             node.getFileSystemProvisioner().prepareWorkspace(AbstractBuild.this,project.getWorkspace(),listener);
-            
-            if (project.isCleanWorkspaceRequired()) {
-                listener.getLogger().println("Cleaning workspace because project is configured to use a clean workspace for each build.");
-                project.getWorkspace().deleteContents();
-            }
-            
+
             checkout(listener);
 
             if(!preBuild(listener,project.getProperties()))

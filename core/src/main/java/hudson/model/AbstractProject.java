@@ -160,11 +160,6 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
     private transient boolean enableRemoteTrigger;
 
     private volatile BuildAuthorizationToken authToken = null;
-    
-    /**
-     * True to clean the workspace prior to each build.
-     */
-    private volatile boolean cleanWorkspaceRequired;
 
     /**
      * List of all {@link Trigger}s for this project.
@@ -341,10 +336,6 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
         return disabled;
     }
     
-    public boolean isCleanWorkspaceRequired() {
-        return cleanWorkspaceRequired;
-    }
-    
     /**
      * Validates the retry count Regex
      */
@@ -368,8 +359,6 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
             Hudson.getInstance().getQueue().cancel(this);
         save();
     }
-    
-    
 
     @Override
     public BallColor getIconColor() {
@@ -1203,12 +1192,6 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
         } else {
             canRoam = true;
             assignedNode = null;
-        }
-        
-        if (req.getParameter("cleanWorkspaceRequired") != null) {
-            cleanWorkspaceRequired = true;
-        } else {
-            cleanWorkspaceRequired = false;
         }
 
         authToken = BuildAuthorizationToken.create(req);
