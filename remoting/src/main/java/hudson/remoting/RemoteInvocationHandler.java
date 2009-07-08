@@ -291,6 +291,10 @@ final class RemoteInvocationHandler implements InvocationHandler, Serializable {
             return null;
         }
 
+        Object[] getArguments() { // for debugging
+            return arguments;
+        }
+
         public String toString() {
             return "RPCRequest("+oid+","+methodName+")";
         }
