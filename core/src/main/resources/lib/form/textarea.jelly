@@ -52,8 +52,8 @@ THE SOFTWARE.
   <f:prepareDatabinding />
   <textarea id="${attrs.id}" style="${attrs.style}"
             name ="${attrs.name ?: '_.'+attrs.field}"
-            class="setting-input ${checkUrl!=null?'validated':''}"
-            checkUrl="${checkUrl}"
+            class="setting-input ${attrs.checkUrl!=null?'validated':''}"
+            checkUrl="${attrs.checkUrl}"
             rows="${h.determineRows(attrs.value)}">
     <st:out value="${attrs.value ?: instance[attrs.field]}" />
   </textarea>
