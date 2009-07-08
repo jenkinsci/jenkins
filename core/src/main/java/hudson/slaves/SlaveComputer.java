@@ -35,6 +35,7 @@ import hudson.FilePath;
 import hudson.lifecycle.WindowsSlaveInstaller;
 import hudson.Util;
 import hudson.AbortException;
+import static hudson.slaves.SlaveComputer.LogHolder.SLAVE_LOG_HANDLER;
 
 import java.io.File;
 import java.io.OutputStream;
@@ -467,9 +468,15 @@ public class SlaveComputer extends Computer {
     }
 
     /**
-     * This field is used on each slave node to record log records on the slave.
+     * Puts the {@link #SLAVE_LOG_HANDLER} into a separate class so that loading this class
+     * in JVM doesn't end up loading tons of additional classes.
      */
-    private static final RingBufferLogHandler SLAVE_LOG_HANDLER = new RingBufferLogHandler();
+    static final class LogHolder {
+        /**
+         * This field is used on each slave node to record log records on the slave.
+         */
+        static final RingBufferLogHandler SLAVE_LOG_HANDLER = new RingBufferLogHandler();
+    }
 
     private static class SlaveInitializer implements Callable<Void,RuntimeException> {
         public Void call() {
