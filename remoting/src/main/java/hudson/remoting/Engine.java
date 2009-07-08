@@ -212,7 +212,7 @@ public class Engine extends Thread {
                 if(retry++>10)
                     throw e;
                 Thread.sleep(1000*10);
-                listener.status(msg+" (retrying:"+retry+")");
+                listener.status(msg+" (retrying:"+retry+")",e);
             }
         }
     }

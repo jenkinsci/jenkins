@@ -31,7 +31,15 @@ package hudson.remoting;
  * @author Kohsuke Kawaguchi
  */
 public interface EngineListener {
+    /**
+     * Status message that indicates the progress of the operation.
+     */
     void status(String msg);
+
+    /**
+     * Status message, with additoinal stack trace that indicates an error that was recovered.
+     */
+    void status(String msg, Throwable t);
 
     /**
      * Fatal error that's non recoverable. 

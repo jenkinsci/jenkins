@@ -28,6 +28,10 @@ import hudson.remoting.EngineListener;
 import javax.swing.*;
 import java.io.StringWriter;
 import java.io.PrintWriter;
+import java.util.logging.Logger;
+import java.util.logging.Level;
+import static java.util.logging.Level.INFO;
+import static java.util.logging.Level.SEVERE;
 
 /**
  * {@link EngineListener} implementation that shows GUI.
@@ -42,9 +46,15 @@ public final class GuiListener implements EngineListener {
     }
 
     public void status(final String msg) {
+        status(msg,null);
+    }
+
+    public void status(final String msg, final Throwable t) {
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
                 frame.status(msg);
+                if(t!=null)
+                    LOGGER.log(INFO, msg, t);
             }
         });
     }
@@ -52,6 +62,7 @@ public final class GuiListener implements EngineListener {
     public void error(final Throwable t) {
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
+                LOGGER.log(SEVERE, t.getMessage(), t);
                 StringWriter sw = new StringWriter();
                 t.printStackTrace(new PrintWriter(sw));
                 JOptionPane.showMessageDialog(
@@ -70,4 +81,6 @@ public final class GuiListener implements EngineListener {
             }
         });
     }
+
+    private static final Logger LOGGER = Logger.getLogger(GuiListener.class.getName());
 }
