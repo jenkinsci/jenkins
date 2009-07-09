@@ -363,5 +363,5 @@ public class MailSender {
 
     public static boolean debug = false;
 
-    private static final int MAX_LOG_LINES = 250;
+    private static final int MAX_LOG_LINES = Integer.getInteger(MailSender.class.getName()+".maxLogLines",250);
 }
