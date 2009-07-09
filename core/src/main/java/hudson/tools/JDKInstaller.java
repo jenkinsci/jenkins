@@ -215,9 +215,9 @@ public class JDKInstaller extends ToolInstaller {
     private static class JdkFinder implements FileFilter, Serializable {
         private static final long serialVersionUID = 1L;
         public boolean accept(File f) {
-            return f.isDirectory() && f.getName().startsWith("jdk");
+            return f.isDirectory() && f.getName().matches("j(2s)?dk.*");
         }
-    };
+    }
 
     /**
      * Performs a license click through and obtains the one-time URL for downloading bits.
@@ -229,6 +229,7 @@ public class JDKInstaller extends ToolInstaller {
         return locateStage2(log, page);
     }
 
+    @SuppressWarnings("unchecked") // dom4j doesn't do generics, apparently... should probably switch to XOM
     private HttpURLConnection locateStage1(Platform platform, CPU cpu) throws IOException {
         URL url = new URL("https://cds.sun.com/is-bin/INTERSHOP.enfinity/WFS/CDS-CDS_Developer-Site/en_US/-/USD/ViewProductDetail-Start?ProductRef="+id);
         HttpURLConnection con = (HttpURLConnection) url.openConnection();

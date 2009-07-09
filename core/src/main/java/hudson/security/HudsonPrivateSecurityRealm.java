@@ -384,7 +384,8 @@ public class HudsonPrivateSecurityRealm extends SecurityRealm implements ModelOb
      */
     public static final class HudsonUserDetailsService implements UserDetailsService {
         public UserDetails loadUserByUsername(String username) {
-            Details p = User.get(username).getProperty(Details.class);
+            User u = User.get(username,false);
+            Details p = u!=null ? u.getProperty(Details.class) : null;
             if(p==null)
                 throw new UsernameNotFoundException("Password is not set: "+username);
             if(p.getUser()==null)

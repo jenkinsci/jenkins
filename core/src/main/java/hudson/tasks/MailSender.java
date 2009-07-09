@@ -109,29 +109,39 @@ public class MailSender {
         return true;
     }
 
+    /**
+     * To correctly compute the state change from the previous build to this build,
+     * we need to ignore aborted builds.
+     *
+     * See http://www.nabble.com/Losing-build-state-after-aborts--td24335949.html
+     */
+    private Result findPreviousBuildResult(AbstractBuild<?,?> b) {
+        do {
+            b=b.getPreviousBuild();
+            if(b==null) return null;
+        } while(b.getResult()==Result.ABORTED);
+        return b.getResult();
+    }
+
     protected MimeMessage getMail(AbstractBuild<?, ?> build, BuildListener listener) throws MessagingException, InterruptedException {
         if (build.getResult() == Result.FAILURE) {
             return createFailureMail(build, listener);
         }
 
         if (build.getResult() == Result.UNSTABLE) {
-            AbstractBuild<?, ?> prev = build.getPreviousBuild();
             if (!dontNotifyEveryUnstableBuild)
                 return createUnstableMail(build, listener);
-            if (prev != null) {
-                if (prev.getResult() == Result.SUCCESS)
-                    return createUnstableMail(build, listener);
-            }
+            Result prev = findPreviousBuildResult(build);
+            if (prev == Result.SUCCESS)
+                return createUnstableMail(build, listener);
         }
 
         if (build.getResult() == Result.SUCCESS) {
-            AbstractBuild<?, ?> prev = build.getPreviousBuild();
-            if (prev != null) {
-                if (prev.getResult() == Result.FAILURE)
-                    return createBackToNormalMail(build, "normal", listener);
-                if (prev.getResult() == Result.UNSTABLE)
-                    return createBackToNormalMail(build, "stable", listener);
-            }
+            Result prev = findPreviousBuildResult(build);
+            if (prev == Result.FAILURE)
+                return createBackToNormalMail(build, "normal", listener);
+            if (prev == Result.UNSTABLE)
+                return createBackToNormalMail(build, "stable", listener);
         }
 
         return null;

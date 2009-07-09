@@ -83,7 +83,7 @@ class DummyClassLoader extends ClassLoader {
                 os.write(loadTransformedClassImage("hudson.remoting.test.TestCallable"));
                 os.close();
                 f.deleteOnExit();
-                return f.toURL();
+                return f.toURI().toURL();
             } catch (IOException e) {
                 return null;
             }

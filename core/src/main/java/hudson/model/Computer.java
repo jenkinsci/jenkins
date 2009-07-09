@@ -112,6 +112,12 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
      */
     protected String nodeName;
 
+    /**
+     * @see #getHostName()
+     */
+    private volatile String cachedHostName;
+    private volatile boolean hostNameCached;
+
     public Computer(Node node) {
         assert node.getNumExecutors()!=0 : "Computer created with 0 executors";
         setNode(node);
@@ -563,7 +569,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
      *
      * <p>
      * Since it's possible that the slave is not reachable from the master (it may be behind a firewall,
-     * connecting to master via JNLP), in which case this method returns null.
+     * connecting to master via JNLP), this method may return null.
      *
      * It's surprisingly tricky for a machine to know a name that other systems can get to,
      * especially between things like DNS search suffix, the hosts file, and YP.
@@ -572,9 +578,16 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
      * So the technique here is to compute possible interfaces and names on the slave,
      * then try to ping them from the master, and pick the one that worked.
      *
+     * <p>
+     * The computation may take some time, so it employs caching to make the successive lookups faster.
+     *
      * @since 1.300
      */
     public String getHostName() throws IOException, InterruptedException {
+        if(hostNameCached)
+            // in the worst case we end up having multiple threads computing the host name simultaneously, but that's not harmful, just wasteful.
+            return cachedHostName;
+
         for( String address : getChannel().call(new ListPossibleNames())) {
             try {
                 InetAddress ia = InetAddress.getByName(address);
@@ -582,16 +595,20 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
                     LOGGER.fine(address+" is not an IPv4 address");
                     continue;
                 }
-                if(!ia.isReachable(500)) {
+                if(!ia.isReachable(3000)) {
                     LOGGER.fine(address+" didn't respond to ping");
                     continue;
                 }
-                return ia.getCanonicalHostName();
+                cachedHostName = ia.getCanonicalHostName();
+                hostNameCached = true;
+                return cachedHostName;
             } catch (IOException e) {
                 // if a given name fails to parse on this host, we get this error
                 LOGGER.log(Level.FINE, "Failed to parse "+address,e);
             }
         }
+        
+        hostNameCached = true;
         return null;
     }
 

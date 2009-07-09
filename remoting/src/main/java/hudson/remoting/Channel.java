@@ -24,6 +24,9 @@
 package hudson.remoting;
 
 import hudson.remoting.ExportTable.ExportList;
+import hudson.remoting.forward.ListeningPort;
+import hudson.remoting.forward.ForwarderFactory;
+import hudson.remoting.forward.PortForwarder;
 
 import java.io.EOFException;
 import java.io.IOException;
@@ -725,6 +728,46 @@ public class Channel implements VirtualChannel, IChannel {
 
     public Object waitForRemoteProperty(Object key) throws InterruptedException {
         return remoteChannel.waitForProperty(key);
+    }
+
+    /**
+     * Starts a local to remote port forwarding (the equivalent of "ssh -L").
+     *
+     * @param recvPort
+     *      The port on this local machine that we'll listen to. 0 to let
+     *      OS pick a random available port. If you specify 0, use
+     *      {@link ListeningPort#getPort()} to figure out the actual assigned port. 
+     * @param forwardHost
+     *      The remote host that the connection will be forwarded to.
+     *      Connection to this host will be made from the other JVM that
+     *      this {@link Channel} represents.
+     * @param forwardPort
+     *      The remote port that the connection will be forwarded to.
+     * @return
+     */
+    public ListeningPort createLocalToRemotePortForwarding(int recvPort, String forwardHost, int forwardPort) throws IOException, InterruptedException {
+        return new PortForwarder( recvPort,
+            ForwarderFactory.create(this,forwardHost,forwardPort));
+    }
+
+    /**
+     * Starts a remote to local port forwarding (the equivalent of "ssh -R").
+     *
+     * @param recvPort
+     *      The port on the remote JVM (represented by this {@link Channel})
+     *      that we'll listen to. 0 to let
+     *      OS pick a random available port. If you specify 0, use
+     *      {@link ListeningPort#getPort()} to figure out the actual assigned port.
+     * @param forwardHost
+     *      The remote host that the connection will be forwarded to.
+     *      Connection to this host will be made from this JVM.
+     * @param forwardPort
+     *      The remote port that the connection will be forwarded to.
+     * @return
+     */
+    public ListeningPort createRemoteToLocalPortForwarding(int recvPort, String forwardHost, int forwardPort) throws IOException, InterruptedException {
+        return PortForwarder.create(this,recvPort,
+                ForwarderFactory.create(forwardHost, forwardPort));
     }
 
     public String toString() {

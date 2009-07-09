@@ -82,6 +82,10 @@ ruby push-m2-repo.rb $id
 chmod u+x publish-javadoc.sh
 ./publish-javadoc.sh
 
+# update index
+./javadocReverseIndex.groovy > .htaccess
+scp .htaccess hudson-ci.org:~/www/hudson-ci.org/javadoc/byShortName
+
 # create and publish debian package
 chmod u+x release-debian.sh
 ./release-debian.sh $id
@@ -91,5 +95,12 @@ svn commit -m "updated changelog as a part of the release" debian/changelog
 cat war/target/hudson-war-$id.ipstgz | ssh wsinterop.sun.com "cd ips/repository; gtar xvzf -"
 ssh wsinterop.sun.com "cd ips; ./start.sh"
 
-cd $WWW
+pushd $WWW
 svn commit -m "Hudson $id released" changelog.html hudson.jnlp
+popd
+
+# sorcerer
+pushd target/checkout
+mvn -P sorcerer sorcerer:aggregate
+rsync -avz target/site/sorcerer wsinterop.sun.com:~/public_html_hudson/
+popd

@@ -322,9 +322,8 @@ public final class PluginManager extends AbstractModelObject {
      * Orderly terminates all the plugins.
      */
     public void stop() {
-        for (PluginWrapper p : activePlugins) {
+        for (PluginWrapper p : activePlugins)
             p.stop();
-        }
         // Work around a bug in commons-logging.
         // See http://www.szegedi.org/articles/memleak.html
         LogFactory.release(uberClassLoader);

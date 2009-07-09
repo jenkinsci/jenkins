@@ -121,7 +121,7 @@ public class WindowsInstallerLink extends ManagementLink {
             copy(req, rsp, dir, getClass().getResource("/windows-service/hudson.exe"), "hudson.exe");
             copy(req, rsp, dir, getClass().getResource("/windows-service/hudson.xml"), "hudson.xml");
             if(!hudsonWar.getCanonicalFile().equals(new File(dir,"hudson.war").getCanonicalFile()))
-                copy(req, rsp, dir, hudsonWar.toURL(), "hudson.war");
+                copy(req, rsp, dir, hudsonWar.toURI().toURL(), "hudson.war");
 
             // install as a service
             ByteArrayOutputStream baos = new ByteArrayOutputStream();

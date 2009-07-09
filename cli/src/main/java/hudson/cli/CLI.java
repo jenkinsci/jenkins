@@ -29,15 +29,21 @@ import hudson.remoting.RemoteOutputStream;
 import hudson.remoting.PingThread;
 
 import java.net.URL;
+import java.net.URLConnection;
+import java.net.Socket;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
 import java.util.ArrayList;
+import java.util.logging.Logger;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.DataOutputStream;
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
 
 /**
  * CLI entry point to Hudson.
@@ -57,26 +63,55 @@ public class CLI {
     public CLI(URL hudson, ExecutorService exec) throws IOException, InterruptedException {
         String url = hudson.toExternalForm();
         if(!url.endsWith("/"))  url+='/';
-        url+="cli";
-        hudson = new URL(url);
 
-        FullDuplexHttpStream con = new FullDuplexHttpStream(hudson);
         ownsPool = exec==null;
         pool = exec!=null ? exec : Executors.newCachedThreadPool();
-        channel = new Channel("Chunked connection to "+hudson,
-                pool,con.getInputStream(),con.getOutputStream());
-        new PingThread(channel,30*1000) {
-            protected void onDead() {
-                // noop. the point of ping is to keep the connection alive
-                // as most HTTP servers have a rather short read time out
-            }
-        }.start();
+
+        int clip = getCliTcpPort(url);
+        if(clip>=0) {
+            // connect via CLI port
+            String host = new URL(url).getHost();
+            LOGGER.fine("Trying to connect directly via TCP/IP to port "+clip+" of "+host);
+            Socket s = new Socket(host,clip);
+            DataOutputStream dos = new DataOutputStream(s.getOutputStream());
+            dos.writeUTF("Protocol:CLI-connect");
+
+            channel = new Channel("channel", pool,
+                    new BufferedInputStream(s.getInputStream()),
+                    new BufferedOutputStream(s.getOutputStream()));
+        } else {
+            // connect via HTTP
+            LOGGER.fine("Trying to connect to "+url+" via HTTP");
+            url+="cli";
+            hudson = new URL(url);
+
+            FullDuplexHttpStream con = new FullDuplexHttpStream(hudson);
+            channel = new Channel("Chunked connection to "+hudson,
+                    pool,con.getInputStream(),con.getOutputStream());
+            new PingThread(channel,30*1000) {
+                protected void onDead() {
+                    // noop. the point of ping is to keep the connection alive
+                    // as most HTTP servers have a rather short read time out
+                }
+            }.start();
+        }
 
         // execute the command
         entryPoint = (CliEntryPoint)channel.waitForRemoteProperty(CliEntryPoint.class.getName());
 
         if(entryPoint.protocolVersion()!=CliEntryPoint.VERSION)
             throw new IOException(Messages.CLI_VersionMismatch());
+    }
+
+    /**
+     * If the server advertises CLI port, returns it.
+     */
+    private int getCliTcpPort(String url) throws IOException {
+        URLConnection head = new URL(url).openConnection();
+        head.connect();
+        String p = head.getHeaderField("X-Hudson-CLI-Port");
+        if(p==null) return -1;
+        return Integer.parseInt(p);
     }
 
     public void close() throws IOException, InterruptedException {
@@ -132,4 +167,6 @@ public class CLI {
         System.err.println(Messages.CLI_Usage());
         System.exit(-1);
     }
+
+    private static final Logger LOGGER = Logger.getLogger(CLI.class.getName());
 }

@@ -114,7 +114,7 @@ public class Main {
         // this needs to be able to see maven.
         ClassRealm remoting = new DefaultClassRealm(launcher.getWorld(),"hudson-remoting", launcher.getSystemClassLoader());
         remoting.setParent(launcher.getWorld().getRealm("plexus.core.maven"));
-        remoting.addConstituent(remotingJar.toURL());
+        remoting.addConstituent(remotingJar.toURI().toURL());
 
         final Socket s = new Socket((String)null,tcpPort);
 

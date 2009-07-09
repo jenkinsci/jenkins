@@ -30,13 +30,14 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.io.Closeable;
 import java.net.URL;
 import java.util.List;
 import java.util.jar.Manifest;
 import java.util.logging.Logger;
+import static java.util.logging.Level.WARNING;
 
 import org.apache.commons.logging.LogFactory;
-import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 
 /**
@@ -283,6 +284,13 @@ public final class PluginWrapper {
         // Work around a bug in commons-logging.
         // See http://www.szegedi.org/articles/memleak.html
         LogFactory.release(classLoader);
+        
+        if (classLoader instanceof Closeable)
+            try {
+                ((Closeable) classLoader).close();
+            } catch (IOException e) {
+                LOGGER.log(WARNING, "Failed to shut down classloader",e);
+            }
     }
 
     /**
@@ -369,12 +377,13 @@ public final class PluginWrapper {
 // Action methods
 //
 //
-    public void doMakeEnabled(StaplerRequest req, StaplerResponse rsp) throws IOException {
-    Hudson.getInstance().checkPermission(Hudson.ADMINISTER);
+    public void doMakeEnabled(StaplerResponse rsp) throws IOException {
+        Hudson.getInstance().checkPermission(Hudson.ADMINISTER);
         enable();
         rsp.setStatus(200);
     }
-    public void doMakeDisabled(StaplerRequest req, StaplerResponse rsp) throws IOException {
+
+    public void doMakeDisabled(StaplerResponse rsp) throws IOException {
         Hudson.getInstance().checkPermission(Hudson.ADMINISTER);
         disable();
         rsp.setStatus(200);

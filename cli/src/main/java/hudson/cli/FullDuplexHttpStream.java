@@ -5,8 +5,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
-import java.io.OutputStreamWriter;
-import java.io.Reader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.UUID;
@@ -21,10 +19,6 @@ import java.util.logging.Logger;
  */
 public class FullDuplexHttpStream {
     private final URL target;
-    /**
-     * Uniquely identifies this connection, so that the server can bundle separate HTTP requests together.
-     */
-    private final UUID uuid = UUID.randomUUID();
 
     private final OutputStream output;
     private final InputStream input;
@@ -41,12 +35,14 @@ public class FullDuplexHttpStream {
         this.target = target;
 
         CrumbData crumbData = new CrumbData();
-        
+
+        UUID uuid = UUID.randomUUID(); // so that the server can correlate those two connections
+
         // server->client
         HttpURLConnection con = (HttpURLConnection) target.openConnection();
         con.setDoOutput(true); // request POST to avoid caching
         con.setRequestMethod("POST");
-        con.addRequestProperty("Session",uuid.toString());
+        con.addRequestProperty("Session", uuid.toString());
         con.addRequestProperty("Side","download");
         if(crumbData.isValid) {
             con.addRequestProperty(crumbData.crumbName, crumbData.crumb);
@@ -62,7 +58,8 @@ public class FullDuplexHttpStream {
         con.setDoOutput(true); // request POST
         con.setRequestMethod("POST");
         con.setChunkedStreamingMode(0);
-        con.addRequestProperty("Session",uuid.toString());
+        con.setRequestProperty("Content-type","application/octet-stream");
+        con.addRequestProperty("Session", uuid.toString());
         con.addRequestProperty("Side","upload");
         if(crumbData.isValid) {
             con.addRequestProperty(crumbData.crumbName, crumbData.crumb);

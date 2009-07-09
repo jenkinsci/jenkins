@@ -30,6 +30,7 @@ import org.kohsuke.args4j.CmdLineException;
 
 import java.util.logging.Logger;
 import java.util.logging.Level;
+import static java.util.logging.Level.INFO;
 import java.util.List;
 import java.util.ArrayList;
 import java.net.URL;
@@ -123,11 +124,15 @@ public class Main {
             LOGGER.info("Hudson agent is running in headless mode.");
         }
 
-        public void status(final String msg) {
-            LOGGER.info(msg);
+        public void status(String msg, Throwable t) {
+            LOGGER.log(INFO,msg,t);
         }
 
-        public void error(final Throwable t) {
+        public void status(String msg) {
+            status(msg,null);
+        }
+
+        public void error(Throwable t) {
             LOGGER.log(Level.SEVERE, t.getMessage(), t);
             System.exit(-1);
         }

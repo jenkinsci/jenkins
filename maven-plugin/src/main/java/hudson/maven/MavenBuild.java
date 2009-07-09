@@ -36,6 +36,7 @@ import hudson.model.Result;
 import hudson.model.Run;
 import hudson.model.Cause.UpstreamCause;
 import hudson.model.Environment;
+import hudson.model.TaskListener;
 import hudson.remoting.Channel;
 import hudson.scm.ChangeLogSet;
 import hudson.scm.ChangeLogSet.Entry;
@@ -168,6 +169,21 @@ public class MavenBuild extends AbstractBuild<MavenModule,MavenBuild> {
     @Override
     public boolean hasChangeSetComputed() {
         return true;
+    }
+
+    /**
+     * Exposes {@code MAVEN_OPTS} to forked processes.
+     *
+     * <p>
+     * See {@link MavenModuleSetBuild#getEnvironment(TaskListener)}  for discussion.
+     */
+    @Override
+    public EnvVars getEnvironment(TaskListener log) throws IOException, InterruptedException {
+        EnvVars envs = super.getEnvironment(log);
+        String opts = project.getParent().getMavenOpts();
+        if(opts!=null)
+            envs.put("MAVEN_OPTS", opts);
+        return envs;
     }
 
     public void registerAsProjectAction(MavenReporter reporter) {
@@ -478,8 +494,7 @@ public class MavenBuild extends AbstractBuild<MavenModule,MavenBuild> {
             ProcessCache.MavenProcess process = mavenProcessCache.get(launcher.getChannel(), listener,
                 new MavenProcessFactory(getParent().getParent(),launcher,envVars,null));
 
-            ArgumentListBuilder margs = new ArgumentListBuilder();
-            margs.add("-N").add("-B");
+            ArgumentListBuilder margs = new ArgumentListBuilder("-N","-B");
             if(mms.usesPrivateRepository())
                 // use the per-project repository. should it be per-module? But that would cost too much in terms of disk
                 // the workspace must be on this node, so getRemote() is safe.

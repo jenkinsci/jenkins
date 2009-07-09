@@ -24,9 +24,15 @@
 package hudson;
 
 import hudson.model.Hudson;
+import hudson.model.Computer;
 import hudson.slaves.SlaveComputer;
 import hudson.remoting.Channel;
+import hudson.remoting.SocketOutputStream;
+import hudson.remoting.SocketInputStream;
 import hudson.remoting.Channel.Listener;
+import hudson.remoting.Channel.Mode;
+import hudson.cli.CliManagerImpl;
+import hudson.cli.CliEntryPoint;
 
 import java.io.DataInputStream;
 import java.io.IOException;
@@ -40,7 +46,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- * Listens to incoming TCP connections from JNLP slave agents.
+ * Listens to incoming TCP connections from JNLP slave agents and CLI.
  *
  * <h2>Security</h2>
  * <p>
@@ -151,6 +157,8 @@ public final class TcpSlaveAgentListener extends Thread {
                     String protocol = s.substring(9);
                     if(protocol.equals("JNLP-connect")) {
                         runJnlpConnect(in, out);
+                    } else if(protocol.equals("CLI-connect")) {
+                            runCliConnect(in, out);
                     } else {
                         error(out, "Unknown protocol:" + s);
                     }
@@ -172,6 +180,19 @@ public final class TcpSlaveAgentListener extends Thread {
                     // try to clean up the socket
                 }
             }
+        }
+
+        /**
+         * Handles CLI connection request.
+         */
+        private void runCliConnect(DataInputStream in, PrintWriter out) throws IOException, InterruptedException {
+            out.println("Welcome");
+            Channel channel = new Channel("CLI channel from " + s.getInetAddress(),
+                    Computer.threadPoolForRemoting, Mode.BINARY,
+                    new BufferedInputStream(new SocketInputStream(this.s)),
+                    new BufferedOutputStream(new SocketOutputStream(this.s)), null, true);
+            channel.setProperty(CliEntryPoint.class.getName(),new CliManagerImpl(null));
+            channel.join();
         }
 
         /**

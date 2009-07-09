@@ -54,6 +54,13 @@ public class ArgumentListBuilder implements Serializable {
     private final List<String> args = new ArrayList<String>();
     private BitSet mask = new BitSet();
 
+    public ArgumentListBuilder() {
+    }
+
+    public ArgumentListBuilder(String... args) {
+        add(args);
+    }
+
     public ArgumentListBuilder add(Object a) {
         return add(a.toString());
     }
