@@ -3232,7 +3232,7 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
             rsp.sendRedirect2(req.getContextPath()+"/configure");
         }
 
-        public Future<?> connect(boolean forceReconnect) {
+        protected Future<?> _connect(boolean forceReconnect) {
             return Futures.precomputed(null);
         }
 

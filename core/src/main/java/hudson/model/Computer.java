@@ -100,6 +100,8 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
     private final CopyOnWriteArrayList<Executor> executors = new CopyOnWriteArrayList<Executor>();
 
     private int numExecutors;
+    
+    private long connectTime = 0;
 
     /**
      * True if Hudson shouldn't start new builds on this node.
@@ -202,8 +204,41 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
      *      both a successful completion and a non-successful completion (such distinction typically doesn't
      *      make much sense because as soon as {@link Computer} is connected it can be disconnected by some other threads.)
      */
-    public abstract Future<?> connect(boolean forceReconnect);
+    public final Future<?> connect(boolean forceReconnect) {
+    	connectTime = System.currentTimeMillis();
+    	return _connect(forceReconnect);
+    }
+    
+    /**
+     * Allows implementing-classes to provide an implementation for the connect method.
+     *
+     * <p>
+     * If already connected or if this computer doesn't support proactive launching, no-op.
+     * This method may return immediately
+     * while the launch operation happens asynchronously.
+     *
+     * @see #disconnect()
+     *
+     * @param forceReconnect
+     *      If true and a connect activity is already in progress, it will be cancelled and
+     *      the new one will be started. If false, and a connect activity is already in progress, this method
+     *      will do nothing and just return the pending connection operation.
+     * @return
+     *      A {@link Future} representing pending completion of the task. The 'completion' includes
+     *      both a successful completion and a non-successful completion (such distinction typically doesn't
+     *      make much sense because as soon as {@link Computer} is connected it can be disconnected by some other threads.)
+     */
+    protected abstract Future<?> _connect(boolean forceReconnect);
 
+    /**
+     * Gets the time (since epoch) when this computer connected.
+     *  
+     * @return The time in ms since epoch when this computer last connected.
+     */
+    public final long getConnectTime() {
+    	return connectTime;
+    }
+    
     /**
      * Disconnect this computer.
      *
@@ -214,7 +249,10 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
      *      {@link Future} to track the asynchronous disconnect operation.
      * @see #connect(boolean)
      */
-    public Future<?> disconnect() { return Futures.precomputed(null); }
+    public Future<?> disconnect() {
+    	connectTime=0;
+    	return Futures.precomputed(null); 
+	}
 
     /**
      * Number of {@link Executor}s that are configured for this computer.
