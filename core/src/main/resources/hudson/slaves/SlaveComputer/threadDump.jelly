@@ -1,7 +1,7 @@
 <!--
 The MIT License
 
-Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, Tom Huybrechts
+Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, Seiji Sogabe
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -23,32 +23,22 @@ THE SOFTWARE.
 -->
 
 <!--
-  Produces stack dump of all threads by using JMX.
+  Thread dump
+
+  TODO: merge this with Hudson/threadDump.jelly
 -->
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
-  <l:layout permission="${app.ADMINISTER}" title="${%Thread dump}">
+  <l:layout title="${%title(it.displayName)}">
     <st:include page="sidepanel.jelly" />
 
     <l:main-panel>
-      <h1>Thread Dump</h1>
-      <j:choose>
-        <j:when test="${h.isMustangOrAbove()}">
-          <!-- use a new Mustang feature to get more detailed dump -->
-          <j:forEach var="t" items="${h.getThreadInfos()}">
-            <h2>${t.threadName}</h2>
-            <pre>${h.dumpThreadInfo(t)}</pre>
-          </j:forEach>
-        </j:when>
-        <j:otherwise>
-          <!-- fall back --> 
-          <j:forEach var="e" items="${h.dumpAllThreads().entrySet()}">
-            <h2>${e.key} (${e.key.state})</h2>
-            <j:forEach var="f" items="${e.value}">
-              <div>${f}</div>
-            </j:forEach>
-          </j:forEach>
-        </j:otherwise>
-      </j:choose>
+      <l:isAdmin>
+        <h1>${%Thread Dump}</h1>
+        <j:forEach var="t" items="${it.getThreadDump().entrySet()}">
+          <h2>${t.key}</h2>
+          <pre>${t.value}</pre>
+        </j:forEach>
+      </l:isAdmin>
     </l:main-panel>
   </l:layout>
 </j:jelly>
