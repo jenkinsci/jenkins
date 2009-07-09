@@ -35,7 +35,9 @@ public class CrumbFilter implements Filter {
      * we cannot use Hudson to the CrumbIssuer into CrumbFilter eagerly.
      */
     public CrumbIssuer getCrumbIssuer() {
-        return Hudson.getInstance().getCrumbIssuer();
+        Hudson h = Hudson.getInstance();
+        if(h==null)     return null;    // before Hudson is initialized?
+        return h.getCrumbIssuer();
     }
 
     public void init(FilterConfig filterConfig) throws ServletException {
