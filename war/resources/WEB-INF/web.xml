@@ -48,12 +48,15 @@ THE SOFTWARE.
     <filter-name>authentication-filter</filter-name>
     <filter-class>hudson.security.HudsonFilter</filter-class>
   </filter>
-
   <filter>
     <filter-name>csrf-filter</filter-name>
     <filter-class>hudson.security.csrf.CrumbFilter</filter-class>
   </filter>
-  
+  <filter>
+    <filter-name>plugins-filter</filter-name>
+    <filter-class>hudson.util.PluginServletFilter</filter-class>
+  </filter>
+
   <!--
 	The Headers filter allows us to to override headers sent by the container
 	that may be in conflict with what we want.  For example, Tomcat will set
@@ -91,34 +94,28 @@ THE SOFTWARE.
     <filter-name>csrf-filter</filter-name>
     <url-pattern>/*</url-pattern>
   </filter-mapping>
-  
-  <filter>
-    <filter-name>plugins-filter</filter-name>
-    <filter-class>hudson.util.PluginServletFilter</filter-class>
-  </filter>
   <filter-mapping>
     <filter-name>plugins-filter</filter-name>
     <url-pattern>/*</url-pattern>
   </filter-mapping>
 
-  <!-- Uncomment this if you are protecting your entire hudson setup
-  	from public view.  See note above about the filter.
-  <filter-mapping>
-    <filter-name>change-headers-filter</filter-name>
-    <!- This path should match the value of:
-    		/security-constraint/web-resource-collection/url-pattern
-     ->
-    <url-pattern>/*</url-pattern>
-  </filter-mapping>
-  -->
-  
   <listener>
     <listener-class>hudson.WebAppMain</listener-class>
   </listener>
 
+  <!--
+    HUDSON-1235 suggests containers interprt '*' as "all roles defined in web.xml"
+    as opposed to "all roles defined in the security realm", so we need to list some
+    common names in the hope that users will have at least one of those roles.
+  -->
   <security-role>
-    <!-- admins can add/remove/configure projects -->
     <role-name>admin</role-name>
+  </security-role>
+  <security-role>
+    <role-name>user</role-name>
+  </security-role>
+  <security-role>
+    <role-name>hudson</role-name>
   </security-role>
 
   <security-constraint>
