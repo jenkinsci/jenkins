@@ -185,7 +185,7 @@ public class WindowsInstallerLink extends ManagementLink {
                                     LOGGER.info("Moving data");
                                     Move mv = new Move();
                                     Project p = new Project();
-                                    p.addBuildListener(new DefaultLogger());
+                                    p.addBuildListener(createLogger());
                                     mv.setProject(p);
                                     FileSet fs = new FileSet();
                                     fs.setDir(oldRoot);
@@ -205,6 +205,13 @@ public class WindowsInstallerLink extends ManagementLink {
                             } catch (InterruptedException e) {
                                 e.printStackTrace();
                             }
+                        }
+
+                        private DefaultLogger createLogger() {
+                            DefaultLogger logger = new DefaultLogger();
+                            logger.setOutputPrintStream(System.out);
+                            logger.setErrorPrintStream(System.err);
+                            return logger;
                         }
                     });
 
