@@ -188,7 +188,7 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
     public Set<User> getCulprits() {
         if(culprits==null) {
             Set<User> r = new HashSet<User>();
-            R p = getPreviousBuild();
+            R p = getPreviousCompletedBuild();
             if(p !=null && isBuilding() && p.getResult().isWorseThan(Result.UNSTABLE)) {
                 // we are still building, so this is just the current latest information,
                 // but we seems to be failing so far, so inherit culprits from the previous build.
