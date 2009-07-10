@@ -61,6 +61,9 @@ import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.QueryParameter;
+import org.kohsuke.stapler.HttpResponse;
+import org.kohsuke.stapler.HttpRedirect;
+import org.kohsuke.stapler.ForwardToView;
 
 
 import javax.servlet.ServletException;
@@ -1251,29 +1254,28 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
     /**
      * Wipes out the workspace.
      */
-    public void doDoWipeOutWorkspace(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException, InterruptedException {
+    public HttpResponse doDoWipeOutWorkspace() throws IOException, ServletException, InterruptedException {
         checkPermission(BUILD);
         if (getScm().processWorkspaceBeforeDeletion(this, getWorkspace(), null)) {
             getWorkspace().deleteRecursive();
-            rsp.sendRedirect2(".");
-        }
-        // If we get here, that means the SCM blocked the workspace deletion.
-        else {
-            req.getView(this, "wipeOutWorkspaceBlocked.jelly").forward(req, rsp);
+            return new HttpRedirect(".");
+        } else {
+            // If we get here, that means the SCM blocked the workspace deletion.
+            return new ForwardToView(this,"wipeOutWorkspaceBlocked.jelly");
         }
     }
 
-    public void doDisable(StaplerResponse rsp) throws IOException, ServletException {
+    public HttpResponse doDisable() throws IOException, ServletException {
         requirePOST();
         checkPermission(CONFIGURE);
         makeDisabled(true);
-        rsp.sendRedirect2(".");
+        return new HttpRedirect(".");
     }
 
-    public void doEnable(StaplerResponse rsp) throws IOException, ServletException {
+    public HttpResponse doEnable() throws IOException, ServletException {
         checkPermission(CONFIGURE);
         makeDisabled(false);
-        rsp.sendRedirect2(".");
+        return new HttpRedirect(".");
     }
 
     /**

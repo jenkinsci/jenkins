@@ -78,6 +78,7 @@ import net.sf.json.JSONObject;
 
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
+import org.kohsuke.stapler.HttpResponse;
 
 /**
  * {@link Job} that allows you to run multiple different configurations
@@ -540,6 +541,17 @@ public class MatrixProject extends AbstractProject<MatrixProject,MatrixBuild> im
         updateTransientActions(); // to pick up transient actions from builder, publisher, etc.
 
         rebuildConfigurations();
+    }
+
+    /**
+     * Also delete all the workspaces of the configuration, too.
+     */
+    @Override
+    public HttpResponse doDoWipeOutWorkspace() throws IOException, ServletException, InterruptedException {
+        HttpResponse rsp = super.doDoWipeOutWorkspace();
+        for (MatrixConfiguration c : configurations.values())
+            c.doDoWipeOutWorkspace();
+        return rsp;
     }
 
     public DescriptorImpl getDescriptor() {
