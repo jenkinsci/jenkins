@@ -1783,9 +1783,9 @@ public final class FilePath implements Serializable {
                             if(hasMatch(dir,pattern)) {
                                 // found a match
                                 if(previous==null)
-                                    return Messages.FilePath_validateAntFileMask_portionMatchAndSuggest(fileMask, pattern);
+                                    return Messages.FilePath_validateAntFileMask_portionMatchAndSuggest(fileMask,pattern);
                                 else
-                                    return Messages.FilePath_validateAntFileMask_portionMatchButPreviousNotMatchAndSuggest(fileMask, pattern, previous);
+                                    return Messages.FilePath_validateAntFileMask_portionMatchButPreviousNotMatchAndSuggest(fileMask,pattern,previous);
                             }
 
                             int idx = findSeparator(pattern);
@@ -1793,7 +1793,7 @@ public final class FilePath implements Serializable {
                                 if(pattern.equals(fileMask))
                                     return Messages.FilePath_validateAntFileMask_doesntMatchAnything(fileMask);
                                 else
-                                    return Messages.FilePath_validateAntFileMask_doesntMatchAnythingAndSuggest(fileMask, pattern);
+                                    return Messages.FilePath_validateAntFileMask_doesntMatchAnythingAndSuggest(fileMask,pattern);
                             }
 
                             // cut off the trailing component and try again
