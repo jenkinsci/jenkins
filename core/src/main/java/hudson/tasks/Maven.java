@@ -351,7 +351,7 @@ public class Maven extends Builder {
         }
 
         /**
-         * Is this Maven 2.1.x?
+         * Is this Maven 2.1.x or later?
          *
          * @param launcher
          *      Represents the node on which we evaluate the path.
@@ -362,7 +362,7 @@ public class Maven extends Builder {
                     File[] jars = new File(getHomeDir(),"lib").listFiles();
                     if(jars!=null) // be defensive
                         for (File jar : jars)
-                            if(jar.getName().startsWith("maven-2.1.") && jar.getName().endsWith("-uber.jar"))
+                            if(jar.getName().startsWith("maven-2.") && !jar.getName().startsWith("maven-2.0") && jar.getName().endsWith("-uber.jar"))
                                 return true;
                     return false;
                 }
