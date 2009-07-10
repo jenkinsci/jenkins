@@ -1783,20 +1783,17 @@ public final class FilePath implements Serializable {
                             if(hasMatch(dir,pattern)) {
                                 // found a match
                                 if(previous==null)
-                                    return String.format("'%s' doesn't match anything, although '%s' exists",
-                                        fileMask, pattern );
+                                    return Messages.FilePath_validateAntFileMask_portionMatchAndSuggest(fileMask, pattern);
                                 else
-                                    return String.format("'%s' doesn't match anything: '%s' exists but not '%s'",
-                                        fileMask, pattern, previous );
+                                    return Messages.FilePath_validateAntFileMask_portionMatchButPreviousNotMatchAndSuggest(fileMask, pattern, previous);
                             }
 
                             int idx = findSeparator(pattern);
                             if(idx<0) {// no more path component left to go back
                                 if(pattern.equals(fileMask))
-                                    return String.format("'%s' doesn't match anything", fileMask );
+                                    return Messages.FilePath_validateAntFileMask_doesntMatchAnything(fileMask);
                                 else
-                                    return String.format("'%s' doesn't match anything: even '%s' doesn't exist",
-                                        fileMask, pattern );
+                                    return Messages.FilePath_validateAntFileMask_doesntMatchAnythingAndSuggest(fileMask, pattern);
                             }
 
                             // cut off the trailing component and try again
@@ -1886,7 +1883,7 @@ public final class FilePath implements Serializable {
         if(value==null || (AbstractProject<?,?>)subject ==null) return FormValidation.ok();
 
         // a common mistake is to use wildcard
-        if(value.contains("*")) return FormValidation.error("Wildcard is not allowed here");
+        if(value.contains("*")) return FormValidation.error(Messages.FilePath_validateRelativePath_wildcardNotAllowed());
 
         try {
             if(!exists())    // no base directory. can't check
@@ -1898,16 +1895,17 @@ public final class FilePath implements Serializable {
                     if(!path.isDirectory())
                         return FormValidation.ok();
                     else
-                        return FormValidation.error(value+" is not a file");
+                        return FormValidation.error(Messages.FilePath_validateRelativePath_notFile(value));
                 } else {
                     if(path.isDirectory())
                         return FormValidation.ok();
                     else
-                        return FormValidation.error(value+" is not a directory");
+                        return FormValidation.error(Messages.FilePath_validateRelativePath_notDirectory(value));
                 }
             }
 
-            String msg = "No such "+(expectingFile?"file":"directory")+": " + value;
+            String msg = expectingFile ? Messages.FilePath_validateRelativePath_noSuchFile(value) : 
+                Messages.FilePath_validateRelativePath_noSuchDirectory(value);
             if(errorIfNotExist)     return FormValidation.error(msg);
             else                    return FormValidation.warning(msg);
         } catch (InterruptedException e) {
