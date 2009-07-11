@@ -23,22 +23,38 @@
  */
 package hudson.maven;
 
+import hudson.Util;
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
 import hudson.model.Action;
+import hudson.model.DependencyGraph;
+import hudson.model.Hudson;
 import hudson.model.ItemGroup;
+import hudson.model.Descriptor.FormException;
+import hudson.tasks.BuildStepDescriptor;
+import hudson.tasks.BuildWrappers;
+import hudson.tasks.Publisher;
+import hudson.tasks.Maven.ProjectWithMaven;
 import hudson.triggers.Trigger;
 import hudson.tasks.Maven.ProjectWithMaven;
 
+import java.io.IOException;
 import java.util.HashSet;
 import java.util.Set;
+
+import javax.servlet.ServletException;
+
+import net.sf.json.JSONObject;
+
+import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.StaplerResponse;
 
 /**
  * Common part between {@link MavenModule} and {@link MavenModuleSet}.
  *
  * @author Kohsuke Kawaguchi
  */
-public abstract class AbstractMavenProject<P extends AbstractMavenProject<P,R>,R extends AbstractBuild<P,R>> extends AbstractProject<P,R>
+public abstract class AbstractMavenProject<P extends AbstractProject<P,R>,R extends AbstractBuild<P,R>> extends AbstractProject<P,R>
     implements ProjectWithMaven {
     protected AbstractMavenProject(ItemGroup parent, String name) {
         super(parent, name);
@@ -63,6 +79,61 @@ public abstract class AbstractMavenProject<P extends AbstractMavenProject<P,R>,R
             }
         }
     }
-
+    
+    private boolean blockBuildWhenUpstreamBuilding = true;
+    
     protected abstract void addTransientActionsFromBuild(R lastBuild, Set<Class> added);
+    
+    @Override
+    public boolean isBuildBlocked() {
+        boolean blocked = super.isBuildBlocked();
+        if (!blocked && blockBuildWhenUpstreamBuilding) {
+            DependencyGraph graph = Hudson.getInstance().getDependencyGraph();
+            AbstractProject bup = getBuildingUpstream();
+            if(bup!=null) {
+                return true;
+            }
+        }
+        return blocked;
+    }
+    
+    public String getWhyBlocked() {
+    	if (super.isBuildBlocked()) {
+            return super.getWhyBlocked();
+    	} else {
+            AbstractProject bup = getBuildingUpstream();
+            String projectName = "";
+            if(bup!=null) {
+                projectName = bup.getName();
+            }
+            return "Upstream project is building: " + projectName;
+    	}
+    }
+    
+    /**
+     * Returns the project if any of the upstream project (or itself) is either
+     * building or is in the queue.
+     * <p>
+     * This means eventually there will be an automatic triggering of
+     * the given project (provided that all builds went smoothly.)
+     */
+    private AbstractProject getBuildingUpstream() {
+    	DependencyGraph graph = Hudson.getInstance().getDependencyGraph();
+        Set<AbstractProject> tups = graph.getTransitiveUpstream(this);
+        tups.add(this);
+        for (AbstractProject tup : tups) {
+            if(tup!=this && (tup.isBuilding() || tup.isInQueue()))
+                return tup;
+        }
+        return null;
+    }
+    
+    public boolean blockBuildWhenUpstreamBuilding() {
+    	return blockBuildWhenUpstreamBuilding;
+    }
+    
+    protected void submit(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException, FormException {
+        super.submit(req,rsp);
+        blockBuildWhenUpstreamBuilding = req.hasParameter("maven.blockBuildWhenUpstreamBuilding");
+    }
 }

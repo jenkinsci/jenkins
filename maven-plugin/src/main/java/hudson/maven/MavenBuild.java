@@ -72,7 +72,7 @@ import java.util.Set;
  * 
  * @author Kohsuke Kawaguchi
  */
-public class MavenBuild extends AbstractBuild<MavenModule,MavenBuild> {
+public class MavenBuild extends AbstractMavenBuild<MavenModule,MavenBuild> {
     /**
      * {@link MavenReporter}s that will contribute project actions.
      * Can be null if there's none.
@@ -537,111 +537,8 @@ public class MavenBuild extends AbstractBuild<MavenModule,MavenBuild> {
 
         public void cleanUp(BuildListener listener) throws Exception {
             if(getResult().isBetterOrEqualTo(Result.SUCCESS))
-                scheduleDownstreamBuilds(listener,new HashSet<AbstractProject>());
+                scheduleDownstreamBuilds(listener);
         }
-    }
-
-    /**
-     * Schedules all the downstream builds.
-     *
-     * @param downstreams
-     *      List of downstream jobs that are already scheduled.
-     *      The method will add jobs that it triggered here,
-     *      and won't try to trigger jobs that are already in this list.
-     * @param listener
-     *      Where the progress reports go.
-     */
-    /*package*/ final void scheduleDownstreamBuilds(BuildListener listener, Set<AbstractProject> downstreams) {
-        // trigger dependency builds
-        DependencyGraph graph = Hudson.getInstance().getDependencyGraph();
-        for( AbstractProject<?,?> down : getParent().getDownstreamProjects()) {
-            if(downstreams.contains(down))
-                continue; // already triggered
-
-            if(debug)
-                listener.getLogger().println("Considering whether to trigger "+down+" or not");
-
-            if(graph.hasIndirectDependencies(getProject(),down)) {
-                // if there's a longer dependency path to this project,
-                // then scheduling the build now is going to be a waste,
-                // so don't do that.
-                // let the longer path eventually trigger this build
-                if(debug)
-                    listener.getLogger().println(" -> No, because there's a longer dependency path");
-                continue;
-            }
-
-            // if the downstream module depends on multiple modules,
-            // only trigger them when all the upstream dependencies are updated.
-            boolean trigger = true;
-
-            AbstractBuild<?,?> dlb = down.getLastBuild(); // can be null.
-            for (MavenModule up : Util.filter(down.getUpstreamProjects(),MavenModule.class)) {
-                MavenBuild ulb;
-                if(up==getProject()) {
-                    // the current build itself is not registered as lastSuccessfulBuild
-                    // at this point, so we have to take that into account. ugly.
-                    if(getResult()==null || !getResult().isWorseThan(Result.UNSTABLE))
-                        ulb = MavenBuild.this;
-                    else
-                        ulb = up.getLastSuccessfulBuild();
-                } else
-                    ulb = up.getLastSuccessfulBuild();
-                if(ulb==null) {
-                    // if no usable build is available from the upstream,
-                    // then we have to wait at least until this build is ready
-                    if(debug)
-                        listener.getLogger().println(" -> No, because another upstream "+up+" for "+down+" has no successful build");
-                    trigger = false;
-                    break;
-                }
-
-                // if no record of the relationship in the last build
-                // is available, we'll just have to assume that the condition
-                // for the new build is met, or else no build will be fired forever.
-                if(dlb==null)   continue;
-                int n = dlb.getUpstreamRelationship(up);
-                if(n==-1)   continue;
-
-                assert ulb.getNumber()>=n;
-
-                if(ulb.getNumber()==n) {
-                    // there's no new build of this upstream since the last build
-                    // of the downstream, and the upstream build is in progress.
-                    // The new downstream build should wait until this build is started
-                    AbstractProject bup = getBuildingUpstream(graph, up);
-                    if(bup!=null) {
-                        if(debug)
-                            listener.getLogger().println(" -> No, because another upstream "+bup+" for "+down+" is building");
-                        trigger = false;
-                        break;
-                    }
-                }
-            }
-
-            if(trigger) {
-                listener.getLogger().println(Messages.MavenBuild_Triggering(down.getName()));
-                downstreams.add(down);
-                down.scheduleBuild(new UpstreamCause(this));
-            }
-        }
-    }
-
-    /**
-     * Returns the project if any of the upstream project (or itself) is either
-     * building or is in the queue.
-     * <p>
-     * This means eventually there will be an automatic triggering of
-     * the given project (provided that all builds went smoothly.)
-     */
-    private AbstractProject getBuildingUpstream(DependencyGraph graph, AbstractProject project) {
-        Set<AbstractProject> tups = graph.getTransitiveUpstream(project);
-        tups.add(project);
-        for (AbstractProject tup : tups) {
-            if(tup!=getProject() && (tup.isBuilding() || tup.isInQueue()))
-                return tup;
-        }
-        return null;
     }
 
     private static final int MAX_PROCESS_CACHE = 5;
@@ -652,4 +549,9 @@ public class MavenBuild extends AbstractBuild<MavenModule,MavenBuild> {
      * Set true to produce debug output.
      */
     public static boolean debug = false;
+    
+    @Override
+    public MavenModule getParent() {// don't know why, but javac wants this
+        return super.getParent();
+    }
 }

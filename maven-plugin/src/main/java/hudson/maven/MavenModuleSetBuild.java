@@ -29,6 +29,7 @@ import hudson.Launcher;
 import hudson.Util;
 import hudson.EnvVars;
 import hudson.FilePath.FileCallable;
+import hudson.matrix.MatrixConfiguration;
 import hudson.maven.MavenBuild.ProxyImpl2;
 import hudson.maven.reporters.MavenFingerprinter;
 import hudson.model.AbstractBuild;
@@ -97,7 +98,7 @@ import org.kohsuke.stapler.StaplerResponse;
  *
  * @author Kohsuke Kawaguchi
  */
-public final class MavenModuleSetBuild extends AbstractBuild<MavenModuleSet,MavenModuleSetBuild> {
+public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,MavenModuleSetBuild> {
     /**
      * {@link MavenReporter}s that will contribute project actions.
      * Can be null if there's none.
@@ -526,10 +527,7 @@ public final class MavenModuleSetBuild extends AbstractBuild<MavenModuleSet,Mave
                 // schedule downstream builds. for non aggregator style builds,
                 // this is done by each module
                 if(getResult().isBetterOrEqualTo(Result.SUCCESS)) {
-                    for(AbstractProject down : getProject().getDownstreamProjects()) {
-                        listener.getLogger().println(Messages.MavenBuild_Triggering(down.getName()));
-                        down.scheduleBuild(new UpstreamCause(MavenModuleSetBuild.this));
-                    }
+                	scheduleDownstreamBuilds(listener);
                 }
             }
 
@@ -789,4 +787,9 @@ public final class MavenModuleSetBuild extends AbstractBuild<MavenModuleSet,Mave
      * Extra versbose debug switch.
      */
     public static boolean debug = false;
+    
+    @Override
+    public MavenModuleSet getParent() {// don't know why, but javac wants this
+        return super.getParent();
+    }
 }
