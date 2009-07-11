@@ -33,7 +33,7 @@ THE SOFTWARE.
   
   <groupId>org.jvnet.hudson.main</groupId>
   <artifactId>pom</artifactId>
-  <version>1.315-SNAPSHOT</version>
+  <version>1.315</version>
   <packaging>pom</packaging>
   
   <name>Hudson main module</name>
@@ -52,9 +52,9 @@ THE SOFTWARE.
   
   <scm>
     <!-- release comes from the RC branch now -->
-    <connection>scm:svn:https://guest@svn.dev.java.net/svn/hudson/branches/rc/</connection>
-    <developerConnection>scm:svn:https://svn.dev.java.net/svn/hudson/branches/rc/</developerConnection>
-    <url>https://hudson.dev.java.net/source/browse/hudson/branches/rc/</url>
+    <connection>scm:svn:https://guest@svn.dev.java.net/svn/hudson/tags/hudson-1_315</connection>
+    <developerConnection>scm:svn:https://svn.dev.java.net/svn/hudson/tags/hudson-1_315</developerConnection>
+    <url>https://hudson.dev.java.net/source/browse/hudson/tags/hudson-1_315</url>
   </scm>
 
   <build>
