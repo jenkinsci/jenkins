@@ -44,7 +44,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.HashSet;
-import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -182,10 +181,10 @@ public class MailSender {
     private void appendBuildUrl(AbstractBuild<?, ?> build, StringBuffer buf) {
         String baseUrl = Mailer.descriptor().getUrl();
         if (baseUrl != null) {
-            buf.append("See ").append(baseUrl).append(Util.encode(build.getUrl()));
+            buf.append("See <").append(baseUrl).append(Util.encode(build.getUrl()));
             if(!build.getChangeSet().isEmptySet())
                 buf.append("changes");
-            buf.append("\n\n");
+            buf.append(">\n\n");
         }
     }
 
@@ -251,8 +250,7 @@ public class MailSender {
                     while (m.find(pos)) {
                         String path = m.group(2).replace(File.separatorChar, '/');
                         String linkUrl = artifactMatches(path, build) ? artifactUrl : workspaceUrl;
-                        // Append ' ' to make sure mail readers do not interpret following ':' as part of URL:
-                        String prefix = line.substring(0, m.start()) + linkUrl + Util.encode(path) + ' ';
+                        String prefix = line.substring(0, m.start()) + '<' + linkUrl + Util.encode(path) + '>';
                         pos = prefix.length();
                         line = prefix + line.substring(m.end());
                         // XXX better style to reuse Matcher and fix offsets, but more work
@@ -358,8 +356,6 @@ public class MailSender {
     protected boolean artifactMatches(String path, AbstractBuild<?, ?> build) {
         return false;
     }
-
-    private static final Logger LOGGER = Logger.getLogger(MailSender.class.getName());
 
     public static boolean debug = false;
 
