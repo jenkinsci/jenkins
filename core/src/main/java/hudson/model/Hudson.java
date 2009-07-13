@@ -2181,6 +2181,8 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
             } else {
             	setCrumbIssuer(null);
             }
+
+            primaryView = json.has("primaryView") ? json.getString("primaryView") : getViews().iterator().next().getViewName();
             
             noUsageStatistics = json.has("usageStatisticsCollected") ? null : true;
 
