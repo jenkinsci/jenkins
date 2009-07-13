@@ -83,7 +83,9 @@ chmod u+x publish-javadoc.sh
 ./publish-javadoc.sh
 
 # update index
-./javadocReverseIndex.groovy > .htaccess
+pushd target/checkout
+./javadocReverseIndex.groovy > ../../.htaccess
+popd
 scp .htaccess hudson-ci.org:~/www/hudson-ci.org/javadoc/byShortName
 
 # create and publish debian package

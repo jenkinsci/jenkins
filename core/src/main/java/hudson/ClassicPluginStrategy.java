@@ -123,7 +123,7 @@ public class ClassicPluginStrategy implements PluginStrategy {
 		// String export = manifest.getMainAttributes().getValue("Export");
 
 		List<File> paths = new ArrayList<File>();
-        if (isLinked) {
+		if (isLinked) {
 			parseClassPath(manifest, archive, paths, "Libraries", ",");
 			parseClassPath(manifest, archive, paths, "Class-Path", " +"); // backward compatibility
 
