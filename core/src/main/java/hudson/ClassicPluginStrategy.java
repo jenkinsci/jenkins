@@ -25,7 +25,8 @@ package hudson;
 
 import hudson.PluginWrapper.Dependency;
 import hudson.util.IOException2;
-import hudson.model.Hudson;
+import hudson.util.MaskingClassLoader;
+import hudson.util.VersionNumber;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -40,6 +41,7 @@ import java.util.List;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.jar.Manifest;
+import java.util.jar.Attributes;
 import java.util.logging.Logger;
 
 import org.apache.tools.ant.BuildException;
@@ -70,7 +72,7 @@ public class ClassicPluginStrategy implements PluginStrategy {
 	public PluginWrapper createPluginWrapper(File archive) throws IOException {
 		LOGGER.info("Loading plugin: " + archive);
 
-		Manifest manifest;
+		final Manifest manifest;
 		URL baseResourceURL;
 
 		boolean isLinked = archive.getName().endsWith(".hpl");
@@ -115,18 +117,17 @@ public class ClassicPluginStrategy implements PluginStrategy {
 			}
 		}
 
+        final Attributes atts = manifest.getMainAttributes();
+
 		// TODO: define a mechanism to hide classes
 		// String export = manifest.getMainAttributes().getValue("Export");
 
 		List<File> paths = new ArrayList<File>();
-		if (isLinked) {
+        if (isLinked) {
 			parseClassPath(manifest, archive, paths, "Libraries", ",");
-			parseClassPath(manifest, archive, paths, "Class-Path", " +"); // backward 
-			// compatibility
+			parseClassPath(manifest, archive, paths, "Class-Path", " +"); // backward compatibility
 
-			baseResourceURL = resolve(archive,
-					manifest.getMainAttributes().getValue("Resource-Path"))
-					.toURI().toURL();
+			baseResourceURL = resolve(archive,atts.getValue("Resource-Path")).toURI().toURL();
 		} else {
 			File classes = new File(expandDir, "WEB-INF/classes");
 			if (classes.exists())
@@ -146,7 +147,7 @@ public class ClassicPluginStrategy implements PluginStrategy {
 		// compute dependencies
 		List<PluginWrapper.Dependency> dependencies = new ArrayList<PluginWrapper.Dependency>();
 		List<PluginWrapper.Dependency> optionalDependencies = new ArrayList<PluginWrapper.Dependency>();
-		String v = manifest.getMainAttributes().getValue("Plugin-Dependencies");
+		String v = atts.getValue("Plugin-Dependencies");
 		if (v != null) {
 			for (String s : v.split(",")) {
 				PluginWrapper.Dependency d = new PluginWrapper.Dependency(s);
@@ -157,26 +158,10 @@ public class ClassicPluginStrategy implements PluginStrategy {
 				}
 			}
 		}
+        for (DetachedPlugin detached : DETACHED_LIST)
+            detached.fix(atts,optionalDependencies);
 
-        // native m2 support moved to a plugin starting 1.296, so plugins built before that
-        // needs to have an implicit dependency to the maven-plugin, or NoClassDefError will ensue.
-        String hudsonVersion = manifest.getMainAttributes().getValue("Hudson-Version");
-        String shortName = manifest.getMainAttributes().getValue("Short-Name");
-        if (!"maven-plugin".equals(shortName) &&
-                // some earlier versions of maven-hpi-plugin apparently puts "null" as a literal here. Watch out for those.
-                (hudsonVersion == null || hudsonVersion.equals("null") || hudsonVersion.compareTo("1.296") <= 0)) {
-            optionalDependencies.add(new PluginWrapper.Dependency("maven-plugin:" + Hudson.VERSION));
-        }
-
-        // subversion support was split off into a plugin in 1.311, so plugins built before that should automatically get
-        // subversion plugin as a dependency
-        if (!"subversion".equals(shortName) &&
-                (hudsonVersion == null || hudsonVersion.equals("null") || hudsonVersion.compareTo("1.310") <= 0)) {
-            optionalDependencies.add(new PluginWrapper.Dependency("subversion:1.0"));
-        }
-
-		ClassLoader dependencyLoader = new DependencyClassLoader(getClass()
-				.getClassLoader(), Util.join(dependencies,optionalDependencies));
+        ClassLoader dependencyLoader = new DependencyClassLoader(getBaseClassLoader(atts), Util.join(dependencies,optionalDependencies));
 
         // using AntClassLoader with Closeable so that we can predictably release jar files opened by URLClassLoader
         AntClassLoader2 classLoader = new AntClassLoader2(dependencyLoader);
@@ -186,7 +171,52 @@ public class ClassicPluginStrategy implements PluginStrategy {
 				classLoader, disableFile, dependencies, optionalDependencies);
 	}
 
-	public void initializeComponents(PluginWrapper plugin) {
+    /**
+     * Information about plugins that were originally in the core.
+     */
+    private static final class DetachedPlugin {
+        private final String shortName;
+        private final VersionNumber splitWhen;
+        private final String requireVersion;
+
+        private DetachedPlugin(String shortName, String splitWhen, String requireVersion) {
+            this.shortName = shortName;
+            this.splitWhen = new VersionNumber(splitWhen);
+            this.requireVersion = requireVersion;
+        }
+
+        private void fix(Attributes atts, List<PluginWrapper.Dependency> optionalDependencies) {
+            // don't fix the dependency for yourself, or else we'll have a cycle
+            String shortName = atts.getValue("Short-Name");
+            if (this.shortName.equals(shortName))   return;
+
+            // some earlier versions of maven-hpi-plugin apparently puts "null" as a literal in Hudson-Version. watch out for them.
+            String hudsonVersion = atts.getValue("Hudson-Version");
+            if (hudsonVersion == null || hudsonVersion.equals("null") || new VersionNumber(hudsonVersion).compareTo(splitWhen) <= 0)
+                optionalDependencies.add(new PluginWrapper.Dependency(shortName+':'+requireVersion));
+        }
+    }
+
+    private static final List<DetachedPlugin> DETACHED_LIST = Arrays.asList(
+        new DetachedPlugin("maven-plugin","1.296","1.296"),
+        new DetachedPlugin("subversion","1.310","1.0")
+    );
+
+    /**
+     * Computes the classloader that takes the class masking into account.
+     *
+     * <p>
+     * This mechanism allows plugins to have their own verions for libraries that core bundles.
+     */
+    private ClassLoader getBaseClassLoader(Attributes atts) {
+        ClassLoader base = getClass().getClassLoader();
+        String masked = atts.getValue("Mask-Classes");
+        if(masked!=null)
+            base = new MaskingClassLoader(base, masked.trim().split("[ \t\r\n]+"));
+        return base;
+    }
+
+    public void initializeComponents(PluginWrapper plugin) {
 	}
 
 	public void load(PluginWrapper wrapper) throws IOException {
