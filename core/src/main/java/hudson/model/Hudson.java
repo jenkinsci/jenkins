@@ -119,7 +119,6 @@ import org.acegisecurity.*;
 import org.acegisecurity.context.SecurityContextHolder;
 import org.acegisecurity.providers.anonymous.AnonymousAuthenticationToken;
 import org.acegisecurity.ui.AbstractProcessingFilter;
-import static org.acegisecurity.ui.rememberme.TokenBasedRememberMeServices.ACEGI_SECURITY_HASHED_REMEMBER_ME_COOKIE_KEY;
 import org.apache.commons.logging.LogFactory;
 import org.apache.commons.jelly.Script;
 import org.apache.commons.jelly.JellyException;
@@ -145,7 +144,6 @@ import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletResponse;
 import static javax.servlet.http.HttpServletResponse.SC_BAD_REQUEST;
 import static javax.servlet.http.HttpServletResponse.SC_NOT_FOUND;
-import javax.servlet.http.HttpSession;
 import java.io.File;
 import java.io.FileFilter;
 import java.io.FileInputStream;
@@ -153,9 +151,6 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.InputStream;
-import java.io.Serializable;
-import java.io.PrintStream;
-import java.io.OutputStream;
 import java.net.URL;
 import java.security.SecureRandom;
 import java.text.NumberFormat;
@@ -179,7 +174,6 @@ import java.util.Timer;
 import java.util.TreeSet;
 import java.util.Properties;
 import java.util.UUID;
-import java.util.Locale;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -417,8 +411,6 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
      */
     private String label="";
 
-    private Boolean useCrumbs;
-    
     /**
      * {@link hudson.security.csrf.CrumbIssuer}
      */
@@ -1607,7 +1599,7 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
      */
     @Exported
     public boolean isUseCrumbs() {
-        return (useCrumbs != null) && useCrumbs;
+        return crumbIssuer!=null;
     }
     
     /**
@@ -2184,11 +2176,9 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
             }
 
             if (json.has("csrf")) {
-            	useCrumbs = true;
             	JSONObject csrf = json.getJSONObject("csrf");
             	setCrumbIssuer(CrumbIssuer.all().newInstanceFromRadioList(csrf, "issuer"));
             } else {
-            	useCrumbs = null;
             	setCrumbIssuer(null);
             }
             
@@ -2303,10 +2293,6 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
         crumbIssuer = issuer;
     }
 
-    public void setUseCrumbs(Boolean use) {
-        useCrumbs = use;
-    }
-    
     public synchronized void doTestPost( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
         JSONObject form = req.getSubmittedForm();
         rsp.sendRedirect("foo");
