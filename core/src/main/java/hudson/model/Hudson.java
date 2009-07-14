@@ -576,9 +576,12 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
 
             updateComputerList();
 
-            // master is online now
-            for (ComputerListener cl : ComputerListener.all())
-                cl.onOnline(toComputer(),new StreamTaskListener(System.out));
+            {// master is online now
+                Computer c = toComputer();
+                if(c!=null)
+                    for (ComputerListener cl : ComputerListener.all())
+                        cl.onOnline(c,new StreamTaskListener(System.out));
+            }
 
             getQueue().load();
 
