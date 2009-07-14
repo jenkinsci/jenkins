@@ -429,6 +429,23 @@ public final class FilePath implements Serializable {
         }));
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        FilePath that = (FilePath) o;
+
+        if (channel != null ? !channel.equals(that.channel) : that.channel != null) return false;
+        return remote.equals(that.remote);
+
+    }
+
+    @Override
+    public int hashCode() {
+        return 31 * (channel != null ? channel.hashCode() : 0) + remote.hashCode();
+    }
+    
     /**
      * Supported tar file compression methods.
      */
