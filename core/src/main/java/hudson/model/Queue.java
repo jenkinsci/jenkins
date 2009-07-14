@@ -24,6 +24,8 @@
 package hudson.model;
 
 import hudson.BulkChange;
+import hudson.ExtensionList;
+import hudson.ExtensionPoint;
 import hudson.Util;
 import hudson.XmlFile;
 import hudson.remoting.AsyncFutureImpl;
@@ -189,6 +191,8 @@ public class Queue extends ResourceController implements Saveable {
 
     private volatile transient LoadBalancer loadBalancer;
 
+    public volatile QueueSortingHandler sortingHandler = null;
+    
     public Queue(LoadBalancer loadBalancer) {
         this.loadBalancer =  loadBalancer.sanitize();
         // if all the executors are busy doing something, then the queue won't be maintained in
@@ -370,6 +374,31 @@ public class Queue extends ResourceController implements Saveable {
      *      That said, one can still look at {@link WaitingItem#future}, {@link WaitingItem#id}, etc.
      */
     public synchronized WaitingItem schedule(Task p, int quietPeriod, List<Action> actions) {
+    	boolean shouldSchedule = true;
+    	for(QueueDecisionHandler h : QueueDecisionHandler.all()) {
+    		shouldSchedule = shouldSchedule && h.shouldSchedule(p, actions);
+    	}
+    	
+    	WaitingItem added = null;
+    	if (shouldSchedule) {
+    		added = scheduleInternal(p, quietPeriod, actions);
+    	}
+    	return added;
+    }
+    
+    /**
+     * Schedules an execution of a task.
+     *
+     * @since 1.311
+     * @return
+     *      null if this task is already in the queue and therefore the add operation was no-op.
+     *      Otherwise indicates the {@link WaitingItem} object added, although the nature of the queue
+     *      is that such {@link Item} only captures the state of the item at a particular moment,
+     *      and by the time you inspect the object, some of its information can be already stale.
+     *
+     *      That said, one can still look at {@link WaitingItem#future}, {@link WaitingItem#id}, etc.
+     */
+    private synchronized WaitingItem scheduleInternal(Task p, int quietPeriod, List<Action> actions) {
     	WaitingItem added=null;
     	List<Item> items = getItems(p);
     	Calendar due = new GregorianCalendar();
@@ -847,6 +876,9 @@ public class Queue extends ResourceController implements Saveable {
                 blockedProjects.put(p,new BlockedItem(top));
             }
         }
+        
+        if (sortingHandler != null)
+        	sortingHandler.sortBuildableItems(buildables);
     }
 
     public Api getApi() {
@@ -1116,6 +1148,56 @@ public class Queue extends ResourceController implements Saveable {
     	public boolean shouldSchedule(List<Action> actions);
     }
 
+    /**
+     * Extension point for deciding if particular job should be scheduled or not
+     *
+     * <p>
+     * This extension point is still a subject to change, as we are seeking more
+     * comprehensive Queue pluggability. See HUDSON-2072.
+     *
+     * @since 1.316
+     */
+    public static abstract class QueueDecisionHandler implements ExtensionPoint {
+    	/**
+    	 * Returns whether the new item should be scheduled. 
+    	 */
+    	public abstract boolean shouldSchedule(Task p, List<Action> actions);
+    	    	
+    	/**
+    	 * All registered {@link QueueDecisionHandler}s
+    	 * @return
+    	 */
+    	public static ExtensionList<QueueDecisionHandler> all() {
+    		return Hudson.getInstance().getExtensionList(QueueDecisionHandler.class);
+    	}
+    }
+    
+    /**
+     * Extension point for sorting buildable items
+     *
+     * <p>
+     * This extension point is still a subject to change, as we are seeking more
+     * comprehensive Queue pluggability. See HUDSON-2072.
+     *
+     * @since 1.316
+     */
+    public static abstract class QueueSortingHandler implements ExtensionPoint {
+    	/**
+    	 * Sorts the buildable items list. The items at the beginning will be executed
+    	 * before the items at the end of the list
+    	 * @param buildables 
+    	 */
+    	public abstract void sortBuildableItems(ItemList<BuildableItem> buildables);
+    	
+    	/**
+    	 * All registered {@link QueueSortingHandler}s
+    	 * @return
+    	 */
+    	public static ExtensionList<QueueSortingHandler> all() {
+    		return Hudson.getInstance().getExtensionList(QueueSortingHandler.class);
+    	}
+    }
+    
     /**
      * {@link Item} in the {@link Queue#waitingList} stage.
      */
