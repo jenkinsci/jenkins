@@ -437,6 +437,7 @@ public abstract class ProcessTree implements Iterable<OSProcess> {
         }
 
         public void killRecursively() {
+            LOGGER.fine("Recursively killing pid="+getPid());
             for (OSProcess p : getChildren())
                 p.killRecursively();
             kill();
