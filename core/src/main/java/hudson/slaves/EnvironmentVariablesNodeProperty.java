@@ -102,9 +102,9 @@ public class EnvironmentVariablesNodeProperty extends NodeProperty<Node> {
 	
 	private static EnvVars toMap(List<Entry> entries) {
 		EnvVars map = new EnvVars();
-		for (Entry entry: entries) {
-			map.put(entry.key,entry.value);
-		}
+        if (entries!=null)
+            for (Entry entry: entries)
+                map.put(entry.key,entry.value);
 		return map;
 	}
 
