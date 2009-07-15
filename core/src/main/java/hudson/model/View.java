@@ -173,6 +173,17 @@ public abstract class View extends AbstractModelObject implements AccessControll
     }
 
     /**
+     * By default, return true to render the "Edit view" link on the page.
+     * This method is really just for the default "All" view to hide the edit link
+     * so that the default Hudson top page remains the same as before 1.316.
+     *
+     * @since 1.316
+     */
+    public boolean isEditable() {
+        return true;
+    }
+
+    /**
      * Gets the {@link Widget}s registered on this object.
      *
      * <p>

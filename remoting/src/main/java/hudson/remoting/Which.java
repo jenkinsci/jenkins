@@ -131,20 +131,22 @@ public class Which {
         if (con instanceof JarURLConnection) {
             JarURLConnection jcon = (JarURLConnection) con;
             JarFile jarFile = jcon.getJarFile();
-            String n = jarFile.getName();
-            if(n.length()>0) {// JDK6u10 needs this
-                return new File(n);
-            } else {
-                // JDK6u10 apparently starts hiding the real jar file name,
-                // so this just keeps getting tricker and trickier...
-                try {
-                    Field f = ZipFile.class.getDeclaredField("name");
-                    f.setAccessible(true);
-                    return new File((String) f.get(jarFile));
-                } catch (NoSuchFieldException e) {
-                    LOGGER.log(Level.INFO, "Failed to obtain the local cache file name of "+clazz, e);
-                } catch (IllegalAccessException e) {
-                    LOGGER.log(Level.INFO, "Failed to obtain the local cache file name of "+clazz, e);
+            if (jarFile!=null) {
+                String n = jarFile.getName();
+                if(n.length()>0) {// JDK6u10 needs this
+                    return new File(n);
+                } else {
+                    // JDK6u10 apparently starts hiding the real jar file name,
+                    // so this just keeps getting tricker and trickier...
+                    try {
+                        Field f = ZipFile.class.getDeclaredField("name");
+                        f.setAccessible(true);
+                        return new File((String) f.get(jarFile));
+                    } catch (NoSuchFieldException e) {
+                        LOGGER.log(Level.INFO, "Failed to obtain the local cache file name of "+clazz, e);
+                    } catch (IllegalAccessException e) {
+                        LOGGER.log(Level.INFO, "Failed to obtain the local cache file name of "+clazz, e);
+                    }
                 }
             }
         }

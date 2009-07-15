@@ -30,7 +30,7 @@ THE SOFTWARE.
     <st:include page="sidepanel.jelly" />
 
     <l:main-panel>
-      <h1>Thread Dump</h1>
+      <h1>${%Thread Dump}</h1>
       <j:choose>
         <j:when test="${h.isMustangOrAbove()}">
           <!-- use a new Mustang feature to get more detailed dump -->

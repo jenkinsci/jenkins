@@ -204,7 +204,7 @@ public abstract class FileSystemProvisioner implements ExtensionPoint, Describab
             File wss = new File(build.getRootDir(),"workspace.zip");
             OutputStream os = new BufferedOutputStream(new FileOutputStream(wss));
             try {
-                ws.createZipArchive(os);
+                ws.zip(os);
             } finally {
                 os.close();
             }

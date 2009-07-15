@@ -48,7 +48,7 @@ id.inc()
 ARGF.each do |line|
   if /=BEGIN=/ =~ line
     puts line
-    puts "<a name=v#{id}><h3>What's new in #{id}</h3></a>"
+    puts "<h3><a name=v#{id}>What's new in #{id}</a></h3>"
     puts "<!--=RC-CHANGES=-->"
     puts "</div><!--=END=-->"
 

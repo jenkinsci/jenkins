@@ -1,3 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
 <!--
 The MIT License
 
@@ -22,15 +23,16 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 -->
 
-<j:jelly xmlns:j="jelly:core" xmlns:s="jelly:stapler" xmlns:d="jelly:define">
-  <s:documentation>
-    Header portion of the HTML page, that gets rendered into the &lt;head> tag.
-    Multiple &lt;l:header> elements can be specified, and can even come after
-    &lt;l:main-panel>.
+<!--
+This file simply sets the virtual host on which to deploy the Web app to be
+able to use WebSphere's provided deployment script as-is.
+E.g., on WAS 7.0 and using jython:
+AdminApplication.installWarFile('hudson','/blabla/hudson.war','localhostNode01','server1','hudson')
 
-    This tag can be placed inside &lt;l:layout>.
-  </s:documentation>
-  <j:if test="${mode=='header'}">
-    <d:invokeBody />
-  </j:if>
-</j:jelly>
+See https://hudson.dev.java.net/issues/show_bug.cgi?id=3270
+-->
+<webappbnd:WebAppBinding
+  xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI"
+  xmlns:webappbnd="webappbnd.xmi"
+  virtualHostName="default_host">
+</webappbnd:WebAppBinding>

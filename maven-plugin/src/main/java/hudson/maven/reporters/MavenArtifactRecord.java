@@ -119,8 +119,8 @@ public class MavenArtifactRecord extends MavenAbstractArtifactRecord<MavenBuild>
         deployer.deploy(main.getFile(),main,deploymentRepository,embedder.getLocalRepository());
 
         for (MavenArtifact aa : attachedArtifacts) {
-            logger.println(Messages.MavenArtifact_DeployingAttachedArtifact(main.getFile().getName()));
             Artifact a = aa.toArtifact(handlerManager,factory, parent);
+            logger.println(Messages.MavenArtifact_DeployingAttachedArtifact(a.getFile().getName()));
             deployer.deploy(a.getFile(),a,deploymentRepository,embedder.getLocalRepository());
         }
     }

@@ -52,6 +52,11 @@ public class AllView extends View {
     }
 
     @Override
+    public boolean isEditable() {
+        return false;
+    }
+
+    @Override
     public boolean contains(TopLevelItem item) {
         return true;
     }

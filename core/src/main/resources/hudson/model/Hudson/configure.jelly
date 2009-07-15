@@ -56,6 +56,19 @@ THE SOFTWARE.
         <input class="setting-input number" name="retry_count"
           type="text" value="${it.scmCheckoutRetryCount}"/>
       </f:entry>
+
+      <j:if test="${size(it.views) gt 1}">
+        <f:entry title="${%Default view}" help="/help/project-config/defaultView.html">
+          <select class="setting-input" name="primaryView">
+            <j:forEach var="v" items="${it.views}">
+              <f:option value="${v.viewName}" selected="${it.primaryView==v}">
+                ${v.viewName}
+              </f:option>
+            </j:forEach>
+          </select>
+        </f:entry>
+      </j:if>
+
       <f:optionalBlock name="use_security" title="${%Enable security}"
                        checked="${it.useSecurity}" help="/help/system-config/enableSecurity.html">
         <f:entry title="${%TCP port for JNLP slave agents}"

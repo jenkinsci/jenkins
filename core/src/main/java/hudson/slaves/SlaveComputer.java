@@ -154,7 +154,7 @@ public class SlaveComputer extends Computer {
         return launcher;
     }
 
-    public Future<?> connect(boolean forceReconnect) {
+    protected Future<?> _connect(boolean forceReconnect) {
         if(channel!=null)   return Futures.precomputed(null);
         if(!forceReconnect && lastConnectActivity!=null)
             return lastConnectActivity;
@@ -351,6 +351,7 @@ public class SlaveComputer extends Computer {
 
     @Override
     public Future<?> disconnect() {
+    	super.disconnect();
         return Computer.threadPoolForRemoting.submit(new Runnable() {
             public void run() {
                 // do this on another thread so that any lengthy disconnect operation

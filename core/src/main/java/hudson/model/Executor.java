@@ -317,7 +317,7 @@ public class Executor extends Thread implements ModelObject {
      */
     public long getIdleStartMilliseconds() {
         if (isIdle())
-            return finishTime;
+            return Math.max(finishTime, owner.getConnectTime());
         else {
             return Math.max(startTime + Math.max(0, executable.getParent().getEstimatedDuration()),
                     System.currentTimeMillis() + 15000);

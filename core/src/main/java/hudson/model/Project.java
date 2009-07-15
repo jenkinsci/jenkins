@@ -201,22 +201,22 @@ public abstract class Project<P extends Project<P,B>,B extends Build<P,B>>
         synchronized(transientActions) {
             super.updateTransientActions();
 
-            for (BuildStep step : builders) {
+            for (BuildStep step : getBuildersList()) {
                 Action a = step.getProjectAction(this);
                 if(a!=null)
                     transientActions.add(a);
             }
-            for (BuildStep step : publishers) {
+            for (BuildStep step : getPublishersList()) {
                 Action a = step.getProjectAction(this);
                 if(a!=null)
                     transientActions.add(a);
             }
-            for (BuildWrapper step : buildWrappers) {
+            for (BuildWrapper step : getBuildWrappers().values()) {
                 Action a = step.getProjectAction(this);
                 if(a!=null)
                     transientActions.add(a);
             }
-            for (Trigger trigger : triggers) {
+            for (Trigger trigger : getTriggers().values()) {
                 Action a = trigger.getProjectAction();
                 if(a!=null)
                     transientActions.add(a);

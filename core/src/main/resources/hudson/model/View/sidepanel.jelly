@@ -40,9 +40,12 @@ THE SOFTWARE.
         <l:task icon="images/24x24/user.gif" href="${rootURL}/people/" title="${%People}" />
       </j:if>
       <l:task icon="images/24x24/notepad.gif" href="${rootURL}/${it.url}builds" title="${%Build History}"/>
+      <j:if test="${it.isEditable()}">
+        <!-- /configure URL on Hudson object is overloaded with Hudson's system config, so always use the explicit name. -->
+        <l:task icon="images/24x24/gear.gif" href="${rootURL}/view/${it.viewName}/configure" title="${%Edit View}"  permission="${it.CONFIGURE}" />
+      </j:if>
       <j:if test="${!it.isDefault()}">
         <!-- this is ugly, but Hudson delegates the rendering of its pages to its primary view -->
-        <l:task icon="images/24x24/gear.gif" href="configure" title="${%Edit View}"  permission="${it.CONFIGURE}" />
         <l:task icon="images/24x24/edit-delete.gif" href="delete" title="${%Delete View}"  permission="${it.CONFIGURE}" />
       </j:if>
       <j:if test="${app.fingerprintMap.ready}">

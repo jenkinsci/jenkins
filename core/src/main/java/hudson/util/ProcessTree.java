@@ -125,6 +125,7 @@ public abstract class ProcessTree implements Iterable<OSProcess> {
      * Either of the parameter can be null.
      */
     public void killAll(Process proc, Map<String, String> modelEnvVars) {
+        LOGGER.info("killAll: process="+proc+" and envs="+modelEnvVars);
         OSProcess p = get(proc);
         if(p!=null) p.killRecursively();
         if(modelEnvVars!=null)
@@ -418,7 +419,9 @@ public abstract class ProcessTree implements Iterable<OSProcess> {
          */
         public void kill() {
             try {
-                UnixReflection.DESTROY_PROCESS.invoke(null,getPid());
+                int pid = getPid();
+                LOGGER.fine("Killing pid="+pid);
+                UnixReflection.DESTROY_PROCESS.invoke(null, pid);
             } catch (IllegalAccessException e) {
                 // this is impossible
                 IllegalAccessError x = new IllegalAccessError();
@@ -435,6 +438,7 @@ public abstract class ProcessTree implements Iterable<OSProcess> {
         }
 
         public void killRecursively() {
+            LOGGER.fine("Recursively killing pid="+getPid());
             for (OSProcess p : getChildren())
                 p.killRecursively();
             kill();

@@ -522,6 +522,16 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
     }
 
     /**
+     * Gets the most recent {@linkplain #isBuilding() completed} build excluding 'this' Run itself.
+     */
+    public final RunT getPreviousCompletedBuild() {
+        RunT r=getPreviousBuild();
+        while (r!=null && r.isBuilding())
+            r=r.getPreviousBuild();
+        return r;
+    }
+
+    /**
      * Returns the last build that didn't fail before this build.
      */
     public RunT getPreviousNotFailedBuild() {

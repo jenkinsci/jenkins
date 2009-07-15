@@ -67,8 +67,8 @@ public class JUnitResultArchiver extends Recorder implements Serializable, Matri
     private final String testResults;
     
     @DataBoundConstructor
-    public JUnitResultArchiver(String junitreport_includes) {
-        this.testResults = junitreport_includes;
+    public JUnitResultArchiver(String testResults) {
+        this.testResults = testResults;
     }
 
     public boolean perform(AbstractBuild build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
@@ -92,7 +92,7 @@ public class JUnitResultArchiver extends Recorder implements Serializable, Matri
                         throw new AbortException(Messages.JUnitResultArchiver_NoTestReportFound());
                     }
 
-                    return new TestResult(buildTime+(nowSlave-nowMaster), ds);
+                    return parseResult(ds, buildTime + (nowSlave - nowMaster));
                 }
             });
 
@@ -109,7 +109,7 @@ public class JUnitResultArchiver extends Recorder implements Serializable, Matri
             build.setResult(Result.FAILURE);
             return true;
         } catch (IOException e) {
-            e.printStackTrace(listener.error("Failed to archive JUnit reports"));
+            e.printStackTrace(listener.error("Failed to archive test reports"));
             build.setResult(Result.FAILURE);
             return true;
         }
@@ -121,6 +121,10 @@ public class JUnitResultArchiver extends Recorder implements Serializable, Matri
             build.setResult(Result.UNSTABLE);
 
         return true;
+    }
+
+    protected TestResult parseResult(DirectoryScanner ds, long buildTime) throws IOException {
+        return new TestResult(buildTime, ds);
     }
 
     public String getTestResults() {
@@ -152,7 +156,7 @@ public class JUnitResultArchiver extends Recorder implements Serializable, Matri
         /**
          * Performs on-the-fly validation on the file mask wildcard.
          */
-        public FormValidation doCheck(@AncestorInPath AbstractProject project, @QueryParameter String value) throws IOException {
+        public FormValidation doCheckTestResults(@AncestorInPath AbstractProject project, @QueryParameter String value) throws IOException {
             return FilePath.validateFileMask(project.getWorkspace(),value);
         }
 

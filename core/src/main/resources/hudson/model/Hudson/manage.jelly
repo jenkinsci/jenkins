@@ -71,7 +71,7 @@ THE SOFTWARE.
         ${%Discard all the loaded data in memory and reload everything from file system.}
         ${%Useful when you modified config files directly on disk.}
       </local:feature>
-      <local:feature icon="gear2.gif"        href="pluginManager/" title="${%Manage Plugins}">
+      <local:feature icon="plugin.gif"        href="pluginManager/" title="${%Manage Plugins}">
         ${%Add, remove, disable or enable plugins that can extend the functionality of Hudson.}
         <j:if test="${it.updateCenter.hasUpdates()}">
           <span style="color:red; font-weight:bold">(${%updates available})</span>

@@ -199,7 +199,7 @@ public final class DirectoryBrowserSupport implements HttpResponse {
         if(baseFile.isDirectory()) {
             if(zip) {
                 rsp.setContentType("application/zip");
-                baseFile.createZipArchive(rsp.getOutputStream(),rest);
+                baseFile.zip(rsp.getOutputStream(),rest);
                 return;
             }
             if (plain) {
