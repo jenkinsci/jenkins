@@ -622,7 +622,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
      * @since 1.300
      * @return
      *      null if the host name cannot be computed (for example because this computer is offline,
-     *      because it's not IP-reachable  
+     *      because the slave is behind the firewall, etc.) 
      */
     public String getHostName() throws IOException, InterruptedException {
         if(hostNameCached)
