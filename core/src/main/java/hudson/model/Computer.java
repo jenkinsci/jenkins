@@ -620,13 +620,19 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
      * The computation may take some time, so it employs caching to make the successive lookups faster.
      *
      * @since 1.300
+     * @return
+     *      null if the host name cannot be computed (for example because this computer is offline,
+     *      because it's not IP-reachable  
      */
     public String getHostName() throws IOException, InterruptedException {
         if(hostNameCached)
             // in the worst case we end up having multiple threads computing the host name simultaneously, but that's not harmful, just wasteful.
             return cachedHostName;
 
-        for( String address : getChannel().call(new ListPossibleNames())) {
+        VirtualChannel channel = getChannel();
+        if(channel==null)   return null; // can't compute right now
+
+        for( String address : channel.call(new ListPossibleNames())) {
             try {
                 InetAddress ia = InetAddress.getByName(address);
                 if(!(ia instanceof Inet4Address)) {
