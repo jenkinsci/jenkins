@@ -55,6 +55,7 @@ import org.apache.tools.tar.TarEntry;
 import org.apache.tools.zip.ZipOutputStream;
 import org.apache.tools.zip.ZipEntry;
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.io.input.CountingInputStream;
 import org.apache.commons.fileupload.FileItem;
 import org.kohsuke.stapler.Stapler;
 
@@ -555,10 +556,17 @@ public final class FilePath implements Serializable {
 
         if(listener!=null)
             listener.getLogger().println(message);
-        if(archive.toExternalForm().endsWith(".zip"))
-            unzipFrom(con.getInputStream());
+
+        CountingInputStream cis = new CountingInputStream(con.getInputStream());
+        try {
+            if(archive.toExternalForm().endsWith(".zip"))
+            unzipFrom(cis);
         else
-            untarFrom(con.getInputStream(),GZIP);
+            untarFrom(cis,GZIP);
+        } catch (IOException e) {
+            throw new IOException2(String.format("Failed to unpack %s (%d bytes read of total %d)",
+                    archive,cis.getByteCount(),con.getContentLength()),e);
+        }
         timestamp.touch(sourceTimestamp);
         return true;
     }
