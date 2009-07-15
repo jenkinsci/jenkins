@@ -45,7 +45,7 @@ THE SOFTWARE.
                 <f:textbox name="proxy.port" value="${app.proxy.port}" />
               </f:entry>
             </f:block>
-            <f:entry title="${%User name}" help="/help/update-center/proxy-username.html>
+            <f:entry title="${%User name}" help="/help/update-center/proxy-username.html">
               <f:textbox name="proxy.userName" value="${app.proxy.userName}" />
             </f:entry>
             <f:entry title="${%Password}">
