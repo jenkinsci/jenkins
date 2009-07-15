@@ -144,4 +144,31 @@ THE SOFTWARE.
     <env-entry-type>java.lang.String</env-entry-type>
     <env-entry-value></env-entry-value>
   </env-entry>
+
+  <!-- configure additional extension-content-type mappings -->
+  <mime-mapping>
+    <extension>xml</extension>
+    <mime-type>application/xml</mime-type>
+  </mime-mapping>
+  <mime-mapping>
+    <extension>xsl</extension>
+    <mime-type>application/xslt+xml</mime-type>
+  </mime-mapping>
+  <mime-mapping>
+    <extension>log</extension>
+    <mime-type>text/plain</mime-type>
+  </mime-mapping>
+  <mime-mapping>
+    <extension>war</extension>
+    <mime-type>application/octet-stream</mime-type>
+  </mime-mapping>
+  <mime-mapping>
+    <extension>ear</extension>
+    <mime-type>application/octet-stream</mime-type>
+  </mime-mapping>
+  <mime-mapping>
+    <extension>rar</extension>
+    <mime-type>application/octet-stream</mime-type>
+  </mime-mapping>
+
 </web-app>
