@@ -187,8 +187,8 @@ public class ClassicPluginStrategy implements PluginStrategy {
 
         private void fix(Attributes atts, List<PluginWrapper.Dependency> optionalDependencies) {
             // don't fix the dependency for yourself, or else we'll have a cycle
-            String shortName = atts.getValue("Short-Name");
-            if (this.shortName.equals(shortName))   return;
+            String yourName = atts.getValue("Short-Name");
+            if (shortName.equals(yourName))   return;
 
             // some earlier versions of maven-hpi-plugin apparently puts "null" as a literal in Hudson-Version. watch out for them.
             String hudsonVersion = atts.getValue("Hudson-Version");
