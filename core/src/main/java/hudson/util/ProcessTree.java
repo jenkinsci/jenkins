@@ -418,7 +418,9 @@ public abstract class ProcessTree implements Iterable<OSProcess> {
          */
         public void kill() {
             try {
-                UnixReflection.DESTROY_PROCESS.invoke(null,getPid());
+                int pid = getPid();
+                LOGGER.fine("Killing pid="+pid);
+                UnixReflection.DESTROY_PROCESS.invoke(null, pid);
             } catch (IllegalAccessException e) {
                 // this is impossible
                 IllegalAccessError x = new IllegalAccessError();
