@@ -303,10 +303,12 @@ public abstract class ProcessTree implements Iterable<OSProcess> {
                     }
 
                     public void killRecursively() {
+                        LOGGER.finer("Killing recursively "+p.getPid());
                         p.killRecursively();
                     }
 
                     public void kill() {
+                        LOGGER.finer("Killing "+p.getPid());
                         p.kill();
                     }
 
@@ -336,16 +338,22 @@ public abstract class ProcessTree implements Iterable<OSProcess> {
                 if(p.getPid()<10)
                     continue;   // ignore system processes like "idle process"
 
+                LOGGER.finest("Considering to kill "+p.getPid());
+
                 boolean matched;
                 try {
                     matched = p.hasMatchingEnvVars(modelEnvVars);
                 } catch (WinpException e) {
                     // likely a missing privilege
+                    LOGGER.log(FINEST,"  Failed to check environment variable match",e);
                     continue;
                 }
 
                 if(matched)
                     p.killRecursively();
+                else
+                    LOGGER.finest("Environment variable didn't match");
+
             }
         }
 
