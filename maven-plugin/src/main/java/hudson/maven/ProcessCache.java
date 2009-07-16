@@ -24,6 +24,7 @@
 package hudson.maven;
 
 import hudson.Util;
+import hudson.Proc;
 import hudson.model.BuildListener;
 import hudson.model.JDK;
 import hudson.model.TaskListener;
@@ -60,10 +61,20 @@ public final class ProcessCache {
          * @param out
          *      The output from the process should be sent to this output stream.
          */
-        Channel newProcess(BuildListener listener,OutputStream out) throws IOException, InterruptedException;
+        NewProcess newProcess(BuildListener listener,OutputStream out) throws IOException, InterruptedException;
         String getMavenOpts();
         MavenInstallation getMavenInstallation(TaskListener listener) throws IOException, InterruptedException;
         JDK getJava(TaskListener listener) throws IOException, InterruptedException;
+    }
+
+    public static class NewProcess {
+        public final Channel channel;
+        public final Proc proc;
+
+        public NewProcess(Channel channel, Proc proc) {
+            this.channel = channel;
+            this.proc = proc;
+        }
     }
 
     class MavenProcess {
@@ -76,6 +87,7 @@ public final class ProcessCache {
          */
         private final String mavenOpts;
         private final PerChannel parent;
+        final Proc proc;
         private final MavenInstallation installation;
         private final JDK jdk;
         private final RedirectableOutputStream output;
@@ -88,10 +100,11 @@ public final class ProcessCache {
 
         private int age = 0;
 
-        MavenProcess(PerChannel parent, String mavenOpts, MavenInstallation installation, JDK jdk, Channel channel, RedirectableOutputStream output) throws IOException, InterruptedException {
+        MavenProcess(PerChannel parent, String mavenOpts, MavenInstallation installation, JDK jdk, NewProcess np, RedirectableOutputStream output) throws IOException, InterruptedException {
             this.parent = parent;
             this.mavenOpts = mavenOpts;
-            this.channel = channel;
+            this.channel = np.channel;
+            this.proc = np.proc;
             this.installation = installation;
             this.jdk = jdk;
             this.output = output;
