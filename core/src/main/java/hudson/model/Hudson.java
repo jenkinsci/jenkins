@@ -1028,8 +1028,8 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
      * implementation for it affects the GUI.
      *
      * <p>
-     * To register an {@link Action}, write code like
-     * {@code Hudson.getInstance().getActions().add(...)}
+     * To register an {@link Action}, implement {@link RootAction} extension point, or write code like
+     * {@code Hudson.getInstance().getActions().add(...)}.
      *
      * @return
      *      Live list where the changes can be made. Can be empty but never null.
