@@ -191,6 +191,11 @@ public final class PluginManager extends AbstractModelObject {
         if(paths==null) return; // crap
         for( String path : (Set<String>) paths) {
             String fileName = path.substring(path.lastIndexOf('/')+1);
+            if(fileName.length()==0) {
+                // see http://www.nabble.com/404-Not-Found-error-when-clicking-on-help-td24508544.html
+                // I suspect some containers are returning directory names.
+                continue;
+            }
             try {
                 URL url = context.getResource(path);
                 long lastModified = url.openConnection().getLastModified();
