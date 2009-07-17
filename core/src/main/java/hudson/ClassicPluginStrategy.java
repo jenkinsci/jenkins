@@ -36,6 +36,7 @@ import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.Closeable;
 import java.net.URL;
+import java.net.URLClassLoader;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Arrays;
@@ -163,12 +164,23 @@ public class ClassicPluginStrategy implements PluginStrategy {
 
         ClassLoader dependencyLoader = new DependencyClassLoader(getBaseClassLoader(atts), Util.join(dependencies,optionalDependencies));
 
-        // using AntClassLoader with Closeable so that we can predictably release jar files opened by URLClassLoader
-        AntClassLoader2 classLoader = new AntClassLoader2(dependencyLoader);
-        classLoader.addPathFiles(paths);
+        ClassLoader cl;
+        if(useAntClassLoader) {
+            // using AntClassLoader with Closeable so that we can predictably release jar files opened by URLClassLoader
+            AntClassLoader2 classLoader = new AntClassLoader2(dependencyLoader);
+            classLoader.addPathFiles(paths);
+            cl = classLoader;
+        } else {
+            // Tom reported that AntClassLoader has a performance issue when Hudson keeps trying to load a class that doesn't exist,
+            // so providing a legacy URLClassLoader support, too
+            List<URL> urls = new ArrayList<URL>();
+            for (File path : paths)
+                urls.add(path.toURI().toURL());
+            cl = new URLClassLoader(urls.toArray(new URL[urls.size()]),dependencyLoader);
+        }
 
 		return new PluginWrapper(archive, manifest, baseResourceURL,
-				classLoader, disableFile, dependencies, optionalDependencies);
+				cl, disableFile, dependencies, optionalDependencies);
 	}
 
     /**
@@ -410,4 +422,6 @@ public class ClassicPluginStrategy implements PluginStrategy {
             cleanup();
         }
     }
+
+    public static boolean useAntClassLoader = Boolean.getBoolean(ClassicPluginStrategy.class.getName()+".useAntClassLoader");
 }
