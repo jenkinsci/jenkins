@@ -47,8 +47,11 @@ THE SOFTWARE.
           <!--<reportFormat>plain</reportFormat>-->
           <redirectTestOutputToFile>true</redirectTestOutputToFile>
           <systemProperties>
-            <!-- use AntClassLoader that supports predictable file handle release -->
-            <hudson.ClassicPluginStrategy.useAntClassLoader>true</hudson.ClassicPluginStrategy.useAntClassLoader>
+            <property>
+              <!-- use AntClassLoader that supports predictable file handle release -->
+              <name>hudson.ClassicPluginStrategy.useAntClassLoader</name>
+              <value>true</value>
+            </property>
           </systemProperties>
         </configuration>
       </plugin>
