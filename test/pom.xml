@@ -46,6 +46,10 @@ THE SOFTWARE.
           <forkMode>once</forkMode>
           <!--<reportFormat>plain</reportFormat>-->
           <redirectTestOutputToFile>true</redirectTestOutputToFile>
+          <systemProperties>
+            <!-- use AntClassLoader that supports predictable file handle release -->
+            <hudson.ClassicPluginStrategy.useAntClassLoader>true</hudson.ClassicPluginStrategy.useAntClassLoader>
+          </systemProperties>
         </configuration>
       </plugin>
       <plugin>
@@ -112,7 +116,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.jvnet.hudson</groupId>
       <artifactId>htmlunit</artifactId>
-      <version>2.2-hudson-9</version>
+      <version>2.2-hudson-10</version>
     </dependency>
 
     <dependency><!-- temporary, until we bump to new htmlunit -->
