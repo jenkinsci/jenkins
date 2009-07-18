@@ -110,7 +110,7 @@ public final class JDK extends ToolInstallation implements NodeSpecific<JDK>, En
      */
     public void buildEnvVars(Map<String,String> env) {
         // see EnvVars javadoc for why this adss PATH.
-        env.put("PATH+JDK",getBinDir().getPath());
+        env.put("PATH+JDK",getHome()+"/bin");
         env.put("JAVA_HOME",getHome());
     }
 
