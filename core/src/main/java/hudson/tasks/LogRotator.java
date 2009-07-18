@@ -34,6 +34,10 @@ import org.kohsuke.stapler.DataBoundConstructor;
 import java.io.IOException;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
+import static java.util.logging.Level.FINE;
+import static java.util.logging.Level.FINER;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 
 /**
  * Deletes old log files.
@@ -76,6 +80,8 @@ public class LogRotator implements Describable<LogRotator> {
     }
 
     public void perform(Job<?,?> job) throws IOException, InterruptedException {
+        LOGGER.log(FINE,"Running the log rotation for "+job.getFullDisplayName());
+
         // keep the last successful build regardless of the status
         Run lsb = job.getLastSuccessfulBuild();
         Run lstb = job.getLastStableBuild();
@@ -83,8 +89,20 @@ public class LogRotator implements Describable<LogRotator> {
         if(numToKeep!=-1) {
             Run[] builds = job.getBuilds().toArray(new Run[0]);
             for( int i=numToKeep; i<builds.length; i++ ) {
-                if(!builds[i].isKeepLog() && builds[i]!=lsb && builds[i]!=lstb)
-                    builds[i].delete();
+                Run r = builds[i];
+                if (r.isKeepLog()) {
+                    LOGGER.log(FINER,r.getFullDisplayName()+" is not GC-ed because it's marked as a keeper");
+                    continue;
+                }
+                if (r==lsb) {
+                    LOGGER.log(FINER,r.getFullDisplayName()+" is not GC-ed because it's the last successful build");
+                    continue;
+                }
+                if (r==lstb) {
+                    LOGGER.log(FINER,r.getFullDisplayName()+" is not GC-ed because it's the last stable build");
+                    continue;
+                }
+                r.delete();
             }
         }
 
@@ -93,8 +111,23 @@ public class LogRotator implements Describable<LogRotator> {
             cal.add(Calendar.DAY_OF_YEAR,-daysToKeep);
             // copy it to the array because we'll be deleting builds as we go.
             for( Run r : job.getBuilds().toArray(new Run[0]) ) {
-                if(r.getTimestamp().before(cal) && !r.isKeepLog() && r!=lsb && r!=lstb)
-                    r.delete();
+                if (r.isKeepLog()) {
+                    LOGGER.log(FINER,r.getFullDisplayName()+" is not GC-ed because it's marked as a keeper");
+                    continue;
+                }
+                if (r==lsb) {
+                    LOGGER.log(FINER,r.getFullDisplayName()+" is not GC-ed because it's the last successful build");
+                    continue;
+                }
+                if (r==lstb) {
+                    LOGGER.log(FINER,r.getFullDisplayName()+" is not GC-ed because it's the last stable build");
+                    continue;
+                }
+                if (!r.getTimestamp().before(cal)) {
+                    LOGGER.log(FINER,r.getFullDisplayName()+" is not GC-ed because it's still new");
+                    continue;
+                }
+                r.delete();
             }
         }
     }
@@ -126,6 +159,8 @@ public class LogRotator implements Describable<LogRotator> {
     public static final class LRDescriptor extends Descriptor<LogRotator> {
         public String getDisplayName() {
             return "Log Rotation";
-        }        
+        }
     }
+
+    private static final Logger LOGGER = Logger.getLogger(LogRotator.class.getName());
 }

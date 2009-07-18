@@ -28,6 +28,7 @@ import hudson.ExtensionPoint;
 import hudson.Util;
 import hudson.XmlFile;
 import hudson.PermalinkList;
+import hudson.Extension;
 import hudson.model.Descriptor.FormException;
 import hudson.model.listeners.ItemListener;
 import hudson.model.PermalinkProjectAction.Permalink;
