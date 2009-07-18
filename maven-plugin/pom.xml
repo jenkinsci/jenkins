@@ -27,7 +27,7 @@ THE SOFTWARE.
   <parent>
     <groupId>org.jvnet.hudson.main</groupId>
     <artifactId>pom</artifactId>
-    <version>1.316</version>
+    <version>1.317-SNAPSHOT</version>
   </parent>
 
   <artifactId>maven-plugin</artifactId>
