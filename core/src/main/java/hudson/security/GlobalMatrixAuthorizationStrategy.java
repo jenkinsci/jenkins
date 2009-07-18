@@ -81,6 +81,8 @@ public class GlobalMatrixAuthorizationStrategy extends AuthorizationStrategy {
      * as this object itself is considered immutable once populated.
      */
     public void add(Permission p, String sid) {
+        if (p==null)
+            throw new IllegalArgumentException();
         Set<String> set = grantedPermissions.get(p);
         if(set==null)
             grantedPermissions.put(p,set = new HashSet<String>());
