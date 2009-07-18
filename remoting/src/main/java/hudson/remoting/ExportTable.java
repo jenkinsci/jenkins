@@ -180,6 +180,16 @@ final class ExportTable<T> {
     }
 
     /**
+     * Removes the exported object for the specified oid from the table.
+     */
+    public synchronized void unexportByOid(Integer oid) {
+        if(oid==null)     return;
+        Entry e = table.get(oid);
+        if(e==null)    return; // presumably already unexported
+        e.release();
+    }
+
+    /**
      * Dumps the contents of the table to a file.
      */
     public synchronized void dump(PrintWriter w) throws IOException {
