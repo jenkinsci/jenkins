@@ -1514,7 +1514,7 @@ public final class FilePath implements Serializable {
         private static final long serialVersionUID = 1L;
     }
 
-    private static interface ArchiverFactory {
+    private static interface ArchiverFactory extends Serializable {
         Archiver create(OutputStream out);
     }
 
