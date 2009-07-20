@@ -90,7 +90,7 @@ public final class TcpSlaveAgentListener extends Thread {
         try {
             serverSocket = new ServerSocket(port);
         } catch (BindException e) {
-            throw new IOException2("Failed to listen on port "+port+" because it's already in use.",e);
+            throw (BindException)new BindException("Failed to listen on port "+port+" because it's already in use.").initCause(e);
         }
         this.configuredPort = port;
 
