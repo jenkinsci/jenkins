@@ -33,6 +33,7 @@ import hudson.remoting.Channel.Listener;
 import hudson.remoting.Channel.Mode;
 import hudson.cli.CliManagerImpl;
 import hudson.cli.CliEntryPoint;
+import hudson.util.IOException2;
 
 import java.io.DataInputStream;
 import java.io.IOException;
@@ -42,6 +43,7 @@ import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.net.BindException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -85,7 +87,11 @@ public final class TcpSlaveAgentListener extends Thread {
      */
     public TcpSlaveAgentListener(int port) throws IOException {
         super("TCP slave agent listener port="+port);
-        serverSocket = new ServerSocket(port);
+        try {
+            serverSocket = new ServerSocket(port);
+        } catch (BindException e) {
+            throw new IOException2("Failed to listen on port "+port+" because it's already in use.",e);
+        }
         this.configuredPort = port;
 
         LOGGER.info("JNLP slave agent listener started on TCP port "+getPort());
