@@ -132,6 +132,7 @@ import org.kohsuke.stapler.StaplerResponse;
 import org.kohsuke.stapler.StaplerFallback;
 import org.kohsuke.stapler.WebApp;
 import org.kohsuke.stapler.QueryParameter;
+import org.kohsuke.stapler.HttpRedirect;
 import org.kohsuke.stapler.jelly.JellyClassLoaderTearOff;
 import org.kohsuke.stapler.jelly.JellyRequestDispatcher;
 import org.kohsuke.stapler.framework.adjunct.AdjunctManager;
@@ -2355,17 +2356,17 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
         rsp.sendRedirect(".");
     }
 
-    public synchronized void doQuietDown(StaplerResponse rsp) throws IOException, ServletException {
+    public synchronized HttpRedirect doQuietDown() throws IOException, ServletException {
         checkPermission(ADMINISTER);
         isQuietingDown = true;
-        rsp.sendRedirect2(".");
+        return new HttpRedirect(".");
     }
 
-    public synchronized void doCancelQuietDown(StaplerResponse rsp) throws IOException, ServletException {
+    public synchronized HttpRedirect doCancelQuietDown() throws IOException, ServletException {
         checkPermission(ADMINISTER);
         isQuietingDown = false;
         getQueue().scheduleMaintenance();
-        rsp.sendRedirect2(".");
+        return new HttpRedirect(".");
     }
 
     /**
