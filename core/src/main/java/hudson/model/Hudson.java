@@ -3369,6 +3369,7 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
     public static boolean KILL_AFTER_LOAD = Boolean.getBoolean(Hudson.class.getName()+".killAfterLoad");
     public static boolean LOG_STARTUP_PERFORMANCE = Boolean.getBoolean(Hudson.class.getName()+".logStartupPerformance");
     private static final boolean CONSISTENT_HASH = true; // Boolean.getBoolean(Hudson.class.getName()+".consistentHash");
+    public static boolean FLYWEIGHT_SUPPORT = Boolean.getBoolean(Hudson.class.getName()+".flyweightSupport");
 
     private static final Logger LOGGER = Logger.getLogger(Hudson.class.getName());
 
