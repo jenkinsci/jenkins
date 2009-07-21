@@ -125,7 +125,7 @@ public abstract class ProcessTree implements Iterable<OSProcess> {
      * Either of the parameter can be null.
      */
     public void killAll(Process proc, Map<String, String> modelEnvVars) {
-        LOGGER.info("killAll: process="+proc+" and envs="+modelEnvVars);
+        LOGGER.fine("killAll: process="+proc+" and envs="+modelEnvVars);
         OSProcess p = get(proc);
         if(p!=null) p.killRecursively();
         if(modelEnvVars!=null)
