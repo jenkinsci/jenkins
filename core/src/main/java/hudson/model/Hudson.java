@@ -3308,7 +3308,7 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
      * <p>
      * The idea here is to overlap the CPU and I/O, so we want more threads than CPU numbers.
      */
-    /*package*/ static final ExecutorService threadPoolForLoad = new ThreadPoolExecutor(
+    /*package*/ transient final ExecutorService threadPoolForLoad = new ThreadPoolExecutor(
         TWICE_CPU_NUM, TWICE_CPU_NUM,
         5L, TimeUnit.SECONDS, new LinkedBlockingQueue<Runnable>(), new DaemonThreadFactory());
 
