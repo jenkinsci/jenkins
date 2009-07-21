@@ -113,6 +113,7 @@ import hudson.util.Iterators;
 import hudson.util.FormValidation;
 import hudson.util.VersionNumber;
 import hudson.util.StreamTaskListener;
+import hudson.util.AdministrativeError;
 import hudson.widgets.Widget;
 import net.sf.json.JSONObject;
 import org.acegisecurity.*;
@@ -152,6 +153,7 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.InputStream;
 import java.net.URL;
+import java.net.BindException;
 import java.security.SecureRandom;
 import java.text.NumberFormat;
 import java.text.ParseException;
@@ -566,9 +568,15 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
     //            throw new Error(e);
     //        }
 
-            if(slaveAgentPort!=-1)
-                tcpSlaveAgentListener = new TcpSlaveAgentListener(slaveAgentPort);
-            else
+            if(slaveAgentPort!=-1) {
+                try {
+                    tcpSlaveAgentListener = new TcpSlaveAgentListener(slaveAgentPort);
+                } catch (BindException e) {
+                    new AdministrativeError(getClass().getName()+".tcpBind",
+                            "Failed to listen to incoming slave connection",
+                            "Failed to listen to incoming slave connection. <a href='configure'>Change the prot number</a> to solve the problem.",e);
+                }
+            } else
                 tcpSlaveAgentListener = null;
 
             udpBroadcastThread = new UDPBroadcastThread(this);
