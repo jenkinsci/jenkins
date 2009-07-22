@@ -30,7 +30,7 @@ case "$1" in
 	
     	# Fix permissions on runtime directories/files.
     	chown -R hudson:adm /var/run/hudson /var/lib/hudson /var/log/hudson
-    	chmod -R 770 /var/run/hudson /var/lib/hudson
+    	chmod -R 750 /var/run/hudson /var/lib/hudson
     	chmod 750 /var/log/hudson
     ;;
 

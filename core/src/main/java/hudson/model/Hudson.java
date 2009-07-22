@@ -113,6 +113,7 @@ import hudson.util.Iterators;
 import hudson.util.FormValidation;
 import hudson.util.VersionNumber;
 import hudson.util.StreamTaskListener;
+import hudson.util.AdministrativeError;
 import hudson.widgets.Widget;
 import net.sf.json.JSONObject;
 import org.acegisecurity.*;
@@ -131,6 +132,7 @@ import org.kohsuke.stapler.StaplerResponse;
 import org.kohsuke.stapler.StaplerFallback;
 import org.kohsuke.stapler.WebApp;
 import org.kohsuke.stapler.QueryParameter;
+import org.kohsuke.stapler.HttpRedirect;
 import org.kohsuke.stapler.jelly.JellyClassLoaderTearOff;
 import org.kohsuke.stapler.jelly.JellyRequestDispatcher;
 import org.kohsuke.stapler.framework.adjunct.AdjunctManager;
@@ -152,6 +154,7 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.InputStream;
 import java.net.URL;
+import java.net.BindException;
 import java.security.SecureRandom;
 import java.text.NumberFormat;
 import java.text.ParseException;
@@ -566,9 +569,15 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
     //            throw new Error(e);
     //        }
 
-            if(slaveAgentPort!=-1)
-                tcpSlaveAgentListener = new TcpSlaveAgentListener(slaveAgentPort);
-            else
+            if(slaveAgentPort!=-1) {
+                try {
+                    tcpSlaveAgentListener = new TcpSlaveAgentListener(slaveAgentPort);
+                } catch (BindException e) {
+                    new AdministrativeError(getClass().getName()+".tcpBind",
+                            "Failed to listen to incoming slave connection",
+                            "Failed to listen to incoming slave connection. <a href='configure'>Change the prot number</a> to solve the problem.",e);
+                }
+            } else
                 tcpSlaveAgentListener = null;
 
             udpBroadcastThread = new UDPBroadcastThread(this);
@@ -1028,8 +1037,8 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
      * implementation for it affects the GUI.
      *
      * <p>
-     * To register an {@link Action}, write code like
-     * {@code Hudson.getInstance().getActions().add(...)}
+     * To register an {@link Action}, implement {@link RootAction} extension point, or write code like
+     * {@code Hudson.getInstance().getActions().add(...)}.
      *
      * @return
      *      Live list where the changes can be made. Can be empty but never null.
@@ -2347,17 +2356,17 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
         rsp.sendRedirect(".");
     }
 
-    public synchronized void doQuietDown(StaplerResponse rsp) throws IOException, ServletException {
+    public synchronized HttpRedirect doQuietDown() throws IOException, ServletException {
         checkPermission(ADMINISTER);
         isQuietingDown = true;
-        rsp.sendRedirect2(".");
+        return new HttpRedirect(".");
     }
 
-    public synchronized void doCancelQuietDown(StaplerResponse rsp) throws IOException, ServletException {
+    public synchronized HttpRedirect doCancelQuietDown() throws IOException, ServletException {
         checkPermission(ADMINISTER);
         isQuietingDown = false;
         getQueue().scheduleMaintenance();
-        rsp.sendRedirect2(".");
+        return new HttpRedirect(".");
     }
 
     /**
@@ -3300,7 +3309,7 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
      * <p>
      * The idea here is to overlap the CPU and I/O, so we want more threads than CPU numbers.
      */
-    /*package*/ static final ExecutorService threadPoolForLoad = new ThreadPoolExecutor(
+    /*package*/ transient final ExecutorService threadPoolForLoad = new ThreadPoolExecutor(
         TWICE_CPU_NUM, TWICE_CPU_NUM,
         5L, TimeUnit.SECONDS, new LinkedBlockingQueue<Runnable>(), new DaemonThreadFactory());
 
@@ -3361,6 +3370,7 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
     public static boolean KILL_AFTER_LOAD = Boolean.getBoolean(Hudson.class.getName()+".killAfterLoad");
     public static boolean LOG_STARTUP_PERFORMANCE = Boolean.getBoolean(Hudson.class.getName()+".logStartupPerformance");
     private static final boolean CONSISTENT_HASH = true; // Boolean.getBoolean(Hudson.class.getName()+".consistentHash");
+    public static boolean FLYWEIGHT_SUPPORT = Boolean.getBoolean(Hudson.class.getName()+".flyweightSupport");
 
     private static final Logger LOGGER = Logger.getLogger(Hudson.class.getName());
 

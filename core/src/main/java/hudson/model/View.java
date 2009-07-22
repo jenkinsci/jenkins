@@ -499,7 +499,8 @@ public abstract class View extends AbstractModelObject implements AccessControll
     /**
      * Deletes this view.
      */
-    public synchronized void doDoDelete( StaplerRequest req, StaplerResponse rsp ) throws IOException {
+    public synchronized void doDoDelete( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
+        requirePOST();
         checkPermission(DELETE);
 
         owner.deleteView(this);

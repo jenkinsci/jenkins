@@ -43,4 +43,5 @@ THE SOFTWARE.
     I'm still debugging this.
   <interactive />
   -->
+  <logmode>rotate</logmode>
 </service>

@@ -36,6 +36,56 @@ THE SOFTWARE.
       <j:if test="${c.offline}"> (${%offline})</j:if>
       <j:if test="${!c.acceptingTasks}"> (${%suspended})</j:if>
     </d:tag>
+    <d:tag name="executor">
+      <tr>
+        <td class="pane" align="right" style="vertical-align: top">
+          ${name}
+        </td>
+        <j:choose>
+          <j:when test="${!e.alive}">
+            <td class="pane">
+              <a href="${rootURL}/computers/${cloop.index}/${url}/causeOfDeath">
+                <span class="error">${%Dead} (!)</span>
+              </a>
+            </td>
+            <td class="pane"/>
+          </j:when>
+          <j:when test="${e.idle}">
+            <td class="pane">
+              <j:choose>
+                <j:when test="${c.offline}">
+                  <a href="${rootURL}/${c.url}">${%Offline}</a>
+                </j:when>
+                <j:otherwise>
+                  ${%Idle}
+                </j:otherwise>
+              </j:choose>
+            </td>
+            <td class="pane"/>
+          </j:when>
+          <j:otherwise>
+            <td class="pane">
+              <div nowrap="true">${%Building}
+                <j:choose>
+                  <j:when test="${h.hasPermission(e.currentExecutable.parent,e.currentExecutable.parent.READ)}">
+                    <a href="${rootURL}/${e.currentExecutable.url}">${e.currentExecutable}</a>
+                    <t:buildProgressBar build="${e.currentExecutable}" executor="${e}"/>
+                  </j:when>
+                  <j:otherwise>
+                    <span>${%Unknown Task}</span>
+                  </j:otherwise>
+                </j:choose>
+              </div>
+            </td>
+            <td class="pane" align="center" valign="middle">
+              <j:if test="${e.hasStopPermission()}">
+                <a href="${rootURL}/computers/${cloop.index}/${url}/stop"><img src="${imagesURL}/16x16/stop.gif" alt="${%terminate this build}" /></a>
+              </j:if>
+            </td>
+          </j:otherwise>
+        </j:choose>
+      </tr>
+    </d:tag>
   </d:taglib>
   <j:set var="computers" value="${attrs.computers?:app.computers}" />
 	<l:pane title="&lt;a href='${rootURL}/computer/'>${%Build Executor Status}&lt;/a>" width="3" id="executors">
@@ -67,55 +117,11 @@ THE SOFTWARE.
 	    </j:choose>
 
 	    <j:forEach var="e" items="${c.executors}" varStatus="eloop">
-	      <tr>
-	        <td class="pane" align="right" style="vertical-align: top">
-	          ${eloop.index+1}
-	        </td>
-	        <j:choose>
-            <j:when test="${!e.alive}">
-              <td class="pane">
-                <a href="${rootURL}/computers/${cloop.index}/executors/${eloop.index}/causeOfDeath">
-                  <span class="error">${%Dead} (!)</span>
-                </a>
-              </td>
-              <td class="pane"/>
-            </j:when>
-            <j:when test="${e.idle}">
-	            <td class="pane">
-                <j:choose>
-                  <j:when test="${c.offline}">
-                    <a href="${rootURL}/${c.url}">${%Offline}</a>
-                  </j:when>
-                  <j:otherwise>
-                    ${%Idle}
-                  </j:otherwise>
-                </j:choose>
-	            </td>
-	            <td class="pane"/>
-	          </j:when>
-	          <j:otherwise>
-	            <td class="pane">
-                <div nowrap="true">${%Building}
-                  <j:choose>
-                    <j:when test="${h.hasPermission(e.currentExecutable.parent,e.currentExecutable.parent.READ)}">
-                      <a href="${rootURL}/${e.currentExecutable.url}">${e.currentExecutable}</a>
-                      <t:buildProgressBar build="${e.currentExecutable}" executor="${e}"/>
-                    </j:when>
-                    <j:otherwise>
-                      <span>${%Unknown Task}</span>
-                    </j:otherwise>
-                  </j:choose>
-                </div>
-              </td>
-	            <td class="pane" align="center" valign="middle">
-                <j:if test="${e.hasStopPermission()}">
-                  <a href="${rootURL}/computers/${cloop.index}/executors/${eloop.index}/stop"><img src="${imagesURL}/16x16/stop.gif" alt="${%terminate this build}" /></a>
-                </j:if>
-	            </td>
-	          </j:otherwise>
-	        </j:choose>
-	      </tr>
+        <local:executor name="${eloop.index+1}" url="executors/${eloop.index}" />
 	    </j:forEach>
+      <j:forEach var="e" items="${c.oneOffExecutors}" varStatus="eloop">
+        <local:executor name="" url="oneOffExecutors/${eloop.index}" />
+      </j:forEach>
 	  </j:forEach>
 	</l:pane>
     <!-- schedule updates only for the full page reload -->

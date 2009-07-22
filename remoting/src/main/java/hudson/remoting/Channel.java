@@ -440,7 +440,7 @@ public class Channel implements VirtualChannel, IChannel {
     }
 
     /*package*/ void unexport(int id) {
-        exportedObjects.unexport(id);
+        exportedObjects.unexportByOid(id);
     }
 
     /**

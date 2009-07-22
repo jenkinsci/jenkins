@@ -44,6 +44,8 @@ import java.util.Set;
 import java.util.List;
 
 import org.kohsuke.stapler.Stapler;
+import org.kohsuke.stapler.export.ExportedBean;
+import org.kohsuke.stapler.export.Exported;
 
 /**
  * Base type of Hudson slaves (although in practice, you probably extend {@link Slave} to define a new slave type.)
@@ -55,6 +57,7 @@ import org.kohsuke.stapler.Stapler;
  * @see NodeMonitor
  * @see NodeDescriptor
  */
+@ExportedBean
 public abstract class Node extends AbstractModelObject implements Describable<Node>, ExtensionPoint, AccessControlled {
 
     public String getDisplayName() {
@@ -71,6 +74,7 @@ public abstract class Node extends AbstractModelObject implements Describable<No
      * @return
      *      "" if this is master
      */
+    @Exported(visibility=999)
     public abstract String getNodeName();
 
     /**
@@ -88,6 +92,7 @@ public abstract class Node extends AbstractModelObject implements Describable<No
     /**
      * Human-readable description of this node.
      */
+    @Exported
     public abstract String getNodeDescription();
 
     /**
@@ -104,6 +109,7 @@ public abstract class Node extends AbstractModelObject implements Describable<No
      * This may be different from <code>getExecutors().size()</code>
      * because it takes time to adjust the number of executors.
      */
+    @Exported
     public abstract int getNumExecutors();
 
     /**
@@ -111,6 +117,7 @@ public abstract class Node extends AbstractModelObject implements Describable<No
      * for those jobs that exclusively specifies this node
      * as the assigned node.
      */
+    @Exported
     public abstract Mode getMode();
 
     /**
@@ -134,6 +141,7 @@ public abstract class Node extends AbstractModelObject implements Describable<No
      * Returns the possibly empty set of labels that are assigned to this node,
      * including the automatic {@link #getSelfLabel() self label}.
      */
+    @Exported
     public abstract Set<Label> getAssignedLabels();
 
     /**

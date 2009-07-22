@@ -71,9 +71,7 @@ public abstract class AbstractMavenBuild<P extends AbstractMavenProject<P,B>,B e
      */
     protected final void scheduleDownstreamBuilds(BuildListener listener) {
         // trigger dependency builds
-        DependencyGraph graph = Hudson.getInstance().getDependencyGraph();
         for( AbstractProject<?,?> down : getParent().getDownstreamProjects()) {
-            
             if(debug)
                 listener.getLogger().println("Considering whether to trigger "+down+" or not");
             
@@ -83,9 +81,22 @@ public abstract class AbstractMavenBuild<P extends AbstractMavenProject<P,B>,B e
             
             if (down.isInQueue()) {
             	if(debug)
-                    listener.getLogger().println(" -> No, because dependency is already in queue");
+                    listener.getLogger().println(" -> No, because downstream is already in queue");
             	trigger = false;
-            } else {
+            } 
+            // Check to see if any of its upstream dependencies are already building or in queue.
+            else if (areUpstreamsBuilding(down, getParent())) {
+                if(debug)
+                    listener.getLogger().println(" -> No, because downstream has dependencies already building or in queue");
+                trigger = false;
+            }
+            // Check to see if any of its upstream dependencies are in this list of downstream projects.
+            else if (inDownstreamProjects(down)) {
+                if(debug)
+                    listener.getLogger().println(" -> No, because downstream has dependencies in the downstream projects list");
+                trigger = false;
+            }
+            else {
                 AbstractBuild<?,?> dlb = down.getLastBuild(); // can be null.
                 for (AbstractMavenProject up : Util.filter(down.getUpstreamProjects(),AbstractMavenProject.class)) {
                     Run ulb;
@@ -125,21 +136,47 @@ public abstract class AbstractMavenBuild<P extends AbstractMavenProject<P,B>,B e
         }
     }
     
-    /**
-     * Returns the project if any of the upstream project (or itself) is either
-     * building or is in the queue.
-     * <p>
+
+    private boolean inDownstreamProjects(AbstractProject downstreamProject) {
+        DependencyGraph graph = Hudson.getInstance().getDependencyGraph();
+        Set<AbstractProject> tups = graph.getTransitiveUpstream(downstreamProject);
+        
+        for (AbstractProject tup : tups) {
+            for (AbstractProject<?,?> dp : getParent().getDownstreamProjects()) {
+                if(dp!=getParent() && dp!=downstreamProject && dp==tup) 
+                    return true;
+            }
+        }
+        return false;
+    }
+
+
+   /**
+     * Determines whether any of the upstream project are either
+     * building or in the queue.
+     *
      * This means eventually there will be an automatic triggering of
      * the given project (provided that all builds went smoothly.)
+     *
+     * @param downstreamProject
+     *      The AbstractProject we want to build.
+     * @param excludeProject
+     *      An AbstractProject to exclude - if we see this in the transitive
+     *      dependencies, we're not going to bother checking to see if it's
+     *      building. For example, pass the current parent project to be sure
+     *      that it will be ignored when looking for building dependencies.
+     * @return
+     *      True if any upstream projects are building or in queue, false otherwise.
      */
-    private AbstractProject getBuildingUpstream(DependencyGraph graph, AbstractProject project) {
-        Set<AbstractProject> tups = graph.getTransitiveUpstream(project);
-        tups.add(project);
+    private boolean areUpstreamsBuilding(AbstractProject downstreamProject,
+                                                   AbstractProject excludeProject) {
+        DependencyGraph graph = Hudson.getInstance().getDependencyGraph();
+        Set<AbstractProject> tups = graph.getTransitiveUpstream(downstreamProject);
         for (AbstractProject tup : tups) {
-            if(tup!=getProject() && (tup.isBuilding() || tup.isInQueue()))
-                return tup;
+            if(tup!=excludeProject && (tup.isBuilding() || tup.isInQueue()))
+                return true;
         }
-        return null;
+        return false;
     }
     
 

@@ -24,6 +24,7 @@
 package hudson.model;
 
 import hudson.Util;
+import hudson.model.Queue.*;
 import hudson.util.TimeUnit2;
 import hudson.security.ACL;
 import org.kohsuke.stapler.StaplerRequest;
@@ -45,7 +46,7 @@ import java.util.logging.Level;
  */
 @ExportedBean
 public class Executor extends Thread implements ModelObject {
-    private final Computer owner;
+    protected final Computer owner;
     private final Queue queue;
 
     private long startTime;
@@ -65,11 +66,11 @@ public class Executor extends Thread implements ModelObject {
 
     private Throwable causeOfDeath;
 
-    public Executor(Computer owner) {
-        super("Executor #"+owner.getExecutors().size()+" for "+owner.getDisplayName());
+    public Executor(Computer owner, int n) {
+        super("Executor #"+n+" for "+owner.getDisplayName());
         this.owner = owner;
         this.queue = Hudson.getInstance().getQueue();
-        this.number = owner.getExecutors().size();
+        this.number = n;
         start();
     }
 
@@ -79,10 +80,7 @@ public class Executor extends Thread implements ModelObject {
 
         try {
             finishTime = System.currentTimeMillis();
-            while(true) {
-                if(Hudson.getInstance() == null || Hudson.getInstance().isTerminating())
-                    return;
-
+            while(shouldRun()) {
                 synchronized(owner) {
                     if(owner.getNumExecutors()<owner.getExecutors().size()) {
                         // we've got too many executors.
@@ -98,7 +96,7 @@ public class Executor extends Thread implements ModelObject {
 
                 Queue.Item queueItem;
                 try {
-                	queueItem = queue.pop();
+                	queueItem = grabJob();
                 } catch (InterruptedException e) {
                     continue;
                 }
@@ -142,6 +140,17 @@ public class Executor extends Thread implements ModelObject {
             causeOfDeath = e;
             throw e;
         }
+    }
+
+    /**
+     * Returns true if we should keep going.
+     */
+    protected boolean shouldRun() {
+        return Hudson.getInstance() != null && !Hudson.getInstance().isTerminating();
+    }
+
+    protected Queue.Item grabJob() throws InterruptedException {
+        return queue.pop();
     }
 
     /**

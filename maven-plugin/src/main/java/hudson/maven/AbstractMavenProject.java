@@ -88,7 +88,6 @@ public abstract class AbstractMavenProject<P extends AbstractProject<P,R>,R exte
     public boolean isBuildBlocked() {
         boolean blocked = super.isBuildBlocked();
         if (!blocked && blockBuildWhenUpstreamBuilding) {
-            DependencyGraph graph = Hudson.getInstance().getDependencyGraph();
             AbstractProject bup = getBuildingUpstream();
             if(bup!=null) {
                 return true;

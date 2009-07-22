@@ -35,6 +35,8 @@ import hudson.triggers.Trigger;
 import hudson.util.OneShotEvent;
 import hudson.util.TimeUnit2;
 import hudson.util.XStream2;
+import hudson.util.ConsistentHash;
+import hudson.util.ConsistentHash.Hash;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -852,7 +854,7 @@ public class Queue extends ResourceController implements Saveable {
                 // ready to be executed
                 LOGGER.fine(p.task.getFullDisplayName() + " no longer blocked");
                 itr.remove();
-                buildables.put(p.task,new BuildableItem(p));
+                makeBuildable(new BuildableItem(p));
             }
         }
 
@@ -862,16 +864,15 @@ public class Queue extends ResourceController implements Saveable {
             if (!top.timestamp.before(new GregorianCalendar()))
                 return; // finished moving all ready items from queue
 
+            waitingList.remove(top);
             Task p = top.task;
             if (!isBuildBlocked(p)) {
                 // ready to be executed immediately
-                waitingList.remove(top);
                 LOGGER.fine(p.getFullDisplayName() + " ready to build");
-                buildables.put(p,new BuildableItem(top));
+                makeBuildable(new BuildableItem(top));
             } else {
                 // this can't be built now because another build is in progress
                 // set this project aside.
-                waitingList.remove(top);
                 LOGGER.fine(p.getFullDisplayName() + " is blocked");
                 blockedProjects.put(p,new BlockedItem(top));
             }
@@ -879,6 +880,31 @@ public class Queue extends ResourceController implements Saveable {
         
         if (sortingHandler != null)
         	sortingHandler.sortBuildableItems(buildables);
+    }
+
+    private void makeBuildable(BuildableItem p) {
+        if(Hudson.FLYWEIGHT_SUPPORT && p.task instanceof FlyweightTask) {
+            ConsistentHash<Node> hash = new ConsistentHash<Node>(new Hash<Node>() {
+                public String hash(Node node) {
+                    return node.getNodeName();
+                }
+            });
+            Hudson h = Hudson.getInstance();
+            hash.add(h, h.getNumExecutors()*100);
+            for (Node n : h.getNodes())
+                hash.add(n,n.getNumExecutors()*100);
+            
+            for (Node n : hash.list(p.task.getFullDisplayName())) {
+                Computer c = n.toComputer();
+                if (c==null)    continue;
+                c.startFlyWeightTask(p);
+                return;
+            }
+            // if the execution get here, it means we couldn't schedule it anywhere.
+            // so do the scheduling like other normal jobs.
+        }
+        
+        buildables.put(p.task,p);
     }
 
     public Api getApi() {
@@ -890,6 +916,13 @@ public class Queue extends ResourceController implements Saveable {
      * @since 1.311
      */
     public interface TransientTask extends Task {}
+
+    /**
+     * Marks {@link Task}s that do not consume {@link Executor}.
+     * @see OneOffExecutor
+     * @since 1.318
+     */
+    public interface FlyweightTask extends Task {}
 
     /**
      * Task whose execution is controlled by the queue.

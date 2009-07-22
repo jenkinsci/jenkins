@@ -98,6 +98,8 @@ import java.net.Inet4Address;
 public /*transient*/ abstract class Computer extends Actionable implements AccessControlled, ExecutorListener {
 
     private final CopyOnWriteArrayList<Executor> executors = new CopyOnWriteArrayList<Executor>();
+    // TODO: 
+    private final CopyOnWriteArrayList<OneOffExecutor> oneOffExecutors = new CopyOnWriteArrayList<OneOffExecutor>();
 
     private int numExecutors;
     
@@ -451,7 +453,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
         } else {
             // if the number is increased, add new ones
             while(executors.size()<numExecutors)
-                executors.add(new Executor(this));
+                executors.add(new Executor(this,executors.size()));
         }
     }
 
@@ -484,6 +486,14 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
     @Exported
     public List<Executor> getExecutors() {
         return new ArrayList<Executor>(executors);
+    }
+
+    /**
+     * Gets the read-only snapshot view of all {@link OneOffExecutor}s.
+     */
+    @Exported
+    public List<OneOffExecutor> getOneOffExecutors() {
+        return new ArrayList<OneOffExecutor>(oneOffExecutors);
     }
 
     /**
@@ -654,6 +664,17 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
         
         hostNameCached = true;
         return null;
+    }
+
+    /**
+     * Starts executing a fly-weight task.
+     */
+    /*package*/ final void startFlyWeightTask(Queue.BuildableItem p) {
+        oneOffExecutors.add(new OneOffExecutor(this, p));
+    }
+
+    /*package*/ final void remove(OneOffExecutor e) {
+        oneOffExecutors.remove(e);
     }
 
     private static class ListPossibleNames implements Callable<List<String>,IOException> {

@@ -40,11 +40,13 @@ import net.sf.json.JSONObject;
 import org.acegisecurity.Authentication;
 import org.apache.commons.io.input.CountingInputStream;
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.io.output.NullOutputStream;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 
 import javax.servlet.ServletException;
+import javax.net.ssl.SSLHandshakeException;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -68,6 +70,8 @@ import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import sun.security.validator.ValidatorException;
 
 /**
  * Controls update center capability.
@@ -637,9 +641,15 @@ public class UpdateCenter extends AbstractModelObject {
         
         
         private void testConnection(URL url) throws IOException {
-            InputStream in = ProxyConfiguration.open(url).getInputStream();
-            IOUtils.copy(in,new ByteArrayOutputStream());
-            in.close();
+            try {
+                InputStream in = ProxyConfiguration.open(url).getInputStream();
+                IOUtils.copy(in,new NullOutputStream());
+                in.close();
+            } catch (SSLHandshakeException e) {
+                if (e.getMessage().contains("PKIX path building failed"))
+                   // fix up this crappy error message from JDK
+                    throw new IOException2("Failed to validate the SSL certificate of "+url,e);
+            }
         }                    
     }
     

@@ -259,7 +259,7 @@ public abstract class SecurityRealm implements Describable<SecurityRealm>, Exten
      * @return
      *      never null.
      */
-    public final UserDetails loadUserByUsername(String username) throws UsernameNotFoundException, DataAccessException {
+    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException, DataAccessException {
         return getSecurityComponents().userDetails.loadUserByUsername(username);
     }
 

@@ -33,6 +33,7 @@ import static hudson.Util.fixNull;
 import hudson.maven.agent.Main;
 import hudson.maven.agent.Maven21Interceptor;
 import hudson.maven.agent.PluginManagerInterceptor;
+import hudson.maven.ProcessCache.NewProcess;
 import hudson.model.BuildListener;
 import hudson.model.Computer;
 import hudson.model.Executor;
@@ -186,7 +187,7 @@ final class MavenProcessFactory implements ProcessCache.Factory {
     /**
      * Starts maven process.
      */
-    public Channel newProcess(BuildListener listener, OutputStream out) throws IOException, InterruptedException {
+    public NewProcess newProcess(BuildListener listener, OutputStream out) throws IOException, InterruptedException {
         if(debug)
             listener.getLogger().println("Using env variables: "+ envVars);
         try {
@@ -208,11 +209,11 @@ final class MavenProcessFactory implements ProcessCache.Factory {
                 throw e;
             }
 
-            return Channels.forProcess("Channel to Maven "+ Arrays.toString(cmds),
-                Computer.threadPoolForRemoting, new BufferedInputStream(con.in), new BufferedOutputStream(con.out), listener.getLogger(), proc);
-
-//            return launcher.launchChannel(buildMavenCmdLine(listener).toCommandArray(),
-//                out, workDir, envVars);
+            return new NewProcess(
+                Channels.forProcess("Channel to Maven "+ Arrays.toString(cmds),
+                    Computer.threadPoolForRemoting, new BufferedInputStream(con.in), new BufferedOutputStream(con.out),
+                    listener.getLogger(), proc),
+                proc);
         } catch (IOException e) {
             if(fixNull(e.getMessage()).contains("java: not found")) {
                 // diagnose issue #659

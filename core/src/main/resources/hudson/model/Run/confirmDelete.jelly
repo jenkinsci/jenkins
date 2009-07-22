@@ -32,7 +32,7 @@ THE SOFTWARE.
 		    <b>${%Warning}</b>: ${%cannotMsg(msg)}
 		  </j:if>		  
 		  <j:if test="${msg==null}">
-		    <form method="get" action="doDelete">
+		    <form method="post" action="doDelete">
 		      ${%Are you sure about deleting the build?}
 		      <f:submit value="${%Yes}" />
 		    </form>

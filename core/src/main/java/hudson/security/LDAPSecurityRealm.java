@@ -276,14 +276,14 @@ public class LDAPSecurityRealm extends SecurityRealm {
     @DataBoundConstructor
     public LDAPSecurityRealm(String server, String rootDN, String userSearchBase, String userSearch, String groupSearchBase, String managerDN, String managerPassword) {
         this.server = server.trim();
+        this.managerDN = Util.fixEmpty(managerDN);
+        this.managerPassword = Scrambler.scramble(Util.fixEmpty(managerPassword));
         if(Util.fixEmptyAndTrim(rootDN)==null)    rootDN=Util.fixNull(inferRootDN(server));
         this.rootDN = rootDN.trim();
         this.userSearchBase = userSearchBase.trim();
         userSearch = Util.fixEmptyAndTrim(userSearch);
         this.userSearch = userSearch!=null ? userSearch : "uid={0}";
         this.groupSearchBase = Util.fixEmptyAndTrim(groupSearchBase);
-        this.managerDN = Util.fixEmpty(managerDN);
-        this.managerPassword = Scrambler.scramble(Util.fixEmpty(managerPassword));
     }
 
     public String getServerUrl() {

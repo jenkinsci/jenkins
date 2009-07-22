@@ -29,10 +29,8 @@ import hudson.Launcher;
 import hudson.Util;
 import hudson.EnvVars;
 import hudson.FilePath.FileCallable;
-import hudson.matrix.MatrixConfiguration;
 import hudson.maven.MavenBuild.ProxyImpl2;
 import hudson.maven.reporters.MavenFingerprinter;
-import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
 import hudson.model.Action;
 import hudson.model.Build;
@@ -47,6 +45,7 @@ import hudson.model.TaskListener;
 import hudson.model.Cause.UpstreamCause;
 import hudson.remoting.Channel;
 import hudson.remoting.VirtualChannel;
+import hudson.remoting.RequestAbortedException;
 import hudson.tasks.BuildWrapper;
 import hudson.tasks.Maven.MavenInstallation;
 import hudson.util.ArgumentListBuilder;
@@ -390,6 +389,17 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
                             mpa = new MavenProbeAction(project,process.channel);
                             addAction(mpa);
                             return process.channel.call(builder);
+                        } catch (RequestAbortedException e) {
+                            // this is normally triggered by the unexpected Maven JVM termination.
+                            // check if the process is still alive, after giving it a bit of time to die
+                            Thread.sleep(1000);
+                            if(process.proc.isAlive())
+                                throw e; // it's still alive. treat this as a bug in the code
+                            else {
+                                String msg = "Maven JVM terminated unexpectedly with exit code " + process.proc.join();
+                                LOGGER.log(Level.FINE,msg,e);
+                                throw new AbortException(msg);
+                            }
                         } finally {
                             builder.end(launcher);
                             getActions().remove(mpa);
