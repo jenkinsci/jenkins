@@ -1247,6 +1247,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
      * Deletes the build when the button is pressed.
      */
     public void doDoDelete( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
+        requirePOST();
         checkPermission(DELETE);
 
         // We should not simply delete the build if it has been explicitly

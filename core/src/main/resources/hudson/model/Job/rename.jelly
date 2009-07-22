@@ -36,7 +36,7 @@ THE SOFTWARE.
         </j:when>
         <j:otherwise>
           <j:set var="newName" value="${request.getParameter('newName')}" />
-          <form method="get" action="doRename">
+          <form method="post" action="doRename">
             ${%description(it.name, newName)}
             <input type="hidden" name="newName" value="${newName}" />
             <f:submit value="${%Yes}" />

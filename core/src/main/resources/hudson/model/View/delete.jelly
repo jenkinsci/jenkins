@@ -27,7 +27,7 @@ THE SOFTWARE.
 	<l:layout>
 		<st:include page="sidepanel.jelly" />
 		<l:main-panel>
-		  <form method="get" action="doDelete">
+		  <form method="post" action="doDelete">
 		    ${%Are you sure about deleting the view?}
 		    <f:submit value="${%Yes}" />
 		  </form>
