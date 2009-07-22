@@ -124,7 +124,7 @@ public final class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,Ma
      * <p>
      * See HUDSON-1714.
      */
-    private boolean ignoreUpstreamChanges = false;
+    private boolean ignoreUpstremChanges = false;
 
     /**
      * Reporters configured at {@link MavenModuleSet} level. Applies to all {@link MavenModule} builds.
@@ -268,8 +268,8 @@ public final class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,Ma
         return usePrivateRepository;
     }
 
-    public boolean ignoreUpstreamChanges() {
-        return ignoreUpstreamChanges;
+    public boolean ignoreUpstremChanges() {
+        return ignoreUpstremChanges;
     }
 
     /**
@@ -621,7 +621,7 @@ public final class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,Ma
         mavenName = req.getParameter("maven_version");
         aggregatorStyleBuild = !req.hasParameter("maven.perModuleBuild");
         usePrivateRepository = req.hasParameter("maven.usePrivateRepository");
-        ignoreUpstreamChanges = !json.has("triggerByDependency");
+        ignoreUpstremChanges = !json.has("triggerByDependency");
 
         reporters.rebuild(req,json,MavenReporters.getConfigurableList());
         publishers.rebuild(req,json,BuildStepDescriptor.filter(Publisher.all(),this.getClass()));

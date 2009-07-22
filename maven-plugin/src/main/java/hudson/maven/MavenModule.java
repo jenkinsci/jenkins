@@ -349,7 +349,7 @@ public final class MavenModule extends AbstractMavenProject<MavenModule,MavenBui
     }
 
     protected void buildDependencyGraph(DependencyGraph graph) {
-        if(isDisabled() || getParent().ignoreUpstreamChanges())        return;
+        if(isDisabled() || getParent().ignoreUpstremChanges())        return;
 
         Map<ModuleDependency,MavenModule> modules = new HashMap<ModuleDependency,MavenModule>();
 

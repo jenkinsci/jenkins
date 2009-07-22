@@ -31,9 +31,9 @@ THE SOFTWARE.
   <p:config-trigger>
     <!-- setting to ignore upstream changes is done as a pseudo-trigger -->
     <f:optionalBlock name="maven.triggerByDependency"
-        help="/help/maven/ignore-upstream-changes.html"
+        help="/help/maven/ignore-upstrem-changes.html"
         title="${%Build whenever a SNAPSHOT dependency is built}"
-        checked="${h.defaultToTrue(!it.ignoreUpstreamChanges())}" />
+        checked="${h.defaultToTrue(!it.ignoreUpstremChanges())}" />
     <p:config-upstream-pseudo-trigger />
   </p:config-trigger>
 
