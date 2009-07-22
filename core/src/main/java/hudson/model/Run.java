@@ -588,6 +588,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
     /**
      * Unique ID of this build.
      */
+    @Exported
     public String getId() {
         return ID_FORMATTER.get().format(new Date(timestamp));
     }
