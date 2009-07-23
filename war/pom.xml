@@ -125,6 +125,11 @@ THE SOFTWARE.
         <version>6.1.7</version>
         <configuration>
           <contextPath>${contextPath}</contextPath>
+          <connectors>
+            <connector implementation="org.mortbay.jetty.nio.SelectChannelConnector">
+                <port>${port}</port>
+            </connector>
+          </connectors>
           <!--
             read directly from core module's output directory,
             so that changes are picked up right away without running mvn.
@@ -217,6 +222,7 @@ THE SOFTWARE.
   <properties>
     <HUDSON_HOME>${basedir}/work</HUDSON_HOME>
     <contextPath>/</contextPath><!-- context path during test -->
+    <port>8080</port><!-- HTTP listener port -->
   </properties>
 
   <pluginRepositories>
