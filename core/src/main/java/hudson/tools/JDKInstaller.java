@@ -221,9 +221,8 @@ public class JDKInstaller extends ToolInstaller {
 
     /**
      * Performs a license click through and obtains the one-time URL for downloading bits.
-     *
      */
-    /*package*/ URL locate(TaskListener log, Platform platform, CPU cpu) throws IOException {
+    public URL locate(TaskListener log, Platform platform, CPU cpu) throws IOException {
         HttpURLConnection con = locateStage1(platform, cpu);
         String page = IOUtils.toString(con.getInputStream());
         return locateStage2(log, page);
