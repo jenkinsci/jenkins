@@ -28,6 +28,7 @@ import hudson.FilePath;
 import hudson.Launcher;
 import hudson.Util;
 import hudson.EnvVars;
+import hudson.scm.ChangeLogSet;
 import hudson.FilePath.FileCallable;
 import hudson.maven.MavenBuild.ProxyImpl2;
 import hudson.maven.reporters.MavenFingerprinter;
@@ -152,6 +153,54 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
         }
 
         return r;
+    }
+
+    /**
+     * Returns the filtered changeset entries that match the given module.
+     */
+    /*package*/ List<ChangeLogSet.Entry> getChangeSetFor(final MavenModule mod) {
+        return new ArrayList<ChangeLogSet.Entry>() {
+            {
+                // modules that are under 'mod'. lazily computed
+                List<MavenModule> subsidiaries = null;
+
+                for (ChangeLogSet.Entry e : getChangeSet()) {
+                    if(isDescendantOf(e, mod)) {
+                        if(subsidiaries==null)
+                            subsidiaries = mod.getSubsidiaries();
+
+                        // make sure at least one change belongs to this module proper,
+                        // and not its subsidiary module
+                        if (notInSubsidiary(subsidiaries, e))
+                            add(e);
+                    }
+                }
+            }
+
+            private boolean notInSubsidiary(List<MavenModule> subsidiaries, ChangeLogSet.Entry e) {
+                for (String path : e.getAffectedPaths())
+                    if(!belongsToSubsidiary(subsidiaries, path))
+                        return true;
+                return false;
+            }
+
+            private boolean belongsToSubsidiary(List<MavenModule> subsidiaries, String path) {
+                for (MavenModule sub : subsidiaries)
+                    if(path.startsWith(sub.getRelativePath()))
+                        return true;
+                return false;
+            }
+
+            /**
+             * Does this change happen somewhere in the given module or its descendants?
+             */
+            private boolean isDescendantOf(ChangeLogSet.Entry e, MavenModule mod) {
+                for (String path : e.getAffectedPaths())
+                    if(path.startsWith(mod.getRelativePath()))
+                        return true;
+                return false;
+            }
+        };
     }
 
     /**
@@ -374,7 +423,7 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
                             // we act as if incrementalBuild is not set if there are no changes.
                             if (!MavenModuleSetBuild.this.getChangeSet().isEmptySet()
                                 && project.isIncrementalBuild()) {
-                                if (MavenUtil.isModuleInChangeset(m, MavenModuleSetBuild.this)) {
+                                if (!getChangeSetFor(m).isEmpty()) {
                                     changedModules.add(m.getModuleName().toString());
                                 }
                             }

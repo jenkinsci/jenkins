@@ -144,6 +144,22 @@ public final class MavenModule extends AbstractMavenProject<MavenModule,MavenBui
     }
 
     /**
+     * Computes the list of {@link MavenModule}s that are 'under' this POM filesystem-wise. The list doens't include
+     * this module itself.
+     *
+     * <p>
+     * Note that this doesn't necessary has anything to do with the module inheritance structure or parent/child
+     * relationship of the POM.
+     */
+    public List<MavenModule> getSubsidiaries() {
+        List<MavenModule> r = new ArrayList<MavenModule>();
+        for (MavenModule mm : getParent().getModules())
+            if(mm!=this && mm.getRelativePath().startsWith(getRelativePath()))
+                r.add(mm);
+        return r;
+    }
+
+    /**
      * Called to update the module with the new POM.
      * <p>
      * This method is invoked on {@link MavenModule} that has the matching

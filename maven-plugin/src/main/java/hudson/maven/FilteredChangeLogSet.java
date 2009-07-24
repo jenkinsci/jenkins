@@ -29,6 +29,7 @@ import hudson.scm.ChangeLogSet.Entry;
 import java.util.Iterator;
 import java.util.List;
 import java.util.ArrayList;
+import java.util.Collections;
 
 /**
  * {@link ChangeLogSet} implementation used for {@link MavenBuild}.
@@ -36,58 +37,19 @@ import java.util.ArrayList;
  * @author Kohsuke Kawaguchi
  */
 public class FilteredChangeLogSet extends ChangeLogSet<Entry> {
-    private final List<Entry> master = new ArrayList<Entry>();
+    private final List<Entry> master;
 
     public final ChangeLogSet<? extends Entry> core;
 
     /*package*/ FilteredChangeLogSet(MavenBuild build) {
         super(build);
-        MavenModule mod = build.getParent();
-
-        // modules that are under 'mod'. lazily computed
-        List<MavenModule> subsidiaries = null;
-
         MavenModuleSetBuild parentBuild = build.getParentBuild();
         if(parentBuild==null) {
             core = ChangeLogSet.createEmpty(build);
-            return;
-        }
-        
-        core = parentBuild.getChangeSet();
-
-        for (Entry e : core) {
-            boolean belongs = false;
-
-            for (String path : e.getAffectedPaths()) {
-                if(path.startsWith(mod.getRelativePath())) {
-                    belongs = true;
-                    break;
-                }
-            }
-
-            if(belongs) {
-                // make sure at least one change belongs to this module proper,
-                // and not its subsidiary module
-                if(subsidiaries==null) {
-                    subsidiaries = new ArrayList<MavenModule>();
-                    for (MavenModule mm : mod.getParent().getModules()) {
-                        if(mm!=mod && mm.getRelativePath().startsWith(mod.getRelativePath()))
-                            subsidiaries.add(mm);
-                    }
-                }
-
-                belongs = false;
-
-                for (String path : e.getAffectedPaths()) {
-                    if(!MavenUtil.belongsToSubsidiary(subsidiaries, path)) {
-                        belongs = true;
-                        break;
-                    }
-                }
-
-                if(belongs)
-                    master.add(e);
-            }
+            master = Collections.emptyList();
+        } else {
+            core = parentBuild.getChangeSet();
+            master = parentBuild.getChangeSetFor(build.getParent());
         }
     }
 

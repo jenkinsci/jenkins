@@ -30,9 +30,6 @@ import hudson.model.AbstractProject;
 import hudson.tasks.Maven.MavenInstallation;
 import hudson.tasks.Maven.ProjectWithMaven;
 
-import hudson.scm.ChangeLogSet;
-import hudson.scm.ChangeLogSet.Entry;
-
 import org.apache.maven.embedder.MavenEmbedderException;
 import org.apache.maven.embedder.MavenEmbedderLogger;
 import org.apache.maven.project.MavenProject;
@@ -43,7 +40,6 @@ import java.io.File;
 import java.io.IOException;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
-import java.io.PrintStream;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Enumeration;
@@ -250,61 +246,6 @@ public class MavenUtil {
             };
         }
     }
-
-    public static boolean isModuleInChangeset(MavenModule mod, MavenModuleSetBuild parentBuild) {
-        // modules that are under 'mod'. lazily computed
-        List<MavenModule> subsidiaries = null;
-        
-        boolean moduleChanged = false;
-        ChangeLogSet<? extends Entry> changes = parentBuild.getChangeSet();
-        
-        for (Entry e : changes) {
-            boolean belongs = false;
-            
-            for (String path : e.getAffectedPaths()) {
-                
-                if(path.startsWith(mod.getRelativePath())) {
-                    belongs = true;
-                    break;
-                }
-            }
-
-            if(belongs) {
-                // make sure at least one change belongs to this module proper,
-                // and not its subsidiary module
-                if(subsidiaries==null) {
-                    subsidiaries = new ArrayList<MavenModule>();
-                    for (MavenModule mm : mod.getParent().getModules()) {
-                        if(mm!=mod && mm.getRelativePath().startsWith(mod.getRelativePath()))
-                            subsidiaries.add(mm);
-                    }
-                }
-
-                belongs = false;
-
-                for (String path : e.getAffectedPaths()) {
-                    if(!belongsToSubsidiary(subsidiaries, path)) {
-                        belongs = true;
-                        break;
-                    }
-                }
-                
-                if (belongs) {
-                    moduleChanged = true;
-                }
-            }
-        }
-
-        return moduleChanged;
-    }
-
-    public static boolean belongsToSubsidiary(List<MavenModule> subsidiaries, String path) {
-        for (MavenModule sub : subsidiaries)
-            if(path.startsWith(sub.getRelativePath()))
-                return true;
-        return false;
-    }
-
 
     /**
      * If set to true, maximize the logging level of Maven embedder.
