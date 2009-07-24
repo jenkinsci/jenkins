@@ -330,7 +330,13 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
             PrintStream logger = listener.getLogger();
             try {
                 EnvVars envVars = getEnvironment(listener);
-                parsePoms(listener, logger, envVars);
+                MavenInstallation mvn = project.getMaven();
+                if(mvn==null)
+                    throw new AbortException("A Maven installation needs to be available for this project to be built.\n"+
+                                             "Either your server has no Maven installations defined, or the requested Maven version does not exist.");
+                
+                mvn = mvn.forEnvironment(envVars).forNode(Computer.currentComputer().getNode(), listener);
+                parsePoms(listener, logger, envVars, mvn);
 
                 if(!project.isAggregatorStyleBuild()) {
                     // start module builds
@@ -360,8 +366,21 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
 
                         SplittableBuildListener slistener = new SplittableBuildListener(listener);
                         proxies = new HashMap<ModuleName, ProxyImpl2>();
-                        for (MavenModule m : project.sortedActiveModules)
+                        List<String> changedModules = new ArrayList<String>();
+
+                        for (MavenModule m : project.sortedActiveModules) {
+                            
+                            // Check if incrementalBuild is selected and that there are changes -
+                            // we act as if incrementalBuild is not set if there are no changes.
+                            if (!MavenModuleSetBuild.this.getChangeSet().isEmptySet()
+                                && project.isIncrementalBuild()) {
+                                if (MavenUtil.isModuleInChangeset(m, MavenModuleSetBuild.this)) {
+                                    changedModules.add(m.getModuleName().toString());
+                                }
+                            }
+                            
                             proxies.put(m.getModuleName(),m.newBuild().new ProxyImpl2(MavenModuleSetBuild.this,slistener));
+                        }
 
                         // run the complete build here
 
@@ -381,6 +400,13 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
                         ArgumentListBuilder margs = new ArgumentListBuilder().add("-B").add("-f", pom.getRemote());
                         if(project.usesPrivateRepository())
                             margs.add("-Dmaven.repo.local="+project.getWorkspace().child(".repository"));
+                        // If incrementalBuild is set, and we're on Maven 2.1 or later, *and* there's at least one module
+                        // listed in changedModules, do the Maven incremental build commands - if there are no changed modules,
+                        // We're building everything anyway.
+                        if (project.isIncrementalBuild() && mvn.isMaven2_1(launcher) && !changedModules.isEmpty()) {
+                            margs.add("-amd");
+                            margs.add("-pl", Util.join(changedModules, ","));
+                        }
                         margs.addTokenized(envVars.expand(project.getGoals()));
 
                         Builder builder = new Builder(slistener, proxies, project.sortedActiveModules, margs.toList(), envVars);
@@ -445,14 +471,8 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
             }
         }
 
-        private void parsePoms(BuildListener listener, PrintStream logger, EnvVars envVars) throws IOException, InterruptedException {
+        private void parsePoms(BuildListener listener, PrintStream logger, EnvVars envVars, MavenInstallation mvn) throws IOException, InterruptedException {
             logger.println("Parsing POMs");
-            MavenInstallation mvn = project.getMaven();
-            if(mvn==null)
-                throw new AbortException("A Maven installation needs to be available for this project to be built.\n"+
-                "Either your server has no Maven installations defined, or the requested Maven version does not exist.");
-
-            mvn = mvn.forEnvironment(envVars).forNode(Computer.currentComputer().getNode(), listener);
 
             List<PomInfo> poms;
             try {
@@ -714,6 +734,7 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
         private final MavenInstallation mavenHome;
         private final String profiles;
         private final Properties properties;
+        private final String privateRepository;
 
         public PomParser(BuildListener listener, MavenInstallation mavenHome, MavenModuleSet project) {
             // project cannot be shipped to the remote JVM, so all the relevant properties need to be captured now.
@@ -722,6 +743,12 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
             this.rootPOM = project.getRootPOM();
             this.profiles = project.getProfiles();
             this.properties = project.getMavenProperties();
+            if (project.usesPrivateRepository()) {
+                this.privateRepository = project.getWorkspace().child(".repository").getRemote();
+            }
+            else {
+                this.privateRepository = null;
+            }
         }
 
         /**
@@ -756,7 +783,8 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
 
             try {
                 MavenEmbedder embedder = MavenUtil.
-                        createEmbedder(listener,mavenHome.getHomeDir(),profiles,properties);
+                        createEmbedder(listener, mavenHome.getHomeDir(), profiles,
+                                       properties, privateRepository);
                 MavenProject mp = embedder.readProject(pom);
                 Map<MavenProject,String> relPath = new HashMap<MavenProject,String>();
                 MavenUtil.resolveModules(embedder,mp,getRootPath(),relPath,listener);

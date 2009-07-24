@@ -107,6 +107,9 @@ public final class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,Ma
      */
     private boolean aggregatorStyleBuild = true;
 
+
+    private boolean incrementalBuild = false;
+
     /**
      * If true, the build will use its own local Maven repository
      * via "-Dmaven.repo.local=...".
@@ -258,6 +261,10 @@ public final class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,Ma
                 return job.nestLevel;
             }
         };
+    }
+
+    public boolean isIncrementalBuild() {
+        return incrementalBuild;
     }
 
     public boolean isAggregatorStyleBuild() {
@@ -622,6 +629,7 @@ public final class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,Ma
         aggregatorStyleBuild = !req.hasParameter("maven.perModuleBuild");
         usePrivateRepository = req.hasParameter("maven.usePrivateRepository");
         ignoreUpstremChanges = !json.has("triggerByDependency");
+        incrementalBuild = req.hasParameter("maven.incrementalBuild");
 
         reporters.rebuild(req,json,MavenReporters.getConfigurableList());
         publishers.rebuild(req,json,BuildStepDescriptor.filter(Publisher.all(),this.getClass()));

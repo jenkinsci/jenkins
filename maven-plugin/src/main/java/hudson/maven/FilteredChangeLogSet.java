@@ -79,7 +79,7 @@ public class FilteredChangeLogSet extends ChangeLogSet<Entry> {
                 belongs = false;
 
                 for (String path : e.getAffectedPaths()) {
-                    if(!belongsToSubsidiary(subsidiaries, path)) {
+                    if(!MavenUtil.belongsToSubsidiary(subsidiaries, path)) {
                         belongs = true;
                         break;
                     }
@@ -89,13 +89,6 @@ public class FilteredChangeLogSet extends ChangeLogSet<Entry> {
                     master.add(e);
             }
         }
-    }
-
-    private boolean belongsToSubsidiary(List<MavenModule> subsidiaries, String path) {
-        for (MavenModule sub : subsidiaries)
-            if(path.startsWith(sub.getRelativePath()))
-                return true;
-        return false;
     }
 
     public Iterator<Entry> iterator() {
