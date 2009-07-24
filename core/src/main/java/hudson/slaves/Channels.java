@@ -30,6 +30,7 @@ import hudson.model.Computer;
 import hudson.model.TaskListener;
 import hudson.remoting.Channel;
 import hudson.remoting.Which;
+import hudson.remoting.Launcher;
 import hudson.util.ArgumentListBuilder;
 import hudson.util.ClasspathBuilder;
 import hudson.util.StreamCopyThread;
@@ -158,7 +159,8 @@ public class Channels {
         args.add(new File(System.getProperty("java.home"),"bin/java"));
         if(systemProperties!=null)
             args.addKeyValuePairs("-D",systemProperties);
-        args.add("-jar").add(Which.jarFile(Channel.class));
+        // use -cp + FQCN instead of -jar since remoting.jar can be rebundled (like in the case of the swarm plugin.)
+        args.add("-cp").add(Which.jarFile(Channel.class)).add(Launcher.class.getName());
 
         // build up a classpath
         if(classpath!=null)
