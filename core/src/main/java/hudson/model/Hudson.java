@@ -3074,6 +3074,11 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
     public static boolean isWindows() {
         return File.pathSeparatorChar==';';
     }
+    
+    public static boolean isDarwin() {
+        // according to http://developer.apple.com/technotes/tn2002/tn2110.html
+        return System.getProperty("os.name").startsWith("mac");
+    }
 
     /**
      * Returns all {@code CVSROOT} strings used in the current Hudson installation.

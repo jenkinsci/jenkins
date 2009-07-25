@@ -31,6 +31,7 @@ import com.sun.jna.StringArray;
 import java.io.IOException;
 
 import static hudson.util.jna.GNUCLibrary.*;
+import hudson.model.Hudson;
 
 /**
  * {@link Lifecycle} implementation when Hudson runs on the embedded
@@ -74,6 +75,10 @@ public class UnixLifecycle extends Lifecycle {
 
     @Override
     public boolean canRestart() {
-        return args!=null;
+        // see http://lists.apple.com/archives/cocoa-dev/2005/Oct/msg00836.html and
+        // http://factor-language.blogspot.com/2007/07/execve-returning-enotsup-on-mac-os-x.html
+        // on Mac, execv fails with ENOTSUP if the caller is multi-threaded, resulting in an error like
+        // the one described in http://www.nabble.com/Restarting-hudson-not-working-on-MacOS--to24641779.html
+        return !Hudson.isDarwin() && args!=null;
     }
 }
