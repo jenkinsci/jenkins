@@ -165,7 +165,9 @@ public class JDKInstaller extends ToolInstaller {
                 ArgumentListBuilder args = new ArgumentListBuilder();
                 args.add(file.getRemote());
                 args.add("/s");
-                args.add("/v/qn REBOOT=Suppress INSTALLDIR="+normalizedPath+" /L "+logFile.getRemote());
+                // according to http://community.acresso.com/showthread.php?t=83301, \" is the trick to quote values with whitespaces.
+                // Oh Windows, oh windows, why do you have to be so difficult?
+                args.add("/v/qn REBOOT=Suppress INSTALLDIR=\\\""+normalizedPath+"\\\" /L \\\""+logFile.getRemote()+"\\\"");
                 
                 if(node.createLauncher(log).launch().cmds(args).stdout(out).pwd(expectedLocation).join()!=0) {
                     out.println("Failed to install JDK");
