@@ -2348,12 +2348,7 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
      * Accepts the new description.
      */
     public synchronized void doSubmitDescription( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
-        checkPermission(ADMINISTER);
-
-        req.setCharacterEncoding("UTF-8");
-        systemMessage = req.getParameter("description");
-        save();
-        rsp.sendRedirect(".");
+        getPrimaryView().doSubmitDescription(req,rsp);
     }
 
     /**

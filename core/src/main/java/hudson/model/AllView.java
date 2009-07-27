@@ -73,6 +73,15 @@ public class AllView extends View {
     }
 
     @Override
+    public synchronized void doSubmitDescription( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
+        checkPermission(Hudson.ADMINISTER);
+
+        req.setCharacterEncoding("UTF-8");
+        Hudson.getInstance().setSystemMessage(req.getParameter("description"));
+        rsp.sendRedirect(".");
+    }
+
+    @Override
     public String getPostConstructLandingPage() {
         return ""; // there's no configuration page
     }
