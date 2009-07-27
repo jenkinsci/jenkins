@@ -465,10 +465,9 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
         	for (Environment e : buildEnvironments)
         		e.buildEnvVars(env);
 
-        ParametersAction parameters = getAction(ParametersAction.class);
-        if (parameters != null)
-        	parameters.buildEnvVars(this,env);
-        
+        for (EnvironmentContributingAction a : Util.filter(getActions(),EnvironmentContributingAction.class))
+            a.buildEnvVars(this,env);
+
         EnvVars.resolve(env);
         
         return env;
