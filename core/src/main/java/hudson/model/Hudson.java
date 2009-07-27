@@ -2356,6 +2356,14 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
         rsp.sendRedirect(".");
     }
 
+    /**
+     * @deprecated as of 1.317
+     *      Use {@link #doQuietDown()} instead.
+     */
+    public synchronized void doQuietDown(StaplerResponse rsp) throws IOException, ServletException {
+        doQuietDown().generateResponse(null,rsp,this);
+    }
+
     public synchronized HttpRedirect doQuietDown() throws IOException, ServletException {
         checkPermission(ADMINISTER);
         isQuietingDown = true;
