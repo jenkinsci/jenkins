@@ -27,7 +27,7 @@ THE SOFTWARE.
   <parent>
     <groupId>org.jvnet.hudson.main</groupId>
     <artifactId>pom</artifactId>
-    <version>1.317-SNAPSHOT</version>
+    <version>1.318-SNAPSHOT</version>
     <relativePath>../pom.xml</relativePath>
   </parent>
   
@@ -111,7 +111,11 @@ THE SOFTWARE.
 
                 <!-- bundled plugins -->
                 <resolveArtifact groupId="${project.groupId}" artifactId="maven-plugin" version="${project.version}" type="hpi" tofile="${basedir}/target/generated-resources/WEB-INF/plugins/maven-plugin.hpi" />
+<<<<<<< .working
                 <resolveArtifact groupId="org.jvnet.hudson.plugins" artifactId="ssh-slaves" version="0.7" type="hpi" tofile="${basedir}/target/generated-resources/WEB-INF/plugins/ssh-slaves.hpi" />
+=======
+                <resolveArtifact groupId="org.jvnet.hudson.plugins" artifactId="ssh-slaves" version="0.6" type="hpi" tofile="${basedir}/target/generated-resources/WEB-INF/plugins/ssh-slaves.hpi" />
+>>>>>>> .merge-right.r20128
                 <resolveArtifact groupId="org.jvnet.hudson.plugins" artifactId="subversion" version="1.4" type="hpi" tofile="${basedir}/target/generated-resources/WEB-INF/plugins/subversion.hpi" />
               </tasks>
             </configuration>
