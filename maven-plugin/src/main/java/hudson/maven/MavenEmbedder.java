@@ -163,6 +163,8 @@ public class MavenEmbedder
 
     private String profiles;
 
+    private File alternateSettings;
+
     private Properties systemProperties;
 
     /**
@@ -238,6 +240,15 @@ public class MavenEmbedder
      */
     public void setProfiles(String profiles) {
         this.profiles = profiles;
+    }
+
+    /**
+     * Sets alternate settings file.
+     *
+     * This method needs to be called before the embedder is {@link #start() started}.
+     */
+    public void setAlternateSettings(File alternateSettings) {
+        this.alternateSettings = alternateSettings;
     }
 
     /**
@@ -760,7 +771,8 @@ public class MavenEmbedder
             // ----------------------------------------------------------------------
 
             settingsBuilder = (MavenSettingsBuilder) embedder.lookup( MavenSettingsBuilder.ROLE );
-
+            
+           
             if(mavenHome!=null) {
                 // set global settings.xml.
                 // Maven figures this out from system property, which is obviously not set
@@ -779,7 +791,10 @@ public class MavenEmbedder
 
             try
             {
-                settings = settingsBuilder.buildSettings();
+                if (alternateSettings == null) 
+                    settings = settingsBuilder.buildSettings();
+                else 
+                    settings = settingsBuilder.buildSettings(alternateSettings, false);
             }
             catch ( IOException e )
             {

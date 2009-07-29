@@ -60,7 +60,7 @@ THE SOFTWARE.
     </j:if>
     <f:entry title="${%Root POM}" help="/plugin/maven-plugin/root-pom.html">
       <f:textbox name="rootPOM" value="${it.rootPOM}"
-              checkUrl="'checkRootPOM?value='+escape(this.value)" />
+              checkUrl="'checkFileInWorkspace?value='+escape(this.value)" />
     </f:entry>
     <f:entry title="${%Goals and options}" help="/plugin/maven-plugin/goals.html">
       <f:textbox name="goals" value="${it.userConfiguredGoals}"/>
@@ -68,6 +68,13 @@ THE SOFTWARE.
     <f:advanced>
       <f:entry title="MAVEN_OPTS" help="/plugin/maven-plugin/maven-opts.html">
         <f:expandableTextbox name="mavenOpts" value="${it.mavenOpts}" />
+      </f:entry>
+      <f:entry title="${%Alternate settings file}"
+               help="/plugin/maven-plugin/alternate-settings.html">
+        <f:textbox name="alternateSettings"
+                   value="${it.alternateSettings}" 
+                   checkUrl="'checkFileInWorkspace?value='+escape(this.value)"
+                   />
       </f:entry>
       <f:optionalBlock name="maven.incrementalBuild"
                        title="${%Incremental build - only build changed modules}"

@@ -82,6 +82,8 @@ public final class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,Ma
 
     private String goals;
 
+    private String alternateSettings;
+
     /**
      * Default goals specified in POM. Can be null.
      */
@@ -532,6 +534,13 @@ public final class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,Ma
     }
 
     /**
+     * Gets the workspace-relative path to an alternative Maven settings.xml file.
+     */
+    public String getAlternateSettings() {
+        return alternateSettings;
+    }
+
+    /**
      * If the list of configured goals contain the "-P" option,
      * return the configured profiles. Otherwise null.
      */
@@ -624,6 +633,7 @@ public final class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,Ma
         if(rootPOM!=null && rootPOM.equals("pom.xml"))   rootPOM=null;   // normalization
 
         goals = Util.fixEmpty(req.getParameter("goals").trim());
+        alternateSettings = Util.fixEmpty(req.getParameter("alternateSettings").trim());
         mavenOpts = Util.fixEmpty(req.getParameter("mavenOpts").trim());
         mavenName = req.getParameter("maven_version");
         aggregatorStyleBuild = !req.hasParameter("maven.perModuleBuild");
@@ -649,9 +659,9 @@ public final class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,Ma
     }
 
     /**
-     * Check the location of POM.
+     * Check the location of the POM, alternate settings file, etc - any file.
      */
-    public FormValidation doCheckRootPOM(@QueryParameter String value) throws IOException, ServletException {
+    public FormValidation doCheckFileInWorkspace(@QueryParameter String value) throws IOException, ServletException {
         FilePath ws = getModuleRoot();
         if(ws==null) return FormValidation.ok();
         return ws.validateRelativePath(value,true,true);

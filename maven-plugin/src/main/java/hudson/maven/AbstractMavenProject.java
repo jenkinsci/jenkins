@@ -80,7 +80,8 @@ public abstract class AbstractMavenProject<P extends AbstractProject<P,R>,R exte
         }
     }
     
-    private boolean blockBuildWhenUpstreamBuilding = true;
+    // Switching this back to default to false.
+    private boolean blockBuildWhenUpstreamBuilding = false;
     
     protected abstract void addTransientActionsFromBuild(R lastBuild, Set<Class> added);
     
