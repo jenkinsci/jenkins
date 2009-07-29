@@ -31,7 +31,7 @@ THE SOFTWARE.
   <p:config-trigger>
     <!-- setting to ignore upstream changes is done as a pseudo-trigger -->
     <f:optionalBlock name="maven.triggerByDependency"
-        help="/help/maven/ignore-upstrem-changes.html"
+        help="/plugin/maven-plugin/ignore-upstrem-changes.html"
         title="${%Build whenever a SNAPSHOT dependency is built}"
         checked="${h.defaultToTrue(!it.ignoreUpstremChanges())}" />
     <p:config-upstream-pseudo-trigger />
@@ -58,26 +58,26 @@ THE SOFTWARE.
         </select>
       </f:entry>
     </j:if>
-    <f:entry title="${%Root POM}" help="/help/maven/root-pom.html">
+    <f:entry title="${%Root POM}" help="/plugin/maven-plugin/root-pom.html">
       <f:textbox name="rootPOM" value="${it.rootPOM}"
               checkUrl="'checkRootPOM?value='+escape(this.value)" />
     </f:entry>
-    <f:entry title="${%Goals and options}" help="/help/maven/goals.html">
+    <f:entry title="${%Goals and options}" help="/plugin/maven-plugin/goals.html">
       <f:textbox name="goals" value="${it.userConfiguredGoals}"/>
     </f:entry>
     <f:advanced>
-      <f:entry title="MAVEN_OPTS" help="/help/maven/maven-opts.html">
+      <f:entry title="MAVEN_OPTS" help="/plugin/maven-plugin/maven-opts.html">
         <f:expandableTextbox name="mavenOpts" value="${it.mavenOpts}" />
       </f:entry>
       <f:optionalBlock name="maven.incrementalBuild"
                        title="${%Incremental build - only build changed modules}"
-                       help="/help/maven/incremental.html"
+                       help="/plugin/maven-plugin/incremental.html"
                        checked="${it.isIncrementalBuild()}" />
-      <f:optionalBlock name="maven.perModuleBuild" title="${%Build modules in parallel}" help="/help/maven/aggregator.html"
+      <f:optionalBlock name="maven.perModuleBuild" title="${%Build modules in parallel}" help="/plugin/maven-plugin/aggregator.html"
         checked="${!it.aggregatorStyleBuild}" />
-      <f:optionalBlock name="maven.usePrivateRepository" title="${%Use private Maven repository}" help="/help/maven/private-repository.html"
+      <f:optionalBlock name="maven.usePrivateRepository" title="${%Use private Maven repository}" help="/plugin/maven-plugin/private-repository.html"
         checked="${it.usesPrivateRepository()}" />
-      <f:optionalBlock name="maven.blockBuildWhenUpstreamBuilding" title="${%Block build when dependency building}" help="/help/maven/block-upstream-building.html"
+      <f:optionalBlock name="maven.blockBuildWhenUpstreamBuilding" title="${%Block build when dependency building}" help="/plugin/maven-plugin/block-upstream-building.html"
         checked="${it.blockBuildWhenUpstreamBuilding()}" />
     </f:advanced>
   </f:section>
