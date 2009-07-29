@@ -251,7 +251,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
      *
      * <p>
      * When a build is {@link #isBuilding() in progress}, this method
-     * may return null or a temporary intermediate result.
+     * returns an intermediate result.
      */
     @Exported
     public Result getResult() {
@@ -1042,6 +1042,9 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
      */
     protected void onStartBuilding() {
         state = State.BUILDING;
+        // start with the best possible value, and code that calls setResult() can progressively set
+        // worse results.
+        result = Result.SUCCESS;
     }
 
     /**
@@ -1049,11 +1052,6 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
      */
     protected void onEndBuilding() {
         state = State.COMPLETED;
-        if(result==null) {
-            // shouldn't happen, but be defensive until we figure out why
-            result = Result.FAILURE;
-            LOGGER.warning(toString()+": No build result is set, so marking as failure. This shouldn't happen");
-        }
         RunListener.fireFinalized(this);
     }
 

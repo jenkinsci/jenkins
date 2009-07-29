@@ -575,7 +575,7 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
                 } catch (BindException e) {
                     new AdministrativeError(getClass().getName()+".tcpBind",
                             "Failed to listen to incoming slave connection",
-                            "Failed to listen to incoming slave connection. <a href='configure'>Change the prot number</a> to solve the problem.",e);
+                            "Failed to listen to incoming slave connection. <a href='configure'>Change the port number</a> to solve the problem.",e);
                 }
             } else
                 tcpSlaveAgentListener = null;
@@ -2348,12 +2348,15 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
      * Accepts the new description.
      */
     public synchronized void doSubmitDescription( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
-        checkPermission(ADMINISTER);
+        getPrimaryView().doSubmitDescription(req,rsp);
+    }
 
-        req.setCharacterEncoding("UTF-8");
-        systemMessage = req.getParameter("description");
-        save();
-        rsp.sendRedirect(".");
+    /**
+     * @deprecated as of 1.317
+     *      Use {@link #doQuietDown()} instead.
+     */
+    public synchronized void doQuietDown(StaplerResponse rsp) throws IOException, ServletException {
+        doQuietDown().generateResponse(null,rsp,this);
     }
 
     public synchronized HttpRedirect doQuietDown() throws IOException, ServletException {
@@ -3073,6 +3076,11 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
 
     public static boolean isWindows() {
         return File.pathSeparatorChar==';';
+    }
+    
+    public static boolean isDarwin() {
+        // according to http://developer.apple.com/technotes/tn2002/tn2110.html
+        return System.getProperty("os.name").startsWith("mac");
     }
 
     /**

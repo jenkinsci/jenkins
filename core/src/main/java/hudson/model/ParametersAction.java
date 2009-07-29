@@ -24,6 +24,7 @@
 package hudson.model;
 
 import hudson.Util;
+import hudson.EnvVars;
 import hudson.model.Queue.QueueAction;
 import hudson.tasks.BuildStep;
 import hudson.tasks.BuildWrapper;
@@ -49,7 +50,7 @@ import java.util.Set;
  * that were specified when scheduling.
  */
 @ExportedBean
-public class ParametersAction implements Action, Iterable<ParameterValue>, QueueAction {
+public class ParametersAction implements Action, Iterable<ParameterValue>, QueueAction, EnvironmentContributingAction {
 
     private final List<ParameterValue> parameters;
 
@@ -73,7 +74,7 @@ public class ParametersAction implements Action, Iterable<ParameterValue>, Queue
         }
     }
 
-    public void buildEnvVars(AbstractBuild<?,?> build, Map<String,String> env) {
+    public void buildEnvVars(AbstractBuild<?,?> build, EnvVars env) {
         for (ParameterValue p : parameters)
             p.buildEnvVars(build,env);
     }

@@ -26,6 +26,8 @@ THE SOFTWARE.
         <j:invokeStatic var="descriptors" className="hudson.tools.ToolInstallerDescriptor" method="for_">
           <j:arg value="${descriptor.clazz}" />
         </j:invokeStatic>
-        <f:hetero-list name="installers" items="${instance.installers}" descriptors="${descriptors}" hasHeader="true"/>
+        <f:hetero-list name="installers" items="${instance.installers}" descriptors="${descriptors}"
+                       addCaption="${%Add Installer}" deleteCaption="${%Delete Installer}"
+                       hasHeader="true"/>
     </f:block>
 </j:jelly>

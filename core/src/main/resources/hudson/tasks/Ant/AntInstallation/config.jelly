@@ -1,7 +1,7 @@
 <!--
 The MIT License
 
-Copyright (c) 2009, Sun Microsystems, Inc.
+Copyright (c) 2004-2009, Sun Microsystems, Inc.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -21,21 +21,15 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 -->
+
+<!--
+  Config page
+-->
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
-  <f:section title="${descriptor.displayName}">
-    <f:entry title="${%title(descriptor.displayName)}" description="${%description(descriptor.displayName)}">
-      <f:repeatable name="tool" var="instance" items="${descriptor.installations}"
-                    add="${%label.add(descriptor.displayName)}">
-        <table width="100%">
-          <st:include page="config.jelly" from="${descriptor}" class="${descriptor.clazz}"/>
-          <f:descriptorList descriptors="${descriptor.propertyDescriptors}" field="properties"/>
-          <f:entry title="">
-            <div align="right">
-              <f:repeatableDeleteButton value="${%label.delete(descriptor.displayName)}"/>
-            </div>
-          </f:entry>
-        </table>
-      </f:repeatable>
-    </f:entry>
-  </f:section>
+  <f:entry title="${%name}" field="name">
+    <f:textbox />
+  </f:entry>
+  <f:entry title="ANT_HOME" field="home">
+    <f:textbox />
+  </f:entry>
 </j:jelly>

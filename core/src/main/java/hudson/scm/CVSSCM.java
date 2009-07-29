@@ -93,7 +93,6 @@ import java.util.Set;
 import java.util.TimeZone;
 import java.util.TreeSet;
 import java.util.logging.Logger;
-import java.util.logging.Level;
 import static java.util.logging.Level.INFO;
 import java.util.concurrent.ExecutionException;
 import java.util.regex.Matcher;
@@ -153,7 +152,7 @@ public class CVSSCM extends SCM implements Serializable {
         if(fixNull(branch).equals("HEAD"))
             branch = null;
 
-        this.cvsroot = cvsRoot;
+        this.cvsroot = fixNull(cvsRoot).trim();
         this.module = module.trim();
         this.branch = nullify(branch);
         this.cvsRsh = nullify(cvsRsh);

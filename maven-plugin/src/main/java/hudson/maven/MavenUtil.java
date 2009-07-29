@@ -29,6 +29,7 @@ import hudson.model.TaskListener;
 import hudson.model.AbstractProject;
 import hudson.tasks.Maven.MavenInstallation;
 import hudson.tasks.Maven.ProjectWithMaven;
+
 import org.apache.maven.embedder.MavenEmbedderException;
 import org.apache.maven.embedder.MavenEmbedderLogger;
 import org.apache.maven.project.MavenProject;
@@ -77,6 +78,10 @@ public class MavenUtil {
         return createEmbedder(listener,mavenHome,profiles,new Properties());
     }
 
+    public static MavenEmbedder createEmbedder(TaskListener listener, File mavenHome, String profiles, Properties systemProperties) throws MavenEmbedderException, IOException {
+        return createEmbedder(listener,mavenHome,profiles,systemProperties,null);
+    }
+
     /**
      * Creates a fresh {@link MavenEmbedder} instance.
      *
@@ -89,8 +94,11 @@ public class MavenUtil {
      *      Profiles to activate/deactivate. Can be null.
      * @param systemProperties
      *      The system properties that the embedded Maven sees. See {@link MavenEmbedder#setSystemProperties(Properties)}.
+     * @param privateRepository
+     *      Optional private repository to use as the local repository.
      */
-    public static MavenEmbedder createEmbedder(TaskListener listener, File mavenHome, String profiles, Properties systemProperties) throws MavenEmbedderException, IOException {
+    public static MavenEmbedder createEmbedder(TaskListener listener, File mavenHome, String profiles, Properties systemProperties,
+                                               String privateRepository) throws MavenEmbedderException, IOException {
         MavenEmbedder maven = new MavenEmbedder(mavenHome);
 
         ClassLoader cl = MavenUtil.class.getClassLoader();
@@ -112,6 +120,9 @@ public class MavenUtil {
         if(!m2Home.exists())
             throw new AbortException("Failed to create "+m2Home+
                 "\nSee https://hudson.dev.java.net/cannot-create-.m2.html");
+
+        if (privateRepository!=null)
+            maven.setLocalRepositoryDirectory(new File(privateRepository));
 
         maven.setProfiles(profiles);
         maven.setSystemProperties(systemProperties);

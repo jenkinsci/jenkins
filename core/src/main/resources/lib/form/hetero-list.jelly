@@ -22,25 +22,34 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 -->
 
-<!--
-  Outer most tag for creating a heterogeneous list, where the user can add different contents.
-
-  Mandatory attributes:
-    name:         form name that receives an array for all the items in the heterogeneous list.
-    items:        existing items to be displayed
-    descriptors:  all types that the user can add.
-
- Optional attributes:
-   addCaption:    caption of the 'add' button.
-   deleteCaption: caption of the 'delete' button.
-   targetType:    the type for which descriptors will be configured.
-                  default to ${it.class} (optional)
-   hasHeader:     for each item, add a caption from descriptor.getDisplayName().
-                  this also activates D&D (where the header is a grip), and help text support.
-
- See Descriptor.newInstancesFromHeteroList for how to parse the submission.
--->
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:local="local">
+  <st:documentation>
+    Outer most tag for creating a heterogeneous list, where the user can add different contents.
+    See Descriptor.newInstancesFromHeteroList for how to parse the submission.
+    
+    <st:attribute name="name" use="required">
+      form name that receives an array for all the items in the heterogeneous list.
+    </st:attribute>
+    <st:attribute name="items" use="required">
+      existing items to be displayed
+    </st:attribute>
+    <st:attribute name="descriptors" use="required">
+      all types that the user can add.
+    </st:attribute>
+    <st:attribute name="addCaption">
+      caption of the 'add' button.
+    </st:attribute>
+    <st:attribute name="deleteCaption">
+      caption of the 'delete' button.
+    </st:attribute>
+    <st:attribute name="targetType">
+      the type for which descriptors will be configured. Defaults to ${it.class} (optional)
+    </st:attribute>
+    <st:attribute name="hasHeader">
+      for each item, add a caption from descriptor.getDisplayName().
+     this also activates D&amp;D (where the header is a grip), and help text support.
+    </st:attribute>
+  </st:documentation>
   <d:taglib uri="local">
     <d:tag name="body">
       <table style="width:100%">
@@ -82,7 +91,7 @@ THE SOFTWARE.
       <j:set var="descriptor" value="${i.descriptor}" />
       <j:set var="instance" value="${i}" />
       <div name="${attrs.name}" class="repeated-chunk">
-        <local:body />
+        <local:body deleteCaption="${attrs.deleteCaption}" />
       </div>
     </j:forEach>
 

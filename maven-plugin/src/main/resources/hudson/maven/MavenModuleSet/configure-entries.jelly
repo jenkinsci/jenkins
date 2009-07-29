@@ -69,6 +69,10 @@ THE SOFTWARE.
       <f:entry title="MAVEN_OPTS" help="/help/maven/maven-opts.html">
         <f:expandableTextbox name="mavenOpts" value="${it.mavenOpts}" />
       </f:entry>
+      <f:optionalBlock name="maven.incrementalBuild"
+                       title="${%Incremental build - only build changed modules}"
+                       help="/help/maven/incremental.html"
+                       checked="${it.isIncrementalBuild()}" />
       <f:optionalBlock name="maven.perModuleBuild" title="${%Build modules in parallel}" help="/help/maven/aggregator.html"
         checked="${!it.aggregatorStyleBuild}" />
       <f:optionalBlock name="maven.usePrivateRepository" title="${%Use private Maven repository}" help="/help/maven/private-repository.html"

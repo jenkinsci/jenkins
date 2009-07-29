@@ -57,6 +57,8 @@ import java.net.Socket;
 import java.net.URLClassLoader;
 import java.net.InetSocketAddress;
 import java.net.HttpURLConnection;
+import java.net.Authenticator;
+import java.net.PasswordAuthentication;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
@@ -114,6 +116,10 @@ public class Launcher {
             "then wait for the master to connect to that port.")
     public File tcpPortFile=null;
 
+
+    @Option(name="-auth",metaVar="user:pass",usage="If your Hudson is security-enabeld, specify a valid user name and password.")
+    public String auth = null;
+
     public InetSocketAddress connectionTarget = null;
 
     @Option(name="-connectTo",usage="make a TCP connection to the given host and port, then start communication.",metaVar="HOST:PORT")
@@ -161,6 +167,15 @@ public class Launcher {
     }
 
     public void run() throws Exception {
+        if(auth!=null) {
+            final int idx = auth.indexOf(':');
+            if(idx<0)   throw new CmdLineException("No ':' in the -auth option");
+            Authenticator.setDefault(new Authenticator() {
+                public PasswordAuthentication getPasswordAuthentication() {
+                    return new PasswordAuthentication(auth.substring(0,idx), auth.substring(idx+1).toCharArray());
+                }
+            });
+        }
         if(connectionTarget!=null) {
             runAsTcpClient();
             System.exit(0);

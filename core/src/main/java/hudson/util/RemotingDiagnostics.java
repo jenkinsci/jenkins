@@ -25,8 +25,10 @@ package hudson.util;
 
 import groovy.lang.GroovyShell;
 import hudson.Functions;
+import hudson.model.Hudson;
 import hudson.remoting.Callable;
 import hudson.remoting.VirtualChannel;
+import hudson.remoting.DelegatingCallable;
 
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -94,15 +96,23 @@ public final class RemotingDiagnostics {
         return channel.call(new Script(script));
     }
 
-    private static final class Script implements Callable<String,RuntimeException> {
+    private static final class Script implements DelegatingCallable<String,RuntimeException> {
         private final String script;
+        private transient ClassLoader cl;
 
         private Script(String script) {
             this.script = script;
+            cl = getClassLoader();
+        }
+
+        public ClassLoader getClassLoader() {
+            return Hudson.getInstance().getPluginManager().uberClassLoader;
         }
 
         public String call() throws RuntimeException {
-            GroovyShell shell = new GroovyShell();
+            // if we run locally, cl!=null. Otherwise the delegating classloader will be available as context classloader.
+            if (cl==null)       cl = Thread.currentThread().getContextClassLoader();
+            GroovyShell shell = new GroovyShell(cl);
 
             StringWriter out = new StringWriter();
             PrintWriter pw = new PrintWriter(out);

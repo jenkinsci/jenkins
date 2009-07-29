@@ -406,13 +406,6 @@ public class Ant extends Builder {
                 return Collections.singletonList(new AntInstaller(null));
             }
 
-            @Override
-            public boolean configure(StaplerRequest req, JSONObject json) throws FormException {
-                setInstallations(req.bindJSONToList(
-                        AntInstallation.class, json.get("ant")).toArray(new AntInstallation[0]));
-                return true;
-            }
-
             /**
              * Checks if the ANT_HOME is valid.
              */

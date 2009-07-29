@@ -244,6 +244,12 @@ public abstract class SCM implements Describable<SCM>, ExtensionPoint {
      * <p>
      * This can be used to propagate information from SCM to builds
      * (for example, SVN revision number.)
+     *
+     * <p>
+     * This method is invoked whenever someone does {@link AbstractBuild#getEnvironment(TaskListener)}, which
+     * can be before/after your checkout method is invoked. So if you are going to provide information about
+     * check out (like SVN revision number that was checked out), be prepared for the possibility that the
+     * check out hasn't happened yet.
      */
     public void buildEnvVars(AbstractBuild build, Map<String, String> env) {
         // default implementation is noop.
