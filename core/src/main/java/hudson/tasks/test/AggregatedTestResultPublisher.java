@@ -40,6 +40,7 @@ import hudson.model.listeners.RunListener;
 import hudson.tasks.BuildStepDescriptor;
 import hudson.tasks.Publisher;
 import hudson.tasks.Recorder;
+import hudson.tasks.BuildStepMonitor;
 import hudson.tasks.Fingerprinter.FingerprintAction;
 import hudson.util.FormValidation;
 import net.sf.json.JSONObject;
@@ -75,6 +76,10 @@ public class AggregatedTestResultPublisher extends Recorder {
         // add a TestResult just so that it can show up later.
         build.addAction(new TestResultAction(jobs,build));
         return true;
+    }
+
+    public BuildStepMonitor getRequiredMonitorService() {
+        return BuildStepMonitor.NONE;
     }
 
     /**

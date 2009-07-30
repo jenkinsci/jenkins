@@ -26,17 +26,20 @@ THE SOFTWARE.
   <st:documentation>
     Foldable block that can be expanded to show more controls by checking the checkbox.
 
-    <st:attribute name="name" use="required">
+    <st:attribute name="name">
       Name of the checkbox. Can be used by the server to determine
       if the block is collapsed or expanded at the time of submission.
 
       Note that when the block is collapsed, none of its child controls will send
       the values to the server (unlike &lt;f:advanced>)
     </st:attribute>
-    <st:attribute name="title" use="required">
+    <st:attribute name="title">
       Human readable text that follows the checkbox.
     </st:attribute>
-    <st:attribute name="checked" use="required">
+    <st:attribute name="field">
+      Used for databinding. TBD. Either this or @name/@title combo is required.
+    </st:attribute>
+    <st:attribute name="checked">
       initial checkbox status. true/false.
     </st:attribute>
     <st:attribute name="help">
@@ -47,17 +50,22 @@ THE SOFTWARE.
       if present, the foldable section expands when the checkbox is unchecked.
     </st:attribute>
   </st:documentation>
+  <j:if test="${attrs.help==null}">
+    <!-- infer the help page from the current descriptor and field if possible -->
+    <j:set target="${attrs}" property="help"
+           value="${descriptor.getHelpFile(attrs.field)}" />
+  </j:if>
 
   <tr class="optional-block-start row-set-start" hasHelp="${attrs.help!=null}"><!-- this ID marks the beginning -->
     <td colspan="3">
-      <f:checkbox name="${name}" onclick="javascript:updateOptionalBlock(this,true)"
-                  negative="${attrs.negative}" checked="${checked}" />
+      <f:checkbox name="${attrs.name}" onclick="javascript:updateOptionalBlock(this,true)"
+                  negative="${attrs.negative}" checked="${attrs.checked}" field="${attrs.field}" />
       <st:nbsp/>
       <label class="attach-previous">${title}</label>
     </td>
     <j:if test="${attrs.help!=null}">
       <td>
-        <a href="#" class="help-button" helpURL="${rootURL}${help}"><img src="${imagesURL}/16x16/help.gif" alt="Help for feature: ${title}" /></a>
+        <a href="#" class="help-button" helpURL="${rootURL}${attrs.help}"><img src="${imagesURL}/16x16/help.gif" alt="Help for feature: ${title}" /></a>
       </td>
     </j:if>
   </tr>

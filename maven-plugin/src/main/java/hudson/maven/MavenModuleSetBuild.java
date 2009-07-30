@@ -438,8 +438,8 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
                         // when multiple CVS/SVN modules are checked out, so also check
                         // the path against the workspace root if that seems like what the user meant (see issue #1293)
                         String rootPOM = project.getRootPOM();
-                        FilePath pom = project.getModuleRoot().child(rootPOM);
-                        FilePath parentLoc = project.getWorkspace().child(rootPOM);
+                        FilePath pom = getModuleRoot().child(rootPOM);
+                        FilePath parentLoc = getWorkspace().child(rootPOM);
                         if(!pom.exists() && parentLoc.exists())
                             pom = parentLoc;
 
@@ -448,7 +448,7 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
 
                         ArgumentListBuilder margs = new ArgumentListBuilder().add("-B").add("-f", pom.getRemote());
                         if(project.usesPrivateRepository())
-                            margs.add("-Dmaven.repo.local="+project.getWorkspace().child(".repository"));
+                            margs.add("-Dmaven.repo.local="+getWorkspace().child(".repository"));
                         // If incrementalBuild is set, and we're on Maven 2.1 or later, *and* there's at least one module
                         // listed in changedModules, do the Maven incremental build commands - if there are no changed modules,
                         // We're building everything anyway.
@@ -530,7 +530,7 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
 
             List<PomInfo> poms;
             try {
-                poms = project.getModuleRoot().act(new PomParser(listener, mvn, project));
+                poms = getModuleRoot().act(new PomParser(listener, mvn, project));
             } catch (IOException e) {
                 if (e.getCause() instanceof AbortException)
                     throw (AbortException) e.getCause();

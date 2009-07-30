@@ -36,6 +36,7 @@ THE SOFTWARE.
     <st:attribute name="id" />
     <st:attribute name="onclick" />
     <st:attribute name="class" />
+    <st:attribute name="negative" />
     <st:attribute name="field">
       Used for databinding. TBD.
     </st:attribute>

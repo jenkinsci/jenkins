@@ -108,7 +108,7 @@ public final class TestResult extends MetaTabulatedResult {
         for (String value : includedFiles) {
             File reportFile = new File(baseDir, value);
             // only count files that were actually updated during this build
-            if(buildTime-1000/*error margin*/ <= reportFile.lastModified()) {
+            if(buildTime-3000/*error margin*/ <= reportFile.lastModified()) {
                 if(reportFile.length()==0) {
                     // this is a typical problem when JVM quits abnormally, like OutOfMemoryError during a test.
                     SuiteResult sr = new SuiteResult(reportFile.getName(), "", "");

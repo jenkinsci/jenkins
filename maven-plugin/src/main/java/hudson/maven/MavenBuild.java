@@ -26,6 +26,7 @@ package hudson.maven;
 import hudson.FilePath;
 import hudson.Util;
 import hudson.EnvVars;
+import hudson.slaves.WorkspaceList;
 import hudson.maven.agent.AbortException;
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
@@ -37,6 +38,8 @@ import hudson.model.Run;
 import hudson.model.Cause.UpstreamCause;
 import hudson.model.Environment;
 import hudson.model.TaskListener;
+import hudson.model.Node;
+import hudson.model.Executor;
 import hudson.remoting.Channel;
 import hudson.scm.ChangeLogSet;
 import hudson.scm.ChangeLogSet.Entry;
@@ -464,14 +467,19 @@ public class MavenBuild extends AbstractMavenBuild<MavenModule,MavenBuild> {
         }
 
         private Object writeReplace() {
-            return Channel.current().export(MavenBuildProxy2.class,this);
+            // when called from remote, methods need to be executed in the proper Executor's context.
+            return Channel.current().export(MavenBuildProxy2.class,
+                Executor.currentExecutor().newImpersonatingProxy(MavenBuildProxy2.class,this));
         }
-
-
     }
 
     private class RunnerImpl extends AbstractRunner {
         private List<MavenReporter> reporters;
+
+        @Override
+        protected FilePath decideWorkspace(Node n, WorkspaceList wsl) {
+            return wsl.allocate(getParentBuild().getModuleRoot().child(getProject().getRelativePath()));
+        }
 
         protected Result doRun(BuildListener listener) throws Exception {
             // pick up a list of reporters to run
@@ -498,8 +506,8 @@ public class MavenBuild extends AbstractMavenBuild<MavenModule,MavenBuild> {
             if(mms.usesPrivateRepository())
                 // use the per-project repository. should it be per-module? But that would cost too much in terms of disk
                 // the workspace must be on this node, so getRemote() is safe.
-                margs.add("-Dmaven.repo.local="+mms.getWorkspace().child(".repository").getRemote());
-            margs.add("-f",getProject().getModuleRoot().child("pom.xml").getRemote());
+                margs.add("-Dmaven.repo.local="+getWorkspace().child(".repository").getRemote());
+            margs.add("-f",getModuleRoot().child("pom.xml").getRemote());
             margs.addTokenized(getProject().getGoals());
 
             Map<String,String> systemProps = new HashMap<String, String>(envVars);
@@ -510,7 +518,7 @@ public class MavenBuild extends AbstractMavenBuild<MavenModule,MavenBuild> {
             try {
                 Result r = process.channel.call(new Builder(
                     listener,new ProxyImpl(),
-                    reporters.toArray(new MavenReporter[0]), margs.toList(), systemProps));
+                    reporters.toArray(new MavenReporter[reporters.size()]), margs.toList(), systemProps));
                 normalExit = true;
                 return r;
             } finally {

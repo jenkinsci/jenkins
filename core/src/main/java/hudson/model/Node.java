@@ -173,6 +173,7 @@ public abstract class Node extends AbstractModelObject implements Describable<No
      * @return
      *      null if this node is not connected hence the path is not available
      */
+    // TODO: should this be modified now that getWorkspace is moved from AbstractProject to AbstractBuild?
     public abstract FilePath getWorkspaceFor(TopLevelItem item);
 
     /**

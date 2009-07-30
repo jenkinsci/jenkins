@@ -66,7 +66,7 @@ public class FileParameterValue extends ParameterValue {
         return new BuildWrapper() {
             public Environment setUp(AbstractBuild build, Launcher launcher, BuildListener listener) throws IOException, InterruptedException {
                 listener.getLogger().println("Copying file to "+location);
-                build.getProject().getWorkspace().child(location).copyFrom(file);
+                build.getWorkspace().child(location).copyFrom(file);
                 file = null;
                 return new Environment() {};
             }

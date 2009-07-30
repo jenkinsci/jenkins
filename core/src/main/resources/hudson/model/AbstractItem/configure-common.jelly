@@ -27,6 +27,9 @@ THE SOFTWARE.
 -->
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:p="/lib/hudson/project">
   <p:config-disableBuild/>
+  <j:if test="${app.CONCURRENT_BUILD}">
+    <f:optionalBlock field="concurrentBuild" title="${%Execute concurrent builds if necessary (beta)}" />
+  </j:if>
 
   <j:set var="jdks" value="${app.JDKs}" />
   <j:if test="${jdks.size() gt 1}">
@@ -36,7 +39,7 @@ THE SOFTWARE.
       <select class="setting-input validated" name="jdk" checkUrl="'${rootURL}/defaultJDKCheck?value='+this.value">
         <option>${%default.value}</option>
         <j:forEach var="inst" items="${jdks}">
-          <f:option selected="${inst.name==it.JDK.name}">${inst.name}</f:option>
+          <f:option selected="${inst.name==it.JDK.name}" value="${inst.name}">${inst.name}</f:option>
         </j:forEach>
       </select>
     </f:entry>

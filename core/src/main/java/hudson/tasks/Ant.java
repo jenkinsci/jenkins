@@ -126,9 +126,6 @@ public class Ant extends Builder {
     }
 
     public boolean perform(AbstractBuild<?,?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
-        AbstractProject proj = build.getProject();
-
-        
         ArgumentListBuilder args = new ArgumentListBuilder();
 
         EnvVars env = build.getEnvironment(listener);
@@ -152,7 +149,7 @@ public class Ant extends Builder {
         String buildFile = env.expand(this.buildFile);
         String targets = Util.replaceMacro(env.expand(this.targets), vr);
         
-        FilePath buildFilePath = buildFilePath(proj.getModuleRoot(), buildFile, targets);
+        FilePath buildFilePath = buildFilePath(build.getModuleRoot(), buildFile, targets);
 
         if(!buildFilePath.exists()) {
             // because of the poor choice of getModuleRoot() with CVS/Subversion, people often get confused
@@ -161,7 +158,7 @@ public class Ant extends Builder {
             // and diagnosing it nicely. See HUDSON-1782
 
             // first check if this appears to be a valid relative path from workspace root
-            FilePath buildFilePath2 = buildFilePath(proj.getWorkspace(), buildFile, targets);
+            FilePath buildFilePath2 = buildFilePath(build.getWorkspace(), buildFile, targets);
             if(buildFilePath2.exists()) {
                 // This must be what the user meant. Let it continue.
                 buildFilePath = buildFilePath2;

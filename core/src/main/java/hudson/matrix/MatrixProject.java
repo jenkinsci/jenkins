@@ -472,13 +472,6 @@ public class MatrixProject extends AbstractProject<MatrixProject,MatrixBuild> im
         return null;
     }
 
-    @Override
-    public FilePath getWorkspace() {
-        Node node = getLastBuiltOn();
-        if(node==null)  node = getParent();
-        return node.getWorkspaceFor(this);
-    }
-
     protected Class<MatrixBuild> getBuildClass() {
         return MatrixBuild.class;
     }

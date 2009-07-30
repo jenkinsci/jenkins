@@ -323,15 +323,6 @@ public final class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,Ma
         return jobs;
     }
 
-    /**
-     * Gets the workspace of this job.
-     */
-    public FilePath getWorkspace() {
-        Node node = getLastBuiltOn();
-        if(node==null)  node = Hudson.getInstance();
-        return node.getWorkspaceFor(this);
-    }
-
     @Override
     protected Class<MavenModuleSetBuild> getBuildClass() {
         return MavenModuleSetBuild.class;

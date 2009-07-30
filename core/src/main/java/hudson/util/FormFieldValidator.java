@@ -389,7 +389,7 @@ public abstract class FormFieldValidator {
          * The base directory from which the path name is resolved.
          */
         protected FilePath getBaseDirectory(AbstractProject<?,?> p) {
-            return p.getWorkspace();
+            return p.getSomeWorkspace();
         }
     }
 
@@ -481,7 +481,7 @@ public abstract class FormFieldValidator {
          * The base directory from which the path name is resolved.
          */
         protected FilePath getBaseDirectory(AbstractProject<?,?> p) {
-            return p.getWorkspace();
+            return p.getSomeWorkspace();
         }
     }
 

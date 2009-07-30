@@ -127,6 +127,12 @@ public abstract class SCM implements Describable<SCM>, ExtensionPoint {
      * polling is configured, then that would immediately trigger a new build.
      *
      * <p>
+     * This flag also affects the mutual exclusion control between builds and polling.
+     * If this methods returns false, polling will continu asynchronously even
+     * when a build is in progress, but otherwise the polling activity is blocked
+     * if a build is currently using a workspace.
+     *
+     * <p>
      * The default implementation returns true.
      *
      * <p>
@@ -191,9 +197,11 @@ public abstract class SCM implements Describable<SCM>, ExtensionPoint {
      * @param project
      *      The project to check for updates
      * @param launcher
-     *      Abstraction of the machine where the polling will take place.
+     *      Abstraction of the machine where the polling will take place. If SCM declares
+     *      that {@linkplain #requiresWorkspaceForPolling() the polling doesn't require a workspace}, this parameter is null.
      * @param workspace
-     *      The workspace directory that contains baseline files.
+     *      The workspace directory that contains baseline files. If SCM declares
+     *      that {@linkplain #requiresWorkspaceForPolling() the polling doesn't require a workspace}, this parameter is null.
      * @param listener
      *      Logs during the polling should be sent here.
      *
@@ -339,6 +347,10 @@ public abstract class SCM implements Describable<SCM>, ExtensionPoint {
     public SCMDescriptor<?> getDescriptor() {
         return (SCMDescriptor)Hudson.getInstance().getDescriptor(getClass());
     }
+
+//
+// convenience methods
+//
 
     protected final boolean createEmptyChangeLog(File changelogFile, BuildListener listener, String rootTag) {
         try {

@@ -87,6 +87,11 @@ public class LogRotatorTest extends HudsonTestCase {
             build.setResult(Result.UNSTABLE);
             return true;
         }
+
+        public BuildStepMonitor getRequiredMonitorService() {
+            return BuildStepMonitor.NONE;
+        }
+
         public Descriptor<Publisher> getDescriptor() {
             return new Descriptor<Publisher>(TestsFail.class) {
                 public String getDisplayName() {

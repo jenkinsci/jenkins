@@ -179,8 +179,6 @@ public class Maven extends Builder {
     }
 
     public boolean perform(AbstractBuild<?,?> build, Launcher launcher, BuildListener listener) throws IOException, InterruptedException {
-        AbstractProject proj = build.getProject();
-
         VariableResolver<String> vr = build.getBuildVariableResolver();
 
         EnvVars env = build.getEnvironment(listener);
@@ -207,7 +205,7 @@ public class Maven extends Builder {
             ArgumentListBuilder args = new ArgumentListBuilder();
             MavenInstallation mi = getMaven();
             if(mi==null) {
-                String execName = proj.getWorkspace().act(new DecideDefaultMavenCommand(normalizedTarget));
+                String execName = build.getWorkspace().act(new DecideDefaultMavenCommand(normalizedTarget));
                 args.add(execName);
             } else {
                 mi = mi.forNode(Computer.currentComputer().getNode(), listener);
@@ -244,7 +242,7 @@ public class Maven extends Builder {
                 env.put("MAVEN_OPTS",jvmOptions);
 
             try {
-                int r = launcher.launch().cmds(args).envs(env).stdout(listener).pwd(proj.getModuleRoot()).join();
+                int r = launcher.launch().cmds(args).envs(env).stdout(listener).pwd(build.getModuleRoot()).join();
                 if (0 != r) {
                     return false;
                 }

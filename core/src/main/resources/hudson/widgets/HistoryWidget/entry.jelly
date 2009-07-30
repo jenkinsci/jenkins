@@ -27,7 +27,8 @@ THE SOFTWARE.
 -->
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
   <j:set var="link" value="${it.baseUrl}/${build.number}/" />
-  <tr class="build-row ${build.building ? 'transitive' : null}">
+  <j:set var="transitive" value="${it.adapter.compare(build,it.firstTransientBuildKey) ge 0 ? 'transitive' : null}" />
+  <tr class="build-row ${transitive}">
     <td nowrap="nowrap">
       <img width="16" height="16" src="${imagesURL}/16x16/${build.buildStatusUrl}" alt="${build.iconColor.description}" tooltip="${build.iconColor.description}" /><st:nbsp/>
       #${build.number}
@@ -61,7 +62,7 @@ THE SOFTWARE.
     </td></tr>
   </j:if>
   <j:if test="${!empty build.description}">
-    <tr class="${build.building ? 'transitive' : null}">
+    <tr class="${transitive}">
       <td></td>
       <td style="padding:0;white-space:normal">
         ${build.truncatedDescription}

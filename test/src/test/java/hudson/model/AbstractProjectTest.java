@@ -44,10 +44,10 @@ public class AbstractProjectTest extends HudsonTestCase {
         FreeStyleProject project = createFreeStyleProject();
         project.getBuildersList().add(new Shell("echo hello"));
 
-        project.scheduleBuild2(0).get();
+        FreeStyleBuild b = project.scheduleBuild2(0).get();
 
         assertTrue("Workspace should exist by now",
-                project.getWorkspace().exists());
+                b.getWorkspace().exists());
 
         // emulate the user behavior
         WebClient webClient = new WebClient();
@@ -58,7 +58,7 @@ public class AbstractProjectTest extends HudsonTestCase {
         page = (HtmlPage)((HtmlForm)page.getElementById("confirmation")).submit(null);
 
         assertFalse("Workspace should be gone by now",
-                project.getWorkspace().exists());
+                b.getWorkspace().exists());
     }
 
     /**
@@ -69,10 +69,9 @@ public class AbstractProjectTest extends HudsonTestCase {
         FreeStyleProject project = createFreeStyleProject();
         project.getBuildersList().add(new Shell("echo hello"));
 
-        project.scheduleBuild2(0).get();
+        FreeStyleBuild b = project.scheduleBuild2(0).get();
 
-        assertTrue("Workspace should exist by now",
-                project.getWorkspace().exists());
+        assertTrue("Workspace should exist by now",b.getWorkspace().exists());
 
         // make sure that the action link is protected
         try {
@@ -104,6 +103,18 @@ public class AbstractProjectTest extends HudsonTestCase {
             fail("shouldn't find a link");
         } catch (ElementNotFoundException e) {
             // OK
+        }
+    }
+
+    /**
+     * Tests the &lt;optionalBlock @field> round trip behavior by using {@link AbstractProject#concurrentBuild}
+     */
+    public void testOptionalBlockDataBindingRoundtrip() throws Exception {
+        FreeStyleProject p = createFreeStyleProject();
+        for( boolean b : new boolean[]{true,false}) {
+            p.setConcurrentBuild(b);
+            submit(new WebClient().getPage(p,"configure").getFormByName("config"));
+            assertEquals(b,p.isConcurrentBuild());
         }
     }
 }

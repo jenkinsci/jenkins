@@ -86,7 +86,7 @@ public class JavadocArchiver extends Recorder {
     public boolean perform(AbstractBuild<?,?> build, Launcher launcher, BuildListener listener) throws InterruptedException {
         listener.getLogger().println(Messages.JavadocArchiver_Publishing());
 
-        FilePath javadoc = build.getParent().getWorkspace().child(javadocDir);
+        FilePath javadoc = build.getWorkspace().child(javadocDir);
         FilePath target = new FilePath(keepAll ? getJavadocDir(build) : getJavadocDir(build.getProject()));
 
         try {
@@ -117,6 +117,10 @@ public class JavadocArchiver extends Recorder {
         return new JavadocAction(project);
     }
 
+    public BuildStepMonitor getRequiredMonitorService() {
+        return BuildStepMonitor.NONE;
+    }
+    
     protected static abstract class BaseJavadocAction implements Action {
         public String getUrlName() {
             return "javadoc";
@@ -205,7 +209,7 @@ public class JavadocArchiver extends Recorder {
          * Performs on-the-fly validation on the file mask wildcard.
          */
         public FormValidation doCheck(@AncestorInPath AbstractProject project, @QueryParameter String value) throws IOException, ServletException {
-            FilePath ws = project.getWorkspace();
+            FilePath ws = project.getSomeWorkspace();
             return ws != null ? ws.validateRelativeDirectory(value) : FormValidation.ok();
         }
 

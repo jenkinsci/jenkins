@@ -122,6 +122,10 @@ public class BuildTrigger extends Recorder implements DependecyDeclarer, MatrixA
         return Items.fromNameList(childProjects,AbstractProject.class);
     }
 
+    public BuildStepMonitor getRequiredMonitorService() {
+        return BuildStepMonitor.NONE;
+    }
+    
     /**
      * Checks if this trigger has the exact same set of children as the given list.
      */

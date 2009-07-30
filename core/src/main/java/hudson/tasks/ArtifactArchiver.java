@@ -85,8 +85,6 @@ public class ArtifactArchiver extends Recorder {
     }
 
     public boolean perform(AbstractBuild<?,?> build, Launcher launcher, BuildListener listener) throws InterruptedException {
-        AbstractProject<?,?> p = build.getProject();
-
         if(artifacts.length()==0) {
             listener.error(Messages.ArtifactArchiver_NoIncludes());
             build.setResult(Result.FAILURE);
@@ -98,7 +96,7 @@ public class ArtifactArchiver extends Recorder {
 
         listener.getLogger().println(Messages.ArtifactArchiver_ARCHIVING_ARTIFACTS());
         try {
-            FilePath ws = p.getWorkspace();
+            FilePath ws = build.getWorkspace();
             if (ws==null) { // #3330: slave down?
                 return true;
             }
@@ -123,7 +121,6 @@ public class ArtifactArchiver extends Recorder {
 
         return true;
     }
-
 
     public @Override boolean prebuild(AbstractBuild<?, ?> build, BuildListener listener) {
         if(latestOnly) {
@@ -150,6 +147,10 @@ public class ArtifactArchiver extends Recorder {
         return true;
     }
 
+    public BuildStepMonitor getRequiredMonitorService() {
+        return BuildStepMonitor.NONE;
+    }
+    
     /**
      * @deprecated as of 1.286
      *      Some plugin depends on this, so this field is left here and points to the last created instance.
@@ -171,7 +172,7 @@ public class ArtifactArchiver extends Recorder {
          * Performs on-the-fly validation on the file mask wildcard.
          */
         public FormValidation doCheckArtifacts(@AncestorInPath AbstractProject project, @QueryParameter String value) throws IOException {
-            return FilePath.validateFileMask(project.getWorkspace(),value);
+            return FilePath.validateFileMask(project.getSomeWorkspace(),value);
         }
 
         public ArtifactArchiver newInstance(StaplerRequest req, JSONObject formData) throws FormException {

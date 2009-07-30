@@ -23,7 +23,6 @@
  */
 package hudson.matrix;
 
-import hudson.FilePath;
 import hudson.util.DescribableList;
 import hudson.model.AbstractBuild;
 import hudson.model.Cause;
@@ -35,7 +34,6 @@ import hudson.model.Item;
 import hudson.model.ItemGroup;
 import hudson.model.JDK;
 import hudson.model.Label;
-import hudson.model.Node;
 import hudson.model.ParametersAction;
 import hudson.model.Project;
 import hudson.model.SCMedItem;
@@ -139,18 +137,6 @@ public class MatrixConfiguration extends Project<MatrixConfiguration,MatrixRun> 
      */
     public Combination getCombination() {
         return combination;
-    }
-
-    @Override
-    public FilePath getWorkspace() {
-        Node node = getLastBuiltOn();
-        if(node==null)  node = Hudson.getInstance();
-        FilePath ws = node.getWorkspaceFor(getParent());
-        if(ws==null)    return null;
-        if(useShortWorkspaceName)
-            return ws.child(digestName);
-        else
-            return ws.child(getCombination().toString('/','/'));
     }
 
     /**
@@ -262,7 +248,11 @@ public class MatrixConfiguration extends Project<MatrixConfiguration,MatrixRun> 
     public SCM getScm() {
         return getParent().getScm();
     }
-    
+
+    /*package*/ String getDigestName() {
+        return digestName;
+    }
+
     /**
      * JDK cannot be set on {@link MatrixConfiguration} because
      * it's controlled by {@link MatrixProject}.

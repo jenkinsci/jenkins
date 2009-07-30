@@ -30,7 +30,7 @@ package hudson.maven;
  *
  * @author Kohsuke Kawaguchi
  */
-interface MavenBuildProxy2 extends MavenBuildProxy {
+public interface MavenBuildProxy2 extends MavenBuildProxy {
     /**
      * Notifies that the build has entered a module.
      */

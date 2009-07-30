@@ -119,6 +119,13 @@ public class Mailer extends Notifier {
     }
 
     /**
+     * This class does explicit check pointing.
+     */
+    public BuildStepMonitor getRequiredMonitorService() {
+        return BuildStepMonitor.NONE;
+    }
+
+    /**
      * @deprecated as of 1.286
      *      Use {@link #descriptor()} to obtain the current instance.
      */

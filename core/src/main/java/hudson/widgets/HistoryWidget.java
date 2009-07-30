@@ -48,7 +48,7 @@ import java.util.List;
  */
 public class HistoryWidget<O extends ModelObject,T> extends Widget {
     /**
-     * The given data model of records.
+     * The given data model of records. Newer ones first.
      */
     public Iterable<T> baseList;
 
@@ -67,6 +67,11 @@ public class HistoryWidget<O extends ModelObject,T> extends Widget {
     private boolean trimmed;
 
     public final Adapter<? super T> adapter;
+
+    /**
+     * First transient build record. Everything >= this will be discarded when AJAX call is made.
+     */
+    private String firstTransientBuildKey;
 
     /**
      * @param owner
@@ -90,6 +95,19 @@ public class HistoryWidget<O extends ModelObject,T> extends Widget {
         return "buildHistory";
     }
 
+    public String getFirstTransientBuildKey() {
+        return firstTransientBuildKey;
+    }
+
+    private Iterable<T> updateFirstTransientBuildKey(Iterable<T> source) {
+        String key=null;
+        for (T t : source)
+            if(adapter.isBuilding(t))
+                key = adapter.getKey(t);
+        firstTransientBuildKey = key;
+        return source;
+    }
+
     /**
      * The records to be rendered this time.
      */
@@ -101,17 +119,17 @@ public class HistoryWidget<O extends ModelObject,T> extends Widget {
                 if(lst.size()>THRESHOLD)
                     return lst.subList(0,THRESHOLD);
                 trimmed=false;
-                return lst;
+                return updateFirstTransientBuildKey(lst);
             } else {
                 lst = new ArrayList<T>(THRESHOLD);
                 Iterator<T> itr = baseList.iterator();
                 while(lst.size()<=THRESHOLD && itr.hasNext())
                     lst.add(itr.next());
-                trimmed = itr.hasNext();
-                return lst;
+                trimmed = itr.hasNext(); // if we don't have enough items in the base list, setting this to false will optimize the next getRenderList() invocation.
+                return updateFirstTransientBuildKey(lst);
             }
         } else
-            return baseList;
+            return updateFirstTransientBuildKey(baseList);
     }
 
     public boolean isTrimmed() {
@@ -137,22 +155,32 @@ public class HistoryWidget<O extends ModelObject,T> extends Widget {
         // pick up builds to send back
         List<T> items = new ArrayList<T>();
 
+        String nn=null; // we'll compute next n here
+
+        // list up all builds >=n.
         for (T t : baseList) {
-            if(adapter.compare(t,n)>=0)
+            if(adapter.compare(t,n)>=0) {
                 items.add(t);
-            else
+                if(adapter.isBuilding(t))
+                    nn = adapter.getKey(t); // the next fetch should start from youngest build in progress
+            } else
                 break;
         }
 
-        baseList = items;
-        if(!items.isEmpty()) {
-            T b = items.get(0);
-            n = adapter.getKey(b);
-            if(!adapter.isBuilding(b))
-                n = adapter.getNextKey(n);
+        if (nn==null) {
+            if (items.isEmpty()) {
+                // nothing to report back. next fetch should retry the same 'n'
+                nn=n;
+            } else {
+                // every record fetched this time is frozen. next fetch should start from the next build
+                nn=adapter.getNextKey(adapter.getKey(items.get(0)));
+            }
         }
 
-        rsp.setHeader("n",n);
+        baseList = items;
+
+        rsp.setHeader("n",nn);
+        firstTransientBuildKey = nn; // all builds >= nn should be marked transient
 
         req.getView(this,"ajaxBuildHistory.jelly").forward(req,rsp);
     }

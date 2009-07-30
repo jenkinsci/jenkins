@@ -28,6 +28,7 @@ import hudson.FeedAdapter;
 import hudson.FilePath;
 import hudson.Launcher;
 import hudson.Util;
+import hudson.slaves.WorkspaceList;
 import hudson.model.Cause.LegacyCodeCause;
 import hudson.model.Cause.UserCause;
 import hudson.model.Cause.RemoteCause;
@@ -35,6 +36,7 @@ import hudson.model.Descriptor.FormException;
 import hudson.model.Fingerprint.RangeSet;
 import hudson.model.RunMap.Constructor;
 import hudson.model.Queue.WaitingItem;
+import hudson.model.Queue.Executable;
 import hudson.scm.ChangeLogSet;
 import hudson.scm.ChangeLogSet.Entry;
 import hudson.scm.NullSCM;
@@ -178,6 +180,8 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
      */
     protected transient /*final*/ List<Action> transientActions = new Vector<Action>();
 
+    private boolean concurrentBuild;
+
     protected AbstractProject(ItemGroup parent, String name) {
         super(parent,name);
 
@@ -223,6 +227,19 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
                 on.getFileSystemProvisioner().discardWorkspace(this,ws);
         }
         super.performDelete();
+    }
+
+    /**
+     * Does this project perform concurrent builds?
+     * @since 1.XXX
+     */
+    public boolean isConcurrentBuild() {
+        return Hudson.CONCURRENT_BUILD && concurrentBuild;
+    }
+
+    public void setConcurrentBuild(boolean b) throws IOException {
+        concurrentBuild = b;
+        save();
     }
 
     /**
@@ -280,14 +297,60 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
      *
      * @return
      *      null if the workspace is on a slave that's not connected.
+     * @deprecated as of 1.XXX
+     *      To support concurrent builds of the same project, this method is moved to {@link AbstractBuild}.
+     *      For backward compatibility, this method returns the right {@link AbstractBuild#getWorkspace()} if called
+     *      from {@link Executor}, and otherwise the workspace of the last build.
+     *
+     *      <p>
+     *      If your are calling this method during a build from an executor, swtich it to {@link AbstractBuild#getWorkspace()}.
+     *      If you are calling this method to serve a file from the workspace, doing a form validation, etc., then
+     *      use {@link #getSomeWorkspace()}
      */
-    public abstract FilePath getWorkspace();
+    public final FilePath getWorkspace() {
+        Executor e = Executor.currentExecutor();
+        if(e!=null) {
+            Executable exe = e.getCurrentExecutable();
+            if (exe instanceof AbstractBuild) {
+                AbstractBuild b = (AbstractBuild) exe;
+                if(b.getProject()==this)
+                    return b.getWorkspace();
+            }
+        }
+        R lb = getLastBuild();
+        if(lb!=null)    return lb.getWorkspace();
+        return null;
+    }
+
+    /**
+     * Gets a workspace for some build of this project.
+     *
+     * <p>
+     * This is useful for obtaining a workspace for the purpose of form field validation, where exactly
+     * which build the workspace belonged is less important. The implementation makes a cursory effort
+     * to find some workspace.
+     *
+     * @return
+     *      null if there's no available workspace.
+     * @since 1.XXX
+     */
+    public final FilePath getSomeWorkspace() {
+        int cnt=0;
+        for (R b = getLastBuild(); cnt<5 && b!=null; b=b.getPreviousBuild()) {
+            FilePath ws = b.getWorkspace();
+            if (ws!=null)   return ws;
+        }
+        return null;
+    }
 
     /**
      * Returns the root directory of the checked-out module.
      * <p>
      * This is usually where <tt>pom.xml</tt>, <tt>build.xml</tt>
      * and so on exists.
+     *
+     * @deprecated as of 1.XXX
+     *      See {@link #getWorkspace()} for a migration strategy.
      */
     public FilePath getModuleRoot() {
         FilePath ws = getWorkspace();
@@ -301,6 +364,9 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
      * Some SCMs support checking out multiple modules into the same workspace.
      * In these cases, the returned array will have a length greater than one.
      * @return The roots of all modules checked out from the SCM.
+     *
+     * @deprecated as of 1.XXX
+     *      See {@link #getWorkspace()} for a migration strategy.
      */
     public FilePath[] getModuleRoots() {
         return getScm().getModuleRoots(getWorkspace());
@@ -745,7 +811,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
      * but derived classes can also check other conditions.
      */
     public boolean isBuildBlocked() {
-        return isBuilding();
+        return isBuilding() && !isConcurrentBuild();
     }
 
     public String getWhyBlocked() {
@@ -784,6 +850,15 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
     /**
      * Gets the {@link Resource} that represents the workspace of this project.
      * Useful for locking and mutual exclusion control.
+     *
+     * @deprecated as of 1.XXX
+     *      Projects no longer have a fixed workspace, ands builds will find an available workspace via
+     *      {@link WorkspaceList} for each build (furthermore, that happens after a build is started.)
+     *      So a {@link Resource} representation for a workspace at the project level no longer makes sense.
+     *
+     *      <p>
+     *      If you need to lock a workspace while you do some computation, see the source code of
+     *      {@link #pollSCMChanges(TaskListener)} for how to obtain a lock of a workspace through {@link WorkspaceList}.
      */
     public Resource getWorkspaceResource() {
         return new Resource(getFullDisplayName()+" workspace");
@@ -801,7 +876,6 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
                 resourceLists.add(activity.getResourceList());
             }
         }
-        resourceLists.add(new ResourceList().w(getWorkspaceResource()));
         return ResourceList.union(resourceLists);
     }
 
@@ -818,26 +892,14 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
         if(scm==null)
             return true;    // no SCM
 
-        // Acquire lock for SCMTrigger so poll won't run while we checkout/update
-        SCMTrigger scmt = getTrigger(SCMTrigger.class);
-        boolean locked = false;
         try {
-            if (scmt!=null) {
-                scmt.getLock().lockInterruptibly();
-                locked = true;
-            }
-
-            FilePath workspace = getWorkspace();
+            FilePath workspace = build.getWorkspace();
             workspace.mkdirs();
-
             return scm.checkout(build, launcher, workspace, listener, changelogFile);
         } catch (InterruptedException e) {
             listener.getLogger().println(Messages.AbstractProject_ScmAborted());
             LOGGER.log(Level.INFO,build.toString()+" aborted",e);
             return false;
-        } finally {
-            if (locked)
-                scmt.getLock().unlock();
         }
     }
 
@@ -860,27 +922,42 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
         }
 
         try {
-            FilePath workspace = getWorkspace();
-            if (scm.requiresWorkspaceForPolling() && (workspace == null || !workspace.exists())) {
-                // workspace offline. build now, or nothing will ever be built
-                Label label = getAssignedLabel();
-                if (label != null && label.isSelfLabel()) {
-                    // if the build is fixed on a node, then attempting a build will do us
-                    // no good. We should just wait for the slave to come back.
-                    listener.getLogger().println(Messages.AbstractProject_NoWorkspace());
-                    return false;
-                }
-                if (workspace == null)
-                    listener.getLogger().println(Messages.AbstractProject_WorkspaceOffline());
-                else
-                    listener.getLogger().println(Messages.AbstractProject_NoWorkspace());
-                listener.getLogger().println(Messages.AbstractProject_NewBuildForWorkspace());
-                return true;
-            }
+            if(scm.requiresWorkspaceForPolling()) {
+                // lock the workspace of the last build
+                FilePath ws=null;
+                R lb = getLastBuild();
+                if (lb!=null)   ws = lb.getWorkspace();
 
-            Launcher launcher = workspace != null ? workspace.createLauncher(listener) : null;
-            LOGGER.fine("Polling SCM changes of " + getName());
-            return scm.pollChanges(this, launcher, workspace, listener);
+                if (ws==null || !ws.exists()) {
+                    // workspace offline. build now, or nothing will ever be built
+                    Label label = getAssignedLabel();
+                    if (label != null && label.isSelfLabel()) {
+                        // if the build is fixed on a node, then attempting a build will do us
+                        // no good. We should just wait for the slave to come back.
+                        listener.getLogger().println(Messages.AbstractProject_NoWorkspace());
+                        return false;
+                    }
+                    if (ws == null)
+                        listener.getLogger().println(Messages.AbstractProject_WorkspaceOffline());
+                    else
+                        listener.getLogger().println(Messages.AbstractProject_NoWorkspace());
+                    listener.getLogger().println(Messages.AbstractProject_NewBuildForWorkspace());
+                    return true;
+                } else {
+                    WorkspaceList l = lb.getBuiltOn().toComputer().getWorkspaceList();
+                    l.acquire(ws);
+                    try {
+                        LOGGER.fine("Polling SCM changes of " + getName());
+                        return scm.pollChanges(this, ws.createLauncher(listener), ws, listener);
+                    } finally {
+                        l.release(ws);
+                    }
+                }
+            } else {
+                // polling without workspace
+                LOGGER.fine("Polling SCM changes of " + getName());
+                return scm.pollChanges(this, null, null, listener);
+            }
         } catch (AbortException e) {
             listener.fatalError(Messages.AbstractProject_Aborted());
             return false;
@@ -1197,6 +1274,8 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
             assignedNode = null;
         }
 
+        setConcurrentBuild(req.getSubmittedForm().has("concurrentBuild"));
+
         authToken = BuildAuthorizationToken.create(req);
 
         setScm(SCMS.parseSCM(req,this));
@@ -1238,7 +1317,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
      */
     public void doWs( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException, InterruptedException {
         checkPermission(AbstractProject.WORKSPACE);
-        FilePath ws = getWorkspace();
+        FilePath ws = getSomeWorkspace();
         if ((ws == null) || (!ws.exists())) {
             // if there's no workspace, report a nice error message
             // Would be good if when asked for *plain*, do something else!

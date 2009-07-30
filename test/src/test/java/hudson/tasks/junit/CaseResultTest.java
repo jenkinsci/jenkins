@@ -65,7 +65,7 @@ public class CaseResultTest extends HudsonTestCase {
         FreeStyleProject p = createFreeStyleProject();
         p.getBuildersList().add(new TestBuilder() {
             public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
-                build.getProject().getWorkspace().child("junit.xml").copyFrom(
+                build.getWorkspace().child("junit.xml").copyFrom(
                     getClass().getResource("junit-report-20090516.xml"));
                 return true;
             }
