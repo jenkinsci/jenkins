@@ -27,6 +27,8 @@ import hudson.model.Descriptor;
 import hudson.model.Hudson;
 import hudson.Util;
 import hudson.Extension;
+import hudson.os.PosixAPI;
+import hudson.util.FormValidation;
 import org.acegisecurity.Authentication;
 import org.acegisecurity.AuthenticationException;
 import org.acegisecurity.AuthenticationManager;
@@ -44,8 +46,13 @@ import org.jvnet.libpam.UnixUser;
 import org.jvnet.libpam.impl.CLibrary;
 import org.springframework.dao.DataAccessException;
 import org.kohsuke.stapler.DataBoundConstructor;
+import org.jruby.ext.posix.POSIX;
+import org.jruby.ext.posix.FileStat;
+import org.jruby.ext.posix.Passwd;
+import org.jruby.ext.posix.Group;
 
 import java.util.Set;
+import java.io.File;
 
 /**
  * {@link SecurityRealm} that uses Unix PAM authentication.
@@ -112,6 +119,30 @@ public class PAMSecurityRealm extends SecurityRealm {
     public static final class DescriptorImpl extends Descriptor<SecurityRealm> {
         public String getDisplayName() {
             return Messages.PAMSecurityRealm_DisplayName();
+        }
+
+        public FormValidation doTest() {
+            File s = new File("/etc/shadow");
+            if(s.exists() && !s.canRead()) {
+                // it looks like shadow password is in use, but we don't have read access
+                System.out.println("Shadow in use");
+                POSIX api = PosixAPI.get();
+                FileStat st = api.stat("/etc/shadow");
+                if(st==null)
+                    return FormValidation.error("Hudson needs to be able to read /etc/shadow");
+
+                Passwd pwd = api.getpwuid(api.geteuid());
+                String user;
+                if(pwd!=null)   user="User '"+pwd.getLoginName()+"'";
+                else            user="Current user";
+
+                String group;
+                Group g = api.getgrgid(st.gid());
+                if(g!=null)     group=g.getName();
+                else            group=String.valueOf(st.gid());
+                return FormValidation.error(user+" needs to belong to group "+group+" to read /etc/shadow");
+            }
+            return FormValidation.ok();
         }
     }
 
