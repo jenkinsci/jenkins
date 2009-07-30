@@ -38,7 +38,6 @@ import hudson.security.SecurityRealm;
 import hudson.tasks.Ant;
 import hudson.tasks.BuildStep;
 import hudson.tasks.Ant.AntInstallation;
-import hudson.tasks.Ant.DescriptorImpl;
 import org.jvnet.hudson.test.Email;
 import org.jvnet.hudson.test.HudsonTestCase;
 import org.jvnet.hudson.test.recipes.LocalData;
