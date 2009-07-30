@@ -139,10 +139,6 @@ public class RedeployPublisher extends Recorder {
             return jobType==MavenModuleSet.class;
         }
 
-        public String getHelpFile() {
-            return "/help/maven/redeploy.html";
-        }
-
         public RedeployPublisher newInstance(StaplerRequest req, JSONObject formData) throws FormException {
             return req.bindJSON(RedeployPublisher.class,formData);
         }
