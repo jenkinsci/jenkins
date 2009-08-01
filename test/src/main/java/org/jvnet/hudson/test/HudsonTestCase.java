@@ -39,6 +39,7 @@ import hudson.matrix.MatrixRun;
 import hudson.maven.MavenModuleSet;
 import hudson.maven.MavenEmbedder;
 import hudson.model.Descriptor;
+import hudson.model.DownloadService;
 import hudson.model.FreeStyleProject;
 import hudson.model.Hudson;
 import hudson.model.Item;
@@ -214,6 +215,7 @@ public abstract class HudsonTestCase extends TestCase {
                 return updateCenterUrl;
             }
         });
+        DownloadService.neverUpdate = true;
 
         // cause all the descriptors to reload.
         // ideally we'd like to reset them to properly emulate the behavior, but that's not possible.
@@ -249,7 +251,7 @@ public abstract class HudsonTestCase extends TestCase {
     }
 
     protected void runTest() throws Throwable {
-        System.out.println("=== Starting "+getName());
+        System.out.println("=== Starting "+ getClass().getSimpleName() + "." + getName());
         new JavaScriptEngine(null);   // ensure that ContextFactory is initialized
         Context cx= ContextFactory.getGlobal().enterContext();
         try {
