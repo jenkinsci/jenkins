@@ -85,14 +85,14 @@ public abstract class Build <P extends Project<P,B>,B extends Build<P,B>>
             try {
                 List<BuildWrapper> wrappers = new ArrayList<BuildWrapper>(project.getBuildWrappers().values());
                 
-                for (NodeProperty nodeProperty: Hudson.getInstance().getGlobalNodeProperties()) {
+                for (NodeProperty<?> nodeProperty: Hudson.getInstance().getGlobalNodeProperties()) {
                     Environment environment = nodeProperty.setUp(Build.this, launcher, listener);
                     if (environment != null) {
                         buildEnvironments.add(environment);
                     }
                 }
 
-                for (NodeProperty nodeProperty: Computer.currentComputer().getNode().getNodeProperties()) {
+                for (NodeProperty<?> nodeProperty: Computer.currentComputer().getNode().getNodeProperties()) {
                     Environment environment = nodeProperty.setUp(Build.this, launcher, listener);
                     if (environment != null) {
                         buildEnvironments.add(environment);
@@ -104,7 +104,7 @@ public abstract class Build <P extends Project<P,B>,B extends Build<P,B>>
                     parameters.createBuildWrappers(Build.this,wrappers);
 
                 for( BuildWrapper w : wrappers ) {
-                    Environment e = w.setUp((AbstractBuild)Build.this, launcher, listener);
+                    Environment e = w.setUp((AbstractBuild<?,?>)Build.this, launcher, listener);
                     if(e==null)
                         return Result.FAILURE;
                     buildEnvironments.add(e);
