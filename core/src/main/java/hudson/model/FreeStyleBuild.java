@@ -46,7 +46,7 @@ public class FreeStyleBuild extends Build<FreeStyleProject,FreeStyleBuild> {
         run(new RunnerImpl());
     }
 
-    protected class RunnerImpl extends Build.RunnerImpl {
+    protected class RunnerImpl extends Build<FreeStyleProject,FreeStyleBuild>.RunnerImpl {
         @Override
         protected FilePath decideWorkspace(Node n, WorkspaceList wsl) {
             String customWorkspace = getProject().getCustomWorkspace();

@@ -127,7 +127,7 @@ public class MatrixRun extends Build<MatrixConfiguration,MatrixRun> {
         run(new RunnerImpl());
     }
 
-    protected class RunnerImpl extends Build.RunnerImpl {
+    protected class RunnerImpl extends Build<MatrixConfiguration,MatrixRun>.RunnerImpl {
         @Override
         protected FilePath decideWorkspace(Node n, WorkspaceList wsl) {
             Node node = getBuiltOn();
