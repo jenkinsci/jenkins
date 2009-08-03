@@ -33,6 +33,8 @@ import java.io.Serializable;
 import net.sf.json.JSONObject;
 
 import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.export.Exported;
+import org.kohsuke.stapler.export.ExportedBean;
 
 /**
  * Defines a parameter for a build.
@@ -88,11 +90,13 @@ import org.kohsuke.stapler.StaplerRequest;
  * TODO: {@link ParameterValue} needs to have some mechanism to expose values to the build
  * @see StringParameterDefinition
  */
+@ExportedBean(defaultVisibility=3)
 public abstract class ParameterDefinition implements
         Describable<ParameterDefinition>, ExtensionPoint, Serializable {
 
     private final String name;
-    private final String description;
+
+	private final String description;
 
     public ParameterDefinition(String name) {
         this(name, null);
@@ -103,10 +107,12 @@ public abstract class ParameterDefinition implements
         this.description = description;
     }
 
+	@Exported
     public String getName() {
         return name;
     }
 
+	@Exported
     public String getDescription() {
         return description;
     }
@@ -140,6 +146,7 @@ public abstract class ParameterDefinition implements
      * @return default parameter value or null if no defaults are available
      * @since 1.253
      */
+	@Exported
     public ParameterValue getDefaultParameterValue() {
         return null;
     }

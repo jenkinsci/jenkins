@@ -34,7 +34,7 @@ import hudson.util.VariableResolver;
  * {@link hudson.model.ParameterValue} created from {@link hudson.model.StringParameterDefinition}.
  */
 public class BooleanParameterValue extends ParameterValue {
-    @Exported(visibility=3)
+    @Exported(visibility=4)
     public final boolean value;
 
     @DataBoundConstructor

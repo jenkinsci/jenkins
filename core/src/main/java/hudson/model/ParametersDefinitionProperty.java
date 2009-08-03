@@ -35,6 +35,9 @@ import net.sf.json.JSONObject;
 
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
+import org.kohsuke.stapler.export.Exported;
+import org.kohsuke.stapler.export.ExportedBean;
+
 import hudson.Extension;
 
 /**
@@ -44,6 +47,7 @@ import hudson.Extension;
  * This class also implements {@link Action} so that <tt>index.jelly</tt> provides
  * a form to enter build parameters. 
  */
+@ExportedBean(defaultVisibility=2)
 public class ParametersDefinitionProperty extends JobProperty<AbstractProject<?, ?>>
         implements Action {
 
@@ -61,6 +65,7 @@ public class ParametersDefinitionProperty extends JobProperty<AbstractProject<?,
         return owner;
     }
 
+	@Exported
     public List<ParameterDefinition> getParameterDefinitions() {
         return parameterDefinitions;
     }

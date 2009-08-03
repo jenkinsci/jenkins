@@ -34,7 +34,7 @@ import hudson.util.VariableResolver;
  * {@link ParameterValue} created from {@link StringParameterDefinition}.
  */
 public class StringParameterValue extends ParameterValue {
-    @Exported(visibility=3)
+    @Exported(visibility=4)
     public final String value;
 
     @DataBoundConstructor
