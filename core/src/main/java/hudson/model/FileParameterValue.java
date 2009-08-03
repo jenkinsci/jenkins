@@ -26,6 +26,8 @@ package hudson.model;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.apache.commons.fileupload.FileItem;
 import org.apache.commons.fileupload.disk.DiskFileItem;
+import org.apache.commons.lang.StringUtils;
+
 import hudson.tasks.BuildWrapper;
 import hudson.Launcher;
 
@@ -65,9 +67,11 @@ public class FileParameterValue extends ParameterValue {
     public BuildWrapper createBuildWrapper(AbstractBuild<?,?> build) {
         return new BuildWrapper() {
             public Environment setUp(AbstractBuild build, Launcher launcher, BuildListener listener) throws IOException, InterruptedException {
-                listener.getLogger().println("Copying file to "+location);
-                build.getWorkspace().child(location).copyFrom(file);
-                file = null;
+            	if (!StringUtils.isEmpty(file.getName())) {
+            		listener.getLogger().println("Copying file to "+location);
+            		build.getWorkspace().child(location).copyFrom(file);
+            		file = null;
+            	}
                 return new Environment() {};
             }
         };
