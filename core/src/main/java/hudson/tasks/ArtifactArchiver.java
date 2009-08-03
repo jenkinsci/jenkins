@@ -90,7 +90,7 @@ public class ArtifactArchiver extends Recorder {
             build.setResult(Result.FAILURE);
             return true;
         }
-
+        
         File dir = build.getArtifactsDir();
         dir.mkdirs();
 
@@ -100,6 +100,8 @@ public class ArtifactArchiver extends Recorder {
             if (ws==null) { // #3330: slave down?
                 return true;
             }
+
+            String artifacts = build.getEnvironment(listener).expand(this.artifacts);
             if(ws.copyRecursiveTo(artifacts,excludes,new FilePath(dir))==0) {
                 if(build.getResult().isBetterOrEqualTo(Result.UNSTABLE)) {
                     // If the build failed, don't complain that there was no matching artifact.
