@@ -27,7 +27,6 @@ import hudson.ExtensionPoint;
 import hudson.Util;
 import hudson.Extension;
 import hudson.DescriptorExtensionList;
-import hudson.Plugin;
 import hudson.widgets.Widget;
 import hudson.model.Descriptor.FormException;
 import static hudson.model.Hudson.checkGoodName;
@@ -40,7 +39,6 @@ import hudson.security.Permission;
 import hudson.security.PermissionGroup;
 import hudson.util.DescriptorList;
 import hudson.util.RunList;
-import org.kohsuke.stapler.Stapler;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 import org.kohsuke.stapler.export.Exported;
@@ -58,6 +56,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.text.ParseException;
+import org.kohsuke.stapler.HttpRedirect;
+import org.kohsuke.stapler.HttpResponse;
 
 /**
  * Encapsulates the rendering of the list of {@link TopLevelItem}s
@@ -99,6 +99,11 @@ public abstract class View extends AbstractModelObject implements AccessControll
 
     protected View(String name) {
         this.name = name;
+    }
+
+    protected View(String name, ViewGroup owner) {
+        this.name = name;
+        this.owner = owner;
     }
 
     /**
@@ -499,12 +504,13 @@ public abstract class View extends AbstractModelObject implements AccessControll
     /**
      * Deletes this view.
      */
-    public synchronized void doDoDelete( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
+    public synchronized HttpResponse doDoDelete() throws IOException, ServletException {
         requirePOST();
         checkPermission(DELETE);
 
         owner.deleteView(this);
-        rsp.sendRedirect2(req.getContextPath()+"/");
+
+        return new HttpRedirect("/" + owner.getUrl());
     }
 
 

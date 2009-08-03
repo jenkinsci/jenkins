@@ -49,6 +49,11 @@ public class MyView extends View {
         super(name);
     }
 
+    public MyView(String name, ViewGroup owner) {
+        this(name);
+        this.owner = owner;
+    }
+
     @Override
     public boolean contains(TopLevelItem item) {
         return item.hasPermission(Job.CONFIGURE);

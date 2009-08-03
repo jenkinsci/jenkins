@@ -23,21 +23,20 @@
  */
 package hudson.security;
 
-import hudson.ExtensionPoint;
-import hudson.Extension;
 import hudson.DescriptorExtensionList;
-import hudson.slaves.Cloud;
-import hudson.slaves.RetentionStrategy;
+import hudson.Extension;
+import hudson.ExtensionPoint;
 import hudson.model.AbstractItem;
+import hudson.model.AbstractProject;
 import hudson.model.Computer;
 import hudson.model.Describable;
 import hudson.model.Descriptor;
 import hudson.model.Hudson;
 import hudson.model.Job;
+import hudson.model.Node;
 import hudson.model.User;
 import hudson.model.View;
-import hudson.model.Node;
-import hudson.model.AbstractProject;
+import hudson.slaves.Cloud;
 import hudson.util.DescriptorList;
 
 import java.io.Serializable;
@@ -95,14 +94,14 @@ public abstract class AuthorizationStrategy implements Describable<Authorization
      * This can be used as a basis for more fine-grained access control.
      *
      * <p>
-     * The default implementation returns {@link #getRootACL()}.
+     * The default implementation returns the ACL of the ViewGroup.
      *
      * @since 1.220
      */
     public ACL getACL(View item) {
-    	return getRootACL();
+    	return item.getOwner().getACL();
     }
-
+    
     /**
      * Implementation can choose to provide different ACL for different items.
      * This can be used as a basis for more fine-grained access control.

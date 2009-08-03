@@ -123,6 +123,7 @@ THE SOFTWARE.
       </plugin>
       <plugin>
         <artifactId>maven-remote-resources-plugin</artifactId>
+        <version>1.0</version>
         <executions>
           <execution>
             <goals>
