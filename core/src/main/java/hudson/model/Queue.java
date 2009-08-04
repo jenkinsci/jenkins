@@ -376,6 +376,13 @@ public class Queue extends ResourceController implements Saveable {
      *      That said, one can still look at {@link WaitingItem#future}, {@link WaitingItem#id}, etc.
      */
     public synchronized WaitingItem schedule(Task p, int quietPeriod, List<Action> actions) {
+        // remove nulls
+        actions = new ArrayList<Action>(actions);
+        for (Iterator<Action> itr = actions.iterator(); itr.hasNext();) {
+            Action a =  itr.next();
+            if (a==null)    itr.remove();
+        }
+
     	boolean shouldSchedule = true;
     	for(QueueDecisionHandler h : QueueDecisionHandler.all()) {
     		shouldSchedule = shouldSchedule && h.shouldSchedule(p, actions);
@@ -490,6 +497,11 @@ public class Queue extends ResourceController implements Saveable {
     	return schedule(p, quietPeriod, actions)!=null;
     }
 
+    /**
+     * @param actions
+     *      For convenience of the caller, some of the items in the array can be null,
+     *      and they'll be ignored.
+     */
     public synchronized WaitingItem schedule(Task p, int quietPeriod, Action... actions) {
     	return schedule(p, quietPeriod, Arrays.asList(actions));
     }

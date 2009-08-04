@@ -44,6 +44,7 @@ import hudson.model.SCMedItem;
 import hudson.model.Saveable;
 import hudson.model.TopLevelItem;
 import hudson.model.TopLevelItemDescriptor;
+import hudson.model.ResourceController;
 import hudson.model.Queue.FlyweightTask;
 import hudson.model.Descriptor.FormException;
 import hudson.tasks.BuildStep;
@@ -132,6 +133,8 @@ public class MatrixProject extends AbstractProject<MatrixProject,MatrixBuild> im
     @CopyOnWrite
     private transient /*final*/ Set<MatrixConfiguration> activeConfigurations = new LinkedHashSet<MatrixConfiguration>();
 
+    private boolean runSequentially;
+
     public MatrixProject(String name) {
         super(Hudson.getInstance(), name);
     }
@@ -146,6 +149,20 @@ public class MatrixProject extends AbstractProject<MatrixProject,MatrixBuild> im
     public void setAxes(AxisList axes) throws IOException {
         this.axes = new AxisList(axes);
         rebuildConfigurations();
+        save();
+    }
+
+    /**
+     * If true, {@link MatrixRun}s are run sequentially, instead of running in parallel.
+     *
+     * TODO: this should be subsumed by {@link ResourceController}.
+     */
+    public boolean isRunSequentially() {
+        return runSequentially;
+    }
+
+    public void setRunSequentially(boolean runSequentially) throws IOException {
+        this.runSequentially = runSequentially;
         save();
     }
 
@@ -528,6 +545,8 @@ public class MatrixProject extends AbstractProject<MatrixProject,MatrixBuild> im
         this.axes = newAxes;
 
         JSONObject json = req.getSubmittedForm();
+
+        runSequentially = json.has("runSequentially");
 
         buildWrappers.rebuild(req, json, BuildWrappers.getFor(this));
         builders.rebuildHetero(req, json, Builder.all(), "builder");

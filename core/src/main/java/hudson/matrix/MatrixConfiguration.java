@@ -299,7 +299,12 @@ public class MatrixConfiguration extends Project<MatrixConfiguration,MatrixRun> 
     public boolean scheduleBuild(ParametersAction parameters) {
     	return scheduleBuild(parameters, new LegacyCodeCause());
     }
-    
+
+    /**
+     *
+     * @param parameters
+     *      Can be null.
+     */
 	public boolean scheduleBuild(ParametersAction parameters, Cause c) {
         return Hudson.getInstance().getQueue().schedule(this, getQuietPeriod(), parameters, new CauseAction(c))!=null;
 	}
