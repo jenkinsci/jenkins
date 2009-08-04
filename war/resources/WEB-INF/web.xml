@@ -150,10 +150,10 @@ THE SOFTWARE.
     <extension>xml</extension>
     <mime-type>application/xml</mime-type>
   </mime-mapping>
-  <mime-mapping>
+  <!--mime-mapping> commenting out until this works out of the box with JOnAS. See  http://www.nabble.com/Error-with-mime-type%2D-%27application-xslt%2Bxml%27-when-deploying-hudson-1.316-in-jonas-td24740489.html
     <extension>xsl</extension>
     <mime-type>application/xslt+xml</mime-type>
-  </mime-mapping>
+  </mime-mapping-->
   <mime-mapping>
     <extension>log</extension>
     <mime-type>text/plain</mime-type>
