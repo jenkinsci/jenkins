@@ -47,8 +47,6 @@ import java.util.AbstractList;
 import java.util.List;
 import java.util.Map;
 import java.util.HashMap;
-import java.util.TreeMap;
-import java.util.Comparator;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -235,6 +233,7 @@ public final class ComputerSet extends AbstractModelObject {
             String xml = Hudson.XSTREAM.toXML(src);
             Node result = (Node)Hudson.XSTREAM.fromXML(xml);
             result.setNodeName(name);
+            result.holdOffLaunchUntilSave = true;
 
             app.addNode(result);
 

@@ -998,13 +998,15 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
         } else {
             if(n.getNumExecutors()>0) {
                 computers.put(n,c=n.createComputer());
-                RetentionStrategy retentionStrategy = c.getRetentionStrategy();
-                if (retentionStrategy != null) {
-                    // if there is a retention strategy, it is responsible for deciding to start the computer
-                    retentionStrategy.start(c);
-                } else {
-                    // we should never get here, but just in case, we'll fall back to the legacy behaviour
-                    c.connect(true);
+                if (!n.holdOffLaunchUntilSave) {
+                    RetentionStrategy retentionStrategy = c.getRetentionStrategy();
+                    if (retentionStrategy != null) {
+                        // if there is a retention strategy, it is responsible for deciding to start the computer
+                        retentionStrategy.start(c);
+                    } else {
+                        // we should never get here, but just in case, we'll fall back to the legacy behaviour
+                        c.connect(true);
+                    }
                 }
             }
         }

@@ -59,6 +59,11 @@ import org.kohsuke.stapler.export.Exported;
  */
 @ExportedBean
 public abstract class Node extends AbstractModelObject implements Describable<Node>, ExtensionPoint, AccessControlled {
+    /**
+     * Newly copied slaves get this flag set, so that Hudson doesn't try to start this node until its configuration
+     * is saved once.
+     */
+    protected volatile transient boolean holdOffLaunchUntilSave;
 
     public String getDisplayName() {
         return getNodeName(); // default implementation
@@ -66,6 +71,10 @@ public abstract class Node extends AbstractModelObject implements Describable<No
 
     public String getSearchUrl() {
         return "computer/"+getNodeName();
+    }
+
+    public boolean isHoldOffLaunchUntilSave() {
+        return holdOffLaunchUntilSave;
     }
 
     /**
