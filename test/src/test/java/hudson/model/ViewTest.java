@@ -38,7 +38,8 @@ import static hudson.model.Messages.Hudson_ViewName;
  * @author Kohsuke Kawaguchi
  */
 public class ViewTest extends HudsonTestCase {
-    /**
+
+	/**
      * Creating two views with the same name.
      */
     @Email("http://d.hatena.ne.jp/ssogabe/20090101/1230744150")
@@ -91,5 +92,24 @@ public class ViewTest extends HudsonTestCase {
         assertTrue(proxyView instanceof ProxyView);
         assertEquals(((ProxyView) proxyView).getProxiedViewName(), "listView");
         assertEquals(((ProxyView) proxyView).getProxiedView(), listView);
+    }
+    
+    public void testDeleteView() throws Exception {
+    	WebClient wc = new WebClient();
+
+    	ListView v = new ListView("list", hudson);
+		hudson.addView(v);
+    	HtmlPage delete = wc.getPage(v, "delete");
+    	submit(delete.getFormByName("delete"));
+    	assertNull(hudson.getView("list"));
+    	
+    	User user = User.get("user", true);
+    	MyViewsProperty p = user.getProperty(MyViewsProperty.class);
+    	v = new ListView("list", p);
+		p.addView(v);
+    	delete = wc.getPage(v, "delete");
+    	submit(delete.getFormByName("delete"));
+    	assertNull(p.getView("list"));
+    	
     }
 }

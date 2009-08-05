@@ -504,13 +504,13 @@ public abstract class View extends AbstractModelObject implements AccessControll
     /**
      * Deletes this view.
      */
-    public synchronized HttpResponse doDoDelete() throws IOException, ServletException {
+    public synchronized void doDoDelete(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
         requirePOST();
         checkPermission(DELETE);
 
         owner.deleteView(this);
 
-        return new HttpRedirect("/" + owner.getUrl());
+        rsp.sendRedirect2(req.getContextPath()+"/" + owner.getUrl());
     }
 
 

@@ -52,6 +52,7 @@ import hudson.model.Saveable;
 import hudson.model.TaskListener;
 import hudson.model.UpdateCenter;
 import hudson.model.AbstractProject;
+import hudson.model.View;
 import hudson.model.UpdateCenter.UpdateCenterConfiguration;
 import hudson.model.Node.Mode;
 import hudson.security.csrf.CrumbIssuer;
@@ -881,6 +882,14 @@ public abstract class HudsonTestCase extends TestCase {
 
         public HtmlPage getPage(Node item, String relative) throws IOException, SAXException {
             return goTo(item.toComputer().getUrl()+relative);
+        }
+
+        public HtmlPage getPage(View view) throws IOException, SAXException {
+            return goTo(view.getUrl());
+        }
+
+        public HtmlPage getPage(View view, String relative) throws IOException, SAXException {
+            return goTo(view.getUrl()+relative);
         }
 
         /**

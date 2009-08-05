@@ -38,6 +38,9 @@ import org.kohsuke.stapler.StaplerResponse;
 
 /**
  * A view that delegates to another.
+ * 
+ * TODO: this does not respond to renaming or deleting the proxied view.
+ * 
  * @author Tom Huybrechts
  *
  */
