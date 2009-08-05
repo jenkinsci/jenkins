@@ -30,6 +30,17 @@ THE SOFTWARE.
     See
     http://hudson.gotdns.com/wiki/display/HUDSON/Jelly+form+controls
     for the reference.
+
+    <st:attribute name="method" use="required">
+      Server-side method that handles the validation. For example, if this is 'foo', you need "doFoo" on
+      your descriptor class.
+    </st:attribute>
+    <st:attribute name="title" use="required">
+      Caption of the validate button. Should be internationalized.
+    </st:attribute>
+    <st:attribute name="with">
+      ','-separated list of fields that are sent to the server.
+    </st:attribute>
   </st:documentation>
   <f:nested>
     <div style="float:right">

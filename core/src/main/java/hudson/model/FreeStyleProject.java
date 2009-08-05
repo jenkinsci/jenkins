@@ -74,15 +74,6 @@ public class FreeStyleProject extends Project<FreeStyleProject,FreeStyleBuild> i
         return customWorkspace;
     }
 
-    @Override
-    public FilePath getWorkspace() {
-        Node node = getLastBuiltOn();
-        if(node==null)  node = getParent();
-        if(customWorkspace!=null)
-            return node.createPath(customWorkspace);
-        return node.getWorkspaceFor(this);
-    }
-
     protected void submit(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException, Descriptor.FormException {
         if(req.hasParameter("customWorkspace"))
             customWorkspace = req.getParameter("customWorkspace.directory");

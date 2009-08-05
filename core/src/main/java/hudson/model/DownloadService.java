@@ -35,6 +35,8 @@ public class DownloadService extends PageDecorator {
      * Builds up an HTML fragment that starts all the download jobs.
      */
     public String generateFragment() {
+    	if (neverUpdate) return "";
+    	
         StringBuilder buf = new StringBuilder();
         if(Hudson.getInstance().hasPermission(Hudson.READ)) {
             long now = System.currentTimeMillis();
@@ -196,5 +198,7 @@ public class DownloadService extends PageDecorator {
 
         private static final Logger LOGGER = Logger.getLogger(Downloadable.class.getName());
     }
+
+    public static boolean neverUpdate = Boolean.getBoolean(DownloadService.class.getName()+".never");
 }
 

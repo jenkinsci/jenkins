@@ -59,8 +59,7 @@ public abstract class CommandInterpreter extends Builder {
     }
 
     public boolean perform(AbstractBuild<?,?> build, Launcher launcher, TaskListener listener) throws InterruptedException {
-        AbstractProject proj = build.getProject();
-        FilePath ws = proj.getWorkspace();
+        FilePath ws = build.getWorkspace();
         FilePath script=null;
         try {
             try {

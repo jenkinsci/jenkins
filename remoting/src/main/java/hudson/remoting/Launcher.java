@@ -182,7 +182,14 @@ public class Launcher {
         } else
         if(slaveJnlpURL!=null) {
             List<String> jnlpArgs = parseJnlpArguments();
-            hudson.remoting.jnlp.Main.main(jnlpArgs.toArray(new String[jnlpArgs.size()]));
+            try {
+                hudson.remoting.jnlp.Main._main(jnlpArgs.toArray(new String[jnlpArgs.size()]));
+            } catch (CmdLineException e) {
+                System.err.println("JNLP file "+slaveJnlpURL+" has invalid arguments: "+jnlpArgs);
+                System.err.println("Most likely a configuration error in the master");
+                System.err.println(e.getMessage());
+                System.exit(1);
+            }
         } else
         if(tcpPortFile!=null) {
             runAsTcpServer();

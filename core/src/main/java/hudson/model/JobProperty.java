@@ -29,6 +29,7 @@ import hudson.Plugin;
 import hudson.tasks.BuildStep;
 import hudson.tasks.Builder;
 import hudson.tasks.Publisher;
+import hudson.tasks.BuildStepMonitor;
 
 import java.io.IOException;
 
@@ -132,6 +133,14 @@ public abstract class JobProperty<J extends Job<?,?>> implements Describable<Job
      */
     public boolean perform(AbstractBuild<?,?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
         return true;
+    }
+
+    /**
+     * Returns {@link BuildStepMonitor#NONE} by default, as {@link JobProperty}s normally don't depend
+     * on its previous result.
+     */
+    public BuildStepMonitor getRequiredMonitorService() {
+        return BuildStepMonitor.NONE;
     }
 
     public final Action getProjectAction(AbstractProject<?,?> project) {

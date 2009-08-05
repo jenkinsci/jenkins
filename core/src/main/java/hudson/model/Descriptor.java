@@ -225,6 +225,18 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable {
             if(!t.isAssignableFrom(clazz))
                 throw new AssertionError("Outer class "+clazz+" of "+getClass()+" is not assignable to "+t+". Perhaps wrong outer class?");
         }
+
+        // detect a type error. this Descriptor is supposed to be returned from getDescriptor(), so make sure its type match up.
+        // this prevents a bug like http://www.nabble.com/Creating-a-new-parameter-Type-%3A-Masked-Parameter-td24786554.html
+        try {
+            Method getd = clazz.getMethod("getDescriptor");
+            if(!getd.getReturnType().isAssignableFrom(getClass())) {
+                throw new AssertionError(getClass()+" must be assignable to "+getd.getReturnType());
+            }
+        } catch (NoSuchMethodException e) {
+            throw new AssertionError(getClass()+" is missing getDescriptor method.");
+        }
+
     }
 
     /**

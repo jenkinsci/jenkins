@@ -25,6 +25,7 @@ package hudson.model;
 
 import com.thoughtworks.xstream.XStream;
 import hudson.CopyOnWrite;
+import hudson.Extension;
 import hudson.FeedAdapter;
 import hudson.Util;
 import hudson.XmlFile;
@@ -38,8 +39,12 @@ import hudson.util.RunList;
 import hudson.util.XStream2;
 import net.sf.json.JSONObject;
 
+import org.acegisecurity.AccessDeniedException;
 import org.acegisecurity.Authentication;
 import org.acegisecurity.providers.anonymous.AnonymousAuthenticationToken;
+import org.kohsuke.stapler.HttpRedirect;
+import org.kohsuke.stapler.HttpResponse;
+import org.kohsuke.stapler.StaplerProxy;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 import org.kohsuke.stapler.export.Exported;
@@ -60,8 +65,10 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.kohsuke.stapler.StaplerFallback;
 
 /**
  * Represents a user.
@@ -514,4 +521,38 @@ public class User extends AbstractModelObject implements AccessControlled, Savea
     public boolean hasPermission(Permission permission) {
         return getACL().hasPermission(permission);
     }
-}
+
+    public Object getDynamic(String token) {
+        for (UserProperty property: getProperties().values()) {
+            if (property instanceof Action) {
+                Action a= (Action) property;
+            if(a.getUrlName().equals(token) || a.getUrlName().equals('/'+token))
+                return a;
+            }
+        }
+        return null;
+    }
+
+    @Extension
+    public static class Me implements RootAction, StaplerProxy {
+
+		public String getDisplayName() {
+			return null;
+		}
+
+		public String getIconFileName() {
+			return null;
+		}
+
+		public String getUrlName() {
+			return "me";
+		}
+		
+		public Object getTarget() {
+			if (User.current() == null) {
+				throw new AccessDeniedException("/me is not available when not logged in");
+			}
+			return User.current();
+		}
+    	
+    }}

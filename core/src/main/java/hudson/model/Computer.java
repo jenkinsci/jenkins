@@ -25,6 +25,7 @@ package hudson.model;
 
 import hudson.EnvVars;
 import hudson.Util;
+import hudson.FilePath;
 import hudson.model.Descriptor.FormException;
 import hudson.node_monitors.NodeMonitor;
 import hudson.remoting.Channel;
@@ -36,6 +37,7 @@ import hudson.security.Permission;
 import hudson.security.PermissionGroup;
 import hudson.slaves.ComputerLauncher;
 import hudson.slaves.RetentionStrategy;
+import hudson.slaves.WorkspaceList;
 import hudson.tasks.BuildWrapper;
 import hudson.tasks.Publisher;
 import hudson.util.DaemonThreadFactory;
@@ -58,6 +60,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Enumeration;
+import java.util.Set;
+import java.util.HashSet;
+import java.util.Collections;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -122,6 +127,8 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
     private volatile String cachedHostName;
     private volatile boolean hostNameCached;
 
+    private final WorkspaceList workspaceList = new WorkspaceList();
+
     public Computer(Node node) {
         assert node.getNumExecutors()!=0 : "Computer created with 0 executors";
         setNode(node);
@@ -132,6 +139,13 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
      */
     protected File getLogFile() {
         return new File(Hudson.getInstance().getRootDir(),"slave-"+nodeName+".log");
+    }
+
+    /**
+     * Gets the object that coordinates the workspace allocation on this computer.
+     */
+    public WorkspaceList getWorkspaceList() {
+        return workspaceList;
     }
 
     /**

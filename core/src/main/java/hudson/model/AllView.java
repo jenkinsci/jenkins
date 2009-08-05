@@ -1,7 +1,7 @@
 /*
  * The MIT License
  * 
- * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi
+ * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, Tom Huybrechts
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,6 +24,7 @@
 package hudson.model;
 
 import org.kohsuke.stapler.DataBoundConstructor;
+import org.kohsuke.stapler.Stapler;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 
@@ -46,6 +47,11 @@ public class AllView extends View {
         super(name);
     }
 
+    public AllView(String name, ViewGroup owner) {
+        this(name);
+        this.owner = owner;
+    }
+    
     @Override
     public String getDescription() {
         return Hudson.getInstance().getDescription();
@@ -100,7 +106,7 @@ public class AllView extends View {
     public static final class DescriptorImpl extends ViewDescriptor {
         @Override
         public boolean isInstantiable() {
-            for (View v : Hudson.getInstance().getViews())
+            for (View v : Stapler.getCurrentRequest().findAncestorObject(ViewGroup.class).getViews())
                 if(v instanceof AllView)
                     return false;
             return true;

@@ -82,6 +82,11 @@ public class MavenUtil {
         return createEmbedder(listener,mavenHome,profiles,systemProperties,null);
     }
 
+    public static MavenEmbedder createEmbedder(TaskListener listener, File mavenHome, String profiles, Properties systemProperties,
+                                               String privateRepository) throws MavenEmbedderException, IOException {
+        return createEmbedder(listener,mavenHome,profiles,systemProperties,privateRepository,null);
+    }
+
     /**
      * Creates a fresh {@link MavenEmbedder} instance.
      *
@@ -96,9 +101,11 @@ public class MavenUtil {
      *      The system properties that the embedded Maven sees. See {@link MavenEmbedder#setSystemProperties(Properties)}.
      * @param privateRepository
      *      Optional private repository to use as the local repository.
+     * @param alternateSettings
+     *      Optional alternate settings.xml file.
      */
     public static MavenEmbedder createEmbedder(TaskListener listener, File mavenHome, String profiles, Properties systemProperties,
-                                               String privateRepository) throws MavenEmbedderException, IOException {
+                                               String privateRepository, File alternateSettings) throws MavenEmbedderException, IOException {
         MavenEmbedder maven = new MavenEmbedder(mavenHome);
 
         ClassLoader cl = MavenUtil.class.getClassLoader();
@@ -125,6 +132,10 @@ public class MavenUtil {
             maven.setLocalRepositoryDirectory(new File(privateRepository));
 
         maven.setProfiles(profiles);
+
+        if (alternateSettings!=null) 
+            maven.setAlternateSettings(alternateSettings);
+
         maven.setSystemProperties(systemProperties);
         maven.start();
 

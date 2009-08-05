@@ -54,6 +54,14 @@ public class RedeployPublisherTest extends HudsonTestCase {
         System.out.println(repo);
     }
 
+    public void testConfigRoundtrip() throws Exception {
+        MavenModuleSet p = createMavenProject();
+        RedeployPublisher rp = new RedeployPublisher("theId", "http://some.url/", true);
+        p.getPublishersList().add(rp);
+        submit(new WebClient().getPage(p,"configure").getFormByName("config"));
+        assertEqualBeans(rp,p.getPublishersList().get(RedeployPublisher.class),"id,url,uniqueVersion");
+    }
+
 //    /**
 //     * Makes sure that the webdav wagon component we bundle is compatible.
 //     */

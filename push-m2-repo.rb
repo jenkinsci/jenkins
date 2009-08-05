@@ -63,16 +63,19 @@ Dir.chdir("../plugins") do
   system "svn update"
   # update master POM
   updatePom("pom.xml",prev,ver)
-  # update parent reference in module POM
-  Dir.glob("*") do |name|
-    next unless File.directory?(name)
-    print "#{name}\n"
-    next unless File.exists?(name+"/pom.xml")
-    updatePom(name+"/pom.xml",prev,ver)
-  end
-  # in case anyone gets out of sync, this will bring them back to the current version,
-  # except that this only works for children nominated in the <module> section.
-  system "mvn -N versions:update-child-modules" or fail
+  # --- stop updating plugin POMs aggressively. Now that plugins/pom.xml is synced
+  #     to central, we no longer have a real incentive to do this, and we can let
+  #     plugin authors choose the version of their choice.
+  ## update parent reference in module POM
+  #Dir.glob("*") do |name|
+  #  next unless File.directory?(name)
+  #  print "#{name}\n"
+  #  next unless File.exists?(name+"/pom.xml")
+  #  updatePom(name+"/pom.xml",prev,ver)
+  #end
+  ## in case anyone gets out of sync, this will bring them back to the current version,
+  ## except that this only works for children nominated in the <module> section.
+  #system "mvn -N versions:update-child-modules" or fail
   system "svn commit -m 'bumping up POM version'" or fail
   system "mvn -N deploy" or fail
 end

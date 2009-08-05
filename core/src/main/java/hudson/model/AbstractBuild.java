@@ -27,6 +27,8 @@ import hudson.EnvVars;
 import hudson.Functions;
 import hudson.Launcher;
 import hudson.Util;
+import hudson.FilePath;
+import hudson.slaves.WorkspaceList;
 import hudson.matrix.MatrixConfiguration;
 import hudson.model.Fingerprint.BuildPtr;
 import hudson.model.Fingerprint.RangeSet;
@@ -42,6 +44,7 @@ import hudson.tasks.BuildWrapper;
 import hudson.tasks.Builder;
 import hudson.tasks.Fingerprinter.FingerprintAction;
 import hudson.tasks.Publisher;
+import hudson.tasks.BuildStepMonitor;
 import hudson.tasks.test.AbstractTestResultAction;
 import hudson.util.AdaptedIterator;
 import hudson.util.Iterators;
@@ -82,6 +85,12 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
      * Null or "" if built by the master. (null happens when we read old record that didn't have this information.)
      */
     private String builtOn;
+
+    /**
+     * The file path on the node that performed a build. Kept as a string since {@link FilePath} is not serializable into XML.
+     * @since 1.XXX
+     */
+    private String workspace;
 
     /**
      * Version of Hudson that built this.
@@ -175,6 +184,51 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
     }
 
     /**
+     * Gets the directory where this build is being built.
+     *
+     * <p>
+     * Note to implementors: to control where the workspace is created, override
+     * {@link AbstractRunner#decideWorkspace(Node,WorkspaceList)}.
+     *
+     * @return
+     *      null if the workspace is on a slave that's not connected. Note that once the build is completed,
+     *      the workspace may be used to build something else, so the value returned from this method may
+     *      no longer show a workspace as it was used for this build.
+     * @since 1.XXX
+     */
+    public final FilePath getWorkspace() {
+        if(workspace==null) return null;
+        Node n = getBuiltOn();
+        if(n==null) return null;
+        return n.createPath(workspace);
+    }
+
+    /**
+     * Returns the root directory of the checked-out module.
+     * <p>
+     * This is usually where <tt>pom.xml</tt>, <tt>build.xml</tt>
+     * and so on exists.
+     */
+    public final FilePath getModuleRoot() {
+        FilePath ws = getWorkspace();
+        if(ws==null)    return null;
+        return getParent().getScm().getModuleRoot(ws);
+    }
+
+    /**
+     * Returns the root directories of all checked-out modules.
+     * <p>
+     * Some SCMs support checking out multiple modules into the same workspace.
+     * In these cases, the returned array will have a length greater than one.
+     * @return The roots of all modules checked out from the SCM.
+     */
+    public FilePath[] getModuleRoots() {
+        FilePath ws = getWorkspace();
+        if(ws==null)    return null;
+        return getParent().getScm().getModuleRoots(ws);
+    }
+
+    /**
      * List of users who committed a change since the last non-broken build till now.
      *
      * <p>
@@ -189,12 +243,15 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
         if(culprits==null) {
             Set<User> r = new HashSet<User>();
             R p = getPreviousCompletedBuild();
-            if(p !=null && isBuilding() && p.getResult().isWorseThan(Result.UNSTABLE)) {
-                // we are still building, so this is just the current latest information,
-                // but we seems to be failing so far, so inherit culprits from the previous build.
-                // isBuilding() check is to avoid recursion when loading data from old Hudson, which doesn't record
-                // this information
-                r.addAll(p.getCulprits());
+            if(p !=null && isBuilding()) {
+                Result pr = p.getResult();
+                if(pr!=null && pr.isWorseThan(Result.UNSTABLE)) {
+                    // we are still building, so this is just the current latest information,
+                    // but we seems to be failing so far, so inherit culprits from the previous build.
+                    // isBuilding() check is to avoid recursion when loading data from old Hudson, which doesn't record
+                    // this information
+                    r.addAll(p.getCulprits());
+                }
             }
             for( Entry e : getChangeSet() )
                 r.add(e.getAuthor());
@@ -237,7 +294,7 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
         return hudsonVersion;
     }
 
-    protected abstract class AbstractRunner implements Runner {
+    protected abstract class AbstractRunner extends Runner {
         /**
          * Since configuration can be changed while a build is in progress,
          * create a launcher once and stick to it for the entire build duration.
@@ -251,6 +308,19 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
             return Executor.currentExecutor().getOwner().getNode();
         }
 
+        /**
+         * Allocates the workspace from {@link WorkspaceList}.
+         *
+         * @param n
+         *      Passed in for the convenience. The node where the build is running.
+         * @param wsl
+         *      Passed in for the convenience. The returned path must be registered to this object.
+         */
+        protected FilePath decideWorkspace(Node n, WorkspaceList wsl) {
+            // TODO: this cast is indicative of abstraction problem
+            return wsl.allocate(n.getWorkspaceFor((TopLevelItem)getProject()));
+        }
+
         public Result run(BuildListener listener) throws Exception {
             Node node = getCurrentNode();
             assert builtOn==null;
@@ -261,32 +331,39 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
             if(!Hudson.getInstance().getNodes().isEmpty())
                 listener.getLogger().println(node instanceof Hudson ? Messages.AbstractBuild_BuildingOnMaster() : Messages.AbstractBuild_BuildingRemotely(builtOn));
 
-            node.getFileSystemProvisioner().prepareWorkspace(AbstractBuild.this,project.getWorkspace(),listener);
+            final FilePath ws = decideWorkspace(node,Computer.currentComputer().getWorkspaceList());
 
-            checkout(listener);
+            try {
+                workspace = ws.getRemote();
+                node.getFileSystemProvisioner().prepareWorkspace(AbstractBuild.this,ws,listener);
 
-            if(!preBuild(listener,project.getProperties()))
-                return Result.FAILURE;
+                checkout(listener);
 
-            Result result = doRun(listener);
+                if(!preBuild(listener,project.getProperties()))
+                    return Result.FAILURE;
 
-            // kill run-away processes that are left
-            // use multiple environment variables so that people can escape this massacre by overriding an environment
-            // variable for some processes
-            launcher.kill(getCharacteristicEnvVars());
+                Result result = doRun(listener);
 
-            // this is ugly, but for historical reason, if non-null value is returned
-            // it should become the final result.
-            if(result==null)    result = getResult();
-            if(result==null)    result = Result.SUCCESS;
+                // kill run-away processes that are left
+                // use multiple environment variables so that people can escape this massacre by overriding an environment
+                // variable for some processes
+                launcher.kill(getCharacteristicEnvVars());
 
-            if(result.isBetterOrEqualTo(Result.UNSTABLE))
-                createSymLink(listener,"lastSuccessful");
+                // this is ugly, but for historical reason, if non-null value is returned
+                // it should become the final result.
+                if(result==null)    result = getResult();
+                if(result==null)    result = Result.SUCCESS;
 
-            if(result.isBetterOrEqualTo(Result.SUCCESS))
-                createSymLink(listener,"lastStable");
+                if(result.isBetterOrEqualTo(Result.UNSTABLE))
+                    createSymLink(listener,"lastSuccessful");
 
-            return result;
+                if(result.isBetterOrEqualTo(Result.SUCCESS))
+                    createSymLink(listener,"lastStable");
+
+                return result;
+            } finally {
+                Computer.currentComputer().getWorkspaceList().release(ws);
+            }
         }
 
         /**
@@ -356,6 +433,7 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
                 for (User u : getCulprits())
                     r.add(u.getId());
                 culprits = r;
+                CheckPoint.CULPRITS_DETERMINED.report();
             }
         }
 
@@ -376,8 +454,21 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
         protected final void performAllBuildStep(BuildListener listener, Iterable<? extends BuildStep> buildSteps, boolean phase) throws InterruptedException, IOException {
             for( BuildStep bs : buildSteps ) {
                 if( (bs instanceof Publisher && ((Publisher)bs).needsToRunAfterFinalized()) ^ phase)
-                    bs.perform(AbstractBuild.this, launcher, listener);
+                    perform(bs,listener);
             }
+        }
+
+        /**
+         * Calls a build step.
+         */
+        protected final boolean perform(BuildStep bs, BuildListener listener) throws InterruptedException, IOException {
+            BuildStepMonitor mon;
+            try {
+                mon = bs.getRequiredMonitorService();
+            } catch (AbstractMethodError e) {
+                mon = BuildStepMonitor.BUILD;
+            }
+            return mon.perform(bs, AbstractBuild.this, launcher, listener);
         }
 
         protected final boolean preBuild(BuildListener listener,Map<?,? extends BuildStep> steps) {
@@ -445,7 +536,7 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
     @Override
     public EnvVars getEnvironment(TaskListener log) throws IOException, InterruptedException {
         EnvVars env = super.getEnvironment(log);
-        env.put("WORKSPACE", getProject().getWorkspace().getRemote());
+        env.put("WORKSPACE", getWorkspace().getRemote());
         // servlet container may have set CLASSPATH in its launch script,
         // so don't let that inherit to the new child process.
         // see http://www.nabble.com/Run-Job-with-JDK-1.4.2-tf4468601.html

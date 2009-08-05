@@ -72,7 +72,10 @@ THE SOFTWARE.
             <f:helpArea />
           </j:if>
         </j:if>
-        <st:include from="${descriptor}" page="${descriptor.configPage}" />
+        <!-- optional added to keep from breaking page rendering when
+        a descriptor doesn't have a config.jelly. -->
+        <st:include from="${descriptor}"
+                    page="${descriptor.configPage}" optional="true" />
         <f:block>
           <div align="right">
             <input type="hidden" name="stapler-class" value="${descriptor.clazz.name}" />

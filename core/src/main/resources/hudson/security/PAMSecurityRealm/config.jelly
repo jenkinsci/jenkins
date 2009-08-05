@@ -27,4 +27,5 @@ THE SOFTWARE.
       <f:textbox field="serviceName" />
     </f:entry>
   </f:advanced>
+  <f:validateButton method="test" title="${%Test}" />
 </j:jelly>

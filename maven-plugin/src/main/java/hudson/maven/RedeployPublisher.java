@@ -33,6 +33,7 @@ import hudson.model.Result;
 import hudson.tasks.BuildStepDescriptor;
 import hudson.tasks.Publisher;
 import hudson.tasks.Recorder;
+import hudson.tasks.BuildStepMonitor;
 import net.sf.json.JSONObject;
 import org.apache.maven.artifact.deployer.ArtifactDeploymentException;
 import org.apache.maven.artifact.repository.ArtifactRepository;
@@ -117,6 +118,10 @@ public class RedeployPublisher extends Recorder {
         return build.getAction(MavenAbstractArtifactRecord.class);
     }
 
+    public BuildStepMonitor getRequiredMonitorService() {
+        return BuildStepMonitor.NONE;
+    }
+    
     @Extension
     public static class DescriptorImpl extends BuildStepDescriptor<Publisher> {
         public DescriptorImpl() {
@@ -132,10 +137,6 @@ public class RedeployPublisher extends Recorder {
 
         public boolean isApplicable(Class<? extends AbstractProject> jobType) {
             return jobType==MavenModuleSet.class;
-        }
-
-        public String getHelpFile() {
-            return "/help/maven/redeploy.html";
         }
 
         public RedeployPublisher newInstance(StaplerRequest req, JSONObject formData) throws FormException {

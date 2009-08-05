@@ -1,7 +1,7 @@
 /*
  * The MIT License
  * 
- * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi
+ * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, Tom Huybrechts
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,6 +23,8 @@
  */
 package hudson.model;
 
+import hudson.security.AccessControlled;
+
 import java.io.IOException;
 import java.util.Collection;
 
@@ -34,7 +36,7 @@ import java.util.Collection;
  * @author Kohsuke Kawaguchi
  * @since 1.269
  */
-public interface ViewGroup extends Saveable, ModelObject {
+public interface ViewGroup extends Saveable, ModelObject, AccessControlled {
     /**
      * Deletes a view in this group.
      */

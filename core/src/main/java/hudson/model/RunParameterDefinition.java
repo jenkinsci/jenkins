@@ -67,7 +67,12 @@ public class RunParameterDefinition extends ParameterDefinition {
 
     @Override
     public ParameterValue getDefaultParameterValue() {
-        return new RunParameterValue(getName(), getProject().getLastBuild().getExternalizableId(), getDescription());
+        Run<?,?> lastBuild = getProject().getLastBuild();
+        if (lastBuild != null) {
+        	return new RunParameterValue(getName(), lastBuild.getExternalizableId(), getDescription());
+        } else {
+        	return null;
+        }
     }
 
     @Override

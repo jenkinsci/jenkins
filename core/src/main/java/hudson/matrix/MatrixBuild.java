@@ -180,21 +180,17 @@ public class MatrixBuild extends AbstractBuild<MatrixProject,MatrixBuild> {
                     return Result.FAILURE;
 
             try {
-                for(MatrixConfiguration c : activeConfigurations) {
-                    logger.println(Messages.MatrixBuild_Triggering(c.getDisplayName()));
-                    ParametersAction parameters = getAction(ParametersAction.class);
-                    if (parameters != null) {
-                    	c.scheduleBuild(parameters, new UpstreamCause(MatrixBuild.this));
-                    } else {
-                    	c.scheduleBuild(new UpstreamCause(MatrixBuild.this));
-                    }
-                }
+                if(!p.isRunSequentially())
+                    for(MatrixConfiguration c : activeConfigurations)
+                        scheduleConfigurationBuild(logger, c);
 
                 // this occupies an executor unnecessarily.
                 // it would be nice if this can be placed in a temproary executor.
 
                 Result r = Result.SUCCESS;
                 for (MatrixConfiguration c : activeConfigurations) {
+                    if(p.isRunSequentially())
+                        scheduleConfigurationBuild(logger, c);
                     String whyInQueue = "";
                     long startTime = System.currentTimeMillis();
 
@@ -269,6 +265,11 @@ public class MatrixBuild extends AbstractBuild<MatrixProject,MatrixBuild> {
                     }
                 }
             }
+        }
+
+        private void scheduleConfigurationBuild(PrintStream logger, MatrixConfiguration c) {
+            logger.println(Messages.MatrixBuild_Triggering(c.getDisplayName()));
+            c.scheduleBuild(getAction(ParametersAction.class), new UpstreamCause(MatrixBuild.this));
         }
 
         public void post2(BuildListener listener) throws Exception {

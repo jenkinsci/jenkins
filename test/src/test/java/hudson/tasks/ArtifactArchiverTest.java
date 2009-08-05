@@ -127,7 +127,7 @@ public class ArtifactArchiverTest extends HudsonTestCase {
         project.getPublishersList().replaceBy(Collections.singleton(artifactArchiver));
         project.getBuildersList().replaceBy(Collections.singleton(new TestBuilder() {
             public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
-                FilePath dir = build.getProject().getWorkspace().child("dir");
+                FilePath dir = build.getWorkspace().child("dir");
                 dir.child("subdir1").mkdirs();
                 FilePath subdir2 = dir.child("subdir2");
                 subdir2.mkdirs();
@@ -150,7 +150,7 @@ public class ArtifactArchiverTest extends HudsonTestCase {
 
     private static class CreateArtifact extends TestBuilder {
         public boolean perform(AbstractBuild<?,?> build, Launcher launcher, BuildListener listener) throws IOException, InterruptedException {
-            build.getProject().getWorkspace().child("f").write("content", "UTF-8");
+            build.getWorkspace().child("f").write("content", "UTF-8");
             return true;
         }
     }

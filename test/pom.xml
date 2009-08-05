@@ -42,13 +42,15 @@ THE SOFTWARE.
       <plugin>
         <artifactId>maven-surefire-plugin</artifactId>
         <configuration>
-          <!-- override with -DforkMode=pertest if you have "unable to create thread problems" on Windows -->
+          <!-- override with -DforkMode=pertest if you have "unable to create thread problems" on Windows
+-->
           <forkMode>once</forkMode>
           <!--<reportFormat>plain</reportFormat>-->
           <redirectTestOutputToFile>true</redirectTestOutputToFile>
           <systemProperties>
             <property>
-              <!-- use AntClassLoader that supports predictable file handle release -->
+              <!-- use AntClassLoader that supports predictable file handle release
+-->
               <name>hudson.ClassicPluginStrategy.useAntClassLoader</name>
               <value>true</value>
             </property>
@@ -120,7 +122,14 @@ THE SOFTWARE.
       <groupId>org.jvnet.hudson</groupId>
       <artifactId>htmlunit</artifactId>
       <version>2.2-hudson-10</version>
-    </dependency>
+      <exclusions>
+      	<exclusion>
+	      	<!--  hides JDK DOM classes in Eclipse -->
+      		<groupId>xml-apis</groupId>
+      		<artifactId>xml-apis</artifactId>
+      	</exclusion>
+      </exclusions>
+	</dependency>
 
     <dependency><!-- temporary, until we bump to new htmlunit -->
       <groupId>org.jvnet.hudson</groupId>

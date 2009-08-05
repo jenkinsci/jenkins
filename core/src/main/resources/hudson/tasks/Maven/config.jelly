@@ -37,13 +37,13 @@ THE SOFTWARE.
     <f:expandableTextbox field="targets" />
   </f:entry>
   <f:advanced>
-    <f:entry title="${%POM}" help="/help/maven/root-pom.html">
+    <f:entry title="${%POM}" help="/plugin/maven-plugin/root-pom.html">
       <f:textbox field="pom"/>
     </f:entry>
     <f:entry title="${%Properties}" help="/help/tasks/maven/properties.html">
       <f:textarea field="properties"/>
     </f:entry>
-    <f:entry title="${%JVM Options}" help="/help/maven/maven-opts.html">
+    <f:entry title="${%JVM Options}" help="/plugin/maven-plugin/maven-opts.html">
       <f:expandableTextbox field="jvmOptions"/>
     </f:entry>
   </f:advanced>

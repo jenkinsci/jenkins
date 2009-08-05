@@ -76,6 +76,19 @@ public class Main {
     public final List<String> args = new ArrayList<String>();
 
     public static void main(String[] args) throws IOException, InterruptedException {
+        try {
+            _main(args);
+        } catch (CmdLineException e) {
+            System.err.println(e.getMessage());
+            System.err.println("java -jar slave.jar [options...] <secret key> <slave name>");
+            new CmdLineParser(new Main()).printUsage(System.err);
+        }
+    }
+
+    /**
+     * Main without the argument handling.
+     */
+    public static void _main(String[] args) throws IOException, InterruptedException, CmdLineException {
         // see http://forum.java.sun.com/thread.jspa?threadID=706976&tstart=0
         // not sure if this is the cause, but attempting to fix
         // https://hudson.dev.java.net/issues/show_bug.cgi?id=310
@@ -89,18 +102,11 @@ public class Main {
 
         Main m = new Main();
         CmdLineParser p = new CmdLineParser(m);
-        try {
-            p.parseArgument(args);
-            if(m.args.size()!=2)
-                throw new CmdLineException("two arguments required, but got "+m.args);
-            if(m.urls.isEmpty())
-                throw new CmdLineException("At least one -url option is required.");
-        } catch (CmdLineException e) {
-            System.err.println(e.getMessage());
-            System.err.println("java -jar slave.jar [options...] <secret key> <slave name>");
-            p.printUsage(System.err);
-            return;
-        }
+        p.parseArgument(args);
+        if(m.args.size()!=2)
+            throw new CmdLineException("two arguments required, but got "+m.args);
+        if(m.urls.isEmpty())
+            throw new CmdLineException("At least one -url option is required.");
 
         m.main();
     }

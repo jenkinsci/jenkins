@@ -35,7 +35,10 @@ import hudson.model.BuildListener;
 import hudson.model.Descriptor;
 import hudson.model.Project;
 import hudson.model.Hudson;
+import hudson.model.CheckPoint;
+import hudson.model.Run;
 
+import javax.management.monitor.Monitor;
 import java.io.IOException;
 import java.util.List;
 import java.util.AbstractList;
@@ -120,6 +123,71 @@ public interface BuildStep {
      *      null if there's no action to be contributed.
      */
     Action getProjectAction(AbstractProject<?,?> project);
+
+
+    /**
+     * Declares the scope of the synchronization monitor this {@link BuildStep} expects from outside.
+     *
+     * <p>
+     * This method is introduced for preserving compatibility with plugins written for earlier versions of Hudson,
+     * which never run multiple builds of the same job in parallel. Such plugins often assume that the outcome
+     * of the previous build is completely available, which is no longer true when we do concurrent builds.
+     *
+     * <p>
+     * To minimize the necessary code change for such plugins, {@link BuildStep} implementations can request
+     * Hudson to externally perform synchronization before executing them. This behavior is as follows:
+     *
+     * <dl>
+     * <dt>{@link BuildStepMonitor#BUILD}
+     * <dd>
+     * This {@link BuildStep} is only executed after the previous build is fully
+     * completed (thus fully restoring the earlier semantics of one build at a time.)
+     *
+     * <dt>{@link BuildStepMonitor#STEP}
+     * <dd>
+     * This {@link BuildStep} is only executed after the same step in the previous build is completed.
+     * For build steps that use a weaker assumption and onl rely on the output from the same build step of
+     * the early builds, this improves the concurrency.
+     *
+     * <dt>{@link BuildStepMonitor#NONE}
+     * <dd>
+     * No external synchronization is performed on this build step. This is the most efficient, and thus
+     * <b>the recommended value for newer plugins</b>. Wherever necessary, you can directly use {@link CheckPoint}s
+     * to perform necessary synchronizations.
+     * </dl>
+     *
+     * <h2>Migrating Older Implementation</h2>
+     * <p>
+     * If you are migrating {@link BuildStep} implementations written for earlier versions of Hudson,
+     * here's what you can do:
+     *
+     * <ul>
+     * <li>
+     * Just return {@link BuildStepMonitor#BUILD} to demand the backward compatible behavior from Hudson,
+     * and make no other changes to the code. This will prevent users from reaping the benefits of concurrent
+     * builds, but at least your plugin will work correctly, and therefore this is a good easy first step.
+     * <li>
+     * If your build step doesn't use anything from a previous build (for example, if you don't even call
+     * {@link Run#getPreviousBuild()}), then you can return {@link BuildStepMonitor#NONE} without making further
+     * code changes and you are done with migration.
+     * <li>
+     * If your build step only depends on {@link Action}s that you added in the previous build by yourself,
+     * then you only need {@link BuildStepMonitor#STEP} scope synchronization. Return it from this method
+     * ,and you are done with migration without any further code changes.
+     * <li>
+     * If your build step makes more complex assumptions, return {@link BuildStepMonitor#NONE} and use
+     * {@link CheckPoint}s directly in your code. The general idea is to call {@link CheckPoint#block()} before
+     * you try to access the state from the previous build.
+     * </ul>
+     *
+     * <h2>Note to caller</h2>
+     * <p>
+     * For plugins written against earlier versions of Hudson, calling this method results in
+     * {@link AbstractMethodError}. 
+     *
+     * @since 1.XXX
+     */
+    BuildStepMonitor getRequiredMonitorService();
 
     /**
      * List of all installed builders.

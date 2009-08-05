@@ -438,8 +438,8 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
                         // when multiple CVS/SVN modules are checked out, so also check
                         // the path against the workspace root if that seems like what the user meant (see issue #1293)
                         String rootPOM = project.getRootPOM();
-                        FilePath pom = project.getModuleRoot().child(rootPOM);
-                        FilePath parentLoc = project.getWorkspace().child(rootPOM);
+                        FilePath pom = getModuleRoot().child(rootPOM);
+                        FilePath parentLoc = getWorkspace().child(rootPOM);
                         if(!pom.exists() && parentLoc.exists())
                             pom = parentLoc;
 
@@ -448,7 +448,7 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
 
                         ArgumentListBuilder margs = new ArgumentListBuilder().add("-B").add("-f", pom.getRemote());
                         if(project.usesPrivateRepository())
-                            margs.add("-Dmaven.repo.local="+project.getWorkspace().child(".repository"));
+                            margs.add("-Dmaven.repo.local="+getWorkspace().child(".repository"));
                         // If incrementalBuild is set, and we're on Maven 2.1 or later, *and* there's at least one module
                         // listed in changedModules, do the Maven incremental build commands - if there are no changed modules,
                         // We're building everything anyway.
@@ -456,6 +456,11 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
                             margs.add("-amd");
                             margs.add("-pl", Util.join(changedModules, ","));
                         }
+
+                        if (project.getAlternateSettings() != null) {
+                            margs.add("-s").add(project.getWorkspace().child(project.getAlternateSettings()));
+                        }
+
                         margs.addTokenized(envVars.expand(project.getGoals()));
 
                         Builder builder = new Builder(slistener, proxies, project.sortedActiveModules, margs.toList(), envVars);
@@ -525,7 +530,7 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
 
             List<PomInfo> poms;
             try {
-                poms = project.getModuleRoot().act(new PomParser(listener, mvn, project));
+                poms = getModuleRoot().act(new PomParser(listener, mvn, project));
             } catch (IOException e) {
                 if (e.getCause() instanceof AbortException)
                     throw (AbortException) e.getCause();
@@ -779,11 +784,12 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
          * Capture the value of the static field so that the debug flag
          * takes an effect even when {@link PomParser} runs in a slave.
          */
-        private final boolean versbose = debug;
+        private final boolean verbose = debug;
         private final MavenInstallation mavenHome;
         private final String profiles;
         private final Properties properties;
         private final String privateRepository;
+        private final String alternateSettings;
 
         public PomParser(BuildListener listener, MavenInstallation mavenHome, MavenModuleSet project) {
             // project cannot be shipped to the remote JVM, so all the relevant properties need to be captured now.
@@ -798,6 +804,7 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
             else {
                 this.privateRepository = null;
             }
+            this.alternateSettings = project.getAlternateSettings();
         }
 
         /**
@@ -825,20 +832,27 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
                 pom = parentLoc;
 
             if(!pom.exists())
-                throw new AbortException(Messages.MavenModuleSetBuild_NoSuchFile(pom));
+                throw new AbortException(Messages.MavenModuleSetBuild_NoSuchPOMFile(pom));
 
-            if(versbose)
+            if(verbose)
                 logger.println("Parsing "+pom);
+
+            File settingsLoc = (alternateSettings == null) ? null 
+                : new File(ws, alternateSettings);
+
+            if ((settingsLoc != null) && (!settingsLoc.exists())) {
+                throw new AbortException(Messages.MavenModuleSetBuild_NoSuchAlternateSettings(settingsLoc.getAbsolutePath()));
+            }
 
             try {
                 MavenEmbedder embedder = MavenUtil.
                         createEmbedder(listener, mavenHome.getHomeDir(), profiles,
-                                       properties, privateRepository);
+                                       properties, privateRepository, settingsLoc);
                 MavenProject mp = embedder.readProject(pom);
                 Map<MavenProject,String> relPath = new HashMap<MavenProject,String>();
                 MavenUtil.resolveModules(embedder,mp,getRootPath(),relPath,listener);
 
-                if(versbose) {
+                if(verbose) {
                     for (Entry<MavenProject, String> e : relPath.entrySet())
                         logger.printf("Discovered %s at %s\n",e.getKey().getId(),e.getValue());
                 }
@@ -871,7 +885,7 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
     private static final Logger LOGGER = Logger.getLogger(MavenModuleSetBuild.class.getName());
 
     /**
-     * Extra versbose debug switch.
+     * Extra verbose debug switch.
      */
     public static boolean debug = false;
     

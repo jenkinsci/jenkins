@@ -37,10 +37,12 @@ import hudson.model.AbstractProject;
 import hudson.model.Action;
 import hudson.model.BuildListener;
 import hudson.model.Result;
+import hudson.model.CheckPoint;
 import hudson.remoting.VirtualChannel;
 import hudson.tasks.BuildStepDescriptor;
 import hudson.tasks.Publisher;
 import hudson.tasks.Recorder;
+import hudson.tasks.BuildStepMonitor;
 import hudson.tasks.test.TestResultAggregator;
 import hudson.tasks.test.TestResultProjectAction;
 import hudson.util.FormValidation;
@@ -79,7 +81,7 @@ public class JUnitResultArchiver extends Recorder implements Serializable, Matri
             final long buildTime = build.getTimestamp().getTimeInMillis();
             final long nowMaster = System.currentTimeMillis();
 
-            TestResult result = build.getProject().getWorkspace().act(new FileCallable<TestResult>() {
+            TestResult result = build.getWorkspace().act(new FileCallable<TestResult>() {
                 public TestResult invoke(File ws, VirtualChannel channel) throws IOException {
                     final long nowSlave = System.currentTimeMillis();
 
@@ -96,6 +98,7 @@ public class JUnitResultArchiver extends Recorder implements Serializable, Matri
                 }
             });
 
+            CHECKPOINT.block();
             action = new TestResultAction(build, result, listener);
             if(result.getPassCount()==0 && result.getFailCount()==0)
                 throw new AbortException(Messages.JUnitResultArchiver_ResultIsEmpty());
@@ -114,8 +117,8 @@ public class JUnitResultArchiver extends Recorder implements Serializable, Matri
             return true;
         }
 
-
         build.getActions().add(action);
+        CHECKPOINT.report();
 
         if(action.getResult().getFailCount()>0)
             build.setResult(Result.UNSTABLE);
@@ -125,6 +128,13 @@ public class JUnitResultArchiver extends Recorder implements Serializable, Matri
 
     protected TestResult parseResult(DirectoryScanner ds, long buildTime) throws IOException {
         return new TestResult(buildTime, ds);
+    }
+
+    /**
+     * This class does explicit checkpointing.
+     */
+    public BuildStepMonitor getRequiredMonitorService() {
+        return BuildStepMonitor.NONE;
     }
 
     public String getTestResults() {
@@ -140,6 +150,10 @@ public class JUnitResultArchiver extends Recorder implements Serializable, Matri
     public MatrixAggregator createAggregator(MatrixBuild build, Launcher launcher, BuildListener listener) {
         return new TestResultAggregator(build,launcher,listener);
     }
+    /**
+     * Test result tracks the diff from the previous run, hence the checkpoint.
+     */
+    private static final CheckPoint CHECKPOINT = new CheckPoint("JUnit result archiving");
 
     private static final long serialVersionUID = 1L;
 
@@ -157,7 +171,7 @@ public class JUnitResultArchiver extends Recorder implements Serializable, Matri
          * Performs on-the-fly validation on the file mask wildcard.
          */
         public FormValidation doCheckTestResults(@AncestorInPath AbstractProject project, @QueryParameter String value) throws IOException {
-            return FilePath.validateFileMask(project.getWorkspace(),value);
+            return FilePath.validateFileMask(project.getSomeWorkspace(),value);
         }
 
         public boolean isApplicable(Class<? extends AbstractProject> jobType) {

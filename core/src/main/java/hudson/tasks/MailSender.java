@@ -103,6 +103,8 @@ public class MailSender {
             }
         } catch (MessagingException e) {
             e.printStackTrace(listener.error(e.getMessage()));
+        } finally {
+            CHECKPOINT.report();
         }
 
         return true;
@@ -111,10 +113,14 @@ public class MailSender {
     /**
      * To correctly compute the state change from the previous build to this build,
      * we need to ignore aborted builds.
-     *
      * See http://www.nabble.com/Losing-build-state-after-aborts--td24335949.html
+     *
+     * <p>
+     * And since we are consulting the earlier result, we need to wait for the previous build
+     * to pass the check point.
      */
-    private Result findPreviousBuildResult(AbstractBuild<?,?> b) {
+    private Result findPreviousBuildResult(AbstractBuild<?,?> b) throws InterruptedException {
+        CHECKPOINT.block();
         do {
             b=b.getPreviousBuild();
             if(b==null) return null;
@@ -229,7 +235,7 @@ public class MailSender {
                 // URL which has already been corrected in a subsequent build. To fix, archive.
                 workspaceUrl = baseUrl + Util.encode(build.getProject().getUrl()) + "ws/";
                 artifactUrl = baseUrl + Util.encode(build.getUrl()) + "artifact/";
-                FilePath ws = build.getProject().getWorkspace();
+                FilePath ws = build.getWorkspace();
                 // Match either file or URL patterns, i.e. either
                 // c:\hudson\workdir\jobs\foo\workspace\src\Foo.java
                 // file:/c:/hudson/workdir/jobs/foo/workspace/src/Foo.java
@@ -360,4 +366,9 @@ public class MailSender {
     public static boolean debug = false;
 
     private static final int MAX_LOG_LINES = Integer.getInteger(MailSender.class.getName()+".maxLogLines",250);
+
+    /**
+     * Sometimes the outcome of the previous build affects the e-mail we send, hence this checkpoint.
+     */
+    private static final CheckPoint CHECKPOINT = new CheckPoint("mail sent");
 }

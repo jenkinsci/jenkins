@@ -208,8 +208,9 @@ public class SlaveComputer extends Computer {
         if (launcher instanceof ExecutorListener) {
             ((ExecutorListener)launcher).taskCompleted(executor, task, durationMS);
         }
-        if (getNode().getRetentionStrategy() instanceof ExecutorListener) {
-            ((ExecutorListener)getNode().getRetentionStrategy()).taskCompleted(executor, task, durationMS);
+        RetentionStrategy r = getNode().getRetentionStrategy();
+        if (r instanceof ExecutorListener) {
+            ((ExecutorListener) r).taskCompleted(executor, task, durationMS);
         }
     }
 

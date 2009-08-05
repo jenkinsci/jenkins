@@ -1,6 +1,7 @@
 package hudson.util;
 
 import hudson.model.FreeStyleProject;
+import hudson.model.FreeStyleBuild;
 import hudson.tasks.Maven;
 
 import org.easymock.EasyMock;
@@ -24,14 +25,15 @@ public class ProcessTreeKillerTest extends HudsonTestCase {
 		project.scheduleBuild(0);
 		Thread.sleep(2000);
 
-		project.getLastBuild().doStop(
+        FreeStyleBuild b = project.getLastBuild();
+        b.doStop(
 				EasyMock.createNiceMock(StaplerRequest.class),
 				EasyMock.createNiceMock(StaplerResponse.class));
 
 		Thread.sleep(1000);
 		
 		// will fail (at least on windows) if test process is still running
-		project.getWorkspace().deleteRecursive();
+		b.getWorkspace().deleteRecursive();
 
 	}
 

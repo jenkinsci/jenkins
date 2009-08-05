@@ -30,6 +30,9 @@ THE SOFTWARE.
     <st:include page="sidepanel.jelly" />
     <l:main-panel>
       <f:form method="post" action="configSubmit" name="config">
+        <j:set var="descriptor" value="${it.descriptor}" />
+        <j:set var="instance" value="${it}" />
+
         <j:if test="${it.isNameEditable()}">
           <f:entry title="${%name(it.pronoun)}">
             <f:textbox name="name" value="${it.name}" />
@@ -51,12 +54,14 @@ THE SOFTWARE.
         <!-- job property configurations -->
         <j:set var="instances" value="${it.properties}" />
         <j:forEach var="d" items="${h.getJobPropertyDescriptors(it.getClass())}" varStatus="loop">
-          <j:set var="descriptor" value="${d}" />
-          <j:set var="instance" value="${instances[d]}" />
+          <j:scope>
+            <j:set var="descriptor" value="${d}" />
+            <j:set var="instance" value="${instances[d]}" />
 
-          <f:rowSet name="jobProperty${loop.index}">
-            <st:include from="${d}" page="${d.configPage}" optional="true"/>
-          </f:rowSet>
+            <f:rowSet name="jobProperty${loop.index}">
+              <st:include from="${d}" page="${d.configPage}" optional="true"/>
+            </f:rowSet>
+          </j:scope>
         </j:forEach>
 
         <!-- additional entries from derived classes -->

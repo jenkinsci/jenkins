@@ -29,7 +29,6 @@ import hudson.tasks.BuildStep;
 import hudson.tasks.BuildTrigger;
 import hudson.tasks.BuildWrapper;
 import hudson.tasks.Builder;
-import hudson.triggers.SCMTrigger;
 
 import java.io.File;
 import java.io.IOException;
@@ -37,7 +36,6 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.List;
-import java.util.concurrent.locks.ReentrantLock;
 import java.util.logging.Logger;
 
 /**
@@ -47,11 +45,6 @@ import java.util.logging.Logger;
  */
 public abstract class Build <P extends Project<P,B>,B extends Build<P,B>>
     extends AbstractBuild<P,B> {
-
-    /**
-     * If the build required a lock, remember it so that we can release it.
-     */
-    private transient ReentrantLock buildLock;
 
     /**
      * Creates a new build.
@@ -69,37 +62,6 @@ public abstract class Build <P extends Project<P,B>,B extends Build<P,B>>
      */
     protected Build(P project, File buildDir) throws IOException {
         super(project,buildDir);
-    }
-
-    @Override
-    protected void onStartBuilding() {
-        super.onStartBuilding();
-        SCMTrigger t = (SCMTrigger)project.getTriggers().get(Hudson.getInstance().getDescriptorByType(SCMTrigger.DescriptorImpl.class));
-        if(t!=null) {
-            // acquire the lock
-            buildLock = t.getLock();
-            synchronized(buildLock) {
-                try {
-                    if(buildLock.isLocked()) {
-                        long time = System.currentTimeMillis();
-                        LOGGER.info("Waiting for the polling of "+getParent()+" to complete");
-                        buildLock.lockInterruptibly();
-                        LOGGER.info("Polling completed. Waited "+(System.currentTimeMillis()-time)+"ms");
-                    } else
-                        buildLock.lockInterruptibly();
-                } catch (InterruptedException e) {
-                    // handle the interrupt later
-                    Thread.currentThread().interrupt();
-                }
-            }
-        }
-    }
-
-    @Override
-    protected void onEndBuilding() {
-        super.onEndBuilding();
-        if(buildLock!=null)
-            buildLock.unlock();
     }
 
 //
@@ -123,14 +85,14 @@ public abstract class Build <P extends Project<P,B>,B extends Build<P,B>>
             try {
                 List<BuildWrapper> wrappers = new ArrayList<BuildWrapper>(project.getBuildWrappers().values());
                 
-                for (NodeProperty nodeProperty: Hudson.getInstance().getGlobalNodeProperties()) {
+                for (NodeProperty<?> nodeProperty: Hudson.getInstance().getGlobalNodeProperties()) {
                     Environment environment = nodeProperty.setUp(Build.this, launcher, listener);
                     if (environment != null) {
                         buildEnvironments.add(environment);
                     }
                 }
 
-                for (NodeProperty nodeProperty: Computer.currentComputer().getNode().getNodeProperties()) {
+                for (NodeProperty<?> nodeProperty: Computer.currentComputer().getNode().getNodeProperties()) {
                     Environment environment = nodeProperty.setUp(Build.this, launcher, listener);
                     if (environment != null) {
                         buildEnvironments.add(environment);
@@ -142,7 +104,7 @@ public abstract class Build <P extends Project<P,B>,B extends Build<P,B>>
                     parameters.createBuildWrappers(Build.this,wrappers);
 
                 for( BuildWrapper w : wrappers ) {
-                    Environment e = w.setUp((AbstractBuild)Build.this, launcher, listener);
+                    Environment e = w.setUp((AbstractBuild<?,?>)Build.this, launcher, listener);
                     if(e==null)
                         return Result.FAILURE;
                     buildEnvironments.add(e);
@@ -192,7 +154,7 @@ public abstract class Build <P extends Project<P,B>,B extends Build<P,B>>
 
         private boolean build(BuildListener listener, Collection<Builder> steps) throws IOException, InterruptedException {
             for( BuildStep bs : steps )
-                if(!bs.perform(Build.this, launcher, listener))
+                if(!perform(bs,listener))
                     return false;
             return true;
         }

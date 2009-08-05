@@ -194,6 +194,7 @@ import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import java.nio.charset.Charset;
 import javax.servlet.RequestDispatcher;
+import javax.servlet.ServletInputStream;
 import javax.crypto.SecretKey;
 
 import groovy.lang.GroovyShell;
@@ -997,13 +998,15 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
         } else {
             if(n.getNumExecutors()>0) {
                 computers.put(n,c=n.createComputer());
-                RetentionStrategy retentionStrategy = c.getRetentionStrategy();
-                if (retentionStrategy != null) {
-                    // if there is a retention strategy, it is responsible for deciding to start the computer
-                    retentionStrategy.start(c);
-                } else {
-                    // we should never get here, but just in case, we'll fall back to the legacy behaviour
-                    c.connect(true);
+                if (!n.holdOffLaunchUntilSave) {
+                    RetentionStrategy retentionStrategy = c.getRetentionStrategy();
+                    if (retentionStrategy != null) {
+                        // if there is a retention strategy, it is responsible for deciding to start the computer
+                        retentionStrategy.start(c);
+                    } else {
+                        // we should never get here, but just in case, we'll fall back to the legacy behaviour
+                        c.connect(true);
+                    }
                 }
             }
         }
@@ -2435,27 +2438,9 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
             result = copy(src,name);
         } else {
             if(isXmlSubmission) {
-                // config.xml submission
-
-                // first copy it as config.xml
-                File configXml = Items.getConfigFile(getRootDirFor(name)).getFile();
-                configXml.getParentFile().mkdirs();
-                try {
-                    FileOutputStream fos = new FileOutputStream(configXml);
-                    try {
-                        Util.copyStream(req.getInputStream(),fos);
-                    } finally {
-                        fos.close();
-                    }
-
-                    // load it
-                    result = (TopLevelItem)Items.load(this,configXml.getParentFile());
-                    items.put(name,result);
-                } catch (IOException e) {
-                    // if anything fails, delete the config file to avoid further confusion
-                    Util.deleteRecursive(configXml.getParentFile());
-                    throw e;
-                }
+                result = createProjectFromXML(name, req.getInputStream());
+                rsp.setStatus(HttpServletResponse.SC_OK);
+                return result;
             } else {
                 // create empty job and redirect to the project config screen
                 if(mode==null) {
@@ -2469,15 +2454,37 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
                 l.onCreated(result);
         }
 
-        if(isXmlSubmission) {
-            // it worked
-            rsp.setStatus(HttpServletResponse.SC_OK);
-        } else {
-            // send the browser to the config page
-            rsp.sendRedirect2(result.getUrl()+"configure");
-        }
-
+        // send the browser to the config page
+        rsp.sendRedirect2(result.getUrl()+"configure");
         return result;
+    }
+
+    /**
+     * Creates a new job from its configuration XML. The type of the job created will be determined by
+     * what's in this XML.
+     * @since 1.319
+     */
+    public TopLevelItem createProjectFromXML(String name, InputStream xml) throws IOException {
+        // place it as config.xml
+        File configXml = Items.getConfigFile(getRootDirFor(name)).getFile();
+        configXml.getParentFile().mkdirs();
+        try {
+            FileOutputStream fos = new FileOutputStream(configXml);
+            try {
+                Util.copyStream(xml,fos);
+            } finally {
+                fos.close();
+            }
+
+            // load it
+            TopLevelItem result = (TopLevelItem)Items.load(this,configXml.getParentFile());
+            items.put(name,result);
+            return result;
+        } catch (IOException e) {
+            // if anything fails, delete the config file to avoid further confusion
+            Util.deleteRecursive(configXml.getParentFile());
+            throw e;
+        }
     }
 
     /**
@@ -3379,6 +3386,14 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
     public static boolean LOG_STARTUP_PERFORMANCE = Boolean.getBoolean(Hudson.class.getName()+".logStartupPerformance");
     private static final boolean CONSISTENT_HASH = true; // Boolean.getBoolean(Hudson.class.getName()+".consistentHash");
     public static boolean FLYWEIGHT_SUPPORT = Boolean.getBoolean(Hudson.class.getName()+".flyweightSupport");
+
+    /**
+     * Tentative switch to activate the concurrent build behavior.
+     * When we merge this back to the trunk, this allows us to keep
+     * this feature hidden for a while until we iron out the kinks.
+     * @see AbstractProject#isConcurrentBuild()
+     */
+    public static boolean CONCURRENT_BUILD = true;
 
     private static final Logger LOGGER = Logger.getLogger(Hudson.class.getName());
 

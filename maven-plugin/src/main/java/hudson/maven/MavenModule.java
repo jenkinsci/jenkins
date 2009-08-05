@@ -216,7 +216,7 @@ public final class MavenModule extends AbstractMavenProject<MavenModule,MavenBui
 
     /**
      * Relative path to this module's root directory
-     * from {@link MavenModuleSet#getWorkspace()}.
+     * from the workspace of a {@link MavenModuleSet}.
      *
      * The path separator is normalized to '/'.
      */
@@ -255,11 +255,6 @@ public final class MavenModule extends AbstractMavenProject<MavenModule,MavenBui
      */
     public String getUserConfiguredGoals() {
         return goals;
-    }
-
-    @Override
-    public FilePath getWorkspace() {
-        return getParent().getModuleRoot().child(relativePath);
     }
 
     public DescribableList<Publisher,Descriptor<Publisher>> getPublishersList() {

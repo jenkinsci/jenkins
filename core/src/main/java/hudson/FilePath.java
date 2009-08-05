@@ -785,6 +785,20 @@ public final class FilePath implements Serializable {
     }
 
     /**
+     * Short for {@code getParent().child(rel)}. Useful for getting other files in the same directory. 
+     */
+    public FilePath sibling(String rel) {
+        return getParent().child(rel);
+    }
+
+    /**
+     * Returns a {@link FilePath} by adding the given suffix to this path name.
+     */
+    public FilePath withSuffix(String suffix) {
+        return new FilePath(channel,remote+suffix);
+    }
+
+    /**
      * The same as {@link FilePath#FilePath(FilePath,String)} but more OO.
      * @param rel a relative or absolute path
      * @return a file on the same channel

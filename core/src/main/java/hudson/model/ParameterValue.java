@@ -62,7 +62,7 @@ import org.kohsuke.stapler.export.ExportedBean;
  * </ol>
  * @see ParameterDefinition
  */
-@ExportedBean
+@ExportedBean(defaultVisibility=3)
 public abstract class ParameterValue implements Serializable {
 	protected final String name;
 
@@ -91,7 +91,7 @@ public abstract class ParameterValue implements Serializable {
      * This uniquely distinguishes {@link ParameterValue} among other parameters
      * for the same build. This must be the same as {@link ParameterDefinition#getName()}.
      */
-    @Exported(visibility=3)
+    @Exported
     public final String getName() {
         return name;
     }

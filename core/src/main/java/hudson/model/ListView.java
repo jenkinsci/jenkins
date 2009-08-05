@@ -98,6 +98,11 @@ public class ListView extends View {
         initColumns();
     }
 
+    public ListView(String name, ViewGroup owner) {
+        this(name);
+        this.owner = owner;
+    }
+
     private Object readResolve() {
         if(includeRegex!=null)
             includePattern = Pattern.compile(includeRegex);

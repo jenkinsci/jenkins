@@ -63,6 +63,14 @@ public abstract class Builder extends BuildStepCompatibilityLayer implements Bui
         return null;
     }
 
+    /**
+     * Returns {@link BuildStepMonitor#NONE} by default, as {@link Builder}s normally don't depend
+     * on its previous result.
+     */
+    public BuildStepMonitor getRequiredMonitorService() {
+        return BuildStepMonitor.NONE;
+    }
+
     public Descriptor<Builder> getDescriptor() {
         return Hudson.getInstance().getDescriptor(getClass());
     }

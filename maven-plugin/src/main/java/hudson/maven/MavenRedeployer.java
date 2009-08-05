@@ -29,6 +29,7 @@ import hudson.model.BuildListener;
 import hudson.model.Result;
 import hudson.tasks.BuildStepDescriptor;
 import hudson.tasks.Publisher;
+import hudson.tasks.BuildStepMonitor;
 import hudson.Launcher;
 import hudson.maven.reporters.MavenArtifactRecord;
 
@@ -60,6 +61,10 @@ public class MavenRedeployer extends Publisher {
         listener.getLogger().println("TODO");
         
         return true;
+    }
+
+    public BuildStepMonitor getRequiredMonitorService() {
+        return BuildStepMonitor.NONE;
     }
 
     public BuildStepDescriptor<Publisher> getDescriptor() {
