@@ -45,7 +45,7 @@ public class PasswordParameterDefinition extends StringParameterDefinition {
     public final static class ParameterDescriptorImpl extends ParameterDescriptor {
         @Override
         public String getDisplayName() {
-            return "Password Parameter";
+            return Messages.PasswordParameterDefinition_DisplayName();
         }
     }
 
