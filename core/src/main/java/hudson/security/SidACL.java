@@ -29,6 +29,10 @@ import org.acegisecurity.acls.sid.PrincipalSid;
 import org.acegisecurity.acls.sid.GrantedAuthoritySid;
 import org.acegisecurity.acls.sid.Sid;
 
+import java.util.logging.Logger;
+import java.util.logging.Level;
+import static java.util.logging.Level.FINE;
+
 /**
  * {@link ACL} that checks permissions based on {@link GrantedAuthority}
  * of the {@link Authentication}.
@@ -39,8 +43,16 @@ public abstract class SidACL extends ACL {
 
     @Override
     public boolean hasPermission(Authentication a, Permission permission) {
-        if(a==SYSTEM)   return true;
+        if(a==SYSTEM) {
+            if(LOGGER.isLoggable(FINE))
+                LOGGER.fine("hasPermission("+a+","+permission+")=>SYSTEM user has full access");
+            return true;
+        }
         Boolean b = _hasPermission(a,permission);
+
+        if(LOGGER.isLoggable(FINE))
+            LOGGER.fine("hasPermission("+a+","+permission+")=>"+(b==null?"null, thus false":b));
+
         if(b==null) b=false;    // default to rejection
         return b;
     }
@@ -124,4 +136,6 @@ public abstract class SidACL extends ACL {
             }
         };
     }
+
+    private static final Logger LOGGER = Logger.getLogger(SidACL.class.getName());
 }
