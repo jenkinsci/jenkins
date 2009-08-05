@@ -233,10 +233,6 @@ public class MyViewsProperty extends UserProperty implements ViewGroup, Action {
 			return "/me/my-views";
 		}
 		
-		public HttpResponse doIndex() {
-			return new HttpRedirect("/me/my-views");
-		}
-    	
     }
 
 }
