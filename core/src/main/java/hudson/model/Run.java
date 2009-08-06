@@ -1095,8 +1095,10 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
                     throw t;
                 } catch( AbortException e ) {// orderly abortion.
                     result = Result.FAILURE;
+                    LOGGER.log(Level.FINE, "Build "+this+" aborted",e);
                 } catch( RunnerAbortedException e ) {// orderly abortion.
                     result = Result.FAILURE;
+                    LOGGER.log(Level.FINE, "Build "+this+" aborted",e);
                 } catch( InterruptedException e) {
                     // aborted
                     result = Result.ABORTED;
