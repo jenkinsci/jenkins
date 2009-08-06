@@ -96,7 +96,10 @@ public class GlobalMatrixAuthorizationStrategy extends AuthorizationStrategy {
      */
     private void add(String shortForm) {
         int idx = shortForm.indexOf(':');
-        add(Permission.fromId(shortForm.substring(0,idx)),shortForm.substring(idx+1));
+        Permission p = Permission.fromId(shortForm.substring(0, idx));
+        if (p==null)
+            throw new IllegalArgumentException("Failed to parse '"+shortForm+"' --- no such permission");
+        add(p,shortForm.substring(idx+1));
     }
 
     @Override
