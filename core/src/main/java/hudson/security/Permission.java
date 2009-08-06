@@ -82,6 +82,30 @@ public final class Permission {
      */
     public final Permission impliedBy;
 
+    /**
+     * Defines a new permission.
+     *
+     * @param group
+     *      Permissions are grouped per classes that own them. Specify the permission group
+     *      created for that class. The idiom is:
+     *
+     * <pre>
+     * class Foo {
+     *     private static final PermissionGroup PERMISSIONS = new PermissionGroup(Foo.class,...);
+     *     public static final Permission ABC = new Permisison(PERMISSION,...) ;
+     * }
+     * </pre>
+     *
+     *      Because of the classloading problems and the difficulty for Hudson to enumerate them,
+     *      the permission constants really need to be static field of the owner class.
+     *
+     * @param name
+     *      See {@link #name}.
+     * @param description
+     *      See {@link #description}.
+     * @param impliedBy
+     *      See {@link #impliedBy}.
+     */
     public Permission(PermissionGroup group, String name, Localizable description, Permission impliedBy) {
         if(!JSONUtils.isJavaIdentifier(name))
             throw new IllegalArgumentException(name+" is not a Java identifier");
