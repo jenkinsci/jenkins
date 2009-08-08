@@ -82,7 +82,7 @@ public interface HudsonHomeLoader {
         public File allocate() throws Exception {
             File target = NEW.allocate();
             if(source.getProtocol().equals("file")) {
-                File src = new File(source.getPath());
+                File src = new File(source.toURI().getPath());
                 if(src.isDirectory())
                     new FilePath(src).copyRecursiveTo("**/*",new FilePath(target));
                 else
@@ -116,7 +116,7 @@ public interface HudsonHomeLoader {
             if(!res.getProtocol().equals("file"))
                 throw new AssertionError("Test data is not available in the file system: "+res);
             // if we picked up a directory, it's one level above config.xml
-            File home = new File(res.getPath());
+            File home = new File(res.toURI().getPath());
             if(!home.getName().endsWith(".zip"))
                 home = home.getParentFile();
 
