@@ -355,6 +355,7 @@ public class Channel implements VirtualChannel, IChannel {
          * @param cause
          *      if the channel is closed abnormally, this parameter
          *      represents an exception that has triggered it.
+         *      Otherwise null.
          */
         public void onClosed(Channel channel, IOException cause) {}
     }
@@ -571,6 +572,7 @@ public class Channel implements VirtualChannel, IChannel {
         } finally {
             notifyAll();
 
+            if (e instanceof OrderlyShutdown)   e = null;
             for (Listener l : listeners.toArray(new Listener[listeners.size()]))
                 l.onClosed(this,e);
         }

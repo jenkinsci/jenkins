@@ -36,6 +36,7 @@ import hudson.lifecycle.WindowsSlaveInstaller;
 import hudson.Util;
 import hudson.AbortException;
 import static hudson.slaves.SlaveComputer.LogHolder.SLAVE_LOG_HANDLER;
+import hudson.slaves.OfflineCause.ChannelTermination;
 
 import java.io.File;
 import java.io.OutputStream;
@@ -56,6 +57,9 @@ import java.security.Security;
 
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
+import org.kohsuke.stapler.QueryParameter;
+import org.kohsuke.stapler.HttpResponse;
+import org.kohsuke.stapler.HttpRedirect;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletResponse;
@@ -281,6 +285,7 @@ public class SlaveComputer extends Computer {
         channel.addListener(new Channel.Listener() {
             public void onClosed(Channel c,IOException cause) {
                 SlaveComputer.this.channel = null;
+                offlineCause = new ChannelTermination(cause);
                 launcher.afterDisconnect(SlaveComputer.this, taskListener);
             }
         });
@@ -301,6 +306,8 @@ public class SlaveComputer extends Computer {
         channel.call(new WindowsSlaveInstaller(remoteFs));
         for (ComputerListener cl : ComputerListener.all())
             cl.preOnline(this,channel,root,taskListener);
+
+        offlineCause = null;
 
         // update the data structure atomically to prevent others from seeing a channel that's not properly initialized yet
         synchronized(channelLock) {
@@ -344,15 +351,22 @@ public class SlaveComputer extends Computer {
             });
     }
 
-    public void doDoDisconnect(StaplerResponse rsp) throws IOException, ServletException {
-        checkPermission(Hudson.ADMINISTER);
-        disconnect();
-        rsp.sendRedirect(".");
+    public HttpResponse doDoDisconnect(@QueryParameter String offlineMessage) throws IOException, ServletException {
+        if (channel!=null) {
+            //does nothing in case computer is already disconnected
+            checkPermission(Hudson.ADMINISTER);
+            offlineMessage = Util.fixEmptyAndTrim(offlineMessage);
+            disconnect(OfflineCause.create(Messages._SlaveComputer_DisconnectedBy(
+                    Hudson.getAuthentication().getName(),
+                    offlineMessage!=null ? " : " + offlineMessage : "")
+            ));
+        }
+        return new HttpRedirect(".");
     }
 
     @Override
-    public Future<?> disconnect() {
-    	super.disconnect();
+    public Future<?> disconnect(OfflineCause cause) {
+        super.disconnect(cause);
         return Computer.threadPoolForRemoting.submit(new Runnable() {
             public void run() {
                 // do this on another thread so that any lengthy disconnect operation

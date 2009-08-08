@@ -29,12 +29,13 @@ THE SOFTWARE.
       <!-- temporarily offline switch -->
       <l:isAdmin>
       <div style="float:right">
-        <form method="get" action="toggleOffline">
+        <form method="post" action="toggleOffline">
           <j:if test="${it.temporarilyOffline}">
             <f:submit value="${%submit.temporarilyOffline}"  />
           </j:if>
           <j:if test="${!it.temporarilyOffline}">
             <f:submit value="${%submit.not.temporarilyOffline}"  />
+            <br/><input name="offlineMessage" size="40"/>
           </j:if>
         </form>
       </div>
@@ -47,6 +48,10 @@ THE SOFTWARE.
           <span style="font-size:smaller">(${it.node.nodeDescription})</span>
         </j:if>
       </h1>
+
+      <j:if test="${it.offlineCause!=null}">
+        <st:include it="${it.offlineCause}" page="cause.jelly" />
+      </j:if>
 
       <j:if test="${it.manualLaunchAllowed}">
         <st:include from="${it.launcher}" page="main.jelly" optional="true"/>

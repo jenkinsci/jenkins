@@ -25,7 +25,6 @@ package hudson.model;
 
 import hudson.EnvVars;
 import hudson.Util;
-import hudson.FilePath;
 import hudson.model.Descriptor.FormException;
 import hudson.node_monitors.NodeMonitor;
 import hudson.remoting.Channel;
@@ -38,6 +37,7 @@ import hudson.security.PermissionGroup;
 import hudson.slaves.ComputerLauncher;
 import hudson.slaves.RetentionStrategy;
 import hudson.slaves.WorkspaceList;
+import hudson.slaves.OfflineCause;
 import hudson.tasks.BuildWrapper;
 import hudson.tasks.Publisher;
 import hudson.util.DaemonThreadFactory;
@@ -47,6 +47,7 @@ import hudson.util.RunList;
 import hudson.util.Futures;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
+import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.export.ExportedBean;
 
@@ -60,9 +61,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Enumeration;
-import java.util.Set;
-import java.util.HashSet;
-import java.util.Collections;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -107,6 +105,11 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
     private final CopyOnWriteArrayList<OneOffExecutor> oneOffExecutors = new CopyOnWriteArrayList<OneOffExecutor>();
 
     private int numExecutors;
+
+    /**
+     * Contains info about reason behind computer being offline.
+     */
+    protected volatile OfflineCause offlineCause;
     
     private long connectTime = 0;
 
@@ -165,6 +168,18 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
 
     public boolean hasPermission(Permission permission) {
         return getACL().hasPermission(permission);
+    }
+
+    /**
+     * If the computer was offline (either temporarily or not),
+     * this method will return the cause.
+     *
+     * @return
+     *      null if the system was put offline without given a cause.
+     */
+    @Exported
+    public OfflineCause getOfflineCause() {
+        return offlineCause;
     }
 
     /**
@@ -261,14 +276,37 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
      * If this is the master, no-op. This method may return immediately
      * while the launch operation happens asynchronously.
      *
+     * @param cause
+     *      Object that identifies the reason the node was disconnected.
+     *
      * @return
      *      {@link Future} to track the asynchronous disconnect operation.
      * @see #connect(boolean)
+     * @since 1.320
+     */
+    public Future<?> disconnect(OfflineCause cause) {
+        offlineCause = cause;
+        if (Util.isOverridden(Computer.class,getClass(),"disconnect"))
+            return disconnect();    // legacy subtypes that extend disconnect().
+
+        connectTime=0;
+        return Futures.precomputed(null);
+	}
+
+    /**
+     * Equivalent to {@code disconnect(null)}
+     *
+     * @deprecated as of 1.320.
+     *      Use {@link #disconnect(OfflineCause)} and specify the cause.
      */
     public Future<?> disconnect() {
-    	connectTime=0;
-    	return Futures.precomputed(null); 
-	}
+        if (Util.isOverridden(Computer.class,getClass(),"disconnect",OfflineCause.class))
+            // if the subtype already derives disconnect(OfflineCause), delegate to it
+            return disconnect(null);
+
+        connectTime=0;
+        return Futures.precomputed(null);
+    }
 
     /**
      * Number of {@link Executor}s that are configured for this computer.
@@ -388,7 +426,24 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
         return temporarilyOffline;
     }
 
+    /**
+     * @deprecated as of 1.320.
+     *      Use {@link #setTemporarilyOffline(boolean, OfflineCause)}
+     */
     public void setTemporarilyOffline(boolean temporarilyOffline) {
+        setTemporarilyOffline(temporarilyOffline,null);
+    }
+
+    /**
+     * Marks the computer as temporarily offline.This retains the underlying
+     * {@link Channel} connection, but prevent builds from executing.
+     *
+     * @param cause
+     *      If the first argument is true, specify the reason why the node is being put
+     *      offline. 
+     */
+    public void setTemporarilyOffline(boolean temporarilyOffline, OfflineCause cause) {
+        offlineCause = temporarilyOffline ? cause : null;
         this.temporarilyOffline = temporarilyOffline;
         Hudson.getInstance().getQueue().scheduleMaintenance();
     }
@@ -739,10 +794,17 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
             runs.newBuilds(), Run.FEED_ADAPTER, req, rsp );
     }
 
-    public void doToggleOffline( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
+    public void doToggleOffline( StaplerRequest req, StaplerResponse rsp, @QueryParameter String offlineMessage) throws IOException, ServletException {
         checkPermission(Hudson.ADMINISTER);
-
-        setTemporarilyOffline(!temporarilyOffline);
+        if(!temporarilyOffline) {
+            offlineMessage = Util.fixEmptyAndTrim(offlineMessage);
+            setTemporarilyOffline(!temporarilyOffline,
+                    OfflineCause.create(hudson.slaves.Messages._SlaveComputer_DisconnectedBy(
+                        Hudson.getAuthentication().getName(),
+                        offlineMessage!=null ? " : " + offlineMessage : "")));
+        } else {
+            setTemporarilyOffline(!temporarilyOffline,null);
+        }
         rsp.forwardToPreviousPage(req);
     }
 
