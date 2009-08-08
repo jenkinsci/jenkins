@@ -221,6 +221,18 @@ function registerValidator(e) {
     e = null; // avoid memory leak
 }
 
+function registerRegexpValidator(e,regexp,message) {
+    e.targetElement = findFollowingTR(e, "validation-error-area").firstChild.nextSibling;
+    e.onchange = function() {
+        if (this.value.match(regexp)) {
+            this.targetElement.innerHTML = "";
+        } else {
+            this.targetElement.innerHTML = "<div class=error>" + message + "</div>";
+        }
+    }
+    e = null; // avoid memory leak
+}
+
 /**
  * Wraps a <button> into YUI button.
  *
@@ -423,16 +435,9 @@ var hudsonRules = {
     "TEXTAREA.validated" : registerValidator,
 
 // validate form values to be a number
-    "INPUT.number" : function(e) {
-        e.targetElement = findFollowingTR(e, "validation-error-area").firstChild.nextSibling;
-        e.onchange = function() {
-            if (this.value.match(/^(\d+|)$/)) {
-                this.targetElement.innerHTML = "";
-            } else {
-                this.targetElement.innerHTML = "<div class=error>Not a number</div>";
-            }
-        }
-        e = null; // avoid memory leak
+    "INPUT.number" : function(e) { registerRegexpValidator(e,/^(\d+|)$/,"Not a number"); },
+    "INPUT.positive-number" : function(e) {
+        registerRegexpValidator(e,/^(\d*[1-9]\d*|)$/,"Not a positive number");
     },
 
     "A.help-button" : function(e) {
