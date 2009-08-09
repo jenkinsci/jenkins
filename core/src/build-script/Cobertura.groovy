@@ -55,6 +55,7 @@ public class Cobertura {
                 formatter(type:"xml")
             }
             sysproperty(key:"net.sourceforge.cobertura.datafile",value:ser)
+	    sysproperty(key:"hudson.ClassicPluginStrategy.useAntClassLoader",value:"true")
         }
     }
 
