@@ -157,7 +157,7 @@ public abstract class HudsonTestCase extends TestCase {
     protected Server server;
 
     /**
-     * Where in the {@link Server} is Hudson deploed?
+     * Where in the {@link Server} is Hudson deployed?
      */
     protected String contextPath = "/";
 
@@ -822,7 +822,7 @@ public abstract class HudsonTestCase extends TestCase {
          * Logs in to Hudson.
          */
         public WebClient login(String username, String password) throws Exception {
-            HtmlPage page = goTo("login");
+            HtmlPage page = goTo("/login");
 //            page = (HtmlPage) page.getFirstAnchorByText("Login").click();
 
             HtmlForm form = page.getFormByName("login");
@@ -928,7 +928,7 @@ public abstract class HudsonTestCase extends TestCase {
          * URL ends with '/'.
          */
         public String getContextPath() {
-            return "http://localhost:"+localPort+contextPath;
+            return "http://localhost:"+localPort+contextPath+"/";
         }
         
         /**
