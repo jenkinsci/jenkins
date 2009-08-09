@@ -1,7 +1,7 @@
 /*
  * The MIT License
  * 
- * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, Daniel Dyer
+ * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, Daniel Dyer, Tom Huybrechts
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -36,28 +36,6 @@ public abstract class TabulatedResult extends TestObject {
      * Gets the human readable title of this result object.
      */
     public abstract String getTitle();
-
-    /**
-     * Gets the total number of passed tests.
-     */
-    public abstract int getPassCount();
-
-    /**
-     * Gets the total number of failed tests.
-     */
-    public abstract int getFailCount();
-
-    /**
-     * Gets the total number of skipped tests.
-     */
-    public abstract int getSkipCount();
-
-    /**
-     * Gets the total number of tests.
-     */
-    public final int getTotalCount() {
-        return getPassCount()+getFailCount()+getSkipCount();
-    }
 
     /**
      * Gets the child test result objects.

@@ -1,7 +1,7 @@
 /*
  * The MIT License
  * 
- * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, Daniel Dyer, Red Hat, Inc.
+ * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, Daniel Dyer, Red Hat, Inc., Tom Huybrechts
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,7 +23,6 @@
  */
 package hudson.tasks.junit;
 
-import com.thoughtworks.xstream.XStream;
 import hudson.XmlFile;
 import hudson.model.AbstractBuild;
 import hudson.model.Action;
@@ -31,15 +30,21 @@ import hudson.model.BuildListener;
 import hudson.tasks.test.AbstractTestResultAction;
 import hudson.util.StringConverter2;
 import hudson.util.XStream2;
-import java.util.List;
-import org.kohsuke.stapler.StaplerProxy;
-import org.kohsuke.stapler.export.Exported;
 
 import java.io.File;
 import java.io.IOException;
 import java.lang.ref.WeakReference;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import org.kohsuke.stapler.StaplerProxy;
+
+import com.thoughtworks.xstream.XStream;
 
 /**
  * {@link Action} that displays the JUnit test result.
@@ -58,7 +63,8 @@ public class TestResultAction extends AbstractTestResultAction<TestResultAction>
     private int failCount;
     private int skipCount;
     private Integer totalCount;
-
+    private List<Data> testData;
+    private Map<String,String> descriptions = new ConcurrentHashMap<String, String>();
 
     public TestResultAction(AbstractBuild owner, TestResult result, BuildListener listener) {
         super(owner);
@@ -154,9 +160,45 @@ public class TestResultAction extends AbstractTestResultAction<TestResultAction>
     public Object getTarget() {
         return getResult();
     }
+    
+    public String getDescription(TestObject object) {
+    	return descriptions.get(object.getId());
+    }
+    
+    public void setDescription(TestObject object, String description) {
+    	descriptions.put(object.getId(), description);
+    }
+    
+    public List<TestAction> getActions(TestObject object) {
+    	List<TestAction> result = new ArrayList<TestAction>();
+    	for (Data data: testData) {
+			result.addAll(data.getTestAction(object));
+    	}
+		return Collections.unmodifiableList(result);
+    }
+    
+	public void setData(List<Data> testData) {
+		this.testData = testData;
+	}
+    
+    public static abstract class Data {
+    	/**
+    	 * Returns all TestActions for the testObject. Always non-null
+    	 */
+    	public abstract List<TestAction> getTestAction(TestObject testObject);
+    }
 
-
-
+    public Object readResolve() {
+    	if (descriptions == null) {
+    		descriptions = new ConcurrentHashMap<String, String>();
+    	}
+    	if (testData == null) {
+    		testData = new ArrayList<Data>();
+    	}
+    	
+    	return this;
+    }
+    
     private static final Logger logger = Logger.getLogger(TestResultAction.class.getName());
 
     private static final XStream XSTREAM = new XStream2();
@@ -168,4 +210,5 @@ public class TestResultAction extends AbstractTestResultAction<TestResultAction>
         XSTREAM.registerConverter(new StringConverter2(),100);
 
     }
+
 }

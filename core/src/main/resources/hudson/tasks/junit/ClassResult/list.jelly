@@ -1,7 +1,7 @@
 <!--
 The MIT License
 
-Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, id:cactusman
+Copyright (c) 2004-2009, Sun Microsystems, Inc., Tom Huybrechts
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -22,35 +22,37 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 -->
 
-<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
-  <j:if test="${it.totalCount!=0}">
-    <h2>${%All Tests}</h2>
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define"
+         xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:lo="hudson:linkout">
     <table class="pane sortable" id="testresult">
       <tr>
-        <td class="pane-header">${%Test name}</td>
-        <td class="pane-header" style="width:6em">${%Duration}</td>
-        <td class="pane-header" style="width:6em">${%Status}</td>
+        <td class="pane-header">${%Build}</td>
+        <td class="pane-header">${%Description}</td>
+        <td class="pane-header" style="width:5em">${%Duration}</td>
+        <td class="pane-header" style="width:5em">${%Fail}</td>
+        <td class="pane-header" style="width:5em">${%Skip}</td>
+        <td class="pane-header" style="width:5em">${%Total}</td>
       </tr>
       <tbody>
-        <j:forEach var="p" items="${it.children}" varStatus="status">
+	        <j:forEach var="b" items="${it.owner.parent.builds}">
+	          <j:set var="p" value="${it.getResultInBuild(b)}"/>
+	          <j:if test="${p != null}">
           <tr>
             <td class="pane">
-            	<a href="${p.safeName}"><span style='${p.previousResult==null?"font-weight:bold":""}'>${p.name}</span></a>
+            	<a href="${app.rootUrl}${b.url}testReport${p.url}">${b.fullDisplayName}</a>
 	          	<st:nbsp/>
 		        <j:forEach var="badge" items="${p.testActions}">
 		          <st:include it="${badge}" page="badge.jelly" optional="true"/>
 		        </j:forEach>
             </td>
-            <td class="pane" style="width:6em" data="${p.duration}">${p.durationString}</td>
-            <td class="pane" style="width:6em">
-              <j:set var="pst" value="${p.status}" />
-              <span class="${pst.cssClass}">
-                ${pst.message}
-              </span>
-            </td>
+            <td class="pane" style="text-align:right">${p.description}</td>
+            <td class="pane" style="text-align:right" data="${p.duration}">${p.durationString}</td>
+            <td class="pane" style="text-align:right">${p.failCount}</td>
+            <td class="pane" style="text-align:right">${p.skipCount}</td>
+            <td class="pane" style="text-align:right">${p.totalCount}</td>
           </tr>
+          </j:if>
         </j:forEach>
       </tbody>
     </table>
-  </j:if>
 </j:jelly>

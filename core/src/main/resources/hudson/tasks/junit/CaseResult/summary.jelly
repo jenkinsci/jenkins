@@ -1,0 +1,16 @@
+<!--  this is loaded on demand in the failed test results summary -->
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define"
+         xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:lo="hudson:linkout">
+	<j:choose>
+		<j:when test="${it.errorDetails!=null}">
+			<h3>Error Details</h3>
+			<pre>${it.errorDetails}</pre>
+		</j:when>
+		<j:otherwise>
+			<j:if test="${it.errorStackTrace!=null}">
+				<h3>Stack Trace</h3>
+				<pre>${it.errorStackTrace}</pre>
+			</j:if>
+		</j:otherwise>
+	</j:choose>
+</j:jelly>

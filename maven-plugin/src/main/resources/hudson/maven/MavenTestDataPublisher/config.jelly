@@ -1,7 +1,7 @@
 <!--
 The MIT License
 
-Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, Tom Huybrechts
+Copyright (c) 2004-2009, Sun Microsystems, Inc., Tom Huybrechts
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -22,31 +22,25 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 -->
 
-<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:test="/lib/test">
-  <l:layout title="${it.owner} ${it.displayName}">
-    <st:include page="sidepanel.jelly" />
-    <l:main-panel>
-      <h1>${it.title}</h1>
-
-      <j:set var="prev" value="${it.previousResult}" />
-
-      <test:bar />
-
-        <div style="text-align:right;">
-        <a href="history">
-          Took ${it.durationString} 
-        </a>
-        </div>
-
-      <t:editableDescription permission="${it.owner.BUILD}"/>
-
-      <table style="margin-top: 1em; margin-left:0em;">
-	  <j:forEach var="action" items="${it.testActions}">
-          <st:include page="summary.jelly" from="${action}" optional="true" it="${action}" />
-	  </j:forEach>
-	  </table>
-
-      <st:include page="body.jelly" />
-    </l:main-panel>
-  </l:layout>
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define"
+	xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
+	<j:invokeStatic var="testDataPublisherDescriptors"
+		className="hudson.tasks.junit.TestDataPublisher" method="all" />
+	<j:if test="${testDataPublisherDescriptors.size() > 0}">
+	<j:set var="testDataPublisherInstances" value="${instance.testDataPublishers}" />
+	<f:entry title="" field="testDataPublishers">
+	<table width="100%">
+	<j:forEach var="tdpd" items="${testDataPublisherDescriptors}">
+		<f:optionalBlock name="${tdpd.jsonSafeClassName}"
+			help="${tdpd.helpFile}" title="${tdpd.displayName}"
+			checked="${testDataPublisherInstances.get(tdpd)!=null}">
+			<j:set var="descriptor" value="${tdpd}" />
+			<j:set var="instance" value="${testDataPublisherInstances.get(tdpd)}" />
+			<st:include from="${tdpd}" page="${tdpd.configPage}"
+				optional="true" />
+		</f:optionalBlock>
+	</j:forEach>
+	</table>
+	</f:entry>
+	</j:if>
 </j:jelly>

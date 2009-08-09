@@ -22,31 +22,31 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 -->
 
-<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:test="/lib/test">
-  <l:layout title="${it.owner} ${it.displayName}">
-    <st:include page="sidepanel.jelly" />
-    <l:main-panel>
-      <h1>${it.title}</h1>
-
-      <j:set var="prev" value="${it.previousResult}" />
-
-      <test:bar />
-
-        <div style="text-align:right;">
-        <a href="history">
-          Took ${it.durationString} 
-        </a>
-        </div>
-
-      <t:editableDescription permission="${it.owner.BUILD}"/>
-
-      <table style="margin-top: 1em; margin-left:0em;">
+<!--
+  Side panel for the build view.
+-->
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
+  <l:header />
+  <l:side-panel>
+    <l:tasks>
+      <j:set var="buildUrl" value="${h.decompose(request)}" />
+      <st:include it="${it.owner}" page="tasks.jelly"/>
+      <l:task icon="images/24x24/graph.gif" href="history" title="History"/>
+      <st:include it="${it.owner}" page="actions.jelly" />
+      
 	  <j:forEach var="action" items="${it.testActions}">
-          <st:include page="summary.jelly" from="${action}" optional="true" it="${action}" />
+	    <j:if test="${action.iconFileName!=null}">
+	      <l:task icon="${h.getIconFilePath(action)}" title="${action.displayName}"
+	              href="${action.urlName}/" />
+	    </j:if>
 	  </j:forEach>
-	  </table>
-
-      <st:include page="body.jelly" />
-    </l:main-panel>
-  </l:layout>
+      
+      <j:if test="${it.owner.previousBuild!=null}">
+        <l:task icon="images/24x24/previous.gif" href="${buildUrl.previousBuildUrl}" title="${%Previous Build}" />
+      </j:if>
+      <j:if test="${it.owner.nextBuild!=null}">
+        <l:task icon="images/24x24/next.gif" href="${buildUrl.nextBuildUrl}" title="${%Next Build}" />
+      </j:if>
+    </l:tasks>
+  </l:side-panel>
 </j:jelly>

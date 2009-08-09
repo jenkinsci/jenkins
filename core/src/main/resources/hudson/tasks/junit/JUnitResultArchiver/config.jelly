@@ -1,7 +1,7 @@
 <!--
 The MIT License
 
-Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi
+Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, Tom Huybrechts
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -22,8 +22,27 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 -->
 
-<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
-  <f:entry title="${%Test report XMLs}" description="${%description}" field="testResults">
-    <f:textbox />
-  </f:entry>
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define"
+	xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
+	<f:entry title="${%Test report XMLs}" description="${%description}"
+		field="testResults">
+		<f:textbox />
+	</f:entry>
+	<j:invokeStatic var="testDataPublisherDescriptors"
+		className="hudson.tasks.junit.TestDataPublisher" method="all" />
+	<j:if test="${testDataPublisherDescriptors.size() > 0}">
+	<f:entry title="Additional test report features" field="testDataPublishers">
+		<j:set var="testDataPublisherInstances" value="${instance.testDataPublishers}"/>
+		<table>
+			<j:forEach var="tdpd" items="${testDataPublisherDescriptors}">
+				<f:optionalBlock name="${tdpd.jsonSafeClassName}" help="${tdpd.helpFile}"
+					title="${tdpd.displayName}" checked="${testDataPublisherInstances.get(tdpd)!=null}">
+					<j:set var="descriptor" value="${tdpd}" />
+					<j:set var="instance" value="${testDataPublisherInstances.get(tdpd)}" />
+					<st:include from="${tdpd}" page="${tdpd.configPage}" optional="true" />
+				</f:optionalBlock>
+			</j:forEach>
+		</table>
+	</f:entry>
+	</j:if>
 </j:jelly>

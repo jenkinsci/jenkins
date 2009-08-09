@@ -1,7 +1,7 @@
 /*
  * The MIT License
  * 
- * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, Daniel Dyer, id:cactusman
+ * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, Daniel Dyer, id:cactusman, Tom Huybrechts
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,17 +23,15 @@
  */
 package hudson.tasks.junit;
 
+import hudson.AbortException;
+import hudson.Util;
 import hudson.model.AbstractBuild;
 import hudson.util.IOException2;
-import hudson.*;
-import org.apache.tools.ant.DirectoryScanner;
-import org.dom4j.DocumentException;
-import org.kohsuke.stapler.StaplerRequest;
-import org.kohsuke.stapler.StaplerResponse;
-import org.kohsuke.stapler.export.Exported;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -41,6 +39,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
+
+import org.apache.tools.ant.DirectoryScanner;
+import org.dom4j.DocumentException;
+import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.StaplerResponse;
+import org.kohsuke.stapler.export.Exported;
 
 /**
  * Root of all the test results for one build.
@@ -80,7 +84,7 @@ public final class TestResult extends MetaTabulatedResult {
      * Number of failed/error tests.
      */
     private transient List<CaseResult> failedTests;
-
+    
     /**
      * Creates an empty result.
      */
@@ -93,6 +97,19 @@ public final class TestResult extends MetaTabulatedResult {
      */
     public TestResult(long buildTime, DirectoryScanner results) throws IOException {
         parse(buildTime, results);
+    }
+    
+    public TestObject getParent() {
+    	return null;
+    }
+    
+    public String getId() {
+    	return "";
+    }
+    
+    @Override
+    public TestResult getTestResult() {
+    	return this;
     }
 
     /**
@@ -164,11 +181,18 @@ public final class TestResult extends MetaTabulatedResult {
         } catch (RuntimeException e) {
             throw new IOException2("Failed to read "+reportFile,e);
         } catch (DocumentException e) {
-            if(!reportFile.getPath().endsWith(".xml"))
+            if (!reportFile.getPath().endsWith(".xml")) {
                 throw new IOException2("Failed to read "+reportFile+"\n"+
                     "Is this really a JUnit report file? Your configuration must be matching too many files",e);
-            else
+            } else {
+                SuiteResult sr = new SuiteResult(reportFile.getName(), "", "");
+                StringWriter writer = new StringWriter();
+                e.printStackTrace(new PrintWriter(writer));
+                String error = "Failed to read test report file "+reportFile.getAbsolutePath()+"\n"+writer.toString();
+                sr.addCase(new CaseResult(sr,"<init>",error));
+                add(sr);
                 throw new IOException2("Failed to read "+reportFile,e);
+            }
         }
     }
 
@@ -189,6 +213,13 @@ public final class TestResult extends MetaTabulatedResult {
             return null;
     }
 
+    @Override
+    public TestResult getResultInBuild(AbstractBuild<?, ?> build) {
+        TestResultAction tra = build.getAction(TestResultAction.class);
+        if (tra == null) return null;
+        return tra.getResult();
+    }
+    
     public String getTitle() {
         return Messages.TestResult_getTitle();
     }
@@ -240,8 +271,13 @@ public final class TestResult extends MetaTabulatedResult {
         return "";
     }
 
-    public PackageResult getDynamic(String packageName, StaplerRequest req, StaplerResponse rsp) {
-        return byPackage(packageName);
+    public Object getDynamic(String token, StaplerRequest req, StaplerResponse rsp) {
+        PackageResult result = byPackage(token);
+        if (result != null) {
+        	return result;
+        } else {
+        	return super.getDynamic(token, req, rsp);
+        }
     }
 
     public PackageResult byPackage(String packageName) {
@@ -251,7 +287,7 @@ public final class TestResult extends MetaTabulatedResult {
     public SuiteResult getSuite(String name) {
         return suitesByName.get(name);
     }
-
+    
     /**
      * Builds up the transient part of the data structure
      * from results {@link #parse(File) parsed} so far.
