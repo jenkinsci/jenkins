@@ -125,7 +125,7 @@ public abstract class BuildWrapper implements ExtensionPoint, Describable<BuildW
      *      and reports a nice error message.
      * @since 1.150
      */
-    public Environment setUp( AbstractBuild build, Launcher launcher, BuildListener listener ) throws IOException, InterruptedException {
+    public hudson.model.Environment setUp( AbstractBuild build, Launcher launcher, BuildListener listener ) throws IOException, InterruptedException {
         if (build instanceof Build)
             return setUp((Build)build,launcher,listener);
         else
