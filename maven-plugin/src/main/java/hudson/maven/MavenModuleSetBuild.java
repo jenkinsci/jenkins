@@ -403,7 +403,7 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
 
                         buildEnvironments = new ArrayList<Environment>();
                         for( BuildWrapper w : wrappers) {
-                            BuildWrapper.Environment e = w.setUp(MavenModuleSetBuild.this, launcher, listener);
+                            Environment e = w.setUp(MavenModuleSetBuild.this, launcher, listener);
                             if(e==null)
                                 return Result.FAILURE;
                             buildEnvironments.add(e);
