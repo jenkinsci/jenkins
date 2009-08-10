@@ -3,12 +3,12 @@
          xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:lo="hudson:linkout">
 	<j:choose>
 		<j:when test="${it.errorDetails!=null}">
-			<h3>Error Details</h3>
+			<h3>${%Error Details}</h3>
 			<pre>${it.errorDetails}</pre>
 		</j:when>
 		<j:otherwise>
 			<j:if test="${it.errorStackTrace!=null}">
-				<h3>Stack Trace</h3>
+				<h3>${%Stack Trace}</h3>
 				<pre>${it.errorStackTrace}</pre>
 			</j:if>
 		</j:otherwise>

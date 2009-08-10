@@ -24,7 +24,7 @@ THE SOFTWARE.
 
 <!-- Displays the chart that show how long builds are taking -->
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
-  <l:layout title="History for ${it.testObject.displayName}">
+  <l:layout title="${%title(it.testObject.displayName)}">
 
 		<script type="text/javascript">
 			function setCount() {
@@ -43,7 +43,7 @@ THE SOFTWARE.
 
 		<st:include from="${it.testObject}" it="${it.testObject}" page="sidepanel.jelly" />
 		<l:main-panel>
-		<H2>History for ${it.testObject.displayName}</H2>
+		<H2>${%title(it.testObject.displayName)}</H2>
       <j:choose>
         <j:when test="${it.testObject.previousResult != null}">
           <div align="center">

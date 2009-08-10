@@ -34,7 +34,7 @@ THE SOFTWARE.
 
         <div style="text-align:right;">
         <a href="history">
-          Took ${it.durationString} 
+          ${%took(it.durationString)}
         </a>
         </div>
 

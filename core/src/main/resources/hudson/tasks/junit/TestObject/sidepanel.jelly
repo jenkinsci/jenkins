@@ -31,7 +31,7 @@ THE SOFTWARE.
     <l:tasks>
       <j:set var="buildUrl" value="${h.decompose(request)}" />
       <st:include it="${it.owner}" page="tasks.jelly"/>
-      <l:task icon="images/24x24/graph.gif" href="history" title="History"/>
+      <l:task icon="images/24x24/graph.gif" href="history" title="${%History}"/>
       <st:include it="${it.owner}" page="actions.jelly" />
       
 	  <j:forEach var="action" items="${it.testActions}">
