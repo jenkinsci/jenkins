@@ -68,7 +68,7 @@ public class MyViewsProperty extends UserProperty implements ViewGroup, Action {
     }
 
     private MyViewsProperty() {
-		views.add(new AllView(hudson.model.Messages.Hudson_ViewName(), this));
+		views.add(new AllView(Messages.Hudson_ViewName(), this));
         primaryViewName = views.get(0).getViewName();
     }
 

@@ -119,7 +119,7 @@ public class ProxyView extends View {
         if(Hudson.getInstance().getView(view)!=null)
             return FormValidation.ok();
         else
-            return FormValidation.error(String.format("Global view %s does not exist", value));
+            return FormValidation.error(Messages.ProxyView_NoSuchViewExists(value));
     }
 
     @Extension
