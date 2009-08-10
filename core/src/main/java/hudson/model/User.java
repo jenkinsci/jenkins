@@ -532,27 +532,4 @@ public class User extends AbstractModelObject implements AccessControlled, Savea
         }
         return null;
     }
-
-    @Extension
-    public static class Me implements RootAction, StaplerProxy {
-
-		public String getDisplayName() {
-			return null;
-		}
-
-		public String getIconFileName() {
-			return null;
-		}
-
-		public String getUrlName() {
-			return "me";
-		}
-		
-		public Object getTarget() {
-			if (User.current() == null) {
-				throw new AccessDeniedException("/me is not available when not logged in");
-			}
-			return User.current();
-		}
-    	
-    }}
+}
