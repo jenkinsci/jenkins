@@ -40,7 +40,6 @@ import java.io.PrintStream;
 
 import org.apache.tools.ant.taskdefs.Zip;
 import org.apache.tools.ant.Project;
-import sun.tools.jar.resources.jar;
 
 /**
  * When a slave is connected, copy <tt>maven-agent.jar</tt> and <tt>maven-intercepter.jar</tt>
