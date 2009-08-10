@@ -111,27 +111,7 @@ public class JUnitResultArchiver extends Recorder implements Serializable,
 			final long nowMaster = System.currentTimeMillis();
 
 			TestResult result = build.getWorkspace().act(
-					new FileCallable<TestResult>() {
-						public TestResult invoke(File ws, VirtualChannel channel)
-								throws IOException {
-							final long nowSlave = System.currentTimeMillis();
-
-							FileSet fs = Util.createFileSet(ws, testResults);
-							DirectoryScanner ds = fs.getDirectoryScanner();
-
-							String[] files = ds.getIncludedFiles();
-							if (files.length == 0) {
-								// no test result. Most likely a configuration
-								// error or fatal problem
-								throw new AbortException(
-										Messages
-												.JUnitResultArchiver_NoTestReportFound());
-							}
-
-							return parseResult(ds, buildTime
-									+ (nowSlave - nowMaster));
-						}
-					});
+					new ParseResultCallable(testResults, buildTime, nowMaster));
 
 			action = new TestResultAction(build, result, listener);
 			if (result.getPassCount() == 0 && result.getFailCount() == 0)
@@ -176,6 +156,11 @@ public class JUnitResultArchiver extends Recorder implements Serializable,
 		return true;
 	}
 
+	/**
+	 * Not actually used, but left for backward compatibility
+	 * 
+	 * @deprecated
+	 */
 	protected TestResult parseResult(DirectoryScanner ds, long buildTime)
 			throws IOException {
 		return new TestResult(buildTime, ds);
@@ -213,6 +198,39 @@ public class JUnitResultArchiver extends Recorder implements Serializable,
 			"JUnit result archiving");
 
 	private static final long serialVersionUID = 1L;
+
+	private static final class ParseResultCallable implements
+			FileCallable<TestResult> {
+		private final long buildTime;
+		private final String testResults;
+		private final long nowMaster;
+
+		private ParseResultCallable(String testResults, long buildTime, 
+				long nowMaster) {
+			this.buildTime = buildTime;
+			this.testResults = testResults;
+			this.nowMaster = nowMaster;
+		}
+
+		public TestResult invoke(File ws, VirtualChannel channel)
+				throws IOException {
+			final long nowSlave = System.currentTimeMillis();
+
+			FileSet fs = Util.createFileSet(ws, testResults);
+			DirectoryScanner ds = fs.getDirectoryScanner();
+
+			String[] files = ds.getIncludedFiles();
+			if (files.length == 0) {
+				// no test result. Most likely a configuration
+				// error or fatal problem
+				throw new AbortException(
+						Messages
+								.JUnitResultArchiver_NoTestReportFound());
+			}
+
+			return new TestResult(buildTime + (nowSlave - nowMaster), ds);
+		}
+	}
 
 	@Extension
 	public static class DescriptorImpl extends BuildStepDescriptor<Publisher> {
