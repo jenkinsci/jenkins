@@ -60,38 +60,44 @@ final class RemoteInvocationHandler implements InvocationHandler, Serializable {
     private final boolean userProxy;
 
     /**
+     * If true, this proxy is automatically unexported by the calling {@link Channel},
+     * so this object won't release the object at {@link #finalize()}.
+     * <p>
+     * This ugly distinction enables us to keep the # of exported objects low for
+     * the typical situation where the calls are synchronous (thus end of the call
+     * signifies full unexport of all involved objects.)
+     */
+    private final boolean autoUnexportByCaller;
+
+    /**
      * If true, indicates that this proxy object is being sent back
-     * to where it came from. If false, indicate sthat this proxy
+     * to where it came from. If false, indicates that this proxy
      * is being sent to the remote peer.
      *
      * Only used in the serialized form of this class.
      */
     private boolean goingHome;
 
-    RemoteInvocationHandler(int id, boolean userProxy) {
-        this.oid = id;
-        this.userProxy = userProxy;
-    }
-
     /**
      * Creates a proxy that wraps an existing OID on the remote.
      */
-    RemoteInvocationHandler(Channel channel, int id, boolean userProxy) {
+    RemoteInvocationHandler(Channel channel, int id, boolean userProxy, boolean autoUnexportByCaller) {
         this.channel = channel;
         this.oid = id;
         this.userProxy = userProxy;
+        this.autoUnexportByCaller = autoUnexportByCaller;
     }
 
     /**
      * Wraps an OID to the typed wrapper.
      */
-    public static <T> T wrap(Channel channel, int id, Class<T> type, boolean userProxy) {
+    public static <T> T wrap(Channel channel, int id, Class<T> type, boolean userProxy, boolean autoUnexportByCaller) {
         ClassLoader cl = type.getClassLoader();
         // if the type is a JDK-defined type, classloader should be for IReadResolve
         if(cl==null || cl==ClassLoader.getSystemClassLoader())
             cl = IReadResolve.class.getClassLoader();
         return type.cast(Proxy.newProxyInstance(cl, new Class[]{type,IReadResolve.class},
-            new RemoteInvocationHandler(channel,id,userProxy)));
+            new RemoteInvocationHandler(channel,id,userProxy,autoUnexportByCaller)));
     }
 
     /**
@@ -187,7 +193,7 @@ final class RemoteInvocationHandler implements InvocationHandler, Serializable {
 
     protected void finalize() throws Throwable {
         // unexport the remote object
-        if(channel!=null)
+        if(channel!=null && !autoUnexportByCaller)
             channel.send(new UnexportCommand(oid));
         super.finalize();
     }

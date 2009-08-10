@@ -289,7 +289,7 @@ public class Channel implements VirtualChannel, IChannel {
 
         if(export(this,false)!=1)
             throw new AssertionError(); // export number 1 is reserved for the channel itself
-        remoteChannel = RemoteInvocationHandler.wrap(this,1,IChannel.class,false);
+        remoteChannel = RemoteInvocationHandler.wrap(this,1,IChannel.class,false,false);
 
         // write the magic preamble.
         // certain communication channel, such as forking JVM via ssh,
@@ -425,7 +425,7 @@ public class Channel implements VirtualChannel, IChannel {
 
         // proxy will unexport this instance when it's GC-ed on the remote machine.
         final int id = export(instance);
-        return RemoteInvocationHandler.wrap(null,id,type,userProxy);
+        return RemoteInvocationHandler.wrap(null,id,type,userProxy,exportedObjects.isRecording());
     }
 
     /*package*/ int export(Object instance) {
