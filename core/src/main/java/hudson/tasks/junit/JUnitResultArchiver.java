@@ -79,12 +79,15 @@ public class JUnitResultArchiver extends Recorder implements Serializable,
 	 */
 	private final String testResults;
 
+    /**
+     * {@link TestDataPublisher}s configured for this archiver, to process the recorded data.
+     * For compatibility reasons, can be null.
+     * @since 1.320
+     */
 	private final DescribableList<TestDataPublisher, Descriptor<TestDataPublisher>> testDataPublishers;
 
 	/**
 	 * left for backwards compatibility
-	 * 
-	 * @param testResults
 	 */
 	@Deprecated
 	public JUnitResultArchiver(String testResults) {
@@ -115,8 +118,7 @@ public class JUnitResultArchiver extends Recorder implements Serializable,
 
 			action = new TestResultAction(build, result, listener);
 			if (result.getPassCount() == 0 && result.getFailCount() == 0)
-				throw new AbortException(Messages
-						.JUnitResultArchiver_ResultIsEmpty());
+				throw new AbortException(Messages.JUnitResultArchiver_ResultIsEmpty());
 
 			List<Data> data = new ArrayList<Data>();
 			if (testDataPublishers != null) {
@@ -205,15 +207,13 @@ public class JUnitResultArchiver extends Recorder implements Serializable,
 		private final String testResults;
 		private final long nowMaster;
 
-		private ParseResultCallable(String testResults, long buildTime, 
-				long nowMaster) {
+		private ParseResultCallable(String testResults, long buildTime, long nowMaster) {
 			this.buildTime = buildTime;
 			this.testResults = testResults;
 			this.nowMaster = nowMaster;
 		}
 
-		public TestResult invoke(File ws, VirtualChannel channel)
-				throws IOException {
+		public TestResult invoke(File ws, VirtualChannel channel) throws IOException {
 			final long nowSlave = System.currentTimeMillis();
 
 			FileSet fs = Util.createFileSet(ws, testResults);
@@ -223,9 +223,7 @@ public class JUnitResultArchiver extends Recorder implements Serializable,
 			if (files.length == 0) {
 				// no test result. Most likely a configuration
 				// error or fatal problem
-				throw new AbortException(
-						Messages
-								.JUnitResultArchiver_NoTestReportFound());
+				throw new AbortException(Messages.JUnitResultArchiver_NoTestReportFound());
 			}
 
 			return new TestResult(buildTime + (nowSlave - nowMaster), ds);

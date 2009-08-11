@@ -183,7 +183,10 @@ public class TestResultAction extends AbstractTestResultAction<TestResultAction>
     
     public static abstract class Data {
     	/**
-    	 * Returns all TestActions for the testObject. Always non-null
+    	 * Returns all TestActions for the testObject.
+         * 
+         * @return
+         *      Can be empty but never null. The caller must assume that the returned list is read-only.
     	 */
     	public abstract List<TestAction> getTestAction(TestObject testObject);
     }

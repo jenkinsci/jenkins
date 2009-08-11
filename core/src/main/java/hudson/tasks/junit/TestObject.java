@@ -74,12 +74,15 @@ import org.kohsuke.stapler.export.ExportedBean;
  */
 @ExportedBean
 public abstract class TestObject extends AbstractModelObject implements Serializable {
-	public AbstractBuild<?, ?> getOwner() {
-		return getParent().getOwner();
-	}
-
 	private volatile transient String id;
 
+    public AbstractBuild<?,?> getOwner() {
+        return getParent().getOwner();
+    }
+
+    /**
+     * Reverse pointer of {@link TabulatedResult#getChildren()}.
+     */
 	public abstract TestObject getParent();
 
 	public String getId() {
