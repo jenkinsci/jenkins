@@ -180,7 +180,15 @@ public class TestResultAction extends AbstractTestResultAction<TestResultAction>
 	public void setData(List<Data> testData) {
 		this.testData = testData;
 	}
-    
+
+    /**
+     * Resolves {@link TestAction}s for the given {@link TestObject}.
+     *
+     * <p>
+     * This object itself is persisted as a part of {@link AbstractBuild}, so it needs to be XStream-serializable.
+     *
+     * @see TestDataPublisher
+     */
     public static abstract class Data {
     	/**
     	 * Returns all TestActions for the testObject.
