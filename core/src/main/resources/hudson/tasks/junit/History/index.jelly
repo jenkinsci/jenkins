@@ -28,14 +28,14 @@ THE SOFTWARE.
 
 		<script type="text/javascript">
 			function setCount() {
-				document.getElementById("graph").src = "countGraph";
-				document.getElementById("graph").lazyMap = "countMap";
+				document.getElementById("graph").src = "count/png";
+				document.getElementById("graph").lazyMap = "count/map";
 				document.getElementById("duration-link").style.display = "";
 				document.getElementById("count-link").style.display = "none";
 			}
 			function setDuration() {
-				document.getElementById("graph").src = "durationGraph"
-				document.getElementById("graph").lazyMap = "durationMap"
+				document.getElementById("graph").src = "duration/png"
+				document.getElementById("graph").lazyMap = "duration/map"
 				document.getElementById("duration-link").style.display = "none";
 				document.getElementById("count-link").style.display = "";
 			}

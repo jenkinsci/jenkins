@@ -49,6 +49,7 @@ import hudson.util.RunList;
 import hudson.util.ShiftedCategoryAxis;
 import hudson.util.StackedAreaRenderer2;
 import hudson.util.TextFile;
+import hudson.util.Graph;
 import hudson.widgets.HistoryWidget;
 import hudson.widgets.Widget;
 import hudson.widgets.HistoryWidget.Adapter;
@@ -68,7 +69,6 @@ import java.util.Map;
 import java.util.SortedMap;
 
 import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletResponse;
 import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactory;
@@ -1028,162 +1028,136 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
         return getIconColor().getImage();
     }
 
-    /**
-     * Returns the graph that shows how long each build took.
-     */
-    public void doBuildTimeGraph(StaplerRequest req, StaplerResponse rsp)
-            throws IOException {
-        if (getLastBuild() == null) {
-            rsp.setStatus(HttpServletResponse.SC_NOT_FOUND);
-            return;
-        }
-        if (req.checkIfModified(getLastBuild().getTimestamp(), rsp))
-            return;
-        ChartUtil
-                .generateGraph(req, rsp, createBuildTimeTrendChart(), 500, 400);
-    }
+    public Graph getBuildTimeGraph() {
+        return new Graph(getLastBuild().getTimestamp(),500,400) {
+            @Override
+            protected JFreeChart createGraph() {
+                class ChartLabel implements Comparable<ChartLabel> {
+                    final Run run;
 
-    /**
-     * Returns the clickable map for the build time graph. Loaded lazily by
-     * AJAX.
-     */
-    public void doBuildTimeGraphMap(StaplerRequest req, StaplerResponse rsp)
-            throws IOException {
-        if (getLastBuild() == null) {
-            rsp.setStatus(HttpServletResponse.SC_NOT_FOUND);
-            return;
-        }
-        if (req.checkIfModified(getLastBuild().getTimestamp(), rsp))
-            return;
-        ChartUtil.generateClickableMap(req, rsp, createBuildTimeTrendChart(),
-                500, 400);
-    }
+                    public ChartLabel(Run r) {
+                        this.run = r;
+                    }
 
-    private JFreeChart createBuildTimeTrendChart() {
-        class ChartLabel implements Comparable<ChartLabel> {
-            final Run run;
+                    public int compareTo(ChartLabel that) {
+                        return this.run.number - that.run.number;
+                    }
 
-            public ChartLabel(Run r) {
-                this.run = r;
-            }
+                    public boolean equals(Object o) {
+                        // HUDSON-2682 workaround for Eclipse compilation bug
+                        // on (c instanceof ChartLabel)
+                        if (o == null || !ChartLabel.class.isAssignableFrom( o.getClass() ))  {
+                            return false;
+                        }
+                        ChartLabel that = (ChartLabel) o;
+                        return run == that.run;
+                    }
 
-            public int compareTo(ChartLabel that) {
-                return this.run.number - that.run.number;
-            }
+                    public Color getColor() {
+                        // TODO: consider gradation. See
+                        // http://www.javadrive.jp/java2d/shape/index9.html
+                        Result r = run.getResult();
+                        if (r == Result.FAILURE)
+                            return ColorPalette.RED;
+                        else if (r == Result.UNSTABLE)
+                            return ColorPalette.YELLOW;
+                        else if (r == Result.ABORTED || r == Result.NOT_BUILT)
+                            return ColorPalette.GREY;
+                        else
+                            return ColorPalette.BLUE;
+                    }
 
-            public boolean equals(Object o) {
-                // HUDSON-2682 workaround for Eclipse compilation bug 
-            	// on (c instanceof ChartLabel)
-                if (o == null || !ChartLabel.class.isAssignableFrom( o.getClass() ))  {
-                	return false;
+                    public int hashCode() {
+                        return run.hashCode();
+                    }
+
+                    public String toString() {
+                        String l = run.getDisplayName();
+                        if (run instanceof Build) {
+                            String s = ((Build) run).getBuiltOnStr();
+                            if (s != null)
+                                l += ' ' + s;
+                        }
+                        return l;
+                    }
+
                 }
-                ChartLabel that = (ChartLabel) o;
-                return run == that.run;
-            }
 
-            public Color getColor() {
-                // TODO: consider gradation. See
-                // http://www.javadrive.jp/java2d/shape/index9.html
-                Result r = run.getResult();
-                if (r == Result.FAILURE)
-                    return ColorPalette.RED;
-                else if (r == Result.UNSTABLE)
-                    return ColorPalette.YELLOW;
-                else if (r == Result.ABORTED || r == Result.NOT_BUILT)
-                    return ColorPalette.GREY;
-                else
-                    return ColorPalette.BLUE;
-            }
-
-            public int hashCode() {
-                return run.hashCode();
-            }
-
-            public String toString() {
-                String l = run.getDisplayName();
-                if (run instanceof Build) {
-                    String s = ((Build) run).getBuiltOnStr();
-                    if (s != null)
-                        l += ' ' + s;
+                DataSetBuilder<String, ChartLabel> data = new DataSetBuilder<String, ChartLabel>();
+                for (Run r : getBuilds()) {
+                    if (r.isBuilding())
+                        continue;
+                    data.add(((double) r.getDuration()) / (1000 * 60), "min",
+                            new ChartLabel(r));
                 }
-                return l;
-            }
 
-        }
+                final CategoryDataset dataset = data.build();
 
-        DataSetBuilder<String, ChartLabel> data = new DataSetBuilder<String, ChartLabel>();
-        for (Run r : getBuilds()) {
-            if (r.isBuilding())
-                continue;
-            data.add(((double) r.getDuration()) / (1000 * 60), "min",
-                    new ChartLabel(r));
-        }
+                final JFreeChart chart = ChartFactory.createStackedAreaChart(null, // chart
+                                                                                    // title
+                        null, // unused
+                        Messages.Job_minutes(), // range axis label
+                        dataset, // data
+                        PlotOrientation.VERTICAL, // orientation
+                        false, // include legend
+                        true, // tooltips
+                        false // urls
+                        );
 
-        final CategoryDataset dataset = data.build();
+                chart.setBackgroundPaint(Color.white);
 
-        final JFreeChart chart = ChartFactory.createStackedAreaChart(null, // chart
-                                                                            // title
-                null, // unused
-                Messages.Job_minutes(), // range axis label
-                dataset, // data
-                PlotOrientation.VERTICAL, // orientation
-                false, // include legend
-                true, // tooltips
-                false // urls
-                );
+                final CategoryPlot plot = chart.getCategoryPlot();
 
-        chart.setBackgroundPaint(Color.white);
+                // plot.setAxisOffset(new Spacer(Spacer.ABSOLUTE, 5.0, 5.0, 5.0, 5.0));
+                plot.setBackgroundPaint(Color.WHITE);
+                plot.setOutlinePaint(null);
+                plot.setForegroundAlpha(0.8f);
+                // plot.setDomainGridlinesVisible(true);
+                // plot.setDomainGridlinePaint(Color.white);
+                plot.setRangeGridlinesVisible(true);
+                plot.setRangeGridlinePaint(Color.black);
 
-        final CategoryPlot plot = chart.getCategoryPlot();
+                CategoryAxis domainAxis = new ShiftedCategoryAxis(null);
+                plot.setDomainAxis(domainAxis);
+                domainAxis.setCategoryLabelPositions(CategoryLabelPositions.UP_90);
+                domainAxis.setLowerMargin(0.0);
+                domainAxis.setUpperMargin(0.0);
+                domainAxis.setCategoryMargin(0.0);
 
-        // plot.setAxisOffset(new Spacer(Spacer.ABSOLUTE, 5.0, 5.0, 5.0, 5.0));
-        plot.setBackgroundPaint(Color.WHITE);
-        plot.setOutlinePaint(null);
-        plot.setForegroundAlpha(0.8f);
-        // plot.setDomainGridlinesVisible(true);
-        // plot.setDomainGridlinePaint(Color.white);
-        plot.setRangeGridlinesVisible(true);
-        plot.setRangeGridlinePaint(Color.black);
+                final NumberAxis rangeAxis = (NumberAxis) plot.getRangeAxis();
+                ChartUtil.adjustChebyshev(dataset, rangeAxis);
+                rangeAxis.setStandardTickUnits(NumberAxis.createIntegerTickUnits());
 
-        CategoryAxis domainAxis = new ShiftedCategoryAxis(null);
-        plot.setDomainAxis(domainAxis);
-        domainAxis.setCategoryLabelPositions(CategoryLabelPositions.UP_90);
-        domainAxis.setLowerMargin(0.0);
-        domainAxis.setUpperMargin(0.0);
-        domainAxis.setCategoryMargin(0.0);
+                StackedAreaRenderer ar = new StackedAreaRenderer2() {
+                    @Override
+                    public Paint getItemPaint(int row, int column) {
+                        ChartLabel key = (ChartLabel) dataset.getColumnKey(column);
+                        return key.getColor();
+                    }
 
-        final NumberAxis rangeAxis = (NumberAxis) plot.getRangeAxis();
-        ChartUtil.adjustChebyshev(dataset, rangeAxis);
-        rangeAxis.setStandardTickUnits(NumberAxis.createIntegerTickUnits());
+                    @Override
+                    public String generateURL(CategoryDataset dataset, int row,
+                            int column) {
+                        ChartLabel label = (ChartLabel) dataset.getColumnKey(column);
+                        return String.valueOf(label.run.number);
+                    }
 
-        StackedAreaRenderer ar = new StackedAreaRenderer2() {
-            @Override
-            public Paint getItemPaint(int row, int column) {
-                ChartLabel key = (ChartLabel) dataset.getColumnKey(column);
-                return key.getColor();
-            }
+                    @Override
+                    public String generateToolTip(CategoryDataset dataset, int row,
+                            int column) {
+                        ChartLabel label = (ChartLabel) dataset.getColumnKey(column);
+                        return label.run.getDisplayName() + " : "
+                                + label.run.getDurationString();
+                    }
+                };
+                plot.setRenderer(ar);
 
-            @Override
-            public String generateURL(CategoryDataset dataset, int row,
-                    int column) {
-                ChartLabel label = (ChartLabel) dataset.getColumnKey(column);
-                return String.valueOf(label.run.number);
-            }
+                // crop extra space around the graph
+                plot.setInsets(new RectangleInsets(0, 0, 0, 5.0));
 
-            @Override
-            public String generateToolTip(CategoryDataset dataset, int row,
-                    int column) {
-                ChartLabel label = (ChartLabel) dataset.getColumnKey(column);
-                return label.run.getDisplayName() + " : "
-                        + label.run.getDurationString();
+                return chart;
             }
         };
-        plot.setRenderer(ar);
-
-        // crop extra space around the graph
-        plot.setInsets(new RectangleInsets(0, 0, 0, 5.0));
-
-        return chart;
     }
 
     /**
