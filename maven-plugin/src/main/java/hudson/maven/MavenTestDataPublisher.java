@@ -47,6 +47,10 @@ import net.sf.json.JSONObject;
 
 import org.kohsuke.stapler.StaplerRequest;
 
+/**
+ * Augments {@link SurefireReport} by executing {@link TestDataPublisher}s.
+ * @since 1.320
+ */
 public class MavenTestDataPublisher extends Recorder {
 
 	private final DescribableList<TestDataPublisher, Descriptor<TestDataPublisher>> testDataPublishers;
@@ -102,14 +106,9 @@ public class MavenTestDataPublisher extends Recorder {
 		}
 		
 		@Override
-		public Publisher newInstance(StaplerRequest req, JSONObject formData)
-				throws hudson.model.Descriptor.FormException {
-			DescribableList<TestDataPublisher, Descriptor<TestDataPublisher>> testDataPublishers = new DescribableList<TestDataPublisher, Descriptor<TestDataPublisher>>(
-					new Saveable() {
-						public void save() throws IOException {
-							// no-op
-						}
-					});
+		public Publisher newInstance(StaplerRequest req, JSONObject formData) throws FormException {
+			DescribableList<TestDataPublisher, Descriptor<TestDataPublisher>> testDataPublishers
+                    = new DescribableList<TestDataPublisher, Descriptor<TestDataPublisher>>(Saveable.NOOP);
 			testDataPublishers.rebuild(req, formData, TestDataPublisher.all());
 
 			return new MavenTestDataPublisher(testDataPublishers);

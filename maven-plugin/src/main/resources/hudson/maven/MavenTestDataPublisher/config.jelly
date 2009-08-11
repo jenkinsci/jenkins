@@ -23,24 +23,24 @@ THE SOFTWARE.
 -->
 
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define"
-	xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
-	<j:invokeStatic var="testDataPublisherDescriptors"
-		className="hudson.tasks.junit.TestDataPublisher" method="all" />
-	<j:if test="${testDataPublisherDescriptors.size() > 0}">
-	<j:set var="testDataPublisherInstances" value="${instance.testDataPublishers}" />
-	<f:entry title="" field="testDataPublishers">
-	<table width="100%">
-	<j:forEach var="tdpd" items="${testDataPublisherDescriptors}">
-		<f:optionalBlock name="${tdpd.jsonSafeClassName}"
-			help="${tdpd.helpFile}" title="${tdpd.displayName}"
-			checked="${testDataPublisherInstances.get(tdpd)!=null}">
-			<j:set var="descriptor" value="${tdpd}" />
-			<j:set var="instance" value="${testDataPublisherInstances.get(tdpd)}" />
-			<st:include from="${tdpd}" page="${tdpd.configPage}"
-				optional="true" />
-		</f:optionalBlock>
-	</j:forEach>
-	</table>
-	</f:entry>
-	</j:if>
+         xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
+  <j:invokeStatic var="testDataPublisherDescriptors"
+                  className="hudson.tasks.junit.TestDataPublisher" method="all"/>
+  <j:if test="${testDataPublisherDescriptors.size() > 0}">
+    <j:set var="testDataPublisherInstances" value="${instance.testDataPublishers}"/>
+    <f:entry title="" field="testDataPublishers">
+      <table width="100%">
+        <j:forEach var="tdpd" items="${testDataPublisherDescriptors}">
+          <f:optionalBlock name="${tdpd.jsonSafeClassName}"
+                           help="${tdpd.helpFile}" title="${tdpd.displayName}"
+                           checked="${testDataPublisherInstances.get(tdpd)!=null}">
+            <j:set var="descriptor" value="${tdpd}"/>
+            <j:set var="instance" value="${testDataPublisherInstances.get(tdpd)}"/>
+            <st:include from="${tdpd}" page="${tdpd.configPage}"
+                        optional="true"/>
+          </f:optionalBlock>
+        </j:forEach>
+      </table>
+    </f:entry>
+  </j:if>
 </j:jelly>
