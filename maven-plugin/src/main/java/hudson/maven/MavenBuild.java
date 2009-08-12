@@ -477,7 +477,7 @@ public class MavenBuild extends AbstractMavenBuild<MavenModule,MavenBuild> {
         private List<MavenReporter> reporters;
 
         @Override
-        protected FilePath decideWorkspace(Node n, WorkspaceList wsl) {
+        protected FilePath decideWorkspace(Node n, WorkspaceList wsl) throws InterruptedException, IOException {
             return wsl.allocate(getParentBuild().getModuleRoot().child(getProject().getRelativePath()));
         }
 

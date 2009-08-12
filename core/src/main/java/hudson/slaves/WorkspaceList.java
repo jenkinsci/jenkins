@@ -24,10 +24,15 @@
 package hudson.slaves;
 
 import hudson.FilePath;
+import hudson.Util;
+import hudson.Functions;
 import hudson.model.Computer;
 
 import java.util.HashSet;
 import java.util.Set;
+import java.util.Map;
+import java.util.HashMap;
+import java.util.Date;
 import java.util.logging.Logger;
 import java.util.logging.Level;
 
@@ -42,22 +47,62 @@ import java.util.logging.Level;
  * @see Computer#getWorkspaceList()
  */
 public final class WorkspaceList {
-    private final Set<FilePath> inUse = new HashSet<FilePath>();
+    /**
+     * Book keeping for workspace allocation.
+     */
+    public static final class Entry {
+        /**
+         * Who acquired this workspace?
+         */
+        public final Thread holder = Thread.currentThread();
+
+        /**
+         * When?
+         */
+        public final long time = System.currentTimeMillis();
+
+        /**
+         * From where?
+         */
+        public final Exception source = new Exception();
+
+        /**
+         * True makes the caller of {@link WorkspaceList#allocate(FilePath)} wait
+         * for this workspace.
+         */
+        public final boolean quick;
+
+        public final FilePath path;
+
+        private Entry(FilePath path, boolean quick) {
+            this.path = path;
+            this.quick = quick;
+        }
+
+        @Override
+        public String toString() {
+            String s = path+" owned by "+holder.getName()+" from "+new Date(time);
+            if(quick) s+=" (quick)";
+            s+="\n"+Functions.printThrowable(source);
+            return s;
+        }
+    }
+
+    private final Map<FilePath,Entry> inUse = new HashMap<FilePath,Entry>();
 
     public WorkspaceList() {
     }
 
     /**
-     * Allocates some workspace by adding some variation to the given base if necessary.
+     * Allocates a workspace by adding some variation to the given base to make it unique.
      */
-    public synchronized FilePath allocate(FilePath base) {
+    public synchronized FilePath allocate(FilePath base) throws InterruptedException {
         for (int i=1; ; i++) {
             FilePath candidate = i==1 ? base : base.withSuffix("@"+i);
-            if(inUse.contains(candidate))
+            Entry e = inUse.get(candidate);
+            if(e!=null && !e.quick)
                 continue;
-            inUse.add(candidate);
-            log("allocated  " + candidate);
-            return candidate;
+            return acquire(candidate);
         }
     }
 
@@ -66,8 +111,9 @@ public final class WorkspaceList {
      */
     public synchronized FilePath record(FilePath p) {
         log("recorded  "+p);
-        if (!inUse.add(p))
-            throw new AssertionError("Tried to record a workspace already owned");
+        Entry old = inUse.put(p, new Entry(p, false));
+        if (old!=null)
+            throw new AssertionError("Tried to record a workspace already owned: "+old);
         return p;
     }
 
@@ -75,7 +121,8 @@ public final class WorkspaceList {
      * Releases an allocated or acquired workspace.
      */
     public synchronized void release(FilePath p) {
-        if (!inUse.remove(p))
+        Entry old = inUse.remove(p);
+        if (old==null)
             throw new AssertionError("Releasing unallocated workspace "+p);
         notifyAll();
     }
@@ -87,10 +134,21 @@ public final class WorkspaceList {
      *      The same {@link FilePath} as given to this method.
      */
     public synchronized FilePath acquire(FilePath p) throws InterruptedException {
-        while (inUse.contains(p))
+        return acquire(p,false);
+    }
+
+    /**
+     * See {@link #acquire(FilePath)}
+     *
+     * @param quick
+     *      If true, indicates that the acquired workspace will be returned quickly.
+     *      This makes other calls to {@link #allocate(FilePath)} to wait for the release of this workspace.
+     */
+    public synchronized FilePath acquire(FilePath p, boolean quick) throws InterruptedException {
+        while (inUse.containsKey(p))
             wait();
         log("acquired "+p);
-        inUse.add(p);
+        inUse.put(p,new Entry(p,quick));
         return p;
     }
 

@@ -945,7 +945,13 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
                     return true;
                 } else {
                     WorkspaceList l = lb.getBuiltOn().toComputer().getWorkspaceList();
-                    l.acquire(ws);
+                    // if doing non-concurrent build, acquite a workspace in a way that causes builds to block for this workspace.
+                    // this prevents multiple workspaces of the same job --- the behavior of Hudson < 1.319.
+                    //
+                    // OTOH, if a concurrent build is chosen, the user is willing to create a multiple workspace,
+                    // so better throughput is achieved over time (modulo the initial cost of creating that many workspaces)
+                    // by having multiple workspaces
+                    l.acquire(ws,!concurrentBuild);
                     try {
                         LOGGER.fine("Polling SCM changes of " + getName());
                         return scm.pollChanges(this, ws.createLauncher(listener), ws, listener);

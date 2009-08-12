@@ -129,7 +129,7 @@ public class MatrixRun extends Build<MatrixConfiguration,MatrixRun> {
 
     protected class RunnerImpl extends Build<MatrixConfiguration,MatrixRun>.RunnerImpl {
         @Override
-        protected FilePath decideWorkspace(Node n, WorkspaceList wsl) {
+        protected FilePath decideWorkspace(Node n, WorkspaceList wsl) throws InterruptedException, IOException {
             Node node = getBuiltOn();
             FilePath ws = node.getWorkspaceFor(getParent().getParent());
             if(useShortWorkspaceName)

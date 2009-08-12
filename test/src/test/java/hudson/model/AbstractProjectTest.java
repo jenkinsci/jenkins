@@ -29,9 +29,21 @@ import com.gargoylesoftware.htmlunit.html.HtmlForm;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import hudson.security.GlobalMatrixAuthorizationStrategy;
 import hudson.tasks.Shell;
+import hudson.scm.SCM;
+import hudson.scm.ChangeLogParser;
+import hudson.scm.NullSCM;
+import hudson.Launcher;
+import hudson.FilePath;
+import hudson.util.StreamTaskListener;
+import hudson.util.OneShotEvent;
 import org.jvnet.hudson.test.HudsonTestCase;
+import org.jvnet.hudson.test.Bug;
 import org.jvnet.hudson.test.recipes.PresetData;
 import org.jvnet.hudson.test.recipes.PresetData.DataSet;
+
+import java.io.IOException;
+import java.io.File;
+import java.util.concurrent.Future;
 
 /**
  * @author Kohsuke Kawaguchi
@@ -115,6 +127,56 @@ public class AbstractProjectTest extends HudsonTestCase {
             p.setConcurrentBuild(b);
             submit(new WebClient().getPage(p,"configure").getFormByName("config"));
             assertEquals(b,p.isConcurrentBuild());
+        }
+    }
+
+    /**
+     * Unless the concurrent build option is enabled, polling and build should be mutually exclusive
+     * to avoid allocating unnecessary workspaces.
+     */
+    @Bug(4202)
+    public void testPollingAndBuildExclusion() throws Exception {
+        final OneShotEvent sync = new OneShotEvent();
+
+        final FreeStyleProject p = createFreeStyleProject();
+        FreeStyleBuild b1 = assertBuildStatusSuccess(p.scheduleBuild2(0).get());
+
+        p.setScm(new NullSCM() {
+            @Override
+            public boolean pollChanges(AbstractProject project, Launcher launcher, FilePath workspace, TaskListener listener) {
+                try {
+                    sync.block();
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+                return true;
+            }
+
+            public boolean requiresWorkspaceForPolling() {
+                return true;
+            }
+        });
+        Thread t = new Thread() {
+            public void run() {
+                p.pollSCMChanges(new StreamTaskListener(System.out));
+            }
+        };
+        try {
+            t.start();
+            Future<FreeStyleBuild> f = p.scheduleBuild2(0);
+
+            // add a bit of delay to make sure that the blockage is happening
+            Thread.sleep(3000);
+
+            // release the polling
+            sync.signal();
+
+            FreeStyleBuild b2 = assertBuildStatusSuccess(f.get());
+
+            // they should have used the same workspace.
+            assertEquals(b1.getWorkspace(), b2.getWorkspace());
+        } finally {
+            t.interrupt();
         }
     }
 }

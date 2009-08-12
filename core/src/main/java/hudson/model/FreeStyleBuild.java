@@ -48,7 +48,7 @@ public class FreeStyleBuild extends Build<FreeStyleProject,FreeStyleBuild> {
 
     protected class RunnerImpl extends Build<FreeStyleProject,FreeStyleBuild>.RunnerImpl {
         @Override
-        protected FilePath decideWorkspace(Node n, WorkspaceList wsl) {
+        protected FilePath decideWorkspace(Node n, WorkspaceList wsl) throws IOException, InterruptedException {
             String customWorkspace = getProject().getCustomWorkspace();
             if (customWorkspace != null)
                 return n.createPath(customWorkspace);

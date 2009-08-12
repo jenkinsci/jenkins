@@ -316,7 +316,7 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
          * @param wsl
          *      Passed in for the convenience. The returned path must be registered to this object.
          */
-        protected FilePath decideWorkspace(Node n, WorkspaceList wsl) {
+        protected FilePath decideWorkspace(Node n, WorkspaceList wsl) throws InterruptedException, IOException {
             // TODO: this cast is indicative of abstraction problem
             return wsl.allocate(n.getWorkspaceFor((TopLevelItem)getProject()));
         }
