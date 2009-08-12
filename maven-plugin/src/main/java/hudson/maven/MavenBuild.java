@@ -27,6 +27,7 @@ import hudson.FilePath;
 import hudson.Util;
 import hudson.EnvVars;
 import hudson.slaves.WorkspaceList;
+import hudson.slaves.WorkspaceList.Lease;
 import hudson.maven.agent.AbortException;
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
@@ -477,7 +478,7 @@ public class MavenBuild extends AbstractMavenBuild<MavenModule,MavenBuild> {
         private List<MavenReporter> reporters;
 
         @Override
-        protected FilePath decideWorkspace(Node n, WorkspaceList wsl) throws InterruptedException, IOException {
+        protected Lease decideWorkspace(Node n, WorkspaceList wsl) throws InterruptedException, IOException {
             return wsl.allocate(getParentBuild().getModuleRoot().child(getProject().getRelativePath()));
         }
 

@@ -25,6 +25,7 @@ package hudson.model;
 
 import hudson.FilePath;
 import hudson.slaves.WorkspaceList;
+import hudson.slaves.WorkspaceList.Lease;
 
 import java.io.IOException;
 import java.io.File;
@@ -48,10 +49,11 @@ public class FreeStyleBuild extends Build<FreeStyleProject,FreeStyleBuild> {
 
     protected class RunnerImpl extends Build<FreeStyleProject,FreeStyleBuild>.RunnerImpl {
         @Override
-        protected FilePath decideWorkspace(Node n, WorkspaceList wsl) throws IOException, InterruptedException {
+        protected Lease decideWorkspace(Node n, WorkspaceList wsl) throws IOException, InterruptedException {
             String customWorkspace = getProject().getCustomWorkspace();
             if (customWorkspace != null)
-                return n.createPath(customWorkspace);
+                // we allow custom workspaces to be concurrently used between jobs.
+                return Lease.creadDummyLease(n.createPath(customWorkspace));
             return super.decideWorkspace(n,wsl);
         }
     }

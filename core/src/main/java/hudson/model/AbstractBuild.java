@@ -29,6 +29,7 @@ import hudson.Launcher;
 import hudson.Util;
 import hudson.FilePath;
 import hudson.slaves.WorkspaceList;
+import hudson.slaves.WorkspaceList.Lease;
 import hudson.matrix.MatrixConfiguration;
 import hudson.model.Fingerprint.BuildPtr;
 import hudson.model.Fingerprint.RangeSet;
@@ -316,7 +317,7 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
          * @param wsl
          *      Passed in for the convenience. The returned path must be registered to this object.
          */
-        protected FilePath decideWorkspace(Node n, WorkspaceList wsl) throws InterruptedException, IOException {
+        protected Lease decideWorkspace(Node n, WorkspaceList wsl) throws InterruptedException, IOException {
             // TODO: this cast is indicative of abstraction problem
             return wsl.allocate(n.getWorkspaceFor((TopLevelItem)getProject()));
         }
@@ -331,11 +332,11 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
             if(!Hudson.getInstance().getNodes().isEmpty())
                 listener.getLogger().println(node instanceof Hudson ? Messages.AbstractBuild_BuildingOnMaster() : Messages.AbstractBuild_BuildingRemotely(builtOn));
 
-            final FilePath ws = decideWorkspace(node,Computer.currentComputer().getWorkspaceList());
+            final Lease lease = decideWorkspace(node,Computer.currentComputer().getWorkspaceList());
 
             try {
-                workspace = ws.getRemote();
-                node.getFileSystemProvisioner().prepareWorkspace(AbstractBuild.this,ws,listener);
+                workspace = lease.path.getRemote();
+                node.getFileSystemProvisioner().prepareWorkspace(AbstractBuild.this,lease.path,listener);
 
                 checkout(listener);
 
@@ -362,7 +363,7 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
 
                 return result;
             } finally {
-                Computer.currentComputer().getWorkspaceList().release(ws);
+                lease.release();
             }
         }
 

@@ -24,17 +24,14 @@
 package hudson.slaves;
 
 import hudson.FilePath;
-import hudson.Util;
 import hudson.Functions;
 import hudson.model.Computer;
 
-import java.util.HashSet;
-import java.util.Set;
-import java.util.Map;
-import java.util.HashMap;
 import java.util.Date;
-import java.util.logging.Logger;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Used by {@link Computer} to keep track of workspaces that are actively in use.
@@ -88,6 +85,33 @@ public final class WorkspaceList {
         }
     }
 
+    /**
+     * Represents a leased workspace that needs to be returned later.
+     */
+    public static abstract class Lease {
+        public final FilePath path;
+
+        protected Lease(FilePath path) {
+            this.path = path;
+        }
+
+        /**
+         * Releases this lease.
+         */
+        public abstract void release();
+
+        /**
+         * Creates a dummy {@link Lease} object that does no-op in the release.
+         */
+        public static Lease creadDummyLease(FilePath p) {
+            return new Lease(p) {
+                public void release() {
+                    // noop
+                }
+            };
+        }
+    }
+
     private final Map<FilePath,Entry> inUse = new HashMap<FilePath,Entry>();
 
     public WorkspaceList() {
@@ -96,7 +120,7 @@ public final class WorkspaceList {
     /**
      * Allocates a workspace by adding some variation to the given base to make it unique.
      */
-    public synchronized FilePath allocate(FilePath base) throws InterruptedException {
+    public synchronized Lease allocate(FilePath base) throws InterruptedException {
         for (int i=1; ; i++) {
             FilePath candidate = i==1 ? base : base.withSuffix("@"+i);
             Entry e = inUse.get(candidate);
@@ -109,18 +133,18 @@ public final class WorkspaceList {
     /**
      * Just record that this workspace is being used, without paying any attention to the sycnhronization support.
      */
-    public synchronized FilePath record(FilePath p) {
+    public synchronized Lease record(FilePath p) {
         log("recorded  "+p);
         Entry old = inUse.put(p, new Entry(p, false));
         if (old!=null)
             throw new AssertionError("Tried to record a workspace already owned: "+old);
-        return p;
+        return lease(p);
     }
 
     /**
      * Releases an allocated or acquired workspace.
      */
-    public synchronized void release(FilePath p) {
+    private synchronized void _release(FilePath p) {
         Entry old = inUse.remove(p);
         if (old==null)
             throw new AssertionError("Releasing unallocated workspace "+p);
@@ -133,7 +157,7 @@ public final class WorkspaceList {
      * @return
      *      The same {@link FilePath} as given to this method.
      */
-    public synchronized FilePath acquire(FilePath p) throws InterruptedException {
+    public synchronized Lease acquire(FilePath p) throws InterruptedException {
         return acquire(p,false);
     }
 
@@ -144,12 +168,23 @@ public final class WorkspaceList {
      *      If true, indicates that the acquired workspace will be returned quickly.
      *      This makes other calls to {@link #allocate(FilePath)} to wait for the release of this workspace.
      */
-    public synchronized FilePath acquire(FilePath p, boolean quick) throws InterruptedException {
+    public synchronized Lease acquire(FilePath p, boolean quick) throws InterruptedException {
         while (inUse.containsKey(p))
             wait();
         log("acquired "+p);
         inUse.put(p,new Entry(p,quick));
-        return p;
+        return lease(p);
+    }
+
+    /**
+     * Wraps a path into a valid lease.
+     */
+    private Lease lease(FilePath p) {
+        return new Lease(p) {
+            public void release() {
+                _release(path);
+            }
+        };
     }
 
     private void log(String msg) {

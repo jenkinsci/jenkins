@@ -25,6 +25,7 @@ package hudson.matrix;
 
 import hudson.FilePath;
 import hudson.slaves.WorkspaceList;
+import hudson.slaves.WorkspaceList.Lease;
 import static hudson.matrix.MatrixConfiguration.useShortWorkspaceName;
 import hudson.model.Build;
 import hudson.model.Node;
@@ -129,7 +130,7 @@ public class MatrixRun extends Build<MatrixConfiguration,MatrixRun> {
 
     protected class RunnerImpl extends Build<MatrixConfiguration,MatrixRun>.RunnerImpl {
         @Override
-        protected FilePath decideWorkspace(Node n, WorkspaceList wsl) throws InterruptedException, IOException {
+        protected Lease decideWorkspace(Node n, WorkspaceList wsl) throws InterruptedException, IOException {
             Node node = getBuiltOn();
             FilePath ws = node.getWorkspaceFor(getParent().getParent());
             if(useShortWorkspaceName)

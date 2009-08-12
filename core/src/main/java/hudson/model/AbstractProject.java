@@ -951,12 +951,12 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
                     // OTOH, if a concurrent build is chosen, the user is willing to create a multiple workspace,
                     // so better throughput is achieved over time (modulo the initial cost of creating that many workspaces)
                     // by having multiple workspaces
-                    l.acquire(ws,!concurrentBuild);
+                    WorkspaceList.Lease lease = l.acquire(ws, !concurrentBuild);
                     try {
                         LOGGER.fine("Polling SCM changes of " + getName());
                         return scm.pollChanges(this, ws.createLauncher(listener), ws, listener);
                     } finally {
-                        l.release(ws);
+                        lease.release();
                     }
                 }
             } else {
