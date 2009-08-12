@@ -11,7 +11,7 @@ import java.io.IOException;
  * Used by {@link BuildStep#getRequiredMonitorService()}.
  *
  * @author Kohsuke Kawaguchi
- * @since 1.XXX
+ * @since 1.319
  */
 public enum BuildStepMonitor {
     NONE {

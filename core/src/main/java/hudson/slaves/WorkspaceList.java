@@ -38,7 +38,7 @@ import java.util.logging.Level;
  * SUBJECT TO CHANGE! Do not use this from plugins directly.
  *
  * @author Kohsuke Kawaguchi
- * @since 1.XXX
+ * @since 1.319
  * @see Computer#getWorkspaceList()
  */
 public final class WorkspaceList {

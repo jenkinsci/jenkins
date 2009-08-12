@@ -88,7 +88,7 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
 
     /**
      * The file path on the node that performed a build. Kept as a string since {@link FilePath} is not serializable into XML.
-     * @since 1.XXX
+     * @since 1.319
      */
     private String workspace;
 
@@ -194,7 +194,7 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
      *      null if the workspace is on a slave that's not connected. Note that once the build is completed,
      *      the workspace may be used to build something else, so the value returned from this method may
      *      no longer show a workspace as it was used for this build.
-     * @since 1.XXX
+     * @since 1.319
      */
     public final FilePath getWorkspace() {
         if(workspace==null) return null;
