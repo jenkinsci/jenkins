@@ -28,6 +28,8 @@ import hudson.model.Computer;
 
 import java.util.HashSet;
 import java.util.Set;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 
 /**
  * Used by {@link Computer} to keep track of workspaces that are actively in use.
@@ -54,6 +56,7 @@ public final class WorkspaceList {
             if(inUse.contains(candidate))
                 continue;
             inUse.add(candidate);
+            log("allocated  " + candidate);
             return candidate;
         }
     }
@@ -62,7 +65,9 @@ public final class WorkspaceList {
      * Just record that this workspace is being used, without paying any attention to the sycnhronization support.
      */
     public synchronized FilePath record(FilePath p) {
-        inUse.add(p);
+        log("recorded  "+p);
+        if (!inUse.add(p))
+            throw new AssertionError("Tried to record a workspace already owned");
         return p;
     }
 
@@ -84,7 +89,15 @@ public final class WorkspaceList {
     public synchronized FilePath acquire(FilePath p) throws InterruptedException {
         while (inUse.contains(p))
             wait();
+        log("acquired "+p);
         inUse.add(p);
         return p;
     }
+
+    private void log(String msg) {
+        if (LOGGER.isLoggable(Level.FINE))
+            LOGGER.fine(Thread.currentThread().getName() + " " + msg);
+    }
+
+    private static final Logger LOGGER = Logger.getLogger(WorkspaceList.class.getName());
 }
