@@ -427,8 +427,10 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
                                     changedModules.add(m.getModuleName().toString());
                                 }
                             }
-                            
-                            proxies.put(m.getModuleName(),m.newBuild().new ProxyImpl2(MavenModuleSetBuild.this,slistener));
+
+                            MavenBuild mb = m.newBuild();
+                            mb.setWorkspace(getModuleRoot().child(m.getRelativePath()));
+                            proxies.put(m.getModuleName(), mb.new ProxyImpl2(MavenModuleSetBuild.this,slistener));
                         }
 
                         // run the complete build here

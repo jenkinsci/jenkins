@@ -205,6 +205,14 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
     }
 
     /**
+     * Normally, a workspace is assigned by {@link Runner}, but this lets you set the workspace in case
+     * {@link AbstractBuild} is created without a build.
+     */
+    protected void setWorkspace(FilePath ws) {
+        this.workspace = ws.getRemote();
+    }
+
+    /**
      * Returns the root directory of the checked-out module.
      * <p>
      * This is usually where <tt>pom.xml</tt>, <tt>build.xml</tt>

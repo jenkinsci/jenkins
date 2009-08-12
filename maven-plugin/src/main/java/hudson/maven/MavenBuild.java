@@ -24,19 +24,13 @@
 package hudson.maven;
 
 import hudson.FilePath;
-import hudson.Util;
 import hudson.EnvVars;
 import hudson.slaves.WorkspaceList;
 import hudson.slaves.WorkspaceList.Lease;
 import hudson.maven.agent.AbortException;
-import hudson.model.AbstractBuild;
-import hudson.model.AbstractProject;
 import hudson.model.BuildListener;
-import hudson.model.DependencyGraph;
-import hudson.model.Hudson;
 import hudson.model.Result;
 import hudson.model.Run;
-import hudson.model.Cause.UpstreamCause;
 import hudson.model.Environment;
 import hudson.model.TaskListener;
 import hudson.model.Node;
@@ -66,10 +60,8 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 /**
  * {@link Run} for {@link MavenModule}.
@@ -229,6 +221,13 @@ public class MavenBuild extends AbstractMavenBuild<MavenModule,MavenBuild> {
     // used by executedMojos.jelly
     public static ExecutedMojo.Cache createExecutedMojoCache() {
         return new ExecutedMojo.Cache();
+    }
+
+    /**
+     * Backdoor for {@link MavenModuleSetBuild} to assign workspaces for modules.
+     */
+    protected void setWorkspace(FilePath path) {
+        super.setWorkspace(path);
     }
 
     /**
