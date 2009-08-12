@@ -42,6 +42,8 @@ import java.util.logging.Logger;
 
 import javax.servlet.ServletException;
 
+import net.sf.json.JSONObject;
+
 import org.acegisecurity.AccessDeniedException;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.HttpRedirect;
@@ -137,10 +139,11 @@ public class MyViewsProperty extends UserProperty implements ViewGroup, Action {
 
     public View getPrimaryView() {
         if (primaryViewName != null) {
-            return getView(primaryViewName);
-        } else {
-            return getViews().iterator().next();
-        }
+            View view = getView(primaryViewName);
+            if (view != null) return view;
+        } 
+
+        return views.get(0);
     }
 
     public HttpResponse doIndex() {
@@ -211,6 +214,20 @@ public class MyViewsProperty extends UserProperty implements ViewGroup, Action {
         public UserProperty newInstance(User user) {
             return new MyViewsProperty();
         }
+    }
+    
+    public UserProperty reconfigure(StaplerRequest req, JSONObject form) throws FormException {
+    	req.bindJSON(this, form);
+    	return this;
+    }
+    
+    public Object readResolve() {
+        if (views == null) {
+            // this shouldn't happen, but an error in 1.319 meant the last view could be deleted
+            views = new CopyOnWriteArrayList<View>();
+            views.add(new AllView(Messages.Hudson_ViewName(), this));
+        }
+        return this;
     }
     
     @Extension
