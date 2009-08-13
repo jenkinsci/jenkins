@@ -120,7 +120,8 @@ import org.mortbay.jetty.webapp.WebAppContext;
 import org.mortbay.jetty.webapp.WebXmlConfiguration;
 import org.mozilla.javascript.Context;
 import org.mozilla.javascript.ContextFactory;
-import org.mozilla.javascript.tools.shell.JSConsole;
+import org.mozilla.javascript.tools.debugger.Dim;
+import org.mozilla.javascript.ContextFactory.Listener;
 import org.w3c.css.sac.CSSException;
 import org.w3c.css.sac.CSSParseException;
 import org.w3c.css.sac.ErrorHandler;
@@ -184,6 +185,21 @@ public abstract class HudsonTestCase extends TestCase {
      * expression evaluation capability of your Java debugger.)
      */
     protected JavaScriptDebugger jsDebugger = new JavaScriptDebugger();
+
+    /**
+     * If no other debugger is installed, install {@link #jsDebugger},
+     * so as not to interfere with {@link Dim}.
+     */
+    private Listener rhinoContextListener = new Listener() {
+        public void contextCreated(Context cx) {
+            if(cx.getDebugger()==null)
+                cx.setDebugger(jsDebugger,null);
+        }
+
+        public void contextReleased(Context cx) {
+        }
+    };
+
 
     protected HudsonTestCase(String name) {
         super(name);
@@ -255,14 +271,12 @@ public abstract class HudsonTestCase extends TestCase {
     protected void runTest() throws Throwable {
         System.out.println("=== Starting "+ getClass().getSimpleName() + "." + getName());
         new JavaScriptEngine(null);   // ensure that ContextFactory is initialized
-        Context cx= ContextFactory.getGlobal().enterContext();
-        try {
-            cx.setOptimizationLevel(-1);
-            cx.setDebugger(jsDebugger,null);
 
+        ContextFactory.getGlobal().addListener(rhinoContextListener);
+        try {
             super.runTest();
         } finally {
-            Context.exit();
+            ContextFactory.getGlobal().removeListener(rhinoContextListener);
         }
     }
 
@@ -491,10 +505,11 @@ public abstract class HudsonTestCase extends TestCase {
      * <p>
      * Note that installing a debugger appears to make an execution of JavaScript substantially slower.
      */
-    public void interactiveJavaScriptDebugger() {
-        org.mozilla.javascript.tools.debugger.Main.mainEmbedded("Rhino debugger: "+getName());
+    public Dim interactiveJavaScriptDebugger() {
         // this can be too late, depending on when this method is invoked.
         Functions.DEBUG_YUI = true;
+
+        return org.mozilla.javascript.tools.debugger.Main.mainEmbedded("Rhino debugger: "+getName());
     }
 
     /**
@@ -581,8 +596,18 @@ public abstract class HudsonTestCase extends TestCase {
     public HtmlPage submit(HtmlForm form, String name) throws Exception {
         for( HtmlElement e : form.getHtmlElementsByTagName("button")) {
             HtmlElement p = (HtmlElement)e.getParentNode().getParentNode();
-            if(p.getAttribute("name").equals(name))
+            if(p.getAttribute("name").equals(name)) {
+                // To make YUI event handling work, this combo seems to be necessary
+                // the click will trigger _onClick in buton-*.js, but it doesn't submit the form
+                // (a comment alluding to this behavior can be seen in submitForm method)
+                // so to complete it, submit the form later.
+                //
+                // Just doing form.submit() doesn't work either, because it doesn't do
+                // the preparation work needed to pass along the name of the button that
+                // triggered a submission (more concretely, m_oSubmitTrigger is not set.)
+                ((HtmlButton)e).click();
                 return (HtmlPage)form.submit((HtmlButton)e);
+            }
         }
         throw new AssertionError("No such submit button with the name "+name);
     }
