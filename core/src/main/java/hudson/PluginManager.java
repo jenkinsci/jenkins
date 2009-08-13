@@ -52,6 +52,8 @@ import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.WebApp;
+import org.kohsuke.stapler.HttpResponse;
+import org.kohsuke.stapler.HttpRedirect;
 
 /**
  * Manages {@link PluginWrapper}s.
@@ -344,10 +346,8 @@ public final class PluginManager extends AbstractModelObject {
             if(n.startsWith("plugin.")) {
                 n = n.substring(7);
                 UpdateCenter.Plugin p = Hudson.getInstance().getUpdateCenter().getPlugin(n);
-                if(p==null) {
-                    sendError("No such plugin: "+n,req,rsp);
-                    return;
-                }
+                if(p==null)
+                    throw new Failure("No such plugin: "+n);
                 p.install();
             }
         }
@@ -378,7 +378,7 @@ public final class PluginManager extends AbstractModelObject {
     /**
      * Uploads a plugin.
      */
-    public void doUploadPlugin( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
+    public HttpResponse doUploadPlugin(StaplerRequest req) throws IOException, ServletException {
         try {
             Hudson.getInstance().checkPermission(Hudson.ADMINISTER);
 
@@ -387,16 +387,14 @@ public final class PluginManager extends AbstractModelObject {
             // Parse the request
             FileItem fileItem = (FileItem) upload.parseRequest(req).get(0);
             String fileName = Util.getFileName(fileItem.getName());
-            if(!fileName.endsWith(".hpi")) {
-                sendError(hudson.model.Messages.Hudson_NotAPlugin(fileName),req,rsp);
-                return;
-            }
+            if(!fileName.endsWith(".hpi"))
+                throw new Failure(hudson.model.Messages.Hudson_NotAPlugin(fileName));
             fileItem.write(new File(rootDir, fileName));
             fileItem.delete();
 
             pluginUploaded=true;
 
-            rsp.sendRedirect2(".");
+            return new HttpRedirect(".");
         } catch (IOException e) {
             throw e;
         } catch (Exception e) {// grrr. fileItem.write throws this

@@ -242,11 +242,7 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
      */
     public void doDoDelete( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException, InterruptedException {
         checkPermission(DELETE);
-        if(!"POST".equals(req.getMethod())) {
-            rsp.setStatus(SC_BAD_REQUEST);
-            sendError("Delete request has to be POST",req,rsp);
-            return;
-        }
+        requirePOST();
         delete();
         rsp.sendRedirect2(req.getContextPath()+"/"+getParent().getUrl());
     }

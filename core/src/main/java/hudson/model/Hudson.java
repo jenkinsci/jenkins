@@ -2167,7 +2167,7 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
     /**
      * Accepts submission from the configuration page.
      */
-    public synchronized void doConfigSubmit( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
+    public synchronized void doConfigSubmit( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException, FormException {
         BulkChange bc = new BulkChange(this);
         try {
             checkPermission(ADMINISTER);
@@ -2295,8 +2295,6 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
                 rsp.sendRedirect(req.getContextPath()+'/');  // go to the top page
             else
                 rsp.sendRedirect("configure"); // back to config
-        } catch (FormException e) {
-            sendError(e,req,rsp);
         } finally {
             bc.commit();
         }
@@ -2521,13 +2519,11 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
         return (T)copy((TopLevelItem)src,name);
     }
 
-    public synchronized void doCreateView( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
+    public synchronized void doCreateView( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException, FormException {
         try {
             checkPermission(View.CREATE);
             addView(View.create(req,rsp, this));
         } catch (ParseException e) {
-            sendError(e,req,rsp);
-        } catch (FormException e) {
             sendError(e,req,rsp);
         }
     }
@@ -2782,11 +2778,19 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
             return;
         }
 
+        restart();
+
+        rsp.sendRedirect2(".");
+    }
+
+    /**
+     * Performs a restart.
+     */
+    public void restart() throws ServletException, IOException {
         final Lifecycle lifecycle = Lifecycle.get();
         if(!lifecycle.canRestart())
-            sendError("Restart is not supported in this running mode.",req,rsp);
+            throw new Failure("Restart is not supported in this running mode.");
         servletContext.setAttribute("app",new HudsonIsRestarting());
-        rsp.sendRedirect2(".");
 
         new Thread("restart thread") {
             @Override

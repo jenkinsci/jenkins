@@ -877,32 +877,28 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
     /**
      * Accepts the update to the node configuration.
      */
-    public void doConfigSubmit( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
-        try {
-            checkPermission(Hudson.ADMINISTER);  // TODO: new permission?
+    public void doConfigSubmit( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException, FormException {
+        checkPermission(Hudson.ADMINISTER);  // TODO: new permission?
 
-            final Hudson app = Hudson.getInstance();
+        final Hudson app = Hudson.getInstance();
 
-            Node result = getNode().getDescriptor().newInstance(req, req.getSubmittedForm());
+        Node result = getNode().getDescriptor().newInstance(req, req.getSubmittedForm());
 
-            // replace the old Node object by the new one
-            synchronized (app) {
-                List<Node> nodes = new ArrayList<Node>(app.getNodes());
-                int i = nodes.indexOf(getNode());
-                if(i<0) {
-                    sendError("This slave appears to be removed while you were editing the configuration",req,rsp);
-                    return;
-                }
-
-                nodes.set(i,result);
-                app.setNodes(nodes);
+        // replace the old Node object by the new one
+        synchronized (app) {
+            List<Node> nodes = new ArrayList<Node>(app.getNodes());
+            int i = nodes.indexOf(getNode());
+            if(i<0) {
+                sendError("This slave appears to be removed while you were editing the configuration",req,rsp);
+                return;
             }
 
-            // take the user back to the slave top page.
-            rsp.sendRedirect2("../"+result.getNodeName()+'/');
-        } catch (FormException e) {
-            sendError(e,req,rsp);
+            nodes.set(i,result);
+            app.setNodes(nodes);
         }
+
+        // take the user back to the slave top page.
+        rsp.sendRedirect2("../"+result.getNodeName()+'/');
     }
 
     /**

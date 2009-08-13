@@ -28,12 +28,15 @@ import hudson.Functions;
 import hudson.model.AbstractModelObject;
 import hudson.model.Hudson;
 import hudson.model.RSS;
+import hudson.model.Failure;
 import hudson.tasks.Mailer;
 import hudson.util.CopyOnWriteMap;
 import org.apache.commons.io.filefilter.WildcardFileFilter;
 import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
+import org.kohsuke.stapler.HttpResponse;
+import org.kohsuke.stapler.HttpRedirect;
 
 import javax.servlet.ServletException;
 import java.io.File;
@@ -96,24 +99,23 @@ public class LogRecorderManager extends AbstractModelObject {
     /**
      * Creates a new log recorder.
      */
-    public void doNewLogRecorder( StaplerRequest req, StaplerResponse rsp, @QueryParameter String name) throws IOException, ServletException {
+    public HttpResponse doNewLogRecorder(@QueryParameter String name) {
         try {
             Hudson.checkGoodName(name);
         } catch (ParseException e) {
-            sendError(e, req, rsp);
-            return;
+            throw new Failure(e.getMessage());
         }
         
         logRecorders.put(name,new LogRecorder(name));
 
         // redirect to the config screen
-        rsp.sendRedirect2(name+"/configure");
+        return new HttpRedirect(name+"/configure");
     }
 
     /**
      * Configure the logging level.
      */
-    public void doConfigLogger(StaplerResponse rsp, @QueryParameter String name, @QueryParameter String level) throws IOException {
+    public HttpResponse doConfigLogger(@QueryParameter String name, @QueryParameter String level) {
         Hudson.getInstance().checkPermission(Hudson.ADMINISTER);
         Level lv;
         if(level.equals("inherit"))
@@ -121,7 +123,7 @@ public class LogRecorderManager extends AbstractModelObject {
         else
             lv = Level.parse(level.toUpperCase());
         Logger.getLogger(name).setLevel(lv);
-        rsp.sendRedirect2("all");
+        return new HttpRedirect("all");
     }
 
     /**

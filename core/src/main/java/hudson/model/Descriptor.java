@@ -34,6 +34,7 @@ import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.Stapler;
 import org.kohsuke.stapler.StaplerResponse;
 import org.kohsuke.stapler.Ancestor;
+import org.kohsuke.stapler.HttpResponse;
 import org.springframework.util.StringUtils;
 import org.jvnet.tiger_types.Types;
 import org.apache.commons.io.IOUtils;
@@ -639,7 +640,7 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable {
         return find(Hudson.getInstance().getExtensionList(Descriptor.class),className);
     }
 
-    public static final class FormException extends Exception {
+    public static final class FormException extends Exception implements HttpResponse {
         private final String formField;
 
         public FormException(String message, String formField) {
@@ -662,6 +663,11 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable {
          */
         public String getFormField() {
             return formField;
+        }
+
+        public void generateResponse(StaplerRequest req, StaplerResponse rsp, Object node) throws IOException, ServletException {
+            // for now, we can't really use the field name that caused the problem.
+            new Failure(getMessage()).generateResponse(req,rsp,node);
         }
     }
 
