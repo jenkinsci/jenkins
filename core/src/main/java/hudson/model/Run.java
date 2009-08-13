@@ -1186,9 +1186,6 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
      */
     protected void onStartBuilding() {
         state = State.BUILDING;
-        // start with the best possible value, and code that calls setResult() can progressively set
-        // worse results.
-        result = Result.SUCCESS;
         RunnerStack.INSTANCE.push(runner);
     }
 
@@ -1206,6 +1203,11 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
         }
         runner = null;
         RunnerStack.INSTANCE.pop();
+	if (result==null) {
+	    result = Result.FAILURE;
+	    LOGGER.warning(toString()+": No build result is set, so marking as failure. This shouldn't happen.");
+        }
+
         RunListener.fireFinalized(this);
     }
 
