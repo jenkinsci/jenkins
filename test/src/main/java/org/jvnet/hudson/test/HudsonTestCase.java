@@ -120,6 +120,7 @@ import org.mortbay.jetty.webapp.WebAppContext;
 import org.mortbay.jetty.webapp.WebXmlConfiguration;
 import org.mozilla.javascript.Context;
 import org.mozilla.javascript.ContextFactory;
+import org.mozilla.javascript.tools.shell.JSConsole;
 import org.w3c.css.sac.CSSException;
 import org.w3c.css.sac.CSSParseException;
 import org.w3c.css.sac.ErrorHandler;
@@ -478,6 +479,22 @@ public abstract class HudsonTestCase extends TestCase {
     public void interactiveBreak() throws Exception {
         System.out.println("Hudson is running at http://localhost:"+localPort+"/");
         new BufferedReader(new InputStreamReader(System.in)).readLine();
+    }
+
+    /**
+     * Starts an interactive JavaScript debugger, and break at the next JavaScript execution.
+     *
+     * <p>
+     * This is useful during debugging a test so that you can step execute and inspect state of JavaScript.
+     * This will launch a Swing GUI, and the method returns immediately.
+     *
+     * <p>
+     * Note that installing a debugger appears to make an execution of JavaScript substantially slower.
+     */
+    public void interactiveJavaScriptDebugger() {
+        org.mozilla.javascript.tools.debugger.Main.mainEmbedded("Rhino debugger: "+getName());
+        // this can be too late, depending on when this method is invoked.
+        Functions.DEBUG_YUI = true;
     }
 
     /**
