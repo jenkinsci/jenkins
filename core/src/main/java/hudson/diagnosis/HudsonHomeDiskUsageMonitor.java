@@ -29,8 +29,9 @@ import hudson.model.AbstractModelObject;
 import hudson.Extension;
 import hudson.ExtensionPoint;
 import hudson.ExtensionList;
-import org.kohsuke.stapler.StaplerRequest;
-import org.kohsuke.stapler.StaplerResponse;
+import org.kohsuke.stapler.HttpResponse;
+import org.kohsuke.stapler.HttpRedirect;
+import org.kohsuke.stapler.QueryParameter;
 
 import java.io.IOException;
 import java.util.List;
@@ -58,12 +59,12 @@ public final class HudsonHomeDiskUsageMonitor extends AdministrativeMonitor {
     /**
      * Depending on whether the user said "yes" or "no", send him to the right place.
      */
-    public void doAct(StaplerRequest req, StaplerResponse rsp) throws IOException {
-        if(req.hasParameter("no")) {
+    public HttpResponse doAct(@QueryParameter boolean no) throws IOException {
+        if(no) {
             disable(true);
-            rsp.sendRedirect(req.getContextPath()+"/manage");
+            return HttpRedirect.fromContextPath("/manage");
         } else {
-            rsp.sendRedirect(".");
+            return new HttpRedirect(".");
         }
     }
 
