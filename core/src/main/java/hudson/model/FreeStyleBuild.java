@@ -23,7 +23,6 @@
  */
 package hudson.model;
 
-import hudson.FilePath;
 import hudson.slaves.WorkspaceList;
 import hudson.slaves.WorkspaceList.Lease;
 
@@ -53,7 +52,7 @@ public class FreeStyleBuild extends Build<FreeStyleProject,FreeStyleBuild> {
             String customWorkspace = getProject().getCustomWorkspace();
             if (customWorkspace != null)
                 // we allow custom workspaces to be concurrently used between jobs.
-                return Lease.creadDummyLease(n.createPath(customWorkspace));
+                return Lease.createDummyLease(n.createPath(customWorkspace));
             return super.decideWorkspace(n,wsl);
         }
     }
