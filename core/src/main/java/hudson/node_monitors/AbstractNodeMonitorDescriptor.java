@@ -30,6 +30,7 @@ import hudson.model.ComputerSet;
 import hudson.model.AdministrativeMonitor;
 import hudson.triggers.Trigger;
 import hudson.triggers.SafeTimerTask;
+import hudson.slaves.OfflineCause;
 
 import java.io.IOException;
 import java.util.Date;
@@ -135,17 +136,24 @@ public abstract class AbstractNodeMonitorDescriptor<T> extends Descriptor<NodeMo
      *      if the node was actually taken offline by this act (as opposed to us deciding not to do it,
      *      or the computer already marked offline.)
      */
-    protected boolean markOffline(Computer c) {
+    protected boolean markOffline(Computer c, OfflineCause oc) {
         if(isIgnored() || c.isTemporarilyOffline()) return false; // noop
 
-        // TODO: define a mechanism to leave a note on this computer so that people know why we took it offline
-        c.setTemporarilyOffline(true);
+        c.setTemporarilyOffline(true, oc);
 
         // notify the admin
         MonitorMarkedNodeOffline no = AdministrativeMonitor.all().get(MonitorMarkedNodeOffline.class);
         if(no!=null)
             no.active = true;
         return true;
+    }
+
+    /**
+     * @deprecated as of 1.320
+     *      Use {@link #markOffline(Computer, OfflineCause)} to specify the cause.
+     */
+    protected boolean markOffline(Computer c) {
+        return markOffline(c,null);
     }
 
     /**

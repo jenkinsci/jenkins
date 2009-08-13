@@ -11,7 +11,7 @@ import java.util.WeakHashMap;
  * (that can be either an {@link Executor} or threads that are impersonating one.)
  *
  * @author Kohsuke Kawaguchi
- * @since 1.XXX
+ * @since 1.319
  */
 final class RunnerStack {
     private final Map<Executor,Stack<Runner>> stack = new WeakHashMap<Executor,Stack<Runner>>();

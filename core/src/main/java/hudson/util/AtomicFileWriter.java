@@ -30,6 +30,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
+import java.nio.charset.Charset;
 
 /**
  * Buffered {@link FileWriter} that uses UTF-8.
@@ -46,10 +47,23 @@ public class AtomicFileWriter extends Writer {
     private final File tmpFile;
     private final File destFile;
 
+    /**
+     * Writes with UTF-8 encoding.
+     */
     public AtomicFileWriter(File f) throws IOException {
+        this(f,"UTF-8");
+    }
+
+    /**
+     * @param encoding
+     *      File encoding to write. If null, platform default encoding is chosen.
+     */
+    public AtomicFileWriter(File f, String encoding) throws IOException {
         tmpFile = File.createTempFile("atomic",null,f.getParentFile());
         destFile = f;
-        core = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(tmpFile),"UTF-8"));
+        if (encoding==null)
+            encoding = Charset.defaultCharset().name();
+        core = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(tmpFile),encoding));
     }
 
     public void write(int c) throws IOException {

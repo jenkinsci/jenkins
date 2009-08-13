@@ -426,9 +426,16 @@ public class User extends AbstractModelObject implements AccessControlled, Savea
             JSONObject json = req.getSubmittedForm();
 
             List<UserProperty> props = new ArrayList<UserProperty>();
-            int i=0;
+            int i = 0;
             for (UserPropertyDescriptor d : UserProperty.all()) {
-                UserProperty p = d.newInstance(req, json.getJSONObject("userProperty"+(i++)));
+                JSONObject o = json.getJSONObject("userProperty" + (i++));
+                UserProperty p = getProperty(d.clazz);
+                if (p != null) {
+                    p = p.reconfigure(req, o);
+                } else {
+                    p = d.newInstance(req, o);
+                }
+
                 p.setUser(this);
                 props.add(p);
             }
@@ -532,27 +539,4 @@ public class User extends AbstractModelObject implements AccessControlled, Savea
         }
         return null;
     }
-
-    @Extension
-    public static class Me implements RootAction, StaplerProxy {
-
-		public String getDisplayName() {
-			return null;
-		}
-
-		public String getIconFileName() {
-			return null;
-		}
-
-		public String getUrlName() {
-			return "me";
-		}
-		
-		public Object getTarget() {
-			if (User.current() == null) {
-				throw new AccessDeniedException("/me is not available when not logged in");
-			}
-			return User.current();
-		}
-    	
-    }}
+}

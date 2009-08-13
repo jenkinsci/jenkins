@@ -27,9 +27,10 @@ THE SOFTWARE.
   <l:layout title="${it.displayName} ${%disconnect}">
     <st:include page="sidepanel.jelly" />
     <l:main-panel>
-      <form method="get" action="doDisconnect">
+      <form method="post" action="doDisconnect">
         ${%Are you sure about disconnecting?}
         <f:submit value="${%Yes}" />
+        <f:textarea name="offlineMessage" />
       </form>
     </l:main-panel>
   </l:layout>

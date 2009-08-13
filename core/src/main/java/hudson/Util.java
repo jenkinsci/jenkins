@@ -949,6 +949,20 @@ public class Util {
         }
     }
 
+    /**
+     * Checks if the public method defined on the base type with the given arguments
+     * are overridden in the given derived type.
+     */
+    public static boolean isOverridden(Class base, Class derived, String methodName, Class... types) {
+        // the rewriteHudsonWar method isn't overridden.
+        try {
+            return !base.getMethod(methodName, types).equals(
+                    derived.getMethod(methodName,types));
+        } catch (NoSuchMethodException e) {
+            throw new AssertionError(e);
+        }
+    }
+
     public static final FastDateFormat XS_DATETIME_FORMATTER = FastDateFormat.getInstance("yyyy-MM-dd'T'HH:mm:ss'Z'",new SimpleTimeZone(0,"GMT"));
 
     // Note: RFC822 dates must not be localized!

@@ -59,7 +59,7 @@ import hudson.scm.SCM;
  *
  * @author Kohsuke Kawaguchi
  * @see BuildStep#getRequiredMonitorService() 
- * @since 1.XXX
+ * @since 1.319
  */
 public final class CheckPoint {
     private final Object identity;

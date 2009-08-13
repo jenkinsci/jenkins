@@ -1,7 +1,7 @@
 <!--
 The MIT License
 
-Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, Daniel Dyer, Seiji Sogabe
+Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, Daniel Dyer, Seiji Sogabe, Tom Huybrechts
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -25,7 +25,7 @@ THE SOFTWARE.
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define"
          xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:lo="hudson:linkout">
   <l:layout title="${it.owner} test - ${it.displayName}">
-    <st:include it="${it.owner}" page="sidepanel.jelly" />
+    <st:include page="sidepanel.jelly" />
     <l:main-panel>
       <j:set var="st" value="${it.status}" />
       <h1 class="${st.cssClass}">
@@ -54,26 +54,32 @@ THE SOFTWARE.
       </j:if>
 
         <div style="text-align:right;">
+        <a href="history">
           ${%took(it.durationString)}
+        </a>
         </div>
 
-    <d:taglib uri="hudson:linkout">
-        <d:bean name="out" className="hudson.util.HyperlinkingOutTag"/>
-    </d:taglib>
+      <t:editableDescription permission="${it.owner.BUILD}"/>
+
+      <table style="margin-top: 1em; margin-left:0em;">
+		  <j:forEach var="action" items="${it.testActions}">
+	          <st:include page="summary.jelly" from="${action}" optional="true" it="${action}" />
+		  </j:forEach>
+	  </table>
 
     <h3>${%Error Message}</h3>
-      <pre><lo:out value="${it.errorDetails}"/></pre>
+      <pre>"${it.annotate(it.errorDetails)}</pre>
     <h3>${%Stacktrace}</h3>
-      <pre><lo:out value="${it.errorStackTrace}"/></pre>
+      <pre><lo:out value="${it.annotate(it.errorStackTrace)}"/></pre>
 
       <j:if test="${!empty(it.stdout)}">
         <h3>${%Standard Output}</h3>
-        <pre><lo:out value="${it.stdout}"/></pre>
+        <pre>${it.annotate(it.stdout)}</pre>
       </j:if>
 
       <j:if test="${!empty(it.stderr)}">
         <h3>${%Standard Error}</h3>
-        <pre><lo:out value="${it.stderr}"/></pre>
+        <pre>${it.annotate(it.stderr)}</pre>
       </j:if>
     </l:main-panel>
   </l:layout>

@@ -45,5 +45,12 @@ THE SOFTWARE.
       <artifactId>maven-core</artifactId>
       <version>${maven.version}</version>
     </dependency>
+
+    <dependency>
+      <!-- default dependency to 2.0.2 confuses IntelliJ. Otherwise this value doesn't really affect build or runtime. -->
+      <groupId>commons-httpclient</groupId>
+      <artifactId>commons-httpclient</artifactId>
+      <version>3.1-rc1</version>
+    </dependency>
   </dependencies>
 </project>

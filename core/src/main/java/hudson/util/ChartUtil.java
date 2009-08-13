@@ -24,19 +24,14 @@
 package hudson.util;
 
 import hudson.model.AbstractBuild;
-import org.jfree.chart.ChartRenderingInfo;
-import org.jfree.chart.ChartUtilities;
+import hudson.tasks.junit.History;
 import org.jfree.chart.JFreeChart;
 import org.jfree.chart.axis.NumberAxis;
 import org.jfree.data.category.CategoryDataset;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 
-import javax.imageio.ImageIO;
-import javax.servlet.ServletOutputStream;
 import java.awt.Font;
-import java.awt.HeadlessException;
-import java.awt.image.BufferedImage;
 import java.io.IOException;
 
 /**
@@ -94,6 +89,9 @@ public class ChartUtil {
      * @param defaultSize
      *      The size of the picture to be generated. These values can be overridden
      *      by the query paramter 'width' and 'height' in the request.
+     * @deprecated as of 1.320
+     *      Bind {@link Graph} to the URL space. See {@link History} as an example (note that doing so involves
+     *      a bit of URL structure change.)
      */
     public static void generateGraph(StaplerRequest req, StaplerResponse rsp, JFreeChart chart, Area defaultSize) throws IOException {
         generateGraph(req,rsp,chart,defaultSize.width, defaultSize.height);
@@ -106,62 +104,24 @@ public class ChartUtil {
      * @param defaultH
      *      The size of the picture to be generated. These values can be overridden
      *      by the query paramter 'width' and 'height' in the request.
+     * @deprecated as of 1.320
+     *      Bind {@link Graph} to the URL space. See {@link History} as an example (note that doing so involves
+     *      a bit of URL structure change.)
      */
-    public static void generateGraph(StaplerRequest req, StaplerResponse rsp, JFreeChart chart, int defaultW, int defaultH) throws IOException {
-        try {
-            String w = req.getParameter("width");
-            if(w==null)     w=String.valueOf(defaultW);
-            String h = req.getParameter("height");
-            if(h==null)     h=String.valueOf(defaultH);
-            BufferedImage image = chart.createBufferedImage(Integer.parseInt(w),Integer.parseInt(h));
-            rsp.setContentType("image/png");
-            ServletOutputStream os = rsp.getOutputStream();
-            ImageIO.write(image, "PNG", os);
-            os.close();
-        } catch(Error e) {
-            /* OpenJDK on ARM produces an error like this in case of headless error
-                Caused by: java.lang.Error: Probable fatal error:No fonts found.
-                        at sun.font.FontManager.getDefaultPhysicalFont(FontManager.java:1088)
-                        at sun.font.FontManager.initialiseDeferredFont(FontManager.java:967)
-                        at sun.font.CompositeFont.doDeferredInitialisation(CompositeFont.java:254)
-                        at sun.font.CompositeFont.getSlotFont(CompositeFont.java:334)
-                        at sun.font.CompositeStrike.getStrikeForSlot(CompositeStrike.java:77)
-                        at sun.font.CompositeStrike.getFontMetrics(CompositeStrike.java:93)
-                        at sun.font.Font2D.getFontMetrics(Font2D.java:387)
-                        at java.awt.Font.defaultLineMetrics(Font.java:2082)
-                        at java.awt.Font.getLineMetrics(Font.java:2152)
-                        at org.jfree.chart.axis.NumberAxis.estimateMaximumTickLabelHeight(NumberAxis.java:974)
-                        at org.jfree.chart.axis.NumberAxis.selectVerticalAutoTickUnit(NumberAxis.java:1104)
-                        at org.jfree.chart.axis.NumberAxis.selectAutoTickUnit(NumberAxis.java:1048)
-                        at org.jfree.chart.axis.NumberAxis.refreshTicksVertical(NumberAxis.java:1249)
-                        at org.jfree.chart.axis.NumberAxis.refreshTicks(NumberAxis.java:1149)
-                        at org.jfree.chart.axis.ValueAxis.reserveSpace(ValueAxis.java:788)
-                        at org.jfree.chart.plot.CategoryPlot.calculateRangeAxisSpace(CategoryPlot.java:2650)
-                        at org.jfree.chart.plot.CategoryPlot.calculateAxisSpace(CategoryPlot.java:2669)
-                        at org.jfree.chart.plot.CategoryPlot.draw(CategoryPlot.java:2716)
-                        at org.jfree.chart.JFreeChart.draw(JFreeChart.java:1222)
-                        at org.jfree.chart.JFreeChart.createBufferedImage(JFreeChart.java:1396)
-                        at org.jfree.chart.JFreeChart.createBufferedImage(JFreeChart.java:1376)
-                        at org.jfree.chart.JFreeChart.createBufferedImage(JFreeChart.java:1361)
-                        at hudson.util.ChartUtil.generateGraph(ChartUtil.java:116)
-                        at hudson.util.ChartUtil.generateGraph(ChartUtil.java:99)
-                        at hudson.tasks.test.AbstractTestResultAction.doGraph(AbstractTestResultAction.java:196)
-                        at hudson.tasks.test.TestResultProjectAction.doTrend(TestResultProjectAction.java:97)
-                        ... 37 more
-             */
-            if(e.getMessage().contains("Probable fatal error:No fonts found")) {
-                rsp.sendRedirect2(req.getContextPath()+"/images/headless.png");
-                return;
+    public static void generateGraph(StaplerRequest req, StaplerResponse rsp, final JFreeChart chart, int defaultW, int defaultH) throws IOException {
+        new Graph(-1,defaultW,defaultH) {
+            protected JFreeChart createGraph() {
+                return chart;
             }
-            throw e; // otherwise let the caller deal with it
-        } catch(HeadlessException e) {
-            // not available. send out error message
-            rsp.sendRedirect2(req.getContextPath()+"/images/headless.png");
-        }
+        }.doPng(req,rsp);
     }
 
     /**
      * Generates the clickable map info and sends that to the response.
+     *
+     * @deprecated as of 1.320
+     *      Bind {@link Graph} to the URL space. See {@link History} as an example (note that doing so involves
+     *      a bit of URL structure change.)
      */
     public static void generateClickableMap(StaplerRequest req, StaplerResponse rsp, JFreeChart chart, Area defaultSize) throws IOException {
         generateClickableMap(req,rsp,chart,defaultSize.width,defaultSize.height);
@@ -169,18 +129,17 @@ public class ChartUtil {
 
     /**
      * Generates the clickable map info and sends that to the response.
+     *
+     * @deprecated as of 1.320
+     *      Bind {@link Graph} to the URL space. See {@link History} as an example (note that doing so involves
+     *      a bit of URL structure change.)
      */
-    public static void generateClickableMap(StaplerRequest req, StaplerResponse rsp, JFreeChart chart, int defaultW, int defaultH) throws IOException {
-        String w = req.getParameter("width");
-        if(w==null)     w=String.valueOf(defaultW);
-        String h = req.getParameter("height");
-        if(h==null)     h=String.valueOf(defaultH);
-
-        ChartRenderingInfo info = new ChartRenderingInfo();
-        chart.createBufferedImage(Integer.parseInt(w),Integer.parseInt(h),info);
-
-        rsp.setContentType("text/plain;charset=UTF-8");
-        rsp.getWriter().println(ChartUtilities.getImageMap( "map", info ));
+    public static void generateClickableMap(StaplerRequest req, StaplerResponse rsp, final JFreeChart chart, int defaultW, int defaultH) throws IOException {
+        new Graph(-1,defaultW,defaultH) {
+            protected JFreeChart createGraph() {
+                return chart;
+            }
+        }.doMap(req,rsp);
     }
 
     /**

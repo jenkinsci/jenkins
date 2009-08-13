@@ -185,7 +185,7 @@ public interface BuildStep {
      * For plugins written against earlier versions of Hudson, calling this method results in
      * {@link AbstractMethodError}. 
      *
-     * @since 1.XXX
+     * @since 1.319
      */
     BuildStepMonitor getRequiredMonitorService();
 

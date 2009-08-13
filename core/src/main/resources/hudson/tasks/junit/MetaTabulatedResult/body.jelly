@@ -1,7 +1,7 @@
 <!--
 The MIT License
 
-Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, id:cactusman
+Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, id:cactusman, Tom Huybrechts
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -23,24 +23,59 @@ THE SOFTWARE.
 -->
 
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
+
+	<script type="text/javascript">
+		<!-- TODO make sure load doesn't happen every time -->
+		function showStackTrace(id,query) {
+			var element = document.getElementById(id)
+			element.style.display = "";
+			document.getElementById(id + "-showlink").style.display = "none";
+			document.getElementById(id + "-hidelink").style.display = "";
+			
+			var rqo = new XMLHttpRequest();
+			rqo.open('GET', query, true);
+			rqo.onreadystatechange = function() { element.innerHTML = rqo.responseText; }  
+			rqo.send(null);
+		}
+		
+		function hideStackTrace(id) {
+			document.getElementById(id).style.display = "none";
+			document.getElementById(id + "-showlink").style.display = "";
+			document.getElementById(id + "-hidelink").style.display = "none";
+		}
+  </script>
+
   <j:if test="${it.failCount!=0}">
     <h2>${%All Failed Tests}</h2>
     <table class="pane sortable">
       <tr>
         <td class="pane-header">${%Test Name}</td>
         <td class="pane-header" style="width:4em">${%Duration}</td>
-        <td class="pane-header" style="width:4em">${%Age}</td>
+        <td class="pane-header" style="width:3em">${%Age}</td>
       </tr>
       <j:forEach var="f" items="${it.failedTests}" varStatus="i">
         <tr>
           <td class="pane">
+			<a id="test-${f.fullName}-showlink" href="#"
+				onclick='javascript:showStackTrace("test-${f.fullName}","${f.getRelativePathFrom(it)}/summary")'>&gt;&gt;&gt;</a>
+			<a id="test-${f.fullName}-hidelink" href="#" style="display:none"
+				onclick='javascript:hideStackTrace("test-${f.fullName}")'>&lt;&lt;&lt;</a>
+          	<st:nbsp/>
             <a href="${f.getRelativePathFrom(it)}"><st:out value="${f.fullName}"/></a>
+          	<st:nbsp/>
+	        <j:forEach var="badge" items="${f.testActions}">
+	          <st:include it="${badge}" page="badge.jelly" optional="true"/>
+	        </j:forEach>
+			<div id="test-${f.fullName}" class="hidden" style="display:none">
+			${%Loading...}
+			</div>
           </td>
+          
           <td class="pane" style="text-align:right;">
             ${f.duration}
           </td>
           <td class="pane" style="text-align:right;">
-            ${f.age}
+            <a href="${rootUrl}/${f.failedSinceRun.url}">${f.age}</a>
           </td>
         </tr>
       </j:forEach>
@@ -55,6 +90,8 @@ THE SOFTWARE.
         <td class="pane-header" style="width:5em">${%Duration}</td>
         <td class="pane-header" style="width:5em">${%Fail}</td>
         <td class="pane-header" style="width:1em; font-size:smaller; white-space:nowrap;">(${%diff})</td>
+        <td class="pane-header" style="width:5em">${%Skip}</td>
+        <td class="pane-header" style="width:1em; font-size:smaller; white-space:nowrap;">(${%diff})</td>
         <td class="pane-header" style="width:5em">${%Total}</td>
         <td class="pane-header" style="width:1em; font-size:smaller; white-space:nowrap;">(${%diff})</td>
       </tr>
@@ -62,11 +99,21 @@ THE SOFTWARE.
         <j:forEach var="p" items="${it.children}">
           <j:set var="prev" value="${p.previousResult}" />
           <tr>
-            <td class="pane"><a href="${p.safeName}/">${p.name}</a></td>
+            <td class="pane">
+	            <a href="${p.safeName}/"><span style='${prev==null?"font-weight:bold":""}'>${p.name}</span></a>
+	          	<st:nbsp/>
+		        <j:forEach var="badge" items="${p.testActions}">
+		          <st:include it="${badge}" page="badge.jelly" optional="true"/>
+		        </j:forEach>
+            </td>
             <td class="pane" style="text-align:right" data="${p.duration}">${p.durationString}</td>
             <td class="pane" style="text-align:right">${p.failCount}</td>
             <td class="pane" style="text-align:right">
               ${h.getDiffString2(p.failCount-prev.failCount)}
+            </td>
+            <td class="pane" style="text-align:right">${p.skipCount}</td>
+            <td class="pane" style="text-align:right">
+              ${h.getDiffString2(p.skipCount-prev.skipCount)}
             </td>
             <td class="pane" style="text-align:right">${p.totalCount}</td>
             <td class="pane" style="text-align:right">

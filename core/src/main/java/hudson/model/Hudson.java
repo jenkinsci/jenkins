@@ -3128,6 +3128,16 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
     }
 
     /**
+     * Exposes the current user to <tt>/me</tt> URL.
+     */
+    public User getMe() {
+        User u = User.current();
+        if (u == null)
+            throw new AccessDeniedException("/me is not available when not logged in");
+        return u;
+    }
+
+    /**
      * Gets the {@link Widget}s registered on this object.
      *
      * <p>

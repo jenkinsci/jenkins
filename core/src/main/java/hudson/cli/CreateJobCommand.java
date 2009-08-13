@@ -1,6 +1,7 @@
 package hudson.cli;
 
 import hudson.model.Hudson;
+import hudson.Extension;
 import org.kohsuke.args4j.Argument;
 
 /**
@@ -8,6 +9,7 @@ import org.kohsuke.args4j.Argument;
  * 
  * @author Kohsuke Kawaguchi
  */
+@Extension
 public class CreateJobCommand extends CLICommand {
     @Override
     public String getShortDescription() {

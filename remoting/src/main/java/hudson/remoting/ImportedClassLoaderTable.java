@@ -40,7 +40,7 @@ final class ImportedClassLoaderTable {
     }
 
     public synchronized ClassLoader get(int oid) {
-        return get(RemoteInvocationHandler.wrap(channel,oid,IClassLoader.class,false));
+        return get(RemoteInvocationHandler.wrap(channel,oid,IClassLoader.class,false,false));
     }
 
     public synchronized ClassLoader get(IClassLoader classLoaderProxy) {

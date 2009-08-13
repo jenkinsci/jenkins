@@ -31,6 +31,7 @@ import org.jvnet.hudson.test.Bug;
 import org.jvnet.hudson.test.HudsonTestCase;
 
 import java.util.List;
+import java.io.File;
 
 /**
  * @author Kohsuke Kawaguchi
@@ -92,5 +93,16 @@ public class FreeStyleProjectTest extends HudsonTestCase {
         submit(new WebClient().getPage(down, "configure").getFormByName("config"));
         assertTrue(up.getDownstreamProjects().contains(down));
         assertTrue(down.getUpstreamProjects().contains(up));
+    }
+
+    /**
+     * Custom workspace and concurrent build had a bad interaction.
+     */
+    @Bug(4206)
+    public void testCustomWorkspaceAllocation() throws Exception {
+        FreeStyleProject f = createFreeStyleProject();
+        File d = createTmpDir();
+        f.setCustomWorkspace(d.getPath());
+        assertBuildStatusSuccess(f.scheduleBuild2(0).get());
     }
 }

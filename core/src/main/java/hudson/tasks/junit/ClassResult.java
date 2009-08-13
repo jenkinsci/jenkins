@@ -1,7 +1,7 @@
 /*
  * The MIT License
  * 
- * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, Daniel Dyer, id:cactusman
+ * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, Daniel Dyer, id:cactusman, Tom Huybrechts
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -38,7 +38,7 @@ import java.util.List;
  * @author Kohsuke Kawaguchi
  */
 public final class ClassResult extends TabulatedResult implements Comparable<ClassResult> {
-    private final String className;
+    private final String className; // simple name
 
     private final List<CaseResult> cases = new ArrayList<CaseResult>();
 
@@ -57,14 +57,17 @@ public final class ClassResult extends TabulatedResult implements Comparable<Cla
         return parent;
     }
 
-    public AbstractBuild<?,?> getOwner() {
-        return parent.getOwner();
-    }
-
     public ClassResult getPreviousResult() {
         PackageResult pr = parent.getPreviousResult();
         if(pr==null)    return null;
-        return pr.getDynamic(getName(),null,null);
+        return pr.getClassResult(getName());
+    }
+
+    @Override
+    public ClassResult getResultInBuild(AbstractBuild<?, ?> build) {
+        PackageResult pr = getParent().getResultInBuild(build);
+        if(pr==null)    return null;
+        return pr.getClassResult(getName());
     }
 
     public String getTitle() {
@@ -81,13 +84,22 @@ public final class ClassResult extends TabulatedResult implements Comparable<Cla
     public @Override String getSafeName() {
         return uniquifyName(parent.getChildren(), safe(getName()));
     }
-
-    public CaseResult getDynamic(String name, StaplerRequest req, StaplerResponse rsp) {
+    
+    public CaseResult getCaseResult(String name) {
         for (CaseResult c : cases) {
             if(c.getSafeName().equals(name))
                 return c;
         }
         return null;
+    }
+
+    public Object getDynamic(String name, StaplerRequest req, StaplerResponse rsp) {
+    	CaseResult c = getCaseResult(name);
+    	if (c != null) {
+    		return c;
+    	} else {
+    		return super.getDynamic(name, req, rsp);
+    	}
     }
 
 
@@ -139,6 +151,9 @@ public final class ClassResult extends TabulatedResult implements Comparable<Cla
         Collections.sort(cases);
     }
 
+    public String getClassName() {
+    	return className;
+    }
 
     public int compareTo(ClassResult that) {
         return this.className.compareTo(that.className);
@@ -146,5 +161,28 @@ public final class ClassResult extends TabulatedResult implements Comparable<Cla
 
     public String getDisplayName() {
         return getName();
+    }
+    
+    public String getFullName() {
+    	return getParent().getDisplayName() + "." + className;
+    }
+
+    /**
+     * Gets the relative path to this test case from the given object.
+     */
+    public String getRelativePathFrom(TestObject it) {
+        if(it==this)
+            return ".";
+        
+        if (it instanceof TestResult) {
+        	return getParent().getSafeName() + "/" + getSafeName();
+        } else if (it instanceof PackageResult) {
+        	return getSafeName();
+        } else if (it instanceof CaseResult) {
+        	return "..";
+        } else {
+        	throw new UnsupportedOperationException();
+        }
+
     }
 }

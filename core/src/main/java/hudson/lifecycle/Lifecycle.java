@@ -24,6 +24,7 @@
 package hudson.lifecycle;
 
 import hudson.ExtensionPoint;
+import hudson.Util;
 import hudson.model.Hudson;
 
 import java.io.File;
@@ -131,16 +132,6 @@ public abstract class Lifecycle implements ExtensionPoint {
         return getHudsonWar()!=null;
     }
 
-    private boolean isOverridden(String methodName, Class... types) {
-        // the rewriteHudsonWar method isn't overridden.
-        try {
-            return !getClass().getMethod(methodName, types).equals(
-                    Lifecycle.class.getMethod(methodName,types));
-        } catch (NoSuchMethodException e) {
-            throw new AssertionError(e);
-        }
-    }
-
     /**
      * If this life cycle supports a restart of Hudson, do so.
      * Otherwise, throw {@link UnsupportedOperationException},
@@ -162,7 +153,8 @@ public abstract class Lifecycle implements ExtensionPoint {
      * Can the {@link #restart()} method restart Hudson?
      */
     public boolean canRestart() {
-        return isOverridden("restart");
+        // the rewriteHudsonWar method isn't overridden.
+        return Util.isOverridden(Lifecycle.class,getClass(), "restart");
     }
 
     private static final Logger LOGGER = Logger.getLogger(Lifecycle.class.getName());

@@ -993,7 +993,7 @@ public class CVSSCM extends SCM implements Serializable {
                 return; // not a CVS-controlled directory. No point in recursing
 
             boolean modified = false;
-            String contents = null;
+            String contents;
             try {
                 contents = FileUtils.readFileToString(entries);
             } catch (IOException e) {
@@ -1021,7 +1021,7 @@ public class CVSSCM extends SCM implements Serializable {
 
             if(modified) {
                 // write it back
-                AtomicFileWriter w = new AtomicFileWriter(entries);
+                AtomicFileWriter w = new AtomicFileWriter(entries,null);
                 try {
                     w.write(newContents.toString());
                     w.commit();

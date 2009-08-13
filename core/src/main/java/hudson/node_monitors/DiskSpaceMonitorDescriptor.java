@@ -27,6 +27,7 @@ import hudson.FilePath.FileCallable;
 import hudson.model.Computer;
 import hudson.remoting.VirtualChannel;
 import hudson.Util;
+import hudson.slaves.OfflineCause;
 import hudson.node_monitors.DiskSpaceMonitorDescriptor.DiskSpace;
 import org.jvnet.animal_sniffer.IgnoreJRERequirement;
 
@@ -36,6 +37,7 @@ import java.io.Serializable;
 import java.util.logging.Logger;
 import java.math.BigDecimal;
 import org.kohsuke.stapler.export.ExportedBean;
+import org.kohsuke.stapler.export.Exported;
 
 /**
  * {@link AbstractNodeMonitorDescriptor} for {@link NodeMonitor} that checks a free disk space of some directory.
@@ -47,7 +49,8 @@ import org.kohsuke.stapler.export.ExportedBean;
      * Value object that represents the disk space.
      */
     @ExportedBean
-    public static final class DiskSpace implements Serializable {
+    public static final class DiskSpace extends OfflineCause implements Serializable {
+        @Exported
         public final long size;
 
         public DiskSpace(long size) {
@@ -57,6 +60,17 @@ import org.kohsuke.stapler.export.ExportedBean;
         @Override
         public String toString() {
             return String.valueOf(size);
+        }
+
+        /**
+         * Gets GB left.
+         */
+        public String getGbLeft() {
+            long space = size;
+            space/=1024L;   // convert to KB
+            space/=1024L;   // convert to MB
+
+            return new BigDecimal(space).scaleByPowerOfTen(-3).toPlainString();
         }
 
         /**
@@ -83,7 +97,7 @@ import org.kohsuke.stapler.export.ExportedBean;
 
     protected DiskSpace monitor(Computer c) throws IOException, InterruptedException {
         DiskSpace size = getFreeSpace(c);
-        if(size!=null && !size.moreThanGB() && markOffline(c))
+        if(size!=null && !size.moreThanGB() && markOffline(c,size))
             LOGGER.warning(Messages.DiskSpaceMonitor_MarkedOffline(c.getName()));
         return size;
     }

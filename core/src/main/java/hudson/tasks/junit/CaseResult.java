@@ -1,7 +1,7 @@
 /*
  * The MIT License
  * 
- * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, Daniel Dyer, Seiji Sogabe
+ * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, Daniel Dyer, Seiji Sogabe, Tom Huybrechts
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,12 +24,14 @@
 package hudson.tasks.junit;
 
 import hudson.model.AbstractBuild;
-import org.dom4j.Element;
-import org.kohsuke.stapler.export.Exported;
+import hudson.model.Run;
 
-import java.util.Comparator;
 import java.text.DecimalFormat;
 import java.text.ParseException;
+import java.util.Comparator;
+
+import org.dom4j.Element;
+import org.kohsuke.stapler.export.Exported;
 
 /**
  * One test result.
@@ -139,6 +141,10 @@ public final class CaseResult extends TestObject implements Comparable<CaseResul
         this.stdout = stdout;
         this.stderr = stderr;
     }
+    
+    public ClassResult getParent() {
+    	return classResult;
+    }
 
     private static String getError(Element testCase) {
         String msg = testCase.elementText("error");
@@ -233,6 +239,22 @@ public final class CaseResult extends TestObject implements Comparable<CaseResul
         return className+'.'+getName();
     }
 
+
+	@Override
+	public int getFailCount() {
+		if (!isPassed() && !isSkipped()) return 1; else return 0;
+	}
+
+	@Override
+	public int getSkipCount() {
+		if (isSkipped()) return 1; else return 0;
+	}
+	
+	@Override
+	public int getPassCount() {
+		return isPassed() ? 1 : 0; 
+	}
+	
     /**
      * If this test failed, then return the build number
      * when this test started failing.
@@ -240,6 +262,10 @@ public final class CaseResult extends TestObject implements Comparable<CaseResul
     @Exported
     public int getFailedSince() {
         return failedSince;
+    }
+    
+    public Run<?,?> getFailedSinceRun() {
+    	return getOwner().getParent().getBuildByNumber(failedSince);
     }
 
     /**
@@ -270,7 +296,7 @@ public final class CaseResult extends TestObject implements Comparable<CaseResul
     @Exported
     public String getStdout() {
         if(stdout!=null)    return stdout;
-        return getParent().getStdout();
+        return getSuiteResult().getStdout();
     }
 
     /**
@@ -282,7 +308,7 @@ public final class CaseResult extends TestObject implements Comparable<CaseResul
     @Exported
     public String getStderr() {
         if(stderr!=null)    return stderr;
-        return getParent().getStderr();
+        return getSuiteResult().getStderr();
     }
 
     @Override
@@ -290,6 +316,13 @@ public final class CaseResult extends TestObject implements Comparable<CaseResul
         SuiteResult pr = parent.getPreviousResult();
         if(pr==null)    return null;
         return pr.getCase(getName());
+    }
+    
+    @Override
+    public CaseResult getResultInBuild(AbstractBuild<?, ?> build) {
+        ClassResult pr = getParent().getResultInBuild(build);
+        if(pr==null)    return null;
+        return pr.getCaseResult(getName());
     }
 
     /**
@@ -326,12 +359,25 @@ public final class CaseResult extends TestObject implements Comparable<CaseResul
         return skipped;
     }
 
-    public SuiteResult getParent() {
+    public SuiteResult getSuiteResult() {
         return parent;
     }
+    
+	public String annotate(String text) {
+		if (text == null)
+			return null;
+		text = text.replace("&", "&amp;").replace("<", "&lt;").replaceAll(
+				"\\b(https?://[^\\s)>]+)", "<a href=\"$1\">$1</a>");
+		
+		for (TestAction action: getTestActions()) {
+			text = action.annotate(text);
+		}
+		
+		return text;
+	}
 
     public AbstractBuild<?,?> getOwner() {
-        return parent.getParent().getOwner();
+        return getSuiteResult().getParent().getOwner();
     }
 
     /**
