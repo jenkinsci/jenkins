@@ -103,7 +103,7 @@ public final class WorkspaceList {
         /**
          * Creates a dummy {@link Lease} object that does no-op in the release.
          */
-        public static Lease creadDummyLease(FilePath p) {
+        public static Lease createDummyLease(FilePath p) {
             return new Lease(p) {
                 public void release() {
                     // noop

@@ -212,7 +212,7 @@ public class SlaveComputer extends Computer {
         if (launcher instanceof ExecutorListener) {
             ((ExecutorListener)launcher).taskCompleted(executor, task, durationMS);
         }
-        RetentionStrategy r = getNode().getRetentionStrategy();
+        RetentionStrategy r = getRetentionStrategy();
         if (r instanceof ExecutorListener) {
             ((ExecutorListener) r).taskCompleted(executor, task, durationMS);
         }
@@ -227,9 +227,9 @@ public class SlaveComputer extends Computer {
         if (launcher instanceof ExecutorListener) {
             ((ExecutorListener)launcher).taskCompletedWithProblems(executor, task, durationMS, problems);
         }
-        if (getNode().getRetentionStrategy() instanceof ExecutorListener) {
-            ((ExecutorListener)getNode().getRetentionStrategy()).taskCompletedWithProblems(executor, task, durationMS,
-                    problems);
+        RetentionStrategy r = getRetentionStrategy();
+        if (r instanceof ExecutorListener) {
+            ((ExecutorListener) r).taskCompletedWithProblems(executor, task, durationMS, problems);
         }
     }
 
@@ -419,7 +419,8 @@ public class SlaveComputer extends Computer {
     }
 
     public RetentionStrategy getRetentionStrategy() {
-        return getNode().getRetentionStrategy();
+        Slave n = getNode();
+        return n==null ? null : n.getRetentionStrategy();
     }
 
     /**
