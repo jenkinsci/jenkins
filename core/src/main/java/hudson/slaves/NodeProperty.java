@@ -26,6 +26,8 @@ package hudson.slaves;
 import hudson.ExtensionPoint;
 import hudson.Launcher;
 import hudson.DescriptorExtensionList;
+import hudson.FilePath;
+import hudson.scm.SCM;
 import hudson.model.AbstractBuild;
 import hudson.model.BuildListener;
 import hudson.model.Describable;
@@ -35,6 +37,7 @@ import hudson.model.Node;
 import hudson.tasks.Builder;
 
 import java.io.IOException;
+import java.io.File;
 import java.util.List;
 
 /**
@@ -70,9 +73,9 @@ public abstract class NodeProperty<N extends Node> implements Describable<NodePr
     }
 
     /**
-     * Runs before the {@link Builder} runs, and performs a set up. Can contribute additional properties
-     * to the environment.
-     *
+     * Runs before the {@link SCM#checkout(AbstractBuild, Launcher, FilePath, BuildListener, File)} runs, and performs a set up.
+     * Can contribute additional properties to the environment.
+     * 
      * @param build
      *      The build in progress for which an {@link Environment} object is created.
      *      Never null.

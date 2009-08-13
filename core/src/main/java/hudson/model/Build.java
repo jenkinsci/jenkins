@@ -81,24 +81,9 @@ public abstract class Build <P extends Project<P,B>,B extends Build<P,B>>
             if(!preBuild(listener,project.getPublishers()))
                 return Result.FAILURE;
 
-            buildEnvironments = new ArrayList<Environment>();
             try {
                 List<BuildWrapper> wrappers = new ArrayList<BuildWrapper>(project.getBuildWrappers().values());
                 
-                for (NodeProperty<?> nodeProperty: Hudson.getInstance().getGlobalNodeProperties()) {
-                    Environment environment = nodeProperty.setUp(Build.this, launcher, listener);
-                    if (environment != null) {
-                        buildEnvironments.add(environment);
-                    }
-                }
-
-                for (NodeProperty<?> nodeProperty: Computer.currentComputer().getNode().getNodeProperties()) {
-                    Environment environment = nodeProperty.setUp(Build.this, launcher, listener);
-                    if (environment != null) {
-                        buildEnvironments.add(environment);
-                    }
-                }
-
                 ParametersAction parameters = getAction(ParametersAction.class);
                 if (parameters != null)
                     parameters.createBuildWrappers(Build.this,wrappers);
@@ -137,6 +122,22 @@ public abstract class Build <P extends Project<P,B>,B extends Build<P,B>>
 
             for(BuildWrapper bw : project.getBuildWrappers().values())
                 l = bw.decorateLauncher(Build.this,l,listener);
+
+            buildEnvironments = new ArrayList<Environment>();
+
+            for (NodeProperty nodeProperty: Hudson.getInstance().getGlobalNodeProperties()) {
+                Environment environment = nodeProperty.setUp(Build.this, l, listener);
+                if (environment != null) {
+                    buildEnvironments.add(environment);
+                }
+            }
+
+            for (NodeProperty nodeProperty: Computer.currentComputer().getNode().getNodeProperties()) {
+                Environment environment = nodeProperty.setUp(Build.this, l, listener);
+                if (environment != null) {
+                    buildEnvironments.add(environment);
+                }
+            }
 
             return l;
         }
