@@ -48,6 +48,8 @@ import org.jvnet.solaris.mount.MountFlags;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 import org.kohsuke.stapler.QueryParameter;
+import org.kohsuke.stapler.HttpResponse;
+import org.kohsuke.stapler.HttpRedirect;
 
 import javax.servlet.ServletException;
 import java.io.File;
@@ -121,18 +123,17 @@ public class ZFSInstaller extends AdministrativeMonitor implements Serializable 
     /**
      * Called from the management screen.
      */
-    public void doAct(StaplerRequest req, StaplerResponse rsp) throws ServletException, IOException {
+    public HttpResponse doAct(StaplerRequest req) throws ServletException, IOException {
         requirePOST();
         Hudson.getInstance().checkPermission(Hudson.ADMINISTER);
 
         if(req.hasParameter("n")) {
             // we'll shut up
             disable(true);
-            rsp.sendRedirect2(req.getContextPath()+"/manage");
-            return;
+            return HttpRedirect.fromContextPath("/manage");
         }
 
-        rsp.sendRedirect2("confirm");
+        return new HttpRedirect("confirm");
     }
 
     /**

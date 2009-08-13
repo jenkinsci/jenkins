@@ -59,8 +59,8 @@ public final class HudsonHomeDiskUsageMonitor extends AdministrativeMonitor {
     /**
      * Depending on whether the user said "yes" or "no", send him to the right place.
      */
-    public HttpResponse doAct(@QueryParameter boolean no) throws IOException {
-        if(no) {
+    public HttpResponse doAct(@QueryParameter String no) throws IOException {
+        if(no!=null) {
             disable(true);
             return HttpRedirect.fromContextPath("/manage");
         } else {
