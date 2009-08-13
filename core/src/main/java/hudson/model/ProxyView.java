@@ -127,7 +127,7 @@ public class ProxyView extends View {
 
         @Override
         public String getDisplayName() {
-            return "Include a global view";
+            return Messages.ProxyView_DisplayName();
         }
         
         @Override

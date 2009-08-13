@@ -169,11 +169,11 @@ public class MyViewsProperty extends UserProperty implements ViewGroup, Action {
         if (exists) {
         	return (getView(view)!=null) ?
             		FormValidation.ok() :
-            		FormValidation.error(String.format("A view with name \"%s\" does not exist", view));
+            		FormValidation.error(Messages.MyViewsProperty_ViewExistsCheck_NotExist(view));
         } else {
         	return (getView(view)==null) ?
         			FormValidation.ok() :
-        				FormValidation.error(String.format("A view with name \"%s\" already exists", view));
+        			FormValidation.error(Messages.MyViewsProperty_ViewExistsCheck_AlreadyExists(view));
         }
     }
 
