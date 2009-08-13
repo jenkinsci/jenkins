@@ -25,6 +25,7 @@
 #
 # Kohsuke's automated release script. Sorry for my checking this in,
 # but Maven doesn't let me run release goals unless I have this in CVS.
+umask 022 # we'll transfer files created during builds to Apache, where go=rx for directories are expected
 
 # make sure we have up to date workspace
 svn update
