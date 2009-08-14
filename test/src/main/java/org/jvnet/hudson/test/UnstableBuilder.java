@@ -40,11 +40,11 @@ import java.io.IOException;
  *
  * @author Kohsuke Kawaguchi
  */
-public class FailureBuilder extends Builder {
+public class UnstableBuilder extends Builder {
     
     public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
-        listener.getLogger().println("Simulating a failure");
-        build.setResult(Result.FAILURE);
+        listener.getLogger().println("Simulating an unstable build");
+        build.setResult(Result.UNSTABLE);
         return false;
     }
 
@@ -55,7 +55,7 @@ public class FailureBuilder extends Builder {
         }
 
         public String getDisplayName() {
-            return "Always fail";
+            return "Make build unstable";
         }
     }
 }

@@ -40,6 +40,7 @@ import hudson.model.JDK;
 import hudson.model.Job;
 import hudson.model.Label;
 import hudson.model.Node;
+import hudson.model.Result;
 import hudson.model.SCMedItem;
 import hudson.model.Saveable;
 import hudson.model.TopLevelItem;
@@ -134,6 +135,9 @@ public class MatrixProject extends AbstractProject<MatrixProject,MatrixBuild> im
     private transient /*final*/ Set<MatrixConfiguration> activeConfigurations = new LinkedHashSet<MatrixConfiguration>();
 
     private boolean runSequentially;
+    
+    private String touchStoneCombinationFilter;
+    private Result touchStoneResultCondition;
 
     public MatrixProject(String name) {
         super(Hudson.getInstance(), name);
@@ -195,7 +199,24 @@ public class MatrixProject extends AbstractProject<MatrixProject,MatrixBuild> im
 		return combinationFilter;
 	}
 
-	protected void updateTransientActions() {
+	public String getTouchStoneCombinationFilter() {
+        return touchStoneCombinationFilter;
+    }
+
+    public void setTouchStoneCombinationFilter(
+            String touchStoneCombinationFilter) {
+        this.touchStoneCombinationFilter = touchStoneCombinationFilter;
+    }
+
+    public Result getTouchStoneResultCondition() {
+        return touchStoneResultCondition;
+    }
+
+    public void setTouchStoneResultCondition(Result touchStoneResultCondition) {
+        this.touchStoneResultCondition = touchStoneResultCondition;
+    }
+
+    protected void updateTransientActions() {
         synchronized(transientActions) {
             super.updateTransientActions();
 
@@ -533,10 +554,19 @@ public class MatrixProject extends AbstractProject<MatrixProject,MatrixBuild> im
             }
         }
         
-        if(req.getParameter("hasCombinationFilter")!=null)
+        if(req.getParameter("hasCombinationFilter")!=null) {
             this.combinationFilter = Util.nullify(req.getParameter("combinationFilter"));
-        else
+        } else {
             this.combinationFilter = null;
+        }
+        
+        if (req.getParameter("hasTouchStoneCombinationFilter")!=null) {
+            this.touchStoneCombinationFilter = Util.nullify(req.getParameter("touchStoneCombinationFilter"));
+            String touchStoneResultCondition = req.getParameter("touchStoneResultCondition");
+            this.touchStoneResultCondition = Result.fromString(touchStoneResultCondition);
+        } else {
+            this.touchStoneCombinationFilter = null;
+        }
 
         // parse system axes
         newAxes.add(Axis.parsePrefixed(req,"jdk"));
