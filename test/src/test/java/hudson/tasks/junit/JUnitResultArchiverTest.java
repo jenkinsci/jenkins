@@ -122,8 +122,7 @@ public class JUnitResultArchiverTest extends HudsonTestCase {
 		
 	}
 
-	private void testSetDescription(String url, TestObject object)
-			throws IOException, SAXException, Exception {
+	private void testSetDescription(String url, TestObject object) throws Exception {
 		HtmlPage page = new WebClient().goTo(url);
 		
 		page.getAnchorByHref("editDescription").click();
