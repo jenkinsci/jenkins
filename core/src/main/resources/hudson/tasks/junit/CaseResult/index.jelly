@@ -23,7 +23,7 @@ THE SOFTWARE.
 -->
 
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define"
-         xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:lo="hudson:linkout">
+         xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
   <l:layout title="${it.owner} test - ${it.displayName}">
     <st:include page="sidepanel.jelly" />
     <l:main-panel>
@@ -70,7 +70,7 @@ THE SOFTWARE.
     <h3>${%Error Message}</h3>
       <pre>"${it.annotate(it.errorDetails)}</pre>
     <h3>${%Stacktrace}</h3>
-      <pre><lo:out value="${it.annotate(it.errorStackTrace)}"/></pre>
+      <pre>${it.annotate(it.errorStackTrace)}</pre>
 
       <j:if test="${!empty(it.stdout)}">
         <h3>${%Standard Output}</h3>

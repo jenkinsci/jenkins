@@ -23,7 +23,7 @@ THE SOFTWARE.
 -->
 
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define"
-         xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:lo="hudson:linkout">
+         xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
     <table class="pane sortable" id="testresult">
       <tr>
         <td class="pane-header">${%Build}</td>

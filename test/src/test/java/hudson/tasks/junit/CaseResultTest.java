@@ -33,6 +33,7 @@ import hudson.model.Result;
 import hudson.model.FreeStyleBuild;
 import hudson.tasks.test.AbstractTestResultAction;
 import hudson.Launcher;
+import hudson.Functions;
 import org.jvnet.hudson.test.HudsonTestCase;
 import org.jvnet.hudson.test.Email;
 import org.jvnet.hudson.test.TestBuilder;
@@ -78,5 +79,59 @@ public class CaseResultTest extends HudsonTestCase {
         assertEquals("org.twia.vendor.VendorManagerTest",cr.getClassName());
         assertEquals("testGetVendorFirmKeyForVendorRep",cr.getName());
 
+    }
+
+//
+// tests for annotate methods
+//
+    public void testPlain() throws Exception {
+        assertOutput("plain text", "plain text");
+    }
+
+    public void testOnItsOwnLine() throws Exception {
+        assertOutput("line #1\nhttp://nowhere.net/\nline #2\n",
+                "line #1\n<a href=\"http://nowhere.net/\">http://nowhere.net/</a>\nline #2\n");
+    }
+
+    public void testInline() throws Exception {
+        assertOutput("failed; see http://nowhere.net/",
+                "failed; see <a href=\"http://nowhere.net/\">http://nowhere.net/</a>");
+        assertOutput("failed (see http://nowhere.net/)",
+                "failed (see <a href=\"http://nowhere.net/\">http://nowhere.net/</a>)");
+    }
+
+    public void testMultipleLinks() throws Exception {
+        assertOutput("http://nowhere.net/ - failed: http://elsewhere.net/",
+                "<a href=\"http://nowhere.net/\">http://nowhere.net/</a> - failed: " +
+                "<a href=\"http://elsewhere.net/\">http://elsewhere.net/</a>");
+    }
+
+    public void testHttps() throws Exception {
+        assertOutput("https://nowhere.net/",
+                "<a href=\"https://nowhere.net/\">https://nowhere.net/</a>");
+    }
+
+    public void testMushedUp() throws Exception {
+        assertOutput("stuffhttp://nowhere.net/", "stuffhttp://nowhere.net/");
+    }
+
+    public void testEscapedMetaChars() throws Exception {
+        assertOutput("a < b && c < d", "a &lt; b &amp;&amp; c &lt; d");
+    }
+
+    public void testEscapedMetaCharsWithLinks() throws Exception {
+        assertOutput("see <http://nowhere.net/>",
+                "see &lt;<a href=\"http://nowhere.net/\">http://nowhere.net/</a>>");
+        assertOutput("http://google.com/?q=stuff&lang=en",
+                "<a href=\"http://google.com/?q=stuff&amp;lang=en\">http://google.com/?q=stuff&amp;lang=en</a>");
+    }
+
+    public void testPortNumber() throws Exception {
+        assertOutput("http://localhost:8080/stuff/",
+                "<a href=\"http://localhost:8080/stuff/\">http://localhost:8080/stuff/</a>");
+    }
+
+    private void assertOutput(String in, String out) throws Exception {
+        assertEquals(out, new CaseResult(null,null,null,null,null,null,null,0,false).annotate(in));
     }
 }
