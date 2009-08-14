@@ -71,8 +71,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import sun.security.validator.ValidatorException;
-
 /**
  * Controls update center capability.
  *
