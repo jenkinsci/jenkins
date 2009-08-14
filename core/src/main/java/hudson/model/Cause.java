@@ -26,7 +26,6 @@ package hudson.model;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.kohsuke.stapler.Stapler;
 import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.export.ExportedBean;
 
@@ -36,7 +35,7 @@ import org.kohsuke.stapler.export.ExportedBean;
  * CauseAction object.
  *
  * @author Michael Donohue
- * @see AbstractBuild#getCauses() 
+ * @see Run#getCauses()
  */
 @ExportedBean
 public abstract class Cause {
@@ -60,7 +59,7 @@ public abstract class Cause {
 		private int upstreamBuild;
 		@Deprecated
 		private transient Cause upstreamCause;
-		private List<Cause> upstreamCauses = new ArrayList<Cause>();
+		private List<Cause> upstreamCauses;
 		
 		// for backward bytecode compatibility
 		public UpstreamCause(AbstractBuild<?,?> up) {
@@ -71,8 +70,7 @@ public abstract class Cause {
 			upstreamBuild = up.getNumber();
 			upstreamProject = up.getParent().getName();
 			upstreamUrl = up.getParent().getUrl();
-			CauseAction ca = up.getAction(CauseAction.class);
-			upstreamCauses = ca == null ? null : ca.getCauses();
+			upstreamCauses = new ArrayList<Cause>(up.getCauses());
 		}
 
         public String getUpstreamProject() {

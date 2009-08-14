@@ -373,6 +373,23 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
     }
 
     /**
+     * Returns the {@link Cause}s that tirggered a build.
+     *
+     * <p>
+     * If a build sits in the queue for a long time, multiple build requests made during this period
+     * are all rolled up into one build, hence this method may return a list.
+     *
+     * @return
+     *      can be empty but never null. read-only.
+     * @since 1.321
+     */
+    public List<Cause> getCauses() {
+        CauseAction a = getAction(CauseAction.class);
+        if (a==null)    return Collections.emptyList();
+        return Collections.unmodifiableList(a.getCauses());
+    }
+
+    /**
      * Returns true if this log file should be kept and not deleted.
      *
      * This is used as a signal to the {@link LogRotator}.
@@ -1079,8 +1096,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
                     this.charset = charset.name();
                     listener = new StreamBuildListener(new PrintStream(new CloseProofOutputStream(log)),charset);
 
-                    CauseAction causeAction = getAction(CauseAction.class);
-                    listener.started(causeAction!=null ? causeAction.getCauses() : null);
+                    listener.started(getCauses());
 
                     RunListener.fireStarted(this,listener);
 
