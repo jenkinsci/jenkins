@@ -283,6 +283,23 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
     }
 
     /**
+     * Returns the {@link Cause}s that tirggered a build.
+     *
+     * <p>
+     * If a build sits in the queue for a long time, multiple build requests made during this period
+     * are all rolled up into one build, hence this method may return a list.
+     *
+     * @return
+     *      can be empty but never null. read-only.
+     * @since 1.321
+     */
+    public List<Cause> getCauses() {
+        CauseAction a = getAction(CauseAction.class);
+        if (a==null)    return Collections.emptyList();
+        return Collections.unmodifiableList(a.getCauses());
+    }
+
+    /**
      * Returns true if this user has made a commit to this build.
      *
      * @since 1.191
