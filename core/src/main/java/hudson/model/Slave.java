@@ -291,7 +291,7 @@ public abstract class Slave extends Node implements Serializable {
     }
 
     public ClockDifference getClockDifference() throws IOException, InterruptedException {
-        VirtualChannel channel = getComputer().getChannel();
+        VirtualChannel channel = getChannel();
         if(channel==null)
             throw new IOException(getNodeName()+" is offline");
 

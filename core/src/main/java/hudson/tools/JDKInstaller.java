@@ -344,7 +344,7 @@ public class JDKInstaller extends ToolInstaller {
          * Determines the platform of the given node.
          */
         public static Platform of(Node n) throws IOException,InterruptedException,DetectionFailedException {
-            return n.toComputer().getChannel().call(new Callable<Platform,DetectionFailedException>() {
+            return n.getChannel().call(new Callable<Platform,DetectionFailedException>() {
                 public Platform call() throws DetectionFailedException {
                     return current();
                 }
@@ -396,7 +396,7 @@ public class JDKInstaller extends ToolInstaller {
          * Determines the CPU of the given node.
          */
         public static CPU of(Node n) throws IOException,InterruptedException, DetectionFailedException {
-            return n.toComputer().getChannel().call(new Callable<CPU,DetectionFailedException>() {
+            return n.getChannel().call(new Callable<CPU,DetectionFailedException>() {
                 public CPU call() throws DetectionFailedException {
                     return current();
                 }
