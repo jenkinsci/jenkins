@@ -486,7 +486,7 @@ public abstract class SecurityRealm implements Describable<SecurityRealm>, Exten
 
     /**
      * {@link GrantedAuthority} that represents the built-in "authenticated" role, which is granted to
-     * anyone non-anomyous.
+     * anyone non-anonymous.
      */
     public static final GrantedAuthority AUTHENTICATED_AUTHORITY = new GrantedAuthorityImpl("authenticated");
 }

@@ -65,6 +65,8 @@ authoritiesPopulator(AuthoritiesPopulatorImpl, initialDirContextFactory, Util.fi
     // see DefaultLdapAuthoritiesPopulator for other possible configurations
     searchSubtree = true;
     groupSearchFilter = "(| (member={0}) (uniqueMember={0}) (memberUid={1}))";
+    // rolePrefix = "ROLE_"; // Default is "ROLE_"
+    // convertToUpperCase = false; // Default is true
 }
 
 authenticationManager(ProviderManager) {

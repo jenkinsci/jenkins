@@ -340,33 +340,32 @@ public class LDAPSecurityRealm extends SecurityRealm {
 
         return new SecurityComponents(
             findBean(AuthenticationManager.class, appContext),
-            new UserDetailsService() {
-                final LdapUserSearch ldapSearch = findBean(LdapUserSearch.class, appContext);
-                final LdapAuthoritiesPopulator authoritiesPopulator = findBean(LdapAuthoritiesPopulator.class, appContext);
-                public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException, DataAccessException {
-                    try {
-                        LdapUserDetails ldapUser = ldapSearch.searchForUser(username);
-                        // LdapUserSearch does not populate granted authorities (group search).
-                        // Add those, as done in LdapAuthenticationProvider.createUserDetails().
-                        if (ldapUser != null) {
-                            LdapUserDetailsImpl.Essence user = new LdapUserDetailsImpl.Essence(ldapUser);
-                            GrantedAuthority[] extraAuthorities = authoritiesPopulator.getGrantedAuthorities(ldapUser);
-                            for (int i = 0; i < extraAuthorities.length; i++) {
-                                user.addAuthority(extraAuthorities[i]);
-                            }
-                            ldapUser = user.createUserDetails();
-                        }
-                        return ldapUser;
-                    } catch (LdapDataAccessException e) {
-                        LOGGER.log(Level.WARNING, "Failed to search LDAP for username="+username,e);
-                        throw new UserMayOrMayNotExistException(e.getMessage(),e);
-                    }
-                }
-            });
+            new LDAPUserDetailsService(appContext));
     }
 
+    /**
+     * Lookup a group; given input must match the configured syntax for group names
+     * in WEB-INF/security/LDAPBindSecurityRealm.groovy's authoritiesPopulator entry.
+     * The defaults are a prefix of "ROLE_" and using all uppercase.  This method will
+     * not return any data if the given name lacks the proper prefix and/or case. 
+     */
     @Override
     public GroupDetails loadGroupByGroupname(String groupname) throws UsernameNotFoundException, DataAccessException {
+        // Check proper syntax based on acegi configuration
+        String prefix = "";
+        boolean onlyUpperCase = false;
+        try {
+            AuthoritiesPopulatorImpl api = (AuthoritiesPopulatorImpl)
+              ((LDAPUserDetailsService)getSecurityComponents().userDetails).authoritiesPopulator;
+            prefix = api.rolePrefix;
+            onlyUpperCase = api.convertToUpperCase;
+        } catch (Exception ignore) { }
+        if (onlyUpperCase && !groupname.equals(groupname.toUpperCase()))
+            throw new UsernameNotFoundException(groupname + " should be all uppercase");
+        if (!groupname.startsWith(prefix))
+            throw new UsernameNotFoundException(groupname + " is missing prefix: " + prefix);
+        groupname = groupname.substring(prefix.length());
+
         // TODO: obtain a DN instead so that we can obtain multiple attributes later
         String searchBase = groupSearchBase != null ? groupSearchBase : "";
         final Set<String> groups = (Set<String>)ldapTemplate.searchForSingleAttributeValues(searchBase, GROUP_SEARCH,
@@ -380,6 +379,34 @@ public class LDAPSecurityRealm extends SecurityRealm {
                 return groups.iterator().next();
             }
         };
+    }
+
+    public static class LDAPUserDetailsService implements UserDetailsService {
+        public final LdapUserSearch ldapSearch;
+        public final LdapAuthoritiesPopulator authoritiesPopulator;
+        LDAPUserDetailsService(WebApplicationContext appContext) {
+            ldapSearch = findBean(LdapUserSearch.class, appContext);
+            authoritiesPopulator = findBean(LdapAuthoritiesPopulator.class, appContext);
+        }
+        public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException, DataAccessException {
+            try {
+                LdapUserDetails ldapUser = ldapSearch.searchForUser(username);
+                // LdapUserSearch does not populate granted authorities (group search).
+                // Add those, as done in LdapAuthenticationProvider.createUserDetails().
+                if (ldapUser != null) {
+                    LdapUserDetailsImpl.Essence user = new LdapUserDetailsImpl.Essence(ldapUser);
+                    GrantedAuthority[] extraAuthorities = authoritiesPopulator.getGrantedAuthorities(ldapUser);
+                    for (int i = 0; i < extraAuthorities.length; i++) {
+                        user.addAuthority(extraAuthorities[i]);
+                    }
+                    ldapUser = user.createUserDetails();
+                }
+                return ldapUser;
+            } catch (LdapDataAccessException e) {
+                LOGGER.log(Level.WARNING, "Failed to search LDAP for username="+username,e);
+                throw new UserMayOrMayNotExistException(e.getMessage(),e);
+            }
+        }
     }
 
     /**
@@ -414,13 +441,31 @@ public class LDAPSecurityRealm extends SecurityRealm {
      * {@link LdapAuthoritiesPopulator} that adds the automatic 'authenticated' role.
      */
     public static final class AuthoritiesPopulatorImpl extends DefaultLdapAuthoritiesPopulator {
+        // Make these available (private in parent class and no get methods!)
+        String rolePrefix;
+        boolean convertToUpperCase;
         public AuthoritiesPopulatorImpl(InitialDirContextFactory initialDirContextFactory, String groupSearchBase) {
             super(initialDirContextFactory, groupSearchBase);
+            // These match the defaults in acegi 1.0.5; set again to store in non-private fields:
+            setRolePrefix("ROLE_");
+            setConvertToUpperCase(true);
         }
 
         @Override
         protected Set getAdditionalRoles(LdapUserDetails ldapUser) {
             return Collections.singleton(AUTHENTICATED_AUTHORITY);
+        }
+
+        @Override
+        public void setRolePrefix(String rolePrefix) {
+            super.setRolePrefix(rolePrefix);
+            this.rolePrefix = rolePrefix;
+        }
+
+        @Override
+        public void setConvertToUpperCase(boolean convertToUpperCase) {
+            super.setConvertToUpperCase(convertToUpperCase);
+            this.convertToUpperCase = convertToUpperCase;
         }
     }
 
