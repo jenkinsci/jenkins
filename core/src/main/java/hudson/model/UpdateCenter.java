@@ -582,6 +582,13 @@ public class UpdateCenter extends AbstractModelObject {
 
             in.close();
             out.close();
+
+            if (total!=-1 && total!=tmp.length()) {
+                // don't know exactly how this happens, but report like
+                // http://www.ashlux.com/wordpress/2009/08/14/hudson-and-the-sonar-plugin-fail-maveninstallation-nosuchmethoderror/
+                // indicates that this kind of inconsistency can happen. So let's be defensive
+                throw new IOException("Inconsistent file length: expected "+total+" but only got "+tmp.length());
+            }
             
             return tmp;
         }
