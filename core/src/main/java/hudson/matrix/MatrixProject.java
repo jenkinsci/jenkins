@@ -136,7 +136,15 @@ public class MatrixProject extends AbstractProject<MatrixProject,MatrixBuild> im
 
     private boolean runSequentially;
     
+    /**
+     * Filter to select a number of combinations to build first
+     */
     private String touchStoneCombinationFilter;
+    
+    /**
+     * Required result on the touchstone combinations, in order to
+     * continue with the rest
+     */
     private Result touchStoneResultCondition;
 
     public MatrixProject(String name) {
