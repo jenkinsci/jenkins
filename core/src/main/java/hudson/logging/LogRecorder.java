@@ -196,6 +196,13 @@ public class LogRecorder extends AbstractModelObject implements Saveable {
         requirePOST();
         getConfigFile().delete();
         getParent().logRecorders.remove(name);
+        // Disable logging for all our targets,
+        // then reenable all other loggers in case any also log the same targets
+        for (Target t : targets)
+            t.getLogger().setLevel(Level.OFF);
+        for (LogRecorder log : getParent().logRecorders.values())
+            for (Target t : log.targets)
+                t.enable();
         rsp.sendRedirect2("..");
     }
 
