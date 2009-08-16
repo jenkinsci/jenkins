@@ -27,10 +27,10 @@ THE SOFTWARE.
 -->
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:s="/lib/form">
   <l:header title="Hudson">
-    <link rel="alternate" title="Hudson:${it.viewName} (all builds)" href="${it.url}rssAll" type="application/rss+xml" />
-    <link rel="alternate" title="Hudson:${it.viewName} (all builds) (RSS 2.0)" href="${it.url}rssAll?flavor=rss20" type="application/rss+xml" />
-    <link rel="alternate" title="Hudson:${it.viewName} (failed builds)" href="${it.url}rssFailed" type="application/rss+xml" />
-    <link rel="alternate" title="Hudson:${it.viewName} (failed builds) (RSS 2.0)" href="${it.url}rssFailed?flavor=rss20" type="application/rss+xml" />
+    <link rel="alternate" title="Hudson:${it.viewName} (all builds)" href="${rootURL}/${it.url}rssAll" type="application/rss+xml" />
+    <link rel="alternate" title="Hudson:${it.viewName} (all builds) (RSS 2.0)" href="${rootURL}/${it.url}rssAll?flavor=rss20" type="application/rss+xml" />
+    <link rel="alternate" title="Hudson:${it.viewName} (failed builds)" href="${rootURL}/${it.url}rssFailed" type="application/rss+xml" />
+    <link rel="alternate" title="Hudson:${it.viewName} (failed builds) (RSS 2.0)" href="${rootURL}/${it.url}rssFailed?flavor=rss20" type="application/rss+xml" />
   </l:header>
   <l:side-panel>
     <l:tasks>
@@ -46,7 +46,7 @@ THE SOFTWARE.
       </j:if>
       <j:if test="${!it.isDefault()}">
         <!-- this is ugly, but Hudson delegates the rendering of its pages to its primary view -->
-        <l:task icon="images/24x24/edit-delete.gif" href="delete" title="${%Delete View}"  permission="${it.CONFIGURE}" />
+        <l:task icon="images/24x24/edit-delete.gif" href="delete" title="${%Delete View}" permission="${it.CONFIGURE}" />
       </j:if>
       <j:if test="${app.fingerprintMap.ready}">
         <l:task icon="images/24x24/search.gif" href="${rootURL}/projectRelationship" title="${%Project Relationship}" />
