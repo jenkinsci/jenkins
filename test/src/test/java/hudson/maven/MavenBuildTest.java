@@ -34,9 +34,19 @@ public class MavenBuildTest extends HudsonTestCase {
         configureDefaultMaven();
         MavenModuleSet m = createMavenProject();
 	m.setGoals("clean install findbugs:findbugs");
-	//        m.getReporters().add(new TestReporter());
         m.setScm(new ExtractResourceSCM(getClass().getResource("maven-test-failure-findbugs.zip")));
         assertBuildStatus(Result.UNSTABLE, m.scheduleBuild2(0).get());
+    }
+
+    /**
+     * Verify that a compilation error properly shows up as a failure.
+     */
+    public void testCompilationFailure() throws Exception {
+        configureDefaultMaven();
+        MavenModuleSet m = createMavenProject();
+	m.setGoals("clean install");
+        m.setScm(new ExtractResourceSCM(getClass().getResource("maven-compilation-failure.zip")));
+        assertBuildStatus(Result.FAILURE, m.scheduleBuild2(0).get());
     }
 
     private static class TestReporter extends MavenReporter {
