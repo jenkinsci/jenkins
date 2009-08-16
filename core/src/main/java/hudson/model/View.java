@@ -208,11 +208,18 @@ public abstract class View extends AbstractModelObject implements AccessControll
     /**
      * Returns the path relative to the context root.
      *
-     * Doesn't start with '/' but ends with '/'. (except when this is
-     * Hudson, 
+     * Doesn't start with '/' but ends with '/' (except returns
+     * empty string when this is the default view).
      */
     public String getUrl() {
-        if(isDefault())   return "";
+        return isDefault() ? "" : getViewUrl();
+    }
+
+    /**
+     * Same as {@link #getUrl()} except this returns a view/{name} path
+     * even for the default view.
+     */
+    public String getViewUrl() {
         return owner.getUrl()+"view/"+getViewName()+'/';
     }
 
