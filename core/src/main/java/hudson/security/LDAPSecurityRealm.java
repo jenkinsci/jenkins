@@ -36,6 +36,7 @@ import hudson.util.Scrambler;
 import hudson.util.spring.BeanBuilder;
 import org.acegisecurity.AuthenticationManager;
 import org.acegisecurity.GrantedAuthority;
+import org.acegisecurity.AcegiSecurityException;
 import org.acegisecurity.ldap.InitialDirContextFactory;
 import org.acegisecurity.ldap.LdapDataAccessException;
 import org.acegisecurity.ldap.LdapTemplate;
@@ -57,6 +58,7 @@ import org.springframework.web.context.WebApplicationContext;
 
 import javax.naming.Context;
 import javax.naming.NamingException;
+import javax.naming.AuthenticationException;
 import javax.naming.directory.Attribute;
 import javax.naming.directory.Attributes;
 import javax.naming.directory.DirContext;
@@ -431,6 +433,9 @@ public class LDAPSecurityRealm extends SecurityRealm {
                 LOGGER.log(Level.FINE, "Failed to look up LDAP for e-mail address",e);
                 return null;
             } catch (NamingException e) {
+                LOGGER.log(Level.FINE, "Failed to look up LDAP for e-mail address",e);
+                return null;
+            } catch (AcegiSecurityException e) {
                 LOGGER.log(Level.FINE, "Failed to look up LDAP for e-mail address",e);
                 return null;
             }
