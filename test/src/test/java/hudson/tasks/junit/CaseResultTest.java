@@ -23,15 +23,11 @@
  */
 package hudson.tasks.junit;
 
-import hudson.maven.MavenModuleSet;
-import hudson.maven.MavenModuleSetBuild;
-import static hudson.model.Result.UNSTABLE;
 import hudson.model.FreeStyleProject;
 import hudson.model.AbstractBuild;
 import hudson.model.BuildListener;
 import hudson.model.Result;
 import hudson.model.FreeStyleBuild;
-import hudson.tasks.test.AbstractTestResultAction;
 import hudson.Launcher;
 import org.jvnet.hudson.test.HudsonTestCase;
 import org.jvnet.hudson.test.Email;
@@ -78,5 +74,31 @@ public class CaseResultTest extends HudsonTestCase {
         assertEquals("org.twia.vendor.VendorManagerTest",cr.getClassName());
         assertEquals("testGetVendorFirmKeyForVendorRep",cr.getName());
 
+
+        // piggy back tests for annotate methods
+        assertOutput(cr,"plain text", "plain text");
+        assertOutput(cr,"line #1\nhttp://nowhere.net/\nline #2\n",
+                "line #1\n<a href=\"http://nowhere.net/\">http://nowhere.net/</a>\nline #2\n");
+        assertOutput(cr,"failed; see http://nowhere.net/",
+                "failed; see <a href=\"http://nowhere.net/\">http://nowhere.net/</a>");
+        assertOutput(cr,"failed (see http://nowhere.net/)",
+                "failed (see <a href=\"http://nowhere.net/\">http://nowhere.net/</a>)");
+        assertOutput(cr,"http://nowhere.net/ - failed: http://elsewhere.net/",
+                "<a href=\"http://nowhere.net/\">http://nowhere.net/</a> - failed: " +
+                "<a href=\"http://elsewhere.net/\">http://elsewhere.net/</a>");
+        assertOutput(cr,"https://nowhere.net/",
+                "<a href=\"https://nowhere.net/\">https://nowhere.net/</a>");
+        assertOutput(cr,"stuffhttp://nowhere.net/", "stuffhttp://nowhere.net/");
+        assertOutput(cr,"a < b && c < d", "a &lt; b &amp;&amp; c &lt; d");
+        assertOutput(cr,"see <http://nowhere.net/>",
+                "see &lt;<a href=\"http://nowhere.net/\">http://nowhere.net/</a>>");
+        assertOutput(cr,"http://google.com/?q=stuff&lang=en",
+                "<a href=\"http://google.com/?q=stuff&amp;lang=en\">http://google.com/?q=stuff&amp;lang=en</a>");
+        assertOutput(cr,"http://localhost:8080/stuff/",
+                "<a href=\"http://localhost:8080/stuff/\">http://localhost:8080/stuff/</a>");
+    }
+
+    private void assertOutput(CaseResult cr, String in, String out) throws Exception {
+        assertEquals(out, cr.annotate(in));
     }
 }

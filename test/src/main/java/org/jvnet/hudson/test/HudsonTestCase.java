@@ -217,7 +217,7 @@ public abstract class HudsonTestCase extends TestCase {
         hudson = newHudson();
         hudson.setNoUsageStatistics(true); // collecting usage stats from tests are pointless.
         
-        hudson.setCrumbIssuer(((CrumbIssuerDescriptor<CrumbIssuer>)hudson.getDescriptor(TestCrumbIssuer.class)).newInstance(null,null));
+        hudson.setCrumbIssuer(new TestCrumbIssuer());
 
         hudson.servletContext.setAttribute("app",hudson);
         hudson.servletContext.setAttribute("version","?");
