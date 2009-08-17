@@ -31,17 +31,34 @@ import org.kohsuke.stapler.export.ExportedBean;
 
 /**
  * Cause object base class.  This class hierarchy is used to keep track of why 
- * a given build was started.   The Cause object is connected to a build via the
- * CauseAction object.
+ * a given build was started. This object encapsulates the UI rendering of the cause,
+ * as well as providing more useful information in respective subypes.
+ *
+ * The Cause object is connected to a build via the {@link CauseAction} object.
+ *
+ * <h2>Views</h2>
+ * <dl>
+ * <dt>description.jelly
+ * <dd>Renders the cause to HTML. By default, it puts the short description.
+ * </dl>
  *
  * @author Michael Donohue
  * @see Run#getCauses()
  */
 @ExportedBean
 public abstract class Cause {
+    /**
+     * One-line human-readable text of the cause.
+     *
+     * <p>
+     * By default, this method is used to render HTML as well.
+     */
 	@Exported(visibility=3)
 	abstract public String getShortDescription();
 
+    /**
+     * Fall back implementation when no other type is available.
+     */
 	public static class LegacyCodeCause extends Cause {
 		private StackTraceElement [] stackTrace;
 		public LegacyCodeCause() {
@@ -54,6 +71,9 @@ public abstract class Cause {
 		}
 	}
 	
+    /**
+     * A build is triggered by the completion of another build (AKA upstream build.)
+     */
 	public static class UpstreamCause extends Cause {
 		private String upstreamProject, upstreamUrl;
 		private int upstreamBuild;
@@ -100,12 +120,16 @@ public abstract class Cause {
 		}
 	}
 
+    /**
+     * A build is started by an user action.
+     */
 	public static class UserCause extends Cause {
 		private String authenticationName;
 		public UserCause() {
 			this.authenticationName = Hudson.getAuthentication().getName();
 		}
-		
+
+        @Exported
         public String getUserName() {
             return authenticationName;
         }
