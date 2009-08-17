@@ -2786,7 +2786,7 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
     /**
      * Performs a restart.
      */
-    public void restart() throws ServletException, IOException {
+    public void restart() {
         final Lifecycle lifecycle = Lifecycle.get();
         if(!lifecycle.canRestart())
             throw new Failure("Restart is not supported in this running mode.");
