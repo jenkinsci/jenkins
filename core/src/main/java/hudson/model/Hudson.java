@@ -87,6 +87,7 @@ import hudson.slaves.Cloud;
 import hudson.slaves.DumbSlave;
 import hudson.slaves.NodeDescriptor;
 import hudson.slaves.NodeProvisioner;
+import hudson.slaves.OfflineCause;
 import hudson.tasks.BuildWrapper;
 import hudson.tasks.Builder;
 import hudson.tasks.DynamicLabeler;
@@ -1373,7 +1374,9 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
      * Removes a {@link Node} from Hudson.
      */
     public synchronized void removeNode(Node n) throws IOException {
-        n.toComputer().disconnect();
+        Computer c = n.toComputer();
+        if (c!=null)
+            c.disconnect(OfflineCause.create(Messages._Hudson_NodeBeingRemoved()));
 
         ArrayList<Node> nl = new ArrayList<Node>(this.slaves);
         nl.remove(n);
