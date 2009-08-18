@@ -68,7 +68,7 @@ THE SOFTWARE.
 	  </table>
 
     <h3>${%Error Message}</h3>
-      <pre>"${it.annotate(it.errorDetails)}</pre>
+      <pre>"${it.annotate(it.errorDetails)}"</pre>
     <h3>${%Stacktrace}</h3>
       <pre>${it.annotate(it.errorStackTrace)}</pre>
 

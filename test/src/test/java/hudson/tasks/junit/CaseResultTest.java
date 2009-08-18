@@ -31,7 +31,11 @@ import hudson.model.FreeStyleBuild;
 import hudson.Launcher;
 import org.jvnet.hudson.test.HudsonTestCase;
 import org.jvnet.hudson.test.Email;
+import org.jvnet.hudson.test.Bug;
 import org.jvnet.hudson.test.TestBuilder;
+import com.gargoylesoftware.htmlunit.WebAssert;
+import com.gargoylesoftware.htmlunit.html.HtmlPage;
+import com.gargoylesoftware.htmlunit.html.HtmlElement;
 
 import java.io.IOException;
 
@@ -98,7 +102,44 @@ public class CaseResultTest extends HudsonTestCase {
                 "<a href=\"http://localhost:8080/stuff/\">http://localhost:8080/stuff/</a>");
     }
 
+
+    /**
+     * Verifies that the error message and stacktrace from a failed junit test actually render properly.
+     */
+    @Bug(4257)
+    public void testErrorMsgAndStacktraceRender() throws Exception {
+        FreeStyleProject p = createFreeStyleProject("render-test");
+        p.getBuildersList().add(new TestBuilder() {
+            public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
+                build.getWorkspace().child("junit.xml").copyFrom(
+                    getClass().getResource("junit-report-20090516.xml"));
+                return true;
+            }
+        });
+        p.getPublishersList().add(new JUnitResultArchiver("*.xml"));
+        FreeStyleBuild b = assertBuildStatus(Result.UNSTABLE, p.scheduleBuild2(0).get());
+        TestResult tr = b.getAction(TestResultAction.class).getResult();
+        assertEquals(3,tr.getFailedTests().size());
+        CaseResult cr = tr.getFailedTests().get(1);
+        assertEquals("org.twia.vendor.VendorManagerTest",cr.getClassName());
+        assertEquals("testGetRevokedClaimsForAdjustingFirm",cr.getName());
+
+	String testUrl = cr.getRelativePathFrom(tr);
+	
+	HtmlPage page = new WebClient().goTo("job/render-test/1/testReport/" + testUrl);
+
+	HtmlElement errorMsg = (HtmlElement) page.getByXPath("//h3[text()='Error Message']/following-sibling::*").get(0);
+	assertEquals("\"" + cr.annotate(cr.getErrorDetails()) + "\"", errorMsg.getTextContent());
+	HtmlElement errorStackTrace = (HtmlElement) page.getByXPath("//h3[text()='Stacktrace']/following-sibling::*").get(0);
+
+	// Have to do some annoying replacing here to get the same text Jelly produces in the end.
+	assertEquals(cr.annotate(cr.getErrorStackTrace()).replaceAll("&lt;", "<").replace("\r\n", "\n"),
+		     errorStackTrace.getTextContent());
+    }
+
+
     private void assertOutput(CaseResult cr, String in, String out) throws Exception {
         assertEquals(out, cr.annotate(in));
     }
+
 }
