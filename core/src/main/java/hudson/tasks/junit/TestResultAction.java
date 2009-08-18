@@ -63,7 +63,7 @@ public class TestResultAction extends AbstractTestResultAction<TestResultAction>
     private int failCount;
     private int skipCount;
     private Integer totalCount;
-    private List<Data> testData;
+    private List<Data> testData = new ArrayList<Data>();
     private Map<String,String> descriptions = new ConcurrentHashMap<String, String>();
 
     public TestResultAction(AbstractBuild owner, TestResult result, BuildListener listener) {
