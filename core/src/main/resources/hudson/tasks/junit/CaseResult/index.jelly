@@ -67,10 +67,15 @@ THE SOFTWARE.
 		  </j:forEach>
 	  </table>
 
+      <j:if test="${!empty(it.errorDetails)}">
     <h3>${%Error Message}</h3>
-      <pre>"${it.annotate(it.errorDetails)}"</pre>
+      <pre>${it.annotate(it.errorDetails)}</pre>
+      </j:if>
+
+      <j:if test="${!empty(it.errorStackTrace)}">
     <h3>${%Stacktrace}</h3>
       <pre>${it.annotate(it.errorStackTrace)}</pre>
+      </j:if>
 
       <j:if test="${!empty(it.stdout)}">
         <h3>${%Standard Output}</h3>
