@@ -33,6 +33,8 @@ import javax.servlet.ServletException;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.Stapler;
+import org.kohsuke.stapler.StaplerFallback;
+import org.kohsuke.stapler.StaplerProxy;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 
@@ -44,7 +46,7 @@ import org.kohsuke.stapler.StaplerResponse;
  * @author Tom Huybrechts
  *
  */
-public class ProxyView extends View {
+public class ProxyView extends View implements StaplerFallback {
 
     private String proxiedViewName;
 
@@ -136,6 +138,10 @@ public class ProxyView extends View {
         	return !(Stapler.getCurrentRequest().findAncestorObject(ViewGroup.class) instanceof Hudson);
         }
 
+    }
+
+    public Object getStaplerFallback() {
+        return getProxiedView();
     }
 
 }
