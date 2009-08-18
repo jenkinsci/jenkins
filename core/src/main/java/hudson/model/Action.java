@@ -26,9 +26,18 @@ package hudson.model;
 import hudson.tasks.test.TestResultProjectAction;
 
 /**
- * Object that contributes an item to the left hand side menu
- * of a {@link ModelObject}
- * (for example to {@link Project}, {@link Build}, and etc.)
+ * Object that contributes additional information, behaviors, and UIs to {@link ModelObject}
+ * (more specifically {@link Actionable} objects, which most interesting {@link ModelObject}s are.)
+ *
+ * <p>
+ * {@link Action}s added to a model object creates additional URL subspace under the parent model object,
+ * through which it can interact with users. {@link Action}s are also capable of exposing themselves
+ * to the left hand side menu of a {@link ModelObject} (for example to {@link Project}, {@link Build}, and etc.)
+ *
+ * <p>
+ * Some actions use the latter without the former (for example, to add a link to an external website),
+ * while others do the former without the latter (for example, to just draw some graphs in <tt>floatingBox.jelly</tt>),
+ * and still some others do both.
  *
  * <p>
  * If an action has a view named <tt>floatingBox.jelly</tt>,
