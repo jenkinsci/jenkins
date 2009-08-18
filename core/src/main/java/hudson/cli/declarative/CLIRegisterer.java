@@ -45,7 +45,7 @@ public class CLIRegisterer extends ExtensionFinder {
                     final String name = m.getAnnotation(CLIMethod.class).name();
 
                     final ResourceBundleHolder res = loadMessageBundle(m);
-                    res.format(name+".shortDescription");   // make sure we have the resource, to fail early
+                    res.format("CLI."+name+".shortDescription");   // make sure we have the resource, to fail early
 
                     r.add(new CloneableCLICommand() {
                         @Override

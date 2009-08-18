@@ -37,7 +37,7 @@ import java.lang.annotation.Target;
  *
  * <p>
  * You need to have <tt>Messages.properties</tt> in the same package with the
- * <tt>command-name.shortDescription</tt> key to describe the command.
+ * <tt>CLI.command-name.shortDescription</tt> key to describe the command.
  * This is used for {@link CLICommand#getShortDescription()}.
  *
  * @author Kohsuke Kawaguchi
