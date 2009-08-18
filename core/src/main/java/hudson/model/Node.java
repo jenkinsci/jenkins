@@ -29,7 +29,6 @@ import hudson.FileSystemProvisioner;
 import hudson.Launcher;
 import hudson.node_monitors.NodeMonitor;
 import hudson.remoting.VirtualChannel;
-import hudson.remoting.Channel;
 import hudson.security.ACL;
 import hudson.security.AccessControlled;
 import hudson.security.Permission;
@@ -65,6 +64,11 @@ public abstract class Node extends AbstractModelObject implements Describable<No
      * is saved once.
      */
     protected volatile transient boolean holdOffLaunchUntilSave;
+    /**
+     * labels assigned to this node dynamically by plugins or other computation
+     * rather than via user configuration.
+     */
+    protected volatile transient DynamicLabels dynamicLabels = new DynamicLabels(null);
 
     public String getDisplayName() {
         return getNodeName(); // default implementation
@@ -256,6 +260,15 @@ public abstract class Node extends AbstractModelObject implements Describable<No
      *      if the operation is aborted.
      */
     public abstract ClockDifference getClockDifference() throws IOException, InterruptedException;
+
+    /**
+     * Check if we should rebuild the list of dynamic labels.
+     * @todo make less hacky
+     * @return
+     */
+    protected boolean isChangedDynamicLabels() {
+        return dynamicLabels.isChanged(toComputer());
+    }
 
     /**
      * Constants that control how Hudson allocates jobs to slaves.

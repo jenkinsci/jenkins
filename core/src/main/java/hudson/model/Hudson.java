@@ -91,8 +91,6 @@ import hudson.slaves.NodeProvisioner;
 import hudson.slaves.OfflineCause;
 import hudson.tasks.BuildWrapper;
 import hudson.tasks.Builder;
-import hudson.tasks.DynamicLabeler;
-import hudson.tasks.LabelFinder;
 import hudson.tasks.Mailer;
 import hudson.tasks.Publisher;
 import hudson.triggers.Trigger;
@@ -428,7 +426,6 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
      */
     private transient final ConcurrentHashMap<String,Label> labels = new ConcurrentHashMap<String,Label>();
     private transient volatile Set<Label> labelSet;
-    private transient volatile Set<Label> dynamicLabels = null;
 
     /**
      * Load statistics of the entire system.
@@ -1259,7 +1256,7 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
     /**
      * Gets the label that exists on this system by the name.
      *
-     * @return null if no such label exists.
+     * @return null if no name is null.
      * @see Label#parse(String)
      */
     public Label getLabel(String name) {
@@ -1943,8 +1940,10 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
     }
 
     public Set<Label> getAssignedLabels() {
-        Set<Label> lset = labelSet; // labelSet may be set by another thread while we are in this method, so capture it.
-        if (lset == null) {
+        // labelSet may be set by another thread while we are in this method,
+        // so capture it.
+        Set<Label> lset = labelSet;
+        if (lset == null || isChangedDynamicLabels()) {
             Set<Label> r = Label.parse(getLabelString());
             r.addAll(getDynamicLabels());
             r.add(getSelfLabel());
@@ -1959,25 +1958,12 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
      * @see hudson.tasks.LabelFinder
      */
     public Set<Label> getDynamicLabels() {
-        if (dynamicLabels == null) {
-            // in the worst cast, two threads end up doing the same computation twice,
-            // but that won't break the semantics.
+        if (dynamicLabels.isChanged(toComputer()))
+            // in the worst cast, two threads end up doing the same computation
+            // twice, but that won't break the semantics.
             // OTOH, not locking prevents dead-lock. See #1390
-            Set<Label> r = new HashSet<Label>();
-            Computer comp = getComputer("");
-            if (comp != null) {
-                VirtualChannel channel = comp.getChannel();
-                if (channel != null) {
-                    for (DynamicLabeler labeler : LabelFinder.LABELERS) {
-                        for (String label : labeler.findLabels(channel)) {
-                            r.add(getLabel(label));
-                        }
-                    }
-                }
-            }
-            dynamicLabels = r;
-        }
-        return dynamicLabels;
+            dynamicLabels = new DynamicLabels(toComputer());
+        return dynamicLabels.labels;
     }
 
     public Label getSelfLabel() {

@@ -39,7 +39,6 @@ import hudson.slaves.NodeProperty;
 import hudson.slaves.NodePropertyDescriptor;
 import hudson.slaves.RetentionStrategy;
 import hudson.slaves.SlaveComputer;
-import hudson.tasks.DynamicLabeler;
 import hudson.tasks.LabelFinder;
 import hudson.util.ClockDifference;
 import hudson.util.DescribableList;
@@ -54,7 +53,6 @@ import java.net.URL;
 import java.net.URLConnection;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -126,9 +124,6 @@ public abstract class Slave extends Node implements Serializable {
      * Lazily computed set of labels from {@link #label}.
      */
     private transient volatile Set<Label> labels;
-
-    private transient volatile Set<Label> dynamicLabels;
-    private transient volatile int dynamicLabelsInstanceHash;
 
     @DataBoundConstructor
     public Slave(String name, String nodeDescription, String remoteFS, String numExecutors,
@@ -236,24 +231,6 @@ public abstract class Slave extends Node implements Serializable {
     }
 
     /**
-     * Check if we should rebuild the list of dynamic labels.
-     * @todo make less hacky
-     * @return
-     */
-    private boolean isChangedDynamicLabels() {
-        Computer comp = getComputer();
-        if (comp == null) {
-            return dynamicLabelsInstanceHash != 0;
-        } else {
-            if (dynamicLabelsInstanceHash == comp.hashCode()) {
-                return false;
-            }
-            dynamicLabels = null; // force a re-calc
-            return true;
-        }
-    }
-
-    /**
      * Returns the possibly empty set of labels that it has been determined as supported by this node.
      *
      * @todo make less hacky
@@ -263,31 +240,14 @@ public abstract class Slave extends Node implements Serializable {
      *      never null.
      */
     public Set<Label> getDynamicLabels() {
-        // another thread may preempt and set dynamicLabels field to null,
-        // so a care needs to be taken to avoid race conditions under all circumstances.
-        Set<Label> labels = dynamicLabels;
-        if (labels != null)     return labels;
-
+        // another thread may preempt and replace dynamicLabels.
+        // so a care needs to be taken to avoid race conditions under all 
+        // circumstances.
         synchronized (this) {
-            labels = dynamicLabels;
-            if (labels != null)     return labels;
-
-            dynamicLabels = labels = new HashSet<Label>();
-            Computer computer = getComputer();
-            VirtualChannel channel;
-            if (computer != null && (channel = computer.getChannel()) != null) {
-                dynamicLabelsInstanceHash = computer.hashCode();
-                for (DynamicLabeler labeler : LabelFinder.LABELERS) {
-                    for (String label : labeler.findLabels(channel)) {
-                        labels.add(Hudson.getInstance().getLabel(label));
-                    }
-                }
-            } else {
-                dynamicLabelsInstanceHash = 0;
-            }
-
-            return labels;
+            if (dynamicLabels.isChanged(toComputer()))
+                dynamicLabels = new DynamicLabels(toComputer());
         }
+        return dynamicLabels.labels;
     }
 
     public ClockDifference getClockDifference() throws IOException, InterruptedException {
@@ -381,7 +341,7 @@ public abstract class Slave extends Node implements Serializable {
      * Gets the corresponding computer object.
      */
     public SlaveComputer getComputer() {
-        return (SlaveComputer)Hudson.getInstance().getComputer(this);
+        return (SlaveComputer)toComputer();
     }
 
     public boolean equals(Object o) {
