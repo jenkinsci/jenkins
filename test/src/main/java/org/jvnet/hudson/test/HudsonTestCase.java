@@ -233,7 +233,9 @@ public abstract class HudsonTestCase extends TestCase {
                 return updateCenterUrl;
             }
         });
+        // don't waste bandwidth talking to the update center
         DownloadService.neverUpdate = true;
+        UpdateCenter.neverUpdate = true;
 
         // cause all the descriptors to reload.
         // ideally we'd like to reset them to properly emulate the behavior, but that's not possible.
@@ -840,6 +842,13 @@ public abstract class HudsonTestCase extends TestCase {
     }
 
     /**
+     * This is to assist Groovy test clients who are incapable of instantiating the inner classes properly.
+     */
+    public WebClient createWebClient() {
+        return new WebClient();
+    }
+    
+    /**
      * Extends {@link com.gargoylesoftware.htmlunit.WebClient} and provide convenience methods
      * for accessing Hudson.
      */
@@ -1004,8 +1013,6 @@ public abstract class HudsonTestCase extends TestCase {
     static {
         // screen scraping relies on locale being fixed.
         Locale.setDefault(Locale.ENGLISH);
-        // don't waste bandwidth talking to the update center
-        UpdateCenter.neverUpdate = true;
 
         {// enable debug assistance, since tests are often run from IDE
             Dispatcher.TRACE = true;
