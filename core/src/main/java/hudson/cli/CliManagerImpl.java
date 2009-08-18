@@ -75,14 +75,14 @@ public class CliManagerImpl implements CliEntryPoint, Serializable {
             SecurityContextHolder.getContext().setAuthentication(auth);
             try {
                 // execute the command, do so with the originator of the request as the principal
-                return cmd.main(args.subList(1,args.size()),stdin, out, err);
+                return cmd.main(args.subList(1,args.size()),locale, stdin, out, err);
             } finally {
                 SecurityContextHolder.getContext().setAuthentication(old);
             }
         }
 
         err.println("No such command: "+subCmd);
-        new HelpCommand().main(Collections.<String>emptyList(), stdin, out, err);
+        new HelpCommand().main(Collections.<String>emptyList(), locale, stdin, out, err);
         return -1;
     }
 

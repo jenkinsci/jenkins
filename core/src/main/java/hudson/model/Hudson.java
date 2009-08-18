@@ -50,6 +50,7 @@ import hudson.tools.ToolInstallation;
 import hudson.tools.ToolDescriptor;
 import hudson.cli.CliEntryPoint;
 import hudson.cli.CliManagerImpl;
+import hudson.cli.declarative.CLIMethod;
 import hudson.logging.LogRecorderManager;
 import hudson.lifecycle.Lifecycle;
 import hudson.model.Descriptor.FormException;
@@ -192,10 +193,10 @@ import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
+import static java.util.logging.Level.SEVERE;
 import java.util.regex.Pattern;
 import java.nio.charset.Charset;
 import javax.servlet.RequestDispatcher;
-import javax.servlet.ServletInputStream;
 import javax.crypto.SecretKey;
 
 import groovy.lang.GroovyShell;
@@ -544,7 +545,7 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
             try {
                 proxy = ProxyConfiguration.load();
             } catch (IOException e) {
-                LOGGER.log(Level.SEVERE, "Failed to load proxy configuration", e);
+                LOGGER.log(SEVERE, "Failed to load proxy configuration", e);
             }
 
             // load plugins.
@@ -617,7 +618,24 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
                 FileUtils.writeStringToFile(new File(userContentDir,"readme.txt"),Messages.Hudson_USER_CONTENT_README());
             }
 
-            Trigger.init(); // start running trigger
+            Trigger.init();
+// pending SEZPOZ-8
+//            // invoke post initialization methods
+//            for ( IndexItem<PostInit,Void> i : Index.load(PostInit.class, Void.class, pluginManager.uberClassLoader)) {
+//                try {
+//                    Method m = (Method)i.element();
+//                    if (Modifier.isStatic(m.getModifiers()))
+//                        m.invoke(null);
+//                    else
+//                        LOGGER.severe(m+" is annotated with @PostInit but it's not a static method");
+//                } catch (InstantiationException e) {
+//                    LOGGER.log(SEVERE,"Failed to invoke @PostInit: "+i,e);
+//                } catch (IllegalAccessException e) {
+//                    LOGGER.log(SEVERE,"Failed to invoke @PostInit: "+i,e);
+//                } catch (InvocationTargetException e) {
+//                    LOGGER.log(SEVERE,"Failed to invoke @PostInit: "+i,e);
+//                }
+//            }
         } finally {
             SecurityContextHolder.clearContext();
         }
@@ -2655,7 +2673,7 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
                     User.reload();
                     context.setAttribute("app",Hudson.this);
                 } catch (IOException e) {
-                    LOGGER.log(Level.SEVERE,"Failed to reload Hudson config",e);
+                    LOGGER.log(SEVERE,"Failed to reload Hudson config",e);
                 }
             }
         }.start();
@@ -2789,6 +2807,7 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
     /**
      * Performs a restart.
      */
+    @CLIMethod(name="restart")
     public void restart() {
         final Lifecycle lifecycle = Lifecycle.get();
         if(!lifecycle.canRestart())
