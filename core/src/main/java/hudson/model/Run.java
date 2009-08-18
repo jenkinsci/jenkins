@@ -1509,7 +1509,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
      * Builds up the environment variable map that's sufficient to identify a process
      * as ours. This is used to kill run-away processes via {@link ProcessTree#killAll(Map)}.
      */
-    protected final EnvVars getCharacteristicEnvVars() {
+    public final EnvVars getCharacteristicEnvVars() {
         EnvVars env = new EnvVars();
         env.put("BUILD_NUMBER",String.valueOf(number));
         env.put("BUILD_ID",getId());
