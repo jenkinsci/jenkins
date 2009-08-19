@@ -93,21 +93,19 @@ public class WindowsSlaveInstaller implements Callable<Void,RuntimeException>, A
      */
     public void actionPerformed(ActionEvent e) {
         int r = JOptionPane.showConfirmDialog(dialog,
-                "This will install a slave agent as a Windows service,\n" +
-                "so that this slave will connect to Hudson as soon as the machine boots.\n" +
-                "Do you want to proceed with installation?",
+                Messages.WindowsSlaveInstaller_ConfirmInstallation(),
                 Messages.WindowsInstallerLink_DisplayName(), OK_CANCEL_OPTION);
         if(r!=JOptionPane.OK_OPTION)    return;
 
         if(!DotNet.isInstalled(2,0)) {
-            JOptionPane.showMessageDialog(dialog,".NET Framework 2.0 or later is required for this feature",
+            JOptionPane.showMessageDialog(dialog,Messages.WindowsSlaveInstaller_DotNetRequired(),
                     Messages.WindowsInstallerLink_DisplayName(), ERROR_MESSAGE);
             return;
         }
 
         final File dir = new File(rootDir);
         if (!dir.exists()) {
-            JOptionPane.showMessageDialog(dialog,"Slave root directory '"+rootDir+"' doesn't exist",
+            JOptionPane.showMessageDialog(dialog,Messages.WindowsSlaveInstaller_RootFsDoesntExist(rootDir),
                     Messages.WindowsInstallerLink_DisplayName(), ERROR_MESSAGE);
             return;
         }
@@ -139,8 +137,7 @@ public class WindowsSlaveInstaller implements Callable<Void,RuntimeException>, A
             }
 
             r = JOptionPane.showConfirmDialog(dialog,
-                    "Installation was successful. Would you like to\n" +
-                    "Stop this slave agent and start the newly installed service?",
+                    Messages.WindowsSlaveInstaller_InstallationSuccessful(),
                     Messages.WindowsInstallerLink_DisplayName(), OK_CANCEL_OPTION);
             if(r!=JOptionPane.OK_OPTION)    return;
 
@@ -162,8 +159,7 @@ public class WindowsSlaveInstaller implements Callable<Void,RuntimeException>, A
         } catch (Exception t) {
             StringWriter sw = new StringWriter();
             t.printStackTrace(new PrintWriter(sw));
-            JOptionPane.showMessageDialog(
-                dialog,sw.toString(),"Error", ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(dialog,sw.toString(),"Error", ERROR_MESSAGE);
         }
     }
 
