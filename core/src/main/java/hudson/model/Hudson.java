@@ -1958,7 +1958,7 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
      * @see hudson.tasks.LabelFinder
      */
     public Set<Label> getDynamicLabels() {
-        if (dynamicLabels.isChanged(toComputer()))
+        if (dynamicLabels==null || dynamicLabels.isChanged(toComputer()))
             // in the worst cast, two threads end up doing the same computation
             // twice, but that won't break the semantics.
             // OTOH, not locking prevents dead-lock. See #1390

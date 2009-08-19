@@ -244,7 +244,7 @@ public abstract class Slave extends Node implements Serializable {
         // so a care needs to be taken to avoid race conditions under all 
         // circumstances.
         synchronized (this) {
-            if (dynamicLabels.isChanged(toComputer()))
+            if (dynamicLabels==null || dynamicLabels.isChanged(toComputer()))
                 dynamicLabels = new DynamicLabels(toComputer());
         }
         return dynamicLabels.labels;
