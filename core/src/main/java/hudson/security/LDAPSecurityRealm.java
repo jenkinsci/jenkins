@@ -23,7 +23,6 @@
  */
 package hudson.security;
 
-import com.sun.jndi.ldap.LdapCtxFactory;
 import groovy.lang.Binding;
 import hudson.Extension;
 import hudson.Util;
@@ -51,18 +50,15 @@ import org.acegisecurity.userdetails.ldap.LdapUserDetails;
 import org.acegisecurity.userdetails.ldap.LdapUserDetailsImpl;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.QueryParameter;
-import org.kohsuke.stapler.StaplerRequest;
-import org.kohsuke.stapler.StaplerResponse;
 import org.springframework.dao.DataAccessException;
 import org.springframework.web.context.WebApplicationContext;
 
 import javax.naming.Context;
 import javax.naming.NamingException;
-import javax.naming.AuthenticationException;
 import javax.naming.directory.Attribute;
 import javax.naming.directory.Attributes;
 import javax.naming.directory.DirContext;
-import javax.servlet.ServletException;
+import javax.naming.directory.InitialDirContext;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.Socket;
@@ -304,7 +300,10 @@ public class LDAPSecurityRealm extends SecurityRealm {
                 props.put(Context.SECURITY_PRINCIPAL,managerDN);
                 props.put(Context.SECURITY_CREDENTIALS,getManagerPassword());
             }
-            DirContext ctx = LdapCtxFactory.getLdapCtxInstance(getServerUrl()+'/', props);
+            props.put(Context.INITIAL_CONTEXT_FACTORY, "com.sun.jndi.ldap.LdapCtxFactory");
+            props.put(Context.PROVIDER_URL, getServerUrl()+'/');
+
+            DirContext ctx = new InitialDirContext(props);
             Attributes atts = ctx.getAttributes("");
             Attribute a = atts.get("defaultNamingContext");
             if(a!=null) // this entry is available on Active Directory. See http://msdn2.microsoft.com/en-us/library/ms684291(VS.85).aspx
@@ -496,7 +495,10 @@ public class LDAPSecurityRealm extends SecurityRealm {
                 if(managerPassword!=null && managerPassword.trim().length() > 0 && !"undefined".equals(managerPassword)) {
                     props.put(Context.SECURITY_CREDENTIALS,managerPassword);
                 }
-                DirContext ctx = LdapCtxFactory.getLdapCtxInstance(addPrefix(server)+'/', props);
+                props.put(Context.INITIAL_CONTEXT_FACTORY, "com.sun.jndi.ldap.LdapCtxFactory");
+                props.put(Context.PROVIDER_URL, addPrefix(server)+'/');
+
+                DirContext ctx = new InitialDirContext(props);
                 ctx.getAttributes("");
                 return FormValidation.ok();   // connected
             } catch (NamingException e) {
