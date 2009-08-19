@@ -23,7 +23,6 @@
  */
 package hudson.lifecycle;
 
-import hudson.FilePath;
 import hudson.Launcher.LocalLauncher;
 import hudson.remoting.Callable;
 import hudson.remoting.Engine;
@@ -36,6 +35,8 @@ import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.output.ByteArrayOutputStream;
 
 import javax.swing.*;
+import static javax.swing.JOptionPane.ERROR_MESSAGE;
+import static javax.swing.JOptionPane.OK_CANCEL_OPTION;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
@@ -95,22 +96,19 @@ public class WindowsSlaveInstaller implements Callable<Void,RuntimeException>, A
                 "This will install a slave agent as a Windows service,\n" +
                 "so that this slave will connect to Hudson as soon as the machine boots.\n" +
                 "Do you want to proceed with installation?",
-                Messages.WindowsInstallerLink_DisplayName(),
-                JOptionPane.OK_CANCEL_OPTION);
+                Messages.WindowsInstallerLink_DisplayName(), OK_CANCEL_OPTION);
         if(r!=JOptionPane.OK_OPTION)    return;
 
         if(!DotNet.isInstalled(2,0)) {
             JOptionPane.showMessageDialog(dialog,".NET Framework 2.0 or later is required for this feature",
-                    Messages.WindowsInstallerLink_DisplayName(),
-                    JOptionPane.ERROR_MESSAGE);
+                    Messages.WindowsInstallerLink_DisplayName(), ERROR_MESSAGE);
             return;
         }
 
         final File dir = new File(rootDir);
         if (!dir.exists()) {
             JOptionPane.showMessageDialog(dialog,"Slave root directory '"+rootDir+"' doesn't exist",
-                    Messages.WindowsInstallerLink_DisplayName(),
-                    JOptionPane.ERROR_MESSAGE);
+                    Messages.WindowsInstallerLink_DisplayName(), ERROR_MESSAGE);
             return;
         }
 
@@ -136,16 +134,14 @@ public class WindowsSlaveInstaller implements Callable<Void,RuntimeException>, A
             r = new LocalLauncher(task).launch().cmds(slaveExe, "install").stdout(task).pwd(dir).join();
             if(r!=0) {
                 JOptionPane.showMessageDialog(
-                    dialog,baos.toString(),"Error",
-                    JOptionPane.ERROR_MESSAGE);
+                    dialog,baos.toString(),"Error", ERROR_MESSAGE);
                 return;
             }
 
             r = JOptionPane.showConfirmDialog(dialog,
                     "Installation was successful. Would you like to\n" +
                     "Stop this slave agent and start the newly installed service?",
-                    Messages.WindowsInstallerLink_DisplayName(),
-                    JOptionPane.OK_CANCEL_OPTION);
+                    Messages.WindowsInstallerLink_DisplayName(), OK_CANCEL_OPTION);
             if(r!=JOptionPane.OK_OPTION)    return;
 
             // let the service start after we close our connection, to avoid conflicts
@@ -167,8 +163,7 @@ public class WindowsSlaveInstaller implements Callable<Void,RuntimeException>, A
             StringWriter sw = new StringWriter();
             t.printStackTrace(new PrintWriter(sw));
             JOptionPane.showMessageDialog(
-                dialog,sw.toString(),"Error",
-                JOptionPane.ERROR_MESSAGE);
+                dialog,sw.toString(),"Error", ERROR_MESSAGE);
         }
     }
 
