@@ -335,10 +335,20 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
      * @since 1.319
      */
     public final FilePath getSomeWorkspace() {
+        R b = getSomeBuildWithWorkspace();
+        return b!=null ? b.getWorkspace() : null;
+    }
+
+    /**
+     * Gets some build that has a live workspace.
+     *
+     * @return null if no such build exists.
+     */
+    public final R getSomeBuildWithWorkspace() {
         int cnt=0;
         for (R b = getLastBuild(); cnt<5 && b!=null; b=b.getPreviousBuild()) {
             FilePath ws = b.getWorkspace();
-            if (ws!=null)   return ws;
+            if (ws!=null)   return b;
         }
         return null;
     }
@@ -1342,9 +1352,10 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
      */
     public HttpResponse doDoWipeOutWorkspace() throws IOException, ServletException, InterruptedException {
         checkPermission(BUILD);
-        getLastBuild();
-        if (getScm().processWorkspaceBeforeDeletion(this, getWorkspace(), null)) {
-            getWorkspace().deleteRecursive();
+        R b = getSomeBuildWithWorkspace();
+        FilePath ws = b!=null ? b.getWorkspace() : null;
+        if (ws!=null && getScm().processWorkspaceBeforeDeletion(this, ws, b.getBuiltOn())) {
+            ws.deleteRecursive();
             return new HttpRedirect(".");
         } else {
             // If we get here, that means the SCM blocked the workspace deletion.
