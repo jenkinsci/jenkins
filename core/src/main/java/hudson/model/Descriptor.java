@@ -258,10 +258,12 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable {
         if(method==null) {
             method = NONE;
             String methodName = "doCheck"+ capitalizedFieldName;
-            for( Method m : getClass().getMethods() ) {
-                if(m.getName().equals(methodName)) {
-                    method = m;
-                    break;
+            for (Class c=getClass(); c!=null; c=c.getSuperclass()) {
+                for( Method m : c.getMethods() ) {
+                    if(m.getName().equals(methodName)) {
+                        method = m;
+                        break;
+                    }
                 }
             }
             checkMethods.put(fieldName,method);

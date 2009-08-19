@@ -393,7 +393,7 @@ public abstract class Slave extends Node implements Serializable {
         /**
          * Performs syntactical check on the remote FS for slaves.
          */
-        public FormValidation doCheckRemoteFs(@QueryParameter String value) throws IOException, ServletException {
+        public FormValidation doCheckRemoteFS(@QueryParameter String value) throws IOException, ServletException {
             if(Util.fixEmptyAndTrim(value)==null)
                 return FormValidation.error("Remote directory is mandatory");
 
