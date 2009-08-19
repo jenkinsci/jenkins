@@ -231,7 +231,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
 
     /**
      * Does this project perform concurrent builds?
-     * @since 1.XXX
+     * @since 1.319
      */
     public boolean isConcurrentBuild() {
         return Hudson.CONCURRENT_BUILD && concurrentBuild;
@@ -297,7 +297,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
      *
      * @return
      *      null if the workspace is on a slave that's not connected.
-     * @deprecated as of 1.XXX
+     * @deprecated as of 1.319
      *      To support concurrent builds of the same project, this method is moved to {@link AbstractBuild}.
      *      For backward compatibility, this method returns the right {@link AbstractBuild#getWorkspace()} if called
      *      from {@link Executor}, and otherwise the workspace of the last build.
@@ -332,7 +332,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
      *
      * @return
      *      null if there's no available workspace.
-     * @since 1.XXX
+     * @since 1.319
      */
     public final FilePath getSomeWorkspace() {
         int cnt=0;
@@ -349,7 +349,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
      * This is usually where <tt>pom.xml</tt>, <tt>build.xml</tt>
      * and so on exists.
      *
-     * @deprecated as of 1.XXX
+     * @deprecated as of 1.319
      *      See {@link #getWorkspace()} for a migration strategy.
      */
     public FilePath getModuleRoot() {
@@ -365,7 +365,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
      * In these cases, the returned array will have a length greater than one.
      * @return The roots of all modules checked out from the SCM.
      *
-     * @deprecated as of 1.XXX
+     * @deprecated as of 1.319
      *      See {@link #getWorkspace()} for a migration strategy.
      */
     public FilePath[] getModuleRoots() {
@@ -851,7 +851,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
      * Gets the {@link Resource} that represents the workspace of this project.
      * Useful for locking and mutual exclusion control.
      *
-     * @deprecated as of 1.XXX
+     * @deprecated as of 1.319
      *      Projects no longer have a fixed workspace, ands builds will find an available workspace via
      *      {@link WorkspaceList} for each build (furthermore, that happens after a build is started.)
      *      So a {@link Resource} representation for a workspace at the project level no longer makes sense.
@@ -1342,6 +1342,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
      */
     public HttpResponse doDoWipeOutWorkspace() throws IOException, ServletException, InterruptedException {
         checkPermission(BUILD);
+        getLastBuild();
         if (getScm().processWorkspaceBeforeDeletion(this, getWorkspace(), null)) {
             getWorkspace().deleteRecursive();
             return new HttpRedirect(".");
