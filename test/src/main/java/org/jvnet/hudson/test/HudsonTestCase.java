@@ -53,6 +53,7 @@ import hudson.model.TaskListener;
 import hudson.model.UpdateCenter;
 import hudson.model.AbstractProject;
 import hudson.model.View;
+import hudson.model.RootAction;
 import hudson.model.UpdateCenter.UpdateCenterConfiguration;
 import hudson.model.Node.Mode;
 import hudson.security.csrf.CrumbIssuer;
@@ -86,6 +87,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.UUID;
 import java.util.jar.Manifest;
 import java.util.logging.Filter;
 import java.util.logging.Level;
@@ -111,6 +113,9 @@ import org.jvnet.hudson.test.rhino.JavaScriptDebugger;
 import org.kohsuke.stapler.Dispatcher;
 import org.kohsuke.stapler.MetaClass;
 import org.kohsuke.stapler.MetaClassLoader;
+import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.StaplerResponse;
+import org.kohsuke.stapler.Stapler;
 import org.mortbay.jetty.Server;
 import org.mortbay.jetty.bio.SocketConnector;
 import org.mortbay.jetty.security.HashUserRealm;
@@ -140,6 +145,7 @@ import com.gargoylesoftware.htmlunit.html.HtmlInput;
 import com.gargoylesoftware.htmlunit.javascript.JavaScriptEngine;
 import com.gargoylesoftware.htmlunit.javascript.host.Stylesheet;
 import com.gargoylesoftware.htmlunit.javascript.host.XMLHttpRequest;
+import groovy.lang.Closure;
 
 /**
  * Base class for all Hudson test cases.
@@ -831,6 +837,35 @@ public abstract class HudsonTestCase extends TestCase {
     public HudsonTestCase with(HudsonHomeLoader homeLoader) {
         this.homeLoader = homeLoader;
         return this;
+    }
+
+    /**
+     * Executes the given closure on the server, in the context of an HTTP request.
+     * This is useful for testing some methods that require {@link StaplerRequest} and {@link StaplerResponse}.
+     *
+     * <p>
+     * The closure will get the request and response as parameters.
+     */
+    public Object executeOnServer(final Closure c) throws Throwable {
+        final Throwable[] t = new Throwable[1];
+        final Object[] r = new Object[1];
+
+        ClosureExecuterAction cea = hudson.getExtensionList(RootAction.class).get(ClosureExecuterAction.class);
+        UUID id = UUID.randomUUID();
+        cea.add(id,new Runnable() {
+            public void run() {
+                try {
+                    r[0] = c.call(new Object[]{Stapler.getCurrentRequest(),Stapler.getCurrentResponse()});
+                } catch (Throwable e) {
+                    t[0] = e;
+                }
+            }
+        });
+        createWebClient().goTo("closures/?uuid="+id);
+
+        if (t[0]!=null)
+            throw t[0];
+        return r[0];
     }
 
     /**

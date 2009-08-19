@@ -36,6 +36,8 @@ public class SlaveTest extends HudsonTestCase {
      * Makes sure that a form validation method gets inherited.
      */
     void testFormValidation() {
-        assertNotNull(hudson.getDescriptor(DumbSlave.class).getCheckUrl("remoteFS")) 
+        onServer {
+            assertNotNull(hudson.getDescriptor(DumbSlave.class).getCheckUrl("remoteFS"))
+        }
     }
 }
