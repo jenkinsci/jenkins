@@ -840,35 +840,6 @@ public abstract class HudsonTestCase extends TestCase {
     }
 
     /**
-     * Executes the given closure on the server, in the context of an HTTP request.
-     * This is useful for testing some methods that require {@link StaplerRequest} and {@link StaplerResponse}.
-     *
-     * <p>
-     * The closure will get the request and response as parameters.
-     */
-    public Object executeOnServer(final Closure c) throws Throwable {
-        final Throwable[] t = new Throwable[1];
-        final Object[] r = new Object[1];
-
-        ClosureExecuterAction cea = hudson.getExtensionList(RootAction.class).get(ClosureExecuterAction.class);
-        UUID id = UUID.randomUUID();
-        cea.add(id,new Runnable() {
-            public void run() {
-                try {
-                    r[0] = c.call(new Object[]{Stapler.getCurrentRequest(),Stapler.getCurrentResponse()});
-                } catch (Throwable e) {
-                    t[0] = e;
-                }
-            }
-        });
-        createWebClient().goTo("closures/?uuid="+id);
-
-        if (t[0]!=null)
-            throw t[0];
-        return r[0];
-    }
-
-    /**
      * Sometimes a part of a test case may ends up creeping into the serialization tree of {@link Saveable#save()},
      * so detect that and flag that as an error. 
      */
@@ -1006,7 +977,9 @@ public abstract class HudsonTestCase extends TestCase {
         }
 
         public Page goTo(String relative, String expectedContentType) throws IOException, SAXException {
-            return super.getPage(getContextPath() +relative);
+            Page p = super.getPage(getContextPath() + relative);
+            assertEquals(expectedContentType,p.getWebResponse().getContentType());
+            return p;
         }
 
         /**

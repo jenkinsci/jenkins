@@ -23,15 +23,15 @@
  */
 package hudson.model
 
-import org.jvnet.hudson.test.HudsonTestCase
 import hudson.slaves.DumbSlave
+import org.jvnet.hudson.test.GroovyHudsonTestCase
 
 /**
  *
  *
  * @author Kohsuke Kawaguchi
  */
-public class SlaveTest extends HudsonTestCase {
+public class SlaveTest extends GroovyHudsonTestCase {
     /**
      * Makes sure that a form validation method gets inherited.
      */
