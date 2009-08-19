@@ -107,6 +107,12 @@ public class WindowsSlaveInstaller implements Callable<Void,RuntimeException>, A
         }
 
         final File dir = new File(rootDir);
+        if (!dir.exists()) {
+            JOptionPane.showMessageDialog(dialog,"Slave root directory '"+rootDir+"' doesn't exist",
+                    Messages.WindowsInstallerLink_DisplayName(),
+                    JOptionPane.ERROR_MESSAGE);
+            return;
+        }
 
 
         try {
