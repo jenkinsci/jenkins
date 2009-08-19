@@ -51,5 +51,6 @@ svn commit -m "RC branch is created" changelog.html
 popd
 
 # re-initialize the tracking
+svn up
 svnmerge init -F $repo/branches/rc
 svn commit -F svnmerge-commit-message.txt
