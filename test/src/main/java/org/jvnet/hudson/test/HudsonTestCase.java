@@ -855,7 +855,7 @@ public abstract class HudsonTestCase extends TestCase {
         cea.add(id,new Runnable() {
             public void run() {
                 try {
-                    r[0] = c.call(new Object[]{Stapler.getCurrentRequest(),Stapler.getCurrentResponse()});
+                    r[0] = c.call();
                 } catch (Throwable e) {
                     t[0] = e;
                 }
