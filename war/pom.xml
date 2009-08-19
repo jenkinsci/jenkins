@@ -257,6 +257,7 @@ THE SOFTWARE.
             <configuration>
               <python>python2.5</python>
               <proto>../ips/proto.py</proto>
+              <attach>false</attach>
             </configuration>
           </plugin>
         </plugins>
