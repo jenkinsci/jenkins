@@ -23,7 +23,6 @@
  */
 package hudson.remoting;
 
-import com.sun.org.apache.xerces.internal.impl.dv.util.Base64;
 import junit.framework.TestCase;
 
 import java.io.ByteArrayInputStream;
@@ -33,6 +32,8 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Arrays;
 import java.util.Random;
+
+import org.apache.commons.codec.binary.Base64;
 
 /**
  * @author Kohsuke Kawaguchi
@@ -56,7 +57,7 @@ public class BinarySafeStreamTest extends TestCase {
 
     public void testSingleWrite() throws IOException {
         byte[] ds = getDataSet(65536);
-        String master = Base64.encode(ds);
+        String master = new String(Base64.encodeBase64(ds));
 
         ByteArrayOutputStream buf = new ByteArrayOutputStream();
         OutputStream o = BinarySafeStream.wrap(buf);
@@ -67,7 +68,7 @@ public class BinarySafeStreamTest extends TestCase {
 
     public void testChunkedWrites() throws IOException {
         byte[] ds = getDataSet(65536);
-        String master = Base64.encode(ds);
+        String master = new String(Base64.encodeBase64(ds));
 
         Random r = new Random(0);
         for( int i=0; i<16; i++) {
@@ -89,7 +90,6 @@ public class BinarySafeStreamTest extends TestCase {
     private void _testRoundtrip(boolean flush) throws IOException {
         byte[] dataSet = getDataSet(65536);
         Random r = new Random(0);
-        String master = Base64.encode(dataSet);
 
         for(int i=0; i<16; i++) {
             if(dump)
@@ -125,7 +125,7 @@ public class BinarySafeStreamTest extends TestCase {
         int ptr=0;
 
         for( int i=0; i<s.length(); i+=4 ) {
-            byte[] buf = Base64.decode(s.substring(i,i+4));
+            byte[] buf = Base64.decodeBase64(s.substring(i,i+4).getBytes());
             for (int j = 0; j < buf.length; j++) {
                 if(buf[j]!=dataSet[ptr])
                     fail("encoding error at offset "+ptr);

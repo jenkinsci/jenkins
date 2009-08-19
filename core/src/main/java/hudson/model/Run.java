@@ -373,6 +373,23 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
     }
 
     /**
+     * Returns the {@link Cause}s that tirggered a build.
+     *
+     * <p>
+     * If a build sits in the queue for a long time, multiple build requests made during this period
+     * are all rolled up into one build, hence this method may return a list.
+     *
+     * @return
+     *      can be empty but never null. read-only.
+     * @since 1.321
+     */
+    public List<Cause> getCauses() {
+        CauseAction a = getAction(CauseAction.class);
+        if (a==null)    return Collections.emptyList();
+        return Collections.unmodifiableList(a.getCauses());
+    }
+
+    /**
      * Returns true if this log file should be kept and not deleted.
      *
      * This is used as a signal to the {@link LogRotator}.
@@ -1079,8 +1096,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
                     this.charset = charset.name();
                     listener = new StreamBuildListener(new PrintStream(new CloseProofOutputStream(log)),charset);
 
-                    CauseAction causeAction = getAction(CauseAction.class);
-                    listener.started(causeAction!=null ? causeAction.getCauses() : null);
+                    listener.started(getCauses());
 
                     RunListener.fireStarted(this,listener);
 
@@ -1186,9 +1202,6 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
      */
     protected void onStartBuilding() {
         state = State.BUILDING;
-        // start with the best possible value, and code that calls setResult() can progressively set
-        // worse results.
-        result = Result.SUCCESS;
         RunnerStack.INSTANCE.push(runner);
     }
 
@@ -1206,6 +1219,11 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
         }
         runner = null;
         RunnerStack.INSTANCE.pop();
+	if (result==null) {
+	    result = Result.FAILURE;
+	    LOGGER.warning(toString()+": No build result is set, so marking as failure. This shouldn't happen.");
+        }
+
         RunListener.fireFinalized(this);
     }
 
@@ -1469,8 +1487,11 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
     public EnvVars getEnvironment(TaskListener log) throws IOException, InterruptedException {
         EnvVars env = Computer.currentComputer().getEnvironment().overrideAll(getCharacteristicEnvVars());
         String rootUrl = Hudson.getInstance().getRootUrl();
-        if(rootUrl!=null)
+        if(rootUrl!=null) {
             env.put("HUDSON_URL", rootUrl);
+            env.put("BUILD_URL", rootUrl+getUrl());
+            env.put("JOB_URL", rootUrl+getParent().getUrl());
+        }
         if(!env.containsKey("HUDSON_HOME"))
             env.put("HUDSON_HOME", Hudson.getInstance().getRootDir().getPath() );
 
@@ -1488,7 +1509,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
      * Builds up the environment variable map that's sufficient to identify a process
      * as ours. This is used to kill run-away processes via {@link ProcessTree#killAll(Map)}.
      */
-    protected final EnvVars getCharacteristicEnvVars() {
+    public final EnvVars getCharacteristicEnvVars() {
         EnvVars env = new EnvVars();
         env.put("BUILD_NUMBER",String.valueOf(number));
         env.put("BUILD_ID",getId());

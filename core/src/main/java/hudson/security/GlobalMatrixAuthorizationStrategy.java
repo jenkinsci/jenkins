@@ -285,7 +285,7 @@ public class GlobalMatrixAuthorizationStrategy extends AuthorizationStrategy {
             String ev = Functions.escape(v);
 
             if(v.equals("authenticated"))
-                // systerm reserved group
+                // system reserved group
                 return FormValidation.respond(Kind.OK, makeImg("user.gif") +ev);
 
             try {
@@ -312,7 +312,7 @@ public class GlobalMatrixAuthorizationStrategy extends AuthorizationStrategy {
                 // fall through next
             }
 
-            // couldn't find it. it doesn't exit
+            // couldn't find it. it doesn't exist
             return FormValidation.respond(Kind.ERROR, makeImg("error.gif") +ev);
         }
 

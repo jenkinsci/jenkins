@@ -114,6 +114,19 @@ THE SOFTWARE.
 	    </f:entry>
     </f:optionalBlock>
 
+    <f:optionalBlock name="hasTouchStoneCombinationFilter" title="${%Execute touchstone builds first}" checked="${!empty(it.touchStoneCombinationFilter)}"
+        help="/help/matrix/touchstone.html">
+        <f:entry title="${%Filter}">
+          <f:textbox name="touchStoneCombinationFilter" value="${it.touchStoneCombinationFilter}" />
+        </f:entry>
+        <f:entry title="Required result" description="Execute the rest of the combinations only if the touchstone builds has (at least) the selected result.">
+            <select name="touchStoneResultCondition">
+                <f:option value="SUCCESS" selected='${it.touchStoneResultCondition.toExportedObject()=="SUCCESS"}'>Stable</f:option>
+                <f:option value="UNSTABLE" selected='${it.touchStoneResultCondition.toExportedObject()=="UNSTABLE"}'>Unstable</f:option>
+            </select>
+         </f:entry>
+    </f:optionalBlock>
+
   </f:section>
 
   <p:config-buildWrappers />

@@ -64,6 +64,11 @@ public abstract class Node extends AbstractModelObject implements Describable<No
      * is saved once.
      */
     protected volatile transient boolean holdOffLaunchUntilSave;
+    /**
+     * labels assigned to this node dynamically by plugins or other computation
+     * rather than via user configuration.
+     */
+    protected volatile transient DynamicLabels dynamicLabels = new DynamicLabels(null);
 
     public String getDisplayName() {
         return getNodeName(); // default implementation
@@ -141,6 +146,16 @@ public abstract class Node extends AbstractModelObject implements Describable<No
     }
 
     /**
+     * Gets the current channel, if the node is connected and online, or null.
+     *
+     * This is just a convenience method for {@link Computer#getChannel()} with null check. 
+     */
+    public final VirtualChannel getChannel() {
+        Computer c = toComputer();
+        return c==null ? null : c.getChannel();
+    }
+
+    /**
      * Creates a new {@link Computer} object that acts as the UI peer of this {@link Node}.
      * Nobody but {@link Hudson#updateComputerList()} should call this method.
      */
@@ -202,9 +217,7 @@ public abstract class Node extends AbstractModelObject implements Describable<No
      * Gets the {@link FilePath} on this node.
      */
     public FilePath createPath(String absolutePath) {
-        Computer computer = toComputer();
-        if (computer==null) return null; // offline
-        VirtualChannel ch = computer.getChannel();
+        VirtualChannel ch = getChannel();
         if(ch==null)    return null;    // offline
         return new FilePath(ch,absolutePath);
     }
@@ -247,6 +260,15 @@ public abstract class Node extends AbstractModelObject implements Describable<No
      *      if the operation is aborted.
      */
     public abstract ClockDifference getClockDifference() throws IOException, InterruptedException;
+
+    /**
+     * Check if we should rebuild the list of dynamic labels.
+     * @todo make less hacky
+     * @return
+     */
+    protected boolean isChangedDynamicLabels() {
+        return dynamicLabels.isChanged(toComputer());
+    }
 
     /**
      * Constants that control how Hudson allocates jobs to slaves.

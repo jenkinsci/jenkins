@@ -41,6 +41,7 @@ import java.io.IOException;
  * @author Kohsuke Kawaguchi
  */
 public class FailureBuilder extends Builder {
+    
     public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
         listener.getLogger().println("Simulating a failure");
         build.setResult(Result.FAILURE);

@@ -281,6 +281,22 @@ public final class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,Ma
         return ignoreUpstremChanges;
     }
 
+    public void setIncrementalBuild(boolean incrementalBuild) {
+        this.incrementalBuild = incrementalBuild;
+    }
+
+    public void setAggregatorStyleBuild(boolean aggregatorStyleBuild) {
+        this.aggregatorStyleBuild = aggregatorStyleBuild;
+    }
+
+    public void setUsePrivateRepository(boolean usePrivateRepository) {
+        this.usePrivateRepository = usePrivateRepository;
+    }
+
+    public void setIgnoreUpstremChanges(boolean ignoreUpstremChanges) {
+        this.ignoreUpstremChanges = ignoreUpstremChanges;
+    }
+
     /**
      * List of active {@link MavenReporter}s that should be applied to all module builds.
      */

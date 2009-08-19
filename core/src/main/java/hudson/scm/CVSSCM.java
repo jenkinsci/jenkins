@@ -864,7 +864,7 @@ public class CVSSCM extends SCM implements Serializable {
                     task.setFailOnError(true);
                     BufferedOutputStream bufferedOutput = new BufferedOutputStream(out);
                     task.setDeststream(bufferedOutput);
-                    task.setBranch(branch);
+                    task.setTag(isTag() ? ":" + branch : branch);
                     task.setStart(startTime);
                     task.setEnd(endTime);
                     if(changedFiles!=null) {

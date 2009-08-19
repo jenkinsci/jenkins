@@ -53,6 +53,7 @@ import hudson.model.TaskListener;
 import hudson.model.UpdateCenter;
 import hudson.model.AbstractProject;
 import hudson.model.View;
+import hudson.model.RootAction;
 import hudson.model.UpdateCenter.UpdateCenterConfiguration;
 import hudson.model.Node.Mode;
 import hudson.security.csrf.CrumbIssuer;
@@ -86,6 +87,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.UUID;
 import java.util.jar.Manifest;
 import java.util.logging.Filter;
 import java.util.logging.Level;
@@ -111,6 +113,9 @@ import org.jvnet.hudson.test.rhino.JavaScriptDebugger;
 import org.kohsuke.stapler.Dispatcher;
 import org.kohsuke.stapler.MetaClass;
 import org.kohsuke.stapler.MetaClassLoader;
+import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.StaplerResponse;
+import org.kohsuke.stapler.Stapler;
 import org.mortbay.jetty.Server;
 import org.mortbay.jetty.bio.SocketConnector;
 import org.mortbay.jetty.security.HashUserRealm;
@@ -120,7 +125,8 @@ import org.mortbay.jetty.webapp.WebAppContext;
 import org.mortbay.jetty.webapp.WebXmlConfiguration;
 import org.mozilla.javascript.Context;
 import org.mozilla.javascript.ContextFactory;
-import org.mozilla.javascript.tools.shell.JSConsole;
+import org.mozilla.javascript.tools.debugger.Dim;
+import org.mozilla.javascript.ContextFactory.Listener;
 import org.w3c.css.sac.CSSException;
 import org.w3c.css.sac.CSSParseException;
 import org.w3c.css.sac.ErrorHandler;
@@ -139,6 +145,7 @@ import com.gargoylesoftware.htmlunit.html.HtmlInput;
 import com.gargoylesoftware.htmlunit.javascript.JavaScriptEngine;
 import com.gargoylesoftware.htmlunit.javascript.host.Stylesheet;
 import com.gargoylesoftware.htmlunit.javascript.host.XMLHttpRequest;
+import groovy.lang.Closure;
 
 /**
  * Base class for all Hudson test cases.
@@ -185,6 +192,21 @@ public abstract class HudsonTestCase extends TestCase {
      */
     protected JavaScriptDebugger jsDebugger = new JavaScriptDebugger();
 
+    /**
+     * If no other debugger is installed, install {@link #jsDebugger},
+     * so as not to interfere with {@link Dim}.
+     */
+    private Listener rhinoContextListener = new Listener() {
+        public void contextCreated(Context cx) {
+            if(cx.getDebugger()==null)
+                cx.setDebugger(jsDebugger,null);
+        }
+
+        public void contextReleased(Context cx) {
+        }
+    };
+
+
     protected HudsonTestCase(String name) {
         super(name);
     }
@@ -217,7 +239,9 @@ public abstract class HudsonTestCase extends TestCase {
                 return updateCenterUrl;
             }
         });
+        // don't waste bandwidth talking to the update center
         DownloadService.neverUpdate = true;
+        UpdateCenter.neverUpdate = true;
 
         // cause all the descriptors to reload.
         // ideally we'd like to reset them to properly emulate the behavior, but that's not possible.
@@ -255,14 +279,12 @@ public abstract class HudsonTestCase extends TestCase {
     protected void runTest() throws Throwable {
         System.out.println("=== Starting "+ getClass().getSimpleName() + "." + getName());
         new JavaScriptEngine(null);   // ensure that ContextFactory is initialized
-        Context cx= ContextFactory.getGlobal().enterContext();
-        try {
-            cx.setOptimizationLevel(-1);
-            cx.setDebugger(jsDebugger,null);
 
+        ContextFactory.getGlobal().addListener(rhinoContextListener);
+        try {
             super.runTest();
         } finally {
-            Context.exit();
+            ContextFactory.getGlobal().removeListener(rhinoContextListener);
         }
     }
 
@@ -491,10 +513,11 @@ public abstract class HudsonTestCase extends TestCase {
      * <p>
      * Note that installing a debugger appears to make an execution of JavaScript substantially slower.
      */
-    public void interactiveJavaScriptDebugger() {
-        org.mozilla.javascript.tools.debugger.Main.mainEmbedded("Rhino debugger: "+getName());
+    public Dim interactiveJavaScriptDebugger() {
         // this can be too late, depending on when this method is invoked.
         Functions.DEBUG_YUI = true;
+
+        return org.mozilla.javascript.tools.debugger.Main.mainEmbedded("Rhino debugger: "+getName());
     }
 
     /**
@@ -581,8 +604,18 @@ public abstract class HudsonTestCase extends TestCase {
     public HtmlPage submit(HtmlForm form, String name) throws Exception {
         for( HtmlElement e : form.getHtmlElementsByTagName("button")) {
             HtmlElement p = (HtmlElement)e.getParentNode().getParentNode();
-            if(p.getAttribute("name").equals(name))
+            if(p.getAttribute("name").equals(name)) {
+                // To make YUI event handling work, this combo seems to be necessary
+                // the click will trigger _onClick in buton-*.js, but it doesn't submit the form
+                // (a comment alluding to this behavior can be seen in submitForm method)
+                // so to complete it, submit the form later.
+                //
+                // Just doing form.submit() doesn't work either, because it doesn't do
+                // the preparation work needed to pass along the name of the button that
+                // triggered a submission (more concretely, m_oSubmitTrigger is not set.)
+                ((HtmlButton)e).click();
                 return (HtmlPage)form.submit((HtmlButton)e);
+            }
         }
         throw new AssertionError("No such submit button with the name "+name);
     }
@@ -807,6 +840,35 @@ public abstract class HudsonTestCase extends TestCase {
     }
 
     /**
+     * Executes the given closure on the server, in the context of an HTTP request.
+     * This is useful for testing some methods that require {@link StaplerRequest} and {@link StaplerResponse}.
+     *
+     * <p>
+     * The closure will get the request and response as parameters.
+     */
+    public Object executeOnServer(final Closure c) throws Throwable {
+        final Throwable[] t = new Throwable[1];
+        final Object[] r = new Object[1];
+
+        ClosureExecuterAction cea = hudson.getExtensionList(RootAction.class).get(ClosureExecuterAction.class);
+        UUID id = UUID.randomUUID();
+        cea.add(id,new Runnable() {
+            public void run() {
+                try {
+                    r[0] = c.call(new Object[]{Stapler.getCurrentRequest(),Stapler.getCurrentResponse()});
+                } catch (Throwable e) {
+                    t[0] = e;
+                }
+            }
+        });
+        createWebClient().goTo("closures/?uuid="+id);
+
+        if (t[0]!=null)
+            throw t[0];
+        return r[0];
+    }
+
+    /**
      * Sometimes a part of a test case may ends up creeping into the serialization tree of {@link Saveable#save()},
      * so detect that and flag that as an error. 
      */
@@ -814,6 +876,13 @@ public abstract class HudsonTestCase extends TestCase {
         throw new AssertionError("HudsonTestCase "+getName()+" is not supposed to be serialized");
     }
 
+    /**
+     * This is to assist Groovy test clients who are incapable of instantiating the inner classes properly.
+     */
+    public WebClient createWebClient() {
+        return new WebClient();
+    }
+    
     /**
      * Extends {@link com.gargoylesoftware.htmlunit.WebClient} and provide convenience methods
      * for accessing Hudson.
@@ -979,8 +1048,6 @@ public abstract class HudsonTestCase extends TestCase {
     static {
         // screen scraping relies on locale being fixed.
         Locale.setDefault(Locale.ENGLISH);
-        // don't waste bandwidth talking to the update center
-        UpdateCenter.neverUpdate = true;
 
         {// enable debug assistance, since tests are often run from IDE
             Dispatcher.TRACE = true;

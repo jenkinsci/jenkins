@@ -898,7 +898,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
      * Accepts submission from the configuration page.
      */
     public synchronized void doConfigSubmit(StaplerRequest req,
-            StaplerResponse rsp) throws IOException, ServletException {
+            StaplerResponse rsp) throws IOException, ServletException, FormException {
         checkPermission(CONFIGURE);
 
         req.setCharacterEncoding("UTF-8");
@@ -946,9 +946,6 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
             } else {
                 rsp.sendRedirect(".");
             }
-        } catch (FormException e) {
-            rsp.setStatus(SC_BAD_REQUEST);
-            sendError(e, req, rsp);
         } catch (JSONException e) {
             StringWriter sw = new StringWriter();
             PrintWriter pw = new PrintWriter(sw);

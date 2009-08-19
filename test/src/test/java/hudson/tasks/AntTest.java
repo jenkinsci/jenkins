@@ -23,18 +23,16 @@
  */
 package hudson.tasks;
 
+import com.gargoylesoftware.htmlunit.html.HtmlButton;
 import com.gargoylesoftware.htmlunit.html.HtmlForm;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
-import com.gargoylesoftware.htmlunit.html.HtmlButton;
-import com.gargoylesoftware.htmlunit.html.HtmlElement;
-import com.gargoylesoftware.htmlunit.html.HtmlInput;
 import hudson.model.FreeStyleProject;
 import hudson.tasks.Ant.AntInstallation;
-import hudson.tasks.Ant.AntInstaller;
 import hudson.tasks.Ant.AntInstallation.DescriptorImpl;
+import hudson.tasks.Ant.AntInstaller;
+import hudson.tools.InstallSourceProperty;
 import hudson.tools.ToolProperty;
 import hudson.tools.ToolPropertyDescriptor;
-import hudson.tools.InstallSourceProperty;
 import hudson.util.DescribableList;
 import org.jvnet.hudson.test.HudsonTestCase;
 

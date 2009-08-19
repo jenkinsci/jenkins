@@ -33,6 +33,7 @@ import hudson.tasks.Fingerprinter;
 import org.jvnet.hudson.test.HudsonTestCase;
 import org.jvnet.hudson.test.SingleFileSCM;
 import org.jvnet.hudson.test.Email;
+import org.jvnet.hudson.test.UnstableBuilder;
 
 import java.io.IOException;
 import java.util.List;
@@ -83,6 +84,31 @@ public class MatrixProjectTest extends HudsonTestCase {
             // also make sure that the variables are expanded at the command line level.
             assertFalse(run.getLog().contains("-Dprop=${db}"));
         }
+    }
+    
+    /**
+     * Test that configuration filters work
+     */
+    public void testConfigurationFilter() throws Exception {
+        MatrixProject p = createMatrixProject();
+        p.setCombinationFilter("db==\"mysql\"");
+        MatrixBuild build = p.scheduleBuild2(0).get();
+        assertEquals(2, build.getRuns().size());
+    }
+
+    /**
+     * Test that touch stone builds  work
+     */
+    public void testTouchStone() throws Exception {
+        MatrixProject p = createMatrixProject();
+        p.setTouchStoneCombinationFilter("db==\"mysql\"");
+        p.setTouchStoneResultCondition(Result.SUCCESS);
+        MatrixBuild build = p.scheduleBuild2(0).get();
+        assertEquals(4, build.getRuns().size());
+
+        p.getBuildersList().add(new UnstableBuilder());
+        build = p.scheduleBuild2(0).get();
+        assertEquals(2, build.getRuns().size());
     }
 
     @Override

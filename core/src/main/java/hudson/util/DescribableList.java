@@ -97,6 +97,11 @@ public class DescribableList<T extends Describable<T>, D extends Descriptor<T>> 
         onModified();
     }
 
+    public void addAll(Collection<? extends T> items) throws IOException {
+        data.addAll(items);
+        onModified();
+    }
+
     /**
      * Removes all instances of the same type, then add the new one.
      */

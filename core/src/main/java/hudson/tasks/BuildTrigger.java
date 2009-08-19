@@ -50,7 +50,6 @@ import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.AncestorInPath;
 import org.kohsuke.stapler.QueryParameter;
 
-import javax.servlet.ServletException;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.util.ArrayList;
@@ -104,6 +103,10 @@ public class BuildTrigger extends Recorder implements DependecyDeclarer, MatrixA
     }
 
     public BuildTrigger(List<AbstractProject> childProjects, Result threshold) {
+        this((Collection<AbstractProject>)childProjects,threshold);
+    }
+
+    public BuildTrigger(Collection<? extends AbstractProject> childProjects, Result threshold) {
         this(Items.toNameList(childProjects),threshold);
     }
 

@@ -23,6 +23,7 @@
  */
 package hudson.matrix;
 
+import hudson.Util;
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
 import hudson.model.BuildListener;
@@ -42,6 +43,7 @@ import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
 
 import org.kohsuke.stapler.StaplerRequest;
@@ -115,8 +117,10 @@ public class MatrixBuild extends AbstractBuild<MatrixProject,MatrixBuild> {
      */
     public List<MatrixRun> getRuns() {
         List<MatrixRun> r = new ArrayList<MatrixRun>();
-        for(MatrixConfiguration c : getParent().getItems())
-            r.add(c.getBuildByNumber(getNumber()));
+        for(MatrixConfiguration c : getParent().getItems()) {
+            MatrixRun b = c.getBuildByNumber(getNumber());
+            if (b != null) r.add(b);
+        }
         return r;
     }
 
@@ -174,6 +178,17 @@ public class MatrixBuild extends AbstractBuild<MatrixProject,MatrixBuild> {
             axes = p.getAxes();
             Collection<MatrixConfiguration> activeConfigurations = p.getActiveConfigurations();
             final int n = getNumber();
+            
+            String touchStoneFilter = p.getTouchStoneCombinationFilter();
+            Collection<MatrixConfiguration> touchStoneConfigurations = new HashSet<MatrixConfiguration>();
+            Collection<MatrixConfiguration> delayedConfigurations = new HashSet<MatrixConfiguration>();
+            for (MatrixConfiguration c: activeConfigurations) {
+                if (touchStoneFilter != null && c.getCombination().evalGroovyExpression(p.getAxes(), p.getTouchStoneCombinationFilter())) {
+                    touchStoneConfigurations.add(c);
+                } else {
+                    delayedConfigurations.add(c);
+                }
+            }
 
             for (MatrixAggregator a : aggregators)
                 if(!a.startBuild())
@@ -181,73 +196,41 @@ public class MatrixBuild extends AbstractBuild<MatrixProject,MatrixBuild> {
 
             try {
                 if(!p.isRunSequentially())
-                    for(MatrixConfiguration c : activeConfigurations)
+                    for(MatrixConfiguration c : touchStoneConfigurations)
                         scheduleConfigurationBuild(logger, c);
-
-                // this occupies an executor unnecessarily.
-                // it would be nice if this can be placed in a temproary executor.
 
                 Result r = Result.SUCCESS;
-                for (MatrixConfiguration c : activeConfigurations) {
+                for (MatrixConfiguration c : touchStoneConfigurations) {
                     if(p.isRunSequentially())
                         scheduleConfigurationBuild(logger, c);
-                    String whyInQueue = "";
-                    long startTime = System.currentTimeMillis();
+                    Result buildResult = waitForCompletion(listener, c);
+                    r = r.combine(buildResult);
+                }
+                
+                if (p.getTouchStoneResultCondition() != null && r.isWorseThan(p.getTouchStoneResultCondition())) {
+                    logger.printf("Touchstone configurations resulted in %s, so aborting...\n", r);
+                    return r;
+                }
+                
+                if(!p.isRunSequentially())
+                    for(MatrixConfiguration c : delayedConfigurations)
+                        scheduleConfigurationBuild(logger, c);
 
-                    // wait for the completion
-                    int appearsCancelledCount = 0;
-                    while(true) {
-                        MatrixRun b = c.getBuildByNumber(n);
-
-                        // two ways to get beyond this. one is that the build starts and gets done,
-                        // or the build gets cancelled before it even started.
-                        Result buildResult = null;
-                        if(b!=null && !b.isBuilding())
-                            buildResult = b.getResult();
-                        Queue.Item qi = c.getQueueItem();
-                        if(b==null && qi==null)
-                            appearsCancelledCount++;
-                        else
-                            appearsCancelledCount = 0;
-
-                        if(appearsCancelledCount>=5) {
-                            // there's conceivably a race condition in computating b and qi, as their computation
-                            // are not synchronized. There are indeed several reports of Hudson incorrectly assuming
-                            // builds being cancelled. See
-                            // http://www.nabble.com/Master-slave-problem-tt14710987.html and also
-                            // http://www.nabble.com/Anyone-using-AccuRev-plugin--tt21634577.html#a21671389
-                            // because of this, we really make sure that the build is cancelled by doing this 5
-                            // times over 5 seconds
-                            logger.println(Messages.MatrixBuild_AppearsCancelled(c.getDisplayName()));
-                            buildResult = Result.ABORTED;
-                        }
-
-                        if(buildResult!=null) {
-                            r = r.combine(buildResult);
-                            if(b!=null)
-                                for (MatrixAggregator a : aggregators)
-                                    if(!a.endRun(b))
-                                        return Result.FAILURE;
-                            break;
-                        } else {
-                            if(qi!=null) {
-                                // if the build seems to be stuck in the queue, display why
-                                String why = qi.getWhy();
-                                if(!why.equals(whyInQueue) && System.currentTimeMillis()-startTime>5000) {
-                                    logger.println(c.getDisplayName()+" is still in the queue: "+why);
-                                    whyInQueue = why;
-                                }
-                            }
-                        }
-                        Thread.sleep(1000);
-                    }
+                for (MatrixConfiguration c : delayedConfigurations) {
+                    if(p.isRunSequentially())
+                        scheduleConfigurationBuild(logger, c);
+                    Result buildResult = waitForCompletion(listener, c);
+                    r = r.combine(buildResult);
                 }
 
                 return r;
             } catch( InterruptedException e ) {
                 logger.println("Aborted");
                 return Result.ABORTED;
-            } finally {
+            } catch (AggregatorFailureException e) {
+                return Result.FAILURE;
+            }
+            finally {
                 // if the build was aborted in the middle. Cancel all the configuration builds.
                 Queue q = Hudson.getInstance().getQueue();
                 synchronized(q) {// avoid micro-locking in q.cancel.
@@ -266,6 +249,58 @@ public class MatrixBuild extends AbstractBuild<MatrixProject,MatrixBuild> {
                 }
             }
         }
+        
+        private Result waitForCompletion(BuildListener listener, MatrixConfiguration c) throws InterruptedException, IOException, AggregatorFailureException {
+            String whyInQueue = "";
+            long startTime = System.currentTimeMillis();
+
+            // wait for the completion
+            int appearsCancelledCount = 0;
+            while(true) {
+                MatrixRun b = c.getBuildByNumber(getNumber());
+
+                // two ways to get beyond this. one is that the build starts and gets done,
+                // or the build gets cancelled before it even started.
+                Result buildResult = null;
+                if(b!=null && !b.isBuilding())
+                    buildResult = b.getResult();
+                Queue.Item qi = c.getQueueItem();
+                if(b==null && qi==null)
+                    appearsCancelledCount++;
+                else
+                    appearsCancelledCount = 0;
+
+                if(appearsCancelledCount>=5) {
+                    // there's conceivably a race condition in computating b and qi, as their computation
+                    // are not synchronized. There are indeed several reports of Hudson incorrectly assuming
+                    // builds being cancelled. See
+                    // http://www.nabble.com/Master-slave-problem-tt14710987.html and also
+                    // http://www.nabble.com/Anyone-using-AccuRev-plugin--tt21634577.html#a21671389
+                    // because of this, we really make sure that the build is cancelled by doing this 5
+                    // times over 5 seconds
+                    listener.getLogger().println(Messages.MatrixBuild_AppearsCancelled(c.getDisplayName()));
+                    buildResult = Result.ABORTED;
+                }
+
+                if(buildResult!=null) {
+                    for (MatrixAggregator a : aggregators)
+                        if(!a.endRun(b))
+                            throw new AggregatorFailureException();
+                    return buildResult;
+                } 
+
+                if(qi!=null) {
+                    // if the build seems to be stuck in the queue, display why
+                    String why = qi.getWhy();
+                    if(!why.equals(whyInQueue) && System.currentTimeMillis()-startTime>5000) {
+                        listener.getLogger().println(c.getDisplayName()+" is still in the queue: "+why);
+                        whyInQueue = why;
+                    }
+                }
+                
+                Thread.sleep(1000);
+            }
+        }
 
         private void scheduleConfigurationBuild(PrintStream logger, MatrixConfiguration c) {
             logger.println(Messages.MatrixBuild_Triggering(c.getDisplayName()));
@@ -277,4 +312,10 @@ public class MatrixBuild extends AbstractBuild<MatrixProject,MatrixBuild> {
                 a.endBuild();
         }
     }
+
+    /**
+     * A private exception to help maintain the correct control flow after extracting the 'waitForCompletion' method
+     */
+    private static class AggregatorFailureException extends Exception {}
+
 }

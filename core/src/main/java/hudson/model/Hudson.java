@@ -50,6 +50,7 @@ import hudson.tools.ToolInstallation;
 import hudson.tools.ToolDescriptor;
 import hudson.cli.CliEntryPoint;
 import hudson.cli.CliManagerImpl;
+import hudson.cli.declarative.CLIMethod;
 import hudson.logging.LogRecorderManager;
 import hudson.lifecycle.Lifecycle;
 import hudson.model.Descriptor.FormException;
@@ -87,10 +88,9 @@ import hudson.slaves.Cloud;
 import hudson.slaves.DumbSlave;
 import hudson.slaves.NodeDescriptor;
 import hudson.slaves.NodeProvisioner;
+import hudson.slaves.OfflineCause;
 import hudson.tasks.BuildWrapper;
 import hudson.tasks.Builder;
-import hudson.tasks.DynamicLabeler;
-import hudson.tasks.LabelFinder;
 import hudson.tasks.Mailer;
 import hudson.tasks.Publisher;
 import hudson.triggers.Trigger;
@@ -191,10 +191,10 @@ import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
+import static java.util.logging.Level.SEVERE;
 import java.util.regex.Pattern;
 import java.nio.charset.Charset;
 import javax.servlet.RequestDispatcher;
-import javax.servlet.ServletInputStream;
 import javax.crypto.SecretKey;
 
 import groovy.lang.GroovyShell;
@@ -426,7 +426,6 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
      */
     private transient final ConcurrentHashMap<String,Label> labels = new ConcurrentHashMap<String,Label>();
     private transient volatile Set<Label> labelSet;
-    private transient volatile Set<Label> dynamicLabels = null;
 
     /**
      * Load statistics of the entire system.
@@ -543,7 +542,7 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
             try {
                 proxy = ProxyConfiguration.load();
             } catch (IOException e) {
-                LOGGER.log(Level.SEVERE, "Failed to load proxy configuration", e);
+                LOGGER.log(SEVERE, "Failed to load proxy configuration", e);
             }
 
             // load plugins.
@@ -616,7 +615,24 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
                 FileUtils.writeStringToFile(new File(userContentDir,"readme.txt"),Messages.Hudson_USER_CONTENT_README());
             }
 
-            Trigger.init(); // start running trigger
+            Trigger.init();
+// pending SEZPOZ-8
+//            // invoke post initialization methods
+//            for ( IndexItem<PostInit,Void> i : Index.load(PostInit.class, Void.class, pluginManager.uberClassLoader)) {
+//                try {
+//                    Method m = (Method)i.element();
+//                    if (Modifier.isStatic(m.getModifiers()))
+//                        m.invoke(null);
+//                    else
+//                        LOGGER.severe(m+" is annotated with @PostInit but it's not a static method");
+//                } catch (InstantiationException e) {
+//                    LOGGER.log(SEVERE,"Failed to invoke @PostInit: "+i,e);
+//                } catch (IllegalAccessException e) {
+//                    LOGGER.log(SEVERE,"Failed to invoke @PostInit: "+i,e);
+//                } catch (InvocationTargetException e) {
+//                    LOGGER.log(SEVERE,"Failed to invoke @PostInit: "+i,e);
+//                }
+//            }
         } finally {
             SecurityContextHolder.clearContext();
         }
@@ -1240,7 +1256,7 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
     /**
      * Gets the label that exists on this system by the name.
      *
-     * @return null if no such label exists.
+     * @return null if no name is null.
      * @see Label#parse(String)
      */
     public Label getLabel(String name) {
@@ -1373,7 +1389,9 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
      * Removes a {@link Node} from Hudson.
      */
     public synchronized void removeNode(Node n) throws IOException {
-        n.toComputer().disconnect();
+        Computer c = n.toComputer();
+        if (c!=null)
+            c.disconnect(OfflineCause.create(Messages._Hudson_NodeBeingRemoved()));
 
         ArrayList<Node> nl = new ArrayList<Node>(this.slaves);
         nl.remove(n);
@@ -1922,8 +1940,10 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
     }
 
     public Set<Label> getAssignedLabels() {
-        Set<Label> lset = labelSet; // labelSet may be set by another thread while we are in this method, so capture it.
-        if (lset == null) {
+        // labelSet may be set by another thread while we are in this method,
+        // so capture it.
+        Set<Label> lset = labelSet;
+        if (lset == null || isChangedDynamicLabels()) {
             Set<Label> r = Label.parse(getLabelString());
             r.addAll(getDynamicLabels());
             r.add(getSelfLabel());
@@ -1938,25 +1958,12 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
      * @see hudson.tasks.LabelFinder
      */
     public Set<Label> getDynamicLabels() {
-        if (dynamicLabels == null) {
-            // in the worst cast, two threads end up doing the same computation twice,
-            // but that won't break the semantics.
+        if (dynamicLabels==null || dynamicLabels.isChanged(toComputer()))
+            // in the worst cast, two threads end up doing the same computation
+            // twice, but that won't break the semantics.
             // OTOH, not locking prevents dead-lock. See #1390
-            Set<Label> r = new HashSet<Label>();
-            Computer comp = getComputer("");
-            if (comp != null) {
-                VirtualChannel channel = comp.getChannel();
-                if (channel != null) {
-                    for (DynamicLabeler labeler : LabelFinder.LABELERS) {
-                        for (String label : labeler.findLabels(channel)) {
-                            r.add(getLabel(label));
-                        }
-                    }
-                }
-            }
-            dynamicLabels = r;
-        }
-        return dynamicLabels;
+            dynamicLabels = new DynamicLabels(toComputer());
+        return dynamicLabels.labels;
     }
 
     public Label getSelfLabel() {
@@ -2167,7 +2174,7 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
     /**
      * Accepts submission from the configuration page.
      */
-    public synchronized void doConfigSubmit( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
+    public synchronized void doConfigSubmit( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException, FormException {
         BulkChange bc = new BulkChange(this);
         try {
             checkPermission(ADMINISTER);
@@ -2295,8 +2302,6 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
                 rsp.sendRedirect(req.getContextPath()+'/');  // go to the top page
             else
                 rsp.sendRedirect("configure"); // back to config
-        } catch (FormException e) {
-            sendError(e,req,rsp);
         } finally {
             bc.commit();
         }
@@ -2521,13 +2526,11 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
         return (T)copy((TopLevelItem)src,name);
     }
 
-    public synchronized void doCreateView( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
+    public synchronized void doCreateView( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException, FormException {
         try {
             checkPermission(View.CREATE);
             addView(View.create(req,rsp, this));
         } catch (ParseException e) {
-            sendError(e,req,rsp);
-        } catch (FormException e) {
             sendError(e,req,rsp);
         }
     }
@@ -2656,7 +2659,7 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
                     User.reload();
                     context.setAttribute("app",Hudson.this);
                 } catch (IOException e) {
-                    LOGGER.log(Level.SEVERE,"Failed to reload Hudson config",e);
+                    LOGGER.log(SEVERE,"Failed to reload Hudson config",e);
                 }
             }
         }.start();
@@ -2782,11 +2785,20 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
             return;
         }
 
+        restart();
+
+        rsp.sendRedirect2(".");
+    }
+
+    /**
+     * Performs a restart.
+     */
+    @CLIMethod(name="restart")
+    public void restart() {
         final Lifecycle lifecycle = Lifecycle.get();
         if(!lifecycle.canRestart())
-            sendError("Restart is not supported in this running mode.",req,rsp);
+            throw new Failure("Restart is not supported in this running mode.");
         servletContext.setAttribute("app",new HudsonIsRestarting());
-        rsp.sendRedirect2(".");
 
         new Thread("restart thread") {
             @Override

@@ -28,10 +28,18 @@ import hudson.model.AbstractBuild;
 import hudson.model.BuildListener;
 import hudson.model.Result;
 import hudson.model.FreeStyleBuild;
+import hudson.maven.MavenModuleSet;
+import hudson.maven.MavenModuleSetBuild;
+import hudson.maven.MavenBuild;
+import hudson.maven.reporters.SurefireReport;
 import hudson.Launcher;
 import org.jvnet.hudson.test.HudsonTestCase;
 import org.jvnet.hudson.test.Email;
+import org.jvnet.hudson.test.Bug;
 import org.jvnet.hudson.test.TestBuilder;
+import org.jvnet.hudson.test.ExtractResourceSCM;
+import com.gargoylesoftware.htmlunit.html.HtmlPage;
+import com.gargoylesoftware.htmlunit.html.HtmlElement;
 
 import java.io.IOException;
 
@@ -74,7 +82,6 @@ public class CaseResultTest extends HudsonTestCase {
         assertEquals("org.twia.vendor.VendorManagerTest",cr.getClassName());
         assertEquals("testGetVendorFirmKeyForVendorRep",cr.getName());
 
-
         // piggy back tests for annotate methods
         assertOutput(cr,"plain text", "plain text");
         assertOutput(cr,"line #1\nhttp://nowhere.net/\nline #2\n",
@@ -98,7 +105,67 @@ public class CaseResultTest extends HudsonTestCase {
                 "<a href=\"http://localhost:8080/stuff/\">http://localhost:8080/stuff/</a>");
     }
 
+
+    /**
+     * Verifies that the error message and stacktrace from a failed junit test actually render properly.
+     */
+    @Bug(4257)
+    public void testFreestyleErrorMsgAndStacktraceRender() throws Exception {
+        FreeStyleProject p = createFreeStyleProject("render-test");
+        p.getBuildersList().add(new TestBuilder() {
+            public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
+                build.getWorkspace().child("junit.xml").copyFrom(
+                    getClass().getResource("junit-report-20090516.xml"));
+                return true;
+            }
+        });
+        p.getPublishersList().add(new JUnitResultArchiver("*.xml"));
+	FreeStyleBuild b = assertBuildStatus(Result.UNSTABLE, p.scheduleBuild2(0).get());
+        TestResult tr = b.getAction(TestResultAction.class).getResult();
+        assertEquals(3,tr.getFailedTests().size());
+        CaseResult cr = tr.getFailedTests().get(1);
+        assertEquals("org.twia.vendor.VendorManagerTest",cr.getClassName());
+        assertEquals("testGetRevokedClaimsForAdjustingFirm",cr.getName());
+	assertNotNull("Error details should not be null", cr.getErrorDetails());
+	assertNotNull("Error stacktrace should not be null", cr.getErrorStackTrace());
+
+	String testUrl = cr.getRelativePathFrom(tr);
+	
+	HtmlPage page = new WebClient().goTo("job/render-test/1/testReport/" + testUrl);
+
+	HtmlElement errorMsg = (HtmlElement) page.getByXPath("//h3[text()='Error Message']/following-sibling::*").get(0);
+
+	assertEquals(cr.annotate(cr.getErrorDetails()).replaceAll("&lt;", "<"), errorMsg.getTextContent());
+	HtmlElement errorStackTrace = (HtmlElement) page.getByXPath("//h3[text()='Stacktrace']/following-sibling::*").get(0);
+	// Have to do some annoying replacing here to get the same text Jelly produces in the end.
+	assertEquals(cr.annotate(cr.getErrorStackTrace()).replaceAll("&lt;", "<").replace("\r\n", "\n"),
+		     errorStackTrace.getTextContent());
+    }
+    
+    /**
+     * Verifies that the error message and stacktrace from a failed junit test actually render properly.
+     */
+    @Bug(4257)
+    public void testMavenErrorMsgAndStacktraceRender() throws Exception {
+	configureDefaultMaven();
+	MavenModuleSet m = createMavenProject("maven-render-test");
+	m.setScm(new ExtractResourceSCM(m.getClass().getResource("maven-test-failure-findbugs.zip")));
+	m.setGoals("clean test");
+
+	MavenModuleSetBuild b = assertBuildStatus(Result.UNSTABLE, m.scheduleBuild2(0).get());
+	MavenBuild modBuild = (MavenBuild)b.getModuleLastBuilds().get(m.getModule("test:test"));
+	TestResult tr = modBuild.getAction(SurefireReport.class).getResult();
+        assertEquals(1,tr.getFailedTests().size());
+        CaseResult cr = tr.getFailedTests().get(0);
+        assertEquals("test.AppTest",cr.getClassName());
+        assertEquals("testApp",cr.getName());
+	assertNotNull("Error details should not be null", cr.getErrorDetails());
+	assertNotNull("Error stacktrace should not be null", cr.getErrorStackTrace());
+    }
+
+
     private void assertOutput(CaseResult cr, String in, String out) throws Exception {
         assertEquals(out, cr.annotate(in));
     }
+
 }

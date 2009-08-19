@@ -208,11 +208,18 @@ public abstract class View extends AbstractModelObject implements AccessControll
     /**
      * Returns the path relative to the context root.
      *
-     * Doesn't start with '/' but ends with '/'. (except when this is
-     * Hudson, 
+     * Doesn't start with '/' but ends with '/' (except returns
+     * empty string when this is the default view).
      */
     public String getUrl() {
-        if(isDefault())   return "";
+        return isDefault() ? "" : getViewUrl();
+    }
+
+    /**
+     * Same as {@link #getUrl()} except this returns a view/{name} path
+     * even for the default view.
+     */
+    public String getViewUrl() {
         return owner.getUrl()+"view/"+getViewName()+'/';
     }
 
@@ -469,29 +476,25 @@ public abstract class View extends AbstractModelObject implements AccessControll
      *
      * Subtypes should override the {@link #submit(StaplerRequest)} method.
      */
-    public final synchronized void doConfigSubmit( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
+    public final synchronized void doConfigSubmit( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException, FormException {
+        checkPermission(CONFIGURE);
+
+        req.setCharacterEncoding("UTF-8");
+
+        submit(req);
+
+        description = Util.nullify(req.getParameter("description"));
+
         try {
-            checkPermission(CONFIGURE);
-
-            req.setCharacterEncoding("UTF-8");
-
-            submit(req);
-
-            description = Util.nullify(req.getParameter("description"));
-
-            try {
-                rename(req.getParameter("name"));
-            } catch (ParseException e) {
-                sendError(e, req, rsp);
-                return;
-            }
-
-            owner.save();
-
-            rsp.sendRedirect2("../"+name);
-        } catch (FormException e) {
-            sendError(e,req,rsp);
+            rename(req.getParameter("name"));
+        } catch (ParseException e) {
+            sendError(e, req, rsp);
+            return;
         }
+
+        owner.save();
+
+        rsp.sendRedirect2("../"+name);
     }
 
     /**

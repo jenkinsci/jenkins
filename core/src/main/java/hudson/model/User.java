@@ -414,39 +414,35 @@ public class User extends AbstractModelObject implements AccessControlled, Savea
     /**
      * Accepts submission from the configuration page.
      */
-    public void doConfigSubmit( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
+    public void doConfigSubmit( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException, FormException {
         checkPermission(Hudson.ADMINISTER);
 
         req.setCharacterEncoding("UTF-8");
 
-        try {
-            fullName = req.getParameter("fullName");
-            description = req.getParameter("description");
+        fullName = req.getParameter("fullName");
+        description = req.getParameter("description");
 
-            JSONObject json = req.getSubmittedForm();
+        JSONObject json = req.getSubmittedForm();
 
-            List<UserProperty> props = new ArrayList<UserProperty>();
-            int i = 0;
-            for (UserPropertyDescriptor d : UserProperty.all()) {
-                JSONObject o = json.getJSONObject("userProperty" + (i++));
-                UserProperty p = getProperty(d.clazz);
-                if (p != null) {
-                    p = p.reconfigure(req, o);
-                } else {
-                    p = d.newInstance(req, o);
-                }
-
-                p.setUser(this);
-                props.add(p);
+        List<UserProperty> props = new ArrayList<UserProperty>();
+        int i = 0;
+        for (UserPropertyDescriptor d : UserProperty.all()) {
+            JSONObject o = json.getJSONObject("userProperty" + (i++));
+            UserProperty p = getProperty(d.clazz);
+            if (p != null) {
+                p = p.reconfigure(req, o);
+            } else {
+                p = d.newInstance(req, o);
             }
-            this.properties = props;
 
-            save();
-
-            rsp.sendRedirect(".");
-        } catch (FormException e) {
-            sendError(e,req,rsp);
+            p.setUser(this);
+            props.add(p);
         }
+        this.properties = props;
+
+        save();
+
+        rsp.sendRedirect(".");
     }
 
     public void doRssAll( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {

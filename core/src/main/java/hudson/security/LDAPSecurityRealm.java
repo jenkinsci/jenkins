@@ -23,7 +23,6 @@
  */
 package hudson.security;
 
-import com.sun.jndi.ldap.LdapCtxFactory;
 import groovy.lang.Binding;
 import hudson.Extension;
 import hudson.Util;
@@ -36,6 +35,7 @@ import hudson.util.Scrambler;
 import hudson.util.spring.BeanBuilder;
 import org.acegisecurity.AuthenticationManager;
 import org.acegisecurity.GrantedAuthority;
+import org.acegisecurity.AcegiSecurityException;
 import org.acegisecurity.ldap.InitialDirContextFactory;
 import org.acegisecurity.ldap.LdapDataAccessException;
 import org.acegisecurity.ldap.LdapTemplate;
@@ -50,8 +50,6 @@ import org.acegisecurity.userdetails.ldap.LdapUserDetails;
 import org.acegisecurity.userdetails.ldap.LdapUserDetailsImpl;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.QueryParameter;
-import org.kohsuke.stapler.StaplerRequest;
-import org.kohsuke.stapler.StaplerResponse;
 import org.springframework.dao.DataAccessException;
 import org.springframework.web.context.WebApplicationContext;
 
@@ -60,7 +58,7 @@ import javax.naming.NamingException;
 import javax.naming.directory.Attribute;
 import javax.naming.directory.Attributes;
 import javax.naming.directory.DirContext;
-import javax.servlet.ServletException;
+import javax.naming.directory.InitialDirContext;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.Socket;
@@ -302,7 +300,10 @@ public class LDAPSecurityRealm extends SecurityRealm {
                 props.put(Context.SECURITY_PRINCIPAL,managerDN);
                 props.put(Context.SECURITY_CREDENTIALS,getManagerPassword());
             }
-            DirContext ctx = LdapCtxFactory.getLdapCtxInstance(getServerUrl()+'/', props);
+            props.put(Context.INITIAL_CONTEXT_FACTORY, "com.sun.jndi.ldap.LdapCtxFactory");
+            props.put(Context.PROVIDER_URL, getServerUrl()+'/');
+
+            DirContext ctx = new InitialDirContext(props);
             Attributes atts = ctx.getAttributes("");
             Attribute a = atts.get("defaultNamingContext");
             if(a!=null) // this entry is available on Active Directory. See http://msdn2.microsoft.com/en-us/library/ms684291(VS.85).aspx
@@ -340,33 +341,32 @@ public class LDAPSecurityRealm extends SecurityRealm {
 
         return new SecurityComponents(
             findBean(AuthenticationManager.class, appContext),
-            new UserDetailsService() {
-                final LdapUserSearch ldapSearch = findBean(LdapUserSearch.class, appContext);
-                final LdapAuthoritiesPopulator authoritiesPopulator = findBean(LdapAuthoritiesPopulator.class, appContext);
-                public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException, DataAccessException {
-                    try {
-                        LdapUserDetails ldapUser = ldapSearch.searchForUser(username);
-                        // LdapUserSearch does not populate granted authorities (group search).
-                        // Add those, as done in LdapAuthenticationProvider.createUserDetails().
-                        if (ldapUser != null) {
-                            LdapUserDetailsImpl.Essence user = new LdapUserDetailsImpl.Essence(ldapUser);
-                            GrantedAuthority[] extraAuthorities = authoritiesPopulator.getGrantedAuthorities(ldapUser);
-                            for (int i = 0; i < extraAuthorities.length; i++) {
-                                user.addAuthority(extraAuthorities[i]);
-                            }
-                            ldapUser = user.createUserDetails();
-                        }
-                        return ldapUser;
-                    } catch (LdapDataAccessException e) {
-                        LOGGER.log(Level.WARNING, "Failed to search LDAP for username="+username,e);
-                        throw new UserMayOrMayNotExistException(e.getMessage(),e);
-                    }
-                }
-            });
+            new LDAPUserDetailsService(appContext));
     }
 
+    /**
+     * Lookup a group; given input must match the configured syntax for group names
+     * in WEB-INF/security/LDAPBindSecurityRealm.groovy's authoritiesPopulator entry.
+     * The defaults are a prefix of "ROLE_" and using all uppercase.  This method will
+     * not return any data if the given name lacks the proper prefix and/or case. 
+     */
     @Override
     public GroupDetails loadGroupByGroupname(String groupname) throws UsernameNotFoundException, DataAccessException {
+        // Check proper syntax based on acegi configuration
+        String prefix = "";
+        boolean onlyUpperCase = false;
+        try {
+            AuthoritiesPopulatorImpl api = (AuthoritiesPopulatorImpl)
+              ((LDAPUserDetailsService)getSecurityComponents().userDetails).authoritiesPopulator;
+            prefix = api.rolePrefix;
+            onlyUpperCase = api.convertToUpperCase;
+        } catch (Exception ignore) { }
+        if (onlyUpperCase && !groupname.equals(groupname.toUpperCase()))
+            throw new UsernameNotFoundException(groupname + " should be all uppercase");
+        if (!groupname.startsWith(prefix))
+            throw new UsernameNotFoundException(groupname + " is missing prefix: " + prefix);
+        groupname = groupname.substring(prefix.length());
+
         // TODO: obtain a DN instead so that we can obtain multiple attributes later
         String searchBase = groupSearchBase != null ? groupSearchBase : "";
         final Set<String> groups = (Set<String>)ldapTemplate.searchForSingleAttributeValues(searchBase, GROUP_SEARCH,
@@ -380,6 +380,34 @@ public class LDAPSecurityRealm extends SecurityRealm {
                 return groups.iterator().next();
             }
         };
+    }
+
+    public static class LDAPUserDetailsService implements UserDetailsService {
+        public final LdapUserSearch ldapSearch;
+        public final LdapAuthoritiesPopulator authoritiesPopulator;
+        LDAPUserDetailsService(WebApplicationContext appContext) {
+            ldapSearch = findBean(LdapUserSearch.class, appContext);
+            authoritiesPopulator = findBean(LdapAuthoritiesPopulator.class, appContext);
+        }
+        public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException, DataAccessException {
+            try {
+                LdapUserDetails ldapUser = ldapSearch.searchForUser(username);
+                // LdapUserSearch does not populate granted authorities (group search).
+                // Add those, as done in LdapAuthenticationProvider.createUserDetails().
+                if (ldapUser != null) {
+                    LdapUserDetailsImpl.Essence user = new LdapUserDetailsImpl.Essence(ldapUser);
+                    GrantedAuthority[] extraAuthorities = authoritiesPopulator.getGrantedAuthorities(ldapUser);
+                    for (int i = 0; i < extraAuthorities.length; i++) {
+                        user.addAuthority(extraAuthorities[i]);
+                    }
+                    ldapUser = user.createUserDetails();
+                }
+                return ldapUser;
+            } catch (LdapDataAccessException e) {
+                LOGGER.log(Level.WARNING, "Failed to search LDAP for username="+username,e);
+                throw new UserMayOrMayNotExistException(e.getMessage(),e);
+            }
+        }
     }
 
     /**
@@ -406,6 +434,9 @@ public class LDAPSecurityRealm extends SecurityRealm {
             } catch (NamingException e) {
                 LOGGER.log(Level.FINE, "Failed to look up LDAP for e-mail address",e);
                 return null;
+            } catch (AcegiSecurityException e) {
+                LOGGER.log(Level.FINE, "Failed to look up LDAP for e-mail address",e);
+                return null;
             }
         }
     }
@@ -414,13 +445,31 @@ public class LDAPSecurityRealm extends SecurityRealm {
      * {@link LdapAuthoritiesPopulator} that adds the automatic 'authenticated' role.
      */
     public static final class AuthoritiesPopulatorImpl extends DefaultLdapAuthoritiesPopulator {
+        // Make these available (private in parent class and no get methods!)
+        String rolePrefix;
+        boolean convertToUpperCase;
         public AuthoritiesPopulatorImpl(InitialDirContextFactory initialDirContextFactory, String groupSearchBase) {
             super(initialDirContextFactory, groupSearchBase);
+            // These match the defaults in acegi 1.0.5; set again to store in non-private fields:
+            setRolePrefix("ROLE_");
+            setConvertToUpperCase(true);
         }
 
         @Override
         protected Set getAdditionalRoles(LdapUserDetails ldapUser) {
             return Collections.singleton(AUTHENTICATED_AUTHORITY);
+        }
+
+        @Override
+        public void setRolePrefix(String rolePrefix) {
+            super.setRolePrefix(rolePrefix);
+            this.rolePrefix = rolePrefix;
+        }
+
+        @Override
+        public void setConvertToUpperCase(boolean convertToUpperCase) {
+            super.setConvertToUpperCase(convertToUpperCase);
+            this.convertToUpperCase = convertToUpperCase;
         }
     }
 
@@ -446,7 +495,10 @@ public class LDAPSecurityRealm extends SecurityRealm {
                 if(managerPassword!=null && managerPassword.trim().length() > 0 && !"undefined".equals(managerPassword)) {
                     props.put(Context.SECURITY_CREDENTIALS,managerPassword);
                 }
-                DirContext ctx = LdapCtxFactory.getLdapCtxInstance(addPrefix(server)+'/', props);
+                props.put(Context.INITIAL_CONTEXT_FACTORY, "com.sun.jndi.ldap.LdapCtxFactory");
+                props.put(Context.PROVIDER_URL, addPrefix(server)+'/');
+
+                DirContext ctx = new InitialDirContext(props);
                 ctx.getAttributes("");
                 return FormValidation.ok();   // connected
             } catch (NamingException e) {

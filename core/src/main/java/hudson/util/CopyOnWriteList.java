@@ -71,6 +71,12 @@ public class CopyOnWriteList<E> implements Iterable<E> {
         core = n;
     }
 
+    public synchronized void addAll(Collection<? extends E> items) {
+        List<E> n = new ArrayList<E>(core);
+        n.addAll(items);
+        core = n;
+    }
+
     /**
      * Removes an item from the list.
      *

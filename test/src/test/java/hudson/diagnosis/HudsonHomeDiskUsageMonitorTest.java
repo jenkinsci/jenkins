@@ -4,6 +4,7 @@ import org.jvnet.hudson.test.HudsonTestCase;
 import org.xml.sax.SAXException;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import com.gargoylesoftware.htmlunit.html.HtmlForm;
+import com.gargoylesoftware.htmlunit.ElementNotFoundException;
 
 import java.io.IOException;
 
@@ -19,13 +20,15 @@ public class HudsonHomeDiskUsageMonitorTest extends HudsonTestCase {
         // clikcing yes should take us to somewhere
         submit(getForm(mon),"yes");
 
-        // TODO: the test doesn't work today because the submit button doesn't send the name in the form.
-        // this appears to be a bug in HTMLUnit.
-//        // now dismiss
-//        submit(getForm(mon),"no");
-//
-//        // and make sure it's gone
-//        assertNull(getForm(mon));
+        // now dismiss
+        submit(getForm(mon),"no");
+
+        // and make sure it's gone
+        try {
+            fail(getForm(mon)+" shouldn't be there");
+        } catch (ElementNotFoundException e) {
+            // as expected
+        }
     }
 
     /**

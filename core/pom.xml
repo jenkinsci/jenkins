@@ -319,7 +319,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.kohsuke.stapler</groupId>
       <artifactId>stapler-jelly</artifactId>
-      <version>1.107</version>
+      <version>1.109</version>
       <exclusions>
         <exclusion>
           <groupId>dom4j</groupId>
@@ -339,6 +339,11 @@ THE SOFTWARE.
       <groupId>args4j</groupId>
       <artifactId>args4j</artifactId>
       <version>2.0.13</version>
+    </dependency>
+    <dependency>
+      <groupId>org.jvnet.hudson</groupId>
+      <artifactId>annotation-indexer</artifactId>
+      <version>1.1</version>
     </dependency>
     <dependency>
       <groupId>org.jvnet.localizer</groupId>

@@ -23,26 +23,21 @@
  */
 package hudson.cli;
 
-import hudson.ExtensionPoint;
+import hudson.AbortException;
 import hudson.Extension;
 import hudson.ExtensionList;
-import hudson.AbortException;
-import hudson.remoting.Channel;
-import hudson.remoting.Callable;
+import hudson.ExtensionPoint;
+import hudson.cli.declarative.CLIMethod;
+import hudson.ExtensionPoint.LegacyInstancesAreScopedToHudson;
 import hudson.model.Hudson;
-import org.kohsuke.args4j.CmdLineParser;
+import hudson.remoting.Callable;
+import hudson.remoting.Channel;
 import org.kohsuke.args4j.CmdLineException;
-import org.kohsuke.args4j.spi.OptionHandler;
-import org.jvnet.tiger_types.Types;
-import org.apache.commons.discovery.resource.classes.DiscoverClasses;
-import org.apache.commons.discovery.resource.ClassLoaders;
-import org.apache.commons.discovery.resource.names.DiscoverServiceNames;
-import org.apache.commons.discovery.ResourceClassIterator;
-import org.apache.commons.discovery.ResourceNameIterator;
+import org.kohsuke.args4j.CmdLineParser;
 
-import java.io.PrintStream;
-import java.io.InputStream;
 import java.io.BufferedInputStream;
+import java.io.InputStream;
+import java.io.PrintStream;
 import java.util.List;
 import java.util.Locale;
 
@@ -58,7 +53,7 @@ import java.util.Locale;
  *
  * <p>
  * The Hudson master then picks the right {@link CLICommand} to execute, clone it, and
- * calls {@link #main(List, InputStream, PrintStream, PrintStream)} method.
+ * calls {@link #main(List, Locale, InputStream, PrintStream, PrintStream)} method.
  *
  * <h2>Note for CLI command implementor</h2>
  * <ul>
@@ -68,7 +63,7 @@ import java.util.Locale;
  * <li>
  * Use <a href="http://args4j.dev.java.net/">args4j</a> annotation on your implementation to define
  * options and arguments (however, if you don't like that, you could override
- * the {@link #main(List, InputStream, PrintStream, PrintStream)} method directly.
+ * the {@link #main(List, Locale, InputStream, PrintStream, PrintStream)} method directly.
  *
  * <li>
  * stdin, stdout, stderr are remoted, so proper buffering is necessary for good user experience.
@@ -81,7 +76,9 @@ import java.util.Locale;
  *
  * @author Kohsuke Kawaguchi
  * @since 1.302
+ * @see CLIMethod
  */
+@LegacyInstancesAreScopedToHudson
 public abstract class CLICommand implements ExtensionPoint, Cloneable {
     /**
      * Connected to stdout and stderr of the CLI agent that initiated the session.
@@ -107,6 +104,11 @@ public abstract class CLICommand implements ExtensionPoint, Cloneable {
      * execute {@link Callable} on the CLI JVM, among other things.
      */
     protected transient Channel channel;
+
+    /**
+     * The locale of the client. Messages should be formatted with this resource.
+     */
+    protected transient Locale locale;
 
 
     /**
@@ -137,10 +139,11 @@ public abstract class CLICommand implements ExtensionPoint, Cloneable {
      */
     public abstract String getShortDescription();
 
-    public int main(List<String> args, InputStream stdin, PrintStream stdout, PrintStream stderr) {
+    public int main(List<String> args, Locale locale, InputStream stdin, PrintStream stdout, PrintStream stderr) {
         this.stdin = new BufferedInputStream(stdin);
         this.stdout = stdout;
         this.stderr = stderr;
+        this.locale = locale;
         this.channel = Channel.current();
         CmdLineParser p = new CmdLineParser(this);
         try {
@@ -180,6 +183,19 @@ public abstract class CLICommand implements ExtensionPoint, Cloneable {
     }
 
     /**
+     * Creates a clone to be used to execute a command.
+     */
+    protected CLICommand createClone() {
+        try {
+            return getClass().newInstance();
+        } catch (IllegalAccessException e) {
+            throw new AssertionError(e);
+        } catch (InstantiationException e) {
+            throw new AssertionError(e);
+        }
+    }
+
+    /**
      * Returns all the registered {@link CLICommand}s.
      */
     public static ExtensionList<CLICommand> all() {
@@ -190,17 +206,9 @@ public abstract class CLICommand implements ExtensionPoint, Cloneable {
      * Obtains a copy of the command for invocation.
      */
     public static CLICommand clone(String name) {
-        for (CLICommand cmd : all()) {
-            if(name.equals(cmd.getName())) {
-                try {
-                    return cmd.getClass().newInstance();
-                } catch (IllegalAccessException e) {
-                    throw new AssertionError(e);
-                } catch (InstantiationException e) {
-                    throw new AssertionError(e);
-                }
-            }
-        }
+        for (CLICommand cmd : all())
+            if(name.equals(cmd.getName()))
+                return cmd.createClone();
         return null;
     }
 }

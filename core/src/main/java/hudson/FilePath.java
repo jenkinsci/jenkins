@@ -899,13 +899,17 @@ public final class FilePath implements Serializable {
 
     /**
      * Deletes this file.
+     * @throws IOException if it exists but could not be successfully deleted
+     * @return true, for a modicum of compatibility
      */
     public boolean delete() throws IOException, InterruptedException {
-        return act(new FileCallable<Boolean>() {
-            public Boolean invoke(File f, VirtualChannel channel) throws IOException {
-                return f.delete();
+        act(new FileCallable<Void>() {
+            public Void invoke(File f, VirtualChannel channel) throws IOException {
+                Util.deleteFile(f);
+                return null;
             }
         });
+        return true;
     }
 
     /**

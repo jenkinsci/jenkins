@@ -60,8 +60,10 @@ THE SOFTWARE.
       <plugin>
         <groupId>org.codehaus.groovy.maven</groupId>
         <artifactId>gmaven-plugin</artifactId>
+	<version>1.0-rc-5</version>
         <executions>
           <execution>
+            <id>preset-packager</id>
             <phase>process-resources</phase>
             <goals>
               <goal>execute</goal>
@@ -69,6 +71,14 @@ THE SOFTWARE.
             <configuration>
               <source>${pom.basedir}/src/main/preset-data/package.groovy</source>
             </configuration>
+          </execution>
+          <execution>
+            <id>test-in-groovy</id>
+            <!-- allow tests written in Groovy -->
+            <goals>
+              <goal>generateTestStubs</goal>
+              <goal>testCompile</goal>
+            </goals>
           </execution>
         </executions>
         <dependencies>
@@ -92,11 +102,6 @@ THE SOFTWARE.
       <artifactId>hudson-war</artifactId>
       <version>${project.version}</version>
       <classifier>war-for-test</classifier>
-    </dependency>
-    <dependency>
-      <groupId>${project.groupId}</groupId>
-      <artifactId>maven-plugin</artifactId>
-      <version>${project.version}</version>
     </dependency>
     <dependency>
       <groupId>${project.groupId}</groupId>
@@ -140,7 +145,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.jvnet.hudson</groupId>
       <artifactId>embedded-rhino-debugger</artifactId>
-      <version>1.0</version>
+      <version>1.1</version>
     </dependency>
     <dependency>
       <!-- for testing JNLP launch. -->

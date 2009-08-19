@@ -186,7 +186,12 @@ public class Util {
             deleteRecursive(child);
     }
 
-    private static void deleteFile(File f) throws IOException {
+    /**
+     * Deletes this file (and does not take no for an answer).
+     * @param f a file to delete
+     * @throws IOException if it exists but could not be successfully deleted
+     */
+    public static void deleteFile(File f) throws IOException {
         if (!f.delete()) {
             if(!f.exists())
                 // we are trying to delete a file that no longer exists, so this is not an error

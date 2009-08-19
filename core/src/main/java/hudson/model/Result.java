@@ -119,6 +119,13 @@ public final class Result implements Serializable, CustomExportedBean {
     public String toExportedObject() {
         return name;
     }
+    
+    public static Result fromString(String s) {
+        for (Result r : all)
+            if (s.equals(r.name))
+                return r;
+        return FAILURE;
+    }
 
     private static final long serialVersionUID = 1L;
 
@@ -130,10 +137,7 @@ public final class Result implements Serializable, CustomExportedBean {
         }
 
         protected Object fromString(String s) {
-            for (Result r : all)
-                if (s.equals(r.name))
-                    return r;
-            return FAILURE;
+            return Result.fromString(s);
         }
     };
 }

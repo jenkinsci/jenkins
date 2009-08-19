@@ -255,8 +255,8 @@ public final class ComputerSet extends AbstractModelObject {
      * Really creates a new slave.
      */
     public synchronized void doDoCreateItem( StaplerRequest req, StaplerResponse rsp,
-                                           @QueryParameter("name") String name,
-                                           @QueryParameter("type") String type ) throws IOException, ServletException {
+                                           @QueryParameter String name,
+                                           @QueryParameter String type ) throws IOException, ServletException, FormException {
         try {
             final Hudson app = Hudson.getInstance();
             app.checkPermission(Hudson.ADMINISTER);  // TODO: new permission?
@@ -269,8 +269,6 @@ public final class ComputerSet extends AbstractModelObject {
             rsp.sendRedirect2(".");
         } catch (ParseException e) {
             rsp.setStatus(SC_BAD_REQUEST);
-            sendError(e,req,rsp);
-        } catch (FormException e) {
             sendError(e,req,rsp);
         }
     }
@@ -311,7 +309,7 @@ public final class ComputerSet extends AbstractModelObject {
     /**
      * Accepts submission from the configuration page.
      */
-    public final synchronized void doConfigSubmit( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
+    public final synchronized void doConfigSubmit( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException, FormException {
         BulkChange bc = new BulkChange(MONITORS_OWNER);
         try {
             Hudson.getInstance().checkPermission(Hudson.ADMINISTER);
@@ -325,8 +323,6 @@ public final class ComputerSet extends AbstractModelObject {
                         monitors.add(i);
                 }
             rsp.sendRedirect2(".");
-        } catch (FormException e) {
-            sendError(e,req,rsp);
         } finally {
             bc.commit();
         }

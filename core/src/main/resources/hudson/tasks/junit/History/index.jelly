@@ -28,14 +28,16 @@ THE SOFTWARE.
 
 		<script type="text/javascript">
 			function setCount() {
-				document.getElementById("graph").src = "count/png";
-				document.getElementById("graph").lazyMap = "count/map";
+				document.getElementById("graph").src = "countGraph/png";
+				document.getElementById("graph").lazyMap = "countGraph/map";
+                document.getElementById("graph").alt = "[Count graph]";
 				document.getElementById("duration-link").style.display = "";
 				document.getElementById("count-link").style.display = "none";
 			}
 			function setDuration() {
-				document.getElementById("graph").src = "duration/png"
-				document.getElementById("graph").lazyMap = "duration/map"
+				document.getElementById("graph").src = "durationGraph/png"
+				document.getElementById("graph").lazyMap = "durationGraph/map"
+                document.getElementById("graph").alt = "[Duration graph]";
 				document.getElementById("duration-link").style.display = "none";
 				document.getElementById("count-link").style.display = "";
 			}
@@ -47,7 +49,7 @@ THE SOFTWARE.
       <j:choose>
         <j:when test="${it.testObject.previousResult != null}">
           <div align="center">
-            <img id="graph" src="durationGraph" width="600" height="300" lazymap="durationMap" alt="[Duration graph]"/>
+            <img id="graph" src="durationGraph/png" width="600" height="300" lazymap="durationGraph/map" alt="[Duration graph]"/>
           </div>
           <div align="center">
           	show

@@ -48,3 +48,7 @@ mv $WWW/changelog.new $WWW/changelog.html
 
 cd $WWW
 svn commit -m "RC branch is created" changelog.html
+
+# re-initialize the tracking
+svnmerge init -F $repo/branches/rc
+svn commit -F svnmerge-commit-message.txt
