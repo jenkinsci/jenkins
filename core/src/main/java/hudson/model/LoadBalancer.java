@@ -64,7 +64,7 @@ public abstract class LoadBalancer /*implements ExtensionPoint*/ {
             if (n != null && n.getMode() == Mode.NORMAL) {
                 for (JobOffer offer : applicable) {
                     if (offer.getNode() == n) {
-                        if (isLargeHudson && offer.getNode() instanceof Slave)
+                        if (isLargeHudson && offer.getNode() instanceof Hudson)
                             // but if we are a large Hudson, then we really do want to keep the master free from builds
                             continue;
                         return offer;
