@@ -119,6 +119,10 @@ public class Maven extends Builder {
         this(targets,name,null,null,null,false);
     }
 
+    public Maven(String targets, String name, String pom, String properties, String jvmOptions) {
+	this(targets, name, pom, properties, jvmOptions, false);
+    }
+    
     @DataBoundConstructor
     public Maven(String targets,String name, String pom, String properties, String jvmOptions, boolean usePrivateRepository) {
         this.targets = targets;
