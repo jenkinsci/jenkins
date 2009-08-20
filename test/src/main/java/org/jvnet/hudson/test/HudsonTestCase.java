@@ -347,9 +347,16 @@ public abstract class HudsonTestCase extends TestCase {
 //    }
 
     /**
-     * Locates Maven2 and configure that as the only Maven in the system.
+     * Returns the older default Maven, while still allowing specification of other bundled Mavens.
      */
     protected MavenInstallation configureDefaultMaven() throws Exception {
+	return configureDefaultMaven("maven-2.0.7");
+    }
+    
+    /**
+     * Locates Maven2 and configure that as the only Maven in the system.
+     */
+    protected MavenInstallation configureDefaultMaven(String mavenVersion) throws Exception {
         // first if we are running inside Maven, pick that Maven.
         String home = System.getProperty("maven.home");
         if(home!=null) {
@@ -365,7 +372,7 @@ public abstract class HudsonTestCase extends TestCase {
         FilePath mvn = hudson.getRootPath().createTempFile("maven", "zip");
         OutputStream os = mvn.write();
         try {
-            IOUtils.copy(HudsonTestCase.class.getClassLoader().getResourceAsStream("maven-2.0.7-bin.zip"), os);
+            IOUtils.copy(HudsonTestCase.class.getClassLoader().getResourceAsStream(mavenVersion + "-bin.zip"), os);
         } finally {
             os.close();
         }
@@ -373,10 +380,10 @@ public abstract class HudsonTestCase extends TestCase {
         mvn.unzip(new FilePath(mvnHome));
         // TODO: switch to tar that preserves file permissions more easily
         if(!Hudson.isWindows())
-            GNUCLibrary.LIBC.chmod(new File(mvnHome,"maven-2.0.7/bin/mvn").getPath(),0755);
+            GNUCLibrary.LIBC.chmod(new File(mvnHome,mavenVersion+"/bin/mvn").getPath(),0755);
 
         MavenInstallation mavenInstallation = new MavenInstallation("default",
-                new File(mvnHome,"maven-2.0.7").getAbsolutePath(), NO_PROPERTIES);
+                new File(mvnHome,mavenVersion).getAbsolutePath(), NO_PROPERTIES);
 		hudson.getDescriptorByType(Maven.DescriptorImpl.class).setInstallations(mavenInstallation);
 		return mavenInstallation;
     }
