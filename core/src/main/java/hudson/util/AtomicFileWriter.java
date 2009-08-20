@@ -59,7 +59,11 @@ public class AtomicFileWriter extends Writer {
      *      File encoding to write. If null, platform default encoding is chosen.
      */
     public AtomicFileWriter(File f, String encoding) throws IOException {
-        tmpFile = File.createTempFile("atomic",null,f.getParentFile());
+        try {
+            tmpFile = File.createTempFile("atomic",null,f.getParentFile());
+        } catch (IOException e) {
+            throw new IOException2("Failed to create a temporary file in "+f.getParentFile(),e);
+        }
         destFile = f;
         if (encoding==null)
             encoding = Charset.defaultCharset().name();
