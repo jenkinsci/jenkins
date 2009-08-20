@@ -25,7 +25,6 @@
 package hudson.model;
 
 import hudson.remoting.VirtualChannel;
-import hudson.tasks.DynamicLabeler;
 import hudson.tasks.LabelFinder;
 import java.util.HashSet;
 import java.util.Set;
@@ -51,7 +50,7 @@ public final class DynamicLabels {
      * Create dynamic labels for a computer.
      */
     public DynamicLabels(Computer comp) {
-        labels = buildLabels(comp!=null?comp.getChannel():null);
+        labels = buildLabels(comp);
         computer = comp;
     }
 
@@ -65,13 +64,13 @@ public final class DynamicLabels {
     /**
      * Read labels from channel into this.labels.
      */
-    private static Set<Label> buildLabels(VirtualChannel channel) {
-        if (null == channel)
+    private static Set<Label> buildLabels(Computer c) {
+        if (null == c)
             return Collections.emptySet();
 
         Set<Label> r = new HashSet<Label>();
-        for (DynamicLabeler labeler : LabelFinder.LABELERS)
-            for (String label : labeler.findLabels(channel))
+        for (LabelFinder labeler : LabelFinder.all())
+            for (String label : labeler.findLabels(c.getNode(),c))
                 r.add(Hudson.getInstance().getLabel(label));
         return r;
     }

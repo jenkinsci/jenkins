@@ -24,24 +24,48 @@
 package hudson.tasks;
 
 import hudson.ExtensionListView;
+import hudson.ExtensionPoint;
+import hudson.ExtensionList;
+import hudson.UDPBroadcastFragment;
+import hudson.Extension;
+import hudson.model.Label;
+import hudson.model.Node;
+import hudson.model.Computer;
+import hudson.model.Hudson;
 import hudson.remoting.VirtualChannel;
 
 import java.util.List;
 import java.util.Set;
+import java.util.Collection;
 
 /**
- * Support for autoconfiguration of nodes.
+ * Automatically adds labels to {@link Node}s.
+ *
+ * <p>
+ * To register your implementation, put {@link Extension} on your derived types.
  *
  * @author Stephen Connolly
+ * @since 1.322
+ *      Signature of this class changed in 1.322, after making sure that no plugin in the Subversion repository
+ *      is using this.
  */
-public interface LabelFinder {
-
-    public static final List<DynamicLabeler> LABELERS = ExtensionListView.createList(DynamicLabeler.class);
+public abstract class LabelFinder implements ExtensionPoint {
+    /**
+     * Returns all the registered {@link LabelFinder}s.
+     */
+    public static ExtensionList<LabelFinder> all() {
+        return Hudson.getInstance().getExtensionList(LabelFinder.class);
+    }
 
     /**
      * Find the labels that the node supports.
-     * @param node The Node
-     * @return a set of labels.
+     *
+     * @param node
+     *      The node that receives labels. Never null.
+     * @param c
+     *      Computer that corresponds to the given node. This parameter is passed in for your convenience. Never null.
+     * @return
+     *      A set of labels to be added dynamically to the node. Can be empty but never null.
      */
-    Set<String> findLabels(VirtualChannel channel);
+    public abstract Collection<String> findLabels(Node node, Computer c);
 }

@@ -24,24 +24,27 @@
 package hudson.tasks.labelers;
 
 import hudson.remoting.Callable;
-import hudson.remoting.VirtualChannel;
-import hudson.tasks.DynamicLabeler;
+import hudson.tasks.LabelFinder;
+import hudson.model.Computer;
+import hudson.model.Node;
 
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
 /**
- * Created by IntelliJ IDEA.
+ * Assigns labels automatically, based on OS.
+ *
+ * TODO: we need to figure out some way to avoid collisions with user-defined labels.
  *
  * @author connollys
  * @since 25-May-2007 15:25:03
  */
 // @Extension --- not live yet
-public class OSLabeler extends DynamicLabeler {
-    public Set<String> findLabels(VirtualChannel channel) {
+public class OSLabeler extends LabelFinder {
+    public Set<String> findLabels(Node node, Computer computer) {
         try {
-            return channel.call(new OSLabelFinder());
+            return computer.getChannel().call(new OSLabelFinder());
         } catch (Exception e) {
             return Collections.emptySet();
         }
