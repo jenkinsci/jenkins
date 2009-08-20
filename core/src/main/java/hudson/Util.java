@@ -7,6 +7,7 @@ import hudson.util.IOException2;
 import hudson.util.QuotedStringTokenizer;
 import hudson.util.VariableResolver;
 import hudson.Proc.LocalProc;
+import hudson.os.PosixAPI;
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.Project;
 import org.apache.tools.ant.types.FileSet;
@@ -15,6 +16,7 @@ import org.apache.tools.ant.taskdefs.Copy;
 import org.apache.commons.lang.time.FastDateFormat;
 import org.kohsuke.stapler.Stapler;
 import org.jvnet.animal_sniffer.IgnoreJRERequirement;
+import org.jruby.ext.posix.POSIX;
 
 import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
@@ -281,7 +283,7 @@ public class Util {
         if (name.equals(".") || name.equals(".."))
             return false;
 
-        File fileInCanonicalParent = null;
+        File fileInCanonicalParent;
         File parentDir = file.getParentFile();
         if ( parentDir == null ) {
             fileInCanonicalParent = file;
@@ -586,7 +588,7 @@ public class Util {
      * 
      * @deprecated 
      *   Use individual localization methods instead. 
-     *   See {@link #Messages.Util_year(long)} for an example.
+     *   See {@link Messages#Util_year(Object)} for an example.
      *   Deprecated since 2009-06-24, remove method after 2009-12-24.
      */
     public static String combine(long n, String suffix) {
@@ -885,12 +887,19 @@ public class Util {
     public static void createSymlink(File baseDir, String targetPath, String symlinkPath, TaskListener listener) throws InterruptedException {
         if(!isWindows() && !NO_SYMLINK) {
             try {
-                // ignore a failure.
-                new LocalProc(new String[]{"rm","-rf", symlinkPath},new String[0],listener.getLogger(), baseDir).join();
+                // if a file or a directory exists here, delete it first.
+                if (new File(symlinkPath).exists())
+                    // ignore a failure.
+                    new LocalProc(new String[]{"rm","-rf", symlinkPath},new String[0],listener.getLogger(), baseDir).join();
 
-                int r = new LocalProc(new String[]{
-                    "ln","-s", targetPath, symlinkPath},
-                    new String[0],listener.getLogger(), baseDir).join();
+                int r;
+
+                if (!SYMLINK_ESCAPEHATCH)
+                    r = PosixAPI.get().symlink(targetPath,symlinkPath);
+                else // escape hatch, until we know that the above works well. 
+                    r = new LocalProc(new String[]{
+                        "ln","-s", targetPath, symlinkPath},
+                        new String[0],listener.getLogger(), baseDir).join();
                 if(r!=0)
                     listener.getLogger().println("ln failed: "+r);
             } catch (IOException e) {
@@ -980,4 +989,6 @@ public class Util {
      * On Unix environment that cannot run "ln", set this to true.
      */
     public static boolean NO_SYMLINK = Boolean.getBoolean(Util.class.getName()+".noSymLink");
+
+    public static boolean SYMLINK_ESCAPEHATCH = Boolean.getBoolean(Util.class.getName()+".symlinkEscapeHatch");
 }
