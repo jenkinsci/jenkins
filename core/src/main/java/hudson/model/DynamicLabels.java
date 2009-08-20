@@ -24,7 +24,6 @@
 
 package hudson.model;
 
-import hudson.remoting.VirtualChannel;
 import hudson.tasks.LabelFinder;
 import java.util.HashSet;
 import java.util.Set;
@@ -70,7 +69,7 @@ public final class DynamicLabels {
 
         Set<Label> r = new HashSet<Label>();
         for (LabelFinder labeler : LabelFinder.all())
-            for (String label : labeler.findLabels(c.getNode(),c))
+            for (String label : labeler.findLabels(c.getNode()))
                 r.add(Hudson.getInstance().getLabel(label));
         return r;
     }

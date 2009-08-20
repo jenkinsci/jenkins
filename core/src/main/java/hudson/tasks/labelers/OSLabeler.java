@@ -25,7 +25,6 @@ package hudson.tasks.labelers;
 
 import hudson.remoting.Callable;
 import hudson.tasks.LabelFinder;
-import hudson.model.Computer;
 import hudson.model.Node;
 
 import java.util.Collections;
@@ -42,9 +41,9 @@ import java.util.Set;
  */
 // @Extension --- not live yet
 public class OSLabeler extends LabelFinder {
-    public Set<String> findLabels(Node node, Computer computer) {
+    public Set<String> findLabels(Node node) {
         try {
-            return computer.getChannel().call(new OSLabelFinder());
+            return node.getChannel().call(new OSLabelFinder());
         } catch (Exception e) {
             return Collections.emptySet();
         }

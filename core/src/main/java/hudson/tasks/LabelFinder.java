@@ -23,19 +23,12 @@
  */
 package hudson.tasks;
 
-import hudson.ExtensionListView;
-import hudson.ExtensionPoint;
-import hudson.ExtensionList;
-import hudson.UDPBroadcastFragment;
 import hudson.Extension;
-import hudson.model.Label;
-import hudson.model.Node;
-import hudson.model.Computer;
+import hudson.ExtensionList;
+import hudson.ExtensionPoint;
 import hudson.model.Hudson;
-import hudson.remoting.VirtualChannel;
+import hudson.model.Node;
 
-import java.util.List;
-import java.util.Set;
 import java.util.Collection;
 
 /**
@@ -62,10 +55,8 @@ public abstract class LabelFinder implements ExtensionPoint {
      *
      * @param node
      *      The node that receives labels. Never null.
-     * @param c
-     *      Computer that corresponds to the given node. This parameter is passed in for your convenience. Never null.
      * @return
      *      A set of labels to be added dynamically to the node. Can be empty but never null.
      */
-    public abstract Collection<String> findLabels(Node node, Computer c);
+    public abstract Collection<String> findLabels(Node node);
 }
