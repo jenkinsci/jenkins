@@ -418,17 +418,21 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
                         List<String> changedModules = new ArrayList<String>();
 
                         for (MavenModule m : project.sortedActiveModules) {
+                            MavenBuild mb = m.newBuild();
                             
                             // Check if incrementalBuild is selected and that there are changes -
                             // we act as if incrementalBuild is not set if there are no changes.
                             if (!MavenModuleSetBuild.this.getChangeSet().isEmptySet()
                                 && project.isIncrementalBuild()) {
-                                if (!getChangeSetFor(m).isEmpty()) {
+				// If there are changes for this module, add it.
+                                if ((!getChangeSetFor(m).isEmpty()) 
+				    // If the last actually-built build of this module wasn't a success,
+				    // add it - i.e., rebuild anything that failed/was unstable in the past.
+				    || (mb.getPreviousBuiltBuild().getResult().isWorseThan(Result.SUCCESS))) {
                                     changedModules.add(m.getModuleName().toString());
                                 }
                             }
 
-                            MavenBuild mb = m.newBuild();
                             mb.setWorkspace(getModuleRoot().child(m.getRelativePath()));
                             proxies.put(m.getModuleName(), mb.new ProxyImpl2(MavenModuleSetBuild.this,slistener));
                         }

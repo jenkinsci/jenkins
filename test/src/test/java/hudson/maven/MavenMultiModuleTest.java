@@ -63,7 +63,48 @@ public class MavenMultiModuleTest extends HudsonTestCase {
 	}	
 	
     }
-    
+
+    /**
+     * Module failures in build X should lead to those modules being re-run in build X+1, even if
+     * incremental build is enabled and nothing changed in those modules.
+     */
+    @Bug(4152)
+    public void testIncrementalMultiModWithErrorsMaven() throws Exception {
+        configureDefaultMaven("apache-maven-2.2.1");
+        MavenModuleSet m = createMavenProject();
+        m.getReporters().add(new TestReporter());
+	m.setScm(new ExtractResourceWithChangesSCM(getClass().getResource("maven-multimod-incr.zip"),
+						   getClass().getResource("maven-multimod-changes.zip")));
+
+	assertBuildStatus(Result.UNSTABLE, m.scheduleBuild2(0).get());
+
+	// Now run a second build with the changes.
+	m.setIncrementalBuild(true);
+        assertBuildStatus(Result.UNSTABLE, m.scheduleBuild2(0).get());
+
+	MavenModuleSetBuild pBuild = m.getLastBuild();
+	ExtractChangeLogSet changeSet = (ExtractChangeLogSet) pBuild.getChangeSet();
+
+	assertFalse("ExtractChangeLogSet should not be empty.", changeSet.isEmptySet());
+
+	for (MavenBuild modBuild : pBuild.getModuleLastBuilds().values()) {
+	    if (modBuild.getParent().getModuleName().toString().equals("org.jvnet.hudson.main.test.multimod.incr:moduleA")) {
+		assertEquals("moduleA should have Result.UNSTABLE", modBuild.getResult(), Result.UNSTABLE);
+	    }
+	    if (modBuild.getParent().getModuleName().toString().equals("org.jvnet.hudson.main.test.multimod.incr:moduleB")) {
+		assertEquals("moduleB should have Result.SUCCESS", modBuild.getResult(), Result.SUCCESS);
+	    }
+	    if (modBuild.getParent().getModuleName().toString().equals("org.jvnet.hudson.main.test.multimod.incr:moduleC")) {
+		assertEquals("moduleC should have Result.SUCCESS", modBuild.getResult(), Result.SUCCESS);
+	    }
+	    if (modBuild.getParent().getModuleName().toString().equals("org.jvnet.hudson.main.test.multimod.incr:moduleD")) {
+		assertEquals("moduleC should have Result.NOT_BUILT", modBuild.getResult(), Result.NOT_BUILT);
+	    }
+	    
+	}	
+	
+    }
+
     /*
     public void testParallelMultiModMavenWsExists() throws Exception {
         configureDefaultMaven();

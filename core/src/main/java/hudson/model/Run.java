@@ -616,6 +616,16 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
     }
 
     /**
+     * Returns the last build that was actually built - i.e., skipping any with Result.NOT_BUILT
+     */
+    public RunT getPreviousBuiltBuild() {
+        RunT r=previousBuild;
+        while( r!=null && r.getResult()==Result.NOT_BUILT )
+            r=r.previousBuild;
+        return r;
+    }
+
+    /**
      * Returns the last build that didn't fail before this build.
      */
     public RunT getPreviousNotFailedBuild() {
