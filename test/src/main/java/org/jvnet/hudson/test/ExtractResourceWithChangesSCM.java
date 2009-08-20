@@ -82,12 +82,12 @@ public class ExtractResourceWithChangesSCM extends NullSCM {
 	// Get list of files changed in secondZip.
 	ZipInputStream zip = new ZipInputStream(secondZip.openStream());
 	ZipEntry e;
-	ExtractChangeLogEntry changeLog = new ExtractChangeLogEntry(secondZip.toString());
+	ExtractChangeLogParser.ExtractChangeLogEntry changeLog = new ExtractChangeLogParser.ExtractChangeLogEntry(secondZip.toString());
 	
 	try {
 	    while ((e=zip.getNextEntry())!=null) {
 		if (!e.isDirectory()) 
-		    changeLog.addFile(new FileInZip(e.getName()));
+		    changeLog.addFile(new ExtractChangeLogParser.FileInZip(e.getName()));
 	    }
 	}
 	finally {
@@ -139,7 +139,7 @@ public class ExtractResourceWithChangesSCM extends NullSCM {
         return escapedString.toString().trim();
     }
     
-    public void saveToChangeLog(File changeLogFile, ExtractChangeLogEntry changeLog) throws IOException {
+    public void saveToChangeLog(File changeLogFile, ExtractChangeLogParser.ExtractChangeLogEntry changeLog) throws IOException {
 	FileOutputStream outputStream = new FileOutputStream(changeLogFile);
 	
 	PrintStream stream = new PrintStream(outputStream, false, "UTF-8");
