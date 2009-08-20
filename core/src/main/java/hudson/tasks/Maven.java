@@ -98,24 +98,47 @@ public class Maven extends Builder {
      */
     public final String properties;
 
+    /**
+     * If true, the build will use its own local Maven repository
+     * via "-Dmaven.repo.local=...".
+     * <p>
+     * This would consume additional disk space, but provides isolation with other builds on the same machine,
+     * such as mixing SNAPSHOTS. Maven also doesn't try to coordinate the concurrent access to Maven repositories
+     * from multiple Maven process, so this helps there too.
+     *
+     * Identical to logic used in maven-plugin.
+     *
+     * @since 1.322
+     */
+    public boolean usePrivateRepository = false;
+
     private final static String MAVEN_1_INSTALLATION_COMMON_FILE = "bin/maven";
     private final static String MAVEN_2_INSTALLATION_COMMON_FILE = "bin/mvn";
 
     public Maven(String targets,String name) {
-        this(targets,name,null,null,null);
+        this(targets,name,null,null,null,false);
     }
 
     @DataBoundConstructor
-    public Maven(String targets,String name, String pom, String properties, String jvmOptions) {
+    public Maven(String targets,String name, String pom, String properties, String jvmOptions, boolean usePrivateRepository) {
         this.targets = targets;
         this.mavenName = name;
         this.pom = Util.fixEmptyAndTrim(pom);
         this.properties = Util.fixEmptyAndTrim(properties);
         this.jvmOptions = Util.fixEmptyAndTrim(jvmOptions);
+	this.usePrivateRepository = usePrivateRepository;
     }
 
     public String getTargets() {
         return targets;
+    }
+
+    public void setUsePrivateRepository(boolean usePrivateRepository) {
+        this.usePrivateRepository = usePrivateRepository;
+    }
+
+    public boolean usesPrivateRepository() {
+        return usePrivateRepository;
     }
 
     /**
@@ -221,6 +244,8 @@ public class Maven extends Builder {
                 args.add("-f",pom);
             args.addKeyValuePairs("-D",build.getBuildVariables());
             args.addKeyValuePairsFromPropertyString("-D",properties,vr);
+	    if(usesPrivateRepository())
+		args.add("-Dmaven.repo.local="+build.getWorkspace().child(".repository"));
             args.addTokenized(normalizedTarget);
 
             if(mi!=null) {
