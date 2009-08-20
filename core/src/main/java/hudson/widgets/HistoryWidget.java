@@ -117,7 +117,7 @@ public class HistoryWidget<O extends ModelObject,T> extends Widget {
             if (baseList instanceof List) {
                 lst = (List<T>) baseList;
                 if(lst.size()>THRESHOLD)
-                    return lst.subList(0,THRESHOLD);
+                    return updateFirstTransientBuildKey(lst.subList(0,THRESHOLD));
                 trimmed=false;
                 return updateFirstTransientBuildKey(lst);
             } else {
