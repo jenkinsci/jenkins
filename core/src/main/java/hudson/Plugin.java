@@ -243,11 +243,12 @@ public abstract class Plugin implements Saveable {
                 new File(Hudson.getInstance().getRootDir(),wrapper.getShortName()+".xml"));
     }
 
+
     /**
      * Dummy instance of {@link Plugin} to be used when a plugin didn't
      * supply one on its own.
      *
-     * @since 1.288
+     * @since 1.321
      */
-    public static final Plugin NONE = new Plugin() {};
+    public static final class DummyImpl extends Plugin {}
 }

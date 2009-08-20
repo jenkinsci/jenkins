@@ -27,6 +27,7 @@ import hudson.PluginWrapper.Dependency;
 import hudson.util.IOException2;
 import hudson.util.MaskingClassLoader;
 import hudson.util.VersionNumber;
+import hudson.Plugin.DummyImpl;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -246,7 +247,7 @@ public class ClassicPluginStrategy implements PluginStrategy {
             String className = wrapper.getPluginClass();
             if(className==null) {
                 // use the default dummy instance
-                wrapper.setPlugin(Plugin.NONE);
+                wrapper.setPlugin(new DummyImpl());
             } else {
                 try {
                     Class clazz = wrapper.classLoader.loadClass(className);
