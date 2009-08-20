@@ -259,10 +259,6 @@ public class GlobalMatrixAuthorizationStrategy extends AuthorizationStrategy {
             return new GlobalMatrixAuthorizationStrategy();
         }
 
-        public String getHelpFile() {
-            return "/help/security/global-matrix.html";
-        }
-
         public List<PermissionGroup> getAllGroups() {
             List<PermissionGroup> groups = new ArrayList<PermissionGroup>(PermissionGroup.getAll());
             groups.remove(PermissionGroup.get(Permission.class));
