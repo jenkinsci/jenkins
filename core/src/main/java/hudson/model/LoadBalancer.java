@@ -97,7 +97,7 @@ public abstract class LoadBalancer /*implements ExtensionPoint*/ {
     };
 
     /**
-     * Work in progress implementation that uses a consistent hash for scheduling.
+     * Uses a consistent hash for scheduling.
      */
     public static final LoadBalancer CONSISTENT_HASH = new LoadBalancer() {
         protected JobOffer choose(Task task, ApplicableJobOfferList applicable) {
