@@ -32,6 +32,8 @@ THE SOFTWARE.
   <d:taglib uri="local">
     <d:tag name="tagForm">
       <form action="submit" method="get">
+        <j:set var="descriptor" value="${it.descriptor}" />
+
         <table>
           <f:block>
             ${%Choose the CVS tag name for this build}:
@@ -41,7 +43,7 @@ THE SOFTWARE.
 
           <j:set var="upstream" value="${it.build.transitiveUpstreamBuilds}" />
           <j:if test="${!empty(upstream)}">
-            <f:optionalBlock name="upstream" title="Tag all upstream builds at once" help="/help/_cvs/tagAll.html">
+            <f:optionalBlock name="upstream" title="Tag all upstream builds at once" help="${descriptor.getHelpFile('tagAll')}">
               <j:forEach var="up" items="${upstream}">
                 <f:entry title="${up.key.name} #${up.value}">
                   <input type="text" name="upstream.${up.key.name}" value="hudson-${up.value}" class="validated"

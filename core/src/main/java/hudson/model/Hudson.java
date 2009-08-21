@@ -3103,27 +3103,6 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
     }
 
     /**
-     * Returns all {@code CVSROOT} strings used in the current Hudson installation.
-     *
-     * <p>
-     * Ideally this shouldn't be defined in here
-     * but EL doesn't provide a convenient way of invoking a static function,
-     * so I'm putting it here for now.
-     */
-    public Set<String> getAllCvsRoots() {
-        Set<String> r = new TreeSet<String>();
-        for( AbstractProject p : getAllItems(AbstractProject.class) ) {
-            SCM scm = p.getScm();
-            if (scm instanceof CVSSCM) {
-                CVSSCM cvsscm = (CVSSCM) scm;
-                r.add(cvsscm.getCvsRoot());
-            }
-        }
-
-        return r;
-    }
-
-    /**
      * Rebuilds the dependency map.
      */
     public void rebuildDependencyGraph() {

@@ -32,6 +32,7 @@ import hudson.Util;
 import hudson.Extension;
 import static hudson.Util.fixEmpty;
 import static hudson.Util.fixNull;
+import static hudson.Util.fixEmptyAndTrim;
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
 import hudson.model.BuildListener;
@@ -40,6 +41,8 @@ import hudson.model.ModelObject;
 import hudson.model.Run;
 import hudson.model.TaskListener;
 import hudson.model.TaskThread;
+import hudson.model.Describable;
+import hudson.model.Descriptor;
 import hudson.org.apache.tools.ant.taskdefs.cvslib.ChangeLogTask;
 import hudson.remoting.Future;
 import hudson.remoting.RemoteOutputStream;
@@ -148,12 +151,12 @@ public class CVSSCM extends SCM implements Serializable {
 	 private String excludedRegions;
 
     @DataBoundConstructor
-    public CVSSCM(String cvsRoot, String module,String branch,String cvsRsh,boolean canUseUpdate, boolean legacy, boolean isTag, String excludedRegions) {
+    public CVSSCM(String cvsRoot, String allModules,String branch,String cvsRsh,boolean canUseUpdate, boolean legacy, boolean isTag, String excludedRegions) {
         if(fixNull(branch).equals("HEAD"))
             branch = null;
 
         this.cvsroot = fixNull(cvsRoot).trim();
-        this.module = module.trim();
+        this.module = allModules.trim();
         this.branch = nullify(branch);
         this.cvsRsh = nullify(cvsRsh);
         this.canUseUpdate = canUseUpdate;
@@ -1113,8 +1116,8 @@ public class CVSSCM extends SCM implements Serializable {
         }
 
         public boolean configure( StaplerRequest req, JSONObject o ) {
-            cvsPassFile = fixEmpty(req.getParameter("cvs_cvspass").trim());
-            cvsExe = fixEmpty(req.getParameter("cvs_exe").trim());
+            cvsPassFile = fixEmptyAndTrim(req.getParameter("cvspassFile"));
+            cvsExe = fixEmptyAndTrim(o.getString("cvsExe"));
             noCompression = req.getParameter("cvs_noCompression")!=null;
             save();
 
@@ -1126,11 +1129,27 @@ public class CVSSCM extends SCM implements Serializable {
             return x.getCvsRoot().equals(y.getCvsRoot());
         }
 
+        /**
+         * Returns all {@code CVSROOT} strings used in the current Hudson installation.
+         */
+        public Set<String> getAllCvsRoots() {
+            Set<String> r = new TreeSet<String>();
+            for( AbstractProject p : Hudson.getInstance().getAllItems(AbstractProject.class) ) {
+                SCM scm = p.getScm();
+                if (scm instanceof CVSSCM) {
+                    CVSSCM cvsscm = (CVSSCM) scm;
+                    r.add(cvsscm.getCvsRoot());
+                }
+            }
+
+            return r;
+        }
+
     //
     // web methods
     //
 
-        public FormValidation doCvsPassCheck(@QueryParameter String value) {
+        public FormValidation doCheckCvspassFile(@QueryParameter String value) {
             // this method can be used to check if a file exists anywhere in the file system,
             // so it should be protected.
             if(!Hudson.getInstance().hasPermission(Hudson.ADMINISTER))
@@ -1155,7 +1174,7 @@ public class CVSSCM extends SCM implements Serializable {
         /**
          * Checks if cvs executable exists.
          */
-        public FormValidation doCvsExeCheck(@QueryParameter String value) {
+        public FormValidation doCheckCvsExe(@QueryParameter String value) {
             return FormValidation.validateExecutable(value);
         }
 
@@ -1307,7 +1326,7 @@ public class CVSSCM extends SCM implements Serializable {
     /**
      * Action for a build that performs the tagging.
      */
-    public final class TagAction extends AbstractScmTagAction {
+    public final class TagAction extends AbstractScmTagAction implements Describable<TagAction> {
 
         /**
          * If non-null, that means the build is already tagged.
@@ -1489,7 +1508,7 @@ public class CVSSCM extends SCM implements Serializable {
                     boolean isDir = path.isDirectory();
 
                     ArgumentListBuilder cmd = new ArgumentListBuilder();
-                    cmd.add(getDescriptor().getCvsExeOrDefault(),"tag");
+                    cmd.add(CVSSCM.this.getDescriptor().getCvsExeOrDefault(),"tag");
                     if(isDir) {
                         cmd.add("-R");
                     }
@@ -1531,6 +1550,21 @@ public class CVSSCM extends SCM implements Serializable {
             else
                 this.tagName = tagName;
             this.workerThread = null;
+        }
+
+        public Descriptor<TagAction> getDescriptor() {
+            return Hudson.getInstance().getDescriptor(getClass());
+        }
+    }
+
+    @Extension
+    public static final class TagActionDescriptor extends Descriptor<TagAction> {
+        public TagActionDescriptor() {
+            super(TagAction.class);
+        }
+
+        public String getDisplayName() {
+            return "";
         }
     }
 
