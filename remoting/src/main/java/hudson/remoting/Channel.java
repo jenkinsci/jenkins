@@ -185,6 +185,11 @@ public class Channel implements VirtualChannel, IChannel {
     private IChannel remoteChannel;
 
     /**
+     * Capability of the remote {@link Channel}.
+     */
+    final Capability remoteCapability;
+
+    /**
      * Communication mode.
      * @since 1.161
      */
@@ -285,11 +290,12 @@ public class Channel implements VirtualChannel, IChannel {
         this.name = name;
         this.executor = exec;
         this.isRestricted = restricted;
-        ObjectOutputStream oos = null;
 
         if(export(this,false)!=1)
             throw new AssertionError(); // export number 1 is reserved for the channel itself
         remoteChannel = RemoteInvocationHandler.wrap(this,1,IChannel.class,false,false);
+
+        properties.put(Capability.class,new Capability()); // export our capability
 
         // write the magic preamble.
         // certain communication channel, such as forking JVM via ssh,
@@ -297,6 +303,7 @@ public class Channel implements VirtualChannel, IChannel {
         // might print some warning before the program starts outputting its own data.)
         //
         // so use magic preamble and discard all the data up to that to improve robustness.
+        ObjectOutputStream oos = null;
         if(mode!= Mode.NEGOTIATE) {
             os.write(mode.preamble);
             oos = new ObjectOutputStream(mode.wrap(os));
@@ -331,6 +338,11 @@ public class Channel implements VirtualChannel, IChannel {
 
                             this.ois = new ObjectInputStream(mode.wrap(is));
                             new ReaderThread(name).start();
+
+                            Capability rc = (Capability) getRemoteProperty(Capability.class);
+                            if (rc==null)       rc = new Capability(0); // assume no capability
+                            this.remoteCapability = rc;
+
                             return;
                         }
                     } else {
