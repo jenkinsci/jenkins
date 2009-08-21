@@ -83,12 +83,13 @@ public class Which {
             return new File(decode(new URL("file:/"+resURL).getPath()));
         }
         
-        if(resURL.startsWith("zip:/")){
+        if(resURL.startsWith("zip:")){
             // weblogic uses this. See http://www.nabble.com/patch-to-get-Hudson-working-on-weblogic-td23997258.html
-            resURL = resURL.substring("zip:/".length(), resURL.lastIndexOf('!')); // cut off zip: and the file name portion
-            return new File(decode(new URL("file:/"+resURL).getPath()));		    
+            // also see http://www.nabble.com/Re%3A-Hudson-on-Weblogic-10.3-td25038378.html#a25043415
+            resURL = resURL.substring("zip:".length(), resURL.lastIndexOf('!')); // cut off zip: and the file name portion
+            return new File(decode(new URL("file:"+resURL).getPath()));
         }
-        
+
         if(resURL.startsWith("file:")) {
             // unpackaged classes
             int n = clazz.getName().split("\\.").length; // how many slashes do wo need to cut?
