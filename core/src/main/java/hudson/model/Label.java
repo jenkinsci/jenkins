@@ -36,6 +36,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.Collection;
+import java.util.TreeSet;
 
 import com.thoughtworks.xstream.converters.Converter;
 import com.thoughtworks.xstream.converters.MarshallingContext;
@@ -345,7 +346,7 @@ public class Label implements Comparable<Label>, ModelObject {
      * @since 1.308
      */
     public static Set<Label> parse(String labels) {
-        Set<Label> r = new HashSet<Label>();
+        Set<Label> r = new TreeSet<Label>();
         labels = fixNull(labels);
         if(labels.length()>0)
             for( String l : labels.split(" +"))
