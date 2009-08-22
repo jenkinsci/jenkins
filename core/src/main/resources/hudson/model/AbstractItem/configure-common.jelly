@@ -28,7 +28,7 @@ THE SOFTWARE.
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:p="/lib/hudson/project">
   <p:config-disableBuild/>
   <j:if test="${app.CONCURRENT_BUILD}">
-    <f:optionalBlock field="concurrentBuild" title="${%Execute concurrent builds if necessary (beta)}" />
+    <f:optionalBlock field="concurrentBuild" title="${%title.concurrentbuilds}" />
   </j:if>
 
   <j:set var="jdks" value="${app.JDKs}" />
