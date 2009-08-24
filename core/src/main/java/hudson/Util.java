@@ -887,14 +887,15 @@ public class Util {
         if(!isWindows() && !NO_SYMLINK) {
             try {
                 // if a file or a directory exists here, delete it first.
-                if (new File(symlinkPath).exists())
+                File symlinkFile = new File(baseDir, symlinkPath);
+                if (symlinkFile.exists())
                     // ignore a failure.
                     new LocalProc(new String[]{"rm","-rf", symlinkPath},new String[0],listener.getLogger(), baseDir).join();
 
                 int r;
 
                 if (!SYMLINK_ESCAPEHATCH)
-                    r = PosixAPI.get().symlink(targetPath,symlinkPath);
+                    r = PosixAPI.get().symlink(targetPath,symlinkFile.getAbsolutePath());
                 else // escape hatch, until we know that the above works well. 
                     r = new LocalProc(new String[]{
                         "ln","-s", targetPath, symlinkPath},
