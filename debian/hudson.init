@@ -62,7 +62,7 @@ do_start()
     $DAEMON $DAEMON_ARGS --running && return 1
     
     # --user in daemon doesn't prepare these environment variables, so do so now
-    export HOME=~$(HUDSON_USER)
+    eval export HOME=~$HUDSON_USER
     export USER=$HUDSON_USER
     $DAEMON $DAEMON_ARGS -- $JAVA $JAVA_ARGS -jar $HUDSON_WAR $HUDSON_ARGS || return 2
 }
