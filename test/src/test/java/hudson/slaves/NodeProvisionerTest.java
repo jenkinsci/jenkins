@@ -95,7 +95,7 @@ public class NodeProvisionerTest extends HudsonTestCase {
     public void testAutoProvision() throws Exception {
         BulkChange bc = new BulkChange(hudson);
         try {
-            DummyCloudImpl cloud = initHudson(10);
+            DummyCloudImpl cloud = initHudson(100);
 
 
             FreeStyleProject p = createJob(new SleepBuilder(10));
@@ -116,7 +116,7 @@ public class NodeProvisionerTest extends HudsonTestCase {
     public void testLoadSpike() throws Exception {
         BulkChange bc = new BulkChange(hudson);
         try {
-            DummyCloudImpl cloud = initHudson(0);
+            DummyCloudImpl cloud = initHudson(100);
 
             verifySuccessfulCompletion(buildAll(create5SlowJobs(new Latch(5))));
 
@@ -134,7 +134,7 @@ public class NodeProvisionerTest extends HudsonTestCase {
     public void testBaselineSlaveUsage() throws Exception {
         BulkChange bc = new BulkChange(hudson);
         try {
-            DummyCloudImpl cloud = initHudson(0);
+            DummyCloudImpl cloud = initHudson(100);
             // add slaves statically upfront
             createSlave().toComputer().connect(false).get();
             createSlave().toComputer().connect(false).get();
@@ -154,7 +154,7 @@ public class NodeProvisionerTest extends HudsonTestCase {
     public void testLabels() throws Exception {
         BulkChange bc = new BulkChange(hudson);
         try {
-            DummyCloudImpl cloud = initHudson(0);
+            DummyCloudImpl cloud = initHudson(100);
             Label blue = hudson.getLabel("blue");
             Label red = hudson.getLabel("red");
             cloud.label = red;
