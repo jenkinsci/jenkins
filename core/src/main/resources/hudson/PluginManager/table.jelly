@@ -53,7 +53,13 @@ THE SOFTWARE.
                       <j:if test="${p.excerpt!=null}">
                         <div class="excerpt">${p.excerpt}</div>
                       </j:if>
-                    </td>
+                      <j:if test="${!p.isCompatibleWithInstalledVersion()}">
+			<div class="compatWarning">${%Warning: New
+			version not compatible with installed
+			version. Jobs using this plugin may need to be
+			reconfigured.}</div>
+		      </j:if>							
+		    </td>
                     <td class="pane"><st:out value="${p.version}" /></td>
                   </tr>
                 </j:forEach>

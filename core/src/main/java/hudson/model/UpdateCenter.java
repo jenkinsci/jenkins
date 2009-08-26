@@ -405,8 +405,22 @@ public class UpdateCenter extends AbstractModelObject {
          *      false otherwise, including the situation where the strings couldn't be parsed as version numbers.
          */
         public boolean isNewerThan(String currentVersion) {
+	    return isNewerThan(currentVersion, version);
+	}
+
+	/**
+	 * Compares two versions - returns true if the first version is newer than the second.
+	 *
+	 * @param firstVersion
+	 *      The first version to test against.
+	 * @param secondVersion
+	 *      The second version to test against.
+	 * @return
+	 *      True if the first version is newer than the second version. False in all other cases.
+	 */
+	public boolean isNewerThan(String firstVersion, String secondVersion) {
             try {
-                return new VersionNumber(currentVersion).compareTo(new VersionNumber(version)) < 0;
+                return new VersionNumber(firstVersion).compareTo(new VersionNumber(secondVersion)) < 0;
             } catch (IllegalArgumentException e) {
                 // couldn't parse as the version number.
                 return false;
@@ -431,13 +445,18 @@ public class UpdateCenter extends AbstractModelObject {
          * Optional excerpt string.
          */
         public final String excerpt;
-
+	/**
+	 * Optional version # from which this plugin release is configuration-compatible.
+	 */
+	public final String compatibleSinceVersion;
+	
         @DataBoundConstructor
         public Plugin(JSONObject o) {
             super(o);
             this.wiki = get(o,"wiki");
             this.title = get(o,"title");
             this.excerpt = get(o,"excerpt");
+	    this.compatibleSinceVersion = get(o,"compatibleSinceVersion");
         }
 
         private String get(JSONObject o, String prop) {
@@ -461,6 +480,26 @@ public class UpdateCenter extends AbstractModelObject {
             return pm.getPlugin(name);
         }
 
+	/**
+	 * If the plugin is already installed, and the new version of the plugin has a "compatibleSinceVersion"
+	 * value (i.e., it's only directly compatible with that version or later), this will check to
+	 * see if the installed version is older than the compatible-since version. If it is older, it'll return false.
+	 * If it's not older, or it's not installed, or it's installed but there's no compatibleSinceVersion
+	 * specified, it'll return true.
+	 */
+	public boolean isCompatibleWithInstalledVersion() {
+	    PluginWrapper installedVersion = getInstalled();
+	    if (installedVersion != null) {
+		if (compatibleSinceVersion != null) {
+		    if (new VersionNumber(installedVersion.getVersion())
+			.isOlderThan(new VersionNumber(compatibleSinceVersion))) {
+			return false;
+		    }
+		}
+	    }
+	    return true;
+	}
+	
         /**
          * Schedules the installation of this plugin.
          *
