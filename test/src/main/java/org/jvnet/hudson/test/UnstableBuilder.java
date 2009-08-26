@@ -45,15 +45,11 @@ public class UnstableBuilder extends Builder {
     public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
         listener.getLogger().println("Simulating an unstable build");
         build.setResult(Result.UNSTABLE);
-        return false;
+        return true;
     }
 
     @Extension
     public static final class DescriptorImpl extends Descriptor<Builder> {
-        public Builder newInstance(StaplerRequest req, JSONObject data) {
-            throw new UnsupportedOperationException();
-        }
-
         public String getDisplayName() {
             return "Make build unstable";
         }
