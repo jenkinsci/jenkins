@@ -50,10 +50,6 @@ public class FailureBuilder extends Builder {
 
     @Extension
     public static final class DescriptorImpl extends Descriptor<Builder> {
-        public Builder newInstance(StaplerRequest req, JSONObject data) {
-            throw new UnsupportedOperationException();
-        }
-
         public String getDisplayName() {
             return "Always fail";
         }
