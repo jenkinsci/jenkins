@@ -27,7 +27,7 @@ THE SOFTWARE.
   <parent>
     <groupId>org.jvnet.hudson.main</groupId>
     <artifactId>pom</artifactId>
-    <version>1.321-SNAPSHOT</version>
+    <version>1.322-SNAPSHOT</version>
     <relativePath>../pom.xml</relativePath>
   </parent>
 
@@ -319,7 +319,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.kohsuke.stapler</groupId>
       <artifactId>stapler-jelly</artifactId>
-      <version>1.109</version>
+      <version>1.110</version>
       <exclusions>
         <exclusion>
           <groupId>dom4j</groupId>
