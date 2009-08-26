@@ -38,6 +38,8 @@ import hudson.slaves.NodePropertyDescriptor;
 import hudson.util.ClockDifference;
 import hudson.util.DescribableList;
 import hudson.util.EnumConverter;
+import hudson.util.TagCloud;
+import hudson.util.TagCloud.WeightFunction;
 
 import java.io.IOException;
 import java.util.Set;
@@ -161,6 +163,16 @@ public abstract class Node extends AbstractModelObject implements Describable<No
      */
     protected abstract Computer createComputer();
 
+    /**
+     * Return the possibly empty tag cloud for the labels of this node.
+     */
+    public TagCloud<Label> getLabelCloud() {
+        return new TagCloud<Label>(getAssignedLabels(),new WeightFunction<Label>() {
+            public float weight(Label item) {
+                return item.getTiedJobs().size();
+            }
+        });
+    }
     /**
      * Returns the possibly empty set of labels that are assigned to this node,
      * including the automatic {@link #getSelfLabel() self label}.

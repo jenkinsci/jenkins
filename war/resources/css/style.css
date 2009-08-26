@@ -873,3 +873,15 @@ table.progress-bar.red td.progress-bar-done {
     margin: 0 !important;
 }
 
+/* ========================= tags/labels ================== */
+/* tag0 is the least important tag in a tag cloud */
+.tag0 { font-size: 1.00em; }
+.tag1 { font-size: 1.10em; }
+.tag2 { font-size: 1.20em; }
+.tag3 { font-size: 1.30em; }
+.tag4 { font-size: 1.40em; }
+.tag5 { font-size: 1.50em; }
+.tag6 { font-size: 1.60em; }
+.tag7 { font-size: 1.70em; }
+.tag8 { font-size: 1.80em; }
+.tag9 { font-size: 1.90em; }
