@@ -31,6 +31,7 @@ import hudson.model.TaskListener;
 import hudson.remoting.Callable;
 import hudson.remoting.Channel;
 import hudson.remoting.VirtualChannel;
+import hudson.remoting.RequestAbortedException;
 import hudson.tasks.Maven.MavenInstallation;
 import hudson.util.DelegatingOutputStream;
 import hudson.util.NullStream;
@@ -142,6 +143,26 @@ public final class ProcessCache {
                 LOGGER.log(Level.WARNING,"Failed to discard the maven process orderly",e);
             }
         }
+
+        /**
+         * Calls a {@link Callable} on the channel, with additional error diagnostics.
+         */
+        public <V,T extends Throwable> V call(Callable<V,T> callable) throws T, IOException, InterruptedException {
+            try {
+                return channel.call(callable);
+            } catch (RequestAbortedException e) {
+                // this is normally triggered by the unexpected Maven JVM termination.
+                // check if the process is still alive, after giving it a bit of time to die
+                Thread.sleep(1000);
+                if(proc.isAlive())
+                    throw e; // it's still alive. treat this as a bug in the code
+                else {
+                    String msg = "Maven JVM terminated unexpectedly with exit code " + proc.join();
+                    LOGGER.log(Level.FINE,msg,e);
+                    throw new hudson.AbortException(msg);
+                }
+            }
+        }
     }
 
     static class PerChannel {
@@ -186,7 +207,7 @@ public final class ProcessCache {
                     // reset the system property.
                     // this also serves as the sanity check.
                     try {
-                        p.channel.call(new SetSystemProperties(p.systemProperties));
+                        p.call(new SetSystemProperties(p.systemProperties));
                     } catch (IOException e) {
                         p.discard();
                         itr.remove();

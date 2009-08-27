@@ -26,11 +26,9 @@ package hudson.maven;
 import hudson.Util;
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
-import hudson.model.Build;
 import hudson.model.BuildListener;
 import hudson.model.DependencyGraph;
 import hudson.model.Hudson;
-import hudson.model.Project;
 import hudson.model.Result;
 import hudson.model.Run;
 import hudson.model.Cause.UpstreamCause;
@@ -62,10 +60,6 @@ public abstract class AbstractMavenBuild<P extends AbstractMavenProject<P,B>,B e
     /**
      * Schedules all the downstream builds.
      *
-     * @param downstreams
-     *      List of downstream jobs that are already scheduled.
-     *      The method will add jobs that it triggered here,
-     *      and won't try to trigger jobs that are already in this list.
      * @param listener
      *      Where the progress reports go.
      */
@@ -178,6 +172,4 @@ public abstract class AbstractMavenBuild<P extends AbstractMavenProject<P,B>,B e
         }
         return false;
     }
-    
-
 }

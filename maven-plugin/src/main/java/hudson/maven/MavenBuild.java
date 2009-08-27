@@ -516,7 +516,7 @@ public class MavenBuild extends AbstractMavenBuild<MavenModule,MavenBuild> {
 
             boolean normalExit = false;
             try {
-                Result r = process.channel.call(new Builder(
+                Result r = process.call(new Builder(
                     listener,new ProxyImpl(),
                     reporters.toArray(new MavenReporter[reporters.size()]), margs.toList(), systemProps));
                 normalExit = true;
