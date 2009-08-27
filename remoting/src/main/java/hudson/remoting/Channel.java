@@ -295,14 +295,15 @@ public class Channel implements VirtualChannel, IChannel {
             throw new AssertionError(); // export number 1 is reserved for the channel itself
         remoteChannel = RemoteInvocationHandler.wrap(this,1,IChannel.class,false,false);
 
-        properties.put(Capability.class,new Capability()); // export our capability
-
         // write the magic preamble.
         // certain communication channel, such as forking JVM via ssh,
         // may produce some garbage at the beginning (for example a remote machine
         // might print some warning before the program starts outputting its own data.)
         //
         // so use magic preamble and discard all the data up to that to improve robustness.
+
+        new Capability().writePreamble(os);
+
         ObjectOutputStream oos = null;
         if(mode!= Mode.NEGOTIATE) {
             os.write(mode.preamble);
@@ -311,39 +312,51 @@ public class Channel implements VirtualChannel, IChannel {
         }
 
         {// read the input until we hit preamble
-            int[] ptr=new int[2];
             Mode[] modes={Mode.BINARY,Mode.TEXT};
+            byte[][] preambles = new byte[][]{Mode.BINARY.preamble, Mode.TEXT.preamble, Capability.PREAMBLE};
+            int[] ptr=new int[3];
+            Capability cap = new Capability(0); // remote capacity that we obtained. If we don't hear from remote, assume no capability
 
             while(true) {
                 int ch = is.read();
                 if(ch==-1)
                     throw new EOFException("unexpected stream termination");
 
-                for(int i=0;i<2;i++) {
-                    byte[] preamble = modes[i].preamble;
+                for(int i=0;i<preambles.length;i++) {
+                    byte[] preamble = preambles[i];
                     if(preamble[ptr[i]]==ch) {
                         if(++ptr[i]==preamble.length) {
-                            // found preamble
-                            if(mode==Mode.NEGOTIATE) {
-                                // now we know what the other side wants, so send the consistent preamble
-                                mode = modes[i];
-                                os.write(mode.preamble);
-                                oos = new ObjectOutputStream(mode.wrap(os));
-                                oos.flush();
-                            } else {
-                                if(modes[i]!=mode)
-                                    throw new IOException("Protocol negotiation failure");
+                            switch (i) {
+                            case 0:
+                            case 1:
+                                // transmission mode negotiation
+                                if(mode==Mode.NEGOTIATE) {
+                                    // now we know what the other side wants, so send the consistent preamble
+                                    mode = modes[i];
+                                    os.write(mode.preamble);
+                                    oos = new ObjectOutputStream(mode.wrap(os));
+                                    oos.flush();
+                                } else {
+                                    if(modes[i]!=mode)
+                                        throw new IOException("Protocol negotiation failure");
+                                }
+                                this.oos = oos;
+
+                                this.ois = new ObjectInputStream(mode.wrap(is));
+                                new ReaderThread(name).start();
+
+                                this.remoteCapability = cap;
+
+                                return;
+                            case 2:
+                                try {// capability negotiation
+                                    ObjectInputStream ois = new ObjectInputStream(Mode.TEXT.wrap(is));
+                                    cap = (Capability)ois.readObject();
+                                } catch (ClassNotFoundException e) {
+                                    throw (Error)new NoClassDefFoundError(e.getMessage()).initCause(e);
+                                }
                             }
-                            this.oos = oos;
-
-                            this.ois = new ObjectInputStream(mode.wrap(is));
-                            new ReaderThread(name).start();
-
-                            Capability rc = (Capability) getRemoteProperty(Capability.class);
-                            if (rc==null)       rc = new Capability(0); // assume no capability
-                            this.remoteCapability = rc;
-
-                            return;
+                            ptr[i]=0; // reset
                         }
                     } else {
                         // didn't match.

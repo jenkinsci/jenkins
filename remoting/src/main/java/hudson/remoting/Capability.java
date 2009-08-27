@@ -1,6 +1,12 @@
 package hudson.remoting;
 
+import hudson.remoting.Channel.Mode;
+
 import java.io.Serializable;
+import java.io.UnsupportedEncodingException;
+import java.io.ObjectOutputStream;
+import java.io.OutputStream;
+import java.io.IOException;
 
 /**
  * Represents additional features implemented on {@link Channel}.
@@ -38,5 +44,25 @@ final class Capability implements Serializable {
         return (mask&1)!=0;
     }
 
+    /**
+     * Writes out the capacity preamble.
+     */
+    void writePreamble(OutputStream os) throws IOException {
+        os.write(PREAMBLE);
+        ObjectOutputStream oos = new ObjectOutputStream(Mode.TEXT.wrap(os));
+        oos.writeObject(this);
+        oos.flush();
+    }
+
     private static final long serialVersionUID = 1L;
+
+    static final byte[] PREAMBLE;
+
+    static {
+        try {
+            PREAMBLE = "\n<===[HUDSON REMOTING CAPACITY]===>".getBytes("UTF-8");
+        } catch (UnsupportedEncodingException e) {
+            throw new AssertionError(e);
+        }
+    }
 }
