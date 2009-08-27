@@ -349,12 +349,8 @@ public class Channel implements VirtualChannel, IChannel {
 
                                 return;
                             case 2:
-                                try {// capability negotiation
-                                    ObjectInputStream ois = new ObjectInputStream(Mode.TEXT.wrap(is));
-                                    cap = (Capability)ois.readObject();
-                                } catch (ClassNotFoundException e) {
-                                    throw (Error)new NoClassDefFoundError(e.getMessage()).initCause(e);
-                                }
+                                cap = Capability.read(is);
+                                break;
                             }
                             ptr[i]=0; // reset
                         }

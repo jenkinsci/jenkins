@@ -7,6 +7,8 @@ import java.io.UnsupportedEncodingException;
 import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.ObjectInputStream;
 
 /**
  * Represents additional features implemented on {@link Channel}.
@@ -52,6 +54,18 @@ final class Capability implements Serializable {
         ObjectOutputStream oos = new ObjectOutputStream(Mode.TEXT.wrap(os));
         oos.writeObject(this);
         oos.flush();
+    }
+
+    /**
+     * The opposite operation of {@link #writePreamble(OutputStream)}.
+     */
+    public static Capability read(InputStream is) throws IOException {
+        try {
+            ObjectInputStream ois = new ObjectInputStream(Mode.TEXT.wrap(is));
+            return (Capability)ois.readObject();
+        } catch (ClassNotFoundException e) {
+            throw (Error)new NoClassDefFoundError(e.getMessage()).initCause(e);
+        }
     }
 
     private static final long serialVersionUID = 1L;
