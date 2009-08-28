@@ -57,6 +57,7 @@ public class Label implements Comparable<Label>, ModelObject {
     private volatile Set<Node> nodes;
     private volatile Set<Cloud> clouds;
 
+    @Exported
     public final LoadStatistics loadStatistics;
     public final NodeProvisioner nodeProvisioner;
 

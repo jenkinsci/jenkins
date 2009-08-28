@@ -337,6 +337,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
         return Hudson.getInstance().getNode(nodeName);
     }
 
+    @Exported
     public LoadStatistics getLoadStatistics() {
         return getNode().getSelfLabel().loadStatistics;
     }
