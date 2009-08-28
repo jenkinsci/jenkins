@@ -867,11 +867,6 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
         }
         if (totalCount > 0) {
             int score = (int) ((100.0 * (totalCount - failCount)) / totalCount);
-            if (score < 100 && score > 0) {
-                // HACK
-                // force e.g. 4/5 to be in the 60-79 range
-                score--;
-            }
 
             Localizable description;
             if (failCount == 0) {

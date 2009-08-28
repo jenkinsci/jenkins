@@ -44,11 +44,12 @@ import java.util.Locale;
 @ExportedBean(defaultVisibility = 2)
 // this is always exported as a part of Job and never on its own, so start with 2.
 public class HealthReport implements Serializable, Comparable<HealthReport> {
+    // These are now 0-20, 21-40, 41-60, 61-80, 81+ but filenames unchanged for compatibility
     private static final String HEALTH_OVER_80 = "health-80plus.gif";
-    private static final String HEALTH_60_TO_79 = "health-60to79.gif";
-    private static final String HEALTH_40_TO_59 = "health-40to59.gif";
-    private static final String HEALTH_20_TO_39 = "health-20to39.gif";
-    private static final String HEALTH_0_TO_19 = "health-00to19.gif";
+    private static final String HEALTH_61_TO_80 = "health-60to79.gif";
+    private static final String HEALTH_41_TO_60 = "health-40to59.gif";
+    private static final String HEALTH_21_TO_40 = "health-20to39.gif";
+    private static final String HEALTH_0_TO_20 = "health-00to19.gif";
     private static final String HEALTH_UNKNOWN = "empty.gif";
 
     /**
@@ -116,14 +117,14 @@ public class HealthReport implements Serializable, Comparable<HealthReport> {
     public HealthReport(int score, String iconUrl, Localizable description) {
         this.score = score;
         if (iconUrl == null) {
-            if (score < 20) {
-                this.iconUrl = HEALTH_0_TO_19;
-            } else if (score < 40) {
-                this.iconUrl = HEALTH_20_TO_39;
-            } else if (score < 60) {
-                this.iconUrl = HEALTH_40_TO_59;
-            } else if (score < 80) {
-                this.iconUrl = HEALTH_60_TO_79;
+            if (score <= 20) {
+                this.iconUrl = HEALTH_0_TO_20;
+            } else if (score <= 40) {
+                this.iconUrl = HEALTH_21_TO_40;
+            } else if (score <= 60) {
+                this.iconUrl = HEALTH_41_TO_60;
+            } else if (score <= 80) {
+                this.iconUrl = HEALTH_61_TO_80;
             } else {
                 this.iconUrl = HEALTH_OVER_80;
             }
