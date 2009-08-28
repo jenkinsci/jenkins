@@ -39,7 +39,6 @@ import hudson.slaves.NodeProperty;
 import hudson.slaves.NodePropertyDescriptor;
 import hudson.slaves.RetentionStrategy;
 import hudson.slaves.SlaveComputer;
-import hudson.tasks.LabelFinder;
 import hudson.util.ClockDifference;
 import hudson.util.DescribableList;
 import hudson.util.FormValidation;
@@ -217,37 +216,6 @@ public abstract class Slave extends Node implements Serializable {
 
     public String getLabelString() {
         return Util.fixNull(label).trim();
-    }
-
-    public Set<Label> getAssignedLabels() {
-        // todo refactor to make dynamic labels a bit less hacky
-        if(labels==null || isChangedDynamicLabels()) {
-            Set<Label> r = Label.parse(getLabelString());
-            r.add(getSelfLabel());
-            r.addAll(getDynamicLabels());
-            this.labels = Collections.unmodifiableSet(r);
-        }
-        return labels;
-    }
-
-    /**
-     * Returns the possibly empty set of labels that it has been determined as supported by this node.
-     *
-     * @todo make less hacky
-     * @see hudson.tasks.LabelFinder
-     *
-     * @return
-     *      never null.
-     */
-    public Set<Label> getDynamicLabels() {
-        // another thread may preempt and replace dynamicLabels.
-        // so a care needs to be taken to avoid race conditions under all 
-        // circumstances.
-        synchronized (this) {
-            if (dynamicLabels==null || dynamicLabels.isChanged(toComputer()))
-                dynamicLabels = new DynamicLabels(toComputer());
-        }
-        return dynamicLabels.labels;
     }
 
     public ClockDifference getClockDifference() throws IOException, InterruptedException {

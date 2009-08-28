@@ -1940,33 +1940,6 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
         return fixNull(label).trim();
     }
 
-    public Set<Label> getAssignedLabels() {
-        // labelSet may be set by another thread while we are in this method,
-        // so capture it.
-        Set<Label> lset = labelSet;
-        if (lset == null || isChangedDynamicLabels()) {
-            Set<Label> r = Label.parse(getLabelString());
-            r.addAll(getDynamicLabels());
-            r.add(getSelfLabel());
-            this.labelSet = lset = Collections.unmodifiableSet(r);
-        }
-        return lset;
-    }
-
-    /**
-     * Returns the possibly empty set of labels that it has been determined as supported by this node.
-     *
-     * @see hudson.tasks.LabelFinder
-     */
-    public Set<Label> getDynamicLabels() {
-        if (dynamicLabels==null || dynamicLabels.isChanged(toComputer()))
-            // in the worst cast, two threads end up doing the same computation
-            // twice, but that won't break the semantics.
-            // OTOH, not locking prevents dead-lock. See #1390
-            dynamicLabels = new DynamicLabels(toComputer());
-        return dynamicLabels.labels;
-    }
-
     public Label getSelfLabel() {
         return getLabel("master");
     }
@@ -2051,8 +2024,10 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
         }
         rebuildDependencyGraph();
 
-        {// recompute label objects
+        {// recompute label objects - populates the labels mapping.
             for (Node slave : slaves)
+                // Note that all labels are not visible until the slaves have
+                // connected.
                 slave.getAssignedLabels();
             getAssignedLabels();
         }

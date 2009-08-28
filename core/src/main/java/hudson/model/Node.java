@@ -42,9 +42,12 @@ import hudson.util.TagCloud;
 import hudson.util.TagCloud.WeightFunction;
 
 import java.io.IOException;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.Set;
 import java.util.List;
 
+import java.util.Map;
 import org.kohsuke.stapler.Stapler;
 import org.kohsuke.stapler.export.ExportedBean;
 import org.kohsuke.stapler.export.Exported;
@@ -66,11 +69,6 @@ public abstract class Node extends AbstractModelObject implements Describable<No
      * is saved once.
      */
     protected volatile transient boolean holdOffLaunchUntilSave;
-    /**
-     * labels assigned to this node dynamically by plugins or other computation
-     * rather than via user configuration.
-     */
-    protected volatile transient DynamicLabels dynamicLabels = new DynamicLabels(null);
 
     public String getDisplayName() {
         return getNodeName(); // default implementation
@@ -175,28 +173,51 @@ public abstract class Node extends AbstractModelObject implements Describable<No
     }
     /**
      * Returns the possibly empty set of labels that are assigned to this node,
-     * including the automatic {@link #getSelfLabel() self label}.
+     * including the automatic {@link #getSelfLabel() self label}, manually
+     * assigned labels and dynamically assigned labels via the
+     * {@link LabelFinder} extension point.
+     *
+     * This method has a side effect of updating the hudson-wide set of labels
+     * and should be called after events that will change that - e.g. a slave
+     * connecting.
      */
     @Exported
-    public abstract Set<Label> getAssignedLabels();
+    public Set<Label> getAssignedLabels() {
+         Set<Label> r = Label.parse(getLabelString());
+        r.add(getSelfLabel());
+        r.addAll(getDynamicLabels());
+        return Collections.unmodifiableSet(r);
+    }
 
     /**
-     * The same as {@link #getAssignedLabels()} but returns labels as a single text.
+     * Return all the labels assigned dynamically to this node.
+     * This calls all the LabelFinder implementations with the node converts
+     * the results into Labels.
+     * @return HashSet<Label>.
+     */
+    private final HashSet<Label> getDynamicLabels() {
+        HashSet<Label> result = new HashSet<Label>();
+        for (LabelFinder labeler : LabelFinder.all())
+            result.addAll(labeler.findLabels(this));
+        return result;
+    }
+
+
+    /**
+     * Returns the manually configured label for a node. The list of assigned
+     * and dynamically determined labels is available via 
+     * {@link #getAssignedLabels()} and includes all labels that have been
+     * manually configured.
+     * 
      * Mainly for form binding.
      */
     public abstract String getLabelString();
-
-    /*
-     * Returns the possibly empty set of labels that it has been determined as supported by this node.
-     * @see hudson.tasks.LabelFinder
-     */
-    public abstract Set<Label> getDynamicLabels();
 
     /**
      * Gets the special label that represents this node itself.
      */
     public Label getSelfLabel() {
-        return Hudson.getInstance().getLabel(getNodeName());
+        return getHudsonLabel(getNodeName());
     }
 
     /**
@@ -274,12 +295,13 @@ public abstract class Node extends AbstractModelObject implements Describable<No
     public abstract ClockDifference getClockDifference() throws IOException, InterruptedException;
 
     /**
-     * Check if we should rebuild the list of dynamic labels.
-     * @todo make less hacky
-     * @return
+     * Returns a hudson label object for a given string.
+     * 
+     * @param labelString.
+     * @return A {@link Label}.
      */
-    protected boolean isChangedDynamicLabels() {
-        return dynamicLabels.isChanged(toComputer());
+    protected Label getHudsonLabel(String labelString) {
+        return Hudson.getInstance().getLabel(labelString);
     }
 
     /**

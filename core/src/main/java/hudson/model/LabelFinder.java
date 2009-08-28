@@ -21,13 +21,11 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package hudson.tasks;
+package hudson.model;
 
 import hudson.Extension;
 import hudson.ExtensionList;
 import hudson.ExtensionPoint;
-import hudson.model.Hudson;
-import hudson.model.Node;
 
 import java.util.Collection;
 
@@ -38,9 +36,9 @@ import java.util.Collection;
  * To register your implementation, put {@link Extension} on your derived types.
  *
  * @author Stephen Connolly
- * @since 1.322
- *      Signature of this class changed in 1.322, after making sure that no plugin in the Subversion repository
- *      is using this.
+ * @since 1.323
+ *      Signature of this class changed in 1.323, after making sure that no
+ *      plugin in the Subversion repository is using this.
  */
 public abstract class LabelFinder implements ExtensionPoint {
     /**
@@ -56,7 +54,7 @@ public abstract class LabelFinder implements ExtensionPoint {
      * @param node
      *      The node that receives labels. Never null.
      * @return
-     *      A set of labels to be added dynamically to the node. Can be empty but never null.
+     *      A set of labels for the node. Can be empty but never null.
      */
-    public abstract Collection<String> findLabels(Node node);
+    public abstract Collection<Label> findLabels(Node node);
 }
