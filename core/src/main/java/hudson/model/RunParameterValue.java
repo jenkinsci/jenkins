@@ -64,5 +64,10 @@ public class RunParameterValue extends ParameterValue {
     public void buildEnvVars(AbstractBuild<?,?> build, Map<String,String> env) {
         env.put(name.toUpperCase(), Hudson.getInstance().getRootUrl() + getRun().getUrl());
     }
+    
+    @Override
+    public String toString() {
+    	return "(RunParameterValue) " + getName() + "='" + getRunId() + "'";
+    }
 
 }

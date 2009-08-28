@@ -105,5 +105,10 @@ public class FileParameterValue extends ParameterValue {
 			return false;
 		return true;
 	}
+	
+	@Override
+    public String toString() {
+    	return "(FileParameterValue) " + getName() + "='" + file.getName() + "'";
+    }
     
 }
