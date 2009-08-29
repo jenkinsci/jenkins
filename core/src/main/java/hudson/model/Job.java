@@ -60,6 +60,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.io.PrintWriter;
+import java.net.URLEncoder;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -937,7 +938,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
                     sendError(e, req, rsp);
                     return;
                 }
-                rsp.sendRedirect("rename?newName=" + newName);
+                rsp.sendRedirect("rename?newName=" + URLEncoder.encode(newName, "UTF-8"));
             } else {
                 rsp.sendRedirect(".");
             }
@@ -1173,7 +1174,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
 
         if (isBuilding()) {
             // redirect to page explaining that we can't rename now
-            rsp.sendRedirect("rename?newName=" + newName);
+            rsp.sendRedirect("rename?newName=" + URLEncoder.encode(newName, "UTF-8"));
             return;
         }
 
