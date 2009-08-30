@@ -47,7 +47,6 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.List;
 
-import java.util.Map;
 import org.kohsuke.stapler.Stapler;
 import org.kohsuke.stapler.export.ExportedBean;
 import org.kohsuke.stapler.export.Exported;
@@ -217,7 +216,7 @@ public abstract class Node extends AbstractModelObject implements Describable<No
      * Gets the special label that represents this node itself.
      */
     public Label getSelfLabel() {
-        return getHudsonLabel(getNodeName());
+        return Label.get(getNodeName());
     }
 
     /**
@@ -293,16 +292,6 @@ public abstract class Node extends AbstractModelObject implements Describable<No
      *      if the operation is aborted.
      */
     public abstract ClockDifference getClockDifference() throws IOException, InterruptedException;
-
-    /**
-     * Returns a hudson label object for a given string.
-     * 
-     * @param labelString.
-     * @return A {@link Label}.
-     */
-    protected Label getHudsonLabel(String labelString) {
-        return Hudson.getInstance().getLabel(labelString);
-    }
 
     /**
      * Constants that control how Hudson allocates jobs to slaves.

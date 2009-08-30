@@ -354,4 +354,11 @@ public class Label implements Comparable<Label>, ModelObject {
                 r.add(Hudson.getInstance().getLabel(l));
         return r;
     }
+
+    /**
+     * Obtains a label by its {@linkplain #getName() name}.
+     */
+    public static Label get(String l) {
+        return Hudson.getInstance().getLabel(l);
+    }
 }
