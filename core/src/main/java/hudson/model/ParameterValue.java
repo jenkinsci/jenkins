@@ -196,4 +196,16 @@ public abstract class ParameterValue implements Serializable {
 		return true;
 	}
 
+    /**
+     * Computes a human-readable possible-localized one-line description of the parameter value.
+     *
+     * <P>
+     * This message is used as a tooltip to describe jobs in the queue. The text should be one line without
+     * new line. No HTML allowed (the caller will perform necessary HTML escapes, so any text can be returend.)
+     *
+     * @since 1.323
+     */
+    public String getShortDescription() {
+        return toString();
+    }
 }

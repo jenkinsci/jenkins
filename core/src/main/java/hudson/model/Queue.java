@@ -1153,16 +1153,16 @@ public class Queue extends ResourceController implements Saveable {
          */
         @Exported
         public String getParams() {
-        	String s = "";
+        	StringBuilder s = new StringBuilder();
         	for(Action action : getActions()) {
         		if(action instanceof ParametersAction) {
         			ParametersAction pa = (ParametersAction)action;
         			for (ParameterValue p : pa.getParameters()) {
-        				s = s + "<br>" + p.toString();
+        				s.append('\n').append(p.getShortDescription());
         			}
         		}
         	}
-        	return s;
+        	return s.toString();
         }
         
         public boolean hasCancelPermission() {

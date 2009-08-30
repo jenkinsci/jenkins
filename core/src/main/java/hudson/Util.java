@@ -710,6 +710,7 @@ public class Util {
      * Escapes HTML unsafe characters like &lt;, &amp; to the respective character entities.
      */
     public static String escape(String text) {
+        if (text==null)     return null;
         StringBuilder buf = new StringBuilder(text.length()+64);
         for( int i=0; i<text.length(); i++ ) {
             char ch = text.charAt(i);
