@@ -23,7 +23,9 @@ SCRIPTNAME=/etc/init.d/$NAME
 
 #DAEMON=$HUDSON_SH
 DAEMON=/usr/bin/daemon
-DAEMON_ARGS="--name=$NAME --inherit --env=HUDSON_HOME=$HUDSON_HOME --output=$HUDSON_LOG --user=$HUDSON_USER --pidfile=$PIDFILE" 
+DAEMON_ARGS="--name=$NAME --inherit --env=HUDSON_HOME=$HUDSON_HOME --output=$HUDSON_LOG --pidfile=$PIDFILE" 
+
+SU=/bin/su
 
 # Exit if the package is not installed
 [ -x "$DAEMON" ] || exit 0
@@ -61,10 +63,9 @@ do_start()
     #   2 if daemon could not be started
     $DAEMON $DAEMON_ARGS --running && return 1
     
-    # --user in daemon doesn't prepare these environment variables, so do so now
-    eval export HOME=~$HUDSON_USER
-    export USER=$HUDSON_USER
-    $DAEMON $DAEMON_ARGS -- $JAVA $JAVA_ARGS -jar $HUDSON_WAR $HUDSON_ARGS || return 2
+    # --user in daemon doesn't prepare environment variables like HOME, USER, LOGNAME or USERNAME,
+    # so we let su do so for us now
+    $SU $HUDSON_USER -c "$DAEMON $DAEMON_ARGS -- $JAVA $JAVA_ARGS -jar $HUDSON_WAR $HUDSON_ARGS" || return 2
 }
 
 #
