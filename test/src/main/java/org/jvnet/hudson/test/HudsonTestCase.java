@@ -249,29 +249,31 @@ public abstract class HudsonTestCase extends TestCase {
     }
 
     protected void tearDown() throws Exception {
-        // cancel pending asynchronous operations, although this doesn't really seem to be working
-        for (WeakReference<WebClient> client : clients) {
-            WebClient c = client.get();
-            if(c==null) continue;
-            // unload the page to cancel asynchronous operations 
-            c.getPage("about:blank");
+        try {
+            // cancel pending asynchronous operations, although this doesn't really seem to be working
+            for (WeakReference<WebClient> client : clients) {
+                WebClient c = client.get();
+                if(c==null) continue;
+                // unload the page to cancel asynchronous operations
+                c.getPage("about:blank");
+            }
+            clients.clear();
+        } finally {
+            server.stop();
+            for (LenientRunnable r : tearDowns)
+                r.run();
+
+            hudson.cleanUp();
+            env.dispose();
+            ExtensionList.clearLegacyInstances();
+            DescriptorExtensionList.clearLegacyInstances();
+
+            // Hudson creates ClassLoaders for plugins that hold on to file descriptors of its jar files,
+            // but because there's no explicit dispose method on ClassLoader, they won't get GC-ed until
+            // at some later point, leading to possible file descriptor overflow. So encourage GC now.
+            // see http://bugs.sun.com/view_bug.do?bug_id=4950148
+            System.gc();
         }
-        clients.clear();
-
-        server.stop();
-        for (LenientRunnable r : tearDowns)
-            r.run();
-
-        hudson.cleanUp();
-        env.dispose();
-        ExtensionList.clearLegacyInstances();
-        DescriptorExtensionList.clearLegacyInstances();
-
-        // Hudson creates ClassLoaders for plugins that hold on to file descriptors of its jar files,
-        // but because there's no explicit dispose method on ClassLoader, they won't get GC-ed until
-        // at some later point, leading to possible file descriptor overflow. So encourage GC now.
-        // see http://bugs.sun.com/view_bug.do?bug_id=4950148
-        System.gc();
     }
 
     protected void runTest() throws Throwable {
