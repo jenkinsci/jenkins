@@ -57,7 +57,6 @@ import hudson.model.RootAction;
 import hudson.model.UpdateCenter.UpdateCenterConfiguration;
 import hudson.model.Node.Mode;
 import hudson.security.csrf.CrumbIssuer;
-import hudson.security.csrf.CrumbIssuerDescriptor;
 import hudson.slaves.CommandLauncher;
 import hudson.slaves.DumbSlave;
 import hudson.slaves.RetentionStrategy;
@@ -115,7 +114,6 @@ import org.kohsuke.stapler.MetaClass;
 import org.kohsuke.stapler.MetaClassLoader;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
-import org.kohsuke.stapler.Stapler;
 import org.mortbay.jetty.Server;
 import org.mortbay.jetty.bio.SocketConnector;
 import org.mortbay.jetty.security.HashUserRealm;
@@ -483,7 +481,15 @@ public abstract class HudsonTestCase extends TestCase {
     public DumbSlave createSlave(Label l) throws Exception {
     	return createSlave(l, null);
     }
-    
+
+    /**
+     * Returns the URL of the webapp top page.
+     * URL ends with '/'.
+     */
+    public URL getURL() throws IOException {
+        return new URL("http://localhost:"+localPort+contextPath+"/");
+    }
+
     /**
      * Creates a slave with certain additional environment variables
      */
@@ -1022,8 +1028,8 @@ public abstract class HudsonTestCase extends TestCase {
          * Returns the URL of the webapp top page.
          * URL ends with '/'.
          */
-        public String getContextPath() {
-            return "http://localhost:"+localPort+contextPath+"/";
+        public String getContextPath() throws IOException {
+            return getURL().toExternalForm();
         }
         
         /**
@@ -1042,7 +1048,7 @@ public abstract class HudsonTestCase extends TestCase {
         /**
          * Creates a URL with crumb parameters relative to {{@link #getContextPath()}
          */
-        public URL createCrumbedUrl(String relativePath) throws MalformedURLException {
+        public URL createCrumbedUrl(String relativePath) throws IOException {
             CrumbIssuer issuer = hudson.getCrumbIssuer();
             String crumbName = issuer.getDescriptor().getCrumbRequestField();
             String crumb = issuer.getCrumb(null);
