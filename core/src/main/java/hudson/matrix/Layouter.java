@@ -112,6 +112,16 @@ public abstract class Layouter<T> {
     }
 
     /**
+     * Computes the repeat count of n-th X-axis.
+     */
+    public int repeatX(int n) {
+        int w = 1;
+        for( n--; n>=0; n-- )
+            w *= x.get(n).size();
+        return w;
+    }
+
+    /**
      * Computes the width of n-th Y-axis.
      */
     public int height(int n) {
