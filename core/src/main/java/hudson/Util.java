@@ -659,7 +659,7 @@ public class Util {
      * plus backslash (Windows path separator).
      * Note that slash(/) is encoded, so the given string should be a
      * single path component used in constructing a URL.
-     * Method name inspired by PHP's rawencode.
+     * Method name inspired by PHP's rawurlencode.
      */
     public static String rawEncode(String s) {
         boolean escaped = false;

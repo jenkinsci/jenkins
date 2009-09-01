@@ -81,6 +81,7 @@ import net.sf.json.JSONObject;
 
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
+import org.kohsuke.stapler.TokenList;
 import org.kohsuke.stapler.HttpResponse;
 
 /**
@@ -326,7 +327,7 @@ public class MatrixProject extends AbstractProject<MatrixProject,MatrixBuild> im
 
             for (File v : valuesDir) {
                 Map<String,String> c = new HashMap<String, String>(combination);
-                c.put(axis,v.getName());
+                c.put(axis,TokenList.decode(v.getName()));
 
                 try {
                     XmlFile config = Items.getConfigFile(v);
@@ -443,7 +444,7 @@ public class MatrixProject extends AbstractProject<MatrixProject,MatrixBuild> im
     public File getRootDirFor(Combination combination) {
         File f = getConfigurationsDir();
         for (Entry<String, String> e : combination.entrySet())
-            f = new File(f,"axis-"+e.getKey()+'/'+e.getValue());
+            f = new File(f,"axis-"+e.getKey()+'/'+Util.rawEncode(e.getValue()));
         f.getParentFile().mkdirs();
         return f;
     }
