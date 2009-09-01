@@ -420,11 +420,17 @@ THE SOFTWARE.
       <groupId>javax.mail</groupId>
       <artifactId>mail</artifactId>
       <version>1.4</version>
+      <exclusions>
+        <exclusion><!-- using a patched version -->
+          <groupId>javax.activation</groupId>
+          <artifactId>activation</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
     <dependency>
-      <groupId>javax.activation</groupId>
+      <groupId>org.jvnet.hudson</groupId>
       <artifactId>activation</artifactId>
-      <version>1.1</version>
+      <version>1.1.1-hudson-1</version>
     </dependency>
     <dependency>
       <groupId>org.jvnet.hudson.dom4j</groupId>
