@@ -2560,7 +2560,7 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
         }
 
         // the user is now authenticated, so send him back to the target
-        String path = req.getContextPath()+req.getRestOfPath();
+        String path = req.getContextPath()+req.getOriginalRestOfPath();
         String q = req.getQueryString();
         if(q!=null)
             path += '?'+q;

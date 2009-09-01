@@ -25,6 +25,7 @@ package hudson.model;
 
 import hudson.FilePath;
 import hudson.Util;
+import hudson.Functions;
 import hudson.util.IOException2;
 import hudson.FilePath.FileCallable;
 import hudson.remoting.VirtualChannel;
