@@ -672,7 +672,7 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
     }
 
     public String getNodeDescription() {
-        return "the master Hudson node";
+        return Messages.Hudson_NodeDescription();
     }
 
     @Exported

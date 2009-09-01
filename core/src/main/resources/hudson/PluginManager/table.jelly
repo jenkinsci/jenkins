@@ -54,10 +54,7 @@ THE SOFTWARE.
                         <div class="excerpt">${p.excerpt}</div>
                       </j:if>
                       <j:if test="${!p.isCompatibleWithInstalledVersion()}">
-			<div class="compatWarning">${%Warning: New
-			version not compatible with installed
-			version. Jobs using this plugin may need to be
-			reconfigured.}</div>
+			<div class="compatWarning">${%${compatWarning}</div>
 		      </j:if>							
 		    </td>
                     <td class="pane"><st:out value="${p.version}" /></td>
