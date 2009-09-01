@@ -148,6 +148,12 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
     protected volatile boolean disabled;
 
     /**
+     * True to keep builds of this project in queue when upstream projects are
+     * building. False by default to keep from breaking existing behavior.
+     */
+    protected volatile boolean blockBuildWhenUpstreamBuilding = false;
+
+    /**
      * Identifies {@link JDK} to be used.
      * Null if no explicit configuration is required.
      *
@@ -409,6 +415,10 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
      */
     public boolean isConfigurable() {
         return true;
+    }
+
+    public boolean blockBuildWhenUpstreamBuilding() {
+    	return blockBuildWhenUpstreamBuilding;
     }
 
     public boolean isDisabled() {
@@ -818,20 +828,58 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
      *
      * <p>
      * A project must be blocked if its own previous build is in progress,
-     * but derived classes can also check other conditions.
+     * or if the blockBuildWhenUpstreamBuilding option is true and an upstream
+     * project is building, but derived classes can also check other conditions.
      */
     public boolean isBuildBlocked() {
-        return isBuilding() && !isConcurrentBuild();
+        boolean blocked = isBuilding() && !isConcurrentBuild();
+	if (!blocked && blockBuildWhenUpstreamBuilding) {
+            AbstractProject bup = getBuildingUpstream();
+            if(bup!=null) {
+                return true;
+            }
+        }
+        return blocked;
+
     }
 
     public String getWhyBlocked() {
-        AbstractBuild<?, ?> build = getLastBuild();
-        Executor e = build.getExecutor();
-        String eta="";
-        if(e!=null)
-            eta = Messages.AbstractProject_ETA(e.getEstimatedRemainingTime());
-        int lbn = build.getNumber();
-        return Messages.AbstractProject_BuildInProgress(lbn,eta);
+	if (isBuilding() && !isConcurrentBuild()) { 
+	    AbstractBuild<?, ?> build = getLastBuild();
+	    Executor e = build.getExecutor();
+	    String eta="";
+	    if(e!=null)
+		eta = Messages.AbstractProject_ETA(e.getEstimatedRemainingTime());
+	    int lbn = build.getNumber();
+	    return Messages.AbstractProject_BuildInProgress(lbn,eta);
+	}
+	else {
+	    AbstractProject bup = getBuildingUpstream();
+            String projectName = "";
+            if(bup!=null) {
+                projectName = bup.getName();
+            }
+            return Messages.AbstractProject_UpstreamBuildInProgress(projectName);
+    	}
+    }
+
+
+    /**
+     * Returns the project if any of the upstream project (or itself) is either
+     * building or is in the queue.
+     * <p>
+     * This means eventually there will be an automatic triggering of
+     * the given project (provided that all builds went smoothly.)
+     */
+    protected AbstractProject getBuildingUpstream() {
+    	DependencyGraph graph = Hudson.getInstance().getDependencyGraph();
+        Set<AbstractProject> tups = graph.getTransitiveUpstream(this);
+        tups.add(this);
+        for (AbstractProject tup : tups) {
+            if(tup!=this && (tup.isBuilding() || tup.isInQueue()))
+                return tup;
+        }
+        return null;
     }
 
     public final long getEstimatedDuration() {

@@ -84,8 +84,6 @@ THE SOFTWARE.
         checked="${!it.aggregatorStyleBuild}" />
       <f:optionalBlock name="maven.usePrivateRepository" title="${%Use private Maven repository}" help="/plugin/maven-plugin/private-repository.html"
         checked="${it.usesPrivateRepository()}" />
-      <f:optionalBlock name="maven.blockBuildWhenUpstreamBuilding" title="${%Block build when dependency building}" help="/plugin/maven-plugin/block-upstream-building.html"
-        checked="${it.blockBuildWhenUpstreamBuilding()}" />
     </f:advanced>
   </f:section>
 

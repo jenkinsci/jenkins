@@ -66,6 +66,7 @@ THE SOFTWARE.
     <f:advanced>
       <p:config-quietPeriod />
       <p:config-retryCount />
+      <p:config-blockWhenUpstreamBuilding />
       <st:include page="configure-advanced.jelly" optional="true" />
     </f:advanced>
   </f:section>
