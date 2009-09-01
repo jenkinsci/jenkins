@@ -11,10 +11,8 @@ import java.io.OutputStream;
 import java.lang.reflect.Proxy;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 /**
  * {@link ObjectInputStream}/{@link ObjectOutputStream} pair that can handle object graph that spans across

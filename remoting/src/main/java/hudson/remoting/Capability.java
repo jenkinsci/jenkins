@@ -74,7 +74,7 @@ final class Capability implements Serializable {
 
     static {
         try {
-            PREAMBLE = "\n<===[HUDSON REMOTING CAPACITY]===>".getBytes("UTF-8");
+            PREAMBLE = "<===[HUDSON REMOTING CAPACITY]===>".getBytes("UTF-8");
         } catch (UnsupportedEncodingException e) {
             throw new AssertionError(e);
         }
