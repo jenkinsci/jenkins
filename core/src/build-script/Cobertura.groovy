@@ -49,8 +49,8 @@ public class Cobertura {
                 junitClasspath()
             }
             batchtest(todir:dir("target/surefire-reports")) {
-                fileset(dir:"src/test/java") {
-                    include(name:"**/*Test.java")
+                fileset(dir:"target/test-classes") {
+                    include(name:"**/*Test.class")
                 }
                 formatter(type:"xml")
             }
