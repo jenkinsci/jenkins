@@ -29,10 +29,14 @@ import java.io.IOException;
 import java.io.PipedInputStream;
 import java.io.PipedOutputStream;
 import java.io.File;
+import java.io.OutputStream;
+import java.io.FileOutputStream;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.net.URLClassLoader;
 import java.net.URL;
+
+import org.apache.commons.io.output.TeeOutputStream;
 
 /**
  * Hides the logic of starting/stopping a channel for test.
@@ -120,24 +124,30 @@ interface ChannelRunner {
 
             proc = Runtime.getRuntime().exec("java -cp "+getClasspath()+" hudson.remoting.Launcher");
 
-            copier = new Copier("copier",proc.getErrorStream(),System.err);
+            copier = new Copier("copier",proc.getErrorStream(),System.out);
             copier.start();
 
             executor = Executors.newCachedThreadPool();
-            return new Channel("north", executor, proc.getInputStream(), proc.getOutputStream());
+            OutputStream out = proc.getOutputStream();
+            if (RECORD_OUTPUT) {
+                File f = File.createTempFile("remoting",".log");
+                System.out.println("Recording to "+f);
+                out = new TeeOutputStream(out,new FileOutputStream(f));
+            }
+            return new Channel("north", executor, proc.getInputStream(), out);
         }
 
         public void stop(Channel channel) throws Exception {
             channel.close();
             channel.join(10*1000);
 
-            System.out.println("north completed");
+//            System.out.println("north completed");
 
             executor.shutdown();
 
             copier.join();
             int r = proc.waitFor();
-            System.out.println("south completed");
+//            System.out.println("south completed");
 
             Assert.assertEquals("exit code should have been 0",0,r);
         }
@@ -156,5 +166,10 @@ interface ChannelRunner {
             }
             return buf.toString();
         }
+
+        /**
+         * Record the communication to the remote node. Used during debugging.
+         */
+        private static boolean RECORD_OUTPUT = false;
     }
 }

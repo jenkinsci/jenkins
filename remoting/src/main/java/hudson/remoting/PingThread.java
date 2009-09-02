@@ -74,6 +74,8 @@ public abstract class PingThread extends Thread {
                 while((diff=nextCheck-System.currentTimeMillis())>0)
                     Thread.sleep(diff);
             }
+        } catch (ChannelClosedException e) {
+            LOGGER.fine(getName()+" is closed. Terminating");
         } catch (IOException e) {
             onDead();
         } catch (InterruptedException e) {
@@ -87,6 +89,8 @@ public abstract class PingThread extends Thread {
         try {
             f.get(TIME_OUT,MILLISECONDS);
         } catch (ExecutionException e) {
+            if (e.getCause() instanceof RequestAbortedException)
+                return; // connection has shut down orderly.
             onDead();
         } catch (TimeoutException e) {
             onDead();
