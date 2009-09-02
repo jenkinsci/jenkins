@@ -2388,23 +2388,16 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
             rsp.sendError(HttpServletResponse.SC_BAD_REQUEST,"Query parameter 'name' is required");
             return null;
         }
-        name = name.trim();
-        String mode = req.getParameter("mode");
 
         try {
-            checkGoodName(name);
+            name = checkJobName(name);
         } catch (ParseException e) {
             rsp.setStatus(SC_BAD_REQUEST);
             sendError(e,req,rsp);
             return null;
         }
 
-        if(getItem(name)!=null) {
-            rsp.setStatus(SC_BAD_REQUEST);
-            sendError(Messages.Hudson_JobAlreadyExists(name),req,rsp);
-            return null;
-        }
-
+        String mode = req.getParameter("mode");
         if(mode!=null && mode.equals("copy")) {
             String from = req.getParameter("from");
             TopLevelItem src = getItem(from);
@@ -2533,6 +2526,19 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
         }
 
         // looks good
+    }
+
+    /**
+     * Makes sure that the given name is good as a job name.
+     * @return trimmed name if valid; throws ParseException if not
+     */
+    private String checkJobName(String name) throws ParseException {
+        checkGoodName(name);
+        name = name.trim();
+        if(getItem(name)!=null)
+            throw new ParseException(Messages.Hudson_JobAlreadyExists(name),0);
+        // looks good
+        return name;
     }
 
     private static String toPrintableName(String name) {
@@ -2928,21 +2934,22 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
     }
 
     /**
-     * Checks if the top-level item with the given name exists.
+     * Makes sure that the given name is good as a job name.
      */
-    public FormValidation doItemExistsCheck(@QueryParameter String value) {
+    public FormValidation doCheckJobName(@QueryParameter String value) {
         // this method can be used to check if a file exists anywhere in the file system,
         // so it should be protected.
         checkPermission(Item.CREATE);
         
-        String job = fixEmpty(value);
-        if(job==null)
+        if(fixEmpty(value)==null)
             return FormValidation.ok();
 
-        if(getItem(job)==null)
+        try {
+            checkJobName(value);
             return FormValidation.ok();
-        else
-            return FormValidation.error(Messages.Hudson_JobAlreadyExists(job));
+        } catch (ParseException e) {
+            return FormValidation.error(e.getMessage());
+        }
     }
 
     /**
