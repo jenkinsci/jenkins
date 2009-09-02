@@ -129,6 +129,7 @@ interface ChannelRunner {
 
         public void stop(Channel channel) throws Exception {
             channel.close();
+            channel.join(10*1000);
 
             System.out.println("north completed");
 
