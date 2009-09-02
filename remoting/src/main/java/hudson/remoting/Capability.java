@@ -33,7 +33,7 @@ final class Capability implements Serializable {
     }
 
     Capability() {
-        this(1);
+        this(0);
     }
 
     /**

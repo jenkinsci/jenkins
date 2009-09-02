@@ -34,7 +34,7 @@ class MultiClassLoaderSerializer {
             this.channel = channel;
         }
 
-
+        @Override
         protected void annotateClass(Class<?> c) throws IOException {
             ClassLoader cl = c.getClassLoader();
             if (cl==null) {// bootstrap classloader. no need to export.
@@ -89,7 +89,9 @@ class MultiClassLoaderSerializer {
         protected Class<?> resolveClass(ObjectStreamClass desc) throws IOException, ClassNotFoundException {
             String name = desc.getName();
             try {
-                return Class.forName(name, false, readClassLoader());
+                ClassLoader cl = readClassLoader();
+                Class<?> c = Class.forName(name, false, cl);
+                return c;
             } catch (ClassNotFoundException ex) {
                 return super.resolveClass(desc);
             }
