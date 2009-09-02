@@ -25,6 +25,8 @@ package hudson.triggers;
 
 import hudson.FilePath;
 import hudson.Launcher;
+import hudson.util.OneShotEvent;
+import hudson.util.StreamTaskListener;
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
 import hudson.model.BuildListener;
@@ -51,27 +53,25 @@ public class SCMTriggerTest extends HudsonTestCase {
     @Bug(2671)
     public void testSimultaneousPollAndBuild() throws Exception {
         FreeStyleProject p = createFreeStyleProject();
-        final Object notifier = new Object();
-        p.setScm(new TestSCM(notifier));
-        hudson.getDescriptorByType(SCMTrigger.DescriptorImpl.class).synchronousPolling = true;
-        SCMTrigger trigger = new SCMTrigger("0 0 1 1 0");
-        p.addTrigger(trigger);
-        trigger.start(p, true);
+
+        // used to coordinate polling and check out
+        final OneShotEvent checkoutStarted = new OneShotEvent();
+
+        p.setScm(new TestSCM(checkoutStarted));
 
         Future<FreeStyleBuild> build = p.scheduleBuild2(0, new Cause.UserCause());
-        // pollSCM as soon as build starts its checkout/update
-        synchronized (notifier) { notifier.wait(); }
-        trigger.run();
-        boolean result = Hudson.getInstance().getQueue().cancel(p);
+        checkoutStarted.block();
+        assertFalse("SCM-poll after build has started should wait until that build finishes SCM-update", p.pollSCMChanges(new StreamTaskListener(System.out)));
         build.get();  // let mock build finish
-        assertFalse("SCM-poll after build has started should wait until that build finishes SCM-update", result);
     }
 
     private static class TestSCM extends NullSCM {
-        private int myRev = 1;
-        private Object notifier;
+        private volatile int myRev = 1;
+        private final OneShotEvent checkoutStarted;
 
-        private TestSCM(Object notifier) { this.notifier = notifier; }
+        public TestSCM(OneShotEvent checkoutStarted) {
+            this.checkoutStarted = checkoutStarted;
+        }
 
         @Override synchronized
         public boolean pollChanges(AbstractProject project, Launcher launcher, FilePath dir, TaskListener listener) throws IOException {
@@ -80,7 +80,7 @@ public class SCMTriggerTest extends HudsonTestCase {
 
         @Override
         public boolean checkout(AbstractBuild build, Launcher launcher, FilePath remoteDir, BuildListener listener, File changeLogFile) throws IOException, InterruptedException {
-            synchronized (notifier) { notifier.notify(); }
+            checkoutStarted.signal();
             Thread.sleep(400);  // processing time for mock update
             synchronized (this) { if (myRev < 2) myRev = 2; }
             return super.checkout(build, launcher, remoteDir, listener, changeLogFile);
