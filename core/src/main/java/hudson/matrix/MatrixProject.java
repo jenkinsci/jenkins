@@ -57,10 +57,12 @@ import hudson.tasks.Publisher;
 import hudson.triggers.Trigger;
 import hudson.util.CopyOnWriteMap;
 import hudson.util.DescribableList;
+import hudson.util.FormValidation;
 
 import java.io.File;
 import java.io.FileFilter;
 import java.io.IOException;
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -83,6 +85,7 @@ import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 import org.kohsuke.stapler.TokenList;
 import org.kohsuke.stapler.HttpResponse;
+import org.kohsuke.stapler.QueryParameter;
 
 /**
  * {@link Job} that allows you to run multiple different configurations
@@ -552,14 +555,21 @@ public class MatrixProject extends AbstractProject<MatrixProject,MatrixBuild> im
         super.submit(req, rsp);
 
         AxisList newAxes = new AxisList();
+        HashSet<String> axisNames = new HashSet<String>();
 
         // parse user axes
         if(req.getParameter("hasAxes")!=null) {
             newAxes.addAll(req.bindParametersToList(Axis.class,"axis."));
             // get rid of empty values
-            for (Iterator<Axis> itr = newAxes.iterator(); itr.hasNext();) {
+            for (Iterator<Axis> itr = newAxes.iterator(); itr.hasNext();) try {
                 Axis a = itr.next();
-                if(a.values.isEmpty())  itr.remove();
+                if(a.values.isEmpty()) { itr.remove(); continue; }
+                checkAxisName(a.name);
+                if (axisNames.contains(a.name))
+                    throw new FormException(Messages.MatrixProject_DuplicateAxisName(),"axis.name");
+                axisNames.add(a.name);
+            } catch (ParseException e) {
+                throw new FormException(e.getMessage(),"axis.name");
             }
         }
         
@@ -604,6 +614,31 @@ public class MatrixProject extends AbstractProject<MatrixProject,MatrixBuild> im
         for (MatrixConfiguration c : configurations.values())
             c.doDoWipeOutWorkspace();
         return rsp;
+    }
+
+    /**
+     * Makes sure that the given name is good as a axis name.
+     */
+    public FormValidation doCheckAxisName(@QueryParameter String value) {
+        checkPermission(CONFIGURE);
+
+        if(Util.fixEmpty(value)==null)
+            return FormValidation.ok();
+
+        try {
+            checkAxisName(value);
+            return FormValidation.ok();
+        } catch (ParseException e) {
+            return FormValidation.error(e.getMessage());
+        }
+    }
+
+    /**
+     * Makes sure that the given name is good as a axis name.
+     * TODO: maybe be even more restrictive since these are used as shell variables
+     */
+    private static void checkAxisName(String name) throws ParseException {
+        Hudson.checkGoodName(name);
     }
 
     public DescriptorImpl getDescriptor() {
