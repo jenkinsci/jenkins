@@ -24,6 +24,7 @@
 package org.jvnet.hudson.test;
 
 import hudson.FilePath;
+import hudson.util.IOException2;
 
 import java.io.File;
 import java.io.IOException;
@@ -60,11 +61,15 @@ public class TemporaryDirectoryAllocator {
      * When this method returns, the directory already exists. 
      */
     public synchronized File allocate() throws IOException {
-        File f = File.createTempFile("hudson", "test", base);
-        f.delete();
-        f.mkdirs();
-        tmpDirectories.add(f);
-        return f;
+        try {
+            File f = File.createTempFile("hudson", "test", base);
+            f.delete();
+            f.mkdirs();
+            tmpDirectories.add(f);
+            return f;
+        } catch (IOException e) {
+            throw new IOException2("Failed to create a temporary directory in "+base,e);
+        }
     }
 
     /**
