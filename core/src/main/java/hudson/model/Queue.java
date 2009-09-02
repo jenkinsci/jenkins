@@ -29,6 +29,7 @@ import hudson.ExtensionPoint;
 import hudson.Util;
 import hudson.XmlFile;
 import hudson.remoting.AsyncFutureImpl;
+import hudson.model.AbstractProject;
 import hudson.model.Node.Mode;
 import hudson.model.ParametersAction;
 import hudson.triggers.SafeTimerTask;
@@ -864,6 +865,14 @@ public class Queue extends ResourceController implements Saveable {
         while (itr.hasNext()) {
             BlockedItem p = itr.next();
             if (!isBuildBlocked(p.task)) {
+                // Make sure that we don't make more than one item buildable unless the
+                // project can handle concurrent builds
+                if (p.task instanceof AbstractProject<?,?>) {
+                    AbstractProject<?,?> proj = (AbstractProject<?,?>) p.task;
+                    if (!proj.isConcurrentBuild() && buildables.containsKey(p.task)) {
+                        continue;
+                    }
+                }
                 // ready to be executed
                 LOGGER.fine(p.task.getFullDisplayName() + " no longer blocked");
                 itr.remove();
