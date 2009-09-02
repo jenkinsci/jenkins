@@ -394,7 +394,7 @@ public class Channel implements VirtualChannel, IChannel {
      */
     /*package*/ synchronized void send(Command cmd) throws IOException {
         if(outClosed)
-            throw new IOException("already closed");
+            throw new ChannelClosedException();
         if(logger.isLoggable(Level.FINE))
             logger.fine("Send "+cmd);
         Channel old = Channel.setCurrent(this);

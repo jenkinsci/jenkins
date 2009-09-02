@@ -23,17 +23,10 @@
  */
 package hudson.remoting;
 
-import junit.framework.TestCase;
-import junit.framework.Test;
-import junit.framework.TestSuite;
-
-import java.io.IOException;
-import java.io.PipedInputStream;
-import java.io.PipedOutputStream;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-
 import hudson.remoting.ChannelRunner.InProcess;
+import junit.framework.Test;
+import junit.framework.TestCase;
+import junit.framework.TestSuite;
 
 /**
  * Base class for remoting tests.
@@ -46,6 +39,7 @@ public abstract class RmiTestBase extends TestCase {
     private ChannelRunner channelRunner = new InProcess();
 
     protected void setUp() throws Exception {
+        System.out.println("Starting "+getName());
         channel = channelRunner.start();
     }
 
