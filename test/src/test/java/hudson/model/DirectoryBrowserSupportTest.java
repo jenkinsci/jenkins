@@ -67,10 +67,22 @@ public class DirectoryBrowserSupportTest extends HudsonTestCase {
 
         // create a problematic file name in the workspace
         FreeStyleProject p = createFreeStyleProject();
-        p.getBuildersList().add(new Shell("touch abc\\\\def"));
+        p.getBuildersList().add(new Shell("touch abc\\\\def.bin"));
         p.scheduleBuild2(0).get();
 
         // can we see it?
-        new WebClient().goTo("job/"+p.getName()+"/ws/abc%5Cdef","application/octet-stream");
+        new WebClient().goTo("job/"+p.getName()+"/ws/abc%5Cdef.bin","application/octet-stream");
+    }
+
+    public void testNonAsciiChar() throws Exception {
+        if(Hudson.isWindows())  return; // can't test this on Windows
+
+        // create a problematic file name in the workspace
+        FreeStyleProject p = createFreeStyleProject();
+        p.getBuildersList().add(new Shell("touch \u6F22\u5B57.bin")); // Kanji
+        p.scheduleBuild2(0).get();
+
+        // can we see it?
+        new WebClient().goTo("job/"+p.getName()+"/ws/%e6%bc%a2%e5%ad%97.bin","application/octet-stream");
     }
 }

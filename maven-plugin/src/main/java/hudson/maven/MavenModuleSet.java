@@ -109,7 +109,15 @@ public final class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,Ma
      */
     private boolean aggregatorStyleBuild = true;
 
-
+    /**
+     * If true, and if aggregatorStyleBuild is false and we are using Maven 2.1 or later, the build will
+     * check the changeset before building, and if there are changes, only those modules which have changes
+     * or those modules which failed or were unstable in the previous build will be built directly, using
+     * Maven's make-like reactor mode. Any modules depending on the directly built modules will also be built,
+     * but that's controlled by Maven.
+     *
+     * @since 1.318
+     */
     private boolean incrementalBuild = false;
 
     /**
@@ -145,7 +153,7 @@ public final class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,Ma
         new DescribableList<Publisher,Descriptor<Publisher>>(this);
 
     /**
-     * List of active ${link BuildWrapper}s configured for this project.
+     * List of active {@link BuildWrapper}s configured for this project.
      * @since 1.212
      */
     private DescribableList<BuildWrapper,Descriptor<BuildWrapper>> buildWrappers =

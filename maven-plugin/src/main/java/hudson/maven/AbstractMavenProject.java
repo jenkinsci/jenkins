@@ -80,60 +80,6 @@ public abstract class AbstractMavenProject<P extends AbstractProject<P,R>,R exte
         }
     }
     
-    // Switching this back to default to false.
-    private boolean blockBuildWhenUpstreamBuilding = false;
-    
     protected abstract void addTransientActionsFromBuild(R lastBuild, Set<Class> added);
     
-    @Override
-    public boolean isBuildBlocked() {
-        boolean blocked = super.isBuildBlocked();
-        if (!blocked && blockBuildWhenUpstreamBuilding) {
-            AbstractProject bup = getBuildingUpstream();
-            if(bup!=null) {
-                return true;
-            }
-        }
-        return blocked;
-    }
-    
-    public String getWhyBlocked() {
-    	if (super.isBuildBlocked()) {
-            return super.getWhyBlocked();
-    	} else {
-            AbstractProject bup = getBuildingUpstream();
-            String projectName = "";
-            if(bup!=null) {
-                projectName = bup.getName();
-            }
-            return "Upstream project is building: " + projectName;
-    	}
-    }
-    
-    /**
-     * Returns the project if any of the upstream project (or itself) is either
-     * building or is in the queue.
-     * <p>
-     * This means eventually there will be an automatic triggering of
-     * the given project (provided that all builds went smoothly.)
-     */
-    private AbstractProject getBuildingUpstream() {
-    	DependencyGraph graph = Hudson.getInstance().getDependencyGraph();
-        Set<AbstractProject> tups = graph.getTransitiveUpstream(this);
-        tups.add(this);
-        for (AbstractProject tup : tups) {
-            if(tup!=this && (tup.isBuilding() || tup.isInQueue()))
-                return tup;
-        }
-        return null;
-    }
-    
-    public boolean blockBuildWhenUpstreamBuilding() {
-    	return blockBuildWhenUpstreamBuilding;
-    }
-    
-    protected void submit(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException, FormException {
-        super.submit(req,rsp);
-        blockBuildWhenUpstreamBuilding = req.hasParameter("maven.blockBuildWhenUpstreamBuilding");
-    }
 }

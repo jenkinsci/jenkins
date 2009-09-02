@@ -91,6 +91,7 @@ import org.kohsuke.stapler.StaplerResponse;
 import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.export.ExportedBean;
 import org.kohsuke.stapler.framework.io.LargeText;
+import org.apache.commons.io.IOUtils;
 
 import com.thoughtworks.xstream.XStream;
 
@@ -612,6 +613,16 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
         for (RunT f : fixUp)
             f.previousBuildInProgress = answer==null ? f : answer;
         return answer;
+    }
+
+    /**
+     * Returns the last build that was actually built - i.e., skipping any with Result.NOT_BUILT
+     */
+    public RunT getPreviousBuiltBuild() {
+        RunT r=previousBuild;
+        while( r!=null && r.getResult()==Result.NOT_BUILT )
+            r=r.previousBuild;
+        return r;
     }
 
     /**
@@ -1386,6 +1397,14 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
                 DateFormat.getDateTimeInstance(DateFormat.SHORT,DateFormat.SHORT, Locale.ENGLISH) :
                 new SimpleDateFormat(format,req.getLocale());
         rsp.getWriter().print(df.format(getTimestamp().getTime()));
+    }
+
+    /**
+     * Sends out the raw console output.
+     */
+    public void doConsoleText(StaplerRequest req, StaplerResponse rsp) throws IOException {
+        rsp.setContentType("text/plain;charset=UTF-8");
+        IOUtils.copy(getLogReader(),rsp.getCompressedOutputStream(req));
     }
 
     /**

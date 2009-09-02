@@ -554,7 +554,7 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable {
 
     private InputStream getHelpStream(Class c, String suffix) {
         Locale locale = Stapler.getCurrentRequest().getLocale();
-        String base = c.getName().replace('.', '/') + "/help"+suffix;
+        String base = c.getName().replace('.', '/').replace('$','/') + "/help"+suffix;
 
         ClassLoader cl = c.getClassLoader();
         if(cl==null)    return null;

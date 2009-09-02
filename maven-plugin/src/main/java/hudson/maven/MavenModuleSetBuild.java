@@ -46,7 +46,6 @@ import hudson.model.TaskListener;
 import hudson.model.Cause.UpstreamCause;
 import hudson.remoting.Channel;
 import hudson.remoting.VirtualChannel;
-import hudson.remoting.RequestAbortedException;
 import hudson.tasks.BuildWrapper;
 import hudson.tasks.Maven.MavenInstallation;
 import hudson.util.ArgumentListBuilder;
@@ -418,17 +417,21 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
                         List<String> changedModules = new ArrayList<String>();
 
                         for (MavenModule m : project.sortedActiveModules) {
+                            MavenBuild mb = m.newBuild();
                             
                             // Check if incrementalBuild is selected and that there are changes -
                             // we act as if incrementalBuild is not set if there are no changes.
                             if (!MavenModuleSetBuild.this.getChangeSet().isEmptySet()
                                 && project.isIncrementalBuild()) {
-                                if (!getChangeSetFor(m).isEmpty()) {
+				// If there are changes for this module, add it.
+                                if ((!getChangeSetFor(m).isEmpty()) 
+				    // If the last actually-built build of this module wasn't a success,
+				    // add it - i.e., rebuild anything that failed/was unstable in the past.
+				    || (mb.getPreviousBuiltBuild().getResult().isWorseThan(Result.SUCCESS))) {
                                     changedModules.add(m.getModuleName().toString());
                                 }
                             }
 
-                            MavenBuild mb = m.newBuild();
                             mb.setWorkspace(getModuleRoot().child(m.getRelativePath()));
                             proxies.put(m.getModuleName(), mb.new ProxyImpl2(MavenModuleSetBuild.this,slistener));
                         }
@@ -470,18 +473,7 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
                         try {
                             mpa = new MavenProbeAction(project,process.channel);
                             addAction(mpa);
-                            return process.channel.call(builder);
-                        } catch (RequestAbortedException e) {
-                            // this is normally triggered by the unexpected Maven JVM termination.
-                            // check if the process is still alive, after giving it a bit of time to die
-                            Thread.sleep(1000);
-                            if(process.proc.isAlive())
-                                throw e; // it's still alive. treat this as a bug in the code
-                            else {
-                                String msg = "Maven JVM terminated unexpectedly with exit code " + process.proc.join();
-                                LOGGER.log(Level.FINE,msg,e);
-                                throw new AbortException(msg);
-                            }
+                            return process.call(builder);
                         } finally {
                             builder.end(launcher);
                             getActions().remove(mpa);

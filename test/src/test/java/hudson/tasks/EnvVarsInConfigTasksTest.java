@@ -145,8 +145,9 @@ public class EnvVarsInConfigTasksTest extends HudsonTestCase {
 				"/simple-projects.zip")));
 
 		project.getBuildersList().add(
-				new Maven("test", "varMaven", "pom.xml${"
-						+ DUMMY_LOCATION_VARNAME + "}", "", ""));
+					      new Maven("test", "varMaven", "pom.xml${"
+							+ DUMMY_LOCATION_VARNAME + "}", "", "",
+							false));
 
 		// test the regular slave - variable not expanded
 		project.setAssignedLabel(slaveRegular.getSelfLabel());

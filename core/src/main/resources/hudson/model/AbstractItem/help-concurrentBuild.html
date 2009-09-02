@@ -1,7 +1,7 @@
 <div>
     If this option is checked, Hudson will schedule and execute multiple builds concurrently (provided
     that you have sufficient executors and incoming build requests.) This is useful on builds and test jobs that
-    take a long time, as each run build will only contain a smaller number of changes, and the total turn-around
+    take a long time, as each build will only contain a smaller number of changes, and the total turn-around
     time decreases due to the shorter time a build request spends waiting for the previous build to complete.
     It is also very useful with parameterized builds, whose individual executions are independent from each other.
 
@@ -11,6 +11,8 @@
     as a cron replacement.
 
     <p>
-    Even when concurrently run, builds are isolated from each other. If they are scheduled on the same node,
-    they use different workspaces.
+    If you use a custom workspace and enable this option, all your builds will run on the same workspace,
+    thus unless a care is taken by your side, it'll likely to collide with each other.
+    Otherwise, even when they are run on the same node, Hudson will use different workspaces to keep
+    them isolated.
 </div>

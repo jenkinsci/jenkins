@@ -29,14 +29,11 @@ THE SOFTWARE.
         <a href="${rootURL}/scm/CVSSCM/version">${%Check CVS version}</a>
       </div>
     </f:description>
-    <f:entry title="${%cvs executable}" help="/help/_cvs/cvsexe.html">
-	    <f:textbox name="cvs_exe" value="${descriptor.cvsExe}"
-        checkUrl="'${rootURL}/scm/CVSSCM/cvsExeCheck?value='+escape(this.value)" />
+    <f:entry title="${%cvs executable}" field="cvsExe">
+	    <f:textbox />
 	  </f:entry>
-    <f:entry title="${%.cvspass file}" help="/help/_cvs/cvspass.html">
-	    <input class="setting-input validated" name="cvs_cvspass"
-	      type="text" value="${descriptor.cvspassFile}"
-        checkUrl="'${rootURL}/scm/CVSSCM/cvsPassCheck?value='+escape(this.value)" />
+    <f:entry title="${%.cvspass file}" field="cvspassFile">
+      <f:textbox />
 	  </f:entry>
     <f:advanced>
       <f:block>

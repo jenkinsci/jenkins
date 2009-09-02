@@ -107,6 +107,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.SortedMap;
 import java.util.TreeMap;
+import java.util.Date;
 import java.util.logging.LogRecord;
 import java.util.logging.SimpleFormatter;
 import java.util.regex.Pattern;
@@ -1151,6 +1152,10 @@ public class Functions {
         }
         
         return "";
+    }
+
+    public static Date getCurrentTime() {
+        return new Date();
     }
     
     private static final Pattern SCHEME = Pattern.compile("[a-z]+://.+");

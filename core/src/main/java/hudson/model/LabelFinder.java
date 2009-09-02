@@ -21,29 +21,40 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package hudson.tasks;
+package hudson.model;
 
+import hudson.Extension;
+import hudson.ExtensionList;
 import hudson.ExtensionPoint;
-import hudson.remoting.VirtualChannel;
 
-import java.util.Collections;
-import java.util.Set;
+import java.util.Collection;
 
 /**
- * Created by IntelliJ IDEA.
+ * Automatically adds labels to {@link Node}s.
  *
- * @author connollys
- * @since 25-May-2007 14:30:15
+ * <p>
+ * To register your implementation, put {@link Extension} on your derived types.
+ *
+ * @author Stephen Connolly
+ * @since 1.323
+ *      Signature of this class changed in 1.323, after making sure that no
+ *      plugin in the Subversion repository is using this.
  */
-public abstract class DynamicLabeler implements LabelFinder, ExtensionPoint {
+public abstract class LabelFinder implements ExtensionPoint {
+    /**
+     * Returns all the registered {@link LabelFinder}s.
+     */
+    public static ExtensionList<LabelFinder> all() {
+        return Hudson.getInstance().getExtensionList(LabelFinder.class);
+    }
+
     /**
      * Find the labels that the node supports.
      *
-     * @param channel
-     *      Connection that represents the node.
-     * @return a set of labels.
+     * @param node
+     *      The node that receives labels. Never null.
+     * @return
+     *      A set of labels for the node. Can be empty but never null.
      */
-    public Set<String> findLabels(VirtualChannel channel) {
-        return Collections.emptySet();
-    }
+    public abstract Collection<Label> findLabels(Node node);
 }

@@ -82,7 +82,15 @@ public class MatrixBuild extends AbstractBuild<MatrixProject,MatrixBuild> {
     public final class RunPtr {
         public final Combination combination;
         private RunPtr(Combination c) { this.combination=c; }
-        public MatrixRun getRun() { return MatrixBuild.this.getRun(combination); }
+
+        public MatrixRun getRun() {
+            return MatrixBuild.this.getRun(combination);
+        }
+
+        public String getShortUrl() {
+            return Util.rawEncode(combination.toString());
+        }
+
         public String getTooltip() {
             MatrixRun r = getRun();
             if(r!=null) return r.getIconColor().getDescription();

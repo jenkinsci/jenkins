@@ -167,6 +167,12 @@ THE SOFTWARE.
 
   <profiles>
     <profile>
+      <id>light-test</id>
+      <properties>
+	<skipTests>true</skipTests>
+      </properties>
+    </profile>
+    <profile>
       <!--
         Obtain code coverage report. This is done by running Unit tests on our own and suppressing surefire.
       -->

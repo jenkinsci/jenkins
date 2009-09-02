@@ -32,7 +32,7 @@ THE SOFTWARE.
     <l:main-panel>
       <j:getStatic var="jobs" className="hudson.model.Items" field="LIST" />
       <n:form nameTitle="${%Job name}" copyTitle="${%Copy existing job}" copyNames="${app.topLevelItemNames}"
-              descriptors="${jobs}" checkUrl="itemExistsCheck" xmlns:n="/lib/hudson/newFromList" />
+              descriptors="${jobs}" checkUrl="checkJobName" xmlns:n="/lib/hudson/newFromList" />
     </l:main-panel>
   </l:layout>
 </j:jelly>

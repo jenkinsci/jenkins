@@ -93,7 +93,10 @@ public class JNLPLauncherTest extends HudsonTestCase {
                     break;
             }
 
-            assertFalse("Slave failed to go online", c.isOffline());
+            if (c.isOffline()) {
+                System.out.println(c.getLog());
+                fail("Slave failed to go online");
+            }
             // run some trivial thing
             System.err.println("Calling task...");
             assertEquals("done", c.getChannel().callAsync(new NoopTask()).get(5, TimeUnit.MINUTES));

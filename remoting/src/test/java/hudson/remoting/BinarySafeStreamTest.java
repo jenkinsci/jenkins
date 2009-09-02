@@ -48,9 +48,9 @@ public class BinarySafeStreamTest extends TestCase {
         o.close();
 
         InputStream in = BinarySafeStream.wrap(new ByteArrayInputStream(buf.toByteArray()));
-        for (int i = 0; i < data.length; i++) {
+        for (byte b : data) {
             int ch = in.read();
-            assertEquals(data[i], ch);
+            assertEquals(b, ch);
         }
         assertEquals(-1,in.read());
     }
@@ -152,7 +152,7 @@ public class BinarySafeStreamTest extends TestCase {
                     int ch = in.read();
                     if(dump)
                         System.out.println("read1("+ch+')');
-                    assert ch>=0;
+                    assertTrue(255>=ch && ch>=-1);  // make sure the range is [-1,255]
                     if(ch==-1)
                         return;
                     out.write(ch);

@@ -65,9 +65,10 @@ THE SOFTWARE.
         <j:if test="${it.node.assignedLabels.size() gt 1}">
         <div>
           ${%Labels:}
-          <j:forEach var="l" items="${it.node.assignedLabels}">
-            <j:if test="${l!=it.node.selfLabel}">
-              <a href="${rootURL}/label/${l.name}">${l.name}</a>
+          <j:forEach var="entry" items="${it.node.labelCloud}">
+            <!-- Skip the label for this node -->
+            <j:if test="${entry.item!=it.node.selfLabel}">
+              <a class="${entry.className}" href="${rootURL}/label/${entry.item.name}">${entry.item.name}</a>
               <st:nbsp/>
             </j:if>
           </j:forEach>

@@ -65,7 +65,7 @@ public class MavenTest extends HudsonTestCase {
         hudson.getDescriptorByType(Maven.DescriptorImpl.class).setInstallations(); // reset
 
         FreeStyleProject p = createFreeStyleProject();
-        p.getBuildersList().add(new Maven("a", null, "b.pom", "c=d", "-e"));
+        p.getBuildersList().add(new Maven("a", null, "b.pom", "c=d", "-e", true));
 
         WebClient webClient = new WebClient();
         HtmlPage page = webClient.getPage(p, "configure");
@@ -80,6 +80,7 @@ public class MavenTest extends HudsonTestCase {
         assertEquals("b.pom", m.pom);
         assertEquals("c=d", m.properties);
         assertEquals("-e", m.jvmOptions);
+	assertTrue(m.usesPrivateRepository());
     }
 
     public void testWithNodeProperty() throws Exception {

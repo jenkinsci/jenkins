@@ -128,6 +128,14 @@ public class CLI {
                 new RemoteOutputStream(stderr));
     }
 
+    public int execute(List<String> args) {
+        return execute(args,System.in,System.out,System.err);
+    }
+
+    public int execute(String... args) {
+        return execute(Arrays.asList(args));
+    }
+
     public static void main(final String[] _args) throws Exception {
         List<String> args = Arrays.asList(_args);
 

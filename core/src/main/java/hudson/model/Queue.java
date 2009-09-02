@@ -30,6 +30,7 @@ import hudson.Util;
 import hudson.XmlFile;
 import hudson.remoting.AsyncFutureImpl;
 import hudson.model.Node.Mode;
+import hudson.model.ParametersAction;
 import hudson.triggers.SafeTimerTask;
 import hudson.triggers.Trigger;
 import hudson.util.OneShotEvent;
@@ -1145,7 +1146,25 @@ public class Queue extends ResourceController implements Saveable {
          */
         @Exported
         public abstract String getWhy();
-
+        
+        /**
+         * Gets a human-readable message about the parameters of this item
+         * @return String
+         */
+        @Exported
+        public String getParams() {
+        	StringBuilder s = new StringBuilder();
+        	for(Action action : getActions()) {
+        		if(action instanceof ParametersAction) {
+        			ParametersAction pa = (ParametersAction)action;
+        			for (ParameterValue p : pa.getParameters()) {
+        				s.append('\n').append(p.getShortDescription());
+        			}
+        		}
+        	}
+        	return s.toString();
+        }
+        
         public boolean hasCancelPermission() {
             return task.hasAbortPermission();
         }

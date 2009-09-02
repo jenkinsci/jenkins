@@ -33,6 +33,7 @@ import java.io.IOException;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.io.NotSerializableException;
+import java.io.ObjectInputStream;
 
 /**
  * {@link Request} that can take {@link Callable} whose actual implementation
@@ -84,7 +85,7 @@ final class UserRequest<RSP,EXC extends Throwable> extends Request<UserResponse<
             try {
                 Object o;
                 try {
-                    o = new ObjectInputStreamEx(new ByteArrayInputStream(request), cl).readObject();
+                    o = deserialize(channel,request,cl);
                 } catch (ClassNotFoundException e) {
                     throw new ClassNotFoundException("Failed to deserialize the Callable object. Perhaps you needed to implement DelegatingCallable?",e);
                 }
@@ -127,11 +128,17 @@ final class UserRequest<RSP,EXC extends Throwable> extends Request<UserResponse<
         }
     }
 
-    private byte[] _serialize(Object o, Channel localChannel) throws IOException {
-        Channel old = Channel.setCurrent(localChannel);
+    private byte[] _serialize(Object o, final Channel channel) throws IOException {
+        Channel old = Channel.setCurrent(channel);
         try {
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
-            new ObjectOutputStream(baos).writeObject(o);
+            ObjectOutputStream oos;
+            if (channel.remoteCapability.supportsMultiClassLoaderRPC())
+                oos = new MultiClassLoaderSerializer.Output(channel,baos);
+            else
+                oos = new ObjectOutputStream(baos);
+
+            oos.writeObject(o);
             return baos.toByteArray();
         } finally {
             Channel.setCurrent(old);
@@ -146,6 +153,19 @@ final class UserRequest<RSP,EXC extends Throwable> extends Request<UserResponse<
             x.initCause(e);
             throw x;
         }
+    }
+
+    /*package*/ static Object deserialize(final Channel channel, byte[] data, ClassLoader defaultClassLoader) throws IOException, ClassNotFoundException {
+        ByteArrayInputStream in = new ByteArrayInputStream(data);
+
+        ObjectInputStream ois;
+        if (channel.remoteCapability.supportsMultiClassLoaderRPC()) {
+            // this code is coupled with the ObjectOutputStream subtype above
+            ois = new MultiClassLoaderSerializer.Input(channel, in);
+        } else {
+            ois = new ObjectInputStreamEx(in, defaultClassLoader);
+        }
+        return ois.readObject();
     }
 
     public void releaseExports() {
@@ -174,7 +194,7 @@ final class UserResponse<RSP,EXC extends Throwable> implements Serializable {
     public RSP retrieve(Channel channel, ClassLoader cl) throws IOException, ClassNotFoundException, EXC {
         Channel old = Channel.setCurrent(channel);
         try {
-            Object o = new ObjectInputStreamEx(new ByteArrayInputStream(response), cl).readObject();
+            Object o = UserRequest.deserialize(channel,response,cl);
 
             if(isException)
                 throw (EXC)o;

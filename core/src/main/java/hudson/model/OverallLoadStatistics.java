@@ -26,6 +26,7 @@ package hudson.model;
 import hudson.model.MultiStageTimeSeries.TimeScale;
 import hudson.model.MultiStageTimeSeries.TrendChart;
 import hudson.util.ColorPalette;
+import org.kohsuke.stapler.export.Exported;
 
 /**
  * {@link LoadStatistics} for the entire system (the master and all the slaves combined.)
@@ -42,6 +43,7 @@ public class OverallLoadStatistics extends LoadStatistics {
     /**
      * Number of total {@link Queue.BuildableItem}s that represents blocked builds.
      */
+    @Exported
     public final MultiStageTimeSeries totalQueueLength = new MultiStageTimeSeries(
             Messages._LoadStatistics_Legends_QueueLength(), ColorPalette.GREY, 0,DECAY);
 

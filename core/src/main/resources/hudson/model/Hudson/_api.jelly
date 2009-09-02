@@ -42,6 +42,11 @@ THE SOFTWARE.
     Build queue has <a href="../queue/api/">its own separate API</a>.
   </p>
   
+  <h2>Load Statistics</h2>
+  <p>
+    Overall load statistics of Hudson has <a href="../overallLoad/api/">its own separate API</a>.
+  </p>
+
   <h2>Restarting Hudson</h2>
   <p>
     Hudson will enter into the "quiet down" mode by sending a request to <a href="../quietDown">this URL</a>.

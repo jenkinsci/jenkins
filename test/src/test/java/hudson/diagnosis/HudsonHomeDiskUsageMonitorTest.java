@@ -17,11 +17,13 @@ public class HudsonHomeDiskUsageMonitorTest extends HudsonTestCase {
         HudsonHomeDiskUsageMonitor mon = HudsonHomeDiskUsageMonitor.get();
         mon.activated = true;
 
-        // clikcing yes should take us to somewhere
+        // clicking yes should take us to somewhere
         submit(getForm(mon),"yes");
+        assertTrue(mon.isEnabled());
 
         // now dismiss
         submit(getForm(mon),"no");
+        assertFalse(mon.isEnabled());
 
         // and make sure it's gone
         try {

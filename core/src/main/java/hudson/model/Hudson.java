@@ -430,6 +430,7 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
     /**
      * Load statistics of the entire system.
      */
+    @Exported
     public transient final OverallLoadStatistics overallLoad = new OverallLoadStatistics();
 
     /**
@@ -671,7 +672,7 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
     }
 
     public String getNodeDescription() {
-        return "the master Hudson node";
+        return Messages.Hudson_NodeDescription();
     }
 
     @Exported
@@ -1939,33 +1940,6 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
         return fixNull(label).trim();
     }
 
-    public Set<Label> getAssignedLabels() {
-        // labelSet may be set by another thread while we are in this method,
-        // so capture it.
-        Set<Label> lset = labelSet;
-        if (lset == null || isChangedDynamicLabels()) {
-            Set<Label> r = Label.parse(getLabelString());
-            r.addAll(getDynamicLabels());
-            r.add(getSelfLabel());
-            this.labelSet = lset = Collections.unmodifiableSet(r);
-        }
-        return lset;
-    }
-
-    /**
-     * Returns the possibly empty set of labels that it has been determined as supported by this node.
-     *
-     * @see hudson.tasks.LabelFinder
-     */
-    public Set<Label> getDynamicLabels() {
-        if (dynamicLabels==null || dynamicLabels.isChanged(toComputer()))
-            // in the worst cast, two threads end up doing the same computation
-            // twice, but that won't break the semantics.
-            // OTOH, not locking prevents dead-lock. See #1390
-            dynamicLabels = new DynamicLabels(toComputer());
-        return dynamicLabels.labels;
-    }
-
     public Label getSelfLabel() {
         return getLabel("master");
     }
@@ -2050,8 +2024,10 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
         }
         rebuildDependencyGraph();
 
-        {// recompute label objects
+        {// recompute label objects - populates the labels mapping.
             for (Node slave : slaves)
+                // Note that all labels are not visible until the slaves have
+                // connected.
                 slave.getAssignedLabels();
             getAssignedLabels();
         }
@@ -2093,7 +2069,8 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
         setCrumbIssuer(crumbIssuer);
 
         // auto register root actions
-        actions.addAll(getExtensionList(RootAction.class));
+        for (Action a : getExtensionList(RootAction.class))
+            if (!actions.contains(a)) actions.add(a);
         
         LOGGER.info(String.format("Took %s ms to load",System.currentTimeMillis()-startTime));
         if(KILL_AFTER_LOAD)
@@ -2411,23 +2388,16 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
             rsp.sendError(HttpServletResponse.SC_BAD_REQUEST,"Query parameter 'name' is required");
             return null;
         }
-        name = name.trim();
-        String mode = req.getParameter("mode");
 
         try {
-            checkGoodName(name);
+            name = checkJobName(name);
         } catch (ParseException e) {
             rsp.setStatus(SC_BAD_REQUEST);
             sendError(e,req,rsp);
             return null;
         }
 
-        if(getItem(name)!=null) {
-            rsp.setStatus(SC_BAD_REQUEST);
-            sendError(Messages.Hudson_JobAlreadyExists(name),req,rsp);
-            return null;
-        }
-
+        String mode = req.getParameter("mode");
         if(mode!=null && mode.equals("copy")) {
             String from = req.getParameter("from");
             TopLevelItem src = getItem(from);
@@ -2558,6 +2528,19 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
         // looks good
     }
 
+    /**
+     * Makes sure that the given name is good as a job name.
+     * @return trimmed name if valid; throws ParseException if not
+     */
+    private String checkJobName(String name) throws ParseException {
+        checkGoodName(name);
+        name = name.trim();
+        if(getItem(name)!=null)
+            throw new ParseException(Messages.Hudson_JobAlreadyExists(name),0);
+        // looks good
+        return name;
+    }
+
     private static String toPrintableName(String name) {
         StringBuilder printableName = new StringBuilder();
         for( int i=0; i<name.length(); i++ ) {
@@ -2583,7 +2566,7 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
         }
 
         // the user is now authenticated, so send him back to the target
-        String path = req.getContextPath()+req.getRestOfPath();
+        String path = req.getContextPath()+req.getOriginalRestOfPath();
         String q = req.getQueryString();
         if(q!=null)
             path += '?'+q;
@@ -2951,21 +2934,22 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
     }
 
     /**
-     * Checks if the top-level item with the given name exists.
+     * Makes sure that the given name is good as a job name.
      */
-    public FormValidation doItemExistsCheck(@QueryParameter String value) {
+    public FormValidation doCheckJobName(@QueryParameter String value) {
         // this method can be used to check if a file exists anywhere in the file system,
         // so it should be protected.
         checkPermission(Item.CREATE);
         
-        String job = fixEmpty(value);
-        if(job==null)
+        if(fixEmpty(value)==null)
             return FormValidation.ok();
 
-        if(getItem(job)==null)
+        try {
+            checkJobName(value);
             return FormValidation.ok();
-        else
-            return FormValidation.error(Messages.Hudson_JobAlreadyExists(job));
+        } catch (ParseException e) {
+            return FormValidation.error(e.getMessage());
+        }
     }
 
     /**
@@ -3100,27 +3084,6 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
     public static boolean isDarwin() {
         // according to http://developer.apple.com/technotes/tn2002/tn2110.html
         return System.getProperty("os.name").startsWith("mac");
-    }
-
-    /**
-     * Returns all {@code CVSROOT} strings used in the current Hudson installation.
-     *
-     * <p>
-     * Ideally this shouldn't be defined in here
-     * but EL doesn't provide a convenient way of invoking a static function,
-     * so I'm putting it here for now.
-     */
-    public Set<String> getAllCvsRoots() {
-        Set<String> r = new TreeSet<String>();
-        for( AbstractProject p : getAllItems(AbstractProject.class) ) {
-            SCM scm = p.getScm();
-            if (scm instanceof CVSSCM) {
-                CVSSCM cvsscm = (CVSSCM) scm;
-                r.add(cvsscm.getCvsRoot());
-            }
-        }
-
-        return r;
     }
 
     /**

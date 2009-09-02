@@ -36,6 +36,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.Collection;
+import java.util.TreeSet;
 
 import com.thoughtworks.xstream.converters.Converter;
 import com.thoughtworks.xstream.converters.MarshallingContext;
@@ -56,6 +57,7 @@ public class Label implements Comparable<Label>, ModelObject {
     private volatile Set<Node> nodes;
     private volatile Set<Cloud> clouds;
 
+    @Exported
     public final LoadStatistics loadStatistics;
     public final NodeProvisioner nodeProvisioner;
 
@@ -345,11 +347,18 @@ public class Label implements Comparable<Label>, ModelObject {
      * @since 1.308
      */
     public static Set<Label> parse(String labels) {
-        Set<Label> r = new HashSet<Label>();
+        Set<Label> r = new TreeSet<Label>();
         labels = fixNull(labels);
         if(labels.length()>0)
             for( String l : labels.split(" +"))
                 r.add(Hudson.getInstance().getLabel(l));
         return r;
+    }
+
+    /**
+     * Obtains a label by its {@linkplain #getName() name}.
+     */
+    public static Label get(String l) {
+        return Hudson.getInstance().getLabel(l);
     }
 }

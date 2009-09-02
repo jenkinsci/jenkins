@@ -101,7 +101,7 @@ public class JDKInstaller extends ToolInstaller {
         PrintStream out = log.getLogger();
         try {
             if(!acceptLicense) {
-                out.println("Unable to perform installation until the license is accepted.");
+                out.println(Messages.JDKInstaller_UnableToInstallUntilLicenseAccepted());
                 return expectedLocation;
             }
             // already installed?
@@ -124,7 +124,7 @@ public class JDKInstaller extends ToolInstaller {
                 file.chmod(0755);
                 if(node.createLauncher(log).launch().cmds(file.getRemote(),"-noregister")
                     .stdin(new ByteArrayInputStream("yes".getBytes())).stdout(out).pwd(expectedLocation).join()!=0)
-                    throw new AbortException("Failed to install JDK");
+                    throw new AbortException(Messages.JDKInstaller_FailedToInstallJDK());
 
                 // JDK creates its own sub-directory, so pull them up
                 List<FilePath> paths = expectedLocation.list(new JdkFinder());
@@ -170,7 +170,7 @@ public class JDKInstaller extends ToolInstaller {
                 args.add("/v/qn REBOOT=Suppress INSTALLDIR=\\\""+normalizedPath+"\\\" /L \\\""+logFile.getRemote()+"\\\"");
                 
                 if(node.createLauncher(log).launch().cmds(args).stdout(out).pwd(expectedLocation).join()!=0) {
-                    out.println("Failed to install JDK");
+                    out.println(Messages.JDKInstaller_FailedToInstallJDK());
                     // log file is in UTF-16
                     InputStreamReader in = new InputStreamReader(logFile.read(), "UTF-16");
                     try {

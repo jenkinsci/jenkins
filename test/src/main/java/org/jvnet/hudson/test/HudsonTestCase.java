@@ -57,7 +57,6 @@ import hudson.model.RootAction;
 import hudson.model.UpdateCenter.UpdateCenterConfiguration;
 import hudson.model.Node.Mode;
 import hudson.security.csrf.CrumbIssuer;
-import hudson.security.csrf.CrumbIssuerDescriptor;
 import hudson.slaves.CommandLauncher;
 import hudson.slaves.DumbSlave;
 import hudson.slaves.RetentionStrategy;
@@ -115,7 +114,6 @@ import org.kohsuke.stapler.MetaClass;
 import org.kohsuke.stapler.MetaClassLoader;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
-import org.kohsuke.stapler.Stapler;
 import org.mortbay.jetty.Server;
 import org.mortbay.jetty.bio.SocketConnector;
 import org.mortbay.jetty.security.HashUserRealm;
@@ -251,29 +249,31 @@ public abstract class HudsonTestCase extends TestCase {
     }
 
     protected void tearDown() throws Exception {
-        // cancel pending asynchronous operations, although this doesn't really seem to be working
-        for (WeakReference<WebClient> client : clients) {
-            WebClient c = client.get();
-            if(c==null) continue;
-            // unload the page to cancel asynchronous operations 
-            c.getPage("about:blank");
+        try {
+            // cancel pending asynchronous operations, although this doesn't really seem to be working
+            for (WeakReference<WebClient> client : clients) {
+                WebClient c = client.get();
+                if(c==null) continue;
+                // unload the page to cancel asynchronous operations
+                c.getPage("about:blank");
+            }
+            clients.clear();
+        } finally {
+            server.stop();
+            for (LenientRunnable r : tearDowns)
+                r.run();
+
+            hudson.cleanUp();
+            env.dispose();
+            ExtensionList.clearLegacyInstances();
+            DescriptorExtensionList.clearLegacyInstances();
+
+            // Hudson creates ClassLoaders for plugins that hold on to file descriptors of its jar files,
+            // but because there's no explicit dispose method on ClassLoader, they won't get GC-ed until
+            // at some later point, leading to possible file descriptor overflow. So encourage GC now.
+            // see http://bugs.sun.com/view_bug.do?bug_id=4950148
+            System.gc();
         }
-        clients.clear();
-
-        server.stop();
-        for (LenientRunnable r : tearDowns)
-            r.run();
-
-        hudson.cleanUp();
-        env.dispose();
-        ExtensionList.clearLegacyInstances();
-        DescriptorExtensionList.clearLegacyInstances();
-
-        // Hudson creates ClassLoaders for plugins that hold on to file descriptors of its jar files,
-        // but because there's no explicit dispose method on ClassLoader, they won't get GC-ed until
-        // at some later point, leading to possible file descriptor overflow. So encourage GC now.
-        // see http://bugs.sun.com/view_bug.do?bug_id=4950148
-        System.gc();
     }
 
     protected void runTest() throws Throwable {
@@ -347,9 +347,16 @@ public abstract class HudsonTestCase extends TestCase {
 //    }
 
     /**
-     * Locates Maven2 and configure that as the only Maven in the system.
+     * Returns the older default Maven, while still allowing specification of other bundled Mavens.
      */
     protected MavenInstallation configureDefaultMaven() throws Exception {
+	return configureDefaultMaven("maven-2.0.7");
+    }
+    
+    /**
+     * Locates Maven2 and configure that as the only Maven in the system.
+     */
+    protected MavenInstallation configureDefaultMaven(String mavenVersion) throws Exception {
         // first if we are running inside Maven, pick that Maven.
         String home = System.getProperty("maven.home");
         if(home!=null) {
@@ -365,7 +372,7 @@ public abstract class HudsonTestCase extends TestCase {
         FilePath mvn = hudson.getRootPath().createTempFile("maven", "zip");
         OutputStream os = mvn.write();
         try {
-            IOUtils.copy(HudsonTestCase.class.getClassLoader().getResourceAsStream("maven-2.0.7-bin.zip"), os);
+            IOUtils.copy(HudsonTestCase.class.getClassLoader().getResourceAsStream(mavenVersion + "-bin.zip"), os);
         } finally {
             os.close();
         }
@@ -373,10 +380,10 @@ public abstract class HudsonTestCase extends TestCase {
         mvn.unzip(new FilePath(mvnHome));
         // TODO: switch to tar that preserves file permissions more easily
         if(!Hudson.isWindows())
-            GNUCLibrary.LIBC.chmod(new File(mvnHome,"maven-2.0.7/bin/mvn").getPath(),0755);
+            GNUCLibrary.LIBC.chmod(new File(mvnHome,mavenVersion+"/bin/mvn").getPath(),0755);
 
         MavenInstallation mavenInstallation = new MavenInstallation("default",
-                new File(mvnHome,"maven-2.0.7").getAbsolutePath(), NO_PROPERTIES);
+                new File(mvnHome,mavenVersion).getAbsolutePath(), NO_PROPERTIES);
 		hudson.getDescriptorByType(Maven.DescriptorImpl.class).setInstallations(mavenInstallation);
 		return mavenInstallation;
     }
@@ -476,7 +483,15 @@ public abstract class HudsonTestCase extends TestCase {
     public DumbSlave createSlave(Label l) throws Exception {
     	return createSlave(l, null);
     }
-    
+
+    /**
+     * Returns the URL of the webapp top page.
+     * URL ends with '/'.
+     */
+    public URL getURL() throws IOException {
+        return new URL("http://localhost:"+localPort+contextPath+"/");
+    }
+
     /**
      * Creates a slave with certain additional environment variables
      */
@@ -1006,15 +1021,17 @@ public abstract class HudsonTestCase extends TestCase {
         }
 
         public Page goTo(String relative, String expectedContentType) throws IOException, SAXException {
-            return super.getPage(getContextPath() +relative);
+            Page p = super.getPage(getContextPath() + relative);
+            assertEquals(expectedContentType,p.getWebResponse().getContentType());
+            return p;
         }
 
         /**
          * Returns the URL of the webapp top page.
          * URL ends with '/'.
          */
-        public String getContextPath() {
-            return "http://localhost:"+localPort+contextPath+"/";
+        public String getContextPath() throws IOException {
+            return getURL().toExternalForm();
         }
         
         /**
@@ -1033,7 +1050,7 @@ public abstract class HudsonTestCase extends TestCase {
         /**
          * Creates a URL with crumb parameters relative to {{@link #getContextPath()}
          */
-        public URL createCrumbedUrl(String relativePath) throws MalformedURLException {
+        public URL createCrumbedUrl(String relativePath) throws IOException {
             CrumbIssuer issuer = hudson.getCrumbIssuer();
             String crumbName = issuer.getDescriptor().getCrumbRequestField();
             String crumb = issuer.getCrumb(null);

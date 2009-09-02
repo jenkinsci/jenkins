@@ -24,6 +24,8 @@
 package hudson.model;
 
 import hudson.CopyOnWrite;
+import org.kohsuke.stapler.export.ExportedBean;
+import org.kohsuke.stapler.export.Exported;
 
 /**
  * Scalar value that changes over the time (such as load average, Q length, # of executors, etc.)
@@ -34,6 +36,7 @@ import hudson.CopyOnWrite;
  *
  * @author Kohsuke Kawaguchi
  */
+@ExportedBean
 public final class TimeSeries {
     /**
      * Decay ratio. Normally 1-e for some small e.
@@ -81,6 +84,7 @@ public final class TimeSeries {
      * @return
      *      Always non-null, contains at least one entry.
      */
+    @Exported
     public float[] getHistory() {
         return history;
     }
@@ -88,6 +92,7 @@ public final class TimeSeries {
     /**
      * Gets the most up-to-date data point value. {@code getHistory[0]}.
      */
+    @Exported
     public float getLatest() {
         return history[0];
     }

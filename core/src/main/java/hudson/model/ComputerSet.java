@@ -211,7 +211,7 @@ public final class ComputerSet extends AbstractModelObject {
         app.checkPermission(Hudson.ADMINISTER);  // TODO: new permission?
 
         try {
-            checkName(name);
+            name = checkName(name);
         } catch (ParseException e) {
             rsp.setStatus(SC_BAD_REQUEST);
             sendError(e,req,rsp);
@@ -275,8 +275,9 @@ public final class ComputerSet extends AbstractModelObject {
 
     /**
      * Makes sure that the given name is good as a slave name.
+     * @return trimmed name if valid; throws ParseException if not
      */
-    private void checkName(String name) throws ParseException {
+    private String checkName(String name) throws ParseException {
         if(name==null)
             throw new ParseException("Query parameter 'name' is required",0);
 
@@ -287,6 +288,7 @@ public final class ComputerSet extends AbstractModelObject {
             throw new ParseException(Messages.ComputerSet_SlaveAlreadyExists(name),0);
 
         // looks good
+        return name;
     }
 
     /**

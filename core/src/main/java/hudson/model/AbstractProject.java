@@ -148,6 +148,12 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
     protected volatile boolean disabled;
 
     /**
+     * True to keep builds of this project in queue when upstream projects are
+     * building. False by default to keep from breaking existing behavior.
+     */
+    protected volatile boolean blockBuildWhenUpstreamBuilding = false;
+
+    /**
      * Identifies {@link JDK} to be used.
      * Null if no explicit configuration is required.
      *
@@ -231,7 +237,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
 
     /**
      * Does this project perform concurrent builds?
-     * @since 1.XXX
+     * @since 1.319
      */
     public boolean isConcurrentBuild() {
         return Hudson.CONCURRENT_BUILD && concurrentBuild;
@@ -297,7 +303,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
      *
      * @return
      *      null if the workspace is on a slave that's not connected.
-     * @deprecated as of 1.XXX
+     * @deprecated as of 1.319
      *      To support concurrent builds of the same project, this method is moved to {@link AbstractBuild}.
      *      For backward compatibility, this method returns the right {@link AbstractBuild#getWorkspace()} if called
      *      from {@link Executor}, and otherwise the workspace of the last build.
@@ -332,13 +338,23 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
      *
      * @return
      *      null if there's no available workspace.
-     * @since 1.XXX
+     * @since 1.319
      */
     public final FilePath getSomeWorkspace() {
+        R b = getSomeBuildWithWorkspace();
+        return b!=null ? b.getWorkspace() : null;
+    }
+
+    /**
+     * Gets some build that has a live workspace.
+     *
+     * @return null if no such build exists.
+     */
+    public final R getSomeBuildWithWorkspace() {
         int cnt=0;
         for (R b = getLastBuild(); cnt<5 && b!=null; b=b.getPreviousBuild()) {
             FilePath ws = b.getWorkspace();
-            if (ws!=null)   return ws;
+            if (ws!=null)   return b;
         }
         return null;
     }
@@ -349,7 +365,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
      * This is usually where <tt>pom.xml</tt>, <tt>build.xml</tt>
      * and so on exists.
      *
-     * @deprecated as of 1.XXX
+     * @deprecated as of 1.319
      *      See {@link #getWorkspace()} for a migration strategy.
      */
     public FilePath getModuleRoot() {
@@ -365,7 +381,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
      * In these cases, the returned array will have a length greater than one.
      * @return The roots of all modules checked out from the SCM.
      *
-     * @deprecated as of 1.XXX
+     * @deprecated as of 1.319
      *      See {@link #getWorkspace()} for a migration strategy.
      */
     public FilePath[] getModuleRoots() {
@@ -399,6 +415,10 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
      */
     public boolean isConfigurable() {
         return true;
+    }
+
+    public boolean blockBuildWhenUpstreamBuilding() {
+    	return blockBuildWhenUpstreamBuilding;
     }
 
     public boolean isDisabled() {
@@ -808,20 +828,58 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
      *
      * <p>
      * A project must be blocked if its own previous build is in progress,
-     * but derived classes can also check other conditions.
+     * or if the blockBuildWhenUpstreamBuilding option is true and an upstream
+     * project is building, but derived classes can also check other conditions.
      */
     public boolean isBuildBlocked() {
-        return isBuilding() && !isConcurrentBuild();
+        boolean blocked = isBuilding() && !isConcurrentBuild();
+	if (!blocked && blockBuildWhenUpstreamBuilding) {
+            AbstractProject bup = getBuildingUpstream();
+            if(bup!=null) {
+                return true;
+            }
+        }
+        return blocked;
+
     }
 
     public String getWhyBlocked() {
-        AbstractBuild<?, ?> build = getLastBuild();
-        Executor e = build.getExecutor();
-        String eta="";
-        if(e!=null)
-            eta = Messages.AbstractProject_ETA(e.getEstimatedRemainingTime());
-        int lbn = build.getNumber();
-        return Messages.AbstractProject_BuildInProgress(lbn,eta);
+	if (isBuilding() && !isConcurrentBuild()) { 
+	    AbstractBuild<?, ?> build = getLastBuild();
+	    Executor e = build.getExecutor();
+	    String eta="";
+	    if(e!=null)
+		eta = Messages.AbstractProject_ETA(e.getEstimatedRemainingTime());
+	    int lbn = build.getNumber();
+	    return Messages.AbstractProject_BuildInProgress(lbn,eta);
+	}
+	else {
+	    AbstractProject bup = getBuildingUpstream();
+            String projectName = "";
+            if(bup!=null) {
+                projectName = bup.getName();
+            }
+            return Messages.AbstractProject_UpstreamBuildInProgress(projectName);
+    	}
+    }
+
+
+    /**
+     * Returns the project if any of the upstream project (or itself) is either
+     * building or is in the queue.
+     * <p>
+     * This means eventually there will be an automatic triggering of
+     * the given project (provided that all builds went smoothly.)
+     */
+    protected AbstractProject getBuildingUpstream() {
+    	DependencyGraph graph = Hudson.getInstance().getDependencyGraph();
+        Set<AbstractProject> tups = graph.getTransitiveUpstream(this);
+        tups.add(this);
+        for (AbstractProject tup : tups) {
+            if(tup!=this && (tup.isBuilding() || tup.isInQueue()))
+                return tup;
+        }
+        return null;
     }
 
     public final long getEstimatedDuration() {
@@ -851,7 +909,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
      * Gets the {@link Resource} that represents the workspace of this project.
      * Useful for locking and mutual exclusion control.
      *
-     * @deprecated as of 1.XXX
+     * @deprecated as of 1.319
      *      Projects no longer have a fixed workspace, ands builds will find an available workspace via
      *      {@link WorkspaceList} for each build (furthermore, that happens after a build is started.)
      *      So a {@link Resource} representation for a workspace at the project level no longer makes sense.
@@ -1342,8 +1400,10 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
      */
     public HttpResponse doDoWipeOutWorkspace() throws IOException, ServletException, InterruptedException {
         checkPermission(BUILD);
-        if (getScm().processWorkspaceBeforeDeletion(this, getWorkspace(), null)) {
-            getWorkspace().deleteRecursive();
+        R b = getSomeBuildWithWorkspace();
+        FilePath ws = b!=null ? b.getWorkspace() : null;
+        if (ws!=null && getScm().processWorkspaceBeforeDeletion(this, ws, b.getBuiltOn())) {
+            ws.deleteRecursive();
             return new HttpRedirect(".");
         } else {
             // If we get here, that means the SCM blocked the workspace deletion.

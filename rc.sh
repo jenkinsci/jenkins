@@ -46,9 +46,11 @@ svn up $WWW/changelog.html
 ruby rc.changelog.rb < $WWW/changelog.html > $WWW/changelog.new
 mv $WWW/changelog.new $WWW/changelog.html
 
-cd $WWW
+pushd $WWW
 svn commit -m "RC branch is created" changelog.html
+popd
 
 # re-initialize the tracking
+svn up
 svnmerge init -F $repo/branches/rc
 svn commit -F svnmerge-commit-message.txt

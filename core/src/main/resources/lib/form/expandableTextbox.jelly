@@ -54,6 +54,7 @@ THE SOFTWARE.
       which is the recommended approach.
     </st:attribute>
   </st:documentation>
+  <f:prepareDatabinding />
   <j:set var="value" value="${attrs.value?:instance[attrs.field]}" />
   <j:choose>
     <j:when test="${h.isMultiline(value)}">

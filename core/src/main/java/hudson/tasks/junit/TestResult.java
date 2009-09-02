@@ -197,7 +197,7 @@ public final class TestResult extends MetaTabulatedResult {
     }
 
     public String getDisplayName() {
-        return "Test Result";
+        return Messages.TestResult_getDisplayName();
     }
 
     public AbstractBuild<?,?> getOwner() {

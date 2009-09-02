@@ -185,6 +185,11 @@ public class Channel implements VirtualChannel, IChannel {
     private IChannel remoteChannel;
 
     /**
+     * Capability of the remote {@link Channel}.
+     */
+    final Capability remoteCapability;
+
+    /**
      * Communication mode.
      * @since 1.161
      */
@@ -285,7 +290,6 @@ public class Channel implements VirtualChannel, IChannel {
         this.name = name;
         this.executor = exec;
         this.isRestricted = restricted;
-        ObjectOutputStream oos = null;
 
         if(export(this,false)!=1)
             throw new AssertionError(); // export number 1 is reserved for the channel itself
@@ -297,6 +301,10 @@ public class Channel implements VirtualChannel, IChannel {
         // might print some warning before the program starts outputting its own data.)
         //
         // so use magic preamble and discard all the data up to that to improve robustness.
+
+        new Capability().writePreamble(os);
+
+        ObjectOutputStream oos = null;
         if(mode!= Mode.NEGOTIATE) {
             os.write(mode.preamble);
             oos = new ObjectOutputStream(mode.wrap(os));
@@ -304,34 +312,47 @@ public class Channel implements VirtualChannel, IChannel {
         }
 
         {// read the input until we hit preamble
-            int[] ptr=new int[2];
             Mode[] modes={Mode.BINARY,Mode.TEXT};
+            byte[][] preambles = new byte[][]{Mode.BINARY.preamble, Mode.TEXT.preamble, Capability.PREAMBLE};
+            int[] ptr=new int[3];
+            Capability cap = new Capability(0); // remote capacity that we obtained. If we don't hear from remote, assume no capability
 
             while(true) {
                 int ch = is.read();
                 if(ch==-1)
                     throw new EOFException("unexpected stream termination");
 
-                for(int i=0;i<2;i++) {
-                    byte[] preamble = modes[i].preamble;
+                for(int i=0;i<preambles.length;i++) {
+                    byte[] preamble = preambles[i];
                     if(preamble[ptr[i]]==ch) {
                         if(++ptr[i]==preamble.length) {
-                            // found preamble
-                            if(mode==Mode.NEGOTIATE) {
-                                // now we know what the other side wants, so send the consistent preamble
-                                mode = modes[i];
-                                os.write(mode.preamble);
-                                oos = new ObjectOutputStream(mode.wrap(os));
-                                oos.flush();
-                            } else {
-                                if(modes[i]!=mode)
-                                    throw new IOException("Protocol negotiation failure");
-                            }
-                            this.oos = oos;
+                            switch (i) {
+                            case 0:
+                            case 1:
+                                // transmission mode negotiation
+                                if(mode==Mode.NEGOTIATE) {
+                                    // now we know what the other side wants, so send the consistent preamble
+                                    mode = modes[i];
+                                    os.write(mode.preamble);
+                                    oos = new ObjectOutputStream(mode.wrap(os));
+                                    oos.flush();
+                                } else {
+                                    if(modes[i]!=mode)
+                                        throw new IOException("Protocol negotiation failure");
+                                }
+                                this.oos = oos;
 
-                            this.ois = new ObjectInputStream(mode.wrap(is));
-                            new ReaderThread(name).start();
-                            return;
+                                this.ois = new ObjectInputStream(mode.wrap(is));
+                                new ReaderThread(name).start();
+
+                                this.remoteCapability = cap;
+
+                                return;
+                            case 2:
+                                cap = Capability.read(is);
+                                break;
+                            }
+                            ptr[i]=0; // reset
                         }
                     } else {
                         // didn't match.

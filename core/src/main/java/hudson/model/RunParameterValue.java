@@ -27,13 +27,6 @@ import org.kohsuke.stapler.DataBoundConstructor;
 
 import java.util.Map;
 
-import com.thoughtworks.xstream.converters.Converter;
-import com.thoughtworks.xstream.converters.MarshallingContext;
-import com.thoughtworks.xstream.converters.UnmarshallingContext;
-import com.thoughtworks.xstream.io.HierarchicalStreamWriter;
-import com.thoughtworks.xstream.io.HierarchicalStreamReader;
-import hudson.util.Secret;
-
 public class RunParameterValue extends ParameterValue {
 
     private final String runId;
@@ -63,6 +56,11 @@ public class RunParameterValue extends ParameterValue {
     @Override
     public void buildEnvVars(AbstractBuild<?,?> build, Map<String,String> env) {
         env.put(name.toUpperCase(), Hudson.getInstance().getRootUrl() + getRun().getUrl());
+    }
+    
+    @Override
+    public String getShortDescription() {
+    	return "(RunParameterValue) " + getName() + "='" + getRunId() + "'";
     }
 
 }

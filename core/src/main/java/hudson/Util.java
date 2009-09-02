@@ -7,6 +7,7 @@ import hudson.util.IOException2;
 import hudson.util.QuotedStringTokenizer;
 import hudson.util.VariableResolver;
 import hudson.Proc.LocalProc;
+import hudson.os.PosixAPI;
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.Project;
 import org.apache.tools.ant.types.FileSet;
@@ -281,7 +282,7 @@ public class Util {
         if (name.equals(".") || name.equals(".."))
             return false;
 
-        File fileInCanonicalParent = null;
+        File fileInCanonicalParent;
         File parentDir = file.getParentFile();
         if ( parentDir == null ) {
             fileInCanonicalParent = file;
@@ -586,7 +587,7 @@ public class Util {
      * 
      * @deprecated 
      *   Use individual localization methods instead. 
-     *   See {@link #Messages.Util_year(long)} for an example.
+     *   See {@link Messages#Util_year(Object)} for an example.
      *   Deprecated since 2009-06-24, remove method after 2009-12-24.
      */
     public static String combine(long n, String suffix) {
@@ -658,7 +659,7 @@ public class Util {
      * plus backslash (Windows path separator).
      * Note that slash(/) is encoded, so the given string should be a
      * single path component used in constructing a URL.
-     * Method name inspired by PHP's rawencode.
+     * Method name inspired by PHP's rawurlencode.
      */
     public static String rawEncode(String s) {
         boolean escaped = false;
@@ -709,6 +710,7 @@ public class Util {
      * Escapes HTML unsafe characters like &lt;, &amp; to the respective character entities.
      */
     public static String escape(String text) {
+        if (text==null)     return null;
         StringBuilder buf = new StringBuilder(text.length()+64);
         for( int i=0; i<text.length(); i++ ) {
             char ch = text.charAt(i);
@@ -885,12 +887,20 @@ public class Util {
     public static void createSymlink(File baseDir, String targetPath, String symlinkPath, TaskListener listener) throws InterruptedException {
         if(!isWindows() && !NO_SYMLINK) {
             try {
-                // ignore a failure.
-                new LocalProc(new String[]{"rm","-rf", symlinkPath},new String[0],listener.getLogger(), baseDir).join();
+                // if a file or a directory exists here, delete it first.
+                File symlinkFile = new File(baseDir, symlinkPath);
+                if (symlinkFile.exists())
+                    // ignore a failure.
+                    new LocalProc(new String[]{"rm","-rf", symlinkPath},new String[0],listener.getLogger(), baseDir).join();
 
-                int r = new LocalProc(new String[]{
-                    "ln","-s", targetPath, symlinkPath},
-                    new String[0],listener.getLogger(), baseDir).join();
+                int r;
+
+                if (!SYMLINK_ESCAPEHATCH)
+                    r = PosixAPI.get().symlink(targetPath,symlinkFile.getAbsolutePath());
+                else // escape hatch, until we know that the above works well. 
+                    r = new LocalProc(new String[]{
+                        "ln","-s", targetPath, symlinkPath},
+                        new String[0],listener.getLogger(), baseDir).join();
                 if(r!=0)
                     listener.getLogger().println("ln failed: "+r);
             } catch (IOException e) {
@@ -980,4 +990,6 @@ public class Util {
      * On Unix environment that cannot run "ln", set this to true.
      */
     public static boolean NO_SYMLINK = Boolean.getBoolean(Util.class.getName()+".noSymLink");
+
+    public static boolean SYMLINK_ESCAPEHATCH = Boolean.getBoolean(Util.class.getName()+".symlinkEscapeHatch");
 }

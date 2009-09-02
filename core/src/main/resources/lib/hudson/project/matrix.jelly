@@ -55,14 +55,16 @@ THE SOFTWARE.
         <h2>${%Configuration Matrix}</h2>
         <table border="1" class="middle-align center-align">
           <!-- X-axis -->
-          <j:forEach var="x" items="${o.x}">
+          <j:forEach var="x" items="${o.x}" varStatus="loop">
             <tr>
               <!-- space for Y-axis -->
               <j:if test="${!empty(o.y)}">
                 <td colspan="${size(o.y)}" />
               </j:if>
-              <j:forEach var="v" items="${x.values}" varStatus="loop">
-                <td colspan="${o.width(loop.index)}">${v}</td>
+              <j:forEach begin="1" end="${o.repeatX(loop.index)}">
+                <j:forEach var="v" items="${x.values}">
+                  <td colspan="${o.width(loop.index)}">${v}</td>
+                </j:forEach>
               </j:forEach>
             </tr>
           </j:forEach>
