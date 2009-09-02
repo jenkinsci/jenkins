@@ -5,6 +5,7 @@ package hudson.remoting;
  */
 public class ChannelTest extends RmiTestBase {
     public void testCapability() {
-        assertTrue(channel.remoteCapability.supportsMultiClassLoaderRPC());
+        // for now this is disabled
+        assertTrue(!channel.remoteCapability.supportsMultiClassLoaderRPC());
     }
 }

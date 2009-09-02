@@ -41,18 +41,6 @@ THE SOFTWARE.
   
   <build>
     <plugins>
-      <!--
-        I haven't figured out how to run those tests from Maven
-        (the problem is that when I fork another process
-        I need to somehow compute the right classpath), so
-        excluded from Maven run for now.
-      -->
-      <plugin>
-        <artifactId>maven-surefire-plugin</artifactId>
-        <configuration>
-          <skip>true</skip>
-        </configuration>
-      </plugin>
       <plugin>
         <groupId>org.codehaus.mojo</groupId>
         <artifactId>findbugs-maven-plugin</artifactId>

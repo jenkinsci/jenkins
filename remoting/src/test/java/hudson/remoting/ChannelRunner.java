@@ -28,8 +28,11 @@ import junit.framework.Assert;
 import java.io.IOException;
 import java.io.PipedInputStream;
 import java.io.PipedOutputStream;
+import java.io.File;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.net.URLClassLoader;
+import java.net.URL;
 
 /**
  * Hides the logic of starting/stopping a channel for test.
@@ -113,7 +116,9 @@ interface ChannelRunner {
         public Channel start() throws Exception {
             System.out.println("forking a new process");
             // proc = Runtime.getRuntime().exec("java -Xdebug -Xrunjdwp:transport=dt_socket,server=y,address=8000 hudson.remoting.Launcher");
-            proc = Runtime.getRuntime().exec("java hudson.remoting.Launcher");
+
+
+            proc = Runtime.getRuntime().exec("java -cp "+getClasspath()+" hudson.remoting.Launcher");
 
             copier = new Copier("copier",proc.getErrorStream(),System.err);
             copier.start();
@@ -138,6 +143,17 @@ interface ChannelRunner {
 
         public String getName() {
             return "fork";
+        }
+
+        public String getClasspath() {
+            // this assumes we run in Maven
+            StringBuilder buf = new StringBuilder();
+            URLClassLoader ucl = (URLClassLoader)getClass().getClassLoader();
+            for (URL url : ucl.getURLs()) {
+                if (buf.length()>0) buf.append(File.pathSeparatorChar);
+                buf.append(url.getPath()); // assume all of them are file URLs
+            }
+            return buf.toString();
         }
     }
 }
