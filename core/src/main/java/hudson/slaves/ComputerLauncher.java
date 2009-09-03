@@ -50,9 +50,6 @@ import java.io.IOException;
  * Useful for showing launch related commands and status reports.
  * </dl>
  *
- * <p>
- * <b>EXPERIMENTAL: SIGNATURE MAY CHANGE IN FUTURE RELEASES</b>
- *
  * @author Stephen Connolly
  * @since 24-Apr-2008 22:12:35
  */
