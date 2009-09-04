@@ -33,7 +33,7 @@
       <plugin>
         <groupId>org.jvnet.localizer</groupId>
         <artifactId>maven-localizer-plugin</artifactId>
-        <version>1.9</version>
+        <version>1.10</version>
         <executions>
           <execution>
             <goals>
@@ -64,7 +64,7 @@
     <dependency>
       <groupId>org.jvnet.localizer</groupId>
       <artifactId>localizer</artifactId>
-      <version>1.9</version>
+      <version>1.10</version>
     </dependency>
   </dependencies>
 </project>
