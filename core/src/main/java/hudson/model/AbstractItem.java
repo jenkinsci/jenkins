@@ -27,8 +27,8 @@ import hudson.XmlFile;
 import hudson.Util;
 import hudson.Functions;
 import hudson.BulkChange;
-import hudson.DescriptorExtensionList;
-import hudson.util.Iterators;
+import hudson.cli.declarative.CLIMethod;
+import hudson.cli.declarative.CLIResolver;
 import hudson.security.AccessControlled;
 import hudson.security.Permission;
 import hudson.security.ACL;
@@ -43,9 +43,10 @@ import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 import org.kohsuke.stapler.Stapler;
 import org.kohsuke.stapler.HttpDeletable;
+import org.kohsuke.args4j.Argument;
+import org.kohsuke.args4j.CmdLineException;
 
 import javax.servlet.ServletException;
-import static javax.servlet.http.HttpServletResponse.SC_BAD_REQUEST;
 
 /**
  * Partial default implementation of {@link Item}.
@@ -259,6 +260,7 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
     /**
      * Deletes this item.
      */
+    @CLIMethod(name="delete-job")
     public synchronized void delete() throws IOException, InterruptedException {
         performDelete();
 
@@ -277,5 +279,17 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
 
     public String toString() {
         return super.toString()+'['+getFullName()+']';
+    }
+
+    /**
+     * Used for CLI binding.
+     */
+    @CLIResolver
+    public static AbstractItem resolveForCLI(
+            @Argument(required=true,metaVar="NAME",usage="Job name") String name) throws CmdLineException {
+        AbstractItem item = Hudson.getInstance().getItemByFullName(name, AbstractItem.class);
+        if (item==null)
+            throw new CmdLineException(null,Messages.AbstractItem_NoSuchJobExists(name,AbstractProject.findNearest(name).getFullName()));
+        return item;
     }
 }

@@ -1,3 +1,26 @@
+/*
+ * The MIT License
+ *
+ * Copyright (c) 2004-2009, Sun Microsystems, Inc.
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ */
 package hudson.cli.declarative;
 
 import hudson.Extension;
@@ -8,8 +31,12 @@ import hudson.cli.CloneableCLICommand;
 import hudson.model.Hudson;
 import org.jvnet.hudson.annotation_indexer.Index;
 import org.jvnet.localizer.ResourceBundleHolder;
+import org.kohsuke.args4j.CmdLineParser;
+import org.kohsuke.args4j.CmdLineException;
 
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.PrintStream;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
@@ -17,6 +44,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Locale;
 import static java.util.logging.Level.SEVERE;
 import java.util.logging.Logger;
 
@@ -32,6 +60,18 @@ public class CLIRegisterer extends ExtensionFinder {
             return (List<T>)discover(hudson);
         else
             return Collections.emptyList();
+    }
+
+    /**
+     * Finds a resolved method annotated with {@link CLIResolver}.
+     */
+    private Method findResolver(Class type) throws IOException {
+        List<Method> resolvers = Util.filter(Index.list(CLIResolver.class, Hudson.getInstance().getPluginManager().uberClassLoader), Method.class);
+        for ( ; type!=null; type=type.getSuperclass())
+            for (Method m : resolvers)
+                if (m.getReturnType()==type)
+                    return m;
+        return null;
     }
 
     private List<CLICommand> discover(final Hudson hudson) {
@@ -55,30 +95,50 @@ public class CLIRegisterer extends ExtensionFinder {
 
                         public String getShortDescription() {
                             // format by using the right locale
-                            return res.format(name+".shortDescription");
+                            return res.format("CLI."+name+".shortDescription");
                         }
 
-                        protected int run() throws Exception {
+                        @Override
+                        public int main(List<String> args, Locale locale, InputStream stdin, PrintStream stdout, PrintStream stderr) {
+                            CmdLineParser parser = new CmdLineParser(null);
                             try {
-                                m.invoke(resolve(m.getDeclaringClass()));
-                                return 0;
-                            } catch (InvocationTargetException e) {
-                                Throwable t = e.getTargetException();
-                                if (t instanceof Exception)
-                                    throw (Exception) t;
-                                throw e;
+                                try {
+                                    MethodBinder resolver = null;
+                                    if (!Modifier.isStatic(m.getModifiers())) {
+                                        // decide which instance receives the method call
+                                        Method r = findResolver(m.getDeclaringClass());
+                                        if (r==null) {
+                                            stderr.println("Unable to find the resolver method annotated with @CLIResolver for "+m.getReturnType());
+                                            return 1;
+                                        }
+                                        resolver = new MethodBinder(r,parser);
+                                    }
+
+                                    MethodBinder invoker = new MethodBinder(m, parser);
+
+                                    parser.parseArgument(args);
+
+                                    Object instance = resolver==null ? null : resolver.call(null);
+                                    invoker.call(instance);
+                                    return 0;
+                                } catch (InvocationTargetException e) {
+                                    Throwable t = e.getTargetException();
+                                    if (t instanceof Exception)
+                                        throw (Exception) t;
+                                    throw e;
+                                }
+                            } catch (CmdLineException e) {
+                                stderr.println(e.getMessage());
+                                printUsage(stderr,parser);
+                                return 1;
+                            } catch (Exception e) {
+                                e.printStackTrace(stderr);
+                                return 1;
                             }
                         }
 
-                        /**
-                         * Finds an instance to invoke a CLI method on.
-                         */
-                        private Object resolve(Class type) {
-                            if (Modifier.isStatic(m.getModifiers()))
-                                return null;
-
-                            // TODO: support resolver
-                            return hudson;
+                        protected int run() throws Exception {
+                            throw new UnsupportedOperationException();
                         }
                     });
                 } catch (ClassNotFoundException e) {

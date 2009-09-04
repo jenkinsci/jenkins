@@ -28,6 +28,8 @@ import hudson.FeedAdapter;
 import hudson.FilePath;
 import hudson.Launcher;
 import hudson.Util;
+import hudson.cli.declarative.CLIResolver;
+import hudson.cli.declarative.CLIMethod;
 import hudson.slaves.WorkspaceList;
 import hudson.model.Cause.LegacyCodeCause;
 import hudson.model.Cause.UserCause;
@@ -66,6 +68,7 @@ import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.HttpRedirect;
 import org.kohsuke.stapler.ForwardToView;
+import org.kohsuke.args4j.Argument;
 
 
 import javax.servlet.ServletException;
@@ -447,6 +450,16 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
         if(b)
             Hudson.getInstance().getQueue().cancel(this);
         save();
+    }
+
+    @CLIMethod(name="disable-job")
+    public void disable() throws IOException {
+        makeDisabled(true);
+    }
+
+    @CLIMethod(name="enable-job")
+    public void enable() throws IOException {
+        makeDisabled(false);
     }
 
     @Override

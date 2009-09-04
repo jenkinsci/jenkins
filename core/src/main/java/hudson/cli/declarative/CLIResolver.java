@@ -21,29 +21,33 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package hudson.cli;
+package hudson.cli.declarative;
 
-import hudson.model.TopLevelItem;
-import hudson.Extension;
-import org.kohsuke.args4j.Argument;
+import hudson.cli.CLICommand;
+import org.jvnet.hudson.annotation_indexer.Indexed;
+import org.kohsuke.args4j.CmdLineException;
+
+import java.lang.annotation.Documented;
+import static java.lang.annotation.ElementType.METHOD;
+import java.lang.annotation.Retention;
+import static java.lang.annotation.RetentionPolicy.RUNTIME;
+import java.lang.annotation.Target;
 
 /**
- * Deletes a job.
+ * Annotates a resolver method that binds a portion of the command line arguments and parameters
+ * to an instance whose {@link CLIMethod} is invoked for the final processing.
+ *
+ * <p>
+ * The resolver method shall never return null --- it should instead indicate a failure by throwing
+ * {@link CmdLineException}.
+ *
  * @author Kohsuke Kawaguchi
+ * @see CLICommand
+ * @since 1.321
  */
-@Extension
-public class DeleteJobCommand extends CLICommand {
-    @Override
-    public String getShortDescription() {
-        return "Deletes a job";
-    }
-
-    @Argument
-    public TopLevelItem job;
-
-    protected int run() throws Exception {
-        job.delete();
-        return 0;
-    }
+@Indexed
+@Retention(RUNTIME)
+@Target({METHOD})
+@Documented
+public @interface CLIResolver {
 }
-
