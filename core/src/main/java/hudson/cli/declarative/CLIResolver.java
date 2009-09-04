@@ -38,7 +38,21 @@ import java.lang.annotation.Target;
  * to an instance whose {@link CLIMethod} is invoked for the final processing.
  *
  * <p>
- * The resolver method shall never return null --- it should instead indicate a failure by throwing
+ * A resolver method must be static. Hudson uses its return
+ * type to pick the resolver method to use, of all the resolver methods it discovers. That is,
+ * if Hudson is looking to find an instance of type <tt>T</tt> for the current command, it first
+ * looks for the resolver method whose return type is <tt>T</tt>, then it checks for the base type of <tt>T</tt>,
+ * and so on.
+ *
+ * <p>
+ * By convention, we encourage the resolver method to be declared in the type it returns, but this is not a requirement.
+ *
+ * <p>
+ * Parameters of the resolver method receives the same parameter/argument injections that {@link CLIMethod}s receive.
+ * Parameters and arguments consumed by the resolver will not be visible to {@link CLIMethod}s.
+ *
+ * <p>
+ * The resolver method shall never return null &mdash; it should instead indicate a failure by throwing
  * {@link CmdLineException}.
  *
  * @author Kohsuke Kawaguchi

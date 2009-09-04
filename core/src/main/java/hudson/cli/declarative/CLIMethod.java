@@ -24,7 +24,9 @@
 package hudson.cli.declarative;
 
 import hudson.cli.CLICommand;
+import hudson.util.ListBoxModel.Option;
 import org.jvnet.hudson.annotation_indexer.Indexed;
+import org.kohsuke.args4j.Argument;
 
 import java.lang.annotation.Documented;
 import static java.lang.annotation.ElementType.METHOD;
@@ -37,8 +39,19 @@ import java.lang.annotation.Target;
  *
  * <p>
  * You need to have <tt>Messages.properties</tt> in the same package with the
- * <tt>CLI.command-name.shortDescription</tt> key to describe the command.
- * This is used for {@link CLICommand#getShortDescription()}.
+ * <tt>CLI.<i>command-name</i>.shortDescription</tt> key to describe the command.
+ * This is used for the same purpose as {@link CLICommand#getShortDescription()}.
+ *
+ * <p>
+ * If you put a {@link CLIMethod} on an instance method (as opposed to a static method),
+ * you need a corresponding {@linkplain CLIResolver CLI resolver method}.
+ *
+ * <p>
+ * A CLI method can have its parameters annotated with {@link Option} and {@link Argument},
+ * to receive parameter/argument injections.
+ *
+ * <p>
+ * A CLI method needs to be public.
  *
  * @author Kohsuke Kawaguchi
  * @see CLICommand
