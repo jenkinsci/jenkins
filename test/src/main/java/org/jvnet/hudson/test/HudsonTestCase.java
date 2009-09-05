@@ -26,6 +26,7 @@ package org.jvnet.hudson.test;
 import hudson.CloseProofOutputStream;
 import hudson.FilePath;
 import hudson.Functions;
+import hudson.Main;
 import hudson.WebAppMain;
 import hudson.EnvVars;
 import hudson.ExtensionList;
@@ -1107,7 +1108,7 @@ public abstract class HudsonTestCase extends TestCase {
         Logger.getLogger("org.springframework").setLevel(Level.WARNING);
 
         // hudson-behavior.js relies on this to decide whether it's running unit tests.
-        Functions.isUnitTest = true;
+        Main.isUnitTest = true;
 
         // prototype.js calls this method all the time, so ignore this warning.
         XML_HTTP_REQUEST_LOGGER.setFilter(new Filter() {

@@ -1161,7 +1161,9 @@ public class Functions {
     private static final Pattern SCHEME = Pattern.compile("[a-z]+://.+");
 
     /**
-     * Set to true if we are running unit tests.
+     * Returns true if we are running unit tests.
      */
-    public static boolean isUnitTest = false;
+    public static boolean getIsUnitTest() {
+        return Main.isUnitTest;
+    }
 }
