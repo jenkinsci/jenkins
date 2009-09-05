@@ -28,6 +28,7 @@ import org.kohsuke.args4j.CmdLineException;
 import org.kohsuke.args4j.CmdLineParser;
 import org.kohsuke.args4j.Option;
 import org.kohsuke.args4j.spi.Setter;
+import org.kohsuke.args4j.spi.OptionHandler;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.InvocationTargetException;
@@ -56,6 +57,9 @@ class MethodBinder {
         final Class[] paramTypes = method.getParameterTypes();
         arguments = new Object[params.length];
 
+        // to work in cooperation with earlier arguments, add bias to all the ones that this one defines.
+        final int bias = parser.getArguments().size();
+
         Annotation[][] pa = method.getParameterAnnotations();
         for (int i=0; i<params.length; i++) {
             final int index = i;
@@ -78,6 +82,7 @@ class MethodBinder {
                     parser.addOption(setter,(Option)a);
                 }
                 if (a instanceof Argument) {
+                    if (bias>0) a = new ArgumentImpl((Argument)a,bias);
                     parser.addArgument(setter,(Argument)a);
                 }
             }
@@ -92,6 +97,48 @@ class MethodBinder {
             if (t instanceof Exception)
                 throw (Exception) t;
             throw e;
+        }
+    }
+
+    /**
+     * {@link Argument} implementation that adds a bias to {@link #index()}.
+     */
+    @SuppressWarnings({"ClassExplicitlyAnnotation"})
+    private static final class ArgumentImpl implements Argument {
+        private final Argument base;
+        private final int bias;
+
+        private ArgumentImpl(Argument base, int bias) {
+            this.base = base;
+            this.bias = bias;
+        }
+
+        public String usage() {
+            return base.usage();
+        }
+
+        public String metaVar() {
+            return base.metaVar();
+        }
+
+        public boolean required() {
+            return base.required();
+        }
+
+        public Class<? extends OptionHandler> handler() {
+            return base.handler();
+        }
+
+        public int index() {
+            return base.index()+bias;
+        }
+
+        public boolean multiValued() {
+            return base.multiValued();
+        }
+
+        public Class<? extends Annotation> annotationType() {
+            return base.annotationType();
         }
     }
 }
