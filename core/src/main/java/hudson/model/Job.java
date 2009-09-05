@@ -29,6 +29,7 @@ import hudson.Util;
 import hudson.XmlFile;
 import hudson.PermalinkList;
 import hudson.Extension;
+import hudson.cli.declarative.CLIResolver;
 import hudson.model.Descriptor.FormException;
 import hudson.model.listeners.ItemListener;
 import hudson.model.PermalinkProjectAction.Permalink;
@@ -96,6 +97,8 @@ import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 import org.kohsuke.stapler.WebMethod;
 import org.kohsuke.stapler.export.Exported;
+import org.kohsuke.args4j.Argument;
+import org.kohsuke.args4j.CmdLineException;
 
 /**
  * A job is an runnable entity under the monitoring of Hudson.
@@ -584,6 +587,19 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
      */
     public RunT getBuildByNumber(int n) {
         return _getRuns().get(n);
+    }
+
+    @CLIResolver
+    public RunT getBuildForCLI(@Argument(required=true,metaVar="BUILD#",usage="Build number") String id) throws CmdLineException {
+        try {
+            int n = Integer.parseInt(id);
+            RunT r = getBuildByNumber(n);
+            if (r==null)
+                throw new CmdLineException("No such build '#"+n+"' exists");
+            return r;
+        } catch (NumberFormatException e) {
+            throw new CmdLineException(id+ "is not a number");
+        }
     }
 
     /**

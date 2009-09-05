@@ -45,6 +45,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
+import java.util.Stack;
 import static java.util.logging.Level.SEVERE;
 import java.util.logging.Logger;
 
@@ -103,24 +104,40 @@ public class CLIRegisterer extends ExtensionFinder {
                             CmdLineParser parser = new CmdLineParser(null);
                             try {
                                 try {
-                                    MethodBinder resolver = null;
-                                    if (!Modifier.isStatic(m.getModifiers())) {
-                                        // decide which instance receives the method call
-                                        Method r = findResolver(m.getDeclaringClass());
-                                        if (r==null) {
-                                            stderr.println("Unable to find the resolver method annotated with @CLIResolver for "+m.getReturnType());
+                                    //  build up the call sequence
+                                    Stack<Method> chains = new Stack<Method>();
+                                    Method method = m;
+                                    while (true) {
+                                        chains.push(method);
+                                        if (Modifier.isStatic(method.getModifiers()))
+                                            break; // the chain is complete.
+
+                                        // the method in question is an instance method, so we need to resolve the instance by using another resolver
+                                        Class<?> type = method.getDeclaringClass();
+                                        method = findResolver(type);
+                                        if (method==null) {
+                                            stderr.println("Unable to find the resolver method annotated with @CLIResolver for "+type);
                                             return 1;
                                         }
-                                        resolver = new MethodBinder(r,parser);
                                     }
 
-                                    MethodBinder invoker = new MethodBinder(m, parser);
+                                    List<MethodBinder> binders = new ArrayList<MethodBinder>();
 
+                                    while (!chains.isEmpty())
+                                        binders.add(new MethodBinder(chains.pop(),parser));
+
+                                    // fill up all the binders
                                     parser.parseArgument(args);
 
-                                    Object instance = resolver==null ? null : resolver.call(null);
-                                    invoker.call(instance);
-                                    return 0;
+                                    // resolve them
+                                    Object instance = null;
+                                    for (MethodBinder binder : binders)
+                                        instance = binder.call(instance);
+
+                                    if (instance instanceof Integer)
+                                        return (Integer) instance;
+                                    else
+                                        return 0;
                                 } catch (InvocationTargetException e) {
                                     Throwable t = e.getTargetException();
                                     if (t instanceof Exception)

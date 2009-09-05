@@ -32,6 +32,7 @@ import hudson.FeedAdapter;
 import hudson.FilePath;
 import hudson.Util;
 import hudson.XmlFile;
+import hudson.cli.declarative.CLIMethod;
 import hudson.matrix.MatrixBuild;
 import hudson.matrix.MatrixRun;
 import hudson.model.listeners.RunListener;
@@ -1424,6 +1425,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
     /**
      * Marks this build to keep the log.
      */
+    @CLIMethod(name="keep-build")
     public final void keepLog() throws IOException {
         keepLog(true);
     }
