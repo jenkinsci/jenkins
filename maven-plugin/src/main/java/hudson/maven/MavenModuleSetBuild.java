@@ -32,6 +32,7 @@ import hudson.scm.ChangeLogSet;
 import hudson.FilePath.FileCallable;
 import hudson.maven.MavenBuild.ProxyImpl2;
 import hudson.maven.reporters.MavenFingerprinter;
+import hudson.maven.reporters.MavenMailer;
 import hudson.model.AbstractProject;
 import hudson.model.Action;
 import hudson.model.Build;
@@ -47,6 +48,7 @@ import hudson.model.Cause.UpstreamCause;
 import hudson.remoting.Channel;
 import hudson.remoting.VirtualChannel;
 import hudson.tasks.BuildWrapper;
+import hudson.tasks.MailSender;
 import hudson.tasks.Maven.MavenInstallation;
 import hudson.util.ArgumentListBuilder;
 import hudson.util.StreamTaskListener;
@@ -609,6 +611,13 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
                 }
             }
 
+	    MavenMailer mailer = project.getReporters().get(MavenMailer.class);
+	    if (mailer != null) {
+		new MailSender(mailer.recipients,
+			       mailer.dontNotifyEveryUnstableBuild,
+			       mailer.sendToIndividuals).execute(MavenModuleSetBuild.this,listener);
+	    }
+	    
             performAllBuildStep(listener, project.getPublishers(),false);
             performAllBuildStep(listener, project.getProperties(),false);
         }
