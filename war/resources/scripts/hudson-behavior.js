@@ -223,13 +223,20 @@ function registerValidator(e) {
 
 function registerRegexpValidator(e,regexp,message) {
     e.targetElement = findFollowingTR(e, "validation-error-area").firstChild.nextSibling;
+    var checkMessage = e.getAttribute('checkMessage');
+    if (checkMessage) message = checkMessage;
+    var oldOnchange = e.onchange;
     e.onchange = function() {
+        var set = oldOnchange != null ? oldOnchange.call(this) : false;
         if (this.value.match(regexp)) {
-            this.targetElement.innerHTML = "";
+            if (!set) this.targetElement.innerHTML = "";
         } else {
             this.targetElement.innerHTML = "<div class=error>" + message + "</div>";
+            set = true;
         }
+        return set;
     }
+    e.onchange.call(e);
     e = null; // avoid memory leak
 }
 
@@ -433,6 +440,9 @@ var hudsonRules = {
     "INPUT.validated" : registerValidator,
     "SELECT.validated" : registerValidator,
     "TEXTAREA.validated" : registerValidator,
+
+// validate required form values
+    "INPUT.required" : function(e) { registerRegexpValidator(e,/./,"Field is required"); },
 
 // validate form values to be a number
     "INPUT.number" : function(e) { registerRegexpValidator(e,/^(\d+|)$/,"Not a number"); },
