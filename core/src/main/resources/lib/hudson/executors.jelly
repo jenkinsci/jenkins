@@ -88,42 +88,38 @@ THE SOFTWARE.
     </d:tag>
   </d:taglib>
   <j:set var="computers" value="${attrs.computers?:app.computers}" />
-	<l:pane title="&lt;a href='${rootURL}/computer/'>${%Build Executor Status}&lt;/a>" width="3" id="executors">
-	  <j:forEach var="c" items="${computers}" varStatus="cloop">
-	    <j:choose>
-	      <j:when test="${c.node==app or computers.size()==1}">
-	        <tr>
-	          <th class="pane" align="right">#</th>
-	          <th class="pane" width="80%">
-              <j:choose>
-                <j:when test="${empty(app.slaves) or computers.size()==1}">
-                  ${%Status}
-                </j:when>
-                <j:otherwise>
-                  <local:computerCaption title="${%Master}" />
-                </j:otherwise>
-              </j:choose>
-            </th>
-            <th class="pane" width="24"><st:nbsp/></th>
-	        </tr>
-	      </j:when>
-	      <j:otherwise>
-	        <tr>
-	          <th class="pane" colspan="3">
-              <local:computerCaption title="${c.displayName}" />
-            </th>
-	        </tr>
-	      </j:otherwise>
-	    </j:choose>
-
-	    <j:forEach var="e" items="${c.executors}" varStatus="eloop">
-        <local:executor name="${eloop.index+1}" url="executors/${eloop.index}" />
-	    </j:forEach>
-      <j:forEach var="e" items="${c.oneOffExecutors}" varStatus="eloop">
-        <local:executor name="" url="oneOffExecutors/${eloop.index}" />
+    <l:pane width="3" id="executors"
+        title="&lt;a href='${rootURL}/computer/'>${%Build Executor Status}&lt;/a>">
+      <colgroup><col width="*"/><col width="80%"/><col width="24"/></colgroup>
+      <j:forEach var="c" items="${computers}" varStatus="cloop">
+        <tr>
+          <th class="pane" colspan="3">
+            <j:choose>
+              <j:when test="${c.node==app or computers.size()==1}">
+                <div style="position:absolute;padding-left:5px">#</div>
+                <j:choose>
+                  <j:when test="${empty(app.slaves) or computers.size()==1}">
+                    ${%Status}
+                  </j:when>
+                  <j:otherwise>
+                    <local:computerCaption title="${%Master}" />
+                  </j:otherwise>
+                </j:choose>
+              </j:when>
+              <j:otherwise>
+                <local:computerCaption title="${c.displayName}" />
+              </j:otherwise>
+            </j:choose>
+          </th>
+        </tr>
+        <j:forEach var="e" items="${c.executors}" varStatus="eloop">
+          <local:executor name="${eloop.index+1}" url="executors/${eloop.index}" />
+        </j:forEach>
+        <j:forEach var="e" items="${c.oneOffExecutors}" varStatus="eloop">
+          <local:executor name="" url="oneOffExecutors/${eloop.index}" />
+        </j:forEach>
       </j:forEach>
-	  </j:forEach>
-	</l:pane>
+    </l:pane>
     <!-- schedule updates only for the full page reload -->
     <j:if test="${ajax==null and !h.isAutoRefresh(request) and h.hasPermission(app.READ)}">
       <script defer="defer">
