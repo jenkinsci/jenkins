@@ -424,6 +424,11 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
     	return blockBuildWhenUpstreamBuilding;
     }
 
+    public void setBlockBuildWhenUpstreamBuilding(boolean b) throws IOException {
+    	blockBuildWhenUpstreamBuilding = b;
+	save();
+    }
+
     public boolean isDisabled() {
         return disabled;
     }
@@ -846,7 +851,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
      */
     public boolean isBuildBlocked() {
         boolean blocked = isBuilding() && !isConcurrentBuild();
-	if (!blocked && blockBuildWhenUpstreamBuilding) {
+	if (!blocked && blockBuildWhenUpstreamBuilding()) {
             AbstractProject bup = getBuildingUpstream();
             if(bup!=null) {
                 return true;
@@ -1339,7 +1344,8 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
         } else {
         	scmCheckoutRetryCount = null;
         }
-
+	setBlockBuildWhenUpstreamBuilding(req.getParameter("blockBuildWhenUpstreamBuilding")!=null);
+	
         if(req.getParameter("hasSlaveAffinity")!=null) {
             canRoam = false;
             assignedNode = req.getParameter("slave");
