@@ -26,6 +26,7 @@ package hudson.model;
 import com.gargoylesoftware.htmlunit.ElementNotFoundException;
 import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
 import com.gargoylesoftware.htmlunit.html.HtmlForm;
+import com.gargoylesoftware.htmlunit.html.HtmlInput;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import hudson.security.GlobalMatrixAuthorizationStrategy;
 import hudson.tasks.Shell;
@@ -128,6 +129,27 @@ public class AbstractProjectTest extends HudsonTestCase {
             submit(new WebClient().getPage(p,"configure").getFormByName("config"));
             assertEquals(b,p.isConcurrentBuild());
         }
+    }
+
+    /**
+     * Tests round trip configuration of the blockBuildWhenUpstreamBuilding field
+     */
+    @Bug(4423)
+    public void testConfiguringBlockBuildWhenUpstreamBuildingRoundtrip() throws Exception {
+        FreeStyleProject p = createFreeStyleProject();        
+        p.blockBuildWhenUpstreamBuilding = false;
+        
+        HtmlForm form = new WebClient().getPage(p, "configure").getFormByName("config");
+        HtmlInput input = form.getInputByName("blockBuildWhenUpstreamBuilding");
+        assertFalse("blockBuildWhenUpstreamBuilding check box is checked.", input.isChecked());
+        
+        input.setChecked(true);
+        submit(form);        
+        assertTrue("blockBuildWhenUpstreamBuilding was not updated from configuration form", p.blockBuildWhenUpstreamBuilding);
+        
+        form = new WebClient().getPage(p, "configure").getFormByName("config");
+        input = form.getInputByName("blockBuildWhenUpstreamBuilding");
+        assertTrue("blockBuildWhenUpstreamBuilding check box is not checked.", input.isChecked());
     }
 
     /**
