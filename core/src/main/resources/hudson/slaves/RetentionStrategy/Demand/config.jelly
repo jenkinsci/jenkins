@@ -25,13 +25,13 @@ THE SOFTWARE.
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout"
          xmlns:t="/lib/hudson" xmlns:f="/lib/form">
     <f:entry title="${%In demand delay}" help="/help/system-config/master-slave/demand/inDemandDelay.html">
-      <input class="setting-input number validated" name="retentionStrategy.inDemandDelay"
-        type="text" value="${instance.inDemandDelay}"
-        checkUrl="'${rootURL}/fieldCheck?errorText=${h.jsStringEscape(h.encode('%In demand delay is mandatory.'))}&amp;value='+escape(this.value)"/>
+      <f:textbox clazz="required number"
+        name="retentionStrategy.inDemandDelay" value="${instance.inDemandDelay}"
+        checkMessage="${%In demand delay is mandatory and must be a number.}"/>
     </f:entry>
     <f:entry title="${%Idle delay}" help="/help/system-config/master-slave/demand/idleDelay.html">
-      <input class="setting-input number validated" name="retentionStrategy.idleDelay"
-        type="text" value="${instance.idleDelay}"
-        checkUrl="'${rootURL}/fieldCheck?errorText=${h.jsStringEscape(h.encode('%Idle delay is mandatory.'))}&amp;value='+escape(this.value)"/>
+      <f:textbox clazz="required number"
+        name="retentionStrategy.idleDelay" value="${instance.idleDelay}"
+        checkMessage="${%Idle delay is mandatory and must be a number.}"/>
     </f:entry>
 </j:jelly>

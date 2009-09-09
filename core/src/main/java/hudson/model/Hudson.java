@@ -2982,11 +2982,15 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
     /**
      * Checks if the value for a field is set; if not an error or warning text is displayed.
      * If the parameter "value" is not set then the parameter "errorText" is displayed
-     * as an error text. If the parameter "errorText" is not set, then the parameter "warningText" is
-     * displayed as a warning text.
+     * as an error text. If the parameter "errorText" is not set, then the parameter "warningText"
+     * is displayed as a warning text.
      * <p>
      * If the text is set and the parameter "type" is set, it will validate that the value is of the
      * correct type. Supported types are "number, "number-positive" and "number-negative".
+     *
+     * @deprecated as of 1.324
+     *      Either use client-side validation (e.g. class="required number")
+     *      or define your own check method, instead of relying on this generic one.
      */
     public FormValidation doFieldCheck(@QueryParameter(fixEmpty=true) String value,
                                        @QueryParameter(fixEmpty=true) String type,
