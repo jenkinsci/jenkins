@@ -26,7 +26,7 @@ THE SOFTWARE.
   <f:entry title="${%Files to fingerprint}"
     description="${%description}">
     <f:textbox name="fingerprint_targets" value="${instance.targets}"
-               checkUrl="'descriptorByName/Fingerprinter/check?value='+escape(this.value)" />
+               checkUrl="'descriptorByName/Fingerprinter/check?value='+encodeURIComponent(this.value)" />
   </f:entry>
   <f:entry title="">
     <f:checkbox name="fingerprint_artifacts" checked="${instance.recordBuildArtifacts}" />

@@ -90,7 +90,7 @@ THE SOFTWARE.
         <f:repeatable var="axis" items="${userAxes}" noAddButton="true" minimum="1">
           <table>
             <f:entry title="${%Name}">
-              <f:textbox name="axis.name" value="${axis.name}" checkUrl="'checkAxisName?value='+encode(this.value)"/>
+              <f:textbox name="axis.name" value="${axis.name}" checkUrl="'checkAxisName?value='+encodeURIComponent(this.value)"/>
             </f:entry>
             <f:entry title="${%Values}" help="/help/matrix/axis-value.html">
               <f:expandableTextbox name="axis.value" value="${axis.valueString}" />

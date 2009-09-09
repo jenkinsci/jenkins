@@ -129,7 +129,7 @@ function toValue(e) {
     var type = e.getAttribute("type");
     if(type!=null && type.toLowerCase()=="checkbox")
         return e.checked;
-    return encode(e.value);
+    return encodeURIComponent(e.value);
 }
 
 // find the nearest ancestor node that has the given tag name
@@ -880,6 +880,7 @@ function refreshPart(id,url) {
 /*
     Perform URL encode.
     Taken from http://www.cresc.co.jp/tech/java/URLencoding/JavaScript_URLEncoding.htm
+    @deprecated Use standard javascript method "encodeURIComponent" instead
 */
 function encode(str){
     var s, u;
