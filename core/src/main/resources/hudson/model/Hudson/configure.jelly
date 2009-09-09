@@ -49,12 +49,10 @@ THE SOFTWARE.
         <f:slave-mode name="master.mode" node="${it}" />
       </j:if>
       <f:entry title="${%Quiet period}" help="/help/project-config/quietPeriod.html">
-        <input class="setting-input number" name="quiet_period"
-          type="text" value="${it.quietPeriod}"/>
+        <f:textbox clazz="number" name="quiet_period" value="${it.quietPeriod}"/>
       </f:entry>
       <f:entry title="${%SCM checkout retry count}" help="/help/project-config/scmCheckoutRetryCount.html">
-        <input class="setting-input number" name="retry_count"
-          type="text" value="${it.scmCheckoutRetryCount}"/>
+        <f:textbox clazz="number" name="retry_count" value="${it.scmCheckoutRetryCount}"/>
       </f:entry>
 
       <j:if test="${size(it.views) gt 1}">
@@ -76,8 +74,8 @@ THE SOFTWARE.
           <f:radio name="slaveAgentPortType" value="fixed" id="sat.fixed"
                    checked="${it.slaveAgentPort &gt; 0}" onclick="$('sat.port').disabled=false"/>
           <label for="sat.fixed">${%Fixed}</label> :
-          <input type="text" class="number" name="slaveAgentPort" id="sat.port"
-             value   ="${it.slaveAgentPort gt 0 ? it.slaveAgentPort : null}"
+          <input type="text" class="setting-input number" name="slaveAgentPort" id="sat.port"
+             value="${it.slaveAgentPort gt 0 ? it.slaveAgentPort : null}"
              disabled="${it.slaveAgentPort gt 0 ? null : 'true'}"/>
 
           <st:nbsp />
