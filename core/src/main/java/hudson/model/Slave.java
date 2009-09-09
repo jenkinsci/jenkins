@@ -142,7 +142,7 @@ public abstract class Slave extends Node implements Serializable {
         this.description = nodeDescription;
         this.numExecutors = numExecutors;
         this.mode = mode;
-        this.remoteFS = remoteFS;
+        this.remoteFS = Util.fixNull(remoteFS).trim();
         this.label = Util.fixNull(labelString).trim();
         this.launcher = launcher;
         this.retentionStrategy = retentionStrategy;
@@ -367,7 +367,7 @@ public abstract class Slave extends Node implements Serializable {
 
             if(value.startsWith("\\\\") || value.startsWith("/net/"))
                 return FormValidation.warning("Are you sure you want to use network mounted file system for FS root? " +
-                        "Note that this directory needs not be visible to the master.");
+                        "Note that this directory does not need to be visible to the master.");
 
             return FormValidation.ok();
         }
@@ -375,7 +375,7 @@ public abstract class Slave extends Node implements Serializable {
 
 
 //
-// backwrad compatibility
+// backward compatibility
 //
     /**
      * In Hudson < 1.69 this was used to store the local file path
