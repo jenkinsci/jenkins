@@ -104,9 +104,10 @@ THE SOFTWARE.
           </table>
         </f:repeatable>
       </f:entry>
-        <f:optionalBlock field="runSequentially" title="${%Run each configuration sequentially}" />
     </f:optionalBlock>
     
+    <f:optionalBlock field="runSequentially" title="${%Run each configuration sequentially}"/>
+
     <f:optionalBlock name="hasCombinationFilter" title="${%Combination Filter}" checked="${!empty(it.combinationFilter)}"
         help="/help/matrix/combinationfilter.html">
 	    <f:entry title="${%Filter}">
