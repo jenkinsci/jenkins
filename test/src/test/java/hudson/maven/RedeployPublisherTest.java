@@ -82,6 +82,7 @@ public class RedeployPublisherTest extends HudsonTestCase {
      * Are we having a problem in handling file names with multiple extensions, like ".tar.gz"?
      */
     @Email("http://www.nabble.com/tar.gz-becomes-.gz-after-Hudson-deployment-td25391364.html")
+    @Bug(3814)
     public void testTarGz() throws Exception {
         configureDefaultMaven();
         MavenModuleSet m2 = createMavenProject();
