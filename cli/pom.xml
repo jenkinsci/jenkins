@@ -12,6 +12,7 @@
   <build>
     <plugins>
       <plugin>
+	<groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-assembly-plugin</artifactId>
         <executions>
           <execution>
@@ -33,7 +34,6 @@
       <plugin>
         <groupId>org.jvnet.localizer</groupId>
         <artifactId>maven-localizer-plugin</artifactId>
-        <version>1.10</version>
         <executions>
           <execution>
             <goals>

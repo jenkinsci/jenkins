@@ -40,6 +40,7 @@ THE SOFTWARE.
   <build>
     <plugins>
       <plugin>
+	<groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-surefire-plugin</artifactId>
         <configuration>
           <!-- override with -DforkMode=pertest if you have "unable to create thread problems" on Windows
@@ -60,7 +61,6 @@ THE SOFTWARE.
       <plugin>
         <groupId>org.codehaus.groovy.maven</groupId>
         <artifactId>gmaven-plugin</artifactId>
-        <version>1.0-rc-5</version>
         <executions>
           <execution>
             <id>preset-packager</id>
@@ -201,6 +201,7 @@ THE SOFTWARE.
           </plugin>
           <plugin>
             <!-- unit tests are run by GMaven through Ant. -->
+	    <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-surefire-plugin</artifactId>
             <configuration>
               <skipTests>true</skipTests>

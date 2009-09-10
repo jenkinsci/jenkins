@@ -42,6 +42,7 @@ THE SOFTWARE.
   <build>
     <plugins>
       <plugin>
+	<groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-jar-plugin</artifactId>
         <configuration>
           <archive>
@@ -53,13 +54,15 @@ THE SOFTWARE.
       </plugin>
       <plugin>
         <!-- compile with 1.2 so that we can report JDK version errors nicely -->
-        <artifactId>maven-compiler-plugin</artifactId>
+	<groupId>org.apache.maven.plugins</groupId>
+	<artifactId>maven-compiler-plugin</artifactId>
         <configuration>
           <source>1.2</source>
           <target>1.2</target>
         </configuration>
       </plugin>
       <plugin>
+	<groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-surefire-plugin</artifactId>
         <configuration>
           <forkMode>never</forkMode>

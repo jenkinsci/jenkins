@@ -59,47 +59,11 @@ THE SOFTWARE.
 
   <build>
     <defaultGoal>install</defaultGoal>
-    <pluginManagement>
-      <plugins>
-        <plugin>
-          <groupId>org.kohsuke.gmaven</groupId>
-          <artifactId>gmaven-plugin</artifactId>
-          <version>1.0-rc-5-patch-2</version>
-          <dependencies>
-            <dependency><!-- this needs to be visible to Ant inside GMaven, so has to be a plugin dependency -->
-              <groupId>org.apache.ant</groupId>
-              <artifactId>ant-junit</artifactId>
-              <version>1.7.0</version>
-            </dependency>
-            <dependency>
-              <groupId>net.sourceforge.cobertura</groupId>
-              <artifactId>cobertura</artifactId>
-              <version>1.9</version>
-            </dependency>
-            <dependency>
-              <!-- this provided scope dependency doesn't get added to GMaven unless explicitly added here -->
-              <groupId>javax.servlet</groupId>
-              <artifactId>servlet-api</artifactId>
-              <version>2.4</version>
-            </dependency>
-          </dependencies>
-        </plugin>
-        <plugin>
-          <groupId>org.jvnet.maven-antrun-extended-plugin</groupId>
-          <artifactId>maven-antrun-extended-plugin</artifactId>
-          <version>1.39</version>
-        </plugin>
-	<plugin>
-	  <artifactId>maven-javadoc-plugin</artifactId>
-	  <version>2.5</version>
-	</plugin>
-      </plugins>
-    </pluginManagement>
     
     <plugins>
       <plugin>
+	<groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-release-plugin</artifactId>
-        <version>2.0-beta-9</version>
         <configuration>
           <!-- enable release profile during the release, create IPS package, and sign bits. -->
           <prepareVerifyArgs>-P release,ips,sign</prepareVerifyArgs>
@@ -112,6 +76,7 @@ THE SOFTWARE.
         </configuration>
       </plugin>
       <plugin>
+	<groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-resources-plugin</artifactId>
         <configuration>
           <!--
@@ -122,6 +87,7 @@ THE SOFTWARE.
         </configuration>
       </plugin>
       <plugin>
+	<groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-assembly-plugin</artifactId>
         <inherited>false</inherited>
         <configuration>
@@ -132,8 +98,8 @@ THE SOFTWARE.
         </configuration>
       </plugin>
       <plugin>
+	<groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-remote-resources-plugin</artifactId>
-        <version>1.0</version>
         <executions>
           <execution>
             <goals>
@@ -151,7 +117,6 @@ THE SOFTWARE.
         <!-- make sure our code doesn't have 1.6 dependencies except where we know it -->
         <groupId>org.jvnet</groupId>
         <artifactId>animal-sniffer</artifactId>
-        <version>1.2</version>
         <configuration>
           <signature>
             <groupId>org.jvnet.animal-sniffer</groupId>
@@ -162,6 +127,7 @@ THE SOFTWARE.
       </plugin>
 
       <plugin><!-- we specify this in the parent POM, so this is redundant, but otherwise IntelliJ is unhappy -->
+	<groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-compiler-plugin</artifactId>
         <configuration>
           <source>1.5</source>
@@ -170,6 +136,7 @@ THE SOFTWARE.
       </plugin>
 
       <plugin>
+	<groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-enforcer-plugin</artifactId>
         <executions>
           <execution>
@@ -236,7 +203,6 @@ THE SOFTWARE.
           <plugin>
             <groupId>org.jvnet.sorcerer</groupId>
             <artifactId>maven-sorcerer-plugin</artifactId>
-            <version>0.8</version>
           </plugin>
         </plugins>
       </reporting>
@@ -245,7 +211,6 @@ THE SOFTWARE.
           <plugin>
             <groupId>org.jvnet.sorcerer</groupId>
             <artifactId>maven-sorcerer-plugin</artifactId>
-            <version>0.8</version>
           </plugin>
         </plugins>
       </build>
