@@ -1342,10 +1342,10 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
         if(req.getParameter("hasCustomScmCheckoutRetryCount")!=null) {
             scmCheckoutRetryCount = Integer.parseInt(req.getParameter("scmCheckoutRetryCount"));
         } else {
-        	scmCheckoutRetryCount = null;
+            scmCheckoutRetryCount = null;
         }
-	setBlockBuildWhenUpstreamBuilding(req.getParameter("blockBuildWhenUpstreamBuilding")!=null);
-	
+        blockBuildWhenUpstreamBuilding = req.getParameter("blockBuildWhenUpstreamBuilding")!=null;
+
         if(req.getParameter("hasSlaveAffinity")!=null) {
             canRoam = false;
             assignedNode = req.getParameter("slave");
@@ -1358,7 +1358,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
             assignedNode = null;
         }
 
-        setConcurrentBuild(req.getSubmittedForm().has("concurrentBuild"));
+        concurrentBuild = req.getSubmittedForm().has("concurrentBuild");
 
         authToken = BuildAuthorizationToken.create(req);
 
