@@ -88,6 +88,7 @@ import java.util.Locale;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.UUID;
+import java.util.concurrent.Callable;
 import java.util.jar.Manifest;
 import java.util.logging.Filter;
 import java.util.logging.Level;
@@ -144,7 +145,6 @@ import com.gargoylesoftware.htmlunit.html.HtmlInput;
 import com.gargoylesoftware.htmlunit.javascript.JavaScriptEngine;
 import com.gargoylesoftware.htmlunit.javascript.host.Stylesheet;
 import com.gargoylesoftware.htmlunit.javascript.host.XMLHttpRequest;
-import groovy.lang.Closure;
 
 /**
  * Base class for all Hudson test cases.
@@ -727,18 +727,22 @@ public abstract class HudsonTestCase extends TestCase {
     protected void recipe() throws Exception {
         recipeLoadCurrentPlugin();
         // look for recipe meta-annotation
-        Method runMethod= getClass().getMethod(getName());
-        for( final Annotation a : runMethod.getAnnotations() ) {
-            Recipe r = a.annotationType().getAnnotation(Recipe.class);
-            if(r==null)     continue;
-            final Runner runner = r.value().newInstance();
-            recipes.add(runner);
-            tearDowns.add(new LenientRunnable() {
-                public void run() throws Exception {
-                    runner.tearDown(HudsonTestCase.this,a);
-                }
-            });
-            runner.setup(this,a);
+        try {
+            Method runMethod= getClass().getMethod(getName());
+            for( final Annotation a : runMethod.getAnnotations() ) {
+                Recipe r = a.annotationType().getAnnotation(Recipe.class);
+                if(r==null)     continue;
+                final Runner runner = r.value().newInstance();
+                recipes.add(runner);
+                tearDowns.add(new LenientRunnable() {
+                    public void run() throws Exception {
+                        runner.tearDown(HudsonTestCase.this,a);
+                    }
+                });
+                runner.setup(this,a);
+            }
+        } catch (NoSuchMethodException e) {
+            // not a plain JUnit test.
         }
     }
 
@@ -855,6 +859,7 @@ public abstract class HudsonTestCase extends TestCase {
         return this;
     }
 
+
     /**
      * Executes the given closure on the server, in the context of an HTTP request.
      * This is useful for testing some methods that require {@link StaplerRequest} and {@link StaplerResponse}.
@@ -862,17 +867,17 @@ public abstract class HudsonTestCase extends TestCase {
      * <p>
      * The closure will get the request and response as parameters.
      */
-    public Object executeOnServer(final Closure c) throws Throwable {
-        final Throwable[] t = new Throwable[1];
-        final Object[] r = new Object[1];
+    public <V> V executeOnServer(final Callable<V> c) throws Exception {
+        final Exception[] t = new Exception[1];
+        final List<V> r = new ArrayList<V>(1);  // size 1 list
 
         ClosureExecuterAction cea = hudson.getExtensionList(RootAction.class).get(ClosureExecuterAction.class);
         UUID id = UUID.randomUUID();
         cea.add(id,new Runnable() {
             public void run() {
                 try {
-                    r[0] = c.call();
-                } catch (Throwable e) {
+                    r.add(c.call());
+                } catch (Exception e) {
                     t[0] = e;
                 }
             }
@@ -881,7 +886,7 @@ public abstract class HudsonTestCase extends TestCase {
 
         if (t[0]!=null)
             throw t[0];
-        return r[0];
+        return r.get(0);
     }
 
     /**
