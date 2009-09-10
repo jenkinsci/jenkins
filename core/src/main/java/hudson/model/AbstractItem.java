@@ -274,6 +274,7 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
      * Does the real job of deleting the item.
      */
     protected void performDelete() throws IOException, InterruptedException {
+        getConfigFile().delete();
         Util.deleteRecursive(getRootDir());
     }
 
