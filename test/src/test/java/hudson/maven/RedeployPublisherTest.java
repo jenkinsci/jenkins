@@ -27,6 +27,7 @@ import hudson.model.Result;
 import org.jvnet.hudson.test.Bug;
 import org.jvnet.hudson.test.HudsonTestCase;
 import org.jvnet.hudson.test.SingleFileSCM;
+import org.jvnet.hudson.test.Email;
 
 import java.io.File;
 
@@ -76,4 +77,23 @@ public class RedeployPublisherTest extends HudsonTestCase {
 //        MavenModuleSetBuild b = m2.scheduleBuild2(0).get();
 //        assertBuildStatus(Result.SUCCESS, b);
 //    }
+
+    /**
+     * Are we having a problem in handling file names with multiple extensions, like ".tar.gz"?
+     */
+    @Email("http://www.nabble.com/tar.gz-becomes-.gz-after-Hudson-deployment-td25391364.html")
+    public void testTarGz() throws Exception {
+        configureDefaultMaven();
+        MavenModuleSet m2 = createMavenProject();
+        File repo = createTmpDir();
+
+        // a fake build
+        m2.setScm(new SingleFileSCM("pom.xml",getClass().getResource("targz-artifact.pom")));
+        m2.getPublishersList().add(new RedeployPublisher("",repo.toURI().toString(),false));
+
+        MavenModuleSetBuild b = m2.scheduleBuild2(0).get();
+        assertBuildStatus(Result.SUCCESS, b);
+
+        assertTrue("tar.gz doesn't exist",new File(repo,"test/test/0.1-SNAPSHOT/test-0.1-SNAPSHOT-bin.tar.gz").exists());
+    }
 }
