@@ -24,6 +24,7 @@
 package hudson.maven;
 
 import hudson.AbortException;
+import hudson.Util;
 import hudson.model.BuildListener;
 import hudson.model.TaskListener;
 import hudson.model.AbstractProject;
@@ -166,21 +167,23 @@ public class MavenUtil {
         List<MavenProject> modules = new ArrayList<MavenProject>();
 
         for (String modulePath : (List<String>) project.getModules()) {
-            File moduleFile = new File(basedir, modulePath);
-            if (moduleFile.exists() && moduleFile.isDirectory()) {
-                moduleFile = new File(basedir, modulePath + "/pom.xml");
-            }
-            if(!moduleFile.exists())
-                throw new AbortException(moduleFile+" is referenced from "+project.getFile()+" but it doesn't exist");
-
-            String relativePath = rel;
-            if(relativePath.length()>0) relativePath+='/';
-            relativePath+=modulePath;
-
-            MavenProject child = embedder.readProject(moduleFile);
-            resolveModules(embedder,child,relativePath,relativePathInfo,listener);
-            modules.add(child);
-        }
+	    if (Util.fixEmptyAndTrim(modulePath)!=null) {
+		File moduleFile = new File(basedir, modulePath);
+		if (moduleFile.exists() && moduleFile.isDirectory()) {
+		    moduleFile = new File(basedir, modulePath + "/pom.xml");
+		}
+		if(!moduleFile.exists())
+		    throw new AbortException(moduleFile+" is referenced from "+project.getFile()+" but it doesn't exist");
+		
+		String relativePath = rel;
+		if(relativePath.length()>0) relativePath+='/';
+		relativePath+=modulePath;
+		
+		MavenProject child = embedder.readProject(moduleFile);
+		resolveModules(embedder,child,relativePath,relativePathInfo,listener);
+		modules.add(child);
+	    }
+	}
 
         project.setCollectedProjects(modules);
     }
