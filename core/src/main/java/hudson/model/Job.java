@@ -977,7 +977,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
     @WebMethod(name = "config.xml")
     public void doConfigDotXml(StaplerRequest req, StaplerResponse rsp)
             throws IOException {
-        checkPermission(CONFIGURE);
+        checkPermission(EXTENDED_READ);
 
         if (req.getMethod().equals("GET")) {
             // read

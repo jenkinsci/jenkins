@@ -1,7 +1,7 @@
 /*
  * The MIT License
  * 
- * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi
+ * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, Yahoo! Inc.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -144,7 +144,7 @@ public class GlobalMatrixAuthorizationStrategy extends AuthorizationStrategy {
     public boolean hasPermission(String sid, Permission p) {
         for(; p!=null; p=p.impliedBy) {
             Set<String> set = grantedPermissions.get(p);
-            if(set!=null && set.contains(sid))
+            if(set!=null && set.contains(sid) && p.getEnabled())
                 return true;
         }
         return false;
@@ -155,7 +155,7 @@ public class GlobalMatrixAuthorizationStrategy extends AuthorizationStrategy {
      */
     public boolean hasExplicitPermission(String sid, Permission p) {
         Set<String> set = grantedPermissions.get(p);
-        return set != null && set.contains(sid);
+        return set != null && set.contains(sid) && p.getEnabled();
     }
 
     /**
@@ -266,7 +266,7 @@ public class GlobalMatrixAuthorizationStrategy extends AuthorizationStrategy {
         }
 
         public boolean showPermission(Permission p) {
-            return true;
+            return p.getEnabled();
         }
 
         public FormValidation doCheckName(@QueryParameter String value ) throws IOException, ServletException {

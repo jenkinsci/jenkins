@@ -26,7 +26,7 @@ THE SOFTWARE.
   Config page. derived class specific entries should go to configure-entries.jsp
 -->
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
-  <l:layout title="${it.displayName} Config" norefresh="true" permission="${it.CONFIGURE}">
+  <l:layout title="${it.displayName} Config" norefresh="true" permission="${it.EXTENDED_READ}">
     <st:include page="sidepanel.jelly" />
     <l:main-panel>
       <f:form method="post" action="configSubmit" name="config">
@@ -67,10 +67,12 @@ THE SOFTWARE.
         <!-- additional entries from derived classes -->
         <st:include page="configure-entries.jelly" />
 
-        <f:block>
-          <!--<input type="button" name="StructureTest" value="Test" onclick="buildFormTree(this.form)" />-->
-          <f:submit value="${%Save}" />
-        </f:block>
+        <j:if test="${h.hasPermission(it,it.CONFIGURE)}">
+          <f:block>
+            <!--<input type="button" name="StructureTest" value="Test" onclick="buildFormTree(this.form)" />-->
+            <f:submit value="${%Save}" />
+          </f:block>
+        </j:if>
       </f:form>
     </l:main-panel>
   </l:layout>
