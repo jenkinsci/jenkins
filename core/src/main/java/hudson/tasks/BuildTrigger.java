@@ -252,10 +252,12 @@ public class BuildTrigger extends Recorder implements DependecyDeclarer, MatrixA
             return Messages.BuildTrigger_DisplayName();
         }
 
+        @Override
         public String getHelpFile() {
             return "/help/project-config/downstream.html";
         }
 
+        @Override
         public Publisher newInstance(StaplerRequest req, JSONObject formData) throws FormException {
             return new BuildTrigger(
                 formData.getString("childProjects"),

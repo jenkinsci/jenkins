@@ -137,6 +137,7 @@ public class ChunkedInputStream extends InputStream {
      * @see java.io.InputStream#read(byte[], int, int)
      * @throws IOException if an IO problem occurs.
      */
+    @Override
     public int read (byte[] b, int off, int len) throws IOException {
 
         if (closed) {
@@ -166,6 +167,7 @@ public class ChunkedInputStream extends InputStream {
      * @see java.io.InputStream#read(byte[])
      * @throws IOException if an IO problem occurs.
      */
+    @Override
     public int read (byte[] b) throws IOException {
         return read(b, 0, b.length);
     }
@@ -313,6 +315,7 @@ public class ChunkedInputStream extends InputStream {
      * next response without scanning.
      * @throws IOException If an IO problem occurs.
      */
+    @Override
     public void close() throws IOException {
         if (!closed) {
             try {

@@ -27,7 +27,6 @@ import hudson.ExtensionPoint;
 import hudson.Plugin;
 import hudson.DescriptorExtensionList;
 import hudson.model.Descriptor.FormException;
-import hudson.tasks.Mailer;
 import net.sf.json.JSONObject;
 
 import org.kohsuke.stapler.StaplerRequest;

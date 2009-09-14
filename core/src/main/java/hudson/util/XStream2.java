@@ -34,7 +34,6 @@ import com.thoughtworks.xstream.io.HierarchicalStreamDriver;
 import com.thoughtworks.xstream.io.HierarchicalStreamReader;
 import com.thoughtworks.xstream.io.HierarchicalStreamWriter;
 import hudson.model.Hudson;
-import hudson.matrix.AxisList;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;

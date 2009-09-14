@@ -113,6 +113,7 @@ public class JavadocArchiver extends Recorder {
         return true;
     }
 
+    @Override
     public Action getProjectAction(AbstractProject project) {
         return new JavadocAction(project);
     }

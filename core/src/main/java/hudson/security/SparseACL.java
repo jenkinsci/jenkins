@@ -24,9 +24,6 @@
 package hudson.security;
 
 import org.acegisecurity.Authentication;
-import org.acegisecurity.GrantedAuthority;
-import org.acegisecurity.acls.sid.GrantedAuthoritySid;
-import org.acegisecurity.acls.sid.PrincipalSid;
 import org.acegisecurity.acls.sid.Sid;
 
 import java.util.ArrayList;
@@ -68,6 +65,7 @@ public class SparseACL extends SidACL {
         add(new Entry(sid,permission,allowed));
     }
 
+    @Override
     public boolean hasPermission(Authentication a, Permission permission) {
         if(a==SYSTEM)   return true;
         Boolean b = _hasPermission(a,permission);

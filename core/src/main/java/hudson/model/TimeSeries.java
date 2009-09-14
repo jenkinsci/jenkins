@@ -97,6 +97,7 @@ public final class TimeSeries {
         return history[0];
     }
 
+    @Override
     public String toString() {
         return Float.toString(history[0]);
     }

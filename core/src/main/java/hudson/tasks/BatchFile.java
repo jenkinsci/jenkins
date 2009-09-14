@@ -25,7 +25,6 @@ package hudson.tasks;
 
 import hudson.FilePath;
 import hudson.Extension;
-import hudson.model.Descriptor;
 import hudson.model.AbstractProject;
 import net.sf.json.JSONObject;
 import org.kohsuke.stapler.StaplerRequest;
@@ -54,6 +53,7 @@ public class BatchFile extends CommandInterpreter {
 
     @Extension
     public static final class DescriptorImpl extends BuildStepDescriptor<Builder> {
+        @Override
         public String getHelpFile() {
             return "/help/project-config/batch.html";
         }
@@ -62,6 +62,7 @@ public class BatchFile extends CommandInterpreter {
             return Messages.BatchFile_DisplayName();
         }
 
+        @Override
         public Builder newInstance(StaplerRequest req, JSONObject data) {
             return new BatchFile(data.getString("batchFile"));
         }

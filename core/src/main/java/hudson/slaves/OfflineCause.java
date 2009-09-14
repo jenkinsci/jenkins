@@ -54,7 +54,7 @@ public abstract class OfflineCause {
             this.description = description;
         }
 
-        @Exported(name="description")
+        @Exported(name="description") @Override
         public String toString() {
             return description.toString();
         }

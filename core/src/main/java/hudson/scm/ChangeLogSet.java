@@ -201,15 +201,15 @@ public abstract class ChangeLogSet<T extends ChangeLogSet.Entry> implements Iter
          *
          * @return never null.
          */
-	    public String getPath();
+        public String getPath();
 	    
 	    
-	    /**
-	     * Return whether the file is new/modified/deleted
-	     *
-	     * @return EditType
-	     * @see EditType
-	     */
-	    public EditType getEditType();
+        /**
+         * Return whether the file is new/modified/deleted
+         *
+         * @return EditType
+         * @see EditType
+         */
+        public EditType getEditType();
     }
 }

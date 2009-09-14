@@ -65,6 +65,7 @@ public class NullSCM extends SCM {
             return Messages.NullSCM_DisplayName();
         }
 
+        @Override
         public SCM newInstance(StaplerRequest req, JSONObject formData) throws FormException {
             return new NullSCM();
         }

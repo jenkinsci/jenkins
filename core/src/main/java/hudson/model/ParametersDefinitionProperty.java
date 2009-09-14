@@ -65,7 +65,7 @@ public class ParametersDefinitionProperty extends JobProperty<AbstractProject<?,
         return owner;
     }
 
-	@Exported
+    @Exported
     public List<ParameterDefinition> getParameterDefinitions() {
         return parameterDefinitions;
     }

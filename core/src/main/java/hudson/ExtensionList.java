@@ -103,6 +103,7 @@ public class ExtensionList<T> extends AbstractList<T> {
         return null;
     }
 
+    @Override
     public Iterator<T> iterator() {
         // we need to intercept mutation, so for now don't allow Iterator.remove 
         return Iterators.readOnly(ensureLoaded().iterator());

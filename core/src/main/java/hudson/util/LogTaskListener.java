@@ -25,7 +25,6 @@
 package hudson.util;
 
 import hudson.model.TaskListener;
-import hudson.util.StreamTaskListener;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -91,7 +90,8 @@ public class LogTaskListener implements TaskListener {
             }
         }
 
-        public @Override void flush() throws IOException {
+        @Override
+        public void flush() throws IOException {
             if (baos.size() > 0) {
                 LogRecord lr = new LogRecord(level, baos.toString());
                 lr.setSourceClassName(caller.getClassName());
@@ -101,7 +101,8 @@ public class LogTaskListener implements TaskListener {
             baos.reset();
         }
 
-        public @Override void close() throws IOException {
+        @Override
+        public void close() throws IOException {
             flush();
         }
 

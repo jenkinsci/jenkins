@@ -23,7 +23,6 @@
  */
 package hudson.tasks.junit;
 
-import hudson.model.Hudson;
 import org.xml.sax.EntityResolver;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
@@ -68,5 +67,5 @@ class XMLEntityResolver implements EntityResolver {
         return null;
     }
 
-    private static final Logger LOGGER = Logger.getLogger(XMLEntityResolver.class.getName() );
+    private static final Logger LOGGER = Logger.getLogger(XMLEntityResolver.class.getName());
 }

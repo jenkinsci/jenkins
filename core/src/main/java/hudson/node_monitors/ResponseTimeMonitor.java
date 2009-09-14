@@ -76,6 +76,7 @@ public class ResponseTimeMonitor extends NodeMonitor {
             return Messages.ResponseTimeMonitor_DisplayName();
         }
 
+        @Override
         public NodeMonitor newInstance(StaplerRequest req, JSONObject formData) throws FormException {
             return new ResponseTimeMonitor();
         }
@@ -133,6 +134,7 @@ public class ResponseTimeMonitor extends NodeMonitor {
         /**
          * HTML rendering of the data
          */
+        @Override
         public String toString() {
 //            StringBuilder buf = new StringBuilder();
 //            for (long l : past5) {

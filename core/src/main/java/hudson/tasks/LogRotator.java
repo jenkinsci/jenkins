@@ -37,7 +37,6 @@ import java.util.GregorianCalendar;
 import static java.util.logging.Level.FINE;
 import static java.util.logging.Level.FINER;
 import java.util.logging.Logger;
-import java.util.logging.Level;
 
 /**
  * Deletes old log files.

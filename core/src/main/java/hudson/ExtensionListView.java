@@ -61,6 +61,7 @@ public class ExtensionListView {
                 return Hudson.getInstance().getExtensionList(type);
             }
 
+            @Override
             public Iterator<T> iterator() {
                 return storage().iterator();
             }
@@ -73,10 +74,12 @@ public class ExtensionListView {
                 return storage().size();
             }
 
+            @Override
             public boolean add(T t) {
                 return storage().add(t);
             }
 
+            @Override
             public void add(int index, T t) {
                 // index ignored
                 storage().add(t);

@@ -132,6 +132,7 @@ public class MatrixBuild extends AbstractBuild<MatrixProject,MatrixBuild> {
         return r;
     }
 
+    @Override
     public Object getDynamic(String token, StaplerRequest req, StaplerResponse rsp) {
         try {
             MatrixRun item = getRun(Combination.fromString(token));

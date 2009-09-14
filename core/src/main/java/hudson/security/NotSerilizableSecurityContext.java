@@ -43,6 +43,7 @@ import javax.servlet.http.HttpSession;
 public class NotSerilizableSecurityContext implements SecurityContext {
     private transient Authentication authentication;
 
+    @Override
     public boolean equals(Object obj) {
         if (obj instanceof SecurityContextImpl) {
             SecurityContextImpl test = (SecurityContextImpl) obj;
@@ -64,6 +65,7 @@ public class NotSerilizableSecurityContext implements SecurityContext {
         return authentication;
     }
 
+    @Override
     public int hashCode() {
         if (this.authentication == null) {
             return -1;
@@ -76,6 +78,7 @@ public class NotSerilizableSecurityContext implements SecurityContext {
         this.authentication = authentication;
     }
 
+    @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
         sb.append(super.toString());

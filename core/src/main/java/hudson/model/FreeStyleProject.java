@@ -23,7 +23,6 @@
  */
 package hudson.model;
 
-import hudson.FilePath;
 import hudson.Extension;
 
 import java.io.File;
@@ -84,6 +83,7 @@ public class FreeStyleProject extends Project<FreeStyleProject,FreeStyleBuild> i
         save();
     }
 
+    @Override
     protected void submit(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException, Descriptor.FormException {
         if(req.hasParameter("customWorkspace"))
             customWorkspace = req.getParameter("customWorkspace.directory");

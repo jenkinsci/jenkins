@@ -43,18 +43,22 @@ public abstract class DelegatingOutputStream extends OutputStream {
         out.write(b);
     }
 
+    @Override
     public void write(byte[] b) throws IOException {
         out.write(b);
     }
 
+    @Override
     public void write(byte[] b, int off, int len) throws IOException {
         out.write(b, off, len);
     }
 
+    @Override
     public void flush() throws IOException {
         out.flush();
     }
 
+    @Override
     public void close() throws IOException {
         out.close();
     }

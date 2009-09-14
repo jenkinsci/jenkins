@@ -48,6 +48,7 @@ public class TimerTrigger extends Trigger<BuildableItem> {
         super(timer_spec);
     }
 
+    @Override
     public void run() {
         job.scheduleBuild(0, new TimerTriggerCause());
     }
@@ -62,6 +63,7 @@ public class TimerTrigger extends Trigger<BuildableItem> {
             return Messages.TimerTrigger_DisplayName();
         }
 
+        @Override
         public String getHelpFile() {
             return "/help/project-config/timer.html";
         }

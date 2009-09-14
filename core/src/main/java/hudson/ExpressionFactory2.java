@@ -54,6 +54,7 @@ final class ExpressionFactory2 implements ExpressionFactory {
             this.expression = expression;
         }
 
+        @Override
         public String toString() {
             return super.toString() + "[" + expression.getExpression() + "]";
         }

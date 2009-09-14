@@ -27,14 +27,8 @@ import hudson.triggers.SafeTimerTask;
 import hudson.triggers.Trigger;
 import hudson.ExtensionPoint;
 import hudson.Extension;
-import hudson.DescriptorExtensionList;
 import hudson.ExtensionList;
-import hudson.scm.SCMDescriptor;
-import hudson.scm.SCM;
-import hudson.util.StreamTaskListener;
-import hudson.util.NullStream;
 
-import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.Random;
 import java.util.Timer;
@@ -90,7 +84,7 @@ public abstract class PeriodicWork extends SafeTimerTask implements ExtensionPoi
         return Hudson.getInstance().getExtensionList(PeriodicWork.class);
     }
 
-// time constants
+    // time constants
     protected static final long MIN = 1000*60;
     protected static final long HOUR =60*MIN;
     protected static final long DAY = 24*HOUR;

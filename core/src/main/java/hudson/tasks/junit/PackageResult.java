@@ -112,6 +112,7 @@ public final class PackageResult extends MetaTabulatedResult implements Comparab
         return skipCount;
     }
 
+    @Override
     public Object getDynamic(String name, StaplerRequest req, StaplerResponse rsp) {
         ClassResult result = getClassResult(name);
         if (result != null) {

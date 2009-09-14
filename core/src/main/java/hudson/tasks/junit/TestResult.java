@@ -103,6 +103,7 @@ public final class TestResult extends MetaTabulatedResult {
     	return null;
     }
     
+    @Override
     public String getId() {
     	return "";
     }
@@ -200,6 +201,7 @@ public final class TestResult extends MetaTabulatedResult {
         return Messages.TestResult_getDisplayName();
     }
 
+    @Override
     public AbstractBuild<?,?> getOwner() {
         return parent.owner;
     }
@@ -271,6 +273,7 @@ public final class TestResult extends MetaTabulatedResult {
         return "";
     }
 
+    @Override
     public Object getDynamic(String token, StaplerRequest req, StaplerResponse rsp) {
         PackageResult result = byPackage(token);
         if (result != null) {

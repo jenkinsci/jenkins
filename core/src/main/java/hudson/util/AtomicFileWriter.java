@@ -70,10 +70,12 @@ public class AtomicFileWriter extends Writer {
         core = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(tmpFile),encoding));
     }
 
+    @Override
     public void write(int c) throws IOException {
         core.write(c);
     }
 
+    @Override
     public void write(String str, int off, int len) throws IOException {
         core.write(str,off,len);
     }

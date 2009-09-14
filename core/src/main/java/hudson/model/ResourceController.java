@@ -23,18 +23,13 @@
  */
 package hudson.model;
 
-import hudson.model.Queue.Task;
 import hudson.util.AdaptedIterator;
 
 import java.util.Set;
 import java.util.HashSet;
-import java.util.Map;
-import java.util.HashMap;
 import java.util.Collection;
 import java.util.AbstractCollection;
 import java.util.Iterator;
-
-import org.apache.commons.collections.iterators.FilterIterator;
 
 /**
  * Controls mutual exclusion of {@link ResourceList}.

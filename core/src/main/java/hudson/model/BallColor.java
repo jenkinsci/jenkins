@@ -92,6 +92,7 @@ public enum BallColor {
     /**
      * Also used as a final name.
      */
+    @Override
     public String toString() {
         return name().toLowerCase(Locale.ENGLISH);
     }

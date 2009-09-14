@@ -147,6 +147,7 @@ public abstract class Build <P extends Project<P,B>,B extends Build<P,B>>
             performAllBuildStep(listener, project.getProperties(),true);
         }
 
+        @Override
         public void cleanUp(BuildListener listener) throws Exception {
             performAllBuildStep(listener, project.getPublishers(),false);
             performAllBuildStep(listener, project.getProperties(),false);

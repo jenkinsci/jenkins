@@ -31,7 +31,6 @@ import hudson.model.TaskListener;
 import hudson.tasks.CommandInterpreter;
 import hudson.util.FormValidation;
 import java.io.IOException;
-import java.util.Collections;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.QueryParameter;
 

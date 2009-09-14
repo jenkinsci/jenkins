@@ -98,6 +98,7 @@ public class VersionNumber implements Comparable<VersionNumber> {
         }
     }
 
+    @Override
     public String toString() {
         StringBuffer buf = new StringBuffer();
         for( int i=0; i<digits.length; i++ ) {
@@ -116,11 +117,13 @@ public class VersionNumber implements Comparable<VersionNumber> {
     }
 
 
+    @Override
     public boolean equals( Object o ) {
         if (!(o instanceof VersionNumber))  return false;
         return compareTo((VersionNumber)o)==0;
     }
 
+    @Override
     public int hashCode() {
         int x=0;
         for (int i : digits)

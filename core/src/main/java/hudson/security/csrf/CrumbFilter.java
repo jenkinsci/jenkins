@@ -14,7 +14,6 @@ import java.util.logging.Logger;
 import javax.servlet.Filter;
 import javax.servlet.FilterChain;
 import javax.servlet.FilterConfig;
-import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
@@ -26,7 +25,6 @@ import javax.servlet.http.HttpServletResponse;
  * protect against cross site request forgeries.
  * 
  * @author dty
- *
  */
 public class CrumbFilter implements Filter {
     /**
@@ -117,5 +115,6 @@ public class CrumbFilter implements Filter {
      */
     public void destroy() {
     }
+
     private static final Logger LOGGER = Logger.getLogger(CrumbFilter.class.getName());
 }

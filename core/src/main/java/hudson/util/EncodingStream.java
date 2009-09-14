@@ -40,6 +40,7 @@ public class EncodingStream extends FilterOutputStream {
         super(out);
     }
 
+    @Override
     public void write(int b) throws IOException {
         out.write(chars.charAt(b/16));
         out.write(chars.charAt(b%16));

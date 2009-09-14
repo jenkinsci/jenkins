@@ -175,6 +175,7 @@ public final class Combination extends TreeMap<String,String> implements Compara
         return buf.toString();
     }
 
+    @Override
     public String toString() {
         return toString(',','=');
     }
@@ -239,18 +240,22 @@ public final class Combination extends TreeMap<String,String> implements Compara
     }
 
     // read-only
+    @Override
     public void clear() {
         throw new UnsupportedOperationException();
     }
 
+    @Override
     public void putAll(Map<? extends String, ? extends String> map) {
         throw new UnsupportedOperationException();
     }
 
+    @Override
     public String put(String key, String value) {
         throw new UnsupportedOperationException();
     }
 
+    @Override
     public String remove(Object key) {
         throw new UnsupportedOperationException();
     }

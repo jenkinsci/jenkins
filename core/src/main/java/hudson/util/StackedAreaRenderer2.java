@@ -81,6 +81,7 @@ public class StackedAreaRenderer2 extends StackedAreaRenderer
     /**
      * Override this method to specify the color to draw the given area.
      */
+    @Override
     public Paint getItemPaint(int row, int column) {
         return super.getItemPaint(row, column);
     }

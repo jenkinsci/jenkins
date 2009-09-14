@@ -69,6 +69,7 @@ public class TableNestChecker extends XMLFilterImpl {
         setContentHandler(target);
     }
 
+    @Override
     public void startElement(String uri, String localName, String qName, Attributes atts) throws SAXException {
         String tagName = localName.toUpperCase();
 
@@ -84,6 +85,7 @@ public class TableNestChecker extends XMLFilterImpl {
         super.startElement(uri, localName, qName, atts);
     }
 
+    @Override
     public void endElement(String uri, String localName, String qName) throws SAXException {
         elements.pop();
         tagNames.pop();

@@ -216,6 +216,7 @@ public class MyViewsProperty extends UserProperty implements ViewGroup, Action {
         }
     }
     
+    @Override
     public UserProperty reconfigure(StaplerRequest req, JSONObject form) throws FormException {
     	req.bindJSON(this, form);
     	return this;

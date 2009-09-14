@@ -212,6 +212,7 @@ public class History {
             return this.o.getOwner().number - that.o.getOwner().number;
         }
 
+        @Override
         public boolean equals(Object o) {
         	if (!(o instanceof ChartLabel)) {
             	return false;
@@ -224,10 +225,12 @@ public class History {
         	return null;
         }
 
+        @Override
         public int hashCode() {
             return o.hashCode();
         }
 
+        @Override
         public String toString() {
             String l = o.getOwner().getDisplayName();
             String s = o.getOwner().getBuiltOnStr();

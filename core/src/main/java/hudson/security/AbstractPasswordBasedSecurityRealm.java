@@ -73,6 +73,7 @@ public abstract class AbstractPasswordBasedSecurityRealm extends SecurityRealm i
      * This is an optional method that improves the user experience. If your backend doesn't support
      * a query like this, just always throw {@link UsernameNotFoundException}.
      */
+    @Override
     public abstract UserDetails loadUserByUsername(String username) throws UsernameNotFoundException, DataAccessException;
 
     /**
@@ -80,6 +81,7 @@ public abstract class AbstractPasswordBasedSecurityRealm extends SecurityRealm i
      *
      * This method is the group version of the {@link #loadUserByUsername(String)}.
      */
+    @Override
     public abstract GroupDetails loadGroupByGroupname(String groupname) throws UsernameNotFoundException, DataAccessException;
 
     class Authenticator extends AbstractUserDetailsAuthenticationProvider {

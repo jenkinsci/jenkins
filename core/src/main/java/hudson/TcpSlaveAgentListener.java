@@ -33,7 +33,6 @@ import hudson.remoting.Channel.Listener;
 import hudson.remoting.Channel.Mode;
 import hudson.cli.CliManagerImpl;
 import hudson.cli.CliEntryPoint;
-import hudson.util.IOException2;
 
 import java.io.DataInputStream;
 import java.io.IOException;
@@ -110,6 +109,7 @@ public final class TcpSlaveAgentListener extends Thread {
         return Hudson.getInstance().getSecretKey();
     }
 
+    @Override
     public void run() {
         try {
             // the loop eventually terminates when the socket is closed.
@@ -150,6 +150,7 @@ public final class TcpSlaveAgentListener extends Thread {
             }
         }
 
+        @Override
         public void run() {
             try {
                 LOGGER.info("Accepted connection #"+id+" from "+s.getRemoteSocketAddress());
@@ -229,6 +230,7 @@ public final class TcpSlaveAgentListener extends Thread {
 
             computer.setChannel(new BufferedInputStream(this.s.getInputStream()), new BufferedOutputStream(this.s.getOutputStream()), log,
                 new Listener() {
+                    @Override
                     public void onClosed(Channel channel, IOException cause) {
                         try {
                             log.close();

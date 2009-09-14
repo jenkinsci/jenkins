@@ -179,6 +179,7 @@ public final class XmlFile {
         file.getParentFile().mkdirs();
     }
 
+    @Override
     public String toString() {
         return file.toString();
     }
@@ -232,14 +233,17 @@ public final class XmlFile {
         try {
             JAXP.newSAXParser().parse(file,new DefaultHandler() {
                 private Locator loc;
+                @Override
                 public void setDocumentLocator(Locator locator) {
                     this.loc = locator;
                 }
 
+                @Override
                 public void startDocument() throws SAXException {
                     attempt();
                 }
 
+                @Override
                 public void startElement(String uri, String localName, String qName, Attributes attributes) throws SAXException {
                     attempt();
                     // if we still haven't found it at the first start element,

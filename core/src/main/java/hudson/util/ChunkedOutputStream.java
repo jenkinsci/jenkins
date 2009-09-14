@@ -166,10 +166,12 @@ public class ChunkedOutputStream extends OutputStream {
      *
      * @since 3.0
      */
+    @Override
     public void write(byte b[]) throws IOException {
         this.write(b, 0, b.length);
     }
 
+    @Override
     public void write(byte src[], int off, int len) throws IOException {
         if (len >= cache.length - cachePosition) {
             flushCacheWithAppend(src, off, len);
@@ -183,6 +185,7 @@ public class ChunkedOutputStream extends OutputStream {
      * Flushes the underlying stream, but leaves the internal buffer alone.
      * @throws IOException
      */
+    @Override
     public void flush() throws IOException {
         flushCache(); // Kohsuke: flush should flush the cache
         stream.flush();
@@ -192,6 +195,7 @@ public class ChunkedOutputStream extends OutputStream {
      * Finishes writing to the underlying stream, but does NOT close the underlying stream.
      * @throws IOException
      */
+    @Override
     public void close() throws IOException {
         finish();
         super.close();

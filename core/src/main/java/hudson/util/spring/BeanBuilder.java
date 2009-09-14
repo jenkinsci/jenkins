@@ -324,6 +324,7 @@ public class BeanBuilder extends GroovyObjectSupport {
 	 */
 	public void loadBeans(Resource[] resources) throws IOException {
 		Closure beans = new Closure(this){
+			@Override
 			public Object call(Object[] args) {
 				return beans((Closure)args[0]);
 			}
@@ -516,6 +517,7 @@ public class BeanBuilder extends GroovyObjectSupport {
 	 * This method overrides property setting in the scope of the BeanBuilder to set
 	 * properties on the current BeanConfiguration
 	 */
+	@Override
 	public void setProperty(String name, Object value) {
 		if(currentBeanConfig != null) {
 			if(value instanceof GString)value = value.toString();
@@ -615,6 +617,7 @@ public class BeanBuilder extends GroovyObjectSupport {
 	 * b) Retrieve a RuntimeBeanReference for a specific bean if it exists
 	 * c) Otherwise just delegate to super.getProperty which will resolve properties from the BeanBuilder itself
 	 */
+	@Override
 	public Object getProperty(String name) {
 		if(binding.containsKey(name)) {
 			return binding.get(name);

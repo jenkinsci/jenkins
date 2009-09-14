@@ -185,6 +185,7 @@ public final class WebAppMain implements ServletContextListener {
             context.setAttribute(APP,new HudsonIsLoading());
 
             new Thread("hudson initialization thread") {
+                @Override
                 public void run() {
                     try {
                         context.setAttribute(APP,new Hudson(home,context));

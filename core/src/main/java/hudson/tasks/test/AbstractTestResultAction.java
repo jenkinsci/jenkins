@@ -24,7 +24,6 @@
 package hudson.tasks.test;
 
 import hudson.Functions;
-import hudson.Util;
 import hudson.model.*;
 import hudson.tasks.junit.CaseResult;
 import hudson.util.ChartUtil;

@@ -112,6 +112,7 @@ public final class ProxyConfiguration implements Saveable {
         if(p.getUserName()!=null) {
         	// Add an authenticator which provides the credentials for proxy authentication
             Authenticator.setDefault(new Authenticator() {
+                @Override
                 public PasswordAuthentication getPasswordAuthentication() {
                     ProxyConfiguration p = Hudson.getInstance().proxy;
                     return new PasswordAuthentication(p.getUserName(),

@@ -62,14 +62,17 @@ public final class Secret {
      *
      * @see #getEncryptedValue()
      */
+    @Override
     public String toString() {
         return value;
     }
 
+    @Override
     public boolean equals(Object that) {
         return that instanceof Secret && value.equals(((Secret)that).value);
     }
 
+    @Override
     public int hashCode() {
         return value.hashCode();
     }
