@@ -145,6 +145,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
         super(parent, name);
     }
 
+    @Override
     public void onLoad(ItemGroup<? extends Item> parent, String name)
             throws IOException {
         super.onLoad(parent, name);
@@ -178,6 +179,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
         this.nextBuildNumber = 1; // reset the next build number
     }
 
+    @Override
     protected void performDelete() throws IOException, InterruptedException {
         // if a build is in progress. Cancel it.
         RunT lb = getLastBuild();
@@ -307,6 +309,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
         return true;
     }
 
+    @Override
     protected SearchIndexBuilder makeSearchIndex() {
         return super.makeSearchIndex().add(new SearchIndex() {
             public void find(String token, List<SearchItem> result) {
@@ -537,7 +540,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
 
                 parent.onRenamed((TopLevelItem) this, oldName, newName);
 
-                for (ItemListener l : Hudson.getInstance().getJobListeners())
+                for (ItemListener l : ItemListener.all())
                     l.onRenamed(this, oldName, newName);
             }
         }
@@ -609,13 +612,8 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
      * be already gone (deleted, rotated, etc.)
      */
     public final RunT getNearestBuild(int n) {
-        SortedMap<Integer, ? extends RunT> m = _getRuns().headMap(n - 1); // the
-                                                                            // map
-                                                                            // should
-                                                                            // include
-                                                                            // n,
-                                                                            // so
-                                                                            // n-1
+        SortedMap<Integer, ? extends RunT> m = _getRuns().headMap(n - 1); // the map should
+                                                                          // include n, so n-1
         if (m.isEmpty())
             return null;
         return m.get(m.lastKey());
@@ -634,6 +632,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
         return m.get(m.firstKey());
     }
 
+    @Override
     public Object getDynamic(String token, StaplerRequest req,
             StaplerResponse rsp) {
         try {
@@ -1052,6 +1051,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
                         return this.run.number - that.run.number;
                     }
 
+                    @Override
                     public boolean equals(Object o) {
                         // HUDSON-2682 workaround for Eclipse compilation bug
                         // on (c instanceof ChartLabel)
@@ -1076,10 +1076,12 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
                             return ColorPalette.BLUE;
                     }
 
+                    @Override
                     public int hashCode() {
                         return run.hashCode();
                     }
 
+                    @Override
                     public String toString() {
                         String l = run.getDisplayName();
                         if (run instanceof Build) {
@@ -1223,6 +1225,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
      * We need to override the identical method in AbstractItem because we won't
      * call getACL(Job) otherwise (single dispatch)
      */
+    @Override
     public ACL getACL() {
         return Hudson.getInstance().getAuthorizationStrategy().getACL(this);
     }

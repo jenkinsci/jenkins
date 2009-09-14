@@ -113,6 +113,7 @@ public abstract class RetentionStrategy<T extends Computer> implements Describab
             c.connect(false);
         }
 
+        @Override
         public Descriptor<RetentionStrategy<?>> getDescriptor() {
             return DESCRIPTOR;
         }
@@ -213,7 +214,7 @@ public abstract class RetentionStrategy<T extends Computer> implements Describab
                     // we've been idle for long enough
                     logger.log(Level.INFO, "Disconnecting computer {0} as it has been idle for {1}",
                             new Object[]{c.getName(), Util.getTimeSpanString(idleMilliseconds)});
-                    c.disconnect();
+                    c.disconnect(OfflineCause.create(Messages._RetentionStrategy_Demand_OfflineIdle()));
                 }
             }
             return 1;

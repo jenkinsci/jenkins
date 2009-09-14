@@ -68,8 +68,6 @@ import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.HttpRedirect;
 import org.kohsuke.stapler.ForwardToView;
-import org.kohsuke.args4j.Argument;
-
 
 import javax.servlet.ServletException;
 import java.io.File;
@@ -225,6 +223,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
         updateTransientActions();
     }
 
+    @Override
     protected void performDelete() throws IOException, InterruptedException {
         // prevent a new build while a delete operation is in progress
         makeDisabled(true);
@@ -293,7 +292,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
      *
      * @return the root project value.
      */
-	public AbstractProject getRootProject() {
+    public AbstractProject getRootProject() {
         if (this.getParent() instanceof Hudson) {
             return this;
         } else {
@@ -405,7 +404,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
     }
     
     public boolean hasCustomScmCheckoutRetryCount(){
-    	return scmCheckoutRetryCount != null;
+        return scmCheckoutRetryCount != null;
     }
 
     public final boolean isBuildable() {
@@ -421,12 +420,12 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
     }
 
     public boolean blockBuildWhenUpstreamBuilding() {
-    	return blockBuildWhenUpstreamBuilding;
+        return blockBuildWhenUpstreamBuilding;
     }
 
     public void setBlockBuildWhenUpstreamBuilding(boolean b) throws IOException {
-    	blockBuildWhenUpstreamBuilding = b;
-	save();
+        blockBuildWhenUpstreamBuilding = b;
+        save();
     }
 
     public boolean isDisabled() {
@@ -437,13 +436,13 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
      * Validates the retry count Regex
      */
     public FormValidation doCheckRetryCount(@QueryParameter String value)throws IOException,ServletException{
-    	// retry count is optional so this is ok
-    	if(value == null || value.trim().equals(""))
-        	return FormValidation.ok();
-    	if (!value.matches("[0-9]*")) {
-    		return FormValidation.error("Invalid retry count");
-    	} 
-    	return FormValidation.ok();
+        // retry count is optional so this is ok
+        if(value == null || value.trim().equals(""))
+            return FormValidation.ok();
+        if (!value.matches("[0-9]*")) {
+            return FormValidation.error("Invalid retry count");
+        } 
+        return FormValidation.ok();
     }
 
     /**
@@ -676,16 +675,16 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
         return defValues;
     }
 
-	/**
+    /**
      * Schedules a build, and returns a {@link Future} object
      * to wait for the completion of the build.
      *
      * <p>
-     * Production code shouldn't be using this, but for tests, this is very convenience, so this isn't marked
+     * Production code shouldn't be using this, but for tests this is very convenient, so this isn't marked
      * as deprecated.
-	 */
+     */
     public Future<R> scheduleBuild2(int quietPeriod) {
-    	return scheduleBuild2(quietPeriod, new LegacyCodeCause());
+        return scheduleBuild2(quietPeriod, new LegacyCodeCause());
     }
     
     /**
@@ -817,6 +816,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
      * {@link BuildStep}s and others who want to add a project action
      * should do so by implementing {@link BuildStep#getProjectAction(AbstractProject)}.
      */
+    @Override
     public synchronized List<Action> getActions() {
         // add all the transient actions, too
         List<Action> actions = new Vector<Action>(super.getActions());
@@ -1229,9 +1229,10 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
      */
     protected abstract void buildDependencyGraph(DependencyGraph graph);
 
+    @Override
     protected SearchIndexBuilder makeSearchIndex() {
         SearchIndexBuilder sib = super.makeSearchIndex();
-        if(isBuildable() && Hudson.isAdmin())
+        if(isBuildable() && hasPermission(Hudson.ADMINISTER))
             sib.add("build","build");
         return sib;
     }

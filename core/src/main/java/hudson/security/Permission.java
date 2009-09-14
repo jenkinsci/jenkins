@@ -184,6 +184,7 @@ public final class Permission {
         }
     }
 
+    @Override
     public String toString() {
         return "Permission["+owner+','+name+']';
     }
@@ -258,30 +259,30 @@ public final class Permission {
     /**
      * Generic read access.
      */
-    public static final Permission READ = new Permission(GROUP,"GenericRead",HUDSON_ADMINISTER);
+    public static final Permission READ = new Permission(GROUP,"GenericRead",null,HUDSON_ADMINISTER);
 
     /**
      * Generic write access.
      */
-    public static final Permission WRITE = new Permission(GROUP,"GenericWrite",HUDSON_ADMINISTER);
+    public static final Permission WRITE = new Permission(GROUP,"GenericWrite",null,HUDSON_ADMINISTER);
 
     /**
      * Generic create access.
      */
-    public static final Permission CREATE = new Permission(GROUP,"GenericCreate",WRITE);
+    public static final Permission CREATE = new Permission(GROUP,"GenericCreate",null,WRITE);
 
     /**
      * Generic update access.
      */
-    public static final Permission UPDATE = new Permission(GROUP,"GenericUpdate",WRITE);
+    public static final Permission UPDATE = new Permission(GROUP,"GenericUpdate",null,WRITE);
 
     /**
      * Generic delete access.
      */
-    public static final Permission DELETE = new Permission(GROUP,"GenericDelete",WRITE);
+    public static final Permission DELETE = new Permission(GROUP,"GenericDelete",null,WRITE);
 
     /**
      * Generic configuration access.
      */
-    public static final Permission CONFIGURE = new Permission(GROUP,"GenericConfigure",UPDATE);
+    public static final Permission CONFIGURE = new Permission(GROUP,"GenericConfigure",null,UPDATE);
 }

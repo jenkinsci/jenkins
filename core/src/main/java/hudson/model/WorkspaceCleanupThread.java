@@ -70,8 +70,8 @@ public class WorkspaceCleanupThread extends AsyncPeriodicWork {
             this.listener = listener;
 
             Hudson h = Hudson.getInstance();
-            for (Slave s : h.getSlaves())
-                process(s);
+            for (Node n : h.getNodes())
+                if (n instanceof Slave) process((Slave)n);
 
             process(h);
         } finally {

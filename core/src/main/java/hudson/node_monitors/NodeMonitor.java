@@ -111,7 +111,7 @@ public abstract class NodeMonitor implements ExtensionPoint, Describable<NodeMon
      * @since 1.187
      */
     public static List<NodeMonitor> getAll() {
-        return ComputerSet.get_monitors();
+        return ComputerSet.getMonitors().toList();
     }
 
     /**
