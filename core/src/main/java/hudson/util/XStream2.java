@@ -25,6 +25,8 @@ package hudson.util;
 
 import com.thoughtworks.xstream.XStream;
 import com.thoughtworks.xstream.mapper.Mapper;
+import com.thoughtworks.xstream.mapper.MapperWrapper;
+import com.thoughtworks.xstream.mapper.ImmutableTypesMapper;
 import com.thoughtworks.xstream.converters.Converter;
 import com.thoughtworks.xstream.converters.DataHolder;
 import com.thoughtworks.xstream.converters.MarshallingContext;
@@ -34,6 +36,7 @@ import com.thoughtworks.xstream.io.HierarchicalStreamDriver;
 import com.thoughtworks.xstream.io.HierarchicalStreamReader;
 import com.thoughtworks.xstream.io.HierarchicalStreamWriter;
 import hudson.model.Hudson;
+import hudson.model.Result;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
@@ -80,6 +83,14 @@ public class XStream2 extends XStream {
 
         // replace default reflection converter
         registerConverter(new RobustReflectionConverter(getMapper(),new JVM().bestReflectionProvider()),-19);
+    }
+
+    @Override
+    protected MapperWrapper wrapMapper(MapperWrapper next) {
+        // list up types that should be marshalled out like a value, without referencial integrity tracking. 
+        ImmutableTypesMapper itm = new ImmutableTypesMapper(next);
+        itm.addImmutableType(Result.class);
+        return itm;
     }
 
     /**
