@@ -64,6 +64,9 @@ public class ArtifactArchiver extends Recorder {
      * Just keep the last successful artifact set, no more.
      */
     private final boolean latestOnly;
+    
+    private static final Boolean allowEmptyArchive = 
+    	Boolean.getBoolean(ArtifactArchiver.class.getName()+".warnOnEmpty");
 
     @DataBoundConstructor
     public ArtifactArchiver(String artifacts, String excludes, boolean latestOnly) {
@@ -82,6 +85,14 @@ public class ArtifactArchiver extends Recorder {
 
     public boolean isLatestOnly() {
         return latestOnly;
+    }
+    
+    private void listenerWarnOrError(BuildListener listener, String message) {
+    	if (allowEmptyArchive) {
+    		listener.getLogger().println(String.format("WARN: %s", message));
+    	} else {
+    		listener.error(message);
+    	}
     }
 
     public boolean perform(AbstractBuild<?,?> build, Launcher launcher, BuildListener listener) throws InterruptedException {
@@ -106,12 +117,14 @@ public class ArtifactArchiver extends Recorder {
                 if(build.getResult().isBetterOrEqualTo(Result.UNSTABLE)) {
                     // If the build failed, don't complain that there was no matching artifact.
                     // The build probably didn't even get to the point where it produces artifacts. 
-                    listener.error(Messages.ArtifactArchiver_NoMatchFound(artifacts));
+                    listenerWarnOrError(listener, Messages.ArtifactArchiver_NoMatchFound(artifacts));
                     String msg = ws.validateAntFileMask(artifacts);
                     if(msg!=null)
-                        listener.error(msg);
+                        listenerWarnOrError(listener, msg);
                 }
-                build.setResult(Result.FAILURE);
+                if (!allowEmptyArchive) {
+                	build.setResult(Result.FAILURE);
+                }
                 return true;
             }
         } catch (IOException e) {
