@@ -899,14 +899,16 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
     public Reader getLogReader() throws IOException {
     	File logFile = getLogFile();
     	if (logFile.exists() ) {
-    		return new FileReader(logFile);
+            if (charset==null)  return new FileReader(logFile); // fall back
+    		return new InputStreamReader(new FileInputStream(logFile),charset);
     	} 
 
     	File compressedLogFile = new File(logFile.getParentFile(), logFile.getName()+ ".gz");
     	if (compressedLogFile.exists()) {
-    		return new InputStreamReader(
-    				new GZIPInputStream(
-    						new FileInputStream(compressedLogFile)));
+            GZIPInputStream is = new GZIPInputStream(new FileInputStream(compressedLogFile));
+
+            if (charset==null)  return new InputStreamReader(is);
+            else                return new InputStreamReader(is,charset);
     	} 
     	
     	return null;
