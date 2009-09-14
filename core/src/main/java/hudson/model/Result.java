@@ -105,6 +105,7 @@ public final class Result implements Serializable, CustomExportedBean {
     }
 
 
+    @Override
     public String toString() {
         return name;
     }

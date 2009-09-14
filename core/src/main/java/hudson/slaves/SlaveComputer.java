@@ -131,6 +131,7 @@ public class SlaveComputer extends Computer {
         return isUnix;
     }
 
+    @Override
     public Slave getNode() {
         return (Slave)super.getNode();
     }
@@ -283,6 +284,7 @@ public class SlaveComputer extends Computer {
         Channel channel = new Channel(nodeName,threadPoolForRemoting, Channel.Mode.NEGOTIATE,
             in,out, launchLog);
         channel.addListener(new Channel.Listener() {
+            @Override
             public void onClosed(Channel c,IOException cause) {
                 SlaveComputer.this.channel = null;
                 offlineCause = new ChannelTermination(cause);

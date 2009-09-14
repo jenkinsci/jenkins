@@ -391,6 +391,7 @@ public abstract class SecurityRealm implements Describable<SecurityRealm>, Exten
          * This special instance is not configurable explicitly,
          * so it doesn't have a descriptor.
          */
+        @Override
         public Descriptor<SecurityRealm> getDescriptor() {
             return null;
         }

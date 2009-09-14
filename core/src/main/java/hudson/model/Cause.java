@@ -53,45 +53,45 @@ public abstract class Cause {
      * <p>
      * By default, this method is used to render HTML as well.
      */
-	@Exported(visibility=3)
-	abstract public String getShortDescription();
+    @Exported(visibility=3)
+    abstract public String getShortDescription();
 
     /**
      * Fall back implementation when no other type is available.
      */
-	public static class LegacyCodeCause extends Cause {
-		private StackTraceElement [] stackTrace;
-		public LegacyCodeCause() {
-			stackTrace = new Exception().getStackTrace();
-		}
-		
-		@Override
-		public String getShortDescription() {
-			return Messages.Cause_LegacyCodeCause_ShortDescription();
-		}
-	}
-	
+    public static class LegacyCodeCause extends Cause {
+        private StackTraceElement [] stackTrace;
+        public LegacyCodeCause() {
+            stackTrace = new Exception().getStackTrace();
+        }
+        
+        @Override
+        public String getShortDescription() {
+            return Messages.Cause_LegacyCodeCause_ShortDescription();
+        }
+    }
+    
     /**
      * A build is triggered by the completion of another build (AKA upstream build.)
      */
-	public static class UpstreamCause extends Cause {
-		private String upstreamProject, upstreamUrl;
-		private int upstreamBuild;
-		@Deprecated
-		private transient Cause upstreamCause;
-		private List<Cause> upstreamCauses;
-		
-		// for backward bytecode compatibility
-		public UpstreamCause(AbstractBuild<?,?> up) {
-		    this((Run<?,?>)up);
-		}
-		
-		public UpstreamCause(Run<?, ?> up) {
-			upstreamBuild = up.getNumber();
-			upstreamProject = up.getParent().getName();
-			upstreamUrl = up.getParent().getUrl();
-			upstreamCauses = new ArrayList<Cause>(up.getCauses());
-		}
+    public static class UpstreamCause extends Cause {
+        private String upstreamProject, upstreamUrl;
+        private int upstreamBuild;
+        @Deprecated
+        private transient Cause upstreamCause;
+        private List<Cause> upstreamCauses;
+        
+        // for backward bytecode compatibility
+        public UpstreamCause(AbstractBuild<?,?> up) {
+            this((Run<?,?>)up);
+        }
+        
+        public UpstreamCause(Run<?, ?> up) {
+            upstreamBuild = up.getNumber();
+            upstreamProject = up.getParent().getName();
+            upstreamUrl = up.getParent().getUrl();
+            upstreamCauses = new ArrayList<Cause>(up.getCauses());
+        }
 
         public String getUpstreamProject() {
             return upstreamProject;
@@ -104,41 +104,41 @@ public abstract class Cause {
         public String getUpstreamUrl() {
             return upstreamUrl;
         }
-		
-		@Override
-		public String getShortDescription() {
-			return Messages.Cause_UpstreamCause_ShortDescription(upstreamProject, Integer.toString(upstreamBuild));
-		}
-		
-		private Object readResolve() {
-			if(upstreamCause != null) {
-				if(upstreamCauses == null) upstreamCauses = new ArrayList<Cause>();
-				upstreamCauses.add(upstreamCause);
-				upstreamCause=null;
-			}
-			return this;
-		}
-	}
+        
+        @Override
+        public String getShortDescription() {
+            return Messages.Cause_UpstreamCause_ShortDescription(upstreamProject, Integer.toString(upstreamBuild));
+        }
+        
+        private Object readResolve() {
+            if(upstreamCause != null) {
+                if(upstreamCauses == null) upstreamCauses = new ArrayList<Cause>();
+                upstreamCauses.add(upstreamCause);
+                upstreamCause=null;
+            }
+            return this;
+        }
+    }
 
     /**
      * A build is started by an user action.
      */
-	public static class UserCause extends Cause {
-		private String authenticationName;
-		public UserCause() {
-			this.authenticationName = Hudson.getAuthentication().getName();
-		}
+    public static class UserCause extends Cause {
+        private String authenticationName;
+        public UserCause() {
+            this.authenticationName = Hudson.getAuthentication().getName();
+        }
 
         @Exported
         public String getUserName() {
             return authenticationName;
         }
 
-		@Override
-		public String getShortDescription() {
-			return Messages.Cause_UserCause_ShortDescription(authenticationName);
-		}
-	}
+        @Override
+        public String getShortDescription() {
+            return Messages.Cause_UserCause_ShortDescription(authenticationName);
+        }
+    }
 
     public static class RemoteCause extends Cause {
         private String addr;

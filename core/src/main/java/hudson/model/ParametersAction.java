@@ -38,7 +38,6 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 /**
@@ -64,7 +63,7 @@ public class ParametersAction implements Action, Iterable<ParameterValue>, Queue
     }
     
     public ParametersAction(ParameterValue... parameters) {
-    	this(Arrays.asList(parameters));
+        this(Arrays.asList(parameters));
     }
 
     public void createBuildWrappers(AbstractBuild<?,?> build, Collection<? super BuildWrapper> result) {
@@ -127,18 +126,17 @@ public class ParametersAction implements Action, Iterable<ParameterValue>, Queue
     /**
      * Allow an other build of the same project to be scheduled, if it has other parameters.
      */
-	public boolean shouldSchedule(List<Action> actions) {
-		List<ParametersAction> others = Util.filter(actions, ParametersAction.class);
-		if (others.isEmpty()) {
-			return !parameters.isEmpty();
-		} else {
-			// I don't think we need multiple ParametersActions, but let's be defensive 
-			Set<ParameterValue> parameters = new HashSet<ParameterValue>();
-			for (ParametersAction other: others) {
-				parameters.addAll(other.parameters);
-			}
-		return !parameters.equals(new HashSet<ParameterValue>(this.parameters));
-		}
-	}
-
+    public boolean shouldSchedule(List<Action> actions) {
+        List<ParametersAction> others = Util.filter(actions, ParametersAction.class);
+        if (others.isEmpty()) {
+            return !parameters.isEmpty();
+        } else {
+            // I don't think we need multiple ParametersActions, but let's be defensive 
+            Set<ParameterValue> parameters = new HashSet<ParameterValue>();
+            for (ParametersAction other: others) {
+                parameters.addAll(other.parameters);
+            }
+        return !parameters.equals(new HashSet<ParameterValue>(this.parameters));
+        }
+    }
 }

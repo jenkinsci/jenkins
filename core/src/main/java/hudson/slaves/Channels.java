@@ -72,6 +72,7 @@ public class Channels {
             /**
              * Kill the process when the channel is severed.
              */
+            @Override
             protected synchronized void terminate(IOException e) {
                 super.terminate(e);
                 try {
@@ -85,6 +86,7 @@ public class Channels {
                 }
             }
 
+            @Override
             public synchronized void close() throws IOException {
                 super.close();
                 // wait for Maven to complete
@@ -106,12 +108,14 @@ public class Channels {
             /**
              * Kill the process when the channel is severed.
              */
+            @Override
             protected synchronized void terminate(IOException e) {
                 super.terminate(e);
                 proc.destroy();
                 // the stderr copier should exit by itself
             }
 
+            @Override
             public synchronized void close() throws IOException {
                 super.close();
                 // wait for Maven to complete

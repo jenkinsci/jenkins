@@ -235,6 +235,7 @@ public class Ant extends Builder {
         return base.child("build.xml");
     }
 
+    @Override
     public DescriptorImpl getDescriptor() {
         return (DescriptorImpl)super.getDescriptor();
     }
@@ -268,6 +269,7 @@ public class Ant extends Builder {
                 installations = (AntInstallation[]) oldPropertyBag.get("installations");
         }
 
+        @Override
         public String getHelpFile() {
             return "/help/project-config/ant.html";
         }
@@ -280,6 +282,7 @@ public class Ant extends Builder {
             return installations;
         }
 
+        @Override
         public Ant newInstance(StaplerRequest req, JSONObject formData) throws FormException {
             return (Ant)req.bindJSON(clazz,formData);
         }

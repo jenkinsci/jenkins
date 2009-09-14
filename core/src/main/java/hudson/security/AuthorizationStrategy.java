@@ -231,10 +231,12 @@ public abstract class AuthorizationStrategy implements Describable<Authorization
                 return Messages.AuthorizationStrategy_DisplayName();
             }
 
+            @Override
             public AuthorizationStrategy newInstance(StaplerRequest req, JSONObject formData) throws FormException {
                 return UNSECURED;
             }
 
+            @Override
             public String getHelpFile() {
                 return "/help/security/no-authorization.html";
             }

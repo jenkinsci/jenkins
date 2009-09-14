@@ -69,6 +69,7 @@ public class MatrixConfiguration extends Project<MatrixConfiguration,MatrixRun> 
         setCombination(c);
     }
 
+    @Override
     public void onLoad(ItemGroup<? extends Item> parent, String name) throws IOException {
         // directory name is not a name for us --- it's taken from the combination name
         super.onLoad(parent, combination.toString());
@@ -115,6 +116,7 @@ public class MatrixConfiguration extends Project<MatrixConfiguration,MatrixRun> 
         return n;
     }
 
+    @Override
     public int assignBuildNumber() throws IOException {
         int nb = getNextBuildNumber();
         MatrixRun r = getLastBuild();
@@ -128,6 +130,7 @@ public class MatrixConfiguration extends Project<MatrixConfiguration,MatrixRun> 
         return combination.toCompactString(getParent().getAxes());
     }
 
+    @Override
     public MatrixProject getParent() {
         return (MatrixProject)super.getParent();
     }
@@ -187,6 +190,7 @@ public class MatrixConfiguration extends Project<MatrixConfiguration,MatrixRun> 
     protected void buildDependencyGraph(DependencyGraph graph) {
     }
 
+    @Override
     public MatrixConfiguration asProject() {
         return this;
     }
@@ -259,6 +263,7 @@ public class MatrixConfiguration extends Project<MatrixConfiguration,MatrixRun> 
      * @deprecated
      *      Not supported.
      */
+    @Override
     public void setJDK(JDK jdk) throws IOException {
         throw new UnsupportedOperationException();
     }
@@ -267,6 +272,7 @@ public class MatrixConfiguration extends Project<MatrixConfiguration,MatrixRun> 
      * @deprecated
      *      Value is controlled by {@link MatrixProject}.
      */
+    @Override
     public void setLogRotator(LogRotator logRotator) {
         throw new UnsupportedOperationException();
     }
@@ -305,8 +311,7 @@ public class MatrixConfiguration extends Project<MatrixConfiguration,MatrixRun> 
      * @param parameters
      *      Can be null.
      */
-	public boolean scheduleBuild(ParametersAction parameters, Cause c) {
+    public boolean scheduleBuild(ParametersAction parameters, Cause c) {
         return Hudson.getInstance().getQueue().schedule(this, getQuietPeriod(), parameters, new CauseAction(c))!=null;
-	}
-	
+    }
 }

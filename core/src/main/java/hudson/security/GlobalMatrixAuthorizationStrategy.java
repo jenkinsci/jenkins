@@ -241,6 +241,7 @@ public class GlobalMatrixAuthorizationStrategy extends AuthorizationStrategy {
             return Messages.GlobalMatrixAuthorizationStrategy_DisplayName();
         }
 
+        @Override
         public AuthorizationStrategy newInstance(StaplerRequest req, JSONObject formData) throws FormException {
             GlobalMatrixAuthorizationStrategy gmas = create();
             for(Map.Entry<String,JSONObject> r : (Set<Map.Entry<String,JSONObject>>)formData.getJSONObject("data").entrySet()) {

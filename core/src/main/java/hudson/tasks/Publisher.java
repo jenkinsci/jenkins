@@ -67,6 +67,7 @@ public abstract class Publisher extends BuildStepCompatibilityLayer implements B
      *      Don't extend from {@link Publisher} directly. Instead, choose {@link Recorder} or {@link Notifier}
      *      as your base class.
      */
+    @Deprecated
     protected Publisher() {
     }
 
@@ -92,7 +93,7 @@ public abstract class Publisher extends BuildStepCompatibilityLayer implements B
     }
 
     /**
-     * Returne true if this {@link Publisher} needs to run after the build result is
+     * Return true if this {@link Publisher} needs to run after the build result is
      * fully finalized.
      *
      * <p>

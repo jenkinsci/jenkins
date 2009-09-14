@@ -332,6 +332,7 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
         public CloudList() {// needed for XStream deserialization
         }
 
+        @Override
         protected void onModified() throws IOException {
             super.onModified();
             Hudson.getInstance().trimLabels();
@@ -662,7 +663,7 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
      *
      * @deprecated
      */
-    @Deprecated
+    @Deprecated @Override
     public String getNodeName() {
         return "";
     }
@@ -1288,6 +1289,7 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
         return queue;
     }
 
+    @Override
     public String getDisplayName() {
         return Messages.Hudson_DisplayName();
     }
@@ -1601,6 +1603,7 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
         return new FilePath(getRootDir());
     }
 
+    @Override
     public FilePath createPath(String absolutePath) {
         return new FilePath((VirtualChannel)null,absolutePath);
     }
@@ -1722,6 +1725,7 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
      *
      * @see AuthorizationStrategy#getRootACL()
      */
+    @Override
     public ACL getACL() {
         return authorizationStrategy.getRootACL();
     }
@@ -1940,6 +1944,7 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
         return fixNull(label).trim();
     }
 
+    @Override
     public Label getSelfLabel() {
         return getLabel("master");
     }
@@ -2636,6 +2641,7 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
         rsp.sendRedirect2(req.getContextPath()+"/");
 
         new Thread("Hudson config reload thread") {
+            @Override
             public void run() {
                 try {
                     load();
@@ -3160,6 +3166,7 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
         /**
          * Returns "" to match with {@link Hudson#getNodeName()}.
          */
+        @Override
         public String getName() {
             return "";
         }
@@ -3179,6 +3186,7 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
             return Messages.Hudson_Computer_Caption();
         }
 
+        @Override
         public String getUrl() {
             return "computer/(master)/";
         }
@@ -3195,6 +3203,7 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
             rsp.sendError(SC_BAD_REQUEST);
         }
 
+        @Override
         public void doConfigSubmit(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
             // the master node isn't in the Hudson.getNodes(), so this method makes no sense.
             throw new UnsupportedOperationException();

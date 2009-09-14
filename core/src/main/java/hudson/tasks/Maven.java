@@ -311,11 +311,13 @@ public class Maven extends Builder {
             return true;
         }
 
+        @Override
         protected void convert(Map<String, Object> oldPropertyBag) {
             if(oldPropertyBag.containsKey("installations"))
                 installations = (MavenInstallation[]) oldPropertyBag.get("installations");
         }
 
+        @Override
         public String getHelpFile() {
             return "/help/project-config/maven.html";
         }

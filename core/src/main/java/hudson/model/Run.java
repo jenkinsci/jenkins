@@ -543,6 +543,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
         return state ==State.NOT_STARTED;
     }
 
+    @Override
     public String toString() {
         return getFullDisplayName();
     }
@@ -876,6 +877,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
             return href;
         }
 
+        @Override
         public String toString() {
             return relativePath;
         }
@@ -910,6 +912,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
     	return null;
     }
     
+    @Override
     protected SearchIndexBuilder makeSearchIndex() {
         SearchIndexBuilder builder = super.makeSearchIndex()
                 .add("console")
@@ -1592,6 +1595,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
          * The entry unique ID needs to be tied to a project, so that
          * new builds will replace the old result.
          */
+        @Override
         public String getEntryID(Run e) {
             // can't use a meaningful year field unless we remember when the job was created.
             return "tag:hudson.dev.java.net,2008:"+e.getParent().getAbsoluteUrl();

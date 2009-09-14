@@ -95,6 +95,7 @@ public class ArtifactArchiver extends Recorder {
     	}
     }
 
+    @Override
     public boolean perform(AbstractBuild<?,?> build, Launcher launcher, BuildListener listener) throws InterruptedException {
         if(artifacts.length()==0) {
             listener.error(Messages.ArtifactArchiver_NoIncludes());
@@ -137,7 +138,8 @@ public class ArtifactArchiver extends Recorder {
         return true;
     }
 
-    public @Override boolean prebuild(AbstractBuild<?, ?> build, BuildListener listener) {
+    @Override
+    public boolean prebuild(AbstractBuild<?, ?> build, BuildListener listener) {
         if(latestOnly) {
             AbstractBuild<?,?> b = build.getProject().getLastCompletedBuild();
             Result bestResultSoFar = Result.NOT_BUILT;
@@ -190,6 +192,7 @@ public class ArtifactArchiver extends Recorder {
             return FilePath.validateFileMask(project.getSomeWorkspace(),value);
         }
 
+        @Override
         public ArtifactArchiver newInstance(StaplerRequest req, JSONObject formData) throws FormException {
             return req.bindJSON(ArtifactArchiver.class,formData);
         }

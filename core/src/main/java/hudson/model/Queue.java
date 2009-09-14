@@ -273,7 +273,7 @@ public class Queue extends ResourceController implements Saveable {
                 }
             }
         } catch (IOException e) {
-            LOGGER.log(Level.WARNING, "Failed to load the queue file " + getQueueFile(), e);
+            LOGGER.log(Level.WARNING, "Failed to load the queue file " + getXMLQueueFile(), e);
         }
     }
 
@@ -293,7 +293,7 @@ public class Queue extends ResourceController implements Saveable {
         try {
             new XmlFile(XSTREAM, getXMLQueueFile()).write(items);
         } catch (IOException e) {
-            LOGGER.log(Level.WARNING, "Failed to write out the queue file " + getQueueFile(), e);
+            LOGGER.log(Level.WARNING, "Failed to write out the queue file " + getXMLQueueFile(), e);
         }
     }
 
@@ -1062,7 +1062,7 @@ public class Queue extends ResourceController implements Saveable {
         /**
          * Used to render the HTML. Should be a human readable text of what this executable is.
          */
-        String toString();
+        @Override String toString();
     }
 
     /*package*/ static final class FutureImpl extends AsyncFutureImpl<Executable> {

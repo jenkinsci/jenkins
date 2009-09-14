@@ -148,7 +148,7 @@ public class CVSSCM extends SCM implements Serializable {
 
     private boolean isTag;
 
-	 private String excludedRegions;
+    private String excludedRegions;
 
     @DataBoundConstructor
     public CVSSCM(String cvsRoot, String allModules,String branch,String cvsRsh,boolean canUseUpdate, boolean legacy, boolean isTag, String excludedRegions) {
@@ -162,7 +162,7 @@ public class CVSSCM extends SCM implements Serializable {
         this.canUseUpdate = canUseUpdate;
         this.flatten = !legacy && getAllModulesNormalized().length==1;
         this.isTag = isTag;
-	    this.excludedRegions = excludedRegions;
+        this.excludedRegions = excludedRegions;
     }
 
     @Override
@@ -208,6 +208,7 @@ public class CVSSCM extends SCM implements Serializable {
         return workspace.child(getAllModulesNormalized()[0]);
     }
 
+    @Override
     public FilePath[] getModuleRoots(FilePath workspace) {
         if (!flatten) {
             final String[] moduleLocations = getAllModulesNormalized();
@@ -228,18 +229,17 @@ public class CVSSCM extends SCM implements Serializable {
         return module;
     }
 
-	 public String getExcludedRegions() {
-		  return excludedRegions;
-	 }
+    public String getExcludedRegions() {
+        return excludedRegions;
+    }
 
-	 public String[] getExcludedRegionsNormalized() {
-		  return excludedRegions == null ? null : excludedRegions.split("[\\r\\n]+");
-	 }
+    public String[] getExcludedRegionsNormalized() {
+        return excludedRegions == null ? null : excludedRegions.split("[\\r\\n]+");
+    }
 
-	 private Pattern[] getExcludedRegionsPatterns() {
-		 String[] excludedRegions = getExcludedRegionsNormalized();
-		 if (excludedRegions != null)
-		 {
+    private Pattern[] getExcludedRegionsPatterns() {
+        String[] excludedRegions = getExcludedRegionsNormalized();
+        if (excludedRegions != null) {
 			 Pattern[] patterns = new Pattern[excludedRegions.length];
 
 			 int i = 0;
@@ -249,10 +249,10 @@ public class CVSSCM extends SCM implements Serializable {
 			 }
 
 			 return patterns;
-		 }
+        }
 
-		 return null;
-	 }
+        return null;
+    }
 
     /**
      * List up all modules to check out.
@@ -832,6 +832,7 @@ public class CVSSCM extends SCM implements Serializable {
                     final boolean[] hadError = new boolean[1];
 
                     ChangeLogTask task = new ChangeLogTask() {
+                        @Override
                         public void log(String msg, int msgLevel) {
                             if(msgLevel==org.apache.tools.ant.Project.MSG_ERR)
                                 hadError[0] = true;
@@ -929,10 +930,12 @@ public class CVSSCM extends SCM implements Serializable {
         }
     }
 
+    @Override
     public DescriptorImpl getDescriptor() {
         return (DescriptorImpl)super.getDescriptor();
     }
 
+    @Override
     public void buildEnvVars(AbstractBuild build, Map<String, String> env) {
         if(cvsRsh!=null)
             env.put("CVS_RSH",cvsRsh);
@@ -1075,6 +1078,7 @@ public class CVSSCM extends SCM implements Serializable {
             load();
         }
 
+        @Override
         protected void convert(Map<String, Object> oldPropertyBag) {
             cvsPassFile = (String)oldPropertyBag.get("cvspass");
         }
@@ -1115,6 +1119,7 @@ public class CVSSCM extends SCM implements Serializable {
             return noCompression;
         }
 
+        @Override
         public boolean configure( StaplerRequest req, JSONObject o ) {
             cvsPassFile = fixEmptyAndTrim(req.getParameter("cvspassFile"));
             cvsExe = fixEmptyAndTrim(o.getString("cvsExe"));
@@ -1253,7 +1258,7 @@ public class CVSSCM extends SCM implements Serializable {
             return FormValidation.ok();
         }
 
-	    /**
+        /**
          * Validates the excludeRegions Regex
          */
         public FormValidation doCheckExcludeRegions(@QueryParameter String value) {
@@ -1576,6 +1581,7 @@ public class CVSSCM extends SCM implements Serializable {
             this.tagSet = tagSet;
         }
 
+        @Override
         public synchronized void start() {
             for (Entry<AbstractBuild, String> e : tagSet.entrySet()) {
                 TagAction ta = e.getKey().getAction(TagAction.class);

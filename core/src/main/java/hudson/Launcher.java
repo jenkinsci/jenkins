@@ -670,12 +670,14 @@ public abstract class Launcher {
                 /**
                  * Kill the process when the channel is severed.
                  */
+                @Override
                 protected synchronized void terminate(IOException e) {
                     super.terminate(e);
                     ProcessTree pt = ProcessTree.get();
                     pt.killAll(proc,cookie);
                 }
 
+                @Override
                 public synchronized void close() throws IOException {
                     super.close();
                     // wait for all the output from the process to be picked up

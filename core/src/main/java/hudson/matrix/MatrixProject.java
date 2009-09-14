@@ -185,15 +185,15 @@ public class MatrixProject extends AbstractProject<MatrixProject,MatrixBuild> im
     /**
      * Sets the combination filter.
      *
-	 * @param combinationFilter the combinationFilter to set
-	 */
-	public void setCombinationFilter(String combinationFilter) throws IOException {
-		this.combinationFilter = combinationFilter;
-		rebuildConfigurations();
-		save();
-	}
+     * @param combinationFilter the combinationFilter to set
+     */
+    public void setCombinationFilter(String combinationFilter) throws IOException {
+        this.combinationFilter = combinationFilter;
+        rebuildConfigurations();
+        save();
+    }
 
-	/**
+    /**
      * Obtains the combination filter, used to trim down the size of the matrix.
      *
      * <p>
@@ -204,14 +204,14 @@ public class MatrixProject extends AbstractProject<MatrixProject,MatrixBuild> im
      * Namely, this expression is evaluated for each axis value combination, and only when it evaluates to true,
      * a corresponding {@link MatrixConfiguration} will be created and built. 
      *
-	 * @return can be null.
+     * @return can be null.
      * @since 1.279
-	 */
-	public String getCombinationFilter() {
-		return combinationFilter;
-	}
+     */
+    public String getCombinationFilter() {
+        return combinationFilter;
+    }
 
-	public String getTouchStoneCombinationFilter() {
+    public String getTouchStoneCombinationFilter() {
         return touchStoneCombinationFilter;
     }
 
@@ -228,6 +228,7 @@ public class MatrixProject extends AbstractProject<MatrixProject,MatrixBuild> im
         this.touchStoneResultCondition = touchStoneResultCondition;
     }
 
+    @Override
     protected void updateTransientActions() {
         synchronized(transientActions) {
             super.updateTransientActions();
@@ -274,6 +275,7 @@ public class MatrixProject extends AbstractProject<MatrixProject,MatrixBuild> im
         };
     }
 
+    @Override
     public void onLoad(ItemGroup<? extends Item> parent, String name) throws IOException {
         super.onLoad(parent,name);
         Collections.sort(axes); // perhaps the file was edited on disk and the sort order might have been broken
@@ -283,6 +285,7 @@ public class MatrixProject extends AbstractProject<MatrixProject,MatrixBuild> im
         rebuildConfigurations();
     }
 
+    @Override
     public void logRotate() throws IOException, InterruptedException {
         super.logRotate();
         // perform the log rotation of inactive configurations to make sure
@@ -452,6 +455,7 @@ public class MatrixProject extends AbstractProject<MatrixProject,MatrixBuild> im
         return f;
     }
 
+    @Override
     public Hudson getParent() {
         return Hudson.getInstance();
     }
@@ -540,6 +544,7 @@ public class MatrixProject extends AbstractProject<MatrixProject,MatrixBuild> im
         return this;
     }
 
+    @Override
     public Object getDynamic(String token, StaplerRequest req, StaplerResponse rsp) {
         try {
             MatrixConfiguration item = getItem(token);
@@ -551,6 +556,7 @@ public class MatrixProject extends AbstractProject<MatrixProject,MatrixBuild> im
         return super.getDynamic(token,req,rsp);
     }
 
+    @Override
     protected void submit(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException, FormException {
         super.submit(req, rsp);
 
