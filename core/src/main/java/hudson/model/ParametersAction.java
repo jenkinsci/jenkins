@@ -131,12 +131,12 @@ public class ParametersAction implements Action, Iterable<ParameterValue>, Queue
         if (others.isEmpty()) {
             return !parameters.isEmpty();
         } else {
-            // I don't think we need multiple ParametersActions, but let's be defensive 
+            // I don't think we need multiple ParametersActions, but let's be defensive
             Set<ParameterValue> parameters = new HashSet<ParameterValue>();
             for (ParametersAction other: others) {
                 parameters.addAll(other.parameters);
             }
-        return !parameters.equals(new HashSet<ParameterValue>(this.parameters));
+            return !parameters.equals(new HashSet<ParameterValue>(this.parameters));
         }
     }
 }
