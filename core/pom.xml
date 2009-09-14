@@ -43,6 +43,7 @@ THE SOFTWARE.
       <plugin>
         <groupId>org.jvnet.hudson.tools</groupId>
         <artifactId>maven-encoding-plugin</artifactId>
+        <version>1.1</version>
         <executions>
           <execution>
             <goals>
@@ -55,10 +56,20 @@ THE SOFTWARE.
       <plugin>
         <groupId>org.kohsuke.stapler</groupId>
         <artifactId>maven-stapler-plugin</artifactId>
+        <version>1.12</version>
+        <extensions>true</extensions>
+        <dependencies>
+          <dependency>
+            <groupId>org.jvnet.maven-jellydoc-plugin</groupId>
+            <artifactId>maven-jellydoc-plugin</artifactId>
+            <version>1.4</version>
+          </dependency>
+        </dependencies>
       </plugin>
       <plugin>
         <groupId>org.jvnet.localizer</groupId>
         <artifactId>maven-localizer-plugin</artifactId>
+        <version>1.10</version>
         <executions>
           <execution>
             <goals>
@@ -72,7 +83,6 @@ THE SOFTWARE.
         </executions>
       </plugin>
       <plugin>
-	<groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-antlr-plugin</artifactId>
         <configuration>
           <sourceDirectory>${basedir}/src/main/grammar</sourceDirectory>
@@ -117,7 +127,6 @@ THE SOFTWARE.
         </executions>
       </plugin>
       <plugin><!-- set main class -->
-	<groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-jar-plugin</artifactId>
         <configuration>
           <archive>
@@ -136,6 +145,7 @@ THE SOFTWARE.
         -->
         <groupId>org.codehaus.mojo</groupId>
         <artifactId>apt-maven-plugin</artifactId>
+        <version>1.0-alpha-2</version>
         <configuration>
           <force>true</force><!-- disable staleness check -->
           <factory>org.jvnet.hudson.tools.ExtensionPointListerFactory</factory>
@@ -183,6 +193,7 @@ THE SOFTWARE.
           <plugin><!-- execute apt:process for "Extension points" Wiki page generation -->
             <groupId>org.codehaus.mojo</groupId>
             <artifactId>apt-maven-plugin</artifactId>
+            <version>1.0-alpha-2</version>
             <executions>
               <execution>
                 <goals>
@@ -223,6 +234,7 @@ THE SOFTWARE.
           <plugin>
             <groupId>org.codehaus.mojo</groupId>
             <artifactId>findbugs-maven-plugin</artifactId>
+            <version>1.2</version>
             <configuration>
               <effort>Max</effort>
               <threshold>Normal</threshold>
@@ -261,7 +273,6 @@ THE SOFTWARE.
           </plugin>
           <plugin>
             <!-- unit tests are run by GMaven through Ant. -->
-	    <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-surefire-plugin</artifactId>
             <configuration>
               <skipTests>true</skipTests>
@@ -723,7 +734,6 @@ THE SOFTWARE.
         </configuration>
       </plugin>
       <plugin><!-- skip slow dependency analysis -->
-	<groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-project-info-reports-plugin</artifactId>
         <configuration>
           <dependencyLocationsEnabled>false</dependencyLocationsEnabled>

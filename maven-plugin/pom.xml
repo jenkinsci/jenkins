@@ -133,14 +133,19 @@ THE SOFTWARE.
             <plugin>
                 <groupId>org.jvnet.hudson.tools</groupId>
                 <artifactId>maven-hpi-plugin</artifactId>
+                <version>1.31</version>
+                <extensions>true</extensions>
             </plugin>
             <plugin>
                 <groupId>org.kohsuke.stapler</groupId>
                 <artifactId>maven-stapler-plugin</artifactId>
+                <version>1.11</version>
+                <extensions>true</extensions>
             </plugin>
             <plugin>
                 <groupId>org.jvnet.localizer</groupId>
                 <artifactId>maven-localizer-plugin</artifactId>
+                <version>1.8</version>
                 <executions>
                     <execution>
                         <goals>
@@ -157,8 +162,7 @@ THE SOFTWARE.
                 <!--
                   javadoc plugin 2.3 apparently interferes with the release process,
                   so sticking to 2.2 (http://www.nabble.com/description-setting-plugin-tp14846399p14950047.html)
-		-->
-		<groupId>org.apache.maven.plugins</groupId>
+                -->
                 <artifactId>maven-javadoc-plugin</artifactId>
                 <version>2.2</version>
             </plugin>

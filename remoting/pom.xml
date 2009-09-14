@@ -44,6 +44,7 @@ THE SOFTWARE.
       <plugin>
         <groupId>org.codehaus.mojo</groupId>
         <artifactId>findbugs-maven-plugin</artifactId>
+	<version>2.1</version>
         <configuration>
           <threshold>High</threshold>
         </configuration>
@@ -59,8 +60,7 @@ THE SOFTWARE.
         </configuration>
       </plugin>
       <plugin>
-	<groupId>org.apache.maven.plugins</groupId>
-	<artifactId>maven-jar-plugin</artifactId>
+        <artifactId>maven-jar-plugin</artifactId>
         <configuration>
           <archive>
             <manifest>

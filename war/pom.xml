@@ -45,8 +45,8 @@ THE SOFTWARE.
     
     <plugins>
       <plugin>
-	<groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-war-plugin</artifactId>
+        <version>2.0</version>
         <configuration>
           <webResources>
             <resource>
@@ -123,6 +123,7 @@ THE SOFTWARE.
         <!-- this is really just a patched version of maven-jetty-plugin to workaround issue #932 -->
         <groupId>org.jvnet.hudson.tools</groupId>
         <artifactId>maven-hudson-dev-plugin</artifactId>
+        <version>6.1.7</version>
         <configuration>
           <contextPath>${contextPath}</contextPath>
           <connectors>
@@ -245,6 +246,7 @@ THE SOFTWARE.
           <plugin>
             <groupId>org.jvnet.updatecenter2</groupId>
             <artifactId>maven-makepkgs-plugin</artifactId>
+            <version>0.3</version>
             <executions>
               <execution>
                 <goals>
