@@ -27,6 +27,7 @@ import hudson.AbortException;
 import hudson.Extension;
 import hudson.FilePath;
 import hudson.Util;
+import hudson.Launcher;
 import hudson.util.FormValidation;
 import hudson.util.ArgumentListBuilder;
 import hudson.model.Node;
@@ -45,14 +46,12 @@ import org.dom4j.Document;
 import org.dom4j.Element;
 
 import java.io.ByteArrayInputStream;
-import java.io.File;
-import java.io.FileFilter;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
-import java.io.Serializable;
 import java.io.PrintWriter;
+import java.io.InputStream;
 import java.net.URL;
 import java.net.HttpURLConnection;
 import java.net.URLEncoder;
@@ -61,6 +60,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Arrays;
+import java.util.Iterator;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -114,77 +114,11 @@ public class JDKInstaller extends ToolInstaller {
             URL url = locate(log, p, CPU.of(node));
 
             out.println("Downloading "+url);
-            FilePath file = expectedLocation.child(fileName(p));
+            FilePath file = expectedLocation.child(p.bundleFileName);
             file.copyFrom(url);
 
-            out.println("Installing "+file);
-            switch (p) {
-            case LINUX:
-            case SOLARIS:
-                file.chmod(0755);
-                if(node.createLauncher(log).launch().cmds(file.getRemote(),"-noregister")
-                    .stdin(new ByteArrayInputStream("yes".getBytes())).stdout(out).pwd(expectedLocation).join()!=0)
-                    throw new AbortException(Messages.JDKInstaller_FailedToInstallJDK());
-
-                // JDK creates its own sub-directory, so pull them up
-                List<FilePath> paths = expectedLocation.list(new JdkFinder());
-                if(paths.size()!=1)
-                    throw new AbortException("Failed to find the extracted JDKs: "+paths);
-
-                // remove the intermediate directory 
-                paths.get(0).moveAllChildrenTo(expectedLocation);
-                break;
-            case WINDOWS:
-                /*
-                    Windows silent installation is full of bad know-how.
-
-                    On Windows, command line argument to a process at the OS level is a single string,
-                    not a string array like POSIX. When we pass arguments as string array, JRE eventually
-                    turn it into a single string with adding quotes to "the right place". Unfortunately,
-                    with the strange argument layout of InstallShield (like /v/qn" INSTALLDIR=foobar"),
-                    it appears that the escaping done by JRE gets in the way, and prevents the installation.
-                    Presumably because of this, my attempt to use /q/vn" INSTALLDIR=foo" didn't work with JDK5.
-
-                    I tried to locate exactly how InstallShield parses the arguments (and why it uses
-                    awkward option like /qn, but couldn't find any. Instead, experiments revealed that
-                    "/q/vn ARG ARG ARG" works just as well. This is presumably due to the Visual C++ runtime library
-                    (which does single string -> string array conversion to invoke the main method in most Win32 process),
-                    and this consistently worked on JDK5 and JDK4.
-
-                    Some of the official documentations are available at
-                    - http://java.sun.com/j2se/1.5.0/sdksilent.html
-                    - http://java.sun.com/j2se/1.4.2/docs/guide/plugin/developer_guide/silent.html
-                 */
-                // see
-                //
-                
-                FilePath logFile = node.getRootPath().createTempFile("jdk-install",".log");
-                // JDK6u13 doesn't like path representation like "/tmp/foo", so make it a strict Windows format
-                String normalizedPath = expectedLocation.absolutize().getRemote();
-
-                ArgumentListBuilder args = new ArgumentListBuilder();
-                args.add(file.getRemote());
-                args.add("/s");
-                // according to http://community.acresso.com/showthread.php?t=83301, \" is the trick to quote values with whitespaces.
-                // Oh Windows, oh windows, why do you have to be so difficult?
-                args.add("/v/qn REBOOT=Suppress INSTALLDIR=\\\""+normalizedPath+"\\\" /L \\\""+logFile.getRemote()+"\\\"");
-                
-                if(node.createLauncher(log).launch().cmds(args).stdout(out).pwd(expectedLocation).join()!=0) {
-                    out.println(Messages.JDKInstaller_FailedToInstallJDK());
-                    // log file is in UTF-16
-                    InputStreamReader in = new InputStreamReader(logFile.read(), "UTF-16");
-                    try {
-                        IOUtils.copy(in,new OutputStreamWriter(out));
-                    } finally {
-                        in.close();
-                    }
-                    throw new AbortException();
-                }
-
-                logFile.delete();
-
-                break;
-            }
+            // JDK6u13 on Windows doesn't like path representation like "/tmp/foo", so make it a strict platform native format by doing 'absolutize'
+            install(node.createLauncher(log), p, new FilePathFileSystem(node), log, expectedLocation.absolutize().getRemote(), file.getRemote());
 
             // successfully installed
             file.delete();
@@ -198,26 +132,141 @@ public class JDKInstaller extends ToolInstaller {
     }
 
     /**
-     * Choose the file name suitable for the downloaded JDK bundle.
+     * Performs the JDK installation to a system, provided that the bundle was already downloaded.
+     *
+     * @param launcher
+     *      Used to launch processes on the system.
+     * @param p
+     *      Platform of the system. This determines how the bundle is installed.
+     * @param fs
+     *      Abstraction of the file system manipulation on this system.
+     * @param log
+     *      Where the output from the installation will be written.
+     * @param expectedLocation
+     *      Path to install JDK to. Must be absolute and in the native file system notation.
+     * @param jdkBundle
+     *      Path to the installed JDK bundle. (The bundle to download can be determined by {@link #locate(TaskListener, Platform, CPU)} call.)
      */
-    private String fileName(Platform p) {
+    public void install(Launcher launcher, Platform p, FileSystem fs, TaskListener log, String expectedLocation, String jdkBundle) throws IOException, InterruptedException {
+        PrintStream out = log.getLogger();
+
+        out.println("Installing "+ jdkBundle);
         switch (p) {
         case LINUX:
         case SOLARIS:
-            return "jdk.sh";
+            fs.chmod(jdkBundle,0755);
+            if(launcher.launch().cmds(jdkBundle,"-noregister")
+                .stdin(new ByteArrayInputStream("yes".getBytes())).stdout(out).pwd(expectedLocation).join()!=0)
+                throw new AbortException(Messages.JDKInstaller_FailedToInstallJDK());
+
+            // JDK creates its own sub-directory, so pull them up
+            List<String> paths = fs.listSubDirectories(expectedLocation);
+            for (Iterator<String> itr = paths.iterator(); itr.hasNext();) {
+                String s =  itr.next();
+                if (!s.matches("j(2s)?dk.*"))
+                    itr.remove();
+            }
+            if(paths.size()!=1)
+                throw new AbortException("Failed to find the extracted JDKs: "+paths);
+
+            // remove the intermediate directory
+            fs.pullUp(paths.get(0),expectedLocation);
+            break;
         case WINDOWS:
-            return "jdk.exe";
+            /*
+                Windows silent installation is full of bad know-how.
+
+                On Windows, command line argument to a process at the OS level is a single string,
+                not a string array like POSIX. When we pass arguments as string array, JRE eventually
+                turn it into a single string with adding quotes to "the right place". Unfortunately,
+                with the strange argument layout of InstallShield (like /v/qn" INSTALLDIR=foobar"),
+                it appears that the escaping done by JRE gets in the way, and prevents the installation.
+                Presumably because of this, my attempt to use /q/vn" INSTALLDIR=foo" didn't work with JDK5.
+
+                I tried to locate exactly how InstallShield parses the arguments (and why it uses
+                awkward option like /qn, but couldn't find any. Instead, experiments revealed that
+                "/q/vn ARG ARG ARG" works just as well. This is presumably due to the Visual C++ runtime library
+                (which does single string -> string array conversion to invoke the main method in most Win32 process),
+                and this consistently worked on JDK5 and JDK4.
+
+                Some of the official documentations are available at
+                - http://java.sun.com/j2se/1.5.0/sdksilent.html
+                - http://java.sun.com/j2se/1.4.2/docs/guide/plugin/developer_guide/silent.html
+             */
+            String logFile = jdkBundle+".install.log";
+
+            ArgumentListBuilder args = new ArgumentListBuilder();
+            args.add(jdkBundle);
+            args.add("/s");
+            // according to http://community.acresso.com/showthread.php?t=83301, \" is the trick to quote values with whitespaces.
+            // Oh Windows, oh windows, why do you have to be so difficult?
+            args.add("/v/qn REBOOT=Suppress INSTALLDIR=\\\""+ expectedLocation +"\\\" /L \\\""+logFile+"\\\"");
+
+            if(launcher.launch().cmds(args).stdout(out).pwd(expectedLocation).join()!=0) {
+                out.println(Messages.JDKInstaller_FailedToInstallJDK());
+                // log file is in UTF-16
+                InputStreamReader in = new InputStreamReader(fs.read(logFile), "UTF-16");
+                try {
+                    IOUtils.copy(in,new OutputStreamWriter(out));
+                } finally {
+                    in.close();
+                }
+                throw new AbortException();
+            }
+
+            fs.delete(logFile);
+
+            break;
         }
-        throw new AssertionError();
     }
 
     /**
-     * Finds the directory that JDK has created.
+     * Abstraction of the file system to perform JDK installation.
+     * Consider {@link FilePathFileSystem} as the canonical documentation of the contract.
      */
-    private static class JdkFinder implements FileFilter, Serializable {
-        private static final long serialVersionUID = 1L;
-        public boolean accept(File f) {
-            return f.isDirectory() && f.getName().matches("j(2s)?dk.*");
+    interface FileSystem {
+        void delete(String file) throws IOException, InterruptedException;
+        void chmod(String file,int mode) throws IOException, InterruptedException;
+        InputStream read(String file) throws IOException;
+        /**
+         * List sub-directories of the given directory and just return the file name portion.
+         */
+        List<String> listSubDirectories(String dir) throws IOException, InterruptedException;
+        void pullUp(String from, String to) throws IOException, InterruptedException;
+    }
+
+    private static final class FilePathFileSystem implements FileSystem {
+        private final Node node;
+
+        private FilePathFileSystem(Node node) {
+            this.node = node;
+        }
+
+        public void delete(String file) throws IOException, InterruptedException {
+            $(file).delete();
+        }
+
+        public void chmod(String file, int mode) throws IOException, InterruptedException {
+            $(file).chmod(mode);
+        }
+
+        public InputStream read(String file) throws IOException {
+            return $(file).read();
+        }
+
+        public List<String> listSubDirectories(String dir) throws IOException, InterruptedException {
+            List<String> r = new ArrayList<String>();
+            for( FilePath f : $(dir).listDirectories())
+                r.add(f.getName());
+            return r;
+        }
+
+        public void pullUp(String from, String to) throws IOException, InterruptedException {
+            $(from).moveAllChildrenTo($(to));
+        }
+
+        private FilePath $(String file) {
+            return node.createPath(file);
         }
     }
 
@@ -334,7 +383,16 @@ public class JDKInstaller extends ToolInstaller {
      * Supported platform.
      */
     public enum Platform {
-        LINUX, SOLARIS, WINDOWS;
+        LINUX("jdk.sh"), SOLARIS("jdk.sh"), WINDOWS("jdk.exe");
+
+        /**
+         * Choose the file name suitable for the downloaded JDK bundle.
+         */
+        public final String bundleFileName;
+
+        Platform(String bundleFileName) {
+            this.bundleFileName = bundleFileName;
+        }
 
         public boolean is(String line) {
             return line.contains(name());
