@@ -632,6 +632,14 @@ public class Channel implements VirtualChannel, IChannel {
     }
 
     /**
+     * If the receiving end of the channel is closed (that is, if we are guaranteed to receive nothing further),
+     * this method returns true.
+     */
+    /*package*/ boolean isInClosed() {
+        return inClosed;
+    }
+
+    /**
      * Waits for this {@link Channel} to be closed down, but only up the given milliseconds.
      *
      * @throws InterruptedException

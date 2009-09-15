@@ -112,8 +112,15 @@ abstract class Request<RSP extends Serializable,EXC extends Throwable> extends C
             final String name = t.getName();
             try {
                 t.setName(name+" / waiting for "+channel);
-                while(response==null)
-                    wait(); // wait until the response arrives
+                while(response==null && !channel.isInClosed())
+                    // I don't know exactly when this can happen, as pendingCalls are cleaned up by Channel,
+                    // but in production I've observed that in rare occasion it can block forever, even after a channel
+                    // is gone. So be defensive against that.
+                    wait(30*1000); // wait until the response arrives
+
+                if (response==null)
+                    // channel is closed and we still don't have a response
+                    throw new RequestAbortedException(null);
             } catch (InterruptedException e) {
                 // if we are cancelled, abort the remote computation, too
                 channel.send(new Cancel(id));
