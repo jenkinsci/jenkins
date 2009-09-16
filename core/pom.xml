@@ -317,6 +317,11 @@ THE SOFTWARE.
       <version>1.0</version>
     </dependency>
     <dependency>
+      <groupId>org.jvnet.hudson</groupId>
+      <artifactId>trilead-ssh2</artifactId>
+      <version>build212-hudson-5</version>
+    </dependency>
+    <dependency>
       <groupId>org.kohsuke.stapler</groupId>
       <artifactId>stapler-jelly</artifactId>
       <version>1.114</version>
