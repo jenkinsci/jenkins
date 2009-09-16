@@ -138,7 +138,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
      * so it may point to the build that's already completed. This pointer is set to 'this'
      * if the computation determines that everything earlier than this build is already completed.
      */
-    private volatile transient RunT previousBuildInProgress;
+    /* does not compile on JDK 7: private*/ volatile transient RunT previousBuildInProgress;
 
     /**
      * When the build is scheduled.
