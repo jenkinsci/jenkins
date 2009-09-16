@@ -35,6 +35,9 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
 import java.util.List;
 import java.util.Collections;
+import java.util.logging.Logger;
+import java.util.logging.Level;
+import static java.util.logging.Level.SEVERE;
 
 /**
  * Slave agent engine that proactively connects to Hudson master.
@@ -162,7 +165,7 @@ public class Engine extends Thread {
                     return;
                 }
 
-                Socket s = connect(port);
+                final Socket s = connect(port);
 
                 listener.status("Handshaking");
                 DataOutputStream dos = new DataOutputStream(s.getOutputStream());
@@ -170,12 +173,26 @@ public class Engine extends Thread {
                 dos.writeUTF(secretKey);
                 dos.writeUTF(slaveName);
 
-                Channel channel = new Channel("channel", executor,
+                final Channel channel = new Channel("channel", executor,
                         new BufferedInputStream(s.getInputStream()),
                         new BufferedOutputStream(s.getOutputStream()));
+                PingThread t = new PingThread(channel) {
+                    protected void onDead() {
+                        try {
+                            if (!channel.isInClosed()) {
+                                LOGGER.info("Ping failed. Terminating the socket.");
+                                s.close();
+                            }
+                        } catch (IOException e) {
+                            LOGGER.log(SEVERE, "Failed to terminate the socket", e);
+                        }
+                    }
+                };
+                t.start();
                 listener.status("Connected");
                 channel.join();
                 listener.status("Terminated");
+                t.interrupt();  // make sure the ping thread is terminated
                 listener.onDisconnect();
 
                 if(noReconnect)
@@ -248,4 +265,6 @@ public class Engine extends Thread {
     }
 
     private static final ThreadLocal<Engine> CURRENT = new ThreadLocal<Engine>();
+
+    private static final Logger LOGGER = Logger.getLogger(Engine.class.getName());
 }
