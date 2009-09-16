@@ -23,6 +23,10 @@
  */
 package hudson.model;
 
+import hudson.tasks.BuildStep;
+import hudson.tasks.BuildWrapper;
+import hudson.triggers.Trigger;
+
 /**
  * Marker interface for {@link Action}s that should be displayed
  * at the top of the project page.
@@ -32,6 +36,9 @@ package hudson.model;
  * users' attention.
  *
  * @author Kohsuke Kawaguchi
+ * @see BuildStep#getProjectAction(AbstractProject)
+ * @see BuildWrapper#getProjectAction(AbstractProject)
+ * @see Trigger#getProjectAction()
  */
 public interface ProminentProjectAction extends Action {
     // TODO: do the rendering of the part from the action page
