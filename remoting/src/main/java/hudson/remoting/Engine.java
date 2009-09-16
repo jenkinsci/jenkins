@@ -207,7 +207,9 @@ public class Engine extends Thread {
         int retry = 1;
         while(true) {
             try {
-                return new Socket(host, Integer.parseInt(port));
+                Socket s = new Socket(host, Integer.parseInt(port));
+                s.setTcpNoDelay(true); // we'll do buffering by ourselves
+                return s;
             } catch (IOException e) {
                 if(retry++>10)
                     throw e;
