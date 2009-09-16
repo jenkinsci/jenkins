@@ -224,7 +224,7 @@ public class JDKInstaller extends ToolInstaller {
      * Abstraction of the file system to perform JDK installation.
      * Consider {@link FilePathFileSystem} as the canonical documentation of the contract.
      */
-    interface FileSystem {
+    public interface FileSystem {
         void delete(String file) throws IOException, InterruptedException;
         void chmod(String file,int mode) throws IOException, InterruptedException;
         InputStream read(String file) throws IOException;
