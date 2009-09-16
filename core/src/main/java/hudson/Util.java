@@ -37,6 +37,7 @@ import org.apache.tools.ant.types.FileSet;
 import org.apache.tools.ant.taskdefs.Chmod;
 import org.apache.tools.ant.taskdefs.Copy;
 import org.apache.commons.lang.time.FastDateFormat;
+import org.apache.commons.io.IOUtils;
 import org.kohsuke.stapler.Stapler;
 import org.jvnet.animal_sniffer.IgnoreJRERequirement;
 
@@ -402,6 +403,24 @@ public class Util {
         int len;
         while((len=in.read(buf))>0)
             out.write(buf,0,len);
+    }
+
+    public static void copyStreamAndClose(InputStream in,OutputStream out) throws IOException {
+        try {
+            copyStream(in,out);
+        } finally {
+            IOUtils.closeQuietly(in);
+            IOUtils.closeQuietly(out);
+        }
+    }
+
+    public static void copyStreamAndClose(Reader in,Writer out) throws IOException {
+        try {
+            copyStream(in,out);
+        } finally {
+            IOUtils.closeQuietly(in);
+            IOUtils.closeQuietly(out);
+        }
     }
 
     /**
