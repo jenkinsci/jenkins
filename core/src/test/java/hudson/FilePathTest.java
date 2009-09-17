@@ -36,6 +36,7 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
 
 import org.junit.Assert;
+import org.apache.commons.io.output.NullOutputStream;
 
 /**
  * @author Kohsuke Kawaguchi
@@ -100,6 +101,18 @@ public class FilePathTest extends TestCase {
 
             Assert.assertTrue("could not delete target " + tmp.getPath(), tmp.delete());
             Assert.assertTrue("could not delete target " + tmp2.getPath(), tmp2.delete());
+        }
+    }
+
+    public void testArchiveBug4039() throws Exception {
+        File tmp = Util.createTempDir();
+        try {
+            FilePath d = new FilePath(french,tmp.getPath());
+            d.child("test").touch(0);
+            d.zip(new NullOutputStream());
+            d.zip(new NullOutputStream(),"**/*");
+        } finally {
+            Util.deleteRecursive(tmp);
         }
     }
 }
