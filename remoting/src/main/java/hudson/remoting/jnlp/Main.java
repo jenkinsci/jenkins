@@ -104,9 +104,9 @@ public class Main {
         CmdLineParser p = new CmdLineParser(m);
         p.parseArgument(args);
         if(m.args.size()!=2)
-            throw new CmdLineException(p,"two arguments required, but got "+m.args);
+            throw new CmdLineException("two arguments required, but got "+m.args);
         if(m.urls.isEmpty())
-            throw new CmdLineException(p,"At least one -url option is required.");
+            throw new CmdLineException("At least one -url option is required.");
 
         m.main();
     }
