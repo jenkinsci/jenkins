@@ -43,6 +43,25 @@ public class ItemListener implements ExtensionPoint {
     }
 
     /**
+     * Called after a new job is created by copying from an existing job.
+     *
+     * For backward compatibility, the default implementation of this method calls {@link #onCreated(Item)}.
+     * If you choose to handle this method, think about whether you want to call super.onCopied or not.
+     *
+     *
+     * @param src
+     *      The source item that the new one was copied from. Never null.
+     * @param  item
+     *      The newly created item. Never null.
+     *
+     * @since 1.325
+     *      Before this version, a copy triggered {@link #onCreated(Item)}.
+     */
+    public void onCopied(Item src, Item item) {
+        onCreated(item);
+    }
+
+    /**
      * Called after all the jobs are loaded from disk into {@link Hudson}
      * object.
      */

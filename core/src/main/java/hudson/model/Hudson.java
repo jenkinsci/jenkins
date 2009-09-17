@@ -2490,7 +2490,7 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
         items.put(name,result);
 
         for (ItemListener l : ItemListener.all())
-            l.onCreated(result);
+            l.onCopied(src,result);
 
         return result;
     }
