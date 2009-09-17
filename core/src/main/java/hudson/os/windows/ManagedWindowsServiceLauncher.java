@@ -107,6 +107,7 @@ public class ManagedWindowsServiceLauncher extends ComputerLauncher {
             SWbemServices services = WMI.connect(session, computer.getName());
 
             String path = computer.getNode().getRemoteFS();
+            if (path.indexOf(':')==-1)   throw new IOException("Remote file system root path of the slave needs to be absolute: "+path);
             SmbFile remoteRoot = new SmbFile("smb://" + computer.getName() + "/" + path.replace('\\', '/').replace(':', '$')+"/",createSmbAuth());
 
             Win32Service slaveService = services.getService("hudsonslave");
