@@ -28,6 +28,7 @@ import hudson.Util;
 import hudson.model.BuildListener;
 import hudson.model.TaskListener;
 import hudson.model.AbstractProject;
+import hudson.model.Hudson;
 import hudson.tasks.Maven.MavenInstallation;
 import hudson.tasks.Maven.ProjectWithMaven;
 
@@ -67,10 +68,10 @@ public class MavenUtil {
      *
      * @see #createEmbedder(TaskListener, File, String)
      */
-    public static MavenEmbedder createEmbedder(TaskListener listener, AbstractProject<?,?> project, String profiles) throws MavenEmbedderException, IOException {
+    public static MavenEmbedder createEmbedder(TaskListener listener, AbstractProject<?,?> project, String profiles) throws MavenEmbedderException, IOException, InterruptedException {
         MavenInstallation m=null;
         if (project instanceof ProjectWithMaven)
-            m = ((ProjectWithMaven) project).inferMavenInstallation();
+            m = ((ProjectWithMaven) project).inferMavenInstallation().forNode(Hudson.getInstance(),listener);
 
         return createEmbedder(listener,m!=null?m.getHomeDir():null,profiles);
     }
