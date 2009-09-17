@@ -61,7 +61,6 @@ import hudson.model.listeners.SCMListener;
 import hudson.remoting.LocalChannel;
 import hudson.remoting.VirtualChannel;
 import hudson.remoting.Channel;
-import hudson.scm.CVSSCM;
 import hudson.scm.RepositoryBrowser;
 import hudson.scm.SCM;
 import hudson.scm.SCMDescriptor;
@@ -1241,7 +1240,7 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
             name = "";
 
         for (Computer c : computers.values()) {
-            if(c.getNode().getNodeName().equals(name))
+            if(c.getName().equals(name))
                 return c;
         }
         return null;
