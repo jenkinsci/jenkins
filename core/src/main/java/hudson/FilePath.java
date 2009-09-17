@@ -1420,7 +1420,7 @@ public final class FilePath implements Serializable {
         }
     }
 
-    private static abstract class DirScanner {
+    private static abstract class DirScanner implements Serializable {
         abstract void scan(File dir, FileVisitor visitor) throws IOException;
 
         /**
@@ -1440,6 +1440,8 @@ public final class FilePath implements Serializable {
             void scan(File dir, FileVisitor visitor) throws IOException {
                 scan(dir,"",visitor);
             }
+
+            private static final long serialVersionUID = 1L;
         }
 
         /**
@@ -1456,6 +1458,8 @@ public final class FilePath implements Serializable {
             void scan(File dir, FileVisitor visitor) throws IOException {
                 super.scan(dir,visitor.with(filter));
             }
+
+            private static final long serialVersionUID = 1L;
         }
 
         /**
@@ -1486,7 +1490,11 @@ public final class FilePath implements Serializable {
                     }
                 }
             }
+
+            private static final long serialVersionUID = 1L;
         }
+
+        private static final long serialVersionUID = 1L;
     }
 
     /**
@@ -1538,16 +1546,20 @@ public final class FilePath implements Serializable {
         Archiver create(OutputStream out);
     }
 
-    private static final class TarArchiverFactory implements ArchiverFactory {
+    private static final class TarArchiverFactory implements ArchiverFactory, Serializable {
         public Archiver create(OutputStream out) {
             return new TarWriter(out);
         }
+
+        private static final long serialVersionUID = 1L;
     }
 
-    private static final class ZipArchiverFactory implements ArchiverFactory {
+    private static final class ZipArchiverFactory implements ArchiverFactory, Serializable {
         public Archiver create(OutputStream out) {
             return new ZipWriter(out);
         }
+
+        private static final long serialVersionUID = 1L;
     }
 
 
