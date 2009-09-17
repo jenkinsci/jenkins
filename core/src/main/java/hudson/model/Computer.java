@@ -330,6 +330,10 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
 
     /**
      * Returns the {@link Node} that this computer represents.
+     *
+     * @return
+     *      null if the configuration has changed and the node is removed, yet the corresponding {@link Computer}
+     *      is not yet gone.
      */
     public Node getNode() {
         if(nodeName==null)
