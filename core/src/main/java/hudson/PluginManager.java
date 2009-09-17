@@ -202,6 +202,8 @@ public final class PluginManager extends AbstractModelObject {
                 URL url = context.getResource(path);
                 long lastModified = url.openConnection().getLastModified();
                 File file = new File(rootDir, fileName);
+                // TODO: allow upgrade of bundled plugins; code below will overwrite the newly
+                // upgraded file with the bundled version since lastModified has changed.
                 if (!file.exists() || file.lastModified() != lastModified) {
                     FileUtils.copyURLToFile(url, file);
                     file.setLastModified(url.openConnection().getLastModified());
