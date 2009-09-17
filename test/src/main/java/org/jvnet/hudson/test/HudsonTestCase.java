@@ -687,10 +687,9 @@ public abstract class HudsonTestCase extends TestCase {
             if(pd==null) {
                 // field?
                 try {
-                    Field f1 = lhs.getClass().getField(p);
-                    Field f2 = rhs.getClass().getField(p);
-                    lp = f1.get(lhs);
-                    rp = f2.get(rhs);
+                    Field f = lhs.getClass().getField(p);
+                    lp = f.get(lhs);
+                    rp = f.get(rhs);
                 } catch (NoSuchFieldException e) {
                     assertNotNull("No such property "+p+" on "+lhs.getClass(),pd);
                     return;
