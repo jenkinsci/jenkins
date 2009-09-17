@@ -1815,6 +1815,8 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
         StringTokenizer tokens = new StringTokenizer(fullName,"/");
         ItemGroup parent = this;
 
+        if(!tokens.hasMoreTokens()) return null;    // for example, empty full name.
+
         while(true) {
             Item item = parent.getItem(tokens.nextToken());
             if(!tokens.hasMoreTokens()) {
