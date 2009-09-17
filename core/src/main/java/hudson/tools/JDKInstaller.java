@@ -170,7 +170,7 @@ public class JDKInstaller extends ToolInstaller {
                 throw new AbortException("Failed to find the extracted JDKs: "+paths);
 
             // remove the intermediate directory
-            fs.pullUp(paths.get(0),expectedLocation);
+            fs.pullUp(expectedLocation+'/'+paths.get(0),expectedLocation);
             break;
         case WINDOWS:
             /*
@@ -235,10 +235,10 @@ public class JDKInstaller extends ToolInstaller {
         void pullUp(String from, String to) throws IOException, InterruptedException;
     }
 
-    private static final class FilePathFileSystem implements FileSystem {
+    /*package*/ static final class FilePathFileSystem implements FileSystem {
         private final Node node;
 
-        private FilePathFileSystem(Node node) {
+        FilePathFileSystem(Node node) {
             this.node = node;
         }
 

@@ -4,10 +4,13 @@ import org.jvnet.hudson.test.HudsonTestCase;
 import hudson.model.JDK;
 import hudson.model.FreeStyleProject;
 import hudson.model.FreeStyleBuild;
+import hudson.model.TaskListener;
 import hudson.tasks.Shell;
 import hudson.util.StreamTaskListener;
 import hudson.tools.JDKInstaller.Platform;
 import hudson.tools.JDKInstaller.CPU;
+import hudson.FilePath;
+import hudson.Launcher.LocalLauncher;
 
 import java.io.File;
 import java.util.Arrays;
@@ -85,4 +88,26 @@ public class JDKInstallerTest extends HudsonTestCase {
         assertTrue(log.contains(tmp.getAbsolutePath()));
     }
 
+    /**
+     * Fake installation on Unix.
+     */
+    public void testFakeUnixInstall() throws Exception {
+        File bundle = File.createTempFile("fake-jdk-by-hudson","sh");
+        try {
+            new FilePath(bundle).write(
+                    "#!/bin/bash -ex\n" +
+                    "mkdir -p jdk1.6.0_dummy/bin\n" +
+                    "touch jdk1.6.0_dummy/bin/java","ASCII");
+            TaskListener l = new StreamTaskListener(System.out);
+
+            File d = env.temporaryDirectoryAllocator.allocate();
+
+            new JDKInstaller("",true).install(new LocalLauncher(l),Platform.LINUX,
+                    new JDKInstaller.FilePathFileSystem(hudson),l,d.getPath(),bundle.getPath());
+
+            assertTrue(new File(d,"bin/java").exists());
+        } finally {
+            bundle.delete();
+        }
+    }
 }
