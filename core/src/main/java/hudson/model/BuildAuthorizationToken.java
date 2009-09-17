@@ -84,6 +84,7 @@ public final class BuildAuthorizationToken {
             return new BuildAuthorizationToken(str);
         }
 
+        @Override
         protected String toString(Object obj) {
             return ((BuildAuthorizationToken)obj).token;
         }

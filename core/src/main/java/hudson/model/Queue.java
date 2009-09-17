@@ -28,7 +28,10 @@ import hudson.ExtensionList;
 import hudson.ExtensionPoint;
 import hudson.Util;
 import hudson.XmlFile;
+import hudson.cli.declarative.CLIMethod;
+import hudson.cli.declarative.CLIResolver;
 import hudson.remoting.AsyncFutureImpl;
+import hudson.model.AbstractProject;
 import hudson.model.Node.Mode;
 import hudson.model.ParametersAction;
 import hudson.triggers.SafeTimerTask;
@@ -270,7 +273,7 @@ public class Queue extends ResourceController implements Saveable {
                 }
             }
         } catch (IOException e) {
-            LOGGER.log(Level.WARNING, "Failed to load the queue file " + getQueueFile(), e);
+            LOGGER.log(Level.WARNING, "Failed to load the queue file " + getXMLQueueFile(), e);
         }
     }
 
@@ -290,13 +293,14 @@ public class Queue extends ResourceController implements Saveable {
         try {
             new XmlFile(XSTREAM, getXMLQueueFile()).write(items);
         } catch (IOException e) {
-            LOGGER.log(Level.WARNING, "Failed to write out the queue file " + getQueueFile(), e);
+            LOGGER.log(Level.WARNING, "Failed to write out the queue file " + getXMLQueueFile(), e);
         }
     }
 
     /**
      * Wipes out all the items currently in the queue, as if all of them are cancelled at once.
      */
+    @CLIMethod(name="clear-queue")
     public synchronized void clear() {
         for (WaitingItem i : waitingList)
             i.onCancelled();
@@ -864,6 +868,14 @@ public class Queue extends ResourceController implements Saveable {
         while (itr.hasNext()) {
             BlockedItem p = itr.next();
             if (!isBuildBlocked(p.task)) {
+                // Make sure that we don't make more than one item buildable unless the
+                // project can handle concurrent builds
+                if (p.task instanceof AbstractProject<?,?>) {
+                    AbstractProject<?,?> proj = (AbstractProject<?,?>) p.task;
+                    if (!proj.isConcurrentBuild() && buildables.containsKey(p.task)) {
+                        continue;
+                    }
+                }
                 // ready to be executed
                 LOGGER.fine(p.task.getFullDisplayName() + " no longer blocked");
                 itr.remove();
@@ -1050,7 +1062,7 @@ public class Queue extends ResourceController implements Saveable {
         /**
          * Used to render the HTML. Should be a human readable text of what this executable is.
          */
-        String toString();
+        @Override String toString();
     }
 
     /*package*/ static final class FutureImpl extends AsyncFutureImpl<Executable> {
@@ -1555,5 +1567,10 @@ public class Queue extends ResourceController implements Saveable {
                 t.onCancelled();
             clear();
         }
+    }
+
+    @CLIResolver
+    public static Queue getInstance() {
+        return Hudson.getInstance().getQueue();
     }
 }

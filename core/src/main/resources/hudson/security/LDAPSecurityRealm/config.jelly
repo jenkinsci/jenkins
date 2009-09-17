@@ -25,7 +25,7 @@ THE SOFTWARE.
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
 	<f:entry title="${%Server}" help="/help/security/ldap/server.html">
 	  <f:textbox name="ldap.server" value="${instance.server}"
-            checkUrl="'${rootURL}/securityRealms/LDAPSecurityRealm/serverCheck?field=server&amp;server='+escape(this.value)+'&amp;managerDN='+escape(this.form.elements['ldap.managerDN'].value)+'&amp;managerPassword='+escape(this.form.elements['ldap.managerPassword'].value)"/>
+            checkUrl="'${rootURL}/securityRealms/LDAPSecurityRealm/serverCheck?field=server&amp;server='+encodeURIComponent(this.value)+'&amp;managerDN='+encodeURIComponent(this.form.elements['ldap.managerDN'].value)+'&amp;managerPassword='+encodeURIComponent(this.form.elements['ldap.managerPassword'].value)"/>
 	</f:entry>
   <f:advanced>
     <f:entry title="${%root DN}" help="/help/security/ldap/rootDN.html">
@@ -42,12 +42,12 @@ THE SOFTWARE.
     </f:entry>
     <f:entry title="${%Manager DN}" help="/help/security/ldap/managerDN.html">
       <f:textbox name="ldap.managerDN" value="${instance.managerDN}"
-      checkUrl="'${rootURL}/securityRealms/LDAPSecurityRealm/serverCheck?field=managerDN&amp;server='+escape(this.form.elements['ldap.server'].value)+'&amp;managerDN='+escape(this.value)+'&amp;managerPassword='+escape(this.form.elements['ldap.managerPassword'].value)"
+      checkUrl="'${rootURL}/securityRealms/LDAPSecurityRealm/serverCheck?field=managerDN&amp;server='+encodeURIComponent(this.form.elements['ldap.server'].value)+'&amp;managerDN='+encodeURIComponent(this.value)+'&amp;managerPassword='+encodeURIComponent(this.form.elements['ldap.managerPassword'].value)"
       />
     </f:entry>
     <f:entry title="${%Manager Password}" help="/help/security/ldap/managerPassword.html">
       <f:password name="ldap.managerPassword" value="${instance.managerPassword}"
-      checkUrl="'${rootURL}/securityRealms/LDAPSecurityRealm/serverCheck?field=password&amp;server='+escape(this.form.elements['ldap.server'].value)+'&amp;managerDN='+escape(this.form.elements['ldap.managerDN'].value)+'&amp;managerPassword='+escape(this.value)" 
+      checkUrl="'${rootURL}/securityRealms/LDAPSecurityRealm/serverCheck?field=password&amp;server='+encodeURIComponent(this.form.elements['ldap.server'].value)+'&amp;managerDN='+encodeURIComponent(this.form.elements['ldap.managerDN'].value)+'&amp;managerPassword='+encodeURIComponent(this.value)" 
       />
     </f:entry>
   </f:advanced>

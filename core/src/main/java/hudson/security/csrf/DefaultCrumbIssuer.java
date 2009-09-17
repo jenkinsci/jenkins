@@ -26,7 +26,6 @@ import org.kohsuke.stapler.StaplerRequest;
  * A crumb issuing algorithm based on the request principal and the remote address.
  * 
  * @author dty
- *
  */
 public class DefaultCrumbIssuer extends CrumbIssuer {
     
@@ -115,6 +114,7 @@ public class DefaultCrumbIssuer extends CrumbIssuer {
             return Messages.DefaultCrumbIssuer_DisplayName();
         }
 
+        @Override
         public DefaultCrumbIssuer newInstance(StaplerRequest req, JSONObject formData) throws FormException {
             return new DefaultCrumbIssuer();
         }

@@ -96,7 +96,7 @@ public abstract class ParameterDefinition implements
 
     private final String name;
 
-	private final String description;
+    private final String description;
 
     public ParameterDefinition(String name) {
         this(name, null);
@@ -107,12 +107,12 @@ public abstract class ParameterDefinition implements
         this.description = description;
     }
 
-	@Exported
+    @Exported
     public String getName() {
         return name;
     }
 
-	@Exported
+    @Exported
     public String getDescription() {
         return description;
     }
@@ -146,7 +146,7 @@ public abstract class ParameterDefinition implements
      * @return default parameter value or null if no defaults are available
      * @since 1.253
      */
-	@Exported
+    @Exported
     public ParameterValue getDefaultParameterValue() {
         return null;
     }

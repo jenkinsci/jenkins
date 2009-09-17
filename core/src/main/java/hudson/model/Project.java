@@ -81,6 +81,7 @@ public abstract class Project<P extends Project<P,B>,B extends Build<P,B>>
         super(parent,name);
     }
 
+    @Override
     public void onLoad(ItemGroup<? extends Item> parent, String name) throws IOException {
         super.onLoad(parent, name);
 
@@ -197,6 +198,7 @@ public abstract class Project<P extends Project<P,B>,B extends Build<P,B>>
         updateTransientActions(); // to pick up transient actions from builder, publisher, etc.
     }
 
+    @Override
     protected void updateTransientActions() {
         synchronized(transientActions) {
             super.updateTransientActions();

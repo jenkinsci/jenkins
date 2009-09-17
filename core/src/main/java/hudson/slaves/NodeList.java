@@ -65,10 +65,12 @@ public final class NodeList extends CopyOnWriteArrayList<Node> {
             super(xstream);
         }
 
+        @Override
         public boolean canConvert(Class type) {
             return type==NodeList.class;
         }
 
+        @Override
         public void marshal(Object source, HierarchicalStreamWriter writer, MarshallingContext context) {
             for (Node o : (NodeList) source) {
                 if(o instanceof EphemeralNode)
@@ -77,10 +79,12 @@ public final class NodeList extends CopyOnWriteArrayList<Node> {
             }
         }
 
+        @Override
         protected Object createCollection(Class type) {
             return new ArrayList();
         }
 
+        @Override
         public Object unmarshal(HierarchicalStreamReader reader, UnmarshallingContext context) {
             return new NodeList((List<Node>)super.unmarshal(reader, context));
         }

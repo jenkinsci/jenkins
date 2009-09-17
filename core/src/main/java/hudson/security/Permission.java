@@ -1,7 +1,7 @@
 /*
  * The MIT License
  * 
- * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi
+ * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, Yahoo! Inc.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -83,6 +83,18 @@ public final class Permission {
     public final Permission impliedBy;
 
     /**
+     * Whether this permission is available for use.
+     *
+     * <p>
+     * This allows us to dynamically enable or disable the visibility of
+     * permissions, so administrators can control the complexitity of their
+     * permission matrix.
+     *
+     * @since 1.325
+     */
+    public boolean enabled;
+    
+    /**
      * Defines a new permission.
      *
      * @param group
@@ -106,7 +118,7 @@ public final class Permission {
      * @param impliedBy
      *      See {@link #impliedBy}.
      */
-    public Permission(PermissionGroup group, String name, Localizable description, Permission impliedBy) {
+    public Permission(PermissionGroup group, String name, Localizable description, Permission impliedBy, boolean enable) {
         if(!JSONUtils.isJavaIdentifier(name))
             throw new IllegalArgumentException(name+" is not a Java identifier");
         this.owner = group.owner;
@@ -114,11 +126,16 @@ public final class Permission {
         this.name = name;
         this.description = description;
         this.impliedBy = impliedBy;
+        this.enabled = enable;
 
         group.add(this);
         ALL.add(this);
     }
 
+    public Permission(PermissionGroup group, String name, Localizable description, Permission impliedBy) {
+        this(group, name, description, impliedBy, true);
+    }
+    
     /**
      * @deprecated since 1.257.
      *      Use {@link #Permission(PermissionGroup, String, Localizable, Permission)} 
@@ -167,10 +184,19 @@ public final class Permission {
         }
     }
 
+    @Override
     public String toString() {
         return "Permission["+owner+','+name+']';
     }
 
+    public void setEnabled(boolean enable) {
+        enabled = enable;
+    }
+
+    public boolean getEnabled() {
+        return enabled;
+    }
+    
     /**
      * Returns all the {@link Permission}s available in the system.
      * @return
@@ -233,30 +259,30 @@ public final class Permission {
     /**
      * Generic read access.
      */
-    public static final Permission READ = new Permission(GROUP,"GenericRead",HUDSON_ADMINISTER);
+    public static final Permission READ = new Permission(GROUP,"GenericRead",null,HUDSON_ADMINISTER);
 
     /**
      * Generic write access.
      */
-    public static final Permission WRITE = new Permission(GROUP,"GenericWrite",HUDSON_ADMINISTER);
+    public static final Permission WRITE = new Permission(GROUP,"GenericWrite",null,HUDSON_ADMINISTER);
 
     /**
      * Generic create access.
      */
-    public static final Permission CREATE = new Permission(GROUP,"GenericCreate",WRITE);
+    public static final Permission CREATE = new Permission(GROUP,"GenericCreate",null,WRITE);
 
     /**
      * Generic update access.
      */
-    public static final Permission UPDATE = new Permission(GROUP,"GenericUpdate",WRITE);
+    public static final Permission UPDATE = new Permission(GROUP,"GenericUpdate",null,WRITE);
 
     /**
      * Generic delete access.
      */
-    public static final Permission DELETE = new Permission(GROUP,"GenericDelete",WRITE);
+    public static final Permission DELETE = new Permission(GROUP,"GenericDelete",null,WRITE);
 
     /**
      * Generic configuration access.
      */
-    public static final Permission CONFIGURE = new Permission(GROUP,"GenericConfigure",UPDATE);
+    public static final Permission CONFIGURE = new Permission(GROUP,"GenericConfigure",null,UPDATE);
 }

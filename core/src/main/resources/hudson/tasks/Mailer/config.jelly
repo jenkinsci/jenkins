@@ -23,10 +23,8 @@ THE SOFTWARE.
 -->
 
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
-  <f:entry title="${%Recipients}"
-    description="${%description}">
-    <input class="setting-input" name="mailer_recipients"
-      type="text" value="${instance.recipients}"/>
+  <f:entry title="${%Recipients}" description="${%description}">
+    <f:textbox name="mailer_recipients" value="${instance.recipients}"/>
   </f:entry>
   <f:entry title="">
     <f:checkbox name="mailer_notifyEveryUnstableBuild" checked="${h.defaultToTrue(!instance.dontNotifyEveryUnstableBuild)}" />

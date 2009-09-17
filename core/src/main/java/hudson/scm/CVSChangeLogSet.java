@@ -235,7 +235,7 @@ public final class CVSChangeLogSet extends ChangeLogSet<CVSChangeLog> {
         
         @Override
         public Collection<File> getAffectedFiles() {
-	        return files;
+            return files;
         }
     }
 
@@ -252,7 +252,7 @@ public final class CVSChangeLogSet extends ChangeLogSet<CVSChangeLog> {
          * Inherited from AffectedFile
          */        
         public String getPath() {
-	        return getName();
+            return getName();
         }
 
         /**
@@ -400,6 +400,7 @@ public final class CVSChangeLogSet extends ChangeLogSet<CVSChangeLog> {
             return new Revision(p);
         }
 
+        @Override
         public String toString() {
             StringBuilder buf = new StringBuilder();
             for (int n : numbers) {

@@ -39,12 +39,14 @@ import org.apache.commons.codec.digest.DigestUtils;
  * @author Kohsuke Kawaguchi
  */
 public class TokenBasedRememberMeServices2 extends TokenBasedRememberMeServices {
+    @Override
     protected String makeTokenSignature(long tokenExpiryTime, UserDetails userDetails) {
         String expectedTokenSignature = DigestUtils.md5Hex(userDetails.getUsername() + ":" + tokenExpiryTime + ":"
                 + "N/A" + ":" + getKey());
         return expectedTokenSignature;
     }
 
+    @Override
     protected String retrievePassword(Authentication successfulAuthentication) {
         return "N/A";
     }

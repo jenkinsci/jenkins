@@ -102,14 +102,14 @@ public final class PluginWrapper {
      */
     private final String shortName;
 
-	/**
+    /**
      * True if this plugin is activated for this session.
      * The snapshot of <tt>disableFile.exists()</tt> as of the start up.
      */
     private final boolean active;
 
     private final List<Dependency> dependencies;
-	private final List<Dependency> optionalDependencies;
+    private final List<Dependency> optionalDependencies;
 
     static final class Dependency {
         public final String shortName;
@@ -202,12 +202,12 @@ public final class PluginWrapper {
     }
 
     public List<Dependency> getDependencies() {
-		return dependencies;
-	}
+        return dependencies;
+    }
 
-	public List<Dependency> getOptionalDependencies() {
-		return optionalDependencies;
-	}
+    public List<Dependency> getOptionalDependencies() {
+        return optionalDependencies;
+    }
 
 
     /**
@@ -326,17 +326,17 @@ public final class PluginWrapper {
     }
 
     public Manifest getManifest() {
-		return manifest;
-	}
+        return manifest;
+    }
 
-	public void setPlugin(Plugin plugin) {
-		this.plugin = plugin;
-		plugin.wrapper = this;
-	}
-	
-	public String getPluginClass() {
-		return manifest.getMainAttributes().getValue("Plugin-Class");		
-	}
+    public void setPlugin(Plugin plugin) {
+        this.plugin = plugin;
+        plugin.wrapper = this;
+    }
+
+    public String getPluginClass() {
+        return manifest.getMainAttributes().getValue("Plugin-Class");
+    }
 
     /**
      * If the plugin has {@link #getUpdateInfo() an update},

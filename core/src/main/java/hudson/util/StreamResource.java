@@ -44,6 +44,7 @@ public class StreamResource extends Resource {
         setName(name);
     }
 
+    @Override
     public InputStream getInputStream() throws IOException {
         return in;
     }

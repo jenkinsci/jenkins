@@ -43,6 +43,7 @@ public final class QueryBuilder {
         return this;
     }
 
+    @Override
     public String toString() {
         return buf.toString();
     }

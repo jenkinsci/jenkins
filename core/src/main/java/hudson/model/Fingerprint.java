@@ -213,6 +213,7 @@ public class Fingerprint implements ModelObject, Saveable {
             return this.end==that.start;
         }
 
+        @Override
         public String toString() {
             return "["+start+","+end+")";
         }
@@ -400,6 +401,7 @@ public class Fingerprint implements ModelObject, Saveable {
             this.ranges.addAll(that.ranges.subList(rhs,that.ranges.size()));
         }
 
+        @Override
         public synchronized String toString() {
             StringBuffer buf = new StringBuffer();
             for (Range r : ranges) {
@@ -759,6 +761,7 @@ public class Fingerprint implements ModelObject, Saveable {
         XSTREAM.registerConverter(new HexBinaryConverter(),10);
         XSTREAM.registerConverter(new RangeSet.ConverterImpl(
             new CollectionConverter(XSTREAM.getClassMapper()) {
+                @Override
                 protected Object createCollection(Class type) {
                     return new ArrayList();
                 }

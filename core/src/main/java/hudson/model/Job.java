@@ -29,6 +29,7 @@ import hudson.Util;
 import hudson.XmlFile;
 import hudson.PermalinkList;
 import hudson.Extension;
+import hudson.cli.declarative.CLIResolver;
 import hudson.model.Descriptor.FormException;
 import hudson.model.listeners.ItemListener;
 import hudson.model.PermalinkProjectAction.Permalink;
@@ -96,6 +97,8 @@ import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 import org.kohsuke.stapler.WebMethod;
 import org.kohsuke.stapler.export.Exported;
+import org.kohsuke.args4j.Argument;
+import org.kohsuke.args4j.CmdLineException;
 
 /**
  * A job is an runnable entity under the monitoring of Hudson.
@@ -142,6 +145,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
         super(parent, name);
     }
 
+    @Override
     public void onLoad(ItemGroup<? extends Item> parent, String name)
             throws IOException {
         super.onLoad(parent, name);
@@ -175,6 +179,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
         this.nextBuildNumber = 1; // reset the next build number
     }
 
+    @Override
     protected void performDelete() throws IOException, InterruptedException {
         // if a build is in progress. Cancel it.
         RunT lb = getLastBuild();
@@ -304,6 +309,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
         return true;
     }
 
+    @Override
     protected SearchIndexBuilder makeSearchIndex() {
         return super.makeSearchIndex().add(new SearchIndex() {
             public void find(String token, List<SearchItem> result) {
@@ -534,7 +540,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
 
                 parent.onRenamed((TopLevelItem) this, oldName, newName);
 
-                for (ItemListener l : Hudson.getInstance().getJobListeners())
+                for (ItemListener l : ItemListener.all())
                     l.onRenamed(this, oldName, newName);
             }
         }
@@ -586,6 +592,19 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
         return _getRuns().get(n);
     }
 
+    @CLIResolver
+    public RunT getBuildForCLI(@Argument(required=true,metaVar="BUILD#",usage="Build number") String id) throws CmdLineException {
+        try {
+            int n = Integer.parseInt(id);
+            RunT r = getBuildByNumber(n);
+            if (r==null)
+                throw new CmdLineException("No such build '#"+n+"' exists");
+            return r;
+        } catch (NumberFormatException e) {
+            throw new CmdLineException(id+ "is not a number");
+        }
+    }
+
     /**
      * Gets the youngest build #m that satisfies <tt>n&lt;=m</tt>.
      * 
@@ -593,13 +612,8 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
      * be already gone (deleted, rotated, etc.)
      */
     public final RunT getNearestBuild(int n) {
-        SortedMap<Integer, ? extends RunT> m = _getRuns().headMap(n - 1); // the
-                                                                            // map
-                                                                            // should
-                                                                            // include
-                                                                            // n,
-                                                                            // so
-                                                                            // n-1
+        SortedMap<Integer, ? extends RunT> m = _getRuns().headMap(n - 1); // the map should
+                                                                          // include n, so n-1
         if (m.isEmpty())
             return null;
         return m.get(m.lastKey());
@@ -618,6 +632,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
         return m.get(m.firstKey());
     }
 
+    @Override
     public Object getDynamic(String token, StaplerRequest req,
             StaplerResponse rsp) {
         try {
@@ -961,7 +976,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
     @WebMethod(name = "config.xml")
     public void doConfigDotXml(StaplerRequest req, StaplerResponse rsp)
             throws IOException {
-        checkPermission(CONFIGURE);
+        checkPermission(EXTENDED_READ);
 
         if (req.getMethod().equals("GET")) {
             // read
@@ -1036,6 +1051,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
                         return this.run.number - that.run.number;
                     }
 
+                    @Override
                     public boolean equals(Object o) {
                         // HUDSON-2682 workaround for Eclipse compilation bug
                         // on (c instanceof ChartLabel)
@@ -1060,10 +1076,12 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
                             return ColorPalette.BLUE;
                     }
 
+                    @Override
                     public int hashCode() {
                         return run.hashCode();
                     }
 
+                    @Override
                     public String toString() {
                         String l = run.getDisplayName();
                         if (run instanceof Build) {
@@ -1207,6 +1225,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
      * We need to override the identical method in AbstractItem because we won't
      * call getACL(Job) otherwise (single dispatch)
      */
+    @Override
     public ACL getACL() {
         return Hudson.getInstance().getAuthorizationStrategy().getACL(this);
     }

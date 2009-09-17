@@ -25,11 +25,9 @@ package hudson.util;
 
 import hudson.Util;
 import hudson.model.Node;
-import hudson.model.Hudson;
 
 import java.io.IOException;
 
-import org.kohsuke.stapler.Stapler;
 import org.kohsuke.stapler.export.ExportedBean;
 import org.kohsuke.stapler.export.Exported;
 
@@ -70,6 +68,7 @@ public final class ClockDifference {
     /**
      * Gets the clock difference in HTML string.
      */
+    @Override
     public String toString() {
         if(-1000<diff && diff <1000)
             return Messages.ClockDifference_InSync();  // clock is in sync
@@ -114,5 +113,6 @@ public final class ClockDifference {
 
     public static final ClockDifference ZERO = new ClockDifference(0);
 
-    private static final String FAILED_HTML = "<span class='error'>" + Messages.ClockDifference_Failed() + "</span>";
+    private static final String FAILED_HTML =
+            "<span class='error'>" + Messages.ClockDifference_Failed() + "</span>";
 }

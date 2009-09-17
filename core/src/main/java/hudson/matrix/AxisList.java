@@ -57,6 +57,7 @@ public class AxisList extends ArrayList<Axis> {
         return null;
     }
 
+    @Override
     public boolean add(Axis axis) {
         return axis!=null && super.add(axis);
     }
@@ -111,6 +112,7 @@ public class AxisList extends ArrayList<Axis> {
             super(xs);
         }
 
+        @Override
         public boolean canConvert(Class type) {
             return type==AxisList.class;
         }

@@ -1,3 +1,26 @@
+/*
+ * The MIT License
+ *
+ * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ */
 package hudson;
 
 import hudson.model.TaskListener;
@@ -14,6 +37,7 @@ import org.apache.tools.ant.types.FileSet;
 import org.apache.tools.ant.taskdefs.Chmod;
 import org.apache.tools.ant.taskdefs.Copy;
 import org.apache.commons.lang.time.FastDateFormat;
+import org.apache.commons.io.IOUtils;
 import org.kohsuke.stapler.Stapler;
 import org.jvnet.animal_sniffer.IgnoreJRERequirement;
 
@@ -381,6 +405,24 @@ public class Util {
             out.write(buf,0,len);
     }
 
+    public static void copyStreamAndClose(InputStream in,OutputStream out) throws IOException {
+        try {
+            copyStream(in,out);
+        } finally {
+            IOUtils.closeQuietly(in);
+            IOUtils.closeQuietly(out);
+        }
+    }
+
+    public static void copyStreamAndClose(Reader in,Writer out) throws IOException {
+        try {
+            copyStream(in,out);
+        } finally {
+            IOUtils.closeQuietly(in);
+            IOUtils.closeQuietly(out);
+        }
+    }
+
     /**
      * Tokenizes the text separated by delimiters.
      *
@@ -652,11 +694,26 @@ public class Util {
         }
     }
 
+    private static final boolean[] uriMap = new boolean[123];
+    static {
+        String raw =
+    "!  $ &'()*+,-. 0123456789   =  @ABCDEFGHIJKLMNOPQRSTUVWXYZ    _ abcdefghijklmnopqrstuvwxyz";
+  //  "# %         /          :;< >?                           [\]^ `                          {|}~
+  //  ^--so these are encoded
+        int i;
+        // Encode control chars and space
+        for (i = 0; i < 33; i++) uriMap[i] = true;
+        for (int j = 0; j < raw.length(); i++, j++)
+            uriMap[i] = (raw.charAt(j) == ' ');
+        // If we add encodeQuery() just add a 2nd map to encode &+=
+        // queryMap[38] = queryMap[43] = queryMap[61] = true;
+    }
+
     /**
      * Encode a single path component for use in an HTTP URL.
      * Escapes all non-ASCII, general unsafe (space and "#%<>[\]^`{|}~)
-     * and HTTP special characters (/;:?) as specified in RFC1738,
-     * plus backslash (Windows path separator).
+     * and HTTP special characters (/;:?) as specified in RFC1738.
+     * (so alphanumeric and !@$&*()-_=+',. are not encoded)
      * Note that slash(/) is encoded, so the given string should be a
      * single path component used in constructing a URL.
      * Method name inspired by PHP's rawurlencode.
@@ -669,8 +726,7 @@ public class Util {
         char c;
         for (int i = 0, m = s.length(); i < m; i++) {
             c = s.charAt(i);
-            if ((c<64 || c>90) && (c<97 || c>122) && (c<38 || c>57 || c==47)
-                    && c!=61 && c!=36 && c!=33 && c!=95) {
+            if (c > 122 || uriMap[c]) {
                 if (!escaped) {
                     out = new StringBuilder(i + (m - i) * 3);
                     out.append(s.substring(0, i));

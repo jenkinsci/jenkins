@@ -252,6 +252,7 @@ public class AggregatedTestResultPublisher extends Recorder {
                 super(Run.class);
             }
 
+            @Override
             public void onCompleted(Run run, TaskListener listener) {
                 lastChanged = System.currentTimeMillis();
             }
@@ -268,6 +269,7 @@ public class AggregatedTestResultPublisher extends Recorder {
             return Messages.AggregatedTestResultPublisher_DisplayName();
         }
 
+        @Override
         public String getHelpFile() {
             return "/help/tasks/aggregate-test/help.html";
         }
@@ -285,6 +287,7 @@ public class AggregatedTestResultPublisher extends Recorder {
             return FormValidation.ok();
         }
 
+        @Override
         public AggregatedTestResultPublisher newInstance(StaplerRequest req, JSONObject formData) throws FormException {
             JSONObject s = formData.getJSONObject("specify");
             if(s.isNullObject())

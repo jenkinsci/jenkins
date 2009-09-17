@@ -77,6 +77,7 @@ public class Executor extends Thread implements ModelObject {
         start();
     }
 
+    @Override
     public void run() {
         // run as the system user. see ACL.SYSTEM for more discussion about why this is somewhat broken
         SecurityContextHolder.getContext().setAuthentication(ACL.SYSTEM);

@@ -71,10 +71,12 @@ public class ProjectMatrixAuthorizationStrategy extends GlobalMatrixAuthorizatio
             ref = new RobustReflectionConverter(m,new JVM().bestReflectionProvider());
         }
 
+        @Override
         protected GlobalMatrixAuthorizationStrategy create() {
             return new ProjectMatrixAuthorizationStrategy();
         }
 
+        @Override
         public Object unmarshal(HierarchicalStreamReader reader, UnmarshallingContext context) {
             String name = reader.peekNextChild();
             if(name!=null && (name.equals("permission") || name.equals("useProjectSecurity")))
@@ -85,6 +87,7 @@ public class ProjectMatrixAuthorizationStrategy extends GlobalMatrixAuthorizatio
                 return ref.unmarshal(reader,context);
         }
 
+        @Override
         public boolean canConvert(Class type) {
             return type==ProjectMatrixAuthorizationStrategy.class;
         }

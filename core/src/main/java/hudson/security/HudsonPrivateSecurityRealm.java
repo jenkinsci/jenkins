@@ -436,6 +436,7 @@ public class HudsonPrivateSecurityRealm extends SecurityRealm implements ModelOb
                 return Details.fromPlainPassword(Util.fixNull(pwd));
             }
 
+            @Override
             public boolean isEnabled() {
                 return Hudson.getInstance().getSecurityRealm() instanceof HudsonPrivateSecurityRealm;
             }
@@ -544,6 +545,7 @@ public class HudsonPrivateSecurityRealm extends SecurityRealm implements ModelOb
             return Messages.HudsonPrivateSecurityRealm_DisplayName();
         }
 
+        @Override
         public String getHelpFile() {
             return "/help/security/private-realm.html"; 
         }

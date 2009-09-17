@@ -27,17 +27,12 @@ import hudson.Util;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.StringTokenizer;
 import java.util.Arrays;
 import java.util.Map;
-import java.util.Properties;
 import java.util.BitSet;
 import java.util.Properties;
 import java.util.Map.Entry;
 import java.io.Serializable;
-import java.io.StringReader;
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
 import java.io.File;
 import java.io.StringReader;
 import java.io.ByteArrayInputStream;
@@ -165,6 +160,7 @@ public class ArgumentListBuilder implements Serializable {
         return args.toArray(new String[args.size()]);
     }
     
+    @Override
     public ArgumentListBuilder clone() {
         ArgumentListBuilder r = new ArgumentListBuilder();
         r.args.addAll(this.args);

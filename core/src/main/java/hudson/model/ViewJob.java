@@ -84,7 +84,7 @@ public abstract class ViewJob<JobT extends ViewJob<JobT,RunT>, RunT extends Run<
         return false;
     }
 
-
+    @Override
     public void onLoad(ItemGroup<? extends Item> parent, String name) throws IOException {
         super.onLoad(parent, name);
         notLoaded = true;
@@ -169,6 +169,7 @@ public abstract class ViewJob<JobT extends ViewJob<JobT,RunT>, RunT extends Run<
             return Hudson.getInstance().isTerminating();
         }
 
+        @Override
         public void run() {
             while (!terminating()) {
                 try {

@@ -57,6 +57,7 @@ public class MatrixRun extends Build<MatrixConfiguration,MatrixRun> {
         super(project, buildDir);
     }
 
+    @Override
     public String getUpUrl() {
         StaplerRequest req = Stapler.getCurrentRequest();
         if(req!=null) {
@@ -84,6 +85,7 @@ public class MatrixRun extends Build<MatrixConfiguration,MatrixRun> {
         return getParent().getParent().getBuildByNumber(getNumber());
     }
 
+    @Override
     public String getDisplayName() {
         StaplerRequest req = Stapler.getCurrentRequest();
         if(req!=null) {

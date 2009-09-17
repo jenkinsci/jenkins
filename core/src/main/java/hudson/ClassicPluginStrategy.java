@@ -389,6 +389,7 @@ public class ClassicPluginStrategy implements PluginStrategy {
             this.dependencies = dependencies;
         }
 
+        @Override
         protected Class<?> findClass(String name) throws ClassNotFoundException {
             for (Dependency dep : dependencies) {
                 PluginWrapper p = pluginManager.getPlugin(dep.shortName);

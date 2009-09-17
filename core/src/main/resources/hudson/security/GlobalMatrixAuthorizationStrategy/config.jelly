@@ -150,7 +150,7 @@ THE SOFTWARE.
         </j:if>
         <!-- validates the name -->
         "#${strategyid} TR.permission-row" : function(e) {
-          FormChecker.delayedCheck("${descriptorPath}/checkName?value="+encode(e.getAttribute("name")),"GET",e.firstChild);
+          FormChecker.delayedCheck("${descriptorPath}/checkName?value="+encodeURIComponent(e.getAttribute("name")),"GET",e.firstChild);
         }
       });
     </script>

@@ -56,6 +56,9 @@ import java.util.Locale;
  * calls {@link #main(List, Locale, InputStream, PrintStream, PrintStream)} method.
  *
  * <h2>Note for CLI command implementor</h2>
+ * Start with <a href="http://wiki.hudson-ci.org/display/HUDSON/Writing+CLI+commands">this document</a>
+ * to get the general idea of CLI.
+ *
  * <ul>
  * <li>
  * Put {@link Extension} on your implementation to have it discovered by Hudson.

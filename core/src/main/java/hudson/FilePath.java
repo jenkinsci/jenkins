@@ -1340,6 +1340,7 @@ public final class FilePath implements Serializable {
                                 setProject(new org.apache.tools.ant.Project());
                             }
 
+                            @Override
                             protected void doFileOperations() {
                                 copySize = super.fileCopyMap.size();
                                 super.doFileOperations();
@@ -1451,6 +1452,7 @@ public final class FilePath implements Serializable {
                 this.filter = filter;
             }
 
+            @Override
             void scan(File dir, FileVisitor visitor) throws IOException {
                 super.scan(dir,visitor.with(filter));
             }
@@ -1575,6 +1577,7 @@ public final class FilePath implements Serializable {
                 // TarOutputStream uses TarBuffer internally,
                 // which flushes the stream for each block. this creates unnecessary
                 // data stream fragmentation, and flush request to a remote, which slows things down.
+                @Override
                 public void flush() throws IOException {
                     // so don't do anything in flush
                 }
@@ -1967,7 +1970,7 @@ public final class FilePath implements Serializable {
         return validateRelativeDirectory(value,true);
     }
 
-    @Deprecated
+    @Deprecated @Override
     public String toString() {
         // to make writing JSPs easily, return local
         return remote;

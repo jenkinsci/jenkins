@@ -30,7 +30,6 @@ import hudson.scm.CVSChangeLogSet.Revision;
 import hudson.scm.CVSRepositoryBrowser;
 import hudson.scm.RepositoryBrowser;
 import hudson.Extension;
-import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.DataBoundConstructor;
 
 import java.io.IOException;

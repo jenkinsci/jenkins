@@ -1,18 +1,18 @@
 /*
  * The MIT License
- *
- * Copyright (c) 2004-2009, Sun Microsystems, Inc.
- *
+ * 
+ * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi
+ * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- *
+ * 
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- *
+ * 
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -21,24 +21,38 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package hudson.cli;
+package hudson.model;
 
-import hudson.Extension;
-import hudson.model.Hudson;
+import com.gargoylesoftware.htmlunit.WebAssert;
+import com.gargoylesoftware.htmlunit.html.HtmlPage;
+
+import org.jvnet.hudson.test.HudsonTestCase;
 
 /**
- * Clears the job queue.
- *
  * @author Kohsuke Kawaguchi
  */
-@Extension
-public class ClearQueueCommand extends CLICommand {
-    public String getShortDescription() {
-        return "Clears the job queue";
-    }
+public class JobTest extends HudsonTestCase {
 
-    protected int run() throws Exception {
-        Hudson.getInstance().getQueue().clear();
-        return 0;
+    @SuppressWarnings("unchecked")
+    public void testJobPropertySummaryIsShownInMainPage() throws Exception {
+        
+        AbstractProject project = createFreeStyleProject();
+        project.addProperty(new JobPropertyImpl("NeedleInPage"));
+                
+        HtmlPage page = new WebClient().getPage(project);
+        WebAssert.assertTextPresent(page, "NeedleInPage");
+    }
+    
+    @SuppressWarnings("unchecked")
+    public static class JobPropertyImpl extends JobProperty {
+        private final String testString;
+        
+        public JobPropertyImpl(String testString) {
+            this.testString = testString;
+        }
+        
+        public String getTestString() {
+            return testString;
+        }        
     }
 }

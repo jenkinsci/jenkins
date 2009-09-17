@@ -5,8 +5,6 @@
  */
 package hudson.security.csrf;
 
-import org.kohsuke.stapler.StaplerRequest;
-
 import hudson.Util;
 import hudson.model.Descriptor;
 
@@ -15,7 +13,6 @@ import hudson.model.Descriptor;
  * additional global configuration for custom crumb issuers.
  * 
  * @author dty
- *
  */
 public abstract class CrumbIssuerDescriptor<T extends CrumbIssuer> extends Descriptor<CrumbIssuer> {
 

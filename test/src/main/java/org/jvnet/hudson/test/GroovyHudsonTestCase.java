@@ -11,6 +11,7 @@ import hudson.tasks.Builder;
 import hudson.Launcher;
 
 import java.util.UUID;
+import java.util.concurrent.Callable;
 import java.io.IOException;
 
 /**
@@ -26,26 +27,12 @@ public abstract class GroovyHudsonTestCase extends HudsonTestCase {
      * <p>
      * The closure will get the request and response as parameters.
      */
-    public Object executeOnServer(final Closure c) throws Throwable {
-        final Throwable[] t = new Throwable[1];
-        final Object[] r = new Object[1];
-
-        ClosureExecuterAction cea = hudson.getExtensionList(RootAction.class).get(ClosureExecuterAction.class);
-        UUID id = UUID.randomUUID();
-        cea.add(id,new Runnable() {
-            public void run() {
-                try {
-                    r[0] = c.call();
-                } catch (Throwable e) {
-                    t[0] = e;
-                }
+    public Object executeOnServer(final Closure c) throws Exception {
+        return executeOnServer(new Callable<Object>() {
+            public Object call() throws Exception {
+                return c.call();
             }
         });
-        createWebClient().goTo("closures/?uuid="+id);
-
-        if (t[0]!=null)
-            throw t[0];
-        return r[0];
     }
 
     /**

@@ -92,6 +92,7 @@ public abstract class TaskThread extends Thread {
     /**
      * Starts the task execution asynchronously.
      */
+    @Override
     public void start() {
         associateWith(owner);
         super.start();
@@ -110,6 +111,7 @@ public abstract class TaskThread extends Thread {
         return ListenerAndText.forMemory();
     }
 
+    @Override
     public final void run() {
         isRunning = true;
         try {

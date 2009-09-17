@@ -228,6 +228,7 @@ public class MarkupText extends AbstractMarkupText {
     /**
      * Returns the fully marked-up text.
      */
+    @Override
     public String toString() {
         if(tags.isEmpty())
             return text;    // the most common case

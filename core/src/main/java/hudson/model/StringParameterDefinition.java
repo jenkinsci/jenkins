@@ -54,6 +54,7 @@ public class StringParameterDefinition extends ParameterDefinition {
         this.defaultValue = defaultValue;
     }
     
+    @Override
     public StringParameterValue getDefaultParameterValue() {
         StringParameterValue v = new StringParameterValue(getName(), defaultValue, getDescription());
         return v;

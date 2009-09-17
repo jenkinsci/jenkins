@@ -376,6 +376,7 @@ public final class CaseResult extends TestObject implements Comparable<CaseResul
 		return text;
 	}
 
+    @Override
     public AbstractBuild<?,?> getOwner() {
         return getSuiteResult().getParent().getOwner();
     }

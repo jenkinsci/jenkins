@@ -30,8 +30,6 @@ import com.sun.jna.Native;
 import com.sun.jna.ptr.IntByReference;
 import org.jvnet.libpam.impl.CLibrary.passwd;
 
-import java.io.File;
-
 /**
  * GNU C library.
  *

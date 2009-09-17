@@ -57,10 +57,12 @@ public class RobustCollectionConverter extends CollectionConverter {
         sc = new SerializableConverter(mapper,reflectionProvider);
     }
 
+    @Override
     public boolean canConvert(Class type) {
         return super.canConvert(type) || type==CopyOnWriteArrayList.class || type==CopyOnWriteArraySet.class;
     }
 
+    @Override
     public Object unmarshal(HierarchicalStreamReader reader, UnmarshallingContext context) {
         // CopyOnWriteArrayList used to serialize as custom serialization,
         // so read it in a compatible fashion.
@@ -72,6 +74,7 @@ public class RobustCollectionConverter extends CollectionConverter {
         }
     }
 
+    @Override
     protected void populateCollection(HierarchicalStreamReader reader, UnmarshallingContext context, Collection collection) {
         while (reader.hasMoreChildren()) {
             reader.moveDown();

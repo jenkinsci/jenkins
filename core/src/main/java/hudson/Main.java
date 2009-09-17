@@ -25,6 +25,7 @@ package hudson;
 
 import hudson.util.DualOutputStream;
 import hudson.util.EncodingStream;
+import com.thoughtworks.xstream.core.util.Base64Encoder;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -80,8 +81,13 @@ public class Main {
         String home = getHudsonHome();
         if(!home.endsWith("/"))     home = home + '/';  // make sure it ends with '/'
 
+        // check for authentication info
+        String auth = new URL(home).getUserInfo();
+        if(auth != null) auth = "Basic " + new Base64Encoder().encode(auth.getBytes("UTF-8"));
+
         {// check if the home is set correctly
             HttpURLConnection con = (HttpURLConnection)new URL(home).openConnection();
+            if (auth != null) con.setRequestProperty("Authorization", auth);
             con.connect();
             if(con.getResponseCode()!=200
             || con.getHeaderField("X-Hudson")==null) {
@@ -94,6 +100,7 @@ public class Main {
 
         {// check if the job name is correct
             HttpURLConnection con = (HttpURLConnection)new URL(home+"job/"+projectNameEnc+"/acceptBuildResult").openConnection();
+            if (auth != null) con.setRequestProperty("Authorization", auth);
             con.connect();
             if(con.getResponseCode()!=200) {
                 System.err.println(projectName+" is not a valid job name on "+home+" ("+con.getResponseMessage()+")");
@@ -130,6 +137,7 @@ public class Main {
             try {
                 // start a remote connection
                 HttpURLConnection con = (HttpURLConnection) new URL(location).openConnection();
+                if (auth != null) con.setRequestProperty("Authorization", auth);
                 con.setDoOutput(true);
                 // this tells HttpURLConnection not to buffer the whole thing
                 con.setFixedLengthStreamingMode((int)tmpFile.length());
@@ -155,4 +163,9 @@ public class Main {
             }
         }
     }
+
+    /**
+     * Set to true if we are running unit tests.
+     */
+    public static boolean isUnitTest = false;
 }

@@ -86,7 +86,8 @@ public class MavenMultiModuleTest extends HudsonTestCase {
 	ExtractChangeLogSet changeSet = (ExtractChangeLogSet) pBuild.getChangeSet();
 
 	assertFalse("ExtractChangeLogSet should not be empty.", changeSet.isEmptySet());
-
+	assertEquals("Parent build should have Result.UNSTABLE", pBuild.getResult(), Result.UNSTABLE);
+	
 	for (MavenBuild modBuild : pBuild.getModuleLastBuilds().values()) {
 	    if (modBuild.getParent().getModuleName().toString().equals("org.jvnet.hudson.main.test.multimod.incr:moduleA")) {
 		assertEquals("moduleA should have Result.UNSTABLE", modBuild.getResult(), Result.UNSTABLE);
@@ -98,7 +99,41 @@ public class MavenMultiModuleTest extends HudsonTestCase {
 		assertEquals("moduleC should have Result.SUCCESS", modBuild.getResult(), Result.SUCCESS);
 	    }
 	    if (modBuild.getParent().getModuleName().toString().equals("org.jvnet.hudson.main.test.multimod.incr:moduleD")) {
-		assertEquals("moduleC should have Result.NOT_BUILT", modBuild.getResult(), Result.NOT_BUILT);
+		assertEquals("moduleD should have Result.NOT_BUILT", modBuild.getResult(), Result.NOT_BUILT);
+	    }
+	    
+	}	
+	
+    }
+
+    /**
+     * Test failures in a child module should lead to the parent being marked as unstable.
+     */
+    @Bug(4378)
+    public void testMultiModWithTestFailuresMaven() throws Exception {
+        configureDefaultMaven("apache-maven-2.2.1");
+        MavenModuleSet m = createMavenProject();
+        m.getReporters().add(new TestReporter());
+	m.setScm(new ExtractResourceSCM(getClass().getResource("maven-multimod-incr.zip")));
+
+	assertBuildStatus(Result.UNSTABLE, m.scheduleBuild2(0).get());
+
+	MavenModuleSetBuild pBuild = m.getLastBuild();
+
+	assertEquals("Parent build should have Result.UNSTABLE", pBuild.getResult(), Result.UNSTABLE);
+	
+	for (MavenBuild modBuild : pBuild.getModuleLastBuilds().values()) {
+	    if (modBuild.getParent().getModuleName().toString().equals("org.jvnet.hudson.main.test.multimod.incr:moduleA")) {
+		assertEquals("moduleA should have Result.UNSTABLE", modBuild.getResult(), Result.UNSTABLE);
+	    }
+	    if (modBuild.getParent().getModuleName().toString().equals("org.jvnet.hudson.main.test.multimod.incr:moduleB")) {
+		assertEquals("moduleB should have Result.SUCCESS", modBuild.getResult(), Result.SUCCESS);
+	    }
+	    if (modBuild.getParent().getModuleName().toString().equals("org.jvnet.hudson.main.test.multimod.incr:moduleC")) {
+		assertEquals("moduleC should have Result.SUCCESS", modBuild.getResult(), Result.SUCCESS);
+	    }
+	    if (modBuild.getParent().getModuleName().toString().equals("org.jvnet.hudson.main.test.multimod.incr:moduleD")) {
+		assertEquals("moduleD should have Result.SUCCESS", modBuild.getResult(), Result.SUCCESS);
 	    }
 	    
 	}	

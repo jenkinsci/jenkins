@@ -64,10 +64,12 @@ public class FullControlOnceLoggedInAuthorizationStrategy extends AuthorizationS
             return Messages.FullControlOnceLoggedInAuthorizationStrategy_DisplayName();
         }
 
+        @Override
         public AuthorizationStrategy newInstance(StaplerRequest req, JSONObject formData) throws FormException {
             return new FullControlOnceLoggedInAuthorizationStrategy();
         }
 
+        @Override
         public String getHelpFile() {
             return "/help/security/full-control-once-logged-in.html";
         }

@@ -297,6 +297,7 @@ public class Label implements Comparable<Label>, ModelObject {
         return new Api(this);
     }
 
+    @Override
     public boolean equals(Object that) {
         if (this == that) return true;
         if (that == null || getClass() != that.getClass()) return false;
@@ -305,6 +306,7 @@ public class Label implements Comparable<Label>, ModelObject {
 
     }
 
+    @Override
     public int hashCode() {
         return name.hashCode();
     }

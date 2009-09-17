@@ -37,8 +37,8 @@ THE SOFTWARE.
         <table>
           <f:block>
             ${%Choose the CVS tag name for this build}:
-            <input type="text" name="name" value="hudson-${it.build.number}" class="validated"
-                   checkUrl="'checkTag?value='+escape(this.value)"/>
+            <f:textbox name="name" value="hudson-${it.build.number}"
+               checkUrl="'checkTag?value='+encodeURIComponent(this.value)"/>
           </f:block>
 
           <j:set var="upstream" value="${it.build.transitiveUpstreamBuilds}" />
@@ -46,8 +46,8 @@ THE SOFTWARE.
             <f:optionalBlock name="upstream" title="Tag all upstream builds at once" help="${descriptor.getHelpFile('tagAll')}">
               <j:forEach var="up" items="${upstream}">
                 <f:entry title="${up.key.name} #${up.value}">
-                  <input type="text" name="upstream.${up.key.name}" value="hudson-${up.value}" class="validated"
-                         checkUrl="'checkTag?value='+escape(this.value)"/>
+                  <f:textbox name="upstream.${up.key.name}" value="hudson-${up.value}"
+                     checkUrl="'checkTag?value='+encodeURIComponent(this.value)"/>
                 </f:entry>
               </j:forEach>
             </f:optionalBlock>

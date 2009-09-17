@@ -93,12 +93,13 @@ public final class ClassResult extends TabulatedResult implements Comparable<Cla
         return null;
     }
 
+    @Override
     public Object getDynamic(String name, StaplerRequest req, StaplerResponse rsp) {
     	CaseResult c = getCaseResult(name);
     	if (c != null) {
-    		return c;
+            return c;
     	} else {
-    		return super.getDynamic(name, req, rsp);
+            return super.getDynamic(name, req, rsp);
     	}
     }
 

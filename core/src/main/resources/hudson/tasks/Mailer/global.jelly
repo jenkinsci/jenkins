@@ -33,18 +33,16 @@ THE SOFTWARE.
     </f:description>
     <f:entry title="${%SMTP server}"
              help="/help/tasks/mailer/smtp-server.html">
-      <input class="setting-input" name="mailer_smtp_server"
-        type="text" value="${descriptor.smtpServer}"/>
+      <f:textbox name="mailer_smtp_server" value="${descriptor.smtpServer}"/>
     </f:entry>
     <f:entry title="${%Default user e-mail suffix}"
              help="/help/tasks/mailer/default-suffix.html">
-      <input class="setting-input" name="mailer_default_suffix"
-        type="text" value="${descriptor.defaultSuffix}"/>
+      <f:textbox name="mailer_default_suffix" value="${descriptor.defaultSuffix}"/>
     </f:entry>
     <f:entry title="${%System Admin E-mail Address}"
              help="/help/tasks/mailer/admin-address.html">
       <f:textbox name="mailer_admin_address" value="${descriptor.adminAddress}"
-          checkUrl="'${rootURL}/publisher/Mailer/addressCheck?value='+encode(this.value)"/>
+          checkUrl="'${rootURL}/publisher/Mailer/addressCheck?value='+encodeURIComponent(this.value)"/>
     </f:entry>
     <f:entry title="${%Hudson URL}"
              help="/help/tasks/mailer/url.html">
@@ -54,12 +52,11 @@ THE SOFTWARE.
       <f:optionalBlock name="mailer.useSMTPAuth" title="${%Use SMTP Authentication}" checked="${descriptor.smtpAuthUserName!=null}"
           help="/help/tasks/mailer/smtpAuth.html">
         <f:entry title="${%User Name}">
-          <input class="setting-input" name="mailer.SMTPAuth.userName"
-                 type="text" value="${descriptor.smtpAuthUserName}"/>
+          <f:textbox name="mailer.SMTPAuth.userName"
+                     value="${descriptor.smtpAuthUserName}"/>
         </f:entry>
         <f:entry title="${%Password}">
-          <input class="setting-input" name="mailer.SMTPAuth.password"
-                 type="password" value="${descriptor.smtpAuthPassword}"/>
+          <f:password name="mailer.SMTPAuth.password" value="${descriptor.smtpAuthPassword}"/>
         </f:entry>
       </f:optionalBlock>
       <f:entry title="${%Use SSL}"
@@ -68,8 +65,7 @@ THE SOFTWARE.
       </f:entry>
       <f:entry title="${%SMTP Port}"
                help="/help/tasks/mailer/smtp-port.html">
-        <input class="setting-input" name="mailer_smtp_port"
-          type="text" value="${descriptor.smtpPort}"/>
+        <f:textbox clazz="number" name="mailer_smtp_port" value="${descriptor.smtpPort}"/>
       </f:entry>
     </f:advanced>
   </f:section>

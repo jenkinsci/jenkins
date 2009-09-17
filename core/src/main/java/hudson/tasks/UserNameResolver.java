@@ -51,7 +51,7 @@ import java.util.List;
  */
 public abstract class UserNameResolver implements ExtensionPoint {
 
-	/**
+    /**
      * Finds full name of the given user.
      *
      * <p>

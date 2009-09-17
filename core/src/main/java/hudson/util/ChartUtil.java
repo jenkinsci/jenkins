@@ -57,16 +57,19 @@ public class ChartUtil {
             return this.build.number-that.build.number;
         }
 
+        @Override
         public boolean equals(Object o) {
             if(!(o instanceof NumberOnlyBuildLabel))    return false;
             NumberOnlyBuildLabel that = (NumberOnlyBuildLabel) o;
             return build==that.build;
         }
 
+        @Override
         public int hashCode() {
             return build.hashCode();
         }
 
+        @Override
         public String toString() {
             return build.getDisplayName();
         }

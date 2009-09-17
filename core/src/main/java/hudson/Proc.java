@@ -47,7 +47,7 @@ import java.util.logging.Logger;
  * @author Kohsuke Kawaguchi
  */
 public abstract class Proc {
-    private Proc() {}
+    protected Proc() {}
 
     /**
      * Checks if the process is still alive.
@@ -238,6 +238,7 @@ public abstract class Proc {
                 this.out = out;
             }
 
+            @Override
             public void run() {
                 try {
                     try {

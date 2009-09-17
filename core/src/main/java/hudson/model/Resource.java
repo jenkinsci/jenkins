@@ -97,6 +97,7 @@ public final class Resource {
         return false;
     }
 
+    @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
@@ -111,6 +112,7 @@ public final class Resource {
         return lhs.equals(rhs);
     }
 
+    @Override
     public int hashCode() {
         return displayName.hashCode();
     }

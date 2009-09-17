@@ -26,7 +26,6 @@ package hudson.slaves;
 import hudson.ExtensionPoint;
 import hudson.Launcher;
 import hudson.DescriptorExtensionList;
-import hudson.FilePath;
 import hudson.scm.SCM;
 import hudson.model.AbstractBuild;
 import hudson.model.BuildListener;
@@ -34,10 +33,8 @@ import hudson.model.Describable;
 import hudson.model.Environment;
 import hudson.model.Hudson;
 import hudson.model.Node;
-import hudson.tasks.Builder;
 
 import java.io.IOException;
-import java.io.File;
 import java.util.List;
 
 /**
@@ -65,9 +62,9 @@ import java.util.List;
 public abstract class NodeProperty<N extends Node> implements Describable<NodeProperty<?>>, ExtensionPoint {
 
     protected transient N node;
-	
-	protected void setNode(N node) { this.node = node; }
-	
+
+    protected void setNode(N node) { this.node = node; }
+
     public NodePropertyDescriptor getDescriptor() {
         return (NodePropertyDescriptor)Hudson.getInstance().getDescriptor(getClass());
     }

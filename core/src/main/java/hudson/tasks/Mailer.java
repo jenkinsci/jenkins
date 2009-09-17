@@ -190,6 +190,7 @@ public class Mailer extends Notifier {
         /**
          * For backward compatibility.
          */
+        @Override
         protected void convert(Map<String, Object> oldPropertyBag) {
             defaultSuffix = (String)oldPropertyBag.get("mail.default.suffix");
             hudsonUrl = (String)oldPropertyBag.get("mail.hudson.url");
@@ -203,6 +204,7 @@ public class Mailer extends Notifier {
             return Messages.Mailer_DisplayName();
         }
 
+        @Override
         public String getHelpFile() {
             return "/help/project-config/mailer.html";
         }
@@ -250,6 +252,7 @@ public class Mailer extends Notifier {
             final String un = getSmtpAuthUserName();
             if(un==null)    return null;
             return new Authenticator() {
+                @Override
                 protected PasswordAuthentication getPasswordAuthentication() {
                     return new PasswordAuthentication(getSmtpAuthUserName(),getSmtpAuthPassword());
                 }
@@ -344,6 +347,7 @@ public class Mailer extends Notifier {
             this.smtpPort = smtpPort;
         }
 
+        @Override
         public Publisher newInstance(StaplerRequest req) {
             Mailer m = new Mailer();
             req.bindParameters(m,"mailer_");
@@ -448,10 +452,10 @@ public class Mailer extends Notifier {
             }
 
             public UserProperty newInstance(User user) {
-                
                 return new UserProperty(null);
             }
 
+            @Override
             public UserProperty newInstance(StaplerRequest req) throws FormException {
                 return new UserProperty(req.getParameter("email.address"));
             }

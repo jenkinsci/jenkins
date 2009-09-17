@@ -72,6 +72,7 @@ public final class FingerprintMap extends KeyedDataStorage<Fingerprint,Fingerpri
         return super.getOrCreate(md5sum, new FingerprintParams(build,fileName));
     }
 
+    @Override
     protected Fingerprint get(String md5sum, boolean createIfNotExist, FingerprintParams createParams) throws IOException {
         // sanity check
         if(md5sum.length()!=32)

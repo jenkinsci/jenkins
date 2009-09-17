@@ -74,17 +74,17 @@ import org.kohsuke.stapler.StaplerRequest;
 public class JUnitResultArchiver extends Recorder implements Serializable,
 		MatrixAggregatable {
 
-	/**
-	 * {@link FileSet} "includes" string, like "foo/bar/*.xml"
-	 */
-	private final String testResults;
+    /**
+     * {@link FileSet} "includes" string, like "foo/bar/*.xml"
+     */
+    private final String testResults;
 
     /**
      * {@link TestDataPublisher}s configured for this archiver, to process the recorded data.
      * For compatibility reasons, can be null.
      * @since 1.320
      */
-	private final DescribableList<TestDataPublisher, Descriptor<TestDataPublisher>> testDataPublishers;
+    private final DescribableList<TestDataPublisher, Descriptor<TestDataPublisher>> testDataPublishers;
 
 	/**
 	 * left for backwards compatibility
@@ -230,15 +230,16 @@ public class JUnitResultArchiver extends Recorder implements Serializable,
 		}
 	}
 
-	@Extension
-	public static class DescriptorImpl extends BuildStepDescriptor<Publisher> {
+    @Extension
+    public static class DescriptorImpl extends BuildStepDescriptor<Publisher> {
 		public String getDisplayName() {
 			return Messages.JUnitResultArchiver_DisplayName();
 		}
 
-		public String getHelpFile() {
-			return "/help/tasks/junit/report.html";
-		}
+        @Override
+        public String getHelpFile() {
+            return "/help/tasks/junit/report.html";
+        }
 
 		@Override
 		public Publisher newInstance(StaplerRequest req, JSONObject formData)
@@ -267,5 +268,5 @@ public class JUnitResultArchiver extends Recorder implements Serializable,
 		public boolean isApplicable(Class<? extends AbstractProject> jobType) {
 			return true;
 		}
-	}
+    }
 }

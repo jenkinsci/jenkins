@@ -2,9 +2,6 @@ package hudson;
 
 import hudson.model.Hudson;
 import hudson.model.Node;
-import hudson.model.TaskListener;
-import hudson.model.AbstractBuild;
-import hudson.model.BuildListener;
 import hudson.model.Executor;
 import hudson.tasks.BuildWrapper;
 

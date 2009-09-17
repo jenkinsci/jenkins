@@ -109,6 +109,7 @@ public class CommandLauncher extends ComputerLauncher {
                     proc.getErrorStream(), listener.getLogger()).start();
 
             computer.setChannel(proc.getInputStream(), proc.getOutputStream(), listener.getLogger(), new Channel.Listener() {
+                @Override
                 public void onClosed(Channel channel, IOException cause) {
                     if (cause != null) {
                         cause.printStackTrace(

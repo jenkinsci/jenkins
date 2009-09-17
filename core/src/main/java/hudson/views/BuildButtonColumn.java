@@ -30,7 +30,6 @@ import org.kohsuke.stapler.StaplerRequest;
 import hudson.Extension;
 import hudson.model.Descriptor;
 import hudson.model.Descriptor.FormException;
-import hudson.views.StatusColumn.DescriptorImpl;
 
 public class BuildButtonColumn extends ListViewColumn {
 

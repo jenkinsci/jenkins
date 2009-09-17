@@ -91,6 +91,7 @@ public class HistoryWidget<O extends ModelObject,T> extends Widget {
         return Messages.BuildHistoryWidget_DisplayName();
     }
 
+    @Override
     public String getUrlName() {
         return "buildHistory";
     }

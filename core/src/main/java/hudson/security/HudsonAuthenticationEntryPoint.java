@@ -55,6 +55,7 @@ import java.text.MessageFormat;
  * @author Kohsuke Kawaguchi
  */
 public class HudsonAuthenticationEntryPoint extends AuthenticationProcessingFilterEntryPoint {
+    @Override
     public void commence(ServletRequest request, ServletResponse response, AuthenticationException authException) throws IOException, ServletException {
         HttpServletRequest req = (HttpServletRequest) request;
         HttpServletResponse rsp = (HttpServletResponse) response;

@@ -26,13 +26,9 @@ package hudson.util;
 import hudson.EnvVars;
 import hudson.Util;
 import hudson.FilePath;
-import hudson.Launcher;
 import hudson.tasks.Builder;
-import hudson.scm.CVSSCM;
 import static hudson.Util.fixEmpty;
 import hudson.model.Hudson;
-import hudson.model.AbstractBuild;
-import hudson.model.BuildListener;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
@@ -416,13 +412,6 @@ public abstract class FormValidation extends IOException implements HttpResponse
 
         protected abstract FormValidation check() throws IOException, ServletException;
     }
-
-
-
-
-
-
-
 
 
 

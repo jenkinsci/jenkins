@@ -65,6 +65,7 @@ public class SCMTrigger extends Trigger<SCMedItem> {
         super(scmpoll_spec);
     }
 
+    @Override
     public void run() {
         if(Hudson.getInstance().isQuietingDown())
             return; // noop
@@ -86,10 +87,12 @@ public class SCMTrigger extends Trigger<SCMedItem> {
         }
     }
 
+    @Override
     public DescriptorImpl getDescriptor() {
         return (DescriptorImpl)super.getDescriptor();
     }
 
+    @Override
     public Action getProjectAction() {
         return new SCMAction();
     }
@@ -175,6 +178,7 @@ public class SCMTrigger extends Trigger<SCMedItem> {
             return Messages.SCMTrigger_DisplayName();
         }
 
+        @Override
         public String getHelpFile() {
             return "/help/project-config/poll-scm.html";
         }
@@ -211,6 +215,7 @@ public class SCMTrigger extends Trigger<SCMedItem> {
                     (maximumThreads==0 ? Executors.newCachedThreadPool() : Executors.newFixedThreadPool(maximumThreads)));
         }
 
+        @Override
         public boolean configure(StaplerRequest req, JSONObject json) throws FormException {
             String t = req.getParameter("poll_scm_threads");
             if(t==null || t.length()==0)
@@ -354,8 +359,9 @@ public class SCMTrigger extends Trigger<SCMedItem> {
         }
 
         // as per the requirement of SequentialExecutionQueue, value equality is necessary
+        @Override
         public boolean equals(Object that) {
-            return job()==((Runner)that).job();
+            return that instanceof Runner && job()==((Runner)that).job();
         }
 
         @Override

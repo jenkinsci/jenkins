@@ -90,7 +90,7 @@ THE SOFTWARE.
         <f:repeatable var="axis" items="${userAxes}" noAddButton="true" minimum="1">
           <table>
             <f:entry title="${%Name}">
-              <f:textbox name="axis.name" value="${axis.name}" checkUrl="'checkAxisName?value='+encode(this.value)"/>
+              <f:textbox name="axis.name" value="${axis.name}" checkUrl="'checkAxisName?value='+encodeURIComponent(this.value)"/>
             </f:entry>
             <f:entry title="${%Values}" help="/help/matrix/axis-value.html">
               <f:expandableTextbox name="axis.value" value="${axis.valueString}" />
@@ -104,9 +104,10 @@ THE SOFTWARE.
           </table>
         </f:repeatable>
       </f:entry>
-        <f:optionalBlock field="runSequentially" title="${%Run each configuration sequentially}" />
     </f:optionalBlock>
     
+    <f:optionalBlock field="runSequentially" title="${%Run each configuration sequentially}"/>
+
     <f:optionalBlock name="hasCombinationFilter" title="${%Combination Filter}" checked="${!empty(it.combinationFilter)}"
         help="/help/matrix/combinationfilter.html">
 	    <f:entry title="${%Filter}">

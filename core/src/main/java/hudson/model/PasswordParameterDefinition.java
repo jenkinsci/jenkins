@@ -37,8 +37,8 @@ import hudson.Extension;
  */
 public class PasswordParameterDefinition extends StringParameterDefinition {
     @DataBoundConstructor
-    public PasswordParameterDefinition(String name, String defaultvalue, String description) {
-        super(name, defaultvalue, description);
+    public PasswordParameterDefinition(String name, String defaultValue, String description) {
+        super(name, defaultValue, description);
     }
 
     @Extension

@@ -21,29 +21,51 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package hudson.cli;
+package org.jvnet.hudson.test.junit;
 
-import hudson.model.TopLevelItem;
-import hudson.Extension;
-import org.kohsuke.args4j.Argument;
+import junit.framework.TestSuite;
+import junit.framework.TestResult;
 
 /**
- * Deletes a job.
+ * {@link TestSuite} that requires some set up and tear down for executing nested tests.
+ *
+ * <p>
+ * The failure in the set up or tear down will be reported as a failure.
+ *
  * @author Kohsuke Kawaguchi
  */
-@Extension
-public class DeleteJobCommand extends CLICommand {
+public class GroupedTest extends TestSuite {
     @Override
-    public String getShortDescription() {
-        return "Deletes a job";
+    public int countTestCases() {
+        return super.countTestCases()+1;
     }
 
-    @Argument
-    public TopLevelItem job;
+    @Override
+    public void run(TestResult result) {
+        try {
+            setUp();
+            try {
+                runGroupedTests(result);
+            } finally {
+                tearDown();
+            }
+            // everything went smoothly. report a successful test to make the ends meet
+            runTest(new FailedTest(getClass(),null),result);
+        } catch (Exception e) {
+            // something went wrong
+            runTest(new FailedTest(getClass(),e),result);
+        }
+    }
 
-    protected int run() throws Exception {
-        job.delete();
-        return 0;
+    /**
+     * Executes the nested tests.
+     */
+    protected void runGroupedTests(TestResult result) throws Exception {
+        super.run(result);
+    }
+
+    protected void setUp() throws Exception {
+    }
+    protected void tearDown() throws Exception {
     }
 }
-

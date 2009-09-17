@@ -32,6 +32,7 @@ import hudson.FeedAdapter;
 import hudson.FilePath;
 import hudson.Util;
 import hudson.XmlFile;
+import hudson.cli.declarative.CLIMethod;
 import hudson.matrix.MatrixBuild;
 import hudson.matrix.MatrixRun;
 import hudson.model.listeners.RunListener;
@@ -137,7 +138,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
      * so it may point to the build that's already completed. This pointer is set to 'this'
      * if the computation determines that everything earlier than this build is already completed.
      */
-    private volatile transient RunT previousBuildInProgress;
+    /* does not compile on JDK 7: private*/ volatile transient RunT previousBuildInProgress;
 
     /**
      * When the build is scheduled.
@@ -542,6 +543,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
         return state ==State.NOT_STARTED;
     }
 
+    @Override
     public String toString() {
         return getFullDisplayName();
     }
@@ -875,6 +877,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
             return href;
         }
 
+        @Override
         public String toString() {
             return relativePath;
         }
@@ -896,19 +899,22 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
     public Reader getLogReader() throws IOException {
     	File logFile = getLogFile();
     	if (logFile.exists() ) {
-    		return new FileReader(logFile);
+            if (charset==null)  return new FileReader(logFile); // fall back
+    		return new InputStreamReader(new FileInputStream(logFile),charset);
     	} 
 
     	File compressedLogFile = new File(logFile.getParentFile(), logFile.getName()+ ".gz");
     	if (compressedLogFile.exists()) {
-    		return new InputStreamReader(
-    				new GZIPInputStream(
-    						new FileInputStream(compressedLogFile)));
+            GZIPInputStream is = new GZIPInputStream(new FileInputStream(compressedLogFile));
+
+            if (charset==null)  return new InputStreamReader(is);
+            else                return new InputStreamReader(is,charset);
     	} 
     	
     	return null;
     }
     
+    @Override
     protected SearchIndexBuilder makeSearchIndex() {
         SearchIndexBuilder builder = super.makeSearchIndex()
                 .add("console")
@@ -1424,6 +1430,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
     /**
      * Marks this build to keep the log.
      */
+    @CLIMethod(name="keep-build")
     public final void keepLog() throws IOException {
         keepLog(true);
     }
@@ -1590,6 +1597,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
          * The entry unique ID needs to be tied to a project, so that
          * new builds will replace the old result.
          */
+        @Override
         public String getEntryID(Run e) {
             // can't use a meaningful year field unless we remember when the job was created.
             return "tag:hudson.dev.java.net,2008:"+e.getParent().getAbsoluteUrl();

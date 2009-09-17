@@ -203,6 +203,7 @@ public class Fingerprinter extends Recorder implements Serializable {
             return Messages.Fingerprinter_DisplayName();
         }
 
+        @Override
         public String getHelpFile() {
             return "/help/project-config/fingerprint.html";
         }
@@ -214,6 +215,7 @@ public class Fingerprinter extends Recorder implements Serializable {
             return FilePath.validateFileMask(project.getSomeWorkspace(),value);
         }
 
+        @Override
         public Publisher newInstance(StaplerRequest req) {
             return new Fingerprinter(
                 req.getParameter("fingerprint_targets").trim(),

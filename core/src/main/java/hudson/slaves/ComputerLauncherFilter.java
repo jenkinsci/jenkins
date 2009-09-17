@@ -24,7 +24,6 @@
 package hudson.slaves;
 
 import hudson.model.Descriptor;
-import hudson.model.Node;
 import hudson.model.TaskListener;
 
 import java.io.IOException;
@@ -53,22 +52,27 @@ public abstract class ComputerLauncherFilter extends ComputerLauncher {
         return core;
     }
 
+    @Override
     public boolean isLaunchSupported() {
         return core.isLaunchSupported();
     }
 
+    @Override
     public void launch(SlaveComputer computer, TaskListener listener) throws IOException, InterruptedException {
         core.launch(computer, listener);
     }
 
+    @Override
     public void afterDisconnect(SlaveComputer computer, TaskListener listener) {
         core.afterDisconnect(computer, listener);
     }
 
+    @Override
     public void beforeDisconnect(SlaveComputer computer, TaskListener listener) {
         core.beforeDisconnect(computer, listener);
     }
 
+    @Override
     public Descriptor<ComputerLauncher> getDescriptor() {
         throw new UnsupportedOperationException();
     }
