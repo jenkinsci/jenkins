@@ -40,6 +40,7 @@ RC=$repo/branches/rc
 tag=$repo/tags/hudson-$(show-pom-version pom.xml | sed -e "s/-SNAPSHOT//g" -e "s/\\./_/g")-rc
 
 svn rm -m "deleting the old RC branch" $RC
+svn up
 rev=$(svn info --xml . | xmlstarlet sel -t -v /info/entry/@revision)
 svn cp -m "tagging the branch point" $repo/trunk/hudson/main@$rev $tag
 svn cp -m "creating a new RC branch" $repo/trunk/hudson/main@$rev $RC
