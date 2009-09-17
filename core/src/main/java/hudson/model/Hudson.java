@@ -3070,11 +3070,11 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
      * Checks if container uses UTF-8 to decode URLs. See
      * http://hudson.gotdns.com/wiki/display/HUDSON/Tomcat#Tomcat-i18n
      */
-    public FormValidation doCheckURIEncoding(StaplerRequest request, @QueryParameter String value) throws IOException {
+    public FormValidation doCheckURIEncoding(StaplerRequest request, StaplerResponse response) throws IOException {
         request.setCharacterEncoding("UTF-8");
         // expected is non-ASCII String
         final String expected = "\u57f7\u4e8b";
-        value = fixEmpty(value);
+        final String value = fixEmpty(request.getParameter("value"));
         if (!expected.equals(value))
             return FormValidation.warningWithMarkup(Messages.Hudson_NotUsesUTF8ToDecodeURL());
         return FormValidation.ok();
