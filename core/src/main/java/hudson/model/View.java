@@ -220,7 +220,7 @@ public abstract class View extends AbstractModelObject implements AccessControll
      * even for the default view.
      */
     public String getViewUrl() {
-        return owner.getUrl()+"view/"+getViewName()+'/';
+        return (owner!=null ? owner.getUrl() : "") + "view/" + getViewName() + '/';
     }
 
     public String getSearchUrl() {
