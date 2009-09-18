@@ -32,7 +32,7 @@ THE SOFTWARE.
       <l:task icon="images/24x24/up.gif" href="${rootURL}/" title="${%Back to Dashboard}" />
       <l:task icon="images/24x24/search.gif" href="${rootURL}/${it.url}/" title="${%Status}" />
       <l:task icon="images/24x24/notepad.gif" href="${rootURL}/${it.url}/builds" title="${%Builds}" />
-      <l:task icon="images/24x24/notepad.gif" href="${rootURL}/${it.url}/my-views" title="${%My Views}" />
+      <l:task icon="images/24x24/notepad.gif" href="${rootURL}/${it.url}/my-views/" title="${%My Views}" />
       <l:task icon="images/24x24/setting.gif" href="${rootURL}/${it.url}/configure" title="${%Configure}" permission="${app.ADMINISTER}"/>
       <!--  TODO add all UserProperties that are also actions -->
     </l:tasks>
