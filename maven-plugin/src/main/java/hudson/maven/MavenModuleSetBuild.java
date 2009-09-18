@@ -793,7 +793,8 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
         private final Properties properties;
         private final String privateRepository;
         private final String alternateSettings;
-
+	private final boolean nonRecursive;
+	
         public PomParser(BuildListener listener, MavenInstallation mavenHome, MavenModuleSet project) {
             // project cannot be shipped to the remote JVM, so all the relevant properties need to be captured now.
             this.listener = listener;
@@ -801,7 +802,8 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
             this.rootPOM = project.getRootPOM();
             this.profiles = project.getProfiles();
             this.properties = project.getMavenProperties();
-            if (project.usesPrivateRepository()) {
+	    this.nonRecursive = project.isNonRecursive();
+	    if (project.usesPrivateRepository()) {
                 this.privateRepository = project.getWorkspace().child(".repository").getRemote();
             }
             else {
@@ -838,8 +840,10 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
                 throw new AbortException(Messages.MavenModuleSetBuild_NoSuchPOMFile(pom));
 
             if(verbose)
-                logger.println("Parsing "+pom);
-
+                logger.println("Parsing "
+			       + (nonRecursive ? "non-recursively " : "recursively ")
+			       + pom);
+	    
             File settingsLoc = (alternateSettings == null) ? null 
                 : new File(ws, alternateSettings);
 
@@ -853,7 +857,7 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
                                        properties, privateRepository, settingsLoc);
                 MavenProject mp = embedder.readProject(pom);
                 Map<MavenProject,String> relPath = new HashMap<MavenProject,String>();
-                MavenUtil.resolveModules(embedder,mp,getRootPath(),relPath,listener);
+                MavenUtil.resolveModules(embedder,mp,getRootPath(),relPath,listener,nonRecursive);
 
                 if(verbose) {
                     for (Entry<MavenProject, String> e : relPath.entrySet())

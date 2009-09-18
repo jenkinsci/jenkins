@@ -160,33 +160,38 @@ public class MavenUtil {
      * @throws AbortException
      *      errors will be reported to the listener and the exception thrown.
      */
-    public static void resolveModules(MavenEmbedder embedder, MavenProject project, String rel, Map<MavenProject,String> relativePathInfo, BuildListener listener) throws ProjectBuildingException, AbortException {
-
+    public static void resolveModules(MavenEmbedder embedder, MavenProject project,
+				      String rel, Map<MavenProject,String> relativePathInfo,
+				      BuildListener listener, boolean nonRecursive) throws ProjectBuildingException,
+											   AbortException {
+	
         File basedir = project.getFile().getParentFile();
         relativePathInfo.put(project,rel);
 
-        List<MavenProject> modules = new ArrayList<MavenProject>();
-
-        for (String modulePath : (List<String>) project.getModules()) {
-	    if (Util.fixEmptyAndTrim(modulePath)!=null) {
-		File moduleFile = new File(basedir, modulePath);
-		if (moduleFile.exists() && moduleFile.isDirectory()) {
-		    moduleFile = new File(basedir, modulePath + "/pom.xml");
+	if (!nonRecursive) {
+	    List<MavenProject> modules = new ArrayList<MavenProject>();
+	    
+	    for (String modulePath : (List<String>) project.getModules()) {
+		if (Util.fixEmptyAndTrim(modulePath)!=null) {
+		    File moduleFile = new File(basedir, modulePath);
+		    if (moduleFile.exists() && moduleFile.isDirectory()) {
+			moduleFile = new File(basedir, modulePath + "/pom.xml");
+		    }
+		    if(!moduleFile.exists())
+			throw new AbortException(moduleFile+" is referenced from "+project.getFile()+" but it doesn't exist");
+		    
+		    String relativePath = rel;
+		    if(relativePath.length()>0) relativePath+='/';
+		    relativePath+=modulePath;
+		    
+		    MavenProject child = embedder.readProject(moduleFile);
+		    resolveModules(embedder,child,relativePath,relativePathInfo,listener,nonRecursive);
+		    modules.add(child);
 		}
-		if(!moduleFile.exists())
-		    throw new AbortException(moduleFile+" is referenced from "+project.getFile()+" but it doesn't exist");
-		
-		String relativePath = rel;
-		if(relativePath.length()>0) relativePath+='/';
-		relativePath+=modulePath;
-		
-		MavenProject child = embedder.readProject(moduleFile);
-		resolveModules(embedder,child,relativePath,relativePathInfo,listener);
-		modules.add(child);
 	    }
+	    
+	    project.setCollectedProjects(modules);
 	}
-
-        project.setCollectedProjects(modules);
     }
 
     /**

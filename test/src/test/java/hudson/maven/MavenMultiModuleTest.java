@@ -28,9 +28,10 @@ public class MavenMultiModuleTest extends HudsonTestCase {
         MavenModuleSet m = createMavenProject();
         m.getReporters().add(new TestReporter());
         m.setScm(new ExtractResourceSCM(getClass().getResource("maven-multimod.zip")));
+	assertFalse("MavenModuleSet.isNonRecursive() should be false", m.isNonRecursive());
         assertBuildStatusSuccess(m.scheduleBuild2(0).get());
     }
-    
+
     public void testIncrementalMultiModMaven() throws Exception {
         configureDefaultMaven("apache-maven-2.2.1");
         MavenModuleSet m = createMavenProject();
@@ -58,6 +59,39 @@ public class MavenMultiModuleTest extends HudsonTestCase {
 	    }
 	    if (modBuild.getParent().getModuleName().toString().equals("org.jvnet.hudson.main.test.multimod:moduleC")) {
 		assertEquals("moduleC should have Result.SUCCESS", modBuild.getResult(), Result.SUCCESS);
+	    }
+	    
+	}	
+	
+    }
+
+    /**
+     * When "-N' or "--non-recursive" show up in the goals, any child modules should be ignored.
+     */
+    @Bug(4491)
+    public void testMultiModMavenNonRecursiveParsing() throws Exception {
+        configureDefaultMaven("apache-maven-2.2.1");
+        MavenModuleSet m = createMavenProject();
+	m.setGoals("clean install -N");
+        m.getReporters().add(new TestReporter());
+	m.setScm(new ExtractResourceSCM(getClass().getResource("maven-multimod.zip")));
+
+	assertBuildStatusSuccess(m.scheduleBuild2(0).get());
+
+	MavenModuleSetBuild pBuild = m.getLastBuild();
+
+	for (MavenBuild modBuild : pBuild.getModuleLastBuilds().values()) {
+	    if (modBuild.getParent().getModuleName().toString().equals("org.jvnet.hudson.main.test.multimod:multimod-top")) {
+		assertEquals("moduleA should have Result.SUCCESS", modBuild.getResult(), Result.SUCCESS);
+	    }
+	    if (modBuild.getParent().getModuleName().toString().equals("org.jvnet.hudson.main.test.multimod:moduleA")) {
+		assertEquals("moduleA should have Result.NOT_BUILT", modBuild.getResult(), Result.NOT_BUILT);
+	    }
+	    if (modBuild.getParent().getModuleName().toString().equals("org.jvnet.hudson.main.test.multimod:moduleB")) {
+		assertEquals("moduleB should have Result.NOT_BUILT", modBuild.getResult(), Result.NOT_BUILT);
+	    }
+	    if (modBuild.getParent().getModuleName().toString().equals("org.jvnet.hudson.main.test.multimod:moduleC")) {
+		assertEquals("moduleC should have Result.NOT_BUILT", modBuild.getResult(), Result.NOT_BUILT);
 	    }
 	    
 	}	
@@ -105,7 +139,7 @@ public class MavenMultiModuleTest extends HudsonTestCase {
 	}	
 	
     }
-
+    
     /**
      * Test failures in a child module should lead to the parent being marked as unstable.
      */
@@ -139,7 +173,7 @@ public class MavenMultiModuleTest extends HudsonTestCase {
 	}	
 	
     }
-
+    
     /*
     public void testParallelMultiModMavenWsExists() throws Exception {
         configureDefaultMaven();

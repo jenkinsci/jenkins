@@ -525,6 +525,14 @@ public final class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,Ma
         this.goals = goals;
     }
 
+    private boolean checkMavenOption(String shortForm, String longForm) {
+        for (String t : Util.tokenize(getGoals())) {
+            if(t.equals(shortForm) || t.equals(longForm))
+                return true;
+	}
+	return false;
+    }
+	
     private List<String> getMavenArgument(String shortForm, String longForm) {
         List<String> args = new ArrayList<String>();
         boolean switchFound=false;
@@ -574,6 +582,13 @@ public final class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,Ma
             else        props.put(arg.substring(0,idx),arg.substring(idx+1));
         }
         return props;
+    }
+
+    /**
+     * Check for "-N" or "--non-recursive" in the Maven goals/options.
+     */
+    public boolean isNonRecursive() {
+	return checkMavenOption("-N", "--non-recursive");
     }
 
     /**
