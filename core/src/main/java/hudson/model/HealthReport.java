@@ -70,7 +70,7 @@ public class HealthReport implements Serializable, Comparable<HealthReport> {
     /**
      * Recover the health icon's tool-tip when deserializing.
      *
-     * @deprecated use {@link #localizibleDescription}
+     * @deprecated since 2008-10-18. Use {@link #localizibleDescription}
      */
     @Deprecated
     private transient String description;
@@ -93,7 +93,8 @@ public class HealthReport implements Serializable, Comparable<HealthReport> {
      *                    When calculating the url to display for absolute paths, the getIconUrl(String) method
      *                    will replace /32x32/ in the path with the appropriate size.
      * @param description The health icon's tool-tip.
-     * @deprecated use {@link #HealthReport(int, String, org.jvnet.localizer.Localizable)}
+     * @deprecated since 2008-10-18.
+     *     Use {@link #HealthReport(int, String, org.jvnet.localizer.Localizable)}
      */
     @Deprecated
     public HealthReport(int score, String iconUrl, String description) {
@@ -140,7 +141,8 @@ public class HealthReport implements Serializable, Comparable<HealthReport> {
      *
      * @param score       The percentage health score (from 0 to 100 inclusive).
      * @param description The health icon's tool-tip.
-     * @deprecated use {@link #HealthReport(int, org.jvnet.localizer.Localizable)}
+     * @deprecated since 2008-10-18.
+     *     Use {@link #HealthReport(int, org.jvnet.localizer.Localizable)}
      */
     @Deprecated
     public HealthReport(int score, String description) {

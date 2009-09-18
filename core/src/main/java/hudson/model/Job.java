@@ -570,8 +570,8 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
     }
 
     /**
-     * @deprecated This is only used to support backward compatibility with old
-     *             URLs.
+     * @deprecated since 2008-06-15.
+     *     This is only used to support backward compatibility with old URLs.
      */
     @Deprecated
     public RunT getBuild(String id) {

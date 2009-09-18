@@ -58,6 +58,7 @@ public abstract class Cause {
 
     /**
      * Fall back implementation when no other type is available.
+     * @deprecated since 2009-02-08
      */
     public static class LegacyCodeCause extends Cause {
         private StackTraceElement [] stackTrace;
@@ -77,10 +78,16 @@ public abstract class Cause {
     public static class UpstreamCause extends Cause {
         private String upstreamProject, upstreamUrl;
         private int upstreamBuild;
+        /**
+         * @deprecated since 2009-02-28
+         */
         @Deprecated
         private transient Cause upstreamCause;
         private List<Cause> upstreamCauses;
-        
+
+        /**
+         * @deprecated since 2009-02-28
+         */
         // for backward bytecode compatibility
         public UpstreamCause(AbstractBuild<?,?> up) {
             this((Run<?,?>)up);

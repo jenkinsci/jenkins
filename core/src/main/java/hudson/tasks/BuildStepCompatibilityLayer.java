@@ -41,6 +41,7 @@ import java.io.IOException;
  *
  * @author Kohsuke Kawaguchi
  * @since 1.150
+ * @deprecated since 1.150
  */
 public abstract class BuildStepCompatibilityLayer implements BuildStep {
 //

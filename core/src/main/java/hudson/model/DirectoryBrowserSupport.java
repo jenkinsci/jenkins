@@ -73,8 +73,8 @@ public final class DirectoryBrowserSupport implements HttpResponse {
     private String indexFileName = "index.html";
 
     /**
-     * @deprecated
-     *      Use {@link #DirectoryBrowserSupport(ModelObject, String)}
+     * @deprecated since 2007-08-12.
+     *      Use {@link #DirectoryBrowserSupport(ModelObject, FilePath, String, String, boolean)}
      */
     public DirectoryBrowserSupport(ModelObject owner) {
         this(owner,owner.getDisplayName());

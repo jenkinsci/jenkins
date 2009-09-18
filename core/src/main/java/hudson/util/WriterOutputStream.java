@@ -38,7 +38,7 @@ import java.nio.*;
  * by assuming the platform default encoding.
  *
  * @author Kohsuke Kawaguchi
- * @deprecated
+ * @deprecated since 2008-05-28.
  *      Use the one in stapler.
  */
 public class WriterOutputStream extends OutputStream {

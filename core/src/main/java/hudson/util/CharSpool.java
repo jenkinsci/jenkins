@@ -32,7 +32,7 @@ import java.util.List;
  * {@link Writer} that spools the output and writes to another {@link Writer} later.
  *
  * @author Kohsuke Kawaguchi
- * @deprecated moved to stapler
+ * @deprecated since 2008-05-28. moved to stapler
  */
 public final class CharSpool extends Writer {
     private List<char[]> buf;

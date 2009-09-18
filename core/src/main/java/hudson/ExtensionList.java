@@ -138,7 +138,7 @@ public class ExtensionList<T> extends AbstractList<T> {
     /**
      * Write access will put the instance into a legacy store.
      *
-     * @deprecated
+     * @deprecated since 2009-02-23.
      *      Prefer automatic registration.
      */
     @Override

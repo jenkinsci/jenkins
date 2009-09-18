@@ -36,7 +36,8 @@ import hudson.ExtensionPoint;
  *
  * @author Kohsuke Kawaguchi
  * @see Hudson#addListener(JobListener)
- * @deprecated {@link ItemListener} is the generalized form of this.
+ * @deprecated since 2007-10-09.
+ *     {@link ItemListener} is the generalized form of this.
  */
 public abstract class JobListener implements ExtensionPoint {
     /**
@@ -46,8 +47,7 @@ public abstract class JobListener implements ExtensionPoint {
     }
 
     /**
-     * Called after all the jobs are loaded from disk into {@link Hudson}
-     * object.
+     * Called after all the jobs are loaded from disk into {@link Hudson} object.
      *
      * @since 1.68
      */

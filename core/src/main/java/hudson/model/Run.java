@@ -1259,8 +1259,9 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
     /**
      * Gets the log of the build as a string.
      *
-     * @deprecated Use {@link #getLog(int)} instead as it avoids loading
-     * the whole log into memory unnecessarily.
+     * @deprecated since 2007-11-11.
+     *     Use {@link #getLog(int)} instead as it avoids loading
+     *     the whole log into memory unnecessarily.
      */
     @Deprecated
     public String getLog() throws IOException {

@@ -88,6 +88,7 @@ public class JUnitResultArchiver extends Recorder implements Serializable,
 
 	/**
 	 * left for backwards compatibility
+         * @deprecated since 2009-08-09.
 	 */
 	@Deprecated
 	public JUnitResultArchiver(String testResults) {
@@ -161,7 +162,7 @@ public class JUnitResultArchiver extends Recorder implements Serializable,
 	/**
 	 * Not actually used, but left for backward compatibility
 	 * 
-	 * @deprecated
+	 * @deprecated since 2009-08-10.
 	 */
 	protected TestResult parseResult(DirectoryScanner ds, long buildTime)
 			throws IOException {

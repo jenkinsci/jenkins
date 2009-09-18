@@ -167,7 +167,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
     private volatile String jdk;
 
     /**
-     * @deprecated
+     * @deprecated since 2007-01-29.
      */
     private transient boolean enableRemoteTrigger;
 

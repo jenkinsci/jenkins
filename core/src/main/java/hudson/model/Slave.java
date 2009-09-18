@@ -130,6 +130,9 @@ public abstract class Slave extends Node implements Serializable {
         this(name,nodeDescription,remoteFS,Util.tryParseNumber(numExecutors, 1).intValue(),mode,labelString,launcher,retentionStrategy, nodeProperties);
     }
 
+    /**
+     * @deprecated since 2009-02-20.
+     */
     @Deprecated
     public Slave(String name, String nodeDescription, String remoteFS, int numExecutors,
             Mode mode, String labelString, ComputerLauncher launcher, RetentionStrategy retentionStrategy) throws FormException, IOException {
@@ -395,6 +398,7 @@ public abstract class Slave extends Node implements Serializable {
      * @deprecated
      */
     private transient String command;
+
     /**
      * Command line to launch the agent, like
      * "ssh myslave java -jar /path/to/hudson-remoting.jar"

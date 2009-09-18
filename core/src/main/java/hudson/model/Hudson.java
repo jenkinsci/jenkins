@@ -861,7 +861,7 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
     /**
      * Adds a new {@link JobListener}.
      *
-     * @deprecated
+     * @deprecated since 2007-01-04.
      *      Use {@code getJobListeners().add(l)} instead.
      */
     public void addListener(JobListener l) {
@@ -871,7 +871,7 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
     /**
      * Deletes an existing {@link JobListener}.
      *
-     * @deprecated
+     * @deprecated since 2007-01-04.
      *      Use {@code getJobListeners().remove(l)} instead.
      */
     public boolean removeListener(JobListener l ) {
@@ -3257,7 +3257,7 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
     }
 
     /**
-     * @deprecated
+     * @deprecated since 2007-12-18.
      *      Use {@link #checkPermission(Permission)}
      */
     public static boolean adminCheck() throws IOException {
@@ -3265,7 +3265,7 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
     }
 
     /**
-     * @deprecated
+     * @deprecated since 2007-12-18.
      *      Use {@link #checkPermission(Permission)}
      */
     public static boolean adminCheck(StaplerRequest req,StaplerResponse rsp) throws IOException {
@@ -3279,7 +3279,7 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
      * Checks if the current user (for which we are processing the current request)
      * has the admin access.
      *
-     * @deprecated
+     * @deprecated since 2007-12-18.
      *      This method is deprecated when Hudson moved from simple Unix root-like model
      *      of "admin gets to do everything, and others don't have any privilege" to more
      *      complex {@link ACL} and {@link Permission} based scheme.
@@ -3298,7 +3298,7 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
     }
 
     /**
-     * @deprecated
+     * @deprecated since 2007-12-18.
      *      Define a custom {@link Permission} and check against ACL.
      *      See {@link #isAdmin()} for more instructions.
      */

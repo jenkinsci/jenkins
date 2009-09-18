@@ -209,7 +209,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
     public abstract void doLaunchSlaveAgent( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException;
 
     /**
-     * @deprecated  Use {@link #connect(boolean)}
+     * @deprecated since 2009-01-06.  Use {@link #connect(boolean)}
      */
     public final void launch() {
         connect(true);
@@ -393,7 +393,8 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
 
     /**
      * Returns true if this computer is supposed to be launched via JNLP.
-     * @deprecated see {@linkplain #isLaunchSupported()} and {@linkplain ComputerLauncher}
+     * @deprecated since 2008-05-18.
+     *     See {@linkplain #isLaunchSupported()} and {@linkplain ComputerLauncher}
      */
     @Exported
     @Deprecated

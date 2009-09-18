@@ -222,7 +222,7 @@ public final class Permission {
     /**
      * {@link PermissionGroup} for {@link Hudson}.
      *
-     * @deprecated
+     * @deprecated since 2009-01-23.
      *      Access {@link Hudson#PERMISSIONS} instead.
      */
     public static final PermissionGroup HUDSON_PERMISSIONS = new PermissionGroup(Hudson.class, hudson.model.Messages._Hudson_Permissions_Title());
@@ -232,7 +232,7 @@ public final class Permission {
      * <p>
      * All permissions are eventually {@linkplain Permission#impliedBy implied by} this permission.
      *
-     * @deprecated
+     * @deprecated since 2009-01-23.
      *      Access {@link Hudson#ADMINISTER} instead.
      */
     public static final Permission HUDSON_ADMINISTER = new Permission(HUDSON_PERMISSIONS,"Administer", hudson.model.Messages._Hudson_AdministerPermission_Description(),null);
@@ -251,7 +251,7 @@ public final class Permission {
      * Historically this was separate from {@link #HUDSON_ADMINISTER} but such a distinction doesn't make sense
      * any more, so deprecated.
      *
-     * @deprecated
+     * @deprecated since 2009-01-23.
      *      Use {@link Hudson#ADMINISTER}.
      */
     public static final Permission FULL_CONTROL = new Permission(GROUP,"FullControl",HUDSON_ADMINISTER);

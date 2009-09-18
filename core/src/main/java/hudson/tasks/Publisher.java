@@ -76,18 +76,18 @@ public abstract class Publisher extends BuildStepCompatibilityLayer implements B
 //
     /**
      * Default implementation that does nothing.
+     * @deprecated since 1.150
      */
-    @Deprecated
-    @Override
+    @Deprecated @Override
     public boolean prebuild(Build build, BuildListener listener) {
         return true;
     }
 
     /**
      * Default implementation that does nothing.
+     * @deprecated since 1.150
      */
-    @Deprecated
-    @Override
+    @Deprecated @Override
     public Action getProjectAction(Project project) {
         return null;
     }

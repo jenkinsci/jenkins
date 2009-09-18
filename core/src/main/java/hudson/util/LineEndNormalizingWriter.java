@@ -37,7 +37,7 @@ import java.io.IOException;
  * we use this filter to always convert LF to CR+LF.
  *
  * @author Kohsuke Kawaguchi
- * @deprecated moved to stapler
+ * @deprecated since 2008-05-28. moved to stapler
  */
 public class LineEndNormalizingWriter extends FilterWriter {
 

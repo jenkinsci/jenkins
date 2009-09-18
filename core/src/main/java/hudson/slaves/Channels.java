@@ -56,7 +56,7 @@ import java.util.logging.Logger;
  */
 public class Channels {
     /**
-     * @deprecated
+     * @deprecated since 2009-04-13.
      *      Use {@link #forProcess(String, ExecutorService, InputStream, OutputStream, OutputStream, Proc)}
      */
     public static Channel forProcess(String name, ExecutorService execService, InputStream in, OutputStream out, Proc proc) throws IOException {

@@ -345,6 +345,9 @@ public class Maven extends Builder {
      */
     public static final class MavenInstallation extends ToolInstallation implements EnvironmentSpecific<MavenInstallation>, NodeSpecific<MavenInstallation> {
 
+        /**
+         * @deprecated since 2009-02-25.
+         */
         @Deprecated // kept for backward compatiblity - use getHome()
         private String mavenHome;
 

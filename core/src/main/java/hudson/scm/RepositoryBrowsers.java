@@ -65,7 +65,7 @@ public class RepositoryBrowsers {
     /**
      * Creates an instance of {@link RepositoryBrowser} from a form submission.
      *
-     * @deprecated
+     * @deprecated since 2008-06-19.
      *      Use {@link #createInstance(Class, StaplerRequest, JSONObject, String)}.
      */
     public static <T extends RepositoryBrowser>
