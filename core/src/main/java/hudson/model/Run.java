@@ -1236,9 +1236,9 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
         }
         runner = null;
         RunnerStack.INSTANCE.pop();
-	if (result==null) {
-	    result = Result.FAILURE;
-	    LOGGER.warning(toString()+": No build result is set, so marking as failure. This shouldn't happen.");
+        if (result == null) {
+            result = Result.FAILURE;
+            LOGGER.warning(toString() + ": No build result is set, so marking as failure. This shouldn't happen.");
         }
 
         RunListener.fireFinalized(this);
