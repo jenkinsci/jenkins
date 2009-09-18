@@ -51,6 +51,7 @@ import hudson.tools.ToolDescriptor;
 import hudson.cli.CliEntryPoint;
 import hudson.cli.CliManagerImpl;
 import hudson.cli.declarative.CLIMethod;
+import hudson.cli.declarative.CLIResolver;
 import hudson.logging.LogRecorderManager;
 import hudson.lifecycle.Lifecycle;
 import hudson.model.Descriptor.FormException;
@@ -475,6 +476,7 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
      */
     private transient final AdjunctManager adjuncts;
 
+    @CLIResolver
     public static Hudson getInstance() {
         return theInstance;
     }
