@@ -48,6 +48,8 @@ import org.codehaus.plexus.component.repository.exception.ComponentLookupExcepti
 import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
+import org.kohsuke.stapler.HttpResponse;
+import org.kohsuke.stapler.HttpRedirect;
 import org.kohsuke.stapler.framework.io.LargeText;
 
 import javax.servlet.ServletException;
@@ -129,7 +131,7 @@ public abstract class MavenAbstractArtifactRecord<T extends AbstractBuild<?,?>> 
         }
 
         // TODO: Eventually provide a better UI
-        public final void doIndex(StaplerRequest req, StaplerResponse rsp) throws IOException {
+        public final void doIndex(StaplerResponse rsp) throws IOException {
             rsp.setContentType("text/plain;charset=UTF-8");
             getLog().writeLogTo(0,rsp.getWriter());
         }
@@ -186,10 +188,10 @@ public abstract class MavenAbstractArtifactRecord<T extends AbstractBuild<?,?>> 
     /**
      * Performs a redeployment.
      */
-    public final void doRedeploy(StaplerRequest req, StaplerResponse rsp,
-                           @QueryParameter("redeploy.id") final String id,
-                           @QueryParameter("redeploy.url") final String repositoryUrl,
-                           @QueryParameter("redeploy.uniqueVersion") final boolean uniqueVersion) throws ServletException, IOException {
+    public final HttpResponse doRedeploy(
+            @QueryParameter("_.id") final String id,
+            @QueryParameter("_.url") final String repositoryUrl,
+            @QueryParameter("_.uniqueVersion") final boolean uniqueVersion) throws ServletException, IOException {
         getACL().checkPermission(REDEPLOY);
 
         File logFile = new File(getBuild().getRootDir(),"maven-deployment."+records.size()+".log");
@@ -221,7 +223,7 @@ public abstract class MavenAbstractArtifactRecord<T extends AbstractBuild<?,?>> 
             }
         }.start();
 
-        rsp.sendRedirect(".");
+        return HttpRedirect.DOT;
     }
 
     /**
