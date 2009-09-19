@@ -27,7 +27,7 @@ THE SOFTWARE.
   <parent>
     <artifactId>pom</artifactId>
     <groupId>org.jvnet.hudson.main</groupId>
-    <version>1.324-SNAPSHOT</version>
+    <version>1.325-SNAPSHOT</version>
   </parent>
   <modelVersion>4.0.0</modelVersion>
   <groupId>org.jvnet.hudson.main</groupId>
@@ -47,6 +47,7 @@ THE SOFTWARE.
           <forkMode>once</forkMode>
           <!--<reportFormat>plain</reportFormat>-->
           <redirectTestOutputToFile>true</redirectTestOutputToFile>
+          <argLine>-XX:MaxPermSize=128m</argLine>
           <systemProperties>
             <property>
               <!-- use AntClassLoader that supports predictable file handle release

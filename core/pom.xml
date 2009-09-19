@@ -27,7 +27,7 @@ THE SOFTWARE.
   <parent>
     <groupId>org.jvnet.hudson.main</groupId>
     <artifactId>pom</artifactId>
-    <version>1.324-SNAPSHOT</version>
+    <version>1.325-SNAPSHOT</version>
     <relativePath>../pom.xml</relativePath>
   </parent>
 
@@ -158,7 +158,7 @@ THE SOFTWARE.
           <dependency>
             <groupId>org.jvnet.hudson.tools</groupId>
             <artifactId>extension-point-lister</artifactId>
-            <version>1.4</version>
+            <version>1.5</version>
             <exclusions>
                <exclusion>
                  <groupId>com.sun</groupId>
