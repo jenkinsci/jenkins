@@ -1219,7 +1219,8 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
      */
     protected void onStartBuilding() {
         state = State.BUILDING;
-        RunnerStack.INSTANCE.push(runner);
+        if (runner!=null)
+            RunnerStack.INSTANCE.push(runner);
     }
 
     /**
@@ -1231,11 +1232,11 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
             // MavenBuilds may be created without their corresponding runners.
             state = State.COMPLETED;
             runner.checkpoints.allDone();
+            runner = null;
+            RunnerStack.INSTANCE.pop();
         } else {
             state = State.COMPLETED;
         }
-        runner = null;
-        RunnerStack.INSTANCE.pop();
         if (result == null) {
             result = Result.FAILURE;
             LOGGER.warning(toString() + ": No build result is set, so marking as failure. This shouldn't happen.");
