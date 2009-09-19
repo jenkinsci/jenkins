@@ -47,6 +47,7 @@ THE SOFTWARE.
           <forkMode>once</forkMode>
           <!--<reportFormat>plain</reportFormat>-->
           <redirectTestOutputToFile>true</redirectTestOutputToFile>
+          <argLine>-XX:MaxPermSize=128m</argLine>
           <systemProperties>
             <property>
               <!-- use AntClassLoader that supports predictable file handle release
