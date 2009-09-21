@@ -303,7 +303,10 @@ public class UpdateCenter extends AbstractModelObject {
         if(data==null)      return false;
 
         for (PluginWrapper pw : Hudson.getInstance().getPluginManager().getPlugins()) {
-            if(pw.getUpdateInfo() !=null) return true;
+            if(!pw.isBundled() && pw.getUpdateInfo()!=null)
+                // do not advertize updates to bundled plugins, since we generally want users to get them
+                // as a part of hudson.war updates. This also avoids unnecessary pinning of plugins. 
+                return true;
         }
         return false;
     }
@@ -804,15 +807,7 @@ public class UpdateCenter extends AbstractModelObject {
             try {
                 LOGGER.info("Starting the installation of "+getName()+" on behalf of "+getUser().getName());
 
-                URL src = getURL();
-
-                config.preValidate(this, src);
-
-                File dst = getDestination();
-                File tmp = config.download(this, src);
-                
-                config.postValidate(this, tmp);
-                config.install(this, tmp, dst);
+                _run();
                 
                 LOGGER.info("Installation successful: "+getName());
                 status = new Success();
@@ -821,6 +816,18 @@ public class UpdateCenter extends AbstractModelObject {
                 LOGGER.log(Level.SEVERE, "Failed to install "+getName(),e);
                 status = new Failure(e);
             }
+        }
+
+        protected void _run() throws IOException {
+            URL src = getURL();
+
+            config.preValidate(this, src);
+
+            File dst = getDestination();
+            File tmp = config.download(this, src);
+
+            config.postValidate(this, tmp);
+            config.install(this, tmp, dst);
         }
 
         /**
@@ -912,6 +919,16 @@ public class UpdateCenter extends AbstractModelObject {
 
         public String getName() {
             return plugin.getDisplayName();
+        }
+
+        @Override
+        public void _run() throws IOException {
+            super.run();
+
+            // if this is a bundled plugin, make sure it won't get overwritten
+            PluginWrapper pw = plugin.getInstalled();
+            if (pw!=null && pw.isBundled())
+                pw.doPin();
         }
 
         protected void onSuccess() {
