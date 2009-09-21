@@ -80,6 +80,8 @@ import java.util.ResourceBundle;
 import java.util.SimpleTimeZone;
 import java.util.StringTokenizer;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
@@ -850,6 +852,14 @@ public class Util {
     public static String fixEmptyAndTrim(String s) {
         if(s==null)    return null;
         return fixEmpty(s.trim());
+    }
+
+    public static <T> List<T> fixNull(List<T> l) {
+        return l!=null ? l : Collections.<T>emptyList();
+    }
+
+    public static <T> Set<T> fixNull(Set<T> l) {
+        return l!=null ? l : Collections.<T>emptySet();
     }
 
     /**

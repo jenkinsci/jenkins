@@ -23,10 +23,23 @@
  */
 package hudson;
 
-import hudson.model.*;
+import hudson.model.AbstractModelObject;
+import hudson.model.Failure;
+import hudson.model.Hudson;
+import hudson.model.UpdateCenter;
 import hudson.util.Service;
+import org.apache.commons.fileupload.FileItem;
+import org.apache.commons.fileupload.disk.DiskFileItemFactory;
+import org.apache.commons.fileupload.servlet.ServletFileUpload;
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.logging.LogFactory;
+import org.kohsuke.stapler.HttpRedirect;
+import org.kohsuke.stapler.HttpResponse;
+import org.kohsuke.stapler.QueryParameter;
+import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.StaplerResponse;
+import org.kohsuke.stapler.WebApp;
 
-import java.util.Enumeration;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import java.io.File;
@@ -34,26 +47,15 @@ import java.io.FilenameFilter;
 import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.Arrays;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
-import org.apache.commons.logging.LogFactory;
-import org.apache.commons.fileupload.servlet.ServletFileUpload;
-import org.apache.commons.fileupload.disk.DiskFileItemFactory;
-import org.apache.commons.fileupload.FileItem;
-import org.apache.commons.io.FileUtils;
-import org.kohsuke.stapler.StaplerRequest;
-import org.kohsuke.stapler.StaplerResponse;
-import org.kohsuke.stapler.QueryParameter;
-import org.kohsuke.stapler.WebApp;
-import org.kohsuke.stapler.HttpResponse;
-import org.kohsuke.stapler.HttpRedirect;
 
 /**
  * Manages {@link PluginWrapper}s.
@@ -110,7 +112,7 @@ public final class PluginManager extends AbstractModelObject {
         if(!rootDir.exists())
             rootDir.mkdirs();
 
-        loadBundledPlugins();
+        Collection<String> bundledPlugins = loadBundledPlugins();
 
         File[] archives = rootDir.listFiles(new FilenameFilter() {
             public boolean accept(File dir, String name) {
@@ -142,6 +144,7 @@ public final class PluginManager extends AbstractModelObject {
         for( File arc : archivesList ) {
             try {
                 PluginWrapper p = strategy.createPluginWrapper(arc);
+                p.isBundled = bundledPlugins.contains(arc.getName());
                 plugins.add(p);
                 if(p.isActive())
                     activePlugins.add(p);
@@ -183,15 +186,19 @@ public final class PluginManager extends AbstractModelObject {
 
     /**
      * If the war file has any "/WEB-INF/plugins/*.hpi", extract them into the plugin directory.
+     *
+     * @return
+     *      File names of the bundled plugins. Like {"ssh-slaves.hpi","subvesrion.hpi"}
      */
-    private void loadBundledPlugins() {
+    private Collection<String> loadBundledPlugins() {
         // this is used in tests, when we want to override the default bundled plugins with .hpl versions
         if (System.getProperty("hudson.bundled.plugins") != null) {
-            return;
+            return Collections.emptySet();
         }
-        Set paths = context.getResourcePaths("/WEB-INF/plugins");
-        if(paths==null) return; // crap
-        for( String path : (Set<String>) paths) {
+
+        Set<String> names = new HashSet<String>();
+
+        for( String path : Util.fixNull((Set<String>)context.getResourcePaths("/WEB-INF/plugins"))) {
             String fileName = path.substring(path.lastIndexOf('/')+1);
             if(fileName.length()==0) {
                 // see http://www.nabble.com/404-Not-Found-error-when-clicking-on-help-td24508544.html
@@ -199,12 +206,17 @@ public final class PluginManager extends AbstractModelObject {
                 continue;
             }
             try {
+                names.add(fileName);
+
                 URL url = context.getResource(path);
                 long lastModified = url.openConnection().getLastModified();
                 File file = new File(rootDir, fileName);
-                // TODO: allow upgrade of bundled plugins; code below will overwrite the newly
-                // upgraded file with the bundled version since lastModified has changed.
-                if (!file.exists() || file.lastModified() != lastModified) {
+                File pinFile = new File(rootDir, fileName+".pinned");
+
+                // update file if:
+                //  - no file exists today
+                //  - bundled version and current version differs (by timestamp), and the file isn't pinned.
+                if (!file.exists() || (file.lastModified() != lastModified && !pinFile.exists())) {
                     FileUtils.copyURLToFile(url, file);
                     file.setLastModified(url.openConnection().getLastModified());
                     // lastModified is set for two reasons:
@@ -216,6 +228,8 @@ public final class PluginManager extends AbstractModelObject {
                 LOGGER.log(Level.SEVERE, "Failed to extract the bundled plugin "+fileName,e);
             }
         }
+
+        return names;
     }
 
     /**
