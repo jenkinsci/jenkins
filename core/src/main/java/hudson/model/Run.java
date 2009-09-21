@@ -445,8 +445,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
         }
 
         final String ending = "...";
-
-        int sz = description.length();
+        final int sz = description.length(), maxTruncLength = maxDescrLength - ending.length();
 
         boolean inTag = false;
         int displayChars = 0;
@@ -458,16 +457,14 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
                 inTag = true;
             } else if (ch == '>') {
                 inTag = false;
-                if (displayChars <= (maxDescrLength - ending.length())) {
+                if (displayChars <= maxTruncLength) {
                     lastTruncatablePoint = i + 1;
                 }
             }
             if (!inTag) {
                 displayChars++;
-                if (displayChars <= (maxDescrLength - ending.length())) {
-                    if (ch == ' ') {
-                        lastTruncatablePoint = i;
-                    }
+                if (displayChars <= maxTruncLength && ch == ' ') {
+                    lastTruncatablePoint = i;
                 }
             }
         }
