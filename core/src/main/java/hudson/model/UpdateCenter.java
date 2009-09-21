@@ -835,7 +835,10 @@ public class UpdateCenter extends AbstractModelObject {
          * the old file with the new file.
          */
         protected void replace(File dst, File src) throws IOException {
-            dst.delete();
+            File bak = Util.changeExtension(dst,".bak");
+            bak.delete();
+            dst.renameTo(bak);
+            dst.delete(); // any failure up to here is no big deal
             if(!src.renameTo(dst)) {
                 throw new IOException("Failed to rename "+src+" to "+dst);
             }

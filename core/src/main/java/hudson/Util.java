@@ -1044,6 +1044,19 @@ public class Util {
         }
     }
 
+    /**
+     * Returns a file name by changing its extension.
+     *
+     * @param ext
+     *      For example, ".zip"
+     */
+    public static File changeExtension(File dst, String ext) {
+        String p = dst.getPath();
+        int pos = p.lastIndexOf('.');
+        if (pos<0)  return new File(p+ext);
+        else        return new File(p.substring(0,pos)+ext);
+    }
+
     public static final FastDateFormat XS_DATETIME_FORMATTER = FastDateFormat.getInstance("yyyy-MM-dd'T'HH:mm:ss'Z'",new SimpleTimeZone(0,"GMT"));
 
     // Note: RFC822 dates must not be localized!
