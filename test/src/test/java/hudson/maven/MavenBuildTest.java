@@ -4,6 +4,7 @@ import org.jvnet.hudson.test.HudsonTestCase;
 import org.jvnet.hudson.test.Bug;
 import org.jvnet.hudson.test.ExtractResourceSCM;
 import hudson.Launcher;
+import hudson.scm.SubversionSCM;
 import hudson.model.BuildListener;
 import hudson.model.Result;
 
@@ -33,7 +34,7 @@ public class MavenBuildTest extends HudsonTestCase {
     public void testTestFailureInEarlyTaskSegment() throws Exception {
         configureDefaultMaven();
         MavenModuleSet m = createMavenProject();
-	m.setGoals("clean install findbugs:findbugs");
+        m.setGoals("clean install findbugs:findbugs");
         m.setScm(new ExtractResourceSCM(getClass().getResource("maven-test-failure-findbugs.zip")));
         assertBuildStatus(Result.UNSTABLE, m.scheduleBuild2(0).get());
     }
@@ -44,7 +45,7 @@ public class MavenBuildTest extends HudsonTestCase {
     public void testCompilationFailure() throws Exception {
         configureDefaultMaven();
         MavenModuleSet m = createMavenProject();
-	m.setGoals("clean install");
+        m.setGoals("clean install");
         m.setScm(new ExtractResourceSCM(getClass().getResource("maven-compilation-failure.zip")));
         assertBuildStatus(Result.FAILURE, m.scheduleBuild2(0).get());
     }
@@ -56,5 +57,21 @@ public class MavenBuildTest extends HudsonTestCase {
             assertNotNull(build.getWorkspace());
             return true;
         }
+    }
+
+    /**
+     * Workspace determination problem on non-aggregator style build.
+     */
+    @Bug(4226)
+    public void testParallelModuleBuild() throws Exception {
+        configureDefaultMaven();
+        MavenModuleSet m = createMavenProject();
+        m.setScm(new SubversionSCM("https://www.dev.java.net/svn/hudson/trunk/hudson/test-projects/multimodule-maven"));
+        m.setAggregatorStyleBuild(false);
+
+        assertBuildStatusSuccess(m.scheduleBuild2(0).get());
+        // run module builds
+        assertBuildStatusSuccess(m.getModule("test$module1").scheduleBuild2(0).get());
+        assertBuildStatusSuccess(m.getModule("test$module1").scheduleBuild2(0).get());
     }
 }
