@@ -7,13 +7,25 @@ import hudson.Launcher;
 import hudson.scm.SubversionSCM;
 import hudson.model.BuildListener;
 import hudson.model.Result;
+import hudson.util.NullStream;
 
 import java.io.IOException;
+import java.io.PrintWriter;
+
+import org.tmatesoft.svn.core.SVNException;
 
 /**
  * @author Kohsuke Kawaguchi
  */
 public class MavenBuildTest extends HudsonTestCase {
+    /**
+     * Sets guest credentials to access java.net Subversion repo.
+     */
+    protected void setJavaNetCredential(SubversionSCM scm) throws SVNException, IOException {
+        // set the credential to access svn.dev.java.net
+        scm.getDescriptor().postCredential("https://www.dev.java.net/svn/hudson/","guest","",null,new PrintWriter(new NullStream()));
+    }
+    
     /**
      * NPE in {@code build.getProject().getWorkspace()} for {@link MavenBuild}.
      */
@@ -25,7 +37,7 @@ public class MavenBuildTest extends HudsonTestCase {
         m.setScm(new ExtractResourceSCM(getClass().getResource("HUDSON-4192.zip")));
         assertBuildStatusSuccess(m.scheduleBuild2(0).get());
     }
-
+    
     /**
      * {@link Result} getting set to SUCCESS even if there's a test failure, when the test failure
      * does not happen in the final task segment.
@@ -38,7 +50,7 @@ public class MavenBuildTest extends HudsonTestCase {
         m.setScm(new ExtractResourceSCM(getClass().getResource("maven-test-failure-findbugs.zip")));
         assertBuildStatus(Result.UNSTABLE, m.scheduleBuild2(0).get());
     }
-
+    
     /**
      * Verify that a compilation error properly shows up as a failure.
      */
@@ -49,7 +61,7 @@ public class MavenBuildTest extends HudsonTestCase {
         m.setScm(new ExtractResourceSCM(getClass().getResource("maven-compilation-failure.zip")));
         assertBuildStatus(Result.FAILURE, m.scheduleBuild2(0).get());
     }
-
+    
     private static class TestReporter extends MavenReporter {
         @Override
         public boolean end(MavenBuild build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
@@ -58,7 +70,7 @@ public class MavenBuildTest extends HudsonTestCase {
             return true;
         }
     }
-
+    
     /**
      * Workspace determination problem on non-aggregator style build.
      */
@@ -66,9 +78,11 @@ public class MavenBuildTest extends HudsonTestCase {
     public void testParallelModuleBuild() throws Exception {
         configureDefaultMaven();
         MavenModuleSet m = createMavenProject();
-        m.setScm(new SubversionSCM("https://www.dev.java.net/svn/hudson/trunk/hudson/test-projects/multimodule-maven"));
-        m.setAggregatorStyleBuild(false);
-
+        SubversionSCM scm = new SubversionSCM("https://www.dev.java.net/svn/hudson/trunk/hudson/test-projects/multimodule-maven");
+        setJavaNetCredential(scm);
+        m.setScm(scm);
+	m.setAggregatorStyleBuild(false);
+        
         assertBuildStatusSuccess(m.scheduleBuild2(0).get());
         // run module builds
         assertBuildStatusSuccess(m.getModule("test$module1").scheduleBuild2(0).get());
