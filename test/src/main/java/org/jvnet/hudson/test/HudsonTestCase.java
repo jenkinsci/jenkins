@@ -153,7 +153,7 @@ import com.gargoylesoftware.htmlunit.javascript.host.XMLHttpRequest;
  * @see <a href="http://hudson.gotdns.com/wiki/display/HUDSON/Unit+Test">Wiki article about unit testing in Hudson</a>
  * @author Kohsuke Kawaguchi
  */
-public abstract class HudsonTestCase extends TestCase {
+public abstract class HudsonTestCase extends TestCase implements RootAction {
     public Hudson hudson;
 
     protected final TestEnvironment env = new TestEnvironment();
@@ -243,6 +243,10 @@ public abstract class HudsonTestCase extends TestCase {
         DownloadService.neverUpdate = true;
         UpdateCenter.neverUpdate = true;
 
+        // expose the test instance as a part of URL tree.
+        // this allows tests to use a part of the URL space for itself.
+        hudson.getActions().add(this);
+
         // cause all the descriptors to reload.
         // ideally we'd like to reset them to properly emulate the behavior, but that's not possible.
         Mailer.descriptor().setHudsonUrl(null);
@@ -288,6 +292,18 @@ public abstract class HudsonTestCase extends TestCase {
         } finally {
             ContextFactory.getGlobal().removeListener(rhinoContextListener);
         }
+    }
+
+    public String getIconFileName() {
+        return null;
+    }
+
+    public String getDisplayName() {
+        return null;
+    }
+
+    public String getUrlName() {
+        return "self";
     }
 
     /**
