@@ -28,7 +28,7 @@ import hudson.model.AbstractBuild;
 import hudson.model.BuildListener;
 import hudson.model.Result;
 import hudson.tasks.BuildStepDescriptor;
-import hudson.tasks.Publisher;
+import hudson.tasks.Notifier;
 import hudson.tasks.BuildStepMonitor;
 import hudson.Launcher;
 import hudson.maven.reporters.MavenArtifactRecord;
@@ -46,7 +46,7 @@ import java.io.IOException;
  *
  * @author Kohsuke Kawaguchi
  */
-public class MavenRedeployer extends Publisher {
+public class MavenRedeployer extends Notifier {
     public boolean perform(AbstractBuild<?,?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
         MavenArtifactRecord mar = build.getAction(MavenArtifactRecord.class);
         if(mar==null) {
@@ -67,14 +67,14 @@ public class MavenRedeployer extends Publisher {
         return BuildStepMonitor.NONE;
     }
 
-    public BuildStepDescriptor<Publisher> getDescriptor() {
+    public BuildStepDescriptor getDescriptor() {
         return DESCRIPTOR;
     }
 
     public static final DescriptorImpl DESCRIPTOR = new DescriptorImpl();
 
-    public static final class DescriptorImpl extends BuildStepDescriptor<Publisher> {
-        public boolean isApplicable(Class<? extends AbstractProject> jobType) {
+    public static final class DescriptorImpl extends BuildStepDescriptor {
+        public boolean isApplicable(Class jobType) {
             return AbstractMavenProject.class.isAssignableFrom(jobType);
         }
 

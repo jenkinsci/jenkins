@@ -43,6 +43,7 @@ import hudson.model.Hudson;
 import hudson.model.ParametersAction;
 import hudson.model.Result;
 import hudson.model.Computer;
+import hudson.model.Run;
 import hudson.model.TaskListener;
 import hudson.model.Cause.UpstreamCause;
 import hudson.remoting.Channel;
@@ -391,7 +392,7 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
                 if(!project.isAggregatorStyleBuild()) {
                     // start module builds
                     logger.println("Triggering "+project.getRootModule().getModuleName());
-                    project.getRootModule().scheduleBuild(new UpstreamCause(MavenModuleSetBuild.this));
+                    project.getRootModule().scheduleBuild(new UpstreamCause((Run<?,?>)MavenModuleSetBuild.this));
                 } else {
                     // do builds here
                     try {
@@ -465,7 +466,7 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
                         }
 
                         if (project.getAlternateSettings() != null) {
-                            margs.add("-s").add(project.getWorkspace().child(project.getAlternateSettings()));
+                            margs.add("-s").add(getWorkspace().child(project.getAlternateSettings()));
                         }
 
                         margs.addTokenized(envVars.expand(project.getGoals()));
@@ -804,7 +805,7 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
             this.properties = project.getMavenProperties();
 	    this.nonRecursive = project.isNonRecursive();
 	    if (project.usesPrivateRepository()) {
-                this.privateRepository = project.getWorkspace().child(".repository").getRemote();
+                this.privateRepository = project.getLastBuild().getWorkspace().child(".repository").getRemote();
             }
             else {
                 this.privateRepository = null;

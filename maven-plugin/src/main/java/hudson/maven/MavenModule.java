@@ -348,6 +348,8 @@ public final class MavenModule extends AbstractMavenProject<MavenModule,MavenBui
      * <p>
      * That is, {@Link MavenModuleSet} builds are incompatible with any {@link MavenModule}
      * builds, whereas {@link MavenModule} builds are compatible with each other.
+     *
+     * @deprecated as of 1.319 in {@link AbstractProject}.
      */
     @Override
     public Resource getWorkspaceResource() {

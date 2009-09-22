@@ -687,12 +687,12 @@ public final class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,Ma
             m.delete();
         rsp.sendRedirect2(".");
     }
-
+    
     /**
      * Check the location of the POM, alternate settings file, etc - any file.
      */
     public FormValidation doCheckFileInWorkspace(@QueryParameter String value) throws IOException, ServletException {
-        FilePath ws = getModuleRoot();
+        FilePath ws = getLastBuild().getModuleRoot();
         if(ws==null) return FormValidation.ok();
         return ws.validateRelativePath(value,true,true);
     }
