@@ -262,23 +262,24 @@ public class Mailer extends Notifier {
         @Override
         public boolean configure(StaplerRequest req, JSONObject json) throws FormException {
             // this code is brain dead
-            smtpHost = nullify(req.getParameter("mailer_smtp_server"));
-            setAdminAddress(req.getParameter("mailer_admin_address"));
+            smtpHost = nullify(json.getString("smtpServer"));
+            setAdminAddress(json.getString("adminAddress"));
 
-            defaultSuffix = nullify(req.getParameter("mailer_default_suffix"));
+            defaultSuffix = nullify(json.getString("defaultSuffix"));
             String url = nullify(json.getString("url"));
             if(url!=null && !url.endsWith("/"))
                 url += '/';
             hudsonUrl = url;
 
-            if(req.getParameter("mailer.useSMTPAuth")!=null) {
-                smtpAuthUsername = nullify(req.getParameter("mailer.SMTPAuth.userName"));
-                smtpAuthPassword = nullify(req.getParameter("mailer.SMTPAuth.password"));
+            if(json.has("useSMTPAuth")) {
+                JSONObject auth = json.getJSONObject("useSMTPAuth");
+                smtpAuthUsername = nullify(auth.getString("smtpAuthUserName"));
+                smtpAuthPassword = nullify(auth.getString("smtpAuthPassword"));
             } else {
                 smtpAuthUsername = smtpAuthPassword = null;
             }
-            smtpPort = nullify(req.getParameter("mailer_smtp_port"));
-            useSsl = req.getParameter("mailer_smtp_use_ssl")!=null;
+            smtpPort = nullify(json.getString("smtpPort"));
+            useSsl = json.getBoolean("useSsl");
             save();
             return true;
         }
@@ -347,6 +348,11 @@ public class Mailer extends Notifier {
             this.smtpPort = smtpPort;
         }
 
+        public void setSmtpAuth(String userName, String password) {
+            this.smtpAuthUsername = userName;
+            this.smtpAuthPassword = password;
+        }
+
         @Override
         public Publisher newInstance(StaplerRequest req) {
             Mailer m = new Mailer();
@@ -379,7 +385,11 @@ public class Mailer extends Notifier {
                 return FormValidation.error(e.getMessage());
             }
         }
-        
+
+        public FormValidation doCheckAdminAddress(@QueryParameter String value) {
+            return doAddressCheck(value);
+        }
+
         /**
          * Send an email to the admin address
          * @param rsp used to write the result of the sending

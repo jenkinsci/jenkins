@@ -24,6 +24,7 @@
 package hudson.tasks;
 
 import hudson.model.FreeStyleProject;
+import hudson.tasks.Mailer.DescriptorImpl;
 import org.jvnet.hudson.test.Bug;
 import org.jvnet.hudson.test.FailureBuilder;
 import org.jvnet.hudson.test.HudsonTestCase;
@@ -94,5 +95,31 @@ public class MailerTest extends HudsonTestCase {
         p.getPublishersList().add(m);
         submit(new WebClient().getPage(p,"configure").getFormByName("config"));
         assertEqualBeans(m,p.getPublishersList().get(Mailer.class),"recipients,dontNotifyEveryUnstableBuild,sendToIndividuals");
+    }
+
+    public void testGlobalConfigRoundtrip() throws Exception {
+        DescriptorImpl d = Mailer.descriptor();
+        d.setAdminAddress("admin@me");
+        d.setDefaultSuffix("default-suffix");
+        d.setHudsonUrl("http://nowhere/");
+        d.setSmtpHost("smtp.host");
+        d.setSmtpPort("1025");
+        d.setUseSsl(true);
+        d.setSmtpAuth("user","pass");
+
+        submit(new WebClient().goTo("configure").getFormByName("config"));
+
+        assertEquals("admin@me",d.getAdminAddress());
+        assertEquals("default-suffix",d.getDefaultSuffix());
+        assertEquals("http://nowhere/",d.getUrl());
+        assertEquals("smtp.host",d.getSmtpServer());
+        assertEquals("1025",d.getSmtpPort());
+        assertEquals(true,d.getUseSsl());
+        assertEquals("user",d.getSmtpAuthUserName());
+        assertEquals("pass",d.getSmtpAuthPassword());
+
+        d.setUseSsl(false);
+        submit(new WebClient().goTo("configure").getFormByName("config"));
+        assertEquals(false,d.getUseSsl());
     }
 }
