@@ -116,6 +116,7 @@ import org.kohsuke.stapler.MetaClass;
 import org.kohsuke.stapler.MetaClassLoader;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
+import org.kohsuke.stapler.Stapler;
 import org.mortbay.jetty.Server;
 import org.mortbay.jetty.bio.SocketConnector;
 import org.mortbay.jetty.security.HashUserRealm;
@@ -875,6 +876,7 @@ public abstract class HudsonTestCase extends TestCase {
         cea.add(id,new Runnable() {
             public void run() {
                 try {
+                    Stapler.getCurrentResponse().setStatus(200);
                     r.add(c.call());
                 } catch (Exception e) {
                     t[0] = e;
@@ -1061,6 +1063,16 @@ public abstract class HudsonTestCase extends TestCase {
             String crumb = issuer.getCrumb(null);
             
             return new URL(getContextPath()+relativePath+"?"+crumbName+"="+crumb);
+        }
+
+        /**
+         * Makes an HTTP request, process it with the given request handler, and returns the response.
+         */
+        public HtmlPage eval(final Runnable requestHandler) throws IOException, SAXException {
+            ClosureExecuterAction cea = hudson.getExtensionList(RootAction.class).get(ClosureExecuterAction.class);
+            UUID id = UUID.randomUUID();
+            cea.add(id,requestHandler);
+            return goTo("closures/?uuid="+id);
         }
     }
 
