@@ -26,6 +26,7 @@ package hudson.tasks;
 import hudson.Launcher;
 import hudson.Functions;
 import hudson.Extension;
+import hudson.Util;
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
 import hudson.model.BuildListener;
@@ -36,7 +37,6 @@ import hudson.util.FormValidation;
 import org.apache.tools.ant.types.selectors.SelectorUtils;
 import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.StaplerRequest;
-import org.kohsuke.stapler.StaplerResponse;
 import org.kohsuke.stapler.export.Exported;
 
 import javax.mail.Authenticator;
@@ -51,7 +51,6 @@ import javax.mail.internet.MimeMessage;
 import javax.servlet.ServletException;
 import java.io.File;
 import java.io.IOException;
-import java.io.PrintStream;
 import java.util.Date;
 import java.util.Map;
 import java.util.Properties;
@@ -215,6 +214,9 @@ public class Mailer extends Notifier {
 
         /** JavaMail session. */
         public Session createSession() {
+            return createSession(smtpHost,smtpPort,useSsl,smtpAuthUsername,smtpAuthPassword);
+        }
+        private static Session createSession(String smtpHost, String smtpPort, boolean useSsl, String smtpAuthUserName, String smtpAuthPassword) {
             Properties props = new Properties(System.getProperties());
             if(smtpHost!=null)
                 props.put("mail.smtp.host",smtpHost);
@@ -238,23 +240,22 @@ public class Mailer extends Notifier {
             	}
 				props.put("mail.smtp.socketFactory.fallback", "false");
 			}
-            if(getSmtpAuthUserName()!=null)
+            if(smtpAuthUserName!=null)
                 props.put("mail.smtp.auth","true");
 
             // avoid hang by setting some timeout. 
             props.put("mail.smtp.timeout","60000");
             props.put("mail.smtp.connectiontimeout","60000");
 
-            return Session.getInstance(props,getAuthenticator());
+            return Session.getInstance(props,getAuthenticator(smtpAuthUserName,smtpAuthPassword));
         }
 
-        private Authenticator getAuthenticator() {
-            final String un = getSmtpAuthUserName();
-            if(un==null)    return null;
+        private static Authenticator getAuthenticator(final String smtpAuthUserName, final String smtpAuthPassword) {
+            if(smtpAuthUserName==null)    return null;
             return new Authenticator() {
                 @Override
                 protected PasswordAuthentication getPasswordAuthentication() {
-                    return new PasswordAuthentication(getSmtpAuthUserName(),getSmtpAuthPassword());
+                    return new PasswordAuthentication(smtpAuthUserName,smtpAuthPassword);
                 }
             };
         }
@@ -392,39 +393,30 @@ public class Mailer extends Notifier {
 
         /**
          * Send an email to the admin address
-         * @param rsp used to write the result of the sending
          * @throws IOException
          * @throws ServletException
          * @throws InterruptedException
          */
-        public void doSendTestMail(StaplerResponse rsp) throws IOException, ServletException, InterruptedException {
-            rsp.setContentType("text/plain");
-            PrintStream writer = new PrintStream(rsp.getOutputStream());            
+        public FormValidation doSendTestMail(
+                @QueryParameter String smtpServer, @QueryParameter String adminAddress, @QueryParameter boolean useSMTPAuth,
+                @QueryParameter String smtpAuthUserName, @QueryParameter String smtpAuthPassword,
+                @QueryParameter boolean useSsl, @QueryParameter String smtpPort) throws IOException, ServletException, InterruptedException {
             try {
-                writer.println("Sending email to " + getAdminAddress());
-                writer.println();
-                writer.println("Email content ---------------------------------------------------------");
-                writer.flush();
+                if (!useSMTPAuth)   smtpAuthUserName = smtpAuthPassword = null;
                 
-                MimeMessage msg = new MimeMessage(createSession());
+                MimeMessage msg = new MimeMessage(createSession(smtpServer,smtpPort,useSsl,smtpAuthUserName,smtpAuthPassword));
                 msg.setSubject("Test email #" + ++testEmailCount);
                 msg.setContent("This is test email #" + testEmailCount + " sent from Hudson Continuous Integration server.", "text/plain");
-                msg.setFrom(new InternetAddress(getAdminAddress()));
+                msg.setFrom(new InternetAddress(adminAddress));
                 msg.setSentDate(new Date());
-                msg.setRecipient(Message.RecipientType.TO, new InternetAddress(getAdminAddress()));                
-                msg.writeTo(writer);
-                writer.println();                
-                writer.println("-----------------------------------------------------------------------");
-                writer.println();
-                writer.flush();
-                
+                msg.setRecipient(Message.RecipientType.TO, new InternetAddress(adminAddress));
+
                 Transport.send(msg);
                 
-                writer.println("Email was successfully sent");
+                return FormValidation.ok("Email was successfully sent");
             } catch (MessagingException e) {
-                e.printStackTrace(writer);
+                return FormValidation.errorWithMarkup("<p>Failed to send out e-mail</p><pre>"+Util.escape(Functions.printThrowable(e))+"</pre>");
             }
-            writer.flush();
         }
 
         public boolean isApplicable(Class<? extends AbstractProject> jobType) {
