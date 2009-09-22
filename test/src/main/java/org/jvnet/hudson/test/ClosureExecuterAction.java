@@ -1,6 +1,5 @@
 package org.jvnet.hudson.test;
 
-import groovy.lang.Closure;
 import hudson.Extension;
 import hudson.model.RootAction;
 import org.kohsuke.stapler.QueryParameter;
@@ -11,9 +10,10 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.Callable;
 
 /**
- * Server-side logic that implements {@link HudsonTestCase#onServer(Closure)}.
+ * Server-side logic that implements {@link HudsonTestCase#executeOnServer(Callable)}.
  *
  * @author Kohsuke Kawaguchi
  */
