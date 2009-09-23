@@ -31,6 +31,7 @@ import hudson.WebAppMain;
 import hudson.EnvVars;
 import hudson.ExtensionList;
 import hudson.DescriptorExtensionList;
+import hudson.Util;
 import hudson.tools.ToolProperty;
 import hudson.remoting.Which;
 import hudson.Launcher.LocalLauncher;
@@ -214,6 +215,7 @@ public abstract class HudsonTestCase extends TestCase implements RootAction {
     protected HudsonTestCase() {
     }
 
+    @Override
     protected void setUp() throws Exception {
         env.pin();
         recipe();
@@ -235,7 +237,7 @@ public abstract class HudsonTestCase extends TestCase implements RootAction {
         // load updates from local proxy to avoid network traffic.
         final String updateCenterUrl = "http://localhost:"+JavaNetReverseProxy.getInstance().localPort+"/";
         hudson.getUpdateCenter().configure(new UpdateCenterConfiguration() {
-            public String getUpdateCenterUrl() {
+            @Override public String getUpdateCenterUrl() {
                 return updateCenterUrl;
             }
         });
@@ -254,6 +256,7 @@ public abstract class HudsonTestCase extends TestCase implements RootAction {
             d.load();
     }
 
+    @Override
     protected void tearDown() throws Exception {
         try {
             // cancel pending asynchronous operations, although this doesn't really seem to be working
@@ -282,6 +285,7 @@ public abstract class HudsonTestCase extends TestCase implements RootAction {
         }
     }
 
+    @Override
     protected void runTest() throws Throwable {
         System.out.println("=== Starting "+ getClass().getSimpleName() + "." + getName());
         new JavaScriptEngine(null);   // ensure that ContextFactory is initialized
@@ -521,7 +525,7 @@ public abstract class HudsonTestCase extends TestCase implements RootAction {
     	// this synchronization block is so that we don't end up adding the same slave name more than once.
     	synchronized (hudson) {
     		DumbSlave slave = new DumbSlave("slave" + hudson.getNodes().size(), "dummy",
-    				createTmpDir().getPath(), "1", Mode.NORMAL, l==null?"":l.getName(), launcher, RetentionStrategy.NOOP);
+    				createTmpDir().getPath(), "1", Mode.NORMAL, l==null?"":l.getName(), launcher, RetentionStrategy.NOOP, Collections.EMPTY_LIST);
     		hudson.addNode(slave);
     		return slave;
     	}
@@ -585,11 +589,11 @@ public abstract class HudsonTestCase extends TestCase implements RootAction {
             return r;
 
         // dump the build output in failure message
-        String msg = "unexpected build status; build log was:\n------\n" + r.getLog() + "\n------\n";
+        String msg = "unexpected build status; build log was:\n------\n" + getLog(r) + "\n------\n";
         if(r instanceof MatrixBuild) {
             MatrixBuild mb = (MatrixBuild)r;
             for (MatrixRun mr : mb.getRuns()) {
-                msg+="--- "+mr.getParent().getCombination()+" ---\n"+mr.getLog()+"\n------\n";
+                msg+="--- "+mr.getParent().getCombination()+" ---\n"+getLog(mr)+"\n------\n";
             }
         }
         assertEquals(msg, status,r.getResult());
@@ -605,12 +609,20 @@ public abstract class HudsonTestCase extends TestCase implements RootAction {
      * Asserts that the console output of the build contains the given substring.
      */
     public void assertLogContains(String substring, Run run) throws Exception {
-        String log = run.getLog();
+        String log = getLog(run);
         if(log.contains(substring))
             return; // good!
 
         System.out.println(log);
         fail("Console output of "+run+" didn't contain "+substring);
+    }
+
+    /**
+     * Get entire log file (this method is deprecated in hudson.model.Run,
+     * but in tests it is OK to load entire log).
+     */
+    protected static String getLog(Run run) throws IOException {
+        return Util.loadFile(run.getLogFile(), run.getCharset());
     }
 
     /**
@@ -936,6 +948,7 @@ public abstract class HudsonTestCase extends TestCase implements RootAction {
             clients.add(new WeakReference<WebClient>(this));
             // make ajax calls synchronous for predictable behaviors that simplify debugging
             setAjaxController(new AjaxController() {
+                @Override
                 public boolean processSynchron(HtmlPage page, WebRequestSettings settings, boolean async) {
                     return true;
                 }
@@ -1023,6 +1036,7 @@ public abstract class HudsonTestCase extends TestCase implements RootAction {
          *      a relative path within the Hudson being tested. (IOW, if you really need to hit
          *      a website on the internet, there's nothing wrong with using this method.)
          */
+        @Override
         public Page getPage(String url) throws IOException, FailingHttpStatusCodeException {
             return super.getPage(url);
         }
