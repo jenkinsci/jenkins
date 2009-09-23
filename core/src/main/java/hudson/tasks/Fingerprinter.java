@@ -41,6 +41,7 @@ import hudson.model.Result;
 import hudson.remoting.VirtualChannel;
 import hudson.util.FormValidation;
 import hudson.util.IOException2;
+import net.sf.json.JSONObject;
 import org.apache.tools.ant.DirectoryScanner;
 import org.apache.tools.ant.types.FileSet;
 import org.kohsuke.stapler.AncestorInPath;
@@ -91,6 +92,7 @@ public class Fingerprinter extends Recorder implements Serializable {
         return recordBuildArtifacts;
     }
 
+    @Override
     public boolean perform(AbstractBuild<?,?> build, Launcher launcher, BuildListener listener) throws InterruptedException {
         try {
             listener.getLogger().println(Messages.Fingerprinter_Recording());
@@ -216,7 +218,7 @@ public class Fingerprinter extends Recorder implements Serializable {
         }
 
         @Override
-        public Publisher newInstance(StaplerRequest req) {
+        public Publisher newInstance(StaplerRequest req, JSONObject formData) {
             return new Fingerprinter(
                 req.getParameter("fingerprint_targets").trim(),
                 req.getParameter("fingerprint_artifacts")!=null);

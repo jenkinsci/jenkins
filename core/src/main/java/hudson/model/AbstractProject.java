@@ -28,7 +28,6 @@ import hudson.FeedAdapter;
 import hudson.FilePath;
 import hudson.Launcher;
 import hudson.Util;
-import hudson.cli.declarative.CLIResolver;
 import hudson.cli.declarative.CLIMethod;
 import hudson.slaves.WorkspaceList;
 import hudson.model.Cause.LegacyCodeCause;
@@ -311,7 +310,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
      *      from {@link Executor}, and otherwise the workspace of the last build.
      *
      *      <p>
-     *      If your are calling this method during a build from an executor, swtich it to {@link AbstractBuild#getWorkspace()}.
+     *      If you are calling this method during a build from an executor, switch it to {@link AbstractBuild#getWorkspace()}.
      *      If you are calling this method to serve a file from the workspace, doing a form validation, etc., then
      *      use {@link #getSomeWorkspace()}
      */
@@ -1400,7 +1399,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
     /**
      * Serves the workspace files.
      */
-    public void doWs( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException, InterruptedException {
+    public DirectoryBrowserSupport doWs( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException, InterruptedException {
         checkPermission(AbstractProject.WORKSPACE);
         FilePath ws = getSomeWorkspace();
         if ((ws == null) || (!ws.exists())) {
@@ -1410,8 +1409,9 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
             // Not critical; client can just check if content type is not text/plain,
             // which also serves to detect old versions of Hudson.
             req.getView(this,"noWorkspace.jelly").forward(req,rsp);
+            return null;
         } else {
-            new DirectoryBrowserSupport(this,getDisplayName()+" workspace").serveFile(req, rsp, ws, "folder.gif", true);
+            return new DirectoryBrowserSupport(this, ws, getDisplayName()+" workspace", "folder.gif", true);
         }
     }
 

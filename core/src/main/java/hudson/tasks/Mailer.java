@@ -88,6 +88,7 @@ public class Mailer extends Notifier {
     private transient String subject;
     private transient boolean failureOnly;
 
+    @Override
     public boolean perform(AbstractBuild<?,?> build, Launcher launcher, BuildListener listener) throws InterruptedException {
         if(debug)
             listener.getLogger().println("Running mailer");
@@ -355,7 +356,7 @@ public class Mailer extends Notifier {
         }
 
         @Override
-        public Publisher newInstance(StaplerRequest req) {
+        public Publisher newInstance(StaplerRequest req, JSONObject formData) {
             Mailer m = new Mailer();
             req.bindParameters(m,"mailer_");
             m.dontNotifyEveryUnstableBuild = req.getParameter("mailer_notifyEveryUnstableBuild")==null;
@@ -458,7 +459,7 @@ public class Mailer extends Notifier {
             }
 
             @Override
-            public UserProperty newInstance(StaplerRequest req) throws FormException {
+            public UserProperty newInstance(StaplerRequest req, JSONObject formData) throws FormException {
                 return new UserProperty(req.getParameter("email.address"));
             }
         }

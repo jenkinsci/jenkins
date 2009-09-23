@@ -24,12 +24,10 @@
 package hudson.model;
 
 import org.jvnet.localizer.Localizable;
-import org.jvnet.localizer.ResourceBundleHolder;
 import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.export.ExportedBean;
 
 import java.io.*;
-import java.lang.reflect.Field;
 import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
@@ -163,7 +161,7 @@ public class HealthReport implements Serializable, Comparable<HealthReport> {
      * Create a new HealthReport.
      */
     public HealthReport() {
-        this(100, HEALTH_UNKNOWN, "");
+        this(100, HEALTH_UNKNOWN, Messages._HealthReport_EmptyString());
     }
 
     /**

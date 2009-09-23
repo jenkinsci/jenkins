@@ -145,7 +145,7 @@ public final class Permission {
     }
 
     private Permission(PermissionGroup group, String name) {
-        this(group,name,null);
+        this(group,name,null,null);
     }
 
     /**
