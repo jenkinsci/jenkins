@@ -27,6 +27,8 @@ import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.ByteArrayOutputStream;
 import java.net.HttpURLConnection;
 import java.net.Socket;
 import java.net.URL;
@@ -36,7 +38,6 @@ import java.util.concurrent.ThreadFactory;
 import java.util.List;
 import java.util.Collections;
 import java.util.logging.Logger;
-import java.util.logging.Level;
 import static java.util.logging.Level.SEVERE;
 
 /**
@@ -110,6 +111,7 @@ public class Engine extends Thread {
         this.noReconnect = noReconnect;
     }
 
+    @SuppressWarnings({"ThrowableInstanceNeverThrown"})
     @Override
     public void run() {
         try {
@@ -173,8 +175,16 @@ public class Engine extends Thread {
                 dos.writeUTF(secretKey);
                 dos.writeUTF(slaveName);
 
+                BufferedInputStream in = new BufferedInputStream(s.getInputStream());
+                String greeting = readLine(in); // why, oh why didn't I use DataOutputStream when writing to the network?
+                if (!greeting.equals(GREETING_SUCCESS)) {
+                    listener.error(new Exception("The server rejected the connection: "+greeting));
+                    Thread.sleep(10*1000);
+                    continue;
+                }
+
                 final Channel channel = new Channel("channel", executor,
-                        new BufferedInputStream(s.getInputStream()),
+                        in,
                         new BufferedOutputStream(s.getOutputStream()));
                 PingThread t = new PingThread(channel) {
                     protected void onDead() {
@@ -202,6 +212,19 @@ public class Engine extends Thread {
             }
         } catch (Throwable e) {
             listener.error(e);
+        }
+    }
+
+    /**
+     * Read until '\n' and returns it as a string.
+     */
+    private static String readLine(InputStream in) throws IOException {
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        while (true) {
+            int ch = in.read();
+            if (ch<0 || ch=='\n')
+                return baos.toString().trim(); // trim off possible '\r'
+            baos.write(ch);
         }
     }
 
@@ -267,4 +290,6 @@ public class Engine extends Thread {
     private static final ThreadLocal<Engine> CURRENT = new ThreadLocal<Engine>();
 
     private static final Logger LOGGER = Logger.getLogger(Engine.class.getName());
+
+    public static final String GREETING_SUCCESS = "Welcome";
 }

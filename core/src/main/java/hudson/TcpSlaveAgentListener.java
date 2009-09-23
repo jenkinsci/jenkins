@@ -29,6 +29,7 @@ import hudson.slaves.SlaveComputer;
 import hudson.remoting.Channel;
 import hudson.remoting.SocketOutputStream;
 import hudson.remoting.SocketInputStream;
+import hudson.remoting.Engine;
 import hudson.remoting.Channel.Listener;
 import hudson.remoting.Channel.Mode;
 import hudson.cli.CliManagerImpl;
@@ -223,7 +224,7 @@ public final class TcpSlaveAgentListener extends Thread {
                 return;
             }
 
-            out.println("Welcome");
+            out.println(Engine.GREETING_SUCCESS);
 
             final OutputStream log = computer.openLogFile();
             new PrintWriter(log).println("JNLP agent connected from "+ this.s.getInetAddress());
