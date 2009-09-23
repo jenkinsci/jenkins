@@ -190,6 +190,19 @@ public class Channel implements VirtualChannel, IChannel {
     final Capability remoteCapability;
 
     /**
+     * When did we receive any data from this slave the last time?
+     * This can be used as a basis for detecting dead connections.
+     * <p>
+     * Note that this doesn't include our sender side of the operation,
+     * as successfully returning from {@link #send(Command)} doesn't mean
+     * anything in terms of whether the underlying network was able to send
+     * the data (for example, if the other end of a socket connection goes down
+     * without telling us anything, the {@link SocketOutputStream#write(int)} will
+     * return right away, and the socket only really times out after 10s of minutes.
+     */
+    private volatile long lastHeard;
+
+    /**
      * Communication mode.
      * @since 1.161
      */
@@ -816,6 +829,13 @@ public class Channel implements VirtualChannel, IChannel {
         return exportedObjects.startRecording();
     }
 
+    /**
+     * @see #lastHeard
+     */
+    public long getLastHeard() {
+        return lastHeard;
+    }
+
     private final class ReaderThread extends Thread {
         public ReaderThread(String name) {
             super("Channel reader thread: "+name);
@@ -829,6 +849,7 @@ public class Channel implements VirtualChannel, IChannel {
                         Channel old = Channel.setCurrent(Channel.this);
                         try {
                             cmd = (Command)ois.readObject();
+                            lastHeard = System.currentTimeMillis();
                         } finally {
                             Channel.setCurrent(old);
                         }
