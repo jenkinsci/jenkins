@@ -136,6 +136,13 @@ public class CLI {
         return execute(Arrays.asList(args));
     }
 
+    /**
+     * Returns true if the named command exists.
+     */
+    public boolean hasCommand(String name) {
+        return entryPoint.hasCommand(name);
+    }
+
     public static void main(final String[] _args) throws Exception {
         List<String> args = Arrays.asList(_args);
 

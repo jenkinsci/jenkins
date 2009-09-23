@@ -86,6 +86,10 @@ public class CliManagerImpl implements CliEntryPoint, Serializable {
         return -1;
     }
 
+    public boolean hasCommand(String name) {
+        return CLICommand.clone(name)!=null;
+    }
+
     public int protocolVersion() {
         return VERSION;
     }
