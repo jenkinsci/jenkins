@@ -760,7 +760,7 @@ public class Channel implements VirtualChannel, IChannel {
 
     public Object setProperty(Object key, Object value) {
         synchronized (properties) {
-            Object old = properties.put(key, value);
+            Object old = value!=null ? properties.put(key, value) : properties.remove(key);
             properties.notifyAll();
             return old;
         }
