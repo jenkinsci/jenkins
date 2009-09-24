@@ -25,7 +25,9 @@ package hudson.security;
 
 import groovy.lang.Binding;
 import hudson.Extension;
-import hudson.Util;
+import static hudson.Util.fixNull;
+import static hudson.Util.fixEmptyAndTrim;
+import static hudson.Util.fixEmpty;
 import hudson.model.Descriptor;
 import hudson.model.Hudson;
 import hudson.model.User;
@@ -274,14 +276,14 @@ public class LDAPSecurityRealm extends SecurityRealm {
     @DataBoundConstructor
     public LDAPSecurityRealm(String server, String rootDN, String userSearchBase, String userSearch, String groupSearchBase, String managerDN, String managerPassword) {
         this.server = server.trim();
-        this.managerDN = Util.fixEmpty(managerDN);
-        this.managerPassword = Scrambler.scramble(Util.fixEmpty(managerPassword));
-        if(Util.fixEmptyAndTrim(rootDN)==null)    rootDN=Util.fixNull(inferRootDN(server));
+        this.managerDN = fixEmpty(managerDN);
+        this.managerPassword = Scrambler.scramble(fixEmpty(managerPassword));
+        if(fixEmptyAndTrim(rootDN)==null)    rootDN= fixNull(inferRootDN(server));
         this.rootDN = rootDN.trim();
-        this.userSearchBase = userSearchBase.trim();
-        userSearch = Util.fixEmptyAndTrim(userSearch);
+        this.userSearchBase = fixNull(userSearchBase).trim();
+        userSearch = fixEmptyAndTrim(userSearch);
         this.userSearch = userSearch!=null ? userSearch : "uid={0}";
-        this.groupSearchBase = Util.fixEmptyAndTrim(groupSearchBase);
+        this.groupSearchBase = fixEmptyAndTrim(groupSearchBase);
     }
 
     public String getServerUrl() {
@@ -326,7 +328,7 @@ public class LDAPSecurityRealm extends SecurityRealm {
     }
 
     public String getLDAPURL() {
-        return getServerUrl()+'/'+Util.fixNull(rootDN);
+        return getServerUrl()+'/'+ fixNull(rootDN);
     }
 
     public SecurityComponents createSecurityComponents() {
@@ -449,7 +451,7 @@ public class LDAPSecurityRealm extends SecurityRealm {
         String rolePrefix;
         boolean convertToUpperCase;
         public AuthoritiesPopulatorImpl(InitialDirContextFactory initialDirContextFactory, String groupSearchBase) {
-            super(initialDirContextFactory, groupSearchBase);
+            super(initialDirContextFactory, fixNull(groupSearchBase));
             // These match the defaults in acegi 1.0.5; set again to store in non-private fields:
             setRolePrefix("ROLE_");
             setConvertToUpperCase(true);
