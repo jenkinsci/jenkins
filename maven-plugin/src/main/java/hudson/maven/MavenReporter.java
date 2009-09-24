@@ -282,6 +282,6 @@ public abstract class MavenReporter implements Describable<MavenReporter>, Exten
     }
 
     public MavenReporterDescriptor getDescriptor() {
-        return (MavenReporterDescriptor)Hudson.getInstance().getDescriptor(getClass());
+        return (MavenReporterDescriptor)Hudson.getInstance().getDescriptorOrDie(getClass());
     }
 }

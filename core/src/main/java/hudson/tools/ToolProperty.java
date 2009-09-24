@@ -56,7 +56,7 @@ public abstract class ToolProperty<T extends ToolInstallation> implements Descri
     }
 
     public ToolPropertyDescriptor getDescriptor() {
-        return (ToolPropertyDescriptor) Hudson.getInstance().getDescriptor(getClass());
+        return (ToolPropertyDescriptor) Hudson.getInstance().getDescriptorOrDie(getClass());
     }
 
     /**

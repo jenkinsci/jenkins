@@ -60,7 +60,7 @@ public abstract class TestDataPublisher implements Describable<TestDataPublisher
 
 	@SuppressWarnings("unchecked")
 	public Descriptor<TestDataPublisher> getDescriptor() {
-		return Hudson.getInstance().getDescriptor(getClass());
+		return Hudson.getInstance().getDescriptorOrDie(getClass());
 	}
 
 	public static DescriptorExtensionList<TestDataPublisher, Descriptor<TestDataPublisher>> all() {

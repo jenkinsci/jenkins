@@ -831,6 +831,19 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
     }
 
     /**
+     * Works just like {@link #getDescriptor(Class)} but don't take no for an answer.
+     *
+     * @throws AssertionError
+     *      If the descriptor is missing.
+     * @since 1.326
+     */
+    public Descriptor getDescriptorOrDie(Class<? extends Describable> type) {
+        Descriptor d = getDescriptor(type);
+        if (d==null)    throw new AssertionError(type+" is missing its descriptor");
+        return d;
+    }
+    
+    /**
      * Gets the {@link Descriptor} instance in the current Hudson by its type.
      */
     public <T extends Descriptor> T getDescriptorByType(Class<T> type) {

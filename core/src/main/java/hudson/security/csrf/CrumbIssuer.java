@@ -139,7 +139,7 @@ public abstract class CrumbIssuer implements Describable<CrumbIssuer>, Extension
      * Access global configuration for the crumb issuer.
      */
     public CrumbIssuerDescriptor<CrumbIssuer> getDescriptor() {
-        return (CrumbIssuerDescriptor<CrumbIssuer>) Hudson.getInstance().getDescriptor(getClass());
+        return (CrumbIssuerDescriptor<CrumbIssuer>) Hudson.getInstance().getDescriptorOrDie(getClass());
     }
 
     /**

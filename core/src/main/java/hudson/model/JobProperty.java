@@ -90,7 +90,7 @@ public abstract class JobProperty<J extends Job<?,?>> implements Describable<Job
      * {@inheritDoc}
      */
     public JobPropertyDescriptor getDescriptor() {
-        return (JobPropertyDescriptor)Hudson.getInstance().getDescriptor(getClass());
+        return (JobPropertyDescriptor)Hudson.getInstance().getDescriptorOrDie(getClass());
     }
 
     /**

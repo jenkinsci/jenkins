@@ -119,7 +119,7 @@ public abstract class Publisher extends BuildStepCompatibilityLayer implements B
     }
 
     public Descriptor<Publisher> getDescriptor() {
-        return Hudson.getInstance().getDescriptor(getClass());
+        return Hudson.getInstance().getDescriptorOrDie(getClass());
     }
 
     /**

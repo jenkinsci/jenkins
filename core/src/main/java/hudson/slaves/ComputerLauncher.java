@@ -133,7 +133,7 @@ public abstract class ComputerLauncher implements Describable<ComputerLauncher>,
     }
 
     public Descriptor<ComputerLauncher> getDescriptor() {
-        return (Descriptor<ComputerLauncher>)Hudson.getInstance().getDescriptor(getClass());
+        return (Descriptor<ComputerLauncher>)Hudson.getInstance().getDescriptorOrDie(getClass());
     }
 
     /**

@@ -150,7 +150,7 @@ public abstract class SecurityRealm implements Describable<SecurityRealm>, Exten
      * <tt>global.jelly</tt>. 
      */
     public Descriptor<SecurityRealm> getDescriptor() {
-        return Hudson.getInstance().getDescriptor(getClass());
+        return Hudson.getInstance().getDescriptorOrDie(getClass());
     }
 
     /**

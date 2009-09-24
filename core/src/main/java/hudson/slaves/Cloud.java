@@ -121,7 +121,7 @@ public abstract class Cloud extends AbstractModelObject implements ExtensionPoin
     public abstract boolean canProvision(Label label);
 
     public Descriptor<Cloud> getDescriptor() {
-        return Hudson.getInstance().getDescriptor(getClass());
+        return Hudson.getInstance().getDescriptorOrDie(getClass());
     }
 
     /**

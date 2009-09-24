@@ -350,11 +350,9 @@ public abstract class Slave extends Node implements Serializable {
     }
 
     public SlaveDescriptor getDescriptor() {
-        Descriptor d = Hudson.getInstance().getDescriptor(getClass());
+        Descriptor d = Hudson.getInstance().getDescriptorOrDie(getClass());
         if (d instanceof SlaveDescriptor)
             return (SlaveDescriptor) d;
-        if (d==null)
-            throw new IllegalStateException(getClass()+" doesn't have a descriptor");
         throw new IllegalStateException(d.getClass()+" needs to extend from SlaveDescriptor");
     }
 

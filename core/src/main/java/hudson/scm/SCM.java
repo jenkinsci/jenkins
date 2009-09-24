@@ -345,7 +345,7 @@ public abstract class SCM implements Describable<SCM>, ExtensionPoint {
     public abstract ChangeLogParser createChangeLogParser();
 
     public SCMDescriptor<?> getDescriptor() {
-        return (SCMDescriptor)Hudson.getInstance().getDescriptor(getClass());
+        return (SCMDescriptor)Hudson.getInstance().getDescriptorOrDie(getClass());
     }
 
 //

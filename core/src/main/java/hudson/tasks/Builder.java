@@ -72,7 +72,7 @@ public abstract class Builder extends BuildStepCompatibilityLayer implements Bui
     }
 
     public Descriptor<Builder> getDescriptor() {
-        return Hudson.getInstance().getDescriptor(getClass());
+        return Hudson.getInstance().getDescriptorOrDie(getClass());
     }
 
     /**

@@ -113,6 +113,6 @@ public abstract class ToolInstaller implements Describable<ToolInstaller>, Exten
     }
 
     public ToolInstallerDescriptor<?> getDescriptor() {
-        return (ToolInstallerDescriptor) Hudson.getInstance().getDescriptor(getClass());
+        return (ToolInstallerDescriptor) Hudson.getInstance().getDescriptorOrDie(getClass());
     }
 }

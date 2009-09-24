@@ -110,7 +110,7 @@ public abstract class Trigger<J extends Item> implements Describable<Trigger<?>>
     }
 
     public TriggerDescriptor getDescriptor() {
-        return (TriggerDescriptor)Hudson.getInstance().getDescriptor(getClass());
+        return (TriggerDescriptor)Hudson.getInstance().getDescriptorOrDie(getClass());
     }
 
 
