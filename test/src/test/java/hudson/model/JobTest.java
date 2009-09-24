@@ -27,6 +27,8 @@ import com.gargoylesoftware.htmlunit.WebAssert;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 
 import org.jvnet.hudson.test.HudsonTestCase;
+import hudson.Extension;
+import hudson.model.JobTest.JobPropertyImpl.DescriptorImpl;
 
 /**
  * @author Kohsuke Kawaguchi
@@ -35,7 +37,8 @@ public class JobTest extends HudsonTestCase {
 
     @SuppressWarnings("unchecked")
     public void testJobPropertySummaryIsShownInMainPage() throws Exception {
-        
+        JobPropertyDescriptor.all().add(new DescriptorImpl());
+
         AbstractProject project = createFreeStyleProject();
         project.addProperty(new JobPropertyImpl("NeedleInPage"));
                 
@@ -53,6 +56,12 @@ public class JobTest extends HudsonTestCase {
         
         public String getTestString() {
             return testString;
-        }        
+        }
+
+        public static final class DescriptorImpl extends JobPropertyDescriptor {
+            public String getDisplayName() {
+                return "";
+            }
+        }
     }
 }
