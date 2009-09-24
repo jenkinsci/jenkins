@@ -24,11 +24,13 @@
 package hudson.scm;
 
 import hudson.model.Descriptor;
-import hudson.model.Describable;
 import hudson.model.AbstractProject;
 
 import java.util.List;
 import java.util.Collections;
+import java.util.logging.Logger;
+import static java.util.logging.Level.WARNING;
+import java.lang.reflect.Field;
 
 /**
  * {@link Descriptor} for {@link SCM}.
@@ -43,7 +45,7 @@ public abstract class SCMDescriptor<T extends SCM> extends Descriptor<SCM> {
      * If this SCM has corresponding {@link RepositoryBrowser},
      * that type. Otherwise this SCM will not have any repository browser.
      */
-    public final Class<? extends RepositoryBrowser> repositoryBrowser;
+    public transient final Class<? extends RepositoryBrowser> repositoryBrowser;
 
     /**
      * Incremented every time a new {@link SCM} instance is created from this descriptor. 
@@ -67,6 +69,26 @@ public abstract class SCMDescriptor<T extends SCM> extends Descriptor<SCM> {
      */
     protected SCMDescriptor(Class<? extends RepositoryBrowser> repositoryBrowser) {
         this.repositoryBrowser = repositoryBrowser;
+    }
+
+    // work around HUDSON-4514. The repositoryBrowser field was marked as non-transient until 1.325,
+    // causing the field to be persisted and overwritten on the load method.
+    @SuppressWarnings({"ConstantConditions"})
+    @Override
+    public void load() {
+        Class<? extends RepositoryBrowser> rb = repositoryBrowser;
+        super.load();
+        if (repositoryBrowser!=rb) { // XStream may overwrite even the final field.
+            try {
+                Field f = SCMDescriptor.class.getDeclaredField("repositoryBrowser");
+                f.setAccessible(true);
+                f.set(this,rb);
+            } catch (NoSuchFieldException e) {
+                LOGGER.log(WARNING, "Failed to overwrite the repositoryBrowser field",e);
+            } catch (IllegalAccessException e) {
+                LOGGER.log(WARNING, "Failed to overwrite the repositoryBrowser field",e);
+            }
+        }
     }
 
     /**
@@ -108,4 +130,6 @@ public abstract class SCMDescriptor<T extends SCM> extends Descriptor<SCM> {
         if(repositoryBrowser==null)     return Collections.emptyList();
         return RepositoryBrowsers.filter(repositoryBrowser);
     }
+
+    private static final Logger LOGGER = Logger.getLogger(SCMDescriptor.class.getName());
 }

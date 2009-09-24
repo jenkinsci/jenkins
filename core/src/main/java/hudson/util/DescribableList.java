@@ -69,7 +69,7 @@ public class DescribableList<T extends Describable<T>, D extends Descriptor<T>> 
     }
 
     /**
-     * @deprecated
+     * @deprecated since 2008-08-15.
      *      Use {@link #DescribableList(Saveable)} 
      */
     public DescribableList(Owner owner) {
@@ -81,7 +81,7 @@ public class DescribableList<T extends Describable<T>, D extends Descriptor<T>> 
     }
 
     /**
-     * @deprecated
+     * @deprecated since 2008-08-15.
      *      Use {@link #setOwner(Saveable)}
      */
     public void setOwner(Owner owner) {
@@ -279,7 +279,7 @@ public class DescribableList<T extends Describable<T>, D extends Descriptor<T>> 
     }
 
     /**
-     * @deprecated 
+     * @deprecated since 2008-08-15.
      *      Just implement {@link Saveable}.
      */
     public interface Owner extends Saveable {

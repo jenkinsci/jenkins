@@ -38,7 +38,8 @@ import java.util.logging.Logger;
 import static java.util.logging.Level.WARNING;
 
 import org.apache.commons.logging.LogFactory;
-import org.kohsuke.stapler.StaplerResponse;
+import org.kohsuke.stapler.HttpResponse;
+import org.kohsuke.stapler.HttpResponses;
 
 /**
  * Represents a Hudson plug-in and associated control information
@@ -95,6 +96,15 @@ public final class PluginWrapper {
     private final File disableFile;
 
     /**
+     * Used to control the unpacking of the bundled plugin.
+     * If a pin file exists, Hudson assumes that the user wants to pin down a particular version
+     * of a plugin, and will not try to overwrite it. Otherwise, it'll be overwritten
+     * by a bundled copy, to ensure consistency across upgrade/downgrade.
+     * @since 1.325
+     */
+    private final File pinFile;
+
+    /**
      * Short name of the plugin. The artifact Id of the plugin.
      * This is also used in the URL within Hudson, so it needs
      * to remain stable even when the *.hpi file name is changed
@@ -110,6 +120,11 @@ public final class PluginWrapper {
 
     private final List<Dependency> dependencies;
     private final List<Dependency> optionalDependencies;
+
+    /**
+     * Is this plugin bundled in hudson.war?
+     */
+    /*package*/ boolean isBundled;
 
     static final class Dependency {
         public final String shortName;
@@ -162,6 +177,7 @@ public final class PluginWrapper {
 		this.baseResourceURL = baseResourceURL;
 		this.classLoader = classLoader;
 		this.disableFile = disableFile;
+        this.pinFile = new File(archive.getPath() + ".pinned");
 		this.active = !disableFile.exists();
 		this.dependencies = dependencies;
 		this.optionalDependencies = optionalDependencies;
@@ -317,6 +333,10 @@ public final class PluginWrapper {
         return active;
     }
 
+    public boolean isBundled() {
+        return isBundled;
+    }
+
     /**
      * If true, the plugin is going to be activated next time
      * Hudson runs.
@@ -377,16 +397,28 @@ public final class PluginWrapper {
 // Action methods
 //
 //
-    public void doMakeEnabled(StaplerResponse rsp) throws IOException {
+    public HttpResponse doMakeEnabled() throws IOException {
         Hudson.getInstance().checkPermission(Hudson.ADMINISTER);
         enable();
-        rsp.setStatus(200);
+        return HttpResponses.ok();
     }
 
-    public void doMakeDisabled(StaplerResponse rsp) throws IOException {
+    public HttpResponse doMakeDisabled() throws IOException {
         Hudson.getInstance().checkPermission(Hudson.ADMINISTER);
         disable();
-        rsp.setStatus(200);
+        return HttpResponses.ok();
+    }
+
+    public HttpResponse doPin() throws IOException {
+        Hudson.getInstance().checkPermission(Hudson.ADMINISTER);
+        new FileOutputStream(pinFile).close();
+        return HttpResponses.ok();
+    }
+
+    public HttpResponse doUnpin() throws IOException {
+        Hudson.getInstance().checkPermission(Hudson.ADMINISTER);
+        pinFile.delete();
+        return HttpResponses.ok();
     }
 
 

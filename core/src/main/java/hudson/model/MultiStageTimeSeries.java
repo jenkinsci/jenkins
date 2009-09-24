@@ -102,7 +102,7 @@ public class MultiStageTimeSeries {
     }
 
     /**
-     * @deprecated
+     * @deprecated since 2009-04-05.
      *      Use {@link #MultiStageTimeSeries(Localizable, Color, float, float)}
      */
     public MultiStageTimeSeries(float initialValue, float decay) {

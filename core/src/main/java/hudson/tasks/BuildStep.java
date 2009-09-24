@@ -38,7 +38,6 @@ import hudson.model.Hudson;
 import hudson.model.CheckPoint;
 import hudson.model.Run;
 
-import javax.management.monitor.Monitor;
 import java.io.IOException;
 import java.util.List;
 import java.util.AbstractList;
@@ -146,7 +145,7 @@ public interface BuildStep {
      * <dt>{@link BuildStepMonitor#STEP}
      * <dd>
      * This {@link BuildStep} is only executed after the same step in the previous build is completed.
-     * For build steps that use a weaker assumption and onl rely on the output from the same build step of
+     * For build steps that use a weaker assumption and only rely on the output from the same build step of
      * the early builds, this improves the concurrency.
      *
      * <dt>{@link BuildStepMonitor#NONE}

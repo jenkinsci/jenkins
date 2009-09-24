@@ -324,7 +324,7 @@ public class ClassicPluginStrategy implements PluginStrategy {
 
         // timestamp check
         File explodeTime = new File(destDir,".timestamp");
-        if(explodeTime.exists() && explodeTime.lastModified()>archive.lastModified())
+        if(explodeTime.exists() && explodeTime.lastModified()!=archive.lastModified())
             return; // no need to expand
 
         LOGGER.info("Extracting "+archive);
@@ -345,7 +345,11 @@ public class ClassicPluginStrategy implements PluginStrategy {
             throw ioe;
         }
 
-        Util.touch(explodeTime);
+        try {
+            new FilePath(explodeTime).touch(archive.lastModified());
+        } catch (InterruptedException e) {
+            throw new AssertionError(e); // impossible
+        }
     }
 
 	/**

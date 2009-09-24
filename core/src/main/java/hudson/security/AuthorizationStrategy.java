@@ -78,9 +78,10 @@ public abstract class AuthorizationStrategy implements Describable<Authorization
     public abstract ACL getRootACL();
 
     /**
-     * @deprecated
+     * @deprecated since 1.277
      *      Override {@link #getACL(Job)} instead.
      */
+    @Deprecated
     public ACL getACL(AbstractProject<?,?> project) {
     	return getACL((Job)project);
     }
@@ -188,7 +189,7 @@ public abstract class AuthorizationStrategy implements Describable<Authorization
     /**
      * All registered {@link SecurityRealm} implementations.
      *
-     * @deprecated
+     * @deprecated since 1.286
      *      Use {@link #all()} for read access, and {@link Extension} for registration.
      */
     public static final DescriptorList<AuthorizationStrategy> LIST = new DescriptorList<AuthorizationStrategy>(AuthorizationStrategy.class);

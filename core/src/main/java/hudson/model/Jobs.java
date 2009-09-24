@@ -32,6 +32,7 @@ import java.util.List;
  * List of all installed {@link Job} types.
  * 
  * @author Kohsuke Kawaguchi
+ * @deprecated since 1.281
  */
 public class Jobs {
     /**

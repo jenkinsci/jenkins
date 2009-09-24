@@ -36,7 +36,7 @@ import java.io.IOException;
  *
  * @author Kohsuke Kawaguchi
  * @see BuildableItem
- * @deprecated
+ * @deprecated 2008-07-20
  *      Use {@link ACL} and {@link AbstractProject#BUILD}. This code is only here
  *      for the backward compatibility.
  */

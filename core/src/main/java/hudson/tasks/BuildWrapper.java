@@ -97,9 +97,10 @@ public abstract class BuildWrapper implements ExtensionPoint, Describable<BuildW
         }
 
         /**
-         * @deprecated
+         * @deprecated since 2007-10-28.
          *      Use {@link #tearDown(AbstractBuild, BuildListener)} instead.
          */
+        @Deprecated
         public boolean tearDown( Build build, BuildListener listener ) throws IOException, InterruptedException {
             return true;
         }
@@ -135,9 +136,10 @@ public abstract class BuildWrapper implements ExtensionPoint, Describable<BuildW
     }
 
     /**
-     * @deprecated
+     * @deprecated since 2007-10-28.
      *      Use {@link #setUp(AbstractBuild, Launcher, BuildListener)} instead.
      */
+    @Deprecated
     public Environment setUp( Build build, Launcher launcher, BuildListener listener ) throws IOException, InterruptedException {
         throw new UnsupportedOperationException(getClass()+" needs to implement the setUp method");
     }

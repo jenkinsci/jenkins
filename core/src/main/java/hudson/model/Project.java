@@ -227,8 +227,8 @@ public abstract class Project<P extends Project<P,B>,B extends Build<P,B>>
     }
 
     /**
-     * @deprecated
-     *      left for legacy config file compatibility
+     * @deprecated since 2006-11-05.
+     *      Left for legacy config file compatibility
      */
     @Deprecated
     private transient String slave;

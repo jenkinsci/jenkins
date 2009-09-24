@@ -99,7 +99,7 @@ public abstract class RunListener<R extends Run> implements ExtensionPoint {
      * Registers this object as an active listener so that it can start getting
      * callbacks invoked.
      *
-     * @deprecated
+     * @deprecated as of 1.281
      *      Put {@link Extension} on your class to get it auto-registered.
      */
     public void register() {

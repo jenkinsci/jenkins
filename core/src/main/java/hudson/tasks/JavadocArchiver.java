@@ -27,6 +27,7 @@ import hudson.FilePath;
 import hudson.Launcher;
 import hudson.Util;
 import hudson.Extension;
+import hudson.EnvVars;
 import hudson.model.*;
 import hudson.util.FormValidation;
 
@@ -83,10 +84,12 @@ public class JavadocArchiver extends Recorder {
         return new File(run.getRootDir(),"javadoc");
     }
 
-    public boolean perform(AbstractBuild<?,?> build, Launcher launcher, BuildListener listener) throws InterruptedException {
+    public boolean perform(AbstractBuild<?,?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
         listener.getLogger().println(Messages.JavadocArchiver_Publishing());
 
-        FilePath javadoc = build.getWorkspace().child(javadocDir);
+        EnvVars env = build.getEnvironment(listener);
+        
+        FilePath javadoc = build.getWorkspace().child(env.expand(javadocDir));
         FilePath target = new FilePath(keepAll ? getJavadocDir(build) : getJavadocDir(build.getProject()));
 
         try {

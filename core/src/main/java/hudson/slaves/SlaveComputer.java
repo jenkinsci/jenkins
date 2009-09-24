@@ -144,8 +144,10 @@ public class SlaveComputer extends Computer {
         return super.getIcon();
     }
 
-    @Override
-    @Deprecated
+    /**
+     * @deprecated since 2008-05-20.
+     */
+    @Deprecated @Override
     public boolean isJnlpAgent() {
         return launcher instanceof JNLPLauncher;
     }
@@ -406,7 +408,7 @@ public class SlaveComputer extends Computer {
     /**
      * Serves jar files for JNLP slave agents.
      *
-     * @deprecated
+     * @deprecated since 2008-08-18.
      *      This URL binding is no longer used and moved up directly under to {@link Hudson},
      *      but it's left here for now just in case some old JNLP slave agents request it.
      */

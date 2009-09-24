@@ -445,8 +445,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
         }
 
         final String ending = "...";
-
-        int sz = description.length();
+        final int sz = description.length(), maxTruncLength = maxDescrLength - ending.length();
 
         boolean inTag = false;
         int displayChars = 0;
@@ -458,16 +457,14 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
                 inTag = true;
             } else if (ch == '>') {
                 inTag = false;
-                if (displayChars <= (maxDescrLength - ending.length())) {
+                if (displayChars <= maxTruncLength) {
                     lastTruncatablePoint = i + 1;
                 }
             }
             if (!inTag) {
                 displayChars++;
-                if (displayChars <= (maxDescrLength - ending.length())) {
-                    if (ch == ' ') {
-                        lastTruncatablePoint = i;
-                    }
+                if (displayChars <= maxTruncLength && ch == ' ') {
+                    lastTruncatablePoint = i;
                 }
             }
         }
@@ -1219,7 +1216,8 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
      */
     protected void onStartBuilding() {
         state = State.BUILDING;
-        RunnerStack.INSTANCE.push(runner);
+        if (runner!=null)
+            RunnerStack.INSTANCE.push(runner);
     }
 
     /**
@@ -1231,14 +1229,14 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
             // MavenBuilds may be created without their corresponding runners.
             state = State.COMPLETED;
             runner.checkpoints.allDone();
+            runner = null;
+            RunnerStack.INSTANCE.pop();
         } else {
             state = State.COMPLETED;
         }
-        runner = null;
-        RunnerStack.INSTANCE.pop();
-	if (result==null) {
-	    result = Result.FAILURE;
-	    LOGGER.warning(toString()+": No build result is set, so marking as failure. This shouldn't happen.");
+        if (result == null) {
+            result = Result.FAILURE;
+            LOGGER.warning(toString() + ": No build result is set, so marking as failure. This shouldn't happen.");
         }
 
         RunListener.fireFinalized(this);
@@ -1259,8 +1257,9 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
     /**
      * Gets the log of the build as a string.
      *
-     * @deprecated Use {@link #getLog(int)} instead as it avoids loading
-     * the whole log into memory unnecessarily.
+     * @deprecated since 2007-11-11.
+     *     Use {@link #getLog(int)} instead as it avoids loading
+     *     the whole log into memory unnecessarily.
      */
     @Deprecated
     public String getLog() throws IOException {

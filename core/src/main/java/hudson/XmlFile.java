@@ -128,6 +128,8 @@ public final class XmlFile {
             throw new IOException2("Unable to read "+file,e);
         } catch(ConversionException e) {
             throw new IOException2("Unable to read "+file,e);
+        } catch(Error e) {// mostly reflection errors
+            throw new IOException2("Unable to read "+file,e);
         } finally {
             r.close();
         }
@@ -147,6 +149,8 @@ public final class XmlFile {
         } catch (StreamException e) {
             throw new IOException2(e);
         } catch(ConversionException e) {
+            throw new IOException2("Unable to read "+file,e);
+        } catch(Error e) {// mostly reflection errors
             throw new IOException2("Unable to read "+file,e);
         } finally {
             r.close();

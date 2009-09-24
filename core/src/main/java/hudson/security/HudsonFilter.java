@@ -26,7 +26,6 @@ package hudson.security;
 import hudson.model.Hudson;
 
 import java.io.IOException;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.servlet.Filter;
@@ -53,7 +52,7 @@ import org.acegisecurity.userdetails.UserDetailsService;
  * @since 1.160
  */
 public class HudsonFilter implements Filter {
-	/**
+    /**
      * The SecurityRealm specific filter.
      */
     private volatile Filter filter;

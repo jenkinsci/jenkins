@@ -205,6 +205,7 @@ public class Maven extends Builder {
         }
     }
 
+    @Override
     public boolean perform(AbstractBuild<?,?> build, Launcher launcher, BuildListener listener) throws IOException, InterruptedException {
         VariableResolver<String> vr = build.getBuildVariableResolver();
 
@@ -214,7 +215,7 @@ public class Maven extends Builder {
         targets = env.expand(targets);
         String pom = env.expand(this.pom);
         String jvmOptions = env.expand(this.jvmOptions);
-        String properties =env.expand(this.properties);
+        String properties = env.expand(this.properties);
 
         int startIndex = 0;
         int endIndex;
@@ -285,6 +286,7 @@ public class Maven extends Builder {
         return true;
     }
 
+    @Override
     public DescriptorImpl getDescriptor() {
         return (DescriptorImpl)super.getDescriptor();
     }
@@ -335,6 +337,7 @@ public class Maven extends Builder {
             save();
         }
 
+        @Override
         public Builder newInstance(StaplerRequest req, JSONObject formData) throws FormException {
             return req.bindJSON(Maven.class,formData);
         }
@@ -345,6 +348,9 @@ public class Maven extends Builder {
      */
     public static final class MavenInstallation extends ToolInstallation implements EnvironmentSpecific<MavenInstallation>, NodeSpecific<MavenInstallation> {
 
+        /**
+         * @deprecated since 2009-02-25.
+         */
         @Deprecated // kept for backward compatiblity - use getHome()
         private String mavenHome;
 
@@ -374,6 +380,7 @@ public class Maven extends Builder {
             return new File(getHome());
         }
 
+        @Override
         public String getHome() {
             if (mavenHome != null) return mavenHome;
             return super.getHome();
@@ -439,9 +446,9 @@ public class Maven extends Builder {
 
         private static final long serialVersionUID = 1L;
 
-		public MavenInstallation forEnvironment(EnvVars environment) {
-			return new MavenInstallation(getName(), environment.expand(getHome()), getProperties().toList());
-		}
+        public MavenInstallation forEnvironment(EnvVars environment) {
+            return new MavenInstallation(getName(), environment.expand(getHome()), getProperties().toList());
+        }
 
         public MavenInstallation forNode(Node node, TaskListener log) throws IOException, InterruptedException {
             return new MavenInstallation(getName(), translateFor(node, log), getProperties().toList());

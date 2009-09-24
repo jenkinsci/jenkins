@@ -1804,7 +1804,7 @@ public final class FilePath implements Serializable {
                         }
                     }
 
-                    {// check the (1) above next as this is more expensive.
+                    {// check the (2) above next as this is more expensive.
                         // Try prepending "**/" to see if that results in a match
                         FileSet fs = Util.createFileSet(dir,"**/"+fileMask);
                         DirectoryScanner ds = fs.getDirectoryScanner(new Project());
@@ -1900,10 +1900,14 @@ public final class FilePath implements Serializable {
     }
 
     /**
-     * Checks the GLOB-style file mask. See {@link #validateAntFileMask(String)} 
+     * Checks the GLOB-style file mask. See {@link #validateAntFileMask(String)}.
+     * Requires configure permission on ancestor AbstractProject object in request.
      * @since 1.294
      */
     public FormValidation validateFileMask(String value, boolean errorIfNotExist) throws IOException {
+        AbstractProject subject = Stapler.getCurrentRequest().findAncestorObject(AbstractProject.class);
+        subject.checkPermission(Item.CONFIGURE);
+
         value = fixEmpty(value);
         if(value==null)
             return FormValidation.ok();
@@ -1922,6 +1926,7 @@ public final class FilePath implements Serializable {
 
     /**
      * Validates a relative file path from this {@link FilePath}.
+     * Requires configure permission on ancestor AbstractProject object in request.
      *
      * @param value
      *      The relative path being validated.

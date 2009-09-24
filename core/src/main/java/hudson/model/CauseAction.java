@@ -33,9 +33,12 @@ import org.kohsuke.stapler.export.ExportedBean;
 
 @ExportedBean
 public class CauseAction implements FoldableAction {
-	@Deprecated
-	// there can be multiple causes, so this is deprecated
-	private transient Cause cause;
+    /**
+     * @deprecated since 2009-02-28
+     */
+    @Deprecated
+    // there can be multiple causes, so this is deprecated
+    private transient Cause cause;
 	
 	private List<Cause> causes = new ArrayList<Cause>();
 

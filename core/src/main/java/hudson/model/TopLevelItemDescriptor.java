@@ -80,7 +80,7 @@ public abstract class TopLevelItemDescriptor extends Descriptor<TopLevelItem> {
     }
 
     /**
-     * @deprecated
+     * @deprecated since 2007-01-19.
      *      This is not a valid operation for {@link Job}s.
      */
     @Deprecated

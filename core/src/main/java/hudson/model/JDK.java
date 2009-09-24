@@ -51,6 +51,9 @@ import org.kohsuke.stapler.QueryParameter;
  * @author Kohsuke Kawaguchi
  */
 public final class JDK extends ToolInstallation implements NodeSpecific<JDK>, EnvironmentSpecific<JDK> {
+    /**
+     * @deprecated since 2009-02-25
+     */
     @Deprecated // kept for backward compatibility - use getHome() instead
     private String javaHome;
 

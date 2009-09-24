@@ -23,35 +23,28 @@
  */
 package hudson.cli;
 
-import java.io.OutputStream;
-import java.io.InputStream;
-import java.util.List;
-import java.util.Locale;
+import hudson.tasks.Mailer;
+import hudson.Extension;
+
+import javax.mail.internet.MimeMessage;
+import javax.mail.Transport;
 
 /**
- * Remotable interface for CLI entry point on the server side.
+ * Sends e-mail through Hudson.
+ *
+ * <p>
+ * Various platforms have different commands to do this, so on heterogenous platform, doing this via Hudson is easier.
  *
  * @author Kohsuke Kawaguchi
  */
-public interface CliEntryPoint {
-    /**
-     * Just like the static main method.
-     *
-     * @param locale
-     *      Locale of this client.
-     */
-    int main(List<String> args, Locale locale, InputStream stdin, OutputStream stdout, OutputStream stderr);
+@Extension
+public class MailCommand extends CLICommand {
+    public String getShortDescription() {
+        return "Reads stdin and sends that out as an e-mail.";
+    }
 
-    /**
-     * Does the named command exist?
-     */
-    boolean hasCommand(String name);
-
-    /**
-     * Returns {@link #VERSION}, so that the client and the server can detect version incompatibility
-     * gracefully.
-     */
-    int protocolVersion();
-
-    int VERSION = 1;
+    protected int run() throws Exception {
+        Transport.send(new MimeMessage(Mailer.descriptor().createSession(),stdin));
+        return 0;
+    }
 }

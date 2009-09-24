@@ -1633,8 +1633,10 @@ function validateButton(checkUrl,paramList,button) {
 
   paramList.split(',').each(function(name) {
       var p = findPreviousFormItem(button,name);
-      if(p!=null)
-        parameters[name] = p.value;
+      if(p!=null) {
+        if(p.type=="checkbox")  parameters[name] = p.checked;
+        else                    parameters[name] = p.value;
+      }
   });
 
   var spinner = Element.up(button,"DIV").nextSibling;

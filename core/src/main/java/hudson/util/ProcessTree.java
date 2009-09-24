@@ -197,7 +197,7 @@ public abstract class ProcessTree implements Iterable<OSProcess> {
          * used for launching the build, returns true if there's a match (which means the process should
          * be considered a descendant of a build.)
          */
-        private boolean hasMatchingEnvVars(Map<String,String> modelEnvVar) {
+        public final boolean hasMatchingEnvVars(Map<String,String> modelEnvVar) {
             if(modelEnvVar.isEmpty())
                 // sanity check so that we don't start rampage.
                 return false;

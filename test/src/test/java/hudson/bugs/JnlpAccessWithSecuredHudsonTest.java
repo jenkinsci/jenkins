@@ -54,13 +54,13 @@ public class JnlpAccessWithSecuredHudsonTest extends HudsonTestCase {
      * Creates a new slave that needs to be launched via JNLP.
      */
     protected Slave createNewJnlpSlave(String name) throws Exception {
-        return new DumbSlave(name,"",System.getProperty("java.io.tmpdir")+'/'+name,"2", Mode.NORMAL, "", new JNLPLauncher(), RetentionStrategy.INSTANCE);
+        return new DumbSlave(name,"",System.getProperty("java.io.tmpdir")+'/'+name,"2", Mode.NORMAL, "", new JNLPLauncher(), RetentionStrategy.INSTANCE, Collections.EMPTY_LIST);
     }
 
     @PresetData(DataSet.NO_ANONYMOUS_READACCESS)
     @Email("http://www.nabble.com/Launching-slave-by-JNLP-with-Active-Directory-plugin-and-matrix-security-problem-td18980323.html")
     public void test() throws Exception {
-        hudson.setSlaves(Collections.singletonList(createNewJnlpSlave("test")));
+        hudson.setNodes(Collections.singletonList(createNewJnlpSlave("test")));
         HudsonTestCase.WebClient wc = new WebClient();
         HtmlPage p = wc.login("alice").goTo("computer/test/");
 

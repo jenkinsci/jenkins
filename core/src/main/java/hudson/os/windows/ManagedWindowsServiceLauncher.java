@@ -36,6 +36,7 @@ import hudson.remoting.SocketInputStream;
 import hudson.remoting.SocketOutputStream;
 import hudson.remoting.Channel.Listener;
 import hudson.Extension;
+import static hudson.Util.copyStreamAndClose;
 import jcifs.smb.SmbFile;
 import jcifs.smb.SmbException;
 import jcifs.smb.NtlmPasswordAuthentication;
@@ -55,7 +56,6 @@ import org.dom4j.DocumentException;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
 import java.io.StringReader;
 import java.io.PrintStream;
 import java.io.BufferedInputStream;
@@ -107,6 +107,7 @@ public class ManagedWindowsServiceLauncher extends ComputerLauncher {
             SWbemServices services = WMI.connect(session, computer.getName());
 
             String path = computer.getNode().getRemoteFS();
+            if (path.indexOf(':')==-1)   throw new IOException("Remote file system root path of the slave needs to be absolute: "+path);
             SmbFile remoteRoot = new SmbFile("smb://" + computer.getName() + "/" + path.replace('\\', '/').replace(':', '$')+"/",createSmbAuth());
 
             Win32Service slaveService = services.getService("hudsonslave");
@@ -123,16 +124,14 @@ public class ManagedWindowsServiceLauncher extends ComputerLauncher {
 
                 // copy exe
                 logger.println(Messages.ManagedWindowsServiceLauncher_CopyingSlaveExe());
-                copyAndClose(getClass().getResource("/windows-service/hudson.exe").openStream(),
-                        new SmbFile(remoteRoot,"hudson-slave.exe").getOutputStream());
+                copyStreamAndClose(getClass().getResource("/windows-service/hudson.exe").openStream(), new SmbFile(remoteRoot,"hudson-slave.exe").getOutputStream());
 
                 copySlaveJar(logger, remoteRoot);
 
                 // copy hudson-slave.xml
                 logger.println(Messages.ManagedWindowsServiceLauncher_CopyingSlaveXml());
                 String xml = WindowsSlaveInstaller.generateSlaveXml("javaw.exe","-tcp %BASE%\\port.txt");
-                copyAndClose(new ByteArrayInputStream(xml.getBytes("UTF-8")),
-                        new SmbFile(remoteRoot,"hudson-slave.xml").getOutputStream());
+                copyStreamAndClose(new ByteArrayInputStream(xml.getBytes("UTF-8")), new SmbFile(remoteRoot,"hudson-slave.xml").getOutputStream());
 
                 // install it as a service
                 logger.println(Messages.ManagedWindowsServiceLauncher_RegisteringService());
@@ -195,8 +194,7 @@ public class ManagedWindowsServiceLauncher extends ComputerLauncher {
     private void copySlaveJar(PrintStream logger, SmbFile remoteRoot) throws IOException {
         // copy slave.jar
         logger.println("Copying slave.jar");
-        copyAndClose(Hudson.getInstance().getJnlpJars("slave.jar").getURL().openStream(),
-                        new SmbFile(remoteRoot,"slave.jar").getOutputStream());
+        copyStreamAndClose(Hudson.getInstance().getJnlpJars("slave.jar").getURL().openStream(), new SmbFile(remoteRoot,"slave.jar").getOutputStream());
     }
 
     private int readSmbFile(SmbFile f) throws IOException {
@@ -225,17 +223,6 @@ public class ManagedWindowsServiceLauncher extends ComputerLauncher {
             e.printStackTrace(listener.error(e.getMessage()));
         } catch (JIException e) {
             e.printStackTrace(listener.error(e.getMessage()));
-        }
-    }
-
-    private static void copyAndClose(InputStream in, OutputStream out) {
-        try {
-            IOUtils.copy(in,out);
-        } catch (IOException e) {
-            e.printStackTrace();
-        } finally {
-            IOUtils.closeQuietly(in);
-            IOUtils.closeQuietly(out);
         }
     }
 

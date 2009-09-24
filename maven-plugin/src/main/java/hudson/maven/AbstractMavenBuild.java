@@ -125,12 +125,11 @@ public abstract class AbstractMavenBuild<P extends AbstractMavenProject<P,B>,B e
             
             if(trigger) {
                 listener.getLogger().println(Messages.MavenBuild_Triggering(down.getName()));
-                down.scheduleBuild(new UpstreamCause(this));
+                down.scheduleBuild(new UpstreamCause((Run<?,?>)this));
             }
         }
     }
     
-
     private boolean inDownstreamProjects(AbstractProject downstreamProject) {
         DependencyGraph graph = Hudson.getInstance().getDependencyGraph();
         Set<AbstractProject> tups = graph.getTransitiveUpstream(downstreamProject);

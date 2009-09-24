@@ -31,6 +31,7 @@ import hudson.WebAppMain;
 import hudson.EnvVars;
 import hudson.ExtensionList;
 import hudson.DescriptorExtensionList;
+import hudson.Util;
 import hudson.tools.ToolProperty;
 import hudson.remoting.Which;
 import hudson.Launcher.LocalLauncher;
@@ -116,6 +117,7 @@ import org.kohsuke.stapler.MetaClass;
 import org.kohsuke.stapler.MetaClassLoader;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
+import org.kohsuke.stapler.Stapler;
 import org.mortbay.jetty.Server;
 import org.mortbay.jetty.bio.SocketConnector;
 import org.mortbay.jetty.security.HashUserRealm;
@@ -152,7 +154,7 @@ import com.gargoylesoftware.htmlunit.javascript.host.XMLHttpRequest;
  * @see <a href="http://hudson.gotdns.com/wiki/display/HUDSON/Unit+Test">Wiki article about unit testing in Hudson</a>
  * @author Kohsuke Kawaguchi
  */
-public abstract class HudsonTestCase extends TestCase {
+public abstract class HudsonTestCase extends TestCase implements RootAction {
     public Hudson hudson;
 
     protected final TestEnvironment env = new TestEnvironment();
@@ -213,6 +215,7 @@ public abstract class HudsonTestCase extends TestCase {
     protected HudsonTestCase() {
     }
 
+    @Override
     protected void setUp() throws Exception {
         env.pin();
         recipe();
@@ -234,13 +237,17 @@ public abstract class HudsonTestCase extends TestCase {
         // load updates from local proxy to avoid network traffic.
         final String updateCenterUrl = "http://localhost:"+JavaNetReverseProxy.getInstance().localPort+"/";
         hudson.getUpdateCenter().configure(new UpdateCenterConfiguration() {
-            public String getUpdateCenterUrl() {
+            @Override public String getUpdateCenterUrl() {
                 return updateCenterUrl;
             }
         });
         // don't waste bandwidth talking to the update center
         DownloadService.neverUpdate = true;
         UpdateCenter.neverUpdate = true;
+
+        // expose the test instance as a part of URL tree.
+        // this allows tests to use a part of the URL space for itself.
+        hudson.getActions().add(this);
 
         // cause all the descriptors to reload.
         // ideally we'd like to reset them to properly emulate the behavior, but that's not possible.
@@ -249,6 +256,7 @@ public abstract class HudsonTestCase extends TestCase {
             d.load();
     }
 
+    @Override
     protected void tearDown() throws Exception {
         try {
             // cancel pending asynchronous operations, although this doesn't really seem to be working
@@ -277,6 +285,7 @@ public abstract class HudsonTestCase extends TestCase {
         }
     }
 
+    @Override
     protected void runTest() throws Throwable {
         System.out.println("=== Starting "+ getClass().getSimpleName() + "." + getName());
         new JavaScriptEngine(null);   // ensure that ContextFactory is initialized
@@ -287,6 +296,18 @@ public abstract class HudsonTestCase extends TestCase {
         } finally {
             ContextFactory.getGlobal().removeListener(rhinoContextListener);
         }
+    }
+
+    public String getIconFileName() {
+        return null;
+    }
+
+    public String getDisplayName() {
+        return null;
+    }
+
+    public String getUrlName() {
+        return "self";
     }
 
     /**
@@ -504,7 +525,7 @@ public abstract class HudsonTestCase extends TestCase {
     	// this synchronization block is so that we don't end up adding the same slave name more than once.
     	synchronized (hudson) {
     		DumbSlave slave = new DumbSlave("slave" + hudson.getNodes().size(), "dummy",
-    				createTmpDir().getPath(), "1", Mode.NORMAL, l==null?"":l.getName(), launcher, RetentionStrategy.NOOP);
+    				createTmpDir().getPath(), "1", Mode.NORMAL, l==null?"":l.getName(), launcher, RetentionStrategy.NOOP, Collections.EMPTY_LIST);
     		hudson.addNode(slave);
     		return slave;
     	}
@@ -568,11 +589,11 @@ public abstract class HudsonTestCase extends TestCase {
             return r;
 
         // dump the build output in failure message
-        String msg = "unexpected build status; build log was:\n------\n" + r.getLog() + "\n------\n";
+        String msg = "unexpected build status; build log was:\n------\n" + getLog(r) + "\n------\n";
         if(r instanceof MatrixBuild) {
             MatrixBuild mb = (MatrixBuild)r;
             for (MatrixRun mr : mb.getRuns()) {
-                msg+="--- "+mr.getParent().getCombination()+" ---\n"+mr.getLog()+"\n------\n";
+                msg+="--- "+mr.getParent().getCombination()+" ---\n"+getLog(mr)+"\n------\n";
             }
         }
         assertEquals(msg, status,r.getResult());
@@ -588,12 +609,20 @@ public abstract class HudsonTestCase extends TestCase {
      * Asserts that the console output of the build contains the given substring.
      */
     public void assertLogContains(String substring, Run run) throws Exception {
-        String log = run.getLog();
+        String log = getLog(run);
         if(log.contains(substring))
             return; // good!
 
         System.out.println(log);
         fail("Console output of "+run+" didn't contain "+substring);
+    }
+
+    /**
+     * Get entire log file (this method is deprecated in hudson.model.Run,
+     * but in tests it is OK to load entire log).
+     */
+    protected static String getLog(Run run) throws IOException {
+        return Util.loadFile(run.getLogFile(), run.getCharset());
     }
 
     /**
@@ -687,10 +716,9 @@ public abstract class HudsonTestCase extends TestCase {
             if(pd==null) {
                 // field?
                 try {
-                    Field f1 = lhs.getClass().getField(p);
-                    Field f2 = rhs.getClass().getField(p);
-                    lp = f1.get(lhs);
-                    rp = f2.get(rhs);
+                    Field f = lhs.getClass().getField(p);
+                    lp = f.get(lhs);
+                    rp = f.get(rhs);
                 } catch (NoSuchFieldException e) {
                     assertNotNull("No such property "+p+" on "+lhs.getClass(),pd);
                     return;
@@ -876,6 +904,7 @@ public abstract class HudsonTestCase extends TestCase {
         cea.add(id,new Runnable() {
             public void run() {
                 try {
+                    Stapler.getCurrentResponse().setStatus(200);
                     r.add(c.call());
                 } catch (Exception e) {
                     t[0] = e;
@@ -919,6 +948,7 @@ public abstract class HudsonTestCase extends TestCase {
             clients.add(new WeakReference<WebClient>(this));
             // make ajax calls synchronous for predictable behaviors that simplify debugging
             setAjaxController(new AjaxController() {
+                @Override
                 public boolean processSynchron(HtmlPage page, WebRequestSettings settings, boolean async) {
                     return true;
                 }
@@ -1006,6 +1036,7 @@ public abstract class HudsonTestCase extends TestCase {
          *      a relative path within the Hudson being tested. (IOW, if you really need to hit
          *      a website on the internet, there's nothing wrong with using this method.)
          */
+        @Override
         public Page getPage(String url) throws IOException, FailingHttpStatusCodeException {
             return super.getPage(url);
         }
@@ -1062,6 +1093,16 @@ public abstract class HudsonTestCase extends TestCase {
             String crumb = issuer.getCrumb(null);
             
             return new URL(getContextPath()+relativePath+"?"+crumbName+"="+crumb);
+        }
+
+        /**
+         * Makes an HTTP request, process it with the given request handler, and returns the response.
+         */
+        public HtmlPage eval(final Runnable requestHandler) throws IOException, SAXException {
+            ClosureExecuterAction cea = hudson.getExtensionList(RootAction.class).get(ClosureExecuterAction.class);
+            UUID id = UUID.randomUUID();
+            cea.add(id,requestHandler);
+            return goTo("closures/?uuid="+id);
         }
     }
 

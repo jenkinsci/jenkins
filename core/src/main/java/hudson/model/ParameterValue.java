@@ -161,7 +161,7 @@ public abstract class ParameterValue implements Serializable {
     /**
      * Accessing {@link ParameterDefinition} is not a good idea.
      *
-     * @deprecated
+     * @deprecated since 2008-09-20.
      *    parameter definition may change any time. So if you find yourself
      *    in need of accessing the information from {@link ParameterDefinition},
      *    instead copy them in {@link ParameterDefinition#createValue(StaplerRequest, JSONObject)}

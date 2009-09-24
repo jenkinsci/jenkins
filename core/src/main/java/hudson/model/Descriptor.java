@@ -119,7 +119,7 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable {
      * Going forward Hudson simply persists all the non-transient fields
      * of {@link Descriptor}, just like others, so this is pointless.
      *
-     * @deprecated
+     * @deprecated since 2006-11-16
      */
     @Deprecated
     private transient Map<String,Object> properties;

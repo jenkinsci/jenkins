@@ -478,7 +478,7 @@ public class MavenBuild extends AbstractMavenBuild<MavenModule,MavenBuild> {
 
         @Override
         protected Lease decideWorkspace(Node n, WorkspaceList wsl) throws InterruptedException, IOException {
-            return wsl.allocate(getParentBuild().getModuleRoot().child(getProject().getRelativePath()));
+            return wsl.allocate(getModuleSetBuild().getModuleRoot().child(getProject().getRelativePath()));
         }
 
         protected Result doRun(BuildListener listener) throws Exception {

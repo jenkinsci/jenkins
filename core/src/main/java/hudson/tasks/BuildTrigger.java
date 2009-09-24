@@ -41,6 +41,7 @@ import hudson.model.Items;
 import hudson.model.Job;
 import hudson.model.Project;
 import hudson.model.Result;
+import hudson.model.Run;
 import hudson.model.Cause.UpstreamCause;
 import hudson.model.listeners.ItemListener;
 import hudson.util.FormValidation;
@@ -174,7 +175,7 @@ public class BuildTrigger extends Recorder implements DependecyDeclarer, MatrixA
                 // this is not completely accurate, as a new build might be triggered
                 // between these calls
                 String name = p.getName()+" #"+p.getNextBuildNumber();
-                if(p.scheduleBuild(new UpstreamCause(build))) {
+                if(p.scheduleBuild(new UpstreamCause((Run)build))) {
                     logger.println(Messages.BuildTrigger_Triggering(name));
                 } else {
                     logger.println(Messages.BuildTrigger_InQueue(name));

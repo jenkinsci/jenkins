@@ -420,6 +420,7 @@ public class HudsonPrivateSecurityRealm extends SecurityRealm implements ModelOb
                     return null;
             }
 
+            @Override
             public Details newInstance(StaplerRequest req, JSONObject formData) throws FormException {
                 String pwd = Util.fixEmpty(req.getParameter("user.password"));
                 String pwd2= Util.fixEmpty(req.getParameter("user.password2"));

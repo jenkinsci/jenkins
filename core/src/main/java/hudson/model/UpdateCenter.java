@@ -303,7 +303,10 @@ public class UpdateCenter extends AbstractModelObject {
         if(data==null)      return false;
 
         for (PluginWrapper pw : Hudson.getInstance().getPluginManager().getPlugins()) {
-            if(pw.getUpdateInfo() !=null) return true;
+            if(!pw.isBundled() && pw.getUpdateInfo()!=null)
+                // do not advertize updates to bundled plugins, since we generally want users to get them
+                // as a part of hudson.war updates. This also avoids unnecessary pinning of plugins. 
+                return true;
         }
         return false;
     }
@@ -444,10 +447,10 @@ public class UpdateCenter extends AbstractModelObject {
          * Optional excerpt string.
          */
         public final String excerpt;
-	/**
-	 * Optional version # from which this plugin release is configuration-compatible.
-	 */
-	public final String compatibleSinceVersion;
+        /**
+         * Optional version # from which this plugin release is configuration-compatible.
+         */
+        public final String compatibleSinceVersion;
 	
         @DataBoundConstructor
         public Plugin(JSONObject o) {
@@ -455,7 +458,7 @@ public class UpdateCenter extends AbstractModelObject {
             this.wiki = get(o,"wiki");
             this.title = get(o,"title");
             this.excerpt = get(o,"excerpt");
-	    this.compatibleSinceVersion = get(o,"compatibleSinceVersion");
+            this.compatibleSinceVersion = get(o,"compatibleSinceVersion");
         }
 
         private String get(JSONObject o, String prop) {
@@ -479,26 +482,26 @@ public class UpdateCenter extends AbstractModelObject {
             return pm.getPlugin(name);
         }
 
-	/**
-	 * If the plugin is already installed, and the new version of the plugin has a "compatibleSinceVersion"
-	 * value (i.e., it's only directly compatible with that version or later), this will check to
-	 * see if the installed version is older than the compatible-since version. If it is older, it'll return false.
-	 * If it's not older, or it's not installed, or it's installed but there's no compatibleSinceVersion
-	 * specified, it'll return true.
-	 */
-	public boolean isCompatibleWithInstalledVersion() {
-	    PluginWrapper installedVersion = getInstalled();
-	    if (installedVersion != null) {
-		if (compatibleSinceVersion != null) {
-		    if (new VersionNumber(installedVersion.getVersion())
-			.isOlderThan(new VersionNumber(compatibleSinceVersion))) {
-			return false;
-		    }
-		}
-	    }
-	    return true;
-	}
-	
+        /**
+         * If the plugin is already installed, and the new version of the plugin has a "compatibleSinceVersion"
+         * value (i.e., it's only directly compatible with that version or later), this will check to
+         * see if the installed version is older than the compatible-since version. If it is older, it'll return false.
+         * If it's not older, or it's not installed, or it's installed but there's no compatibleSinceVersion
+         * specified, it'll return true.
+         */
+        public boolean isCompatibleWithInstalledVersion() {
+            PluginWrapper installedVersion = getInstalled();
+            if (installedVersion != null) {
+                if (compatibleSinceVersion != null) {
+                    if (new VersionNumber(installedVersion.getVersion())
+                            .isOlderThan(new VersionNumber(compatibleSinceVersion))) {
+                        return false;
+                    }
+                }
+            }
+            return true;
+        }
+
         /**
          * Schedules the installation of this plugin.
          *
@@ -804,15 +807,7 @@ public class UpdateCenter extends AbstractModelObject {
             try {
                 LOGGER.info("Starting the installation of "+getName()+" on behalf of "+getUser().getName());
 
-                URL src = getURL();
-
-                config.preValidate(this, src);
-
-                File dst = getDestination();
-                File tmp = config.download(this, src);
-                
-                config.postValidate(this, tmp);
-                config.install(this, tmp, dst);
+                _run();
                 
                 LOGGER.info("Installation successful: "+getName());
                 status = new Success();
@@ -823,12 +818,27 @@ public class UpdateCenter extends AbstractModelObject {
             }
         }
 
+        protected void _run() throws IOException {
+            URL src = getURL();
+
+            config.preValidate(this, src);
+
+            File dst = getDestination();
+            File tmp = config.download(this, src);
+
+            config.postValidate(this, tmp);
+            config.install(this, tmp, dst);
+        }
+
         /**
          * Called when the download is completed to overwrite
          * the old file with the new file.
          */
         protected void replace(File dst, File src) throws IOException {
-            dst.delete();
+            File bak = Util.changeExtension(dst,".bak");
+            bak.delete();
+            dst.renameTo(bak);
+            dst.delete(); // any failure up to here is no big deal
             if(!src.renameTo(dst)) {
                 throw new IOException("Failed to rename "+src+" to "+dst);
             }
@@ -912,6 +922,16 @@ public class UpdateCenter extends AbstractModelObject {
 
         public String getName() {
             return plugin.getDisplayName();
+        }
+
+        @Override
+        public void _run() throws IOException {
+            super.run();
+
+            // if this is a bundled plugin, make sure it won't get overwritten
+            PluginWrapper pw = plugin.getInstalled();
+            if (pw!=null && pw.isBundled())
+                pw.doPin();
         }
 
         protected void onSuccess() {

@@ -44,7 +44,7 @@ import java.util.concurrent.ConcurrentHashMap;
 public final class FingerprintMap extends KeyedDataStorage<Fingerprint,FingerprintParams> {
 
     /**
-     * @deprecated
+     * @deprecated since 2007-03-26.
      *      Some old version of Hudson incorrectly serialized this information to the disk.
      *      So we need this field to be here for such configuration to be read correctly.
      *      This field is otherwise no longer in use.

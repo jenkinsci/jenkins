@@ -42,16 +42,14 @@ THE SOFTWARE.
       <plugin>
         <artifactId>maven-surefire-plugin</artifactId>
         <configuration>
-          <!-- override with -DforkMode=pertest if you have "unable to create thread problems" on Windows
--->
+          <!-- override with -DforkMode=pertest if you have "unable to create thread problems" on Windows -->
           <forkMode>once</forkMode>
           <!--<reportFormat>plain</reportFormat>-->
           <redirectTestOutputToFile>true</redirectTestOutputToFile>
           <argLine>-XX:MaxPermSize=128m</argLine>
           <systemProperties>
             <property>
-              <!-- use AntClassLoader that supports predictable file handle release
--->
+              <!-- use AntClassLoader that supports predictable file handle release -->
               <name>hudson.ClassicPluginStrategy.useAntClassLoader</name>
               <value>true</value>
             </property>
@@ -108,6 +106,11 @@ THE SOFTWARE.
       <groupId>${project.groupId}</groupId>
       <artifactId>maven-plugin</artifactId>
       <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.jvnet.hudson.plugins</groupId>
+      <artifactId>subversion</artifactId>
+      <version>1.7</version>
     </dependency>
     <dependency>
       <groupId>org.mortbay.jetty</groupId>

@@ -51,6 +51,7 @@ import hudson.tools.ToolDescriptor;
 import hudson.cli.CliEntryPoint;
 import hudson.cli.CliManagerImpl;
 import hudson.cli.declarative.CLIMethod;
+import hudson.cli.declarative.CLIResolver;
 import hudson.logging.LogRecorderManager;
 import hudson.lifecycle.Lifecycle;
 import hudson.model.Descriptor.FormException;
@@ -61,7 +62,6 @@ import hudson.model.listeners.SCMListener;
 import hudson.remoting.LocalChannel;
 import hudson.remoting.VirtualChannel;
 import hudson.remoting.Channel;
-import hudson.scm.CVSSCM;
 import hudson.scm.RepositoryBrowser;
 import hudson.scm.SCM;
 import hudson.scm.SCMDescriptor;
@@ -476,6 +476,7 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
      */
     private transient final AdjunctManager adjuncts;
 
+    @CLIResolver
     public static Hudson getInstance() {
         return theInstance;
     }
@@ -862,7 +863,7 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
     /**
      * Adds a new {@link JobListener}.
      *
-     * @deprecated
+     * @deprecated since 2007-01-04.
      *      Use {@code getJobListeners().add(l)} instead.
      */
     public void addListener(JobListener l) {
@@ -872,7 +873,7 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
     /**
      * Deletes an existing {@link JobListener}.
      *
-     * @deprecated
+     * @deprecated since 2007-01-04.
      *      Use {@code getJobListeners().remove(l)} instead.
      */
     public boolean removeListener(JobListener l ) {
@@ -1241,7 +1242,7 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
             name = "";
 
         for (Computer c : computers.values()) {
-            if(c.getNode().getNodeName().equals(name))
+            if(c.getName().equals(name))
                 return c;
         }
         return null;
@@ -1815,6 +1816,8 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
         StringTokenizer tokens = new StringTokenizer(fullName,"/");
         ItemGroup parent = this;
 
+        if(!tokens.hasMoreTokens()) return null;    // for example, empty full name.
+
         while(true) {
             Item item = parent.getItem(tokens.nextToken());
             if(!tokens.hasMoreTokens()) {
@@ -2349,12 +2352,14 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
         doQuietDown().generateResponse(null,rsp,this);
     }
 
+    @CLIMethod(name="quiet-down")
     public synchronized HttpRedirect doQuietDown() throws IOException, ServletException {
         checkPermission(ADMINISTER);
         isQuietingDown = true;
         return new HttpRedirect(".");
     }
 
+    @CLIMethod(name="cancel-quiet-down")
     public synchronized HttpRedirect doCancelQuietDown() throws IOException, ServletException {
         checkPermission(ADMINISTER);
         isQuietingDown = false;
@@ -2490,7 +2495,7 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
         items.put(name,result);
 
         for (ItemListener l : ItemListener.all())
-            l.onCreated(result);
+            l.onCopied(src,result);
 
         return result;
     }
@@ -3070,11 +3075,11 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
      * Checks if container uses UTF-8 to decode URLs. See
      * http://hudson.gotdns.com/wiki/display/HUDSON/Tomcat#Tomcat-i18n
      */
-    public FormValidation doCheckURIEncoding(StaplerRequest request, @QueryParameter String value) throws IOException {
+    public FormValidation doCheckURIEncoding(StaplerRequest request, StaplerResponse response) throws IOException {
         request.setCharacterEncoding("UTF-8");
         // expected is non-ASCII String
         final String expected = "\u57f7\u4e8b";
-        value = fixEmpty(value);
+        final String value = fixEmpty(request.getParameter("value"));
         if (!expected.equals(value))
             return FormValidation.warningWithMarkup(Messages.Hudson_NotUsesUTF8ToDecodeURL());
         return FormValidation.ok();
@@ -3256,7 +3261,7 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
     }
 
     /**
-     * @deprecated
+     * @deprecated since 2007-12-18.
      *      Use {@link #checkPermission(Permission)}
      */
     public static boolean adminCheck() throws IOException {
@@ -3264,7 +3269,7 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
     }
 
     /**
-     * @deprecated
+     * @deprecated since 2007-12-18.
      *      Use {@link #checkPermission(Permission)}
      */
     public static boolean adminCheck(StaplerRequest req,StaplerResponse rsp) throws IOException {
@@ -3278,7 +3283,7 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
      * Checks if the current user (for which we are processing the current request)
      * has the admin access.
      *
-     * @deprecated
+     * @deprecated since 2007-12-18.
      *      This method is deprecated when Hudson moved from simple Unix root-like model
      *      of "admin gets to do everything, and others don't have any privilege" to more
      *      complex {@link ACL} and {@link Permission} based scheme.
@@ -3297,7 +3302,7 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
     }
 
     /**
-     * @deprecated
+     * @deprecated since 2007-12-18.
      *      Define a custom {@link Permission} and check against ACL.
      *      See {@link #isAdmin()} for more instructions.
      */

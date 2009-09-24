@@ -125,6 +125,7 @@ public class Ant extends Builder {
         return antOpts;
     }
 
+    @Override
     public boolean perform(AbstractBuild<?,?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
         ArgumentListBuilder args = new ArgumentListBuilder();
 
@@ -299,6 +300,7 @@ public class Ant extends Builder {
     public static final class AntInstallation extends ToolInstallation implements
             EnvironmentSpecific<AntInstallation>, NodeSpecific<AntInstallation> {
         // to remain backward compatible with earlier Hudson that stored this field here.
+        @Deprecated
         private final String antHome;
 
         @DataBoundConstructor
@@ -334,6 +336,7 @@ public class Ant extends Builder {
             return getHome();
         }
 
+        @Override
         public String getHome() {
             if (antHome != null) return antHome;
             return super.getHome();
@@ -360,7 +363,7 @@ public class Ant extends Builder {
             else
                 execName = "ant";
 
-            String antHome = Util.replaceMacro(getAntHome(),EnvVars.masterEnvVars);
+            String antHome = Util.replaceMacro(getHome(),EnvVars.masterEnvVars);
 
             return new File(antHome,"bin/"+execName);
         }
@@ -375,7 +378,7 @@ public class Ant extends Builder {
         private static final long serialVersionUID = 1L;
 
         public AntInstallation forEnvironment(EnvVars environment) {
-            return new AntInstallation(getName(), environment.expand(antHome), getProperties().toList());
+            return new AntInstallation(getName(), environment.expand(getHome()), getProperties().toList());
         }
 
         public AntInstallation forNode(Node node, TaskListener log) throws IOException, InterruptedException {

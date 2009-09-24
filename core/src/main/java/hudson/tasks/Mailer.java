@@ -26,6 +26,7 @@ package hudson.tasks;
 import hudson.Launcher;
 import hudson.Functions;
 import hudson.Extension;
+import hudson.Util;
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
 import hudson.model.BuildListener;
@@ -36,7 +37,6 @@ import hudson.util.FormValidation;
 import org.apache.tools.ant.types.selectors.SelectorUtils;
 import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.StaplerRequest;
-import org.kohsuke.stapler.StaplerResponse;
 import org.kohsuke.stapler.export.Exported;
 
 import javax.mail.Authenticator;
@@ -51,7 +51,6 @@ import javax.mail.internet.MimeMessage;
 import javax.servlet.ServletException;
 import java.io.File;
 import java.io.IOException;
-import java.io.PrintStream;
 import java.util.Date;
 import java.util.Map;
 import java.util.Properties;
@@ -89,6 +88,7 @@ public class Mailer extends Notifier {
     private transient String subject;
     private transient boolean failureOnly;
 
+    @Override
     public boolean perform(AbstractBuild<?,?> build, Launcher launcher, BuildListener listener) throws InterruptedException {
         if(debug)
             listener.getLogger().println("Running mailer");
@@ -215,6 +215,9 @@ public class Mailer extends Notifier {
 
         /** JavaMail session. */
         public Session createSession() {
+            return createSession(smtpHost,smtpPort,useSsl,smtpAuthUsername,smtpAuthPassword);
+        }
+        private static Session createSession(String smtpHost, String smtpPort, boolean useSsl, String smtpAuthUserName, String smtpAuthPassword) {
             Properties props = new Properties(System.getProperties());
             if(smtpHost!=null)
                 props.put("mail.smtp.host",smtpHost);
@@ -238,23 +241,22 @@ public class Mailer extends Notifier {
             	}
 				props.put("mail.smtp.socketFactory.fallback", "false");
 			}
-            if(getSmtpAuthUserName()!=null)
+            if(smtpAuthUserName!=null)
                 props.put("mail.smtp.auth","true");
 
             // avoid hang by setting some timeout. 
             props.put("mail.smtp.timeout","60000");
             props.put("mail.smtp.connectiontimeout","60000");
 
-            return Session.getInstance(props,getAuthenticator());
+            return Session.getInstance(props,getAuthenticator(smtpAuthUserName,smtpAuthPassword));
         }
 
-        private Authenticator getAuthenticator() {
-            final String un = getSmtpAuthUserName();
-            if(un==null)    return null;
+        private static Authenticator getAuthenticator(final String smtpAuthUserName, final String smtpAuthPassword) {
+            if(smtpAuthUserName==null)    return null;
             return new Authenticator() {
                 @Override
                 protected PasswordAuthentication getPasswordAuthentication() {
-                    return new PasswordAuthentication(getSmtpAuthUserName(),getSmtpAuthPassword());
+                    return new PasswordAuthentication(smtpAuthUserName,smtpAuthPassword);
                 }
             };
         }
@@ -262,23 +264,24 @@ public class Mailer extends Notifier {
         @Override
         public boolean configure(StaplerRequest req, JSONObject json) throws FormException {
             // this code is brain dead
-            smtpHost = nullify(req.getParameter("mailer_smtp_server"));
-            setAdminAddress(req.getParameter("mailer_admin_address"));
+            smtpHost = nullify(json.getString("smtpServer"));
+            setAdminAddress(json.getString("adminAddress"));
 
-            defaultSuffix = nullify(req.getParameter("mailer_default_suffix"));
+            defaultSuffix = nullify(json.getString("defaultSuffix"));
             String url = nullify(json.getString("url"));
             if(url!=null && !url.endsWith("/"))
                 url += '/';
             hudsonUrl = url;
 
-            if(req.getParameter("mailer.useSMTPAuth")!=null) {
-                smtpAuthUsername = nullify(req.getParameter("mailer.SMTPAuth.userName"));
-                smtpAuthPassword = nullify(req.getParameter("mailer.SMTPAuth.password"));
+            if(json.has("useSMTPAuth")) {
+                JSONObject auth = json.getJSONObject("useSMTPAuth");
+                smtpAuthUsername = nullify(auth.getString("smtpAuthUserName"));
+                smtpAuthPassword = nullify(auth.getString("smtpAuthPassword"));
             } else {
                 smtpAuthUsername = smtpAuthPassword = null;
             }
-            smtpPort = nullify(req.getParameter("mailer_smtp_port"));
-            useSsl = req.getParameter("mailer_smtp_use_ssl")!=null;
+            smtpPort = nullify(json.getString("smtpPort"));
+            useSsl = json.getBoolean("useSsl");
             save();
             return true;
         }
@@ -347,8 +350,13 @@ public class Mailer extends Notifier {
             this.smtpPort = smtpPort;
         }
 
+        public void setSmtpAuth(String userName, String password) {
+            this.smtpAuthUsername = userName;
+            this.smtpAuthPassword = password;
+        }
+
         @Override
-        public Publisher newInstance(StaplerRequest req) {
+        public Publisher newInstance(StaplerRequest req, JSONObject formData) {
             Mailer m = new Mailer();
             req.bindParameters(m,"mailer_");
             m.dontNotifyEveryUnstableBuild = req.getParameter("mailer_notifyEveryUnstableBuild")==null;
@@ -379,42 +387,37 @@ public class Mailer extends Notifier {
                 return FormValidation.error(e.getMessage());
             }
         }
-        
+
+        public FormValidation doCheckAdminAddress(@QueryParameter String value) {
+            return doAddressCheck(value);
+        }
+
         /**
          * Send an email to the admin address
-         * @param rsp used to write the result of the sending
          * @throws IOException
          * @throws ServletException
          * @throws InterruptedException
          */
-        public void doSendTestMail(StaplerResponse rsp) throws IOException, ServletException, InterruptedException {
-            rsp.setContentType("text/plain");
-            PrintStream writer = new PrintStream(rsp.getOutputStream());            
+        public FormValidation doSendTestMail(
+                @QueryParameter String smtpServer, @QueryParameter String adminAddress, @QueryParameter boolean useSMTPAuth,
+                @QueryParameter String smtpAuthUserName, @QueryParameter String smtpAuthPassword,
+                @QueryParameter boolean useSsl, @QueryParameter String smtpPort) throws IOException, ServletException, InterruptedException {
             try {
-                writer.println("Sending email to " + getAdminAddress());
-                writer.println();
-                writer.println("Email content ---------------------------------------------------------");
-                writer.flush();
+                if (!useSMTPAuth)   smtpAuthUserName = smtpAuthPassword = null;
                 
-                MimeMessage msg = new MimeMessage(createSession());
+                MimeMessage msg = new MimeMessage(createSession(smtpServer,smtpPort,useSsl,smtpAuthUserName,smtpAuthPassword));
                 msg.setSubject("Test email #" + ++testEmailCount);
                 msg.setContent("This is test email #" + testEmailCount + " sent from Hudson Continuous Integration server.", "text/plain");
-                msg.setFrom(new InternetAddress(getAdminAddress()));
+                msg.setFrom(new InternetAddress(adminAddress));
                 msg.setSentDate(new Date());
-                msg.setRecipient(Message.RecipientType.TO, new InternetAddress(getAdminAddress()));                
-                msg.writeTo(writer);
-                writer.println();                
-                writer.println("-----------------------------------------------------------------------");
-                writer.println();
-                writer.flush();
-                
+                msg.setRecipient(Message.RecipientType.TO, new InternetAddress(adminAddress));
+
                 Transport.send(msg);
                 
-                writer.println("Email was successfully sent");
+                return FormValidation.ok("Email was successfully sent");
             } catch (MessagingException e) {
-                e.printStackTrace(writer);
+                return FormValidation.errorWithMarkup("<p>Failed to send out e-mail</p><pre>"+Util.escape(Functions.printThrowable(e))+"</pre>");
             }
-            writer.flush();
         }
 
         public boolean isApplicable(Class<? extends AbstractProject> jobType) {
@@ -456,7 +459,7 @@ public class Mailer extends Notifier {
             }
 
             @Override
-            public UserProperty newInstance(StaplerRequest req) throws FormException {
+            public UserProperty newInstance(StaplerRequest req, JSONObject formData) throws FormException {
                 return new UserProperty(req.getParameter("email.address"));
             }
         }

@@ -80,6 +80,8 @@ import java.util.ResourceBundle;
 import java.util.SimpleTimeZone;
 import java.util.StringTokenizer;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
@@ -852,6 +854,14 @@ public class Util {
         return fixEmpty(s.trim());
     }
 
+    public static <T> List<T> fixNull(List<T> l) {
+        return l!=null ? l : Collections.<T>emptyList();
+    }
+
+    public static <T> Set<T> fixNull(Set<T> l) {
+        return l!=null ? l : Collections.<T>emptySet();
+    }
+
     /**
      * Cuts all the leading path portion and get just the file name.
      */
@@ -975,7 +985,7 @@ public class Util {
      * but don't remember it right now.
      *
      * @since 1.204
-     * @deprecated This method is broken (see ISSUE#1666). It should probably
+     * @deprecated since 2008-05-13. This method is broken (see ISSUE#1666). It should probably
      * be removed but I'm not sure if it is considered part of the public API
      * that needs to be maintained for backwards compatibility.
      * Use {@link #encode(String)} instead. 
@@ -1032,6 +1042,19 @@ public class Util {
         } catch (NoSuchMethodException e) {
             throw new AssertionError(e);
         }
+    }
+
+    /**
+     * Returns a file name by changing its extension.
+     *
+     * @param ext
+     *      For example, ".zip"
+     */
+    public static File changeExtension(File dst, String ext) {
+        String p = dst.getPath();
+        int pos = p.lastIndexOf('.');
+        if (pos<0)  return new File(p+ext);
+        else        return new File(p.substring(0,pos)+ext);
     }
 
     public static final FastDateFormat XS_DATETIME_FORMATTER = FastDateFormat.getInstance("yyyy-MM-dd'T'HH:mm:ss'Z'",new SimpleTimeZone(0,"GMT"));
