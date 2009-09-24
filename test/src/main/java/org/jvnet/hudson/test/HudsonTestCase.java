@@ -904,7 +904,9 @@ public abstract class HudsonTestCase extends TestCase implements RootAction {
         cea.add(id,new Runnable() {
             public void run() {
                 try {
-                    Stapler.getCurrentResponse().setStatus(200);
+                    StaplerResponse rsp = Stapler.getCurrentResponse();
+                    rsp.setStatus(200);
+                    rsp.setContentType("text/html");
                     r.add(c.call());
                 } catch (Exception e) {
                     t[0] = e;
