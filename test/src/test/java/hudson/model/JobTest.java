@@ -27,8 +27,6 @@ import com.gargoylesoftware.htmlunit.WebAssert;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 
 import org.jvnet.hudson.test.HudsonTestCase;
-import hudson.Extension;
-import hudson.model.JobTest.JobPropertyImpl.DescriptorImpl;
 
 /**
  * @author Kohsuke Kawaguchi
@@ -45,7 +43,8 @@ public class JobTest extends HudsonTestCase {
     }
     
     @SuppressWarnings("unchecked")
-    public static class JobPropertyImpl extends JobProperty {
+    public static class JobPropertyImpl extends JobProperty<Job<?,?>> {
+        public static DescriptorImpl DESCRIPTOR = new DescriptorImpl();
         private final String testString;
         
         public JobPropertyImpl(String testString) {
@@ -56,8 +55,12 @@ public class JobTest extends HudsonTestCase {
             return testString;
         }
 
-        @Extension
-        public static final class DescriptorImpl extends JobPropertyDescriptor {
+        @Override
+        public JobPropertyDescriptor getDescriptor() {
+            return DESCRIPTOR;
+        }
+
+        private static final class DescriptorImpl extends JobPropertyDescriptor {
             public String getDisplayName() {
                 return "";
             }
