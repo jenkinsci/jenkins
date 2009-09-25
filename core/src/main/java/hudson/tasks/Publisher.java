@@ -104,7 +104,7 @@ public abstract class Publisher extends BuildStepCompatibilityLayer implements B
      * <p>
      * So normally, that is the preferrable behavior, but in a few cases
      * this is problematic. One of such cases is when a publisher needs to
-     * trigger other builds, whcih in turn need to see this build as a
+     * trigger other builds, which in turn need to see this build as a
      * completed build. Those plugins that need to do this can return true
      * from this method, so that the {@link #perform(AbstractBuild, Launcher, BuildListener)} 
      * method is called after the build is marked as completed.
