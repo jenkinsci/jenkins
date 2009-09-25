@@ -25,6 +25,7 @@ package hudson.tasks;
 
 import hudson.DescriptorExtensionList;
 import hudson.Extension;
+import hudson.Launcher;
 import hudson.model.Action;
 import hudson.model.Build;
 import hudson.model.BuildListener;
@@ -32,6 +33,7 @@ import hudson.model.Describable;
 import hudson.model.Project;
 import hudson.model.Descriptor;
 import hudson.model.Hudson;
+import hudson.model.AbstractBuild;
 
 import java.util.List;
 import java.util.ArrayList;
