@@ -35,7 +35,7 @@ import com.gargoylesoftware.htmlunit.html.HtmlPage;
  *
  * @author Kohsuke Kawaguchi
  */
-public class ValidateButtonTest extends HudsonTestCase implements Describable {
+public class ValidateButtonTest extends HudsonTestCase implements Describable<ValidateButtonTest> {
 
     public void test1() throws Exception {
         DescriptorImpl d = getDescriptor();
@@ -51,7 +51,7 @@ public class ValidateButtonTest extends HudsonTestCase implements Describable {
     }
 
     @Extension
-    public static final class DescriptorImpl extends Descriptor {
+    public static final class DescriptorImpl extends Descriptor<ValidateButtonTest> {
         private Exception test1Outcome;
 
         public String getDisplayName() {
