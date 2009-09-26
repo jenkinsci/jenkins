@@ -1439,6 +1439,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
     }
 
     public HttpResponse doEnable() throws IOException, ServletException {
+        requirePOST();
         checkPermission(CONFIGURE);
         makeDisabled(false);
         return new HttpRedirect(".");
