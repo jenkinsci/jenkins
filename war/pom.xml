@@ -27,7 +27,7 @@ THE SOFTWARE.
   <parent>
     <groupId>org.jvnet.hudson.main</groupId>
     <artifactId>pom</artifactId>
-    <version>1.325-SNAPSHOT</version>
+    <version>1.327-SNAPSHOT</version>
     <relativePath>../pom.xml</relativePath>
   </parent>
   
@@ -113,7 +113,7 @@ THE SOFTWARE.
                 <resolveArtifact groupId="${project.groupId}" artifactId="maven-plugin" version="${project.version}" type="hpi" tofile="${basedir}/target/generated-resources/WEB-INF/plugins/maven-plugin.hpi" />
                 <resolveArtifact groupId="org.jvnet.hudson.plugins" artifactId="ssh-slaves" version="0.7" type="hpi" tofile="${basedir}/target/generated-resources/WEB-INF/plugins/ssh-slaves.hpi" />
                 <resolveArtifact groupId="org.jvnet.hudson.plugins" artifactId="subversion" version="1.7" type="hpi" tofile="${basedir}/target/generated-resources/WEB-INF/plugins/subversion.hpi" />
-                <resolveArtifact groupId="org.jvnet.hudson.plugins" artifactId="scis-ad" version="1.0" type="hpi" tofile="${basedir}/target/generated-resources/WEB-INF/plugins/scis-ad.hpi" />
+                <resolveArtifact groupId="org.jvnet.hudson.plugins" artifactId="scis-ad" version="1.1" type="hpi" tofile="${basedir}/target/generated-resources/WEB-INF/plugins/scis-ad.hpi" />
               </tasks>
             </configuration>
           </execution>
