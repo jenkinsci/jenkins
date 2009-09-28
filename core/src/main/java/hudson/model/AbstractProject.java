@@ -482,6 +482,9 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
                 if(a!=null)
                     transientActions.add(a);
             }
+
+            for (TransientProjectActionFactory tpaf : TransientProjectActionFactory.all())
+                transientActions.addAll(Util.fixNull(tpaf.createFor(this))); // be defensive against null
         }
     }
 
@@ -814,6 +817,8 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
      * Note that this method returns a read-only view of {@link Action}s.
      * {@link BuildStep}s and others who want to add a project action
      * should do so by implementing {@link BuildStep#getProjectAction(AbstractProject)}.
+     *
+     * @see TransientProjectActionFactory
      */
     @Override
     public synchronized List<Action> getActions() {
