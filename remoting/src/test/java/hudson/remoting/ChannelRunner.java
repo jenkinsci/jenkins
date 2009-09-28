@@ -123,7 +123,7 @@ interface ChannelRunner {
             // proc = Runtime.getRuntime().exec("java -Xdebug -Xrunjdwp:transport=dt_socket,server=y,address=8000 hudson.remoting.Launcher");
 
 
-            proc = Runtime.getRuntime().exec("java -cp "+getClasspath()+" hudson.remoting.Launcher");
+            proc = Runtime.getRuntime().exec("java -cp \""+getClasspath()+"\" hudson.remoting.Launcher");
 
             copier = new Copier("copier",proc.getErrorStream(),System.out);
             copier.start();
