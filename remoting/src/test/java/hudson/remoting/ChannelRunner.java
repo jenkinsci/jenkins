@@ -37,6 +37,7 @@ import java.net.URLClassLoader;
 import java.net.URL;
 
 import org.apache.commons.io.output.TeeOutputStream;
+import org.apache.commons.io.FileUtils;
 
 /**
  * Hides the logic of starting/stopping a channel for test.
@@ -162,7 +163,7 @@ interface ChannelRunner {
             URLClassLoader ucl = (URLClassLoader)getClass().getClassLoader();
             for (URL url : ucl.getURLs()) {
                 if (buf.length()>0) buf.append(File.pathSeparatorChar);
-                buf.append(url.getPath()); // assume all of them are file URLs
+                buf.append(FileUtils.toFile(url)); // assume all of them are file URLs
             }
             return buf.toString();
         }
