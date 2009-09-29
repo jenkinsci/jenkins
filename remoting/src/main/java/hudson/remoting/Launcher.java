@@ -336,7 +336,8 @@ public class Launcher {
                 WARNING: Stack unwind information not available. Following frames may be wrong.
                 02f1f13c 6d99c844 java_6d3e0000!Java_sun_security_provider_NativeSeedGenerator_nativeGenerateSeed+0x6e
              */
-            new SecureRandom().nextBoolean();
+//            new SecureRandom().nextBoolean();
+            ;
         }
 
         // this will prevent programs from accidentally writing to System.out
