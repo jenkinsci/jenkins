@@ -67,6 +67,7 @@ import java.security.cert.X509Certificate;
 import java.security.cert.CertificateException;
 import java.security.NoSuchAlgorithmException;
 import java.security.KeyManagementException;
+import java.security.SecureRandom;
 
 /**
  * Entry point for running a {@link Channel}. This is the main method of the slave JVM.
@@ -312,6 +313,32 @@ public class Launcher {
         // use stdin/stdout for channel communication
         ttyCheck();
 
+        if (isWindows()) {
+            /*
+                To prevent the dead lock between GetFileType from _ioinit in C runtime and blocking read that ChannelReaderThread
+                would do on stdin, load the crypto DLL first.
+
+                This is a band-aid solution to the problem. Still searching for more fundamental fix. 
+
+                02f1e750 7c90d99a ntdll!KiFastSystemCallRet
+                02f1e754 7c810f63 ntdll!NtQueryVolumeInformationFile+0xc
+                02f1e784 77c2c9f9 kernel32!GetFileType+0x7e
+                02f1e7e8 77c1f01d msvcrt!_ioinit+0x19f
+                02f1e88c 7c90118a msvcrt!__CRTDLL_INIT+0xac
+                02f1e8ac 7c91c4fa ntdll!LdrpCallInitRoutine+0x14
+                02f1e9b4 7c916371 ntdll!LdrpRunInitializeRoutines+0x344
+                02f1ec60 7c9164d3 ntdll!LdrpLoadDll+0x3e5
+                02f1ef08 7c801bbd ntdll!LdrLoadDll+0x230
+                02f1ef70 7c801d72 kernel32!LoadLibraryExW+0x18e
+                02f1ef84 7c801da8 kernel32!LoadLibraryExA+0x1f
+                02f1efa0 77de8830 kernel32!LoadLibraryA+0x94
+                02f1f05c 6d3eb1be ADVAPI32!CryptAcquireContextA+0x512
+                WARNING: Stack unwind information not available. Following frames may be wrong.
+                02f1f13c 6d99c844 java_6d3e0000!Java_sun_security_provider_NativeSeedGenerator_nativeGenerateSeed+0x6e
+             */
+            new SecureRandom().nextBoolean();
+        }
+
         // this will prevent programs from accidentally writing to System.out
         // and messing up the stream.
         OutputStream os = System.out;
@@ -384,5 +411,9 @@ public class Launcher {
         public X509Certificate[] getAcceptedIssuers() {
             return new X509Certificate[0];
         }
+    }
+
+    public static boolean isWindows() {
+        return File.pathSeparatorChar==';';
     }
 }
