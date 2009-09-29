@@ -192,7 +192,7 @@ public final class CaseResult extends TestObject implements Comparable<CaseResul
     /**
      * Gets the duration of the test, in seconds
      */
-    @Exported
+    @Exported(visibility=9)
     public float getDuration() {
         return duration;
     }
@@ -213,7 +213,7 @@ public final class CaseResult extends TestObject implements Comparable<CaseResul
     /**
      * Gets the class name of a test class.
      */
-    @Exported
+    @Exported(visibility=9)
     public String getClassName() {
         return className;
     }
@@ -240,26 +240,26 @@ public final class CaseResult extends TestObject implements Comparable<CaseResul
     }
 
 
-	@Override
-	public int getFailCount() {
-		if (!isPassed() && !isSkipped()) return 1; else return 0;
-	}
+    @Override
+    public int getFailCount() {
+        if (!isPassed() && !isSkipped()) return 1; else return 0;
+    }
 
-	@Override
-	public int getSkipCount() {
-		if (isSkipped()) return 1; else return 0;
-	}
-	
-	@Override
-	public int getPassCount() {
-		return isPassed() ? 1 : 0; 
-	}
-	
+    @Override
+    public int getSkipCount() {
+        if (isSkipped()) return 1; else return 0;
+    }
+
+    @Override
+    public int getPassCount() {
+        return isPassed() ? 1 : 0;
+    }
+
     /**
      * If this test failed, then return the build number
      * when this test started failing.
      */
-    @Exported
+    @Exported(visibility=9)
     public int getFailedSince() {
         return failedSince;
     }
@@ -272,7 +272,7 @@ public final class CaseResult extends TestObject implements Comparable<CaseResul
      * Gets the number of consecutive builds (including this)
      * that this test case has been failing.
      */
-    @Exported
+    @Exported(visibility=9)
     public int getAge() {
         if(isPassed())
             return 0;
@@ -354,7 +354,7 @@ public final class CaseResult extends TestObject implements Comparable<CaseResul
      * been configured to be skipped.
      * @return true if the test was not executed, false otherwise.
      */
-    @Exported
+    @Exported(visibility=9)
     public boolean isSkipped() {
         return skipped;
     }
@@ -363,18 +363,18 @@ public final class CaseResult extends TestObject implements Comparable<CaseResul
         return parent;
     }
     
-	public String annotate(String text) {
-		if (text == null)
-			return null;
-		text = text.replace("&", "&amp;").replace("<", "&lt;").replaceAll(
-				"\\b(https?://[^\\s)>]+)", "<a href=\"$1\">$1</a>");
-		
-		for (TestAction action: getTestActions()) {
-			text = action.annotate(text);
-		}
-		
-		return text;
-	}
+    public String annotate(String text) {
+        if (text == null)
+                return null;
+        text = text.replace("&", "&amp;").replace("<", "&lt;").replaceAll(
+                        "\\b(https?://[^\\s)>]+)", "<a href=\"$1\">$1</a>");
+
+        for (TestAction action: getTestActions()) {
+                text = action.annotate(text);
+        }
+
+        return text;
+    }
 
     @Override
     public AbstractBuild<?,?> getOwner() {
@@ -421,7 +421,7 @@ public final class CaseResult extends TestObject implements Comparable<CaseResul
         return this.getFullName().compareTo(that.getFullName());
     }
 
-    @Exported(name="status") // because stapler notices suffix 's' and remove it
+    @Exported(name="status",visibility=9) // because stapler notices suffix 's' and remove it
     public Status getStatus() {
         if (skipped) {
             return Status.SKIPPED;
