@@ -335,6 +335,9 @@ public class Launcher {
                 02f1f05c 6d3eb1be ADVAPI32!CryptAcquireContextA+0x512
                 WARNING: Stack unwind information not available. Following frames may be wrong.
                 02f1f13c 6d99c844 java_6d3e0000!Java_sun_security_provider_NativeSeedGenerator_nativeGenerateSeed+0x6e
+
+                see http://weblogs.java.net/blog/kohsuke/archive/2009/09/28/reading-stdin-may-cause-your-jvm-hang
+                for more details
              */
             new SecureRandom().nextBoolean();
         }
