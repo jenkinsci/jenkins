@@ -142,7 +142,7 @@ public class PAMSecurityRealm extends SecurityRealm {
                 else            group=String.valueOf(st.gid());
                 return FormValidation.error(user+" needs to belong to group "+group+" to read /etc/shadow");
             }
-            return FormValidation.ok();
+            return FormValidation.ok("Success");
         }
     }
 
