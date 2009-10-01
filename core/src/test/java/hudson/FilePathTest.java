@@ -98,8 +98,8 @@ public class FilePathTest extends TestCase {
 
             f.copyTo(f2);
 
-            assertTrue("could not delete target " + tmp.getPath(), f.delete());
-            assertTrue("could not delete target " + tmp2.getPath(), f2.delete());
+            f.delete();
+            f2.delete();
         }
     }
 
