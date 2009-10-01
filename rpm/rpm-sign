@@ -1,0 +1,7 @@
+#!/usr/bin/expect -f
+## rpm-sign.exp -- Sign RPMs by sending the passphrase.
+set password [lindex $argv 0]
+spawn rpm --resign [lindex $argv 1]
+expect -exact "Enter pass phrase: "
+send -- "$password\r"
+expect eof
