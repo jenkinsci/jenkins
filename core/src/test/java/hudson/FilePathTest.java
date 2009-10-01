@@ -94,12 +94,12 @@ public class FilePathTest extends TestCase {
             File tmp = File.createTempFile("testCopyFrom","");
             FilePath f = new FilePath(tmp);
             File tmp2 = File.createTempFile("testCopyTo","");
-            FilePath f2 = new FilePath(british,tmp.getPath());
+            FilePath f2 = new FilePath(british,tmp2.getPath());
 
             f.copyTo(f2);
 
-            assertTrue("could not delete target " + tmp.getPath(), tmp.delete());
-            assertTrue("could not delete target " + tmp2.getPath(), tmp2.delete());
+            assertTrue("could not delete target " + tmp.getPath(), f.delete());
+            assertTrue("could not delete target " + tmp2.getPath(), f2.delete());
         }
     }
 
