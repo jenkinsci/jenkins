@@ -46,7 +46,7 @@ THE SOFTWARE.
     <plugins>
       <plugin>
         <artifactId>maven-war-plugin</artifactId>
-        <version>2.0</version>
+        <version>2.1-beta-1</version>
         <configuration>
           <webResources>
             <resource>
@@ -65,7 +65,22 @@ THE SOFTWARE.
               <mainClass>Main</mainClass>
             </manifest>
           </archive>
+          <!--outputFileNameMapping>@{artifactId}@.@{extension}@</outputFileNameMapping-->
         </configuration>
+      </plugin>
+      <plugin>
+        <artifactId>maven-dependency-plugin</artifactId>
+        <executions>
+          <execution>
+            <phase>generate-resources</phase>
+            <goals>
+              <goal>list</goal>
+            </goals>
+            <configuration>
+              <outputFile>${basedir}/target/classes/dependencies.txt</outputFile>
+            </configuration>
+          </execution>
+        </executions>
       </plugin>
       <plugin>
         <groupId>org.jvnet.maven-antrun-extended-plugin</groupId>
@@ -96,7 +111,7 @@ THE SOFTWARE.
                 <mkdir dir="target/generated-resources" />
 
                 <!-- put executable war header -->
-                <resolveArtifact groupId="org.jvnet.hudson" artifactId="executable-war" version="1.13" type="jar" property="executable-war.jar" />
+                <resolveArtifact groupId="org.jvnet.hudson" artifactId="executable-war" version="1.14" type="jar" property="executable-war.jar" />
                 <unjar src="${executable-war.jar}" dest="target/generated-resources">
                   <patternset>
                     <include name="**/*.class" />
@@ -225,17 +240,6 @@ THE SOFTWARE.
     <contextPath>/</contextPath><!-- context path during test -->
     <port>8080</port><!-- HTTP listener port -->
   </properties>
-
-  <pluginRepositories>
-    <pluginRepository>
-      <id>java.net2</id>
-      <url>http://download.java.net/maven/2</url>
-      <releases>
-        <enabled>true</enabled>
-        <updatePolicy>never</updatePolicy>
-      </releases>
-    </pluginRepository>
-  </pluginRepositories>
 
   <profiles>
     <profile>
