@@ -64,7 +64,7 @@ public class DownloadService extends PageDecorator {
         if(Hudson.getInstance().hasPermission(Hudson.READ)) {
             long now = System.currentTimeMillis();
             for (Downloadable d : Downloadable.all()) {
-                if(d.getDue()<now) {
+                if(d.getDue()<now && d.lastAttempt+10*1000<now) {
                     buf.append("<script>")
                        .append("Behaviour.addLoadEvent(function() {")
                        .append("  downloadService.download(")
@@ -79,6 +79,7 @@ public class DownloadService extends PageDecorator {
                        .append("null);")
                        .append("});")
                        .append("</script>");
+                    d.lastAttempt = now;
                 }
             }
         }
@@ -110,6 +111,7 @@ public class DownloadService extends PageDecorator {
         private final String url;
         private final long interval;
         private volatile long due=0;
+        private volatile long lastAttempt=Long.MIN_VALUE;
 
         /**
          *
