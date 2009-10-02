@@ -65,7 +65,9 @@ public class DownloadService extends PageDecorator {
             long now = System.currentTimeMillis();
             for (Downloadable d : Downloadable.all()) {
                 if(d.getDue()<now) {
-                    buf.append("<script>downloadService.download(")
+                    buf.append("<script>")
+                       .append("Behaviour.addLoadEvent(function() {")
+                       .append("  downloadService.download(")
                        .append(QuotedStringTokenizer.quote(d.getId()))
                        .append(',')
                        .append(QuotedStringTokenizer.quote(d.getUrl()))
@@ -74,7 +76,9 @@ public class DownloadService extends PageDecorator {
                        .append(',')
                        .append(QuotedStringTokenizer.quote(Stapler.getCurrentRequest().getContextPath()+'/'+getUrl()+"/byId/"+d.getId()+"/postBack"))
                        .append(',')
-                       .append("null);</script>");
+                       .append("null);")
+                       .append("});")
+                       .append("</script>");
                 }
             }
         }
