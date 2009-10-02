@@ -85,7 +85,7 @@ public abstract class NodeMonitor implements ExtensionPoint, Describable<NodeMon
     }
 
     public AbstractNodeMonitorDescriptor<?> getDescriptor() {
-        return (AbstractNodeMonitorDescriptor<?>)Hudson.getInstance().getDescriptor(getClass());
+        return (AbstractNodeMonitorDescriptor<?>)Hudson.getInstance().getDescriptorOrDie(getClass());
     }
 
     public Object data(Computer c) {

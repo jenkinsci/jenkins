@@ -66,7 +66,7 @@ public abstract class NodeProperty<N extends Node> implements Describable<NodePr
     protected void setNode(N node) { this.node = node; }
 
     public NodePropertyDescriptor getDescriptor() {
-        return (NodePropertyDescriptor)Hudson.getInstance().getDescriptor(getClass());
+        return (NodePropertyDescriptor)Hudson.getInstance().getDescriptorOrDie(getClass());
     }
 
     /**

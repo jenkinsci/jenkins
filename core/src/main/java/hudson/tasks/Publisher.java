@@ -25,6 +25,7 @@ package hudson.tasks;
 
 import hudson.DescriptorExtensionList;
 import hudson.Extension;
+import hudson.Launcher;
 import hudson.model.Action;
 import hudson.model.Build;
 import hudson.model.BuildListener;
@@ -32,6 +33,7 @@ import hudson.model.Describable;
 import hudson.model.Project;
 import hudson.model.Descriptor;
 import hudson.model.Hudson;
+import hudson.model.AbstractBuild;
 
 import java.util.List;
 import java.util.ArrayList;
@@ -102,7 +104,7 @@ public abstract class Publisher extends BuildStepCompatibilityLayer implements B
      * <p>
      * So normally, that is the preferrable behavior, but in a few cases
      * this is problematic. One of such cases is when a publisher needs to
-     * trigger other builds, whcih in turn need to see this build as a
+     * trigger other builds, which in turn need to see this build as a
      * completed build. Those plugins that need to do this can return true
      * from this method, so that the {@link #perform(AbstractBuild, Launcher, BuildListener)} 
      * method is called after the build is marked as completed.
@@ -119,7 +121,7 @@ public abstract class Publisher extends BuildStepCompatibilityLayer implements B
     }
 
     public Descriptor<Publisher> getDescriptor() {
-        return Hudson.getInstance().getDescriptor(getClass());
+        return Hudson.getInstance().getDescriptorOrDie(getClass());
     }
 
     /**

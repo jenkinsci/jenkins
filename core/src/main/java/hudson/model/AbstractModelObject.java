@@ -76,7 +76,9 @@ public abstract class AbstractModelObject implements SearchableModelObject {
      * Convenience method to verify that the current request is a POST request.
      */
     protected final void requirePOST() throws ServletException {
-        String method = Stapler.getCurrentRequest().getMethod();
+        StaplerRequest req = Stapler.getCurrentRequest();
+        if (req==null)  return; // invoked outside the context of servlet
+        String method = req.getMethod();
         if(!method.equalsIgnoreCase("POST"))
             throw new ServletException("Must be POST, Can't be "+method);
     }

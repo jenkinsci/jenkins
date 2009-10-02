@@ -176,7 +176,7 @@ public abstract class AuthorizationStrategy implements Describable<Authorization
     public abstract Collection<String> getGroups();
 
     public Descriptor<AuthorizationStrategy> getDescriptor() {
-        return Hudson.getInstance().getDescriptor(getClass());
+        return Hudson.getInstance().getDescriptorOrDie(getClass());
     }
 
     /**

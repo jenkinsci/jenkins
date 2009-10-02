@@ -171,7 +171,7 @@ public abstract class FileSystemProvisioner implements ExtensionPoint, Describab
     public abstract WorkspaceSnapshot snapshot(AbstractBuild<?,?> build, FilePath ws, TaskListener listener) throws IOException, InterruptedException;
 
     public FileSystemProvisionerDescriptor getDescriptor() {
-        return (FileSystemProvisionerDescriptor) Hudson.getInstance().getDescriptor(getClass());
+        return (FileSystemProvisionerDescriptor) Hudson.getInstance().getDescriptorOrDie(getClass());
     }
 
     /**

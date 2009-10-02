@@ -213,11 +213,11 @@ public class UpdateCenter extends AbstractModelObject {
         rsp.sendRedirect2(".");
     }
 
-    private void addJob(UpdateCenterJob job) {
+    private Future<UpdateCenterJob> addJob(UpdateCenterJob job) {
         // the first job is always the connectivity check
         if(jobs.size()==0)
-            new ConnectionCheckJob().schedule();
-        job.schedule();
+            new ConnectionCheckJob().submit();
+        return job.submit();
     }
 
     /**
@@ -504,15 +504,23 @@ public class UpdateCenter extends AbstractModelObject {
         }
 
         /**
+         * @deprecated as of 1.326
+         *      Use {@link #deploy()}. 
+         */
+        public void install() {
+            deploy();
+        }
+
+        /**
          * Schedules the installation of this plugin.
          *
          * <p>
          * This is mainly intended to be called from the UI. The actual installation work happens
          * asynchronously in another thread.
          */
-        public void install() {
+        public Future<UpdateCenterJob> deploy() {
             Hudson.getInstance().checkPermission(Hudson.ADMINISTER);
-            addJob(new InstallationJob(this, Hudson.getAuthentication()));
+            return addJob(new InstallationJob(this, Hudson.getAuthentication()));
         }
 
         /**
@@ -706,10 +714,23 @@ public class UpdateCenter extends AbstractModelObject {
      * This object will have the <tt>row.jelly</tt> which renders the job on UI.
      */
     public abstract class UpdateCenterJob implements Runnable {
+        /**
+         * @deprecated as of 1.326
+         *      Use {@link #submit()} instead.
+         */
         public void schedule() {
+            submit();
+        }
+
+        /**
+         * Schedules this job for an execution
+         * @return
+         *      {@link Future} to keeps track of the status of the execution.
+         */
+        public Future<UpdateCenterJob> submit() {
             LOGGER.fine("Scheduling "+this+" to installerService");
             jobs.add(this);
-            installerService.submit(this);
+            return installerService.submit(this,this);
         }
     }
 

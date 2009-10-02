@@ -170,7 +170,7 @@ public abstract class View extends AbstractModelObject implements AccessControll
     }
 
     public ViewDescriptor getDescriptor() {
-        return (ViewDescriptor)Hudson.getInstance().getDescriptor(getClass());
+        return (ViewDescriptor)Hudson.getInstance().getDescriptorOrDie(getClass());
     }
 
     public String getDisplayName() {

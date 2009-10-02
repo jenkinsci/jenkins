@@ -121,7 +121,7 @@ public abstract class ParameterDefinition implements
      * {@inheritDoc}
      */
     public ParameterDescriptor getDescriptor() {
-        return (ParameterDescriptor)Hudson.getInstance().getDescriptor(getClass());
+        return (ParameterDescriptor)Hudson.getInstance().getDescriptorOrDie(getClass());
     }
 
     /**

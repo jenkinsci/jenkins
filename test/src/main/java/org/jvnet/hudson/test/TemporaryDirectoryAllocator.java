@@ -90,14 +90,14 @@ public class TemporaryDirectoryAllocator {
 
         new Thread("Disposing "+base) {
             public void run() {
-                try {
-                    for (File dir : tbr)
+                for (File dir : tbr)
+                    try {
                         new FilePath(dir).deleteRecursive();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
             }
         }.start();
     }

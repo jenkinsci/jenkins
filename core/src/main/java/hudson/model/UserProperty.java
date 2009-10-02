@@ -64,7 +64,7 @@ public abstract class UserProperty implements Describable<UserProperty>, Extensi
 
     // descriptor must be of the UserPropertyDescriptor type
     public UserPropertyDescriptor getDescriptor() {
-        return (UserPropertyDescriptor)Hudson.getInstance().getDescriptor(getClass());
+        return (UserPropertyDescriptor)Hudson.getInstance().getDescriptorOrDie(getClass());
     }
 
     /**

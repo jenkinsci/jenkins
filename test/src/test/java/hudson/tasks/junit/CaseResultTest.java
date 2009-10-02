@@ -40,7 +40,7 @@ import org.jvnet.hudson.test.TestBuilder;
 import org.jvnet.hudson.test.ExtractResourceSCM;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import com.gargoylesoftware.htmlunit.html.HtmlElement;
-
+import com.gargoylesoftware.htmlunit.xml.XmlPage;
 import java.io.IOException;
 
 /**
@@ -66,16 +66,7 @@ public class CaseResultTest extends HudsonTestCase {
 
     @Email("http://www.nabble.com/NPE-%28Fatal%3A-Null%29-in-recording-junit-test-results-td23562964.html")
     public void testIssue20090516() throws Exception {
-        FreeStyleProject p = createFreeStyleProject();
-        p.getBuildersList().add(new TestBuilder() {
-            public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
-                build.getWorkspace().child("junit.xml").copyFrom(
-                    getClass().getResource("junit-report-20090516.xml"));
-                return true;
-            }
-        });
-        p.getPublishersList().add(new JUnitResultArchiver("*.xml"));
-        FreeStyleBuild b = assertBuildStatus(Result.UNSTABLE, p.scheduleBuild2(0).get());
+        FreeStyleBuild b = configureTestBuild(null);
         TestResult tr = b.getAction(TestResultAction.class).getResult();
         assertEquals(3,tr.getFailedTests().size());
         CaseResult cr = tr.getFailedTests().get(0);
@@ -111,16 +102,7 @@ public class CaseResultTest extends HudsonTestCase {
      */
     @Bug(4257)
     public void testFreestyleErrorMsgAndStacktraceRender() throws Exception {
-        FreeStyleProject p = createFreeStyleProject("render-test");
-        p.getBuildersList().add(new TestBuilder() {
-            public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
-                build.getWorkspace().child("junit.xml").copyFrom(
-                    getClass().getResource("junit-report-20090516.xml"));
-                return true;
-            }
-        });
-        p.getPublishersList().add(new JUnitResultArchiver("*.xml"));
-	FreeStyleBuild b = assertBuildStatus(Result.UNSTABLE, p.scheduleBuild2(0).get());
+        FreeStyleBuild b = configureTestBuild("render-test");
         TestResult tr = b.getAction(TestResultAction.class).getResult();
         assertEquals(3,tr.getFailedTests().size());
         CaseResult cr = tr.getFailedTests().get(1);
@@ -163,7 +145,94 @@ public class CaseResultTest extends HudsonTestCase {
 	assertNotNull("Error stacktrace should not be null", cr.getErrorStackTrace());
     }
 
+    /**
+     * Verify fields show up at the correct visibility in the remote API
+     */
 
+    private static final String[] MAX_VISIBILITY_FIELDS = { "name" };
+    private static final String[] REDUCED_VISIBILITY_FIELDS = { "stdout", "stderr", "errorStackTrace", "errorDetails" };
+    private static final String[] OTHER_FIELDS = { "duration", "className", "failedSince", "age", "skipped", "status" };
+
+    @Email("http://www.nabble.com/Change-remote-API-visibility-for-CaseResult.getStdout-getStderr-td25619046.html")
+    public void testRemoteApiDefaultVisibility() throws Exception {
+        FreeStyleBuild b = configureTestBuild("test-remoteapi");
+
+        XmlPage page = (XmlPage) new WebClient().goTo("job/test-remoteapi/1/testReport/org.twia.vendor/VendorManagerTest/testCreateAdjustingFirm/api/xml","application/xml");
+
+        int found = 0;
+
+        found = page.getByXPath(composeXPath(MAX_VISIBILITY_FIELDS)).size();
+        assertTrue("Should have found an element, but found " + found, found > 0);
+
+        found = page.getByXPath(composeXPath(REDUCED_VISIBILITY_FIELDS)).size();
+        assertTrue("Should have found an element, but found " + found, found > 0);
+
+        found = page.getByXPath(composeXPath(OTHER_FIELDS)).size();
+        assertTrue("Should have found an element, but found " + found, found > 0);
+    }
+    
+    @Email("http://www.nabble.com/Change-remote-API-visibility-for-CaseResult.getStdout-getStderr-td25619046.html")
+    public void testRemoteApiNoDetails() throws Exception {
+        FreeStyleBuild b = configureTestBuild("test-remoteapi");
+
+        XmlPage page = (XmlPage) new WebClient().goTo("job/test-remoteapi/1/testReport/org.twia.vendor/VendorManagerTest/testCreateAdjustingFirm/api/xml?depth=-1","application/xml");
+
+        int found = 0;
+
+        found = page.getByXPath(composeXPath(MAX_VISIBILITY_FIELDS)).size();
+        assertTrue("Should have found an element, but found " + found, found > 0);
+
+        found = page.getByXPath(composeXPath(REDUCED_VISIBILITY_FIELDS)).size();
+        assertTrue("Should have found 0 elements, but found " + found, found == 0);
+
+        found = page.getByXPath(composeXPath(OTHER_FIELDS)).size();
+        assertTrue("Should have found an element, but found " + found, found > 0);
+   }
+    
+    @Email("http://www.nabble.com/Change-remote-API-visibility-for-CaseResult.getStdout-getStderr-td25619046.html")
+    public void testRemoteApiNameOnly() throws Exception {
+        FreeStyleBuild b = configureTestBuild("test-remoteapi");
+
+        XmlPage page = (XmlPage) new WebClient().goTo("job/test-remoteapi/1/testReport/org.twia.vendor/VendorManagerTest/testCreateAdjustingFirm/api/xml?depth=-10","application/xml");
+
+        int found = 0;
+
+        found = page.getByXPath(composeXPath(MAX_VISIBILITY_FIELDS)).size();
+        assertTrue("Should have found an element, but found " + found, found > 0);
+
+        found = page.getByXPath(composeXPath(REDUCED_VISIBILITY_FIELDS)).size();
+        assertTrue("Should have found 0 elements, but found " + found, found == 0);
+
+        found = page.getByXPath(composeXPath(OTHER_FIELDS)).size();
+        assertTrue("Should have found 0 elements, but found " + found, found == 0);
+    }
+
+    private FreeStyleBuild configureTestBuild(String projectName) throws Exception {
+        FreeStyleProject p = projectName == null ? createFreeStyleProject() : createFreeStyleProject(projectName);
+        p.getBuildersList().add(new TestBuilder() {
+            public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
+                build.getWorkspace().child("junit.xml").copyFrom(
+                    getClass().getResource("junit-report-20090516.xml"));
+                return true;
+            }
+        });
+        p.getPublishersList().add(new JUnitResultArchiver("*.xml"));
+        return assertBuildStatus(Result.UNSTABLE, p.scheduleBuild2(0).get());
+    }
+
+    private String composeXPath(String[] fields) throws Exception {
+        StringBuilder tmp = new StringBuilder(100);
+        for ( String f : fields ) {
+            if (tmp.length() > 0 ) {
+                tmp.append("|");
+            }
+            tmp.append("//caseResult/");
+            tmp.append(f);
+        }
+
+        return tmp.toString();
+    }
+    
     private void assertOutput(CaseResult cr, String in, String out) throws Exception {
         assertEquals(out, cr.annotate(in));
     }

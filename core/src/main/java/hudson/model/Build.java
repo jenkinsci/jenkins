@@ -29,6 +29,8 @@ import hudson.tasks.BuildStep;
 import hudson.tasks.BuildTrigger;
 import hudson.tasks.BuildWrapper;
 import hudson.tasks.Builder;
+import hudson.tasks.Recorder;
+import hudson.tasks.Notifier;
 
 import java.io.File;
 import java.io.IOException;
@@ -40,6 +42,39 @@ import java.util.logging.Logger;
 
 /**
  * A build of a {@link Project}.
+ *
+ * <h2>Steps of a build</h2>
+ * <p>
+ * Roughly speaking, a {@link Build} goes through the following stages:
+ *
+ * <dl>
+ * <dt>SCM checkout
+ * <dd>Hudson decides which directory to use for a build, then the source code is checked out
+ *
+ * <dt>Pre-build steps
+ * <dd>Everyone gets their {@link BuildStep#prebuild(AbstractBuild, BuildListener)} invoked
+ * to indicate that the build is starting
+ *
+ * <dt>Build wrapper set up
+ * <dd>{@link BuildWrapper#setUp(AbstractBuild, Launcher, BuildListener)} is invoked. This is normally
+ * to prepare an environment for the build.
+ *
+ * <dt>Builder runs
+ * <dd>{@link Builder#perform(AbstractBuild, Launcher, BuildListener)} is invoked. This is where
+ * things that are useful to users happen, like calling Ant, Make, etc.
+ *
+ * <dt>Recorder runs
+ * <dd>{@link Recorder#perform(AbstractBuild, Launcher, BuildListener)} is invoked. This is normally
+ * to record the output from the build, such as test results.
+ *
+ * <dt>Notifier runs
+ * <dd>{@link Notifier#perform(AbstractBuild, Launcher, BuildListener)} is invoked. This is normally
+ * to send out notifications, based on the results determined so far.
+ * </dl>
+ *
+ * <p>
+ * And beyond that, the build is considered complete, and from then on {@link Build} object is there to
+ * keep the record of what happened in this build. 
  *
  * @author Kohsuke Kawaguchi
  */

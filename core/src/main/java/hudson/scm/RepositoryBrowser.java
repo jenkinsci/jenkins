@@ -95,7 +95,7 @@ public abstract class RepositoryBrowser<E extends ChangeLogSet.Entry> implements
     }
 
     public Descriptor<RepositoryBrowser<?>> getDescriptor() {
-        return Hudson.getInstance().getDescriptor(getClass());
+        return Hudson.getInstance().getDescriptorOrDie(getClass());
     }
 
     /**

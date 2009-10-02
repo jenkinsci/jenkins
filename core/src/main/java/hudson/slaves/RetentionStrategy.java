@@ -83,7 +83,7 @@ public abstract class RetentionStrategy<T extends Computer> implements Describab
     }
 
     public Descriptor<RetentionStrategy<?>> getDescriptor() {
-        return Hudson.getInstance().getDescriptor(getClass());
+        return Hudson.getInstance().getDescriptorOrDie(getClass());
     }
 
     /**

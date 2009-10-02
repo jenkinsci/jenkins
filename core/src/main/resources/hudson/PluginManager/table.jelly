@@ -35,11 +35,11 @@ THE SOFTWARE.
     <l:main-panel>
       <form method="post" action="install">
         <local:tabBar page="${attrs.page}" xmlns:local="/hudson/PluginManager">
-          <table id="plugins" class="sortable pane bigtable" style="margin-top:0px; border-top: none;">
             <tr style="border-top: 0px;">
               <th width="32" tooltip="${%Check to install the plugin}">${%Install}</th>
               <th initialSortDir="down">${%Name}</th>
               <th>${%Version}</th>
+              <j:if test="${attrs.page=='updates'}"><th>${%Installed}</th></j:if>
             </tr>
             <j:choose>
               <j:when test="${!empty(list)}">
@@ -58,6 +58,17 @@ THE SOFTWARE.
 		      </j:if>							
 		    </td>
                     <td class="pane"><st:out value="${p.version}" /></td>
+                    <j:if test="${attrs.page=='updates'}">
+                      <td>
+                        <j:choose><j:when test="${p.installed.active}">
+                          <st:out value="${p.installed.version}" />
+                        </j:when><j:otherwise>
+                          <span title="${%Inactive}">
+                            (<st:out value="${p.installed.version}" />)
+                          </span>
+                        </j:otherwise></j:choose>
+                      </td>
+                    </j:if>
                   </tr>
                 </j:forEach>
               </j:when>
@@ -71,15 +82,14 @@ THE SOFTWARE.
                 </tr>
               </j:otherwise>
             </j:choose>
-          </table>
-
-          <j:if test="${!empty(list)}">
-            <div style="float:right; margin-top:1em">
-              <f:submit value="${%Install}" />
-            </div>
-          </j:if>
-          <d:invokeBody />
         </local:tabBar>
+
+        <j:if test="${!empty(list)}">
+          <div style="float:right; margin-top:1em">
+            <f:submit value="${%Install}" />
+          </div>
+        </j:if>
+        <d:invokeBody />
       </form>
     </l:main-panel>
   </l:layout>

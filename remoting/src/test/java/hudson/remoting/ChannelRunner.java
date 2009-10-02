@@ -37,6 +37,7 @@ import java.net.URLClassLoader;
 import java.net.URL;
 
 import org.apache.commons.io.output.TeeOutputStream;
+import org.apache.commons.io.FileUtils;
 
 /**
  * Hides the logic of starting/stopping a channel for test.
@@ -121,8 +122,8 @@ interface ChannelRunner {
             System.out.println("forking a new process");
             // proc = Runtime.getRuntime().exec("java -Xdebug -Xrunjdwp:transport=dt_socket,server=y,address=8000 hudson.remoting.Launcher");
 
-
-            proc = Runtime.getRuntime().exec("java -cp "+getClasspath()+" hudson.remoting.Launcher");
+            System.out.println(getClasspath());
+            proc = Runtime.getRuntime().exec(new String[]{"java","-cp",getClasspath(),"hudson.remoting.Launcher"});
 
             copier = new Copier("copier",proc.getErrorStream(),System.out);
             copier.start();
@@ -162,7 +163,7 @@ interface ChannelRunner {
             URLClassLoader ucl = (URLClassLoader)getClass().getClassLoader();
             for (URL url : ucl.getURLs()) {
                 if (buf.length()>0) buf.append(File.pathSeparatorChar);
-                buf.append(url.getPath()); // assume all of them are file URLs
+                buf.append(FileUtils.toFile(url)); // assume all of them are file URLs
             }
             return buf.toString();
         }

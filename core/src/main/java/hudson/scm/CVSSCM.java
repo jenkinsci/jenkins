@@ -1558,7 +1558,7 @@ public class CVSSCM extends SCM implements Serializable {
         }
 
         public Descriptor<TagAction> getDescriptor() {
-            return Hudson.getInstance().getDescriptor(getClass());
+            return Hudson.getInstance().getDescriptorOrDie(getClass());
         }
     }
 

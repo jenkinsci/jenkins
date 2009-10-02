@@ -35,7 +35,6 @@ public class JobTest extends HudsonTestCase {
 
     @SuppressWarnings("unchecked")
     public void testJobPropertySummaryIsShownInMainPage() throws Exception {
-        
         AbstractProject project = createFreeStyleProject();
         project.addProperty(new JobPropertyImpl("NeedleInPage"));
                 
@@ -44,7 +43,8 @@ public class JobTest extends HudsonTestCase {
     }
     
     @SuppressWarnings("unchecked")
-    public static class JobPropertyImpl extends JobProperty {
+    public static class JobPropertyImpl extends JobProperty<Job<?,?>> {
+        public static DescriptorImpl DESCRIPTOR = new DescriptorImpl();
         private final String testString;
         
         public JobPropertyImpl(String testString) {
@@ -53,6 +53,17 @@ public class JobTest extends HudsonTestCase {
         
         public String getTestString() {
             return testString;
-        }        
+        }
+
+        @Override
+        public JobPropertyDescriptor getDescriptor() {
+            return DESCRIPTOR;
+        }
+
+        private static final class DescriptorImpl extends JobPropertyDescriptor {
+            public String getDisplayName() {
+                return "";
+            }
+        }
     }
 }

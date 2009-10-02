@@ -191,7 +191,7 @@ public abstract class BuildWrapper implements ExtensionPoint, Describable<BuildW
     }
 
     public Descriptor<BuildWrapper> getDescriptor() {
-        return (Descriptor<BuildWrapper>) Hudson.getInstance().getDescriptor(getClass());
+        return (Descriptor<BuildWrapper>) Hudson.getInstance().getDescriptorOrDie(getClass());
 
     }
 
