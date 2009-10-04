@@ -45,6 +45,10 @@ import java.security.GeneralSecurityException;
  * Note that since the cryptography relies on {@link Hudson#getSecretKey()}, this is not meant as a protection
  * against code running in the same VM, nor against an attacker who has local file system access. 
  *
+ * <p>
+ * {@link Secret}s can correctly read-in plain text password, so this allows the existing
+ * String field to be updated to {@link Secret}.
+ *
  * @author Kohsuke Kawaguchi
  */
 public final class Secret {
@@ -155,7 +159,7 @@ public final class Secret {
         }
 
         public Object unmarshal(HierarchicalStreamReader reader, final UnmarshallingContext context) {
-            return Secret.decrypt(reader.getValue());
+            return fromString(reader.getValue());
         }
     }
 

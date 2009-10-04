@@ -71,4 +71,19 @@ public class SecretTest extends TestCase {
         Object o = Hudson.XSTREAM.fromXML(xml);
         assertEquals(o,s);
     }
+
+    public static class Foo {
+        Secret password;
+    }
+
+    /**
+     * Makes sure the serialization form is backward compatible with String.
+     */
+    public void testCompatibilityFromString() {
+        String tagName = Foo.class.getName().replace("$","-");
+        String xml = "<"+tagName+"><password>secret</password></"+tagName+">";
+        Foo foo = new Foo();
+        Hudson.XSTREAM.fromXML(xml, foo);
+        assertEquals("secret",foo.password.toString());
+    }
 }
