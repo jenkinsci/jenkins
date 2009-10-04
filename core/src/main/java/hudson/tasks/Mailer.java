@@ -392,6 +392,13 @@ public class Mailer extends Notifier {
             return doAddressCheck(value);
         }
 
+        public FormValidation doCheckDefaultSuffix(@QueryParameter String value) {
+            if (value.matches("@[A-Za-z0-9.\\-]+") || Util.fixEmptyAndTrim(value)==null)
+                return FormValidation.ok();
+            else
+                return FormValidation.error("This field should be '@' followed by a domain name.");
+        }
+
         /**
          * Send an email to the admin address
          * @throws IOException
