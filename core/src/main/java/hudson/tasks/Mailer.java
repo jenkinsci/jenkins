@@ -27,6 +27,7 @@ import hudson.Launcher;
 import hudson.Functions;
 import hudson.Extension;
 import hudson.Util;
+import static hudson.Util.fixEmptyAndTrim;
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
 import hudson.model.BuildListener;
@@ -57,6 +58,8 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 
 import net.sf.json.JSONObject;
 
@@ -221,8 +224,11 @@ public class Mailer extends Notifier {
             return createSession(smtpHost,smtpPort,useSsl,smtpAuthUsername,smtpAuthPassword);
         }
         private static Session createSession(String smtpHost, String smtpPort, boolean useSsl, String smtpAuthUserName, Secret smtpAuthPassword) {
+            smtpPort = fixEmptyAndTrim(smtpPort);
+            smtpAuthUserName = fixEmptyAndTrim(smtpAuthUserName);
+
             Properties props = new Properties(System.getProperties());
-            if(smtpHost!=null)
+            if(fixEmptyAndTrim(smtpHost)!=null)
                 props.put("mail.smtp.host",smtpHost);
             if (smtpPort!=null) {
                 props.put("mail.smtp.port", smtpPort);
@@ -251,7 +257,8 @@ public class Mailer extends Notifier {
             props.put("mail.smtp.timeout","60000");
             props.put("mail.smtp.connectiontimeout","60000");
 
-            return Session.getInstance(props,getAuthenticator(smtpAuthUserName,smtpAuthPassword.toString()));
+            return Session.getInstance(props,getAuthenticator(smtpAuthUserName,
+                    smtpAuthPassword!=null ? smtpAuthPassword.toString() : null));
         }
 
         private static Authenticator getAuthenticator(final String smtpAuthUserName, final String smtpAuthPassword) {
@@ -314,7 +321,7 @@ public class Mailer extends Notifier {
         }
 
         public String getSmtpAuthPassword() {
-            return smtpAuthPassword.toString();
+            return smtpAuthPassword!=null ? smtpAuthPassword.toString() : null;
         }
         
         public boolean getUseSsl() {
@@ -392,12 +399,22 @@ public class Mailer extends Notifier {
             }
         }
 
+        public FormValidation doCheckSmtpServer(@QueryParameter String value) {
+            try {
+                if (fixEmptyAndTrim(value)!=null)
+                    InetAddress.getByName(value);
+                return FormValidation.ok();
+            } catch (UnknownHostException e) {
+                return FormValidation.error("Unknown host name: "+value);
+            }
+        }
+
         public FormValidation doCheckAdminAddress(@QueryParameter String value) {
             return doAddressCheck(value);
         }
 
         public FormValidation doCheckDefaultSuffix(@QueryParameter String value) {
-            if (value.matches("@[A-Za-z0-9.\\-]+") || Util.fixEmptyAndTrim(value)==null)
+            if (value.matches("@[A-Za-z0-9.\\-]+") || fixEmptyAndTrim(value)==null)
                 return FormValidation.ok();
             else
                 return FormValidation.error("This field should be '@' followed by a domain name.");
