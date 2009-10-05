@@ -34,7 +34,7 @@ THE SOFTWARE.
 			
 			var rqo = new XMLHttpRequest();
 			rqo.open('GET', query, true);
-			rqo.onreadystatechange = function() { element.innerHTML = rqo.responseText; }  
+			rqo.onreadystatechange = function() { element.innerHTML = rqo.responseText.replace("<", "&lt;").replace(">", "&gt;"); }  
 			rqo.send(null);
 		}
 		
@@ -57,9 +57,9 @@ THE SOFTWARE.
         <tr>
           <td class="pane">
 			<a id="test-${f.fullName}-showlink" href="#"
-				onclick='javascript:showStackTrace("test-${f.fullName}","${f.getRelativePathFrom(it)}/summary")'>&gt;&gt;&gt;</a>
+				onclick='showStackTrace("test-${f.fullName}","${f.getRelativePathFrom(it)}/summary"); return false;'>&gt;&gt;&gt;</a>
 			<a id="test-${f.fullName}-hidelink" href="#" style="display:none"
-				onclick='javascript:hideStackTrace("test-${f.fullName}")'>&lt;&lt;&lt;</a>
+				onclick='hideStackTrace("test-${f.fullName}"); return false;'>&lt;&lt;&lt;</a>
           	<st:nbsp/>
             <a href="${f.getRelativePathFrom(it)}"><st:out value="${f.fullName}"/></a>
           	<st:nbsp/>
