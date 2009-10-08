@@ -66,6 +66,22 @@ public class MavenMultiModuleTest extends HudsonTestCase {
     }
 
     /**
+     * NPE in {@code getChangeSetFor(m)} in {@link MavenModuleSetBuild} when incremental build is
+     * enabled and a new module is added.
+     */
+    public void testNewModMultiModMaven() throws Exception {
+        configureDefaultMaven("apache-maven-2.2.1");
+        MavenModuleSet m = createMavenProject();
+        m.getReporters().add(new TestReporter());
+	m.setScm(new ExtractResourceWithChangesSCM(getClass().getResource("maven-multimod.zip"),
+						   getClass().getResource("maven-multimod-changes.zip")));
+
+	m.setIncrementalBuild(true);
+
+	assertBuildStatusSuccess(m.scheduleBuild2(0).get());
+    }
+
+    /**
      * When "-N' or "--non-recursive" show up in the goals, any child modules should be ignored.
      */
     @Bug(4491)
