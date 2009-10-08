@@ -30,6 +30,7 @@ import hudson.Util;
 import hudson.Launcher;
 import hudson.util.FormValidation;
 import hudson.util.ArgumentListBuilder;
+import hudson.util.IOException2;
 import hudson.model.Node;
 import hudson.model.TaskListener;
 import hudson.model.DownloadService.Downloadable;
@@ -282,70 +283,81 @@ public class JDKInstaller extends ToolInstaller {
     @SuppressWarnings("unchecked") // dom4j doesn't do generics, apparently... should probably switch to XOM
     private HttpURLConnection locateStage1(Platform platform, CPU cpu) throws IOException {
         URL url = new URL("https://cds.sun.com/is-bin/INTERSHOP.enfinity/WFS/CDS-CDS_Developer-Site/en_US/-/USD/ViewProductDetail-Start?ProductRef="+id);
-        HttpURLConnection con = (HttpURLConnection) url.openConnection();
-        String cookie = con.getHeaderField("Set-Cookie");
-        LOGGER.fine("Cookie="+cookie);
+        String cookie;
+        Element form;
+        try {
+            HttpURLConnection con = (HttpURLConnection) url.openConnection();
+            cookie = con.getHeaderField("Set-Cookie");
+            LOGGER.fine("Cookie="+cookie);
 
-        Tidy tidy = new Tidy();
-        tidy.setErrout(new PrintWriter(new NullWriter()));
-        DOMReader domReader = new DOMReader();
-        Document dom = domReader.read(tidy.parseDOM(con.getInputStream(), null));
+            Tidy tidy = new Tidy();
+            tidy.setErrout(new PrintWriter(new NullWriter()));
+            DOMReader domReader = new DOMReader();
+            Document dom = domReader.read(tidy.parseDOM(con.getInputStream(), null));
 
-        Element form=null;
-        for (Element e : (List<Element>)dom.selectNodes("//form")) {
-            String action = e.attributeValue("action");
-            LOGGER.fine("Found form:"+action);
-            if(action.contains("ViewFilteredProducts")) {
-                form = e;
-                break;
+            form = null;
+            for (Element e : (List<Element>)dom.selectNodes("//form")) {
+                String action = e.attributeValue("action");
+                LOGGER.fine("Found form:"+action);
+                if(action.contains("ViewFilteredProducts")) {
+                    form = e;
+                    break;
+                }
             }
+        } catch (IOException e) {
+            throw new IOException2("Failed to access "+url,e);
         }
 
-        con = (HttpURLConnection) new URL(form.attributeValue("action")).openConnection();
-        con.setRequestMethod("POST");
-        con.setDoOutput(true);
-        con.setRequestProperty("Cookie",cookie);
-        con.setRequestProperty("Content-Type","application/x-www-form-urlencoded");
-        PrintStream os = new PrintStream(con.getOutputStream());
+        url = new URL(form.attributeValue("action"));
+        try {
+            HttpURLConnection con = (HttpURLConnection) url.openConnection();
+            con.setRequestMethod("POST");
+            con.setDoOutput(true);
+            con.setRequestProperty("Cookie",cookie);
+            con.setRequestProperty("Content-Type","application/x-www-form-urlencoded");
+            PrintStream os = new PrintStream(con.getOutputStream());
 
-        // select platform
-        String primary=null,secondary=null;
-        Element p = (Element)form.selectSingleNode(".//select[@id='dnld_platform']");
-        for (Element opt : (List<Element>)p.elements("option")) {
-            String value = opt.attributeValue("value");
-            String vcap = value.toUpperCase(Locale.ENGLISH);
-            if(!platform.is(vcap))  continue;
-            switch (cpu.accept(vcap)) {
-            case PRIMARY:   primary = value;break;
-            case SECONDARY: secondary=value;break;
-            case UNACCEPTABLE:  break;
+            // select platform
+            String primary=null,secondary=null;
+            Element p = (Element)form.selectSingleNode(".//select[@id='dnld_platform']");
+            for (Element opt : (List<Element>)p.elements("option")) {
+                String value = opt.attributeValue("value");
+                String vcap = value.toUpperCase(Locale.ENGLISH);
+                if(!platform.is(vcap))  continue;
+                switch (cpu.accept(vcap)) {
+                case PRIMARY:   primary = value;break;
+                case SECONDARY: secondary=value;break;
+                case UNACCEPTABLE:  break;
+                }
             }
-        }
-        if(primary==null)   primary=secondary;
-        if(primary==null)
+            if(primary==null)   primary=secondary;
+            if(primary==null)
             throw new AbortException("Couldn't find the right download for "+platform+" and "+ cpu +" combination");
-        os.print(p.attributeValue("name")+'='+primary);
-        LOGGER.fine("Platform choice:"+primary);
+            os.print(p.attributeValue("name")+'='+primary);
+            LOGGER.fine("Platform choice:"+primary);
 
-        // select language
-        Element l = (Element)form.selectSingleNode(".//select[@id='dnld_language']");
-        if (l != null) {
-            os.print("&"+l.attributeValue("name")+"="+l.element("option").attributeValue("value"));
-        }
+            // select language
+            Element l = (Element)form.selectSingleNode(".//select[@id='dnld_language']");
+            if (l != null) {
+                os.print("&"+l.attributeValue("name")+"="+l.element("option").attributeValue("value"));
+            }
 
-        // the rest
-        for (Element e : (List<Element>)form.selectNodes(".//input")) {
-            os.print('&');
-            os.print(e.attributeValue("name"));
-            os.print('=');
-            String value = e.attributeValue("value");
-            if(value==null)
-                os.print("on"); // assume this is a checkbox
-            else
-                os.print(URLEncoder.encode(value,"UTF-8"));
+            // the rest
+            for (Element e : (List<Element>)form.selectNodes(".//input")) {
+                os.print('&');
+                os.print(e.attributeValue("name"));
+                os.print('=');
+                String value = e.attributeValue("value");
+                if(value==null)
+                    os.print("on"); // assume this is a checkbox
+                else
+                    os.print(URLEncoder.encode(value,"UTF-8"));
+            }
+            os.close();
+            return con;
+        } catch (IOException e) {
+            throw new IOException2("Failed to access "+url,e);
         }
-        os.close();
-        return con;
     }
 
     private URL locateStage2(TaskListener log, String page) throws MalformedURLException {
