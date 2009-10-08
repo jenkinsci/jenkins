@@ -30,7 +30,7 @@ public class SequentialExecutionQueue implements Executor {
     /**
      * {@link Runnable}s that are currently executing. Useful for trouble-shooting.
      */
-    private final Set<Runnable> inProgress = new HashSet<Runnable>();
+    private final Set<QueueEntry> inProgress = new HashSet<QueueEntry>();
 
     public SequentialExecutionQueue(ExecutorService executors) {
         this.executors = executors;
@@ -85,7 +85,11 @@ public class SequentialExecutionQueue implements Executor {
      * Gets {@link Runnable}s that are currently executed by a live thread.
      */
     public synchronized Set<Runnable> getInProgress() {
-        return new HashSet<Runnable>(inProgress);
+        Set<Runnable> items = new HashSet<Runnable>();
+        for (QueueEntry entry : inProgress) {
+            items.add(entry.item);
+        }
+        return items;
     }
 
     private final class QueueEntry implements Runnable {

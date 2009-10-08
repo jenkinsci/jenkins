@@ -82,6 +82,11 @@ import java.util.Set;
 public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends AbstractBuild<P,R>> extends Run<P,R> implements Queue.Executable {
 
     /**
+     * Set if we want the blame information to flow from upstream to downstream build.
+     */
+    private static final boolean upstreamCulprits = Boolean.getBoolean("hudson.upstreamCulprits");
+
+    /**
      * Name of the slave this project was built on.
      * Null or "" if built by the master. (null happens when we read old record that didn't have this information.)
      */
@@ -264,6 +269,22 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
             }
             for( Entry e : getChangeSet() )
                 r.add(e.getAuthor());
+
+
+            if (upstreamCulprits) {
+                // If we have dependencies since the last successful build, add their authors to our list
+                if (getPreviousNotFailedBuild() != null) {
+                    Map <AbstractProject,AbstractBuild.DependencyChange> depmap = getDependencyChanges(getPreviousNotFailedBuild());
+                    for (AbstractBuild.DependencyChange dep : depmap.values()) {
+                        for (AbstractBuild<?,?> b : dep.getBuilds()) {
+                            for (Entry entry : b.getChangeSet()) {
+                                r.add(entry.getAuthor());
+                            }
+                        }
+                    }
+                }
+            }
+
             return r;
         }
 
@@ -676,9 +697,16 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
 
         // look for fingerprints that point to this build as the source, and merge them all
         for (Fingerprint e : f.getFingerprints().values()) {
-            BuildPtr o = e.getOriginal();
-            if(o!=null && o.is(this))
+
+            if (upstreamCulprits) {
+                // With upstreamCulprits, we allow downstream relationships
+                // from intermediate jobs
                 rs.add(e.getRangeSet(that));
+            } else {
+                BuildPtr o = e.getOriginal();
+                if(o!=null && o.is(this))
+                    rs.add(e.getRangeSet(that));
+            }
         }
 
         return rs;
@@ -724,9 +752,18 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
 
         // look for fingerprints that point to the given project as the source, and merge them all
         for (Fingerprint e : f.getFingerprints().values()) {
-            BuildPtr o = e.getOriginal();
-            if(o!=null && o.belongsTo(that))
-                n = Math.max(n,o.getNumber());
+            if (upstreamCulprits) {
+                // With upstreamCulprits, we allow upstream relationships
+                // from intermediate jobs
+                Fingerprint.RangeSet rangeset = e.getRangeSet(that);
+                if (! rangeset.isEmpty()) {
+                    n = Math.max(n, rangeset.listNumbersReverse().iterator().next());
+                }
+            } else {
+                BuildPtr o = e.getOriginal();
+                if(o!=null && o.belongsTo(that))
+                    n = Math.max(n,o.getNumber());
+            }
         }
 
         return n;

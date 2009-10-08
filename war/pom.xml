@@ -64,6 +64,9 @@ THE SOFTWARE.
             <manifest>
               <mainClass>Main</mainClass>
             </manifest>
+            <manifestEntries>
+              <Implementation-Version>${project.version}</Implementation-Version>
+            </manifestEntries>
           </archive>
           <!--outputFileNameMapping>@{artifactId}@.@{extension}@</outputFileNameMapping-->
         </configuration>

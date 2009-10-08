@@ -25,11 +25,11 @@ package hudson.tools;
 
 import hudson.ExtensionList;
 import hudson.ExtensionPoint;
-import hudson.scm.CVSChangeLogSet.File;
 import hudson.slaves.NodeSpecific;
 import hudson.model.Hudson;
 import hudson.model.Node;
 import hudson.model.TaskListener;
+import java.io.File;
 import java.io.IOException;
 
 /**

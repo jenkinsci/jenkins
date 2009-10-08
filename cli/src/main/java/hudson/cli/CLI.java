@@ -27,6 +27,8 @@ import hudson.remoting.Channel;
 import hudson.remoting.RemoteInputStream;
 import hudson.remoting.RemoteOutputStream;
 import hudson.remoting.PingThread;
+import hudson.remoting.SocketInputStream;
+import hudson.remoting.SocketOutputStream;
 
 import java.net.URL;
 import java.net.URLConnection;
@@ -76,9 +78,9 @@ public class CLI {
             DataOutputStream dos = new DataOutputStream(s.getOutputStream());
             dos.writeUTF("Protocol:CLI-connect");
 
-            channel = new Channel("channel", pool,
-                    new BufferedInputStream(s.getInputStream()),
-                    new BufferedOutputStream(s.getOutputStream()));
+            channel = new Channel("CLI connection to "+hudson, pool,
+                    new BufferedInputStream(new SocketInputStream(s)),
+                    new BufferedOutputStream(new SocketOutputStream(s)));
         } else {
             // connect via HTTP
             LOGGER.fine("Trying to connect to "+url+" via HTTP");

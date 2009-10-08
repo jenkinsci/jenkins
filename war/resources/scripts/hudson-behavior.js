@@ -386,8 +386,8 @@ var hudsonRules = {
             var nameRef = tr.getAttribute("nameref");
             while (container.lastChild != null) {
                 var row = container.lastChild;
-                if(nameRef!=null)
-                    row.setAttribute("nameref",nameRef);
+                if(nameRef!=null && row.getAttribute("nameref")==null)
+                    row.setAttribute("nameref",nameRef); // to handle inner rowSets, don't override existing values
                 tr.parentNode.insertBefore(row, tr.nextSibling);
             }
         });

@@ -27,6 +27,7 @@ import hudson.Launcher;
 import hudson.Functions;
 import hudson.Extension;
 import hudson.Util;
+import static hudson.Util.fixEmptyAndTrim;
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
 import hudson.model.BuildListener;
@@ -34,6 +35,7 @@ import hudson.model.User;
 import hudson.model.UserPropertyDescriptor;
 import hudson.model.Hudson;
 import hudson.util.FormValidation;
+import hudson.util.Secret;
 import org.apache.tools.ant.types.selectors.SelectorUtils;
 import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.StaplerRequest;
@@ -56,6 +58,8 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 
 import net.sf.json.JSONObject;
 
@@ -151,7 +155,9 @@ public class Mailer extends Notifier {
         /**
          * If non-null, use SMTP-AUTH with these information.
          */
-        private String smtpAuthPassword,smtpAuthUsername;
+        private String smtpAuthUsername;
+
+        private Secret smtpAuthPassword;
 
         /**
          * The e-mail address that Hudson puts to "From:" field in outgoing e-mails.
@@ -195,7 +201,7 @@ public class Mailer extends Notifier {
             defaultSuffix = (String)oldPropertyBag.get("mail.default.suffix");
             hudsonUrl = (String)oldPropertyBag.get("mail.hudson.url");
             smtpAuthUsername = (String)oldPropertyBag.get("mail.hudson.smtpauth.username");
-            smtpAuthPassword = (String)oldPropertyBag.get("mail.hudson.smtpauth.password");
+            smtpAuthPassword = Secret.fromString((String)oldPropertyBag.get("mail.hudson.smtpauth.password"));
             adminAddress = (String)oldPropertyBag.get("mail.admin.address");
             smtpHost = (String)oldPropertyBag.get("mail.smtp.host");
         }
@@ -217,9 +223,12 @@ public class Mailer extends Notifier {
         public Session createSession() {
             return createSession(smtpHost,smtpPort,useSsl,smtpAuthUsername,smtpAuthPassword);
         }
-        private static Session createSession(String smtpHost, String smtpPort, boolean useSsl, String smtpAuthUserName, String smtpAuthPassword) {
+        private static Session createSession(String smtpHost, String smtpPort, boolean useSsl, String smtpAuthUserName, Secret smtpAuthPassword) {
+            smtpPort = fixEmptyAndTrim(smtpPort);
+            smtpAuthUserName = fixEmptyAndTrim(smtpAuthUserName);
+
             Properties props = new Properties(System.getProperties());
-            if(smtpHost!=null)
+            if(fixEmptyAndTrim(smtpHost)!=null)
                 props.put("mail.smtp.host",smtpHost);
             if (smtpPort!=null) {
                 props.put("mail.smtp.port", smtpPort);
@@ -248,7 +257,8 @@ public class Mailer extends Notifier {
             props.put("mail.smtp.timeout","60000");
             props.put("mail.smtp.connectiontimeout","60000");
 
-            return Session.getInstance(props,getAuthenticator(smtpAuthUserName,smtpAuthPassword));
+            return Session.getInstance(props,getAuthenticator(smtpAuthUserName,
+                    smtpAuthPassword!=null ? smtpAuthPassword.toString() : null));
         }
 
         private static Authenticator getAuthenticator(final String smtpAuthUserName, final String smtpAuthPassword) {
@@ -276,9 +286,10 @@ public class Mailer extends Notifier {
             if(json.has("useSMTPAuth")) {
                 JSONObject auth = json.getJSONObject("useSMTPAuth");
                 smtpAuthUsername = nullify(auth.getString("smtpAuthUserName"));
-                smtpAuthPassword = nullify(auth.getString("smtpAuthPassword"));
+                smtpAuthPassword = Secret.fromString(nullify(auth.getString("smtpAuthPassword")));
             } else {
-                smtpAuthUsername = smtpAuthPassword = null;
+                smtpAuthUsername = null;
+                smtpAuthPassword = null;
             }
             smtpPort = nullify(json.getString("smtpPort"));
             useSsl = json.getBoolean("useSsl");
@@ -310,7 +321,7 @@ public class Mailer extends Notifier {
         }
 
         public String getSmtpAuthPassword() {
-            return smtpAuthPassword;
+            return smtpAuthPassword!=null ? smtpAuthPassword.toString() : null;
         }
         
         public boolean getUseSsl() {
@@ -352,7 +363,7 @@ public class Mailer extends Notifier {
 
         public void setSmtpAuth(String userName, String password) {
             this.smtpAuthUsername = userName;
-            this.smtpAuthPassword = password;
+            this.smtpAuthPassword = Secret.fromString(password);
         }
 
         @Override
@@ -388,8 +399,25 @@ public class Mailer extends Notifier {
             }
         }
 
+        public FormValidation doCheckSmtpServer(@QueryParameter String value) {
+            try {
+                if (fixEmptyAndTrim(value)!=null)
+                    InetAddress.getByName(value);
+                return FormValidation.ok();
+            } catch (UnknownHostException e) {
+                return FormValidation.error("Unknown host name: "+value);
+            }
+        }
+
         public FormValidation doCheckAdminAddress(@QueryParameter String value) {
             return doAddressCheck(value);
+        }
+
+        public FormValidation doCheckDefaultSuffix(@QueryParameter String value) {
+            if (value.matches("@[A-Za-z0-9.\\-]+") || fixEmptyAndTrim(value)==null)
+                return FormValidation.ok();
+            else
+                return FormValidation.error("This field should be '@' followed by a domain name.");
         }
 
         /**
@@ -405,7 +433,7 @@ public class Mailer extends Notifier {
             try {
                 if (!useSMTPAuth)   smtpAuthUserName = smtpAuthPassword = null;
                 
-                MimeMessage msg = new MimeMessage(createSession(smtpServer,smtpPort,useSsl,smtpAuthUserName,smtpAuthPassword));
+                MimeMessage msg = new MimeMessage(createSession(smtpServer,smtpPort,useSsl,smtpAuthUserName,Secret.fromString(smtpAuthPassword)));
                 msg.setSubject("Test email #" + ++testEmailCount);
                 msg.setContent("This is test email #" + testEmailCount + " sent from Hudson Continuous Integration server.", "text/plain");
                 msg.setFrom(new InternetAddress(adminAddress));

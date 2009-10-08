@@ -27,6 +27,7 @@ import hudson.model.Hudson;
 
 import java.io.IOException;
 import java.util.logging.Logger;
+import static java.util.logging.Level.SEVERE;
 
 import javax.servlet.Filter;
 import javax.servlet.FilterChain;
@@ -98,14 +99,23 @@ public class HudsonFilter implements Filter {
         this.filterConfig = filterConfig;
         // this is how we make us available to the rest of Hudson.
         filterConfig.getServletContext().setAttribute(HudsonFilter.class.getName(),this);
-        Hudson hudson = Hudson.getInstance();
-        if (hudson != null) {
-            // looks like we are initialized after Hudson came into being. initialize it now. See #3069
-            LOGGER.fine("Security wasn't initialized; Initializing it...");
-            SecurityRealm securityRealm = hudson.getSecurityRealm();
-            reset(securityRealm);
-            LOGGER.fine("securityRealm is " + securityRealm);
-            LOGGER.fine("Security initialized");
+        try {
+            Hudson hudson = Hudson.getInstance();
+            if (hudson != null) {
+                // looks like we are initialized after Hudson came into being. initialize it now. See #3069
+                LOGGER.fine("Security wasn't initialized; Initializing it...");
+                SecurityRealm securityRealm = hudson.getSecurityRealm();
+                reset(securityRealm);
+                LOGGER.fine("securityRealm is " + securityRealm);
+                LOGGER.fine("Security initialized");
+            }
+        } catch (ExceptionInInitializerError e) {
+            // see HUDSON-4592. In some containers this happens before
+            // WebAppMain.contextInitialized kicks in, which makes
+            // the whole thing fail hard before a nicer error check
+            // in WebAppMain.contextInitialized. So for now,
+            // just report it here, and let the WebAppMain handle the failure gracefully.
+            LOGGER.log(SEVERE, "Failed to initialize Hudson",e);
         }
     }
 
