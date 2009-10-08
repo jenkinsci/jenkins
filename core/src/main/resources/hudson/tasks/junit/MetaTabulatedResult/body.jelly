@@ -27,14 +27,14 @@ THE SOFTWARE.
 	<script type="text/javascript">
 		<!-- TODO make sure load doesn't happen every time -->
 		function showStackTrace(id,query) {
-			var element = document.getElementById(id)
+			var element = document.getElementById(id);
 			element.style.display = "";
 			document.getElementById(id + "-showlink").style.display = "none";
 			document.getElementById(id + "-hidelink").style.display = "";
 			
 			var rqo = new XMLHttpRequest();
 			rqo.open('GET', query, true);
-			rqo.onreadystatechange = function() { element.innerHTML = rqo.responseText.replace("<", "&lt;").replace(">", "&gt;"); }  
+			rqo.onreadystatechange = function() { element.innerHTML = rqo.responseText.replace("&lt;", "&amp;lt;").replace("&gt;", "&amp;gt;"); };
 			rqo.send(null);
 		}
 		
