@@ -65,7 +65,7 @@ public final class Result implements Serializable, CustomExportedBean {
     /**
      * Bigger numbers are worse.
      */
-    private final int ordinal;
+    public final int ordinal;
 
     /**
      * Default ball color for this status.

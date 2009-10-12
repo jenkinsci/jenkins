@@ -182,7 +182,17 @@ public abstract class CLICommand implements ExtensionPoint, Cloneable {
 
     protected void printUsage(PrintStream stderr, CmdLineParser p) {
         stderr.println("java -jar hudson-cli.jar "+getName()+" args...");
+        printUsageSummary(stderr);
         p.printUsage(stderr);
+    }
+
+    /**
+     * Called while producing usage. This is a good method to override
+     * to render the general description of the command that goes beyond
+     * a single-line summary. 
+     */
+    protected void printUsageSummary(PrintStream stderr) {
+        stderr.println(getShortDescription());
     }
 
     /**
