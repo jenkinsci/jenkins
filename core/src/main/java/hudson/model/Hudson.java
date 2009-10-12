@@ -2651,7 +2651,7 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
     /**
      * Reloads the configuration.
      */
-    @CLIMethod(name="reload-config")
+    @CLIMethod(name="reload-configuration")
     public synchronized HttpResponse doReload() throws IOException {
         checkPermission(ADMINISTER);
 
