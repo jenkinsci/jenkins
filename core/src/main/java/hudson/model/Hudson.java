@@ -133,6 +133,8 @@ import org.kohsuke.stapler.StaplerFallback;
 import org.kohsuke.stapler.WebApp;
 import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.HttpRedirect;
+import org.kohsuke.stapler.HttpResponses;
+import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.jelly.JellyClassLoaderTearOff;
 import org.kohsuke.stapler.jelly.JellyRequestDispatcher;
 import org.kohsuke.stapler.framework.adjunct.AdjunctManager;
@@ -2649,14 +2651,12 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
     /**
      * Reloads the configuration.
      */
-    public synchronized void doReload( StaplerRequest req, StaplerResponse rsp ) throws IOException {
+    @CLIMethod(name="reload-config")
+    public synchronized HttpResponse doReload() throws IOException {
         checkPermission(ADMINISTER);
 
         // engage "loading ..." UI and then run the actual task in a separate thread
-        final ServletContext context = req.getServletContext();
-        context.setAttribute("app",new HudsonIsLoading());
-
-        rsp.sendRedirect2(req.getContextPath()+"/");
+        servletContext.setAttribute("app",new HudsonIsLoading());
 
         new Thread("Hudson config reload thread") {
             @Override
@@ -2664,12 +2664,14 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
                 try {
                     load();
                     User.reload();
-                    context.setAttribute("app",Hudson.this);
+                    servletContext.setAttribute("app",Hudson.this);
                 } catch (IOException e) {
                     LOGGER.log(SEVERE,"Failed to reload Hudson config",e);
                 }
             }
         }.start();
+
+        return HttpResponses.redirectViaContextPath("/");
     }
 
     /**
