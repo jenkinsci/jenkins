@@ -167,8 +167,10 @@ public abstract class HudsonTestCase extends TestCase implements RootAction {
 
     /**
      * Where in the {@link Server} is Hudson deployed?
+     * <p>
+     * Just like {@link ServletContext#getContextPath()}, starts with '/' but doesn't end with '/'.
      */
-    protected String contextPath = "/";
+    protected String contextPath = "";
 
     /**
      * {@link Runnable}s to be invoked at {@link #tearDown()}.
