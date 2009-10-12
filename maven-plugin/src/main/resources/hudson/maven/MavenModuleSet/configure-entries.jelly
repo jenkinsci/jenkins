@@ -73,7 +73,7 @@ THE SOFTWARE.
                help="/plugin/maven-plugin/alternate-settings.html">
         <f:textbox name="alternateSettings"
                    value="${it.alternateSettings}" 
-                   checkUrl="'checkFileInWorkspace?value='+escape(this.value)"
+                   checkUrl="'checkFileRelative?value='+escape(this.value)"
                    />
       </f:entry>
       <f:optionalBlock name="maven.incrementalBuild"
