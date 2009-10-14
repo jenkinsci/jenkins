@@ -3113,7 +3113,7 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
     
     public static boolean isDarwin() {
         // according to http://developer.apple.com/technotes/tn2002/tn2110.html
-        return System.getProperty("os.name").startsWith("mac");
+        return System.getProperty("os.name").toLowerCase().startsWith("mac");
     }
 
     /**
