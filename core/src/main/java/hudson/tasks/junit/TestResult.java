@@ -230,7 +230,7 @@ public final class TestResult extends MetaTabulatedResult {
         return Messages.TestResult_getChildTitle();
     }
 
-    // TODO once stapler 1.60 is released: @Exported
+    @Exported(visibility=999)
     public float getDuration() {
         return duration; 
     }
@@ -247,7 +247,7 @@ public final class TestResult extends MetaTabulatedResult {
         return failedTests.size();
     }
 
-    @Exported
+    @Exported(visibility=999)
     @Override
     public int getSkipCount() {
         return skippedTests;
@@ -263,7 +263,7 @@ public final class TestResult extends MetaTabulatedResult {
         return byPackages.values();
     }
 
-    @Exported(inline=true)
+    @Exported(inline=true,visibility=9)
     public Collection<SuiteResult> getSuites() {
         return suites;
     }
