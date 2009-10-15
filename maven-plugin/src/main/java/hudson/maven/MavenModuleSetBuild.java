@@ -427,10 +427,11 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
                             if (!MavenModuleSetBuild.this.getChangeSet().isEmptySet()
                                 && project.isIncrementalBuild()) {
 				// If there are changes for this module, add it.
-                                if ((!getChangeSetFor(m).isEmpty()) 
-				    // If the last actually-built build of this module wasn't a success,
-				    // add it - i.e., rebuild anything that failed/was unstable in the past.
-				    || (mb.getPreviousBuiltBuild().getResult().isWorseThan(Result.SUCCESS))) {
+				// Also add it if we've never seen this module before,
+				// or if the previous build of this module failed or was unstable.
+                                if ((mb.getPreviousBuiltBuild() == null) ||
+                                    (!getChangeSetFor(m).isEmpty()) 
+                                    || (mb.getPreviousBuiltBuild().getResult().isWorseThan(Result.SUCCESS))) {
                                     changedModules.add(m.getModuleName().toString());
                                 }
                             }

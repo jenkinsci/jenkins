@@ -34,6 +34,8 @@ import hudson.search.SearchIndexBuilder;
 import hudson.tasks.Maven.MavenInstallation;
 import hudson.tasks.*;
 import hudson.tasks.junit.JUnitResultArchiver;
+import static hudson.Util.fixEmpty;
+import static hudson.Util.fixEmptyAndTrim;
 import hudson.util.CopyOnWriteMap;
 import hudson.util.DescribableList;
 import hudson.util.Function1;
@@ -692,6 +694,28 @@ public final class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,Ma
      * Check the location of the POM, alternate settings file, etc - any file.
      */
     public FormValidation doCheckFileInWorkspace(@QueryParameter String value) throws IOException, ServletException {
+        MavenModuleSetBuild lb = getLastBuild();
+        if (lb!=null) {
+            FilePath ws = lb.getModuleRoot();
+            if(ws!=null)
+                return ws.validateRelativePath(value,true,true);
+        }
+        return FormValidation.ok();
+    }
+
+    /**
+     * Check that the provided file is a relative path. And check that it exists, just in case.
+     */
+    public FormValidation doCheckFileRelative(@QueryParameter String value) throws IOException, ServletException {
+        String v = fixEmpty(value);
+        if ((v == null) || (v.length() == 0)) {
+            // Null values are allowed.
+            return FormValidation.ok();
+        }
+        if ((v.startsWith("/")) || (v.startsWith("\\")) || (v.matches("^\\w\\:\\\\.*"))) {
+            return FormValidation.error("Alternate settings file must be a relative path.");
+        }
+        
         MavenModuleSetBuild lb = getLastBuild();
         if (lb!=null) {
             FilePath ws = lb.getModuleRoot();

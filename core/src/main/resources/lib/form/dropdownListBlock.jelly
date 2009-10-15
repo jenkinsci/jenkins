@@ -21,21 +21,23 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 -->
-
-<!--
-  Foldable block expanded when the corresponding item is selected in the drop-down list.
-
-  @value (mandatory)
-    value of the list item. set to <option value="...">
-  @title (mandatory)
-    human readable text displayed for this list item.
-  @selected (mandatory)
-    is this value initially selected?
--->
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
+  <st:documentation>
+    Foldable block expanded when the corresponding item is selected in the drop-down list.
+
+    <st:attribute name="value" use="required">
+      value of the list item. set to &lt;option value="...">
+    </st:attribute>
+    <st:attribute name="title" use="required">
+      human readable text displayed for this list item.
+    </st:attribute>
+    <st:attribute name="selected" type="boolean">
+      is this value initially selected?
+    </st:attribute>
+  </st:documentation>
   <j:choose>
     <j:when test="${dropdownListMode=='createSelectField'}">
-      <f:option selected="${selected}" value="${value}">${title}</f:option>
+      <f:option selected="${attrs.selected}" value="${value}">${title}</f:option>
     </j:when>
     <j:when test="${dropdownListMode=='generateEntries'}">
       <!-- sandwitch them by a marker so that we now what to show/hide -->

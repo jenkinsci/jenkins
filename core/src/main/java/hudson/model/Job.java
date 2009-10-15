@@ -156,7 +156,9 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
             // but old Hudson didn't do it, so if the file doesn't exist,
             // assume that nextBuildNumber was read from config.xml
             try {
-                this.nextBuildNumber = Integer.parseInt(f.readTrim());
+                synchronized (this) {
+                    this.nextBuildNumber = Integer.parseInt(f.readTrim());
+                }
             } catch (NumberFormatException e) {
                 throw new IOException2(f + " doesn't contain a number", e);
             }
@@ -176,7 +178,9 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
     @Override
     public void onCopiedFrom(Item src) {
         super.onCopiedFrom(src);
-        this.nextBuildNumber = 1; // reset the next build number
+        synchronized (this) {
+            this.nextBuildNumber = 1; // reset the next build number
+        }
     }
 
     @Override
@@ -193,11 +197,11 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
         super.performDelete();
     }
 
-    private TextFile getNextBuildNumberFile() {
+    /*package*/ TextFile getNextBuildNumberFile() {
         return new TextFile(new File(this.getRootDir(), "nextBuildNumber"));
     }
 
-    protected void saveNextBuildNumber() throws IOException {
+    protected synchronized void saveNextBuildNumber() throws IOException {
         if (nextBuildNumber == 0) { // #3361
             nextBuildNumber = 1;
         }
@@ -275,7 +279,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
      * 
      * @since 1.199 (before that, this method was package private.)
      */
-    public void updateNextBuildNumber(int next) throws IOException {
+    public synchronized void updateNextBuildNumber(int next) throws IOException {
         if (next > nextBuildNumber) {
             this.nextBuildNumber = next;
             saveNextBuildNumber();

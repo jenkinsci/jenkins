@@ -272,7 +272,8 @@ public abstract class Slave extends Node implements Serializable {
             URLConnection con = connect();
             // since we end up redirecting users to jnlpJars/foo.jar/, set the content disposition
             // so that browsers can download them in the right file name.
-            rsp.setHeader("Content-Disposition", "inline; filename=" + fileName);
+            // see http://support.microsoft.com/kb/260519 and http://www.boutell.com/newfaq/creating/forcedownload.html
+            rsp.setHeader("Content-Disposition", "attachment; filename=" + fileName);
             InputStream in = con.getInputStream();
             rsp.serveFile(req, in, con.getLastModified(), con.getContentLength(), "*.jar" );
             in.close();

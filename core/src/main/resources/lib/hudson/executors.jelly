@@ -93,10 +93,11 @@ THE SOFTWARE.
       <colgroup><col width="*"/><col width="80%"/><col width="24"/></colgroup>
       <j:forEach var="c" items="${computers}" varStatus="cloop">
         <tr>
-          <th class="pane" colspan="3">
-            <j:choose>
-              <j:when test="${c.node==app or computers.size()==1}">
-                <div style="position:absolute;padding-left:5px">#</div>
+          <j:choose>
+            <j:when test="${c.node==app or computers.size()==1}">
+              <th class="pane">#</th>
+              <th class="pane" colspan="2">
+                <div style="margin-right:19px">
                 <j:choose>
                   <j:when test="${empty(app.slaves) or computers.size()==1}">
                     ${%Status}
@@ -105,12 +106,15 @@ THE SOFTWARE.
                     <local:computerCaption title="${%Master}" />
                   </j:otherwise>
                 </j:choose>
-              </j:when>
-              <j:otherwise>
+                </div>
+              </th>
+            </j:when>
+            <j:otherwise>
+              <th class="pane" colspan="3">
                 <local:computerCaption title="${c.displayName}" />
-              </j:otherwise>
-            </j:choose>
-          </th>
+              </th>
+            </j:otherwise>
+          </j:choose>
         </tr>
         <j:forEach var="e" items="${c.executors}" varStatus="eloop">
           <local:executor name="${eloop.index+1}" url="executors/${eloop.index}" />

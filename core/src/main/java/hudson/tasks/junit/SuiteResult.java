@@ -52,7 +52,7 @@ import org.kohsuke.stapler.export.ExportedBean;
  */
 @ExportedBean
 public final class SuiteResult implements Serializable {
-	private final String file;
+    private final String file;
     private final String name;
     private final String stdout;
     private final String stderr;
@@ -157,12 +157,12 @@ public final class SuiteResult implements Serializable {
         duration += cr.getDuration(); 
     }
 
-    @Exported
+    @Exported(visibility=9)
     public String getName() {
         return name;
     }
 
-    @Exported
+    @Exported(visibility=9)
     public float getDuration() {
         return duration; 
     }
@@ -200,12 +200,12 @@ public final class SuiteResult implements Serializable {
         return parent;
     }
 
-    @Exported
+    @Exported(visibility=9)
     public String getTimestamp() {
         return timestamp;
     }
 
-    @Exported(inline=true)
+    @Exported(inline=true,visibility=9)
     public List<CaseResult> getCases() {
         return cases;
     }

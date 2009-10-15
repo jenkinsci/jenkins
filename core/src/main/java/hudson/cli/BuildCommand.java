@@ -1,0 +1,57 @@
+package hudson.cli;
+
+import hudson.model.AbstractBuild;
+import hudson.model.AbstractProject;
+import hudson.model.Cause;
+import hudson.Extension;
+import org.kohsuke.args4j.Argument;
+import org.kohsuke.args4j.Option;
+
+import java.util.concurrent.Future;
+import java.io.PrintStream;
+
+/**
+ * Builds a job, and optionally waits until its completion.
+ *
+ * @author Kohsuke Kawaguchi
+ */
+@Extension
+public class BuildCommand extends CLICommand {
+    @Override
+    public String getShortDescription() {
+        return "Builds a job, and optionall waits until its completion.";
+    }
+
+    @Argument(metaVar="JOB",usage="Name of the job to build",required=true)
+    public AbstractProject<?,?> job;
+
+    @Option(name="-s",usage="Wait until the completion/abortion of the command")
+    public boolean sync = false;
+
+    protected int run() throws Exception {
+        Future<? extends AbstractBuild> f = job.scheduleBuild2(0, new CLICause());
+        if (!sync)  return 0;
+
+        AbstractBuild b = f.get();    // wait for the completion
+        stdout.println("Completed "+b.getFullDisplayName()+" : "+b.getResult());
+        return b.getResult().ordinal;
+    }
+
+    @Override
+    protected void printUsageSummary(PrintStream stderr) {
+        stderr.println(
+            "Starts a build, and optionally waits for a completion.\n" +
+            "Aside from general scripting use, this command can be\n" +
+            "used to invoke another job from within a build of one job.\n" +
+            "With the -s option, this command changes the exit code based on\n" +
+            "the outcome of the build (exit code 0 indicates a success.)\n"
+        );
+    }
+
+    public static class CLICause extends Cause {
+        public String getShortDescription() {
+            return "Started by command line";
+        }
+    }
+}
+
