@@ -73,11 +73,6 @@ jarUrl=$(cat target/upload.log | grep "^Posted" | sed -e "s/Posted //g")
 perl -p -i.bak -e "s|https://.+hudson\.jar|$jarUrl|" $WWW/hudson.jnlp
 cp $WWW/hudson.jnlp $WWW/$id.jnlp
 
-# push the permalink
-echo "Redirect 302 /latest/hudson.war $warUrl" > /tmp/latest.htaccess.war
-scp /tmp/latest.htaccess.war hudson.gotdns.com:/home/kohsuke/public_html_hudson/latest/.htaccess.war
-ssh hudson.gotdns.com "cd /home/kohsuke/public_html_hudson/latest; cat .htaccess.* > .htaccess"
-
 # update changelog.html
 ruby update.changelog.rb $id < $WWW/changelog.html > $WWW/changelog.new
 mv $WWW/changelog.new $WWW/changelog.html
