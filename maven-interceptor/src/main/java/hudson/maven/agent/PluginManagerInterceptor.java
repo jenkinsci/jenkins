@@ -192,7 +192,8 @@ public class PluginManagerInterceptor extends DefaultPluginManager {
             // orderly abort
             throw new AbortException("Execution aborted",e);
         } catch (IOException e) {
-            throw new PluginManagerException(e.getMessage(),e);
+            // we can't use two-args constructor. see the comment from steffeng on Mon Sep 14 20:22:32 HUDSON-2373.
+            throw (PluginManagerException)new PluginManagerException(e.getMessage()).initCause(e);
         } finally {
             configuratorFilter = null;
         }
