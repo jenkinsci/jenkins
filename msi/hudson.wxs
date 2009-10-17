@@ -1,0 +1,47 @@
+<?xml version="1.0"?>
+<Wix xmlns='http://schemas.microsoft.com/wix/2006/wi'>
+  <Product Name='Hudson ${var.VERSION}' Id='f8a1c07f-69d2-4fe1-a194-c5d563d44889' UpgradeCode='ca304bcd-a9a4-4178-8fac-e0505b1e05f3'
+    Language='1033' Codepage='1252' Version='${var.VERSION}' Manufacturer='Hudson project'>
+
+    <Package Id='*' Keywords='Installer' Description="Hudson"
+      Comments='Continuous Integration Server'
+      InstallerVersion='100' Compressed='yes' SummaryCodepage='1252' />
+      <Media Id='1' Cabinet='hudson.cab' EmbedCab='yes'/>
+      <Directory Id='TARGETDIR' Name='SourceDir'>
+        <Directory Id='ProgramFilesFolder' Name='PFiles'>
+          <Directory Id='Hudson' Name='Hudson' FileSource=".">
+              <Component Id='Main' Guid='8fd00c9c-e018-46d6-9135-67696ea0bcbf'>
+                <File Id="HudsonExe" Name="hudson.exe" DiskId='1' KeyPath='yes'/>
+                <ServiceInstall Id="HudsonService"
+                     Name="hudson"
+                     DisplayName="Hudson"
+                     Type="ownProcess"
+                     Start="auto"
+                     ErrorControl="normal"
+                     Description="Hudson Continuous Integration Server"
+                     Account="[SERVICEACCOUNT]"
+                     Password="[SERVICEPASSWORD]" />
+                 <ServiceControl Id="StartHudsonService" Name="HudsonService" Start="install" Wait="no" />
+                 <ServiceControl Id="StopHudsonService" Name="HudsonService" Stop="both" Wait="yes" Remove="uninstall" />
+              </Component>
+          </Directory>
+        </Directory>
+      </Directory>
+
+    <Feature Id='Complete' Level='1'>
+      <ComponentRef Id='Main' />
+    </Feature>
+
+    <!-- launch a browser at the end of the installation -->
+    <Property Id="BROWSER">
+      <RegistrySearch Id='DefaultBrowser' Type='raw' Root='HKCR' Key='http\shell\open\command' />
+    </Property>
+    <CustomAction Id='LaunchBrowser' Property='BROWSER' ExeCommand='http://localhost:8080/' Return='asyncNoWait' />
+
+    <InstallExecuteSequence>
+      <Custom Action='LaunchBrowser' After='InstallFinalize'>NOT Installed</Custom>
+    </InstallExecuteSequence>
+
+  </Product>
+</Wix>
+
