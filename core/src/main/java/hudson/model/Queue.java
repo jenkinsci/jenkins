@@ -953,7 +953,8 @@ public class Queue extends ResourceController implements Saveable {
      *
      * <h2>View</h2>
      * <tt>summary.jelly</tt> should do one-line HTML rendering to be used while rendering
-     * "build history" widget, next to the blocking build.
+     * "build history" widget, next to the blocking build. By default it simply renders
+     * {@link #getShortDescription()} text.
      */
     public abstract static class CauseOfBlockage {
         /**
@@ -1197,6 +1198,9 @@ public class Queue extends ResourceController implements Saveable {
             return cob!=null ? cob.getShortDescription() : null;
         }
 
+        /**
+         * Gets an object that describes why this item is in the queue.
+         */
         public abstract CauseOfBlockage getCauseOfBlockage();
 
         /**
