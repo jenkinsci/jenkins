@@ -38,6 +38,7 @@ import hudson.model.Fingerprint.RangeSet;
 import hudson.model.RunMap.Constructor;
 import hudson.model.Queue.WaitingItem;
 import hudson.model.Queue.Executable;
+import hudson.model.Queue.CauseOfBlockage;
 import hudson.scm.ChangeLogSet;
 import hudson.scm.ChangeLogSet.Entry;
 import hudson.scm.NullSCM;
@@ -854,37 +855,59 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
      * project is building, but derived classes can also check other conditions.
      */
     public boolean isBuildBlocked() {
-        boolean blocked = isBuilding() && !isConcurrentBuild();
-	if (!blocked && blockBuildWhenUpstreamBuilding()) {
-            AbstractProject bup = getBuildingUpstream();
-            if(bup!=null) {
-                return true;
-            }
-        }
-        return blocked;
-
+        return getCauseOfBlockage()!=null;
     }
 
     public String getWhyBlocked() {
-	if (isBuilding() && !isConcurrentBuild()) { 
-	    AbstractBuild<?, ?> build = getLastBuild();
-	    Executor e = build.getExecutor();
-	    String eta="";
-	    if(e!=null)
-		eta = Messages.AbstractProject_ETA(e.getEstimatedRemainingTime());
-	    int lbn = build.getNumber();
-	    return Messages.AbstractProject_BuildInProgress(lbn,eta);
-	}
-	else {
-	    AbstractProject bup = getBuildingUpstream();
-            String projectName = "";
-            if(bup!=null) {
-                projectName = bup.getName();
-            }
-            return Messages.AbstractProject_UpstreamBuildInProgress(projectName);
-    	}
+        CauseOfBlockage cb = getCauseOfBlockage();
+        return cb!=null ? cb.getShortDescription() : null;
     }
 
+    /**
+     * Blocked because the previous build is already in progress.
+     */
+    public static class BecauseOfBuildInProgress extends CauseOfBlockage {
+        private final AbstractBuild<?,?> build;
+
+        public BecauseOfBuildInProgress(AbstractBuild<?, ?> build) {
+            this.build = build;
+        }
+
+        public String getShortDescription() {
+            Executor e = build.getExecutor();
+            String eta = "";
+            if (e != null)
+                eta = Messages.AbstractProject_ETA(e.getEstimatedRemainingTime());
+            int lbn = build.getNumber();
+            return Messages.AbstractProject_BuildInProgress(lbn, eta);
+        }
+    }
+
+    /**
+     * Because the upstream build is in progress, and we are configured to wait for that.
+     */
+    public static class BecauseOfUpstreamBuildInProgress extends CauseOfBlockage {
+        public final AbstractProject<?,?> up;
+
+        public BecauseOfUpstreamBuildInProgress(AbstractProject<?,?> up) {
+            this.up = up;
+        }
+
+        public String getShortDescription() {
+            return Messages.AbstractProject_UpstreamBuildInProgress(up.getName());
+        }
+    }
+
+    public CauseOfBlockage getCauseOfBlockage() {
+        if (isBuilding() && !isConcurrentBuild())
+            return new BecauseOfBuildInProgress(getLastBuild());
+        if (blockBuildWhenUpstreamBuilding()) {
+            AbstractProject<?,?> bup = getBuildingUpstream();
+            if (bup!=null)
+                return new BecauseOfUpstreamBuildInProgress(bup);
+        }
+        return null;
+    }
 
     /**
      * Returns the project if any of the upstream project (or itself) is either

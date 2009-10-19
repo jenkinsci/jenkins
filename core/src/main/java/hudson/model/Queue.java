@@ -71,6 +71,7 @@ import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.export.ExportedBean;
+import org.jvnet.localizer.Localizable;
 
 import com.thoughtworks.xstream.XStream;
 import com.thoughtworks.xstream.converters.basic.AbstractSingleValueConverter;
@@ -948,6 +949,31 @@ public class Queue extends ResourceController implements Saveable {
     public interface FlyweightTask extends Task {}
 
     /**
+     * If a {@link Task} execution is blocked in the queue, this object represents why.
+     *
+     * <h2>View</h2>
+     * <tt>summary.jelly</tt> should do one-line HTML rendering to be used while rendering
+     * "build history" widget, next to the blocking build.
+     */
+    public abstract static class CauseOfBlockage {
+        /**
+         * Human readable description of why the build is blocked.
+         */
+        public abstract String getShortDescription();
+
+        /**
+         * Obtains a simple implementation backed by {@link Localizable}.
+         */
+        public static CauseOfBlockage fromMessage(final Localizable l) {
+            return new CauseOfBlockage() {
+                public String getShortDescription() {
+                    return l.toString();
+                }
+            };
+        }
+    }
+
+    /**
      * Task whose execution is controlled by the queue.
      *
      * <p>
@@ -980,17 +1006,28 @@ public class Queue extends ResourceController implements Saveable {
          * for temporary reasons.
          *
          * <p>
-         * This can be used to define mutual exclusion that goes beyond
-         * {@link #getResourceList()}.
+         * Short-hand for {@code getCauseOfBlockage()!=null}.
          */
         boolean isBuildBlocked();
 
         /**
-         * When {@link #isBuildBlocked()} is true, this method returns
-         * human readable description of why the build is blocked.
-         * Used for HTML rendering.
+         * @deprecated as of 1.330
+         *      Use {@link CauseOfBlockage#getShortDescription()} instead.
          */
         String getWhyBlocked();
+
+        /**
+         * If the execution of this task should be blocked for temporary reasons,
+         * this method returns a non-null object explaining why.
+         *
+         * <p>
+         * Otherwise this method returns null, indicating that the build can proceed right away.
+         *
+         * <p>
+         * This can be used to define mutual exclusion that goes beyond
+         * {@link #getResourceList()}.
+         */
+        CauseOfBlockage getCauseOfBlockage();
 
         /**
          * Unique name of this task.
@@ -1155,8 +1192,13 @@ public class Queue extends ResourceController implements Saveable {
          * Gets a human-readable status message describing why it's in the queue.
          */
         @Exported
-        public abstract String getWhy();
-        
+        public final String getWhy() {
+            CauseOfBlockage cob = getCauseOfBlockage();
+            return cob!=null ? cob.getShortDescription() : null;
+        }
+
+        public abstract CauseOfBlockage getCauseOfBlockage();
+
         /**
          * Gets a human-readable message about the parameters of this item
          * @return String
@@ -1296,13 +1338,12 @@ public class Queue extends ResourceController implements Saveable {
             return this.id - that.id;
         }
 
-        @Override
-        public String getWhy() {
+        public CauseOfBlockage getCauseOfBlockage() {
             long diff = timestamp.getTimeInMillis() - System.currentTimeMillis();
             if (diff > 0)
-                return Messages.Queue_InQuietPeriod(Util.getTimeSpanString(diff));
+                return CauseOfBlockage.fromMessage(Messages._Queue_InQuietPeriod(Util.getTimeSpanString(diff)));
             else
-                return Messages.Queue_Unknown();
+                return CauseOfBlockage.fromMessage(Messages._Queue_Unknown());
         }
     }
 
@@ -1339,15 +1380,14 @@ public class Queue extends ResourceController implements Saveable {
             super(ni);
         }
 
-        @Override
-        public String getWhy() {
+        public CauseOfBlockage getCauseOfBlockage() {
             ResourceActivity r = getBlockingActivity(task);
             if (r != null) {
                 if (r == task) // blocked by itself, meaning another build is in progress
-                    return Messages.Queue_InProgress();
-                return Messages.Queue_BlockedBy(r.getDisplayName());
+                    return CauseOfBlockage.fromMessage(Messages._Queue_InProgress());
+                return CauseOfBlockage.fromMessage(Messages._Queue_BlockedBy(r.getDisplayName()));
             }
-            return task.getWhyBlocked();
+            return task.getCauseOfBlockage();
         }
     }
 
@@ -1363,11 +1403,10 @@ public class Queue extends ResourceController implements Saveable {
             super(ni);
         }
 
-        @Override
-        public String getWhy() {
+        public CauseOfBlockage getCauseOfBlockage() {
             Hudson hudson = Hudson.getInstance();
             if(hudson.isQuietingDown())
-                return Messages.Queue_HudsonIsAboutToShutDown();
+                return CauseOfBlockage.fromMessage(Messages._Queue_HudsonIsAboutToShutDown());
 
             Label label = task.getAssignedLabel();
             if (hudson.getNodes().isEmpty())
@@ -1378,16 +1417,16 @@ public class Queue extends ResourceController implements Saveable {
                 name = label.getName();
                 if (label.isOffline()) {
                     if (label.getNodes().size() > 1)
-                        return Messages.Queue_AllNodesOffline(name);
+                        return CauseOfBlockage.fromMessage(Messages._Queue_AllNodesOffline(name));
                     else
-                        return Messages.Queue_NodeOffline(name);
+                        return CauseOfBlockage.fromMessage(Messages._Queue_NodeOffline(name));
                 }
             }
 
             if(name==null)
-                return Messages.Queue_WaitingForNextAvailableExecutor();
+                return CauseOfBlockage.fromMessage(Messages._Queue_WaitingForNextAvailableExecutor());
             else
-                return Messages.Queue_WaitingForNextAvailableExecutorOn(name);
+                return CauseOfBlockage.fromMessage(Messages._Queue_WaitingForNextAvailableExecutorOn(name));
         }
 
         @Override
