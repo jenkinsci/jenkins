@@ -105,4 +105,20 @@ public class FreeStyleProjectTest extends HudsonTestCase {
         f.setCustomWorkspace(d.getPath());
         assertBuildStatusSuccess(f.scheduleBuild2(0).get());
     }
+
+    /**
+     * Custom workspace and variable expansion.
+     */
+    @Bug(3997)
+    public void testCustomWorkspaceVariableExpansion() throws Exception {
+        FreeStyleProject f = createFreeStyleProject();
+        File d = new File(createTmpDir(),"${JOB_NAME}");
+        f.setCustomWorkspace(d.getPath());
+        FreeStyleBuild b = assertBuildStatusSuccess(f.scheduleBuild2(0).get());
+
+        String path = b.getWorkspace().getRemote();
+        System.out.println(path);
+        assertFalse(path.contains("${JOB_NAME}"));
+        assertTrue(b.getWorkspace().getName().equals(f.getName()));
+    }
 }

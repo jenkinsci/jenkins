@@ -332,6 +332,11 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
         protected Launcher launcher;
 
         /**
+         * Output/progress of this build goes here.
+         */
+        protected BuildListener listener;
+
+        /**
          * Returns the current {@link Node} on which we are buildling.
          */
         protected final Node getCurrentNode() {
@@ -356,6 +361,7 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
             assert builtOn==null;
             builtOn = node.getNodeName();
             hudsonVersion = Hudson.VERSION;
+            this.listener = listener;
 
             launcher = createLauncher(listener);
             if(!Hudson.getInstance().getNodes().isEmpty())
@@ -393,6 +399,7 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
                 return result;
             } finally {
                 lease.release();
+                this.listener = null;
             }
         }
 
@@ -566,7 +573,9 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
     @Override
     public EnvVars getEnvironment(TaskListener log) throws IOException, InterruptedException {
         EnvVars env = super.getEnvironment(log);
-        env.put("WORKSPACE", getWorkspace().getRemote());
+        FilePath ws = getWorkspace();
+        if (ws!=null)   // if this is done very early on in the build, workspace may not be decided yet. see HUDSON-3997
+            env.put("WORKSPACE", ws.getRemote());
         // servlet container may have set CLASSPATH in its launch script,
         // so don't let that inherit to the new child process.
         // see http://www.nabble.com/Run-Job-with-JDK-1.4.2-tf4468601.html
