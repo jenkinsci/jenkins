@@ -1105,6 +1105,11 @@ public class CVSSCM extends SCM implements Serializable {
             return cvsExe;
         }
 
+        public void setCvsExe(String value) {
+            this.cvsExe = value;
+            save();
+        }
+
         public String getCvsExeOrDefault() {
             if(Util.fixEmpty(cvsExe)==null)     return "cvs";
             else                                return cvsExe;
@@ -1121,7 +1126,7 @@ public class CVSSCM extends SCM implements Serializable {
 
         @Override
         public boolean configure( StaplerRequest req, JSONObject o ) {
-            cvsPassFile = fixEmptyAndTrim(req.getParameter("cvspassFile"));
+            cvsPassFile = fixEmptyAndTrim(o.getString("cvspassFile"));
             cvsExe = fixEmptyAndTrim(o.getString("cvsExe"));
             noCompression = req.getParameter("cvs_noCompression")!=null;
             save();

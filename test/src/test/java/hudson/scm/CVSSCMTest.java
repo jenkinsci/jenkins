@@ -1,6 +1,7 @@
 package hudson.scm;
 
 import org.jvnet.hudson.test.HudsonTestCase;
+import org.jvnet.hudson.test.Bug;
 import hudson.model.FreeStyleProject;
 
 /**
@@ -25,6 +26,17 @@ public class CVSSCMTest extends HudsonTestCase {
 
         roundtrip(p);
         assertEquals(scm1, (CVSSCM)p.getScm());
+    }
+
+    @Bug(4456)
+    public void testGlobalConfigRoundtrip() throws Exception {
+        CVSSCM.DescriptorImpl d = hudson.getDescriptorByType(CVSSCM.DescriptorImpl.class);
+        d.setCvspassFile("a");
+        d.setCvsExe("b");
+
+        submit(createWebClient().goTo("configure").getFormByName("config"));
+        assertEquals("a",d.getCvspassFile());
+        assertEquals("b",d.getCvsExe());
     }
 
     private void roundtrip(FreeStyleProject p) throws Exception {
