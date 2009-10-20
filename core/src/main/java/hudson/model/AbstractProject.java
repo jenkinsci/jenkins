@@ -38,7 +38,7 @@ import hudson.model.Fingerprint.RangeSet;
 import hudson.model.RunMap.Constructor;
 import hudson.model.Queue.WaitingItem;
 import hudson.model.Queue.Executable;
-import hudson.model.Queue.CauseOfBlockage;
+import hudson.model.queue.CauseOfBlockage;
 import hudson.scm.ChangeLogSet;
 import hudson.scm.ChangeLogSet.Entry;
 import hudson.scm.NullSCM;

@@ -32,6 +32,11 @@ import hudson.cli.declarative.CLIMethod;
 import hudson.cli.declarative.CLIResolver;
 import hudson.remoting.AsyncFutureImpl;
 import hudson.model.Node.Mode;
+import hudson.model.queue.CauseOfBlockage;
+import hudson.model.queue.CauseOfBlockage.BecauseLabelIsBusy;
+import hudson.model.queue.CauseOfBlockage.BecauseNodeIsOffline;
+import hudson.model.queue.CauseOfBlockage.BecauseLabelIsOffline;
+import hudson.model.queue.CauseOfBlockage.BecauseNodeIsBusy;
 import hudson.triggers.SafeTimerTask;
 import hudson.triggers.Trigger;
 import hudson.util.OneShotEvent;
@@ -71,7 +76,6 @@ import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.export.ExportedBean;
-import org.jvnet.localizer.Localizable;
 
 import com.thoughtworks.xstream.XStream;
 import com.thoughtworks.xstream.converters.basic.AbstractSingleValueConverter;
@@ -949,32 +953,6 @@ public class Queue extends ResourceController implements Saveable {
     public interface FlyweightTask extends Task {}
 
     /**
-     * If a {@link Task} execution is blocked in the queue, this object represents why.
-     *
-     * <h2>View</h2>
-     * <tt>summary.jelly</tt> should do one-line HTML rendering to be used while rendering
-     * "build history" widget, next to the blocking build. By default it simply renders
-     * {@link #getShortDescription()} text.
-     */
-    public abstract static class CauseOfBlockage {
-        /**
-         * Human readable description of why the build is blocked.
-         */
-        public abstract String getShortDescription();
-
-        /**
-         * Obtains a simple implementation backed by {@link Localizable}.
-         */
-        public static CauseOfBlockage fromMessage(final Localizable l) {
-            return new CauseOfBlockage() {
-                public String getShortDescription() {
-                    return l.toString();
-                }
-            };
-        }
-    }
-
-    /**
      * Task whose execution is controlled by the queue.
      *
      * <p>
@@ -1416,21 +1394,20 @@ public class Queue extends ResourceController implements Saveable {
             if (hudson.getNodes().isEmpty())
                 label = null;    // no master/slave. pointless to talk about nodes
 
-            String name = null;
             if (label != null) {
-                name = label.getName();
                 if (label.isOffline()) {
-                    if (label.getNodes().size() > 1)
-                        return CauseOfBlockage.fromMessage(Messages._Queue_AllNodesOffline(name));
-                    else
-                        return CauseOfBlockage.fromMessage(Messages._Queue_NodeOffline(name));
+                    Set<Node> nodes = label.getNodes();
+                    if (nodes.size() > 1)       return new BecauseLabelIsOffline(label);
+                    else                        return new BecauseNodeIsOffline(nodes.iterator().next());
                 }
             }
 
-            if(name==null)
+            if(label==null)
                 return CauseOfBlockage.fromMessage(Messages._Queue_WaitingForNextAvailableExecutor());
-            else
-                return CauseOfBlockage.fromMessage(Messages._Queue_WaitingForNextAvailableExecutorOn(name));
+
+            Set<Node> nodes = label.getNodes();
+            if (nodes.size() > 1)       return new BecauseLabelIsBusy(label);
+            else                        return new BecauseNodeIsBusy(nodes.iterator().next());
         }
 
         @Override
