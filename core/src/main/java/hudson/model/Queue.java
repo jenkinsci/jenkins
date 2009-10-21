@@ -417,12 +417,11 @@ public class Queue extends ResourceController implements Saveable {
      */
     private synchronized WaitingItem scheduleInternal(Task p, int quietPeriod, List<Action> actions) {
     	WaitingItem added=null;
-    	List<Item> items = getItems(p);
-    	Calendar due = new GregorianCalendar();
+        Calendar due = new GregorianCalendar();
     	due.add(Calendar.SECOND, quietPeriod);
 
     	List<Item> duplicatesInQueue = new ArrayList<Item>();
-    	for(Item item : items) {
+    	for(Item item : getItems(p)) {
     		boolean shouldScheduleItem = false;
     		for (QueueAction action: item.getActions(QueueAction.class)) {
                 shouldScheduleItem |= action.shouldSchedule(actions);
@@ -449,7 +448,7 @@ public class Queue extends ResourceController implements Saveable {
     			if ((item instanceof WaitingItem))
     				waitingDuplicates.add((WaitingItem)item);
     		}
-    		if(duplicatesInQueue.size() == 0) {
+    		if(duplicatesInQueue.isEmpty()) {
     			// all duplicates in the queue are already in the blocked or 
     			// buildable stage no need to requeue
     			return null;
