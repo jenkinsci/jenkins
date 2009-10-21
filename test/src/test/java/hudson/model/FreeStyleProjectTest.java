@@ -57,7 +57,7 @@ public class FreeStyleProjectTest extends HudsonTestCase {
         List<Builder> builders = project.getBuilders();
         assertEquals(1,builders.size());
         assertEquals(Shell.class,builders.get(0).getClass());
-        assertEquals("echo hello",((Shell)builders.get(0)).getCommand());
+        assertEquals("echo hello",((Shell)builders.get(0)).getCommand().trim());
         assertTrue(builders.get(0)!=shell);
     }
 

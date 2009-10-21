@@ -1,7 +1,7 @@
 /*
  * The MIT License
  * 
- * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, Jene Jasper
+ * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, Jene Jasper, Yahoo! Inc.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -70,6 +70,21 @@ public class Shell extends CommandInterpreter {
         return s;
     }
 
+    /**
+     * Older versions of bash have a bug where non-ASCII on the first line
+     * makes the shell think the file is a binary file and not a script. Adding
+     * a leading carriage return works around this problem.
+     */
+    private static String addCrForNonASCII(String s) {
+        if(!s.startsWith("#!")) {
+            if (s.indexOf('\n')!=0) {
+                return new String("\n" + s);
+            }
+        }
+
+        return s;
+    }
+
     protected String[] buildCommandLine(FilePath script) {
         if(command.startsWith("#!")) {
             // interpreter override
@@ -85,7 +100,7 @@ public class Shell extends CommandInterpreter {
     }
 
     protected String getContents() {
-        return fixCrLf(command);
+        return addCrForNonASCII(fixCrLf(command));
     }
 
     protected String getFileExtension() {
