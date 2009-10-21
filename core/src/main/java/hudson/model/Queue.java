@@ -424,14 +424,11 @@ public class Queue extends ResourceController implements Saveable {
     	List<Item> duplicatesInQueue = new ArrayList<Item>();
     	for(Item item : items) {
     		boolean shouldScheduleItem = false;
-    		for (Action action: item.getActions()) {
-    			if (action instanceof QueueAction)
-    				shouldScheduleItem |= ((QueueAction) action).shouldSchedule(actions);
+    		for (QueueAction action: item.getActions(QueueAction.class)) {
+                shouldScheduleItem |= action.shouldSchedule(actions);
     		}
-    		for (Action action: actions) {
-    			if (action instanceof QueueAction) {
-    				shouldScheduleItem |= ((QueueAction) action).shouldSchedule(item.getActions());
-    			}
+    		for (QueueAction action: Util.filter(actions,QueueAction.class)) {
+                shouldScheduleItem |= action.shouldSchedule(item.getActions());
     		}
     		if(!shouldScheduleItem) {
     			duplicatesInQueue.add(item);
@@ -446,10 +443,8 @@ public class Queue extends ResourceController implements Saveable {
     		// the requested build is already queued, so will not be added
     		List<WaitingItem> waitingDuplicates = new ArrayList<WaitingItem>();
     		for(Item item : duplicatesInQueue) {
-    			for(Action a : actions) {
-    				if(a instanceof FoldableAction) {
-    					((FoldableAction)a).foldIntoExisting(item.task, item.getActions());
-    				}
+    			for(FoldableAction a : Util.filter(actions,FoldableAction.class)) {
+                    a.foldIntoExisting(item.task, item.getActions());
     			}
     			if ((item instanceof WaitingItem))
     				waitingDuplicates.add((WaitingItem)item);
