@@ -416,10 +416,11 @@ public class Queue extends ResourceController implements Saveable {
      *      That said, one can still look at {@link WaitingItem#future}, {@link WaitingItem#id}, etc.
      */
     private synchronized WaitingItem scheduleInternal(Task p, int quietPeriod, List<Action> actions) {
-    	WaitingItem added=null;
+    	WaitingItem added;
         Calendar due = new GregorianCalendar();
     	due.add(Calendar.SECOND, quietPeriod);
 
+        // Do we already have this task in the queue? Because if so, we won't schedule a new one.
     	List<Item> duplicatesInQueue = new ArrayList<Item>();
     	for(Item item : getItems(p)) {
     		boolean shouldScheduleItem = false;
@@ -433,13 +434,15 @@ public class Queue extends ResourceController implements Saveable {
     			duplicatesInQueue.add(item);
     		}
     	}
-    	if (duplicatesInQueue.size() == 0) {
+    	if (duplicatesInQueue.isEmpty()) {
     		LOGGER.fine(p.getFullDisplayName() + " added to queue");
 
     		// put the item in the queue
     		waitingList.add(added=new WaitingItem(due,p,actions));
     	} else {
     		// the requested build is already queued, so will not be added
+            added = null;
+
     		List<WaitingItem> waitingDuplicates = new ArrayList<WaitingItem>();
     		for(Item item : duplicatesInQueue) {
     			for(FoldableAction a : Util.filter(actions,FoldableAction.class)) {
@@ -447,11 +450,6 @@ public class Queue extends ResourceController implements Saveable {
     			}
     			if ((item instanceof WaitingItem))
     				waitingDuplicates.add((WaitingItem)item);
-    		}
-    		if(duplicatesInQueue.isEmpty()) {
-    			// all duplicates in the queue are already in the blocked or 
-    			// buildable stage no need to requeue
-    			return null;
     		}
     		// TODO: avoid calling scheduleMaintenance() if none of the waiting items 
     		// actually change
