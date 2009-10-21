@@ -73,12 +73,12 @@ public class Shell extends CommandInterpreter {
     /**
      * Older versions of bash have a bug where non-ASCII on the first line
      * makes the shell think the file is a binary file and not a script. Adding
-     * a leading carriage return works around this problem.
+     * a leading line feed works around this problem.
      */
     private static String addCrForNonASCII(String s) {
         if(!s.startsWith("#!")) {
             if (s.indexOf('\n')!=0) {
-                return new String("\n" + s);
+                return "\n" + s;
             }
         }
 
