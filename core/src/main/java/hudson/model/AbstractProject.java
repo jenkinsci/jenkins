@@ -641,7 +641,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
         if (isDisabled())
             return null;
 
-        List<Action> queueActions = new ArrayList(Arrays.asList(actions));
+        List<Action> queueActions = new ArrayList<Action>(Arrays.asList(actions));
         if (isParameterized() && Util.filter(queueActions, ParametersAction.class).isEmpty()) {
             queueActions.add(new ParametersAction(getDefaultParametersValues()));
         }
