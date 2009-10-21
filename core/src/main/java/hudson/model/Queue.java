@@ -33,6 +33,7 @@ import hudson.cli.declarative.CLIResolver;
 import hudson.remoting.AsyncFutureImpl;
 import hudson.model.Node.Mode;
 import hudson.model.queue.CauseOfBlockage;
+import hudson.model.queue.FoldableAction;
 import hudson.model.queue.CauseOfBlockage.BecauseLabelIsBusy;
 import hudson.model.queue.CauseOfBlockage.BecauseNodeIsOffline;
 import hudson.model.queue.CauseOfBlockage.BecauseLabelIsOffline;
