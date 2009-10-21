@@ -10,6 +10,7 @@ import org.jvnet.hudson.test.ExtractChangeLogSet;
 import hudson.Launcher;
 import hudson.model.BuildListener;
 import hudson.model.Result;
+import hudson.tasks.Maven.MavenInstallation;
 
 import java.io.IOException;
 import java.util.List;
@@ -33,7 +34,7 @@ public class MavenMultiModuleTest extends HudsonTestCase {
     }
 
     public void testIncrementalMultiModMaven() throws Exception {
-        configureDefaultMaven("apache-maven-2.2.1");
+        configureDefaultMaven("apache-maven-2.2.1", MavenInstallation.MAVEN_21);
         MavenModuleSet m = createMavenProject();
         m.getReporters().add(new TestReporter());
 	m.setScm(new ExtractResourceWithChangesSCM(getClass().getResource("maven-multimod.zip"),
@@ -69,7 +70,7 @@ public class MavenMultiModuleTest extends HudsonTestCase {
      * enabled and a new module is added.
      */
     public void testNewModMultiModMaven() throws Exception {
-        configureDefaultMaven("apache-maven-2.2.1");
+        configureDefaultMaven("apache-maven-2.2.1", MavenInstallation.MAVEN_21);
         MavenModuleSet m = createMavenProject();
         m.getReporters().add(new TestReporter());
 	m.setScm(new ExtractResourceWithChangesSCM(getClass().getResource("maven-multimod.zip"),
@@ -85,7 +86,7 @@ public class MavenMultiModuleTest extends HudsonTestCase {
      */
     @Bug(4491)
     public void testMultiModMavenNonRecursiveParsing() throws Exception {
-        configureDefaultMaven("apache-maven-2.2.1");
+        configureDefaultMaven("apache-maven-2.2.1", MavenInstallation.MAVEN_21);
         MavenModuleSet m = createMavenProject();
 	m.setGoals("clean install -N");
         m.getReporters().add(new TestReporter());
@@ -120,7 +121,7 @@ public class MavenMultiModuleTest extends HudsonTestCase {
      */
     @Bug(4152)
     public void testIncrementalMultiModWithErrorsMaven() throws Exception {
-        configureDefaultMaven("apache-maven-2.2.1");
+        configureDefaultMaven("apache-maven-2.2.1", MavenInstallation.MAVEN_21);
         MavenModuleSet m = createMavenProject();
         m.getReporters().add(new TestReporter());
 	m.setScm(new ExtractResourceWithChangesSCM(getClass().getResource("maven-multimod-incr.zip"),
@@ -160,7 +161,7 @@ public class MavenMultiModuleTest extends HudsonTestCase {
      */
     @Bug(4378)
     public void testMultiModWithTestFailuresMaven() throws Exception {
-        configureDefaultMaven("apache-maven-2.2.1");
+        configureDefaultMaven("apache-maven-2.2.1", MavenInstallation.MAVEN_21);
         MavenModuleSet m = createMavenProject();
         m.getReporters().add(new TestReporter());
 	m.setScm(new ExtractResourceSCM(getClass().getResource("maven-multimod-incr.zip")));
