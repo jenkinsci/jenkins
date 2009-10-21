@@ -380,7 +380,7 @@ public class Queue extends ResourceController implements Saveable {
 
         return scheduleInternal(p, quietPeriod, actions);
     }
-    
+
     /**
      * Schedules an execution of a task.
      *
@@ -426,7 +426,7 @@ public class Queue extends ResourceController implements Saveable {
         // but let the actions affect the existing stuff.
         for(Item item : duplicatesInQueue) {
             for(FoldableAction a : Util.filter(actions,FoldableAction.class)) {
-                a.foldIntoExisting(item.task, item.getActions());
+                a.foldIntoExisting(item, p, actions);
             }
         }
 
@@ -1207,6 +1207,8 @@ public class Queue extends ResourceController implements Saveable {
     /**
      * An optional interface for actions on Queue.Item.
      * Lets the action cooperate in queue management.
+     * 
+     * @since 1.300-ish.
      */
     public interface QueueAction extends Action {
     	/**
