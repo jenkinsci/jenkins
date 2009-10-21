@@ -357,23 +357,6 @@ public class Queue extends ResourceController implements Saveable {
     /**
      * Schedules an execution of a task.
      *
-     * @param quietPeriod Number of seconds that the task will be placed in queue.
-     *                    Useful when the same task is likely scheduled for multiple
-     *                    times.
-     * @return true if the project 'p' is actually added to the queue.
-     *         false if the queue contained it and therefore the add()
-     *         was noop, or just changed the due date of the task.
-     * @since 1.114
-     * @deprecated as of 1.311
-     *      Use {@link #schedule(Task, int, List)} 
-     */
-    private boolean add(Task p, int quietPeriod, List<Action> actions) {
-        return schedule(p,quietPeriod,actions)!=null;
-    }
-
-    /**
-     * Schedules an execution of a task.
-     *
      * @since 1.311
      * @return
      *      null if this task is already in the queue and therefore the add operation was no-op.
