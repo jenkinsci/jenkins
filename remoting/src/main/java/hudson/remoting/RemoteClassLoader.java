@@ -195,14 +195,17 @@ final class RemoteClassLoader extends URLClassLoader {
     }
 
     private File makeResource(String name, byte[] image) throws IOException {
-        int idx = name.lastIndexOf('/');
-        File f = File.createTempFile("hudson-remoting","."+name.substring(idx+1));
-        FileOutputStream fos = new FileOutputStream(f);
+        File tmpFile = File.createTempFile("hudson-remoting", "");
+        tmpFile.delete();
+        File resource = new File(tmpFile, name);
+        resource.getParentFile().mkdirs();
+
+        FileOutputStream fos = new FileOutputStream(resource);
         fos.write(image);
         fos.close();
-        f.deleteOnExit();
+        resource.deleteOnExit();
 
-        return f;
+        return resource;
     }
 
     /**
