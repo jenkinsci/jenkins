@@ -391,16 +391,11 @@ public class Queue extends ResourceController implements Saveable {
             if (a==null)    itr.remove();
         }
 
-    	boolean shouldSchedule = true;
-    	for(QueueDecisionHandler h : QueueDecisionHandler.all()) {
-    		shouldSchedule = shouldSchedule && h.shouldSchedule(p, actions);
-    	}
-    	
-    	WaitingItem added = null;
-    	if (shouldSchedule) {
-    		added = scheduleInternal(p, quietPeriod, actions);
-    	}
-    	return added;
+    	for(QueueDecisionHandler h : QueueDecisionHandler.all())
+    		if (!h.shouldSchedule(p, actions))
+                return null;    // veto
+
+        return scheduleInternal(p, quietPeriod, actions);
     }
     
     /**
