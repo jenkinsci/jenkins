@@ -443,17 +443,15 @@ public class Queue extends ResourceController implements Saveable {
     		// the requested build is already queued, so will not be added
             added = null;
 
-    		List<WaitingItem> waitingDuplicates = new ArrayList<WaitingItem>();
     		for(Item item : duplicatesInQueue) {
     			for(FoldableAction a : Util.filter(actions,FoldableAction.class)) {
                     a.foldIntoExisting(item.task, item.getActions());
     			}
-    			if ((item instanceof WaitingItem))
-    				waitingDuplicates.add((WaitingItem)item);
     		}
+
     		// TODO: avoid calling scheduleMaintenance() if none of the waiting items 
     		// actually change
-    		for(WaitingItem wi : waitingDuplicates) {
+    		for(WaitingItem wi : Util.filter(duplicatesInQueue,WaitingItem.class)) {
     			if(quietPeriod<=0) {
     				// the user really wants to build now, and they mean NOW.
     				// so let's pull in the timestamp if we can.
