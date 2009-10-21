@@ -1397,11 +1397,6 @@ public class Queue extends ResourceController implements Saveable {
         }
     }
 
-    /**
-     * Unique number generator
-     */
-    private int iota = 0;
-
     private static final Logger LOGGER = Logger.getLogger(Queue.class.getName());
 
     /**
