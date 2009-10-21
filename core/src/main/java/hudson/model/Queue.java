@@ -394,7 +394,6 @@ public class Queue extends ResourceController implements Saveable {
      *      That said, one can still look at {@link WaitingItem#future}, {@link WaitingItem#id}, etc.
      */
     private synchronized WaitingItem scheduleInternal(Task p, int quietPeriod, List<Action> actions) {
-    	WaitingItem added;
         Calendar due = new GregorianCalendar();
     	due.add(Calendar.SECOND, quietPeriod);
 
@@ -416,41 +415,44 @@ public class Queue extends ResourceController implements Saveable {
     		LOGGER.fine(p.getFullDisplayName() + " added to queue");
 
     		// put the item in the queue
-    		waitingList.add(added=new WaitingItem(due,p,actions));
-    	} else {
-    		// the requested build is already queued, so will not be added
-            added = null;
-
-    		for(Item item : duplicatesInQueue) {
-    			for(FoldableAction a : Util.filter(actions,FoldableAction.class)) {
-                    a.foldIntoExisting(item.task, item.getActions());
-    			}
-    		}
-
-    		// TODO: avoid calling scheduleMaintenance() if none of the waiting items 
-    		// actually change
-    		for(WaitingItem wi : Util.filter(duplicatesInQueue,WaitingItem.class)) {
-    			if(quietPeriod<=0) {
-    				// the user really wants to build now, and they mean NOW.
-    				// so let's pull in the timestamp if we can.
-    				if (wi.timestamp.before(due))
-    					continue;
-    			} else {
-    				// otherwise we do the normal quiet period implementation
-    				if (wi.timestamp.after(due))
-    					continue;
-    				// quiet period timer reset. start the period over again
-    			}
-
-    			// waitingList is sorted, so when we change a timestamp we need to maintain order
-    			waitingList.remove(wi);
-    			wi.timestamp = due;
-    			waitingList.add(wi);
-    		}
-
+            WaitingItem added = new WaitingItem(due,p,actions);
+    		waitingList.add(added);
+            scheduleMaintenance();   // let an executor know that a new item is in the queue.
+            return added;
     	}
-    	scheduleMaintenance();   // let an executor know that a new item is in the queue.
-    	return added;
+
+        LOGGER.fine(p.getFullDisplayName() + " is already in the queue");
+
+        // but let the actions affect the existing stuff.
+        for(Item item : duplicatesInQueue) {
+            for(FoldableAction a : Util.filter(actions,FoldableAction.class)) {
+                a.foldIntoExisting(item.task, item.getActions());
+            }
+        }
+
+        boolean queueUpdated = false;
+        for(WaitingItem wi : Util.filter(duplicatesInQueue,WaitingItem.class)) {
+            if(quietPeriod<=0) {
+                // the user really wants to build now, and they mean NOW.
+                // so let's pull in the timestamp if we can.
+                if (wi.timestamp.before(due))
+                    continue;
+            } else {
+                // otherwise we do the normal quiet period implementation
+                if (wi.timestamp.after(due))
+                    continue;
+                // quiet period timer reset. start the period over again
+            }
+
+            // waitingList is sorted, so when we change a timestamp we need to maintain order
+            waitingList.remove(wi);
+            wi.timestamp = due;
+            waitingList.add(wi);
+            queueUpdated=true;
+        }
+
+        if (queueUpdated)   scheduleMaintenance();
+        return null;
     }
     
     /**
