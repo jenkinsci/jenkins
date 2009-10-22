@@ -56,7 +56,7 @@ THE SOFTWARE.
       <plugin>
         <groupId>org.kohsuke.stapler</groupId>
         <artifactId>maven-stapler-plugin</artifactId>
-        <version>1.13</version>
+        <version>1.14</version>
         <extensions>true</extensions>
         <dependencies>
           <dependency>
@@ -328,7 +328,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.kohsuke.stapler</groupId>
       <artifactId>stapler-jelly</artifactId>
-      <version>1.117</version>
+      <version>1.118</version>
       <exclusions>
         <exclusion>
           <groupId>dom4j</groupId>
@@ -343,6 +343,11 @@ THE SOFTWARE.
           <artifactId>commons-jexl</artifactId>
         </exclusion>
       </exclusions>
+    </dependency>
+    <dependency><!-- until we get this version through Stapler -->
+      <groupId>org.kohsuke.stapler</groupId>
+      <artifactId>json-lib</artifactId>
+      <version>2.1-rev3</version>
     </dependency>
     <dependency>
       <groupId>args4j</groupId>

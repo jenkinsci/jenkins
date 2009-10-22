@@ -32,6 +32,12 @@ import hudson.cli.declarative.CLIMethod;
 import hudson.cli.declarative.CLIResolver;
 import hudson.remoting.AsyncFutureImpl;
 import hudson.model.Node.Mode;
+import hudson.model.queue.CauseOfBlockage;
+import hudson.model.queue.FoldableAction;
+import hudson.model.queue.CauseOfBlockage.BecauseLabelIsBusy;
+import hudson.model.queue.CauseOfBlockage.BecauseNodeIsOffline;
+import hudson.model.queue.CauseOfBlockage.BecauseLabelIsOffline;
+import hudson.model.queue.CauseOfBlockage.BecauseNodeIsBusy;
 import hudson.triggers.SafeTimerTask;
 import hudson.triggers.Trigger;
 import hudson.util.OneShotEvent;
@@ -352,23 +358,6 @@ public class Queue extends ResourceController implements Saveable {
     /**
      * Schedules an execution of a task.
      *
-     * @param quietPeriod Number of seconds that the task will be placed in queue.
-     *                    Useful when the same task is likely scheduled for multiple
-     *                    times.
-     * @return true if the project 'p' is actually added to the queue.
-     *         false if the queue contained it and therefore the add()
-     *         was noop, or just changed the due date of the task.
-     * @since 1.114
-     * @deprecated as of 1.311
-     *      Use {@link #schedule(Task, int, List)} 
-     */
-    private boolean add(Task p, int quietPeriod, List<Action> actions) {
-        return schedule(p,quietPeriod,actions)!=null;
-    }
-
-    /**
-     * Schedules an execution of a task.
-     *
      * @since 1.311
      * @return
      *      null if this task is already in the queue and therefore the add operation was no-op.
@@ -386,18 +375,13 @@ public class Queue extends ResourceController implements Saveable {
             if (a==null)    itr.remove();
         }
 
-    	boolean shouldSchedule = true;
-    	for(QueueDecisionHandler h : QueueDecisionHandler.all()) {
-    		shouldSchedule = shouldSchedule && h.shouldSchedule(p, actions);
-    	}
-    	
-    	WaitingItem added = null;
-    	if (shouldSchedule) {
-    		added = scheduleInternal(p, quietPeriod, actions);
-    	}
-    	return added;
+    	for(QueueDecisionHandler h : QueueDecisionHandler.all())
+    		if (!h.shouldSchedule(p, actions))
+                return null;    // veto
+
+        return scheduleInternal(p, quietPeriod, actions);
     }
-    
+
     /**
      * Schedules an execution of a task.
      *
@@ -411,73 +395,65 @@ public class Queue extends ResourceController implements Saveable {
      *      That said, one can still look at {@link WaitingItem#future}, {@link WaitingItem#id}, etc.
      */
     private synchronized WaitingItem scheduleInternal(Task p, int quietPeriod, List<Action> actions) {
-    	WaitingItem added=null;
-    	List<Item> items = getItems(p);
-    	Calendar due = new GregorianCalendar();
+        Calendar due = new GregorianCalendar();
     	due.add(Calendar.SECOND, quietPeriod);
 
+        // Do we already have this task in the queue? Because if so, we won't schedule a new one.
     	List<Item> duplicatesInQueue = new ArrayList<Item>();
-    	for(Item item : items) {
+    	for(Item item : getItems(p)) {
     		boolean shouldScheduleItem = false;
-    		for (Action action: item.getActions()) {
-    			if (action instanceof QueueAction)
-    				shouldScheduleItem |= ((QueueAction) action).shouldSchedule(actions);
+    		for (QueueAction action: item.getActions(QueueAction.class)) {
+                shouldScheduleItem |= action.shouldSchedule(actions);
     		}
-    		for (Action action: actions) {
-    			if (action instanceof QueueAction) {
-    				shouldScheduleItem |= ((QueueAction) action).shouldSchedule(item.getActions());
-    			}
+    		for (QueueAction action: Util.filter(actions,QueueAction.class)) {
+                shouldScheduleItem |= action.shouldSchedule(item.getActions());
     		}
     		if(!shouldScheduleItem) {
     			duplicatesInQueue.add(item);
     		}
     	}
-    	if (duplicatesInQueue.size() == 0) {
+    	if (duplicatesInQueue.isEmpty()) {
     		LOGGER.fine(p.getFullDisplayName() + " added to queue");
 
     		// put the item in the queue
-    		waitingList.add(added=new WaitingItem(due,p,actions));
-    	} else {
-    		// the requested build is already queued, so will not be added
-    		List<WaitingItem> waitingDuplicates = new ArrayList<WaitingItem>();
-    		for(Item item : duplicatesInQueue) {
-    			for(Action a : actions) {
-    				if(a instanceof FoldableAction) {
-    					((FoldableAction)a).foldIntoExisting(item.task, item.getActions());
-    				}
-    			}
-    			if ((item instanceof WaitingItem))
-    				waitingDuplicates.add((WaitingItem)item);
-    		}
-    		if(duplicatesInQueue.size() == 0) {
-    			// all duplicates in the queue are already in the blocked or 
-    			// buildable stage no need to requeue
-    			return null;
-    		}
-    		// TODO: avoid calling scheduleMaintenance() if none of the waiting items 
-    		// actually change
-    		for(WaitingItem wi : waitingDuplicates) {
-    			if(quietPeriod<=0) {
-    				// the user really wants to build now, and they mean NOW.
-    				// so let's pull in the timestamp if we can.
-    				if (wi.timestamp.before(due))
-    					continue;
-    			} else {
-    				// otherwise we do the normal quiet period implementation
-    				if (wi.timestamp.after(due))
-    					continue;
-    				// quiet period timer reset. start the period over again
-    			}
-
-    			// waitingList is sorted, so when we change a timestamp we need to maintain order
-    			waitingList.remove(wi);
-    			wi.timestamp = due;
-    			waitingList.add(wi);
-    		}
-
+            WaitingItem added = new WaitingItem(due,p,actions);
+    		waitingList.add(added);
+            scheduleMaintenance();   // let an executor know that a new item is in the queue.
+            return added;
     	}
-    	scheduleMaintenance();   // let an executor know that a new item is in the queue.
-    	return added;
+
+        LOGGER.fine(p.getFullDisplayName() + " is already in the queue");
+
+        // but let the actions affect the existing stuff.
+        for(Item item : duplicatesInQueue) {
+            for(FoldableAction a : Util.filter(actions,FoldableAction.class)) {
+                a.foldIntoExisting(item, p, actions);
+            }
+        }
+
+        boolean queueUpdated = false;
+        for(WaitingItem wi : Util.filter(duplicatesInQueue,WaitingItem.class)) {
+            if(quietPeriod<=0) {
+                // the user really wants to build now, and they mean NOW.
+                // so let's pull in the timestamp if we can.
+                if (wi.timestamp.before(due))
+                    continue;
+            } else {
+                // otherwise we do the normal quiet period implementation
+                if (wi.timestamp.after(due))
+                    continue;
+                // quiet period timer reset. start the period over again
+            }
+
+            // waitingList is sorted, so when we change a timestamp we need to maintain order
+            waitingList.remove(wi);
+            wi.timestamp = due;
+            waitingList.add(wi);
+            queueUpdated=true;
+        }
+
+        if (queueUpdated)   scheduleMaintenance();
+        return null;
     }
     
     /**
@@ -980,17 +956,28 @@ public class Queue extends ResourceController implements Saveable {
          * for temporary reasons.
          *
          * <p>
-         * This can be used to define mutual exclusion that goes beyond
-         * {@link #getResourceList()}.
+         * Short-hand for {@code getCauseOfBlockage()!=null}.
          */
         boolean isBuildBlocked();
 
         /**
-         * When {@link #isBuildBlocked()} is true, this method returns
-         * human readable description of why the build is blocked.
-         * Used for HTML rendering.
+         * @deprecated as of 1.330
+         *      Use {@link CauseOfBlockage#getShortDescription()} instead.
          */
         String getWhyBlocked();
+
+        /**
+         * If the execution of this task should be blocked for temporary reasons,
+         * this method returns a non-null object explaining why.
+         *
+         * <p>
+         * Otherwise this method returns null, indicating that the build can proceed right away.
+         *
+         * <p>
+         * This can be used to define mutual exclusion that goes beyond
+         * {@link #getResourceList()}.
+         */
+        CauseOfBlockage getCauseOfBlockage();
 
         /**
          * Unique name of this task.
@@ -1155,8 +1142,16 @@ public class Queue extends ResourceController implements Saveable {
          * Gets a human-readable status message describing why it's in the queue.
          */
         @Exported
-        public abstract String getWhy();
-        
+        public final String getWhy() {
+            CauseOfBlockage cob = getCauseOfBlockage();
+            return cob!=null ? cob.getShortDescription() : null;
+        }
+
+        /**
+         * Gets an object that describes why this item is in the queue.
+         */
+        public abstract CauseOfBlockage getCauseOfBlockage();
+
         /**
          * Gets a human-readable message about the parameters of this item
          * @return String
@@ -1213,6 +1208,8 @@ public class Queue extends ResourceController implements Saveable {
     /**
      * An optional interface for actions on Queue.Item.
      * Lets the action cooperate in queue management.
+     * 
+     * @since 1.300-ish.
      */
     public interface QueueAction extends Action {
     	/**
@@ -1296,13 +1293,12 @@ public class Queue extends ResourceController implements Saveable {
             return this.id - that.id;
         }
 
-        @Override
-        public String getWhy() {
+        public CauseOfBlockage getCauseOfBlockage() {
             long diff = timestamp.getTimeInMillis() - System.currentTimeMillis();
             if (diff > 0)
-                return Messages.Queue_InQuietPeriod(Util.getTimeSpanString(diff));
+                return CauseOfBlockage.fromMessage(Messages._Queue_InQuietPeriod(Util.getTimeSpanString(diff)));
             else
-                return Messages.Queue_Unknown();
+                return CauseOfBlockage.fromMessage(Messages._Queue_Unknown());
         }
     }
 
@@ -1339,15 +1335,14 @@ public class Queue extends ResourceController implements Saveable {
             super(ni);
         }
 
-        @Override
-        public String getWhy() {
+        public CauseOfBlockage getCauseOfBlockage() {
             ResourceActivity r = getBlockingActivity(task);
             if (r != null) {
                 if (r == task) // blocked by itself, meaning another build is in progress
-                    return Messages.Queue_InProgress();
-                return Messages.Queue_BlockedBy(r.getDisplayName());
+                    return CauseOfBlockage.fromMessage(Messages._Queue_InProgress());
+                return CauseOfBlockage.fromMessage(Messages._Queue_BlockedBy(r.getDisplayName()));
             }
-            return task.getWhyBlocked();
+            return task.getCauseOfBlockage();
         }
     }
 
@@ -1363,31 +1358,29 @@ public class Queue extends ResourceController implements Saveable {
             super(ni);
         }
 
-        @Override
-        public String getWhy() {
+        public CauseOfBlockage getCauseOfBlockage() {
             Hudson hudson = Hudson.getInstance();
             if(hudson.isQuietingDown())
-                return Messages.Queue_HudsonIsAboutToShutDown();
+                return CauseOfBlockage.fromMessage(Messages._Queue_HudsonIsAboutToShutDown());
 
             Label label = task.getAssignedLabel();
             if (hudson.getNodes().isEmpty())
                 label = null;    // no master/slave. pointless to talk about nodes
 
-            String name = null;
             if (label != null) {
-                name = label.getName();
                 if (label.isOffline()) {
-                    if (label.getNodes().size() > 1)
-                        return Messages.Queue_AllNodesOffline(name);
-                    else
-                        return Messages.Queue_NodeOffline(name);
+                    Set<Node> nodes = label.getNodes();
+                    if (nodes.size() > 1)       return new BecauseLabelIsOffline(label);
+                    else                        return new BecauseNodeIsOffline(nodes.iterator().next());
                 }
             }
 
-            if(name==null)
-                return Messages.Queue_WaitingForNextAvailableExecutor();
-            else
-                return Messages.Queue_WaitingForNextAvailableExecutorOn(name);
+            if(label==null)
+                return CauseOfBlockage.fromMessage(Messages._Queue_WaitingForNextAvailableExecutor());
+
+            Set<Node> nodes = label.getNodes();
+            if (nodes.size() > 1)       return new BecauseLabelIsBusy(label);
+            else                        return new BecauseNodeIsBusy(nodes.iterator().next());
         }
 
         @Override
@@ -1408,11 +1401,6 @@ public class Queue extends ResourceController implements Saveable {
             }
         }
     }
-
-    /**
-     * Unique number generator
-     */
-    private int iota = 0;
 
     private static final Logger LOGGER = Logger.getLogger(Queue.class.getName());
 

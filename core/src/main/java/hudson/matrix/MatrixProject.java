@@ -24,7 +24,6 @@
 package hudson.matrix;
 
 import hudson.CopyOnWrite;
-import hudson.FilePath;
 import hudson.XmlFile;
 import hudson.Util;
 import hudson.Extension;
@@ -39,12 +38,10 @@ import hudson.model.Items;
 import hudson.model.JDK;
 import hudson.model.Job;
 import hudson.model.Label;
-import hudson.model.Node;
 import hudson.model.Result;
 import hudson.model.SCMedItem;
 import hudson.model.Saveable;
 import hudson.model.TopLevelItem;
-import hudson.model.TopLevelItemDescriptor;
 import hudson.model.ResourceController;
 import hudson.model.Queue.FlyweightTask;
 import hudson.model.Descriptor.FormException;

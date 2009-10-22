@@ -81,9 +81,11 @@ public class MavenBuildTest extends HudsonTestCase {
         SubversionSCM scm = new SubversionSCM("https://www.dev.java.net/svn/hudson/trunk/hudson/test-projects/multimodule-maven");
         setJavaNetCredential(scm);
         m.setScm(scm);
-        m.setAggregatorStyleBuild(false);
         
         assertBuildStatusSuccess(m.scheduleBuild2(0).get());
+
+        m.setAggregatorStyleBuild(false);
+
         // run module builds
         assertBuildStatusSuccess(m.getModule("test$module1").scheduleBuild2(0).get());
         assertBuildStatusSuccess(m.getModule("test$module1").scheduleBuild2(0).get());

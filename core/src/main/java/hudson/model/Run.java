@@ -73,6 +73,7 @@ import java.util.Comparator;
 import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
@@ -718,12 +719,12 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
     }
 
     /**
-     * Gets the first {@value #CUTOFF} artifacts (relative to {@link #getArtifactsDir()}.
+     * Gets the first {@value #TREE_CUTOFF} artifacts (relative to {@link #getArtifactsDir()}.
      */
     @Exported
     public List<Artifact> getArtifacts() {
         ArtifactList r = new ArtifactList();
-        addArtifacts(getArtifactsDir(),"","",r);
+        addArtifacts(getArtifactsDir(),"","",r,null);
         r.computeDisplayName();
         return r;
     }
@@ -738,26 +739,58 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
         return !getArtifacts().isEmpty();
     }
 
-    private void addArtifacts( File dir, String path, String pathHref, List<Artifact> r ) {
+    private void addArtifacts( File dir, String path, String pathHref, ArtifactList r, Artifact parent ) {
         String[] children = dir.list();
         if(children==null)  return;
+        String childPath, childHref;
+        boolean collapsed;
+        Artifact a;
         for (String child : children) {
-            if(r.size()>CUTOFF)
+            if(r.size()>TREE_CUTOFF)
                 return;
+            childPath = path + child;
+            childHref = pathHref + Util.rawEncode(child);
             File sub = new File(dir, child);
-            if (sub.isDirectory()) {
-                addArtifacts(sub, path + child + '/', pathHref + Util.rawEncode(child) + '/', r);
+            collapsed = (children.length==1 && parent!=null);
+            if (collapsed) {
+                // Collapse single items into parent node where possible:
+                a = new Artifact(parent.getFileName() + '/' + child, childPath,
+                                 sub.isDirectory() ? null : childHref, parent.getTreeNodeId());
+                r.tree.put(a, r.tree.remove(parent));
             } else {
-                r.add(new Artifact(path + child, pathHref + Util.rawEncode(child)));
+                // Use null href for a directory:
+                a = new Artifact(child, childPath,
+                                 sub.isDirectory() ? null : childHref, "n" + ++r.idSeq);
+                r.tree.put(a, parent!=null ? parent.getTreeNodeId() : null);
+            }
+            if (sub.isDirectory()) {
+                addArtifacts(sub, childPath + '/', childHref + '/', r, a);
+            } else {
+                // Don't store collapsed path in ArrayList (for correct data in external API)
+                r.add(collapsed ? new Artifact(child, a.relativePath, a.href, a.treeNodeId) : a);
             }
         }
     }
 
-    private static final int CUTOFF = 17;   // 0, 1,... 16, and then "too many"
+    public static final int
+        LIST_CUTOFF = Integer.parseInt(System.getProperty("hudson.model.Run.ArtifactList.listCutoff", "16")),
+        TREE_CUTOFF = Integer.parseInt(System.getProperty("hudson.model.Run.ArtifactList.treeCutoff", "40"));
+        // ..and then "too many"
 
     public final class ArtifactList extends ArrayList<Artifact> {
+        /**
+         * Map of Artifact to treeNodeId of parent node in tree view.
+         * Contains Artifact objects for directories and files (the ArrayList contains only files).
+         */
+        private LinkedHashMap<Artifact,String> tree = new LinkedHashMap<Artifact,String>();
+        private int idSeq = 0;
+
+        public Map<Artifact,String> getTree() {
+            return tree;
+        }
+
         public void computeDisplayName() {
-            if(size()>CUTOFF)   return; // we are not going to display file names, so no point in computing this
+            if(size()>LIST_CUTOFF)   return; // we are not going to display file names, so no point in computing this
 
             int maxDepth = 0;
             int[] len = new int[size()];
@@ -843,11 +876,28 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
          */
         /*package*/ String displayPath;
 
+        /**
+         * The filename of the artifact.
+         * (though when directories with single items are collapsed for tree view, name may
+         *  include multiple path components, like "dist/pkg/mypkg")
+         */
+        private String name;
+
+        /**
+         * Properly encoded relativePath for use in URLs.  This field is null for directories.
+         */
         private String href;
 
-        /*package for test*/ Artifact(String relativePath, String href) {
+        /**
+         * Id of this node for use in tree view.
+         */
+        private String treeNodeId;
+
+        /*package for test*/ Artifact(String name, String relativePath, String href, String treeNodeId) {
+            this.name = name;
             this.relativePath = relativePath;
             this.href = href;
+            this.treeNodeId = treeNodeId;
         }
 
         /**
@@ -862,7 +912,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
          */
     	@Exported(visibility=3)
         public String getFileName() {
-            return getFile().getName();
+            return name;
         }
 
     	@Exported(visibility=3)
@@ -872,6 +922,10 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
 
         public String getHref() {
             return href;
+        }
+
+        public String getTreeNodeId() {
+            return treeNodeId;
         }
 
         @Override

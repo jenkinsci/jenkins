@@ -24,12 +24,12 @@
 package hudson.model;
 
 import hudson.model.Queue.Task;
+import hudson.model.queue.FoldableAction;
+import org.kohsuke.stapler.export.Exported;
+import org.kohsuke.stapler.export.ExportedBean;
 
 import java.util.ArrayList;
 import java.util.List;
-
-import org.kohsuke.stapler.export.Exported;
-import org.kohsuke.stapler.export.ExportedBean;
 
 @ExportedBean
 public class CauseAction implements FoldableAction {
@@ -77,15 +77,14 @@ public class CauseAction implements FoldableAction {
         return causes.get(0).getShortDescription();
     }
 
-	public void foldIntoExisting(Task t, List<Action> actions) {
-		for(Action action : actions) {
-			if(action instanceof CauseAction) {
-				this.causes.addAll(((CauseAction)action).causes);
-				return;
-			}
+    public void foldIntoExisting(hudson.model.Queue.Item item, Task owner, List<Action> otherActions) {
+        CauseAction existing = item.getAction(CauseAction.class);
+        if (existing!=null) {
+            existing.causes.addAll(this.causes);
+            return;
 		}
 		// no CauseAction found, so add a copy of this one
-		actions.add(new CauseAction(this));
+		item.getActions().add(new CauseAction(this));
 	}
 	
 	private Object readResolve() {

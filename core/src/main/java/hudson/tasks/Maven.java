@@ -347,7 +347,13 @@ public class Maven extends Builder {
      * Represents a Maven installation in a system.
      */
     public static final class MavenInstallation extends ToolInstallation implements EnvironmentSpecific<MavenInstallation>, NodeSpecific<MavenInstallation> {
-
+        /**
+         * Constants for describing Maven versions for comparison.
+         */
+        public static final int MAVEN_20 = 0;
+        public static final int MAVEN_21 = 1;
+        
+    
         /**
          * @deprecated since 2009-02-25.
          */
@@ -387,13 +393,52 @@ public class Maven extends Builder {
         }
 
         /**
+         * Compares the version of this Maven installation to the minimum required version specified.
+         *
+         * @param launcher
+         *      Represents the node on which we evaluate the path.
+         * @param mavenReqVersion
+         *      Represents the minimum required Maven version - constants defined above.
+         */
+        public boolean meetsMavenReqVersion(Launcher launcher, int mavenReqVersion) throws IOException, InterruptedException {
+            String mavenVersion = launcher.getChannel().call(new Callable<String,IOException>() {
+                    public String call() throws IOException {
+                        File[] jars = new File(getHomeDir(),"lib").listFiles();
+                        if(jars!=null) { // be defensive
+                            for (File jar : jars) {
+                                if (jar.getName().endsWith("-uber.jar") && jar.getName().startsWith("maven-")) {
+                                    return jar.getName();
+                                }
+                            }
+                        }
+                        return "";
+                    }
+                });
+
+            if (!mavenVersion.equals("")) {
+                if (mavenReqVersion == MAVEN_20) {
+                    if(mavenVersion.startsWith("maven-2.") || mavenVersion.startsWith("maven-core-2"))
+                        return true;
+                }
+                else if (mavenReqVersion == MAVEN_21) {
+                    if(mavenVersion.startsWith("maven-2.") && !mavenVersion.startsWith("maven-2.0"))
+                        return true;
+                }
+            }
+            return false;
+            
+        }
+        
+        /**
          * Is this Maven 2.1.x or later?
          *
          * @param launcher
          *      Represents the node on which we evaluate the path.
          */
         public boolean isMaven2_1(Launcher launcher) throws IOException, InterruptedException {
-            return launcher.getChannel().call(new Callable<Boolean,IOException>() {
+            return meetsMavenReqVersion(launcher, MAVEN_21);
+        }
+            /*            return launcher.getChannel().call(new Callable<Boolean,IOException>() {
                 public Boolean call() throws IOException {
                     File[] jars = new File(getHomeDir(),"lib").listFiles();
                     if(jars!=null) // be defensive
@@ -402,8 +447,8 @@ public class Maven extends Builder {
                                 return true;
                     return false;
                 }
-            });
-        }
+                });
+                } */
 
         /**
          * Gets the executable path of this maven on the given target system.
@@ -552,4 +597,5 @@ public class Maven extends Builder {
          */
         MavenInstallation inferMavenInstallation();
     }
+
 }

@@ -52,7 +52,7 @@ public class FreeStyleBuild extends Build<FreeStyleProject,FreeStyleBuild> {
             String customWorkspace = getProject().getCustomWorkspace();
             if (customWorkspace != null)
                 // we allow custom workspaces to be concurrently used between jobs.
-                return Lease.createDummyLease(n.createPath(customWorkspace));
+                return Lease.createDummyLease(n.createPath(getEnvironment(listener).expand(customWorkspace)));
             return super.decideWorkspace(n,wsl);
         }
     }

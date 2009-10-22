@@ -35,7 +35,6 @@ import hudson.tasks.Maven.MavenInstallation;
 import hudson.tasks.*;
 import hudson.tasks.junit.JUnitResultArchiver;
 import static hudson.Util.fixEmpty;
-import static hudson.Util.fixEmptyAndTrim;
 import hudson.util.CopyOnWriteMap;
 import hudson.util.DescribableList;
 import hudson.util.Function1;

@@ -21,18 +21,39 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package hudson.model;
+package hudson.model.queue;
 
 import hudson.model.Queue.Task;
+import hudson.model.Action;
+import hudson.model.Queue;
 
 import java.util.List;
 
 /**
- * @author mdonohue
  * An action interface that allows action data to be folded together.
- * This is useful for combining any distinct values from a build determined to 
- * be a duplicate of a build already in the build queue.
+ *
+ * <p>
+ * {@link Action} can implement this optional marker interface to be notified when
+ * the {@link Task} that it's added to the queue with is determined to be "already in the queue".
+ *
+ * <p>
+ * This is useful for passing on parameters to the task that's already in the queue.
+ *
+ * @author mdonohue
+ * @since 1.300-ish.
  */
 public interface FoldableAction extends Action {
-    public void foldIntoExisting(Task t, List<Action> actions);
+    /**
+     * Notifies that the {@link Task} that "owns" this action (that is, the task for which this action is submitted)
+     * is considered as a duplicate.
+     *
+     * @param item
+     *      The existing {@link Queue.Item} in the queue against which we are judged as a duplicate. Never null.
+     * @param owner
+     *      The {@link Task} with which this action was submitted to the queue. Never null.
+     * @param otherActions
+     *      Other {@link Action}s that are submitted with the task. (One of them is this {@link FoldableAction}.)
+     *      Never null.
+     */
+    void foldIntoExisting(Queue.Item item, Task owner, List<Action> otherActions);
 }

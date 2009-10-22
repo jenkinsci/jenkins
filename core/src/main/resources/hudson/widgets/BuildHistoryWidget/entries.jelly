@@ -45,7 +45,17 @@ THE SOFTWARE.
               </a>
             </j:if>
           </div>
-          (${%pending}${h.prepend(' - ',item.why)})
+          <j:set var="cause" value="${item.getCauseOfBlockage()}"/>
+          <j:choose>
+            <j:when test="${cause!=null}">
+              (${%pending} -
+                <st:include it="${cause}" page="summary.jelly" />
+              )
+            </j:when>
+            <j:otherwise>
+              (${%pending})
+            </j:otherwise>
+          </j:choose>
         </td>
       </tr>
     </j:forEach>

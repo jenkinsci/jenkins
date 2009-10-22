@@ -536,7 +536,7 @@ public class UpdateCenter extends AbstractModelObject {
      * Configuration data for controlling the update center's behaviors. The update
      * center's defaults will check internet connectivity by trying to connect
      * to www.google.com; will download plugins, the plugin catalog and updates
-     * from hudson.dev.java.net; and will install plugins with file system
+     * from hudson-ci.org; and will install plugins with file system
      * operations.
      * 
      * @since 1.266
@@ -684,14 +684,14 @@ public class UpdateCenter extends AbstractModelObject {
          *      Absolute URL that ends with '/'.
          */
         public String getUpdateCenterUrl() {
-            return "https://hudson.dev.java.net/";
+            return "http://hudson-ci.org/";
         }
         
         /**
          * Returns the URL of the server that hosts plugins and core updates.
          */
         public String getPluginRepositoryBaseUrl() {
-            return "https://hudson.dev.java.net/";
+            return "http://hudson-ci.org/";
         }
         
         

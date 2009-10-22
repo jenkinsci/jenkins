@@ -81,7 +81,7 @@ public class JavaNetReverseProxy extends HttpServlet {
 
         File cache = new File(cacheFolder, d);
         if(!cache.exists()) {
-            URL url = new URL("https://hudson.dev.java.net/" + path);
+            URL url = new URL("http://hudson-ci.org/" + path);
             FileUtils.copyURLToFile(url,cache);
         }
 
@@ -105,7 +105,7 @@ public class JavaNetReverseProxy extends HttpServlet {
     public static synchronized JavaNetReverseProxy getInstance() throws Exception {
         if(INSTANCE==null)
             // TODO: think of a better location --- ideally inside the target/ dir so that clean would wipe them out
-            INSTANCE = new JavaNetReverseProxy(new File(new File(System.getProperty("java.io.tmpdir")),"java.net-cache"));
+            INSTANCE = new JavaNetReverseProxy(new File(new File(System.getProperty("java.io.tmpdir")),"hudson-ci.org-cache"));
         return INSTANCE;
     }
 }

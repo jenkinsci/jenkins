@@ -374,19 +374,21 @@ public abstract class HudsonTestCase extends TestCase implements RootAction {
      * Returns the older default Maven, while still allowing specification of other bundled Mavens.
      */
     protected MavenInstallation configureDefaultMaven() throws Exception {
-	return configureDefaultMaven("maven-2.0.7");
+	return configureDefaultMaven("maven-2.0.7", MavenInstallation.MAVEN_20);
     }
     
     /**
      * Locates Maven2 and configure that as the only Maven in the system.
      */
-    protected MavenInstallation configureDefaultMaven(String mavenVersion) throws Exception {
-        // first if we are running inside Maven, pick that Maven.
+    protected MavenInstallation configureDefaultMaven(String mavenVersion, int mavenReqVersion) throws Exception {
+        // first if we are running inside Maven, pick that Maven, if it meets the criteria we require..
         String home = System.getProperty("maven.home");
         if(home!=null) {
             MavenInstallation mavenInstallation = new MavenInstallation("default",home, NO_PROPERTIES);
-			hudson.getDescriptorByType(Maven.DescriptorImpl.class).setInstallations(mavenInstallation);
-            return mavenInstallation;
+            if (mavenInstallation.meetsMavenReqVersion(createLocalLauncher(), mavenReqVersion)) {
+                hudson.getDescriptorByType(Maven.DescriptorImpl.class).setInstallations(mavenInstallation);
+                return mavenInstallation;
+            }
         }
 
         // otherwise extract the copy we have.
