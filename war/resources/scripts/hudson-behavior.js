@@ -1569,7 +1569,7 @@ var updateCenter = {
     postBackURL : null,
     info: {},
     completionHandler: null,
-    url: "https://hudson.dev.java.net/",
+    url: "http://hudson-ci.org/",
 
     checkUpdates : function() {
         loadScript(updateCenter.url+"update-center.json?"+Hash.toQueryString(updateCenter.info));
