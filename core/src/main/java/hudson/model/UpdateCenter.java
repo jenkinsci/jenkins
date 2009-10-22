@@ -693,7 +693,7 @@ public class UpdateCenter extends AbstractModelObject {
         public String getPluginRepositoryBaseUrl() {
             return "http://hudson-ci.org/";
         }
-        
+
         
         private void testConnection(URL url) throws IOException {
             try {

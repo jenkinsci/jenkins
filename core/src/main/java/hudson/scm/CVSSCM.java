@@ -868,6 +868,11 @@ public class CVSSCM extends SCM implements Serializable {
                     task.setFailOnError(true);
                     BufferedOutputStream bufferedOutput = new BufferedOutputStream(out);
                     task.setDeststream(bufferedOutput);
+                    // It's to enforce ChangeLogParser find a "branch". If tag was specified, branch does not matter (see documentation for 'cvs log -r:tag').
+                    if (!isTag()){
+                        task.setBranch(branch);
+                    }
+                    // It's to enforce ChangeLogTask use "baranch" in CVS command (cvs log -r...).
                     task.setTag(isTag() ? ":" + branch : branch);
                     task.setStart(startTime);
                     task.setEnd(endTime);
