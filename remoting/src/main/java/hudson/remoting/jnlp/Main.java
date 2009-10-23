@@ -64,6 +64,10 @@ public class Main {
             usage="Specify the Hudson root URLs to connect to.")
     public final List<URL> urls = new ArrayList<URL>();
 
+    @Option(name="-credentials",metaVar="USER:PASSWORD",
+            usage="HTTP BASIC AUTH header to pass in for making HTTP requests.")
+    public String credentials;
+
     @Option(name="-noreconnect",
             usage="If the connection ends, don't retry and just exit.")
     public boolean noReconnect = false;
@@ -117,6 +121,8 @@ public class Main {
                 urls, args.get(0), args.get(1));
         if(tunnel!=null)
             engine.setTunnel(tunnel);
+        if(credentials!=null)
+            engine.setCredentials(credentials);
         engine.setNoReconnect(noReconnect);
         engine.start();
         engine.join();

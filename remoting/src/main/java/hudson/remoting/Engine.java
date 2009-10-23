@@ -82,6 +82,7 @@ public class Engine extends Thread {
 
     private final String secretKey;
     public final String slaveName;
+    private String credentials;
 
     /**
      * See Main#tunnel in the jnlp-agent module for the details.
@@ -105,6 +106,10 @@ public class Engine extends Thread {
 
     public void setTunnel(String tunnel) {
         this.tunnel = tunnel;
+    }
+
+    public void setCredentials(String creds) {
+        this.credentials = creds;
     }
 
     public void setNoReconnect(boolean noReconnect) {
@@ -135,6 +140,11 @@ public class Engine extends Thread {
 
                     // find out the TCP port
                     HttpURLConnection con = (HttpURLConnection)salURL.openConnection();
+                if (con instanceof HttpURLConnection && credentials != null) {
+                    HttpURLConnection http = (HttpURLConnection) con;
+		    String encoding = new sun.misc.BASE64Encoder().encode (credentials.getBytes());
+		    http.setRequestProperty ("Authorization", "Basic " + encoding);
+		}
                     try {
                         con.connect();
                     } catch (IOException x) {

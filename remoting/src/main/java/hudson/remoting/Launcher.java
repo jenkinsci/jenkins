@@ -97,6 +97,9 @@ public class Launcher {
             "Connection parameters are obtained by parsing the JNLP file.")
     public URL slaveJnlpURL = null;
 
+    @Option(name="-jnlpCredentials",metaVar="USER:PASSWORD",usage="HTTP BASIC AUTH header to pass in for making HTTP requests.")
+    public String slaveJnlpCredentials = null;
+
     @Option(name="-cp",aliases="-classpath",metaVar="PATH",
             usage="add the given classpath elements to the system classloader.")
     public void addClasspath(String pathList) throws Exception {
@@ -208,6 +211,12 @@ public class Launcher {
         while (true) {
             try {
                 URLConnection con = slaveJnlpURL.openConnection();
+                if (con instanceof HttpURLConnection && slaveJnlpCredentials != null) {
+                    HttpURLConnection http = (HttpURLConnection) con;
+                    String userPassword = slaveJnlpCredentials;
+                    String encoding = new sun.misc.BASE64Encoder().encode(userPassword.getBytes());
+                    http.setRequestProperty("Authorization", "Basic " + encoding);
+                }
                 con.connect();
 
                 if (con instanceof HttpURLConnection) {
@@ -239,6 +248,10 @@ public class Launcher {
                 List<String> jnlpArgs = new ArrayList<String>();
                 for( int i=0; i<argElements.getLength(); i++ )
                         jnlpArgs.add(argElements.item(i).getTextContent());
+                if (slaveJnlpCredentials != null) {
+                    jnlpArgs.add("-credentials");
+                    jnlpArgs.add(slaveJnlpCredentials);
+                }
                 // force a headless mode
                 jnlpArgs.add("-headless");
                 return jnlpArgs;
