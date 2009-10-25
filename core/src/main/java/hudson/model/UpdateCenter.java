@@ -49,6 +49,7 @@ import org.jvnet.hudson.crypto.SignatureOutputStream;
 import org.jvnet.hudson.crypto.CertificateUtil;
 
 import javax.servlet.ServletException;
+import javax.servlet.ServletContext;
 import javax.net.ssl.SSLHandshakeException;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -81,6 +82,8 @@ import java.security.GeneralSecurityException;
 import java.security.Signature;
 import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
+import java.security.cert.TrustAnchor;
+import java.security.cert.Certificate;
 
 import com.trilead.ssh2.crypto.Base64;
 
@@ -230,6 +233,14 @@ public class UpdateCenter extends AbstractModelObject {
                 X509Certificate c = (X509Certificate) cf.generateCertificate(new ByteArrayInputStream(Base64.decode(cert.toString().toCharArray())));
                 c.checkValidity();
                 certs.add(c);
+            }
+
+            // all default root CAs in JVM are trusted, plus certs bundled in Hudson
+            Set<TrustAnchor> anchors = CertificateUtil.getDefaultRootCAs();
+            ServletContext context = Hudson.getInstance().servletContext;
+            for (String cert : (Set<String>) context.getResourcePaths("/WEB-INF/update-center-rootCAs")) {
+                if (cert.endsWith(".txt"))  continue;       // skip text files that are meant to be documentation
+                anchors.add(new TrustAnchor((X509Certificate)cf.generateCertificate(context.getResourceAsStream(cert)),null));
             }
             CertificateUtil.validatePath(certs);
         }
