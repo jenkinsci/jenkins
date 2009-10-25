@@ -1,7 +1,10 @@
 #!/bin/bash -ex
-heat dir data -o data.wxs -sfrag -gg -cg DataComponents -dr HudsonDir -var var.DataDir
-candle -dVERSION=1.100 -dDataDir=data -ext WixUIExtension -ext WixUtilExtension hudson.wxs data.wxs
-light -o hudson-1.msi -ext WixUIExtension -ext WixUtilExtension hudson.wixobj data.wixobj
+# capture JRE
+JREDIR='c:\Program Files\Java\jre6'
+heat dir "$JREDIR" -o jre.wxs -sfrag -sreg -nologo -srd -gg -cg JreComponents -dr JreDir -var var.JreDir
 
-#candle -dVERSION=1.101 -dDataDir=data -ext WixUIExtension -ext WixUtilExtension hudson.wxs data.wxs
-#light -o hudson-2.msi -ext WixUIExtension -ext WixUtilExtension hudson.wixobj data.wixobj
+for v in 1.100 1.101
+do
+  candle -dVERSION=$v -dJreDir="$JREDIR" -nologo -ext WixUIExtension -ext WixUtilExtension hudson.wxs jre.wxs
+  light -o hudson-$v.msi -nologo -ext WixUIExtension -ext WixUtilExtension hudson.wixobj jre.wixobj
+done

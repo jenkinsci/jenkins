@@ -10,12 +10,13 @@
       <Directory Id='TARGETDIR' Name='SourceDir'>
         <Directory Id='ProgramFilesFolder' Name='PFiles'>
           <Directory Id='HudsonDir' Name='Hudson' FileSource=".">
+              <Directory Id='JreDir' Name='jre'/>
               <Component Id='Main' Guid='8fd00c9c-e018-46d6-9135-67696ea0bcbf'>
                 <File Name="hudson.exe" Source='tmp/hudson.exe' DiskId='1' KeyPath='yes'/>
                 <File Name="hudson.xml" Source='tmp/hudson.xml' DiskId='1' />
                 <File Name="hudson.war" DiskId='1' />
                 <ServiceInstall Id="HudsonService"
-                     Name="hudson"
+                     Name="Hudson"
                      DisplayName="Hudson"
                      Type="ownProcess"
                      Start="auto"
@@ -23,8 +24,8 @@
                      Description="Hudson Continuous Integration Server"
                      Account="[SERVICEACCOUNT]"
                      Password="[SERVICEPASSWORD]" />
-                 <ServiceControl Id="StartHudsonService" Name="hudson" Start="install" Wait="no" />
-                 <ServiceControl Id="StopHudsonService" Name="hudson" Stop="both" Wait="yes" Remove="uninstall" />
+                 <ServiceControl Id="StartHudsonService" Name="Hudson" Start="install" Wait="no" />
+                 <ServiceControl Id="StopHudsonService" Name="Hudson" Stop="both" Wait="yes" Remove="uninstall" />
               </Component>
           </Directory>
         </Directory>
@@ -39,7 +40,7 @@
 
     <Feature Id='Complete' Level='1'>
       <ComponentRef Id='Main' />
-      <ComponentGroupRef Id='DataComponents' />
+      <ComponentGroupRef Id='JreComponents' />
     </Feature>
 
     <UI>
