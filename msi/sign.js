@@ -7,4 +7,6 @@ var args = WScript.Arguments;
 
 signer.Load(args(1));
 sc.FileName = args(0);
+sc.Description = args(2);
+sc.DescriptionURL = "http://hudson-ci.org/";
 sc.Sign(signer);
