@@ -300,6 +300,11 @@ THE SOFTWARE.
     </dependency>
     <dependency>
       <groupId>org.jvnet.hudson</groupId>
+      <artifactId>crypto-util</artifactId>
+      <version>1.0</version>
+    </dependency>
+    <dependency>
+      <groupId>org.jvnet.hudson</groupId>
       <artifactId>jtidy</artifactId>
       <version>4aug2000r7-dev-hudson-1</version>
       <exclusions>
