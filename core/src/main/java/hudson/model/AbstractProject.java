@@ -1094,6 +1094,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
         return false;
     }
 
+    @Exported
     public SCM getScm() {
         return scm;
     }

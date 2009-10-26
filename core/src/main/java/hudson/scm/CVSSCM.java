@@ -63,6 +63,7 @@ import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.QueryParameter;
+import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.framework.io.ByteBuffer;
 
 import javax.servlet.ServletException;
@@ -184,6 +185,7 @@ public class CVSSCM extends SCM implements Serializable {
         return local ? "-z0" : "-z3";
     }
 
+    @Exported
     public String getCvsRoot() {
         return cvsroot;
     }
@@ -193,6 +195,7 @@ public class CVSSCM extends SCM implements Serializable {
      * <p>
      * This causes Hudson to stop using "-D" option while check out and update.
      */
+    @Exported
     public boolean isTag() {
         return isTag;
     }
@@ -225,10 +228,12 @@ public class CVSSCM extends SCM implements Serializable {
         return new CVSChangeLogParser();
     }
 
+    @Exported
     public String getAllModules() {
         return module;
     }
 
+    @Exported
     public String getExcludedRegions() {
         return excludedRegions;
     }
@@ -269,18 +274,22 @@ public class CVSSCM extends SCM implements Serializable {
     /**
      * Branch to build. Null to indicate the trunk.
      */
+    @Exported
     public String getBranch() {
         return branch;
     }
 
+    @Exported
     public String getCvsRsh() {
         return cvsRsh;
     }
 
+    @Exported
     public boolean getCanUseUpdate() {
         return canUseUpdate;
     }
 
+    @Exported
     public boolean isFlatten() {
         return flatten;
     }
