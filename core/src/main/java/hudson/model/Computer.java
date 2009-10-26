@@ -48,6 +48,8 @@ import hudson.util.Futures;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 import org.kohsuke.stapler.QueryParameter;
+import org.kohsuke.stapler.HttpResponses;
+import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.export.ExportedBean;
 
@@ -800,7 +802,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
             runs.newBuilds(), Run.FEED_ADAPTER, req, rsp );
     }
 
-    public void doToggleOffline( StaplerRequest req, StaplerResponse rsp, @QueryParameter String offlineMessage) throws IOException, ServletException {
+    public HttpResponse doToggleOffline(@QueryParameter String offlineMessage) throws IOException, ServletException {
         checkPermission(Hudson.ADMINISTER);
         if(!temporarilyOffline) {
             offlineMessage = Util.fixEmptyAndTrim(offlineMessage);
@@ -811,7 +813,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
         } else {
             setTemporarilyOffline(!temporarilyOffline,null);
         }
-        rsp.forwardToPreviousPage(req);
+        return HttpResponses.redirectToDot();
     }
 
     public Api getApi() {
