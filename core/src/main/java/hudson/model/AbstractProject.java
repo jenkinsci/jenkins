@@ -531,6 +531,8 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
         // or otherwise we could dead-lock
 
         for (AbstractProject<?,?> p : Hudson.getInstance().getAllItems(AbstractProject.class)) {
+            // Don't consider child projects such as MatrixConfiguration:
+            if (!p.isConfigurable()) continue;
             boolean isUpstream = upstream.contains(p);
             synchronized(p) {
                 // does 'p' include us in its BuildTrigger? 
