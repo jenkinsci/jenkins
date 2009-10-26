@@ -240,7 +240,7 @@ THE SOFTWARE.
           ${%Page generated}:
           <i:formatDate value="${h.getCurrentTime()}" type="both" dateStyle="medium" timeStyle="medium"/>
         </span>
-        <a href="http://hudson.dev.java.net/">
+        <a href="http://hudson-ci.org/">
           Hudson ver. ${h.version}
         </a>
       </td></tr>
