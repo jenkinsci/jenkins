@@ -156,7 +156,7 @@ public class WindowsSlaveInstaller implements Callable<Void,RuntimeException>, A
                 }
             });
             System.exit(0);
-        } catch (Exception t) {
+        } catch (Exception t) {// this runs as a JNLP app, so if we let an exeption go, we'll never find out why it failed 
             StringWriter sw = new StringWriter();
             t.printStackTrace(new PrintWriter(sw));
             JOptionPane.showMessageDialog(dialog,sw.toString(),"Error", ERROR_MESSAGE);
