@@ -25,8 +25,12 @@ package hudson.model;
 
 import hudson.tasks.Shell;
 import hudson.tasks.BatchFile;
+import hudson.Launcher;
 import org.jvnet.hudson.test.Email;
 import org.jvnet.hudson.test.HudsonTestCase;
+import org.jvnet.hudson.test.TestBuilder;
+
+import java.io.IOException;
 
 /**
  * @author Kohsuke Kawaguchi
@@ -75,11 +79,14 @@ public class DirectoryBrowserSupportTest extends HudsonTestCase {
     }
 
     public void testNonAsciiChar() throws Exception {
-        if(Hudson.isWindows())  return; // can't test this on Windows
-
         // create a problematic file name in the workspace
         FreeStyleProject p = createFreeStyleProject();
-        p.getBuildersList().add(new Shell("touch \u6F22\u5B57.bin")); // Kanji
+        p.getBuildersList().add(new TestBuilder() {
+            public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
+                build.getWorkspace().child("\u6F22\u5B57.bin").touch(0); // Kanji
+                return true;
+            }
+        }); // Kanji
         p.scheduleBuild2(0).get();
 
         // can we see it?
