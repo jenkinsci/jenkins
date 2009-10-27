@@ -56,7 +56,7 @@ public class GroovyCommand extends CLICommand implements Serializable {
         return "Executes the specified Groovy script";
     }
 
-    @Argument(metaVar="SCRIPT",usage="Script to be executed. File, URL or '-' to represent stdin.")
+    @Argument(metaVar="SCRIPT",usage="Script to be executed. File, URL or '=' to represent stdin.")
     public String script;
 
     /**
@@ -72,7 +72,7 @@ public class GroovyCommand extends CLICommand implements Serializable {
         Binding binding = new Binding();
         binding.setProperty("out",new PrintWriter(stdout,true));
         GroovyShell groovy = new GroovyShell(binding);
-        groovy.run(loadScript(),script,remaining.toArray(new String[remaining.size()]));
+        groovy.run(loadScript(),"RemoteClass",remaining.toArray(new String[remaining.size()]));
         return 0;
     }
 
@@ -84,7 +84,7 @@ public class GroovyCommand extends CLICommand implements Serializable {
             throw new CmdLineException("No script is specified");
         return channel.call(new Callable<String,IOException>() {
             public String call() throws IOException {
-                if(script.equals("-"))
+                if(script.equals("="))
                     return IOUtils.toString(System.in);
 
                 File f = new File(script);
