@@ -12,9 +12,9 @@
           <Directory Id='HudsonDir' Name='Hudson' FileSource=".">
               <Directory Id='JreDir' Name='jre'/>
               <Component Id='Main' Guid='8fd00c9c-e018-46d6-9135-67696ea0bcbf'>
-                <File Name="hudson.exe" Source='tmp/hudson.exe' DiskId='1' KeyPath='yes'/>
+                <File Name="hudson.exe" Source='tmp/hudson.exe' KeyPath='yes'/>
                 <File Name="hudson.xml" Source='tmp/hudson.xml' DiskId='1' />
-                <File Name="hudson.war" DiskId='1' />
+                <File Name="hudson.war" Source='$(var.WAR)' DiskId='1' />
                 <ServiceInstall Id="HudsonService"
                      Name="Hudson"
                      DisplayName="Hudson"
