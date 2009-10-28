@@ -81,7 +81,7 @@ public class GroovyCommand extends CLICommand implements Serializable {
      */
     private String loadScript() throws CmdLineException, IOException, InterruptedException {
         if(script==null)
-            throw new CmdLineException("No script is specified");
+            throw new CmdLineException(null, "No script is specified");
         return channel.call(new Callable<String,IOException>() {
             public String call() throws IOException {
                 if(script.equals("="))

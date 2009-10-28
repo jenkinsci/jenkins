@@ -53,12 +53,12 @@ public class OverallLoadStatistics extends LoadStatistics {
 
     @Override
     public int computeIdleExecutors() {
-        return Hudson.getInstance().getComputer().getIdleExecutors();
+        return new ComputerSet().getIdleExecutors();
     }
 
     @Override
     public int computeTotalExecutors() {
-        return Hudson.getInstance().getComputer().getTotalExecutors();
+        return new ComputerSet().getTotalExecutors();
     }
 
     @Override

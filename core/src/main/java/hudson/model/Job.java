@@ -602,10 +602,10 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
             int n = Integer.parseInt(id);
             RunT r = getBuildByNumber(n);
             if (r==null)
-                throw new CmdLineException("No such build '#"+n+"' exists");
+                throw new CmdLineException(null, "No such build '#"+n+"' exists");
             return r;
         } catch (NumberFormatException e) {
-            throw new CmdLineException(id+ "is not a number");
+            throw new CmdLineException(null, id+ "is not a number");
         }
     }
 

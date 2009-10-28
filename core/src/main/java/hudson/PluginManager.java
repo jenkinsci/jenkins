@@ -364,7 +364,7 @@ public final class PluginManager extends AbstractModelObject {
                 UpdateCenter.Plugin p = Hudson.getInstance().getUpdateCenter().getPlugin(n);
                 if(p==null)
                     throw new Failure("No such plugin: "+n);
-                p.install();
+                p.deploy();
             }
         }
         rsp.sendRedirect("../updateCenter/");

@@ -23,8 +23,8 @@
  */
 package hudson.model;
 
-import com.thoughtworks.xstream.converters.Converter;
-import com.thoughtworks.xstream.converters.basic.AbstractBasicConverter;
+import com.thoughtworks.xstream.converters.SingleValueConverter;
+import com.thoughtworks.xstream.converters.basic.AbstractSingleValueConverter;
 import org.kohsuke.stapler.export.CustomExportedBean;
 
 import java.io.Serializable;
@@ -132,12 +132,12 @@ public final class Result implements Serializable, CustomExportedBean {
 
     private static final Result[] all = new Result[] {SUCCESS,UNSTABLE,FAILURE,NOT_BUILT,ABORTED};
 
-    public static final Converter conv = new AbstractBasicConverter () {
+    public static final SingleValueConverter conv = new AbstractSingleValueConverter () {
         public boolean canConvert(Class clazz) {
             return clazz==Result.class;
         }
 
-        protected Object fromString(String s) {
+        public Object fromString(String s) {
             return Result.fromString(s);
         }
     };

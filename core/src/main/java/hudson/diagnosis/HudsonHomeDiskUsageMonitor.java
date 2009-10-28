@@ -30,7 +30,7 @@ import hudson.Extension;
 import hudson.ExtensionPoint;
 import hudson.ExtensionList;
 import org.kohsuke.stapler.HttpResponse;
-import org.kohsuke.stapler.HttpRedirect;
+import org.kohsuke.stapler.HttpResponses;
 import org.kohsuke.stapler.QueryParameter;
 
 import java.io.IOException;
@@ -62,9 +62,9 @@ public final class HudsonHomeDiskUsageMonitor extends AdministrativeMonitor {
     public HttpResponse doAct(@QueryParameter String no) throws IOException {
         if(no!=null) {
             disable(true);
-            return HttpRedirect.fromContextPath("/manage");
+            return HttpResponses.redirectViaContextPath("/manage");
         } else {
-            return new HttpRedirect(".");
+            return HttpResponses.redirectToDot();
         }
     }
 

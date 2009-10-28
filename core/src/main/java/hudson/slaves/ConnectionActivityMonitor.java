@@ -66,7 +66,7 @@ public class ConnectionActivityMonitor extends AsyncPeriodicWork {
 
                     if (lastPing!=null && now-lastPing > TIMEOUT) {
                         LOGGER.info("Repeated ping attempts failed on "+c.getName()+". Disconnecting");
-                        c.disconnect(); // TODO: explain the cause
+                        c.disconnect(OfflineCause.create(Messages._ConnectionActivityMonitor_OfflineCause()));
                     } else {
                         // send a ping. if we receive a reply, it will be reflected in the next getLastHeard() call.
                         channel.callAsync(PING_COMMAND);

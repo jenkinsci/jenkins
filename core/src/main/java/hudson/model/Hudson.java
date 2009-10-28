@@ -1511,6 +1511,7 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
         return "";
     }
 
+    @Override
     public String getSearchUrl() {
         return "";
     }
@@ -2118,7 +2119,7 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
         for( Computer c : computers.values() ) {
             c.interrupt();
             c.kill();
-            pending.add(c.disconnect());
+            pending.add(c.disconnect(null));
         }
         if(udpBroadcastThread!=null)
             udpBroadcastThread.shutdown();

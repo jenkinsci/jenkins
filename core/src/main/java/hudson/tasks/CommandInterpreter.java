@@ -53,6 +53,7 @@ public abstract class CommandInterpreter extends Builder {
         return command;
     }
 
+    @Override
     public boolean perform(AbstractBuild<?,?> build, Launcher launcher, BuildListener listener) throws InterruptedException {
         return perform(build,launcher,(TaskListener)listener);
     }

@@ -211,7 +211,7 @@ public abstract class LoadStatistics {
             }
 
             // update statistics of the entire system
-            ComputerSet cs = h.getComputer();
+            ComputerSet cs = new ComputerSet();
             h.overallLoad.totalExecutors.update(cs.getTotalExecutors());
             h.overallLoad.busyExecutors .update(cs.getBusyExecutors());
             int q=0;

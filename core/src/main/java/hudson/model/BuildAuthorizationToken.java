@@ -23,7 +23,7 @@
  */
 package hudson.model;
 
-import com.thoughtworks.xstream.converters.basic.AbstractBasicConverter;
+import com.thoughtworks.xstream.converters.basic.AbstractSingleValueConverter;
 import hudson.Util;
 import hudson.security.ACL;
 import org.kohsuke.stapler.StaplerRequest;
@@ -75,17 +75,17 @@ public final class BuildAuthorizationToken {
         return token;
     }
 
-    public static final class ConverterImpl extends AbstractBasicConverter {
+    public static final class ConverterImpl extends AbstractSingleValueConverter {
         public boolean canConvert(Class type) {
             return type== BuildAuthorizationToken.class;
         }
 
-        protected Object fromString(String str) {
+        public Object fromString(String str) {
             return new BuildAuthorizationToken(str);
         }
 
         @Override
-        protected String toString(Object obj) {
+        public String toString(Object obj) {
             return ((BuildAuthorizationToken)obj).token;
         }
     }

@@ -760,7 +760,7 @@ public class Fingerprint implements ModelObject, Saveable {
         XSTREAM.alias("ranges",RangeSet.class);
         XSTREAM.registerConverter(new HexBinaryConverter(),10);
         XSTREAM.registerConverter(new RangeSet.ConverterImpl(
-            new CollectionConverter(XSTREAM.getClassMapper()) {
+            new CollectionConverter(XSTREAM.getMapper()) {
                 @Override
                 protected Object createCollection(Class type) {
                     return new ArrayList();

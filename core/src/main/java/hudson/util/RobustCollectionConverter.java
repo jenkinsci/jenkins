@@ -23,7 +23,7 @@
  */
 package hudson.util;
 
-import com.thoughtworks.xstream.alias.CannotResolveClassException;
+import com.thoughtworks.xstream.mapper.CannotResolveClassException;
 import com.thoughtworks.xstream.converters.UnmarshallingContext;
 import com.thoughtworks.xstream.converters.collections.CollectionConverter;
 import com.thoughtworks.xstream.converters.reflection.ReflectionProvider;
