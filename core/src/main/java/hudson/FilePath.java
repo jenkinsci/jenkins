@@ -767,6 +767,17 @@ public final class FilePath implements Serializable {
     }
 
     /**
+     * Gets the file name portion except the extension.
+     *
+     * For example, "foo" for "foo.txt" and "foo.tar" for "foo.tar.gz".
+     */
+    public String getBaseName() {
+        String n = getName();
+        int idx = n.lastIndexOf('.');
+        if (idx<0)  return n;
+        return n.substring(0,idx);
+    }
+    /**
      * Gets just the file name portion.
      *
      * This method assumes that the file name is the same between local and remote.
