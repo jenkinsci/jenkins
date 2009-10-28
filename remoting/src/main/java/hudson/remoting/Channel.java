@@ -354,11 +354,9 @@ public class Channel implements VirtualChannel, IChannel {
                                         throw new IOException("Protocol negotiation failure");
                                 }
                                 this.oos = oos;
-
+                                this.remoteCapability = cap;
                                 this.ois = new ObjectInputStream(mode.wrap(is));
                                 new ReaderThread(name).start();
-
-                                this.remoteCapability = cap;
 
                                 return;
                             case 2:
