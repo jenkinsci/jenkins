@@ -70,7 +70,7 @@ public class AuthorizationMatrixProperty extends JobProperty<Job<?, ?>> {
 		return useProjectSecurity;
 	}
 
-	public void setUseProjectSecurity(boolean useProjectSecurity) {
+	protected void setUseProjectSecurity(boolean useProjectSecurity) {
 		this.useProjectSecurity = useProjectSecurity;
 	}
 
@@ -229,7 +229,7 @@ public class AuthorizationMatrixProperty extends JobProperty<Job<?, ?>> {
 			AuthorizationMatrixProperty amp = (AuthorizationMatrixProperty) source;
 
 			writer.startNode("useProjectSecurity");
-			context.convertAnother(Boolean.valueOf(amp.isUseProjectSecurity()));
+			context.convertAnother(amp.isUseProjectSecurity());
 			writer.endNode();
 			
 			for (Entry<Permission, Set<String>> e : amp.grantedPermissions
@@ -252,7 +252,7 @@ public class AuthorizationMatrixProperty extends JobProperty<Job<?, ?>> {
 			if (prop!=null && prop.equals("useProjectSecurity")) {
 				reader.moveDown();
 				Boolean useSecurity = (Boolean) context.convertAnother(as, Boolean.class);
-				as.setUseProjectSecurity(useSecurity.booleanValue());
+				as.setUseProjectSecurity(useSecurity);
 				reader.moveUp();
 			}
 			while (reader.hasMoreChildren()) {
