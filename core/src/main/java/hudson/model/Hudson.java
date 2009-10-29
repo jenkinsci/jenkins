@@ -2806,6 +2806,8 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
      * Queues up a restart of Hudson for when there are no builds running, if we can.
      *
      * This first replaces "app" to {@link HudsonIsRestarting}
+     * 
+     * @since 1.332
      */
     public void doSafeRestart(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
         checkPermission(ADMINISTER);
@@ -2897,6 +2899,43 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
         w.close();
 
         System.exit(0);
+    }
+
+    
+    /**
+     * Shutdown the system safely.
+     * @since 1.332
+     */
+    public void doSafeExit( StaplerRequest req, StaplerResponse rsp ) throws IOException {
+        checkPermission(ADMINISTER);
+        rsp.setStatus(HttpServletResponse.SC_OK);
+        rsp.setContentType("text/plain");
+        PrintWriter w = rsp.getWriter();
+        w.println("Shutting down as soon as all jobs are complete");
+        w.close();
+        isQuietingDown = true;
+        final String exitUser = getAuthentication().toString();
+        final String exitAddr = req.getRemoteAddr().toString();
+        new Thread("safe-exit thread") {
+            @Override
+            public void run() {
+                try {
+                    LOGGER.severe(String.format("Shutting down VM as requested by %s from %s",
+                                                exitUser, exitAddr));
+                    // Wait 'til we have no active executors.
+                    while (isQuietingDown
+                           && (overallLoad.computeTotalExecutors() > overallLoad.computeIdleExecutors())) {
+                        Thread.sleep(5000);
+                    }
+                    // Make sure isQuietingDown is still true.
+                    if (isQuietingDown) {
+                        System.exit(0);
+                    }
+                } catch (InterruptedException e) {
+                    LOGGER.log(Level.WARNING, "Failed to shutdown Hudson",e);
+                }
+            }
+        }.start();
     }
 
     /**
