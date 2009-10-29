@@ -67,6 +67,7 @@ import hudson.tasks.Maven;
 import hudson.tasks.Ant;
 import hudson.tasks.Ant.AntInstallation;
 import hudson.tasks.Maven.MavenInstallation;
+import hudson.util.PersistedList;
 import hudson.util.StreamTaskListener;
 import hudson.util.jna.GNUCLibrary;
 
@@ -238,10 +239,11 @@ public abstract class HudsonTestCase extends TestCase implements RootAction {
 
         // load updates from local proxy to avoid network traffic.
         final String updateCenterUrl = "http://localhost:"+JavaNetReverseProxy.getInstance().localPort+"/";
-        List<UpdateSite> newSites = new ArrayList<UpdateSite>();
-        newSites.add(new UpdateSite("default", updateCenterUrl));
-        hudson.getUpdateCenter().replaceSources(newSites);
         
+        PersistedList<UpdateSite> sites = hudson.getUpdateCenter().getSites();
+        sites.clear();
+        sites.add(new UpdateSite("default", updateCenterUrl));
+
         // don't waste bandwidth talking to the update center
         DownloadService.neverUpdate = true;
         UpdateCenter.neverUpdate = true;
