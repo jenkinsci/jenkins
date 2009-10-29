@@ -437,9 +437,10 @@ public class ChangeLogTask extends AbstractCvsTask {
                 log("Filtering out "+cvsEntry+" because it's too late compare to "+m_stop,Project.MSG_VERBOSE);
                 continue;
             }
-            if (!cvsEntry.containsBranch(branch)) {
+            //if tag was specified, it takes care of branches or HEAD, because it does not go out of one. Otherwise HEAD or specified Brach should be filtered
+            if (null == getTag() && !cvsEntry.containsBranch(branch)) {
                 // didn't match the branch
-                log("Filtering out "+cvsEntry+" because it didn't match the branch",Project.MSG_VERBOSE);
+                log("Filtering out "+cvsEntry+" because it didn't match the branch '"+branch+"'",Project.MSG_VERBOSE);
                 continue;
             }
             results.addElement(cvsEntry);

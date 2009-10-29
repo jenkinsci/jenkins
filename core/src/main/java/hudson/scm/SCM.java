@@ -40,6 +40,7 @@ import hudson.model.Node;
 import hudson.model.WorkspaceCleanupThread;
 import hudson.model.Hudson;
 import hudson.model.Descriptor;
+import hudson.model.Api;
 import hudson.model.AbstractProject.AbstractProjectDescriptor;
 
 import java.io.File;
@@ -48,6 +49,8 @@ import java.io.IOException;
 import java.util.Map;
 import java.util.List;
 import java.util.ArrayList;
+
+import org.kohsuke.stapler.export.Exported;
 
 /**
  * Captures the configuration information in it.
@@ -77,6 +80,13 @@ public abstract class SCM implements Describable<SCM>, ExtensionPoint {
     private transient AutoBrowserHolder autoBrowserHolder;
 
     /**
+     * Expose {@link SCM} to the remote API.
+     */
+    public Api getApi() {
+        return new Api(this);
+    }
+
+    /**
      * Returns the {@link RepositoryBrowser} for files
      * controlled by this {@link SCM}.
      *
@@ -86,8 +96,19 @@ public abstract class SCM implements Describable<SCM>, ExtensionPoint {
      *
      * @see #getEffectiveBrowser()
      */
+    @Exported
     public RepositoryBrowser getBrowser() {
         return null;
+    }
+
+    /**
+     * Type of this SCM.
+     *
+     * Exposed so that the client of the remote API can tell what SCM this is.
+     */
+    @Exported
+    public String getType() {
+        return getClass().getName();
     }
 
     /**
@@ -98,6 +119,7 @@ public abstract class SCM implements Describable<SCM>, ExtensionPoint {
      * This method attempts to find applicable browser
      * from other job configurations.
      */
+    @Exported
     public final RepositoryBrowser getEffectiveBrowser() {
         RepositoryBrowser b = getBrowser();
         if(b!=null)

@@ -29,7 +29,7 @@ public class TopLevelItemOptionHandler extends OptionHandler<TopLevelItem> {
 
         TopLevelItem s = h.getItem(src);
         if (s==null)
-            throw new CmdLineException("No such job '"+src+"' perhaps you meant "+ AbstractProject.findNearest(src)+"?");
+            throw new CmdLineException(owner, "No such job '"+src+"' perhaps you meant "+ AbstractProject.findNearest(src)+"?");
         setter.addValue(s);
         return 1;
     }

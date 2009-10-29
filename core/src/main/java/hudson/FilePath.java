@@ -58,6 +58,7 @@ import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.input.CountingInputStream;
 import org.apache.commons.fileupload.FileItem;
 import org.kohsuke.stapler.Stapler;
+import org.jvnet.robust_http_client.RetryableHttpStream;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
@@ -557,7 +558,9 @@ public final class FilePath implements Serializable {
         if(listener!=null)
             listener.getLogger().println(message);
 
-        CountingInputStream cis = new CountingInputStream(con.getInputStream());
+        // for HTTP downloads, enable automatic retry for added resilience
+        InputStream in = archive.getProtocol().equals("http") ? new RetryableHttpStream(archive) : con.getInputStream();
+        CountingInputStream cis = new CountingInputStream(in);
         try {
             if(archive.toExternalForm().endsWith(".zip"))
             unzipFrom(cis);
@@ -763,6 +766,17 @@ public final class FilePath implements Serializable {
         });
     }
 
+    /**
+     * Gets the file name portion except the extension.
+     *
+     * For example, "foo" for "foo.txt" and "foo.tar" for "foo.tar.gz".
+     */
+    public String getBaseName() {
+        String n = getName();
+        int idx = n.lastIndexOf('.');
+        if (idx<0)  return n;
+        return n.substring(0,idx);
+    }
     /**
      * Gets just the file name portion.
      *

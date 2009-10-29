@@ -93,26 +93,25 @@ public class WindowsSlaveInstaller implements Callable<Void,RuntimeException>, A
      * Called when the install menu is selected
      */
     public void actionPerformed(ActionEvent e) {
-        int r = JOptionPane.showConfirmDialog(dialog,
-                Messages.WindowsSlaveInstaller_ConfirmInstallation(),
-                Messages.WindowsInstallerLink_DisplayName(), OK_CANCEL_OPTION);
-        if(r!=JOptionPane.OK_OPTION)    return;
-
-        if(!DotNet.isInstalled(2,0)) {
-            JOptionPane.showMessageDialog(dialog,Messages.WindowsSlaveInstaller_DotNetRequired(),
-                    Messages.WindowsInstallerLink_DisplayName(), ERROR_MESSAGE);
-            return;
-        }
-
-        final File dir = new File(rootDir);
-        if (!dir.exists()) {
-            JOptionPane.showMessageDialog(dialog,Messages.WindowsSlaveInstaller_RootFsDoesntExist(rootDir),
-                    Messages.WindowsInstallerLink_DisplayName(), ERROR_MESSAGE);
-            return;
-        }
-
-
         try {
+            int r = JOptionPane.showConfirmDialog(dialog,
+                    Messages.WindowsSlaveInstaller_ConfirmInstallation(),
+                    Messages.WindowsInstallerLink_DisplayName(), OK_CANCEL_OPTION);
+            if(r!=JOptionPane.OK_OPTION)    return;
+
+            if(!DotNet.isInstalled(2,0)) {
+                JOptionPane.showMessageDialog(dialog,Messages.WindowsSlaveInstaller_DotNetRequired(),
+                        Messages.WindowsInstallerLink_DisplayName(), ERROR_MESSAGE);
+                return;
+            }
+
+            final File dir = new File(rootDir);
+            if (!dir.exists()) {
+                JOptionPane.showMessageDialog(dialog,Messages.WindowsSlaveInstaller_RootFsDoesntExist(rootDir),
+                        Messages.WindowsInstallerLink_DisplayName(), ERROR_MESSAGE);
+                return;
+            }
+
             final File slaveExe = new File(dir, "hudson-slave.exe");
             FileUtils.copyURLToFile(getClass().getResource("/windows-service/hudson.exe"), slaveExe);
 
@@ -157,7 +156,7 @@ public class WindowsSlaveInstaller implements Callable<Void,RuntimeException>, A
                 }
             });
             System.exit(0);
-        } catch (Exception t) {
+        } catch (Exception t) {// this runs as a JNLP app, so if we let an exeption go, we'll never find out why it failed 
             StringWriter sw = new StringWriter();
             t.printStackTrace(new PrintWriter(sw));
             JOptionPane.showMessageDialog(dialog,sw.toString(),"Error", ERROR_MESSAGE);

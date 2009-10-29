@@ -38,7 +38,7 @@ THE SOFTWARE.
       <information>
         <title>Slave Agent for ${it.displayName}</title>
         <vendor>Hudson project</vendor>
-        <homepage href="https://hudson.dev.java.net/"/>
+        <homepage href="https://hudson-ci.org/"/>
       </information>
 
       <security>

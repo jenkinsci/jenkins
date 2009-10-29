@@ -151,7 +151,7 @@ import com.gargoylesoftware.htmlunit.javascript.host.XMLHttpRequest;
 /**
  * Base class for all Hudson test cases.
  *
- * @see <a href="http://hudson.gotdns.com/wiki/display/HUDSON/Unit+Test">Wiki article about unit testing in Hudson</a>
+ * @see <a href="http://wiki.hudson-ci.org/wiki/display/HUDSON/Unit+Test">Wiki article about unit testing in Hudson</a>
  * @author Kohsuke Kawaguchi
  */
 public abstract class HudsonTestCase extends TestCase implements RootAction {
@@ -522,13 +522,18 @@ public abstract class HudsonTestCase extends TestCase implements RootAction {
      * Creates a slave with certain additional environment variables
      */
     public DumbSlave createSlave(Label l, EnvVars env) throws Exception {
-    	CommandLauncher launcher = new CommandLauncher(
-    			"\""+System.getProperty("java.home") + "/bin/java\" -jar \"" + 
-    			new File(hudson.getJnlpJars("slave.jar").getURL().toURI()).getAbsolutePath() + "\"", env);
+        synchronized (hudson) {
+            // this synchronization block is so that we don't end up adding the same slave name more than once.
+
+            int sz = hudson.getNodes().size();
+            CommandLauncher launcher = new CommandLauncher(
+                    String.format("\"%s/bin/java\" %s -jar \"%s\"",
+                            System.getProperty("java.home"),
+                            SLAVE_DEBUG_PORT>0 ? " -Xdebug -Xrunjdwp:transport=dt_socket,server=y,address="+(SLAVE_DEBUG_PORT+sz): "",
+                            new File(hudson.getJnlpJars("slave.jar").getURL().toURI()).getAbsolutePath()),
+                    env);
     	
-    	// this synchronization block is so that we don't end up adding the same slave name more than once.
-    	synchronized (hudson) {
-    		DumbSlave slave = new DumbSlave("slave" + hudson.getNodes().size(), "dummy",
+            DumbSlave slave = new DumbSlave("slave" + sz, "dummy",
     				createTmpDir().getPath(), "1", Mode.NORMAL, l==null?"":l.getName(), launcher, RetentionStrategy.NOOP, Collections.EMPTY_LIST);
     		hudson.addNode(slave);
     		return slave;
@@ -1173,4 +1178,9 @@ public abstract class HudsonTestCase extends TestCase implements RootAction {
     private static final Logger LOGGER = Logger.getLogger(HudsonTestCase.class.getName());
 
     protected static final List<ToolProperty<?>> NO_PROPERTIES = Collections.<ToolProperty<?>>emptyList();
+
+    /**
+     * Specify this to a TCP/IP port number to have slaves started with the debugger.
+     */
+    public static int SLAVE_DEBUG_PORT = Integer.getInteger(HudsonTestCase.class.getName()+".slaveDebugPort",-1);
 }

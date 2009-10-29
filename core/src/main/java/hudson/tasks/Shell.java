@@ -161,7 +161,8 @@ public class Shell extends CommandInterpreter {
             return new Shell(data.getString("shell"));
         }
 
-        public boolean configure( StaplerRequest req ) {
+        @Override
+        public boolean configure(StaplerRequest req, JSONObject data) {
             setShell(req.getParameter("shell"));
             return true;
         }

@@ -41,17 +41,23 @@ import org.acegisecurity.Authentication;
 import org.apache.commons.io.input.CountingInputStream;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.output.NullOutputStream;
+import org.apache.commons.io.output.TeeOutputStream;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
+import org.jvnet.hudson.crypto.SignatureOutputStream;
+import org.jvnet.hudson.crypto.CertificateUtil;
 
 import javax.servlet.ServletException;
+import javax.servlet.ServletContext;
 import javax.net.ssl.SSLHandshakeException;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.InputStream;
+import java.io.ByteArrayInputStream;
+import java.io.OutputStreamWriter;
 import java.net.URL;
 import java.net.URLConnection;
 import java.net.UnknownHostException;
@@ -70,6 +76,16 @@ import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.security.MessageDigest;
+import java.security.DigestOutputStream;
+import java.security.GeneralSecurityException;
+import java.security.Signature;
+import java.security.cert.CertificateFactory;
+import java.security.cert.X509Certificate;
+import java.security.cert.TrustAnchor;
+import java.security.cert.Certificate;
+
+import com.trilead.ssh2.crypto.Base64;
 
 /**
  * Controls update center capability.
@@ -181,7 +197,7 @@ public class UpdateCenter extends AbstractModelObject {
     /**
      * This is the endpoint that receives the update center data file from the browser.
      */
-    public void doPostBack(StaplerRequest req) throws IOException {
+    public void doPostBack(StaplerRequest req) throws IOException, GeneralSecurityException {
         dataTimestamp = System.currentTimeMillis();
         String p = req.getParameter("json");
         JSONObject o = JSONObject.fromObject(p);
@@ -192,8 +208,69 @@ public class UpdateCenter extends AbstractModelObject {
             return;
         }
 
+        if (signatureCheck)
+            verifySignature(o);
+
         LOGGER.info("Obtained the latest update center data file");
         getDataFile().write(p);
+    }
+
+    /**
+     * Verifies the signature in the update center data file.
+     */
+    private boolean verifySignature(JSONObject o) throws GeneralSecurityException, IOException {
+        JSONObject signature = o.getJSONObject("signature");
+        if (signature.isNullObject()) {
+            LOGGER.severe("No signature block found");
+            return false;
+        }
+        o.remove("signature");
+
+        List<X509Certificate> certs = new ArrayList<X509Certificate>();
+        {// load and verify certificates
+            CertificateFactory cf = CertificateFactory.getInstance("X509");
+            for (Object cert : o.getJSONArray("certificates")) {
+                X509Certificate c = (X509Certificate) cf.generateCertificate(new ByteArrayInputStream(Base64.decode(cert.toString().toCharArray())));
+                c.checkValidity();
+                certs.add(c);
+            }
+
+            // all default root CAs in JVM are trusted, plus certs bundled in Hudson
+            Set<TrustAnchor> anchors = CertificateUtil.getDefaultRootCAs();
+            ServletContext context = Hudson.getInstance().servletContext;
+            for (String cert : (Set<String>) context.getResourcePaths("/WEB-INF/update-center-rootCAs")) {
+                if (cert.endsWith(".txt"))  continue;       // skip text files that are meant to be documentation
+                anchors.add(new TrustAnchor((X509Certificate)cf.generateCertificate(context.getResourceAsStream(cert)),null));
+            }
+            CertificateUtil.validatePath(certs);
+        }
+
+        // this is for computing a digest to check sanity
+        MessageDigest sha1 = MessageDigest.getInstance("SHA1");
+        DigestOutputStream dos = new DigestOutputStream(new NullOutputStream(),sha1);
+
+        // this is for computing a signature
+        Signature sig = Signature.getInstance("SHA1withRSA");
+        sig.initVerify(certs.get(0));
+        SignatureOutputStream sos = new SignatureOutputStream(sig);
+
+        o.writeCanonical(new OutputStreamWriter(new TeeOutputStream(dos,sos),"UTF-8"));
+
+        // did the digest match? this is not a part of the signature validation, but if we have a bug in the c14n
+        // (which is more likely than someone tampering with update center), we can tell
+        String computedDigest = new String(Base64.encode(sha1.digest()));
+        String providedDigest = signature.getString("digest");
+        if (!computedDigest.equalsIgnoreCase(providedDigest)) {
+            LOGGER.severe("Digest mismatch: "+computedDigest+" vs "+providedDigest);
+            return false;
+        }
+
+        if (!sig.verify(Base64.decode(signature.getString("signature").toCharArray()))) {
+            LOGGER.severe("Signature in the update center doesn't match with the certificate");
+            return false;
+        }
+
+        return true;
     }
 
     /**
@@ -693,7 +770,7 @@ public class UpdateCenter extends AbstractModelObject {
         public String getPluginRepositoryBaseUrl() {
             return "http://hudson-ci.org/";
         }
-        
+
         
         private void testConnection(URL url) throws IOException {
             try {
@@ -1016,4 +1093,9 @@ public class UpdateCenter extends AbstractModelObject {
     private static final Logger LOGGER = Logger.getLogger(UpdateCenter.class.getName());
 
     public static boolean neverUpdate = Boolean.getBoolean(UpdateCenter.class.getName()+".never");
+
+    /**
+     * Off by default until we know this is reasonably working.
+     */
+    public static boolean signatureCheck = Boolean.getBoolean(UpdateCenter.class.getName()+".signatureCheck");
 }

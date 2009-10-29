@@ -300,6 +300,11 @@ THE SOFTWARE.
     </dependency>
     <dependency>
       <groupId>org.jvnet.hudson</groupId>
+      <artifactId>crypto-util</artifactId>
+      <version>1.0</version>
+    </dependency>
+    <dependency>
+      <groupId>org.jvnet.hudson</groupId>
       <artifactId>jtidy</artifactId>
       <version>4aug2000r7-dev-hudson-1</version>
       <exclusions>
@@ -328,7 +333,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.kohsuke.stapler</groupId>
       <artifactId>stapler-jelly</artifactId>
-      <version>1.118</version>
+      <version>1.119</version>
       <exclusions>
         <exclusion>
           <groupId>dom4j</groupId>

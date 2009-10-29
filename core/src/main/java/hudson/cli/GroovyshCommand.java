@@ -25,8 +25,13 @@ package hudson.cli;
 
 import hudson.Extension;
 import hudson.model.Hudson;
+import hudson.remoting.ChannelClosedException;
+import groovy.lang.Binding;
+import groovy.lang.Closure;
 import org.codehaus.groovy.tools.shell.Groovysh;
 import org.codehaus.groovy.tools.shell.IO;
+import org.codehaus.groovy.tools.shell.Shell;
+import org.codehaus.groovy.tools.shell.util.XmlCommandRegistrar;
 
 import java.util.List;
 import java.util.Locale;
@@ -59,10 +64,51 @@ public class GroovyshCommand extends CLICommand {
         System.setProperty("jline.terminal", UnsupportedTerminal.class.getName());
         Terminal.resetTerminal();
 
-        Groovysh shell = new Groovysh(new IO(new BufferedInputStream(stdin),stdout,stderr));
-        // redirect "println" to the CLI
-        shell.getInterp().getContext().setProperty("out",new PrintWriter(stdout,true));
+        Groovysh shell = createShell(stdin, stdout, stderr);
         return shell.run(args.toArray(new String[args.size()]));
+    }
+
+    protected Groovysh createShell(InputStream stdin, PrintStream stdout,
+        PrintStream stderr) {
+
+        Binding binding = new Binding();
+        // redirect "println" to the CLI
+        binding.setProperty("out", new PrintWriter(stdout,true));
+        binding.setProperty("hudson", hudson.model.Hudson.getInstance());
+
+        IO io = new IO(new BufferedInputStream(stdin),stdout,stderr);
+
+        final ClassLoader cl = Thread.currentThread().getContextClassLoader();
+        Closure registrar = new Closure(null, null) {
+            public Object doCall(Object[] args) {
+                assert(args.length == 1);
+                assert(args[0] instanceof Shell);
+
+                Shell shell = (Shell)args[0];
+                XmlCommandRegistrar r = new XmlCommandRegistrar(shell, cl);
+                r.register(GroovyshCommand.class.getResource("commands.xml"));
+
+                return null;
+            }
+        };
+        Groovysh shell = new Groovysh(cl, binding, io, registrar);
+        shell.getImports().add("import hudson.model.*");
+
+        // defaultErrorHook doesn't re-throw IOException, so ShellRunner in
+        // Groovysh will keep looping forever if we don't terminate when the
+        // channel is closed
+        final Closure originalErrorHook = shell.getErrorHook();
+        shell.setErrorHook(new Closure(shell, shell) {
+            public Object doCall(Object[] args) throws ChannelClosedException {
+                if (args.length == 1 && args[0] instanceof ChannelClosedException) {
+                    throw (ChannelClosedException)args[0];
+                }
+
+                return originalErrorHook.call(args);
+            }
+        });
+
+        return shell;
     }
 
     protected int run() {
