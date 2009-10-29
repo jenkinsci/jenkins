@@ -4,6 +4,7 @@ import hudson.Extension;
 import hudson.FilePath;
 import hudson.model.Hudson;
 import hudson.model.UpdateCenter;
+import hudson.model.UpdateSite;
 import org.kohsuke.args4j.Argument;
 import org.kohsuke.args4j.Option;
 
@@ -64,7 +65,7 @@ public class InstallPluginCommand extends CLICommand {
             }
 
             // is this a plugin the update center?
-            UpdateCenter.Plugin p = Hudson.getInstance().getUpdateCenter().getPlugin(source);
+            UpdateSite.Plugin p = Hudson.getInstance().getUpdateCenter().getPlugin(source);
             if (p!=null) {
                 stdout.println("Installing "+source+" from update center");
                 p.deploy().get();
