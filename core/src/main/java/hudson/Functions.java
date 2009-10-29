@@ -1068,13 +1068,6 @@ public class Functions {
     }
 
     /**
-     * Gets the URL for the update center server
-     */
-    public String getUpdateCenterUrl() {
-        return Hudson.getInstance().getUpdateCenter().getUrl();
-    }
-
-    /**
      * If the given href link is matching the current page, return true.
      *
      * Used in <tt>task.jelly</tt> to decide if the page should be highlighted.

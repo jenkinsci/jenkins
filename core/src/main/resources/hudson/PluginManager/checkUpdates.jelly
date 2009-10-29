@@ -38,7 +38,7 @@ THE SOFTWARE.
       </tr>
     </table>
     <script>
-      updateCenter.completionHandler = function() {
+      downloadService.completionHandler = function() {
           $$('completionMarker').innerHTML = "${%Done}";
       }
     </script>

@@ -26,6 +26,7 @@ package hudson;
 import hudson.model.AbstractModelObject;
 import hudson.model.Failure;
 import hudson.model.Hudson;
+import hudson.model.UpdateSite;
 import hudson.model.UpdateCenter;
 import hudson.util.Service;
 import org.apache.commons.fileupload.FileItem;
@@ -352,6 +353,25 @@ public final class PluginManager extends AbstractModelObject {
         LogFactory.release(uberClassLoader);
     }
 
+    public HttpResponse doUpdateSources(StaplerRequest req) throws IOException {
+        Hudson.getInstance().checkPermission(Hudson.ADMINISTER);
+
+        if (req.hasParameter("remove")) {
+            UpdateCenter uc = Hudson.getInstance().getUpdateCenter();
+            BulkChange bc = new BulkChange(uc);
+            try {
+                for (String id : req.getParameterValues("sources"))
+                    uc.getSites().remove(uc.getById(id));
+            } finally {
+                bc.commit();
+            }
+        } else
+        if (req.hasParameter("add"))
+            return new HttpRedirect("addSite");
+
+        return new HttpRedirect("./sites");
+    }
+
     /**
      * Performs the installation of the plugins.
      */
@@ -361,10 +381,13 @@ public final class PluginManager extends AbstractModelObject {
             String n =  en.nextElement();
             if(n.startsWith("plugin.")) {
                 n = n.substring(7);
-                UpdateCenter.Plugin p = Hudson.getInstance().getUpdateCenter().getPlugin(n);
-                if(p==null)
-                    throw new Failure("No such plugin: "+n);
-                p.deploy();
+                if (n.indexOf(".") > 0) {
+                    String[] pluginInfo = n.split("\\.");
+                    UpdateSite.Plugin p = Hudson.getInstance().getUpdateCenter().getById(pluginInfo[1]).getPlugin(pluginInfo[0]);
+                    if(p==null)
+                        throw new Failure("No such plugin: "+n);
+                    p.deploy();
+                }
             }
         }
         rsp.sendRedirect("../updateCenter/");
@@ -376,9 +399,9 @@ public final class PluginManager extends AbstractModelObject {
             @QueryParameter("proxy.userName") String userName,
             @QueryParameter("proxy.password") String password,
             StaplerResponse rsp) throws IOException {
-        Hudson.getInstance().checkPermission(Hudson.ADMINISTER);
-
         Hudson hudson = Hudson.getInstance();
+        hudson.checkPermission(Hudson.ADMINISTER);
+
         server = Util.fixEmptyAndTrim(server);
         if(server==null) {
             hudson.proxy = null;

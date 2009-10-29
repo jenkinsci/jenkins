@@ -45,7 +45,7 @@ THE SOFTWARE.
               <j:when test="${!empty(list)}">
                 <j:forEach var="p" items="${list}">
                   <tr>
-                    <td class="pane" align="center"><input type="checkbox" name="plugin.${p.name}"/></td>
+                    <td class="pane" align="center"><input type="checkbox" name="plugin.${p.name}.${p.sourceId}"/></td>
                     <td class="pane">
                       <div>
                         <a href="${p.wiki}"><st:out value="${p.displayName}"/></a>
@@ -54,9 +54,9 @@ THE SOFTWARE.
                         <div class="excerpt">${p.excerpt}</div>
                       </j:if>
                       <j:if test="${!p.isCompatibleWithInstalledVersion()}">
-			<div class="compatWarning">${%compatWarning}</div>
-		      </j:if>							
-		    </td>
+                        <div class="compatWarning">${%compatWarning}</div>
+                      </j:if>
+                    </td>
                     <td class="pane"><st:out value="${p.version}" /></td>
                     <j:if test="${attrs.page=='updates'}">
                       <td>

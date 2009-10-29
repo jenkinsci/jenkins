@@ -53,10 +53,10 @@ import hudson.model.Run;
 import hudson.model.Saveable;
 import hudson.model.TaskListener;
 import hudson.model.UpdateCenter;
+import hudson.model.UpdateSite;
 import hudson.model.AbstractProject;
 import hudson.model.View;
 import hudson.model.RootAction;
-import hudson.model.UpdateCenter.UpdateCenterConfiguration;
 import hudson.model.Node.Mode;
 import hudson.security.csrf.CrumbIssuer;
 import hudson.slaves.CommandLauncher;
@@ -238,11 +238,10 @@ public abstract class HudsonTestCase extends TestCase implements RootAction {
 
         // load updates from local proxy to avoid network traffic.
         final String updateCenterUrl = "http://localhost:"+JavaNetReverseProxy.getInstance().localPort+"/";
-        hudson.getUpdateCenter().configure(new UpdateCenterConfiguration() {
-            @Override public String getUpdateCenterUrl() {
-                return updateCenterUrl;
-            }
-        });
+        List<UpdateSite> newSites = new ArrayList<UpdateSite>();
+        newSites.add(new UpdateSite("default", updateCenterUrl));
+        hudson.getUpdateCenter().replaceSources(newSites);
+        
         // don't waste bandwidth talking to the update center
         DownloadService.neverUpdate = true;
         UpdateCenter.neverUpdate = true;

@@ -152,7 +152,7 @@ public class DownloadService extends PageDecorator {
          * URL to download.
          */
         public String getUrl() {
-            return Hudson.getInstance().getUpdateCenter().getUrl()+"updates/"+url;
+            return Hudson.getInstance().getUpdateCenter().getDefaultBaseUrl()+"updates/"+url;
         }
 
         /**

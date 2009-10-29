@@ -61,10 +61,7 @@ import java.util.Map;
  *
  * @author Kohsuke Kawaguchi
  */
-public class DescribableList<T extends Describable<T>, D extends Descriptor<T>> implements Iterable<T> {
-    private final CopyOnWriteList<T> data = new CopyOnWriteList<T>();
-    private Saveable owner;
-
+public class DescribableList<T extends Describable<T>, D extends Descriptor<T>> extends PersistedList<T> {
     protected DescribableList() {
     }
 
@@ -88,31 +85,12 @@ public class DescribableList<T extends Describable<T>, D extends Descriptor<T>> 
         this.owner = owner;
     }
 
-    public void setOwner(Saveable owner) {
-        this.owner = owner;
-    }
-
-    public void add(T item) throws IOException {
-        data.add(item);
-        onModified();
-    }
-
-    public void addAll(Collection<? extends T> items) throws IOException {
-        data.addAll(items);
-        onModified();
-    }
-
     /**
      * Removes all instances of the same type, then add the new one.
      */
     public void replace(T item) throws IOException {
         removeAll((Class)item.getClass());
         data.add(item);
-        onModified();
-    }
-
-    public void replaceBy(Collection<? extends T> col) throws IOException {
-        data.replaceBy(col);
         onModified();
     }
 
@@ -123,55 +101,8 @@ public class DescribableList<T extends Describable<T>, D extends Descriptor<T>> 
         return null;
     }
 
-    public <U extends T> U get(Class<U> type) {
-        for (T t : data)
-            if(type.isInstance(t))
-                return type.cast(t);
-        return null;
-    }
-
-    /**
-     * Gets all instances that matches the given type.
-     */
-    public <U extends T> List<U> getAll(Class<U> type) {
-        List<U> r = new ArrayList<U>();
-        for (T t : data)
-            if(type.isInstance(t))
-                r.add(type.cast(t));
-        return r;
-    }
-
     public boolean contains(D d) {
         return get(d)!=null;
-    }
-
-    public int size() {
-        return data.size();
-    }
-
-    /**
-     * Removes an instance by its type.
-     */
-    public void remove(Class<? extends T> type) throws IOException {
-        for (T t : data) {
-            if(t.getClass()==type) {
-                data.remove(t);
-                onModified();
-                return;
-            }
-        }
-    }
-
-    public void removeAll(Class<? extends T> type) throws IOException {
-        boolean modified=false;
-        for (T t : data) {
-            if(t.getClass()==type) {
-                data.remove(t);
-                modified=true;
-            }
-        }
-        if(modified)
-            onModified();
     }
 
     public void remove(D descriptor) throws IOException {
@@ -184,42 +115,9 @@ public class DescribableList<T extends Describable<T>, D extends Descriptor<T>> 
         }
     }
 
-    public void clear() {
-        data.clear();
-    }
-
-    public Iterator<T> iterator() {
-        return data.iterator();
-    }
-
-    /**
-     * Called when a list is mutated.
-     */
-    protected void onModified() throws IOException {
-        owner.save();
-    }
-
     @SuppressWarnings("unchecked")
     public Map<D,T> toMap() {
         return (Map)Descriptor.toMap(data);
-    }
-
-    /**
-     * Returns the snapshot view of instances as list.
-     */
-    public List<T> toList() {
-        return data.getView();
-    }
-
-    /**
-     * Gets all the {@link Describable}s in an array.
-     */
-    public T[] toArray(T[] array) {
-        return data.toArray(array);
-    }
-
-    public void addAllTo(Collection<? super T> dst) {
-        data.addAllTo(dst);
     }
 
     /**

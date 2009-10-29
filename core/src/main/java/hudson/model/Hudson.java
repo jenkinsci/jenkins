@@ -490,7 +490,7 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
      */
     private transient final String secretKey;
 
-    private transient final UpdateCenter updateCenter = new UpdateCenter(this);
+    private transient final UpdateCenter updateCenter = new UpdateCenter();
 
     /**
      * True if the user opted out from the statistics tracking. We'll never send anything if this is true.
@@ -522,7 +522,7 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
 
             Trigger.timer = new Timer("Hudson cron thread");
             queue = new Queue(CONSISTENT_HASH?LoadBalancer.CONSISTENT_HASH:LoadBalancer.DEFAULT);
-
+            
             try {
                 dependencyGraph = DependencyGraph.EMPTY;
             } catch (InternalError e) {
@@ -549,7 +549,7 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
             } catch (IOException e) {
                 LOGGER.log(SEVERE, "Failed to load proxy configuration", e);
             }
-
+            
             // load plugins.
             pluginManager = new PluginManager(context);
             pluginManager.initialize();
@@ -619,6 +619,8 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
                 userContentDir.mkdirs();
                 FileUtils.writeStringToFile(new File(userContentDir,"readme.txt"),Messages.Hudson_USER_CONTENT_README());
             }
+
+            updateCenter.load();    // this has to wait until after all plugins load, to let custom UpdateCenterConfiguration take effect first.
 
             Trigger.init();
 // pending SEZPOZ-8

@@ -1552,6 +1552,11 @@ var downloadService = {
     },
 
     post : function(id,data) {
+        if (data==undefined) {
+            // default to id in data
+            data = id;
+            id = data.id;
+        }
         var o = this.continuations[id];
         new Ajax.Request(o.postBack, {
             parameters:{json:Object.toJSON(data)},
@@ -1563,28 +1568,8 @@ var downloadService = {
     }
 };
 
-// update center service. for historical reasons,
-// this is separate from downloadSerivce
-var updateCenter = {
-    postBackURL : null,
-    info: {},
-    completionHandler: null,
-    url: "http://hudson-ci.org/",
-
-    checkUpdates : function() {
-        loadScript(updateCenter.url+"update-center.json?"+Hash.toQueryString(updateCenter.info));
-    },
-
-    post : function(data) {
-        new Ajax.Request(updateCenter.postBackURL, {
-            parameters:{json:Object.toJSON(data)},
-            onSuccess: function() {
-                if(updateCenter.completionHandler!=null)
-                    updateCenter.completionHandler();
-            }
-        });
-    }
-};
+// update center service. to remain compatible with earlier version of Hudson, aliased.
+var updateCenter = downloadService;
 
 /*
 redirects to a page once the page is ready.

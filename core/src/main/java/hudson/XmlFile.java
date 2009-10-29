@@ -140,7 +140,7 @@ public final class XmlFile {
      *
      * @return
      *      The unmarshalled object. Usually the same as <tt>o</tt>, but would be different
-     *      if the XML representation if completely new.
+     *      if the XML representation is completely new.
      */
     public Object unmarshal( Object o ) throws IOException {
         Reader r = new BufferedReader(new InputStreamReader(new FileInputStream(file),"UTF-8"));
