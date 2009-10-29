@@ -82,7 +82,9 @@ public class AuthorizationMatrixProperty extends JobProperty<Job<?, ?>> {
     }
 
     public AuthorizationMatrixProperty(Map<Permission, Set<String>> grantedPermissions) {
-        this.grantedPermissions.putAll(grantedPermissions);
+        // do a deep copy to be safe
+        for (Entry<Permission,Set<String>> e : grantedPermissions.entrySet())
+            this.grantedPermissions.put(e.getKey(),new HashSet<String>(e.getValue()));
     }
 
 	public Set<String> getGroups() {
