@@ -2803,6 +2803,23 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
     }
 
     /**
+     * Queues up a restart of Hudson for when there are no builds running, if we can.
+     *
+     * This first replaces "app" to {@link HudsonIsRestarting}
+     */
+    public void doSafeRestart(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
+        checkPermission(ADMINISTER);
+        if(Stapler.getCurrentRequest().getMethod().equals("GET")) {
+            req.getView(this,"_safeRestart.jelly").forward(req,rsp);
+            return;
+        }
+
+        safeRestart();
+
+        rsp.sendRedirect2(".");
+    }
+
+    /**
      * Performs a restart.
      */
     @CLIMethod(name="restart")
@@ -2819,6 +2836,43 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
                     // give some time for the browser to load the "reloading" page
                     Thread.sleep(5000);
                     lifecycle.restart();
+                } catch (InterruptedException e) {
+                    LOGGER.log(Level.WARNING, "Failed to restart Hudson",e);
+                } catch (IOException e) {
+                    LOGGER.log(Level.WARNING, "Failed to restart Hudson",e);
+                }
+            }
+        }.start();
+    }
+
+    /**
+     * Queues up a restart to be performed once there are no builds currently running.
+     * @since 1.332
+     */
+    @CLIMethod(name="safe-restart")
+    public void safeRestart() {
+        final Lifecycle lifecycle = Lifecycle.get();
+        if(!lifecycle.canRestart())
+            throw new Failure("Restart is not supported in this running mode.");
+        // Quiet down so that we won't launch new builds.
+        isQuietingDown = true;
+        
+        new Thread("safe-restart thread") {
+            @Override
+            public void run() {
+                try {
+                    // Wait 'til we have no active executors.
+                    while (isQuietingDown
+                           && (overallLoad.computeTotalExecutors() > overallLoad.computeIdleExecutors())) {
+                        Thread.sleep(5000);
+                    }
+                    // Make sure isQuietingDown is still true.
+                    if (isQuietingDown) {
+                        servletContext.setAttribute("app",new HudsonIsRestarting());
+                        // give some time for the browser to load the "reloading" page
+                        Thread.sleep(5000);
+                        lifecycle.restart();
+                    }
                 } catch (InterruptedException e) {
                     LOGGER.log(Level.WARNING, "Failed to restart Hudson",e);
                 } catch (IOException e) {
