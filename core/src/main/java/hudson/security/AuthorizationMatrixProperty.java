@@ -59,6 +59,9 @@ import javax.servlet.ServletException;
 
 /**
  * {@link JobProperty} to associate ACL for each project.
+ *
+ * <p>
+ * Once created (and initialized), this object becomes immutable.
  */
 public class AuthorizationMatrixProperty extends JobProperty<Job<?, ?>> {
 
@@ -68,10 +71,6 @@ public class AuthorizationMatrixProperty extends JobProperty<Job<?, ?>> {
 
 	public boolean isUseProjectSecurity() {
 		return useProjectSecurity;
-	}
-
-	protected void setUseProjectSecurity(boolean useProjectSecurity) {
-		this.useProjectSecurity = useProjectSecurity;
 	}
 
 	/**
@@ -126,7 +125,7 @@ public class AuthorizationMatrixProperty extends JobProperty<Job<?, ?>> {
             formData = formData.getJSONObject("useProjectSecurity");
 
             if(!formData.isNullObject()) {
-                amp.setUseProjectSecurity(true);
+                amp.useProjectSecurity = true;
                 for (Map.Entry<String, Object> r : (Set<Map.Entry<String, Object>>) formData.getJSONObject("data").entrySet()) {
                     String sid = r.getKey();
                     if (r.getValue() instanceof JSONObject) {
@@ -251,8 +250,7 @@ public class AuthorizationMatrixProperty extends JobProperty<Job<?, ?>> {
 			String prop = reader.peekNextChild();
 			if (prop!=null && prop.equals("useProjectSecurity")) {
 				reader.moveDown();
-				Boolean useSecurity = (Boolean) context.convertAnother(as, Boolean.class);
-				as.setUseProjectSecurity(useSecurity);
+                as.useProjectSecurity = (Boolean) context.convertAnother(as, Boolean.class);
 				reader.moveUp();
 			}
 			while (reader.hasMoreChildren()) {
