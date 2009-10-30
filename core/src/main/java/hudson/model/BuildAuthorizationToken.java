@@ -23,7 +23,11 @@
  */
 package hudson.model;
 
-import com.thoughtworks.xstream.converters.basic.AbstractSingleValueConverter;
+import com.thoughtworks.xstream.converters.Converter;
+import com.thoughtworks.xstream.converters.MarshallingContext;
+import com.thoughtworks.xstream.converters.UnmarshallingContext;
+import com.thoughtworks.xstream.io.HierarchicalStreamWriter;
+import com.thoughtworks.xstream.io.HierarchicalStreamReader;
 import hudson.Util;
 import hudson.security.ACL;
 import org.kohsuke.stapler.StaplerRequest;
@@ -75,18 +79,17 @@ public final class BuildAuthorizationToken {
         return token;
     }
 
-    public static final class ConverterImpl extends AbstractSingleValueConverter {
+    public static final class ConverterImpl implements Converter {
         public boolean canConvert(Class type) {
             return type== BuildAuthorizationToken.class;
         }
 
-        public Object fromString(String str) {
-            return new BuildAuthorizationToken(str);
+        public void marshal(Object source, HierarchicalStreamWriter writer, MarshallingContext context) {
+            writer.setValue(((BuildAuthorizationToken) source).token);
         }
 
-        @Override
-        public String toString(Object obj) {
-            return ((BuildAuthorizationToken)obj).token;
+        public Object unmarshal(HierarchicalStreamReader reader, final UnmarshallingContext context) {
+            return new BuildAuthorizationToken(reader.getValue());
         }
     }
 }
