@@ -441,6 +441,9 @@ public final class PluginManager extends AbstractModelObject {
         }
     }
 
+    /**
+     * {@link ClassLoader} that can see all plugins.
+     */
     private final class UberClassLoader extends ClassLoader {
         public UberClassLoader() {
             super(PluginManager.class.getClassLoader());
