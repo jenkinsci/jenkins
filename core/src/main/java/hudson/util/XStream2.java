@@ -28,8 +28,11 @@ import com.thoughtworks.xstream.mapper.Mapper;
 import com.thoughtworks.xstream.mapper.MapperWrapper;
 import com.thoughtworks.xstream.mapper.ImmutableTypesMapper;
 import com.thoughtworks.xstream.converters.Converter;
+import com.thoughtworks.xstream.converters.ConverterMatcher;
 import com.thoughtworks.xstream.converters.DataHolder;
 import com.thoughtworks.xstream.converters.MarshallingContext;
+import com.thoughtworks.xstream.converters.SingleValueConverter;
+import com.thoughtworks.xstream.converters.SingleValueConverterWrapper;
 import com.thoughtworks.xstream.converters.UnmarshallingContext;
 import com.thoughtworks.xstream.core.JVM;
 import com.thoughtworks.xstream.io.HierarchicalStreamDriver;
@@ -121,7 +124,10 @@ public class XStream2 extends XStream {
                         throw new InstantiationError("Unrecognized constructor parameter: "+p[i]);
 
                 }
-                return (Converter)c.newInstance(args);
+                ConverterMatcher cm = (ConverterMatcher)c.newInstance(args);
+                return cm instanceof SingleValueConverter
+                        ? new SingleValueConverterWrapper((SingleValueConverter)cm)
+                        : (Converter)cm;
             } catch (ClassNotFoundException e) {
                 return null;
             } catch (IllegalAccessException e) {
