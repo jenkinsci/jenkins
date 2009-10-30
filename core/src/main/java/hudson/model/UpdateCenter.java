@@ -194,9 +194,11 @@ public class UpdateCenter extends AbstractModelObject implements Saveable {
      *      null if no such update center is provided.
      */
     public UpdateSite getCoreSource() {
-        for (UpdateSite s : sites)
-            if (s.getData().core!=null)
+        for (UpdateSite s : sites) {
+            Data data = s.getData();
+            if (data!=null && data.core!=null)
                 return s;
+        }
         return null;
     }
 
