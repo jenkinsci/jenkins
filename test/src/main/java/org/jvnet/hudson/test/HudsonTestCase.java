@@ -238,7 +238,7 @@ public abstract class HudsonTestCase extends TestCase implements RootAction {
         hudson.getJDKs().add(new JDK("default",System.getProperty("java.home")));
 
         // load updates from local proxy to avoid network traffic.
-        final String updateCenterUrl = "http://localhost:"+JavaNetReverseProxy.getInstance().localPort+"/";
+        final String updateCenterUrl = "http://localhost:"+JavaNetReverseProxy.getInstance().localPort+"/update-center.json";
         
         PersistedList<UpdateSite> sites = hudson.getUpdateCenter().getSites();
         sites.clear();
