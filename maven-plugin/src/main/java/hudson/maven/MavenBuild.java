@@ -364,6 +364,10 @@ public class MavenBuild extends AbstractMavenBuild<MavenModule,MavenBuild> {
             return System.currentTimeMillis()-getTimestamp().getTimeInMillis();
         }
 
+        public boolean isArchivingDisabled() {
+            return MavenBuild.this.getParent().getParent().isArchivingDisabled();
+        }
+        
         public void registerAsProjectAction(MavenReporter reporter) {
             MavenBuild.this.registerAsProjectAction(reporter);
         }

@@ -33,12 +33,14 @@ import hudson.model.BuildListener;
 import hudson.util.InvocationInterceptor;
 import hudson.FilePath;
 import hudson.Extension;
+import hudson.Util;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.installer.ArtifactInstallationException;
 import org.apache.maven.project.MavenProject;
 
 import java.io.IOException;
 import java.io.File;
+import java.io.FileInputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -102,7 +104,7 @@ public class MavenArtifactArchiver extends MavenReporter {
         if(pom.getFile()!=null) {// goals like 'clean' runs without loading POM, apparently.
             // record POM
             final MavenArtifact pomArtifact = new MavenArtifact(
-                pom.getGroupId(), pom.getArtifactId(), pom.getVersion(), null, "pom", pom.getFile().getName());
+                                                                pom.getGroupId(), pom.getArtifactId(), pom.getVersion(), null, "pom", pom.getFile().getName(), Util.getDigestOf(new FileInputStream(pom.getFile())));
             mavenArtifacts.add(pom.getFile());
             pomArtifact.archive(build,pom.getFile(),listener);
 
@@ -144,10 +146,15 @@ public class MavenArtifactArchiver extends MavenReporter {
         for (File assembly : assemblies) {
             if(mavenArtifacts.contains(assembly))
                 continue;   // looks like this is already archived
-            FilePath target = build.getArtifactsDir().child(assembly.getName());
-            listener.getLogger().println("[HUDSON] Archiving "+ assembly+" to "+target);
-            new FilePath(assembly).copyTo(target);
-            // TODO: fingerprint
+            if (build.isArchivingDisabled()) {
+                listener.getLogger().println("[HUDSON] Archiving disabled - not archiving " + assembly);
+            }
+            else {
+                FilePath target = build.getArtifactsDir().child(assembly.getName());
+                listener.getLogger().println("[HUDSON] Archiving "+ assembly+" to "+target);
+                new FilePath(assembly).copyTo(target);
+                // TODO: fingerprint
+            }
         }
 
         return true;

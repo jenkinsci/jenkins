@@ -141,6 +141,11 @@ public final class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,Ma
     private boolean ignoreUpstremChanges = false;
 
     /**
+     * If true, do not archive artifacts to the master.
+     */
+    private boolean archivingDisabled = false;
+
+    /**
      * Reporters configured at {@link MavenModuleSet} level. Applies to all {@link MavenModule} builds.
      */
     private DescribableList<MavenReporter,Descriptor<MavenReporter>> reporters =
@@ -290,6 +295,10 @@ public final class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,Ma
         return ignoreUpstremChanges;
     }
 
+    public boolean isArchivingDisabled() {
+        return archivingDisabled;
+    }
+
     public void setIncrementalBuild(boolean incrementalBuild) {
         this.incrementalBuild = incrementalBuild;
     }
@@ -304,6 +313,10 @@ public final class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,Ma
 
     public void setIgnoreUpstremChanges(boolean ignoreUpstremChanges) {
         this.ignoreUpstremChanges = ignoreUpstremChanges;
+    }
+
+    public void setIsArchivingDisabled(boolean archivingDisabled) {
+        this.archivingDisabled = archivingDisabled;
     }
 
     /**
@@ -671,7 +684,8 @@ public final class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,Ma
         usePrivateRepository = req.hasParameter("maven.usePrivateRepository");
         ignoreUpstremChanges = !json.has("triggerByDependency");
         incrementalBuild = req.hasParameter("maven.incrementalBuild");
-
+        archivingDisabled = req.hasParameter("maven.archivingDisabled");
+        
         reporters.rebuild(req,json,MavenReporters.getConfigurableList());
         publishers.rebuild(req,json,BuildStepDescriptor.filter(Publisher.all(),this.getClass()));
         buildWrappers.rebuild(req,json,BuildWrappers.getFor(this));
