@@ -1080,7 +1080,7 @@ public class Functions {
         if (url.endsWith("/")) url = url.substring(0, url.length() - 1);
         if (href.endsWith("/")) href = href.substring(0, href.length() - 1);
 
-        return url.endsWith(href));
+        return url.endsWith(href);
     }
 
     public <T> List<T> singletonList(T t) {
