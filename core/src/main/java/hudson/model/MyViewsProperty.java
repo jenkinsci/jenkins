@@ -235,7 +235,7 @@ public class MyViewsProperty extends UserProperty implements ViewGroup, Action {
     public static class GlobalAction implements RootAction {
 
 		public String getDisplayName() {
-			return "My Views";
+			return Messages.MyViewsProperty_GlobalAction_DisplayName();
 		}
 
 		public String getIconFileName() {
