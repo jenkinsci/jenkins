@@ -27,6 +27,7 @@ import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
 import com.gargoylesoftware.htmlunit.Page;
 import org.jvnet.hudson.test.HudsonTestCase;
 import org.jvnet.hudson.test.Bug;
+import org.jvnet.hudson.test.Email;
 
 /**
  * @author Kohsuke Kawaguchi
@@ -80,4 +81,9 @@ public class ApiTest extends HudsonTestCase {
         }
     }
 
+    @Email("https://hudson.dev.java.net/servlets/BrowseList?list=users&by=thread&from=2222483")
+    public void testProjectExport() throws Exception {
+        FreeStyleProject p = createFreeStyleProject();
+        new WebClient().goTo(p.getUrl()+"api/xml", "application/xml");
+    }
 }
