@@ -446,6 +446,30 @@ public class Fingerprint implements ModelObject, Saveable {
             return ranges.get(ranges.size() - 1).isSmallerThan(n);
         }
 
+        /**
+         * Parses a {@link RangeSet} from a string like "1-3,5,7-9"
+         */
+        public static RangeSet fromString(String list) {
+            RangeSet rs = new RangeSet();
+            for (String s : Util.tokenize(list,",")) {
+                s = s.trim();
+                // s is either single number or range "x-y".
+                // note that the end range is inclusive in this notation, but not in the Range class
+                try {
+                    if(s.contains("-")) {
+                        String[] tokens = Util.tokenize(s,"-");
+                        rs.ranges.add(new Range(Integer.parseInt(tokens[0]),Integer.parseInt(tokens[1])+1));
+                    } else {
+                        int n = Integer.parseInt(s);
+                        rs.ranges.add(new Range(n,n+1));
+                    }
+                } catch (NumberFormatException e) {
+                    // ignore malformed text
+                }
+            }
+            return rs;
+        }
+
         static final class ConverterImpl implements Converter {
             private final Converter collectionConv; // used to convert ArrayList in it
 
@@ -481,24 +505,7 @@ public class Fingerprint implements ModelObject, Saveable {
                      */
                     return new RangeSet((List<Range>)(collectionConv.unmarshal(reader,context)));
                 } else {
-                    RangeSet rs = new RangeSet();
-                    for (String s : Util.tokenize(reader.getValue(),",")) {
-                        s = s.trim();
-                        // s is either single number or range "x-y".
-                        // note that the end range is inclusive in this notation, but not in the Range class
-                        try {
-                            if(s.contains("-")) {
-                                String[] tokens = Util.tokenize(s,"-");
-                                rs.ranges.add(new Range(Integer.parseInt(tokens[0]),Integer.parseInt(tokens[1])+1));
-                            } else {
-                                int n = Integer.parseInt(s);
-                                rs.ranges.add(new Range(n,n+1));
-                            }
-                        } catch (NumberFormatException e) {
-                            // ignore malformed text
-                        }
-                    }
-                    return rs;
+                    return RangeSet.fromString(reader.getValue());
                 }
             }
         }
