@@ -127,7 +127,7 @@ public class DoubleLaunchChecker {
         String contextPath="";
         try {
             Method m = ServletContext.class.getMethod("getContextPath");
-            contextPath=(String)m.invoke(h.servletContext);
+            contextPath=" contextPath=\""+m.invoke(h.servletContext)+"\"";
         } catch (Exception e) {
             // maybe running with Servlet 2.4
         }
