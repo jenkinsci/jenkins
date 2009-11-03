@@ -32,6 +32,7 @@ import hudson.model.Hudson;
 import hudson.model.Result;
 import hudson.model.Run;
 import hudson.model.Cause.UpstreamCause;
+import hudson.tasks.BuildTrigger;
 
 import java.io.File;
 import java.io.IOException;
@@ -41,7 +42,7 @@ import java.util.Set;
 public abstract class AbstractMavenBuild<P extends AbstractMavenProject<P,B>,B extends AbstractMavenBuild<P,B>> extends AbstractBuild<P, B>  {
 
     /**
-     * Extra versbose debug switch.
+     * Extra verbose debug switch.
      */
     public static boolean debug = false;
     
@@ -59,11 +60,16 @@ public abstract class AbstractMavenBuild<P extends AbstractMavenProject<P,B>,B e
     
     /**
      * Schedules all the downstream builds.
+     * Returns immediately if build result doesn't meet the required level
+     * (as specified by {@link BuildTrigger}, or {@link Result#SUCCESS} if none).
      *
      * @param listener
      *      Where the progress reports go.
      */
     protected final void scheduleDownstreamBuilds(BuildListener listener) {
+        BuildTrigger bt = getParent().getPublishersList().get(BuildTrigger.class);
+        if (getResult().isWorseThan(bt!=null ? bt.getThreshold() : Result.SUCCESS)) return;
+
         // trigger dependency builds
         for( AbstractProject<?,?> down : getParent().getDownstreamProjects()) {
             if(debug)

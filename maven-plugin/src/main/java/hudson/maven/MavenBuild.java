@@ -226,6 +226,7 @@ public class MavenBuild extends AbstractMavenBuild<MavenModule,MavenBuild> {
     /**
      * Backdoor for {@link MavenModuleSetBuild} to assign workspaces for modules.
      */
+    @Override
     protected void setWorkspace(FilePath path) {
         super.setWorkspace(path);
     }
@@ -255,6 +256,7 @@ public class MavenBuild extends AbstractMavenBuild<MavenModule,MavenBuild> {
                 super(buildProxy);
             }
 
+            @Override
             public void executeAsync(final BuildCallable<?,?> program) throws IOException {
                 futures.add(Channel.current().callAsync(new AsyncInvoker(core,program)));
             }
@@ -547,9 +549,9 @@ public class MavenBuild extends AbstractMavenBuild<MavenModule,MavenBuild> {
                 reporter.end(MavenBuild.this,launcher,listener);
         }
 
+        @Override
         public void cleanUp(BuildListener listener) throws Exception {
-            if(getResult().isBetterOrEqualTo(Result.SUCCESS))
-                scheduleDownstreamBuilds(listener);
+            scheduleDownstreamBuilds(listener);
         }
     }
 
