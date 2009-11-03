@@ -98,7 +98,6 @@ public abstract class SCM implements Describable<SCM>, ExtensionPoint {
      *
      * @see #getEffectiveBrowser()
      */
-    @Exported
     public RepositoryBrowser getBrowser() {
         return null;
     }
@@ -121,7 +120,7 @@ public abstract class SCM implements Describable<SCM>, ExtensionPoint {
      * This method attempts to find applicable browser
      * from other job configurations.
      */
-    @Exported
+    @Exported(name="browser")
     public final RepositoryBrowser getEffectiveBrowser() {
         RepositoryBrowser b = getBrowser();
         if(b!=null)
