@@ -403,7 +403,7 @@ public class Fingerprint implements ModelObject, Saveable {
 
         @Override
         public synchronized String toString() {
-            StringBuffer buf = new StringBuffer();
+            StringBuilder buf = new StringBuilder();
             for (Range r : ranges) {
                 if(buf.length()>0)  buf.append(',');
                 buf.append(r);
@@ -449,7 +449,7 @@ public class Fingerprint implements ModelObject, Saveable {
         /**
          * Parses a {@link RangeSet} from a string like "1-3,5,7-9"
          */
-        public static RangeSet fromString(String list) {
+        public static RangeSet fromString(String list, boolean skipError) {
             RangeSet rs = new RangeSet();
             for (String s : Util.tokenize(list,",")) {
                 s = s.trim();
@@ -464,7 +464,10 @@ public class Fingerprint implements ModelObject, Saveable {
                         rs.ranges.add(new Range(n,n+1));
                     }
                 } catch (NumberFormatException e) {
+                    if (!skipError)
+                        throw new IllegalArgumentException("Unable to parse "+list);
                     // ignore malformed text
+
                 }
             }
             return rs;
@@ -505,7 +508,7 @@ public class Fingerprint implements ModelObject, Saveable {
                      */
                     return new RangeSet((List<Range>)(collectionConv.unmarshal(reader,context)));
                 } else {
-                    return RangeSet.fromString(reader.getValue());
+                    return RangeSet.fromString(reader.getValue(),true);
                 }
             }
         }
