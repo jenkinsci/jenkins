@@ -37,6 +37,7 @@ public class UpdateCenter2Test extends HudsonTestCase {
      */
     void testInstall() {
         UpdateCenter.neverUpdate = false;
+        UpdateSite.neverUpdate = false;
         createWebClient().goTo("/") // load the metadata
         def job = hudson.updateCenter.getPlugin("changelog-history").deploy().get(); // this seems like one of the smallest plugin
         println job.status;
