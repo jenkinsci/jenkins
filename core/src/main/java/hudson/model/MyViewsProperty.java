@@ -62,6 +62,9 @@ public class MyViewsProperty extends UserProperty implements ViewGroup, Action {
     private static final Logger log = Logger.getLogger(MyViewsProperty.class.getName());
 
     private String primaryViewName;
+    /**
+     * Always hold at least one view.
+     */
     private CopyOnWriteArrayList<View> views = new CopyOnWriteArrayList<View>();
 
     @DataBoundConstructor
@@ -223,11 +226,13 @@ public class MyViewsProperty extends UserProperty implements ViewGroup, Action {
     }
     
     public Object readResolve() {
-        if (views == null) {
+        if (views == null)
             // this shouldn't happen, but an error in 1.319 meant the last view could be deleted
             views = new CopyOnWriteArrayList<View>();
+
+        if (views.isEmpty())
+            // preserve the non-empty invariant
             views.add(new AllView(Messages.Hudson_ViewName(), this));
-        }
         return this;
     }
     
