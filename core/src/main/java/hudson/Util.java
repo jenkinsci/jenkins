@@ -29,8 +29,8 @@ import static hudson.model.Hudson.isWindows;
 import hudson.util.IOException2;
 import hudson.util.QuotedStringTokenizer;
 import hudson.util.VariableResolver;
+import hudson.util.jna.GNUCLibrary;
 import hudson.Proc.LocalProc;
-import hudson.os.PosixAPI;
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.Project;
 import org.apache.tools.ant.types.FileSet;
@@ -87,6 +87,8 @@ import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.nio.charset.Charset;
+
+import com.sun.jna.Native;
 
 /**
  * Various utility methods that don't have more proper home.
@@ -964,16 +966,16 @@ public class Util {
                     new LocalProc(new String[]{"rm","-rf", symlinkPath},new String[0],listener.getLogger(), baseDir).join();
 
                 int r;
-                String errMsg = "";
-                if (!SYMLINK_ESCAPEHATCH && PosixAPI.isNative()) {
-                    r = PosixAPI.get().symlink(targetPath,symlinkFile.getAbsolutePath());
-                    if (r!=0) errMsg = " errno=" + PosixAPI.get().errno();
-                } else // escape hatch, until we know that the above works well. 
+                if (!SYMLINK_ESCAPEHATCH) {
+                    r = GNUCLibrary.LIBC.symlink(targetPath,symlinkFile.getAbsolutePath());
+                    if (r!=0)
+                        r = Native.getLastError();
+                } else // escape hatch, until we know that the above works well.
                     r = new LocalProc(new String[]{
                         "ln","-s", targetPath, symlinkPath},
                         new String[0],listener.getLogger(), baseDir).join();
                 if(r!=0)
-                    listener.getLogger().println("ln failed: "+r+errMsg);
+                    listener.getLogger().println("ln failed: "+r);
             } catch (IOException e) {
                 PrintStream log = listener.getLogger();
                 log.println("ln failed");
