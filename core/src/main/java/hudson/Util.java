@@ -964,15 +964,16 @@ public class Util {
                     new LocalProc(new String[]{"rm","-rf", symlinkPath},new String[0],listener.getLogger(), baseDir).join();
 
                 int r;
-
-                if (!SYMLINK_ESCAPEHATCH)
+                String errMsg = "";
+                if (!SYMLINK_ESCAPEHATCH && PosixAPI.isNative()) {
                     r = PosixAPI.get().symlink(targetPath,symlinkFile.getAbsolutePath());
-                else // escape hatch, until we know that the above works well. 
+                    if (r!=0) errMsg = " errno=" + PosixAPI.get().errno();
+                } else // escape hatch, until we know that the above works well. 
                     r = new LocalProc(new String[]{
                         "ln","-s", targetPath, symlinkPath},
                         new String[0],listener.getLogger(), baseDir).join();
                 if(r!=0)
-                    listener.getLogger().println("ln failed: "+r);
+                    listener.getLogger().println("ln failed: "+r+errMsg);
             } catch (IOException e) {
                 PrintStream log = listener.getLogger();
                 log.println("ln failed");
