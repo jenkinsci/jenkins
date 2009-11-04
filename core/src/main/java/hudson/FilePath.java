@@ -553,6 +553,8 @@ public final class FilePath implements Serializable {
             if(timestamp.exists() && sourceTimestamp ==timestamp.lastModified())
                 return false;   // already up to date
             this.deleteContents();
+        } else {
+            this.mkdirs();
         }
 
         if(listener!=null)
@@ -563,7 +565,7 @@ public final class FilePath implements Serializable {
         CountingInputStream cis = new CountingInputStream(in);
         try {
             if(archive.toExternalForm().endsWith(".zip"))
-            unzipFrom(cis);
+                unzipFrom(cis);
         else
             untarFrom(cis,GZIP);
         } catch (IOException e) {
