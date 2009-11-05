@@ -177,21 +177,13 @@ public class DescribableList<T extends Describable<T>, D extends Descriptor<T>> 
     }
 
 /*
-    The following four seemingly pointless method definitions are necessary to produce
+    The following two seemingly pointless method definitions are necessary to produce
     backward compatible binary signatures. Without this we only get
     get(Ljava/lang/Class;)Ljava/lang/Object; from PersistedList where we need
     get(Ljava/lang/Class;)Lhudson/model/Describable;
  */
     public <U extends T> U get(Class<U> type) {
         return super.get(type);
-    }
-
-    public <U extends T> List<U> getAll(Class<U> type) {
-        return super.getAll(type);
-    }
-
-    public List<T> toList() {
-        return super.toList();
     }
 
     public T[] toArray(T[] array) {
