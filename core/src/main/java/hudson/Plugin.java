@@ -27,6 +27,7 @@ import hudson.model.Hudson;
 import hudson.model.Descriptor;
 import hudson.model.Saveable;
 import hudson.model.listeners.ItemListener;
+import hudson.model.listeners.SaveableListener;
 import hudson.model.Descriptor.FormException;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
@@ -227,6 +228,7 @@ public abstract class Plugin implements Saveable {
     public void save() throws IOException {
         if(BulkChange.contains(this))   return;
         getConfigXml().write(this);
+        SaveableListener.fireOnChange(this, getConfigXml());
     }
 
     /**

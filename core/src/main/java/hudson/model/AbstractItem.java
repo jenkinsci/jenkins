@@ -29,6 +29,7 @@ import hudson.Functions;
 import hudson.BulkChange;
 import hudson.cli.declarative.CLIMethod;
 import hudson.cli.declarative.CLIResolver;
+import hudson.model.listeners.SaveableListener;
 import hudson.security.AccessControlled;
 import hudson.security.Permission;
 import hudson.security.ACL;
@@ -216,6 +217,7 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
     public synchronized void save() throws IOException {
         if(BulkChange.contains(this))   return;
         getConfigFile().write(this);
+        SaveableListener.fireOnChange(this, getConfigFile());
     }
 
     public final XmlFile getConfigFile() {

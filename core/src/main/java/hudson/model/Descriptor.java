@@ -27,6 +27,7 @@ import hudson.XmlFile;
 import hudson.BulkChange;
 import hudson.Util;
 import static hudson.Util.singleQuote;
+import hudson.model.listeners.SaveableListener;
 import hudson.scm.CVSSCM;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
@@ -479,6 +480,7 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable {
         if(BulkChange.contains(this))   return;
         try {
             getConfigFile().write(this);
+            SaveableListener.fireOnChange(this, getConfigFile());
         } catch (IOException e) {
             LOGGER.log(Level.WARNING, "Failed to save "+getConfigFile(),e);
         }

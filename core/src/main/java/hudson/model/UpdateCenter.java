@@ -35,6 +35,7 @@ import hudson.XmlFile;
 import hudson.lifecycle.Lifecycle;
 import hudson.model.UpdateSite.Data;
 import hudson.model.UpdateSite.Plugin;
+import hudson.model.listeners.SaveableListener;
 import hudson.util.DaemonThreadFactory;
 import hudson.util.IOException2;
 import hudson.util.PersistedList;
@@ -263,6 +264,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable {
         if(BulkChange.contains(this))   return;
         try {
             getConfigFile().write(sites);
+            SaveableListener.fireOnChange(this, getConfigFile());
         } catch (IOException e) {
             LOGGER.log(Level.WARNING, "Failed to save "+getConfigFile(),e);
         }

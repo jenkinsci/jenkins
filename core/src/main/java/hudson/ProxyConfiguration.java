@@ -25,6 +25,7 @@ package hudson;
 
 import hudson.model.Hudson;
 import hudson.model.Saveable;
+import hudson.model.listeners.SaveableListener;
 import hudson.util.Scrambler;
 import hudson.util.XStream2;
 
@@ -89,6 +90,7 @@ public final class ProxyConfiguration implements Saveable {
     public void save() throws IOException {
         if(BulkChange.contains(this))   return;
         getXmlFile().write(this);
+        SaveableListener.fireOnChange(this, getXmlFile());
     }
 
     public static XmlFile getXmlFile() {

@@ -28,6 +28,7 @@ import hudson.DescriptorExtensionList;
 import hudson.Util;
 import hudson.XmlFile;
 import hudson.model.Descriptor.FormException;
+import hudson.model.listeners.SaveableListener;
 import hudson.node_monitors.NodeMonitor;
 import hudson.slaves.NodeDescriptor;
 import hudson.util.DescribableList;
@@ -65,6 +66,7 @@ public final class ComputerSet extends AbstractModelObject {
     private static final Saveable MONITORS_OWNER = new Saveable() {
         public void save() throws IOException {
             getConfigFile().write(monitors);
+            SaveableListener.fireOnChange(this, getConfigFile());
         }
     };
 

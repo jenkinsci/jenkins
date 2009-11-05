@@ -36,6 +36,7 @@ import hudson.cli.declarative.CLIMethod;
 import hudson.matrix.MatrixBuild;
 import hudson.matrix.MatrixRun;
 import hudson.model.listeners.RunListener;
+import hudson.model.listeners.SaveableListener;
 import hudson.search.SearchIndexBuilder;
 import hudson.security.ACL;
 import hudson.security.AccessControlled;
@@ -1302,6 +1303,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
     public synchronized void save() throws IOException {
         if(BulkChange.contains(this))   return;
         getDataFile().write(this);
+        SaveableListener.fireOnChange(this, getDataFile());
     }
 
     private XmlFile getDataFile() {

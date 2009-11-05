@@ -32,6 +32,7 @@ import hudson.cli.declarative.CLIMethod;
 import hudson.cli.declarative.CLIResolver;
 import hudson.remoting.AsyncFutureImpl;
 import hudson.model.Node.Mode;
+import hudson.model.listeners.SaveableListener;
 import hudson.model.queue.CauseOfBlockage;
 import hudson.model.queue.FoldableAction;
 import hudson.model.queue.CauseOfBlockage.BecauseLabelIsBusy;
@@ -295,7 +296,9 @@ public class Queue extends ResourceController implements Saveable {
     	}
 
         try {
-            new XmlFile(XSTREAM, getXMLQueueFile()).write(items);
+            XmlFile queueFile = new XmlFile(XSTREAM, getXMLQueueFile());
+            queueFile.write(items);
+            SaveableListener.fireOnChange(this, queueFile);
         } catch (IOException e) {
             LOGGER.log(Level.WARNING, "Failed to write out the queue file " + getXMLQueueFile(), e);
         }

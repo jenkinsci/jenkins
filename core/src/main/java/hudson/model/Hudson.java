@@ -58,6 +58,7 @@ import hudson.model.Descriptor.FormException;
 import hudson.model.listeners.ItemListener;
 import hudson.model.listeners.JobListener;
 import hudson.model.listeners.JobListener.JobListenerAdapter;
+import hudson.model.listeners.SaveableListener;
 import hudson.model.listeners.SCMListener;
 import hudson.remoting.LocalChannel;
 import hudson.remoting.VirtualChannel;
@@ -2109,6 +2110,7 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
     public synchronized void save() throws IOException {
         if(BulkChange.contains(this))   return;
         getConfigFile().write(this);
+        SaveableListener.fireOnChange(this, getConfigFile());
     }
 
 
