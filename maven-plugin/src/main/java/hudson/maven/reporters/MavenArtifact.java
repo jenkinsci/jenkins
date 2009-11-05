@@ -24,6 +24,7 @@
 package hudson.maven.reporters;
 
 import hudson.FilePath;
+import hudson.Util;
 import hudson.maven.MavenBuild;
 import hudson.maven.MavenBuildProxy;
 import hudson.model.BuildListener;
@@ -36,6 +37,7 @@ import org.apache.maven.artifact.handler.DefaultArtifactHandler;
 import org.apache.maven.artifact.handler.manager.ArtifactHandlerManager;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.Collections;
@@ -84,7 +86,12 @@ public final class MavenArtifact implements Serializable {
      */
     public final String canonicalName;
 
-    public MavenArtifact(Artifact a) {
+    /**
+     * The md5sum for this artifact.
+     */
+    public final String md5sum;
+    
+    public MavenArtifact(Artifact a) throws IOException {
         this.groupId = a.getGroupId();
         this.artifactId = a.getArtifactId();
         this.version = a.getVersion();
@@ -92,7 +99,7 @@ public final class MavenArtifact implements Serializable {
         this.type = a.getType();
         // TODO: on archive we need to follow the same format as Maven repository
         this.fileName = a.getFile().getName();
-
+        this.md5sum = Util.getDigestOf(new FileInputStream(a.getFile()));
         String extension;
         if(a.getArtifactHandler()!=null) // don't know if this can be null, but just to be defensive.
             extension = a.getArtifactHandler().getExtension();
@@ -102,7 +109,7 @@ public final class MavenArtifact implements Serializable {
         canonicalName = getSeed(extension);
     }
 
-    public MavenArtifact(String groupId, String artifactId, String version, String classifier, String type, String fileName) {
+    public MavenArtifact(String groupId, String artifactId, String version, String classifier, String type, String fileName, String md5sum) {
         this.groupId = groupId;
         this.artifactId = artifactId;
         this.version = version;
@@ -110,13 +117,14 @@ public final class MavenArtifact implements Serializable {
         this.type = type;
         this.fileName = fileName;
         this.canonicalName = getSeed(type);
+        this.md5sum = md5sum;
     }
 
     /**
      * Convenience method to check if the given {@link Artifact} object contains
      * enough information suitable for recording, and if so, create {@link MavenArtifact}.
      */
-    public static MavenArtifact create(Artifact a) {
+    public static MavenArtifact create(Artifact a) throws IOException {
         File file = a.getFile();
         if(file==null)
             return null; // perhaps build failed and didn't leave an artifact
@@ -181,17 +189,21 @@ public final class MavenArtifact implements Serializable {
      * Called from within Maven to archive an artifact in Hudson.
      */
     public void archive(MavenBuildProxy build, File file, BuildListener listener) throws IOException, InterruptedException {
-        FilePath target = getArtifactArchivePath(build,groupId,artifactId,version);
-        FilePath origin = new FilePath(file);
-        if (!target.exists()) {
-            listener.getLogger().println("[HUDSON] Archiving "+ file+" to "+target);
-            origin.copyTo(target);
-        } else if (!origin.digest().equals(target.digest())) {
-            listener.getLogger().println("[HUDSON] Re-archiving "+file);
-            origin.copyTo(target);
-        } else {
-            LOGGER.fine("Not actually archiving "+origin+" due to digest match");
+        if (build.isArchivingDisabled()) {
+            listener.getLogger().println("[HUDSON] Archiving disabled - not archiving " + file);
         }
+        else {
+            FilePath target = getArtifactArchivePath(build,groupId,artifactId,version);
+            FilePath origin = new FilePath(file);
+            if (!target.exists()) {
+                listener.getLogger().println("[HUDSON] Archiving "+ file+" to "+target);
+                origin.copyTo(target);
+            } else if (!origin.digest().equals(target.digest())) {
+                listener.getLogger().println("[HUDSON] Re-archiving "+file);
+                origin.copyTo(target);
+            } else {
+                LOGGER.fine("Not actually archiving "+origin+" due to digest match");
+            }
 
             /* debug probe to investigate "missing artifact" problem typically seen like this:
 
@@ -231,20 +243,17 @@ public final class MavenArtifact implements Serializable {
                     at java.lang.Thread.run(Thread.java:619)
          */
 
-        if(!target.exists())
-            throw new AssertionError("Just copied "+file+" to "+target+" but now I can't find it");
+            if(!target.exists())
+                throw new AssertionError("Just copied "+file+" to "+target+" but now I can't find it");
+        }
     }
 
     /**
      * Called from within the master to record fingerprint.
      */
     public void recordFingerprint(MavenBuild build) throws IOException {
-        try {
-            FingerprintMap map = Hudson.getInstance().getFingerprintMap();
-            map.getOrCreate(build,fileName,new FilePath(getFile(build)).digest());
-        } catch (InterruptedException e) {
-            throw new AssertionError(); // this runs on the master, so this is impossible
-        }
+        FingerprintMap map = Hudson.getInstance().getFingerprintMap();
+        map.getOrCreate(build,fileName,md5sum);
     }
 
     private static final Logger LOGGER = Logger.getLogger(MavenArtifact.class.getName());

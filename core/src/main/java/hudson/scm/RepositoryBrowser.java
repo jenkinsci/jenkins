@@ -26,7 +26,6 @@ package hudson.scm;
 import hudson.ExtensionPoint;
 import hudson.DescriptorExtensionList;
 import hudson.Extension;
-import hudson.tasks.BuildWrapper;
 import hudson.model.Describable;
 import hudson.model.Descriptor;
 import hudson.model.Hudson;
@@ -35,6 +34,7 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.net.URL;
 import java.net.MalformedURLException;
+import org.kohsuke.stapler.export.ExportedBean;
 
 /**
  * Connects Hudson to repository browsers like ViewCVS or FishEye,
@@ -55,6 +55,7 @@ import java.net.MalformedURLException;
  * @since 1.89
  * @see RepositoryBrowsers
  */
+@ExportedBean
 public abstract class RepositoryBrowser<E extends ChangeLogSet.Entry> implements ExtensionPoint, Describable<RepositoryBrowser<?>>, Serializable {
     /**
      * Determines the link to the given change set.

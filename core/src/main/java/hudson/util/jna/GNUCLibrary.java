@@ -76,5 +76,12 @@ public interface GNUCLibrary extends Library {
 
     int sysctlnametomib(String name, Pointer mibp, IntByReference size);
 
+    /**
+     * Creates a symlink.
+     *
+     * See http://linux.die.net/man/3/symlink
+     */
+    int symlink(String oldname, String newname);
+
     public static final GNUCLibrary LIBC = (GNUCLibrary) Native.loadLibrary("c",GNUCLibrary.class);
 }

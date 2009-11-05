@@ -33,6 +33,8 @@ import hudson.cli.declarative.CLIResolver;
 import hudson.model.Descriptor.FormException;
 import hudson.model.listeners.ItemListener;
 import hudson.model.PermalinkProjectAction.Permalink;
+import hudson.model.Fingerprint.RangeSet;
+import hudson.model.Fingerprint.Range;
 import hudson.search.QuickSilver;
 import hudson.search.SearchIndex;
 import hudson.search.SearchIndexBuilder;
@@ -69,6 +71,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.SortedMap;
+import java.util.LinkedList;
 
 import javax.servlet.ServletException;
 import javax.xml.transform.Transformer;
@@ -564,6 +567,21 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
     @Exported
     public List<RunT> getBuilds() {
         return new ArrayList<RunT>(_getRuns().values());
+    }
+
+    /**
+     * Obtains all the {@link Run}s whose build numbers matches the given {@link RangeSet}.
+     */
+    public synchronized List<RunT> getBuilds(RangeSet rs) {
+        List<RunT> builds = new LinkedList<RunT>();
+
+        for (Range r : rs.getRanges()) {
+            for (RunT b = getNearestBuild(r.start); b!=null && b.getNumber()<r.end; b=b.getNextBuild()) {
+                builds.add(b);
+            }
+        }
+
+        return builds;
     }
 
     /**

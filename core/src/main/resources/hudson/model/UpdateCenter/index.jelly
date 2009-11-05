@@ -31,11 +31,11 @@ THE SOFTWARE.
   <l:main-panel>
     <h1>${%Installing Plugins/Upgrades}</h1>
 
-    <form method="post" action="${rootURL}/restart">
+    <form method="post" action="${rootURL}/safeRestart">
       <p class="warning">
         ${%warning}
         <j:if test="${app.lifecycle.canRestart()}">
-          <f:submit value="${%Restart Now}" />
+          <f:submit value="${%Restart When No Jobs Are Running}" />
         </j:if>
       </p>
     </form>

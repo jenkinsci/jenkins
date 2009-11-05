@@ -1,5 +1,6 @@
 package hudson.os;
 
+import org.jruby.ext.posix.JavaPOSIX;
 import org.jruby.ext.posix.POSIX;
 import org.jruby.ext.posix.POSIXFactory;
 import org.jruby.ext.posix.POSIXHandler;
@@ -18,6 +19,14 @@ import java.util.logging.Logger;
 public class PosixAPI {
     public static POSIX get() {
         return posix;
+    }
+
+    /**
+     * Determine if the jna-posix library could not provide native support, and
+     * used a fallback java implementation which does not support many operations.
+     */
+    public boolean isNative() {
+        return !(posix instanceof JavaPOSIX);
     }
 
     private static final POSIX posix = POSIXFactory.getPOSIX(new POSIXHandler() {

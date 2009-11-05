@@ -234,6 +234,7 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
         return r;
     }
 
+    @Override
     public Object getDynamic(String token, StaplerRequest req, StaplerResponse rsp) {
         // map corresponding module build under this object
         if(token.indexOf('$')>0) {
@@ -608,9 +609,7 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
             if(project.isAggregatorStyleBuild()) {
                 // schedule downstream builds. for non aggregator style builds,
                 // this is done by each module
-                if(getResult().isBetterOrEqualTo(Result.SUCCESS)) {
-                	scheduleDownstreamBuilds(listener);
-                }
+                scheduleDownstreamBuilds(listener);
             }
 
 	    MavenMailer mailer = project.getReporters().get(MavenMailer.class);
@@ -660,6 +659,7 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
                 super(core);
             }
 
+            @Override
             public void executeAsync(final BuildCallable<?,?> program) throws IOException {
                 futures.add(Channel.current().callAsync(new AsyncInvoker(core,program)));
             }
@@ -683,6 +683,7 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
             }
         }
 
+        @Override
         public Result call() throws IOException {
             try {
                 return super.call();
@@ -771,6 +772,7 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
             super(cause);
         }
 
+        @Override
         public Exception getCause() {
             return (Exception)super.getCause();
         }

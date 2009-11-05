@@ -53,10 +53,10 @@ import hudson.model.Run;
 import hudson.model.Saveable;
 import hudson.model.TaskListener;
 import hudson.model.UpdateCenter;
+import hudson.model.UpdateSite;
 import hudson.model.AbstractProject;
 import hudson.model.View;
 import hudson.model.RootAction;
-import hudson.model.UpdateCenter.UpdateCenterConfiguration;
 import hudson.model.Node.Mode;
 import hudson.security.csrf.CrumbIssuer;
 import hudson.slaves.CommandLauncher;
@@ -67,6 +67,7 @@ import hudson.tasks.Maven;
 import hudson.tasks.Ant;
 import hudson.tasks.Ant.AntInstallation;
 import hudson.tasks.Maven.MavenInstallation;
+import hudson.util.PersistedList;
 import hudson.util.StreamTaskListener;
 import hudson.util.jna.GNUCLibrary;
 
@@ -237,15 +238,16 @@ public abstract class HudsonTestCase extends TestCase implements RootAction {
         hudson.getJDKs().add(new JDK("default",System.getProperty("java.home")));
 
         // load updates from local proxy to avoid network traffic.
-        final String updateCenterUrl = "http://localhost:"+JavaNetReverseProxy.getInstance().localPort+"/";
-        hudson.getUpdateCenter().configure(new UpdateCenterConfiguration() {
-            @Override public String getUpdateCenterUrl() {
-                return updateCenterUrl;
-            }
-        });
+        final String updateCenterUrl = "http://localhost:"+JavaNetReverseProxy.getInstance().localPort+"/update-center.json";
+        
         // don't waste bandwidth talking to the update center
         DownloadService.neverUpdate = true;
         UpdateCenter.neverUpdate = true;
+        UpdateSite.neverUpdate = true;
+
+        PersistedList<UpdateSite> sites = hudson.getUpdateCenter().getSites();
+        sites.clear();
+        sites.add(new UpdateSite("default", updateCenterUrl));
 
         // expose the test instance as a part of URL tree.
         // this allows tests to use a part of the URL space for itself.

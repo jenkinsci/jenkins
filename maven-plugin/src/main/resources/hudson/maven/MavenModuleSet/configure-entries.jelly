@@ -80,6 +80,10 @@ THE SOFTWARE.
                        title="${%Incremental build - only build changed modules}"
                        help="/plugin/maven-plugin/incremental.html"
                        checked="${it.isIncrementalBuild()}" />
+      <f:optionalBlock name="maven.archivingDisabled"
+                       title="${%Disable automatic artifact archiving}"
+                       help="/plugin/maven-plugin/archivingDisabled.html"
+                       checked="${it.isArchivingDisabled()}" />
       <f:optionalBlock name="maven.perModuleBuild" title="${%Build modules in parallel}" help="/plugin/maven-plugin/aggregator.html"
         checked="${!it.aggregatorStyleBuild}" />
       <f:optionalBlock name="maven.usePrivateRepository" title="${%Use private Maven repository}" help="/plugin/maven-plugin/private-repository.html"

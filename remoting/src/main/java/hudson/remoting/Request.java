@@ -105,43 +105,49 @@ abstract class Request<RSP extends Serializable,EXC extends Throwable> extends C
             }
         }
 
-        synchronized(this) {
-            // set the thread name to represent the channel we are blocked on,
-            // so that thread dump would give us more useful information.
-            Thread t = Thread.currentThread();
-            final String name = t.getName();
-            try {
-                // wait until the response arrives
-                t.setName(name+" / waiting for "+channel);
-                while(response==null && !channel.isInClosed())
-                    // I don't know exactly when this can happen, as pendingCalls are cleaned up by Channel,
-                    // but in production I've observed that in rare occasion it can block forever, even after a channel
-                    // is gone. So be defensive against that.
-                    wait(30*1000);
+        try {
+            synchronized(this) {
+                // set the thread name to represent the channel we are blocked on,
+                // so that thread dump would give us more useful information.
+                Thread t = Thread.currentThread();
+                final String name = t.getName();
+                try {
+                    // wait until the response arrives
+                    t.setName(name+" / waiting for "+channel);
+                    while(response==null && !channel.isInClosed())
+                        // I don't know exactly when this can happen, as pendingCalls are cleaned up by Channel,
+                        // but in production I've observed that in rare occasion it can block forever, even after a channel
+                        // is gone. So be defensive against that.
+                        wait(30*1000);
 
-                if (response==null)
-                    // channel is closed and we still don't have a response
-                    throw new RequestAbortedException(null);
-            } catch (InterruptedException e) {
-                // if we are cancelled, abort the remote computation, too
-                channel.send(new Cancel(id));
-                throw e;
-            } finally {
-                t.setName(name);
-            }
-
-            Object exc = response.exception;
-
-            if(exc !=null) {
-                if(exc instanceof RequestAbortedException) {
-                    // add one more exception, so that stack trace shows both who's waiting for the completion
-                    // and where the connection outage was detected.
-                    exc = new RequestAbortedException((RequestAbortedException)exc);
+                    if (response==null)
+                        // channel is closed and we still don't have a response
+                        throw new RequestAbortedException(null);
+                } finally {
+                    t.setName(name);
                 }
-                throw (EXC)exc; // some versions of JDK fails to compile this line. If so, upgrade your JDK.
-            }
 
-            return response.returnValue;
+                Object exc = response.exception;
+
+                if (exc!=null) {
+                    if(exc instanceof RequestAbortedException) {
+                        // add one more exception, so that stack trace shows both who's waiting for the completion
+                        // and where the connection outage was detected.
+                        exc = new RequestAbortedException((RequestAbortedException)exc);
+                    }
+                    throw (EXC)exc; // some versions of JDK fails to compile this line. If so, upgrade your JDK.
+                }
+
+                return response.returnValue;
+            }
+        } catch (InterruptedException e) {
+            // if we are cancelled, abort the remote computation, too.
+            // do this outside the "synchronized(this)" block to prevent locking Request and Channel in a wrong order.
+            synchronized (channel) { // ... so that the close check and send won't be interrupted in the middle by a close
+                if (!channel.isOutClosed())
+                    channel.send(new Cancel(id));   // only send a cancel if we can, or else ChannelClosedException will mask the original cause
+            }
+            throw e;
         }
     }
 

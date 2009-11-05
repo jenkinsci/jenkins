@@ -1002,10 +1002,10 @@ public class Functions {
         if(SCHEME.matcher(urlName).matches())
             return urlName; // absolute URL
         if(urlName.startsWith("/"))
-            return Stapler.getCurrentRequest().getContextPath()+urlName+'/';
+            return Stapler.getCurrentRequest().getContextPath()+urlName;
         else
             // relative URL name
-            return Stapler.getCurrentRequest().getContextPath()+'/'+itUrl+urlName+'/';
+            return Stapler.getCurrentRequest().getContextPath()+'/'+itUrl+urlName;
     }
 
     /**
@@ -1068,24 +1068,19 @@ public class Functions {
     }
 
     /**
-     * Gets the URL for the update center server
-     */
-    public String getUpdateCenterUrl() {
-        return Hudson.getInstance().getUpdateCenter().getUrl();
-    }
-
-    /**
      * If the given href link is matching the current page, return true.
      *
      * Used in <tt>task.jelly</tt> to decide if the page should be highlighted.
      */
     public boolean hyperlinkMatchesCurrentPage(String href) throws UnsupportedEncodingException {
         String url = Stapler.getCurrentRequest().getRequestURL().toString();
+        if (href.length() <= 1) return href.equals(".") && url.endsWith("/");
         url = URLDecoder.decode(url,"UTF-8");
         href = URLDecoder.decode(href,"UTF-8");
+        if (url.endsWith("/")) url = url.substring(0, url.length() - 1);
+        if (href.endsWith("/")) href = href.substring(0, href.length() - 1);
 
-        return (href.length()>1 && url.endsWith(href))
-            || (href.equals(".") && url.endsWith("."));
+        return url.endsWith(href);
     }
 
     public <T> List<T> singletonList(T t) {

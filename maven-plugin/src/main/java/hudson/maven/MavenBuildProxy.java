@@ -114,6 +114,11 @@ public interface MavenBuildProxy {
     long getMilliSecsSinceBuildStart();
 
     /**
+     * If true, artifacts will not actually be archived to master. Calls {@link MavenModuleSet#isArchivingDisabled()}.
+     */
+    boolean isArchivingDisabled();
+    
+    /**
      * Nominates that the reporter will contribute a project action
      * for this build by using {@link MavenReporter#getProjectAction(MavenModule)}.
      *
@@ -201,6 +206,10 @@ public interface MavenBuildProxy {
             return core.getMilliSecsSinceBuildStart();
         }
 
+        public boolean isArchivingDisabled() {
+            return core.isArchivingDisabled();
+        }
+        
         public void registerAsProjectAction(MavenReporter reporter) {
             core.registerAsProjectAction(reporter);
         }

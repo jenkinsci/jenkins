@@ -49,6 +49,7 @@ import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.HttpResponse;
+import org.kohsuke.stapler.HttpResponses;
 import org.kohsuke.stapler.HttpRedirect;
 
 import javax.servlet.ServletException;
@@ -130,7 +131,7 @@ public class ZFSInstaller extends AdministrativeMonitor implements Serializable 
         if(req.hasParameter("n")) {
             // we'll shut up
             disable(true);
-            return HttpRedirect.fromContextPath("/manage");
+            return HttpResponses.redirectViaContextPath("/manage");
         }
 
         return new HttpRedirect("confirm");

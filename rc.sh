@@ -27,7 +27,7 @@
 #
 
 # there shouldn't be any unmerged changes in the RC branch
-svnmerge merge -S rc .
+svnmerge merge -S /branches/rc .
 pending=$(svn status | grep -v '^?' | wc -l)
 if [ $pending != 0 ]; then
   echo "unmerged or uncommitted changes"

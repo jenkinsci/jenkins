@@ -23,69 +23,51 @@
  */
 package hudson.model;
 
+import hudson.BulkChange;
+import hudson.Extension;
 import hudson.ExtensionPoint;
 import hudson.Functions;
 import hudson.PluginManager;
 import hudson.PluginWrapper;
-import hudson.Util;
 import hudson.ProxyConfiguration;
-import hudson.Extension;
+import hudson.Util;
+import hudson.XmlFile;
 import hudson.lifecycle.Lifecycle;
+import hudson.model.UpdateSite.Data;
+import hudson.model.UpdateSite.Plugin;
 import hudson.util.DaemonThreadFactory;
-import hudson.util.TextFile;
-import hudson.util.VersionNumber;
 import hudson.util.IOException2;
-import static hudson.util.TimeUnit2.DAYS;
-import net.sf.json.JSONObject;
+import hudson.util.PersistedList;
+import hudson.util.XStream2;
 import org.acegisecurity.Authentication;
-import org.apache.commons.io.input.CountingInputStream;
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.io.input.CountingInputStream;
 import org.apache.commons.io.output.NullOutputStream;
-import org.apache.commons.io.output.TeeOutputStream;
-import org.kohsuke.stapler.DataBoundConstructor;
-import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
-import org.jvnet.hudson.crypto.SignatureOutputStream;
-import org.jvnet.hudson.crypto.CertificateUtil;
 
-import javax.servlet.ServletException;
-import javax.servlet.ServletContext;
 import javax.net.ssl.SSLHandshakeException;
+import javax.servlet.ServletException;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.OutputStream;
 import java.io.InputStream;
-import java.io.ByteArrayInputStream;
-import java.io.OutputStreamWriter;
+import java.io.OutputStream;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.net.UnknownHostException;
-import java.net.MalformedURLException;
 import java.util.ArrayList;
-import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
-import java.util.TreeMap;
 import java.util.Vector;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.Future;
+import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.security.MessageDigest;
-import java.security.DigestOutputStream;
-import java.security.GeneralSecurityException;
-import java.security.Signature;
-import java.security.cert.CertificateFactory;
-import java.security.cert.X509Certificate;
-import java.security.cert.TrustAnchor;
-import java.security.cert.Certificate;
-
-import com.trilead.ssh2.crypto.Base64;
 
 /**
  * Controls update center capability.
@@ -102,22 +84,7 @@ import com.trilead.ssh2.crypto.Base64;
  * @author Kohsuke Kawaguchi
  * @since 1.220
  */
-public class UpdateCenter extends AbstractModelObject {
-    /**
-     * What's the time stamp of data file?
-     */
-    private long dataTimestamp = -1;
-
-    /**
-     * When was the last time we asked a browser to check the data for us?
-     *
-     * <p>
-     * There's normally some delay between when we send HTML that includes the check code,
-     * until we get the data back, so this variable is used to avoid asking too many browseres
-     * all at once.
-     */
-    private volatile long lastAttempt = -1;
-
+public class UpdateCenter extends AbstractModelObject implements Saveable {
     /**
      * {@link ExecutorService} that performs installation.
      */
@@ -136,22 +103,30 @@ public class UpdateCenter extends AbstractModelObject {
     private final Vector<UpdateCenterJob> jobs = new Vector<UpdateCenterJob>();
 
     /**
+     * {@link UpdateSite}s from which we've already installed a plugin at least once.
+     * This is used to skip network tests.
+     */
+    private final Set<UpdateSite> sourcesUsed = new HashSet<UpdateSite>();
+
+    /**
+     * List of {@link UpdateSite}s to be used.
+     */
+    private final PersistedList<UpdateSite> sites = new PersistedList<UpdateSite>(this);
+
+    /**
      * Update center configuration data
      */
     private UpdateCenterConfiguration config;
-    
-    /**
-     * Create update center to get plugins/updates from hudson.dev.java.net
-     */
-    public UpdateCenter(Hudson parent) {
+
+    public UpdateCenter() {
         configure(new UpdateCenterConfiguration());
     }
-    
+
     /**
      * Configures update center to get plugins/updates from alternate servers,
      * and optionally using alternate strategies for downloading, installing
      * and upgrading.
-     * 
+     *
      * @param config Configuration data
      * @see UpdateCenterConfiguration
      */
@@ -159,19 +134,6 @@ public class UpdateCenter extends AbstractModelObject {
         if (config!=null) {
             this.config = config;
         }
-    }
-    
-    /**
-     * Returns true if it's time for us to check for new version.
-     */
-    public boolean isDue() {
-        if(neverUpdate)     return false;
-        if(dataTimestamp==-1)
-            dataTimestamp = getDataFile().file.lastModified();
-        long now = System.currentTimeMillis();
-        boolean due = now - dataTimestamp > DAY && now - lastAttempt > 15000;
-        if(due)     lastAttempt = now;
-        return due;
     }
 
     /**
@@ -187,90 +149,79 @@ public class UpdateCenter extends AbstractModelObject {
     }
 
     /**
+     * Returns the list of {@link UpdateSite}s to be used.
+     * This is a live list, whose change will be persisted automatically.
+     *
+     * @return
+     *      can be empty but never null.
+     */
+    public PersistedList<UpdateSite> getSites() {
+        return sites;
+    }
+
+    /**
      * Gets the string representing how long ago the data was obtained.
+     * Will be the newest of all {@link UpdateSite}s.
      */
     public String getLastUpdatedString() {
-        if(dataTimestamp<0)     return "N/A";
-        return Util.getPastTimeString(System.currentTimeMillis()-dataTimestamp);
+        long newestTs = -1;
+        for (UpdateSite s : sites) {
+            if (s.getDataTimestamp()>newestTs) {
+                newestTs = s.getDataTimestamp();
+            }
+        }
+        if(newestTs<0)     return "N/A";
+        return Util.getPastTimeString(System.currentTimeMillis()-newestTs);
     }
 
     /**
-     * This is the endpoint that receives the update center data file from the browser.
+     * Gets {@link UpdateSite} by its ID.
+     * Used to bind them to URL.
      */
-    public void doPostBack(StaplerRequest req) throws IOException, GeneralSecurityException {
-        dataTimestamp = System.currentTimeMillis();
-        String p = req.getParameter("json");
-        JSONObject o = JSONObject.fromObject(p);
-                
-        int v = o.getInt("updateCenterVersion");
-        if(v !=1) {
-            LOGGER.warning("Unrecognized update center version: "+v);
-            return;
+    public UpdateSite getById(String id) {
+        for (UpdateSite s : sites) {
+            if (s.getId().equals(id)) {
+                return s;
+            }
         }
-
-        if (signatureCheck)
-            verifySignature(o);
-
-        LOGGER.info("Obtained the latest update center data file");
-        getDataFile().write(p);
+        return null;
     }
 
     /**
-     * Verifies the signature in the update center data file.
+     * Gets the {@link UpdateSite} from which we receive updates for <tt>hudson.war</tt>.
+     *
+     * @return
+     *      null if no such update center is provided.
      */
-    private boolean verifySignature(JSONObject o) throws GeneralSecurityException, IOException {
-        JSONObject signature = o.getJSONObject("signature");
-        if (signature.isNullObject()) {
-            LOGGER.severe("No signature block found");
-            return false;
+    public UpdateSite getCoreSource() {
+        for (UpdateSite s : sites) {
+            Data data = s.getData();
+            if (data!=null && data.core!=null)
+                return s;
         }
-        o.remove("signature");
+        return null;
+    }
 
-        List<X509Certificate> certs = new ArrayList<X509Certificate>();
-        {// load and verify certificates
-            CertificateFactory cf = CertificateFactory.getInstance("X509");
-            for (Object cert : o.getJSONArray("certificates")) {
-                X509Certificate c = (X509Certificate) cf.generateCertificate(new ByteArrayInputStream(Base64.decode(cert.toString().toCharArray())));
-                c.checkValidity();
-                certs.add(c);
-            }
+    /**
+     * Gets the default base URL.
+     *
+     * @deprecated
+     *      TODO: revisit tool update mechanism, as that should be de-centralized, too. In the mean time,
+     *      please try not to use this method, and instead ping us to get this part completed.
+     */
+    public String getDefaultBaseUrl() {
+        return config.getUpdateCenterUrl();
+    }
 
-            // all default root CAs in JVM are trusted, plus certs bundled in Hudson
-            Set<TrustAnchor> anchors = CertificateUtil.getDefaultRootCAs();
-            ServletContext context = Hudson.getInstance().servletContext;
-            for (String cert : (Set<String>) context.getResourcePaths("/WEB-INF/update-center-rootCAs")) {
-                if (cert.endsWith(".txt"))  continue;       // skip text files that are meant to be documentation
-                anchors.add(new TrustAnchor((X509Certificate)cf.generateCertificate(context.getResourceAsStream(cert)),null));
-            }
-            CertificateUtil.validatePath(certs);
+    /**
+     * Gets the plugin with the given name from the first {@link UpdateSite} to contain it.
+     */
+    public Plugin getPlugin(String artifactId) {
+        for (UpdateSite s : sites) {
+            Plugin p = s.getPlugin(artifactId);
+            if (p!=null) return p;
         }
-
-        // this is for computing a digest to check sanity
-        MessageDigest sha1 = MessageDigest.getInstance("SHA1");
-        DigestOutputStream dos = new DigestOutputStream(new NullOutputStream(),sha1);
-
-        // this is for computing a signature
-        Signature sig = Signature.getInstance("SHA1withRSA");
-        sig.initVerify(certs.get(0));
-        SignatureOutputStream sos = new SignatureOutputStream(sig);
-
-        o.writeCanonical(new OutputStreamWriter(new TeeOutputStream(dos,sos),"UTF-8"));
-
-        // did the digest match? this is not a part of the signature validation, but if we have a bug in the c14n
-        // (which is more likely than someone tampering with update center), we can tell
-        String computedDigest = new String(Base64.encode(sha1.digest()));
-        String providedDigest = signature.getString("digest");
-        if (!computedDigest.equalsIgnoreCase(providedDigest)) {
-            LOGGER.severe("Digest mismatch: "+computedDigest+" vs "+providedDigest);
-            return false;
-        }
-
-        if (!sig.verify(Base64.decode(signature.getString("signature").toCharArray()))) {
-            LOGGER.severe("Signature in the update center doesn't match with the certificate");
-            return false;
-        }
-
-        return true;
+        return null;
     }
 
     /**
@@ -279,7 +230,7 @@ public class UpdateCenter extends AbstractModelObject {
     public void doUpgrade(StaplerResponse rsp) throws IOException, ServletException {
         requirePOST();
         Hudson.getInstance().checkPermission(Hudson.ADMINISTER);
-        HudsonUpgradeJob job = new HudsonUpgradeJob(Hudson.getAuthentication());
+        HudsonUpgradeJob job = new HudsonUpgradeJob(getCoreSource(), Hudson.getAuthentication());
         if(!Lifecycle.get().canRewriteHudsonWar()) {
             sendError("Hudson upgrade not supported in this running mode");
             return;
@@ -290,103 +241,11 @@ public class UpdateCenter extends AbstractModelObject {
         rsp.sendRedirect2(".");
     }
 
-    private Future<UpdateCenterJob> addJob(UpdateCenterJob job) {
+    /*package*/ synchronized Future<UpdateCenterJob> addJob(UpdateCenterJob job) {
         // the first job is always the connectivity check
-        if(jobs.size()==0)
-            new ConnectionCheckJob().submit();
+        if (sourcesUsed.add(job.site))
+            new ConnectionCheckJob(job.site).submit();
         return job.submit();
-    }
-
-    /**
-     * Loads the update center data, if any.
-     *
-     * @return  null if no data is available.
-     */
-    public Data getData() {
-        TextFile df = getDataFile();
-        if(df.exists()) {
-            try {
-                return new Data(JSONObject.fromObject(df.read()));
-            } catch (IOException e) {
-                LOGGER.log(Level.SEVERE,"Failed to parse "+df,e);
-                df.delete(); // if we keep this file, it will cause repeated failures
-                return null;
-            }
-        } else {
-            return null;
-        }
-    }
-
-    /**
-     * Returns a list of plugins that should be shown in the "available" tab.
-     * These are "all plugins - installed plugins".
-     */
-    public List<Plugin> getAvailables() {
-        List<Plugin> r = new ArrayList<Plugin>();
-        Data data = getData();
-        if(data ==null)     return Collections.emptyList();
-        for (Plugin p : data.plugins.values()) {
-            if(p.getInstalled()==null)
-                r.add(p);
-        }
-        return r;
-    }
-
-    /**
-     * Gets the information about a specific plugin.
-     *
-     * @param artifactId
-     *      The short name of the plugin. Corresponds to {@link PluginWrapper#getShortName()}.
-     *
-     * @return
-     *      null if no such information is found.
-     */
-    public Plugin getPlugin(String artifactId) {
-        Data dt = getData();
-        if(dt==null)    return null;
-        return dt.plugins.get(artifactId);
-    }
-
-    /**
-     * This is where we store the update center data.
-     */
-    private TextFile getDataFile() {
-        return new TextFile(new File(Hudson.getInstance().root,"update-center.json"));
-    }
-
-    /**
-     * Returns the list of plugins that are updates to currently installed ones.
-     *
-     * @return
-     *      can be empty but never null.
-     */
-    public List<Plugin> getUpdates() {
-        Data data = getData();
-        if(data==null)      return Collections.emptyList(); // fail to determine
-
-        List<Plugin> r = new ArrayList<Plugin>();
-        for (PluginWrapper pw : Hudson.getInstance().getPluginManager().getPlugins()) {
-            Plugin p = pw.getUpdateInfo();
-            if(p!=null) r.add(p);
-        }
-
-        return r;
-    }
-
-    /**
-     * Does any of the plugin has updates?
-     */
-    public boolean hasUpdates() {
-        Data data = getData();
-        if(data==null)      return false;
-
-        for (PluginWrapper pw : Hudson.getInstance().getPluginManager().getPlugins()) {
-            if(!pw.isBundled() && pw.getUpdateInfo()!=null)
-                // do not advertize updates to bundled plugins, since we generally want users to get them
-                // as a part of hudson.war updates. This also avoids unnecessary pinning of plugins. 
-                return true;
-        }
-        return false;
     }
 
     public String getDisplayName() {
@@ -398,12 +257,62 @@ public class UpdateCenter extends AbstractModelObject {
     }
 
     /**
-     * Exposed to get rid of hardcoding of the URL that serves up update-center.json
-     * in Javascript.
+     * Saves the configuration info to the disk.
      */
-    public String getUrl() {
-        return config.getUpdateCenterUrl();
+    public synchronized void save() {
+        if(BulkChange.contains(this))   return;
+        try {
+            getConfigFile().write(sites);
+        } catch (IOException e) {
+            LOGGER.log(Level.WARNING, "Failed to save "+getConfigFile(),e);
+        }
     }
+
+    /**
+     * Loads the data from the disk into this object.
+     */
+    public synchronized void load() throws IOException {
+        XmlFile file = getConfigFile();
+        if(file.exists()) {
+            try {
+                sites.replaceBy(((PersistedList)file.unmarshal(sites)).toList());
+            } catch (IOException e) {
+                LOGGER.log(Level.WARNING, "Failed to load "+file, e);
+            }
+        } else {
+            // If there aren't already any UpdateSources, add the default one.
+            if (sites.isEmpty()) {
+                // to maintain compatibility with existing UpdateCenterConfiguration, create the default one as specified by UpdateCenterConfiguration
+                sites.add(new UpdateSite("default",config.getUpdateCenterUrl()+"update-center.json"));
+            }
+        }
+    }
+
+    private XmlFile getConfigFile() {
+        return new XmlFile(XSTREAM,new File(Hudson.getInstance().root,
+                                    UpdateCenter.class.getName()+".xml"));
+    }
+
+    public List<Plugin> getAvailables() {
+        List<Plugin> plugins = new ArrayList<Plugin>();
+
+        for (UpdateSite s : sites) {
+            plugins.addAll(s.getAvailables());
+        }
+
+        return plugins;
+    }
+
+    public List<Plugin> getUpdates() {
+        List<Plugin> plugins = new ArrayList<Plugin>();
+
+        for (UpdateSite s : sites) {
+            plugins.addAll(s.getUpdates());
+        }
+
+        return plugins;
+    }
+
 
     /**
      * {@link AdministrativeMonitor} that checks if there's Hudson update.
@@ -416,213 +325,39 @@ public class UpdateCenter extends AbstractModelObject {
         }
 
         public Data getData() {
-            return Hudson.getInstance().getUpdateCenter().getData();
+            UpdateSite cs = Hudson.getInstance().getUpdateCenter().getCoreSource();
+            if (cs!=null)   return cs.getData();
+            return null;
         }
     }
+
 
     /**
-     * In-memory representation of the update center data.
-     */
-    public final class Data {
-        /**
-         * The latest hudson.war.
-         */
-        public final Entry core;
-        /**
-         * Plugins in the official repository, keyed by their artifact IDs.
-         */
-        public final Map<String,Plugin> plugins = new TreeMap<String,Plugin>(String.CASE_INSENSITIVE_ORDER);
-        
-        Data(JSONObject o) {
-            core = new Entry(o.getJSONObject("core"));
-            for(Map.Entry<String,JSONObject> e : (Set<Map.Entry<String,JSONObject>>)o.getJSONObject("plugins").entrySet()) {
-                plugins.put(e.getKey(),new Plugin(e.getValue()));
-            }
-        }
-
-        /**
-         * Is there a new version of the core?
-         */
-        public boolean hasCoreUpdates() {
-            return core.isNewerThan(Hudson.VERSION);
-        }
-
-        /**
-         * Do we support upgrade?
-         */
-        public boolean canUpgrade() {
-            return Lifecycle.get().canRewriteHudsonWar();
-        }
-    }
-
-    public static class Entry {
-        /**
-         * Artifact ID.
-         */
-        public final String name;
-        /**
-         * The version.
-         */
-        public final String version;
-        /**
-         * Download URL.
-         */
-        public final String url;
-
-        public Entry(JSONObject o) {
-            this.name = o.getString("name");
-            this.version = o.getString("version");
-            this.url = o.getString("url");
-        }
-
-        /**
-         * Checks if the specified "current version" is older than the version of this entry.
-         *
-         * @param currentVersion
-         *      The string that represents the version number to be compared.
-         * @return
-         *      true if the version listed in this entry is newer.
-         *      false otherwise, including the situation where the strings couldn't be parsed as version numbers.
-         */
-        public boolean isNewerThan(String currentVersion) {
-	    return isNewerThan(currentVersion, version);
-	}
-
-	/**
-	 * Compares two versions - returns true if the first version is newer than the second.
-	 *
-	 * @param firstVersion
-	 *      The first version to test against.
-	 * @param secondVersion
-	 *      The second version to test against.
-	 * @return
-	 *      True if the first version is newer than the second version. False in all other cases.
-	 */
-	public boolean isNewerThan(String firstVersion, String secondVersion) {
-            try {
-                return new VersionNumber(firstVersion).compareTo(new VersionNumber(secondVersion)) < 0;
-            } catch (IllegalArgumentException e) {
-                // couldn't parse as the version number.
-                return false;
-            }
-        }
-    }
-
-    public final class Plugin extends Entry {
-        /**
-         * Optional URL to the Wiki page that discusses this plugin.
-         */
-        public final String wiki;
-        /**
-         * Human readable title of the plugin, taken from Wiki page.
-         * Can be null.
-         *
-         * <p>
-         * beware of XSS vulnerability since this data comes from Wiki 
-         */
-        public final String title;
-        /**
-         * Optional excerpt string.
-         */
-        public final String excerpt;
-        /**
-         * Optional version # from which this plugin release is configuration-compatible.
-         */
-        public final String compatibleSinceVersion;
-	
-        @DataBoundConstructor
-        public Plugin(JSONObject o) {
-            super(o);
-            this.wiki = get(o,"wiki");
-            this.title = get(o,"title");
-            this.excerpt = get(o,"excerpt");
-            this.compatibleSinceVersion = get(o,"compatibleSinceVersion");
-        }
-
-        private String get(JSONObject o, String prop) {
-            if(o.has(prop))
-                return o.getString(prop);
-            else
-                return null;
-        }
-
-        public String getDisplayName() {
-            if(title!=null) return title;
-            return name;
-        }
-
-        /**
-         * If some version of this plugin is currently installed, return {@link PluginWrapper}.
-         * Otherwise null.
-         */
-        public PluginWrapper getInstalled() {
-            PluginManager pm = Hudson.getInstance().getPluginManager();
-            return pm.getPlugin(name);
-        }
-
-        /**
-         * If the plugin is already installed, and the new version of the plugin has a "compatibleSinceVersion"
-         * value (i.e., it's only directly compatible with that version or later), this will check to
-         * see if the installed version is older than the compatible-since version. If it is older, it'll return false.
-         * If it's not older, or it's not installed, or it's installed but there's no compatibleSinceVersion
-         * specified, it'll return true.
-         */
-        public boolean isCompatibleWithInstalledVersion() {
-            PluginWrapper installedVersion = getInstalled();
-            if (installedVersion != null) {
-                if (compatibleSinceVersion != null) {
-                    if (new VersionNumber(installedVersion.getVersion())
-                            .isOlderThan(new VersionNumber(compatibleSinceVersion))) {
-                        return false;
-                    }
-                }
-            }
-            return true;
-        }
-
-        /**
-         * @deprecated as of 1.326
-         *      Use {@link #deploy()}. 
-         */
-        public void install() {
-            deploy();
-        }
-
-        /**
-         * Schedules the installation of this plugin.
-         *
-         * <p>
-         * This is mainly intended to be called from the UI. The actual installation work happens
-         * asynchronously in another thread.
-         */
-        public Future<UpdateCenterJob> deploy() {
-            Hudson.getInstance().checkPermission(Hudson.ADMINISTER);
-            return addJob(new InstallationJob(this, Hudson.getAuthentication()));
-        }
-
-        /**
-         * Making the installation web bound.
-         */
-        public void doInstall(StaplerResponse rsp) throws IOException {
-            install();
-            rsp.sendRedirect2("../..");
-        }
-    }
-
-    /**
-     * Configuration data for controlling the update center's behaviors. The update
-     * center's defaults will check internet connectivity by trying to connect
-     * to www.google.com; will download plugins, the plugin catalog and updates
-     * from hudson-ci.org; and will install plugins with file system
-     * operations.
-     * 
+     * Strategy object for controlling the update center's behaviors.
+     *
+     * <p>
+     * Until 1.MULTIUPDATE, this extension point used to control the configuration of
+     * where to get updates (hence the name of this class), but with the introduction
+     * of multiple update center sites capability, that functionality is achieved by
+     * simply installing another {@link UpdateSite}.
+     *
+     * <p>
+     * See {@link UpdateSite} for how to manipulate them programmatically.
+     *
      * @since 1.266
      */
+    @SuppressWarnings({"UnusedDeclaration"})
     public static class UpdateCenterConfiguration implements ExtensionPoint {
+        /**
+         * Creates default update center configuration - uses settings for global update center.
+         */
+        public UpdateCenterConfiguration() {
+        }
+
         /**
          * Check network connectivity by trying to establish a connection to
          * the host in connectionCheckUrl.
-         * 
+         *
          * @param job The connection checker that is invoking this strategy.
          * @param connectionCheckUrl A string containing the URL of a domain
          *          that is assumed to be always available.
@@ -631,10 +366,10 @@ public class UpdateCenter extends AbstractModelObject {
         public void checkConnection(ConnectionCheckJob job, String connectionCheckUrl) throws IOException {
             testConnection(new URL(connectionCheckUrl));
         }
-        
+
         /**
          * Check connection to update center server.
-         * 
+         *
          * @param job The connection checker that is invoking this strategy.
          * @param updateCenterUrl A sting containing the URL of the update center host.
          * @throws IOException if a connection to the update center server can't be established.
@@ -642,29 +377,22 @@ public class UpdateCenter extends AbstractModelObject {
         public void checkUpdateCenter(ConnectionCheckJob job, String updateCenterUrl) throws IOException {
             testConnection(new URL(updateCenterUrl + "?uctest"));
         }
-        
+
         /**
-         * Validate the URL of the resource before downloading it. The default
-         * implementation enforces that the base of the resource URL starts
-         * with the string returned by {@link #getPluginRepositoryBaseUrl()}.
-         * 
+         * Validate the URL of the resource before downloading it.
+         *
          * @param job The download job that is invoking this strategy. This job is
          *          responsible for managing the status of the download and installation.
          * @param src The location of the resource on the network
          * @throws IOException if the validation fails
          */
         public void preValidate(DownloadJob job, URL src) throws IOException {
-            // In the future if we are to open up update center to 3rd party, we need more elaborate scheme
-            // like signing to ensure the safety of the bits.
-            if(!src.toExternalForm().startsWith(getPluginRepositoryBaseUrl())) {
-                throw new IOException("Installation of plugin from "+src+" is not allowed");
-            }                    
         }
-        
+
         /**
          * Validate the resource after it has been downloaded, before it is
          * installed. The default implementation does nothing.
-         * 
+         *
          * @param job The download job that is invoking this strategy. This job is
          *          responsible for managing the status of the download and installation.
          * @param src The location of the downloaded resource.
@@ -672,13 +400,13 @@ public class UpdateCenter extends AbstractModelObject {
          */
         public void postValidate(DownloadJob job, File src) throws IOException {
         }
-        
+
         /**
          * Download a plugin or core upgrade in preparation for installing it
          * into its final location. Implementations will normally download the
          * resource into a temporary location and hand off a reference to this
          * location to the install or upgrade strategy to move into the final location.
-         * 
+         *
          * @param job The download job that is invoking this strategy. This job is
          *          responsible for managing the status of the download and installation.
          * @param src The URL to the resource to be downloaded.
@@ -716,14 +444,14 @@ public class UpdateCenter extends AbstractModelObject {
                 // indicates that this kind of inconsistency can happen. So let's be defensive
                 throw new IOException("Inconsistent file length: expected "+total+" but only got "+tmp.length());
             }
-            
+
             return tmp;
         }
-        
+
         /**
          * Called after a plugin has been downloaded to move it into its final
          * location. The default implementation is a file rename.
-         * 
+         *
          * @param job The install job that is invoking this strategy.
          * @param src The temporary location of the plugin.
          * @param dst The final destination to install the plugin to.
@@ -732,11 +460,11 @@ public class UpdateCenter extends AbstractModelObject {
         public void install(DownloadJob job, File src, File dst) throws IOException {
             job.replace(dst, src);
         }
-        
+
         /**
          * Called after an upgrade has been downloaded to move it into its final
          * location. The default implementation is a file rename.
-         * 
+         *
          * @param job The upgrade job that is invoking this strategy.
          * @param src The temporary location of the upgrade.
          * @param dst The final destination to install the upgrade to.
@@ -744,34 +472,46 @@ public class UpdateCenter extends AbstractModelObject {
          */
         public void upgrade(DownloadJob job, File src, File dst) throws IOException {
             job.replace(dst, src);
-        }        
+        }
 
         /**
-         * Returns an "always up" server for Internet connectivity testing
+         * Returns an "always up" server for Internet connectivity testing.
+         *
+         * @deprecated as of 1.MULTIUPDATE
+         *      With the introduction of multiple update center capability, this information
+         *      is now a part of the <tt>update-center.json</tt> file. See
+         *      <tt>http://hudson-ci.org/update-center.json</tt> as an example.
          */
         public String getConnectionCheckUrl() {
             return "http://www.google.com";
         }
-        
+
         /**
          * Returns the URL of the server that hosts the update-center.json
          * file.
          *
+         * @deprecated as of 1.MULTIUPDATE
+         *      With the introduction of multiple update center capability, this information
+         *      is now moved to {@link UpdateSite}.
          * @return
          *      Absolute URL that ends with '/'.
          */
         public String getUpdateCenterUrl() {
             return "http://hudson-ci.org/";
         }
-        
+
         /**
          * Returns the URL of the server that hosts plugins and core updates.
+         *
+         * @deprecated as of 1.MULTIUPDATE
+         *      <tt>update-center.json</tt> is now signed, so we don't have to further make sure that
+         *      we aren't downloading from anywhere unsecure.
          */
         public String getPluginRepositoryBaseUrl() {
             return "http://hudson-ci.org/";
         }
 
-        
+
         private void testConnection(URL url) throws IOException {
             try {
                 InputStream in = ProxyConfiguration.open(url).getInputStream();
@@ -782,15 +522,24 @@ public class UpdateCenter extends AbstractModelObject {
                    // fix up this crappy error message from JDK
                     throw new IOException2("Failed to validate the SSL certificate of "+url,e);
             }
-        }                    
+        }
     }
-    
+
     /**
      * Things that {@link UpdateCenter#installerService} executes.
      *
      * This object will have the <tt>row.jelly</tt> which renders the job on UI.
      */
     public abstract class UpdateCenterJob implements Runnable {
+        /**
+         * Which {@link UpdateSite} does this belong to?
+         */
+        public final UpdateSite site;
+
+        protected UpdateCenterJob(UpdateSite site) {
+            this.site = site;
+        }
+
         /**
          * @deprecated as of 1.326
          *      Use {@link #submit()} instead.
@@ -817,24 +566,29 @@ public class UpdateCenter extends AbstractModelObject {
     public final class ConnectionCheckJob extends UpdateCenterJob {
         private final Vector<String> statuses= new Vector<String>();
 
+        public ConnectionCheckJob(UpdateSite site) {
+            super(site);
+        }
+
         public void run() {
             LOGGER.fine("Doing a connectivity check");
             try {
-                String connectionCheckUrl = config.getConnectionCheckUrl();
-                
-                statuses.add(Messages.UpdateCenter_Status_CheckingInternet());
-                try {
-                    config.checkConnection(this, connectionCheckUrl);
-                } catch (IOException e) {
-                    if(e.getMessage().contains("Connection timed out")) {
-                        // Google can't be down, so this is probably a proxy issue
-                        statuses.add(Messages.UpdateCenter_Status_ConnectionFailed(connectionCheckUrl));
-                        return;
+                String connectionCheckUrl = site.getConnectionCheckUrl();
+                if (connectionCheckUrl!=null) {
+                    statuses.add(Messages.UpdateCenter_Status_CheckingInternet());
+                    try {
+                        config.checkConnection(this, connectionCheckUrl);
+                    } catch (IOException e) {
+                        if(e.getMessage().contains("Connection timed out")) {
+                            // Google can't be down, so this is probably a proxy issue
+                            statuses.add(Messages.UpdateCenter_Status_ConnectionFailed(connectionCheckUrl));
+                            return;
+                        }
                     }
                 }
 
                 statuses.add(Messages.UpdateCenter_Status_CheckingJavaNet());
-                config.checkUpdateCenter(this, config.getUpdateCenterUrl());
+                config.checkUpdateCenter(this, site.getUrl());
 
                 statuses.add(Messages.UpdateCenter_Status_Success());
             } catch (UnknownHostException e) {
@@ -886,9 +640,9 @@ public class UpdateCenter extends AbstractModelObject {
          */
         protected abstract void onSuccess();
 
-        
+
         private Authentication authentication;
-        
+
         /**
          * Get the user that initiated this job
          */
@@ -896,18 +650,18 @@ public class UpdateCenter extends AbstractModelObject {
         {
             return this.authentication;
         }
-        
-        protected DownloadJob(Authentication authentication)
-        {
+
+        protected DownloadJob(UpdateSite site, Authentication authentication) {
+            super(site);
             this.authentication = authentication;
         }
-        
+
         public void run() {
             try {
                 LOGGER.info("Starting the installation of "+getName()+" on behalf of "+getUser().getName());
 
                 _run();
-                
+
                 LOGGER.info("Installation successful: "+getName());
                 status = new Success();
                 onSuccess();
@@ -1005,8 +759,8 @@ public class UpdateCenter extends AbstractModelObject {
 
         private final PluginManager pm = Hudson.getInstance().getPluginManager();
 
-        public InstallationJob(Plugin plugin, Authentication auth) {
-            super(auth);
+        public InstallationJob(Plugin plugin, UpdateSite site, Authentication auth) {
+            super(site, auth);
             this.plugin = plugin;
         }
 
@@ -1047,12 +801,12 @@ public class UpdateCenter extends AbstractModelObject {
      * Represents the state of the upgrade activity of Hudson core.
      */
     public final class HudsonUpgradeJob extends DownloadJob {
-        public HudsonUpgradeJob(Authentication auth) {
-            super(auth);
+        public HudsonUpgradeJob(UpdateSite site, Authentication auth) {
+            super(site, auth);
         }
 
         protected URL getURL() throws MalformedURLException {
-            return new URL(getData().core.url);
+            return new URL(site.getData().core.url);
         }
 
         protected File getDestination() {
@@ -1088,14 +842,13 @@ public class UpdateCenter extends AbstractModelObject {
      */
     private static final AtomicInteger iota = new AtomicInteger();
 
-    private static final long DAY = DAYS.toMillis(1);
-
     private static final Logger LOGGER = Logger.getLogger(UpdateCenter.class.getName());
 
     public static boolean neverUpdate = Boolean.getBoolean(UpdateCenter.class.getName()+".never");
 
-    /**
-     * Off by default until we know this is reasonably working.
-     */
-    public static boolean signatureCheck = Boolean.getBoolean(UpdateCenter.class.getName()+".signatureCheck");
+    public static final XStream2 XSTREAM = new XStream2();
+    static {
+        XSTREAM.alias("site",UpdateSite.class);
+        XSTREAM.alias("sites",PersistedList.class);
+    }
 }

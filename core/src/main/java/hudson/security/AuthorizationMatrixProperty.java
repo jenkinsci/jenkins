@@ -39,6 +39,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.Collections;
 import java.util.Map.Entry;
 import java.io.IOException;
 
@@ -59,20 +60,13 @@ import javax.servlet.ServletException;
 
 /**
  * {@link JobProperty} to associate ACL for each project.
+ *
+ * <p>
+ * Once created (and initialized), this object becomes immutable.
  */
 public class AuthorizationMatrixProperty extends JobProperty<Job<?, ?>> {
 
 	private transient SidACL acl = new AclImpl();
-
-	private boolean useProjectSecurity;
-
-	public boolean isUseProjectSecurity() {
-		return useProjectSecurity;
-	}
-
-	public void setUseProjectSecurity(boolean useProjectSecurity) {
-		this.useProjectSecurity = useProjectSecurity;
-	}
 
 	/**
 	 * List up all permissions that are granted.
@@ -83,6 +77,15 @@ public class AuthorizationMatrixProperty extends JobProperty<Job<?, ?>> {
 	private final Map<Permission, Set<String>> grantedPermissions = new HashMap<Permission, Set<String>>();
 
 	private Set<String> sids = new HashSet<String>();
+
+    private AuthorizationMatrixProperty() {
+    }
+
+    public AuthorizationMatrixProperty(Map<Permission, Set<String>> grantedPermissions) {
+        // do a deep copy to be safe
+        for (Entry<Permission,Set<String>> e : grantedPermissions.entrySet())
+            this.grantedPermissions.put(e.getKey(),new HashSet<String>(e.getValue()));
+    }
 
 	public Set<String> getGroups() {
 		return sids;
@@ -104,7 +107,17 @@ public class AuthorizationMatrixProperty extends JobProperty<Job<?, ?>> {
 		return Arrays.asList(data);
 	}
 
-	/**
+    /**
+     * Returns all the (Permission,sid) pairs that are granted, in the multi-map form.
+     *
+     * @return
+     *      read-only. never null.
+     */
+    public Map<Permission,Set<String>> getGrantedPermissions() {
+        return Collections.unmodifiableMap(grantedPermissions);
+    }
+
+    /**
 	 * Adds to {@link #grantedPermissions}. Use of this method should be limited
 	 * during construction, as this object itself is considered immutable once
 	 * populated.
@@ -120,22 +133,20 @@ public class AuthorizationMatrixProperty extends JobProperty<Job<?, ?>> {
     @Extension
 	public static class DescriptorImpl extends JobPropertyDescriptor {
 		@Override
-		public JobProperty<?> newInstance(StaplerRequest req,
-				JSONObject formData) throws FormException {
-            AuthorizationMatrixProperty amp = new AuthorizationMatrixProperty();
+		public JobProperty<?> newInstance(StaplerRequest req, JSONObject formData) throws FormException {
             formData = formData.getJSONObject("useProjectSecurity");
+            if (formData.isNullObject())
+                return null;
 
-            if(!formData.isNullObject()) {
-                amp.setUseProjectSecurity(true);
-                for (Map.Entry<String, Object> r : (Set<Map.Entry<String, Object>>) formData.getJSONObject("data").entrySet()) {
-                    String sid = r.getKey();
-                    if (r.getValue() instanceof JSONObject) {
-                        for (Map.Entry<String, Boolean> e : (Set<Map.Entry<String, Boolean>>) ((JSONObject) r
-                                .getValue()).entrySet()) {
-                            if (e.getValue()) {
-                                Permission p = Permission.fromId(e.getKey());
-                                amp.add(p, sid);
-                            }
+            AuthorizationMatrixProperty amp = new AuthorizationMatrixProperty();
+            for (Map.Entry<String, Object> r : (Set<Map.Entry<String, Object>>) formData.getJSONObject("data").entrySet()) {
+                String sid = r.getKey();
+                if (r.getValue() instanceof JSONObject) {
+                    for (Map.Entry<String, Boolean> e : (Set<Map.Entry<String, Boolean>>) ((JSONObject) r
+                            .getValue()).entrySet()) {
+                        if (e.getValue()) {
+                            Permission p = Permission.fromId(e.getKey());
+                            amp.add(p, sid);
                         }
                     }
                 }
@@ -228,10 +239,6 @@ public class AuthorizationMatrixProperty extends JobProperty<Job<?, ?>> {
 				MarshallingContext context) {
 			AuthorizationMatrixProperty amp = (AuthorizationMatrixProperty) source;
 
-			writer.startNode("useProjectSecurity");
-			context.convertAnother(Boolean.valueOf(amp.isUseProjectSecurity()));
-			writer.endNode();
-			
 			for (Entry<Permission, Set<String>> e : amp.grantedPermissions
 					.entrySet()) {
 				String p = e.getKey().getId();
@@ -251,8 +258,7 @@ public class AuthorizationMatrixProperty extends JobProperty<Job<?, ?>> {
 			String prop = reader.peekNextChild();
 			if (prop!=null && prop.equals("useProjectSecurity")) {
 				reader.moveDown();
-				Boolean useSecurity = (Boolean) context.convertAnother(as, Boolean.class);
-				as.setUseProjectSecurity(useSecurity.booleanValue());
+                context.convertAnother(as, String.class); // we used to use this but not any more.
 				reader.moveUp();
 			}
 			while (reader.hasMoreChildren()) {

@@ -25,8 +25,10 @@ package hudson.logging;
 
 import com.thoughtworks.xstream.XStream;
 import hudson.BulkChange;
+import hudson.Util;
 import hudson.XmlFile;
 import hudson.model.AbstractModelObject;
+import hudson.model.Failure;
 import hudson.model.Hudson;
 import hudson.model.Saveable;
 import hudson.util.CopyOnWriteList;
@@ -40,6 +42,7 @@ import org.kohsuke.stapler.StaplerResponse;
 import javax.servlet.ServletException;
 import java.io.File;
 import java.io.IOException;
+import java.text.ParseException;
 import java.util.List;
 import java.util.Arrays;
 import java.util.logging.Level;
@@ -155,12 +158,20 @@ public class LogRecorder extends AbstractModelObject implements Saveable {
     public synchronized void doConfigSubmit( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
         JSONObject src = req.getSubmittedForm();
 
-        String newName = src.getString("name");
+        String newName = src.getString("name"), redirect = ".";
+        XmlFile oldFile = null;
         if(!name.equals(newName)) {
+            try {
+                Hudson.checkGoodName(newName);
+            } catch (ParseException e) {
+                throw new Failure(e.getMessage());
+            }
+            oldFile = getConfigFile();
             // rename
             getParent().logRecorders.remove(name);
             this.name = newName;
             getParent().logRecorders.put(name,this);
+            redirect = "../" + Util.rawEncode(newName) + '/';
         }
 
         List<Target> newTargets = req.bindJSONToList(Target.class, src.get("targets"));
@@ -169,7 +180,8 @@ public class LogRecorder extends AbstractModelObject implements Saveable {
         targets.replaceBy(newTargets);
 
         save();
-        rsp.sendRedirect2(".");
+        if (oldFile!=null) oldFile.delete();
+        rsp.sendRedirect2(redirect);
     }
 
     /**

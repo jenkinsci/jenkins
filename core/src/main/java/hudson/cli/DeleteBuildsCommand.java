@@ -23,35 +23,49 @@
  */
 package hudson.cli;
 
-import hudson.model.Hudson;
+import hudson.model.AbstractBuild;
+import hudson.model.AbstractProject;
+import hudson.model.Fingerprint.RangeSet;
 import hudson.Extension;
 import org.kohsuke.args4j.Argument;
 
+import java.io.PrintStream;
+import java.util.List;
+
 /**
- * Creates a new job by reading stdin as a configuration XML file.
- * 
+ * Deletes builds records in a bulk.
+ *
  * @author Kohsuke Kawaguchi
  */
 @Extension
-public class CreateJobCommand extends CLICommand {
+public class DeleteBuildsCommand extends CLICommand {
     @Override
     public String getShortDescription() {
-        return "Creates a new job by reading stdin as a configuration XML file";
+        return "Deletes build record(s)";
     }
 
-    @Argument(metaVar="NAME",usage="Name of the job to create")
-    public String name;
+    @Argument(metaVar="JOB",usage="Name of the job to build",required=true,index=0)
+    public AbstractProject<?,?> job;
+
+    @Argument(metaVar="RANGE",usage="Range of the build records to delete. 'N-M', 'N,M', or 'N'",required=true,index=1)
+    public String range;
+
+    @Override
+    protected void printUsageSummary(PrintStream stderr) {
+        stderr.println(
+            "Delete build records of a specified job, possibly in a bulk. "
+        );
+    }
 
     protected int run() throws Exception {
-        Hudson h = Hudson.getInstance();
-        if (h.getItem(name)!=null) {
-            stderr.println("Job '"+name+"' already exists");
-            return -1;
-        }
+        RangeSet rs = RangeSet.fromString(range,false);
+        List<? extends AbstractBuild> builds = job.getBuilds(rs);
 
-        h.createProjectFromXML(name,stdin);
+        for (AbstractBuild build : builds)
+            build.delete();
+
+        stdout.println("Deleted "+builds.size()+" builds");
+
         return 0;
     }
 }
-
-

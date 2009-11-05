@@ -1,7 +1,7 @@
 <!--
 The MIT License
 
-Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi
+Copyright (c) 2004-2009, Sun Microsystems, Inc.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -22,32 +22,15 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 -->
 
-<!--
-  Used when the search didn't have the exact hit.
--->
+<!-- Delete view -->
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
-  <j:set var="q" value="${request.getParameter('q')}"/>
-  <j:new var="h" className="hudson.Functions" /><!-- needed for printing title. -->
-  <l:layout title="Search for '${h.escape(q)}'">
-    <l:main-panel>
-      <h1>Search for '${h.escape(q)}'</h1>
-      <j:set var="items" value="${it.getSuggestions(request,q)}"/>
-      <j:choose>
-        <j:when test="${items.size()==0}">
-          <div class='error'>
-            Nothing seems to match.
-          </div>
-        </j:when>
-        <j:otherwise>
-          <ol>
-            <j:forEach var="i" items="${items}">
-              <li>
-                <a href="?q=${i.path}">${i.path}</a>
-              </li>
-            </j:forEach>
-          </ol>
-        </j:otherwise>
-      </j:choose>
-    </l:main-panel>
-  </l:layout>
+	<l:layout title="Safely Restart Hudson">
+		<st:include page="sidepanel.jelly" />
+		<l:main-panel>
+		  <form method="post" action="safeRestart">
+		    ${%Are you sure about restarting Hudson? Hudson will restart once all running jobs are finished.}
+		    <f:submit value="${%Yes}" />
+		  </form>
+		</l:main-panel>
+	</l:layout>
 </j:jelly>

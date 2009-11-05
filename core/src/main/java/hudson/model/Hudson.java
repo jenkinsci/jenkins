@@ -490,7 +490,7 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
      */
     private transient final String secretKey;
 
-    private transient final UpdateCenter updateCenter = new UpdateCenter(this);
+    private transient final UpdateCenter updateCenter = new UpdateCenter();
 
     /**
      * True if the user opted out from the statistics tracking. We'll never send anything if this is true.
@@ -522,7 +522,7 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
 
             Trigger.timer = new Timer("Hudson cron thread");
             queue = new Queue(CONSISTENT_HASH?LoadBalancer.CONSISTENT_HASH:LoadBalancer.DEFAULT);
-
+            
             try {
                 dependencyGraph = DependencyGraph.EMPTY;
             } catch (InternalError e) {
@@ -549,7 +549,7 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
             } catch (IOException e) {
                 LOGGER.log(SEVERE, "Failed to load proxy configuration", e);
             }
-
+            
             // load plugins.
             pluginManager = new PluginManager(context);
             pluginManager.initialize();
@@ -619,6 +619,8 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
                 userContentDir.mkdirs();
                 FileUtils.writeStringToFile(new File(userContentDir,"readme.txt"),Messages.Hudson_USER_CONTENT_README());
             }
+
+            updateCenter.load();    // this has to wait until after all plugins load, to let custom UpdateCenterConfiguration take effect first.
 
             Trigger.init();
 // pending SEZPOZ-8
@@ -2801,6 +2803,25 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
     }
 
     /**
+     * Queues up a restart of Hudson for when there are no builds running, if we can.
+     *
+     * This first replaces "app" to {@link HudsonIsRestarting}
+     * 
+     * @since 1.332
+     */
+    public void doSafeRestart(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
+        checkPermission(ADMINISTER);
+        if(Stapler.getCurrentRequest().getMethod().equals("GET")) {
+            req.getView(this,"_safeRestart.jelly").forward(req,rsp);
+            return;
+        }
+
+        safeRestart();
+
+        rsp.sendRedirect2(".");
+    }
+
+    /**
      * Performs a restart.
      */
     @CLIMethod(name="restart")
@@ -2827,6 +2848,43 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
     }
 
     /**
+     * Queues up a restart to be performed once there are no builds currently running.
+     * @since 1.332
+     */
+    @CLIMethod(name="safe-restart")
+    public void safeRestart() {
+        final Lifecycle lifecycle = Lifecycle.get();
+        if(!lifecycle.canRestart())
+            throw new Failure("Restart is not supported in this running mode.");
+        // Quiet down so that we won't launch new builds.
+        isQuietingDown = true;
+        
+        new Thread("safe-restart thread") {
+            @Override
+            public void run() {
+                try {
+                    // Wait 'til we have no active executors.
+                    while (isQuietingDown
+                           && (overallLoad.computeTotalExecutors() > overallLoad.computeIdleExecutors())) {
+                        Thread.sleep(5000);
+                    }
+                    // Make sure isQuietingDown is still true.
+                    if (isQuietingDown) {
+                        servletContext.setAttribute("app",new HudsonIsRestarting());
+                        // give some time for the browser to load the "reloading" page
+                        Thread.sleep(5000);
+                        lifecycle.restart();
+                    }
+                } catch (InterruptedException e) {
+                    LOGGER.log(Level.WARNING, "Failed to restart Hudson",e);
+                } catch (IOException e) {
+                    LOGGER.log(Level.WARNING, "Failed to restart Hudson",e);
+                }
+            }
+        }.start();
+    }
+
+    /**
      * Shutdown the system.
      * @since 1.161
      */
@@ -2841,6 +2899,43 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
         w.close();
 
         System.exit(0);
+    }
+
+    
+    /**
+     * Shutdown the system safely.
+     * @since 1.332
+     */
+    public void doSafeExit( StaplerRequest req, StaplerResponse rsp ) throws IOException {
+        checkPermission(ADMINISTER);
+        rsp.setStatus(HttpServletResponse.SC_OK);
+        rsp.setContentType("text/plain");
+        PrintWriter w = rsp.getWriter();
+        w.println("Shutting down as soon as all jobs are complete");
+        w.close();
+        isQuietingDown = true;
+        final String exitUser = getAuthentication().toString();
+        final String exitAddr = req.getRemoteAddr().toString();
+        new Thread("safe-exit thread") {
+            @Override
+            public void run() {
+                try {
+                    LOGGER.severe(String.format("Shutting down VM as requested by %s from %s",
+                                                exitUser, exitAddr));
+                    // Wait 'til we have no active executors.
+                    while (isQuietingDown
+                           && (overallLoad.computeTotalExecutors() > overallLoad.computeIdleExecutors())) {
+                        Thread.sleep(5000);
+                    }
+                    // Make sure isQuietingDown is still true.
+                    if (isQuietingDown) {
+                        System.exit(0);
+                    }
+                } catch (InterruptedException e) {
+                    LOGGER.log(Level.WARNING, "Failed to shutdown Hudson",e);
+                }
+            }
+        }.start();
     }
 
     /**

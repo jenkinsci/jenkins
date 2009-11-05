@@ -25,6 +25,7 @@ package hudson;
 
 import hudson.model.Hudson;
 import hudson.model.UpdateCenter;
+import hudson.model.UpdateSite;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -252,7 +253,7 @@ public final class PluginWrapper {
         if(url!=null)      return url;
 
         // fallback to update center metadata
-        UpdateCenter.Plugin ui = getInfo();
+        UpdateSite.Plugin ui = getInfo();
         if(ui!=null)    return ui.wiki;
 
         return null;
@@ -360,23 +361,23 @@ public final class PluginWrapper {
 
     /**
      * If the plugin has {@link #getUpdateInfo() an update},
-     * returns the {@link UpdateCenter.Plugin} object.
+     * returns the {@link UpdateSite.Plugin} object.
      *
      * @return
      *      This method may return null &mdash; for example,
      *      the user may have installed a plugin locally developed.
      */
-    public UpdateCenter.Plugin getUpdateInfo() {
+    public UpdateSite.Plugin getUpdateInfo() {
         UpdateCenter uc = Hudson.getInstance().getUpdateCenter();
-        UpdateCenter.Plugin p = uc.getPlugin(getShortName());
+        UpdateSite.Plugin p = uc.getPlugin(getShortName());
         if(p!=null && p.isNewerThan(getVersion())) return p;
         return null;
     }
     
     /**
-     * returns the {@link UpdateCenter.Plugin} object, or null.
+     * returns the {@link UpdateSite.Plugin} object, or null.
      */
-    public UpdateCenter.Plugin getInfo() {
+    public UpdateSite.Plugin getInfo() {
         UpdateCenter uc = Hudson.getInstance().getUpdateCenter();
         return uc.getPlugin(getShortName());
     }

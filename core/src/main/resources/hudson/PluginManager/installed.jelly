@@ -93,10 +93,10 @@ THE SOFTWARE.
         </div>
       </j:if>
       <div class="warning" id="needRestart" style="display:none; margin: 1em; height: 1em">
-        <form method="post" action="${rootURL}/restart">
+        <form method="post" action="${rootURL}/safeRestart">
           ${%Changes will take effect when you restart Hudson}
           <j:if test="${app.lifecycle.canRestart()}">
-            <s:submit value="${%Restart Now}" />
+            <s:submit value="${%Restart Once No Jobs Are Running}" />
           </j:if>
         </form>
       </div>
