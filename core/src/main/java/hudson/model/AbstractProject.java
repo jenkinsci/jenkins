@@ -992,20 +992,14 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
         return Collections.emptySet();
     }
 
-    public boolean checkout(AbstractBuild build, Launcher launcher, BuildListener listener, File changelogFile) throws IOException {
+    public boolean checkout(AbstractBuild build, Launcher launcher, BuildListener listener, File changelogFile) throws IOException, InterruptedException {
         SCM scm = getScm();
         if(scm==null)
             return true;    // no SCM
 
-        try {
-            FilePath workspace = build.getWorkspace();
-            workspace.mkdirs();
-            return scm.checkout(build, launcher, workspace, listener, changelogFile);
-        } catch (InterruptedException e) {
-            listener.getLogger().println(Messages.AbstractProject_ScmAborted());
-            LOGGER.log(Level.INFO,build.toString()+" aborted",e);
-            return false;
-        }
+        FilePath workspace = build.getWorkspace();
+        workspace.mkdirs();
+        return scm.checkout(build, launcher, workspace, listener, changelogFile);
     }
 
     /**
