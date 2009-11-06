@@ -171,7 +171,7 @@ abstract class Request<RSP extends Serializable,EXC extends Throwable> extends C
 
         return new hudson.remoting.Future<RSP>() {
 
-            private boolean cancelled;
+            private volatile boolean cancelled;
 
             public boolean cancel(boolean mayInterruptIfRunning) {
                 if (cancelled || isDone()) {
