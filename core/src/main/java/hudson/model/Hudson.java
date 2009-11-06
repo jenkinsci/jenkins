@@ -24,6 +24,7 @@
 package hudson.model;
 
 import com.thoughtworks.xstream.XStream;
+import groovy.lang.GroovyShell;
 import hudson.BulkChange;
 import hudson.FilePath;
 import hudson.Functions;
@@ -125,6 +126,7 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.commons.jelly.Script;
 import org.apache.commons.jelly.JellyException;
 import org.apache.commons.io.FileUtils;
+import org.kohsuke.stapler.Ancestor;
 import org.kohsuke.stapler.MetaClass;
 import org.kohsuke.stapler.Stapler;
 import org.kohsuke.stapler.StaplerProxy;
@@ -199,8 +201,6 @@ import java.util.regex.Pattern;
 import java.nio.charset.Charset;
 import javax.servlet.RequestDispatcher;
 import javax.crypto.SecretKey;
-
-import groovy.lang.GroovyShell;
 
 /**
  * Root object of the system.
@@ -2460,7 +2460,17 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
         }
 
         // send the browser to the config page
-        rsp.sendRedirect2(result.getUrl()+"configure");
+        // use View to trim view/{default-view} from URL if possible
+        String redirect = result.getUrl()+"configure";
+        List<Ancestor> ancestors = req.getAncestors();
+        for (int i = ancestors.size() - 1; i >= 0; i--) {
+            Object o = ancestors.get(i).getObject();
+            if (o instanceof View) {
+                redirect = req.getContextPath() + '/' + ((View)o).getUrl() + redirect;
+                break;
+            }
+        }
+        rsp.sendRedirect2(redirect);
         return result;
     }
 
