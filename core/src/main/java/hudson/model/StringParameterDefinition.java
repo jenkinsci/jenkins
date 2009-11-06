@@ -28,11 +28,14 @@ import net.sf.json.JSONObject;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.StaplerRequest;
 import hudson.Extension;
+import hudson.cli.CLICommand;
+
+import java.io.IOException;
 
 /**
  * Parameter whose value is a string value.
  */
-public class StringParameterDefinition extends ParameterDefinition {
+public class StringParameterDefinition extends SimpleParameterDefinition {
 
     private String defaultValue;
 
@@ -80,15 +83,7 @@ public class StringParameterDefinition extends ParameterDefinition {
         return value;
     }
 
-	@Override
-	public ParameterValue createValue(StaplerRequest req) {
-        String[] value = req.getParameterValues(getName());
-        if (value == null) {
-        	return getDefaultParameterValue();
-        } else if (value.length != 1) {
-        	throw new IllegalArgumentException("Illegal number of parameter values for " + getName() + ": " + value.length);
-        } else 
-        	return new StringParameterValue(getName(), value[0], getDescription());
-	}
-
+    public ParameterValue createValue(String value) {
+        return new StringParameterValue(getName(), value, getDescription());
+    }
 }

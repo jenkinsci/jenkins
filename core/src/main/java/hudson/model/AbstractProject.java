@@ -638,6 +638,9 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
     /**
      * Schedules a build of this project, and returns a {@link Future} object
      * to wait for the completion of the build.
+     *
+     * @param actions
+     *      For the convenience of the caller, this array can contain null, and those will be silently ignored.
      */
     public Future<R> scheduleBuild2(int quietPeriod, Cause c, Action... actions) {
         if (isDisabled())
@@ -696,7 +699,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
      * Schedules a build of this project, and returns a {@link Future} object
      * to wait for the completion of the build.
      */
-    public Future<R> scheduleBuild2(int quietPeriod, Cause c) {
+    public Future<R> PascheduleBuild2(int quietPeriod, Cause c) {
         return scheduleBuild2(quietPeriod, c, new Action[0]);
     }
 

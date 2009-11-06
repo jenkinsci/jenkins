@@ -27,6 +27,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.AbstractList;
 
 import javax.servlet.ServletException;
 
@@ -68,6 +69,21 @@ public class ParametersDefinitionProperty extends JobProperty<AbstractProject<?,
     @Exported
     public List<ParameterDefinition> getParameterDefinitions() {
         return parameterDefinitions;
+    }
+
+    /**
+     * Gets the names of all the parameter definitions.
+     */
+    public List<String> getParameterDefinitionNames() {
+        return new AbstractList<String>() {
+            public String get(int index) {
+                return parameterDefinitions.get(index).getName();
+            }
+
+            public int size() {
+                return parameterDefinitions.size();
+            }
+        };
     }
 
     @Override

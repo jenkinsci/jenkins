@@ -6,15 +6,17 @@ import org.kohsuke.stapler.export.Exported;
 import org.apache.commons.lang.StringUtils;
 import net.sf.json.JSONObject;
 import hudson.Extension;
+import hudson.cli.CLICommand;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Arrays;
+import java.io.IOException;
 
 /**
  * @author huybrechts
  */
-public class ChoiceParameterDefinition extends ParameterDefinition {
+public class ChoiceParameterDefinition extends SimpleParameterDefinition {
     private final List<String> choices;
 
     @DataBoundConstructor
@@ -49,37 +51,22 @@ public class ChoiceParameterDefinition extends ParameterDefinition {
     }
 
 
-    private void checkValue(StringParameterValue value) {
-        if (!choices.contains(value.value)) {
+    private StringParameterValue checkValue(StringParameterValue value) {
+        if (!choices.contains(value.value))
             throw new IllegalArgumentException("Illegal choice: " + value.value);
-        }
+        return value;
     }
 
     @Override
     public ParameterValue createValue(StaplerRequest req, JSONObject jo) {
         StringParameterValue value = req.bindJSON(StringParameterValue.class, jo);
         value.setDescription(getDescription());
-
-        checkValue(value);
-
-        return value;
+        return checkValue(value);
     }
 
-	@Override
-	public ParameterValue createValue(StaplerRequest req) {
-        StringParameterValue result;
-        String[] value = req.getParameterValues(getName());
-        if (value == null) {
-        	result = getDefaultParameterValue();
-        } else if (value.length != 1) {
-        	throw new IllegalArgumentException("Illegal number of parameter values for " + getName() + ": " + value.length);
-        } else {
-            result = new StringParameterValue(getName(), value[0], getDescription());
-        }
-        checkValue(result);
-        return result;
-
-	}
+    public StringParameterValue createValue(String value) {
+        return checkValue(new StringParameterValue(getName(), value, getDescription()));
+    }
 
     @Extension
     public static class DescriptorImpl extends ParameterDescriptor {

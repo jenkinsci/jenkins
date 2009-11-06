@@ -30,6 +30,9 @@ import org.jvnet.hudson.test.TestBuilder
 import hudson.model.AbstractBuild
 import hudson.Launcher
 import hudson.model.BuildListener
+import hudson.model.ParametersDefinitionProperty
+import hudson.model.StringParameterDefinition
+import hudson.model.ParametersAction
 
 /**
  * {@link BuildCommand} test.
@@ -68,4 +71,12 @@ public class BuildCommandTest extends HudsonTestCase {
         assertFalse(p.getBuildByNumber(1).isBuilding())
     }
 
+    void testParameters() {
+        def p = createFreeStyleProject();
+        p.addProperty(new ParametersDefinitionProperty([new StringParameterDefinition("key",null)]));
+
+        new CLI(getURL()).execute(["build","-s","-p","key=foobar",p.name]);
+        def b = assertBuildStatusSuccess(p.getBuildByNumber(1));
+        assertEquals("foobar",b.getAction(ParametersAction.class).getParameter("key").value);        
+    }
 }

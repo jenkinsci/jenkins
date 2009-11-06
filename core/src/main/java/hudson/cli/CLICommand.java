@@ -92,7 +92,7 @@ public abstract class CLICommand implements ExtensionPoint, Cloneable {
      * (In contrast, calling {@code System.out.println(...)} would print out
      * the message to the server log file, which is probably not what you want.
      */
-    protected transient PrintStream stdout,stderr;
+    public transient PrintStream stdout,stderr;
 
     /**
      * Connected to stdin of the CLI agent.
@@ -100,18 +100,18 @@ public abstract class CLICommand implements ExtensionPoint, Cloneable {
      * <p>
      * This input stream is buffered to hide the latency in the remoting.
      */
-    protected transient InputStream stdin;
+    public transient InputStream stdin;
 
     /**
      * {@link Channel} that represents the CLI JVM. You can use this to
      * execute {@link Callable} on the CLI JVM, among other things.
      */
-    protected transient Channel channel;
+    public transient Channel channel;
 
     /**
      * The locale of the client. Messages should be formatted with this resource.
      */
-    protected transient Locale locale;
+    public transient Locale locale;
 
 
     /**
@@ -207,6 +207,8 @@ public abstract class CLICommand implements ExtensionPoint, Cloneable {
             throw new AssertionError(e);
         }
     }
+
+    
 
     /**
      * Returns all the registered {@link CLICommand}s.

@@ -26,11 +26,22 @@ package hudson.cli;
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
 import hudson.model.Cause;
+import hudson.model.ParametersAction;
+import hudson.model.ParameterValue;
+import hudson.model.ParametersDefinitionProperty;
+import hudson.model.ParameterDefinition;
 import hudson.Extension;
+import hudson.AbortException;
+import hudson.util.EditDistance;
 import org.kohsuke.args4j.Argument;
 import org.kohsuke.args4j.Option;
 
 import java.util.concurrent.Future;
+import java.util.Map;
+import java.util.HashMap;
+import java.util.List;
+import java.util.ArrayList;
+import java.util.Map.Entry;
 import java.io.PrintStream;
 
 /**
@@ -51,8 +62,32 @@ public class BuildCommand extends CLICommand {
     @Option(name="-s",usage="Wait until the completion/abortion of the command")
     public boolean sync = false;
 
+    @Option(name="-p",usage="Specify the build parameters in the key=value format.")
+    public Map<String,String> parameters = new HashMap<String, String>();
+
     protected int run() throws Exception {
-        Future<? extends AbstractBuild> f = job.scheduleBuild2(0, new CLICause());
+        ParametersAction a = null;
+
+        if (!parameters.isEmpty()) {
+            ParametersDefinitionProperty pdp = job.getProperty(ParametersDefinitionProperty.class);
+            if (pdp==null)
+                throw new AbortException(job.getFullDisplayName()+" is not parameterized but the -p option was specified");
+
+            List<ParameterValue> values = new ArrayList<ParameterValue>(); 
+
+            for (Entry<String, String> e : parameters.entrySet()) {
+                String name = e.getKey();
+                ParameterDefinition pd = pdp.getParameterDefinition(name);
+                if (pd==null)
+                    throw new AbortException(String.format("\'%s\' is not a valid parameter. Did you mean %s?",
+                            name, EditDistance.findNearest(name, pdp.getParameterDefinitionNames())));
+                values.add(pd.createValue(this,e.getValue()));
+            }
+            
+            a = new ParametersAction(values);
+        }
+
+        Future<? extends AbstractBuild> f = job.scheduleBuild2(0, new CLICause(), a);
         if (!sync)  return 0;
 
         AbstractBuild b = f.get();    // wait for the completion
