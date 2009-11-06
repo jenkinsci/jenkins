@@ -33,6 +33,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Map;
+import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.logging.Level;
@@ -281,7 +282,6 @@ public abstract class Proc {
         @Override
         public void kill() throws IOException, InterruptedException {
             process.cancel(true);
-            join();
         }
 
         @Override
@@ -296,6 +296,8 @@ public abstract class Proc {
                 if(e.getCause() instanceof IOException)
                     throw (IOException)e.getCause();
                 throw new IOException2("Failed to join the process",e);
+            } catch (CancellationException x) {
+                return -1;
             }
         }
 

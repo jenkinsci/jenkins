@@ -25,6 +25,7 @@ package hudson.remoting;
 
 import java.io.IOException;
 import java.io.Serializable;
+import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
@@ -169,26 +170,41 @@ abstract class Request<RSP extends Serializable,EXC extends Throwable> extends C
         channel.send(this);
 
         return new hudson.remoting.Future<RSP>() {
-            /**
-             * The task cannot be cancelled.
-             */
+
+            private boolean cancelled;
+
             public boolean cancel(boolean mayInterruptIfRunning) {
-                return false;
+                if (cancelled || isDone()) {
+                    return false;
+                }
+                cancelled = true;
+                if (mayInterruptIfRunning) {
+                    try {
+                        channel.send(new Cancel(id));
+                    } catch (IOException x) {
+                        return false;
+                    }
+                }
+                return true;
             }
 
             public boolean isCancelled() {
-                return false;
+                return cancelled;
             }
 
             public boolean isDone() {
-                return response!=null;
+                return isCancelled() || response!=null;
             }
 
             public RSP get() throws InterruptedException, ExecutionException {
                 synchronized(Request.this) {
                     try {
-                        while(response==null)
+                        while(response==null) {
+                            if (isCancelled()) {
+                                throw new CancellationException();
+                            }
                             Request.this.wait(); // wait until the response arrives
+                        }
                     } catch (InterruptedException e) {
                         try {
                             channel.send(new Cancel(id));
@@ -207,8 +223,12 @@ abstract class Request<RSP extends Serializable,EXC extends Throwable> extends C
 
             public RSP get(long timeout, TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException {
                 synchronized(Request.this) {
-                    if(response==null)
+                    if(response==null) {
+                        if (isCancelled()) {
+                            throw new CancellationException();
+                        }
                         Request.this.wait(unit.toMillis(timeout)); // wait until the response arrives
+                    }
                     if(response==null)
                         throw new TimeoutException();
 
