@@ -73,7 +73,7 @@ public class LauncherTest extends TestCase {
         Proc p = l.launch().cmds("sh", "-c", "sleep 2; rm " + tmp.getPath()).stdout(System.out).stderr(System.err).start();
         long start = System.currentTimeMillis();
         p.kill();
-        assertNotSame(0, p.join());
+        assertTrue(p.join()!=0);
         long end = System.currentTimeMillis();
         assertTrue("join finished promptly", (end - start < 1000));
         Thread.sleep(2500);
