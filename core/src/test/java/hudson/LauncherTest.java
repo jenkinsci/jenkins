@@ -31,16 +31,16 @@ import hudson.util.ProcessTree;
 import java.io.File;
 import java.io.PipedInputStream;
 import java.io.PipedOutputStream;
-import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.util.concurrent.Callable;
+
 import junit.framework.TestCase;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.FileUtils;
 
 public class LauncherTest extends TestCase {
-
     public LauncherTest(String n) {
         super(n);
     }
@@ -83,6 +83,7 @@ public class LauncherTest extends TestCase {
         assertTrue(p.join()!=0);
         long end = System.currentTimeMillis();
         assertTrue("join finished promptly", (end - start < 5000));
+        french.call(NOOP); // this only returns after the other side of the channel has finished executing cancellation 
         assertNull("process should be gone",ProcessTree.get().get(Integer.parseInt(FileUtils.readFileToString(tmp).trim())));
 
         // Manual version of test: set up instance w/ one slave. Now in script console
@@ -94,4 +95,9 @@ public class LauncherTest extends TestCase {
         // hangs and on slave machine pgrep sleep => one process; after manual kill, script returns.
     }
 
+    private static final hudson.remoting.Callable<Object,RuntimeException> NOOP = new hudson.remoting.Callable() {
+        public Object call() throws Exception {
+            return null;
+        }
+    };
 }
