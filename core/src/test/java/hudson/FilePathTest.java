@@ -40,42 +40,7 @@ import org.apache.commons.io.output.NullOutputStream;
 /**
  * @author Kohsuke Kawaguchi
  */
-public class FilePathTest extends TestCase {
-    /**
-     * Two channels that are connected to each other, but shares the same classloader. 
-     */
-    private Channel french, british;
-    private ExecutorService executors = Executors.newCachedThreadPool();
-
-    @Override
-    protected void setUp() throws Exception {
-        super.setUp();
-        final PipedInputStream p1i = new PipedInputStream();
-        final PipedInputStream p2i = new PipedInputStream();
-        final PipedOutputStream p1o = new PipedOutputStream(p1i);
-        final PipedOutputStream p2o = new PipedOutputStream(p2i);
-
-        Future<Channel> f1 = executors.submit(new Callable<Channel>() {
-            public Channel call() throws Exception {
-                return new Channel("This side of the channel", executors, p1i, p2o);
-            }
-        });
-        Future<Channel> f2 = executors.submit(new Callable<Channel>() {
-            public Channel call() throws Exception {
-                return new Channel("The other side of the channel", executors, p2i, p1o);
-            }
-        });
-        french = f1.get();
-        british = f2.get();
-    }
-
-    @Override
-    protected void tearDown() throws Exception {
-        french.close(); // this will automatically initiate the close on the other channel, too.
-        french.join();
-        british.join();
-        executors.shutdown();
-    }
+public class FilePathTest extends AbstractChannelTest {
 
     public void testCopyTo() throws Exception {
         File tmp = File.createTempFile("testCopyTo","");

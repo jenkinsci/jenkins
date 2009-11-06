@@ -24,52 +24,20 @@
 
 package hudson;
 
-import hudson.remoting.Channel;
-import hudson.util.StreamTaskListener;
 import hudson.util.ProcessTree;
-
-import java.io.File;
-import java.io.PipedInputStream;
-import java.io.PipedOutputStream;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
-import java.util.concurrent.Callable;
-
-import junit.framework.TestCase;
-import org.apache.commons.io.IOUtils;
+import hudson.util.StreamTaskListener;
+import hudson.remoting.Callable;
 import org.apache.commons.io.FileUtils;
 
-public class LauncherTest extends TestCase {
-    public LauncherTest(String n) {
-        super(n);
-    }
+import java.io.File;
 
+public class LauncherTest extends AbstractChannelTest {
     //@Bug(4611)
     public void testRemoteKill() throws Exception {
         if (File.pathSeparatorChar != ':') {
             System.err.println("Skipping, currently Unix-specific test");
             return;
         }
-
-        // XXX setup stolen from FilePathTest; should it be refactored into common test utility?
-        final ExecutorService executors = Executors.newCachedThreadPool();
-        final PipedInputStream p1i = new PipedInputStream();
-        final PipedInputStream p2i = new PipedInputStream();
-        final PipedOutputStream p1o = new PipedOutputStream(p1i);
-        final PipedOutputStream p2o = new PipedOutputStream(p2i);
-        Future<Channel> f1 = executors.submit(new Callable<Channel>() {
-            public Channel call() throws Exception {
-                return new Channel("This side of the channel", executors, p1i, p2o);
-            }
-        });
-        Future<Channel> f2 = executors.submit(new Callable<Channel>() {
-            public Channel call() throws Exception {
-                return new Channel("The other side of the channel", executors, p2i, p1o);
-            }
-        });
-        Channel french = f1.get();
-        Channel british = f2.get();
 
         File tmp = File.createTempFile("testRemoteKill", "");
         tmp.delete();
@@ -95,7 +63,7 @@ public class LauncherTest extends TestCase {
         // hangs and on slave machine pgrep sleep => one process; after manual kill, script returns.
     }
 
-    private static final hudson.remoting.Callable<Object,RuntimeException> NOOP = new hudson.remoting.Callable() {
+    private static final Callable<Object,RuntimeException> NOOP = new Callable() {
         public Object call() throws Exception {
             return null;
         }
