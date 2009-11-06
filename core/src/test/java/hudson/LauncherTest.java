@@ -26,6 +26,8 @@ package hudson;
 
 import hudson.remoting.Channel;
 import hudson.util.StreamTaskListener;
+import hudson.util.ProcessTree;
+
 import java.io.File;
 import java.io.PipedInputStream;
 import java.io.PipedOutputStream;
@@ -34,6 +36,8 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import junit.framework.TestCase;
+import org.apache.commons.io.IOUtils;
+import org.apache.commons.io.FileUtils;
 
 public class LauncherTest extends TestCase {
 
@@ -68,16 +72,18 @@ public class LauncherTest extends TestCase {
         Channel british = f2.get();
 
         File tmp = File.createTempFile("testRemoteKill", "");
+        tmp.delete();
         FilePath f = new FilePath(french, tmp.getPath());
         Launcher l = f.createLauncher(new StreamTaskListener(System.err));
-        Proc p = l.launch().cmds("sh", "-c", "sleep 2; rm " + tmp.getPath()).stdout(System.out).stderr(System.err).start();
+        Proc p = l.launch().cmds("sh", "-c", "echo $$$$ > "+tmp+"; sleep 30").stdout(System.out).stderr(System.err).start();
+        while (!tmp.exists())
+            Thread.sleep(100);
         long start = System.currentTimeMillis();
         p.kill();
         assertTrue(p.join()!=0);
         long end = System.currentTimeMillis();
-        assertTrue("join finished promptly", (end - start < 1000));
-        Thread.sleep(2500);
-        assertTrue("was in fact killed before completion", tmp.isFile());
+        assertTrue("join finished promptly", (end - start < 5000));
+        assertNull("process should be gone",ProcessTree.get().get(Integer.parseInt(FileUtils.readFileToString(tmp).trim())));
 
         // Manual version of test: set up instance w/ one slave. Now in script console
         // new hudson.FilePath(new java.io.File("/tmp")).createLauncher(new hudson.util.StreamTaskListener(System.err)).
