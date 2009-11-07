@@ -225,7 +225,15 @@ public abstract class HudsonTestCase extends TestCase implements RootAction {
         AbstractProject.WORKSPACE.toString();
 
 
-        hudson = newHudson();
+        try {
+            hudson = newHudson();
+        } catch (Exception e) {
+            // if Hudson instance fails to initialize, it leaves the instance field non-empty and break all the rest of the tests, so clean that up.
+            Field f = Hudson.class.getDeclaredField("theInstance");
+            f.setAccessible(true);
+            f.set(null,null);
+            throw e;
+        }
         hudson.setNoUsageStatistics(true); // collecting usage stats from tests are pointless.
         
         hudson.setCrumbIssuer(new TestCrumbIssuer());
