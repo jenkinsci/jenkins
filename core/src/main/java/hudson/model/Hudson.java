@@ -1874,6 +1874,19 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
      *      if the project of the given name already exists.
      */
     public synchronized TopLevelItem createProject( TopLevelItemDescriptor type, String name ) throws IOException {
+        return createProject(type, name, true);
+    }
+
+    /**
+     * Creates a new job.
+     * @param type Descriptor for job type
+     * @param name Name for job
+     * @param notify Whether to fire onCreated method for all ItemListeners
+     * @throws IllegalArgumentException
+     *      if a project of the give name already exists.
+     */
+    public synchronized TopLevelItem createProject( TopLevelItemDescriptor type, String name, boolean notify )
+            throws IOException {
         if(items.containsKey(name))
             throw new IllegalArgumentException();
 
@@ -1886,6 +1899,11 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
 
         item.save();
         items.put(name,item);
+
+        if (notify)
+            for (ItemListener l : ItemListener.all())
+                l.onCreated(item);
+
         return item;
     }
 
@@ -2447,16 +2465,13 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
                 rsp.setStatus(HttpServletResponse.SC_OK);
                 return result;
             } else {
-                // create empty job and redirect to the project config screen
                 if(mode==null) {
                     rsp.sendError(SC_BAD_REQUEST);
                     return null;
                 }
+                // create empty job and redirect to the project config screen
                 result = createProject(Items.getDescriptor(mode), name);
             }
-
-            for (ItemListener l : ItemListener.all())
-                l.onCreated(result);
         }
 
         // send the browser to the config page
@@ -2494,6 +2509,10 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
             // load it
             TopLevelItem result = (TopLevelItem)Items.load(this,configXml.getParentFile());
             items.put(name,result);
+
+            for (ItemListener l : ItemListener.all())
+                l.onCreated(result);
+
             return result;
         } catch (IOException e) {
             // if anything fails, delete the config file to avoid further confusion
@@ -2514,7 +2533,7 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
      */
     @SuppressWarnings({"unchecked"})
     public <T extends TopLevelItem> T copy(T src, String name) throws IOException {
-        T result = (T)createProject(src.getDescriptor(),name);
+        T result = (T)createProject(src.getDescriptor(),name,false);
 
         // copy config
         Util.copyFile(Items.getConfigFile(src).getFile(),Items.getConfigFile(result).getFile());
