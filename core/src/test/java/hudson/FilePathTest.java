@@ -23,24 +23,16 @@
  */
 package hudson;
 
-import junit.framework.TestCase;
-import hudson.remoting.Channel;
 import hudson.util.NullStream;
 
-import java.io.PipedInputStream;
-import java.io.PipedOutputStream;
 import java.io.File;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Callable;
-import java.util.concurrent.Future;
 
 import org.apache.commons.io.output.NullOutputStream;
 
 /**
  * @author Kohsuke Kawaguchi
  */
-public class FilePathTest extends AbstractChannelTest {
+public class FilePathTest extends ChannelTestCase {
 
     public void testCopyTo() throws Exception {
         File tmp = File.createTempFile("testCopyTo","");

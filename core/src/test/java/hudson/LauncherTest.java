@@ -31,7 +31,7 @@ import org.apache.commons.io.FileUtils;
 
 import java.io.File;
 
-public class LauncherTest extends AbstractChannelTest {
+public class LauncherTest extends ChannelTestCase {
     //@Bug(4611)
     public void testRemoteKill() throws Exception {
         if (File.pathSeparatorChar != ':') {
