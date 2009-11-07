@@ -16,7 +16,7 @@ import hudson.remoting.Channel;
  *
  * @author Kohsuke Kawaguchi
  */
-public class ChannelTestCase extends TestCase {
+public abstract class ChannelTestCase extends TestCase {
     /**
      * Two channels that are connected to each other, but shares the same classloader.
      */
