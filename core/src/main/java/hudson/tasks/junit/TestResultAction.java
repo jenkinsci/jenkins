@@ -28,7 +28,7 @@ import hudson.model.AbstractBuild;
 import hudson.model.Action;
 import hudson.model.BuildListener;
 import hudson.tasks.test.AbstractTestResultAction;
-import hudson.util.StringConverter2;
+import hudson.util.HeapSpaceStringConverter;
 import hudson.util.XStream2;
 
 import java.io.File;
@@ -221,8 +221,7 @@ public class TestResultAction extends AbstractTestResultAction<TestResultAction>
         XSTREAM.alias("result",TestResult.class);
         XSTREAM.alias("suite",SuiteResult.class);
         XSTREAM.alias("case",CaseResult.class);
-        XSTREAM.registerConverter(new StringConverter2(),100);
-
+        XSTREAM.registerConverter(new HeapSpaceStringConverter(),100);
     }
 
 }
