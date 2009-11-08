@@ -28,6 +28,7 @@ import hudson.model.Action;
 import hudson.matrix.MatrixBuild;
 import hudson.matrix.Combination;
 import hudson.matrix.MatrixRun;
+import hudson.tasks.junit.CaseResult;
 
 /**
  * {@link Action} that aggregates all the test results from {@link MatrixRun}s.
@@ -54,5 +55,11 @@ public class MatrixTestResult extends AggregatedTestResultAction {
     public AbstractBuild<?,?> resolveChild(Child child) {
         MatrixBuild b = (MatrixBuild)owner;
         return b.getRun(Combination.fromString(child.name));
+    }
+
+    @Override
+    public String getTestResultPath(CaseResult it) {
+        // Prepend Configuration path
+        return it.getOwner().getParent().getShortUrl() + super.getTestResultPath(it);
     }
 }
