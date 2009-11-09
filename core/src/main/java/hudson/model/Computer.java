@@ -25,6 +25,7 @@ package hudson.model;
 
 import hudson.EnvVars;
 import hudson.Util;
+import hudson.cli.declarative.CLIMethod;
 import hudson.model.Descriptor.FormException;
 import hudson.node_monitors.NodeMonitor;
 import hudson.remoting.Channel;
@@ -38,6 +39,7 @@ import hudson.slaves.ComputerLauncher;
 import hudson.slaves.RetentionStrategy;
 import hudson.slaves.WorkspaceList;
 import hudson.slaves.OfflineCause;
+import hudson.slaves.OfflineCause.ByCLI;
 import hudson.tasks.BuildWrapper;
 import hudson.tasks.Publisher;
 import hudson.util.DaemonThreadFactory;
@@ -50,8 +52,10 @@ import org.kohsuke.stapler.StaplerResponse;
 import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.HttpResponses;
 import org.kohsuke.stapler.HttpResponse;
+import org.kohsuke.stapler.HttpRedirect;
 import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.export.ExportedBean;
+import org.kohsuke.args4j.Option;
 
 import javax.servlet.ServletException;
 import java.io.File;
@@ -67,6 +71,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.util.concurrent.ExecutionException;
 import java.util.logging.LogRecord;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -264,6 +269,14 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
     protected abstract Future<?> _connect(boolean forceReconnect);
 
     /**
+     * CLI command to reconnect this node.
+     */
+    @CLIMethod(name="connect-node")
+    public void cliConnect(@Option(name="-f",usage="Cancel any currently pending connect operation and retry from scratch") boolean force) throws ExecutionException, InterruptedException {
+        connect(force).get();
+    }
+
+    /**
      * Gets the time (since epoch) when this computer connected.
      *  
      * @return The time in ms since epoch when this computer last connected.
@@ -308,6 +321,27 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
 
         connectTime=0;
         return Futures.precomputed(null);
+    }
+
+    /**
+     * CLI command to disconnects this node.
+     */
+    @CLIMethod(name="disconnect-node")
+    public void cliDisconnect(@Option(name="-m",usage="Record the note about why you are disconnecting this node") String cause) throws ExecutionException, InterruptedException {
+        disconnect(new ByCLI(cause)).get();
+    }
+
+    /**
+     * CLI command to mark the node offline.
+     */
+    @CLIMethod(name="offline-node")
+    public void cliOffline(@Option(name="-m",usage="Record the note about why you are disconnecting this node") String cause) throws ExecutionException, InterruptedException {
+        setTemporarilyOffline(true,new ByCLI(cause));
+    }
+
+    @CLIMethod(name="online-node")
+    public void cliOnline() throws ExecutionException, InterruptedException {
+        setTemporarilyOffline(false,null);
     }
 
     /**
@@ -443,7 +477,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
     }
 
     /**
-     * Marks the computer as temporarily offline.This retains the underlying
+     * Marks the computer as temporarily offline. This retains the underlying
      * {@link Channel} connection, but prevent builds from executing.
      *
      * @param cause
@@ -912,10 +946,11 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
     /**
      * Really deletes the slave.
      */
-    public void doDoDelete(StaplerResponse rsp) throws IOException {
+    @CLIMethod(name="delete-node")
+    public HttpResponse doDoDelete() throws IOException {
         checkPermission(DELETE);
         Hudson.getInstance().removeNode(getNode());
-        rsp.sendRedirect("..");
+        return new HttpRedirect("..");
     }
 
     /**

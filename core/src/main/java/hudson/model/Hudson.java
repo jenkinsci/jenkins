@@ -1255,6 +1255,7 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
         return computers.get(n);
     }
 
+    @CLIResolver
     public Computer getComputer(String name) {
         if(name.equals("(master)"))
             name = "";
@@ -3346,8 +3347,8 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
          * Report an error.
          */
         @Override
-        public void doDoDelete(StaplerResponse rsp) throws IOException {
-            rsp.sendError(SC_BAD_REQUEST);
+        public HttpResponse doDoDelete() throws IOException {
+            throw HttpResponses.status(SC_BAD_REQUEST);
         }
 
         @Override
