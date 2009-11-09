@@ -57,6 +57,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.FileReader;
+import java.io.FilterOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintStream;
@@ -1465,7 +1466,16 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
      */
     public void doConsoleText(StaplerRequest req, StaplerResponse rsp) throws IOException {
         rsp.setContentType("text/plain;charset=UTF-8");
-        IOUtils.copy(getLogReader(),rsp.getCompressedOutputStream(req));
+        // Prevent jelly from flushing stream so Content-Length header can be added afterwards
+        FilterOutputStream out = new FilterOutputStream(rsp.getCompressedOutputStream(req)) {
+            @Override public void flush() { }
+            @Override public void write(byte[] b, int off, int len) throws IOException {
+                out.write(b,off,len);
+            }
+        };
+        IOUtils.copy(getLogReader(), out);
+        out.flush();
+        out.close();
     }
 
     /**
