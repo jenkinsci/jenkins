@@ -24,6 +24,9 @@
 package hudson.model;
 
 import static javax.servlet.http.HttpServletResponse.SC_BAD_REQUEST;
+import static javax.servlet.http.HttpServletResponse.SC_NO_CONTENT;
+import javax.servlet.http.HttpServletResponse;
+
 import hudson.ExtensionPoint;
 import hudson.Util;
 import hudson.XmlFile;
@@ -1043,6 +1046,32 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
      */
     protected void submit(StaplerRequest req, StaplerResponse rsp)
             throws IOException, ServletException, FormException {
+    }
+
+    /**
+     * Accepts and serves the job description
+     */
+    public void doDescription(StaplerRequest req, StaplerResponse rsp)
+            throws IOException {
+        if (req.getMethod().equals("GET")) {
+            //read
+            rsp.setContentType("text/plain;charset=UTF-8");
+            rsp.getWriter().write(this.getDescription());
+            return;
+        }
+        if (req.getMethod().equals("POST")) {
+            checkPermission(CONFIGURE);
+
+            // submission
+            if (req.getParameter("description") != null) {
+                this.setDescription(req.getParameter("description"));
+                rsp.sendError(SC_NO_CONTENT);
+                return;
+            }
+        }
+
+        // huh?
+        rsp.sendError(SC_BAD_REQUEST);
     }
 
     /**
