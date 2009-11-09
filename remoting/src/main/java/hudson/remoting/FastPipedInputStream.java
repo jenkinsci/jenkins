@@ -47,7 +47,7 @@ public class FastPipedInputStream extends InputStream {
     /**
      * Creates an unconnected PipedInputStream with a default buffer size.
      */
-    FastPipedInputStream() {
+    public FastPipedInputStream() {
         this.buffer = new byte[0x10000];
     }
 

@@ -10,6 +10,8 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import hudson.remoting.Channel;
+import hudson.remoting.FastPipedInputStream;
+import hudson.remoting.FastPipedOutputStream;
 
 /**
  * Test that uses a connected channel.
@@ -27,10 +29,10 @@ public abstract class ChannelTestCase extends TestCase {
     @Override
     protected void setUp() throws Exception {
         super.setUp();
-        final PipedInputStream p1i = new PipedInputStream();
-        final PipedInputStream p2i = new PipedInputStream();
-        final PipedOutputStream p1o = new PipedOutputStream(p1i);
-        final PipedOutputStream p2o = new PipedOutputStream(p2i);
+        final FastPipedInputStream p1i = new FastPipedInputStream();
+        final FastPipedInputStream p2i = new FastPipedInputStream();
+        final FastPipedOutputStream p1o = new FastPipedOutputStream(p1i);
+        final FastPipedOutputStream p2o = new FastPipedOutputStream(p2i);
 
         Future<Channel> f1 = executors.submit(new Callable<Channel>() {
             public Channel call() throws Exception {
