@@ -41,6 +41,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.Collections;
 import java.util.Map.Entry;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.io.IOException;
 
 import net.sf.json.JSONObject;
@@ -216,15 +218,17 @@ public class AuthorizationMatrixProperty extends JobProperty<Job<?, ?>> {
         return set != null && set.contains(sid);
     }
     
-	/**
-	 * Works like {@link #add(Permission, String)} but takes both parameters
-	 * from a single string of the form <tt>PERMISSIONID:sid</tt>
-	 */
-	private void add(String shortForm) {
-		int idx = shortForm.indexOf(':');
-		add(Permission.fromId(shortForm.substring(0, idx)), shortForm
-				.substring(idx + 1));
-	}
+    /**
+     * Works like {@link #add(Permission, String)} but takes both parameters
+     * from a single string of the form <tt>PERMISSIONID:sid</tt>
+     */
+    private void add(String shortForm) {
+        int idx = shortForm.indexOf(':');
+        Permission p = Permission.fromId(shortForm.substring(0, idx));
+        if (p==null)
+            throw new IllegalArgumentException("Failed to parse '"+shortForm+"' --- no such permission");
+        add(p, shortForm.substring(idx + 1));
+    }
 
 	/**
 	 * Persist {@link ProjectMatrixAuthorizationStrategy} as a list of IDs that
@@ -244,11 +248,10 @@ public class AuthorizationMatrixProperty extends JobProperty<Job<?, ?>> {
 				String p = e.getKey().getId();
 				for (String sid : e.getValue()) {
 					writer.startNode("permission");
-					context.convertAnother(p + ':' + sid);
+					writer.setValue(p + ':' + sid);
 					writer.endNode();
 				}
 			}
-
 		}
 
 		public Object unmarshal(HierarchicalStreamReader reader,
@@ -258,13 +261,17 @@ public class AuthorizationMatrixProperty extends JobProperty<Job<?, ?>> {
 			String prop = reader.peekNextChild();
 			if (prop!=null && prop.equals("useProjectSecurity")) {
 				reader.moveDown();
-                context.convertAnother(as, String.class); // we used to use this but not any more.
+				reader.getValue(); // we used to use this but not any more.
 				reader.moveUp();
 			}
 			while (reader.hasMoreChildren()) {
 				reader.moveDown();
-				String id = (String) context.convertAnother(as, String.class);
-				as.add(id);
+                try {
+                    as.add(reader.getValue());
+                } catch (IllegalArgumentException ex) {
+                     Logger.getLogger(AuthorizationMatrixProperty.class.getName())
+                           .log(Level.WARNING,"Skipping a non-existent permission",ex);
+                }
 				reader.moveUp();
 			}
 
