@@ -23,6 +23,7 @@
  */
 package hudson.model;
 
+import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
 import com.gargoylesoftware.htmlunit.WebAssert;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 
@@ -30,6 +31,7 @@ import hudson.util.TextFile;
 import java.io.IOException;
 import java.util.concurrent.CountDownLatch;
 import org.jvnet.hudson.test.HudsonTestCase;
+import org.jvnet.hudson.test.recipes.LocalData;
 
 /**
  * @author Kohsuke Kawaguchi
@@ -156,5 +158,21 @@ public class JobTest extends HudsonTestCase {
                 return "";
             }
         }
+    }
+
+    @LocalData
+    public void testReadPermission() throws Exception {
+        WebClient wc = new WebClient();
+        try {
+            HtmlPage page = wc.goTo("/job/testJob/");
+            fail("getJob bypassed READ permission: " + page.getTitleText() + page.getBody().asText());
+        } catch (FailingHttpStatusCodeException expected) { }
+        try {
+            HtmlPage page = wc.goTo("/jobCaseInsensitive/testJob/");
+            fail("getJobCaseInsensitive bypassed READ permission: " + page.getTitleText());
+        } catch (FailingHttpStatusCodeException expected) { }
+        wc.login("joe");  // Has Item.READ permission
+        wc.goTo("/job/testJob/");
+        wc.goTo("/jobCaseInsensitive/TESTJOB/");
     }
 }

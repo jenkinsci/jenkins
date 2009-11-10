@@ -1796,9 +1796,12 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
      *      Used only for mapping jobs to URL in a case-insensitive fashion.
      */
     public TopLevelItem getJobCaseInsensitive(String name) {
+        String match = Functions.toEmailSafeString(name);
         for (Entry<String, TopLevelItem> e : items.entrySet()) {
-            if(Functions.toEmailSafeString(e.getKey()).equalsIgnoreCase(Functions.toEmailSafeString(name)))
-                return e.getValue();
+            if(Functions.toEmailSafeString(e.getKey()).equalsIgnoreCase(match)) {
+                TopLevelItem item = e.getValue();
+                return item.hasPermission(Item.READ) ? item : null;
+            }
         }
         return null;
     }
