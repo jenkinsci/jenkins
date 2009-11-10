@@ -27,7 +27,9 @@ THE SOFTWARE.
   <p>
     To programmatically obtain <tt>config.xml</tt>, hit <a href="../config.xml">this URL</a>.
     You can also POST an updated <tt>config.xml</tt> to the same URL to programmatically
-    update the configuration of a job.
+    update the configuration of a job.  Similarly, <a href="../description">this URL</a>
+    can be used to get and set just the job description.  POST form data with a
+    "description" parameter to set the description.
   </p>
 
   <h2>Perform a build</h2>
