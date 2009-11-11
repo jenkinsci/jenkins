@@ -76,6 +76,10 @@ public class FreeStyleProject extends Project<FreeStyleProject,FreeStyleBuild> i
      * <p>
      * This is not {@link File} because it may have to hold a path representation on another OS.
      *
+     * <p>
+     * If this path is relative, it's resolved against {@link Node#getRootPath()} on the node where this workspace
+     * is prepared. 
+     *
      * @since 1.320
      */
     public void setCustomWorkspace(String customWorkspace) throws IOException {

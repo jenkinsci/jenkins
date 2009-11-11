@@ -20,4 +20,8 @@
   move around jobs to different slaves. Sometimes this is desirable, sometimes this is not. Also,
   you can map multiple projects to have the same workspace, but if you do so, make sure concurrent executions
   of those jobs won't have nasty interferance with each other.
+
+  <p>
+  If this path is relative, it's resolved against the "remote FS root" directory of the slave, or <tt>$HUDSON_HOME</tt>
+  on the master.    
 </div>
