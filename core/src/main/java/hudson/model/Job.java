@@ -1001,16 +1001,16 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
     @WebMethod(name = "config.xml")
     public void doConfigDotXml(StaplerRequest req, StaplerResponse rsp)
             throws IOException {
-        checkPermission(EXTENDED_READ);
-
         if (req.getMethod().equals("GET")) {
             // read
+            checkPermission(EXTENDED_READ);
             rsp.setContentType("application/xml;charset=UTF-8");
             getConfigFile().writeRawTo(rsp.getWriter());
             return;
         }
         if (req.getMethod().equals("POST")) {
             // submission
+            checkPermission(CONFIGURE);
             XmlFile configXmlFile = getConfigFile();
             AtomicFileWriter out = new AtomicFileWriter(configXmlFile.getFile());
 
