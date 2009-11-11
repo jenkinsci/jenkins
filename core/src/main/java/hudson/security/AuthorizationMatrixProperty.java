@@ -133,7 +133,7 @@ public class AuthorizationMatrixProperty extends JobProperty<Job<?, ?>> {
 	}
 
     @Extension
-	public static class DescriptorImpl extends JobPropertyDescriptor {
+    public static class DescriptorImpl extends JobPropertyDescriptor {
 		@Override
 		public JobProperty<?> newInstance(StaplerRequest req, JSONObject formData) throws FormException {
             formData = formData.getJSONObject("useProjectSecurity");
@@ -172,7 +172,7 @@ public class AuthorizationMatrixProperty extends JobProperty<Job<?, ?>> {
 		}
 
         public boolean showPermission(Permission p) {
-            return p!=Item.CREATE;
+            return p.getEnabled() && p!=Item.CREATE;
         }
 
         public FormValidation doCheckName(@AncestorInPath Job project, @QueryParameter String value) throws IOException, ServletException {
