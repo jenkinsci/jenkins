@@ -2641,8 +2641,10 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
      * Called once the user logs in. Just forward to the top page.
      */
     public void doLoginEntry( StaplerRequest req, StaplerResponse rsp ) throws IOException {
-        if(req.getUserPrincipal()==null)
+        if(req.getUserPrincipal()==null) {
             rsp.sendRedirect2("noPrincipal");
+            return;
+        }
 
         String from = req.getParameter("from");
         if(from!=null && from.startsWith("/") && !from.equals("/loginError")) {
