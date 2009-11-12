@@ -558,7 +558,7 @@ public class UpdateSite {
 
     private static final Logger LOGGER = Logger.getLogger(UpdateSite.class.getName());
 
-    public static boolean neverUpdate = Boolean.getBoolean(UpdateCenter.class.getName()+".neverUpdate");
+    public static boolean neverUpdate = Boolean.getBoolean(UpdateCenter.class.getName()+".never");
 
     /**
      * Off by default until we know this is reasonably working.
