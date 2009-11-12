@@ -86,6 +86,7 @@ public abstract class Proc {
         private final Thread copier,copier2;
         private final OutputStream out;
         private final EnvVars cookie;
+        private final String name;
 
         public LocalProc(String cmd, Map<String,String> env, OutputStream out, File workDir) throws IOException {
             this(cmd,Util.mapToEnv(env),out,workDir);
@@ -140,6 +141,7 @@ public abstract class Proc {
 
         private LocalProc( String name, ProcessBuilder procBuilder, InputStream in, OutputStream out, OutputStream err ) throws IOException {
             Logger.getLogger(Proc.class.getName()).log(Level.FINE, "Running: {0}", name);
+            this.name = name;
             this.out = out;
             this.cookie = EnvVars.createCookie();
             procBuilder.environment().putAll(cookie);
@@ -163,6 +165,15 @@ public abstract class Proc {
          */
         @Override
         public int join() throws InterruptedException, IOException {
+            // show what we are waiting for in the thread title
+            // since this involves some native work, let's have some soak period before enabling this by default 
+            Thread t = Thread.currentThread();
+            String oldName = t.getName();
+            if (SHOW_PID) {
+                ProcessTree.OSProcess p = ProcessTree.get().get(proc);
+                t.setName(oldName+" "+(p!=null?"waiting for pid="+p.getPid():"waiting for "+name));
+            }
+
             try {
                 int r = proc.waitFor();
                 // see http://hudson.gotdns.com/wiki/display/HUDSON/Spawning+processes+from+build
@@ -199,6 +210,8 @@ public abstract class Proc {
                 // aborting. kill the process
                 destroy();
                 throw e;
+            } finally {
+                t.setName(oldName);
             }
         }
 
@@ -308,4 +321,8 @@ public abstract class Proc {
     }
 
     private static final Logger LOGGER = Logger.getLogger(Proc.class.getName());
+    /**
+     * Debug switch to have the thread display the process it's waiting for.
+     */
+    public static boolean SHOW_PID = false;
 }
