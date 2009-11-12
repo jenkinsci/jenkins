@@ -52,6 +52,8 @@ public class UtilTest extends TestCase {
 
         // $ escaping
         assertEquals("asd$${AA}dd", Util.replaceMacro("asd$$$${AA}dd",m));
+        assertEquals("$", Util.replaceMacro("$$",m));
+        assertEquals("$$", Util.replaceMacro("$$$$",m));
 
     	// test that more complex scenarios work
         assertEquals("/a/B/aa", Util.replaceMacro("/$A/$B/$AA",m));

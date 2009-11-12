@@ -23,6 +23,7 @@
  */
 package hudson.model;
 
+import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
 import com.gargoylesoftware.htmlunit.WebAssert;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 
@@ -30,6 +31,7 @@ import hudson.util.TextFile;
 import java.io.IOException;
 import java.util.concurrent.CountDownLatch;
 import org.jvnet.hudson.test.HudsonTestCase;
+import org.jvnet.hudson.test.recipes.LocalData;
 
 /**
  * @author Kohsuke Kawaguchi
@@ -156,5 +158,61 @@ public class JobTest extends HudsonTestCase {
                 return "";
             }
         }
+    }
+
+    @LocalData
+    public void testReadPermission() throws Exception {
+        WebClient wc = new WebClient();
+        try {
+            HtmlPage page = wc.goTo("job/testJob/");
+            fail("getJob bypassed Item.READ permission: " + page.getTitleText());
+        } catch (FailingHttpStatusCodeException expected) { }
+        try {
+            HtmlPage page = wc.goTo("jobCaseInsensitive/testJob/");
+            fail("getJobCaseInsensitive bypassed Item.READ permission: " + page.getTitleText());
+        } catch (FailingHttpStatusCodeException expected) { }
+        wc.login("joe");  // Has Item.READ permission
+        // Verify we can access both URLs:
+        wc.goTo("job/testJob/");
+        wc.goTo("jobCaseInsensitive/TESTJOB/");
+    }
+
+    @LocalData
+    public void testConfigDotXmlPermission() throws Exception {
+        hudson.setCrumbIssuer(null);
+        WebClient wc = new WebClient();
+        boolean saveEnabled = Item.EXTENDED_READ.getEnabled();
+        Item.EXTENDED_READ.setEnabled(true);
+        try {
+            try {
+                wc.goTo("job/testJob/config.xml", "text/plain");
+                fail("doConfigDotXml bypassed EXTENDED_READ permission");
+            } catch (FailingHttpStatusCodeException expected) {
+                assertEquals("403 for no permission", 403, expected.getStatusCode());
+            }
+            wc.login("alice");  // Has CONFIGURE and EXTENDED_READ permission
+            tryConfigDotXml(wc, 500, "Both perms; should get 500");
+            wc.login("bob");  // Has only CONFIGURE permission (this should imply EXTENDED_READ)
+            tryConfigDotXml(wc, 500, "Config perm should imply EXTENDED_READ");
+            wc.login("charlie");  // Has only EXTENDED_READ permission
+            tryConfigDotXml(wc, 403, "No permission, should get 403");
+        } finally {
+            Item.EXTENDED_READ.setEnabled(saveEnabled);
+        }
+    }
+
+    private static void tryConfigDotXml(WebClient wc, int status, String msg) throws Exception {
+        // Verify we can GET the config.xml:
+        wc.goTo("job/testJob/config.xml", "application/xml");
+        // This page is a simple form to POST to /job/testJob/config.xml
+        // But it posts invalid data so we expect 500 if we have permission, 403 if not
+        HtmlPage page = wc.goTo("userContent/post.html");
+        try {
+            page.getForms().get(0).submit();
+            fail("Expected exception: " + msg);
+        } catch (FailingHttpStatusCodeException expected) {
+            assertEquals(msg, status, expected.getStatusCode());
+        }
+        wc.goTo("logout");
     }
 }

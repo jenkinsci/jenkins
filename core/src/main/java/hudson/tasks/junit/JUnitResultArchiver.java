@@ -117,7 +117,11 @@ public class JUnitResultArchiver extends Recorder implements Serializable,
 			TestResult result = build.getWorkspace().act(
 					new ParseResultCallable(testResults, buildTime, nowMaster));
 
-			action = new TestResultAction(build, result, listener);
+			try {
+				action = new TestResultAction(build, result, listener);
+			} catch (NullPointerException npe) {
+				throw new AbortException(Messages.JUnitResultArchiver_BadXML(testResults));
+			}
 			if (result.getPassCount() == 0 && result.getFailCount() == 0)
 				throw new AbortException(Messages.JUnitResultArchiver_ResultIsEmpty());
 

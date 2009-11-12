@@ -33,6 +33,7 @@ import com.thoughtworks.xstream.io.HierarchicalStreamWriter;
 import hudson.Util;
 import hudson.XmlFile;
 import hudson.BulkChange;
+import hudson.model.listeners.SaveableListener;
 import hudson.util.HexBinaryConverter;
 import hudson.util.Iterators;
 import hudson.util.XStream2;
@@ -701,6 +702,7 @@ public class Fingerprint implements ModelObject, Saveable {
 
         File file = getFingerprintFile(md5sum);
         getConfigFile(file).write(this);
+        SaveableListener.fireOnChange(this, getConfigFile(file));
 
         if(logger.isLoggable(Level.FINE))
             logger.fine("Saving fingerprint "+file+" took "+(System.currentTimeMillis()-start)+"ms");

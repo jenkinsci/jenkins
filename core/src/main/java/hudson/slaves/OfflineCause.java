@@ -54,7 +54,7 @@ public abstract class OfflineCause {
             this.description = description;
         }
 
-        @Exported(name="description") @Override
+        @Exported(name="description")
         public String toString() {
             return description.toString();
         }
@@ -78,6 +78,22 @@ public abstract class OfflineCause {
 
         public String getShortDescription() {
             return cause.toString();
+        }
+    }
+
+    public static class ByCLI extends OfflineCause {
+        @Exported
+        public final String message;
+
+        public ByCLI(String message) {
+            this.message = message;
+        }
+
+        @Override
+        public String toString() {
+            if (message==null)
+                return Messages.OfflineCause_DisconnectedFromCLI();
+            return message;
         }
     }
 }

@@ -36,6 +36,9 @@ public abstract class DelegatingOutputStream extends OutputStream {
     protected OutputStream out;
 
     protected DelegatingOutputStream(OutputStream out) {
+        if (out == null) {
+            throw new IllegalArgumentException("null stream");
+        }
         this.out = out;
     }
 

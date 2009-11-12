@@ -120,8 +120,10 @@ public class Which {
                 return new File(zipFile.getName());
             } catch (NoSuchFieldException e) {
                 // something must have changed in JBoss5. fall through
+                LOGGER.log(Level.FINE, "Failed to resolve vfszip into a jar location",e);
             } catch (IllegalAccessException e) {
                 // something must have changed in JBoss5. fall through
+                LOGGER.log(Level.FINE, "Failed to resolve vfszip into a jar location",e);
             } finally {
                 is.close();
             }

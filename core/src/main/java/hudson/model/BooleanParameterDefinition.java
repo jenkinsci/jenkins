@@ -29,9 +29,11 @@ import net.sf.json.JSONObject;
 import hudson.Extension;
 
 /**
+ * {@link ParameterDefinition} that is either 'true' or 'false'.
+ *
  * @author huybrechts
  */
-public class BooleanParameterDefinition extends ParameterDefinition {
+public class BooleanParameterDefinition extends SimpleParameterDefinition {
     private final boolean defaultValue;
 
     @DataBoundConstructor
@@ -51,17 +53,8 @@ public class BooleanParameterDefinition extends ParameterDefinition {
         return value;
     }
 
-    @Override
-    public ParameterValue createValue(StaplerRequest req) {
-        String[] value = req.getParameterValues(getName());
-        if (value == null) {
-            return getDefaultParameterValue();
-        } else if (value.length != 1) {
-            throw new IllegalArgumentException("Illegal number of parameter values for " + getName() + ": " + value.length);
-        } else {
-            boolean booleanValue = Boolean.parseBoolean(value[0]);
-            return new BooleanParameterValue(getName(), booleanValue, getDescription());
-        }
+    public ParameterValue createValue(String value) {
+        return new BooleanParameterValue(getName(),Boolean.valueOf(value),getDescription());
     }
 
     @Override

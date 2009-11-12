@@ -56,6 +56,9 @@ THE SOFTWARE.
                       <j:if test="${!p.isCompatibleWithInstalledVersion()}">
                         <div class="compatWarning">${%compatWarning}</div>
                       </j:if>
+                      <j:if test="${p.isForNewerHudson()}">
+                        <div class="compatWarning">${%coreWarning(p.coreVersion)}</div>
+                      </j:if>
                     </td>
                     <td class="pane"><st:out value="${p.version}" /></td>
                     <j:if test="${attrs.page=='updates'}">

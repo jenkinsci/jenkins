@@ -24,6 +24,7 @@
 package hudson.model;
 
 import com.thoughtworks.xstream.XStream;
+import groovy.lang.GroovyShell;
 import hudson.BulkChange;
 import hudson.FilePath;
 import hudson.Functions;
@@ -58,6 +59,7 @@ import hudson.model.Descriptor.FormException;
 import hudson.model.listeners.ItemListener;
 import hudson.model.listeners.JobListener;
 import hudson.model.listeners.JobListener.JobListenerAdapter;
+import hudson.model.listeners.SaveableListener;
 import hudson.model.listeners.SCMListener;
 import hudson.remoting.LocalChannel;
 import hudson.remoting.VirtualChannel;
@@ -124,6 +126,7 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.commons.jelly.Script;
 import org.apache.commons.jelly.JellyException;
 import org.apache.commons.io.FileUtils;
+import org.kohsuke.stapler.Ancestor;
 import org.kohsuke.stapler.MetaClass;
 import org.kohsuke.stapler.Stapler;
 import org.kohsuke.stapler.StaplerProxy;
@@ -198,8 +201,6 @@ import java.util.regex.Pattern;
 import java.nio.charset.Charset;
 import javax.servlet.RequestDispatcher;
 import javax.crypto.SecretKey;
-
-import groovy.lang.GroovyShell;
 
 /**
  * Root object of the system.
@@ -1254,6 +1255,7 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
         return computers.get(n);
     }
 
+    @CLIResolver
     public Computer getComputer(String name) {
         if(name.equals("(master)"))
             name = "";
@@ -1794,9 +1796,12 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
      *      Used only for mapping jobs to URL in a case-insensitive fashion.
      */
     public TopLevelItem getJobCaseInsensitive(String name) {
+        String match = Functions.toEmailSafeString(name);
         for (Entry<String, TopLevelItem> e : items.entrySet()) {
-            if(Functions.toEmailSafeString(e.getKey()).equalsIgnoreCase(Functions.toEmailSafeString(name)))
-                return e.getValue();
+            if(Functions.toEmailSafeString(e.getKey()).equalsIgnoreCase(match)) {
+                TopLevelItem item = e.getValue();
+                return item.hasPermission(Item.READ) ? item : null;
+            }
         }
         return null;
     }
@@ -1873,6 +1878,19 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
      *      if the project of the given name already exists.
      */
     public synchronized TopLevelItem createProject( TopLevelItemDescriptor type, String name ) throws IOException {
+        return createProject(type, name, true);
+    }
+
+    /**
+     * Creates a new job.
+     * @param type Descriptor for job type
+     * @param name Name for job
+     * @param notify Whether to fire onCreated method for all ItemListeners
+     * @throws IllegalArgumentException
+     *      if a project of the give name already exists.
+     */
+    public synchronized TopLevelItem createProject( TopLevelItemDescriptor type, String name, boolean notify )
+            throws IOException {
         if(items.containsKey(name))
             throw new IllegalArgumentException();
 
@@ -1885,6 +1903,11 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
 
         item.save();
         items.put(name,item);
+
+        if (notify)
+            for (ItemListener l : ItemListener.all())
+                l.onCreated(item);
+
         return item;
     }
 
@@ -2109,6 +2132,7 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
     public synchronized void save() throws IOException {
         if(BulkChange.contains(this))   return;
         getConfigFile().write(this);
+        SaveableListener.fireOnChange(this, getConfigFile());
     }
 
 
@@ -2445,20 +2469,27 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
                 rsp.setStatus(HttpServletResponse.SC_OK);
                 return result;
             } else {
-                // create empty job and redirect to the project config screen
                 if(mode==null) {
                     rsp.sendError(SC_BAD_REQUEST);
                     return null;
                 }
+                // create empty job and redirect to the project config screen
                 result = createProject(Items.getDescriptor(mode), name);
             }
-
-            for (ItemListener l : ItemListener.all())
-                l.onCreated(result);
         }
 
         // send the browser to the config page
-        rsp.sendRedirect2(result.getUrl()+"configure");
+        // use View to trim view/{default-view} from URL if possible
+        String redirect = result.getUrl()+"configure";
+        List<Ancestor> ancestors = req.getAncestors();
+        for (int i = ancestors.size() - 1; i >= 0; i--) {
+            Object o = ancestors.get(i).getObject();
+            if (o instanceof View) {
+                redirect = req.getContextPath() + '/' + ((View)o).getUrl() + redirect;
+                break;
+            }
+        }
+        rsp.sendRedirect2(redirect);
         return result;
     }
 
@@ -2482,6 +2513,10 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
             // load it
             TopLevelItem result = (TopLevelItem)Items.load(this,configXml.getParentFile());
             items.put(name,result);
+
+            for (ItemListener l : ItemListener.all())
+                l.onCreated(result);
+
             return result;
         } catch (IOException e) {
             // if anything fails, delete the config file to avoid further confusion
@@ -2502,7 +2537,7 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
      */
     @SuppressWarnings({"unchecked"})
     public <T extends TopLevelItem> T copy(T src, String name) throws IOException {
-        T result = (T)createProject(src.getDescriptor(),name);
+        T result = (T)createProject(src.getDescriptor(),name,false);
 
         // copy config
         Util.copyFile(Items.getConfigFile(src).getFile(),Items.getConfigFile(result).getFile());
@@ -3315,8 +3350,8 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
          * Report an error.
          */
         @Override
-        public void doDoDelete(StaplerResponse rsp) throws IOException {
-            rsp.sendError(SC_BAD_REQUEST);
+        public HttpResponse doDoDelete() throws IOException {
+            throw HttpResponses.status(SC_BAD_REQUEST);
         }
 
         @Override

@@ -31,7 +31,7 @@ import java.util.Map;
 import hudson.util.VariableResolver;
 
 /**
- * {@link hudson.model.ParameterValue} created from {@link hudson.model.StringParameterDefinition}.
+ * {@link ParameterValue} created from {@link BooleanParameterDefinition}.
  */
 public class BooleanParameterValue extends ParameterValue {
     @Exported(visibility=4)

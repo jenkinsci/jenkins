@@ -28,12 +28,12 @@ THE SOFTWARE.
 	<j:choose>
 		<j:when test="${it.errorDetails!=null}">
 			<h3>${%Error Details}</h3>
-			<pre>${it.errorDetails}</pre>
+			<pre><st:out value="${it.errorDetails}"/></pre>
 		</j:when>
 		<j:otherwise>
 			<j:if test="${it.errorStackTrace!=null}">
 				<h3>${%Stack Trace}</h3>
-				<pre>${it.errorStackTrace}</pre>
+				<pre><st:out value="${it.errorStackTrace}"/></pre>
 			</j:if>
 		</j:otherwise>
 	</j:choose>

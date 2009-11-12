@@ -23,6 +23,7 @@
  */
 package hudson.remoting;
 
+import java.util.concurrent.CancellationException;
 import junit.framework.Test;
 
 import java.util.concurrent.ExecutionException;
@@ -100,6 +101,35 @@ public class SimpleTest extends RmiTestBase {
 
         public T call() throws RuntimeException {
             return t;
+        }
+    }
+
+    /**
+     * Checks whether {@link Future#cancel} behaves according to spec.
+     * Currently seems to be used by MavenBuilder.call and Proc.RemoteProc.kill
+     * (in turn used by MercurialSCM.joinWithTimeout when polling on remote host).
+     */
+    //@Bug(4611)
+    public void testCancellation() throws Exception {
+        Cancellable task = new Cancellable();
+        Future<Integer> r = channel.callAsync(task);
+        r.cancel(true);
+        try {
+            r.get();
+            fail("should not return normally");
+        } catch (CancellationException x) {
+            // right
+        }
+        assertTrue(r.isCancelled());
+        assertFalse(task.ran);
+        // XXX ought to also test various other aspects: cancelling before start, etc.
+    }
+    private static class Cancellable implements Callable<Integer, InterruptedException> {
+        boolean ran;
+        public Integer call() throws InterruptedException {
+            Thread.sleep(9999);
+            ran = true;
+            return 0;
         }
     }
 

@@ -111,6 +111,13 @@ public class ParametersAction implements Action, Iterable<ParameterValue>, Queue
         return Collections.unmodifiableList(parameters);
     }
 
+    public ParameterValue getParameter(String name) {
+        for (ParameterValue p : parameters)
+            if (p.getName().equals(name))
+                return p;
+        return null;
+    }
+
     public String getDisplayName() {
         return Messages.ParameterAction_DisplayName();
     }

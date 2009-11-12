@@ -23,7 +23,7 @@ THE SOFTWARE.
 -->
 
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
-	<f:block xmlns:local="local">
+  <f:block xmlns:local="local">
     <j:set var="groups" value="${descriptor.allGroups}"/>
     <d:taglib uri="local">
       <!-- generate one row for the sid name @sid -->
@@ -99,11 +99,16 @@ THE SOFTWARE.
         <local:row sid="${null}" />
       </tr>
     </table>
-    <div style="margin-top:0.5em; margin-left: 2em;">
+    <table style="margin-top:0.5em; margin-left: 2em; width: 100%">
+     <tr><td colspan="3">
       ${%User/group to add}:
       <input type="text" id="${id}text" />
       <input type="button" value="${%Add}" id="${id}button"/>
-    </div>
+     </td><td align="right">
+      <a href="#" class="help-button" helpURL="${rootURL}${descriptor.find('hudson.security.GlobalMatrixAuthorizationStrategy$DescriptorImpl').getHelpFile('user-group')}"><img src="${imagesURL}/16x16/help.gif" alt="[help]"/></a>
+     </td></tr>
+     <f:helpArea />
+    </table>
     <script>
       (function() {
         <!-- place master outside the DOM tree so that it won't creep into the submitted form -->

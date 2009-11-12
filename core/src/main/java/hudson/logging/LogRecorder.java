@@ -31,6 +31,7 @@ import hudson.model.AbstractModelObject;
 import hudson.model.Failure;
 import hudson.model.Hudson;
 import hudson.model.Saveable;
+import hudson.model.listeners.SaveableListener;
 import hudson.util.CopyOnWriteList;
 import hudson.util.RingBufferLogHandler;
 import hudson.util.XStream2;
@@ -199,6 +200,7 @@ public class LogRecorder extends AbstractModelObject implements Saveable {
     public synchronized void save() throws IOException {
         if(BulkChange.contains(this))   return;
         getConfigFile().write(this);
+        SaveableListener.fireOnChange(this, getConfigFile());
     }
 
     /**

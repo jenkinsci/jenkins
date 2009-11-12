@@ -53,6 +53,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.io.IOException;
 import java.io.Serializable;
 
@@ -202,7 +204,7 @@ public class GlobalMatrixAuthorizationStrategy extends AuthorizationStrategy {
                 String p = e.getKey().getId();
                 for (String sid : e.getValue()) {
                     writer.startNode("permission");
-                    context.convertAnother(p+':'+sid);
+                    writer.setValue(p+':'+sid);
                     writer.endNode();
                 }
             }
@@ -214,8 +216,12 @@ public class GlobalMatrixAuthorizationStrategy extends AuthorizationStrategy {
 
             while (reader.hasMoreChildren()) {
                 reader.moveDown();
-                String id = (String)context.convertAnother(as,String.class);
-                as.add(id);
+                try {
+                    as.add(reader.getValue());
+                } catch (IllegalArgumentException ex) {
+                    Logger.getLogger(GlobalMatrixAuthorizationStrategy.class.getName())
+                          .log(Level.WARNING,"Skipping a non-existent permission",ex);
+                }
                 reader.moveUp();
             }
 

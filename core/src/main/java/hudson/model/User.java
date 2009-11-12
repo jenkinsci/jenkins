@@ -31,6 +31,7 @@ import hudson.XmlFile;
 import hudson.BulkChange;
 import hudson.tasks.Mailer;
 import hudson.model.Descriptor.FormException;
+import hudson.model.listeners.SaveableListener;
 import hudson.security.ACL;
 import hudson.security.AccessControlled;
 import hudson.security.Permission;
@@ -395,6 +396,7 @@ public class User extends AbstractModelObject implements AccessControlled, Savea
     public synchronized void save() throws IOException {
         if(BulkChange.contains(this))   return;
         getConfigFile().write(this);
+        SaveableListener.fireOnChange(this, getConfigFile());
     }
 
     /**

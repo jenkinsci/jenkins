@@ -464,6 +464,10 @@ public class UpdateSite {
          * Optional version # from which this plugin release is configuration-compatible.
          */
         public final String compatibleSinceVersion;
+        /**
+         * Version of Hudson core this plugin was compiled against.
+         */
+        public final String requiredCore;
 
         @DataBoundConstructor
         public Plugin(String sourceId, JSONObject o) {
@@ -472,6 +476,7 @@ public class UpdateSite {
             this.title = get(o,"title");
             this.excerpt = get(o,"excerpt");
             this.compatibleSinceVersion = get(o,"compatibleSinceVersion");
+            this.requiredCore = get(o,"requiredCore");
         }
 
         private String get(JSONObject o, String prop) {
@@ -513,6 +518,10 @@ public class UpdateSite {
                 }
             }
             return true;
+        }
+
+        public boolean isForNewerHudson() {
+            return requiredCore!=null && new VersionNumber(requiredCore).isNewerThan(new VersionNumber(Hudson.VERSION));
         }
 
         /**

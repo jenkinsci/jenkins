@@ -704,7 +704,7 @@ public abstract class Launcher {
         }
 
         public Proc launch(ProcStarter ps) throws IOException {
-            final OutputStream out = new RemoteOutputStream(new CloseProofOutputStream(ps.stdout));
+            final OutputStream out = ps.stdout == null ? null : new RemoteOutputStream(new CloseProofOutputStream(ps.stdout));
             final OutputStream err = ps.stderr==null ? null : new RemoteOutputStream(new CloseProofOutputStream(ps.stderr));
             final InputStream  in  = ps.stdin==null ? null : new RemoteInputStream(ps.stdin);
             final String workDir = ps.pwd==null ? null : ps.pwd.getRemote();
