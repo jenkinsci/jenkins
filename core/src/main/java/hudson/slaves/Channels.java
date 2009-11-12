@@ -91,7 +91,7 @@ public class Channels {
             @Override
             public synchronized void close() throws IOException {
                 super.close();
-                // wait for Maven to complete
+                // wait for the child process to complete
                 try {
                     proc.join();
                 } catch (InterruptedException e) {
