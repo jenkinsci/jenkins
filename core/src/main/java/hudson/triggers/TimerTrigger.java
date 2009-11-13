@@ -87,5 +87,15 @@ public class TimerTrigger extends Trigger<BuildableItem> {
         public String getShortDescription() {
             return Messages.TimerTrigger_TimerTriggerCause_ShortDescription();
         }
+
+        @Override
+        public boolean equals(Object o) {
+            return o instanceof TimerTriggerCause;
+        }
+
+        @Override
+        public int hashCode() {
+            return 5;
+        }
     }
 }

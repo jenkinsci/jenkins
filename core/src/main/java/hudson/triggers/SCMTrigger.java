@@ -375,6 +375,16 @@ public class SCMTrigger extends Trigger<SCMedItem> {
         public String getShortDescription() {
             return Messages.SCMTrigger_SCMTriggerCause_ShortDescription();
         }
+
+        @Override
+        public boolean equals(Object o) {
+            return o instanceof SCMTriggerCause;
+        }
+
+        @Override
+        public int hashCode() {
+            return 3;
+        }
     }
 
     /**

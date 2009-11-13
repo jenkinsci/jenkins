@@ -24,6 +24,7 @@
 package hudson.model;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import org.kohsuke.stapler.export.Exported;
@@ -145,6 +146,17 @@ public abstract class Cause {
         public String getShortDescription() {
             return Messages.Cause_UserCause_ShortDescription(authenticationName);
         }
+
+        @Override
+        public boolean equals(Object o) {
+            return o instanceof UserCause && Arrays.equals(new Object[] {authenticationName},
+                    new Object[] {((UserCause)o).authenticationName});
+        }
+
+        @Override
+        public int hashCode() {
+            return 295 + (this.authenticationName != null ? this.authenticationName.hashCode() : 0);
+        }
     }
 
     public static class RemoteCause extends Cause {
@@ -163,6 +175,20 @@ public abstract class Cause {
             } else {
                 return Messages.Cause_RemoteCause_ShortDescription(addr);
             }
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            return o instanceof RemoteCause && Arrays.equals(new Object[] {addr, note},
+                    new Object[] {((RemoteCause)o).addr, ((RemoteCause)o).note});
+        }
+
+        @Override
+        public int hashCode() {
+            int hash = 5;
+            hash = 83 * hash + (this.addr != null ? this.addr.hashCode() : 0);
+            hash = 83 * hash + (this.note != null ? this.note.hashCode() : 0);
+            return hash;
         }
     }
 }
