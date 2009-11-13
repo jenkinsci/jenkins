@@ -29,6 +29,7 @@ import hudson.Launcher;
 import hudson.Util;
 import hudson.FilePath;
 import hudson.slaves.WorkspaceList;
+import hudson.slaves.NodeProperty;
 import hudson.slaves.WorkspaceList.Lease;
 import hudson.matrix.MatrixConfiguration;
 import hudson.model.Fingerprint.BuildPtr;
@@ -413,7 +414,31 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
          *      Always non-null. Connected to the main build output. 
          */
         protected Launcher createLauncher(BuildListener listener) throws IOException, InterruptedException {
-            return getCurrentNode().createLauncher(listener);
+            Launcher l = getCurrentNode().createLauncher(listener);
+
+            if (project instanceof BuildableItemWithBuildWrappers) {
+                BuildableItemWithBuildWrappers biwbw = (BuildableItemWithBuildWrappers) project;
+                for(BuildWrapper bw : biwbw.getBuildWrappersList())
+                    l = bw.decorateLauncher(AbstractBuild.this,l,listener);
+            }
+
+            buildEnvironments = new ArrayList<Environment>();
+
+            for (NodeProperty nodeProperty: Hudson.getInstance().getGlobalNodeProperties()) {
+                Environment environment = nodeProperty.setUp(AbstractBuild.this, l, listener);
+                if (environment != null) {
+                    buildEnvironments.add(environment);
+                }
+            }
+
+            for (NodeProperty nodeProperty: Computer.currentComputer().getNode().getNodeProperties()) {
+                Environment environment = nodeProperty.setUp(AbstractBuild.this, l, listener);
+                if (environment != null) {
+                    buildEnvironments.add(environment);
+                }
+            }
+
+            return l;
         }
 
         private void createSymLink(BuildListener listener, String name) throws InterruptedException {
