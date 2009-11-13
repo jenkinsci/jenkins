@@ -57,6 +57,7 @@ import hudson.model.UpdateSite;
 import hudson.model.AbstractProject;
 import hudson.model.View;
 import hudson.model.RootAction;
+import hudson.model.User;
 import hudson.model.Node.Mode;
 import hudson.security.csrf.CrumbIssuer;
 import hudson.slaves.CommandLauncher;
@@ -223,6 +224,7 @@ public abstract class HudsonTestCase extends TestCase implements RootAction {
         env.pin();
         recipe();
         AbstractProject.WORKSPACE.toString();
+        User.clear();
 
 
         try {
