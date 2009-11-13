@@ -110,6 +110,16 @@ public class BuildCommand extends CLICommand {
         public String getShortDescription() {
             return "Started by command line";
         }
+
+        @Override
+        public boolean equals(Object o) {
+            return o instanceof CLICause;
+        }
+
+        @Override
+        public int hashCode() {
+            return 7;
+        }
     }
 }
 

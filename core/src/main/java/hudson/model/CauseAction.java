@@ -80,19 +80,21 @@ public class CauseAction implements FoldableAction {
     public void foldIntoExisting(hudson.model.Queue.Item item, Task owner, List<Action> otherActions) {
         CauseAction existing = item.getAction(CauseAction.class);
         if (existing!=null) {
-            existing.causes.addAll(this.causes);
+            for (Cause c : this.causes) {
+                if (!existing.causes.contains(c)) existing.causes.add(c);
+            }
             return;
-		}
-		// no CauseAction found, so add a copy of this one
-		item.getActions().add(new CauseAction(this));
-	}
+        }
+        // no CauseAction found, so add a copy of this one
+        item.getActions().add(new CauseAction(this));
+    }
 	
-	private Object readResolve() {
+    private Object readResolve() {
 		// if we are being read in from an older version
 		if(cause != null) {
 			if(causes == null) causes=new ArrayList<Cause>();
 			causes.add(cause);
 		}
 		return this;
-	} 
+    }
 }
