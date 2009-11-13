@@ -124,7 +124,7 @@ public class FastPipedOutputStream extends OutputStream {
             throw new IOException("Unconnected pipe");
         }
         if(sink.closed!=null) {
-            throw new IOException("Pipe is already closed",sink.closed);
+            throw (IOException)new IOException("Pipe is already closed").initCause(sink.closed);
         }
 
         while (len>0) {
