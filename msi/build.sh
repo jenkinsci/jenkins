@@ -24,4 +24,5 @@ v=$(unzip -p "$war" META-INF/MANIFEST.MF | grep Implementation-Version | cut -d 
 echo version=$v
 
 candle -dVERSION=$v -dJreDir="$JREDIR" -dWAR="$war" -nologo -ext WixUIExtension -ext WixUtilExtension hudson.wxs jre.wxs
-light -o hudson-$v.msi -nologo -dcl:high -ext WixUIExtension -ext WixUtilExtension hudson.wixobj jre.wixobj
+# '-sval' skips validation. without this, light somehow doesn't work on automated build environment
+light -o hudson-$v.msi -sval -nologo -dcl:high -ext WixUIExtension -ext WixUtilExtension hudson.wixobj jre.wixobj
