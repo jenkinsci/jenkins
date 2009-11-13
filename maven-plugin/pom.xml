@@ -161,14 +161,6 @@ THE SOFTWARE.
                     </execution>
                 </executions>
             </plugin>
-            <plugin>
-                <!--
-                  javadoc plugin 2.3 apparently interferes with the release process,
-                  so sticking to 2.2 (http://www.nabble.com/description-setting-plugin-tp14846399p14950047.html)
-                -->
-                <artifactId>maven-javadoc-plugin</artifactId>
-                <version>2.2</version>
-            </plugin>
         </plugins>
     </build>
 </project>
