@@ -37,7 +37,10 @@ import java.io.IOException;
 public class FastPipedInputStream extends InputStream {
 
     byte[] buffer;
-    boolean closed = false;
+    /**
+     * Once closed, this is set to the stack trace of who closed it.
+     */
+    ClosedBy closed = null;
     int readLaps = 0;
     int readPosition = 0;
     FastPipedOutputStream source;
@@ -97,7 +100,7 @@ public class FastPipedInputStream extends InputStream {
             throw new IOException("Unconnected pipe");
         }
         synchronized(buffer) {
-            closed = true;
+            closed = new ClosedBy();
             // Release any pending writers.
             buffer.notifyAll();
         }
@@ -151,7 +154,7 @@ public class FastPipedInputStream extends InputStream {
         while (true) {
             synchronized(buffer) {
                 if(writePosition == readPosition && writeLaps == readLaps) {
-                    if(closed) {
+                    if(closed!=null) {
                         return -1;
                     }
                     // Wait for any writer to put something in the circular buffer.
@@ -184,4 +187,9 @@ public class FastPipedInputStream extends InputStream {
         }
     }
 
+    static final class ClosedBy extends Throwable {
+        ClosedBy() {
+            super("The pipe was closed at...");
+        }
+    }
 }

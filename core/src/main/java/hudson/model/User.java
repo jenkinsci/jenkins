@@ -338,6 +338,13 @@ public class User extends AbstractModelObject implements AccessControlled, Savea
     }
 
     /**
+     * Stop gap hack. Don't use it. To be removed in the trunk.
+     */
+    public static void clear() {
+        byName.clear();
+    }
+
+    /**
      * Returns the user name.
      */
     public String getDisplayName() {
