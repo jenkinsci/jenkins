@@ -76,7 +76,7 @@ public class FastPipedOutputStream extends OutputStream {
             throw new IOException("Unconnected pipe");
         }
         synchronized(sink.buffer) {
-            sink.closed = true;
+            sink.closed = new FastPipedInputStream.ClosedBy();
             flush();
         }
     }
@@ -123,8 +123,8 @@ public class FastPipedOutputStream extends OutputStream {
         if(sink == null) {
             throw new IOException("Unconnected pipe");
         }
-        if(sink.closed) {
-            throw new IOException("Broken pipe");
+        if(sink.closed!=null) {
+            throw new IOException("Pipe is already closed",sink.closed);
         }
 
         while (len>0) {
