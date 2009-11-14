@@ -29,7 +29,9 @@ import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.export.ExportedBean;
 
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 @ExportedBean
 public class CauseAction implements FoldableAction {
@@ -69,6 +71,19 @@ public class CauseAction implements FoldableAction {
 	}
 
     /**
+     * Get list of causes with duplicates combined into counters.
+     * @return Map of Cause to number of occurrences of that Cause
+     */
+    public Map<Cause,Integer> getCauseCounts() {
+        Map<Cause,Integer> result = new LinkedHashMap<Cause,Integer>();
+        for (Cause c : causes) {
+            Integer i = result.get(c);
+            result.put(c, i == null ? 1 : i.intValue() + 1);
+        }
+        return result;
+    }
+
+    /**
      * @deprecated as of 1.288
      *      but left here for backward compatibility.
      */
@@ -80,9 +95,7 @@ public class CauseAction implements FoldableAction {
     public void foldIntoExisting(hudson.model.Queue.Item item, Task owner, List<Action> otherActions) {
         CauseAction existing = item.getAction(CauseAction.class);
         if (existing!=null) {
-            for (Cause c : this.causes) {
-                if (!existing.causes.contains(c)) existing.causes.add(c);
-            }
+            existing.causes.addAll(this.causes);
             return;
         }
         // no CauseAction found, so add a copy of this one
