@@ -30,12 +30,14 @@ import hudson.model.Cause.*;
 import hudson.triggers.SCMTrigger.SCMTriggerCause;
 import hudson.triggers.TimerTrigger.TimerTriggerCause;
 import hudson.util.XStream2;
+import hudson.util.OneShotEvent;
+import hudson.Launcher;
 import org.apache.commons.fileupload.FileUploadException;
 import org.apache.commons.fileupload.disk.DiskFileItemFactory;
 import org.apache.commons.fileupload.servlet.ServletFileUpload;
 import org.apache.commons.io.FileUtils;
 import org.jvnet.hudson.test.HudsonTestCase;
-import org.jvnet.hudson.test.SleepBuilder;
+import org.jvnet.hudson.test.TestBuilder;
 import org.mortbay.jetty.Server;
 import org.mortbay.jetty.bio.SocketConnector;
 import org.mortbay.jetty.servlet.ServletHandler;
@@ -162,44 +164,67 @@ public class QueueTest extends HudsonTestCase {
     }
 
     public void testFoldableCauseAction() throws Exception {
+        final OneShotEvent buildStarted = new OneShotEvent();
+        final OneShotEvent buildShouldComplete = new OneShotEvent();
+
         hudson.quietPeriod = 0;
         FreeStyleProject project = createFreeStyleProject();
         // Make build sleep a while so it blocks new builds
-        project.getBuildersList().add(new SleepBuilder(3000));
+        project.getBuildersList().add(new TestBuilder() {
+            public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
+                buildStarted.signal();
+                buildShouldComplete.block();
+                return true;
+            }
+        });
+
         // Start one build to block others
         assertTrue(project.scheduleBuild(new UserCause()));
-        Thread.sleep(100);
+        buildStarted.block(); // wait for the build to really start
+
         // Schedule a new build, and trigger it many ways while it sits in queue
         Future<FreeStyleBuild> fb = project.scheduleBuild2(0, new UserCause());
         assertNotNull(fb);
-        Thread.sleep(100);
         assertFalse(project.scheduleBuild(new SCMTriggerCause()));
-        Thread.sleep(100);
         assertFalse(project.scheduleBuild(new UserCause()));
-        Thread.sleep(100);
         assertFalse(project.scheduleBuild(new TimerTriggerCause()));
-        Thread.sleep(100);
         assertFalse(project.scheduleBuild(new RemoteCause("1.2.3.4", "test")));
-        Thread.sleep(100);
         assertFalse(project.scheduleBuild(new RemoteCause("4.3.2.1", "test")));
-        Thread.sleep(100);
-        assertFalse(project.scheduleBuild(new RemoteCause("1.2.3.4", "test")));
-        Thread.sleep(100);
-        assertFalse(project.scheduleBuild(new RemoteCause("1.2.3.4", "foo")));
-        Thread.sleep(100);
         assertFalse(project.scheduleBuild(new SCMTriggerCause()));
-        Thread.sleep(100);
+        assertFalse(project.scheduleBuild(new RemoteCause("1.2.3.4", "test")));
+        assertFalse(project.scheduleBuild(new RemoteCause("1.2.3.4", "foo")));
+        assertFalse(project.scheduleBuild(new SCMTriggerCause()));
         assertFalse(project.scheduleBuild(new TimerTriggerCause()));
+
         // Wait for 2nd build to finish
+        buildShouldComplete.signal();
         FreeStyleBuild build = fb.get();
+
+        // Make sure proper folding happened.
         CauseAction ca = build.getAction(CauseAction.class);
         assertNotNull(ca);
         StringBuilder causes = new StringBuilder();
         for (Cause c : ca.getCauses()) causes.append(c.getShortDescription() + "\n");
-        assertEquals("Build causes should have only unique items",
+        assertEquals("Build causes should have all items, even duplicates",
                 "Started by user anonymous\nStarted by an SCM change\n"
-                + "Started by timer\nStarted by remote host 1.2.3.4 with note: test\n"
+                + "Started by user anonymous\nStarted by timer\n"
+                + "Started by remote host 1.2.3.4 with note: test\n"
                 + "Started by remote host 4.3.2.1 with note: test\n"
-                + "Started by remote host 1.2.3.4 with note: foo\n", causes.toString());
+                + "Started by an SCM change\n"
+                + "Started by remote host 1.2.3.4 with note: test\n"
+                + "Started by remote host 1.2.3.4 with note: foo\n"
+                + "Started by an SCM change\nStarted by timer\n",
+                causes.toString());
+
+        // View for build should group duplicates
+        WebClient wc = new WebClient();
+        String buildPage = wc.getPage(build, "").asText();
+        assertTrue("Build page should combine duplicates and show counts: " + buildPage,
+                   buildPage.contains("Started by user anonymous (2 times) "
+                        + "Started by an SCM change (3 times) "
+                        + "Started by timer (2 times) "
+                        + "Started by remote host 1.2.3.4 with note: test (2 times) "
+                        + "Started by remote host 4.3.2.1 with note: test "
+                        + "Started by remote host 1.2.3.4 with note: foo"));
     }
 }
