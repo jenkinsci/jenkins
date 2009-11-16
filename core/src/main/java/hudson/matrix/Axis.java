@@ -24,6 +24,7 @@
 package hudson.matrix;
 
 import hudson.Util;
+import hudson.util.QuotedStringTokenizer;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.DataBoundConstructor;
 
@@ -120,14 +121,19 @@ public final class Axis implements Comparable<Axis>, Iterable<String> {
 
     /**
      * Used for generating the config UI.
-     * If the axis is big and occupies a lot of space, use NL for separator
-     * to display multi-line text
+     * If the axis is big and occupies a lot of space, use newline for separator
+     * to display multi-line text.
      */
     public String getValueString() {
         int len=0;
         for (String value : values)
             len += value.length();
-        return Util.join(values, len>30 ?"\n":" ");
+        char delim = len>30 ? '\n' : ' ';
+        // Build string connected with delimiter, quoting as needed
+        StringBuilder buf = new StringBuilder(len+values.size()*3);
+        for (String value : values)
+            buf.append(delim).append(QuotedStringTokenizer.quote(value,""));
+        return buf.substring(1);
     }
 
     /**
