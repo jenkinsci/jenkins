@@ -68,6 +68,7 @@ import java.security.cert.CertificateException;
 import java.security.NoSuchAlgorithmException;
 import java.security.KeyManagementException;
 import java.security.SecureRandom;
+import java.util.Properties;
 
 /**
  * Entry point for running a {@link Channel}. This is the main method of the slave JVM.
@@ -157,6 +158,7 @@ public class Launcher {
     }
 
     public static void main(String... args) throws Exception {
+        computeVersion();
         Launcher launcher = new Launcher();
         CmdLineParser parser = new CmdLineParser(launcher);
         try {
@@ -173,9 +175,9 @@ public class Launcher {
     public void run() throws Exception {
         if(auth!=null) {
             final int idx = auth.indexOf(':');
-            if(idx<0)   throw new CmdLineException("No ':' in the -auth option");
+            if(idx<0)   throw new CmdLineException(null, "No ':' in the -auth option");
             Authenticator.setDefault(new Authenticator() {
-                public PasswordAuthentication getPasswordAuthentication() {
+                @Override public PasswordAuthentication getPasswordAuthentication() {
                     return new PasswordAuthentication(auth.substring(0,idx), auth.substring(idx+1).toCharArray());
                 }
             });
@@ -432,4 +434,21 @@ public class Launcher {
     public static boolean isWindows() {
         return File.pathSeparatorChar==';';
     }
+
+    private static void computeVersion() {
+        Properties props = new Properties();
+        try {
+            InputStream is = Launcher.class.getResourceAsStream("hudson-version.properties");
+            if(is!=null)
+                props.load(is);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        VERSION = props.getProperty("version", "?");
+    }
+
+    /**
+     * Version number of Hudson this slave.jar is from.
+     */
+    public static String VERSION = "?";
 }
