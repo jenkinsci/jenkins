@@ -13,10 +13,20 @@ HUDSON_HOME="@@HOME@@"
 ## Default:     ""
 ## ServiceRestart: hudson
 #
-# JAVA_HOME directory to use for running Hudson.
-# When left empty, it will use the system-wide JAVA_HOME
+# Java executable to run Hudson
+# When left empty, we'll try to find the suitable Java.
 #
-HUDSON_JAVA_HOME=""
+HUDSON_JAVA_CMD=""
+
+## Type:        string
+## Default:     "hudson"
+## ServiceRestart: hudson
+#
+# Unix user account that runs the Hudson daemon
+# Be careful when you change this, as you need to update
+# permissions of $HUDSON_HOME and /var/log/hudson.
+#
+HUDSON_USER="hudson"
 
 ## Type:        string
 ## Default:     "-Djava.awt.headless=true"
@@ -33,15 +43,6 @@ HUDSON_JAVA_OPTIONS="-Djava.awt.headless=true"
 # Port Hudson is listening on.
 #
 HUDSON_PORT="8080"
-
-## Type:        integer(1:9)
-## Default:     5
-## ServiceRestart: hudson
-#
-# Debug level for logs -- the higher the value, the more verbose.
-# 5 is INFO.
-#
-HUDSON_DEBUG_LEVEL="5"
 
 ## Type:        integer(1:9)
 ## Default:     5
