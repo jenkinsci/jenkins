@@ -38,20 +38,19 @@ test -r "$HUDSON_WAR" || { echo "$HUDSON_WAR not installed";
 
 # Check for existence of needed config file and read it
 HUDSON_CONFIG=/etc/sysconfig/hudson
-test -e "$HUDSON_CONFIG" || { echo "$HUDSON_CONFIG not existing";
-	if [ "$1" = "stop" ]; then exit 0;
-	else exit 6; fi; }
-test -r "$HUDSON_CONFIG" || { echo "$HUDSON_CONFIG not readable. Perhaps you forgot 'sudo'?";
+test -r "$HUDSON_CONFIG" || { echo "$HUDSON_CONFIG not existing";
 	if [ "$1" = "stop" ]; then exit 0;
 	else exit 6; fi; }
 
 HUDSON_PID_FILE="/var/run/hudson.pid"
-
-# Source function library.
-. /etc/init.d/functions
+HUDSON_USER="hudson"
+HUDSON_GROUP="hudson"
 
 # Read config	
-[ -f "$HUDSON_CONFIG" ] && . "$HUDSON_CONFIG"
+. "$HUDSON_CONFIG"
+
+. /etc/rc.status
+rc_reset # Reset status of this service
 
 # Set up environment accordingly to the configuration settings
 [ -n "$HUDSON_HOME" ] || { echo "HUDSON_HOME not configured in $HUDSON_CONFIG";
@@ -62,17 +61,24 @@ HUDSON_PID_FILE="/var/run/hudson.pid"
 	else exit 1; fi; }
 export HUDSON_HOME
 
-# Search usable Java. We do this because various reports indicated
-# that /usr/bin/java may not always point to Java 1.5
-# see http://www.nabble.com/guinea-pigs-wanted-----Hudson-RPM-for-RedHat-Linux-td25673707.html
-for candidate in /usr/lib/jvm/java-1.6.0/bin/java /usr/lib/jvm/jre-1.6.0/bin/java /usr/lib/jvm/java-1.5.0/bin/java /usr/lib/jvm/jre-1.5.0/bin/java /usr/bin/java
-do
-  [ -x "$HUDSON_JAVA_CMD" ] && break
-  HUDSON_JAVA_CMD="$candidate"
-done
+if [ -z "$HUDSON_JAVA_HOME" ]; then
+    . /etc/profile.d/alljava.sh
+    [ -n "$JAVA_HOME" ] || { echo "Failed to determine JAVA_HOME, set HUDSON_JAVA_HOME in $HUDSON_CONFIG";
+	if [ "$1" = "stop" ]; then exit 0;
+	else exit 6; fi; }
+else
+    JAVA_HOME="$HUDSON_JAVA_HOME"
+fi
+[ -d "$JAVA_HOME" ] || { echo "Invalid HUDSON_JAVA_HOME: directory does not exist: $JAVA_HOME";
+    if [ "$1" = "stop" ]; then exit 0;
+    else exit 6; fi; }
+[ -e "$JAVA_HOME/bin/java" ] || { echo "Invalid HUDSON_JAVA_HOME: bin/java not found under $JAVA_HOME";
+    if [ "$1" = "stop" ]; then exit 0;
+    else exit 6; fi; }
+export JAVA_HOME
 
-JAVA_CMD="$HUDSON_JAVA_CMD $HUDSON_JAVA_OPTIONS -DHUDSON_HOME=$HUDSON_HOME -jar $HUDSON_WAR"
-PARAMS="--logfile=/var/log/hudson/hudson.log --daemon"
+JAVA_CMD="$JAVA_HOME/bin/java $HUDSON_JAVA_OPTIONS -jar $HUDSON_WAR"
+PARAMS="--javaHome=$JAVA_HOME --logfile=/var/log/hudson/hudson.log"
 [ -n "$HUDSON_PORT" ] && PARAMS="$PARAMS --httpPort=$HUDSON_PORT"
 [ -n "$HUDSON_DEBUG_LEVEL" ] && PARAMS="$PARAMS --debug=$HUDSON_DEBUG_LEVEL"
 [ -n "$HUDSON_HANDLER_STARTUP" ] && PARAMS="$PARAMS --handlerCountStartup=$HUDSON_HANDLER_STARTUP"
@@ -83,38 +89,39 @@ if [ "$HUDSON_ENABLE_ACCESS_LOG" = "yes" ]; then
     PARAMS="$PARAMS --accessLoggerClassName=winstone.accesslog.SimpleAccessLogger --simpleAccessLogger.format=combined --simpleAccessLogger.file=/var/log/hudson/access_log"
 fi
 
-RETVAL=0
-
 case "$1" in
     start)
 	echo -n "Starting Hudson "
-	daemon --user "$HUDSON_USER" --pidfile "$HUDSON_PID_FILE" $JAVA_CMD $PARAMS > /dev/null
-	RETVAL=$?
-	if [ $RETVAL = 0 ]; then
-	    success
-	    echo > "$HUDSON_PID_FILE"  # just in case we fail to find it
-            MY_SESSION_ID=`/bin/ps h -o sess -p $$`
-            # get PID
-            /bin/ps hww -u "$HUDSON_USER" -o sess,ppid,pid,cmd | \
-            while read sess ppid pid cmd; do
-		[ "$ppid" = 1 ] || continue
-		# this test doesn't work because Hudson sets a new Session ID
-                # [ "$sess" = "$MY_SESSION_ID" ] || continue
-	       	echo "$cmd" | grep $HUDSON_WAR > /dev/null
-		[ $? = 0 ] || continue
-		# found a PID
-		echo $pid > "$HUDSON_PID_FILE"
-	    done
+	if /sbin/startproc -l /var/log/hudson.rc -u "$HUDSON_USER" -p "$HUDSON_PID_FILE" $JAVA_CMD $PARAMS; then
+	    rc_status
+	    # get own session ID
+	    MY_SESSION_ID=`/bin/ps h -o sess -p $$`
+	    # get PID
+	    /bin/ps hww -u hudson -o sess,pid,cmd | \
+		while read sess pid cmd; do [ "$sess" = "$MY_SESSION_ID" -a "$cmd" = "$JAVA_CMD $PARAMS" ] && echo $pid; done | \
+		head -1 > "$HUDSON_PID_FILE"
 	else
-	    failure
+	    rc_failed 1
 	fi
-	echo
+	rc_status -v
 	;;
     stop)
 	echo -n "Shutting down Hudson "
-	killproc hudson
-	RETVAL=$?
-	echo
+	PID=`cat "$HUDSON_PID_FILE" 2>/dev/null`
+	if [ -n "$PID" ]; then
+	    if /bin/kill -0 "$PID"; then
+		# process exists
+		/bin/kill -INT "$PID"
+		rc=$?
+		[ "$rc" = "0" ] && /bin/rm -f "$HUDSON_PID_FILE"
+		rc_failed "$rc"
+	    else
+		rc_failed 7
+	    fi
+	else
+	    rc_failed 1
+	fi
+	rc_status -v
 	;;
     try-restart|condrestart)
 	if test "$1" = "condrestart"; then
@@ -124,23 +131,28 @@ case "$1" in
 	if test $? = 0; then
 		$0 restart
 	else
-		: # Not running is not a failure.
+		rc_reset	# Not running is not a failure.
 	fi
+	rc_status
 	;;
     restart)
 	$0 stop
 	$0 start
+	rc_status
 	;;
     force-reload)
 	echo -n "Reload service Hudson "
 	$0 try-restart
+	rc_status
 	;;
     reload)
-    	$0 restart
+	rc_failed 3
+	rc_status -v
 	;;
     status)
-    	status hudson
-	RETVAL=$?
+	echo -n "Checking for service Hudson "
+	/sbin/checkproc -p "$HUDSON_PID_FILE" "$JAVA_HOME/bin/java"
+	rc_status -v
 	;;
     probe)
 	## Optional: Probe for the necessity of a reload, print out the
@@ -154,4 +166,4 @@ case "$1" in
 	exit 1
 	;;
 esac
-exit $RETVAL
+rc_exit
