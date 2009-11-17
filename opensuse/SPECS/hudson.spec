@@ -27,12 +27,8 @@ BuildRoot:	%{_tmppath}/build-%{name}-%{version}
 # JDK package >= 1.6.0 to 1, and packages referring to JDK virtual
 # provides >= 1.6.0 must specify the epoch, "java >= 1:1.6.0".
 #
-# Kohsuke - 2009/09/29
-#    test by mrooney on what he believes to be RHEL 5.2 indicates
-#    that there's no such packages. JRE/JDK RPMs from java.sun.com
-#    do not have this virtual package declarations. So for now,
-#    I'm dropping this requirement.
-# Requires:	java >= 1:1.6.0
+# java-1_6_0-sun provides this at least
+Requires:	java-sun >= 1.6.0
 PreReq:		/usr/sbin/groupadd /usr/sbin/useradd
 #PreReq:		%{fillup_prereq}
 BuildArch:	noarch
