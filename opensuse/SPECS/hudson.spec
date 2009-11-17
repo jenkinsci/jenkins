@@ -90,6 +90,7 @@ Authors:
 %attr(0750,hudson,hudson) /var/log/hudson
 %config /etc/logrotate.d/%{name}
 %config /etc/init.d/%{name}
+%config /etc/sysconfig/%{name}
 /usr/sbin/rc%{name}
 /var/adm/fillup-templates/sysconfig.%{name}
 
