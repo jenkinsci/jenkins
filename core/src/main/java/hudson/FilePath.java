@@ -220,7 +220,7 @@ public final class FilePath implements Serializable {
         return rel.startsWith("/") || DRIVE_PATTERN.matcher(rel).matches();
     }
 
-    private static final Pattern DRIVE_PATTERN = Pattern.compile("[A-Za-z]:\\\\.+");
+    private static final Pattern DRIVE_PATTERN = Pattern.compile("[A-Za-z]:\\\\.*");
 
     /**
      * Checks if the remote path is Unix.
