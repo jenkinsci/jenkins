@@ -68,7 +68,7 @@ THE SOFTWARE.
               <div nowrap="true">${%Building}
                 <j:choose>
                   <j:when test="${h.hasPermission(e.currentExecutable.parent,e.currentExecutable.parent.READ)}">
-                    <a href="${rootURL}/${e.currentExecutable.parent.url}">${e.currentExecutable.parent.name}</a>&#160;<a href="${rootURL}/${e.currentExecutable.url}">#${e.currentExecutable.number}</a>
+                    <a href="${rootURL}/${e.currentExecutable.parent.url}">${e.currentExecutable.parent.fullDisplayName}</a>&#160;<a href="${rootURL}/${e.currentExecutable.url}">#${e.currentExecutable.number}</a>
                     <t:buildProgressBar build="${e.currentExecutable}" executor="${e}"/>
                   </j:when>
                   <j:otherwise>
