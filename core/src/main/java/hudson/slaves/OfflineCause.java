@@ -54,7 +54,7 @@ public abstract class OfflineCause {
             this.description = description;
         }
 
-        @Exported(name="description")
+        @Exported(name="description") @Override
         public String toString() {
             return description.toString();
         }
@@ -78,6 +78,16 @@ public abstract class OfflineCause {
 
         public String getShortDescription() {
             return cause.toString();
+        }
+    }
+
+    /**
+     * Caused by failure to launch.
+     */
+    public static class LaunchFailed extends OfflineCause {
+        @Override
+        public String toString() {
+            return Messages.OfflineCause_LaunchFailed();
         }
     }
 

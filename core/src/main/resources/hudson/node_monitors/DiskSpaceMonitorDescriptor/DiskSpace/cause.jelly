@@ -23,9 +23,5 @@ THE SOFTWARE.
 -->
 
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
-  <div>
-    <span class="error">
-      ${%blurb(it.gbLeft)}
-    </span>
-  </div>
+  <p class="error">${%blurb(it.gbLeft)}</p>
 </j:jelly>

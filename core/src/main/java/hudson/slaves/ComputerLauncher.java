@@ -30,12 +30,9 @@ import hudson.model.Describable;
 import hudson.model.Descriptor;
 import hudson.model.Hudson;
 import hudson.model.TaskListener;
-import hudson.remoting.Channel.Listener;
 import hudson.util.DescriptorList;
 import hudson.util.StreamTaskListener;
 
-import java.io.InputStream;
-import java.io.OutputStream;
 import java.io.IOException;
 
 /**

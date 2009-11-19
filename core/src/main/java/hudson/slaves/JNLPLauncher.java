@@ -70,6 +70,7 @@ public class JNLPLauncher extends ComputerLauncher {
         return false;
     }
 
+    @Override
     public void launch(SlaveComputer computer, TaskListener listener) {
         // do nothing as we cannot self start
     }

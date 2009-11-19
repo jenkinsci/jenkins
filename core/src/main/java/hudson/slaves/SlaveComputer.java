@@ -188,6 +188,9 @@ public class SlaveComputer extends Computer {
                 } catch (InterruptedException e) {
                     e.printStackTrace(listener.error(Messages.ComputerLauncher_abortedLaunch()));
                     throw e;
+                } finally {
+                    if (channel==null)
+                        offlineCause = new OfflineCause.LaunchFailed();
                 }
             }
         });
