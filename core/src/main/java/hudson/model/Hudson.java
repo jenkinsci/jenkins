@@ -3564,7 +3564,7 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
         // this seems to be necessary to force registration of converter early enough
         Mode.class.getEnumConstants();
 
-        // doule check that initialization order didn't do any harm
+        // double check that initialization order didn't do any harm
         assert PERMISSIONS!=null;
         assert ADMINISTER!=null;
     }
