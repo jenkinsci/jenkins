@@ -164,9 +164,9 @@ public class SlaveComputer extends Computer {
 
     protected Future<?> _connect(boolean forceReconnect) {
         if(channel!=null)   return Futures.precomputed(null);
-        if(!forceReconnect && lastConnectActivity!=null)
+        if(!forceReconnect && isConnecting())
             return lastConnectActivity;
-        if(forceReconnect && lastConnectActivity!=null)
+        if(forceReconnect && isConnecting())
             logger.fine("Forcing a reconnect");
 
         closeChannel();
@@ -288,9 +288,10 @@ public class SlaveComputer extends Computer {
             in,out, launchLog);
         channel.addListener(new Channel.Listener() {
             @Override
-            public void onClosed(Channel c,IOException cause) {
+            public void onClosed(Channel c, IOException cause) {
                 SlaveComputer.this.channel = null;
-                offlineCause = new ChannelTermination(cause);
+                // Orderly shutdown will have null exception
+                if (cause!=null) offlineCause = new ChannelTermination(cause);
                 launcher.afterDisconnect(SlaveComputer.this, taskListener);
             }
         });
@@ -458,8 +459,12 @@ public class SlaveComputer extends Computer {
         // maybe the configuration was changed to relaunch the slave, so try to re-launch now.
         // "constructed==null" test is an ugly hack to avoid launching before the object is fully
         // constructed.
-        if(constructed!=null)
-            connect(false);
+        if(constructed!=null) {
+            if (node instanceof Slave)
+                ((Slave)node).getRetentionStrategy().check(this);
+            else
+                connect(false);
+        }
     }
 
     /**
