@@ -29,8 +29,12 @@ RUN_STANDALONE=true
 HUDSON_LOG=/var/log/hudson/$NAME.log
 #HUDSON_LOG=daemon.info
 
-# OS LIMITS SETUP (disabled by default)
-#MAXOPENFILES=8192
+# OS LIMITS SETUP
+#   comment this out to observe /etc/security/limits.conf
+#   this is on by default because http://github.com/feniix/hudson/commit/d13c08ea8f5a3fa730ba174305e6429b74853927
+#   reported that Ubuntu's PAM configuration doesn't include pam_limits.so, and as a result the # of file
+#   descriptors are forced to 1024 regardless of /etc/security/limits.conf
+MAXOPENFILES=8192
 
 
 # arguments to pass to hudson.
