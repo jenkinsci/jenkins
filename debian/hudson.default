@@ -29,6 +29,10 @@ RUN_STANDALONE=true
 HUDSON_LOG=/var/log/hudson/$NAME.log
 #HUDSON_LOG=daemon.info
 
+# OS LIMITS SETUP (disabled by default)
+#MAXOPENFILES=8192
+
+
 # arguments to pass to hudson.
 # --javahome=$JAVA_HOME
 # --httpPort=$HTTP_PORT (default 8080; disable with -1)
