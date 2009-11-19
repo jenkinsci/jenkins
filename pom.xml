@@ -91,7 +91,7 @@ THE SOFTWARE.
         </plugin>
 	<plugin>
 	  <artifactId>maven-javadoc-plugin</artifactId>
-	  <version>2.5</version>
+	  <version>2.6.1</version>
 	</plugin>
       </plugins>
     </pluginManagement>

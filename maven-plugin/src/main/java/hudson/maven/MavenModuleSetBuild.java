@@ -398,13 +398,12 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
                     // do builds here
                     try {
                         List<BuildWrapper> wrappers = new ArrayList<BuildWrapper>();
-                        for (BuildWrapper w : project.getBuildWrappers())
+                        for (BuildWrapper w : project.getBuildWrappersList())
                             wrappers.add(w);
                         ParametersAction parameters = getAction(ParametersAction.class);
                         if (parameters != null)
                             parameters.createBuildWrappers(MavenModuleSetBuild.this,wrappers);
 
-                        buildEnvironments = new ArrayList<Environment>();
                         for( BuildWrapper w : wrappers) {
                             Environment e = w.setUp(MavenModuleSetBuild.this, launcher, listener);
                             if(e==null)

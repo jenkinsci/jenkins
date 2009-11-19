@@ -43,6 +43,7 @@ import hudson.model.SCMedItem;
 import hudson.model.Saveable;
 import hudson.model.TopLevelItem;
 import hudson.model.ResourceController;
+import hudson.model.BuildableItemWithBuildWrappers;
 import hudson.model.Queue.FlyweightTask;
 import hudson.model.Descriptor.FormException;
 import hudson.tasks.BuildStep;
@@ -90,7 +91,7 @@ import org.kohsuke.stapler.QueryParameter;
  *
  * @author Kohsuke Kawaguchi
  */
-public class MatrixProject extends AbstractProject<MatrixProject,MatrixBuild> implements TopLevelItem, SCMedItem, ItemGroup<MatrixConfiguration>, Saveable, FlyweightTask  {
+public class MatrixProject extends AbstractProject<MatrixProject,MatrixBuild> implements TopLevelItem, SCMedItem, ItemGroup<MatrixConfiguration>, Saveable, FlyweightTask, BuildableItemWithBuildWrappers {
     /**
      * Other configuration axes.
      *
@@ -509,6 +510,10 @@ public class MatrixProject extends AbstractProject<MatrixProject,MatrixBuild> im
 
     public DescribableList<Publisher,Descriptor<Publisher>> getPublishersList() {
         return publishers;
+    }
+
+    public DescribableList<BuildWrapper, Descriptor<BuildWrapper>> getBuildWrappersList() {
+        return buildWrappers;
     }
 
     public Map<Descriptor<BuildWrapper>,BuildWrapper> getBuildWrappers() {

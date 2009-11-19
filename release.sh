@@ -108,8 +108,14 @@ mvn -P sorcerer sorcerer:aggregate
 rsync -avz target/site/sorcerer wsinterop.sun.com:~/public_html_hudson/
 popd
 
-# RPM
+# RedHat RPM
 pushd rpm
+./build.sh ../hudson.war
+./rsync.sh
+popd
+
+# OpenSUSE RPM
+pushd opensuse
 ./build.sh ../hudson.war
 ./rsync.sh
 popd

@@ -35,14 +35,14 @@ public class FailedTest extends TestCase {
     /**
      * The failure. If null, the test will succeed, despite the class name.
      */
-    private final Exception problem;
+    private final Throwable problem;
 
-    public FailedTest(String name, Exception problem) {
+    public FailedTest(String name, Throwable problem) {
         super(name);
         this.problem = problem;
     }
 
-    public FailedTest(Class name, Exception problem) {
+    public FailedTest(Class name, Throwable problem) {
         this(name.getName(),problem);
     }
 

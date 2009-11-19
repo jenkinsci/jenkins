@@ -148,35 +148,6 @@ public abstract class Build <P extends Project<P,B>,B extends Build<P,B>>
             return null;
         }
 
-        /**
-         * Decorates the {@link Launcher}
-         */
-        @Override
-        protected Launcher createLauncher(BuildListener listener) throws IOException, InterruptedException {
-            Launcher l = super.createLauncher(listener);
-
-            for(BuildWrapper bw : project.getBuildWrappers().values())
-                l = bw.decorateLauncher(Build.this,l,listener);
-
-            buildEnvironments = new ArrayList<Environment>();
-
-            for (NodeProperty nodeProperty: Hudson.getInstance().getGlobalNodeProperties()) {
-                Environment environment = nodeProperty.setUp(Build.this, l, listener);
-                if (environment != null) {
-                    buildEnvironments.add(environment);
-                }
-            }
-
-            for (NodeProperty nodeProperty: Computer.currentComputer().getNode().getNodeProperties()) {
-                Environment environment = nodeProperty.setUp(Build.this, l, listener);
-                if (environment != null) {
-                    buildEnvironments.add(environment);
-                }
-            }
-
-            return l;
-        }
-
         public void post2(BuildListener listener) throws IOException, InterruptedException {
             performAllBuildStep(listener, project.getPublishers(),true);
             performAllBuildStep(listener, project.getProperties(),true);

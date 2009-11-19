@@ -23,18 +23,21 @@
  */
 package hudson.security;
 
+import groovy.lang.Binding;
 import hudson.model.Descriptor;
 import hudson.model.Hudson;
 import hudson.Util;
 import hudson.Extension;
 import hudson.os.PosixAPI;
 import hudson.util.FormValidation;
+import hudson.util.spring.BeanBuilder;
 import org.acegisecurity.Authentication;
 import org.acegisecurity.AuthenticationException;
 import org.acegisecurity.AuthenticationManager;
 import org.acegisecurity.BadCredentialsException;
 import org.acegisecurity.GrantedAuthority;
 import org.acegisecurity.GrantedAuthorityImpl;
+import org.acegisecurity.providers.AuthenticationProvider;
 import org.acegisecurity.providers.UsernamePasswordAuthenticationToken;
 import org.acegisecurity.userdetails.UsernameNotFoundException;
 import org.acegisecurity.userdetails.UserDetailsService;
@@ -45,6 +48,7 @@ import org.jvnet.libpam.PAMException;
 import org.jvnet.libpam.UnixUser;
 import org.jvnet.libpam.impl.CLibrary;
 import org.springframework.dao.DataAccessException;
+import org.springframework.web.context.WebApplicationContext;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.jruby.ext.posix.POSIX;
 import org.jruby.ext.posix.FileStat;
@@ -70,28 +74,46 @@ public class PAMSecurityRealm extends SecurityRealm {
         this.serviceName = serviceName;
     }
 
-    public SecurityComponents createSecurityComponents() {
-        return new SecurityComponents(
-            new AuthenticationManager() {
-                public Authentication authenticate(Authentication authentication) throws AuthenticationException {
-                    String username = authentication.getPrincipal().toString();
-                    String password = authentication.getCredentials().toString();
+    public static class PAMAuthenticationProvider implements AuthenticationProvider {
+        private String serviceName;
 
-                    try {
-                        UnixUser u = new PAM(serviceName).authenticate(username, password);
-                        Set<String> grps = u.getGroups();
-                        GrantedAuthority[] groups = new GrantedAuthority[grps.size()];
-                        int i=0;
-                        for (String g : grps)
-                            groups[i++] = new GrantedAuthorityImpl(g);
-                        
-                        // I never understood why Acegi insists on keeping the password...
-                        return new UsernamePasswordAuthenticationToken(username, password, groups);
-                    } catch (PAMException e) {
-                        throw new BadCredentialsException(e.getMessage(),e);
-                    }
-                }
-            },
+        public PAMAuthenticationProvider(String serviceName) {
+            this.serviceName = serviceName;
+        }
+
+        public Authentication authenticate(Authentication authentication) throws AuthenticationException {
+            String username = authentication.getPrincipal().toString();
+            String password = authentication.getCredentials().toString();
+
+            try {
+                UnixUser u = new PAM(serviceName).authenticate(username, password);
+                Set<String> grps = u.getGroups();
+                GrantedAuthority[] groups = new GrantedAuthority[grps.size()];
+                int i=0;
+                for (String g : grps)
+                    groups[i++] = new GrantedAuthorityImpl(g);
+
+                // I never understood why Acegi insists on keeping the password...
+                return new UsernamePasswordAuthenticationToken(username, password, groups);
+            } catch (PAMException e) {
+                throw new BadCredentialsException(e.getMessage(),e);
+            }
+        }
+
+        public boolean supports(Class clazz) {
+            return true;
+        }
+    }
+
+    public SecurityComponents createSecurityComponents() {
+        Binding binding = new Binding();
+        binding.setVariable("instance", this);
+
+        BeanBuilder builder = new BeanBuilder();
+        builder.parse(Hudson.getInstance().servletContext.getResourceAsStream("/WEB-INF/security/PAMSecurityRealm.groovy"),binding);
+        WebApplicationContext context = builder.createApplicationContext();
+        return new SecurityComponents(
+            findBean(AuthenticationManager.class, context),
             new UserDetailsService() {
                 public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException, DataAccessException {
                     if(!UnixUser.exists(username))

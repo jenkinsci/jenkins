@@ -57,7 +57,7 @@ THE SOFTWARE.
                         <div class="compatWarning">${%compatWarning}</div>
                       </j:if>
                       <j:if test="${p.isForNewerHudson()}">
-                        <div class="compatWarning">${%coreWarning(p.coreVersion)}</div>
+                        <div class="compatWarning">${%coreWarning(p.requiredCore)}</div>
                       </j:if>
                     </td>
                     <td class="pane"><st:out value="${p.version}" /></td>

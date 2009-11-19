@@ -1563,6 +1563,8 @@ var downloadService = {
             onSuccess: function() {
                 if(o.completionHandler!=null)
                     o.completionHandler();
+                else if(downloadService.completionHandler!=null)
+                    downloadService.completionHandler();
             }
         });
     }

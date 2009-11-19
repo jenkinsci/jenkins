@@ -61,7 +61,7 @@ import org.kohsuke.stapler.export.Exported;
  *
  * @author Kohsuke Kawaguchi
  */
-public final class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,MavenModuleSetBuild> implements TopLevelItem, ItemGroup<MavenModule>, SCMedItem, Saveable {
+public final class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,MavenModuleSetBuild> implements TopLevelItem, ItemGroup<MavenModule>, SCMedItem, Saveable, BuildableItemWithBuildWrappers {
     /**
      * All {@link MavenModule}s, keyed by their {@link MavenModule#getModuleName()} module name}s.
      */
@@ -338,8 +338,15 @@ public final class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,Ma
         return publishers;
     }
 
+    public DescribableList<BuildWrapper, Descriptor<BuildWrapper>> getBuildWrappersList() {
+        return buildWrappers;
+    }
+
     /**
      * List of active {@link BuildWrapper}s. Can be empty but never null.
+     *
+     * @deprecated as of 1.335
+     *      Use {@link #getBuildWrappersList()} to be consistent with other subtypes of {@link AbstractProject}.
      */
     public DescribableList<BuildWrapper, Descriptor<BuildWrapper>> getBuildWrappers() {
         return buildWrappers;

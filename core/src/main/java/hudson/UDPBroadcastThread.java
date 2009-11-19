@@ -24,19 +24,21 @@
 package hudson;
 
 import hudson.model.Hudson;
+import hudson.util.OneShotEvent;
 
 import java.io.IOException;
-import java.net.InetSocketAddress;
-import java.net.SocketAddress;
 import java.net.BindException;
-import java.nio.ByteBuffer;
+import java.net.DatagramPacket;
+import java.net.InetAddress;
+import java.net.MulticastSocket;
+import java.net.SocketAddress;
+import java.net.UnknownHostException;
 import java.nio.channels.ClosedByInterruptException;
-import java.nio.channels.DatagramChannel;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- * Monitors a UDP broadcast and respond with the location of the Hudson service.
+ * Monitors a UDP multicast broadcast and respond with the location of the Hudson service.
  *
  * <p>
  * Useful for auto-discovery of Hudson in the network.
@@ -45,6 +47,9 @@ import java.util.logging.Logger;
  */
 public class UDPBroadcastThread extends Thread {
     private final Hudson hudson;
+
+    public final OneShotEvent ready = new OneShotEvent();
+
     public UDPBroadcastThread(Hudson hudson) {
         super("Hudson UDP "+PORT+" monitoring thread");
         this.hudson = hudson;
@@ -53,42 +58,39 @@ public class UDPBroadcastThread extends Thread {
     @Override
     public void run() {
         try {
-            DatagramChannel ch = DatagramChannel.open();
-            try {
-                ch.socket().bind(new InetSocketAddress(PORT));
+            MulticastSocket mcs = new MulticastSocket(PORT);
+            mcs.joinGroup(MULTICAST);
+            ready.signal();
 
-                ByteBuffer b = ByteBuffer.allocate(2048);
-                while(true) {
-                    // the only thing that matters here is who sent it, not what was sent.
-                    SocketAddress sender = ch.receive(b);
+            while(true) {
+                byte[] buf = new byte[2048];
+                DatagramPacket p = new DatagramPacket(buf,buf.length);
+                mcs.receive(p);
 
-                    // prepare a response
-                    TcpSlaveAgentListener tal = hudson.getTcpSlaveAgentListener();
+                SocketAddress sender = p.getSocketAddress();
 
-                    StringBuilder buf = new StringBuilder("<hudson>");
-                    tag(buf,"version",Hudson.VERSION);
-                    tag(buf,"url",hudson.getRootUrl());
-                    tag(buf,"slave-port",tal==null?null:tal.getPort());
+                // prepare a response
+                TcpSlaveAgentListener tal = hudson.getTcpSlaveAgentListener();
 
-                    for (UDPBroadcastFragment f : UDPBroadcastFragment.all())
-                        f.buildFragment(buf,sender);
+                StringBuilder rsp = new StringBuilder("<hudson>");
+                tag(rsp,"version",Hudson.VERSION);
+                tag(rsp,"url",hudson.getRootUrl());
+                tag(rsp,"slave-port",tal==null?null:tal.getPort());
 
-                    buf.append("</hudson>");
+                for (UDPBroadcastFragment f : UDPBroadcastFragment.all())
+                    f.buildFragment(rsp,sender);
 
-                    b.clear();
-                    b.put(buf.toString().getBytes("UTF-8"));
-                    b.flip();
-                    ch.send(b, sender);
-                }
-            } finally {
-                ch.close();
+                rsp.append("</hudson>");
+
+                byte[] response = rsp.toString().getBytes("UTF-8");
+                mcs.send(new DatagramPacket(response,response.length,sender));
             }
         } catch (ClosedByInterruptException e) {
             // shut down
         } catch (BindException e) {
             // if we failed to listen to UDP, just silently abandon it, as a stack trace
             // makes people unnecessarily concerned, for a feature that currently does no good.
-            LOGGER.log(Level.FINE, "Failed to listen to UDP port "+PORT,e);
+            LOGGER.log(Level.WARNING, "Failed to listen to UDP port "+PORT,e);
         } catch (IOException e) {
             LOGGER.log(Level.WARNING, "UDP handling problem",e);
         }
@@ -106,4 +108,17 @@ public class UDPBroadcastThread extends Thread {
     public static final int PORT = Integer.getInteger("hudson.udp",33848);
 
     private static final Logger LOGGER = Logger.getLogger(UDPBroadcastThread.class.getName());
+
+    /**
+     * Multicast socket address.
+     */
+    public static InetAddress MULTICAST;
+
+    static {
+        try {
+            MULTICAST = InetAddress.getByAddress(new byte[]{(byte)239, (byte)77, (byte)124, (byte)213});
+        } catch (UnknownHostException e) {
+            throw new Error(e);
+        }
+    }
 }

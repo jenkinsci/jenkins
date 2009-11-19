@@ -38,8 +38,10 @@ THE SOFTWARE.
       </tr>
     </table>
     <script>
+      downloadService.siteCount = 0${app.updateCenter.sites.size()};
       downloadService.completionHandler = function() {
-          $$('completionMarker').innerHTML = "${%Done}";
+          if (--downloadService.siteCount &lt;= 0)
+            $$('completionMarker').innerHTML = "${%Done}";
       }
     </script>
   </l:main-panel>

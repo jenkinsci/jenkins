@@ -20,5 +20,5 @@ base.eachFileRecurse { File f ->
 }
 
 index.each { k,v ->
-    println "Redirect 302 /javadoc/byShortName/${k} https://hudson.dev.java.net/nonav/javadoc/index.html?${v}"
+    println "Redirect 302 /javadoc/byShortName/${k} https://hudson-ci.org/javadoc/index.html?${v}"
 }

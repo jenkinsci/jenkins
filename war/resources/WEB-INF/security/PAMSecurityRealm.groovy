@@ -21,31 +21,30 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package hudson.util;
+/*
+    Configure Unix authentication realm.
+    The 'instance' object refers to the instance of PAMSecurityRealm.
+*/
+import org.acegisecurity.providers.ProviderManager
+import hudson.security.PAMSecurityRealm.PAMAuthenticationProvider
+import org.acegisecurity.providers.anonymous.AnonymousAuthenticationProvider
+import org.acegisecurity.providers.rememberme.RememberMeAuthenticationProvider
+import hudson.model.Hudson
 
-import java.io.FilterOutputStream;
-import java.io.IOException;
-import java.io.OutputStream;
+authenticationManager(ProviderManager) {
+    providers = [
+        // the primary authentication source
+        bean(PAMAuthenticationProvider,instance.serviceName),
 
-/**
- * Hex-binary encoding stream.
- *
- * TODO: use base64binary.
- *
- * @author Kohsuke Kawaguchi
- * @see DecodingStream
- */
-public class EncodingStream extends FilterOutputStream {
-    public EncodingStream(OutputStream out) {
-        super(out);
-    }
-
-    @Override
-    public void write(int b) throws IOException {
-        if (b < 0) b += 256;
-        out.write(chars.charAt(b/16));
-        out.write(chars.charAt(b%16));
-    }
-
-    private static final String chars = "0123456789ABCDEF";
+    // these providers apply everywhere
+        bean(RememberMeAuthenticationProvider) {
+            key = Hudson.getInstance().getSecretKey();
+        },
+        // this doesn't mean we allow anonymous access.
+        // we just authenticate anonymous users as such,
+        // so that later authorization can reject them if so configured
+        bean(AnonymousAuthenticationProvider) {
+            key = "anonymous"
+        }
+    ]
 }

@@ -51,7 +51,7 @@ public class GroupedTest extends TestSuite {
             }
             // everything went smoothly. report a successful test to make the ends meet
             runTest(new FailedTest(getClass(),null),result);
-        } catch (Exception e) {
+        } catch (Throwable e) {
             // something went wrong
             runTest(new FailedTest(getClass(),e),result);
         }
