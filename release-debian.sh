@@ -39,12 +39,19 @@ mv debian/changelog.tmp debian/changelog
 
 # build the debian package
 debuild -us -uc -B
-scp ../hudson_${ver}_all.deb hudson.gotdns.com:~/public_html_hudson/debian/binary
+scp ../hudson_${ver}_all.deb hudson-ci.org:~/public_html_hudson/debian/binary
 
 # build package index
+# see http://wiki.debian.org/SecureApt for more details
 pushd ..
 mkdir binary > /dev/null 2>&1 || true
 mv hudson_${ver}_all.deb binary
-dpkg-scanpackages binary /dev/null | gzip -9c > binary/Packages.gz
-scp binary/Packages.gz hudson.gotdns.com:~/public_html_hudson/debian/binary
+sudo apt-get install apt-utils
+apt-ftparchive packages binary | gzip -9c > binary/Packages.gz
+apt-ftparchive contents binary | gzip -9c > binary/Contents.gz
+apt-ftparchive release  binary             > binary/Release
+# sign the release file
+rm binary/Release.gpg || true
+gpg --passphrase-file ~/.gpg.passphrase -abs -o binary/Release.gpg binary/Release
+scp binary/Packages.gz hudson-ci.org:~/public_html_hudson/debian/binary
 popd
