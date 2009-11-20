@@ -52,6 +52,6 @@ apt-ftparchive contents binary | gzip -9c > binary/Contents.gz
 apt-ftparchive release  binary             > binary/Release
 # sign the release file
 rm binary/Release.gpg || true
-gpg --passphrase-file ~/.gpg.passphrase -abs -o binary/Release.gpg binary/Release
+gpg --no-use-agent --passphrase-file ~/.gpg.passphrase -abs -o binary/Release.gpg binary/Release
 scp binary/Packages.gz hudson-ci.org:~/public_html_hudson/debian/binary
 popd
