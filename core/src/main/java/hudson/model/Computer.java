@@ -306,7 +306,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
 
         connectTime=0;
         return Futures.precomputed(null);
-	}
+    }
 
     /**
      * Equivalent to {@code disconnect(null)}
@@ -920,7 +920,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
      * Accepts the update to the node configuration.
      */
     public void doConfigSubmit( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException, FormException {
-        checkPermission(Hudson.ADMINISTER);  // TODO: new permission?
+        checkPermission(CONFIGURE);
 
         final Hudson app = Hudson.getInstance();
 

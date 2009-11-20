@@ -3368,7 +3368,8 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
             // this hides the "delete" link from the /computer/(master) page.
             if(permission==Computer.DELETE)
                 return false;
-            return super.hasPermission(permission);
+            // Configuration of master node requires ADMINISTER permission
+            return super.hasPermission(permission==Computer.CONFIGURE ? Hudson.ADMINISTER : permission);
         }
 
         @Override
