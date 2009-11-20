@@ -511,10 +511,11 @@ public class User extends AbstractModelObject implements AccessControlled, Savea
 
     public ACL getACL() {
         final ACL base = Hudson.getInstance().getAuthorizationStrategy().getACL(this);
-        // always allow the user full control of himself.
+        // always allow a non-anonymous user full control of himself.
         return new ACL() {
             public boolean hasPermission(Authentication a, Permission permission) {
-                return a.getName().equals(id) || base.hasPermission(a, permission);
+                return (a.getName().equals(id) && !(a instanceof AnonymousAuthenticationToken))
+                        || base.hasPermission(a, permission);
             }
         };
     }
