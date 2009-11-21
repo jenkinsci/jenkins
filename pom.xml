@@ -103,11 +103,7 @@ THE SOFTWARE.
         <configuration>
           <!-- enable release profile during the release, create IPS package, and sign bits. -->
           <prepareVerifyArgs>-P release,ips,sign</prepareVerifyArgs>
-          <!--
-            also run assembly during the release.
-            http://www.nabble.com/Release-Plugin%3A-Include-assemblies-for-deploying-tf2642295s177.html#a7377938
-           -->
-          <goals>-DskipTests install javadoc:javadoc animal-sniffer:check assembly:attached deploy javadoc:aggregate</goals>
+          <goals>-DskipTests javadoc:javadoc animal-sniffer:check deploy javadoc:aggregate</goals>
           <remoteTagging>true</remoteTagging><!-- work around http://jira.codehaus.org/browse/SCM-406 -->
         </configuration>
       </plugin>
@@ -119,16 +115,6 @@ THE SOFTWARE.
             but this suppresses a warning from Maven, and as long as we don't do filtering we should be OK.
           -->
           <encoding>UTF-8</encoding>
-        </configuration>
-      </plugin>
-      <plugin>
-        <artifactId>maven-assembly-plugin</artifactId>
-        <inherited>false</inherited>
-        <configuration>
-          <finalName>hudson-${version}</finalName>
-          <descriptors>
-            <descriptor>assembly-src.xml</descriptor>
-          </descriptors>
         </configuration>
       </plugin>
       <plugin>
@@ -256,6 +242,31 @@ THE SOFTWARE.
             <groupId>org.jvnet.sorcerer</groupId>
             <artifactId>maven-sorcerer-plugin</artifactId>
             <version>0.8</version>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+    <profile>
+      <id>release</id>
+      <build>
+        <plugins>
+          <plugin>
+            <artifactId>maven-assembly-plugin</artifactId>
+            <inherited>false</inherited>
+            <executions>
+              <execution>
+                <goals>
+                  <goal>attached</goal>
+                </goals>
+                <phase>package</phase>
+                <configuration>
+                  <finalName>hudson-${version}</finalName>
+                  <descriptors>
+                    <descriptor>assembly-src.xml</descriptor>
+                  </descriptors>
+                </configuration>
+              </execution>
+            </executions>
           </plugin>
         </plugins>
       </build>
