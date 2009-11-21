@@ -42,19 +42,33 @@ THE SOFTWARE.
       <plugin>
         <artifactId>maven-surefire-plugin</artifactId>
         <configuration>
-          <!-- override with -DforkMode=pertest if you have "unable to create thread problems" on Windows -->
-          <forkMode>once</forkMode>
-          <!--<reportFormat>plain</reportFormat>-->
-          <redirectTestOutputToFile>true</redirectTestOutputToFile>
-          <argLine>-XX:MaxPermSize=192m -Dfile.encoding=UTF-8</argLine>
-          <systemProperties>
-            <property>
-              <!-- use AntClassLoader that supports predictable file handle release -->
-              <name>hudson.ClassicPluginStrategy.useAntClassLoader</name>
-              <value>true</value>
-            </property>
-          </systemProperties>
+          <skip>true</skip><!-- tests now run by maven-junit-plugin -->
         </configuration>
+      </plugin>
+      <plugin>
+        <!-- see http://maven-junit-plugin.kenai.com/ for more info -->
+        <groupId>com.sun.maven</groupId>
+        <artifactId>maven-junit-plugin</artifactId>
+        <version>1.2</version>
+        <executions>
+          <execution>
+            <goals>
+              <goal>test</goal>
+            </goals>
+            <configuration>
+              <fork>true</fork>
+              <concurrency>-1</concurrency> <!-- -1 means # of processors in the system -->
+              <argLine>-XX:MaxPermSize=128m -Dfile.encoding=UTF-8</argLine>
+              <systemProperties>
+                <property>
+                  <!-- use AntClassLoader that supports predictable file handle release -->
+                  <name>hudson.ClassicPluginStrategy.useAntClassLoader</name>
+                  <value>true</value>
+                </property>
+              </systemProperties>
+            </configuration>
+          </execution>
+        </executions>
       </plugin>
       <plugin>
         <groupId>org.codehaus.groovy.maven</groupId>
@@ -167,7 +181,7 @@ THE SOFTWARE.
     <profile>
       <id>light-test</id>
       <properties>
-	<skipTests>true</skipTests>
+        <skipTests>true</skipTests>
       </properties>
     </profile>
     <profile>
@@ -199,7 +213,8 @@ THE SOFTWARE.
           </plugin>
           <plugin>
             <!-- unit tests are run by GMaven through Ant. -->
-            <artifactId>maven-surefire-plugin</artifactId>
+            <groupId>com.sun.maven</groupId>
+            <artifactId>maven-junit-plugin</artifactId>
             <configuration>
               <skipTests>true</skipTests>
             </configuration>
