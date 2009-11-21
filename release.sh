@@ -99,6 +99,7 @@ cat war/target/hudson-war-$id.ipstgz | ssh wsinterop.sun.com "cd ips/repository;
 ssh wsinterop.sun.com "cd ips; ./start.sh"
 
 pushd $WWW
+svn update changelog.html 
 svn commit -m "Hudson $id released" changelog.html hudson.jnlp
 popd
 
