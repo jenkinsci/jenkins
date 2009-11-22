@@ -94,6 +94,7 @@ public class LogTaskListener implements TaskListener {
         public void flush() throws IOException {
             if (baos.size() > 0) {
                 LogRecord lr = new LogRecord(level, baos.toString());
+                lr.setLoggerName(logger.getName());
                 lr.setSourceClassName(caller.getClassName());
                 lr.setSourceMethodName(caller.getMethodName());
                 logger.log(lr);
