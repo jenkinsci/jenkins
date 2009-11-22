@@ -50,6 +50,7 @@ import hudson.tasks.BuildStepMonitor;
 import hudson.tasks.test.AbstractTestResultAction;
 import hudson.util.AdaptedIterator;
 import hudson.util.Iterators;
+import hudson.util.LogTaskListener;
 import hudson.util.VariableResolver;
 import org.kohsuke.stapler.Stapler;
 import org.kohsuke.stapler.StaplerRequest;
@@ -327,6 +328,38 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
         return hudsonVersion;
     }
 
+    @Override
+    public synchronized void delete() throws IOException {
+        // Need to check if deleting this build affects lastSuccessful/lastStable symlinks
+        R lastSuccessful = getProject().getLastSuccessfulBuild(),
+          lastStable = getProject().getLastStableBuild();
+
+        super.delete();
+
+        try {
+            if (lastSuccessful == this)
+                updateSymlink("lastSuccessful", getProject().getLastSuccessfulBuild());
+            if (lastStable == this)
+                updateSymlink("lastStable", getProject().getLastStableBuild());
+        } catch (InterruptedException ex) {
+            LOGGER.warning("Interrupted update of lastSuccessful/lastStable symlinks for "
+                           + getProject().getDisplayName());
+            // handle it later
+            Thread.currentThread().interrupt();
+        }
+    }
+
+    private void updateSymlink(String name, AbstractBuild<?,?> newTarget) throws InterruptedException {
+        if (newTarget != null)
+            newTarget.createSymlink(new LogTaskListener(LOGGER, Level.WARNING), name);
+        else
+            new File(getProject().getBuildDir(), "../"+name).delete();
+    }
+
+    private void createSymlink(TaskListener listener, String name) throws InterruptedException {
+        Util.createSymlink(getProject().getBuildDir(),"builds/"+getId(),"../"+name,listener);
+    }
+
     protected abstract class AbstractRunner extends Runner {
         /**
          * Since configuration can be changed while a build is in progress,
@@ -394,10 +427,10 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
                 if(result==null)    result = Result.SUCCESS;
 
                 if(result.isBetterOrEqualTo(Result.UNSTABLE))
-                    createSymLink(listener,"lastSuccessful");
+                    createSymlink(listener, "lastSuccessful");
 
                 if(result.isBetterOrEqualTo(Result.SUCCESS))
-                    createSymLink(listener,"lastStable");
+                    createSymlink(listener, "lastStable");
 
                 return result;
             } finally {
@@ -439,10 +472,6 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
             }
 
             return l;
-        }
-
-        private void createSymLink(BuildListener listener, String name) throws InterruptedException {
-            Util.createSymlink(getProject().getBuildDir(),"builds/"+getId(),"../"+name,listener);
         }
 
         private void checkout(BuildListener listener) throws Exception {
