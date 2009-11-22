@@ -318,7 +318,7 @@ public class Util {
             fileInCanonicalParent = new File( parentDir.getCanonicalPath(), name );
         }
         return !fileInCanonicalParent.getCanonicalFile().equals( fileInCanonicalParent.getAbsoluteFile() );
-    }    
+    }
 
     /**
      * Creates a new temporary directory.
@@ -960,8 +960,10 @@ public class Util {
         if(!isWindows() && !NO_SYMLINK) {
             try {
                 // if a file or a directory exists here, delete it first.
+                // try simple delete first (whether exists() or not, as it may be symlink pointing
+                // to non-existent target), but fallback to "rm -rf" to delete non-empty dir.
                 File symlinkFile = new File(baseDir, symlinkPath);
-                if (symlinkFile.exists())
+                if (!symlinkFile.delete() && symlinkFile.exists())
                     // ignore a failure.
                     new LocalProc(new String[]{"rm","-rf", symlinkPath},new String[0],listener.getLogger(), baseDir).join();
 
