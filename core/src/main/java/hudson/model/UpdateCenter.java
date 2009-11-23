@@ -32,6 +32,11 @@ import hudson.PluginWrapper;
 import hudson.ProxyConfiguration;
 import hudson.Util;
 import hudson.XmlFile;
+import hudson.triggers.SafeTimerTask;
+import hudson.init.Initializer;
+import hudson.init.InitMilestone;
+import static hudson.init.InitMilestone.JOB_LOADED;
+import static hudson.init.InitMilestone.PLUGINS_STARTED;
 import hudson.lifecycle.Lifecycle;
 import hudson.model.UpdateSite.Data;
 import hudson.model.UpdateSite.Plugin;
@@ -40,6 +45,7 @@ import hudson.util.DaemonThreadFactory;
 import hudson.util.IOException2;
 import hudson.util.PersistedList;
 import hudson.util.XStream2;
+import hudson.util.DoubleLaunchChecker;
 import org.acegisecurity.Authentication;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.input.CountingInputStream;
@@ -840,6 +846,16 @@ public class UpdateCenter extends AbstractModelObject implements Saveable {
     }
 
     /**
+     * Initializes the update center.
+     *
+     * This has to wait until after all plugins load, to let custom UpdateCenterConfiguration take effect first.
+     */
+    @Initializer(after=PLUGINS_STARTED)
+    public static void init(Hudson h) throws IOException {
+        h.getUpdateCenter().load();
+    }
+
+    /**
      * Sequence number generator.
      */
     private static final AtomicInteger iota = new AtomicInteger();
@@ -849,6 +865,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable {
     public static boolean neverUpdate = Boolean.getBoolean(UpdateCenter.class.getName()+".never");
 
     public static final XStream2 XSTREAM = new XStream2();
+
     static {
         XSTREAM.alias("site",UpdateSite.class);
         XSTREAM.alias("sites",PersistedList.class);

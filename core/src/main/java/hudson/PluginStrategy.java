@@ -41,8 +41,7 @@ public interface PluginStrategy extends ExtensionPoint {
 	/**
 	 * Creates a plugin wrapper, which provides a management interface for the plugin
 	 * @param archive
-	 * @return
-	 * @throws IOException
+     *      Either a directory that points to a pre-exploded plugin, or an hpi file, or an hpl file.
 	 */
 	public abstract PluginWrapper createPluginWrapper(File archive)
 			throws IOException;

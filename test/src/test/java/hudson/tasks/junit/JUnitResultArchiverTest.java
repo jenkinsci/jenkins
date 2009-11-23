@@ -94,12 +94,8 @@ public class JUnitResultArchiverTest extends HudsonTestCase {
 		assertTestResults(build);
 	}
 
-	private void reloadHudson() throws NoSuchMethodException,
-			IllegalAccessException, InvocationTargetException {
-		Method m = Hudson.class.getDeclaredMethod("load");
-		m.setAccessible(true);
-		m.invoke(hudson);
-		
+	private void reloadHudson() throws Exception {
+        hudson.reload();
 		project = (FreeStyleProject) hudson.getItem("junit");
 	}
 	

@@ -25,6 +25,7 @@ package hudson.logging;
 
 import hudson.FeedAdapter;
 import hudson.Functions;
+import hudson.init.Initializer;
 import hudson.model.AbstractModelObject;
 import hudson.model.Hudson;
 import hudson.model.RSS;
@@ -176,5 +177,10 @@ public class LogRecorderManager extends AbstractModelObject {
                 return Mailer.descriptor().getAdminAddress();
             }
         },req,rsp);
+    }
+
+    @Initializer
+    public static void init(Hudson h) throws IOException {
+        h.getLog().load();
     }
 }

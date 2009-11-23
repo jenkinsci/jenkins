@@ -23,17 +23,25 @@
  */
 package hudson;
 
+import static hudson.init.InitMilestone.PLUGINS_PREPARED;
+import static hudson.init.InitMilestone.PLUGINS_STARTED;
+import static hudson.init.InitMilestone.PLUGINS_LISTED;
+import hudson.init.InitStrategy;
 import hudson.model.AbstractModelObject;
 import hudson.model.Failure;
 import hudson.model.Hudson;
-import hudson.model.UpdateSite;
 import hudson.model.UpdateCenter;
+import hudson.model.UpdateSite;
 import hudson.util.Service;
 import org.apache.commons.fileupload.FileItem;
 import org.apache.commons.fileupload.disk.DiskFileItemFactory;
 import org.apache.commons.fileupload.servlet.ServletFileUpload;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.logging.LogFactory;
+import org.jvnet.hudson.reactor.Executable;
+import org.jvnet.hudson.reactor.Reactor;
+import org.jvnet.hudson.reactor.TaskBuilder;
+import org.jvnet.hudson.reactor.TaskGraphBuilder;
 import org.kohsuke.stapler.HttpRedirect;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.QueryParameter;
@@ -44,17 +52,17 @@ import org.kohsuke.stapler.WebApp;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import java.io.File;
-import java.io.FilenameFilter;
 import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.Map;
+import java.util.HashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -102,7 +110,7 @@ public final class PluginManager extends AbstractModelObject {
     /**
      * Strategy for creating and initializing plugins
      */
-    private PluginStrategy strategy;
+    private final PluginStrategy strategy;
 
     public PluginManager(ServletContext context) {
         this.context = context;
@@ -112,58 +120,8 @@ public final class PluginManager extends AbstractModelObject {
         rootDir = new File(Hudson.getInstance().getRootDir(),"plugins");
         if(!rootDir.exists())
             rootDir.mkdirs();
-
-        Collection<String> bundledPlugins = loadBundledPlugins();
-
-        File[] archives = rootDir.listFiles(new FilenameFilter() {
-            public boolean accept(File dir, String name) {
-                return name.endsWith(".hpi")        // plugin jar file
-                    || name.endsWith(".hpl");       // linked plugin. for debugging.
-            }
-        });
-
-        if(archives==null) {
-            LOGGER.severe("Hudson is unable to create "+rootDir+"\nPerhaps its security privilege is insufficient");
-            return;
-        }
         
         strategy = createPluginStrategy();
-
-        // load plugins from a system property, for use in the "mvn hudson-dev:run"
-        List<File> archivesList = new ArrayList<File>(Arrays.asList(archives));
-        String hplProperty = System.getProperty("hudson.bundled.plugins");
-        if (hplProperty != null) {
-            for (String hplLocation: hplProperty.split(",")) {
-                File hpl = new File(hplLocation.trim());
-                if (hpl.exists())
-                    archivesList.add(hpl);
-                else
-                    LOGGER.warning("bundled plugin " + hplLocation + " does not exist");
-            }
-        }
-
-        for( File arc : archivesList ) {
-            try {
-                PluginWrapper p = strategy.createPluginWrapper(arc);
-                p.isBundled = bundledPlugins.contains(arc.getName());
-                plugins.add(p);
-                if(p.isActive())
-                    activePlugins.add(p);
-            } catch (IOException e) {
-                failedPlugins.add(new FailedPlugin(arc.getName(),e));
-                LOGGER.log(Level.SEVERE, "Failed to load a plug-in " + arc, e);
-            }
-        }
-
-        for (PluginWrapper p : activePlugins.toArray(new PluginWrapper[activePlugins.size()]))
-            try {
-            	strategy.load(p);
-            } catch (IOException e) {
-                failedPlugins.add(new FailedPlugin(p.getShortName(),e));
-                LOGGER.log(Level.SEVERE, "Failed to load a plug-in " + p.getShortName(), e);
-                activePlugins.remove(p);
-                plugins.remove(p);
-            }
     }
 
     /**
@@ -171,18 +129,114 @@ public final class PluginManager extends AbstractModelObject {
      * This is a separate method so that code executed from here will see a valid value in
      * {@link Hudson#pluginManager}. 
      */
-    public void initialize() {
-        for (PluginWrapper p : activePlugins.toArray(new PluginWrapper[activePlugins.size()])) {
-            strategy.initializeComponents(p);
-            try {
-                p.getPlugin().postInitialize();
-            } catch (Exception e) {
-                failedPlugins.add(new FailedPlugin(p.getShortName(), e));
-                LOGGER.log(Level.SEVERE, "Failed to post-initialize a plug-in " + p.getShortName(), e);
-                activePlugins.remove(p);
-                plugins.remove(p);
+    public TaskBuilder initTasks(final InitStrategy initStrategy) {
+        return new TaskGraphBuilder() {
+            List<File> archives;
+            Collection<String> bundledPlugins;
+
+            {
+                Handle loadBundledPlugins = add("Loading bundled plugins", new Executable() {
+                    public void run(Reactor session) throws Exception {
+                        bundledPlugins = loadBundledPlugins();
+                    }
+                });
+
+                Handle listUpPlugins = requires(loadBundledPlugins).add("Listing up plugins", new Executable() {
+                    public void run(Reactor session) throws Exception {
+                        archives = initStrategy.listPluginArchives(PluginManager.this);
+                    }
+                });
+
+                requires(listUpPlugins).attains(PLUGINS_LISTED).add("Preparing plugins",new Executable() {
+                    public void run(Reactor session) throws Exception {
+                        TaskGraphBuilder g = new TaskGraphBuilder();
+
+                        final Map<String,File> inspectedShortNames = new HashMap<String,File>();
+
+                        for( final File arc : archives ) {
+                            g.followedBy().notFatal().attains(PLUGINS_LISTED).add("Inspecting plugin " + arc, new Executable() {
+                                public void run(Reactor session) throws Exception {
+                                    try {
+                                        PluginWrapper p = strategy.createPluginWrapper(arc);
+                                        if (isDuplicate(p)) return;
+
+                                        p.isBundled = bundledPlugins.contains(arc.getName());
+                                        plugins.add(p);
+                                        if(p.isActive())
+                                            activePlugins.add(p);
+                                    } catch (IOException e) {
+                                        failedPlugins.add(new FailedPlugin(arc.getName(),e));
+                                        throw e;
+                                    }
+                                }
+
+                                /**
+                                 * Inspects duplication. this happens when you run hpi:run on a bundled plugin,
+                                 * as well as putting numbered hpi files, like "cobertura-1.0.hpi" and "cobertura-1.1.hpi"
+                                 */
+                                private boolean isDuplicate(PluginWrapper p) {
+                                    String shortName = p.getShortName();
+                                    if (inspectedShortNames.containsKey(shortName)) {
+                                        LOGGER.info("Ignoring "+arc+" because "+inspectedShortNames.get(shortName)+" is already loaded");
+                                        return true;
+                                    }
+
+                                    inspectedShortNames.put(shortName,arc);
+                                    return false;
+                                }
+                            });
+                        }
+
+                        g.requires(PLUGINS_LISTED).attains(PLUGINS_PREPARED).add("Loading plugins",new Executable() {
+                            /**
+                             * Once the plugins are listed, schedule their initialization.
+                             */
+                            public void run(Reactor session) throws Exception {
+                                TaskGraphBuilder g = new TaskGraphBuilder();
+
+                                // schedule execution of loading plugins
+                                for (final PluginWrapper p : activePlugins.toArray(new PluginWrapper[activePlugins.size()])) {
+                                    g.followedBy().notFatal().attains(PLUGINS_PREPARED).add("Loading plugin " + p.getShortName(), new Executable() {
+                                        public void run(Reactor session) throws Exception {
+                                            try {
+                                                strategy.load(p);
+                                            } catch (IOException e) {
+                                                failedPlugins.add(new FailedPlugin(p.getShortName(), e));
+                                                activePlugins.remove(p);
+                                                plugins.remove(p);
+                                                throw e;
+                                            }
+                                        }
+                                    });
+                                }
+
+                                // schedule execution of initializing plugins
+                                for (final PluginWrapper p : activePlugins.toArray(new PluginWrapper[activePlugins.size()])) {
+                                    g.followedBy().notFatal().attains(PLUGINS_STARTED).add("Initializing plugin " + p.getShortName(), new Executable() {
+                                        public void run(Reactor session) throws Exception {
+                                            try {
+                                                p.getPlugin().postInitialize();
+                                            } catch (Exception e) {
+                                                failedPlugins.add(new FailedPlugin(p.getShortName(), e));
+                                                activePlugins.remove(p);
+                                                plugins.remove(p);
+                                                throw e;
+                                            }
+                                        }
+                                    });
+                                }
+
+                                // register them all
+                                session.addAll(g.discoverTasks(session));
+                            }
+                        });
+
+                        // register them all
+                        session.addAll(g.discoverTasks(session));
+                    }
+                });
             }
-        }
+        };
     }
 
     /**

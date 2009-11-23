@@ -295,8 +295,7 @@ public final class PluginWrapper {
         try {
             plugin.stop();
         } catch(Throwable t) {
-            System.err.println("Failed to shut down "+shortName);
-            System.err.println(t);
+            LOGGER.log(WARNING, "Failed to shut down "+shortName, t);
         }
         // Work around a bug in commons-logging.
         // See http://www.szegedi.org/articles/memleak.html
