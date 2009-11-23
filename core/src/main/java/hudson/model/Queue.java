@@ -28,6 +28,7 @@ import hudson.ExtensionList;
 import hudson.ExtensionPoint;
 import hudson.Util;
 import hudson.XmlFile;
+import hudson.matrix.MatrixConfiguration;
 import hudson.cli.declarative.CLIMethod;
 import hudson.cli.declarative.CLIResolver;
 import hudson.remoting.AsyncFutureImpl;
@@ -929,6 +930,14 @@ public class Queue extends ResourceController implements Saveable {
     public interface FlyweightTask extends Task {}
 
     /**
+     * Marks {@link Task}s that are not affected by the {@linkplain Hudson#isQuietingDown()}  quietting down},
+     * because these tasks keep other tasks executing.
+     *
+     * @since 1.336 
+     */
+    public interface NonBlockingTask extends Task {}
+
+    /**
      * Task whose execution is controlled by the queue.
      *
      * <p>
@@ -1365,7 +1374,7 @@ public class Queue extends ResourceController implements Saveable {
 
         public CauseOfBlockage getCauseOfBlockage() {
             Hudson hudson = Hudson.getInstance();
-            if(hudson.isQuietingDown())
+            if(hudson.isQuietingDown() && !(task instanceof NonBlockingTask))
                 return CauseOfBlockage.fromMessage(Messages._Queue_HudsonIsAboutToShutDown());
 
             Label label = task.getAssignedLabel();

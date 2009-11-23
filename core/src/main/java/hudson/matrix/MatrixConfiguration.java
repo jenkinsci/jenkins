@@ -37,6 +37,7 @@ import hudson.model.Label;
 import hudson.model.ParametersAction;
 import hudson.model.Project;
 import hudson.model.SCMedItem;
+import hudson.model.Queue.NonBlockingTask;
 import hudson.model.Cause.LegacyCodeCause;
 import hudson.scm.SCM;
 import hudson.tasks.BuildWrapper;
@@ -53,7 +54,7 @@ import java.util.Map;
  *
  * @author Kohsuke Kawaguchi
  */
-public class MatrixConfiguration extends Project<MatrixConfiguration,MatrixRun> implements SCMedItem {
+public class MatrixConfiguration extends Project<MatrixConfiguration,MatrixRun> implements SCMedItem, NonBlockingTask {
     /**
      * The actual value combination.
      */

@@ -27,8 +27,10 @@ import hudson.model.Node.Mode;
 import hudson.model.Queue.ApplicableJobOfferList;
 import hudson.model.Queue.JobOffer;
 import hudson.model.Queue.Task;
+import hudson.model.Queue.NonBlockingTask;
 import hudson.util.ConsistentHash;
 import hudson.util.ConsistentHash.Hash;
+import hudson.matrix.MatrixConfiguration;
 
 import java.util.logging.Logger;
 
@@ -156,7 +158,7 @@ public abstract class LoadBalancer /*implements ExtensionPoint*/ {
         return new LoadBalancer() {
             @Override
             protected JobOffer choose(Task task, ApplicableJobOfferList applicable) {
-                if (Hudson.getInstance().isQuietingDown()) {
+                if (Hudson.getInstance().isQuietingDown() && !(task instanceof NonBlockingTask)) {
                     // if we are quieting down, don't start anything new so that
                     // all executors will be eventually free.
                     return null;
