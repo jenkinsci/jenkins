@@ -197,7 +197,9 @@ public abstract class Node extends AbstractModelObject implements Describable<No
     private final HashSet<Label> getDynamicLabels() {
         HashSet<Label> result = new HashSet<Label>();
         for (LabelFinder labeler : LabelFinder.all())
-            result.addAll(labeler.findLabels(this));
+            // Filter out any bad(null) results from plugins
+            for (Label label : labeler.findLabels(this))
+                if (label != null) result.add(label);
         return result;
     }
 
