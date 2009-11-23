@@ -45,14 +45,17 @@ import hudson.model.Hudson;
  */
 public class UnixLifecycle extends Lifecycle {
     private JavaVMArguments args;
+    private Throwable failedToObtainArgs;
 
     public UnixLifecycle() throws IOException {
         try {
             args = JavaVMArguments.current();
         } catch (UnsupportedOperationException e) {
             // can't restart
+            failedToObtainArgs = e;
         } catch (LinkageError e) {
             // see HUDSON-3875
+            failedToObtainArgs = e;
         }
     }
 
@@ -74,11 +77,14 @@ public class UnixLifecycle extends Lifecycle {
     }
 
     @Override
-    public boolean canRestart() {
+    public void canRestart() throws RestartNotSupportedException {
         // see http://lists.apple.com/archives/cocoa-dev/2005/Oct/msg00836.html and
         // http://factor-language.blogspot.com/2007/07/execve-returning-enotsup-on-mac-os-x.html
         // on Mac, execv fails with ENOTSUP if the caller is multi-threaded, resulting in an error like
         // the one described in http://www.nabble.com/Restarting-hudson-not-working-on-MacOS--to24641779.html
-        return !Hudson.isDarwin() && args!=null;
+        if (Hudson.isDarwin())
+            throw new RestartNotSupportedException("Restart is not supported on Mac OS X");
+        if (args==null)
+            throw new RestartNotSupportedException("Failed to obtain the command line arguments of the process",failedToObtainArgs);
     }
 }

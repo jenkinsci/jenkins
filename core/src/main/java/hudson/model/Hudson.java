@@ -55,6 +55,7 @@ import hudson.cli.declarative.CLIMethod;
 import hudson.cli.declarative.CLIResolver;
 import hudson.logging.LogRecorderManager;
 import hudson.lifecycle.Lifecycle;
+import hudson.lifecycle.RestartNotSupportedException;
 import hudson.model.Descriptor.FormException;
 import hudson.model.listeners.ItemListener;
 import hudson.model.listeners.JobListener;
@@ -2827,7 +2828,7 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
      *
      * This first replaces "app" to {@link HudsonIsRestarting}
      */
-    public void doRestart(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
+    public void doRestart(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException, RestartNotSupportedException {
         checkPermission(ADMINISTER);
         if(Stapler.getCurrentRequest().getMethod().equals("GET")) {
             req.getView(this,"_restart.jelly").forward(req,rsp);
@@ -2846,7 +2847,7 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
      * 
      * @since 1.332
      */
-    public void doSafeRestart(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
+    public void doSafeRestart(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException, RestartNotSupportedException {
         checkPermission(ADMINISTER);
         if(Stapler.getCurrentRequest().getMethod().equals("GET")) {
             req.getView(this,"_safeRestart.jelly").forward(req,rsp);
@@ -2862,10 +2863,9 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
      * Performs a restart.
      */
     @CLIMethod(name="restart")
-    public void restart() {
+    public void restart() throws RestartNotSupportedException {
         final Lifecycle lifecycle = Lifecycle.get();
-        if(!lifecycle.canRestart())
-            throw new Failure("Restart is not supported in this running mode.");
+        lifecycle.canRestart(); // verify that Hudson is restartable
         servletContext.setAttribute("app",new HudsonIsRestarting());
 
         new Thread("restart thread") {
@@ -2889,10 +2889,9 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
      * @since 1.332
      */
     @CLIMethod(name="safe-restart")
-    public void safeRestart() {
+    public void safeRestart() throws RestartNotSupportedException {
         final Lifecycle lifecycle = Lifecycle.get();
-        if(!lifecycle.canRestart())
-            throw new Failure("Restart is not supported in this running mode.");
+        lifecycle.canRestart(); // verify that Hudson is restartable
         // Quiet down so that we won't launch new builds.
         isQuietingDown = true;
         
