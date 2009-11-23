@@ -77,7 +77,7 @@ public class UnixLifecycle extends Lifecycle {
     }
 
     @Override
-    public void canRestart() throws RestartNotSupportedException {
+    public void verifyRestartable() throws RestartNotSupportedException {
         // see http://lists.apple.com/archives/cocoa-dev/2005/Oct/msg00836.html and
         // http://factor-language.blogspot.com/2007/07/execve-returning-enotsup-on-mac-os-x.html
         // on Mac, execv fails with ENOTSUP if the caller is multi-threaded, resulting in an error like

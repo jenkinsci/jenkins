@@ -2865,7 +2865,7 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
     @CLIMethod(name="restart")
     public void restart() throws RestartNotSupportedException {
         final Lifecycle lifecycle = Lifecycle.get();
-        lifecycle.canRestart(); // verify that Hudson is restartable
+        lifecycle.verifyRestartable(); // verify that Hudson is restartable
         servletContext.setAttribute("app",new HudsonIsRestarting());
 
         new Thread("restart thread") {
@@ -2891,7 +2891,7 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
     @CLIMethod(name="safe-restart")
     public void safeRestart() throws RestartNotSupportedException {
         final Lifecycle lifecycle = Lifecycle.get();
-        lifecycle.canRestart(); // verify that Hudson is restartable
+        lifecycle.verifyRestartable(); // verify that Hudson is restartable
         // Quiet down so that we won't launch new builds.
         isQuietingDown = true;
         
