@@ -22,9 +22,11 @@ case "$1" in
     configure)
     
         # Create hudson user if it doesn't exist.
+        # sometimes tools that users want Hudson to run need a shell,
+        # so use /bin/bash. See HUDSON-4830
 	    if ! id hudson > /dev/null 2>&1 ; then
 	        adduser --system --home /var/lib/hudson --no-create-home \
-		    --ingroup nogroup --disabled-password --shell /bin/false \
+		    --ingroup nogroup --disabled-password --shell /bin/bash \
 		    hudson
 	    fi
 	
