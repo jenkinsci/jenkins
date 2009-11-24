@@ -46,17 +46,17 @@ public enum InitMilestone implements Milestone {
      *
      * This is used in {@link Initializer#after()} since annotations cannot have null as the default value.
      */
-    STARTED,
+    STARTED("Started initialization"),
 
     /**
      * By this milestone, all plugins metadata are inspected and their dependencies figured out.
      */
-    PLUGINS_LISTED,
+    PLUGINS_LISTED("Listed all plugins"),
 
     /**
      * By this milestone, all plugin metadata are loaded and its classloader set up.
      */
-    PLUGINS_PREPARED,
+    PLUGINS_PREPARED("Prepared all plugins"),
     /**
      * By this milestone, all plugins start executing.
      *
@@ -65,18 +65,23 @@ public enum InitMilestone implements Milestone {
      * of a plugin often involves finding extension point implementations, which in turn
      * require all the classes from all the plugins to be loadable.
      */
-    PLUGINS_STARTED,
+    PLUGINS_STARTED("Started all plugins"),
     /**
      * By this milestone, all jobs and their build records are loaded from disk.
      */
-    JOB_LOADED,
+    JOB_LOADED("Loaded all jobs"),
     /**
      * The very last milestone
      *
      * This is used in {@link Initializer#before()} since annotations cannot have null as the default value.
      */
-    COMPLETED;
+    COMPLETED("Completed initialization");
 
+    private final String message;
+
+    InitMilestone(String message) {
+        this.message = message;
+    }
 
     /**
      * Creates a set of dummy tasks to enforce ordering among {@link InitMilestone}s.
@@ -87,5 +92,11 @@ public enum InitMilestone implements Milestone {
         for (int i=0; i<v.length-1; i++)
             b.add(null, Executable.NOOP).requires(v[i]).attains(v[i+1]);
         return b;
+    }
+
+
+    @Override
+    public String toString() {
+        return message;
     }
 }

@@ -583,6 +583,9 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
                     InitMilestone.ordering()        // forced ordering among key milestones
             );
 
+            if(KILL_AFTER_LOAD)
+                System.exit(0);
+
             if(slaveAgentPort!=-1) {
                 try {
                     tcpSlaveAgentListener = new TcpSlaveAgentListener(slaveAgentPort);
@@ -680,11 +683,17 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
             }
 
             public void onTaskFailed(Task t, Throwable err, boolean fatal) {
-                LOGGER.log(Level.SEVERE, "Failed "+t.getDisplayName(),err);
+                LOGGER.log(SEVERE, "Failed "+t.getDisplayName(),err);
             }
 
             public void onAttained(Milestone milestone) {
-                LOGGER.log(level,"Attained "+milestone.toString());
+                Level lv = level;
+                String s = "Attained "+milestone.toString();
+                if (milestone instanceof InitMilestone) {
+                    lv = Level.INFO; // noteworthy milestones --- at least while we debug problems further
+                    s = ((InitMilestone)milestone).toString();
+                }
+                LOGGER.log(lv,s);
             }
         });
         return new ReactorListener.Aggregator(r);
@@ -2135,9 +2144,6 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
                 // auto register root actions
                 for (Action a : getExtensionList(RootAction.class))
                     if (!actions.contains(a)) actions.add(a);
-
-                if(KILL_AFTER_LOAD)
-                    System.exit(0);
             }
         });
 
