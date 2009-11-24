@@ -72,11 +72,8 @@ public class ClassicPluginStrategy implements PluginStrategy {
 	}
 
 	public PluginWrapper createPluginWrapper(File archive) throws IOException {
-		LOGGER.info("Preparing plugin: " + archive);
-
 		final Manifest manifest;
 		URL baseResourceURL;
-
 
 		File expandDir = null; 
 		// if .hpi, this is the directory where war is expanded
