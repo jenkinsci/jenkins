@@ -670,12 +670,13 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
     private ReactorListener buildReactorListener() throws IOException {
         List<ReactorListener> r = (List) ServiceLoader.load(Thread.currentThread().getContextClassLoader(), InitReactorListener.class);
         r.add(new ReactorListener() {
+            final Level level = Level.parse(System.getProperty(Hudson.class.getName()+".initLogLevel","FINE"));
             public void onTaskStarted(Task t) {
-                LOGGER.fine("Started "+t.getDisplayName());
+                LOGGER.log(level,"Started "+t.getDisplayName());
             }
 
             public void onTaskCompleted(Task t) {
-                LOGGER.fine("Completed "+t.getDisplayName());
+                LOGGER.log(level,"Completed "+t.getDisplayName());
             }
 
             public void onTaskFailed(Task t, Throwable err, boolean fatal) {
@@ -683,7 +684,7 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
             }
 
             public void onAttained(Milestone milestone) {
-                LOGGER.fine("Attained "+milestone.toString());
+                LOGGER.log(level,"Attained "+milestone.toString());
             }
         });
         return new ReactorListener.Aggregator(r);
