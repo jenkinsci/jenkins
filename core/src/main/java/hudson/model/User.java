@@ -48,6 +48,7 @@ import org.kohsuke.stapler.export.ExportedBean;
 import org.apache.commons.io.filefilter.DirectoryFileFilter;
 
 import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletResponse;
 import java.io.File;
 import java.io.IOException;
 import java.io.FileFilter;
@@ -302,6 +303,7 @@ public class User extends AbstractModelObject implements AccessControlled, Savea
     }
 
     private static volatile long lastScanned;
+
     /**
      * Gets all the users.
      */
@@ -407,6 +409,19 @@ public class User extends AbstractModelObject implements AccessControlled, Savea
     }
 
     /**
+     * Deletes the data directory and removes this user from Hudson.
+     *
+     * @throws IOException
+     *      if we fail to delete.
+     */
+    public synchronized void delete() throws IOException {
+        synchronized (byName) {
+            byName.remove(id);
+            Util.deleteRecursive(new File(getRootDir(), id));
+        }
+    }
+
+    /**
      * Exposed remote API.
      */
     public Api getApi() {
@@ -445,6 +460,22 @@ public class User extends AbstractModelObject implements AccessControlled, Savea
         save();
 
         rsp.sendRedirect(".");
+    }
+
+    /**
+     * Deletes this user from Hudson.
+     */
+    public void doDoDelete(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
+        requirePOST();
+        checkPermission(Hudson.ADMINISTER);
+        if (id.equals(Hudson.getAuthentication().getName())) {
+            rsp.sendError(HttpServletResponse.SC_BAD_REQUEST, "Cannot delete self");
+            return;
+        }
+
+        delete();
+
+        rsp.sendRedirect2("../..");
     }
 
     public void doRssAll( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
@@ -526,6 +557,14 @@ public class User extends AbstractModelObject implements AccessControlled, Savea
 
     public boolean hasPermission(Permission permission) {
         return getACL().hasPermission(permission);
+    }
+
+    /**
+     * With ADMINISTER permission, can delete users with persisted data but can't delete self.
+     */
+    public boolean canDelete() {
+        return hasPermission(Hudson.ADMINISTER) && !id.equals(Hudson.getAuthentication().getName())
+                && new File(getRootDir(), id).exists();
     }
 
     public Object getDynamic(String token) {

@@ -1,7 +1,7 @@
 <!--
 The MIT License
 
-Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi
+Copyright (c) 2004-2009, Sun Microsystems, Inc., Alan Harder
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -22,32 +22,14 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 -->
 
-<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
-  <l:layout permission="${app.ADMINISTER}">
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
+  <l:layout>
     <st:include page="sidepanel.jelly" />
     <l:main-panel>
-      <h1>Users</h1>
-      <p>${%blurb}</p>
-      
-      <table class="sortable pane bigtable" id="people">
-        <tr>
-          <th style="width:32px"/>
-          <th>${%Name}</th>
-          <th style="width:32px"/>
-        </tr>
-        <j:forEach var="user" items="${it.allUsers}">
-          <tr>
-            <td><a href="${user.url}/"><img src="${imagesURL}/32x32/user.gif" alt=""/></a></td>
-            <td><a href="${user.url}/">${user}</a></td>
-            <td>
-              <a href="${user.url}/configure"><img src="${imagesURL}/32x32/setting.gif" alt="Setting"/></a>
-              <j:if test="${user.canDelete()}">
-                <a href="${user.url}/delete"><img src="${imagesURL}/24x24/edit-delete.gif" alt="Delete"/></a>
-              </j:if>
-            </td>
-          </tr>
-        </j:forEach>
-      </table>
+      <form method="post" action="doDelete" name="delete">
+        ${%Are you sure about deleting the user from Hudson?}
+        <f:submit value="${%Yes}" />
+      </form>
     </l:main-panel>
   </l:layout>
 </j:jelly>
