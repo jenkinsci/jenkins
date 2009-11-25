@@ -31,6 +31,7 @@ import hudson.util.QuotedStringTokenizer;
 import hudson.util.VariableResolver;
 import hudson.util.jna.GNUCLibrary;
 import hudson.Proc.LocalProc;
+import hudson.os.PosixAPI;
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.Project;
 import org.apache.tools.ant.types.FileSet;
@@ -969,9 +970,15 @@ public class Util {
 
                 int r;
                 if (!SYMLINK_ESCAPEHATCH) {
-                    r = GNUCLibrary.LIBC.symlink(targetPath,symlinkFile.getAbsolutePath());
-                    if (r!=0)
-                        r = Native.getLastError();
+                    try {
+                        r = GNUCLibrary.LIBC.symlink(targetPath,symlinkFile.getAbsolutePath());
+                        if (r!=0)
+                            r = Native.getLastError();
+                    } catch (LinkageError e) {
+                        // if JNA is unavailable, fall back.
+                        // we still prefer to try JNA first as PosixAPI supports even smaller platforms.
+                        r = PosixAPI.get().symlink(targetPath,symlinkFile.getAbsolutePath());
+                    }
                 } else // escape hatch, until we know that the above works well.
                     r = new LocalProc(new String[]{
                         "ln","-s", targetPath, symlinkPath},
