@@ -57,7 +57,7 @@ THE SOFTWARE.
             </goals>
             <configuration>
               <fork>true</fork>
-              <concurrency>-1</concurrency> <!-- -1 means # of processors in the system -->
+              <concurrency>1</concurrency> <!-- -1 means # of processors in the system -->
               <argLine>-XX:MaxPermSize=192m -Dfile.encoding=UTF-8</argLine>
               <systemProperties>
                 <property>
