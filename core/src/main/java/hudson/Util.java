@@ -31,6 +31,7 @@ import hudson.util.QuotedStringTokenizer;
 import hudson.util.VariableResolver;
 import hudson.util.jna.GNUCLibrary;
 import hudson.Proc.LocalProc;
+import hudson.os.PosixAPI;
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.Project;
 import org.apache.tools.ant.types.FileSet;
@@ -318,7 +319,7 @@ public class Util {
             fileInCanonicalParent = new File( parentDir.getCanonicalPath(), name );
         }
         return !fileInCanonicalParent.getCanonicalFile().equals( fileInCanonicalParent.getAbsoluteFile() );
-    }    
+    }
 
     /**
      * Creates a new temporary directory.
@@ -960,16 +961,24 @@ public class Util {
         if(!isWindows() && !NO_SYMLINK) {
             try {
                 // if a file or a directory exists here, delete it first.
+                // try simple delete first (whether exists() or not, as it may be symlink pointing
+                // to non-existent target), but fallback to "rm -rf" to delete non-empty dir.
                 File symlinkFile = new File(baseDir, symlinkPath);
-                if (symlinkFile.exists())
+                if (!symlinkFile.delete() && symlinkFile.exists())
                     // ignore a failure.
                     new LocalProc(new String[]{"rm","-rf", symlinkPath},new String[0],listener.getLogger(), baseDir).join();
 
                 int r;
                 if (!SYMLINK_ESCAPEHATCH) {
-                    r = GNUCLibrary.LIBC.symlink(targetPath,symlinkFile.getAbsolutePath());
-                    if (r!=0)
-                        r = Native.getLastError();
+                    try {
+                        r = GNUCLibrary.LIBC.symlink(targetPath,symlinkFile.getAbsolutePath());
+                        if (r!=0)
+                            r = Native.getLastError();
+                    } catch (LinkageError e) {
+                        // if JNA is unavailable, fall back.
+                        // we still prefer to try JNA first as PosixAPI supports even smaller platforms.
+                        r = PosixAPI.get().symlink(targetPath,symlinkFile.getAbsolutePath());
+                    }
                 } else // escape hatch, until we know that the above works well.
                     r = new LocalProc(new String[]{
                         "ln","-s", targetPath, symlinkPath},

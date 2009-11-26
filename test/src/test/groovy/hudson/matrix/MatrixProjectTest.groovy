@@ -41,6 +41,15 @@ import org.jvnet.hudson.test.SingleFileSCM
 import org.jvnet.hudson.test.UnstableBuilder
 import com.gargoylesoftware.htmlunit.html.HtmlTable
 import org.jvnet.hudson.test.Bug
+import org.jvnet.hudson.test.TestBuilder
+import hudson.model.AbstractBuild
+import hudson.Launcher
+import hudson.model.BuildListener
+import hudson.util.OneShotEvent
+import java.util.concurrent.Future
+import java.util.concurrent.TimeUnit
+import hudson.model.FreeStyleProject
+import java.util.concurrent.TimeoutException
 
 /**
  *
@@ -183,5 +192,42 @@ public class MatrixProjectTest extends HudsonTestCase {
             (2..6).collect { n -> new Axis("axis${n}", (1..n)*.toString() ) }
         );
         assertRectangleTable(p)
+    }
+
+    /**
+     * Quiettng down Hudson causes a dead lock if the parent is running but children is in the queue
+     */
+    @Bug(4873)
+    void testQuietDownDeadlock() {
+        def p = createMatrixProject();
+        p.axes = new AxisList(new Axis("foo","1","2"));
+        p.runSequentially = true; // so that we can put the 2nd one in the queue
+
+        OneShotEvent firstStarted = new OneShotEvent();
+        OneShotEvent buildCanProceed = new OneShotEvent();
+
+        p.getBuildersList().add( [perform:{ AbstractBuild build, Launcher launcher, BuildListener listener ->
+            firstStarted.signal();
+            buildCanProceed.block();
+            return true;
+        }] as TestBuilder );
+        Future f = p.scheduleBuild2(0)
+
+        // have foo=1 block to make sure the 2nd configuration is in the queue
+        firstStarted.block();
+        // enter into the quiet down while foo=2 is still in the queue
+        hudson.doQuietDown();
+        buildCanProceed.signal();
+
+        // make sure foo=2 still completes. use time out to avoid hang
+        assertBuildStatusSuccess(f.get(10,TimeUnit.SECONDS));
+
+        // MatrixProject scheduled after the quiet down shouldn't start
+        try {
+            p.scheduleBuild2(0).get(3,TimeUnit.SECONDS)
+            fail()
+        } catch (TimeoutException e) {
+            // expected
+        }        
     }
 }

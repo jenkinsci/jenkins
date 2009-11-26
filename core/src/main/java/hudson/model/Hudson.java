@@ -24,8 +24,12 @@
 package hudson.model;
 
 import com.thoughtworks.xstream.XStream;
-import groovy.lang.GroovyShell;
 import hudson.BulkChange;
+import hudson.DescriptorExtensionList;
+import hudson.Extension;
+import hudson.ExtensionList;
+import hudson.ExtensionListView;
+import hudson.ExtensionPoint;
 import hudson.FilePath;
 import hudson.Functions;
 import hudson.Launcher;
@@ -36,34 +40,34 @@ import hudson.PluginWrapper;
 import hudson.ProxyConfiguration;
 import hudson.StructuredForm;
 import hudson.TcpSlaveAgentListener;
+import hudson.UDPBroadcastThread;
 import hudson.Util;
 import static hudson.Util.fixEmpty;
 import static hudson.Util.fixNull;
 import hudson.WebAppMain;
 import hudson.XmlFile;
-import hudson.UDPBroadcastThread;
-import hudson.ExtensionList;
-import hudson.ExtensionPoint;
-import hudson.DescriptorExtensionList;
-import hudson.ExtensionListView;
-import hudson.Extension;
-import hudson.tools.ToolInstallation;
-import hudson.tools.ToolDescriptor;
 import hudson.cli.CliEntryPoint;
 import hudson.cli.CliManagerImpl;
 import hudson.cli.declarative.CLIMethod;
 import hudson.cli.declarative.CLIResolver;
-import hudson.logging.LogRecorderManager;
+import static hudson.init.InitMilestone.JOB_LOADED;
+import static hudson.init.InitMilestone.PLUGINS_STARTED;
+import hudson.init.InitializerFinder;
+import hudson.init.InitMilestone;
+import hudson.init.InitReactorListener;
+import hudson.init.InitStrategy;
 import hudson.lifecycle.Lifecycle;
+import hudson.logging.LogRecorderManager;
+import hudson.lifecycle.RestartNotSupportedException;
 import hudson.model.Descriptor.FormException;
 import hudson.model.listeners.ItemListener;
 import hudson.model.listeners.JobListener;
 import hudson.model.listeners.JobListener.JobListenerAdapter;
-import hudson.model.listeners.SaveableListener;
 import hudson.model.listeners.SCMListener;
+import hudson.model.listeners.SaveableListener;
+import hudson.remoting.Channel;
 import hudson.remoting.LocalChannel;
 import hudson.remoting.VirtualChannel;
-import hudson.remoting.Channel;
 import hudson.scm.RepositoryBrowser;
 import hudson.scm.SCM;
 import hudson.scm.SCMDescriptor;
@@ -81,70 +85,87 @@ import hudson.security.PermissionGroup;
 import hudson.security.SecurityMode;
 import hudson.security.SecurityRealm;
 import hudson.security.csrf.CrumbIssuer;
-import hudson.slaves.ComputerListener;
-import hudson.slaves.NodeProperty;
-import hudson.slaves.NodePropertyDescriptor;
-import hudson.slaves.RetentionStrategy;
-import hudson.slaves.NodeList;
 import hudson.slaves.Cloud;
+import hudson.slaves.ComputerListener;
 import hudson.slaves.DumbSlave;
 import hudson.slaves.NodeDescriptor;
+import hudson.slaves.NodeList;
+import hudson.slaves.NodeProperty;
+import hudson.slaves.NodePropertyDescriptor;
 import hudson.slaves.NodeProvisioner;
 import hudson.slaves.OfflineCause;
+import hudson.slaves.RetentionStrategy;
 import hudson.tasks.BuildWrapper;
 import hudson.tasks.Builder;
 import hudson.tasks.Mailer;
 import hudson.tasks.Publisher;
+import hudson.tools.ToolDescriptor;
+import hudson.tools.ToolInstallation;
 import hudson.triggers.Trigger;
 import hudson.triggers.TriggerDescriptor;
+import hudson.util.AdministrativeError;
 import hudson.util.CaseInsensitiveComparator;
 import hudson.util.ClockDifference;
 import hudson.util.CopyOnWriteList;
 import hudson.util.CopyOnWriteMap;
 import hudson.util.DaemonThreadFactory;
+import hudson.util.DescribableList;
+import hudson.util.FormValidation;
+import hudson.util.Futures;
 import hudson.util.HudsonIsLoading;
+import hudson.util.HudsonIsRestarting;
+import hudson.util.Iterators;
+import hudson.util.Memoizer;
 import hudson.util.MultipartFormDataParser;
 import hudson.util.RemotingDiagnostics;
-import hudson.util.TextFile;
-import hudson.util.XStream2;
-import hudson.util.HudsonIsRestarting;
-import hudson.util.DescribableList;
-import hudson.util.Futures;
-import hudson.util.Memoizer;
-import hudson.util.Iterators;
-import hudson.util.FormValidation;
-import hudson.util.VersionNumber;
 import hudson.util.StreamTaskListener;
-import hudson.util.AdministrativeError;
+import hudson.util.TextFile;
+import hudson.util.VersionNumber;
+import hudson.util.XStream2;
+import hudson.util.ServiceLoader;
 import hudson.widgets.Widget;
 import net.sf.json.JSONObject;
-import org.acegisecurity.*;
+import org.acegisecurity.AccessDeniedException;
+import org.acegisecurity.AcegiSecurityException;
+import org.acegisecurity.Authentication;
+import org.acegisecurity.GrantedAuthority;
+import org.acegisecurity.GrantedAuthorityImpl;
 import org.acegisecurity.context.SecurityContextHolder;
 import org.acegisecurity.providers.anonymous.AnonymousAuthenticationToken;
 import org.acegisecurity.ui.AbstractProcessingFilter;
-import org.apache.commons.logging.LogFactory;
-import org.apache.commons.jelly.Script;
 import org.apache.commons.jelly.JellyException;
-import org.apache.commons.io.FileUtils;
+import org.apache.commons.jelly.Script;
+import org.apache.commons.logging.LogFactory;
+import org.jvnet.hudson.reactor.Executable;
+import org.jvnet.hudson.reactor.ReactorException;
+import org.jvnet.hudson.reactor.Task;
+import org.jvnet.hudson.reactor.TaskBuilder;
+import org.jvnet.hudson.reactor.TaskGraphBuilder;
+import org.jvnet.hudson.reactor.Milestone;
+import org.jvnet.hudson.reactor.Reactor;
+import org.jvnet.hudson.reactor.ReactorListener;
+import org.jvnet.hudson.reactor.TaskGraphBuilder.Handle;
 import org.kohsuke.stapler.Ancestor;
+import org.kohsuke.stapler.HttpRedirect;
+import org.kohsuke.stapler.HttpResponse;
+import org.kohsuke.stapler.HttpResponses;
 import org.kohsuke.stapler.MetaClass;
+import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.Stapler;
+import org.kohsuke.stapler.StaplerFallback;
 import org.kohsuke.stapler.StaplerProxy;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
-import org.kohsuke.stapler.StaplerFallback;
 import org.kohsuke.stapler.WebApp;
-import org.kohsuke.stapler.QueryParameter;
-import org.kohsuke.stapler.HttpRedirect;
-import org.kohsuke.stapler.HttpResponses;
-import org.kohsuke.stapler.HttpResponse;
-import org.kohsuke.stapler.jelly.JellyClassLoaderTearOff;
-import org.kohsuke.stapler.jelly.JellyRequestDispatcher;
-import org.kohsuke.stapler.framework.adjunct.AdjunctManager;
 import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.export.ExportedBean;
+import org.kohsuke.stapler.framework.adjunct.AdjunctManager;
+import org.kohsuke.stapler.jelly.JellyClassLoaderTearOff;
+import org.kohsuke.stapler.jelly.JellyRequestDispatcher;
 import org.xml.sax.InputSource;
 
+import javax.crypto.SecretKey;
+import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.http.Cookie;
@@ -156,14 +177,15 @@ import java.io.FileFilter;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.PrintWriter;
 import java.io.InputStream;
-import java.net.URL;
+import java.io.PrintWriter;
 import java.net.BindException;
+import java.net.URL;
+import java.nio.charset.Charset;
 import java.security.SecureRandom;
+import java.text.Collator;
 import java.text.NumberFormat;
 import java.text.ParseException;
-import java.text.Collator;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -175,32 +197,29 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Properties;
 import java.util.Set;
 import java.util.Stack;
 import java.util.StringTokenizer;
 import java.util.Timer;
 import java.util.TreeSet;
-import java.util.Properties;
 import java.util.UUID;
-import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeoutException;
-import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.logging.Level;
+import static java.util.logging.Level.SEVERE;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
-import static java.util.logging.Level.SEVERE;
 import java.util.regex.Pattern;
-import java.nio.charset.Charset;
-import javax.servlet.RequestDispatcher;
-import javax.crypto.SecretKey;
 
 /**
  * Root object of the system.
@@ -508,7 +527,7 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
      */
     private transient final LogRecorderManager log = new LogRecorderManager();
 
-    public Hudson(File root, ServletContext context) throws IOException, InterruptedException {
+    public Hudson(File root, ServletContext context) throws IOException, InterruptedException, ReactorException {
     	// As hudson is starting, grant this process full controll
     	SecurityContextHolder.getContext().setAuthentication(ACL.SYSTEM);
         try {
@@ -519,8 +538,9 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
                 throw new IllegalStateException("second instance");
             theInstance = this;
 
-            log.load();
-
+            // doing this early allows InitStrategy to set environment upfront 
+            final InitStrategy is = InitStrategy.get(Thread.currentThread().getContextClassLoader());
+            
             Trigger.timer = new Timer("Hudson cron thread");
             queue = new Queue(CONSISTENT_HASH?LoadBalancer.CONSISTENT_HASH:LoadBalancer.DEFAULT);
             
@@ -550,30 +570,21 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
             } catch (IOException e) {
                 LOGGER.log(SEVERE, "Failed to load proxy configuration", e);
             }
-            
-            // load plugins.
-            pluginManager = new PluginManager(context);
-            pluginManager.initialize();
 
-            // if we are loading old data that doesn't have this field
-            if(slaves==null)    slaves = new NodeList();
+            pluginManager = new PluginManager(context);
 
             adjuncts = new AdjunctManager(servletContext, pluginManager.uberClassLoader,"adjuncts/"+VERSION_HASH);
 
-            load();
+            // initialization consists of ...
+            executeReactor( is,
+                    new InitializerFinder(),        // misc. stuff
+                    pluginManager.initTasks(is),    // loading and preparing plugins
+                    loadTasks(),                    // load jobs
+                    InitMilestone.ordering()        // forced ordering among key milestones
+            );
 
-    //        try {
-    //            // fill up the cache
-    //            load();
-    //
-    //            Controller c = new Controller();
-    //            c.startCPUProfiling(ProfilingModes.CPU_TRACING,""); // "java.*");
-    //            load();
-    //            c.stopCPUProfiling();
-    //            c.captureSnapshot(ProfilingModes.SNAPSHOT_WITHOUT_HEAP);
-    //        } catch (Exception e) {
-    //            throw new Error(e);
-    //        }
+            if(KILL_AFTER_LOAD)
+                System.exit(0);
 
             if(slaveAgentPort!=-1) {
                 try {
@@ -598,52 +609,94 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
                         cl.onOnline(c,new StreamTaskListener(System.out));
             }
 
-            getQueue().load();
-
             for (ItemListener l : ItemListener.all())
                 l.onLoaded();
-
-            // run the initialization script, if it exists.
-            File initScript = new File(getRootDir(),"init.groovy");
-            if(initScript.exists()) {
-                LOGGER.info("Executing "+initScript);
-                GroovyShell shell = new GroovyShell(pluginManager.uberClassLoader);
-                try {
-                    shell.evaluate(initScript);
-                } catch (Throwable t) {
-                    t.printStackTrace();
-                }
-            }
-
-            File userContentDir = new File(getRootDir(), "userContent");
-            if(!userContentDir.exists()) {
-                userContentDir.mkdirs();
-                FileUtils.writeStringToFile(new File(userContentDir,"readme.txt"),Messages.Hudson_USER_CONTENT_README());
-            }
-
-            updateCenter.load();    // this has to wait until after all plugins load, to let custom UpdateCenterConfiguration take effect first.
-
-            Trigger.init();
-// pending SEZPOZ-8
-//            // invoke post initialization methods
-//            for ( IndexItem<PostInit,Void> i : Index.load(PostInit.class, Void.class, pluginManager.uberClassLoader)) {
-//                try {
-//                    Method m = (Method)i.element();
-//                    if (Modifier.isStatic(m.getModifiers()))
-//                        m.invoke(null);
-//                    else
-//                        LOGGER.severe(m+" is annotated with @PostInit but it's not a static method");
-//                } catch (InstantiationException e) {
-//                    LOGGER.log(SEVERE,"Failed to invoke @PostInit: "+i,e);
-//                } catch (IllegalAccessException e) {
-//                    LOGGER.log(SEVERE,"Failed to invoke @PostInit: "+i,e);
-//                } catch (InvocationTargetException e) {
-//                    LOGGER.log(SEVERE,"Failed to invoke @PostInit: "+i,e);
-//                }
-//            }
         } finally {
             SecurityContextHolder.clearContext();
         }
+    }
+
+    /**
+     * Executes a reactor.
+     *
+     * @param is
+     *      If non-null, this can be consulted for ignoring some tasks. Only used during the initialization of Hudson.
+     */
+    private void executeReactor(final InitStrategy is, TaskBuilder... builders) throws IOException, InterruptedException, ReactorException {
+        Reactor reactor = new Reactor(builders) {
+            /**
+             * Sets the thread name to the task for better diagnostics.
+             */
+            protected void runTask(Task task) throws Exception {
+                if (is!=null && is.skipInitTask(task))  return;
+
+                SecurityContextHolder.getContext().setAuthentication(ACL.SYSTEM);   // full access in the initialization thread
+                String taskName = task.getDisplayName();
+
+                Thread t = Thread.currentThread();
+                String name = t.getName();
+                if (taskName !=null)
+                    t.setName(taskName);
+                try {
+                    long start = System.currentTimeMillis();
+                    super.runTask(task);
+                    if(LOG_STARTUP_PERFORMANCE)
+                        LOGGER.info(String.format("Took %dms for %s by %s",
+                                System.currentTimeMillis()-start, taskName, name));
+                } finally {
+                    t.setName(name);
+                    SecurityContextHolder.clearContext();
+                }
+            }
+        };
+
+        ExecutorService es;
+        if (PARALLEL_LOAD)
+            es = new ThreadPoolExecutor(
+                TWICE_CPU_NUM, TWICE_CPU_NUM, 5L, TimeUnit.SECONDS, new LinkedBlockingQueue<Runnable>(), new DaemonThreadFactory());
+        else
+            es = Executors.newSingleThreadExecutor(new DaemonThreadFactory());
+        try {
+            reactor.execute(es,buildReactorListener());
+        } finally {
+            es.shutdownNow();   // upon a successful return the executor queue should be empty. Upon an exception, we want to cancel all pending tasks
+        }
+    }
+
+    /**
+     * Aggregates all the listeners into one and returns it.
+     *
+     * <p>
+     * At this point plugins are not loaded yet, so we fall back to the META-INF/services look up to discover implementations.
+     * As such there's no way for plugins to participate into this process. 
+     */
+    private ReactorListener buildReactorListener() throws IOException {
+        List<ReactorListener> r = (List) ServiceLoader.load(Thread.currentThread().getContextClassLoader(), InitReactorListener.class);
+        r.add(new ReactorListener() {
+            final Level level = Level.parse(System.getProperty(Hudson.class.getName()+".initLogLevel","FINE"));
+            public void onTaskStarted(Task t) {
+                LOGGER.log(level,"Started "+t.getDisplayName());
+            }
+
+            public void onTaskCompleted(Task t) {
+                LOGGER.log(level,"Completed "+t.getDisplayName());
+            }
+
+            public void onTaskFailed(Task t, Throwable err, boolean fatal) {
+                LOGGER.log(SEVERE, "Failed "+t.getDisplayName(),err);
+            }
+
+            public void onAttained(Milestone milestone) {
+                Level lv = level;
+                String s = "Attained "+milestone.toString();
+                if (milestone instanceof InitMilestone) {
+                    lv = Level.INFO; // noteworthy milestones --- at least while we debug problems further
+                    s = ((InitMilestone)milestone).toString();
+                }
+                LOGGER.log(lv,s);
+            }
+        });
+        return new ReactorListener.Aggregator(r);
     }
 
     public TcpSlaveAgentListener getTcpSlaveAgentListener() {
@@ -1035,7 +1088,7 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
         } else {
             if(n.getNumExecutors()>0) {
                 computers.put(n,c=n.createComputer());
-                if (!n.holdOffLaunchUntilSave) {
+                if (!n.holdOffLaunchUntilSave && AUTOMATIC_SLAVE_LAUNCH) {
                     RetentionStrategy retentionStrategy = c.getRetentionStrategy();
                     if (retentionStrategy != null) {
                         // if there is a retention strategy, it is responsible for deciding to start the computer
@@ -1997,18 +2050,7 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
         return new MasterComputer();
     }
 
-    private synchronized void load() throws IOException {
-        long startTime = System.currentTimeMillis();
-        XmlFile cfg = getConfigFile();
-        if(cfg.exists()) {
-            // reset some data that may not exit in the disk file
-            // so that we can take a proper compensation action later.
-            primaryView = null;
-            views.clear();
-            cfg.unmarshal(this);
-        }
-        clouds.setOwner(this);
-
+    private synchronized TaskBuilder loadTasks() throws IOException {
         File projectsDir = new File(root,"jobs");
         if(!projectsDir.isDirectory() && !projectsDir.mkdirs()) {
             if(projectsDir.exists())
@@ -2020,110 +2062,92 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
                 return child.isDirectory() && Items.getConfigFile(child).exists();
             }
         });
-        items.clear();
-        if(PARALLEL_LOAD) {
-            // load jobs in parallel for better performance
-            LOGGER.info("Loading in "+TWICE_CPU_NUM+" parallel threads");
-            List<Future<TopLevelItem>> loaders = new ArrayList<Future<TopLevelItem>>();
-            for (final File subdir : subdirs) {
-                loaders.add(threadPoolForLoad.submit(new Callable<TopLevelItem>() {
-                    public TopLevelItem call() throws Exception {
-                        Thread t = Thread.currentThread();
-                        String name = t.getName();
-                        t.setName("Loading "+subdir);
-                        try {
-                            long start = System.currentTimeMillis();
-                            TopLevelItem item = (TopLevelItem) Items.load(Hudson.this, subdir);
-                            if(LOG_STARTUP_PERFORMANCE)
-                                LOGGER.info("Loaded "+item.getName()+" in "+(System.currentTimeMillis()-start)+"ms by "+name);
-                            return item;
-                        } finally {
-                            t.setName(name);
-                        }
-                    }
-                }));
-            }
 
-            for (Future<TopLevelItem> loader : loaders) {
-                try {
-                    TopLevelItem item = loader.get();
-                    items.put(item.getName(), item);
-                } catch (ExecutionException e) {
-                    LOGGER.log(Level.WARNING, "Failed to load a project",e.getCause());
-                } catch (InterruptedException e) {
-                    e.printStackTrace(); // this is probably not the right thing to do
+        TaskGraphBuilder g = new TaskGraphBuilder();
+        Handle loadHudson = g.requires(PLUGINS_STARTED).attains(JOB_LOADED).add("Loading global config", new Executable() {
+            public void run(Reactor session) throws Exception {
+                XmlFile cfg = getConfigFile();
+                if (cfg.exists()) {
+                    // reset some data that may not exit in the disk file
+                    // so that we can take a proper compensation action later.
+                    primaryView = null;
+                    views.clear();
+
+                    // load from disk
+                    cfg.unmarshal(Hudson.this);
                 }
+
+                // if we are loading old data that doesn't have this field
+                if (slaves == null) slaves = new NodeList();
+
+                clouds.setOwner(Hudson.this);
+                items.clear();
             }
-        } else {
-            for (File subdir : subdirs) {
-                try {
-                    long start = System.currentTimeMillis();
-                    TopLevelItem item = (TopLevelItem)Items.load(this,subdir);
-                    if(LOG_STARTUP_PERFORMANCE)
-                        LOGGER.info("Loaded "+item.getName()+" in "+(System.currentTimeMillis()-start)+"ms");
+        });
+
+        for (final File subdir : subdirs) {
+            g.requires(loadHudson).attains(JOB_LOADED).notFatal().add("Loading job "+subdir.getName(),new Executable() {
+                public void run(Reactor session) throws Exception {
+                    TopLevelItem item = (TopLevelItem) Items.load(Hudson.this, subdir);
                     items.put(item.getName(), item);
-                } catch (Error e) {
-                    LOGGER.log(Level.WARNING, "Failed to load "+subdir,e);
-                } catch (RuntimeException e) {
-                    LOGGER.log(Level.WARNING, "Failed to load "+subdir,e);
-                } catch (IOException e) {
-                    LOGGER.log(Level.WARNING, "Failed to load "+subdir,e);
                 }
+            });
+        }
+
+        g.requires(JOB_LOADED).add("Finalizing set up",new Executable() {
+            public void run(Reactor session) throws Exception {
+                rebuildDependencyGraph();
+
+                {// recompute label objects - populates the labels mapping.
+                    for (Node slave : slaves)
+                        // Note that not all labels are visible until the slaves have connected.
+                        slave.getAssignedLabels();
+                    getAssignedLabels();
+                }
+
+                // initialize views by inserting the default view if necessary
+                // this is both for clean Hudson and for backward compatibility.
+                if(views.size()==0 || primaryView==null) {
+                    View v = new AllView(Messages.Hudson_ViewName());
+                    v.owner = Hudson.this;
+                    views.add(0,v);
+                    primaryView = v.getViewName();
+                }
+
+                // read in old data that doesn't have the security field set
+                if(authorizationStrategy==null) {
+                    if(useSecurity==null || !useSecurity)
+                        authorizationStrategy = AuthorizationStrategy.UNSECURED;
+                    else
+                        authorizationStrategy = new LegacyAuthorizationStrategy();
+                }
+                if(securityRealm==null) {
+                    if(useSecurity==null || !useSecurity)
+                        setSecurityRealm(SecurityRealm.NO_AUTHENTICATION);
+                    else
+                        setSecurityRealm(new LegacySecurityRealm());
+                } else {
+                    // force the set to proxy
+                    setSecurityRealm(securityRealm);
+                }
+
+                if(useSecurity!=null && !useSecurity) {
+                    // forced reset to the unsecure mode.
+                    // this works as an escape hatch for people who locked themselves out.
+                    authorizationStrategy = AuthorizationStrategy.UNSECURED;
+                    setSecurityRealm(SecurityRealm.NO_AUTHENTICATION);
+                }
+
+                // Initialize the filter with the crumb issuer
+                setCrumbIssuer(crumbIssuer);
+
+                // auto register root actions
+                for (Action a : getExtensionList(RootAction.class))
+                    if (!actions.contains(a)) actions.add(a);
             }
-        }
-        rebuildDependencyGraph();
+        });
 
-        {// recompute label objects - populates the labels mapping.
-            for (Node slave : slaves)
-                // Note that all labels are not visible until the slaves have
-                // connected.
-                slave.getAssignedLabels();
-            getAssignedLabels();
-        }
-
-        // initialize views by inserting the default view if necessary
-        // this is both for clean Hudson and for backward compatibility.
-        if(views.size()==0 || primaryView==null) {
-            View v = new AllView(Messages.Hudson_ViewName());
-            v.owner = this;
-            views.add(0,v);
-            primaryView = v.getViewName();
-        }
-
-        // read in old data that doesn't have the security field set
-        if(authorizationStrategy==null) {
-            if(useSecurity==null || !useSecurity)
-                authorizationStrategy = AuthorizationStrategy.UNSECURED;
-            else
-                authorizationStrategy = new LegacyAuthorizationStrategy();
-        }
-        if(securityRealm==null) {
-            if(useSecurity==null || !useSecurity)
-                setSecurityRealm(SecurityRealm.NO_AUTHENTICATION);
-            else
-                setSecurityRealm(new LegacySecurityRealm());
-        } else {
-            // force the set to proxy
-            setSecurityRealm(securityRealm);
-        }
-
-        if(useSecurity!=null && !useSecurity) {
-            // forced reset to the unsecure mode.
-            // this works as an escape hatch for people who locked themselves out.
-            authorizationStrategy = AuthorizationStrategy.UNSECURED;
-            setSecurityRealm(SecurityRealm.NO_AUTHENTICATION);
-        }
-
-        // Initialize the filter with the crumb issuer
-        setCrumbIssuer(crumbIssuer);
-
-        // auto register root actions
-        for (Action a : getExtensionList(RootAction.class))
-            if (!actions.contains(a)) actions.add(a);
-        
-        LOGGER.info(String.format("Took %s ms to load",System.currentTimeMillis()-startTime));
-        if(KILL_AFTER_LOAD)
-            System.exit(0);
+        return g;
     }
 
     /**
@@ -2395,14 +2419,14 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
     }
 
     @CLIMethod(name="quiet-down")
-    public synchronized HttpRedirect doQuietDown() throws IOException, ServletException {
+    public synchronized HttpRedirect doQuietDown() {
         checkPermission(ADMINISTER);
         isQuietingDown = true;
         return new HttpRedirect(".");
     }
 
     @CLIMethod(name="cancel-quiet-down")
-    public synchronized HttpRedirect doCancelQuietDown() throws IOException, ServletException {
+    public synchronized HttpRedirect doCancelQuietDown() {
         checkPermission(ADMINISTER);
         isQuietingDown = false;
         getQueue().scheduleMaintenance();
@@ -2702,16 +2726,27 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
             @Override
             public void run() {
                 try {
-                    load();
-                    User.reload();
-                    servletContext.setAttribute("app",Hudson.this);
+                    reload();
                 } catch (IOException e) {
+                    LOGGER.log(SEVERE,"Failed to reload Hudson config",e);
+                } catch (ReactorException e) {
+                    LOGGER.log(SEVERE,"Failed to reload Hudson config",e);
+                } catch (InterruptedException e) {
                     LOGGER.log(SEVERE,"Failed to reload Hudson config",e);
                 }
             }
         }.start();
 
         return HttpResponses.redirectViaContextPath("/");
+    }
+
+    /**
+     * Reloads the configuration synchronously.
+     */
+    public void reload() throws IOException, InterruptedException, ReactorException {
+        executeReactor(null,loadTasks());
+        User.reload();
+        servletContext.setAttribute("app", this);
     }
 
     /**
@@ -2827,7 +2862,7 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
      *
      * This first replaces "app" to {@link HudsonIsRestarting}
      */
-    public void doRestart(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
+    public void doRestart(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException, RestartNotSupportedException {
         checkPermission(ADMINISTER);
         if(Stapler.getCurrentRequest().getMethod().equals("GET")) {
             req.getView(this,"_restart.jelly").forward(req,rsp);
@@ -2846,7 +2881,7 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
      * 
      * @since 1.332
      */
-    public void doSafeRestart(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
+    public void doSafeRestart(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException, RestartNotSupportedException {
         checkPermission(ADMINISTER);
         if(Stapler.getCurrentRequest().getMethod().equals("GET")) {
             req.getView(this,"_safeRestart.jelly").forward(req,rsp);
@@ -2862,10 +2897,9 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
      * Performs a restart.
      */
     @CLIMethod(name="restart")
-    public void restart() {
+    public void restart() throws RestartNotSupportedException {
         final Lifecycle lifecycle = Lifecycle.get();
-        if(!lifecycle.canRestart())
-            throw new Failure("Restart is not supported in this running mode.");
+        lifecycle.verifyRestartable(); // verify that Hudson is restartable
         servletContext.setAttribute("app",new HudsonIsRestarting());
 
         new Thread("restart thread") {
@@ -2889,10 +2923,9 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
      * @since 1.332
      */
     @CLIMethod(name="safe-restart")
-    public void safeRestart() {
+    public void safeRestart() throws RestartNotSupportedException {
         final Lifecycle lifecycle = Lifecycle.get();
-        if(!lifecycle.canRestart())
-            throw new Failure("Restart is not supported in this running mode.");
+        lifecycle.verifyRestartable(); // verify that Hudson is restartable
         // Quiet down so that we won't launch new builds.
         isQuietingDown = true;
         
@@ -3368,7 +3401,8 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
             // this hides the "delete" link from the /computer/(master) page.
             if(permission==Computer.DELETE)
                 return false;
-            return super.hasPermission(permission);
+            // Configuration of master node requires ADMINISTER permission
+            return super.hasPermission(permission==Computer.CONFIGURE ? Hudson.ADMINISTER : permission);
         }
 
         @Override
@@ -3546,6 +3580,11 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
      */
     public static boolean CONCURRENT_BUILD = true;
 
+    /**
+     * Automatically try to launch a slave when Hudson is initialized or a new slave is created.
+     */
+    public static boolean AUTOMATIC_SLAVE_LAUNCH = true;
+    
     private static final Logger LOGGER = Logger.getLogger(Hudson.class.getName());
 
     private static final Pattern ICON_SIZE = Pattern.compile("\\d+x\\d+");
@@ -3564,7 +3603,7 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
         // this seems to be necessary to force registration of converter early enough
         Mode.class.getEnumConstants();
 
-        // doule check that initialization order didn't do any harm
+        // double check that initialization order didn't do any harm
         assert PERMISSIONS!=null;
         assert ADMINISTER!=null;
     }

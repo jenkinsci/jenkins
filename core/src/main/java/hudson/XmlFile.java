@@ -147,7 +147,7 @@ public final class XmlFile {
         try {
             return xs.unmarshal(new XppReader(r),o);
         } catch (StreamException e) {
-            throw new IOException2(e);
+            throw new IOException2("Unable to read "+file,e);
         } catch(ConversionException e) {
             throw new IOException2("Unable to read "+file,e);
         } catch(Error e) {// mostly reflection errors

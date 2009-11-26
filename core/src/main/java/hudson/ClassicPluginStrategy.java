@@ -72,16 +72,13 @@ public class ClassicPluginStrategy implements PluginStrategy {
 	}
 
 	public PluginWrapper createPluginWrapper(File archive) throws IOException {
-		LOGGER.info("Loading plugin: " + archive);
-
 		final Manifest manifest;
 		URL baseResourceURL;
-
-		boolean isLinked = archive.getName().endsWith(".hpl");
 
 		File expandDir = null; 
 		// if .hpi, this is the directory where war is expanded
 
+        boolean isLinked = archive.getName().endsWith(".hpl");
 		if (isLinked) {
 			// resolve the .hpl file to the location of the manifest file
 			String firstLine = new BufferedReader(new FileReader(archive))
@@ -102,21 +99,25 @@ public class ClassicPluginStrategy implements PluginStrategy {
 				in.close();
 			}
 		} else {
-			expandDir = new File(archive.getParentFile(), PluginWrapper.getBaseName(archive));
-			explode(archive, expandDir);
+            if (archive.isDirectory()) {// already expanded
+                expandDir = archive;
+            } else {
+                expandDir = new File(archive.getParentFile(), PluginWrapper.getBaseName(archive));
+                explode(archive, expandDir);
+            }
 
-			File manifestFile = new File(expandDir, "META-INF/MANIFEST.MF");
-			if (!manifestFile.exists()) {
-				throw new IOException(
-						"Plugin installation failed. No manifest at "
-								+ manifestFile);
-			}
-			FileInputStream fin = new FileInputStream(manifestFile);
-			try {
-				manifest = new Manifest(fin);
-			} finally {
-				fin.close();
-			}
+            File manifestFile = new File(expandDir, "META-INF/MANIFEST.MF");
+            if (!manifestFile.exists()) {
+                throw new IOException(
+                        "Plugin installation failed. No manifest at "
+                                + manifestFile);
+            }
+            FileInputStream fin = new FileInputStream(manifestFile);
+            try {
+                manifest = new Manifest(fin);
+            } finally {
+                fin.close();
+            }
 		}
 
         final Attributes atts = manifest.getMainAttributes();
@@ -326,8 +327,6 @@ public class ClassicPluginStrategy implements PluginStrategy {
         File explodeTime = new File(destDir,".timestamp");
         if(explodeTime.exists() && explodeTime.lastModified()==archive.lastModified())
             return; // no need to expand
-
-        LOGGER.info("Extracting "+archive);
 
         // delete the contents so that old files won't interfere with new files
         Util.deleteContentsRecursive(destDir);

@@ -105,7 +105,7 @@ public abstract class RetentionStrategy<T extends Computer> implements Describab
      */
     public static final RetentionStrategy<Computer> NOOP = new RetentionStrategy<Computer>() {
         public long check(Computer c) {
-            return 1;
+            return 60;
         }
 
         @Override
@@ -176,7 +176,7 @@ public abstract class RetentionStrategy<T extends Computer> implements Describab
 
         @DataBoundConstructor
         public Demand(long inDemandDelay, long idleDelay) {
-            this.inDemandDelay = Math.max(1, inDemandDelay);
+            this.inDemandDelay = Math.max(0, inDemandDelay);
             this.idleDelay = Math.max(1, idleDelay);
         }
 
@@ -201,12 +201,11 @@ public abstract class RetentionStrategy<T extends Computer> implements Describab
         public synchronized long check(SlaveComputer c) {
             if (c.isOffline()) {
                 final long demandMilliseconds = System.currentTimeMillis() - c.getDemandStartMilliseconds();
-                if (demandMilliseconds > inDemandDelay * 1000 * 60 /*MINS->MILLIS*/) {
+                if (demandMilliseconds > inDemandDelay * 1000 * 60 /*MINS->MILLIS*/ && c.isLaunchSupported()) {
                     // we've been in demand for long enough
                     logger.log(Level.INFO, "Launching computer {0} as it has been in demand for {1}",
                             new Object[]{c.getName(), Util.getTimeSpanString(demandMilliseconds)});
-                    if (c.isLaunchSupported())
-                        c.connect(false);
+                    c.connect(false);
                 }
             } else if (c.isIdle()) {
                 final long idleMilliseconds = System.currentTimeMillis() - c.getIdleStartMilliseconds();

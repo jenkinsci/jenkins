@@ -38,10 +38,6 @@ THE SOFTWARE.
       </j:when>
 
       <j:otherwise>
-        <p class="error">
-          ${%description}
-          <a href="log">${%See log for more details}</a>
-        </p>
         <l:isAdmin>
           <form method="get" action="launchSlaveAgent">
             <f:submit value="${%Launch slave agent}" />

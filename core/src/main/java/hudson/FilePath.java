@@ -1261,11 +1261,15 @@ public final class FilePath implements Serializable {
      * Copies this file to the specified target.
      */
     public void copyTo(FilePath target) throws IOException, InterruptedException {
-        OutputStream out = target.write();
         try {
-            copyTo(out);
-        } finally {
-            out.close();
+            OutputStream out = target.write();
+            try {
+                copyTo(out);
+            } finally {
+                out.close();
+            }
+        } catch (IOException e) {
+            throw new IOException2("Failed to copy "+this+" to "+target,e);
         }
     }
 

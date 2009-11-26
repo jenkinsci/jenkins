@@ -312,7 +312,12 @@ public class MailSender {
                     rcp.addAll(buildCulpritList(listener,b.getCulprits()));
             } else {
                 // ordinary address
-                rcp.add(new InternetAddress(address));
+                try {
+                    rcp.add(new InternetAddress(address));
+                } catch (AddressException e) {
+                    // report bad address, but try to send to other addresses
+                    e.printStackTrace(listener.error(e.getMessage()));
+                }
             }
         }
 

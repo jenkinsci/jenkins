@@ -157,8 +157,18 @@ public class BulkChange {
      */
     public static boolean contains(Saveable s) {
         for(BulkChange b=current(); b!=null; b=b.parent)
-            if(b.saveable== s)
+            if(b.saveable==s || b.saveable==ALL)
                 return true;
         return false;
     }
+
+    /**
+     * Magic {@link Saveable} instance that can make {@link BulkChange} veto
+     * all the save operations by making the {@link #contains(Saveable)} method return
+     * true for everything.
+     */
+    public static final Saveable ALL = new Saveable() {
+        public void save() {
+        }
+    };
 }

@@ -62,6 +62,13 @@ do_start()
     #   1 if daemon was already running
     #   2 if daemon could not be started
     $DAEMON $DAEMON_ARGS --running && return 1
+
+    # If the var MAXOPENFILES is enabled in /etc/default/hudson then set the max open files to the 
+    # proper value
+    if [ -z "$MAXOPENFILES" ]; then
+      echo Setting up max open files limit to $MAXOPENFILES
+      ulimit -n $MAXOPENFILES
+    fi
     
     # --user in daemon doesn't prepare environment variables like HOME, USER, LOGNAME or USERNAME,
     # so we let su do so for us now

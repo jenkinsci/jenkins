@@ -1,0 +1,7 @@
+#!/usr/bin/expect -f
+## Sign repomd.xml by sending the passphrase.
+set password [lindex $argv 0]
+spawn gpg -a --detach-sign --yes [lindex $argv 1]
+expect -exact "Enter passphrase: "
+send -- "$password\r"
+expect eof

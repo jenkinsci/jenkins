@@ -29,6 +29,7 @@ import hudson.FilePath;
 import hudson.FilePath.FileCallable;
 import hudson.Util;
 import hudson.Functions;
+import hudson.os.PosixAPI;
 import hudson.model.Node;
 import hudson.model.TaskListener;
 import hudson.model.Hudson;
@@ -130,8 +131,15 @@ public class ZipExtractionInstaller extends ToolInstaller {
             if (f.isFile()) {
                 if(Functions.isMustangOrAbove())
                     f.setExecutable(true, false);
-                else
-                    GNUCLibrary.LIBC.chmod(f.getAbsolutePath(),0755);
+                else {
+                    try {
+                        GNUCLibrary.LIBC.chmod(f.getAbsolutePath(),0755);
+                    } catch (LinkageError e) {
+                        // if JNA is unavailable, fall back.
+                        // we still prefer to try JNA first as PosixAPI supports even smaller platforms.
+                        PosixAPI.get().chmod(f.getAbsolutePath(),0755);
+                    }
+                }
             } else {
                 File[] kids = f.listFiles();
                 if (kids != null) {

@@ -227,26 +227,33 @@ public final class TcpSlaveAgentListener extends Thread {
             out.println(Engine.GREETING_SUCCESS);
 
             final OutputStream log = computer.openLogFile();
-            new PrintWriter(log).println("JNLP agent connected from "+ this.s.getInetAddress());
+            PrintWriter logw = new PrintWriter(log,true);
+            logw.println("JNLP agent connected from "+ this.s.getInetAddress());
 
-            computer.setChannel(new BufferedInputStream(this.s.getInputStream()), new BufferedOutputStream(this.s.getOutputStream()), log,
-                new Listener() {
-                    @Override
-                    public void onClosed(Channel channel, IOException cause) {
-                        try {
-                            log.close();
-                        } catch (IOException e) {
-                            e.printStackTrace(); 
+            try {
+                computer.setChannel(new BufferedInputStream(this.s.getInputStream()), new BufferedOutputStream(this.s.getOutputStream()), log,
+                    new Listener() {
+                        @Override
+                        public void onClosed(Channel channel, IOException cause) {
+                            try {
+                                log.close();
+                            } catch (IOException e) {
+                                e.printStackTrace();
+                            }
+                            if(cause!=null)
+                                LOGGER.log(Level.WARNING, "Connection #"+id+" terminated",cause);
+                            try {
+                                ConnectionHandler.this.s.close();
+                            } catch (IOException e) {
+                                // ignore
+                            }
                         }
-                        if(cause!=null)
-                            LOGGER.log(Level.WARNING, "Connection #"+id+" terminated",cause);
-                        try {
-                            ConnectionHandler.this.s.close();
-                        } catch (IOException e) {
-                            // ignore
-                        }
-                    }
-                });
+                    });
+            } catch (IOException e) {
+                logw.println("Failed to establish the connection with the slave"); 
+                e.printStackTrace(logw);
+                throw e;
+            }
         }
 
         private void error(PrintWriter out, String msg) throws IOException {

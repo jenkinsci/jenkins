@@ -109,7 +109,8 @@ public class LogRecorder extends AbstractModelObject implements Saveable {
         public boolean includes(LogRecord r) {
             if(r.getLevel().intValue() < level)
                 return false;   // below the threshold
-            if(!r.getLoggerName().startsWith(name))
+            String logName = r.getLoggerName();
+            if(logName==null || !logName.startsWith(name))
                 return false;   // not within this logger
 
             String rest = r.getLoggerName().substring(name.length());

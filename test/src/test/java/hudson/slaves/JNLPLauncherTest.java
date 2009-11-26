@@ -99,7 +99,7 @@ public class JNLPLauncherTest extends HudsonTestCase {
             }
             // run some trivial thing
             System.err.println("Calling task...");
-            assertEquals("done", c.getChannel().callAsync(new NoopTask()).get(5, TimeUnit.MINUTES));
+            assertEquals("done", c.getChannel().callAsync(new NoopTask()).get(5 * 60, TimeUnit.SECONDS));
             System.err.println("...done.");
         } finally {
             proc.kill();

@@ -151,10 +151,27 @@ public abstract class Lifecycle implements ExtensionPoint {
 
     /**
      * Can the {@link #restart()} method restart Hudson?
+     *
+     * @throws RestartNotSupportedException
+     *      If the restart is not supported, throw this exception and explain the cause.
+     */
+    public void verifyRestartable() throws RestartNotSupportedException {
+        // the rewriteHudsonWar method isn't overridden.
+        if (!Util.isOverridden(Lifecycle.class,getClass(), "restart"))
+            throw new RestartNotSupportedException("Restart is not supported in this running mode.");
+    }
+
+    /**
+     * The same as {@link #verifyRestartable()} except the status is indicated by the return value,
+     * not by an exception.
      */
     public boolean canRestart() {
-        // the rewriteHudsonWar method isn't overridden.
-        return Util.isOverridden(Lifecycle.class,getClass(), "restart");
+        try {
+            verifyRestartable();
+            return true;
+        } catch (RestartNotSupportedException e) {
+            return false;
+        }
     }
 
     private static final Logger LOGGER = Logger.getLogger(Lifecycle.class.getName());

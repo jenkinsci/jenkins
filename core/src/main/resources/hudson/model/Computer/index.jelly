@@ -52,7 +52,7 @@ THE SOFTWARE.
         </j:if>
       </h1>
 
-      <j:if test="${it.offlineCause!=null}">
+      <j:if test="${it.offlineCause!=null and it.offline and !it.connecting}">
         <st:include it="${it.offlineCause}" page="cause.jelly" />
       </j:if>
 

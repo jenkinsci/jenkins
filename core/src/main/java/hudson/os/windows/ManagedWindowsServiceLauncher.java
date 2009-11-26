@@ -96,6 +96,7 @@ public class ManagedWindowsServiceLauncher extends ComputerLauncher {
         return new NtlmPasswordAuthentication(auth.getDomain(), auth.getUserName(), auth.getPassword());
     }
 
+    @Override
     public void launch(final SlaveComputer computer, final TaskListener listener) throws IOException, InterruptedException {
         try {
             PrintStream logger = listener.getLogger();
@@ -174,6 +175,7 @@ public class ManagedWindowsServiceLauncher extends ComputerLauncher {
             computer.setChannel(new BufferedInputStream(new SocketInputStream(s)),
                 new BufferedOutputStream(new SocketOutputStream(s)),
                 listener.getLogger(),new Listener() {
+                    @Override
                     public void onClosed(Channel channel, IOException cause) {
                         afterDisconnect(computer,listener);
                     }

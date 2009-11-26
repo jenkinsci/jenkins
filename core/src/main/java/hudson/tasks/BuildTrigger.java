@@ -153,7 +153,7 @@ public class BuildTrigger extends Recorder implements DependecyDeclarer, MatrixA
      *      Optional {@link BuildTrigger} configured for the current build.
      *      If it is non-null, its configuration value will affect the triggering behavior.
      *      But even when this is null (meaning no user-defined downstream project is set up),
-     *      there might be other dependencies defined by somebody else, so buidl would
+     *      there might be other dependencies defined by somebody else, so build would
      *      still have to call this method. 
      */
     public static boolean execute(AbstractBuild build, BuildListener listener, BuildTrigger trigger) {

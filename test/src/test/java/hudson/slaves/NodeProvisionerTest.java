@@ -227,7 +227,7 @@ public class NodeProvisionerTest extends HudsonTestCase {
         System.out.println("Waiting for a completion");
         for (Future<FreeStyleBuild> f : builds) {
             try {
-                assertBuildStatus(Result.SUCCESS, f.get(1, TimeUnit.MINUTES));
+                assertBuildStatus(Result.SUCCESS, f.get(60, TimeUnit.SECONDS));
             } catch (TimeoutException e) {
                 // time out so that the automated test won't hang forever, even when we have bugs
                 System.out.println("Build didn't complete in time");

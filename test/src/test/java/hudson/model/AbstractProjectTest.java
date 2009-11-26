@@ -30,21 +30,21 @@ import com.gargoylesoftware.htmlunit.html.HtmlInput;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import hudson.security.GlobalMatrixAuthorizationStrategy;
 import hudson.tasks.Shell;
-import hudson.scm.SCM;
-import hudson.scm.ChangeLogParser;
 import hudson.scm.NullSCM;
 import hudson.Launcher;
 import hudson.FilePath;
+import hudson.Util;
 import hudson.util.StreamTaskListener;
 import hudson.util.OneShotEvent;
+import java.io.IOException;
 import org.jvnet.hudson.test.HudsonTestCase;
 import org.jvnet.hudson.test.Bug;
 import org.jvnet.hudson.test.recipes.PresetData;
 import org.jvnet.hudson.test.recipes.PresetData.DataSet;
 
-import java.io.IOException;
 import java.io.File;
 import java.util.concurrent.Future;
+import org.apache.commons.io.FileUtils;
 
 /**
  * @author Kohsuke Kawaguchi
@@ -174,12 +174,12 @@ public class AbstractProjectTest extends HudsonTestCase {
                 return true;
             }
 
-            public boolean requiresWorkspaceForPolling() {
+            @Override public boolean requiresWorkspaceForPolling() {
                 return true;
             }
         });
         Thread t = new Thread() {
-            public void run() {
+            @Override public void run() {
                 p.pollSCMChanges(new StreamTaskListener(System.out));
             }
         };
@@ -200,5 +200,37 @@ public class AbstractProjectTest extends HudsonTestCase {
         } finally {
             t.interrupt();
         }
+    }
+
+    @Bug(1986)
+    public void testBuildSymlinks() throws Exception {
+        FreeStyleProject job = createFreeStyleProject();
+        job.getBuildersList().add(new Shell("echo \"Build #$BUILD_NUMBER\"\n"));
+        FreeStyleBuild build = job.scheduleBuild2(0, new Cause.UserCause()).get();
+        File lastSuccessful = new File(job.getRootDir(), "lastSuccessful"),
+             lastStable = new File(job.getRootDir(), "lastStable");
+        // First build creates links
+        assertSymlinkForBuild(lastSuccessful, 1);
+        assertSymlinkForBuild(lastStable, 1);
+        FreeStyleBuild build2 = job.scheduleBuild2(0, new Cause.UserCause()).get();
+        // Another build updates links
+        assertSymlinkForBuild(lastSuccessful, 2);
+        assertSymlinkForBuild(lastStable, 2);
+        // Delete latest build should update links
+        build2.delete();
+        assertSymlinkForBuild(lastSuccessful, 1);
+        assertSymlinkForBuild(lastStable, 1);
+        // Delete all builds should remove links
+        build.delete();
+        assertFalse("lastSuccessful link should be removed", lastSuccessful.exists());
+        assertFalse("lastStable link should be removed", lastStable.exists());
+    }
+
+    private static void assertSymlinkForBuild(File file, int buildNumber) throws IOException {
+        assertTrue("should exist and point to something that exists", file.exists());
+        assertTrue("should be symlink", Util.isSymlink(file));
+        String s = FileUtils.readFileToString(new File(file, "log"));
+        assertTrue("link should point to build #" + buildNumber + ", but log was:\n" + s,
+                   s.contains("Build #" + buildNumber + "\n"));
     }
 }

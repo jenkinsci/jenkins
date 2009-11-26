@@ -33,6 +33,10 @@ import org.jvnet.libpam.impl.CLibrary.passwd;
 /**
  * GNU C library.
  *
+ * <p>
+ * Not available on all platforms (such as Linux/PPC, IBM mainframe, etc.), so the caller should recover gracefully
+ * in case of {@link LinkageError}. See HUDSON-4820.
+ *
  * @author Kohsuke Kawaguchi
  */
 public interface GNUCLibrary extends Library {

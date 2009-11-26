@@ -681,6 +681,7 @@ public class Channel implements VirtualChannel, IChannel {
             }
         }
 
+        @Override
         public String toString() {
             return "close";
         }
@@ -812,6 +813,7 @@ public class Channel implements VirtualChannel, IChannel {
                 ForwarderFactory.create(forwardHost, forwardPort));
     }
 
+    @Override
     public String toString() {
         return super.toString()+":"+name;
     }
@@ -839,6 +841,7 @@ public class Channel implements VirtualChannel, IChannel {
             super("Channel reader thread: "+name);
         }
 
+        @Override
         public void run() {
             Command cmd = null;
             try {
