@@ -106,18 +106,17 @@ public class Label implements Comparable<Label>, ModelObject {
      */
     @Exported
     public Set<Node> getNodes() {
-        if(nodes==null) {
-            Set<Node> r = new HashSet<Node>();
-            Hudson h = Hudson.getInstance();
-            if(h.getAssignedLabels().contains(this))
-                r.add(h);
-            for (Node n : h.getNodes()) {
-                if(n.getAssignedLabels().contains(this))
-                    r.add(n);
-            }
-            nodes = Collections.unmodifiableSet(r);
+        if(nodes!=null) return nodes;
+
+        Set<Node> r = new HashSet<Node>();
+        Hudson h = Hudson.getInstance();
+        if(h.getAssignedLabels().contains(this))
+            r.add(h);
+        for (Node n : h.getNodes()) {
+            if(n.getAssignedLabels().contains(this))
+                r.add(n);
         }
-        return nodes;
+        return nodes = Collections.unmodifiableSet(r);
     }
 
     /**
