@@ -106,7 +106,7 @@ public class Label implements Comparable<Label>, ModelObject {
      */
     @Exported
     public Set<Node> getNodes() {
-        Nodes nodes = this.nodes;
+        Set<Node> nodes = this.nodes;
         if(nodes!=null) return nodes;
 
         Set<Node> r = new HashSet<Node>();
