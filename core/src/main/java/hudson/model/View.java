@@ -23,13 +23,13 @@
  */
 package hudson.model;
 
+import static hudson.model.Hudson.checkGoodName;
+import hudson.DescriptorExtensionList;
+import hudson.Extension;
 import hudson.ExtensionPoint;
 import hudson.Util;
-import hudson.Extension;
-import hudson.DescriptorExtensionList;
-import hudson.widgets.Widget;
 import hudson.model.Descriptor.FormException;
-import static hudson.model.Hudson.checkGoodName;
+import hudson.model.Node.Mode;
 import hudson.scm.ChangeLogSet.Entry;
 import hudson.search.CollectionSearchIndex;
 import hudson.search.SearchIndexBuilder;
@@ -39,25 +39,28 @@ import hudson.security.Permission;
 import hudson.security.PermissionGroup;
 import hudson.util.DescriptorList;
 import hudson.util.RunList;
-import org.kohsuke.stapler.StaplerRequest;
-import org.kohsuke.stapler.StaplerResponse;
-import org.kohsuke.stapler.export.Exported;
-import org.kohsuke.stapler.export.ExportedBean;
+import hudson.widgets.Widget;
 
-import javax.servlet.ServletException;
 import java.io.IOException;
+import java.text.ParseException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.GregorianCalendar;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.text.ParseException;
-import org.kohsuke.stapler.HttpRedirect;
-import org.kohsuke.stapler.HttpResponse;
+
+import javax.servlet.ServletException;
+
+import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.StaplerResponse;
+import org.kohsuke.stapler.export.Exported;
+import org.kohsuke.stapler.export.ExportedBean;
 
 /**
  * Encapsulates the rendering of the list of {@link TopLevelItem}s
@@ -96,6 +99,16 @@ public abstract class View extends AbstractModelObject implements AccessControll
      * Message displayed in the view page.
      */
     protected String description;
+    
+    /**
+     * If true, only show relevant executors
+     */
+    protected boolean filterExecutors;
+
+    /**
+     * If true, only show relevant queue items
+     */
+    protected boolean filterQueue;
 
     protected View(String name) {
         this.name = name;
@@ -187,8 +200,22 @@ public abstract class View extends AbstractModelObject implements AccessControll
     public boolean isEditable() {
         return true;
     }
-
+    
     /**
+     * If true, only show relevant executors
+     */
+    public boolean isFilterExecutors() {
+		return filterExecutors;
+	}
+    
+    /**
+     * If true, only show relevant queue items
+     */
+    public boolean isFilterQueue() {
+    	return filterQueue;
+    }
+
+	/**
      * Gets the {@link Widget}s registered on this object.
      *
      * <p>
@@ -203,6 +230,56 @@ public abstract class View extends AbstractModelObject implements AccessControll
      */
     public boolean isDefault() {
         return Hudson.getInstance().getPrimaryView()==this;
+    }
+    
+    public List<Computer> getComputers() {
+    	Computer[] computers = Hudson.getInstance().getComputers();
+    	
+    	if (!isFilterExecutors()) {
+    		return Arrays.asList(computers);
+    	}
+    	
+    	List<Computer> result = new ArrayList<Computer>();
+    	
+    	boolean roam = false;
+    	HashSet<Label> labels = new HashSet<Label>();
+    	for (Item item: getItems()) {
+    		if (item instanceof AbstractProject<?,?>) {
+    			AbstractProject<?,?> p = (AbstractProject<?, ?>) item;
+    			Label l = p.getAssignedLabel();
+    			if (l != null) {
+    				labels.add(l);
+    			} else {
+    				roam = true;
+    			}
+    		}
+    	}
+    	
+    	for (Computer c: computers) {
+    		Node n = c.getNode();
+    		if (c != null) {
+    			if (roam && n.getMode() == Mode.NORMAL || !Collections.disjoint(n.getAssignedLabels(), labels)) {
+    				result.add(c);
+    			}
+    		}
+    	}
+    	
+    	return result;
+    }
+    
+    public List<Queue.Item> getQueueItems() {
+    	if (!isFilterQueue()) {
+    		return Arrays.asList(Hudson.getInstance().getQueue().getItems());
+    	}
+    	
+    	Collection<TopLevelItem> items = getItems(); 
+    	List<Queue.Item> result = new ArrayList<Queue.Item>();
+    	for (Queue.Item qi: Hudson.getInstance().getQueue().getItems()) {
+    		if (items.contains(qi.task)) {
+    			result.add(qi);
+    		}
+    	}
+    	return result;
     }
 
     /**
@@ -484,6 +561,8 @@ public abstract class View extends AbstractModelObject implements AccessControll
         submit(req);
 
         description = Util.nullify(req.getParameter("description"));
+        filterExecutors = req.getParameter("filterExecutors") != null;
+        filterQueue = req.getParameter("filterQueue") != null;
 
         try {
             rename(req.getParameter("name"));

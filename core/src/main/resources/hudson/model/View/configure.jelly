@@ -1,7 +1,7 @@
 <!--
 The MIT License
 
-Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi
+Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, Tom Huybrechts
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -39,6 +39,12 @@ THE SOFTWARE.
         </f:entry>
         <f:entry title="${%Description}" help="/help/view-config/description.html">
           <f:textarea name="description" field="description" />
+        </f:entry>
+        <f:entry title="${%Filter build queue}" help="/help/view-config/filter-queue.html">
+        	<f:checkbox name="filterQueue" field="filterQueue"/>
+        </f:entry>
+        <f:entry title="${%Filter build executors}" help="/help/view-config/filter-executors.html">
+        	<f:checkbox name="filterExecutors" field="filterExecutors"/>
         </f:entry>
 
         <!-- subtypes can put entries here. -->
