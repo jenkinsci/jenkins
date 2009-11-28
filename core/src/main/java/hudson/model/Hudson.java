@@ -3570,7 +3570,10 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
     public static boolean KILL_AFTER_LOAD = Boolean.getBoolean(Hudson.class.getName()+".killAfterLoad");
     public static boolean LOG_STARTUP_PERFORMANCE = Boolean.getBoolean(Hudson.class.getName()+".logStartupPerformance");
     private static final boolean CONSISTENT_HASH = true; // Boolean.getBoolean(Hudson.class.getName()+".consistentHash");
-    public static boolean FLYWEIGHT_SUPPORT = Boolean.getBoolean(Hudson.class.getName()+".flyweightSupport");
+    /**
+     * Enabled by default as of 1.337. Will keep it for a while just in case we have some serious problems.
+     */
+    public static boolean FLYWEIGHT_SUPPORT = !"false".equals(System.getProperty(Hudson.class.getName()+".flyweightSupport"));
 
     /**
      * Tentative switch to activate the concurrent build behavior.
