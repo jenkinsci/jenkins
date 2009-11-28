@@ -904,7 +904,7 @@ public class Queue extends ResourceController implements Saveable {
             
             for (Node n : hash.list(p.task.getFullDisplayName())) {
                 Computer c = n.toComputer();
-                if (c==null)    continue;
+                if (c==null || c.isOffline())    continue;
                 c.startFlyWeightTask(p);
                 return;
             }
