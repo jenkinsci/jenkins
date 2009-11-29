@@ -23,9 +23,10 @@
  */
 package hudson.model;
 
-import org.kohsuke.stapler.DataBoundConstructor;
-
 import java.util.Map;
+
+import org.kohsuke.stapler.DataBoundConstructor;
+import org.kohsuke.stapler.export.Exported;
 
 public class RunParameterValue extends ParameterValue {
 
@@ -49,6 +50,17 @@ public class RunParameterValue extends ParameterValue {
     public String getRunId() {
         return runId;
     }
+    
+    @Exported
+    public String getJobName() {
+    	return runId.split("#")[0];
+    }
+    
+    @Exported
+    public String getNumber() {
+    	return runId.split("#")[1];
+    }
+    
 
     /**
      * Exposes the name/value as an environment variable.
