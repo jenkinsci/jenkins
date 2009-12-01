@@ -122,7 +122,7 @@ import hudson.util.StreamTaskListener;
 import hudson.util.TextFile;
 import hudson.util.VersionNumber;
 import hudson.util.XStream2;
-import hudson.util.ServiceLoader;
+import hudson.util.Service;
 import hudson.widgets.Widget;
 import net.sf.json.JSONObject;
 import org.acegisecurity.AccessDeniedException;
@@ -671,7 +671,7 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
      * As such there's no way for plugins to participate into this process. 
      */
     private ReactorListener buildReactorListener() throws IOException {
-        List<ReactorListener> r = (List) ServiceLoader.load(Thread.currentThread().getContextClassLoader(), InitReactorListener.class);
+        List<ReactorListener> r = (List) Service.loadInstances(Thread.currentThread().getContextClassLoader(), InitReactorListener.class);
         r.add(new ReactorListener() {
             final Level level = Level.parse(System.getProperty(Hudson.class.getName()+".initLogLevel","FINE"));
             public void onTaskStarted(Task t) {
