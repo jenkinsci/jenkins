@@ -33,20 +33,54 @@ THE SOFTWARE.
   <l:layout title="Update Center" permission="${app.ADMINISTER}" norefresh="true">
     <st:include page="sidepanel.jelly"/>
     <l:main-panel>
+      <script type="text/javascript">// &lt;![CDATA[
+        function showhideCategories(hdr,on) {
+          var table = hdr.parentNode.parentNode.parentNode,
+              newDisplay = on ? '' : 'none',
+              nameList = new Array(), name;
+          for (var i = 1; i &lt; table.rows.length; i++) {
+            if (on || table.rows[i].cells.length == 1)
+              table.rows[i].style.display = newDisplay;
+             else {
+              // Hide duplicate rows for a plugin when not viewing by-category
+              name = table.rows[i].cells[1].getAttribute('data');
+              if (nameList[name] == 1) table.rows[i].style.display = 'none';
+              nameList[name] = 1;
+            }
+          }
+        }
+      // ]]&gt;
+      </script>
       <form method="post" action="install">
+        <j:set var="isUpdates" value="${attrs.page=='updates'}" />
         <local:tabBar page="${attrs.page}" xmlns:local="/hudson/PluginManager">
             <tr style="border-top: 0px;">
-              <th width="32" tooltip="${%Check to install the plugin}">${%Install}</th>
-              <th initialSortDir="down">${%Name}</th>
-              <th>${%Version}</th>
-              <j:if test="${attrs.page=='updates'}"><th>${%Installed}</th></j:if>
+              <th initialSortDir="${isUpdates?null:'down'}" tooltip="${%Check to install the plugin}"
+                  width="32" onclick="showhideCategories(this,1)">${%Install}</th>
+              <th initialSortDir="${isUpdates?'down':null}"
+                  onclick="showhideCategories(this,0)">${%Name}</th>
+              <th onclick="showhideCategories(this,0)">${%Version}</th>
+              <j:if test="${isUpdates}"><th>${%Installed}</th></j:if>
             </tr>
             <j:choose>
               <j:when test="${!empty(list)}">
+                <j:set var="lastCat" value="" />
                 <j:forEach var="p" items="${list}">
+                  <j:if test="${!isUpdates}">
+                    <j:set var="thisCat" value="${p.category}" />
+                    <j:set var="p" value="${p.plugin}" />
+                    <j:if test="${thisCat != lastCat}">
+                      <tr>
+                        <td class="pane" colspan="3">${thisCat}</td>
+                      </tr>
+                    </j:if>
+                    <j:set var="lastCat" value="${thisCat}" />
+                  </j:if>
                   <tr>
-                    <td class="pane" align="center"><input type="checkbox" name="plugin.${p.name}.${p.sourceId}"/></td>
-                    <td class="pane">
+                    <td class="pane" align="center" data="${thisCat}_">
+                      <input type="checkbox" name="plugin.${p.name}.${p.sourceId}"/>
+                    </td>
+                    <td class="pane" data="${h.xmlEscape(p.displayName)}">
                       <div>
                         <a href="${p.wiki}"><st:out value="${p.displayName}"/></a>
                       </div>
@@ -61,7 +95,7 @@ THE SOFTWARE.
                       </j:if>
                     </td>
                     <td class="pane"><st:out value="${p.version}" /></td>
-                    <j:if test="${attrs.page=='updates'}">
+                    <j:if test="${isUpdates}">
                       <td>
                         <j:choose><j:when test="${p.installed.active}">
                           <st:out value="${p.installed.version}" />

@@ -61,6 +61,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.TreeSet;
 import java.util.Vector;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -303,6 +304,33 @@ public class UpdateCenter extends AbstractModelObject implements Saveable {
         }
 
         return plugins;
+    }
+
+    /**
+     * Returns a list of plugins that should be shown in the "available" tab, grouped by category.
+     * A plugin with multiple categories will appear multiple times in the list.
+     */
+    public PluginEntry[] getCategorizedAvailables() {
+        TreeSet<PluginEntry> entries = new TreeSet<PluginEntry>();
+        for (Plugin p : getAvailables()) {
+            if (p.categories==null || p.categories.length==0)
+                entries.add(new PluginEntry(p, getCategoryDisplayName(null)));
+            else
+                for (String c : p.categories)
+                    entries.add(new PluginEntry(p, getCategoryDisplayName(c)));
+        }
+        return entries.toArray(new PluginEntry[entries.size()]);
+    }
+
+    private static String getCategoryDisplayName(String category) {
+        if (category==null)
+            return Messages.UpdateCenter_PluginCategory_misc();
+        try {
+            return (String)Messages.class.getMethod(
+                    "UpdateCenter_PluginCategory_" + category.replace('-', '_')).invoke(null);
+        } catch (Exception ex) {
+            return Messages.UpdateCenter_PluginCategory_unrecognized(category);
+        }
     }
 
     public List<Plugin> getUpdates() {
@@ -824,6 +852,18 @@ public class UpdateCenter extends AbstractModelObject implements Saveable {
         @Override
         protected void replace(File dst, File src) throws IOException {
             Lifecycle.get().rewriteHudsonWar(src);
+        }
+    }
+
+    public static final class PluginEntry implements Comparable<PluginEntry> {
+        public Plugin plugin;
+        public String category;
+        private PluginEntry(Plugin p, String c) { plugin = p; category = c; }
+
+        public int compareTo(PluginEntry o) {
+            int r = category.compareTo(o.category);
+            if (r==0) r = plugin.name.compareToIgnoreCase(o.plugin.name);
+            return r;
         }
     }
 

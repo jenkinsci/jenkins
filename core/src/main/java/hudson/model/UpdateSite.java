@@ -246,14 +246,14 @@ public class UpdateSite {
     public List<Plugin> getAvailables() {
         List<Plugin> r = new ArrayList<Plugin>();
         Data data = getData();
-        if(data ==null)     return Collections.emptyList();
+        if(data==null)     return Collections.emptyList();
         for (Plugin p : data.plugins.values()) {
             if(p.getInstalled()==null)
                 r.add(p);
         }
         return r;
     }
-    
+
     /**
      * Gets the information about a specific plugin.
      *
@@ -468,6 +468,11 @@ public class UpdateSite {
          * Version of Hudson core this plugin was compiled against.
          */
         public final String requiredCore;
+        /**
+         * Categories for grouping plugins, taken from labels assigned to wiki page.
+         * Can be null.
+         */
+        public final String[] categories;
 
         @DataBoundConstructor
         public Plugin(String sourceId, JSONObject o) {
@@ -477,6 +482,7 @@ public class UpdateSite {
             this.excerpt = get(o,"excerpt");
             this.compatibleSinceVersion = get(o,"compatibleSinceVersion");
             this.requiredCore = get(o,"requiredCore");
+            this.categories = o.has("labels") ? (String[])o.getJSONArray("labels").toArray(new String[0]) : null;
         }
 
         private String get(JSONObject o, String prop) {

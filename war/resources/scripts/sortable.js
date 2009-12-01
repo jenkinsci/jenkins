@@ -87,6 +87,7 @@ function ts_getInnerText(el) {
 
 // extract data for sorting from a cell
 function extractData(x) {
+  if(x==null) return '';
   var data = x.getAttribute("data");
   if(data!=null)
     return data;
