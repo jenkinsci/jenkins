@@ -32,11 +32,8 @@ import hudson.PluginWrapper;
 import hudson.ProxyConfiguration;
 import hudson.Util;
 import hudson.XmlFile;
-import hudson.triggers.SafeTimerTask;
-import hudson.init.Initializer;
-import hudson.init.InitMilestone;
-import static hudson.init.InitMilestone.JOB_LOADED;
 import static hudson.init.InitMilestone.PLUGINS_STARTED;
+import hudson.init.Initializer;
 import hudson.lifecycle.Lifecycle;
 import hudson.model.UpdateSite.Data;
 import hudson.model.UpdateSite.Plugin;
@@ -45,9 +42,7 @@ import hudson.util.DaemonThreadFactory;
 import hudson.util.IOException2;
 import hudson.util.PersistedList;
 import hudson.util.XStream2;
-import hudson.util.DoubleLaunchChecker;
 import org.acegisecurity.Authentication;
-import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.input.CountingInputStream;
 import org.apache.commons.io.output.NullOutputStream;
 import org.kohsuke.stapler.StaplerResponse;
@@ -57,7 +52,6 @@ import javax.servlet.ServletException;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -522,9 +516,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable {
 
         private void testConnection(URL url) throws IOException {
             try {
-                InputStream in = ProxyConfiguration.open(url).getInputStream();
-                IOUtils.copy(in,new NullOutputStream());
-                in.close();
+                Util.copyStreamAndClose(ProxyConfiguration.open(url).getInputStream(),new NullOutputStream());
             } catch (SSLHandshakeException e) {
                 if (e.getMessage().contains("PKIX path building failed"))
                    // fix up this crappy error message from JDK

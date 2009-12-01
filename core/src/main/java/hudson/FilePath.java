@@ -40,6 +40,7 @@ import hudson.remoting.RemoteInputStream;
 import hudson.util.IOException2;
 import hudson.util.HeadBufferingStream;
 import hudson.util.FormValidation;
+import hudson.util.IOUtils;
 import static hudson.util.jna.GNUCLibrary.LIBC;
 import static hudson.Util.fixEmpty;
 import static hudson.FilePath.TarCompression.GZIP;
@@ -54,7 +55,6 @@ import org.apache.tools.ant.types.FileSet;
 import org.apache.tools.tar.TarEntry;
 import org.apache.tools.zip.ZipOutputStream;
 import org.apache.tools.zip.ZipEntry;
-import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.input.CountingInputStream;
 import org.apache.commons.fileupload.FileItem;
 import org.kohsuke.stapler.Stapler;
@@ -405,12 +405,7 @@ public final class FilePath implements Serializable {
                 } else {
                     File p = f.getParentFile();
                     if(p!=null) p.mkdirs();
-                    FileOutputStream out = new FileOutputStream(f);
-                    try {
-                        IOUtils.copy(zip, out);
-                    } finally {
-                        out.close();
-                    }
+                    IOUtils.copy(zip, f);
                     f.setLastModified(e.getTime());
                     zip.closeEntry();
                 }
@@ -1731,12 +1726,7 @@ public final class FilePath implements Serializable {
                     File parent = f.getParentFile();
                     if (parent != null) parent.mkdirs();
 
-                    OutputStream fos = new FileOutputStream(f);
-                    try {
-                        IOUtils.copy(t,fos);
-                    } finally {
-                        fos.close();
-                    }
+                    IOUtils.copy(t,f);
                     f.setLastModified(te.getModTime().getTime());
                     int mode = te.getMode()&0777;
                     if(mode!=0 && !Hudson.isWindows()) // be defensive

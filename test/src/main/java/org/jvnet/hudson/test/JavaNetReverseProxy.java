@@ -1,8 +1,8 @@
 package org.jvnet.hudson.test;
 
 import hudson.Util;
+import hudson.util.IOUtils;
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.IOUtils;
 import org.mortbay.jetty.Server;
 import org.mortbay.jetty.bio.SocketConnector;
 import org.mortbay.jetty.handler.ContextHandlerCollection;
@@ -86,7 +86,7 @@ public class JavaNetReverseProxy extends HttpServlet {
         }
 
         resp.setContentType(getMimeType(path));
-        IOUtils.copy(new FileInputStream(cache),resp.getOutputStream());
+        IOUtils.copy(cache,resp.getOutputStream());
     }
 
     private String getMimeType(String path) {

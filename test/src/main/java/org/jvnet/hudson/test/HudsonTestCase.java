@@ -76,7 +76,6 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.io.OutputStream;
 import java.lang.annotation.Annotation;
 import java.lang.ref.WeakReference;
 import java.lang.reflect.Method;
@@ -106,7 +105,6 @@ import junit.framework.TestCase;
 
 import org.apache.commons.httpclient.NameValuePair;
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.IOUtils;
 import org.apache.commons.beanutils.PropertyUtils;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.resolver.AbstractArtifactResolutionException;
@@ -408,12 +406,7 @@ public abstract class HudsonTestCase extends TestCase implements RootAction {
         LOGGER.warning("Extracting a copy of Maven bundled in the test harness. " +
                 "To avoid a performance hit, set the system property 'maven.home' to point to a Maven2 installation.");
         FilePath mvn = hudson.getRootPath().createTempFile("maven", "zip");
-        OutputStream os = mvn.write();
-        try {
-            IOUtils.copy(HudsonTestCase.class.getClassLoader().getResourceAsStream(mavenVersion + "-bin.zip"), os);
-        } finally {
-            os.close();
-        }
+        mvn.copyFrom(HudsonTestCase.class.getClassLoader().getResource(mavenVersion + "-bin.zip"));
         File mvnHome = createTmpDir();
         mvn.unzip(new FilePath(mvnHome));
         // TODO: switch to tar that preserves file permissions more easily
@@ -437,12 +430,7 @@ public abstract class HudsonTestCase extends TestCase implements RootAction {
             LOGGER.warning("Extracting a copy of Ant bundled in the test harness. " +
                     "To avoid a performance hit, set the environment variable ANT_HOME to point to an  Ant installation.");
             FilePath ant = hudson.getRootPath().createTempFile("ant", "zip");
-            OutputStream os = ant.write();
-            try {
-                IOUtils.copy(HudsonTestCase.class.getClassLoader().getResourceAsStream("apache-ant-1.7.1-bin.zip"), os);
-            } finally {
-                os.close();
-            }
+            ant.copyFrom(HudsonTestCase.class.getClassLoader().getResource("apache-ant-1.7.1-bin.zip"));
             File antHome = createTmpDir();
             ant.unzip(new FilePath(antHome));
             // TODO: switch to tar that preserves file permissions more easily
