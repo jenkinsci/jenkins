@@ -182,12 +182,6 @@ public class MatrixConfiguration extends Project<MatrixConfiguration,MatrixRun> 
     }
 
     @Override
-    public boolean isFingerprintConfigured() {
-        // TODO
-        return false;
-    }
-
-    @Override
     protected void buildDependencyGraph(DependencyGraph graph) {
     }
 
