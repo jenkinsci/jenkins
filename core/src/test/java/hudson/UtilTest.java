@@ -28,6 +28,10 @@ import junit.framework.TestCase;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.Locale;
+import java.io.File;
+
+import hudson.model.Hudson;
+import hudson.util.StreamTaskListener;
 
 /**
  * @author Kohsuke Kawaguchi
@@ -137,5 +141,26 @@ public class UtilTest extends TestCase {
         assertEquals("Failed parse did not return the default value", 10, Util.tryParseNumber("ss", 10).intValue());
         assertEquals("Parsing empty string did not return the default value", 10, Util.tryParseNumber("", 10).intValue());
         assertEquals("Parsing null string did not return the default value", 10, Util.tryParseNumber(null, 10).intValue());
+    }
+
+    public void testSymlink() throws Exception {
+        if (Hudson.isWindows())     return;
+
+        StreamTaskListener l = new StreamTaskListener(System.out);
+        File d = Util.createTempDir();
+        try {
+            new FilePath(new File(d, "a")).touch(0);
+            Util.createSymlink(d,"a","x", l);
+            assertEquals("a",Util.resolveSymlink(new File(d,"x"),l));
+
+            // test a long name
+            StringBuilder buf = new StringBuilder(768);
+            for( int i=0; i<768; i++)
+                buf.append('0'+(i%10));
+            Util.createSymlink(d,buf.toString(),"x", l);
+            assertEquals(buf.toString(),Util.resolveSymlink(new File(d,"x"),l));
+        } finally {
+            Util.deleteRecursive(d);
+        }
     }
 }

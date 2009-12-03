@@ -27,6 +27,8 @@ import com.sun.jna.Library;
 import com.sun.jna.StringArray;
 import com.sun.jna.Pointer;
 import com.sun.jna.Native;
+import com.sun.jna.Memory;
+import com.sun.jna.NativeLong;
 import com.sun.jna.ptr.IntByReference;
 import org.jvnet.libpam.impl.CLibrary.passwd;
 
@@ -86,6 +88,16 @@ public interface GNUCLibrary extends Library {
      * See http://linux.die.net/man/3/symlink
      */
     int symlink(String oldname, String newname);
+
+    /**
+     * Read a symlink. The name will be copied into the specified memory, and returns the number of
+     * bytes copied. The string is not null-terminated.
+     *
+     * @return
+     *      if the return value equals size, the caller needs to retry with a bigger buffer.
+     *      If -1, error.
+     */
+    int readlink(String filename, Memory buffer, NativeLong size);
 
     public static final GNUCLibrary LIBC = (GNUCLibrary) Native.loadLibrary("c",GNUCLibrary.class);
 }
