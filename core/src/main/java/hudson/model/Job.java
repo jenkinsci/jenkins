@@ -25,7 +25,6 @@ package hudson.model;
 
 import static javax.servlet.http.HttpServletResponse.SC_BAD_REQUEST;
 import static javax.servlet.http.HttpServletResponse.SC_NO_CONTENT;
-import javax.servlet.http.HttpServletResponse;
 
 import hudson.ExtensionPoint;
 import hudson.Util;
