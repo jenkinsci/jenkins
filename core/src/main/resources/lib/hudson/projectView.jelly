@@ -23,25 +23,36 @@ THE SOFTWARE.
 -->
 
 <!--
-  <%@ attribute name="jobs" required="true" type="java.util.Collection" %>
-  <%@ attribute name="showViewTabs" required="true" type="java.lang.Boolean" %>
-
   <%@ attribute name="jobBaseUrl" type="String" %>
     The base URL of all job links. Normally ${rootURL}/
-
-  @indenter:
-     optional Indenter instance used to indent items.
-  @views:
-     if non-null, render nested views
 -->
 <j:jelly xmlns:j="jelly:core" xmlns:x="jelly:xml" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout"
          xmlns:t="/lib/hudson" xmlns:f="/lib/form">
+  <st:documentation>
+    Renders a list of jobs and their key information.
+
+    <st:attribute name="jobs" use="required" trim="Collection">
+      Items to disable.
+    </st:attribute>
+    <st:attribute name="showViewTabs" use="required" type="boolean">
+      If the caller rendered a view tabes, set this to true so that CSS is adjusted accordingly.
+    </st:attribute>
+    <st:attribute name="views" type="Collection&lt;View>">
+      If non-null, render nested views.
+    </st:attribute>
+    <st:attribute name="indenter" type="hudson.Indenter">
+      Optional Indenter instance used to indent items.
+    </st:attribute>
+    <st:attribute name="columnExtensions" type="Collection&lt;hudson.views.ListViewColumn>">
+      List view columns to render. If omitted, the default ones from ListView.getDefaultColumns() are used.
+    </st:attribute>
+  </st:documentation>
+
   <t:setIconSize/>
   <div class="dashboard">
 
     <j:if test="${columnExtensions==null}">
-        <j:invokeStatic var="defaultColumns" className="hudson.model.ListView" method="getDefaultColumns"/>
-        <j:set var="columnExtensions" value="${defaultColumns}"/>
+        <j:invokeStatic var="columnExtensions" className="hudson.model.ListView" method="getDefaultColumns"/>
     </j:if>
     
     <j:if test="${!empty(jobs)}">
