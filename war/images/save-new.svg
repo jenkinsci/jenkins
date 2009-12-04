@@ -1,27 +1,34 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <!-- Created with Inkscape (http://www.inkscape.org/) -->
+
 <svg
    xmlns:dc="http://purl.org/dc/elements/1.1/"
-   xmlns:cc="http://web.resource.org/cc/"
+   xmlns:cc="http://creativecommons.org/ns#"
    xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
    xmlns:svg="http://www.w3.org/2000/svg"
    xmlns="http://www.w3.org/2000/svg"
    xmlns:xlink="http://www.w3.org/1999/xlink"
-   xmlns:sodipodi="http://inkscape.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
    xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
    width="48"
    height="48"
    id="svg2"
    sodipodi:version="0.32"
-   inkscape:version="0.42+devel"
+   inkscape:version="0.47pre4 r22446"
    version="1.0"
-   sodipodi:docbase="/home/jimmac/gfx/ximian/tango-icon-theme/scalable/devices"
-   sodipodi:docname="media-floppy.svg"
+   sodipodi:docname="save-new.svg"
    inkscape:export-filename="/home/jimmac/gfx/ximian/tango-icon-theme/scalable/devices/media-floppy.png"
    inkscape:export-xdpi="90"
    inkscape:export-ydpi="90">
   <defs
      id="defs4">
+    <inkscape:perspective
+       sodipodi:type="inkscape:persp3d"
+       inkscape:vp_x="0 : 24 : 1"
+       inkscape:vp_y="0 : 1000 : 0"
+       inkscape:vp_z="48 : 24 : 1"
+       inkscape:persp3d-origin="24 : 16 : 1"
+       id="perspective35" />
     <linearGradient
        inkscape:collect="always"
        id="linearGradient2371">
@@ -113,6 +120,48 @@
        r="22.875"
        gradientTransform="matrix(1.000000,0.000000,0.000000,0.269126,-1.352272e-16,30.08005)"
        gradientUnits="userSpaceOnUse" />
+    <inkscape:perspective
+       id="perspective2927"
+       inkscape:persp3d-origin="0.5 : 0.33333333 : 1"
+       inkscape:vp_z="1 : 0.5 : 1"
+       inkscape:vp_y="0 : 1000 : 0"
+       inkscape:vp_x="0 : 0.5 : 1"
+       sodipodi:type="inkscape:persp3d" />
+    <radialGradient
+       inkscape:collect="always"
+       xlink:href="#linearGradient12512"
+       id="radialGradient2580"
+       gradientUnits="userSpaceOnUse"
+       cx="55"
+       cy="125"
+       fx="55"
+       fy="125"
+       r="14.375" />
+    <linearGradient
+       id="linearGradient12512">
+      <stop
+         id="stop12513"
+         offset="0.0000000"
+         style="stop-color:#ffffff;stop-opacity:1.0000000;" />
+      <stop
+         id="stop12517"
+         offset="0.50000000"
+         style="stop-color:#fff520;stop-opacity:0.89108908;" />
+      <stop
+         id="stop12514"
+         offset="1.0000000"
+         style="stop-color:#fff300;stop-opacity:0.0000000;" />
+    </linearGradient>
+    <radialGradient
+       r="14.375"
+       fy="125"
+       fx="55"
+       cy="125"
+       cx="55"
+       gradientUnits="userSpaceOnUse"
+       id="radialGradient2937"
+       xlink:href="#linearGradient12512"
+       inkscape:collect="always" />
   </defs>
   <sodipodi:namedview
      id="base"
@@ -130,16 +179,25 @@
      showborder="true"
      borderlayer="top"
      showgrid="false"
-     gridcolor="#9f9f9f"
-     gridopacity="0.10196078"
-     gridempcolor="#9f9f9f"
-     gridempopacity="0.25490196"
-     gridempspacing="10"
      inkscape:grid-points="false"
      inkscape:window-width="872"
      inkscape:window-height="693"
      inkscape:window-x="502"
-     inkscape:window-y="197" />
+     inkscape:window-y="197"
+     inkscape:window-maximized="0">
+    <inkscape:grid
+       id="GridFromPre046Settings"
+       type="xygrid"
+       originx="0px"
+       originy="0px"
+       spacingx="1px"
+       spacingy="1px"
+       color="#9f9f9f"
+       empcolor="#9f9f9f"
+       opacity="0.10196078"
+       empopacity="0.25490196"
+       empspacing="10" />
+  </sodipodi:namedview>
   <metadata
      id="metadata7">
     <rdf:RDF>
@@ -266,5 +324,18 @@
        y="30.4566"
        rx="0.75120711"
        ry="0.75120765" />
+    <path
+       inkscape:export-ydpi="33.852203"
+       inkscape:export-xdpi="33.852203"
+       inkscape:export-filename="/home/jimmac/ximian_art/icons/nautilus/suse93/stock_new-16.png"
+       transform="matrix(0.611127,0,0,0.611127,5.615939,-67.942577)"
+       d="m 69.375,125 a 14.375,14.375 0 1 1 -28.75,0 14.375,14.375 0 1 1 28.75,0 z"
+       sodipodi:ry="14.375"
+       sodipodi:rx="14.375"
+       sodipodi:cy="125"
+       sodipodi:cx="55"
+       id="path12511"
+       style="fill:url(#radialGradient2937);fill-opacity:1;fill-rule:nonzero;stroke:none;stroke-width:1.25000024;marker:none;visibility:visible;display:block"
+       sodipodi:type="arc" />
   </g>
 </svg>
