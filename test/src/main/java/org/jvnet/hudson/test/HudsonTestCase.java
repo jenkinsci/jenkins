@@ -1173,6 +1173,9 @@ public abstract class HudsonTestCase extends TestCase implements RootAction {
                 return !record.getMessage().contains("XMLHttpRequest.getResponseHeader() was called before the response was available.");
             }
         });
+
+        // remove the upper bound of the POST data size in Jetty.
+        System.setProperty("org.mortbay.jetty.Request.maxFormContentSize","-1");
     }
 
     private static final Logger LOGGER = Logger.getLogger(HudsonTestCase.class.getName());
