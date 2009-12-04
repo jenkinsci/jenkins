@@ -123,6 +123,7 @@ import hudson.util.TextFile;
 import hudson.util.VersionNumber;
 import hudson.util.XStream2;
 import hudson.util.Service;
+import hudson.util.IOUtils;
 import hudson.widgets.Widget;
 import net.sf.json.JSONObject;
 import org.acegisecurity.AccessDeniedException;
@@ -1958,8 +1959,7 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
         items.put(name,item);
 
         if (notify)
-            for (ItemListener l : ItemListener.all())
-                l.onCreated(item);
+            ItemListener.fireOnCreated(item);
 
         return item;
     }
@@ -2527,19 +2527,13 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
         File configXml = Items.getConfigFile(getRootDirFor(name)).getFile();
         configXml.getParentFile().mkdirs();
         try {
-            FileOutputStream fos = new FileOutputStream(configXml);
-            try {
-                Util.copyStream(xml,fos);
-            } finally {
-                fos.close();
-            }
+            IOUtils.copy(xml,configXml);
 
             // load it
             TopLevelItem result = (TopLevelItem)Items.load(this,configXml.getParentFile());
             items.put(name,result);
 
-            for (ItemListener l : ItemListener.all())
-                l.onCreated(result);
+            ItemListener.fireOnCreated(result);
 
             return result;
         } catch (IOException e) {
@@ -2571,8 +2565,7 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
         result.onCopiedFrom(src);
         items.put(name,result);
 
-        for (ItemListener l : ItemListener.all())
-            l.onCopied(src,result);
+        ItemListener.fireOnCopied(src,result);
 
         return result;
     }
