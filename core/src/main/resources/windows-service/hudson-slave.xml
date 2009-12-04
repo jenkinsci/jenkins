@@ -31,7 +31,7 @@ THE SOFTWARE.
 <service>
   <id>hudsonslave</id>
   <name>Hudson Slave</name>
-  <description>This service runs a slave for Hudson continous integration system.</description>
+  <description>This service runs a slave for Hudson continuous integration system.</description>
   <!--
     if you'd like to run Hudson with a specific version of Java, specify a full path to java.exe.
     The following value assumes that you have java in your PATH.

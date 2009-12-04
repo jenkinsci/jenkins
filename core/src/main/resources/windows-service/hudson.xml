@@ -31,7 +31,7 @@ THE SOFTWARE.
 <service>
   <id>hudson</id>
   <name>Hudson</name>
-  <description>This service runs Hudson continous integration system.</description>
+  <description>This service runs Hudson continuous integration system.</description>
   <env name="HUDSON_HOME" value="%BASE%"/>
   <!--
     if you'd like to run Hudson with a specific version of Java, specify a full path to java.exe.
