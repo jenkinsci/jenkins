@@ -151,8 +151,8 @@ public abstract class Publisher extends BuildStepCompatibilityLayer implements B
          * This is used as a sort key.
          */
         private int classify(Descriptor<Publisher> d) {
-            if(Recorder.class.isAssignableFrom(d.clazz))    return 0;
-            if(Notifier.class.isAssignableFrom(d.clazz))    return 2;
+            if(d.isSubTypeOf(Recorder.class))    return 0;
+            if(d.isSubTypeOf(Notifier.class))    return 2;
 
             // for compatibility, if the descriptor is manually registered in a specific way, detect that.
             Class<? extends Publisher> kind = PublisherList.KIND.get(d);
