@@ -40,10 +40,10 @@ THE SOFTWARE.
 	<j:set var="artifacts" value="${build.artifacts}" />
 	<j:if test="${!build.building and !empty(artifacts)}">
 	  <t:summary icon="package.gif">
+	    <a href="${baseURL}artifact/">${caption}</a>
 	    <j:choose>
 	      <j:when test="${size(artifacts) le build.LIST_CUTOFF}">
 	        <!-- if not too many, just list them -->
-	        ${caption}<br />
 	        <ul>
 	          <j:forEach var="f" items="${artifacts}">
 	            <li>
@@ -64,7 +64,7 @@ THE SOFTWARE.
 	          <script language="javascript">// &lt;![CDATA[
 	           YAHOO.util.Event.onContentReady('artifact-tree', function () {
 	            var artifactTree = new YAHOO.widget.TreeView('artifact-tree');
-	            var artifactRoot = new YAHOO.widget.TextNode('${h.jsStringEscape(caption)}',
+	            var artifactRoot = new YAHOO.widget.TextNode('${h.jsStringEscape('%View')}',
 	                                                         artifactTree.getRoot(), false);
 	            <j:forEach var="e" items="${artifacts.getTree().entrySet()}">
 	              <j:set var="f" value="${e.key}"/>
@@ -80,10 +80,7 @@ THE SOFTWARE.
 	           });
 	          // ]]&gt;</script>
 	      </j:when>
-	      <j:otherwise>
-	          <!-- otherwise use a link to directory browser -->
-	        <a href="${baseURL}artifact/">${caption}</a>
-	      </j:otherwise>
+	      <!-- otherwise just show link to directory browser -->
 	    </j:choose>
 	  </t:summary>
 	</j:if>

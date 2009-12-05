@@ -69,6 +69,7 @@ import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.Comparator;
@@ -744,6 +745,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
     private void addArtifacts( File dir, String path, String pathHref, ArtifactList r, Artifact parent ) {
         String[] children = dir.list();
         if(children==null)  return;
+        Arrays.sort(children, String.CASE_INSENSITIVE_ORDER);
         String childPath, childHref;
         boolean collapsed;
         Artifact a;
@@ -1024,6 +1026,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
 
         removeRunFromParent();
     }
+
     @SuppressWarnings("unchecked") // seems this is too clever for Java's type system?
     private void removeRunFromParent() {
         getParent().removeRun((RunT)this);
