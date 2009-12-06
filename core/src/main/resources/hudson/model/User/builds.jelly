@@ -30,7 +30,7 @@ THE SOFTWARE.
         <img src="${imagesURL}/48x48/user.gif" alt="" />
         Builds for ${it}
       </h1>
-      <t:buildListTable builds="${it.builds}"/>
+      <t:buildListTable builds="${it.builds}" jobBaseUrl="${rootURL}/" />
     </l:main-panel>
   </l:layout>
 </j:jelly>
