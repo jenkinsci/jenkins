@@ -563,7 +563,9 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
                     try {
                         perform(bs,listener);
                     } catch (Exception e) {
-                        Logger.getLogger(getClass().getName()).warning("Publisher " + bs.getClass().getName() + " skipped due to error: " + e.getMessage());
+                        String msg = "Publisher " + bs.getClass().getName() + " aborted due to exception";
+                        e.printStackTrace(listener.error(msg));
+                        LOGGER.log(Level.WARNING, msg, e);
                     }
             }
         }
