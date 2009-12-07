@@ -71,9 +71,8 @@ THE SOFTWARE.
         </executions>
       </plugin>
       <plugin>
-        <groupId>org.codehaus.groovy.maven</groupId>
+        <groupId>org.kohsuke.gmaven</groupId>
         <artifactId>gmaven-plugin</artifactId>
-        <version>1.0-rc-5</version>
         <executions>
           <execution>
             <id>preset-packager</id>

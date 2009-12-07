@@ -25,11 +25,6 @@ package hudson.model;
 
 import org.kohsuke.stapler.StaplerRequest;
 
-import java.util.List;
-import java.util.ArrayList;
-
-import hudson.tasks.BuildStepDescriptor;
-
 /**
  * {@link Descriptor} for {@link TopLevelItem}s.
  *
