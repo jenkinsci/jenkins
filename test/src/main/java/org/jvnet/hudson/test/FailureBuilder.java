@@ -53,5 +53,8 @@ public class FailureBuilder extends Builder {
         public String getDisplayName() {
             return "Always fail";
         }
+        public FailureBuilder newInstance(StaplerRequest req, JSONObject data) {
+            return new FailureBuilder();
+        }
     }
 }

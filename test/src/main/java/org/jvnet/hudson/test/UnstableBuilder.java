@@ -53,5 +53,8 @@ public class UnstableBuilder extends Builder {
         public String getDisplayName() {
             return "Make build unstable";
         }
+        public UnstableBuilder newInstance(StaplerRequest req, JSONObject data) {
+            return new UnstableBuilder();
+        }
     }
 }
