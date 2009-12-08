@@ -421,27 +421,14 @@ public class UpdateSite {
          *      false otherwise, including the situation where the strings couldn't be parsed as version numbers.
          */
         public boolean isNewerThan(String currentVersion) {
-	        return isNewerThan(currentVersion, version);
-	    }
-
-        /**
-         * Compares two versions - returns true if the first version is newer than the second.
-         *
-         * @param firstVersion
-         *      The first version to test against.
-         * @param secondVersion
-         *      The second version to test against.
-         * @return
-         *      True if the first version is newer than the second version. False in all other cases.
-         */
-        private static boolean isNewerThan(String firstVersion, String secondVersion) {
             try {
-                return new VersionNumber(firstVersion).compareTo(new VersionNumber(secondVersion)) < 0;
+                return new VersionNumber(currentVersion).compareTo(new VersionNumber(version)) < 0;
             } catch (IllegalArgumentException e) {
                 // couldn't parse as the version number.
                 return false;
             }
         }
+
     }
 
     public final class Plugin extends Entry {
@@ -550,16 +537,19 @@ public class UpdateSite {
         public List<Plugin> getNeededDependencies() {
             List<Plugin> deps = new ArrayList<Plugin>();
 
-            for(Map.Entry<String,String> e : (Set<Map.Entry<String,String>>)dependencies.entrySet()) {
+            for(Map.Entry<String,String> e : dependencies.entrySet()) {
                 Plugin depPlugin = getPlugin(e.getKey());
+                VersionNumber requiredVersion = new VersionNumber(e.getValue());
                 
                 // Is the plugin installed already? If not, add it.
-                if (depPlugin.getInstalled()==null) {
+                PluginWrapper current = depPlugin.getInstalled();
+
+                if (current ==null) {
                     deps.add(depPlugin);
                 }
                 // If the dependency plugin is installed, is the version we depend on newer than
                 // what's installed? If so, upgrade.
-                else if (Plugin.isNewerThan(e.getValue(), depPlugin.getInstalled().getVersion())) {
+                else if (current.isOlderThan(requiredVersion)) {
                     deps.add(depPlugin);
                 }
             }
