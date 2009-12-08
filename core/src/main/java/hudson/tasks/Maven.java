@@ -521,12 +521,6 @@ public class Maven extends Builder {
                 Hudson.getInstance().getDescriptorByType(Maven.DescriptorImpl.class).setInstallations(installations);
             }
 
-            @Override
-            public boolean configure(StaplerRequest req, JSONObject json) throws FormException {
-                setInstallations(req.bindJSONToList(MavenInstallation.class, json.get("maven")).toArray(new MavenInstallation[0]));
-                return true;
-            }
-
             /**
              * Checks if the MAVEN_HOME is valid.
              */
