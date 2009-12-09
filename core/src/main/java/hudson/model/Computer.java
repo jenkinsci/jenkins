@@ -563,8 +563,11 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
                     e.interrupt();
         } else {
             // if the number is increased, add new ones
-            while(executors.size()<numExecutors)
-                executors.add(new Executor(this,executors.size()));
+            while(executors.size()<numExecutors) {
+                Executor e = new Executor(this, executors.size());
+                e.start();
+                executors.add(e);
+            }
         }
     }
 
@@ -781,7 +784,9 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
      * Starts executing a fly-weight task.
      */
     /*package*/ final void startFlyWeightTask(Queue.BuildableItem p) {
-        oneOffExecutors.add(new OneOffExecutor(this, p));
+        OneOffExecutor e = new OneOffExecutor(this, p);
+        e.start();
+        oneOffExecutors.add(e);
     }
 
     /*package*/ final void remove(OneOffExecutor e) {

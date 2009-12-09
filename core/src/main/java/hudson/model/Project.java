@@ -169,18 +169,12 @@ public abstract class Project<P extends Project<P,B>,B extends Build<P,B>>
 
     @Override
     public boolean isFingerprintConfigured() {
-        for (Publisher p : publishers) {
-            if(p instanceof Fingerprinter)
-                return true;
-        }
-        return false;
+        return getPublishersList().get(Fingerprinter.class)!=null;
     }
 
     public MavenInstallation inferMavenInstallation() {
-        for (Builder builder : builders) {
-            if (builder instanceof Maven)
-                return ((Maven) builder).getMaven();
-        }
+        Maven m = getBuildersList().get(Maven.class);
+        if (m!=null)    return m.getMaven();
         return null;
     }
 

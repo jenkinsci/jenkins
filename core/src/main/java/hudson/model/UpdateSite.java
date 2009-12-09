@@ -50,6 +50,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
+import java.util.HashMap;
 import java.util.Set;
 import java.util.concurrent.Future;
 import java.util.logging.Level;
@@ -246,14 +247,14 @@ public class UpdateSite {
     public List<Plugin> getAvailables() {
         List<Plugin> r = new ArrayList<Plugin>();
         Data data = getData();
-        if(data ==null)     return Collections.emptyList();
+        if(data==null)     return Collections.emptyList();
         for (Plugin p : data.plugins.values()) {
             if(p.getInstalled()==null)
                 r.add(p);
         }
         return r;
     }
-    
+
     /**
      * Gets the information about a specific plugin.
      *
@@ -420,27 +421,14 @@ public class UpdateSite {
          *      false otherwise, including the situation where the strings couldn't be parsed as version numbers.
          */
         public boolean isNewerThan(String currentVersion) {
-	        return isNewerThan(currentVersion, version);
-	    }
-
-        /**
-         * Compares two versions - returns true if the first version is newer than the second.
-         *
-         * @param firstVersion
-         *      The first version to test against.
-         * @param secondVersion
-         *      The second version to test against.
-         * @return
-         *      True if the first version is newer than the second version. False in all other cases.
-         */
-        private static boolean isNewerThan(String firstVersion, String secondVersion) {
             try {
-                return new VersionNumber(firstVersion).compareTo(new VersionNumber(secondVersion)) < 0;
+                return new VersionNumber(currentVersion).compareTo(new VersionNumber(version)) < 0;
             } catch (IllegalArgumentException e) {
                 // couldn't parse as the version number.
                 return false;
             }
         }
+
     }
 
     public final class Plugin extends Entry {
@@ -468,7 +456,17 @@ public class UpdateSite {
          * Version of Hudson core this plugin was compiled against.
          */
         public final String requiredCore;
+        /**
+         * Categories for grouping plugins, taken from labels assigned to wiki page.
+         * Can be null.
+         */
+        public final String[] categories;
 
+        /**
+         * Dependencies of this plugin.
+         */
+        public final Map<String,String> dependencies = new HashMap<String,String>();
+        
         @DataBoundConstructor
         public Plugin(String sourceId, JSONObject o) {
             super(sourceId, o);
@@ -477,6 +475,19 @@ public class UpdateSite {
             this.excerpt = get(o,"excerpt");
             this.compatibleSinceVersion = get(o,"compatibleSinceVersion");
             this.requiredCore = get(o,"requiredCore");
+            this.categories = o.has("labels") ? (String[])o.getJSONArray("labels").toArray(new String[0]) : null;
+            for(Object jo : o.getJSONArray("dependencies")) {
+                JSONObject depObj = (JSONObject) jo;
+                // Make sure there's a name attribute, that that name isn't maven-plugin - we ignore that one -
+                // and that the optional value isn't true.
+                if (get(depObj,"name")!=null
+                    && !get(depObj,"name").equals("maven-plugin")
+                    && get(depObj,"optional").equals("false")) {
+                    dependencies.put(get(depObj,"name"), get(depObj,"version"));
+                }
+                
+            }
+
         }
 
         private String get(JSONObject o, String prop) {
@@ -520,6 +531,32 @@ public class UpdateSite {
             return true;
         }
 
+        /**
+         * Returns a list of dependent plugins which need to be installed or upgraded for this plugin to work.
+         */
+        public List<Plugin> getNeededDependencies() {
+            List<Plugin> deps = new ArrayList<Plugin>();
+
+            for(Map.Entry<String,String> e : dependencies.entrySet()) {
+                Plugin depPlugin = getPlugin(e.getKey());
+                VersionNumber requiredVersion = new VersionNumber(e.getValue());
+                
+                // Is the plugin installed already? If not, add it.
+                PluginWrapper current = depPlugin.getInstalled();
+
+                if (current ==null) {
+                    deps.add(depPlugin);
+                }
+                // If the dependency plugin is installed, is the version we depend on newer than
+                // what's installed? If so, upgrade.
+                else if (current.isOlderThan(requiredVersion)) {
+                    deps.add(depPlugin);
+                }
+            }
+
+            return deps;
+        }
+        
         public boolean isForNewerHudson() {
             return requiredCore!=null && new VersionNumber(requiredCore).isNewerThan(new VersionNumber(Hudson.VERSION));
         }
@@ -542,6 +579,10 @@ public class UpdateSite {
         public Future<UpdateCenterJob> deploy() {
             Hudson.getInstance().checkPermission(Hudson.ADMINISTER);
             UpdateCenter uc = Hudson.getInstance().getUpdateCenter();
+            for (Plugin dep : getNeededDependencies()) {
+                LOGGER.log(Level.WARNING, "Adding dependent install of " + dep.name + " for plugin " + name);
+                dep.deploy();
+            }
             return uc.addJob(uc.new InstallationJob(this, UpdateSite.this, Hudson.getAuthentication()));
         }
 

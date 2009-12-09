@@ -560,7 +560,13 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
         protected final void performAllBuildStep(BuildListener listener, Iterable<? extends BuildStep> buildSteps, boolean phase) throws InterruptedException, IOException {
             for (BuildStep bs : buildSteps) {
                 if ((bs instanceof Publisher && ((Publisher)bs).needsToRunAfterFinalized()) ^ phase)
-                    perform(bs,listener);
+                    try {
+                        perform(bs,listener);
+                    } catch (Exception e) {
+                        String msg = "Publisher " + bs.getClass().getName() + " aborted due to exception";
+                        e.printStackTrace(listener.error(msg));
+                        LOGGER.log(Level.WARNING, msg, e);
+                    }
             }
         }
 

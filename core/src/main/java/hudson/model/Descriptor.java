@@ -416,6 +416,13 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable {
     }
 
     /**
+     * Checks if the type represented by this descriptor is a subtype of the given type.
+     */
+    public final boolean isSubTypeOf(Class type) {
+        return type.isAssignableFrom(clazz);
+    }
+
+    /**
      * @deprecated
      *      As of 1.64. Use {@link #configure(StaplerRequest)}.
      */

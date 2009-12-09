@@ -49,6 +49,7 @@ import java.io.PrintStream;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
+import java.util.logging.Handler;
 import java.util.List;
 import java.util.Collections;
 import java.util.ArrayList;
@@ -519,9 +520,14 @@ public class SlaveComputer extends Computer {
 
     private static class SlaveInitializer implements Callable<Void,RuntimeException> {
         public Void call() {
-            // avoid double installation of the handler
+            // avoid double installation of the handler. JNLP slaves can reconnect to the master multiple times
+            // and each connection gets a different RemoteClassLoader, so we need to evict them by class name,
+            // not by their identity.
             Logger logger = Logger.getLogger("hudson");
-            logger.removeHandler(SLAVE_LOG_HANDLER);
+            for (Handler h : logger.getHandlers()) {
+                if (h.getClass().getName().equals(SLAVE_LOG_HANDLER.getClass().getName()))
+                    logger.removeHandler(h);
+            }
             logger.addHandler(SLAVE_LOG_HANDLER);
 
             // remove Sun PKCS11 provider if present. See http://hudson.gotdns.com/wiki/display/HUDSON/Solaris+Issue+6276483

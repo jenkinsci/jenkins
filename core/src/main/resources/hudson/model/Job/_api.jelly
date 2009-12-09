@@ -38,11 +38,14 @@ THE SOFTWARE.
     If the build has parameters, post to <a href="../buildWithParameters">this URL</a> and provide the parameters as form data.
   </p>
   <p>
-  	To programmatically schedule SCM polling, post to <a href="../polling">this URL</a>.
+    To programmatically schedule SCM polling, post to <a href="../polling">this URL</a>.
   </p>
   <p>
-  	If security is enabled, a build authorization token must be provided as a parameter called <i>token</i>. The value of the token 
-  	can be specified on the job configuration page in the 'Trigger builds remotely' section.
+    If security is enabled, the recommended method is to provide the username/password of an
+    account with build permission in the request.  Tools such as <tt>curl</tt> and <tt>wget</tt>
+    have parameters to specify these credentials.  Another alternative (but deprecated) is to
+    configure the 'Trigger builds remotely' section in the job configuration.  Then building
+    or polling can be triggered by including a parameter called <i>token</i> in the request.
   </p>
 
   <h2>Delete a job</h2>

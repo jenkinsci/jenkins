@@ -106,4 +106,14 @@ public class ItemListener implements ExtensionPoint {
     public static ExtensionList<ItemListener> all() {
         return Hudson.getInstance().getExtensionList(ItemListener.class);
     }
+
+    public static void fireOnCopied(Item src, Item result) {
+        for (ItemListener l : all())
+            l.onCopied(src,result);
+    }
+
+    public static void fireOnCreated(Item item) {
+        for (ItemListener l : all())
+            l.onCreated(item);
+    }
 }

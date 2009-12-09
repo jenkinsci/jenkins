@@ -89,6 +89,14 @@ final class RemoteClassLoader extends URLClassLoader {
         this.channel = RemoteInvocationHandler.unwrap(proxy);
     }
 
+    /**
+     * If this {@link RemoteClassLoader} represents a classloader from the specified channel,
+     * return its exported OID. Otherwise return -1.
+     */
+    /*package*/ int getOid(Channel channel) {
+        return RemoteInvocationHandler.unwrap(proxy,channel);
+    }
+
     protected Class<?> findClass(String name) throws ClassNotFoundException {
         try {
             // first attempt to load from locally fetched jars
@@ -97,16 +105,49 @@ final class RemoteClassLoader extends URLClassLoader {
             if(channel.isRestricted)
                 throw e;
             // delegate to remote
-            long startTime = System.nanoTime();
-            byte[] bytes = proxy.fetch(name);
-            channel.classLoadingTime.addAndGet(System.nanoTime()-startTime);
-            channel.classLoadingCount.incrementAndGet();
+            if (channel.remoteCapability.supportsMultiClassLoaderRPC()) {
+                /*
+                    In multi-classloader setup, RemoteClassLoaders do not retain the relationships among the original classloaders,
+                    so each RemoteClassLoader ends up loading classes on its own without delegating to other RemoteClassLoaders.
 
-            // define package
-            definePackage(name);
+                    See the classloader X/Y examples in HUDSON-5048 for the depiction of the problem.
 
-            return defineClass(name, bytes, 0, bytes.length);
+                    So instead, we find the right RemoteClassLoader to load the class on per class basis.
+                    The communication is optimized for the single classloader use, by always returning the class file image
+                    along with the reference to the initiating ClassLoader (if the initiating ClassLoader has already loaded this class,
+                    then the class file image is wasted.)
+                 */
+                long startTime = System.nanoTime();
+                ClassFile cf = proxy.fetch2(name);
+                channel.classLoadingTime.addAndGet(System.nanoTime()-startTime);
+                channel.classLoadingCount.incrementAndGet();
+
+                ClassLoader cl = channel.importedClassLoaders.get(cf.classLoader);
+                if (cl instanceof RemoteClassLoader) {
+                    RemoteClassLoader rcl = (RemoteClassLoader) cl;
+                    Class<?> c = rcl.findLoadedClass(name);
+                    if (c==null)
+                        c = rcl.loadClassFile(name,cf.classImage);
+                    return c;
+                } else {
+                    return cl.loadClass(name);
+                }
+            } else {
+                long startTime = System.nanoTime();
+                byte[] bytes = proxy.fetch(name);
+                channel.classLoadingTime.addAndGet(System.nanoTime()-startTime);
+                channel.classLoadingCount.incrementAndGet();
+
+                return loadClassFile(name, bytes);
+            }
         }
+    }
+
+    private Class<?> loadClassFile(String name, byte[] bytes) {
+        // define package
+        definePackage(name);
+
+        return defineClass(name, bytes, 0, bytes.length);
     }
 
     /**
@@ -232,12 +273,28 @@ final class RemoteClassLoader extends URLClassLoader {
         }
     }
 
+    static class ClassFile implements Serializable {
+        /**
+         * oid of the classloader that should load this class.
+         */
+        final int classLoader;
+        final byte[] classImage;
+
+        ClassFile(int classLoader, byte[] classImage) {
+            this.classLoader = classLoader;
+            this.classImage = classImage;
+        }
+
+        private static final long serialVersionUID = 1L;
+    }
+
     /**
      * Remoting interface.
      */
     /*package*/ static interface IClassLoader {
         byte[] fetchJar(URL url) throws IOException;
         byte[] fetch(String className) throws ClassNotFoundException;
+        ClassFile fetch2(String className) throws ClassNotFoundException;
         byte[] getResource(String name) throws IOException;
         byte[][] getResources(String name) throws IOException;
     }
@@ -251,21 +308,23 @@ final class RemoteClassLoader extends URLClassLoader {
                 return new RemoteIClassLoader(oid,rcl.proxy);
             }
         }
-        return local.export(IClassLoader.class, new ClassLoaderProxy(cl), false);
+        return local.export(IClassLoader.class, new ClassLoaderProxy(cl,local), false);
     }
 
     /**
      * Exports and just returns the object ID, instead of obtaining the proxy.
      */
     static int exportId(ClassLoader cl, Channel local) {
-        return local.export(new ClassLoaderProxy(cl));
+        return local.export(new ClassLoaderProxy(cl,local), false);
     }
 
     /*package*/ static final class ClassLoaderProxy implements IClassLoader {
-        private final ClassLoader cl;
+        final ClassLoader cl;
+        final Channel channel;
 
-        public ClassLoaderProxy(ClassLoader cl) {
+        public ClassLoaderProxy(ClassLoader cl, Channel channel) {
             this.cl = cl;
+            this.channel = channel;
         }
 
         public byte[] fetchJar(URL url) throws IOException {
@@ -284,6 +343,17 @@ final class RemoteClassLoader extends URLClassLoader {
             }
         }
 
+        public ClassFile fetch2(String className) throws ClassNotFoundException {
+            ClassLoader ecl = cl.loadClass(className).getClassLoader();
+
+            try {
+                return new ClassFile(
+                        exportId(ecl,channel),
+                        readFully(ecl.getResourceAsStream(className.replace('.', '/') + ".class")));
+            } catch (IOException e) {
+                throw new ClassNotFoundException();
+            }
+        }
 
         public byte[] getResource(String name) throws IOException {
             InputStream in = cl.getResourceAsStream(name);
@@ -350,6 +420,10 @@ final class RemoteClassLoader extends URLClassLoader {
 
         public byte[] fetch(String className) throws ClassNotFoundException {
             return proxy.fetch(className);
+        }
+
+        public ClassFile fetch2(String className) throws ClassNotFoundException {
+            return proxy.fetch2(className);
         }
 
         public byte[] getResource(String name) throws IOException {

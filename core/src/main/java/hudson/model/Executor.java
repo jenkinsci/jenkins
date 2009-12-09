@@ -74,7 +74,6 @@ public class Executor extends Thread implements ModelObject {
         this.owner = owner;
         this.queue = Hudson.getInstance().getQueue();
         this.number = n;
-        start();
     }
 
     @Override

@@ -48,7 +48,6 @@ import hudson.model.BuildListener
 import hudson.util.OneShotEvent
 import java.util.concurrent.Future
 import java.util.concurrent.TimeUnit
-import hudson.model.FreeStyleProject
 import java.util.concurrent.TimeoutException
 
 /**
@@ -224,7 +223,8 @@ public class MatrixProjectTest extends HudsonTestCase {
 
         // MatrixProject scheduled after the quiet down shouldn't start
         try {
-            p.scheduleBuild2(0).get(3,TimeUnit.SECONDS)
+            Future g = p.scheduleBuild2(0)
+            g.get(3,TimeUnit.SECONDS)
             fail()
         } catch (TimeoutException e) {
             // expected

@@ -26,5 +26,10 @@
   manchmal nicht. Darüberhinaus können Sie auch mehrere Projekte
   auf das gleiche Arbeitsverzeichnis verweisen. In diesem Fall müssen Sie
   dafür sorgen, daß die gleichzeitige Ausführung dieser Jobs keine unerwünschten
-  gegenseitigen Beeinträchtigungen herbeiführt. 
+  gegenseitigen Beeinträchtigungen herbeiführt.
+  
+  <p>
+  Ein relativer Pfad wird auf Slave-Knoten ausgehend vom Konfigurationseintrag
+  "Stammverzeichnis in entferntem Dateisystem" aufgelöst, auf dem Master-Knoten
+  hingegen von <tt>$HUDSON_HOME</tt>.   
 </div>

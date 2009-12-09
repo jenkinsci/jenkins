@@ -122,7 +122,8 @@ import hudson.util.StreamTaskListener;
 import hudson.util.TextFile;
 import hudson.util.VersionNumber;
 import hudson.util.XStream2;
-import hudson.util.ServiceLoader;
+import hudson.util.Service;
+import hudson.util.IOUtils;
 import hudson.widgets.Widget;
 import net.sf.json.JSONObject;
 import org.acegisecurity.AccessDeniedException;
@@ -671,7 +672,7 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
      * As such there's no way for plugins to participate into this process. 
      */
     private ReactorListener buildReactorListener() throws IOException {
-        List<ReactorListener> r = (List) ServiceLoader.load(Thread.currentThread().getContextClassLoader(), InitReactorListener.class);
+        List<ReactorListener> r = (List) Service.loadInstances(Thread.currentThread().getContextClassLoader(), InitReactorListener.class);
         r.add(new ReactorListener() {
             final Level level = Level.parse(System.getProperty(Hudson.class.getName()+".initLogLevel","FINE"));
             public void onTaskStarted(Task t) {
@@ -1958,8 +1959,7 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
         items.put(name,item);
 
         if (notify)
-            for (ItemListener l : ItemListener.all())
-                l.onCreated(item);
+            ItemListener.fireOnCreated(item);
 
         return item;
     }
@@ -2527,19 +2527,13 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
         File configXml = Items.getConfigFile(getRootDirFor(name)).getFile();
         configXml.getParentFile().mkdirs();
         try {
-            FileOutputStream fos = new FileOutputStream(configXml);
-            try {
-                Util.copyStream(xml,fos);
-            } finally {
-                fos.close();
-            }
+            IOUtils.copy(xml,configXml);
 
             // load it
             TopLevelItem result = (TopLevelItem)Items.load(this,configXml.getParentFile());
             items.put(name,result);
 
-            for (ItemListener l : ItemListener.all())
-                l.onCreated(result);
+            ItemListener.fireOnCreated(result);
 
             return result;
         } catch (IOException e) {
@@ -2571,8 +2565,7 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
         result.onCopiedFrom(src);
         items.put(name,result);
 
-        for (ItemListener l : ItemListener.all())
-            l.onCopied(src,result);
+        ItemListener.fireOnCopied(src,result);
 
         return result;
     }
@@ -3570,7 +3563,10 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
     public static boolean KILL_AFTER_LOAD = Boolean.getBoolean(Hudson.class.getName()+".killAfterLoad");
     public static boolean LOG_STARTUP_PERFORMANCE = Boolean.getBoolean(Hudson.class.getName()+".logStartupPerformance");
     private static final boolean CONSISTENT_HASH = true; // Boolean.getBoolean(Hudson.class.getName()+".consistentHash");
-    public static boolean FLYWEIGHT_SUPPORT = Boolean.getBoolean(Hudson.class.getName()+".flyweightSupport");
+    /**
+     * Enabled by default as of 1.337. Will keep it for a while just in case we have some serious problems.
+     */
+    public static boolean FLYWEIGHT_SUPPORT = !"false".equals(System.getProperty(Hudson.class.getName()+".flyweightSupport"));
 
     /**
      * Tentative switch to activate the concurrent build behavior.

@@ -57,7 +57,7 @@ public class RepositoryBrowsers {
     public static List<Descriptor<RepositoryBrowser<?>>> filter(Class<? extends RepositoryBrowser> t) {
         List<Descriptor<RepositoryBrowser<?>>> r = new ArrayList<Descriptor<RepositoryBrowser<?>>>();
         for (Descriptor<RepositoryBrowser<?>> d : RepositoryBrowser.all())
-            if(t.isAssignableFrom(d.clazz))
+            if(d.isSubTypeOf(t))
                 r.add(d);
         return r;
     }

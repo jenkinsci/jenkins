@@ -12,7 +12,7 @@ import java.util.Arrays;
 import java.util.logging.Logger;
 
 import hudson.PluginManager;
-import hudson.util.ServiceLoader;
+import hudson.util.Service;
 
 /**
  * Strategy pattern of the various key decision making during the Hudson initialization.
@@ -89,7 +89,7 @@ public class InitStrategy {
      * Obtains the instance to be used.
      */
     public static InitStrategy get(ClassLoader cl) throws IOException {
-        List<InitStrategy> r = ServiceLoader.load(cl, InitStrategy.class);
+        List<InitStrategy> r = Service.loadInstances(cl, InitStrategy.class);
         if (r.isEmpty())    return new InitStrategy();      // default
 
         InitStrategy s = r.get(0);

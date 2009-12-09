@@ -1,7 +1,7 @@
 <!--
 The MIT License
 
-Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, Daniel Dyer, id:cactusman
+Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, Daniel Dyer, id:cactusman, Tom Huybrechts
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -58,8 +58,8 @@ THE SOFTWARE.
 
       <t:actions />
     </l:tasks>
-    <t:queue items="${app.queue.items}" />
-    <t:executors />
+    <t:queue items="${it.queueItems}" />
+    <t:executors computers="${it.computers}" />
     <j:forEach var="w" items="${it.widgets}">
       <st:include it="${w}" page="index.jelly" />
     </j:forEach>

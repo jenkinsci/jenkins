@@ -16,7 +16,12 @@ import java.util.Map;
 
 /**
  * {@link ObjectInputStream}/{@link ObjectOutputStream} pair that can handle object graph that spans across
- * multiple classloaders. 
+ * multiple classloaders.
+ *
+ * <p>
+ * To pass around ClassLoaders, this class uses OID instead of {@link IClassLoader}, since doing so
+ * can results in recursive class resolution that may end up with NPE in ObjectInputStream.defaultReadFields like
+ * described in the comment from huybrechts in HUDSON-4293.
  *
  * @author Kohsuke Kawaguchi
  * @see Capability#supportsMultiClassLoaderRPC() 
@@ -38,16 +43,27 @@ class MultiClassLoaderSerializer {
         protected void annotateClass(Class<?> c) throws IOException {
             ClassLoader cl = c.getClassLoader();
             if (cl==null) {// bootstrap classloader. no need to export.
-                writeInt(-2);
+                writeInt(TAG_SYSTEMCLASSLOADER);
                 return;
             }
 
             Integer idx = classLoaders.get(cl);
             if (idx==null) {
                 classLoaders.put(cl,classLoaders.size());
-                writeInt(-1);
-                writeObject(RemoteClassLoader.export(cl,channel));
-            } else {
+                if (cl instanceof RemoteClassLoader) {
+                    int oid = ((RemoteClassLoader) cl).getOid(channel);
+                    if (oid>=0) {
+                        // this classloader came from where we are sending this classloader to.
+                        writeInt(TAG_LOCAL_CLASSLOADER);
+                        writeInt(oid);
+                        return;
+                    }
+                }
+
+                // tell the receiving side that they need to import a new classloader
+                writeInt(TAG_EXPORTED_CLASSLOADER);
+                writeInt(RemoteClassLoader.exportId(cl,channel));
+            } else {// reference to a classloader that's already written
                 writeInt(idx);
             }
         }
@@ -68,17 +84,20 @@ class MultiClassLoaderSerializer {
         }
 
         private ClassLoader readClassLoader() throws IOException, ClassNotFoundException {
+            ClassLoader cl;
             int code = readInt();
             switch (code) {
-            case -2:
+            case TAG_SYSTEMCLASSLOADER:
                 return null;
-            case -1:
-                // fill the entry with some value in preparation of recursive readObject below.
-                // this is actually only necessary for classLoader[0].
-                classLoaders.add(Channel.class.getClassLoader());
 
-                ClassLoader cl = channel.importedClassLoaders.get((IClassLoader) readObject());
-                classLoaders.set(classLoaders.size()-1,cl);
+            case TAG_LOCAL_CLASSLOADER:
+                cl = ((RemoteClassLoader.ClassLoaderProxy)channel.getExportedObject(readInt())).cl;
+                classLoaders.add(cl);
+                return cl;
+
+            case TAG_EXPORTED_CLASSLOADER:
+                cl = channel.importedClassLoaders.get(readInt());
+                classLoaders.add(cl);
                 return cl;
             default:
                 return classLoaders.get(code);
@@ -107,4 +126,19 @@ class MultiClassLoaderSerializer {
             return Proxy.getProxyClass(cl, classes);
         }
     }
+
+    /**
+     * Indicates that the class being sent should be loaded from the system classloader.
+     */
+    private static final int TAG_SYSTEMCLASSLOADER = -3;
+    /**
+     * Indicates that the class being sent originates from the sender side. The sender exports this classloader
+     * and sends its OID in the following int. The receiver will import this classloader to resolve the class.
+     */
+    private static final int TAG_EXPORTED_CLASSLOADER = -2;
+    /**
+     * Indicates that the class being sent originally came from the receiver. The following int indicates
+     * the OID of the classloader exported from the receiver, which the sender used.
+     */
+    private static final int TAG_LOCAL_CLASSLOADER = -1;
 }

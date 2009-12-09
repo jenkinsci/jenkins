@@ -28,6 +28,9 @@ THE SOFTWARE.
     <st:attribute name="builds" use="required">
       A collection of builds to be displayed.
     </st:attribute>
+    <st:attribute name="jobBaseUrl" use="required">
+      The base URL of all job/build links. Normally ${rootURL}/
+    </st:attribute>
   </st:documentation>
 
   <t:setIconSize/>
@@ -43,15 +46,15 @@ THE SOFTWARE.
     <j:forEach var="b" items="${h.subList(attrs.builds,50)}">
       <tr>
         <td data="${b.iconColor.ordinal()}">
-          <a href="${rootURL}/${b.url}">
+          <a href="${jobBaseUrl}${b.url}">
             <img src="${imagesURL}/${iconSize}/${b.buildStatusUrl}"
                  alt="${b.iconColor.description}"/>
           </a>
         </td>
         <td>
-          <a href="${rootURL}/${b.parent.url}">${b.parent.displayName}</a>
+          <a href="${jobBaseUrl}${b.parent.url}">${b.parent.displayName}</a>
           <st:nbsp/>
-          <a href="${rootURL}/${b.url}">#${b.number}</a>
+          <a href="${jobBaseUrl}${b.url}">#${b.number}</a>
         </td>
         <td data="${b.timestampString2}">
           ${b.timestampString}
@@ -60,7 +63,7 @@ THE SOFTWARE.
           <t:buildStatusSummary build="${b}" />
         </td>
         <td>
-          <a href="${rootURL}/${b.url}console">
+          <a href="${jobBaseUrl}${b.url}console">
             <img src="${imagesURL}/${subIconSize}/terminal.gif" title="${%Console output}" alt="${%Console output}" border="0" />
           </a>
         </td>

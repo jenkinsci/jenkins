@@ -180,7 +180,7 @@ function findPrevious(src,filter) {
  */
 function findPreviousFormItem(src,name) {
     var name2 = "_."+name; // handles <textbox field="..." /> notation silently
-    return findPrevious(src,function(e){ return (e.tagName=="INPUT" || e.tagName=="TEXTAREA") && (e.name==name || e.name==name2); });
+    return findPrevious(src,function(e){ return (e.tagName=="INPUT" || e.tagName=="TEXTAREA" || e.tagName=="SELECT") && (e.name==name || e.name==name2); });
 }
 
 

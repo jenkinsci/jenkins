@@ -90,6 +90,8 @@ import java.util.regex.Pattern;
 import java.nio.charset.Charset;
 
 import com.sun.jna.Native;
+import com.sun.jna.Memory;
+import com.sun.jna.NativeLong;
 
 /**
  * Various utility methods that don't have more proper home.
@@ -958,39 +960,77 @@ public class Util {
      * If there's a prior symlink at baseDir+symlinkPath, it will be overwritten.
      */
     public static void createSymlink(File baseDir, String targetPath, String symlinkPath, TaskListener listener) throws InterruptedException {
-        if(!isWindows() && !NO_SYMLINK) {
-            try {
-                // if a file or a directory exists here, delete it first.
-                // try simple delete first (whether exists() or not, as it may be symlink pointing
-                // to non-existent target), but fallback to "rm -rf" to delete non-empty dir.
-                File symlinkFile = new File(baseDir, symlinkPath);
-                if (!symlinkFile.delete() && symlinkFile.exists())
-                    // ignore a failure.
-                    new LocalProc(new String[]{"rm","-rf", symlinkPath},new String[0],listener.getLogger(), baseDir).join();
+        if(isWindows() || NO_SYMLINK)   return;
 
-                int r;
-                if (!SYMLINK_ESCAPEHATCH) {
-                    try {
-                        r = GNUCLibrary.LIBC.symlink(targetPath,symlinkFile.getAbsolutePath());
-                        if (r!=0)
-                            r = Native.getLastError();
-                    } catch (LinkageError e) {
-                        // if JNA is unavailable, fall back.
-                        // we still prefer to try JNA first as PosixAPI supports even smaller platforms.
-                        r = PosixAPI.get().symlink(targetPath,symlinkFile.getAbsolutePath());
-                    }
-                } else // escape hatch, until we know that the above works well.
-                    r = new LocalProc(new String[]{
-                        "ln","-s", targetPath, symlinkPath},
-                        new String[0],listener.getLogger(), baseDir).join();
-                if(r!=0)
-                    listener.getLogger().println("ln failed: "+r);
-            } catch (IOException e) {
-                PrintStream log = listener.getLogger();
-                log.println("ln failed");
-                Util.displayIOException(e,listener);
-                e.printStackTrace( log );
+        try {
+            // if a file or a directory exists here, delete it first.
+            // try simple delete first (whether exists() or not, as it may be symlink pointing
+            // to non-existent target), but fallback to "rm -rf" to delete non-empty dir.
+            File symlinkFile = new File(baseDir, symlinkPath);
+            if (!symlinkFile.delete() && symlinkFile.exists())
+                // ignore a failure.
+                new LocalProc(new String[]{"rm","-rf", symlinkPath},new String[0],listener.getLogger(), baseDir).join();
+
+            int r;
+            if (!SYMLINK_ESCAPEHATCH) {
+                try {
+                    r = GNUCLibrary.LIBC.symlink(targetPath,symlinkFile.getAbsolutePath());
+                    if (r!=0)
+                        r = Native.getLastError();
+                } catch (LinkageError e) {
+                    // if JNA is unavailable, fall back.
+                    // we still prefer to try JNA first as PosixAPI supports even smaller platforms.
+                    r = PosixAPI.get().symlink(targetPath,symlinkFile.getAbsolutePath());
+                }
+            } else // escape hatch, until we know that the above works well.
+                r = new LocalProc(new String[]{
+                    "ln","-s", targetPath, symlinkPath},
+                    new String[0],listener.getLogger(), baseDir).join();
+            if(r!=0)
+                listener.getLogger().println("ln failed: "+r);
+        } catch (IOException e) {
+            PrintStream log = listener.getLogger();
+            log.println("ln failed");
+            Util.displayIOException(e,listener);
+            e.printStackTrace( log );
+        }
+    }
+
+    /**
+     * Resolves symlink, if the given file is a symlink. Otherwise return null.
+     * <p>
+     * If the resolution fails, report an error.
+     *
+     * @param listener
+     *      If we rely on an external command to resolve symlink, this is it.
+     *      (TODO: try readlink(1) available on some platforms)
+     */
+    public static String resolveSymlink(File link, TaskListener listener) throws InterruptedException, IOException {
+        if(isWindows())     return null;
+
+        String filename = link.getAbsolutePath();
+        try {
+            for (int sz=512; sz < 65536; sz*=2) {
+                Memory m = new Memory(sz);
+                int r = GNUCLibrary.LIBC.readlink(filename,m,new NativeLong(sz));
+                if (r<0) {
+                    if (r==22/*EINVAL --- but is this really portable?*/)
+                        return null; // this means it's not a symlink
+                    throw new IOException("Failed to readlink "+link+" error="+Native.getLastError());
+                }
+                if (r==sz)
+                    continue;   // buffer too small
+
+                byte[] buf = new byte[r];
+                m.read(0,buf,0,r);
+                return new String(buf);
             }
+            // something is wrong. It can't be this long!
+            throw new IOException("Symlink too long: "+link);
+        } catch (LinkageError e) {
+            // if JNA is unavailable, fall back.
+            // we still prefer to try JNA first as PosixAPI supports even smaller platforms.
+            return PosixAPI.get().readlink(filename);
         }
     }
 
