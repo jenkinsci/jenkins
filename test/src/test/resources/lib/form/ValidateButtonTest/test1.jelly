@@ -43,7 +43,13 @@ THE SOFTWARE.
       <f:entry title="d">
         <f:textarea name="d" value="dvalue" />
       </f:entry>
-      <f:validateButton method="validateTest1" title="test" with="a,b,c,d" />
+      <f:entry title="e" field="e">
+        <select class="setting-input" name="_.e">
+          <f:option value="e1">e1</f:option>
+          <f:option value="e2" selected="true">e2</f:option>
+        </select>
+      </f:entry>
+      <f:validateButton method="validateTest1" title="test" with="a,b,c,d,e" />
     </f:form>
   </l:main-panel>
 </l:layout>

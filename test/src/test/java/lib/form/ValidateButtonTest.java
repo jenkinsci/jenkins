@@ -58,12 +58,15 @@ public class ValidateButtonTest extends HudsonTestCase implements Describable<Va
             return null;
         }
 
-        public void doValidateTest1(@QueryParameter("a") String a, @QueryParameter("b") boolean b, @QueryParameter("c") boolean c, @QueryParameter("d") String d) {
+        public void doValidateTest1(@QueryParameter("a") String a, @QueryParameter("b") boolean b,
+                                    @QueryParameter("c") boolean c, @QueryParameter("d") String d,
+                                    @QueryParameter("e") String e) {
             try {
                 assertEquals("avalue",a);
                 assertTrue(b);
                 assertFalse(c);
                 assertEquals("dvalue",d);
+                assertEquals("e2",e);
                 test1Outcome = null;
             } catch (Exception t) {
                 test1Outcome = t;
