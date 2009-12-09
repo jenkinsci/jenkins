@@ -406,7 +406,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
     /**
      * Sets the custom quiet period of this project, or revert to the global default if null is given. 
      */
-    public void setQuitPeriod(Integer seconds) throws IOException {
+    public void setQuietPeriod(Integer seconds) throws IOException {
         this.quietPeriod = seconds;
         save();
     }
