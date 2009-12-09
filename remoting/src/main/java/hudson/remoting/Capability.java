@@ -33,7 +33,7 @@ final class Capability implements Serializable {
     }
 
     Capability() {
-        this(0);
+        this(MASK_MULTI_CLASSLOADER);
     }
 
     /**
@@ -43,7 +43,7 @@ final class Capability implements Serializable {
      * @see MultiClassLoaderSerializer
      */
     boolean supportsMultiClassLoaderRPC() {
-        return (mask&1)!=0;
+        return (mask&MASK_MULTI_CLASSLOADER)!=0;
     }
 
     /**
@@ -69,6 +69,25 @@ final class Capability implements Serializable {
     }
 
     private static final long serialVersionUID = 1L;
+
+    /**
+     * This was used briefly to indicate the use of {@link MultiClassLoaderSerializer}, but
+     * that was disabled (see HUDSON-4293) in Sep 2009. AFAIK no released version of Hudson
+     * exposed it, but since then the wire format of {@link MultiClassLoaderSerializer} has evolved
+     * in an incompatible way.
+     * <p>
+     * So just to be on the safe side, I assigned a different bit to indicate this feature {@link #MASK_MULTI_CLASSLOADER},
+     * so that even if there are remoting.jar out there that advertizes this bit, we won't be using
+     * the new {@link MultiClassLoaderSerializer} code.
+     * <p>
+     * If we ever use up all 64bits of long, we can probably come back and reuse this bit, as by then
+     * hopefully any such remoting.jar deployment is long gone. 
+     */
+    private static final long MASK_UNUSED1 = 1L;
+    /**
+     * Bit that indicates the use of {@link MultiClassLoaderSerializer}.
+     */
+    private static final long MASK_MULTI_CLASSLOADER = 2L;
 
     static final byte[] PREAMBLE;
 

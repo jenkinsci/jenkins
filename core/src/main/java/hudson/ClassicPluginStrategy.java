@@ -408,6 +408,20 @@ public class ClassicPluginStrategy implements PluginStrategy {
         }
 
         // TODO: delegate resources? watch out for diamond dependencies
+
+        @Override
+        protected URL findResource(String name) {
+            for (Dependency dep : dependencies) {
+                PluginWrapper p = pluginManager.getPlugin(dep.shortName);
+                if(p!=null) {
+                    URL url = p.classLoader.getResource(name);
+                    if (url!=null)
+                        return url;
+                }
+            }
+
+            return null;
+        }
     }
 
     /**
