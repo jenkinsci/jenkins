@@ -28,7 +28,6 @@ import hudson.ExtensionList;
 import hudson.ExtensionPoint;
 import hudson.Util;
 import hudson.XmlFile;
-import hudson.matrix.MatrixConfiguration;
 import hudson.init.Initializer;
 import static hudson.init.InitMilestone.JOB_LOADED;
 import hudson.cli.declarative.CLIMethod;
@@ -48,7 +47,6 @@ import hudson.util.OneShotEvent;
 import hudson.util.TimeUnit2;
 import hudson.util.XStream2;
 import hudson.util.ConsistentHash;
-import hudson.util.DoubleLaunchChecker;
 import hudson.util.ConsistentHash.Hash;
 
 import java.io.BufferedReader;
@@ -891,7 +889,7 @@ public class Queue extends ResourceController implements Saveable {
     }
 
     private void makeBuildable(BuildableItem p) {
-        if(Hudson.FLYWEIGHT_SUPPORT && p.task instanceof FlyweightTask) {
+        if(Hudson.FLYWEIGHT_SUPPORT && p.task instanceof FlyweightTask && (!Hudson.getInstance().isQuietingDown() || p.task instanceof NonBlockingTask)) {
             ConsistentHash<Node> hash = new ConsistentHash<Node>(new Hash<Node>() {
                 public String hash(Node node) {
                     return node.getNodeName();
@@ -933,7 +931,7 @@ public class Queue extends ResourceController implements Saveable {
     public interface FlyweightTask extends Task {}
 
     /**
-     * Marks {@link Task}s that are not affected by the {@linkplain Hudson#isQuietingDown()}  quietting down},
+     * Marks {@link Task}s that are not affected by the {@linkplain Hudson#isQuietingDown()}  quieting down},
      * because these tasks keep other tasks executing.
      *
      * @since 1.336 
