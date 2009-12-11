@@ -137,15 +137,15 @@ public class ClassicPluginStrategy implements PluginStrategy {
 				paths.add(classes);
 			File lib = new File(expandDir, "WEB-INF/lib");
 			File[] libs = lib.listFiles(JAR_FILTER);
-			if (libs != null)
+            if (libs != null)
                 paths.addAll(Arrays.asList(libs));
 
 			baseResourceURL = expandDir.toURI().toURL();
 		}
-		File disableFile = new File(archive.getPath() + ".disabled");
-		if (disableFile.exists()) {
-			LOGGER.info("Plugin is disabled");
-		}
+        File disableFile = new File(archive.getPath() + ".disabled");
+        if (disableFile.exists()) {
+            LOGGER.info("Plugin " + archive.getName() + " is disabled");
+        }
 
 		// compute dependencies
 		List<PluginWrapper.Dependency> dependencies = new ArrayList<PluginWrapper.Dependency>();
