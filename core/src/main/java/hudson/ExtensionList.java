@@ -37,6 +37,8 @@ import java.util.List;
 import java.util.Vector;
 import java.util.Comparator;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Retains the known extension instances for the given type 'T'.
@@ -187,6 +189,9 @@ public class ExtensionList<T> extends AbstractList<T> {
      * Loads all the extensions.
      */
     protected List<T> load() {
+        if (LOGGER.isLoggable(Level.FINE))
+            LOGGER.log(Level.FINE,"Loading ExtensionList: "+extensionType, new Throwable());
+
         List<T> r = new ArrayList<T>();
         for (ExtensionFinder finder : finders())
             r.addAll(finder.findExtensions(extensionType, hudson));
@@ -252,4 +257,6 @@ public class ExtensionList<T> extends AbstractList<T> {
     public static void clearLegacyInstances() {
         staticLegacyInstances.clear();
     }
+
+    private static final Logger LOGGER = Logger.getLogger(ExtensionList.class.getName());
 }
