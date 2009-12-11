@@ -308,6 +308,11 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
     public transient final File root;
 
     /**
+     * Where are we in the initialization?
+     */
+    private transient volatile InitMilestone initLevel = InitMilestone.STARTED;
+
+    /**
      * All {@link Item}s keyed by their {@link Item#getName() name}s.
      */
     /*package*/ transient final Map<String,TopLevelItem> items = new CopyOnWriteMap.Tree<String,TopLevelItem>(CaseInsensitiveComparator.INSTANCE);
@@ -693,6 +698,7 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
                 if (milestone instanceof InitMilestone) {
                     lv = Level.INFO; // noteworthy milestones --- at least while we debug problems further
                     s = ((InitMilestone)milestone).toString();
+                    initLevel = (InitMilestone)milestone;
                 }
                 LOGGER.log(lv,s);
             }
@@ -1829,6 +1835,17 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
      */
     public boolean isTerminating() {
         return terminating;
+    }
+
+    /**
+     * Gets the initialization milestone that we've already reached.
+     *
+     * @return
+     *      {@link InitMilestone#STARTED} even if the initialization hasn't been started, so that this method
+     *      never returns null. 
+     */
+    public InitMilestone getInitLevel() {
+        return initLevel;
     }
 
     public void setNumExecutors(int n) throws IOException {
