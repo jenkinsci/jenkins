@@ -1014,9 +1014,10 @@ public class Util {
                 Memory m = new Memory(sz);
                 int r = GNUCLibrary.LIBC.readlink(filename,m,new NativeLong(sz));
                 if (r<0) {
-                    if (r==22/*EINVAL --- but is this really portable?*/)
+                    int err = Native.getLastError();
+                    if (err==22/*EINVAL --- but is this really portable?*/)
                         return null; // this means it's not a symlink
-                    throw new IOException("Failed to readlink "+link+" error="+Native.getLastError());
+                    throw new IOException("Failed to readlink "+link+" error="+ err);
                 }
                 if (r==sz)
                     continue;   // buffer too small
