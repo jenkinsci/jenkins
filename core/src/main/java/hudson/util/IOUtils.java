@@ -1,11 +1,11 @@
 package hudson.util;
 
-import java.io.OutputStream;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.FileOutputStream;
+import java.io.OutputStream;
 
 /**
  * Adds more to commons-io.
@@ -30,5 +30,28 @@ public class IOUtils extends org.apache.commons.io.IOUtils {
         } finally {
             closeQuietly(fos);
         }
+    }
+
+    /**
+     * Ensures that the given directory exists (if not, it's created, including all the parent directories.)
+     *
+     * @return
+     *      This method returns the 'dir' parameter so that the method call flows better.
+     */
+    public static File mkdirs(File dir) throws IOException {
+        if(dir.mkdirs() || dir.exists())
+            return dir;
+
+        // following Ant <mkdir> task to avoid possible race condition.
+        try {
+            Thread.sleep(10);
+        } catch (InterruptedException e) {
+            // ignore
+        }
+
+        if (dir.mkdirs() || dir.exists())
+            return dir;
+
+        throw new IOException("Failed to create a directory at "+dir);
     }
 }
