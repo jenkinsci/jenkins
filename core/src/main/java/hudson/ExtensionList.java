@@ -23,6 +23,7 @@
  */
 package hudson;
 
+import hudson.init.InitMilestone;
 import hudson.model.Hudson;
 import hudson.util.DescriptorList;
 import hudson.util.Memoizer;
@@ -172,8 +173,8 @@ public class ExtensionList<T> extends AbstractList<T> {
     private List<T> ensureLoaded() {
         if(extensions!=null)
             return extensions; // already loaded
-        if(Hudson.getInstance().getPluginManager()==null)
-            return legacyInstances; // can't perform the auto discovery until all plugins are loaded, so just make the legacy instances visisble
+        if(Hudson.getInstance().getInitLevel().compareTo(InitMilestone.PLUGINS_PREPARED)<0)
+            return legacyInstances; // can't perform the auto discovery until all plugins are loaded, so just make the legacy instances visible
 
         synchronized (this) {
             if(extensions==null) {
