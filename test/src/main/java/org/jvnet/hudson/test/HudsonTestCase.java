@@ -776,9 +776,18 @@ public abstract class HudsonTestCase extends TestCase implements RootAction {
      */
     protected void waitUntilNoActivityUpTo(int timeout) throws Exception {
         long startTime = System.currentTimeMillis();
+        int streak = 0;
 
-        while (isSomethingHappening()) {
-            Thread.sleep(500);
+        while (true) {
+            Thread.sleep(100);
+            if (isSomethingHappening())
+                streak=0;
+            else
+                streak++;
+
+            if (streak>5)   // the system is quiet for a while
+                return;
+
             if (System.currentTimeMillis()-startTime > timeout)
                 throw new AssertionError("Hudson is still doing something after "+timeout+"ms");
         }
