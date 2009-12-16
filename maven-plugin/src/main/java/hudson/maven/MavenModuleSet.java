@@ -615,9 +615,23 @@ public final class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,Ma
     /**
      * Possibly null, whitespace-separated (including TAB, NL, etc) VM options
      * to be used to launch Maven process.
+     *
+     * If mavenOpts is null or empty, we'll return the globally-defined MAVEN_OPTS.
      */
     public String getMavenOpts() {
-        return mavenOpts;
+        if ((mavenOpts!=null) && (mavenOpts.trim().length()>0)) { 
+            return mavenOpts;
+        }
+        else {
+            return DESCRIPTOR.getGlobalMavenOpts();
+        }
+    }
+
+    /**
+     * Set mavenOpts.
+     */
+    public void setMavenOpts(String mavenOpts) {
+        this.mavenOpts = mavenOpts;
     }
 
     /**
@@ -753,6 +767,20 @@ public final class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,Ma
     public static final DescriptorImpl DESCRIPTOR = new DescriptorImpl();
 
     public static final class DescriptorImpl extends AbstractProjectDescriptor {
+        /**
+         * Globally-defined MAVEN_OPTS.
+         */
+        private String globalMavenOpts;
+
+        public String getGlobalMavenOpts() {
+            return globalMavenOpts;
+        }
+
+        public void setGlobalMavenOpts(String globalMavenOpts) {
+            this.globalMavenOpts = globalMavenOpts;
+            save();
+        }
+
         public String getDisplayName() {
             return Messages.MavenModuleSet_DiplayName();
         }
@@ -763,6 +791,14 @@ public final class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,Ma
 
         public Maven.DescriptorImpl getMavenDescriptor() {
             return Hudson.getInstance().getDescriptorByType(Maven.DescriptorImpl.class);
+        }
+
+        @Override
+        public boolean configure( StaplerRequest req, JSONObject o ) {
+            globalMavenOpts = Util.fixEmptyAndTrim(o.getString("globalMavenOpts"));
+            save();
+            
+            return true;
         }
 
         @Override

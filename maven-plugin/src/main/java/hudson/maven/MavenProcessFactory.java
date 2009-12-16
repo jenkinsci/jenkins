@@ -263,7 +263,7 @@ final class MavenProcessFactory implements ProcessCache.Factory {
             args.add("-agentlib:yjpagent=tracing");
 
         args.addTokenized(getMavenOpts());
-
+        
         args.add("-cp");
         args.add(
             (isMaster? Which.jarFile(Main.class).getAbsolutePath():slaveRoot.child("maven-agent.jar").getRemote())+
@@ -300,7 +300,27 @@ final class MavenProcessFactory implements ProcessCache.Factory {
     }
 
     public String getMavenOpts() {
-        return envVars.expand(mms.getMavenOpts());
+        String mavenOpts = mms.getMavenOpts();
+
+        if ((mavenOpts==null) || (mavenOpts.trim().length()==0)) {
+            Node n = getCurrentNode();
+            if (n!=null) {
+                try {
+                    String localMavenOpts = n.toComputer().getEnvironment().get("MAVEN_OPTS");
+                    
+                    if ((localMavenOpts!=null) && (localMavenOpts.trim().length()>0)) {
+                        mavenOpts = localMavenOpts;
+                    }
+                } catch (IOException e) {
+                } catch (InterruptedException e) {
+                    // Don't do anything - this just means the slave isn't running, so we
+                    // don't want to use its MAVEN_OPTS anyway.
+                }
+
+            }
+        }
+        
+        return envVars.expand(mavenOpts);
     }
 
     public MavenInstallation getMavenInstallation(TaskListener log) throws IOException, InterruptedException {

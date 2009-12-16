@@ -23,6 +23,7 @@
  */
 package hudson.model;
 
+import hudson.ExtensionList;
 import org.kohsuke.stapler.StaplerRequest;
 
 /**
@@ -87,4 +88,12 @@ public abstract class TopLevelItemDescriptor extends Descriptor<TopLevelItem> {
      * Creates a new {@link Job}.
      */
     public abstract TopLevelItem newInstance(String name);
+
+    /**
+     * Returns all the registered {@link TopLevelItem} descriptors.
+     */
+    public static ExtensionList<TopLevelItemDescriptor> all() {
+        return Hudson.getInstance().getExtensionList(TopLevelItemDescriptor.class);
+    }
+
 }
