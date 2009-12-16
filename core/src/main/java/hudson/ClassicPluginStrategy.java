@@ -339,9 +339,7 @@ public class ClassicPluginStrategy implements PluginStrategy {
             e.setDest(destDir);
             e.execute();
         } catch (BuildException x) {
-            IOException ioe = new IOException("Failed to expand " + archive);
-            ioe.initCause(x);
-            throw ioe;
+            throw new IOException2("Failed to expand " + archive,x);
         }
 
         try {
