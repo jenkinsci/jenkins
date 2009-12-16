@@ -235,6 +235,28 @@ final class RemoteClassLoader extends URLClassLoader {
         return toURLs(files).elements();
     }
 
+    // FIXME move to utils
+    /** Instructs Java to recursively delete the given directory (dir) and its contents when the JVM exits.
+     *  @param dir File  customer  representing directory to delete. If this file argument is not a directory, it will still
+     *  be deleted. <p>
+     *  The method works in Java 1.3, Java 1.4, Java 5.0 and Java 6.0; but it does not work with some early Java 6.0 versions
+     *  See http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=6437591
+     */
+    public static void deleteDirectoryOnExit(final File dir) {
+        // Delete this on exit.  Delete on exit requests are processed in REVERSE order
+        dir.deleteOnExit();
+
+        // If it's a directory, visit its children.  This recursive walk has to be done AFTER calling deleteOnExit
+        // on the directory itself because Java deletes the files to be deleted on exit in reverse order.
+        if (dir.isDirectory()) {
+            File[] childFiles = dir.listFiles();
+            if (childFiles != null) { // listFiles may return null if there's an IO error
+                for (File f: childFiles) { deleteDirectoryOnExit(f); }
+            }
+        }
+    }
+
+
     private File makeResource(String name, byte[] image) throws IOException {
         File tmpFile = File.createTempFile("hudson-remoting", "");
         tmpFile.delete();
@@ -244,7 +266,8 @@ final class RemoteClassLoader extends URLClassLoader {
         FileOutputStream fos = new FileOutputStream(resource);
         fos.write(image);
         fos.close();
-        resource.deleteOnExit();
+
+        deleteDirectoryOnExit(tmpFile);
 
         return resource;
     }
