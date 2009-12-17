@@ -23,6 +23,7 @@
  */
 package hudson.model;
 
+import hudson.ExtensionList;
 import org.kohsuke.stapler.StaplerRequest;
 
 /**
@@ -64,9 +65,9 @@ public abstract class TopLevelItemDescriptor extends Descriptor<TopLevelItem> {
      *
      * <p>
      * Used as the caption when the user chooses what job type to create.
-     * The descriptor implementation also needs to have <tt>detail.jelly</tt>
+     * The descriptor implementation also needs to have <tt>newJobDetail.jelly</tt>
      * script, which will be used to render the text below the caption
-     * that expains the job type.
+     * that explains the job type.
      */
     public abstract String getDisplayName();
 
@@ -87,4 +88,12 @@ public abstract class TopLevelItemDescriptor extends Descriptor<TopLevelItem> {
      * Creates a new {@link Job}.
      */
     public abstract TopLevelItem newInstance(String name);
+
+    /**
+     * Returns all the registered {@link TopLevelItem} descriptors.
+     */
+    public static ExtensionList<TopLevelItemDescriptor> all() {
+        return Hudson.getInstance().getExtensionList(TopLevelItemDescriptor.class);
+    }
+
 }

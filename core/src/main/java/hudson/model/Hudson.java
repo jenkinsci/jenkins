@@ -697,8 +697,8 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
                 String s = "Attained "+milestone.toString();
                 if (milestone instanceof InitMilestone) {
                     lv = Level.INFO; // noteworthy milestones --- at least while we debug problems further
-                    s = ((InitMilestone)milestone).toString();
                     initLevel = (InitMilestone)milestone;
+                    s = initLevel.toString();
                 }
                 LOGGER.log(lv,s);
             }

@@ -112,6 +112,10 @@ public final class ProcessCache {
             this.systemProperties = channel.call(new GetSystemProperties());
         }
 
+        public String getMavenOpts() {
+            return mavenOpts;
+        }
+        
         boolean matches(String mavenOpts,MavenInstallation installation, JDK jdk) {
             return Util.fixNull(this.mavenOpts).equals(Util.fixNull(mavenOpts))
                 && this.installation==installation

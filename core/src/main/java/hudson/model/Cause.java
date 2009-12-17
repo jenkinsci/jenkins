@@ -101,14 +101,17 @@ public abstract class Cause {
             upstreamCauses = new ArrayList<Cause>(up.getCauses());
         }
 
+        @Exported(visibility=3)
         public String getUpstreamProject() {
             return upstreamProject;
         }
 
+        @Exported(visibility=3)
         public int getUpstreamBuild() {
             return upstreamBuild;
         }
 
+        @Exported(visibility=3)
         public String getUpstreamUrl() {
             return upstreamUrl;
         }
@@ -137,7 +140,7 @@ public abstract class Cause {
             this.authenticationName = Hudson.getAuthentication().getName();
         }
 
-        @Exported
+        @Exported(visibility=3)
         public String getUserName() {
             return authenticationName;
         }

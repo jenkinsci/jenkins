@@ -159,6 +159,7 @@ THE SOFTWARE.
       <local:globalConfig className="hudson.tasks.Publisher" />
       <local:globalConfig className="hudson.model.JobPropertyDescriptor" />
       <local:globalConfig className="hudson.model.PageDecorator" />
+      <local:globalConfig className="hudson.model.TopLevelItemDescriptor" />
 
       <j:if test="${!empty(h.getCloudDescriptors())}">
         <f:section title="${%Cloud}">

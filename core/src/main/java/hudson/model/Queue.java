@@ -834,7 +834,14 @@ public class Queue extends ResourceController implements Saveable {
         return t.isBuildBlocked() || !canRun(t.getResourceList());
     }
 
-
+    /**
+     *  Make sure we don't queue two tasks of the same project to be built
+     *  unless that project allows concurrent builds.
+     */
+    private boolean allowNewBuildableTask (Task t) {
+           return t.isConcurrentBuild() || !buildables.containsKey(t);
+    }
+    
     /**
      * Queue maintenance.
      * <p>
@@ -848,15 +855,7 @@ public class Queue extends ResourceController implements Saveable {
         Iterator<BlockedItem> itr = blockedProjects.values().iterator();
         while (itr.hasNext()) {
             BlockedItem p = itr.next();
-            if (!isBuildBlocked(p.task)) {
-                // Make sure that we don't make more than one item buildable unless the
-                // project can handle concurrent builds
-                if (p.task instanceof AbstractProject<?,?>) {
-                    AbstractProject<?,?> proj = (AbstractProject<?,?>) p.task;
-                    if (!proj.isConcurrentBuild() && buildables.containsKey(p.task)) {
-                        continue;
-                    }
-                }
+            if (!isBuildBlocked(p.task) && allowNewBuildableTask(p.task)) {
                 // ready to be executed
                 LOGGER.fine(p.task.getFullDisplayName() + " no longer blocked");
                 itr.remove();
@@ -872,7 +871,7 @@ public class Queue extends ResourceController implements Saveable {
 
             waitingList.remove(top);
             Task p = top.task;
-            if (!isBuildBlocked(p)) {
+            if (!isBuildBlocked(p) && allowNewBuildableTask(p)) {
                 // ready to be executed immediately
                 LOGGER.fine(p.getFullDisplayName() + " ready to build");
                 makeBuildable(new BuildableItem(top));
@@ -1045,6 +1044,11 @@ public class Queue extends ResourceController implements Saveable {
          *      URL that ends with '/'.
          */
         String getUrl();
+        
+        /**
+         * True if the task allows concurrent builds
+         */
+        boolean isConcurrentBuild();
     }
 
     public interface Executable extends Runnable {

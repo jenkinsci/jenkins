@@ -402,6 +402,14 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
     public boolean getHasCustomQuietPeriod() {
         return quietPeriod!=null;
     }
+
+    /**
+     * Sets the custom quiet period of this project, or revert to the global default if null is given. 
+     */
+    public void setQuietPeriod(Integer seconds) throws IOException {
+        this.quietPeriod = seconds;
+        save();
+    }
     
     public boolean hasCustomScmCheckoutRetryCount(){
         return scmCheckoutRetryCount != null;

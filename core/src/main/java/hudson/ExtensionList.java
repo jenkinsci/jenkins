@@ -190,7 +190,9 @@ public class ExtensionList<T> extends AbstractList<T> {
      * Loads all the extensions.
      */
     protected List<T> load() {
-        LOGGER.log(Level.FINE,"Loading ExtensionList: "+extensionType, new Throwable());
+        if (LOGGER.isLoggable(Level.FINE))
+            LOGGER.log(Level.FINE,"Loading ExtensionList: "+extensionType, new Throwable());
+
         List<T> r = new ArrayList<T>();
         for (ExtensionFinder finder : finders())
             r.addAll(finder.findExtensions(extensionType, hudson));

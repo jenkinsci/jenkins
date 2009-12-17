@@ -26,6 +26,7 @@ package hudson.logging;
 import hudson.FeedAdapter;
 import hudson.Functions;
 import hudson.init.Initializer;
+import static hudson.init.InitMilestone.PLUGINS_PREPARED;
 import hudson.model.AbstractModelObject;
 import hudson.model.Hudson;
 import hudson.model.RSS;
@@ -179,7 +180,7 @@ public class LogRecorderManager extends AbstractModelObject {
         },req,rsp);
     }
 
-    @Initializer
+    @Initializer(before=PLUGINS_PREPARED)
     public static void init(Hudson h) throws IOException {
         h.getLog().load();
     }

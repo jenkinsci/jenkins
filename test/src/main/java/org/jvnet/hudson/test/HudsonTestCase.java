@@ -32,6 +32,7 @@ import hudson.EnvVars;
 import hudson.ExtensionList;
 import hudson.DescriptorExtensionList;
 import hudson.Util;
+import hudson.model.Computer;
 import hudson.tools.ToolProperty;
 import hudson.remoting.Which;
 import hudson.Launcher.LocalLauncher;
@@ -745,6 +746,51 @@ public abstract class HudsonTestCase extends TestCase implements RootAction {
      */
     protected <T extends Descriptor<?>> T get(Class<T> d) {
         return hudson.getDescriptorByType(d);
+    }
+
+
+    /**
+     * Returns true if Hudson is building something or going to build something.
+     */
+    protected boolean isSomethingHappening() {
+        if (!hudson.getQueue().isEmpty())
+            return true;
+        for (Computer n : hudson.getComputers())
+            if (!n.isIdle())
+                return true;
+        return false;
+    }
+
+    /**
+     * Waits until Hudson finishes building everything, including those in the queue.
+     * <p>
+     * This method uses a default time out to prevent infinite hang in the automated test execution environment.
+     */
+    protected void waitUntilNoActivity() throws Exception {
+        waitUntilNoActivityUpTo(30*1000);
+    }
+
+    /**
+     * Waits until Hudson finishes building everything, including those in the queue, or fail the test
+     * if the specified timeout milliseconds is 
+     */
+    protected void waitUntilNoActivityUpTo(int timeout) throws Exception {
+        long startTime = System.currentTimeMillis();
+        int streak = 0;
+
+        while (true) {
+            Thread.sleep(100);
+            if (isSomethingHappening())
+                streak=0;
+            else
+                streak++;
+
+            if (streak>5)   // the system is quiet for a while
+                return;
+
+            if (System.currentTimeMillis()-startTime > timeout)
+                throw new AssertionError("Hudson is still doing something after "+timeout+"ms");
+        }
     }
 
 
