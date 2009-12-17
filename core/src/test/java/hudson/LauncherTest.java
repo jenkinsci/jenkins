@@ -41,27 +41,32 @@ public class LauncherTest extends ChannelTestCase {
 
         File tmp = File.createTempFile("testRemoteKill", "");
         tmp.delete();
-        FilePath f = new FilePath(french, tmp.getPath());
-        Launcher l = f.createLauncher(new StreamTaskListener(System.err));
-        Proc p = l.launch().cmds("sh", "-c", "echo $$$$ > "+tmp+"; sleep 30").stdout(System.out).stderr(System.err).start();
-        while (!tmp.exists())
-            Thread.sleep(100);
-        long start = System.currentTimeMillis();
-        p.kill();
-        assertTrue(p.join()!=0);
-        long end = System.currentTimeMillis();
-        assertTrue("join finished promptly", (end - start < 5000));
-        french.call(NOOP); // this only returns after the other side of the channel has finished executing cancellation
-        Thread.sleep(2000); // more delay to make sure it's gone
-        assertNull("process should be gone",ProcessTree.get().get(Integer.parseInt(FileUtils.readFileToString(tmp).trim())));
 
-        // Manual version of test: set up instance w/ one slave. Now in script console
-        // new hudson.FilePath(new java.io.File("/tmp")).createLauncher(new hudson.util.StreamTaskListener(System.err)).
-        //   launch().cmds("sleep", "1d").stdout(System.out).stderr(System.err).start().kill()
-        // returns immediately and pgrep sleep => nothing. But without fix
-        // hudson.model.Hudson.instance.nodes[0].rootPath.createLauncher(new hudson.util.StreamTaskListener(System.err)).
-        //   launch().cmds("sleep", "1d").stdout(System.out).stderr(System.err).start().kill()
-        // hangs and on slave machine pgrep sleep => one process; after manual kill, script returns.
+        try {
+            FilePath f = new FilePath(french, tmp.getPath());
+            Launcher l = f.createLauncher(new StreamTaskListener(System.err));
+            Proc p = l.launch().cmds("sh", "-c", "echo $$$$ > "+tmp+"; sleep 30").stdout(System.out).stderr(System.err).start();
+            while (!tmp.exists())
+                Thread.sleep(100);
+            long start = System.currentTimeMillis();
+            p.kill();
+            assertTrue(p.join()!=0);
+            long end = System.currentTimeMillis();
+            assertTrue("join finished promptly", (end - start < 5000));
+            french.call(NOOP); // this only returns after the other side of the channel has finished executing cancellation
+            Thread.sleep(2000); // more delay to make sure it's gone
+            assertNull("process should be gone",ProcessTree.get().get(Integer.parseInt(FileUtils.readFileToString(tmp).trim())));
+
+            // Manual version of test: set up instance w/ one slave. Now in script console
+            // new hudson.FilePath(new java.io.File("/tmp")).createLauncher(new hudson.util.StreamTaskListener(System.err)).
+            //   launch().cmds("sleep", "1d").stdout(System.out).stderr(System.err).start().kill()
+            // returns immediately and pgrep sleep => nothing. But without fix
+            // hudson.model.Hudson.instance.nodes[0].rootPath.createLauncher(new hudson.util.StreamTaskListener(System.err)).
+            //   launch().cmds("sleep", "1d").stdout(System.out).stderr(System.err).start().kill()
+            // hangs and on slave machine pgrep sleep => one process; after manual kill, script returns.
+        } finally {
+            tmp.delete();
+        }
     }
 
     private static final Callable<Object,RuntimeException> NOOP = new Callable() {
