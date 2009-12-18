@@ -31,13 +31,12 @@ import hudson.Extension;
 import hudson.Functions;
 import hudson.remoting.VirtualChannel;
 import hudson.FilePath.FileCallable;
-
-import org.kohsuke.stapler.DataBoundConstructor;
+import org.kohsuke.stapler.StaplerRequest;
 import org.jvnet.animal_sniffer.IgnoreJRERequirement;
+import net.sf.json.JSONObject;
 
 import java.io.IOException;
 import java.io.File;
-import java.util.logging.Logger;
 
 /**
  * Monitors the disk space of "/tmp".
@@ -45,17 +44,6 @@ import java.util.logging.Logger;
  * @author Kohsuke Kawaguchi
  */
 public class TemporarySpaceMonitor extends NodeMonitor {
-	/**
-	 * The free space threshold, in bytes, below which the node
-	 * monitor will be triggered.
-	 */
-	public final long freeSpaceTheshold;
-	
-	@DataBoundConstructor
-	public TemporarySpaceMonitor(long freeSpaceTheshold) {
-		this.freeSpaceTheshold = freeSpaceTheshold;
-	}
-	
     public DiskSpace getFreeSpace(Computer c) {
         return DESCRIPTOR.get(c);
     }
@@ -71,6 +59,11 @@ public class TemporarySpaceMonitor extends NodeMonitor {
             return Messages.TemporarySpaceMonitor_DisplayName();
         }
 
+        @Override
+        public NodeMonitor newInstance(StaplerRequest req, JSONObject formData) throws FormException {
+            return new TemporarySpaceMonitor();
+        }
+
         protected DiskSpace getFreeSpace(Computer c) throws IOException, InterruptedException {
             FilePath p = c.getNode().getRootPath();
             if(p==null) return null;
@@ -84,20 +77,6 @@ public class TemporarySpaceMonitor extends NodeMonitor {
         if(Functions.isMustangOrAbove())    return DESCRIPTOR;
         return null;
     }
-    
-    @Override
-    public Object data(Computer c) {
-    	DiskSpace size = (DiskSpace) super.data(c);
-        if(size!=null && size.size < freeSpaceTheshold) {
-        	size.setTriggered(true);
-        	if(DESCRIPTOR.markOffline(c,size)) {
-        		LOGGER.warning(Messages.DiskSpaceMonitor_MarkedOffline(c.getName()));
-        	}
-        }
-        return size;
-    }
-    
-    private static final Logger LOGGER = Logger.getLogger(TemporarySpaceMonitor.class.getName());
 
     protected static final class GetTempSpace implements FileCallable<DiskSpace> {
         @IgnoreJRERequirement

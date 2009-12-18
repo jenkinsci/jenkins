@@ -34,6 +34,7 @@ import org.jvnet.animal_sniffer.IgnoreJRERequirement;
 import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
+import java.util.logging.Logger;
 import java.math.BigDecimal;
 import org.kohsuke.stapler.export.ExportedBean;
 import org.kohsuke.stapler.export.Exported;
@@ -51,8 +52,6 @@ import org.kohsuke.stapler.export.Exported;
     public static final class DiskSpace extends OfflineCause implements Serializable {
         @Exported
         public final long size;
-        
-        private boolean triggered;
 
         public DiskSpace(long size) {
             this.size = size;
@@ -81,27 +80,26 @@ import org.kohsuke.stapler.export.Exported;
             long space = size;
             space/=1024L;   // convert to KB
             space/=1024L;   // convert to MB
-            if(triggered) {
+            if(space<1024) {
                 // less than a GB
                 return Util.wrapToErrorSpan(new BigDecimal(space).scaleByPowerOfTen(-3).toPlainString()+"GB");
             }
 
             return space/1024+"GB";
         }
-        
-        /**
-         * Sets whether this disk space amount should be treated as outside
-         * the acceptable conditions or not.
-         */
-        protected void setTriggered(boolean triggered) {
-        	this.triggered = triggered;
+
+        public boolean moreThanGB() {
+            return size>1024L*1024*1024;
         }
-        
-        private static final long serialVersionUID = 2L;
+
+        private static final long serialVersionUID = 1L;
     }
 
     protected DiskSpace monitor(Computer c) throws IOException, InterruptedException {
-        return getFreeSpace(c);
+        DiskSpace size = getFreeSpace(c);
+        if(size!=null && !size.moreThanGB() && markOffline(c,size))
+            LOGGER.warning(Messages.DiskSpaceMonitor_MarkedOffline(c.getName()));
+        return size;
     }
 
     /**
@@ -123,4 +121,6 @@ import org.kohsuke.stapler.export.Exported;
         }
         private static final long serialVersionUID = 1L;
     }
+
+    private static final Logger LOGGER = Logger.getLogger(DiskSpaceMonitor.class.getName());
 }
