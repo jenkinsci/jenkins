@@ -29,10 +29,11 @@ import hudson.Functions;
 import hudson.model.Computer;
 import hudson.model.Hudson;
 import hudson.node_monitors.DiskSpaceMonitorDescriptor.DiskSpace;
-import net.sf.json.JSONObject;
-import org.kohsuke.stapler.StaplerRequest;
+
+import org.kohsuke.stapler.DataBoundConstructor;
 
 import java.io.IOException;
+import java.util.logging.Logger;
 
 /**
  * Checks available disk space of the remote FS root.
@@ -42,6 +43,17 @@ import java.io.IOException;
  * @since 1.123
  */
 public class DiskSpaceMonitor extends NodeMonitor {
+	/**
+	 * The free space threshold, in bytes, below which the node
+	 * monitor will be triggered.
+	 */
+	public final long freeSpaceTheshold;
+	
+	@DataBoundConstructor
+	public DiskSpaceMonitor(long freeSpaceTheshold) {
+		this.freeSpaceTheshold = freeSpaceTheshold;
+	}
+	
     public DiskSpace getFreeSpace(Computer c) {
         return DESCRIPTOR.get(c);
     }
@@ -57,11 +69,6 @@ public class DiskSpaceMonitor extends NodeMonitor {
             return Messages.DiskSpaceMonitor_DisplayName();
         }
 
-        @Override
-        public NodeMonitor newInstance(StaplerRequest req, JSONObject formData) throws FormException {
-            return new DiskSpaceMonitor();
-        }
-
         protected DiskSpace getFreeSpace(Computer c) throws IOException, InterruptedException {
             FilePath p = c.getNode().getRootPath();
             if(p==null) return null;
@@ -75,4 +82,18 @@ public class DiskSpaceMonitor extends NodeMonitor {
         if(Functions.isMustangOrAbove())    return DESCRIPTOR;
         return null;
     }
+    
+    @Override
+    public Object data(Computer c) {
+    	DiskSpace size = (DiskSpace) super.data(c);
+        if(size!=null && size.size < freeSpaceTheshold) {
+        	size.setTriggered(true);
+        	if(DESCRIPTOR.markOffline(c,size)) {
+        		LOGGER.warning(Messages.DiskSpaceMonitor_MarkedOffline(c.getName()));
+        	}
+        }
+        return size;
+    }
+    
+    private static final Logger LOGGER = Logger.getLogger(DiskSpaceMonitor.class.getName());
 }

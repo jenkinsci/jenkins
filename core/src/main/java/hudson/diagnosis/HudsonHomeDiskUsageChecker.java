@@ -56,10 +56,15 @@ public class HudsonHomeDiskUsageChecker extends PeriodicWork {
 
             LOGGER.fine("Monitoring disk usage of HUDSON_HOME. total="+total+" free="+free);
 
-            // if it's more than 90% full and less than 1GB, activate
+            // Get the minimum amount of space to check for, with a default of 1GB
+            long freeSpaceTheshold = Long.getLong(
+            		HudsonHomeDiskUsageChecker.class.getName() + ".freeSpaceTheshold",
+            		Long.valueOf(1073741824L));
+
+            // if it's more than 90% full and less than the minimum, activate
             // it's AND and not OR so that small Hudson home won't get a warning,
             // and similarly, if you have a 1TB disk, you don't get a warning when you still have 100GB to go.
-            HudsonHomeDiskUsageMonitor.get().activated = (total/free>10 && free<1024L*1024*1024);
+            HudsonHomeDiskUsageMonitor.get().activated = (total/free>10 && free<freeSpaceTheshold);
         } catch (LinkageError _) {
             // pre Mustang
             LOGGER.info("Not on JDK6. Cannot monitor HUDSON_HOME disk usage");
