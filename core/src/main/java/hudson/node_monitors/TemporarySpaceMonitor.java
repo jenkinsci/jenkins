@@ -23,27 +23,32 @@
  */
 package hudson.node_monitors;
 
-import hudson.node_monitors.DiskSpaceMonitorDescriptor.DiskSpace;
+import hudson.Extension;
+import hudson.FilePath;
+import hudson.FilePath.FileCallable;
+import hudson.Functions;
 import hudson.model.Computer;
 import hudson.model.Hudson;
-import hudson.FilePath;
-import hudson.Extension;
-import hudson.Functions;
+import hudson.node_monitors.DiskSpaceMonitorDescriptor.DiskSpace;
 import hudson.remoting.VirtualChannel;
-import hudson.FilePath.FileCallable;
-import org.kohsuke.stapler.StaplerRequest;
 import org.jvnet.animal_sniffer.IgnoreJRERequirement;
-import net.sf.json.JSONObject;
+import org.kohsuke.stapler.DataBoundConstructor;
 
-import java.io.IOException;
 import java.io.File;
+import java.io.IOException;
+import java.text.ParseException;
 
 /**
  * Monitors the disk space of "/tmp".
  *
  * @author Kohsuke Kawaguchi
  */
-public class TemporarySpaceMonitor extends NodeMonitor {
+public class TemporarySpaceMonitor extends AbstractDiskSpaceMonitor {
+    @DataBoundConstructor
+	public TemporarySpaceMonitor(String freeSpaceThreshold) throws ParseException {
+        super(freeSpaceThreshold);
+	}
+	
     public DiskSpace getFreeSpace(Computer c) {
         return DESCRIPTOR.get(c);
     }
@@ -59,11 +64,6 @@ public class TemporarySpaceMonitor extends NodeMonitor {
             return Messages.TemporarySpaceMonitor_DisplayName();
         }
 
-        @Override
-        public NodeMonitor newInstance(StaplerRequest req, JSONObject formData) throws FormException {
-            return new TemporarySpaceMonitor();
-        }
-
         protected DiskSpace getFreeSpace(Computer c) throws IOException, InterruptedException {
             FilePath p = c.getNode().getRootPath();
             if(p==null) return null;
@@ -77,7 +77,7 @@ public class TemporarySpaceMonitor extends NodeMonitor {
         if(Functions.isMustangOrAbove())    return DESCRIPTOR;
         return null;
     }
-
+    
     protected static final class GetTempSpace implements FileCallable<DiskSpace> {
         @IgnoreJRERequirement
         public DiskSpace invoke(File f, VirtualChannel channel) throws IOException {

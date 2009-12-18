@@ -29,10 +29,10 @@ import hudson.Functions;
 import hudson.model.Computer;
 import hudson.model.Hudson;
 import hudson.node_monitors.DiskSpaceMonitorDescriptor.DiskSpace;
-import net.sf.json.JSONObject;
-import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.DataBoundConstructor;
 
 import java.io.IOException;
+import java.text.ParseException;
 
 /**
  * Checks available disk space of the remote FS root.
@@ -41,7 +41,12 @@ import java.io.IOException;
  * @author Kohsuke Kawaguchi
  * @since 1.123
  */
-public class DiskSpaceMonitor extends NodeMonitor {
+public class DiskSpaceMonitor extends AbstractDiskSpaceMonitor {
+    @DataBoundConstructor
+	public DiskSpaceMonitor(String freeSpaceThreshold) throws ParseException {
+        super(freeSpaceThreshold);
+	}
+	
     public DiskSpace getFreeSpace(Computer c) {
         return DESCRIPTOR.get(c);
     }
@@ -55,11 +60,6 @@ public class DiskSpaceMonitor extends NodeMonitor {
     public static final DiskSpaceMonitorDescriptor DESCRIPTOR = new DiskSpaceMonitorDescriptor() {
         public String getDisplayName() {
             return Messages.DiskSpaceMonitor_DisplayName();
-        }
-
-        @Override
-        public NodeMonitor newInstance(StaplerRequest req, JSONObject formData) throws FormException {
-            return new DiskSpaceMonitor();
         }
 
         protected DiskSpace getFreeSpace(Computer c) throws IOException, InterruptedException {
