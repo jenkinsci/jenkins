@@ -247,7 +247,7 @@ public class Queue extends ResourceController implements Saveable {
                     int maxId = 0;
                     for (Object o : list) {
                         if (o instanceof Task) {
-                            // backward compatiblity
+                            // backward compatibility
                             schedule((Task)o, 0);
                         } else if (o instanceof Item) {
                             Item item = (Item)o;
@@ -477,7 +477,7 @@ public class Queue extends ResourceController implements Saveable {
 
     /**
      * @deprecated as of 1.311
-     *      Use {@link #schedule(Task, int, Action[])}
+     *      Use {@link #schedule(Task, int, Action...)} 
      */
     public synchronized boolean add(Task p, int quietPeriod, Action... actions) {
     	return schedule(p, quietPeriod, actions)!=null;
@@ -838,10 +838,16 @@ public class Queue extends ResourceController implements Saveable {
      *  Make sure we don't queue two tasks of the same project to be built
      *  unless that project allows concurrent builds.
      */
-    private boolean allowNewBuildableTask (Task t) {
-           return t.isConcurrentBuild() || !buildables.containsKey(t);
+    private boolean allowNewBuildableTask(Task t) {
+        try {
+            if (t.isConcurrentBuild())
+                return true;
+        } catch (AbstractMethodError e) {
+            // earlier versions don't have the "isConcurrentBuild" method, so fall back gracefully
+        }
+        return !buildables.containsKey(t);
     }
-    
+
     /**
      * Queue maintenance.
      * <p>
@@ -1047,6 +1053,8 @@ public class Queue extends ResourceController implements Saveable {
         
         /**
          * True if the task allows concurrent builds
+         *
+         * @since 1.338
          */
         boolean isConcurrentBuild();
     }
