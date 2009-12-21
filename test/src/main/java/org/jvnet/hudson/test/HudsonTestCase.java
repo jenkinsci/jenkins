@@ -33,6 +33,8 @@ import hudson.ExtensionList;
 import hudson.DescriptorExtensionList;
 import hudson.Util;
 import hudson.model.Computer;
+import hudson.model.Executor;
+import hudson.model.Queue.Executable;
 import hudson.tools.ToolProperty;
 import hudson.remoting.Which;
 import hudson.Launcher.LocalLauncher;
@@ -788,8 +790,17 @@ public abstract class HudsonTestCase extends TestCase implements RootAction {
             if (streak>5)   // the system is quiet for a while
                 return;
 
-            if (System.currentTimeMillis()-startTime > timeout)
-                throw new AssertionError("Hudson is still doing something after "+timeout+"ms");
+            if (System.currentTimeMillis()-startTime > timeout) {
+                List<Executable> building = new ArrayList<Executable>();
+                for (Computer c : hudson.getComputers()) {
+                    for (Executor e : c.getExecutors()) {
+                        if (e.isBusy())
+                            building.add(e.getCurrentExecutable());
+                    }
+                }
+                throw new AssertionError(String.format("Hudson is still doing something after %dms: queue=%s building=%s",
+                        timeout, Arrays.asList(hudson.getQueue().getItems()), building));
+            }
         }
     }
 
