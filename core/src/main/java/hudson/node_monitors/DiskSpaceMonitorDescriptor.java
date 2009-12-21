@@ -118,13 +118,13 @@ import org.kohsuke.stapler.export.Exported;
             for (int i=0; i<suffix.length(); i++) {
                 if (size.endsWith(suffix.substring(i,i+1))) {
                     multiplier = 1;
-                    for (int j=0; j<i; j++ )
+                    for (int j=0; j<=i; j++ )
                         multiplier*=1024;
                     size = size.substring(0,size.length()-1);
                 }
             }
 
-            return new DiskSpace((long)Double.parseDouble(size.trim())*multiplier);
+            return new DiskSpace((long)(Double.parseDouble(size.trim())*multiplier));
         }
 
         private static final long serialVersionUID = 2L;
