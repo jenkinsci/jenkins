@@ -42,10 +42,10 @@ THE SOFTWARE.
           ${name}
         </td>
         <j:choose>
-          <j:when test="${!e.alive}">
+          <j:when test="${true or !e.alive}">
             <td class="pane">
               <a href="${rootURL}/computers/${cloop.index}/${url}/causeOfDeath">
-                <span class="error">${%Dead} (!)</span>
+                <div class="error">${%Dead} (!)</div>
               </a>
             </td>
             <td class="pane"/>

@@ -420,7 +420,7 @@ th.pane {
     color: white;
 }
 
-/* ======================== error/warning message (mainly in the form) ======================== */
+/* ======================== error/warning message (mainly in the form.) Use them on block elements ======================== */
 .error {
     color: #CC0000;
     font-weight: bold;
