@@ -75,7 +75,9 @@ public abstract class BuildWrapper implements ExtensionPoint, Describable<BuildW
          * This method is invoked even when the build failed, so that the
          * clean up operation can be performed regardless of the build result
          * (for example, you'll want to stop application server even if a build
-         * fails.)
+         * fails.)  {@link Build#getResult} in this case will return Result.FAILURE
+         * (since 1.339), and a null result indicates SUCCESS-so-far (post-build
+         * actions may still affect the final result).
          *
          * @param build
          *      The same {@link Build} object given to the set up method.

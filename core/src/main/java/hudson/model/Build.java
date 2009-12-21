@@ -23,8 +23,6 @@
  */
 package hudson.model;
 
-import hudson.Launcher;
-import hudson.slaves.NodeProperty;
 import hudson.tasks.BuildStep;
 import hudson.tasks.BuildTrigger;
 import hudson.tasks.BuildWrapper;
@@ -116,6 +114,7 @@ public abstract class Build <P extends Project<P,B>,B extends Build<P,B>>
             if(!preBuild(listener,project.getPublishers()))
                 return Result.FAILURE;
 
+            Result r = null;
             try {
                 List<BuildWrapper> wrappers = new ArrayList<BuildWrapper>(project.getBuildWrappers().values());
                 
@@ -126,13 +125,14 @@ public abstract class Build <P extends Project<P,B>,B extends Build<P,B>>
                 for( BuildWrapper w : wrappers ) {
                     Environment e = w.setUp((AbstractBuild<?,?>)Build.this, launcher, listener);
                     if(e==null)
-                        return Result.FAILURE;
+                        return (r = Result.FAILURE);
                     buildEnvironments.add(e);
                 }
 
                 if(!build(listener,project.getBuilders()))
-                    return Result.FAILURE;
+                    r = Result.FAILURE;
             } finally {
+                if (r != null) setResult(r);
                 // tear down in reverse order
                 boolean failed=false;
                 for( int i=buildEnvironments.size()-1; i>=0; i-- ) {
@@ -145,7 +145,7 @@ public abstract class Build <P extends Project<P,B>,B extends Build<P,B>>
                 if (failed) return Result.FAILURE;
             }
 
-            return null;
+            return r;
         }
 
         public void post2(BuildListener listener) throws IOException, InterruptedException {
