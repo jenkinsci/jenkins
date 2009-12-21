@@ -171,11 +171,14 @@ public class Queue extends ResourceController implements Saveable {
          * Verifies that the {@link Executor} represented by this object is capable of executing the given task.
          */
         public boolean canTake(Task task) {
+            Node node = getNode();
+            if (node==null)     return false;   // this executor is about to die
+
             Label l = task.getAssignedLabel();
-            if(l!=null && !l.contains(getNode()))
+            if(l!=null && !l.contains(node))
                 return false;   // the task needs to be executed on label that this node doesn't have.
 
-            if(l==null && getNode().getMode()== Mode.EXCLUSIVE)
+            if(l==null && node.getMode()== Mode.EXCLUSIVE)
                 return false;   // this node is reserved for tasks that are tied to it
 
             return isAvailable();
