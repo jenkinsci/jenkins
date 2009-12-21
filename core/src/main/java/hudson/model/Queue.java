@@ -1233,6 +1233,11 @@ public class Queue extends ResourceController implements Saveable {
             this.future = new FutureImpl(task);
             return this;
         }
+
+        @Override
+        public String toString() {
+            return getClass().getName()+':'+task.toString();
+        }
     }
     
     /**
