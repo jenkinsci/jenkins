@@ -36,6 +36,7 @@ THE SOFTWARE.
       <plugin>
         <groupId>org.jvnet.maven-antrun-extended-plugin</groupId>
         <artifactId>maven-antrun-extended-plugin</artifactId>
+        <version>1.40</version>
         <executions>
           <execution>
             <phase>validate</phase>
