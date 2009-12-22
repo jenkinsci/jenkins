@@ -1,7 +1,7 @@
 <!--
 The MIT License
 
-Copyright (c) 2004-2009, Sun Microsystems, Inc.
+Copyright (c) 2004-2009, Sun Microsystems, Inc., Seiji Sogabe
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -21,14 +21,6 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 -->
-
-<!--
-  Config page
--->
-<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
-  <f:section title="${%Maven Project Configuration}">
-    <f:entry title="${%Global MAVEN_OPTS}" help="/plugin/maven-plugin/maven-opts.html">
-      <f:expandableTextbox name="globalMavenOpts" value="${descriptor.globalMavenOpts}" />
-    </f:entry>
-  </f:section>
-</j:jelly>
+<div>
+       このビューのジョブのみキューに表示されます。
+</div>
