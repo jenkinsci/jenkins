@@ -481,7 +481,7 @@ public abstract class Launcher {
      *      The working directory of the new process, or null to inherit
      *      from the current process
      * @param envVars
-     *      Environment variable overrides. In adition to what the current process
+     *      Environment variable overrides. In addition to what the current process
      *      is inherited (if this is going to be launched from a slave agent, that
      *      becomes the "current" process), these variables will be also set.
      */
