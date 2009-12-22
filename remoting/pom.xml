@@ -163,4 +163,14 @@ THE SOFTWARE.
       <scope>test</scope>
     </dependency>
   </dependencies>
+
+  <profiles>
+    <profile>
+      <id>release</id>
+      <properties>
+        <!-- for releases, just use the POM version. See above ant-run plugin for how this gets used. -->
+        <build.version>${version}</build.version>
+      </properties>
+    </profile>
+  </profiles>
 </project>
