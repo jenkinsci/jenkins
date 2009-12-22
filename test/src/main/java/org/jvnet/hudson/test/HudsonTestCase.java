@@ -769,7 +769,7 @@ public abstract class HudsonTestCase extends TestCase implements RootAction {
      * This method uses a default time out to prevent infinite hang in the automated test execution environment.
      */
     protected void waitUntilNoActivity() throws Exception {
-        waitUntilNoActivityUpTo(30*1000);
+        waitUntilNoActivityUpTo(60*1000);
     }
 
     /**
