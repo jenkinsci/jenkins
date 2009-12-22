@@ -13,6 +13,20 @@ import org.jvnet.hudson.test.recipes.LocalData;
  * @author dty
  */
 public class ExtendedReadPermissionTest extends HudsonTestCase {
+    private boolean enabled;
+
+    @Override
+    protected void setUp() throws Exception {
+        super.setUp();
+        enabled = Item.EXTENDED_READ.getEnabled();
+    }
+
+    @Override
+    protected void tearDown() throws Exception {
+        Item.EXTENDED_READ.setEnabled(enabled);
+        super.tearDown();
+    }
+
     /**
      * alice: Job/Configure+Read
      * bob: Job/Read
