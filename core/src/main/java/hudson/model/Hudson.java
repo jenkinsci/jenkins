@@ -2352,6 +2352,9 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
             for( ToolDescriptor d : ToolInstallation.all() )
                 result &= configureDescriptor(req,json,d);
 
+            for( TopLevelItemDescriptor d : TopLevelItemDescriptor.all() )
+                result &= configureDescriptor(req,json,d);
+
             for( JSONObject o : StructuredForm.toList(json,"plugin"))
                 pluginManager.getPlugin(o.getString("name")).getPlugin().configure(req, o);
 

@@ -49,16 +49,18 @@ public class UDPBroadcastThread extends Thread {
     private final Hudson hudson;
 
     public final OneShotEvent ready = new OneShotEvent();
+    private MulticastSocket mcs;
+    private boolean shutdown;
 
-    public UDPBroadcastThread(Hudson hudson) {
+    public UDPBroadcastThread(Hudson hudson) throws IOException {
         super("Hudson UDP "+PORT+" monitoring thread");
         this.hudson = hudson;
+        mcs = new MulticastSocket(PORT);
     }
 
     @Override
     public void run() {
         try {
-            MulticastSocket mcs = new MulticastSocket(PORT);
             mcs.joinGroup(MULTICAST);
             ready.signal();
 
@@ -92,6 +94,7 @@ public class UDPBroadcastThread extends Thread {
             // makes people unnecessarily concerned, for a feature that currently does no good.
             LOGGER.log(Level.WARNING, "Failed to listen to UDP port "+PORT,e);
         } catch (IOException e) {
+            if (shutdown)   return; // forcibly closed
             LOGGER.log(Level.WARNING, "UDP handling problem",e);
         }
     }
@@ -102,6 +105,8 @@ public class UDPBroadcastThread extends Thread {
     }
 
     public void shutdown() {
+        shutdown = true;
+        mcs.close();
         interrupt();
     }
 

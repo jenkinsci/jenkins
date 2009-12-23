@@ -104,12 +104,19 @@ public abstract class ToolInstaller implements Describable<ToolInstaller>, Exten
      * @since 1.310
      */
     protected final FilePath preferredLocation(ToolInstallation tool, Node node) {
+        if (node == null) {
+            throw new IllegalArgumentException("must pass non-null node");
+        }
         String home = Util.fixEmptyAndTrim(tool.getHome());
         if (home == null) {
             // XXX should this somehow uniquify paths among ToolInstallation.all()?
             home = tool.getName().replaceAll("[^A-Za-z0-9_.-]+", "_");
         }
-        return node.getRootPath().child("tools").child(home);
+        FilePath root = node.getRootPath();
+        if (root == null) {
+            throw new IllegalArgumentException("Node " + node.getDisplayName() + " seems to be offline");
+        }
+        return root.child("tools").child(home);
     }
 
     public ToolInstallerDescriptor<?> getDescriptor() {

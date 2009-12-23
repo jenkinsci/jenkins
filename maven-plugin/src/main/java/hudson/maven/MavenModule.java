@@ -24,7 +24,6 @@
 package hudson.maven;
 
 import hudson.CopyOnWrite;
-import hudson.FilePath;
 import hudson.Util;
 import hudson.Functions;
 import hudson.maven.reporters.MavenMailer;
@@ -49,6 +48,7 @@ import hudson.util.DescribableList;
 import org.apache.maven.project.MavenProject;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
+import org.kohsuke.stapler.export.Exported;
 
 import javax.servlet.ServletException;
 import java.io.IOException;
@@ -59,7 +59,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.HashSet;
-import org.kohsuke.stapler.export.Exported;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * {@link Job} that builds projects based on Maven2.
@@ -187,6 +188,7 @@ public final class MavenModule extends AbstractMavenProject<MavenModule,MavenBui
         }
     }
 
+    @Override
     protected void doSetName(String name) {
         moduleName = ModuleName.fromFileSystemName(name);
         super.doSetName(moduleName.toString());
@@ -310,6 +312,7 @@ public final class MavenModule extends AbstractMavenProject<MavenModule,MavenBui
         return false;
     }
 
+    @Override
     public MavenModuleSet getParent() {
         return (MavenModuleSet)super.getParent();
     }
@@ -337,6 +340,7 @@ public final class MavenModule extends AbstractMavenProject<MavenModule,MavenBui
      * {@link MavenModule} uses the workspace of the {@link MavenModuleSet},
      * so it always needs to be built on the same slave as the parent.
      */
+    @Override
     public Label getAssignedLabel() {
         Node n = getParent().getLastBuiltOn();
         if(n==null) return null;
@@ -408,9 +412,14 @@ public final class MavenModule extends AbstractMavenProject<MavenModule,MavenBui
 
         for (MavenReporter step : list) {
             if(!added.add(step.getClass()))     continue;   // already added
-            Action a = step.getProjectAction(this);
-            if(a!=null)
-                transientActions.add(a);
+            try {
+                Action a = step.getProjectAction(this);
+                if(a!=null)
+                    transientActions.add(a);
+            } catch (Exception e) {
+                LOGGER.log(Level.WARNING, "Failed to getProjectAction from " + step
+                           + ". Report issue to plugin developers.", e);
+            }
         }
     }
 
@@ -425,6 +434,7 @@ public final class MavenModule extends AbstractMavenProject<MavenModule,MavenBui
         return reporters;
     }
 
+    @Override
     protected void submit(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException, FormException {
         super.submit(req, rsp);
 
@@ -436,6 +446,7 @@ public final class MavenModule extends AbstractMavenProject<MavenModule,MavenBui
         Hudson.getInstance().rebuildDependencyGraph();
     }
 
+    @Override
     protected void performDelete() throws IOException, InterruptedException {
         super.performDelete();
         getParent().onModuleDeleted(this);
@@ -445,19 +456,21 @@ public final class MavenModule extends AbstractMavenProject<MavenModule,MavenBui
      * Creates a list of {@link MavenReporter}s to be used for a build of this project.
      */
     protected final List<MavenReporter> createReporters() {
-        List<MavenReporter> reporters = new ArrayList<MavenReporter>();
+        List<MavenReporter> reporterList = new ArrayList<MavenReporter>();
 
-        getReporters().addAllTo(reporters);
-        getParent().getReporters().addAllTo(reporters);
+        getReporters().addAllTo(reporterList);
+        getParent().getReporters().addAllTo(reporterList);
 
         for (MavenReporterDescriptor d : MavenReporterDescriptor.all()) {
             if(getReporters().contains(d))
                 continue;   // already configured
             MavenReporter auto = d.newAutoInstance(this);
             if(auto!=null)
-                reporters.add(auto);
+                reporterList.add(auto);
         }
 
-        return reporters;
+        return reporterList;
     }
+
+    private static final Logger LOGGER = Logger.getLogger(MavenModule.class.getName());
 }

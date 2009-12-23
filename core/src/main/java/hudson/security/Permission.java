@@ -87,7 +87,7 @@ public final class Permission {
      *
      * <p>
      * This allows us to dynamically enable or disable the visibility of
-     * permissions, so administrators can control the complexitity of their
+     * permissions, so administrators can control the complexity of their
      * permission matrix.
      *
      * @since 1.325

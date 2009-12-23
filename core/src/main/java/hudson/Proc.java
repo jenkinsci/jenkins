@@ -65,7 +65,8 @@ public abstract class Proc {
     public abstract void kill() throws IOException, InterruptedException;
 
     /**
-     * Waits for the completion of the process.
+     * Waits for the completion of the process and until we finish reading everything that the process has produced
+     * to stdout/stderr.
      *
      * <p>
      * If the thread is interrupted while waiting for the completion
@@ -177,7 +178,7 @@ public abstract class Proc {
             try {
                 int r = proc.waitFor();
                 // see http://hudson.gotdns.com/wiki/display/HUDSON/Spawning+processes+from+build
-                // problems like that shows up as inifinite wait in join(), which confuses great many users.
+                // problems like that shows up as infinite wait in join(), which confuses great many users.
                 // So let's do a timed wait here and try to diagnose the problem
                 copier.join(10*1000);
                 if(copier2!=null)   copier2.join(10*1000);

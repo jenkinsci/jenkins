@@ -42,9 +42,8 @@ public class EncodingStream extends FilterOutputStream {
 
     @Override
     public void write(int b) throws IOException {
-        if (b < 0) b += 256;
-        out.write(chars.charAt(b/16));
-        out.write(chars.charAt(b%16));
+        out.write(chars.charAt((b >> 4) & 0xF));
+        out.write(chars.charAt(b & 0xF));
     }
 
     private static final String chars = "0123456789ABCDEF";

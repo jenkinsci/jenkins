@@ -48,13 +48,17 @@ id.inc()
 ARGF.each do |line|
   if /=BEGIN=/ =~ line
     puts line
-    puts "<h3><a name=v#{id}>What's new in #{id}</a></h3>"
+    puts "<h3><a name=v#{id}>What's new in #{id}</a> <!--=DATE=--></h3>"
     puts "<!--=RC-CHANGES=-->"
     puts "</div><!--=END=-->"
 
     next
   end
   if /=END=/ =~ line
+    next
+  end
+  if /=DATE=/ =~ line
+    puts line.gsub("<!--=DATE=-->",Time.now.strftime("(%Y/%m/%d)"))
     next
   end
   puts line
