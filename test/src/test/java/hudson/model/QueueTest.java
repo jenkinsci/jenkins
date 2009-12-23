@@ -218,7 +218,7 @@ public class QueueTest extends HudsonTestCase {
 
         // View for build should group duplicates
         WebClient wc = new WebClient();
-        String buildPage = wc.getPage(build, "").asText();
+        String buildPage = wc.getPage(build, "").asText().replace('\n',' ');
         assertTrue("Build page should combine duplicates and show counts: " + buildPage,
                    buildPage.contains("Started by user anonymous (2 times) "
                         + "Started by an SCM change (3 times) "

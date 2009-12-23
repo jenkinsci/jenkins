@@ -35,7 +35,7 @@ public class ListScmBrowsersTest extends HudsonTestCase {
         for (HtmlSelect select : selects) {
             Set<String> title = new HashSet<String>();
             for(HtmlOption o : select.getOptions()) {
-                assertTrue("Duplicate entry: "+o.asText(),title.add(o.asText()));
+                assertTrue("Duplicate entry: "+o.getText(),title.add(o.getText()));
             }
         }
     }

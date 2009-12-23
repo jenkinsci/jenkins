@@ -23,6 +23,8 @@
  */
 package org.jvnet.hudson.test;
 
+import com.gargoylesoftware.htmlunit.DefaultCssErrorHandler;
+import com.gargoylesoftware.htmlunit.javascript.host.xml.XMLHttpRequest;
 import hudson.CloseProofOutputStream;
 import hudson.FilePath;
 import hudson.Functions;
@@ -106,6 +108,9 @@ import javax.servlet.ServletContextEvent;
 
 import junit.framework.TestCase;
 
+import net.sourceforge.htmlunit.corejs.javascript.Context;
+import net.sourceforge.htmlunit.corejs.javascript.ContextFactory;
+import net.sourceforge.htmlunit.corejs.javascript.ContextFactory.Listener;
 import org.apache.commons.httpclient.NameValuePair;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.beanutils.PropertyUtils;
@@ -121,6 +126,7 @@ import org.kohsuke.stapler.MetaClassLoader;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 import org.kohsuke.stapler.Stapler;
+import org.mortbay.jetty.MimeTypes;
 import org.mortbay.jetty.Server;
 import org.mortbay.jetty.bio.SocketConnector;
 import org.mortbay.jetty.security.HashUserRealm;
@@ -128,10 +134,7 @@ import org.mortbay.jetty.security.UserRealm;
 import org.mortbay.jetty.webapp.Configuration;
 import org.mortbay.jetty.webapp.WebAppContext;
 import org.mortbay.jetty.webapp.WebXmlConfiguration;
-import org.mozilla.javascript.Context;
-import org.mozilla.javascript.ContextFactory;
 import org.mozilla.javascript.tools.debugger.Dim;
-import org.mozilla.javascript.ContextFactory.Listener;
 import org.w3c.css.sac.CSSException;
 import org.w3c.css.sac.CSSParseException;
 import org.w3c.css.sac.ErrorHandler;
@@ -149,7 +152,6 @@ import com.gargoylesoftware.htmlunit.html.HtmlElement;
 import com.gargoylesoftware.htmlunit.html.HtmlInput;
 import com.gargoylesoftware.htmlunit.javascript.JavaScriptEngine;
 import com.gargoylesoftware.htmlunit.javascript.host.Stylesheet;
-import com.gargoylesoftware.htmlunit.javascript.host.XMLHttpRequest;
 
 /**
  * Base class for all Hudson test cases.
@@ -303,7 +305,7 @@ public abstract class HudsonTestCase extends TestCase implements RootAction {
     @Override
     protected void runTest() throws Throwable {
         System.out.println("=== Starting "+ getClass().getSimpleName() + "." + getName());
-        new JavaScriptEngine(null);   // ensure that ContextFactory is initialized
+//        new JavaScriptEngine(null);   // ensure that ContextFactory is initialized
 
         ContextFactory.getGlobal().addListener(rhinoContextListener);
         try {
@@ -347,6 +349,7 @@ public abstract class HudsonTestCase extends TestCase implements RootAction {
         context.setClassLoader(getClass().getClassLoader());
         context.setConfigurations(new Configuration[]{new WebXmlConfiguration(),new NoListenerConfiguration()});
         server.setHandler(context);
+        context.setMimeTypes(MIME_TYPES);
 
         SocketConnector connector = new SocketConnector();
         server.addConnector(connector);
@@ -566,7 +569,9 @@ public abstract class HudsonTestCase extends TestCase implements RootAction {
         // this can be too late, depending on when this method is invoked.
         Functions.DEBUG_YUI = true;
 
-        return org.mozilla.javascript.tools.debugger.Main.mainEmbedded("Rhino debugger: "+getName());
+        // TODO: port this back later
+//        return net.sourceforge.htmlunit.corejs.javascript.tools.debugger.Main.mainEmbedded("Rhino debugger: "+getName());
+        return null;
     }
 
     /**
@@ -1021,6 +1026,29 @@ public abstract class HudsonTestCase extends TestCase implements RootAction {
                     return true;
                 }
             });
+
+            setCssErrorHandler(new ErrorHandler() {
+                final ErrorHandler defaultHandler = new DefaultCssErrorHandler();
+
+                public void warning(CSSParseException exception) throws CSSException {
+                    if (!ignore(exception))
+                        defaultHandler.warning(exception);
+                }
+
+                public void error(CSSParseException exception) throws CSSException {
+                    if (!ignore(exception))
+                        defaultHandler.error(exception);
+                }
+
+                public void fatalError(CSSParseException exception) throws CSSException {
+                    if (!ignore(exception))
+                        defaultHandler.fatalError(exception);
+                }
+
+                private boolean ignore(CSSParseException e) {
+                    return e.getURI().contains("/yui/");
+                }
+            });
         }
 
         /**
@@ -1195,29 +1223,6 @@ public abstract class HudsonTestCase extends TestCase implements RootAction {
                 }
         }
 
-        // we don't care CSS errors in YUI
-        final ErrorHandler defaultHandler = Stylesheet.CSS_ERROR_HANDLER;
-        Stylesheet.CSS_ERROR_HANDLER = new ErrorHandler() {
-            public void warning(CSSParseException exception) throws CSSException {
-                if(!ignore(exception))
-                    defaultHandler.warning(exception);
-            }
-
-            public void error(CSSParseException exception) throws CSSException {
-                if(!ignore(exception))
-                    defaultHandler.error(exception);
-            }
-
-            public void fatalError(CSSParseException exception) throws CSSException {
-                if(!ignore(exception))
-                    defaultHandler.fatalError(exception);
-            }
-
-            private boolean ignore(CSSParseException e) {
-                return e.getURI().contains("/yui/");
-            }
-        };
-
         // suppress INFO output from Spring, which is verbose
         Logger.getLogger("org.springframework").setLevel(Level.WARNING);
 
@@ -1243,4 +1248,9 @@ public abstract class HudsonTestCase extends TestCase implements RootAction {
      * Specify this to a TCP/IP port number to have slaves started with the debugger.
      */
     public static int SLAVE_DEBUG_PORT = Integer.getInteger(HudsonTestCase.class.getName()+".slaveDebugPort",-1);
+
+    public static final MimeTypes MIME_TYPES = new MimeTypes();
+    static {
+        MIME_TYPES.addMimeMapping("js","application/javascript");
+    }
 }
