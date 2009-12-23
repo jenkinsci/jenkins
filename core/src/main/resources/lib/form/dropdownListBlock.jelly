@@ -40,7 +40,7 @@ THE SOFTWARE.
       <f:option selected="${attrs.selected}" value="${value}">${title}</f:option>
     </j:when>
     <j:when test="${dropdownListMode=='generateEntries'}">
-      <!-- sandwitch them by a marker so that we now what to show/hide -->
+      <!-- sandwich them by markers so that we know what to show/hide -->
       <j:set var="sid" value="${h.generateId()}"/>
       <j:set var="eid" value="${h.generateId()}"/>
       <tr id="${sid}" style="display:none" />
