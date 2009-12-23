@@ -62,6 +62,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -496,7 +497,7 @@ public class User extends AbstractModelObject implements AccessControlled, Savea
      * Keyed by {@link User#id}. This map is used to ensure
      * singleton-per-id semantics of {@link User} objects.
      */
-    private static final Map<String,User> byName = new HashMap<String,User>();
+    private static final Map<String,User> byName = new TreeMap<String,User>(String.CASE_INSENSITIVE_ORDER);
 
     /**
      * Used to load/save user configuration.
