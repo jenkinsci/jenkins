@@ -84,7 +84,7 @@ public final class FishEyeCVS extends CVSRepositoryBrowser {
             return "FishEye";
         }
 
-        public FormValidation doCheck(@QueryParameter String value) throws IOException, ServletException {
+        public FormValidation doCheckUrl(@QueryParameter String value) throws IOException, ServletException {
             value = Util.fixEmpty(value);
             if (value == null) return FormValidation.ok();
             if (!value.endsWith("/"))   value += '/';
