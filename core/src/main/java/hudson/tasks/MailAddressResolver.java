@@ -27,15 +27,10 @@ import hudson.Extension;
 import hudson.ExtensionList;
 import hudson.ExtensionListView;
 import hudson.ExtensionPoint;
-import hudson.model.AbstractProject;
 import hudson.model.Hudson;
 import hudson.model.User;
-import hudson.scm.CVSSCM;
-import hudson.scm.SCM;
 
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -133,63 +128,5 @@ public abstract class MailAddressResolver implements ExtensionPoint {
      */
     public static ExtensionList<MailAddressResolver> all() {
         return Hudson.getInstance().getExtensionList(MailAddressResolver.class);
-    }
-
-    /**
-     * {@link MailAddressResolver} implemenations that cover well-known major public sites.
-     *
-     * <p>
-     * Since this has low UI visibility, we are open to having a large number of rules here.
-     * If you'd like to add one, please contribute more rules.
-     */
-    @Extension
-    public static class DefaultAddressResolver extends MailAddressResolver {
-        public String findMailAddressFor(User u) {
-            for (AbstractProject<?,?> p : u.getProjects()) {
-                SCM scm = p.getScm();
-                if (scm instanceof CVSSCM) {
-                    CVSSCM cvsscm = (CVSSCM) scm;
-                    
-                    String s = findMailAddressFor(u,cvsscm.getCvsRoot());
-                    if(s!=null) return s;
-                }
-            }
-
-            // didn't hit any known rules
-            return null;
-        }
-
-        /**
-         *
-         * @param scm
-         *      String that represents SCM connectivity.
-         */
-        protected String findMailAddressFor(User u, String scm) {
-            for (Map.Entry<Pattern, String> e : RULE_TABLE.entrySet())
-                if(e.getKey().matcher(scm).matches())
-                    return u.getId()+e.getValue();
-            return null;
-        }
-
-        private static final Map<Pattern,String/*suffix*/> RULE_TABLE = new HashMap<Pattern, String>();
-
-        static {
-            {// java.net
-                String username = "([A-Za-z0-9_\\-])+";
-                String host = "(.*.dev.java.net|kohsuke.sfbay.*)";
-                Pattern cvsUrl = Pattern.compile(":pserver:"+username+"@"+host+":/cvs");
-
-                RULE_TABLE.put(cvsUrl,"@dev.java.net");
-            }
-
-            {// source forge
-                Pattern cvsUrl = Pattern.compile(":(pserver|ext):([^@]+)@([^.]+).cvs.(sourceforge|sf).net:.+");
-
-                RULE_TABLE.put(cvsUrl,"@users.sourceforge.net");
-            }
-
-            // TODO: read some file under $HUDSON_HOME?
-        }
-
     }
 }

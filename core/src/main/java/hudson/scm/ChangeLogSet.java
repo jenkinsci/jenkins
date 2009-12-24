@@ -32,7 +32,6 @@ import org.kohsuke.stapler.export.ExportedBean;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
@@ -92,7 +91,7 @@ public abstract class ChangeLogSet<T extends ChangeLogSet.Entry> implements Iter
      * Constant instance that represents no changes.
      */
     public static ChangeLogSet<? extends ChangeLogSet.Entry> createEmpty(AbstractBuild build) {
-        return new CVSChangeLogSet(build,Collections.<CVSChangeLogSet.CVSChangeLog>emptyList());
+        return new EmptyChangeLogSet(build);
     }
 
     @ExportedBean(defaultVisibility=999)
