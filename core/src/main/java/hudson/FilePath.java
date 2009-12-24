@@ -669,7 +669,7 @@ public final class FilePath implements Serializable {
                 throw e;    // pass through so that the caller can catch it as AbortException
             } catch (IOException e) {
                 // wrap it into a new IOException so that we get the caller's stack trace as well.
-                throw new IOException2("remote file operation failed",e);
+                throw new IOException2("remote file operation failed: "+remote+" at "+channel,e);
             }
         } else {
             // the file is on the local machine.
