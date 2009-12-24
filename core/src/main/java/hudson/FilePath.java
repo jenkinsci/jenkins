@@ -1005,7 +1005,7 @@ public final class FilePath implements Serializable {
         if(!isUnix() || mask==-1)   return;
         act(new FileCallable<Void>() {
             public Void invoke(File f, VirtualChannel channel) throws IOException {
-                if(LIBC.chmod(f.getAbsolutePath(),mask)!=0)
+                if(File.separatorChar=='/' && LIBC.chmod(f.getAbsolutePath(),mask)!=0)
                     throw new IOException("Failed to chmod "+f+" : "+LIBC.strerror(Native.getLastError()));
                 return null;
             }
