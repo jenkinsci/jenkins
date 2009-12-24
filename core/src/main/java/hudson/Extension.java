@@ -64,7 +64,7 @@ import java.lang.annotation.Target;
  * @see ExtensionList
  */
 @Indexable
-@Retention(RetentionPolicy.SOURCE)
+@Retention(RetentionPolicy.RUNTIME)
 @Target({TYPE, FIELD, METHOD})
 @Documented
 public @interface Extension {
