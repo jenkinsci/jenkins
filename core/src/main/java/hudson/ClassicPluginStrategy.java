@@ -213,7 +213,8 @@ public class ClassicPluginStrategy implements PluginStrategy {
 
     private static final List<DetachedPlugin> DETACHED_LIST = Arrays.asList(
         new DetachedPlugin("maven-plugin","1.296","1.296"),
-        new DetachedPlugin("subversion","1.310","1.0")
+        new DetachedPlugin("subversion","1.310","1.0"),
+        new DetachedPlugin("cvs","1.340","0.1")
     );
 
     /**
