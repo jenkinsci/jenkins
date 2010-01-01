@@ -45,7 +45,7 @@ THE SOFTWARE.
       </table>
       <div>
         <form action="${rootURL}/ignore">
-          <f:submit value="Ignore this problem and keep using Hudson anyway" />
+          <f:submit value="${%label}" />
         </form>
       </div>
     </l:main-panel>
