@@ -73,7 +73,7 @@ THE SOFTWARE.
         <f:entry title="${%TCP port for JNLP slave agents}"
             help="/help/system-config/master-slave/slave-agent-port.html">
           <f:radio name="slaveAgentPortType" value="fixed" id="sat.fixed"
-                   checked="${it.slaveAgentPort &gt; 0}" onclick="$('sat.port').disabled=false"/>
+                   checked="${it.slaveAgentPort gt 0}" onclick="$('sat.port').disabled=false"/>
           <label for="sat.fixed">${%Fixed}</label> :
           <input type="text" class="setting-input number" name="slaveAgentPort" id="sat.port"
              value="${it.slaveAgentPort gt 0 ? it.slaveAgentPort : null}"
