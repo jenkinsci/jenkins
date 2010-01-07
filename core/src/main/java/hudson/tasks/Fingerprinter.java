@@ -151,7 +151,7 @@ public class Fingerprinter extends Recorder implements Serializable {
             private static final long serialVersionUID = 1L;
         }
 
-        final long buildTimestamp = build.getTimestamp().getTimeInMillis();
+        final long buildTimestamp = build.getTimeInMillis();
 
         FilePath ws = build.getWorkspace();
         if(ws==null) {

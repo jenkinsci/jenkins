@@ -111,7 +111,7 @@ public class JUnitResultArchiver extends Recorder implements Serializable,
 		final String testResults = build.getEnvironment(listener).expand(this.testResults);
 
 		try {
-			final long buildTime = build.getTimestamp().getTimeInMillis();
+			final long buildTime = build.getTimeInMillis();
 			final long nowMaster = System.currentTimeMillis();
 
 			TestResult result = build.getWorkspace().act(
