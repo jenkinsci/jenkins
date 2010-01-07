@@ -132,24 +132,13 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
      * @since 1.137
      */
     private volatile Set<String> culprits;
-    
-    /**
-     * Cumulative list of the downstream build values
-     * <p>
-     * This is the Map of downstream build values, key will be the project name and value will be 
-     * the respective build number. 
-     * 
-     * @author shinod.mohandas
-     * @since 1.341
-     */
-    private Map<String,Integer> downStreamBuildValues;
-    
+
     /**
      * During the build this field remembers {@link BuildWrapper.Environment}s created by
      * {@link BuildWrapper}. This design is bit ugly but forced due to compatibility.
      */
     protected transient List<Environment> buildEnvironments;
-    
+
     protected AbstractBuild(P job) throws IOException {
         super(job);
     }
@@ -841,37 +830,6 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
                 };
             }
         };
-    }
-
-    /**
-     * Returns the downstream build values.
-     * <p>
-     * This method returns a map of downstream build values
-     * (from project name to the respective build number).
-     * This method returns a map even if the fingerprint action is not configured.
-     *
-     * @author shinod.mohandas
-     * @since 1.341
-     */
-    public Map<String,Integer> getDownStreamBuildValues() {
-        if (downStreamBuildValues == null)
-            downStreamBuildValues = new HashMap<String,Integer>();
-        return downStreamBuildValues;
-    }
-
-    /**
-     * This method is used to add a downstream build values to the current build.
-     * <p>
-     * Used to add every downstream build values to the map.
-     * The builds will be added only
-     * after a build trigger schedules the downstream build.
-     * @author shinod.mohandas
-     * @since 1.341
-     */
-    public void addDownStreamBuildValues(String project, int buildnumber) {
-        if (downStreamBuildValues == null)
-            downStreamBuildValues = new HashMap<String,Integer>();
-        downStreamBuildValues.put(project, buildnumber);
     }
 
     /**

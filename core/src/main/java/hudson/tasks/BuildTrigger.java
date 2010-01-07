@@ -175,7 +175,6 @@ public class BuildTrigger extends Recorder implements DependecyDeclarer, MatrixA
                 // this is not completely accurate, as a new build might be triggered
                 // between these calls
                 String name = p.getName()+" #"+p.getNextBuildNumber();
-                build.addDownStreamBuildValues(p.getName(),p.getNextBuildNumber());
                 if(p.scheduleBuild(new UpstreamCause((Run)build))) {
                     logger.println(Messages.BuildTrigger_Triggering(name));
                 } else {
