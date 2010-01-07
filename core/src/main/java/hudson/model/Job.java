@@ -70,10 +70,12 @@ import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.SortedMap;
 import java.util.LinkedList;
+import java.util.concurrent.TimeUnit;
 
 import javax.servlet.ServletException;
 import javax.xml.transform.Transformer;
@@ -82,6 +84,7 @@ import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
 
+import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 import net.sf.json.JSONException;
 
@@ -98,6 +101,7 @@ import org.jfree.chart.renderer.category.StackedAreaRenderer;
 import org.jfree.data.category.CategoryDataset;
 import org.jfree.ui.RectangleInsets;
 import org.jvnet.localizer.Localizable;
+import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 import org.kohsuke.stapler.WebMethod;
@@ -1278,5 +1282,29 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
     @Override
     public ACL getACL() {
         return Hudson.getInstance().getAuthorizationStrategy().getACL(this);
+    }
+
+    public void doTimelineData(@QueryParameter long min, @QueryParameter long max, StaplerResponse rsp) throws IOException {
+        Date l = new Date(min);
+        Date h = new Date(max);
+        List<Event> result = new ArrayList<Event>();
+        for (int i=0; i<10; i++) {
+            Event e = new Event();
+            e.start = new Date(min+ TimeUnit.HOURS.toMillis(i));
+            e.title = "Event "+i;
+            e.description = "Longish description of event "+i;
+            JSONObject.fromObject(e);
+            result.add(e);
+        }
+        JSONObject o = new JSONObject();
+        o.put("events", JSONArray.fromObject(result));
+        rsp.setContentType("application/javascript;charset=UTF-8");
+        o.write(rsp.getWriter());
+    }
+
+    public static final class Event {
+        public Date start;
+        public Date end;
+        public String title, description;
     }
 }

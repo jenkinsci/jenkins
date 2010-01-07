@@ -219,6 +219,8 @@ public class HudsonPrivateSecurityRealm extends SecurityRealm implements ModelOb
      *      a valid {@link User} object if the user creation was successful.
      */
     private User createAccount(StaplerRequest req, StaplerResponse rsp, boolean selfRegistration, String formView) throws ServletException, IOException {
+        req.setCharacterEncoding("UTF-8");
+
         // form field validation
         // this pattern needs to be generalized and moved to stapler
         SignupInfo si = new SignupInfo();

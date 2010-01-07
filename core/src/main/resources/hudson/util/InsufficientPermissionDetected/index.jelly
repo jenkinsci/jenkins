@@ -27,20 +27,13 @@ THE SOFTWARE.
     <l:header title="Hudson" />
     <l:side-panel />
     <l:main-panel>
-      <h1><img src="${imagesURL}/48x48/error.gif" alt="[!]"/><st:nbsp/>Error</h1>
+      <h1><img src="${imagesURL}/48x48/error.gif" alt="[!]"/><st:nbsp/>${%Error}</h1>
       <p>
-        We detected that Hudson does not have sufficient permission to run,
-        as indicated by the stack trace below. Most likely cause of this
-        problem is that the security manger is on. If that was intended,
-        you need to grant sufficient permissions for Hudson to run. Otherwise,
-        or if you have no idea what a security manager is, then the easiest
-        way to fix the problem is simply to turn the security manager off.
-      </p><p>
-        For how to turn off security manager in your container, refer
-        to <a href="http://hudson.gotdns.com/wiki/display/HUDSON/Containers"
-        >Container-specific documentations</a> of Hudson.
+         ${%errorMessage.1}
       </p>
-
+      <p>
+         ${%errorMessage.2}
+      </p>
       <pre>${it.exceptionTrace}</pre>
     </l:main-panel>
   </l:layout>

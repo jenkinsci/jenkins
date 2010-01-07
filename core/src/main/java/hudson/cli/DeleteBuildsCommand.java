@@ -23,12 +23,10 @@
  */
 package hudson.cli;
 
-import hudson.model.AbstractBuild;
-import hudson.model.AbstractProject;
-import hudson.model.Fingerprint.RangeSet;
 import hudson.Extension;
-import org.kohsuke.args4j.Argument;
+import hudson.model.AbstractBuild;
 
+import java.io.IOException;
 import java.io.PrintStream;
 import java.util.List;
 
@@ -38,17 +36,11 @@ import java.util.List;
  * @author Kohsuke Kawaguchi
  */
 @Extension
-public class DeleteBuildsCommand extends CLICommand {
+public class DeleteBuildsCommand extends AbstractBuildRangeCommand {
     @Override
     public String getShortDescription() {
         return "Deletes build record(s)";
     }
-
-    @Argument(metaVar="JOB",usage="Name of the job to build",required=true,index=0)
-    public AbstractProject<?,?> job;
-
-    @Argument(metaVar="RANGE",usage="Range of the build records to delete. 'N-M', 'N,M', or 'N'",required=true,index=1)
-    public String range;
 
     @Override
     protected void printUsageSummary(PrintStream stderr) {
@@ -57,10 +49,8 @@ public class DeleteBuildsCommand extends CLICommand {
         );
     }
 
-    protected int run() throws Exception {
-        RangeSet rs = RangeSet.fromString(range,false);
-        List<? extends AbstractBuild> builds = job.getBuilds(rs);
-
+    @Override
+    protected int act(List<AbstractBuild<?, ?>> builds) throws IOException {
         for (AbstractBuild build : builds)
             build.delete();
 
@@ -68,4 +58,5 @@ public class DeleteBuildsCommand extends CLICommand {
 
         return 0;
     }
+
 }

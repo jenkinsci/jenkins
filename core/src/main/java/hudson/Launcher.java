@@ -642,6 +642,7 @@ public abstract class Launcher {
 
             ProcessBuilder pb = new ProcessBuilder(cmd);
             pb.directory(toFile(workDir));
+            if (envVars!=null) pb.environment().putAll(envVars);
 
             return launchChannel(out, pb);
         }

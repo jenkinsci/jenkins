@@ -6,7 +6,7 @@
     size=+4096k
     notifempty
     missingok
-    create 644 root root
+    create 644
     postrotate
      kill -SIGALRM `cat /var/run/hudson.pid`
     endscript

@@ -155,10 +155,10 @@ public class MailSender {
     private MimeMessage createBackToNormalMail(AbstractBuild<?, ?> build, String subject, BuildListener listener) throws MessagingException {
         MimeMessage msg = createEmptyMail(build, listener);
 
-        msg.setSubject(getSubject(build, "Hudson build is back to " + subject + ": "),"UTF-8");
+        msg.setSubject(getSubject(build, "Hudson build is back to " + subject + ": "),MAIL_CHARSET);
         StringBuffer buf = new StringBuffer();
         appendBuildUrl(build, buf);
-        msg.setText(buf.toString());
+        msg.setText(buf.toString(),MAIL_CHARSET);
 
         return msg;
     }
@@ -176,10 +176,10 @@ public class MailSender {
                 subject = "Hudson build is still unstable: ";
         }
 
-        msg.setSubject(getSubject(build, subject),"UTF-8");
+        msg.setSubject(getSubject(build, subject),MAIL_CHARSET);
         StringBuffer buf = new StringBuffer();
         appendBuildUrl(build, buf);
-        msg.setText(buf.toString());
+        msg.setText(buf.toString(), MAIL_CHARSET);
 
         return msg;
     }
@@ -197,7 +197,7 @@ public class MailSender {
     private MimeMessage createFailureMail(AbstractBuild<?, ?> build, BuildListener listener) throws MessagingException, InterruptedException {
         MimeMessage msg = createEmptyMail(build, listener);
 
-        msg.setSubject(getSubject(build, "Build failed in Hudson: "),"UTF-8");
+        msg.setSubject(getSubject(build, "Build failed in Hudson: "),MAIL_CHARSET);
 
         StringBuffer buf = new StringBuffer();
         appendBuildUrl(build, buf);
@@ -272,7 +272,7 @@ public class MailSender {
             buf.append("Failed to access build log\n\n").append(Functions.printThrowable(e));
         }
 
-        msg.setText(buf.toString());
+        msg.setText(buf.toString(),MAIL_CHARSET);
 
         return msg;
     }
@@ -372,6 +372,11 @@ public class MailSender {
     public static boolean debug = false;
 
     private static final int MAX_LOG_LINES = Integer.getInteger(MailSender.class.getName()+".maxLogLines",250);
+
+    /**
+     * The charset to use for the text and subject.
+     */
+    private static final String MAIL_CHARSET = "UTF-8";
 
     /**
      * Sometimes the outcome of the previous build affects the e-mail we send, hence this checkpoint.

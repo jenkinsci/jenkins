@@ -87,7 +87,7 @@ public class ExtensionList<T> extends AbstractList<T> {
      * @param legacyStore
      *      Place to store manually registered instances. The version of the constructor that
      *      omits this uses a new {@link Vector}, making the storage lifespan tied to the life of  {@link ExtensionList}.
-     *      If the manually registerd instances are scoped to VM level, the caller should pass in a static list. 
+     *      If the manually registered instances are scoped to VM level, the caller should pass in a static list. 
      */
     protected ExtensionList(Hudson hudson, Class<T> extensionType, CopyOnWriteArrayList<T> legacyStore) {
         this.hudson = hudson;

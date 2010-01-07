@@ -28,7 +28,6 @@ import hudson.BulkChange;
 import hudson.Util;
 import static hudson.Util.singleQuote;
 import hudson.model.listeners.SaveableListener;
-import hudson.scm.CVSSCM;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 import org.kohsuke.stapler.StaplerRequest;
@@ -79,21 +78,20 @@ import java.beans.Introspector;
  * configuration/extensibility mechanism.
  *
  * <p>
- * For example, Take the CVS support as an example, which is implemented
- * in {@link CVSSCM} class. Whenever a job is configured with CVS, a new
- * {@link CVSSCM} instance is created with the per-job configuration
+ * Take the list view support as an example, which is implemented
+ * in {@link ListView} class. Whenever a new view is created, a new
+ * {@link ListView} instance is created with the configuration
  * information. This instance gets serialized to XML, and this instance
- * will be called to perform CVS operations for that job. This is the job
+ * will be called to render the view page. This is the job
  * of {@link Describable} &mdash; each instance represents a specific
- * configuration of the CVS support (branch, CVSROOT, etc.)
+ * configuration of a view (what projects are in it, regular expression, etc.)
  *
  * <p>
- * For Hudson to create such configured {@link CVSSCM} instance, Hudson
- * needs another object that captures the metadata of {@link CVSSCM},
- * and that is what a {@link Descriptor} is for. {@link CVSSCM} class
+ * For Hudson to create such configured {@link ListView} instance, Hudson
+ * needs another object that captures the metadata of {@link ListView},
+ * and that is what a {@link Descriptor} is for. {@link ListView} class
  * has a singleton descriptor, and this descriptor helps render
- * the configuration form, remember system-wide configuration (such as
- * where <tt>cvs.exe</tt> is), and works as a factory.
+ * the configuration form, remember system-wide configuration, and works as a factory.
  *
  * <p>
  * {@link Descriptor} also usually have its associated views.

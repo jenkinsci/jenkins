@@ -36,7 +36,6 @@ import hudson.matrix.MatrixConfiguration;
 import hudson.model.Fingerprint.BuildPtr;
 import hudson.model.Fingerprint.RangeSet;
 import hudson.model.listeners.SCMListener;
-import hudson.scm.CVSChangeLogParser;
 import hudson.scm.ChangeLogParser;
 import hudson.scm.ChangeLogSet;
 import hudson.scm.ChangeLogSet.Entry;
@@ -606,8 +605,22 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
      */
     @Exported
     public ChangeLogSet<? extends Entry> getChangeSet() {
-        if (scm==null)
-            scm = new CVSChangeLogParser();
+        if (scm==null) {
+            // for historical reason, null means CVS.
+            try {
+                Class<?> c = Hudson.getInstance().getPluginManager().uberClassLoader.loadClass("hudson.scm.CVSChangeLogParser");
+                scm = (ChangeLogParser)c.newInstance();
+            } catch (ClassNotFoundException e) {
+                // if CVS isn't available, fall back to something non-null.
+                scm = new NullChangeLogParser();
+            } catch (InstantiationException e) {
+                scm = new NullChangeLogParser();
+                throw (Error)new InstantiationError().initCause(e);
+            } catch (IllegalAccessException e) {
+                scm = new NullChangeLogParser();
+                throw (Error)new IllegalAccessError().initCause(e);
+            }
+        }
 
         if (changeSet==null) // cached value
             try {

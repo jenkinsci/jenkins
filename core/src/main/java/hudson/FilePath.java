@@ -669,7 +669,7 @@ public final class FilePath implements Serializable {
                 throw e;    // pass through so that the caller can catch it as AbortException
             } catch (IOException e) {
                 // wrap it into a new IOException so that we get the caller's stack trace as well.
-                throw new IOException2("remote file operation failed",e);
+                throw new IOException2("remote file operation failed: "+remote+" at "+channel,e);
             }
         } else {
             // the file is on the local machine.
@@ -1005,7 +1005,7 @@ public final class FilePath implements Serializable {
         if(!isUnix() || mask==-1)   return;
         act(new FileCallable<Void>() {
             public Void invoke(File f, VirtualChannel channel) throws IOException {
-                if(LIBC.chmod(f.getAbsolutePath(),mask)!=0)
+                if(File.separatorChar=='/' && LIBC.chmod(f.getAbsolutePath(),mask)!=0)
                     throw new IOException("Failed to chmod "+f+" : "+LIBC.strerror(Native.getLastError()));
                 return null;
             }
