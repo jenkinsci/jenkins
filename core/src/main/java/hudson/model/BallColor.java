@@ -23,9 +23,11 @@
  */
 package hudson.model;
 
+import hudson.util.ColorPalette;
 import org.jvnet.localizer.LocaleProvider;
 import org.jvnet.localizer.Localizable;
 
+import java.awt.*;
 import java.util.Locale;
 
 /**
@@ -36,7 +38,7 @@ import java.util.Locale;
  * {@link #ordinal()} is the sort order. 
  *
  * <p>
- * Note that mutiple {@link BallColor} instances may map to the same
+ * Note that multiple {@link BallColor} instances may map to the same
  * RGB color, to avoid the rainbow effect.
  *
  * <h2>Historical Note</h2>
@@ -49,26 +51,28 @@ import java.util.Locale;
  * @author Kohsuke Kawaguchi
  */
 public enum BallColor {
-    RED("red",Messages._BallColor_Failed()),
-    RED_ANIME("red_anime",Messages._BallColor_InProgress()),
-    YELLOW("yellow",Messages._BallColor_Unstable()),
-    YELLOW_ANIME("yellow_anime",Messages._BallColor_InProgress()),
-    BLUE("blue",Messages._BallColor_Success()),
-    BLUE_ANIME("blue_anime",Messages._BallColor_InProgress()),
+    RED("red",Messages._BallColor_Failed(), ColorPalette.RED),
+    RED_ANIME("red_anime",Messages._BallColor_InProgress(), ColorPalette.RED),
+    YELLOW("yellow",Messages._BallColor_Unstable(), ColorPalette.YELLOW),
+    YELLOW_ANIME("yellow_anime",Messages._BallColor_InProgress(), ColorPalette.YELLOW),
+    BLUE("blue",Messages._BallColor_Success(), ColorPalette.BLUE),
+    BLUE_ANIME("blue_anime",Messages._BallColor_InProgress(), ColorPalette.BLUE),
     // for historical reasons they are called grey.
-    GREY("grey",Messages._BallColor_Pending()),
-    GREY_ANIME("grey_anime",Messages._BallColor_InProgress()),
+    GREY("grey",Messages._BallColor_Pending(), ColorPalette.GREY),
+    GREY_ANIME("grey_anime",Messages._BallColor_InProgress(), ColorPalette.GREY),
 
-    DISABLED("grey",Messages._BallColor_Disabled()),
-    DISABLED_ANIME("grey_anime",Messages._BallColor_InProgress()),
-    ABORTED("grey",Messages._BallColor_Aborted()),
-    ABORTED_ANIME("grey_anime",Messages._BallColor_InProgress()),
+    DISABLED("grey",Messages._BallColor_Disabled(), ColorPalette.GREY),
+    DISABLED_ANIME("grey_anime",Messages._BallColor_InProgress(), ColorPalette.GREY),
+    ABORTED("grey",Messages._BallColor_Aborted(), ColorPalette.GREY),
+    ABORTED_ANIME("grey_anime",Messages._BallColor_InProgress(), ColorPalette.GREY),
     ;
 
     private final Localizable description;
     private final String image;
+    private final Color baseColor;
 
-    BallColor(String image, Localizable description) {
+    BallColor(String image, Localizable description, Color baseColor) {
+        this.baseColor = baseColor;
         // name() is not usable in the constructor, so I have to repeat the name twice
         // in the constants definition.
         this.image = image+".gif";
@@ -90,6 +94,20 @@ public enum BallColor {
     }
 
     /**
+     * Gets the RGB color of this color. Animation effect is not reflected to this value.
+     */
+    public Color getBaseColor() {
+        return baseColor;
+    }
+
+    /**
+     * Returns the {@link #getBaseColor()} in the "#RRGGBB" format.
+     */
+    public String getHtmlBaseColor() {
+        return String.format("#%06X",baseColor.getRGB()&0xFFFFFF);
+    }
+
+    /**
      * Also used as a final name.
      */
     @Override
@@ -101,15 +119,22 @@ public enum BallColor {
      * Gets the animated version.
      */
     public BallColor anime() {
-        if(name().endsWith("_ANIME"))   return this;
-        else                            return valueOf(name()+"_ANIME");
+        if(isAnimated())   return this;
+        else               return valueOf(name()+"_ANIME");
     }
 
     /**
      * Gets the unanimated version.
      */
     public BallColor noAnime() {
-        if(name().endsWith("_ANIME"))   return valueOf(name().substring(0,name().length()-6));
-        else                            return this;
+        if(isAnimated())   return valueOf(name().substring(0,name().length()-6));
+        else               return this;
+    }
+
+    /**
+     * True if the icon is animated.
+     */
+    public boolean isAnimated() {
+        return name().endsWith("_ANIME");
     }
 }
