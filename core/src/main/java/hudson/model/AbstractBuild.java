@@ -132,12 +132,60 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
      * @since 1.137
      */
     private volatile Set<String> culprits;
+    
+    
+    
+    /**
+     * Cumilative list of the downstream build values
+     * <p>
+     * This is the Map of downstream build values, key will be the project name and value will be 
+     * the respective build number. 
+     * 
+     * @author shinod.mohandas
+     * @since 1.341
+     */
+    private Map<String,Integer> downStreamBuildvalues ;
+    
+    
+    /**
+     * Returns the downstream build values
+     * <p>
+     * This method returns a map of downstream build values.
+     * project name will be the key and the respective build number will be the value
+     * this method returns the Map even if the fingerprint action is not configured.
+     * 
+     * @author shinod.mohandas
+     * @since 1.341
+     */
+    public Map<String, Integer> getDownStreamBuildvalues() {
+    	if(downStreamBuildvalues==null)
+			downStreamBuildvalues = new  HashMap<String, Integer>();
+		return downStreamBuildvalues;
+	}
+
+	/**
+	 * This method is used to add a downstream build values to the current build
+	 * 
+	 * <p>
+	 * Used to add every downstream build values to the map.The builds will be added only 
+	 * after buildTrigger schedule the downstream build.
+	 * @return void 
+	 * @author shinod.mohandas 
+	 * @since 1.341
+	 */
+    public void addDownStreamBuildvalues(String project,int buildnumber) {
+		if(downStreamBuildvalues==null)
+			downStreamBuildvalues = new  HashMap<String, Integer>();
+		downStreamBuildvalues.put(project,buildnumber);
+	}
 
     /**
      * During the build this field remembers {@link BuildWrapper.Environment}s created by
      * {@link BuildWrapper}. This design is bit ugly but forced due to compatibility.
      */
     protected transient List<Environment> buildEnvironments;
+    
+   // private List<>
 
     protected AbstractBuild(P job) throws IOException {
         super(job);
