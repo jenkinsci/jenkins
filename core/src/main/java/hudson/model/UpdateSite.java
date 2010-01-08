@@ -560,7 +560,7 @@ public class UpdateSite {
         public boolean isForNewerHudson() {
             try {
                 return requiredCore!=null && new VersionNumber(requiredCore).isNewerThan(
-                    new VersionNumber(Hudson.VERSION.replaceFirst("SHOT *\(private.*\)", "SHOT")));
+                  new VersionNumber(Hudson.VERSION.replaceFirst("SHOT *\\(private.*\\)", "SHOT")));
             } catch (NumberFormatException nfe) {
                 return true;  // If unable to parse version
             }
