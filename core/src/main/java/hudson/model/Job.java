@@ -55,6 +55,7 @@ import hudson.util.ShiftedCategoryAxis;
 import hudson.util.StackedAreaRenderer2;
 import hudson.util.TextFile;
 import hudson.util.Graph;
+import hudson.util.TimeUnit2;
 import hudson.widgets.HistoryWidget;
 import hudson.widgets.Widget;
 import hudson.widgets.HistoryWidget.Adapter;
@@ -1290,7 +1291,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
         List<Event> result = new ArrayList<Event>();
         for (int i=0; i<10; i++) {
             Event e = new Event();
-            e.start = new Date(min+ TimeUnit.HOURS.toMillis(i));
+            e.start = new Date(min+ TimeUnit2.HOURS.toMillis(i));
             e.title = "Event "+i;
             e.description = "Longish description of event "+i;
             JSONObject.fromObject(e);
