@@ -255,7 +255,7 @@ public abstract class Slave extends Node implements Serializable {
     public FilePath getWorkspaceRoot() {
         FilePath r = getRootPath();
         if(r==null) return null;
-        return r.child("workspace");
+        return r.child(WORKSPACE_ROOT);
     }
 
     /**
@@ -414,4 +414,9 @@ public abstract class Slave extends Node implements Serializable {
 
         private static final long serialVersionUID = 1L;
     }
+
+    /**
+     * Determines the workspace root file name for those who really really need the shortest possible path name.
+     */
+    private static final String WORKSPACE_ROOT = System.getProperty(Slave.class.getName()+".workspaceRoot","workspace");
 }
