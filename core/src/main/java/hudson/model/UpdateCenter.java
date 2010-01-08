@@ -693,7 +693,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable {
                 LOGGER.info("Installation successful: "+getName());
                 status = new Success();
                 onSuccess();
-            } catch (IOException e) {
+            } catch (Throwable e) {
                 LOGGER.log(Level.SEVERE, "Failed to install "+getName(),e);
                 status = new Failure(e);
             }
@@ -811,8 +811,12 @@ public class UpdateCenter extends AbstractModelObject implements Saveable {
 
             // if this is a bundled plugin, make sure it won't get overwritten
             PluginWrapper pw = plugin.getInstalled();
-            if (pw!=null && pw.isBundled())
+            if (pw!=null && pw.isBundled()) try {
+                SecurityContextHolder.getContext().setAuthentication(ACL.SYSTEM);
                 pw.doPin();
+            } finally {
+                SecurityContextHolder.clearContext();
+            }
         }
 
         protected void onSuccess() {
