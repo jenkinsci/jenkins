@@ -55,7 +55,6 @@ import hudson.util.ShiftedCategoryAxis;
 import hudson.util.StackedAreaRenderer2;
 import hudson.util.TextFile;
 import hudson.util.Graph;
-import hudson.util.TimeUnit2;
 import hudson.widgets.HistoryWidget;
 import hudson.widgets.Widget;
 import hudson.widgets.HistoryWidget.Adapter;
@@ -68,15 +67,16 @@ import java.io.StringWriter;
 import java.io.PrintWriter;
 import java.net.URLEncoder;
 import java.text.ParseException;
+import java.util.AbstractList;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.SortedMap;
 import java.util.LinkedList;
-import java.util.concurrent.TimeUnit;
 
 import javax.servlet.ServletException;
 import javax.xml.transform.Transformer;
@@ -85,7 +85,6 @@ import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
 
-import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 import net.sf.json.JSONException;
 
@@ -109,6 +108,8 @@ import org.kohsuke.stapler.WebMethod;
 import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.args4j.Argument;
 import org.kohsuke.args4j.CmdLineException;
+import org.koshuke.stapler.simile.timeline.Event;
+import org.koshuke.stapler.simile.timeline.TimelineEventList;
 
 /**
  * A job is an runnable entity under the monitoring of Hudson.
@@ -619,6 +620,38 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
      */
     public RunT getBuildByNumber(int n) {
         return _getRuns().get(n);
+    }
+
+    /**
+     * Obtains a list of builds, in the descending order, that are within the specified time range [start,end).
+     *
+     * @return can be empty but never null.
+     */
+    public List<RunT> getBuildsByTimestamp(long start, long end) {
+        final List<RunT> builds = getBuilds();
+        AbstractList<Long> TIMESTAMP_ADAPTER = new AbstractList<Long>() {
+            public Long get(int index) {
+                return builds.get(index).timestamp;
+            }
+
+            public int size() {
+                return builds.size();
+            }
+        };
+        Comparator<Long> DESCENDING_ORDER = new Comparator<Long>() {
+            public int compare(Long o1, Long o2) {
+                if (o1 > o2) return -1;
+                if (o1 < o2) return +1;
+                return 0;
+            }
+        };
+
+        int s = Collections.binarySearch(TIMESTAMP_ADAPTER, start, DESCENDING_ORDER);
+        if (s<0)    s=-(s+1);   // min is inclusive
+        int e = Collections.binarySearch(TIMESTAMP_ADAPTER, end,   DESCENDING_ORDER);
+        if (e<0)    e=-(e+1);   else e++;   // max is exclusive, so the exact match should be excluded
+
+        return builds.subList(e,s);
     }
 
     @CLIResolver
@@ -1285,27 +1318,22 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
         return Hudson.getInstance().getAuthorizationStrategy().getACL(this);
     }
 
-    public void doTimelineData(@QueryParameter long min, @QueryParameter long max, StaplerResponse rsp) throws IOException {
-        Date l = new Date(min);
-        Date h = new Date(max);
-        List<Event> result = new ArrayList<Event>();
-        for (int i=0; i<10; i++) {
+    public TimelineEventList doTimelineData(StaplerRequest req, @QueryParameter long min, @QueryParameter long max) throws IOException {
+        TimelineEventList result = new TimelineEventList();
+        for (RunT r : getBuildsByTimestamp(min,max)) {
             Event e = new Event();
-            e.start = new Date(min+ TimeUnit2.HOURS.toMillis(i));
-            e.title = "Event "+i;
-            e.description = "Longish description of event "+i;
-            JSONObject.fromObject(e);
+            e.start = r.getTime();
+            e.end   = new Date(r.timestamp+r.getDuration());
+            e.title = r.getFullDisplayName();
+            // what to put in the description?
+            // e.description = "Longish description of event "+r.getFullDisplayName();
+            // e.durationEvent = true;
+            e.link = req.getContextPath()+'/'+r.getUrl();
+            BallColor c = r.getIconColor();
+            e.color = String.format("#%06X",c.getBaseColor().darker().getRGB()&0xFFFFFF);
+            e.classname = "event-"+c.noAnime().toString()+" " + (c.isAnimated()?"animated":"");
             result.add(e);
         }
-        JSONObject o = new JSONObject();
-        o.put("events", JSONArray.fromObject(result));
-        rsp.setContentType("application/javascript;charset=UTF-8");
-        o.write(rsp.getWriter());
-    }
-
-    public static final class Event {
-        public Date start;
-        public Date end;
-        public String title, description;
+        return result;
     }
 }
