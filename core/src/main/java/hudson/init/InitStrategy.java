@@ -39,18 +39,19 @@ public class InitStrategy {
      *      and when that happens, Hudson will ignore all but the first one in the list.
      */
     public List<File> listPluginArchives(PluginManager pm) throws IOException {
-        File[] archives = pm.rootDir.listFiles(new FilenameFilter() {
-            public boolean accept(File dir, String name) {
-                return name.endsWith(".hpi")        // plugin jar file
-                    || name.endsWith(".hpl");       // linked plugin. for debugging.
-            }
-        });
-        if (archives == null)
+        File[] hpi = pm.rootDir.listFiles(new FilterByExtension(".hpi")); // plugin jar file
+        File[] hpl = pm.rootDir.listFiles(new FilterByExtension(".hpl")); // linked plugin. for debugging.
+        if (hpi==null || hpl==null)
             throw new IOException("Hudson is unable to create " + pm.rootDir + "\nPerhaps its security privilege is insufficient");
 
         List<File> r = new ArrayList<File>();
+
+        // the ordering makes sure that during the debugging we get proper precedence among duplicates.
+        // for example, while doing "mvn hpi:run" on a plugin that's bundled with Hudson, we want to the
+        // *.hpl file to override the bundled hpi file.
         getBundledPluginsFromProperty(r);
-        r.addAll(Arrays.asList(archives));
+        r.addAll(Arrays.asList(hpl));
+        r.addAll(Arrays.asList(hpi));
 
         return r;
     }
@@ -98,4 +99,17 @@ public class InitStrategy {
     }
 
     private static final Logger LOGGER = Logger.getLogger(InitStrategy.class.getName());
+
+    private static class FilterByExtension implements FilenameFilter {
+        private final String extension;
+
+        public FilterByExtension(String extension) {
+            this.extension = extension;
+        }
+
+        public boolean accept(File dir, String name) {
+            return name.endsWith(extension)        // plugin jar file
+                || name.endsWith(".hpl");       // linked plugin. for debugging.
+        }
+    }
 }
