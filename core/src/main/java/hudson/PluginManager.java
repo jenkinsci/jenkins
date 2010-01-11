@@ -26,12 +26,16 @@ package hudson;
 import static hudson.init.InitMilestone.PLUGINS_PREPARED;
 import static hudson.init.InitMilestone.PLUGINS_STARTED;
 import static hudson.init.InitMilestone.PLUGINS_LISTED;
+
+import hudson.PluginWrapper.Dependency;
 import hudson.init.InitStrategy;
 import hudson.model.AbstractModelObject;
 import hudson.model.Failure;
 import hudson.model.Hudson;
 import hudson.model.UpdateCenter;
 import hudson.model.UpdateSite;
+import hudson.util.CyclicGraphDetector;
+import hudson.util.CyclicGraphDetector.CycleDetectedException;
 import hudson.util.Service;
 import org.apache.commons.fileupload.FileItem;
 import org.apache.commons.fileupload.disk.DiskFileItemFactory;
@@ -186,6 +190,36 @@ public final class PluginManager extends AbstractModelObject {
                                 }
                             });
                         }
+
+                        g.requires(PLUGINS_LISTED).add("Checking cyclic dependencies",new Executable() {
+                            /**
+                             * Makes sure there's no cycle in dependencies.
+                             */
+                            public void run(Reactor reactor) throws Exception {
+                                try {
+                                    new CyclicGraphDetector<PluginWrapper>() {
+                                        @Override
+                                        protected List<PluginWrapper> getEdges(PluginWrapper p) {
+                                            List<PluginWrapper> next = new ArrayList<PluginWrapper>();
+                                            addTo(p.getDependencies(),next);
+                                            addTo(p.getOptionalDependencies(),next);
+                                            return next;
+                                        }
+
+                                        private void addTo(List<Dependency> dependencies, List<PluginWrapper> r) {
+                                            for (Dependency d : dependencies) {
+                                                PluginWrapper p = getPlugin(d.shortName);
+                                                if (p!=null)
+                                                    r.add(p);
+                                            }
+                                        }
+                                    }.run(getPlugins());
+                                } catch (CycleDetectedException e) {
+                                    stop(); // disable all plugins since classloading from them can lead to StackOverflow
+                                    throw e;    // let Hudson fail
+                                }
+                            }
+                        });
 
                         g.requires(PLUGINS_LISTED).attains(PLUGINS_PREPARED).add("Loading plugins",new Executable() {
                             /**
@@ -402,6 +436,7 @@ public final class PluginManager extends AbstractModelObject {
     public void stop() {
         for (PluginWrapper p : activePlugins)
             p.stop();
+        activePlugins.clear();
         // Work around a bug in commons-logging.
         // See http://www.szegedi.org/articles/memleak.html
         LogFactory.release(uberClassLoader);
