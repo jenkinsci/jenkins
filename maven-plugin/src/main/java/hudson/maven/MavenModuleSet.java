@@ -797,7 +797,7 @@ public final class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,Ma
         public boolean configure( StaplerRequest req, JSONObject o ) {
             globalMavenOpts = Util.fixEmptyAndTrim(o.getString("globalMavenOpts"));
             save();
-            
+
             return true;
         }
 
