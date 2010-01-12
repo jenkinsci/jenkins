@@ -29,8 +29,14 @@ import static com.sun.jna.Pointer.NULL;
 import com.sun.jna.ptr.IntByReference;
 import hudson.EnvVars;
 import hudson.Util;
+import hudson.model.Hudson;
+import hudson.remoting.Channel;
+import hudson.remoting.VirtualChannel;
 import hudson.util.ProcessTree.OSProcess;
 import static hudson.util.jna.GNUCLibrary.LIBC;
+
+import hudson.util.ProcessTreeRemoting.IOSProcess;
+import hudson.util.ProcessTreeRemoting.IProcessTree;
 import org.apache.commons.io.FileUtils;
 import org.jvnet.winp.WinProcess;
 import org.jvnet.winp.WinpException;
@@ -43,6 +49,7 @@ import java.io.FileFilter;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.RandomAccessFile;
+import java.io.Serializable;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -70,10 +77,13 @@ import java.util.logging.Logger;
  * and do some useful things on processes. On other platforms, the implementation falls back to
  * "do nothing" behavior.
  *
+ * <p>
+ * {@link ProcessTree} is remotable.
+ *
  * @author Kohsuke Kawaguchi
  * @since 1.315
  */
-public abstract class ProcessTree implements Iterable<OSProcess> {
+public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, Serializable {
     /**
      * To be filled in the constructor of the derived type.
      */
@@ -135,18 +145,27 @@ public abstract class ProcessTree implements Iterable<OSProcess> {
     /**
      * Represents a process.
      */
-    public abstract class OSProcess {
+    public abstract class OSProcess implements IOSProcess, Serializable {
+        final int pid;
+
         // instantiation only allowed for subtypes in this class
-        private OSProcess() {
+        private OSProcess(int pid) {
+            this.pid = pid;
         }
 
-        public abstract int getPid();
+        public final int getPid() {
+            return pid;
+        }
         /**
          * Gets the parent process. This method may return null, because
          * there's no guarantee that we are getting a consistent snapshot
          * of the whole system state.
          */
         public abstract OSProcess getParent();
+
+        /*package*/ final ProcessTree getTree() {
+            return ProcessTree.this;
+        }
 
         /**
          * Immediate child processes.
@@ -211,7 +230,54 @@ public abstract class ProcessTree implements Iterable<OSProcess> {
 
             return true;
         }
+
+        /**
+         * Executes a chunk of code at the same machine where this process resides.
+         */
+        public <T> T act(ProcessCallable<T> callable) throws IOException, InterruptedException {
+            return callable.invoke(this,Hudson.MasterComputer.localChannel);
+        }
+
+        Object writeReplace() {
+            return new SerializedProcess(pid);
+        }
     }
+
+    /**
+     * Serialized form of {@link OSProcess} is the PID and {@link ProcessTree}
+     */
+    private final class SerializedProcess implements Serializable {
+        private final int pid;
+        private static final long serialVersionUID = 1L;
+
+        private SerializedProcess(int pid) {
+            this.pid = pid;
+        }
+
+        Object readResolve() {
+            return get(pid);
+        }
+    }
+
+    /**
+     * Code that gets executed on the machine where the {@link OSProcess} is local.
+     * Used to act on {@link OSProcess}.
+     *
+     * @see OSProcess#act(ProcessCallable)
+     */
+    public static interface ProcessCallable<T> extends Serializable {
+        /**
+         * Performs the computational task on the node where the data is located.
+         *
+         * @param process
+         *      {@link OSProcess} that represents the local process.
+         * @param channel
+         *      The "back pointer" of the {@link Channel} that represents the communication
+         *      with the node from where the code was sent.
+         */
+        T invoke(OSProcess process, VirtualChannel channel) throws IOException;
+    }
+
 
     /**
      * Gets the {@link ProcessTree} of the current system
@@ -252,11 +318,7 @@ public abstract class ProcessTree implements Iterable<OSProcess> {
      */
     private static final ProcessTree DEFAULT = new ProcessTree() {
         public OSProcess get(final Process proc) {
-            return new OSProcess() {
-                public int getPid() {
-                    return -1;
-                }
-
+            return new OSProcess(-1) {
                 public OSProcess getParent() {
                     return null;
                 }
@@ -289,13 +351,10 @@ public abstract class ProcessTree implements Iterable<OSProcess> {
     private static final class Windows extends ProcessTree {
         Windows() {
             for (final WinProcess p : WinProcess.all()) {
-                super.processes.put(p.getPid(),new OSProcess() {
+                int pid = p.getPid();
+                super.processes.put(pid,new OSProcess(pid) {
                     private EnvVars env;
                     private List<String> args;
-
-                    public int getPid() {
-                        return p.getPid();
-                    }
 
                     public OSProcess getParent() {
                         // windows process doesn't have parent/child relationship
@@ -303,12 +362,12 @@ public abstract class ProcessTree implements Iterable<OSProcess> {
                     }
 
                     public void killRecursively() {
-                        LOGGER.finer("Killing recursively "+p.getPid());
+                        LOGGER.finer("Killing recursively "+getPid());
                         p.killRecursively();
                     }
 
                     public void kill() {
-                        LOGGER.finer("Killing "+p.getPid());
+                        LOGGER.finer("Killing "+getPid());
                         p.kill();
                     }
 
@@ -418,6 +477,10 @@ public abstract class ProcessTree implements Iterable<OSProcess> {
      * A process.
      */
     public abstract class UnixProcess extends OSProcess {
+        protected UnixProcess(int pid) {
+            super(pid);
+        }
+
         protected final File getFile(String relativePath) {
             return new File(new File("/proc/"+getPid()),relativePath);
         }
@@ -507,13 +570,12 @@ public abstract class ProcessTree implements Iterable<OSProcess> {
         }
 
         class LinuxProcess extends UnixProcess {
-            private final int pid;
             private int ppid = -1;
             private EnvVars envVars;
             private List<String> arguments;
 
             LinuxProcess(int pid) throws IOException {
-                this.pid = pid;
+                super(pid);
 
                 BufferedReader r = new BufferedReader(new FileReader(getFile("status")));
                 try {
@@ -530,10 +592,6 @@ public abstract class ProcessTree implements Iterable<OSProcess> {
                 }
                 if(ppid==-1)
                     throw new IOException("Failed to parse PPID from /proc/"+pid+"/status");
-            }
-
-            public int getPid() {
-                return pid;
             }
 
             public OSProcess getParent() {
@@ -609,10 +667,9 @@ public abstract class ProcessTree implements Iterable<OSProcess> {
             private final int argc;
             private EnvVars envVars;
             private List<String> arguments;
-            private final int pid;
 
             private SolarisProcess(int pid) throws IOException {
-                this.pid = pid;
+                super(pid);
 
                 RandomAccessFile psinfo = new RandomAccessFile(getFile("psinfo"),"r");
                 try {
@@ -668,10 +725,6 @@ public abstract class ProcessTree implements Iterable<OSProcess> {
                 if(ppid==-1)
                     throw new IOException("Failed to parse PPID from /proc/"+pid+"/status");
 
-            }
-
-            public int getPid() {
-                return pid;
             }
 
             public OSProcess getParent() {
@@ -822,18 +875,13 @@ public abstract class ProcessTree implements Iterable<OSProcess> {
         }
 
         private class DarwinProcess extends UnixProcess {
-            private final int pid;
             private final int ppid;
             private EnvVars envVars;
             private List<String> arguments;
 
             DarwinProcess(int pid, int ppid) {
-                this.pid = pid;
+                super(pid);
                 this.ppid = ppid;
-            }
-
-            public int getPid() {
-                return pid;
             }
 
             public OSProcess getParent() {
@@ -978,6 +1026,83 @@ public abstract class ProcessTree implements Iterable<OSProcess> {
         private static final int KERN_PROCARGS2 = 49;
     }
 
+    /**
+     * Represents a process tree over a channel.
+     */
+    public static class Remote extends ProcessTree implements Serializable {
+        private final IProcessTree proxy;
+
+        public Remote(ProcessTree proxy, Channel ch) {
+            this.proxy = ch.export(IProcessTree.class,proxy);
+            for (Entry<Integer,OSProcess> e : proxy.processes.entrySet())
+                processes.put(e.getKey(),new RemoteProcess(e.getValue(),ch));
+        }
+
+        @Override
+        public OSProcess get(Process proc) {
+            return null;
+        }
+
+        @Override
+        public void killAll(Map<String, String> modelEnvVars) {
+            proxy.killAll(modelEnvVars);
+        }
+
+        Object writeReplace() {
+            return this; // cancel out super.writeReplace()
+        }
+        
+        private static final long serialVersionUID = 1L;
+
+        private class RemoteProcess extends OSProcess implements Serializable {
+            private final IOSProcess proxy;
+
+            RemoteProcess(OSProcess proxy, Channel ch) {
+                super(proxy.getPid());
+                this.proxy = ch.export(IOSProcess.class,proxy);
+            }
+
+            public OSProcess getParent() {
+                IOSProcess p = proxy.getParent();
+                if (p==null)    return null;
+                return get(p.getPid());
+            }
+
+            public void kill() {
+                proxy.kill();
+            }
+
+            public void killRecursively() {
+                proxy.killRecursively();
+            }
+
+            public List<String> getArguments() {
+                return proxy.getArguments();
+            }
+
+            public EnvVars getEnvironmentVariables() {
+                return proxy.getEnvironmentVariables();
+            }
+
+            Object writeReplace() {
+                return this; // cancel out super.writeReplace()
+            }
+
+            public <T> T act(ProcessCallable<T> callable) throws IOException, InterruptedException {
+                return proxy.act(callable);
+            }
+
+
+            private static final long serialVersionUID = 1L;
+        }
+    }
+
+    /**
+     * Use {@link Remote} as the serialized form.
+     */
+    /*package*/ Object writeReplace() {
+        return new Remote(this,Channel.current());
+    }
 
 //    public static void main(String[] args) {
 //        // dump everything
