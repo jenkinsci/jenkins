@@ -89,10 +89,35 @@ THE SOFTWARE.
           <artifactId>maven-antrun-extended-plugin</artifactId>
           <version>1.39</version>
         </plugin>
-	<plugin>
-	  <artifactId>maven-javadoc-plugin</artifactId>
-	  <version>2.6.1</version>
-	</plugin>
+        <plugin>
+          <artifactId>maven-javadoc-plugin</artifactId>
+          <version>2.6.1</version>
+        </plugin>
+        <plugin>
+          <!--
+            Both test harness and core uses stapler as an extension,
+            and apparently without having extension preloaded at the parent, the main artifact of the 'test' module
+            ends up installed with 'stapler-jar' extension (which normally is an indication that the ArtifactTypeHandler
+            defined in this extension is not getting picked up.)
+
+            To avoid this problem, I'm defining an extension here. Not sure if the nested <dependencies> is necessary.
+            It's also possible that I misdiagnosed the problem and the root cause is something entirely different.
+
+            To test if you can remove this work around, do a rebuild from main and see if the test harness
+            is installed with the right extension into the local repository.
+          -->
+          <groupId>org.kohsuke.stapler</groupId>
+          <artifactId>maven-stapler-plugin</artifactId>
+          <version>1.14</version>
+          <extensions>true</extensions>
+          <dependencies>
+            <dependency>
+              <groupId>org.jvnet.maven-jellydoc-plugin</groupId>
+              <artifactId>maven-jellydoc-plugin</artifactId>
+              <version>1.4</version>
+            </dependency>
+          </dependencies>
+        </plugin>
       </plugins>
     </pluginManagement>
     
