@@ -143,19 +143,19 @@ public class Api extends AbstractModelObject {
 
         if(result instanceof CharacterData) {
             rsp.setContentType("text/plain");
-            rsp.getWriter().print(((CharacterData)result).getText());
+            rsp.getCompressedWriter(req).write(((CharacterData)result).getText());
             return;
         }
 
         if(result instanceof String || result instanceof Number || result instanceof Boolean) {
             rsp.setContentType("text/plain");
-            rsp.getWriter().print(result.toString());
+            rsp.getCompressedWriter(req).write(result.toString());
             return;
         }
 
         // otherwise XML
         rsp.setContentType("application/xml;charset=UTF-8");
-        new XMLWriter(rsp.getWriter()).write(result);
+        new XMLWriter(rsp.getCompressedWriter(req)).write(result);
     }
 
     /**
