@@ -27,7 +27,6 @@ import hudson.model.AbstractBuild;
 import hudson.scm.ChangeLogSet;
 
 import java.util.List;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 
@@ -35,25 +34,24 @@ import java.util.Iterator;
 /**
  * @author Andrew Bayer
  */
-
 public class ExtractChangeLogSet extends ChangeLogSet<ExtractChangeLogParser.ExtractChangeLogEntry> {
     private List<ExtractChangeLogParser.ExtractChangeLogEntry> changeLogs = null;
-    
-    public ExtractChangeLogSet(AbstractBuild<?,?> build, List<ExtractChangeLogParser.ExtractChangeLogEntry> changeLogs) {
-	super(build);
-	for (ExtractChangeLogParser.ExtractChangeLogEntry entry : changeLogs) {
-	    entry.setParent(this);
-	}
-	this.changeLogs = Collections.unmodifiableList(changeLogs);
+
+    public ExtractChangeLogSet(AbstractBuild<?, ?> build, List<ExtractChangeLogParser.ExtractChangeLogEntry> changeLogs) {
+        super(build);
+        for (ExtractChangeLogParser.ExtractChangeLogEntry entry : changeLogs) {
+            entry.setParent(this);
+        }
+        this.changeLogs = Collections.unmodifiableList(changeLogs);
     }
-    
+
     @Override
-	public boolean isEmptySet() {
-	return changeLogs.size()==0;
+    public boolean isEmptySet() {
+        return changeLogs.isEmpty();
     }
-    
+
     public Iterator<ExtractChangeLogParser.ExtractChangeLogEntry> iterator() {
-	return changeLogs.iterator();
+        return changeLogs.iterator();
     }
 
 }
