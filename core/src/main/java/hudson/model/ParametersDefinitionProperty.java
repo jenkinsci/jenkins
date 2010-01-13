@@ -26,6 +26,8 @@ package hudson.model;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.AbstractList;
 
@@ -87,8 +89,8 @@ public class ParametersDefinitionProperty extends JobProperty<AbstractProject<?,
     }
 
     @Override
-    public Action getJobAction(AbstractProject<?, ?> job) {
-        return this;
+    public Collection<Action> getJobActions(AbstractProject<?, ?> job) {
+        return Collections.<Action>singleton(this);
     }
 
     public AbstractProject<?, ?> getProject() {

@@ -43,6 +43,8 @@ import org.kohsuke.stapler.DataBoundConstructor;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.ArrayList;
@@ -93,8 +95,8 @@ public class SCMTrigger extends Trigger<SCMedItem> {
     }
 
     @Override
-    public Action getProjectAction() {
-        return new SCMAction();
+    public Collection<? extends Action> getProjectActions() {
+        return Collections.singleton(new SCMAction());
     }
 
     /**

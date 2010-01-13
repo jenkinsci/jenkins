@@ -34,6 +34,8 @@ import hudson.model.CheckPoint;
 import hudson.Launcher;
 
 import java.io.IOException;
+import java.util.Collection;
+import java.util.Collections;
 
 /**
  * Provides compatibility with {@link BuildStep} before 1.150
@@ -67,6 +69,15 @@ public abstract class BuildStepCompatibilityLayer implements BuildStep {
         else
             return null;
     }
+
+    public Collection<? extends Action> getProjectActions(AbstractProject<?, ?> project) {
+        // delegate to getJobAction (singular) for backward compatible behavior
+        Action a = getProjectAction(project);
+        if (a==null)    return Collections.emptyList();
+        return Collections.singletonList(a);
+    }
+
+
 //
 // old definitions < 1.150
 //

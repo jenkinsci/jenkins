@@ -40,6 +40,8 @@ import org.kohsuke.stapler.AncestorInPath;
 import javax.servlet.ServletException;
 import java.io.File;
 import java.io.IOException;
+import java.util.Collection;
+import java.util.Collections;
 
 /**
  * Saves Javadoc for the project and publish them. 
@@ -117,8 +119,8 @@ public class JavadocArchiver extends Recorder {
     }
 
     @Override
-    public Action getProjectAction(AbstractProject project) {
-        return new JavadocAction(project);
+    public Collection<Action> getProjectActions(AbstractProject project) {
+        return Collections.<Action>singleton(new JavadocAction(project));
     }
 
     public BuildStepMonitor getRequiredMonitorService() {

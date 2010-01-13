@@ -231,26 +231,14 @@ public class MatrixProject extends AbstractProject<MatrixProject,MatrixBuild> im
         synchronized(transientActions) {
             super.updateTransientActions();
 
-            for (BuildStep step : builders) {
-                Action a = step.getProjectAction(this);
-                if(a!=null)
-                    transientActions.add(a);
-            }
-            for (BuildStep step : publishers) {
-                Action a = step.getProjectAction(this);
-                if(a!=null)
-                    transientActions.add(a);
-            }
-            for (BuildWrapper step : buildWrappers) {
-                Action a = step.getProjectAction(this);
-                if(a!=null)
-                    transientActions.add(a);
-            }
-            for (Trigger trigger : triggers) {
-                Action a = trigger.getProjectAction();
-                if(a!=null)
-                    transientActions.add(a);
-            }
+            for (BuildStep step : builders)
+                transientActions.addAll(step.getProjectActions(this));
+            for (BuildStep step : publishers)
+                transientActions.addAll(step.getProjectActions(this));
+            for (BuildWrapper step : buildWrappers)
+                transientActions.addAll(step.getProjectActions(this));
+            for (Trigger trigger : triggers)
+                transientActions.addAll(trigger.getProjectActions(this));
         }
     }
 

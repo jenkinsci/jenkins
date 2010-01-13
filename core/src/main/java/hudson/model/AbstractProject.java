@@ -487,9 +487,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
             transientActions.clear();
 
             for (JobProperty<? super P> p : properties) {
-                Action a = p.getJobAction((P)this);
-                if(a!=null)
-                    transientActions.add(a);
+                transientActions.addAll(p.getJobActions((P)this));
             }
 
             for (TransientProjectActionFactory tpaf : TransientProjectActionFactory.all())
@@ -830,7 +828,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
      * <p>
      * Note that this method returns a read-only view of {@link Action}s.
      * {@link BuildStep}s and others who want to add a project action
-     * should do so by implementing {@link BuildStep#getProjectAction(AbstractProject)}.
+     * should do so by implementing {@link BuildStep#getProjectActions(AbstractProject)}.
      *
      * @see TransientProjectActionFactory
      */

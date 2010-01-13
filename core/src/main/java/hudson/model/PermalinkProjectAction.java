@@ -28,7 +28,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
 
 /**
  * Optional interface for {@link Action}s that are attached
- * to {@link AbstractProject} (through {@link JobProperty#getJobAction(Job)}),
+ * to {@link AbstractProject} (through {@link JobProperty#getJobActions(Job)}),
  * which allows plugins to define additional permalinks in the project.
  *
  * <p>

@@ -55,6 +55,8 @@ import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 
 import net.sf.json.JSONObject;
@@ -189,8 +191,8 @@ public class JUnitResultArchiver extends Recorder implements Serializable,
 	}
 
 	@Override
-	public Action getProjectAction(AbstractProject<?, ?> project) {
-		return new TestResultProjectAction(project);
+	public Collection<Action> getProjectActions(AbstractProject<?, ?> project) {
+		return Collections.<Action>singleton(new TestResultProjectAction(project));
 	}
 
 	public MatrixAggregator createAggregator(MatrixBuild build,

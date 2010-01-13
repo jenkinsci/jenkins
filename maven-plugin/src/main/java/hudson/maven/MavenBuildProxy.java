@@ -120,7 +120,7 @@ public interface MavenBuildProxy {
     
     /**
      * Nominates that the reporter will contribute a project action
-     * for this build by using {@link MavenReporter#getProjectAction(MavenModule)}.
+     * for this build by using {@link MavenReporter#getProjectActions(MavenModule)}.
      *
      * <p>
      * The specified {@link MavenReporter} object will be transfered to the master
