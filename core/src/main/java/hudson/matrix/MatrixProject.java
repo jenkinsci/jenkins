@@ -238,7 +238,7 @@ public class MatrixProject extends AbstractProject<MatrixProject,MatrixBuild> im
             for (BuildWrapper step : buildWrappers)
                 transientActions.addAll(step.getProjectActions(this));
             for (Trigger trigger : triggers)
-                transientActions.addAll(trigger.getProjectActions(this));
+                transientActions.addAll(trigger.getProjectActions());
         }
     }
 

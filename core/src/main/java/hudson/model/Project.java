@@ -208,7 +208,7 @@ public abstract class Project<P extends Project<P,B>,B extends Build<P,B>>
             for (BuildWrapper step : getBuildWrappers().values())
                 transientActions.addAll(step.getProjectActions(this));
             for (Trigger trigger : getTriggers().values())
-                transientActions.addAll(trigger.getProjectActions(this));
+                transientActions.addAll(trigger.getProjectActions());
         }
     }
 
