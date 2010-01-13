@@ -585,6 +585,14 @@ public final class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,Ma
     }
 
     /**
+     * Sets the workspace-relative path to an alternative Maven settings.xml file.
+     */
+    public void setAlternateSettings(String alternateSettings) throws IOException {
+        this.alternateSettings = alternateSettings;
+        save();
+    }
+
+    /**
      * If the list of configured goals contain the "-P" option,
      * return the configured profiles. Otherwise null.
      */
