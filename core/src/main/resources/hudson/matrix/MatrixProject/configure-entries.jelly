@@ -31,6 +31,8 @@ THE SOFTWARE.
   <f:section title="${%Advanced Project Options}">
     <f:advanced>
       <p:config-quietPeriod />
+      <p:config-retryCount />
+      <p:config-blockWhenUpstreamBuilding />
     </f:advanced>
   </f:section>
   <p:config-scm/>
