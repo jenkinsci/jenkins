@@ -33,6 +33,10 @@ import java.util.Map;
  * @author Kohsuke Kawaguchi
  */
 public class PluginAutomaticTestBuilder {
+    /**
+     * @param params
+     *      Various information about the plugin that maven-hpi-plugin adds.
+     */
     public static TestSuite build(Map params) {
         return new TestSuite();
     }
