@@ -111,7 +111,7 @@ import com.sun.jna.Native;
  * <p>
  * The transparency makes it easy to write plugins without worrying too much about
  * remoting, by making it works like NFS, where remoting happens at the file-system
- * later.
+ * layer.
  *
  * <p>
  * But one should note that such use of remoting may not be optional. Sometimes,
