@@ -413,9 +413,7 @@ public final class MavenModule extends AbstractMavenProject<MavenModule,MavenBui
         for (MavenReporter step : list) {
             if(!added.add(step.getClass()))     continue;   // already added
             try {
-                Action a = step.getProjectAction(this);
-                if(a!=null)
-                    transientActions.add(a);
+                transientActions.addAll(step.getProjectActions(this));
             } catch (Exception e) {
                 LOGGER.log(Level.WARNING, "Failed to getProjectAction from " + step
                            + ". Report issue to plugin developers.", e);

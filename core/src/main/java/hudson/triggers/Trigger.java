@@ -107,9 +107,28 @@ public abstract class Trigger<J extends Item> implements Describable<Trigger<?>>
     /**
      * Returns an action object if this {@link Trigger} has an action
      * to contribute to a {@link Project}.
+     *
+     * @deprecated as of 1.341
+     *      Use {@link #getProjectActions()} instead.
      */
     public Action getProjectAction() {
         return null;
+    }
+
+    /**
+     * {@link Action}s to be displayed in the job page.
+     *
+     * @param job
+     *      This object owns the {@link BuildWrapper}. The returned action will be added to this object.
+     * @return
+     *      can be empty but never null
+     * @since 1.341
+     */
+    public Collection<? extends Action> getProjectActions() {
+        // delegate to getJobAction (singular) for backward compatible behavior
+        Action a = getProjectAction();
+        if (a==null)    return Collections.emptyList();
+        return Collections.singletonList(a);
     }
 
     public TriggerDescriptor getDescriptor() {

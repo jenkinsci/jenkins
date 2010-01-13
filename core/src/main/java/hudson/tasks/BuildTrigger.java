@@ -32,9 +32,11 @@ import hudson.matrix.MatrixAggregator;
 import hudson.matrix.MatrixBuild;
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
+import hudson.model.Action;
 import hudson.model.BuildListener;
 import hudson.model.DependecyDeclarer;
 import hudson.model.DependencyGraph;
+import hudson.model.DependencyGraph.Dependency;
 import hudson.model.Hudson;
 import hudson.model.Item;
 import hudson.model.Items;
@@ -43,6 +45,7 @@ import hudson.model.Project;
 import hudson.model.Result;
 import hudson.model.Run;
 import hudson.model.Cause.UpstreamCause;
+import hudson.model.TaskListener;
 import hudson.model.listeners.ItemListener;
 import hudson.util.FormValidation;
 import net.sf.json.JSONObject;
@@ -53,11 +56,11 @@ import org.kohsuke.stapler.QueryParameter;
 
 import java.io.IOException;
 import java.io.PrintStream;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.StringTokenizer;
+import java.util.TreeMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -138,8 +141,17 @@ public class BuildTrigger extends Recorder implements DependecyDeclarer, MatrixA
         return children.size()==projects.size() && children.containsAll(projects);
     }
 
+    @Override
     public boolean perform(AbstractBuild build, Launcher launcher, BuildListener listener) {
         return true;
+    }
+
+    /**
+     * @deprecated since 1.341; use {@link #execute(AbstractBuild,BuildListener)}
+     */
+    @Deprecated
+    public static boolean execute(AbstractBuild build, BuildListener listener, BuildTrigger trigger) {
+        return execute(build, listener);
     }
 
     /**
@@ -149,33 +161,32 @@ public class BuildTrigger extends Recorder implements DependecyDeclarer, MatrixA
      *      The current build. Its downstreams will be triggered.
      * @param listener
      *      Receives the progress report.
-     * @param trigger
-     *      Optional {@link BuildTrigger} configured for the current build.
-     *      If it is non-null, its configuration value will affect the triggering behavior.
-     *      But even when this is null (meaning no user-defined downstream project is set up),
-     *      there might be other dependencies defined by somebody else, so build would
-     *      still have to call this method. 
      */
-    public static boolean execute(AbstractBuild build, BuildListener listener, BuildTrigger trigger) {
-        if(trigger==null || !build.getResult().isWorseThan(trigger.getThreshold())) {
-            PrintStream logger = listener.getLogger();
-            //Trigger all downstream Project of the project, not just those defined by this buildtrigger
-            List <AbstractProject> downstreamProjects = 
-                new ArrayList<AbstractProject> (build.getProject().getDownstreamProjects()); 
-                
-            // Sort topologically            
-            Collections.sort(downstreamProjects, 
-                    Collections.reverseOrder (Hudson.getInstance().getDependencyGraph()));
-            
-            for (AbstractProject p : downstreamProjects) {
-                if(p.isDisabled()) {
-                    logger.println(Messages.BuildTrigger_Disabled(p.getName()));
-                    continue;
-                }
+    public static boolean execute(AbstractBuild build, BuildListener listener) {
+        PrintStream logger = listener.getLogger();
+        // Check all downstream Project of the project, not just those defined by BuildTrigger
+        DependencyGraph graph = Hudson.getInstance().getDependencyGraph();
+        List<Dependency> downstreamProjects = graph.getDownstreamDependencies(build.getProject());
+        // Sort topologically
+        TreeMap<AbstractProject,Dependency> downstreamMap =
+                new TreeMap<AbstractProject,Dependency>(Collections.reverseOrder(graph));
+        for (Dependency dep : downstreamProjects)
+            downstreamMap.put(dep.getDownstreamProject(), dep);
+
+        for (Dependency dep : downstreamMap.values()) {
+            AbstractProject p = dep.getDownstreamProject();
+            if (p.isDisabled()) {
+                logger.println(Messages.BuildTrigger_Disabled(p.getName()));
+                continue;
+            }
+            if (dep.shouldTriggerBuild(build, listener)) {
+                List<Action> buildActions = dep.getBuildActions(build, listener);
+                if (buildActions == null) buildActions = Collections.emptyList();
                 // this is not completely accurate, as a new build might be triggered
                 // between these calls
                 String name = p.getName()+" #"+p.getNextBuildNumber();
-                if(p.scheduleBuild(new UpstreamCause((Run)build))) {
+                if(p.scheduleBuild(p.getQuietPeriod(), new UpstreamCause((Run)build),
+                                   buildActions.toArray(new Action[buildActions.size()]))) {
                     logger.println(Messages.BuildTrigger_Triggering(name));
                 } else {
                     logger.println(Messages.BuildTrigger_InQueue(name));
@@ -187,7 +198,13 @@ public class BuildTrigger extends Recorder implements DependecyDeclarer, MatrixA
     }
 
     public void buildDependencyGraph(AbstractProject owner, DependencyGraph graph) {
-        graph.addDependency(owner,getChildProjects());
+        for (AbstractProject p : getChildProjects())
+            graph.addDependency(new Dependency(owner, p) {
+                @Override
+                public boolean shouldTriggerBuild(AbstractBuild build, TaskListener listener) {
+                    return build.getResult().isBetterOrEqualTo(threshold);
+                }
+            });
     }
 
     @Override
@@ -199,7 +216,7 @@ public class BuildTrigger extends Recorder implements DependecyDeclarer, MatrixA
         return new MatrixAggregator(build, launcher, listener) {
             @Override
             public boolean endBuild() throws InterruptedException, IOException {
-                return execute(build,listener,BuildTrigger.this);
+                return execute(build,listener);
             }
         };
     }

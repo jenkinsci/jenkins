@@ -90,7 +90,7 @@ public class MailSender {
 
                 Address[] allRecipients = mail.getAllRecipients();
                 if (allRecipients != null) {
-                    StringBuffer buf = new StringBuffer("Sending e-mails to:");
+                    StringBuilder buf = new StringBuilder("Sending e-mails to:");
                     for (Address a : allRecipients)
                         buf.append(' ').append(a);
                     listener.getLogger().println(buf);
@@ -144,9 +144,9 @@ public class MailSender {
         if (build.getResult() == Result.SUCCESS) {
             Result prev = findPreviousBuildResult(build);
             if (prev == Result.FAILURE)
-                return createBackToNormalMail(build, "normal", listener);
+                return createBackToNormalMail(build, Messages.MailSender_BackToNormal_Normal(), listener);
             if (prev == Result.UNSTABLE)
-                return createBackToNormalMail(build, "stable", listener);
+                return createBackToNormalMail(build, Messages.MailSender_BackToNormal_Stable(), listener);
         }
 
         return null;
@@ -155,8 +155,8 @@ public class MailSender {
     private MimeMessage createBackToNormalMail(AbstractBuild<?, ?> build, String subject, BuildListener listener) throws MessagingException {
         MimeMessage msg = createEmptyMail(build, listener);
 
-        msg.setSubject(getSubject(build, "Hudson build is back to " + subject + ": "),MAIL_CHARSET);
-        StringBuffer buf = new StringBuffer();
+        msg.setSubject(getSubject(build, Messages.MailSender_BackToNormalMail_Subject(subject)),MAIL_CHARSET);
+        StringBuilder buf = new StringBuilder();
         appendBuildUrl(build, buf);
         msg.setText(buf.toString(),MAIL_CHARSET);
 
@@ -166,47 +166,55 @@ public class MailSender {
     private MimeMessage createUnstableMail(AbstractBuild<?, ?> build, BuildListener listener) throws MessagingException {
         MimeMessage msg = createEmptyMail(build, listener);
 
-        String subject = "Hudson build is unstable: ";
+        String subject = Messages.MailSender_UnstableMail_Subject();
 
         AbstractBuild<?, ?> prev = build.getPreviousBuild();
+        boolean still = false;
         if(prev!=null) {
             if(prev.getResult()==Result.SUCCESS)
-                subject = "Hudson build became unstable: ";
-            if(prev.getResult()==Result.UNSTABLE)
-                subject = "Hudson build is still unstable: ";
+                subject =Messages.MailSender_UnstableMail_ToUnStable_Subject();
+            else if(prev.getResult()==Result.UNSTABLE) {
+                subject = Messages.MailSender_UnstableMail_StillUnstable_Subject();
+                still = true;
+            }
         }
 
         msg.setSubject(getSubject(build, subject),MAIL_CHARSET);
-        StringBuffer buf = new StringBuffer();
-        appendBuildUrl(build, buf);
+        StringBuilder buf = new StringBuilder();
+        // Link to project changes summary for "still unstable" if this or last build has changes
+        if (still && !(build.getChangeSet().isEmptySet() && prev.getChangeSet().isEmptySet()))
+            appendUrl(Util.encode(build.getProject().getUrl()) + "changes", buf);
+        else
+            appendBuildUrl(build, buf);
         msg.setText(buf.toString(), MAIL_CHARSET);
 
         return msg;
     }
 
-    private void appendBuildUrl(AbstractBuild<?, ?> build, StringBuffer buf) {
+    private void appendBuildUrl(AbstractBuild<?, ?> build, StringBuilder buf) {
+        appendUrl(Util.encode(build.getUrl())
+                  + (build.getChangeSet().isEmptySet() ? "" : "changes"), buf);
+    }
+
+    private void appendUrl(String url, StringBuilder buf) {
         String baseUrl = Mailer.descriptor().getUrl();
-        if (baseUrl != null) {
-            buf.append("See <").append(baseUrl).append(Util.encode(build.getUrl()));
-            if(!build.getChangeSet().isEmptySet())
-                buf.append("changes");
-            buf.append(">\n\n");
-        }
+        if (baseUrl != null)
+            buf.append(Messages.MailSender_Link(baseUrl, url)).append("\n\n");
     }
 
     private MimeMessage createFailureMail(AbstractBuild<?, ?> build, BuildListener listener) throws MessagingException, InterruptedException {
         MimeMessage msg = createEmptyMail(build, listener);
 
-        msg.setSubject(getSubject(build, "Build failed in Hudson: "),MAIL_CHARSET);
+        msg.setSubject(getSubject(build, Messages.MailSender_FailureMail_Subject()),MAIL_CHARSET);
 
-        StringBuffer buf = new StringBuffer();
+        StringBuilder buf = new StringBuilder();
         appendBuildUrl(build, buf);
 
         boolean firstChange = true;
         for (ChangeLogSet.Entry entry : build.getChangeSet()) {
             if (firstChange) {
                 firstChange = false;
-                buf.append("Changes:\n\n");
+                buf.append(Messages.MailSender_FailureMail_Changes()).append("\n\n");
             }
             buf.append('[');
             buf.append(entry.getAuthor().getFullName());
@@ -269,7 +277,7 @@ public class MailSender {
             }
         } catch (IOException e) {
             // somehow failed to read the contents of the log
-            buf.append("Failed to access build log\n\n").append(Functions.printThrowable(e));
+            buf.append(Messages.MailSender_FailureMail_FailedToAccessBuildLog()).append("\n\n").append(Functions.printThrowable(e));
         }
 
         msg.setText(buf.toString(),MAIL_CHARSET);
@@ -359,7 +367,7 @@ public class MailSender {
     }
 
     private String getSubject(AbstractBuild<?, ?> build, String caption) {
-        return caption + build.getProject().getFullDisplayName() + " #" + build.getNumber();
+        return caption + ' ' + build.getProject().getFullDisplayName() + " #" + build.getNumber();
     }
 
     /**

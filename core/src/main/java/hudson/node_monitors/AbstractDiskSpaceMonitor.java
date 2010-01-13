@@ -23,6 +23,10 @@ public abstract class AbstractDiskSpaceMonitor extends NodeMonitor {
         DiskSpace.parse(threshold); // make sure it parses
     }
 
+    public AbstractDiskSpaceMonitor() {
+        this.freeSpaceThreshold = "1GB";
+    }
+
     public long getThresholdBytes() {
         if (freeSpaceThreshold==null)
             return DEFAULT_THRESHOLD; // backward compatibility with the data format that didn't have 'freeSpaceThreshold'

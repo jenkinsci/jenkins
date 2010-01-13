@@ -43,6 +43,8 @@ import org.codehaus.plexus.component.configurator.ComponentConfigurationExceptio
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Collection;
+import java.util.Collections;
 
 /**
  * Watches out for the execution of maven-site-plugin and records its output.
@@ -84,8 +86,8 @@ public class MavenSiteArchiver extends MavenReporter {
     }
 
 
-    public Action getProjectAction(MavenModule project) {
-        return new SiteAction(project);
+    public Collection<? extends Action> getProjectActions(MavenModule project) {
+        return Collections.singleton(new SiteAction(project));
     }
 
     public Action getAggregatedProjectAction(MavenModuleSet project) {

@@ -34,6 +34,8 @@ import hudson.model.Project;
 import hudson.model.Descriptor;
 import hudson.model.Hudson;
 
+import java.util.Collection;
+
 /**
  * {@link BuildStep}s that perform the actual build.
  *
@@ -54,13 +56,6 @@ public abstract class Builder extends BuildStepCompatibilityLayer implements Bui
      */
     public boolean prebuild(Build build, BuildListener listener) {
         return true;
-    }
-
-    /**
-     * Default implementation that does nothing.
-     */
-    public Action getProjectAction(Project project) {
-        return null;
     }
 
     /**

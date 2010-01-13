@@ -164,7 +164,7 @@ public class ClassicPluginStrategy implements PluginStrategy {
         for (DetachedPlugin detached : DETACHED_LIST)
             detached.fix(atts,optionalDependencies);
 
-        ClassLoader dependencyLoader = new DependencyClassLoader(getBaseClassLoader(atts), Util.join(dependencies,optionalDependencies));
+        ClassLoader dependencyLoader = new DependencyClassLoader(getBaseClassLoader(atts), archive, Util.join(dependencies,optionalDependencies));
 
         ClassLoader cl;
         if(useAntClassLoader) {
@@ -384,10 +384,16 @@ public class ClassicPluginStrategy implements PluginStrategy {
      * Used to load classes from dependency plugins.
      */
     final class DependencyClassLoader extends ClassLoader {
+        /**
+         * This classloader is created for this plugin. Useful during debugging.
+         */
+        private final File _for;
+
         private List<Dependency> dependencies;
 
-        public DependencyClassLoader(ClassLoader parent, List<Dependency> dependencies) {
+        public DependencyClassLoader(ClassLoader parent, File archive, List<Dependency> dependencies) {
             super(parent);
+            this._for = archive;
             this.dependencies = dependencies;
         }
 

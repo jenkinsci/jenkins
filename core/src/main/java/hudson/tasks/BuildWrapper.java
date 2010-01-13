@@ -26,7 +26,6 @@ package hudson.tasks;
 import hudson.ExtensionPoint;
 import hudson.Launcher;
 import hudson.DescriptorExtensionList;
-import hudson.FileSystemProvisionerDescriptor;
 import hudson.LauncherDecorator;
 import hudson.model.AbstractBuild;
 import hudson.model.Build;
@@ -40,6 +39,8 @@ import hudson.model.Descriptor;
 import hudson.model.Run.RunnerAbortedException;
 
 import java.io.IOException;
+import java.util.Collection;
+import java.util.Collections;
 
 /**
  * Pluggability point for performing pre/post actions for the build process.
@@ -187,10 +188,29 @@ public abstract class BuildWrapper implements ExtensionPoint, Describable<BuildW
      * @return
      *      null if there's no such action.
      * @since 1.226
+     * @deprecated
+     *      Use {@link #getProjectActions(AbstractProject)} instead.
      */
     public Action getProjectAction(AbstractProject job) {
         return null;
     }
+
+    /**
+     * {@link Action}s to be displayed in the job page.
+     *
+     * @param job
+     *      This object owns the {@link BuildWrapper}. The returned action will be added to this object.
+     * @return
+     *      can be empty but never null
+     * @since 1.341
+     */
+    public Collection<? extends Action> getProjectActions(AbstractProject job) {
+        // delegate to getJobAction (singular) for backward compatible behavior
+        Action a = getProjectAction(job);
+        if (a==null)    return Collections.emptyList();
+        return Collections.singletonList(a);
+    }
+
 
     public Descriptor<BuildWrapper> getDescriptor() {
         return (Descriptor<BuildWrapper>) Hudson.getInstance().getDescriptorOrDie(getClass());

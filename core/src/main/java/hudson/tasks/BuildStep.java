@@ -39,6 +39,7 @@ import hudson.model.CheckPoint;
 import hudson.model.Run;
 
 import java.io.IOException;
+import java.util.Collection;
 import java.util.List;
 import java.util.AbstractList;
 import java.util.Iterator;
@@ -101,7 +102,13 @@ public interface BuildStep {
     boolean perform(AbstractBuild<?,?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException;
 
     /**
-     * Returns an action object if this {@link BuildStep} has an action
+     * @deprecated as of 1.341.
+     *      Use {@link #getProjectActions(AbstractProject)} instead.
+     */
+    Action getProjectAction(AbstractProject<?,?> project);
+
+    /**
+     * Returns action objects if this {@link BuildStep} has actions
      * to contribute to a {@link Project}.
      *
      * <p>
@@ -119,9 +126,9 @@ public interface BuildStep {
      *      since {@link BuildStep} object doesn't usually have this "parent" pointer.
      *
      * @return
-     *      null if there's no action to be contributed.
+     *      can be empty but never null.
      */
-    Action getProjectAction(AbstractProject<?,?> project);
+    Collection<? extends Action> getProjectActions(AbstractProject<?,?> project);
 
 
     /**

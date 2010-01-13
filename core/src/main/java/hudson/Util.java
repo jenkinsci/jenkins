@@ -887,12 +887,12 @@ public class Util {
     /**
      * Concatenate multiple strings by inserting a separator.
      */
-    public static String join(Collection<String> strings, String seprator) {
+    public static String join(Collection<?> strings, String separator) {
         StringBuilder buf = new StringBuilder();
         boolean first=true;
-        for (String s : strings) {
+        for (Object s : strings) {
             if(first)   first=false;
-            else        buf.append(seprator);
+            else        buf.append(separator);
             buf.append(s);
         }
         return buf.toString();

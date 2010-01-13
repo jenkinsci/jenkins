@@ -47,6 +47,8 @@ import org.codehaus.plexus.configuration.xml.XmlPlexusConfiguration;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Collection;
+import java.util.Collections;
 
 /**
  * Records the surefire test result.
@@ -122,8 +124,8 @@ public class SurefireArchiver extends MavenReporter {
     }
 
 
-    public Action getProjectAction(MavenModule module) {
-        return new TestResultProjectAction(module);
+    public Collection<? extends Action> getProjectActions(MavenModule module) {
+        return Collections.singleton(new TestResultProjectAction(module));
     }
 
     private boolean isSurefireTest(MojoInfo mojo) {

@@ -202,18 +202,12 @@ public final class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,Ma
             module.updateTransientActions();
         }
         if(publishers!=null)    // this method can be loaded from within the onLoad method, where this might be null
-            for (BuildStep step : publishers) {
-                Action a = step.getProjectAction(this);
-                if(a!=null)
-                    transientActions.add(a);
-            }
+            for (BuildStep step : publishers)
+                transientActions.addAll(step.getProjectActions(this));
 
         if (buildWrappers!=null)
-	        for (BuildWrapper step : buildWrappers) {
-	            Action a = step.getProjectAction(this);
-	            if(a!=null)
-	                transientActions.add(a);
-	        }
+	        for (BuildWrapper step : buildWrappers)
+                transientActions.addAll(step.getProjectActions(this));
     }
 
     protected void addTransientActionsFromBuild(MavenModuleSetBuild build, Set<Class> added) {
@@ -585,6 +579,14 @@ public final class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,Ma
     }
 
     /**
+     * Sets the workspace-relative path to an alternative Maven settings.xml file.
+     */
+    public void setAlternateSettings(String alternateSettings) throws IOException {
+        this.alternateSettings = alternateSettings;
+        save();
+    }
+
+    /**
      * If the list of configured goals contain the "-P" option,
      * return the configured profiles. Otherwise null.
      */
@@ -797,7 +799,7 @@ public final class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,Ma
         public boolean configure( StaplerRequest req, JSONObject o ) {
             globalMavenOpts = Util.fixEmptyAndTrim(o.getString("globalMavenOpts"));
             save();
-            
+
             return true;
         }
 

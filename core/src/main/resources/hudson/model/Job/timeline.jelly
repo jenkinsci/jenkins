@@ -32,28 +32,6 @@ THE SOFTWARE.
       <div id="tl" style="height:500px; border:1px solid black;" />
       <div id="status" />
       <script><![CDATA[
-        var timeline_data = {  // save as a global variable
-        'dateTimeFormat': 'iso8601',
-
-        'events' : [
-                {'start': '1924',
-                'title': 'Barfusserkirche',
-                'description': 'by Lyonel Feininger, American/German Painter, 1871-1956',
-                'image': 'http://images.allposters.com/images/AWI/NR096_b.jpg',
-                'link': 'http://www.allposters.com/-sp/Barfusserkirche-1924-Posters_i1116895_.htm'
-                },
-
-
-                {'start': '1900',
-                'end': '1913',
-                'title': 'Three Figures',
-                'description': 'by Kasimir Malevich, Ukrainian Painter, 1878-1935',
-                'image': 'http://images.allposters.com/images/BRGPOD/75857_b.jpg',
-                'link': 'http://www.allposters.com/-sp/Three-Figures-1913-28-Posters_i1349989_.htm'
-                }
-        ]};
-
-        var tl;
         window.addEventListener('load', function() {
             var tl_el = document.getElementById("tl");
             var eventSource1 = new Timeline.DefaultEventSource();
@@ -61,6 +39,7 @@ THE SOFTWARE.
             var interval = 24*60*60*1000;
             eventSource1.ensureVisible = function(band) {
               // make sure all data are loaded for the portion visible in the band
+              // $('status').innerHTML = "min="+band.getMinDate()+" max="+band.getMaxDate();
               var min = Math.floor(band.getMinDate().getTime()/interval);
               var max = Math.ceil(band.getMaxDate().getTime()/interval);
               for (var i=min; i<=max; i++) {
@@ -70,7 +49,11 @@ THE SOFTWARE.
                       method:"POST",
                       parameters: {min: i*interval, max:(i+1)*interval},
                       onSuccess: function(t) {
-                        eventSource1.loadJSON(eval(t.responseText));
+                        try {
+                          eventSource1.loadJSON(eval('('+t.responseText+')'),'.');
+                        } catch (e) {
+                          alert(e);
+                        }
                       }
                   });
                 }
@@ -82,10 +65,10 @@ THE SOFTWARE.
 //            theme1.autoWidth = true; // Set the Timeline's "width" automatically.
                                      // Set autoWidth on the Timeline's first band's theme,
                                      // will affect all bands.
-            theme1.timeline_start = new Date(Date.UTC(1890, 0, 1));
-            theme1.timeline_stop  = new Date(Date.UTC(2160, 0, 1));
+            theme1.timeline_start = new Date(${it.firstBuild.timeInMillis-24*60*60*1000});
+            theme1.timeline_stop  = new Date(${it.lastBuild.timeInMillis+24*60*60*1000});
 
-            var d = Timeline.DateTime.parseGregorianDateTime("1900")
+            var d = theme1.timeline_stop;
             var bandInfos = [
                 // the bar that shows outline
                 Timeline.createBandInfo({
@@ -110,26 +93,24 @@ THE SOFTWARE.
             bandInfos[0].syncWith = 1;
 
             // create the Timeline
-            tl = Timeline.create(tl_el, bandInfos, Timeline.HORIZONTAL);
+            var tl = Timeline.create(tl_el, bandInfos, Timeline.HORIZONTAL);
 
-            tl.getBand(1).addOnScrollListener(function(band) {
+            tl.getBand(0).addOnScrollListener(function(band) {
                 eventSource1.ensureVisible(band);
             });
 
-            var url = '.'; // The base url for image, icon and background image
-                           // references in the data
-            eventSource1.loadJSON(timeline_data, url);
             tl.layout(); // display the Timeline
-        },false);
 
-        var resizeTimerID = null;
-        window.addEventListener('resize',function() {
-            if (resizeTimerID == null) {
-                resizeTimerID = window.setTimeout(function() {
-                    resizeTimerID = null;
-                    tl.layout();
-                }, 500);
-            }
+            // if resized, redo layout
+            var resizeTimerID = null;
+            window.addEventListener('resize',function() {
+                if (resizeTimerID == null) {
+                    resizeTimerID = window.setTimeout(function() {
+                        resizeTimerID = null;
+                        tl.layout();
+                    }, 500);
+                }
+            },false);
         },false);
       ]]></script>
     </l:main-panel>

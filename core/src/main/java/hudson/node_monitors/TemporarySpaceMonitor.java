@@ -48,7 +48,9 @@ public class TemporarySpaceMonitor extends AbstractDiskSpaceMonitor {
 	public TemporarySpaceMonitor(String freeSpaceThreshold) throws ParseException {
         super(freeSpaceThreshold);
 	}
-	
+
+    public TemporarySpaceMonitor() {}
+
     public DiskSpace getFreeSpace(Computer c) {
         return DESCRIPTOR.get(c);
     }

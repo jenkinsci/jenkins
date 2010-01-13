@@ -35,10 +35,10 @@ import hudson.triggers.Trigger;
  * are used to create a large, more visible icon in the top page to draw
  * users' attention.
  *
- * @see BuildStep#getProjectAction(AbstractProject)
- * @see BuildWrapper#getProjectAction(AbstractProject)
- * @see Trigger#getProjectAction()
- * @see JobProperty#getJobAction(Job)
+ * @see BuildStep#getProjectActions(AbstractProject)
+ * @see BuildWrapper#getProjectActions(AbstractProject)
+ * @see Trigger#getProjectActions()
+ * @see JobProperty#getJobActions(Job)
  *
  * @author Kohsuke Kawaguchi
  */

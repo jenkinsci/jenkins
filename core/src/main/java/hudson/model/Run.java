@@ -432,6 +432,20 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
         return c;
     }
 
+    /**
+     * Same as {@link #getTimestamp()} but in a different type.
+     */
+    public final Date getTime() {
+        return new Date(timestamp);
+    }
+
+    /**
+     * Same as {@link #getTimestamp()} but in a different type, that is since the time of the epoc.
+     */
+    public final long getTimeInMillis() {
+        return timestamp;
+    }
+
     @Exported
     public String getDescription() {
         return description;
@@ -1461,7 +1475,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
         DateFormat df = format==null ?
                 DateFormat.getDateTimeInstance(DateFormat.SHORT,DateFormat.SHORT, Locale.ENGLISH) :
                 new SimpleDateFormat(format,req.getLocale());
-        rsp.getWriter().print(df.format(getTimestamp().getTime()));
+        rsp.getWriter().print(df.format(getTime()));
     }
 
     /**
@@ -1644,8 +1658,8 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
      */
     public static final Comparator<Run> ORDER_BY_DATE = new Comparator<Run>() {
         public int compare(Run lhs, Run rhs) {
-            long lt = lhs.getTimestamp().getTimeInMillis();
-            long rt = rhs.getTimestamp().getTimeInMillis();
+            long lt = lhs.getTimeInMillis();
+            long rt = rhs.getTimeInMillis();
             if(lt>rt)   return -1;
             if(lt<rt)   return 1;
             return 0;

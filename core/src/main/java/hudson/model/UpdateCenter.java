@@ -38,6 +38,7 @@ import hudson.lifecycle.Lifecycle;
 import hudson.model.UpdateSite.Data;
 import hudson.model.UpdateSite.Plugin;
 import hudson.model.listeners.SaveableListener;
+import hudson.security.ACL;
 import hudson.util.DaemonThreadFactory;
 import hudson.util.IOException2;
 import hudson.util.PersistedList;
@@ -70,6 +71,7 @@ import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.acegisecurity.context.SecurityContextHolder;
 
 /**
  * Controls update center capability.
@@ -693,7 +695,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable {
                 LOGGER.info("Installation successful: "+getName());
                 status = new Success();
                 onSuccess();
-            } catch (IOException e) {
+            } catch (Throwable e) {
                 LOGGER.log(Level.SEVERE, "Failed to install "+getName(),e);
                 status = new Failure(e);
             }
@@ -812,7 +814,12 @@ public class UpdateCenter extends AbstractModelObject implements Saveable {
             // if this is a bundled plugin, make sure it won't get overwritten
             PluginWrapper pw = plugin.getInstalled();
             if (pw!=null && pw.isBundled())
-                pw.doPin();
+                try {
+                    SecurityContextHolder.getContext().setAuthentication(ACL.SYSTEM);
+                    pw.doPin();
+                } finally {
+                    SecurityContextHolder.clearContext();
+                }
         }
 
         protected void onSuccess() {
