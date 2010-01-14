@@ -26,6 +26,7 @@ package hudson.util;
 import static hudson.Util.fixEmpty;
 import hudson.EnvVars;
 import hudson.FilePath;
+import hudson.ProxyConfiguration;
 import hudson.Util;
 import hudson.tasks.JavadocArchiver;
 import hudson.model.AbstractProject;
@@ -252,7 +253,7 @@ public abstract class FormFieldValidator {
          */
         protected BufferedReader open(URL url) throws IOException {
             // use HTTP content type to find out the charset.
-            URLConnection con = url.openConnection();
+            URLConnection con = ProxyConfiguration.open(url);
             if (con == null) { // XXX is this even permitted by URL.openConnection?
                 throw new IOException(url.toExternalForm());
             }

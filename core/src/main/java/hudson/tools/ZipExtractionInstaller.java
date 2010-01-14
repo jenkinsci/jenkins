@@ -27,6 +27,7 @@ package hudson.tools;
 import hudson.Extension;
 import hudson.FilePath;
 import hudson.FilePath.FileCallable;
+import hudson.ProxyConfiguration;
 import hudson.Util;
 import hudson.Functions;
 import hudson.os.PosixAPI;
@@ -98,7 +99,7 @@ public class ZipExtractionInstaller extends ToolInstaller {
 
         public FormValidation doCheckUrl(@QueryParameter String value) {
             try {
-                URLConnection conn = new URL(value).openConnection();
+                URLConnection conn = ProxyConfiguration.open(new URL(value));
                 conn.connect();
                 if (conn instanceof HttpURLConnection) {
                     if (((HttpURLConnection) conn).getResponseCode() != HttpURLConnection.HTTP_OK) {

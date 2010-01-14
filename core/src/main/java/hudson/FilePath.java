@@ -529,7 +529,7 @@ public final class FilePath implements Serializable {
         try {
             URLConnection con;
             try {
-                con = archive.openConnection();
+                con = ProxyConfiguration.open(archive);
                 con.connect();
             } catch (IOException x) {
                 if (this.exists()) {
