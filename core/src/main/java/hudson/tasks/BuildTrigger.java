@@ -56,8 +56,10 @@ import org.kohsuke.stapler.QueryParameter;
 
 import java.io.IOException;
 import java.io.PrintStream;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.StringTokenizer;
 import java.util.TreeMap;
@@ -165,15 +167,18 @@ public class BuildTrigger extends Recorder implements DependecyDeclarer, MatrixA
     public static boolean execute(AbstractBuild build, BuildListener listener) {
         PrintStream logger = listener.getLogger();
         // Check all downstream Project of the project, not just those defined by BuildTrigger
-        DependencyGraph graph = Hudson.getInstance().getDependencyGraph();
-        List<Dependency> downstreamProjects = graph.getDownstreamDependencies(build.getProject());
+        final DependencyGraph graph = Hudson.getInstance().getDependencyGraph();
+        List<Dependency> downstreamProjects = new ArrayList<Dependency>(
+                graph.getDownstreamDependencies(build.getProject()));
         // Sort topologically
-        TreeMap<AbstractProject,Dependency> downstreamMap =
-                new TreeMap<AbstractProject,Dependency>(Collections.reverseOrder(graph));
-        for (Dependency dep : downstreamProjects)
-            downstreamMap.put(dep.getDownstreamProject(), dep);
+        Collections.sort(downstreamProjects, new Comparator<Dependency>() {
+            public int compare(Dependency lhs, Dependency rhs) {
+                // Swapping lhs/rhs to get reverse sort:
+                return graph.compare(rhs.getDownstreamProject(), lhs.getDownstreamProject());
+            }
+        });
 
-        for (Dependency dep : downstreamMap.values()) {
+        for (Dependency dep : downstreamProjects) {
             AbstractProject p = dep.getDownstreamProject();
             if (p.isDisabled()) {
                 logger.println(Messages.BuildTrigger_Disabled(p.getName()));
