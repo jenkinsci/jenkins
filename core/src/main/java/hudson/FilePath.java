@@ -526,49 +526,53 @@ public final class FilePath implements Serializable {
      * @since 1.299
      */
     public boolean installIfNecessaryFrom(URL archive, TaskListener listener, String message) throws IOException, InterruptedException {
-        URLConnection con;
         try {
-            con = archive.openConnection();
-            con.connect();
-        } catch (IOException x) {
-            if (this.exists()) {
-                // Cannot connect now, so assume whatever was last unpacked is still OK.
-                if (listener != null) {
-                    listener.getLogger().println("Skipping installation of " + archive + " to " + remote + ": " + x);
+            URLConnection con;
+            try {
+                con = archive.openConnection();
+                con.connect();
+            } catch (IOException x) {
+                if (this.exists()) {
+                    // Cannot connect now, so assume whatever was last unpacked is still OK.
+                    if (listener != null) {
+                        listener.getLogger().println("Skipping installation of " + archive + " to " + remote + ": " + x);
+                    }
+                    return false;
+                } else {
+                    throw x;
                 }
-                return false;
-            } else {
-                throw x;
             }
-        }
-        long sourceTimestamp = con.getLastModified();
-        FilePath timestamp = this.child(".timestamp");
+            long sourceTimestamp = con.getLastModified();
+            FilePath timestamp = this.child(".timestamp");
 
-        if(this.exists()) {
-            if(timestamp.exists() && sourceTimestamp ==timestamp.lastModified())
-                return false;   // already up to date
-            this.deleteContents();
-        } else {
-            this.mkdirs();
-        }
+            if(this.exists()) {
+                if(timestamp.exists() && sourceTimestamp ==timestamp.lastModified())
+                    return false;   // already up to date
+                this.deleteContents();
+            } else {
+                this.mkdirs();
+            }
 
-        if(listener!=null)
-            listener.getLogger().println(message);
+            if(listener!=null)
+                listener.getLogger().println(message);
 
-        // for HTTP downloads, enable automatic retry for added resilience
-        InputStream in = archive.getProtocol().equals("http") ? new RetryableHttpStream(archive) : con.getInputStream();
-        CountingInputStream cis = new CountingInputStream(in);
-        try {
-            if(archive.toExternalForm().endsWith(".zip"))
-                unzipFrom(cis);
-        else
-            untarFrom(cis,GZIP);
+            // for HTTP downloads, enable automatic retry for added resilience
+            InputStream in = archive.getProtocol().equals("http") ? new RetryableHttpStream(archive) : con.getInputStream();
+            CountingInputStream cis = new CountingInputStream(in);
+            try {
+                if(archive.toExternalForm().endsWith(".zip"))
+                    unzipFrom(cis);
+            else
+                untarFrom(cis,GZIP);
+            } catch (IOException e) {
+                throw new IOException2(String.format("Failed to unpack %s (%d bytes read of total %d)",
+                        archive,cis.getByteCount(),con.getContentLength()),e);
+            }
+            timestamp.touch(sourceTimestamp);
+            return true;
         } catch (IOException e) {
-            throw new IOException2(String.format("Failed to unpack %s (%d bytes read of total %d)",
-                    archive,cis.getByteCount(),con.getContentLength()),e);
+            throw new IOException2("Failed to install "+archive+" to "+remote,e);
         }
-        timestamp.touch(sourceTimestamp);
-        return true;
     }
 
     /**
