@@ -61,12 +61,12 @@ THE SOFTWARE.
     </st:attribute>
   </st:documentation>
   <f:prepareDatabinding />
-  <input class="setting-input ${attrs.checkUrl!=null?'validated':''} ${attrs.clazz}"
+
+  <!-- mostly pass-through all the attributes -->
+  <m:input xmlns:m="jelly:hudson.util.jelly.MorphTagLibrary"
+         class="setting-input ${attrs.checkUrl!=null?'validated':''} ${attrs.clazz}"
          name="${attrs.name ?: '_.'+attrs.field}"
          value="${attrs.value ?: instance[attrs.field] ?: attrs.default}"
-         id="${attrs.id}"
          type="text"
-         checkUrl="${attrs.checkUrl}" checkMethod="${attrs.checkMethod}"
-         checkMessage="${attrs.checkMessage}"
-         onchange="${attrs.onchange}" onkeyup="${attrs.onkeyup}"/>
+         ATTRIBUTES="${attrs}" EXCEPT="field clazz" />
 </j:jelly>

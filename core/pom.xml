@@ -570,7 +570,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.jvnet.hudson</groupId>
       <artifactId>commons-jelly</artifactId>
-      <version>1.1-hudson-20091221</version>
+      <version>1.1-hudson-20100114</version>
     </dependency>
     <dependency>
       <groupId>org.acegisecurity</groupId>
