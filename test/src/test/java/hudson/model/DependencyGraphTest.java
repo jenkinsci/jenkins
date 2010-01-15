@@ -92,15 +92,15 @@ public class DependencyGraphTest extends HudsonTestCase {
         public void buildDependencyGraph(AbstractProject owner, DependencyGraph graph) {
             graph.addDependency(new DependencyGraph.Dependency(owner, down) {
                 @Override
-                public boolean shouldTriggerBuild(AbstractBuild build, TaskListener listener) {
+                public boolean shouldTriggerBuild(AbstractBuild build, TaskListener listener,
+                                                  List<Action> actions) {
                     // Trigger for ODD build number
-                    return build.getNumber() % 2 == 1;
+                    if (build.getNumber() % 2 == 1) {
+                        actions.add(new MailMessageIdAction("foo"));
+                        return true;
+                    }
+                    return false;
                 }
-                @Override
-                public List<Action> getBuildActions(AbstractBuild build, TaskListener listener) {
-                    return Collections.singletonList((Action)new MailMessageIdAction("foo"));
-                }
-
             });
         }
     }

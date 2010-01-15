@@ -62,7 +62,6 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.StringTokenizer;
-import java.util.TreeMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -184,9 +183,8 @@ public class BuildTrigger extends Recorder implements DependecyDeclarer, MatrixA
                 logger.println(Messages.BuildTrigger_Disabled(p.getName()));
                 continue;
             }
-            if (dep.shouldTriggerBuild(build, listener)) {
-                List<Action> buildActions = dep.getBuildActions(build, listener);
-                if (buildActions == null) buildActions = Collections.emptyList();
+            List<Action> buildActions = new ArrayList<Action>();
+            if (dep.shouldTriggerBuild(build, listener, buildActions)) {
                 // this is not completely accurate, as a new build might be triggered
                 // between these calls
                 String name = p.getName()+" #"+p.getNextBuildNumber();
@@ -206,7 +204,8 @@ public class BuildTrigger extends Recorder implements DependecyDeclarer, MatrixA
         for (AbstractProject p : getChildProjects())
             graph.addDependency(new Dependency(owner, p) {
                 @Override
-                public boolean shouldTriggerBuild(AbstractBuild build, TaskListener listener) {
+                public boolean shouldTriggerBuild(AbstractBuild build, TaskListener listener,
+                                                  List<Action> actions) {
                     return build.getResult().isBetterOrEqualTo(threshold);
                 }
             });
