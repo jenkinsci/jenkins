@@ -32,6 +32,7 @@ import hudson.views.LastDurationColumn;
 import hudson.views.LastFailureColumn;
 import hudson.views.LastSuccessColumn;
 import hudson.views.ListViewColumn;
+import hudson.views.ListViewColumnDescriptor;
 import hudson.views.StatusColumn;
 import hudson.views.WeatherColumn;
 import hudson.model.Descriptor.FormException;
@@ -132,17 +133,18 @@ public class ListView extends View implements Saveable {
         }
         for (Descriptor<ListViewColumn> d : left)
             try {
-                r.add(d.newInstance(null,null));
+                if (d instanceof ListViewColumnDescriptor) {
+                    ListViewColumnDescriptor ld = (ListViewColumnDescriptor) d;
+                    if (!ld.shownByDefault())       continue;   // skip this
+                }
+                ListViewColumn lvc = d.newInstance(null, null);
+                if (!lvc.shownByDefault())      continue; // skip this
+
+                r.add(lvc);
             } catch (FormException e) {
                 LOGGER.log(Level.WARNING, "Failed to instantiate "+d.clazz,e);
             }
 
-        Iterator<ListViewColumn> filter = r.iterator();
-        while (filter.hasNext()) {
-            if (!filter.next().shownByDefault()) {
-                filter.remove();
-            }
-        }
         columns = new DescribableList<ListViewColumn, Descriptor<ListViewColumn>>(this,r);
     }
 

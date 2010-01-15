@@ -27,19 +27,16 @@ import hudson.Extension;
 import hudson.model.Descriptor;
 
 public class LastStableColumn extends ListViewColumn {
-
-    @Override
-    public boolean shownByDefault() {
-        return false;
-    }
-
     @Extension
-    public static class DescriptorImpl extends Descriptor<ListViewColumn> {
+    public static class DescriptorImpl extends ListViewColumnDescriptor {
         @Override
         public String getDisplayName() {
             return Messages.LastStableColumn_DisplayName();
         }
 
+        @Override
+        public boolean shownByDefault() {
+            return false;
+        }
     }
-
 }

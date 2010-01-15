@@ -28,7 +28,7 @@ import hudson.model.Descriptor;
 
 public class LastSuccessColumn extends ListViewColumn {
     @Extension
-    public static class DescriptorImpl extends Descriptor<ListViewColumn> {
+    public static class DescriptorImpl extends ListViewColumnDescriptor {
         @Override
         public String getDisplayName() {
             return Messages.LastSuccessColumn_DisplayName();

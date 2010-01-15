@@ -53,6 +53,7 @@ import org.kohsuke.stapler.export.Exported;
  *
  * @author Kohsuke Kawaguchi
  * @since 1.279
+ * @see ListViewColumnDescriptor
  */
 public abstract class ListViewColumn implements ExtensionPoint, Describable<ListViewColumn> {
     /**
@@ -83,12 +84,19 @@ public abstract class ListViewColumn implements ExtensionPoint, Describable<List
     /**
      * Whether this column will be shown by default.
      * The default implementation is true.
+     *
      * @since 1.301
+     * @deprecated as of 1.342.
+     *      Use {@link ListViewColumnDescriptor#shownByDefault()}
      */
     public boolean shownByDefault() {
         return true;
     }
 
+    /**
+     * For compatibility reason, this method may not return a {@link ListViewColumnDescriptor}
+     * and instead return a plain {@link Descriptor} instance.
+     */
     public Descriptor<ListViewColumn> getDescriptor() {
         return Hudson.getInstance().getDescriptorOrDie(getClass());
     }
