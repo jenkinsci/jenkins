@@ -754,6 +754,12 @@ THE SOFTWARE.
       <version>1.0</version>
     </dependency>
 
+    <dependency><!-- Hudson doesn't depend on it but some plugin wants the latest version. Bundling 1.4 until we figure out a mechanism to let plugins load its own -->
+      <groupId>commons-codec</groupId>
+      <artifactId>commons-codec</artifactId>
+      <version>1.4</version>
+    </dependency>
+
     <!-- offline profiler API to put in the classpath if we need it -->
     <!--dependency>
       <groupId>com.yourkit.api</groupId>
