@@ -28,6 +28,7 @@ import hudson.BulkChange;
 import hudson.Util;
 import static hudson.Util.singleQuote;
 import hudson.model.listeners.SaveableListener;
+import hudson.views.ListViewColumn;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 import org.kohsuke.stapler.StaplerRequest;
@@ -326,11 +327,20 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable {
      * <p>
      * ... which performs the databinding on the constructor of {@link #clazz}.
      *
+     * <p>
+     * For some types of {@link Describable}, such as {@link ListViewColumn}, this method
+     * can be invoked with null request object for historical reason. Such design is considered
+     * broken, but due to the compatibility reasons we cannot fix it. Because of this, the
+     * default implementation gracefully handles null request, but the contract of the method
+     * still is "request is always non-null." Extension points that need to define the "default instance"
+     * semantics should define a descriptor subtype and add the no-arg newInstance method.
+     *
      * @param req
-     *      Always non-null. This object includes represents the entire submisison.
+     *      Always non-null (see note above.) This object includes represents the entire submission.
      * @param formData
      *      The JSON object that captures the configuration data for this {@link Descriptor}.
      *      See http://hudson.gotdns.com/wiki/display/HUDSON/Structured+Form+Submission
+     *      Always non-null.
      *
      * @throws FormException
      *      Signals a problem in the submitted form.
@@ -345,11 +355,20 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable {
                 // maintain the backward compatible behavior
                 return newInstance(req);
             } else {
+                if (req==null) {
+                    // yes, req is supposed to be always non-null, but see the note above
+                    return clazz.newInstance();
+                }
+
                 // new behavior as of 1.206
                 return req.bindJSON(clazz,formData);
             }
         } catch (NoSuchMethodException e) {
             throw new AssertionError(e); // impossible
+        } catch (InstantiationException e) {
+            throw new Error(e);
+        } catch (IllegalAccessException e) {
+            throw new Error(e);
         }
     }
 

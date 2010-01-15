@@ -23,17 +23,14 @@
  */
 package hudson.views;
 
-import hudson.ExtensionPoint;
-import hudson.ExtensionList;
-import hudson.Extension;
 import hudson.DescriptorExtensionList;
-import hudson.tasks.Publisher;
-import hudson.tasks.UserNameResolver;
+import hudson.Extension;
+import hudson.ExtensionPoint;
 import hudson.model.Describable;
-import hudson.model.ListView;
-import hudson.model.Item;
-import hudson.model.Hudson;
 import hudson.model.Descriptor;
+import hudson.model.Hudson;
+import hudson.model.Item;
+import hudson.model.ListView;
 import hudson.util.DescriptorList;
 import org.kohsuke.stapler.export.Exported;
 
@@ -45,9 +42,14 @@ import org.kohsuke.stapler.export.Exported;
  * is called for each cell of this column. The {@link Item} object
  * is passed in the "job" variable. The view should render
  * the &lt;td> tag.
+ *
  * <p>
  * This object may have an additional <tt>columHeader.jelly</tt>. The default ColmnHeader
  * will render ColumnCaption.
+ *
+ * <p>
+ * There also must be a default constructor, which is invoked to create a list view column in
+ * the default configuration.
  *
  * @author Kohsuke Kawaguchi
  * @since 1.279
