@@ -125,19 +125,18 @@ public class ListView extends View {
             Descriptor<ListViewColumn> des = all.find(d.getClass().getName());
             if (des  != null) {
                 try {
-                    r.add (des.newInstance(null, null));
-                   left.remove(des);
+                    r.add(des.newInstance(null, null));
+                    left.remove(des);
                 } catch (FormException e) {
-                    // so far impossible. TODO: report
+                    LOGGER.log(Level.WARNING, "Failed to instantiate "+des.clazz,e);
                 }
-                
             }
         }
         for (Descriptor<ListViewColumn> d : left)
             try {
                 r.add(d.newInstance(null,null));
             } catch (FormException e) {
-                // so far impossible. TODO: report
+                LOGGER.log(Level.WARNING, "Failed to instantiate "+d.clazz,e);
             }
         Iterator<ListViewColumn> filter = r.iterator();
         while (filter.hasNext()) {
@@ -176,9 +175,8 @@ public class ListView extends View {
                 try {
                     r.add (des.newInstance(null, null));
                 } catch (FormException e) {
-                    // so far impossible. TODO: report
+                    LOGGER.log(Level.WARNING, "Failed to instantiate "+des.clazz,e);
                 }
-                
             }
         }
         return Collections.unmodifiableList(r);
@@ -283,4 +281,6 @@ public class ListView extends View {
             return FormValidation.ok();
         }
     }
+
+    private static final Logger LOGGER = Logger.getLogger(ListView.class.getName());
 }
