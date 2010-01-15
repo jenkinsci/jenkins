@@ -412,26 +412,17 @@ public final class DependencyGraph implements Comparator<AbstractProject> {
         }
 
         /**
-         * Should the downstream job be triggered?
-         * Default implementation always returns true (for backward compatibility).
-         * Subclasses may override to check build result, etc.
+         * Decide whether build should be triggered and provide any Actions for the build.
+         * Default implementation always returns true (for backward compatibility), and
+         * adds no Actions. Subclasses may override to control how/if the build is triggered.
          * @param build Build of upstream project that just completed
          * @param listener For any error/log output
+         * @param actions Add Actions for the triggered build to this list; never null
          * @return True to trigger a build of the downstream project
          */
-        public boolean shouldTriggerBuild(AbstractBuild build, TaskListener listener) {
+        public boolean shouldTriggerBuild(AbstractBuild build, TaskListener listener,
+                                          List<Action> actions) {
             return true;
-        }
-
-        /**
-         * Actions to include in triggered build.  Default implementation returns empty list,
-         * but subclasses may override to add Actions.
-         * @param build Build of upstream project that just completed
-         * @param listener For ny error/log output
-         * @return List of Actions to include in triggered build; may return null or empty list.
-         */
-        public List<Action> getBuildActions(AbstractBuild build, TaskListener listener) {
-            return Collections.emptyList();
         }
     }
 }
