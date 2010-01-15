@@ -25,7 +25,6 @@
 package hudson.views;
 
 import hudson.Extension;
-import hudson.model.Descriptor;
 
 public class WeatherColumn extends ListViewColumn {
     @Extension

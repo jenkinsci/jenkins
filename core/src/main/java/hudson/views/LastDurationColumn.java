@@ -24,7 +24,6 @@
 package hudson.views;
 
 import hudson.Extension;
-import hudson.model.Descriptor;
 
 public class LastDurationColumn extends ListViewColumn {
     @Extension
