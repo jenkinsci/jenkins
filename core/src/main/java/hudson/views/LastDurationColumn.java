@@ -27,13 +27,6 @@ import hudson.Extension;
 import hudson.model.Descriptor;
 
 public class LastDurationColumn extends ListViewColumn {
-
-    public Descriptor<ListViewColumn> getDescriptor() {
-        return DESCRIPTOR;
-    }
-    
-    public static final Descriptor<ListViewColumn> DESCRIPTOR = new DescriptorImpl();
-
     @Extension
     public static class DescriptorImpl extends Descriptor<ListViewColumn> {
         @Override

@@ -33,12 +33,6 @@ public class LastStableColumn extends ListViewColumn {
         return false;
     }
 
-    public Descriptor<ListViewColumn> getDescriptor() {
-        return DESCRIPTOR;
-    }
-    
-    public static final Descriptor<ListViewColumn> DESCRIPTOR = new DescriptorImpl();
-
     @Extension
     public static class DescriptorImpl extends Descriptor<ListViewColumn> {
         @Override

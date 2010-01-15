@@ -89,4 +89,7 @@ public abstract class ListViewColumn implements ExtensionPoint, Describable<List
         return true;
     }
 
+    public Descriptor<ListViewColumn> getDescriptor() {
+        return Hudson.getInstance().getDescriptorOrDie(getClass());
+    }
 }
