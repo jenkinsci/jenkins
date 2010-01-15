@@ -63,7 +63,7 @@ import java.util.regex.PatternSyntaxException;
  *
  * @author Kohsuke Kawaguchi
  */
-public class ListView extends View {
+public class ListView extends View implements Saveable {
 
     /**
      * List of job names. This is what gets serialized.
@@ -91,6 +91,13 @@ public class ListView extends View {
     public ListView(String name, ViewGroup owner) {
         this(name);
         this.owner = owner;
+    }
+
+    public void save() throws IOException {
+        // persistence is a part of the owner.
+        // due to the initialization timing issue, it can be null when this method is called.
+        if (owner!=null)
+            owner.save();
     }
 
     private Object readResolve() {
@@ -136,12 +143,7 @@ public class ListView extends View {
                 filter.remove();
             }
         }
-        columns = new DescribableList<ListViewColumn, Descriptor<ListViewColumn>>(Saveable.NOOP);
-        try {
-            columns.replaceBy(r);
-        } catch (IOException ex) {
-            Logger.getLogger(ListView.class.getName()).log(Level.SEVERE, null, ex);
-        }
+        columns = new DescribableList<ListViewColumn, Descriptor<ListViewColumn>>(this,r);
     }
 
     /**

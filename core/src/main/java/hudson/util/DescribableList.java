@@ -77,6 +77,11 @@ public class DescribableList<T extends Describable<T>, D extends Descriptor<T>> 
         setOwner(owner);
     }
 
+    public DescribableList(Saveable owner, Collection<? extends T> initialList) {
+        super(initialList);
+        setOwner(owner);
+    }
+
     /**
      * @deprecated since 2008-08-15.
      *      Use {@link #setOwner(Saveable)}
