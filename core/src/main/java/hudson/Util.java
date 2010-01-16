@@ -64,6 +64,7 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.nio.ByteBuffer;
 import java.nio.CharBuffer;
 import java.nio.charset.CharacterCodingException;
 import java.nio.charset.CharsetEncoder;
@@ -745,7 +746,9 @@ public class Util {
                 buf.put(0,c);
                 buf.rewind();
                 try {
-                    for (byte b : enc.encode(buf).array()) {
+                    ByteBuffer bytes = enc.encode(buf);
+                    while (bytes.hasRemaining()) {
+                        byte b = bytes.get();
                         out.append('%');
                         out.append(toDigit((b >> 4) & 0xF));
                         out.append(toDigit(b & 0xF));
