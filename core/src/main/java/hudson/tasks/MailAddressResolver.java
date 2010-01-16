@@ -92,9 +92,15 @@ public abstract class MailAddressResolver implements ExtensionPoint {
             return u.getFullName();
 
         String ds = Mailer.descriptor().getDefaultSuffix();
-        if(ds!=null)
+        if(ds!=null) {
+            // another common pattern is "DOMAIN\person" in Windows. Only
+            // do this when this full name is not manually set. see HUDSON-5164
+            Matcher m = WINDOWS_DOMAIN_REGEXP.matcher(u.getFullName());
+            if (m.matches() && u.getFullName().replace('\\','_').equals(u.getId()))
+                return m.group(1)+ds; // user+defaultSuffix
+
             return u.getId()+ds;
-        else
+        } else
             return null;
     }
 
@@ -114,6 +120,10 @@ public abstract class MailAddressResolver implements ExtensionPoint {
      */
     private static final Pattern EMAIL_ADDRESS_REGEXP = Pattern.compile("^.*<([^>]+)>.*$");
 
+    /**
+     * Matches something like "DOMAIN\person"
+     */
+    private static final Pattern WINDOWS_DOMAIN_REGEXP = Pattern.compile("[^\\\\ ]+\\\\([^\\\\ ]+)");
 
     /**
      * All registered {@link MailAddressResolver} implementations.
