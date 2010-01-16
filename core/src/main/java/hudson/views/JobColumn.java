@@ -24,8 +24,13 @@
 package hudson.views;
 
 import hudson.Extension;
+import org.kohsuke.stapler.DataBoundConstructor;
 
 public class JobColumn extends ListViewColumn {
+    @DataBoundConstructor
+    public JobColumn() {
+    }
+
     @Extension
     public static class DescriptorImpl extends ListViewColumnDescriptor {
         @Override

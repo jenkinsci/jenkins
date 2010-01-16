@@ -24,8 +24,13 @@
 package hudson.views;
 
 import hudson.Extension;
+import org.kohsuke.stapler.DataBoundConstructor;
 
 public class LastStableColumn extends ListViewColumn {
+    @DataBoundConstructor
+    public LastStableColumn() {
+    }
+
     @Extension
     public static class DescriptorImpl extends ListViewColumnDescriptor {
         @Override

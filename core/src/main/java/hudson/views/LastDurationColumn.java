@@ -24,8 +24,13 @@
 package hudson.views;
 
 import hudson.Extension;
+import org.kohsuke.stapler.DataBoundConstructor;
 
 public class LastDurationColumn extends ListViewColumn {
+    @DataBoundConstructor
+    public LastDurationColumn() {
+    }
+
     @Extension
     public static class DescriptorImpl extends ListViewColumnDescriptor {
         @Override

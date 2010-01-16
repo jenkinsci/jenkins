@@ -1261,6 +1261,7 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
     }
 
     public void addView(View v) throws IOException {
+        v.owner = this;
         views.add(v);
         save();
     }

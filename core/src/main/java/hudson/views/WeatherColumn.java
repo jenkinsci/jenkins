@@ -25,8 +25,13 @@
 package hudson.views;
 
 import hudson.Extension;
+import org.kohsuke.stapler.DataBoundConstructor;
 
 public class WeatherColumn extends ListViewColumn {
+    @DataBoundConstructor
+    public WeatherColumn() {
+    }
+
     @Extension
     public static class DescriptorImpl extends ListViewColumnDescriptor {
         @Override
