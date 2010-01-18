@@ -425,12 +425,6 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
                 if (result==null)    result = getResult();
                 if (result==null)    result = Result.SUCCESS;
 
-                if (result.isBetterOrEqualTo(Result.UNSTABLE))
-                    createSymlink(listener, "lastSuccessful");
-
-                if (result.isBetterOrEqualTo(Result.SUCCESS))
-                    createSymlink(listener, "lastStable");
-
                 return result;
             } finally {
                 lease.release();
@@ -532,6 +526,12 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
         public final void post(BuildListener listener) throws Exception {
             try {
                 post2(listener);
+
+                if (result.isBetterOrEqualTo(Result.UNSTABLE))
+                    createSymlink(listener, "lastSuccessful");
+
+                if (result.isBetterOrEqualTo(Result.SUCCESS))
+                    createSymlink(listener, "lastStable");
             } finally {
                 // update the culprit list
                 HashSet<String> r = new HashSet<String>();
