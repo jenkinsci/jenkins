@@ -101,6 +101,10 @@ import java.net.URL;
 public class Channel implements VirtualChannel, IChannel {
     private final ObjectInputStream ois;
     private final ObjectOutputStream oos;
+    /**
+     * Human readable description of where this channel is connected to. Used during diagnostic output
+     * and error reports.
+     */
     private final String name;
     /*package*/ final boolean isRestricted;
     /*package*/ final ExecutorService executor;
@@ -549,11 +553,11 @@ public class Channel implements VirtualChannel, IChannel {
 
         // re-wrap the exception so that we can capture the stack trace of the caller.
         } catch (ClassNotFoundException e) {
-            IOException x = new IOException("Remote call failed");
+            IOException x = new IOException("Remote call on "+name+" failed");
             x.initCause(e);
             throw x;
         } catch (Error e) {
-            IOException x = new IOException("Remote call failed");
+            IOException x = new IOException("Remote call on "+name+" failed");
             x.initCause(e);
             throw x;
         } finally {
