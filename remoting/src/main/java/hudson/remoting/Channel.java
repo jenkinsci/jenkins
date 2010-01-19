@@ -191,7 +191,7 @@ public class Channel implements VirtualChannel, IChannel {
     /**
      * Capability of the remote {@link Channel}.
      */
-    final Capability remoteCapability;
+    public final Capability remoteCapability;
 
     /**
      * When did we receive any data from this slave the last time?

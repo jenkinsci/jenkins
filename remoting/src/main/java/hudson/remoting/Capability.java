@@ -22,7 +22,7 @@ import java.io.ObjectInputStream;
  * @author Kohsuke Kawaguchi
  * @see Channel#remoteCapability
  */
-final class Capability implements Serializable {
+public final class Capability implements Serializable {
     /**
      * Bit mask of optional capabilities.
      */
@@ -42,7 +42,7 @@ final class Capability implements Serializable {
      *
      * @see MultiClassLoaderSerializer
      */
-    boolean supportsMultiClassLoaderRPC() {
+    public boolean supportsMultiClassLoaderRPC() {
         return (mask&MASK_MULTI_CLASSLOADER)!=0;
     }
 
