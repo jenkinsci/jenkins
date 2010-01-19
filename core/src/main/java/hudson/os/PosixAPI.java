@@ -31,7 +31,7 @@ public class PosixAPI {
 
     private static final POSIX posix = POSIXFactory.getPOSIX(new POSIXHandler() {
         public void error(ERRORS errors, String s) {
-            throw new RuntimeException(s+" "+errors);
+            throw new PosixException(s,errors);
         }
 
         public void unimplementedError(String s) {
