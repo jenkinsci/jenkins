@@ -84,7 +84,9 @@ public class TemporarySpaceMonitor extends AbstractDiskSpaceMonitor {
         @IgnoreJRERequirement
         public DiskSpace invoke(File f, VirtualChannel channel) throws IOException {
             try {
-                f = File.createTempFile("tmp-space","monitor");
+                // if the disk is really filled up we can't even create a single file,
+                // so calling File.createTempFile and figuring out the directory won't reliably work.
+                f = new File(System.getProperty("java.io.tmpdir"));
                 long s = f.getUsableSpace();
                 if(s<=0)    return null;
                 return new DiskSpace(s);
