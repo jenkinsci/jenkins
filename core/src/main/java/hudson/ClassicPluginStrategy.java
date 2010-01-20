@@ -166,23 +166,27 @@ public class ClassicPluginStrategy implements PluginStrategy {
 
         ClassLoader dependencyLoader = new DependencyClassLoader(getBaseClassLoader(atts), archive, Util.join(dependencies,optionalDependencies));
 
-        ClassLoader cl;
+        return new PluginWrapper(archive, manifest, baseResourceURL,
+                createClassLoader(paths, dependencyLoader), disableFile, dependencies, optionalDependencies);
+    }
+
+    /**
+     * Creates the classloader that can load all the specified jar files and delegate to the given parent.
+     */
+    protected ClassLoader createClassLoader(List<File> paths, ClassLoader parent) throws IOException {
         if(useAntClassLoader) {
             // using AntClassLoader with Closeable so that we can predictably release jar files opened by URLClassLoader
-            AntClassLoader2 classLoader = new AntClassLoader2(dependencyLoader);
+            AntClassLoader2 classLoader = new AntClassLoader2(parent);
             classLoader.addPathFiles(paths);
-            cl = classLoader;
+            return classLoader;
         } else {
             // Tom reported that AntClassLoader has a performance issue when Hudson keeps trying to load a class that doesn't exist,
             // so providing a legacy URLClassLoader support, too
             List<URL> urls = new ArrayList<URL>();
             for (File path : paths)
                 urls.add(path.toURI().toURL());
-            cl = new URLClassLoader(urls.toArray(new URL[urls.size()]),dependencyLoader);
+            return new URLClassLoader(urls.toArray(new URL[urls.size()]),parent);
         }
-
-        return new PluginWrapper(archive, manifest, baseResourceURL,
-                cl, disableFile, dependencies, optionalDependencies);
     }
 
     /**

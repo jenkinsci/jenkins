@@ -24,37 +24,23 @@
 package hudson.views;
 
 import hudson.Extension;
-import hudson.model.Descriptor;
-import net.sf.json.JSONObject;
-
-import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.DataBoundConstructor;
 
 public class LastStableColumn extends ListViewColumn {
-
-    @Override
-    public boolean shownByDefault() {
-        return false;
+    @DataBoundConstructor
+    public LastStableColumn() {
     }
-
-    public Descriptor<ListViewColumn> getDescriptor() {
-        return DESCRIPTOR;
-    }
-    
-    public static final Descriptor<ListViewColumn> DESCRIPTOR = new DescriptorImpl();
 
     @Extension
-    public static class DescriptorImpl extends Descriptor<ListViewColumn> {
-
-        @Override
-        public ListViewColumn newInstance(StaplerRequest req, JSONObject formData) throws FormException {
-            return new LastStableColumn();
-        }
-
+    public static class DescriptorImpl extends ListViewColumnDescriptor {
         @Override
         public String getDisplayName() {
             return Messages.LastStableColumn_DisplayName();
         }
 
+        @Override
+        public boolean shownByDefault() {
+            return false;
+        }
     }
-
 }

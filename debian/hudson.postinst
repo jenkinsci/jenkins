@@ -31,8 +31,12 @@ case "$1" in
 	    fi
 	
     	# Fix permissions on runtime directories/files.
-    	chown -R hudson:adm /var/run/hudson /var/lib/hudson /var/log/hudson
-    	chmod -R 750 /var/run/hudson /var/lib/hudson
+    	# change group/owner to hudson:adm - exclude jobs directory. See HUDSON-4047
+    	find /var/lib/hudson -path "*jobs" -prune -o -exec chown hudson:adm {} +
+    	chown -R hudson:adm /var/run/hudson /var/log/hudson
+    	# change mode to 750 - exclude jobs and .ssh directories. See HUDSON-4047
+    	find /var/lib/hudson -path "*jobs" -prune -o -path "*.ssh" -prune -o -exec chmod 750 {} +
+    	chmod -R 750 /var/run/hudson
     	chmod 750 /var/log/hudson
     ;;
 

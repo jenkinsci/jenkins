@@ -98,6 +98,7 @@ THE SOFTWARE.
               <phase>generate-test-resources</phase>
               <phase>process-test-resources</phase>
               <phase>test-compile</phase>
+              <phase>process-test-classes</phase>
               <phase>test</phase>
               <phase>package</phase>
               <phase>pre-integration-test</phase>

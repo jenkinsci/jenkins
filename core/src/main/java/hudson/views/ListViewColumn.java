@@ -23,17 +23,14 @@
  */
 package hudson.views;
 
-import hudson.ExtensionPoint;
-import hudson.ExtensionList;
-import hudson.Extension;
 import hudson.DescriptorExtensionList;
-import hudson.tasks.Publisher;
-import hudson.tasks.UserNameResolver;
+import hudson.Extension;
+import hudson.ExtensionPoint;
 import hudson.model.Describable;
-import hudson.model.ListView;
-import hudson.model.Item;
-import hudson.model.Hudson;
 import hudson.model.Descriptor;
+import hudson.model.Hudson;
+import hudson.model.Item;
+import hudson.model.ListView;
 import hudson.util.DescriptorList;
 import org.kohsuke.stapler.export.Exported;
 
@@ -45,12 +42,18 @@ import org.kohsuke.stapler.export.Exported;
  * is called for each cell of this column. The {@link Item} object
  * is passed in the "job" variable. The view should render
  * the &lt;td> tag.
+ *
  * <p>
  * This object may have an additional <tt>columHeader.jelly</tt>. The default ColmnHeader
  * will render ColumnCaption.
  *
+ * <p>
+ * There also must be a default constructor, which is invoked to create a list view column in
+ * the default configuration.
+ *
  * @author Kohsuke Kawaguchi
  * @since 1.279
+ * @see ListViewColumnDescriptor
  */
 public abstract class ListViewColumn implements ExtensionPoint, Describable<ListViewColumn> {
     /**
@@ -81,10 +84,20 @@ public abstract class ListViewColumn implements ExtensionPoint, Describable<List
     /**
      * Whether this column will be shown by default.
      * The default implementation is true.
+     *
      * @since 1.301
+     * @deprecated as of 1.342.
+     *      Use {@link ListViewColumnDescriptor#shownByDefault()}
      */
     public boolean shownByDefault() {
         return true;
     }
 
+    /**
+     * For compatibility reason, this method may not return a {@link ListViewColumnDescriptor}
+     * and instead return a plain {@link Descriptor} instance.
+     */
+    public Descriptor<ListViewColumn> getDescriptor() {
+        return Hudson.getInstance().getDescriptorOrDie(getClass());
+    }
 }

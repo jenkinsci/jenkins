@@ -1,7 +1,7 @@
 <!--
 The MIT License
 
-Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, Stephen Connolly, id:cactusman, Martin Eigenbrodt
+Copyright (c) 2004-2010, Sun Microsystems, Inc., Kohsuke Kawaguchi, Stephen Connolly, id:cactusman, Martin Eigenbrodt
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -22,10 +22,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 -->
 
-<!--
-  <%@ attribute name="jobBaseUrl" type="String" %>
-    The base URL of all job links. Normally ${rootURL}/
--->
 <j:jelly xmlns:j="jelly:core" xmlns:x="jelly:xml" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout"
          xmlns:t="/lib/hudson" xmlns:f="/lib/form">
   <st:documentation>
@@ -33,6 +29,9 @@ THE SOFTWARE.
 
     <st:attribute name="jobs" use="required" trim="Collection">
       Items to disable.
+    </st:attribute>
+    <st:attribute name="jobBaseUrl" type="String">
+      The base URL of all job links. Normally ${rootURL}/
     </st:attribute>
     <st:attribute name="showViewTabs" use="required" type="boolean">
       If the caller rendered a view tabes, set this to true so that CSS is adjusted accordingly.
@@ -55,7 +54,7 @@ THE SOFTWARE.
         <j:invokeStatic var="columnExtensions" className="hudson.model.ListView" method="getDefaultColumns"/>
     </j:if>
     
-    <j:if test="${!empty(jobs)}">
+    <j:if test="${!empty(jobs) or !empty(attrs.views)}">
       <!-- the caller can inject a tab bar here -->
       <d:invokeBody/>
       <!-- project list -->

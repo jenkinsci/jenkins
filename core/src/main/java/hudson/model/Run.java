@@ -736,7 +736,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
     }
 
     /**
-     * Gets the first {@value #TREE_CUTOFF} artifacts (relative to {@link #getArtifactsDir()}.
+     * Gets the artifacts (relative to {@link #getArtifactsDir()}.
      */
     @Exported
     public List<Artifact> getArtifacts() {
@@ -764,8 +764,6 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
         boolean collapsed;
         Artifact a;
         for (String child : children) {
-            if(r.size()>TREE_CUTOFF)
-                return;
             childPath = path + child;
             childHref = pathHref + Util.rawEncode(child);
             File sub = new File(dir, child);
@@ -790,10 +788,17 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
         }
     }
 
-    public static final int
-        LIST_CUTOFF = Integer.parseInt(System.getProperty("hudson.model.Run.ArtifactList.listCutoff", "16")),
-        TREE_CUTOFF = Integer.parseInt(System.getProperty("hudson.model.Run.ArtifactList.treeCutoff", "40"));
-        // ..and then "too many"
+    /**
+     * Maximum number of artifacts to list before using switching to the tree view.
+     */
+    public static final int LIST_CUTOFF = Integer.parseInt(System.getProperty("hudson.model.Run.ArtifactList.listCutoff", "16"));
+
+    /**
+     * Maximum number of artifacts to show in tree view before just showing a link.
+     */
+    public static final int TREE_CUTOFF = Integer.parseInt(System.getProperty("hudson.model.Run.ArtifactList.treeCutoff", "40"));
+
+    // ..and then "too many"
 
     public final class ArtifactList extends ArrayList<Artifact> {
         /**

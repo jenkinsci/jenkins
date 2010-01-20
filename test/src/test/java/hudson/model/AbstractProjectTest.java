@@ -34,6 +34,7 @@ import hudson.scm.NullSCM;
 import hudson.Launcher;
 import hudson.FilePath;
 import hudson.Util;
+import hudson.tasks.ArtifactArchiver;
 import hudson.util.StreamTaskListener;
 import hudson.util.OneShotEvent;
 import java.io.IOException;
@@ -226,11 +227,34 @@ public class AbstractProjectTest extends HudsonTestCase {
         assertFalse("lastStable link should be removed", lastStable.exists());
     }
 
-    private static void assertSymlinkForBuild(File file, int buildNumber) throws IOException {
+    private static void assertSymlinkForBuild(File file, int buildNumber)
+            throws IOException, InterruptedException {
         assertTrue("should exist and point to something that exists", file.exists());
         assertTrue("should be symlink", Util.isSymlink(file));
         String s = FileUtils.readFileToString(new File(file, "log"));
-        assertTrue("link should point to build #" + buildNumber + ", but log was:\n" + s,
+        assertTrue("link should point to build #" + buildNumber + ", but link was: "
+                   + Util.resolveSymlink(file, TaskListener.NULL) + "\nand log was:\n" + s,
                    s.contains("Build #" + buildNumber + "\n"));
+    }
+
+    @Bug(2543)
+    public void testSymlinkForPostBuildFailure() throws Exception {
+        // Links should be updated after post-build actions when final build result is known
+        FreeStyleProject job = createFreeStyleProject();
+        job.getBuildersList().add(new Shell("echo \"Build #$BUILD_NUMBER\"\n"));
+        FreeStyleBuild build = job.scheduleBuild2(0, new Cause.UserCause()).get();
+        assertEquals(Result.SUCCESS, build.getResult());
+        File lastSuccessful = new File(job.getRootDir(), "lastSuccessful"),
+             lastStable = new File(job.getRootDir(), "lastStable");
+        // First build creates links
+        assertSymlinkForBuild(lastSuccessful, 1);
+        assertSymlinkForBuild(lastStable, 1);
+        // Archive artifacts that don't exist to create failure in post-build action
+        job.getPublishersList().add(new ArtifactArchiver("*.foo", "", false));
+        build = job.scheduleBuild2(0, new Cause.UserCause()).get();
+        assertEquals(Result.FAILURE, build.getResult());
+        // Links should not be updated since build failed
+        assertSymlinkForBuild(lastSuccessful, 1);
+        assertSymlinkForBuild(lastStable, 1);
     }
 }

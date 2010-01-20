@@ -26,6 +26,7 @@ package hudson.tools;
 import hudson.AbortException;
 import hudson.Extension;
 import hudson.FilePath;
+import hudson.ProxyConfiguration;
 import hudson.Util;
 import hudson.Launcher;
 import hudson.util.FormValidation;
@@ -286,7 +287,7 @@ public class JDKInstaller extends ToolInstaller {
         String cookie;
         Element form;
         try {
-            HttpURLConnection con = (HttpURLConnection) url.openConnection();
+            HttpURLConnection con = (HttpURLConnection) ProxyConfiguration.open(url);
             cookie = con.getHeaderField("Set-Cookie");
             LOGGER.fine("Cookie="+cookie);
 
@@ -310,7 +311,7 @@ public class JDKInstaller extends ToolInstaller {
 
         url = new URL(form.attributeValue("action"));
         try {
-            HttpURLConnection con = (HttpURLConnection) url.openConnection();
+            HttpURLConnection con = (HttpURLConnection) ProxyConfiguration.open(url);
             con.setRequestMethod("POST");
             con.setDoOutput(true);
             con.setRequestProperty("Cookie",cookie);

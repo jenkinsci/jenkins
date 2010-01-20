@@ -126,7 +126,7 @@ public class UtilTest extends TestCase {
             "01234567890!@$&*()-_=+',.", "01234567890!@$&*()-_=+',.",
             " \"#%/:;<>?", "%20%22%23%25%2F%3A%3B%3C%3E%3F",
             "[\\]^`{|}~", "%5B%5C%5D%5E%60%7B%7C%7D%7E",
-            "d\u00E9velopp\u00E9s", "d%C3%A9%00velopp%C3%A9%00s",
+            "d\u00E9velopp\u00E9s", "d%C3%A9velopp%C3%A9s",
         };
         for (int i = 0; i < data.length; i += 2) {
             assertEquals("test " + i, data[i + 1], Util.rawEncode(data[i]));

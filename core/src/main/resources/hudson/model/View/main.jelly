@@ -1,7 +1,7 @@
 <!--
 The MIT License
 
-Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi
+Copyright (c) 2004-2010, Sun Microsystems, Inc., Kohsuke Kawaguchi
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -23,23 +23,10 @@ THE SOFTWARE.
 -->
 
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
-  <j:choose xmlns:local="local">
-    <d:taglib uri="local">
-      <d:tag name="viewTabs">
-        <!-- view tab bar -->
-        <l:tabBar>
-          <j:forEach var="v" items="${it.owner.views}">
-            <l:tab name="${v.viewName}" active="${v==it}" href="${rootURL}/${v.url}" />
-          </j:forEach>
-          <j:if test="${it.hasPermission(it.CREATE)}">
-            <l:tab name="+" href="${rootURL}/${it.owner.url}newView" active="false" />
-          </j:if>
-        </l:tabBar>
-      </d:tag>
-    </d:taglib>
-    <j:when test="${empty(it.items)}">
+  <j:choose>
+    <j:when test="${empty(items)}">
       <j:if test="${!empty(app.items)}">
-        <local:viewTabs/>
+        <st:include page="viewTabs.jelly" />
         <br/>
       </j:if>
       <st:include page="noJob.jelly" />
@@ -47,7 +34,7 @@ THE SOFTWARE.
     <j:otherwise>
       <!-- set @jobBaseUrl="" so that links to jobs will be under this view. -->
       <t:projectView jobs="${items}" jobBaseUrl="" showViewTabs="true" columnExtensions="${it.columns}">
-        <local:viewTabs/>
+        <st:include page="viewTabs.jelly" />
       </t:projectView>
     </j:otherwise>
   </j:choose>

@@ -94,6 +94,17 @@ public class DescriptorExtensionList<T extends Describable<T>, D extends Descrip
     }
 
     /**
+     * Finds the descriptor that describes the given type.
+     * That is, if this method returns d, {@code d.clazz==type}
+     */
+    public D find(Class<? extends T> type) {
+        for (D d : this)
+            if (d.clazz==type)
+                return d;
+        return null;
+    }
+
+    /**
      * Creates a new instance of a {@link Describable}
      * from the structured form submission data posted
      * by a radio button group.

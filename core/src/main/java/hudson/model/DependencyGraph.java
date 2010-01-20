@@ -23,7 +23,9 @@
  */
 package hudson.model;
 
-import hudson.security.Permission;
+import hudson.security.ACL;
+import org.acegisecurity.Authentication;
+import org.acegisecurity.context.SecurityContextHolder;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 import org.kohsuke.graph_layouter.Layout;
@@ -87,13 +89,20 @@ public final class DependencyGraph implements Comparator<AbstractProject> {
      * Builds the dependency graph.
      */
     public DependencyGraph() {
-        for( AbstractProject p : Hudson.getInstance().getAllItems(AbstractProject.class) )
-            p.buildDependencyGraph(this);
+        // Set full privileges while computing to avoid missing any projects the current user cannot see
+        Authentication saveAuth = SecurityContextHolder.getContext().getAuthentication();
+        try {
+            SecurityContextHolder.getContext().setAuthentication(ACL.SYSTEM);
+            for( AbstractProject p : Hudson.getInstance().getAllItems(AbstractProject.class) )
+                p.buildDependencyGraph(this);
 
-        forward = finalize(forward);
-        backward = finalize(backward);
+            forward = finalize(forward);
+            backward = finalize(backward);
 
-        built = true;
+            built = true;
+        } finally {
+            SecurityContextHolder.getContext().setAuthentication(saveAuth);
+        }
     }
 
     /**

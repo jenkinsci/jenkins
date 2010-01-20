@@ -23,31 +23,14 @@
  */
 package hudson.maven;
 
-import hudson.Util;
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
-import hudson.model.Action;
-import hudson.model.DependencyGraph;
-import hudson.model.Hudson;
 import hudson.model.ItemGroup;
-import hudson.model.Descriptor.FormException;
-import hudson.tasks.BuildStepDescriptor;
-import hudson.tasks.BuildWrappers;
-import hudson.tasks.Publisher;
 import hudson.tasks.Maven.ProjectWithMaven;
 import hudson.triggers.Trigger;
-import hudson.tasks.Maven.ProjectWithMaven;
 
-import java.io.IOException;
 import java.util.HashSet;
 import java.util.Set;
-
-import javax.servlet.ServletException;
-
-import net.sf.json.JSONObject;
-
-import org.kohsuke.stapler.StaplerRequest;
-import org.kohsuke.stapler.StaplerResponse;
 
 /**
  * Common part between {@link MavenModule} and {@link MavenModuleSet}.

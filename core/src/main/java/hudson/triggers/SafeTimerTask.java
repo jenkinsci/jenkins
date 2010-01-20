@@ -59,7 +59,7 @@ public abstract class SafeTimerTask extends TimerTask {
         }
     }
 
-    protected abstract void doRun();
+    protected abstract void doRun() throws Exception;
 
     private static final Logger LOGGER = Logger.getLogger(SafeTimerTask.class.getName());
 }

@@ -52,6 +52,10 @@ public class PersistedList<T> implements Iterable<T> {
     protected PersistedList() {
     }
 
+    protected PersistedList(Collection<? extends T> initialList) {
+        data.replaceBy(initialList);
+    }
+
     public PersistedList(Saveable owner) {
         setOwner(owner);
     }

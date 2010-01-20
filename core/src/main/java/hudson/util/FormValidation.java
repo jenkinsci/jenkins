@@ -24,8 +24,12 @@
 package hudson.util;
 
 import hudson.EnvVars;
+import hudson.Launcher;
+import hudson.ProxyConfiguration;
 import hudson.Util;
 import hudson.FilePath;
+import hudson.model.AbstractBuild;
+import hudson.model.BuildListener;
 import hudson.tasks.Builder;
 import static hudson.Util.fixEmpty;
 import hudson.model.Hudson;
@@ -357,7 +361,7 @@ public abstract class FormValidation extends IOException implements HttpResponse
          */
         protected BufferedReader open(URL url) throws IOException {
             // use HTTP content type to find out the charset.
-            URLConnection con = url.openConnection();
+            URLConnection con = ProxyConfiguration.open(url);
             if (con == null) { // XXX is this even permitted by URL.openConnection?
                 throw new IOException(url.toExternalForm());
             }

@@ -570,7 +570,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.jvnet.hudson</groupId>
       <artifactId>commons-jelly</artifactId>
-      <version>1.1-hudson-20091221</version>
+      <version>1.1-hudson-20100114</version>
     </dependency>
     <dependency>
       <groupId>org.acegisecurity</groupId>
@@ -614,7 +614,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>xpp3</groupId>
       <artifactId>xpp3</artifactId>
-      <version>1.1.3.3</version>
+      <version>1.1.4c</version>
     </dependency>
     <dependency>
       <groupId>junit</groupId>
@@ -752,6 +752,12 @@ THE SOFTWARE.
       <groupId>org.jvnet.robust-http-client</groupId>
       <artifactId>robust-http-client</artifactId>
       <version>1.0</version>
+    </dependency>
+
+    <dependency><!-- Hudson doesn't depend on it but some plugin wants the latest version. Bundling 1.4 until we figure out a mechanism to let plugins load its own -->
+      <groupId>commons-codec</groupId>
+      <artifactId>commons-codec</artifactId>
+      <version>1.4</version>
     </dependency>
 
     <!-- offline profiler API to put in the classpath if we need it -->

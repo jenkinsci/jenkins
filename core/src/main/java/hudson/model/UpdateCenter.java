@@ -447,7 +447,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable {
          * @see DownloadJob
          */
         public File download(DownloadJob job, URL src) throws IOException {
-            URLConnection con = ProxyConfiguration.open(src);
+            URLConnection con = connect(job,src);
             int total = con.getContentLength();
             CountingInputStream in = new CountingInputStream(con.getInputStream());
             byte[] buf = new byte[8192];
@@ -478,6 +478,14 @@ public class UpdateCenter extends AbstractModelObject implements Saveable {
             }
 
             return tmp;
+        }
+
+        /**
+         * Connects to the given URL for downloading the binary. Useful for tweaking
+         * how the connection gets established.
+         */
+        protected URLConnection connect(DownloadJob job, URL src) throws IOException {
+            return ProxyConfiguration.open(src);
         }
 
         /**

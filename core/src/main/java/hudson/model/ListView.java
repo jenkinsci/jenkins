@@ -32,6 +32,7 @@ import hudson.views.LastDurationColumn;
 import hudson.views.LastFailureColumn;
 import hudson.views.LastSuccessColumn;
 import hudson.views.ListViewColumn;
+import hudson.views.ListViewColumnDescriptor;
 import hudson.views.StatusColumn;
 import hudson.views.WeatherColumn;
 import hudson.model.Descriptor.FormException;
@@ -46,6 +47,7 @@ import org.kohsuke.stapler.QueryParameter;
 
 import javax.servlet.ServletException;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.List;
 import java.util.TreeSet;
 import java.util.ArrayList;
@@ -62,7 +64,7 @@ import java.util.regex.PatternSyntaxException;
  *
  * @author Kohsuke Kawaguchi
  */
-public class ListView extends View {
+public class ListView extends View implements Saveable {
 
     /**
      * List of job names. This is what gets serialized.
@@ -70,17 +72,6 @@ public class ListView extends View {
     /*package*/ final SortedSet<String> jobNames = new TreeSet<String>(CaseInsensitiveComparator.INSTANCE);
 
     private DescribableList<ListViewColumn, Descriptor<ListViewColumn>> columns;
-
-    // First add all the known instances in the correct order:
-    private static final Descriptor [] defaultColumnDescriptors  =  {
-        StatusColumn.DESCRIPTOR,
-        WeatherColumn.DESCRIPTOR,
-        JobColumn.DESCRIPTOR,
-        LastSuccessColumn.DESCRIPTOR,
-        LastFailureColumn.DESCRIPTOR,
-        LastDurationColumn.DESCRIPTOR,
-        BuildButtonColumn.DESCRIPTOR
-    };
 
     /**
      * Include regex string.
@@ -103,6 +94,13 @@ public class ListView extends View {
         this.owner = owner;
     }
 
+    public void save() throws IOException {
+        // persistence is a part of the owner.
+        // due to the initialization timing issue, it can be null when this method is called.
+        if (owner!=null)
+            owner.save();
+    }
+
     private Object readResolve() {
         if(includeRegex!=null)
             includePattern = Pattern.compile(includeRegex);
@@ -115,42 +113,39 @@ public class ListView extends View {
             // already persisted
             return;
         }
+
         // OK, set up default list of columns:
         // create all instances
         ArrayList<ListViewColumn> r = new ArrayList<ListViewColumn>();
         DescriptorExtensionList<ListViewColumn, Descriptor<ListViewColumn>> all = ListViewColumn.all();
-        ArrayList<Descriptor<ListViewColumn>> left = new ArrayList<Descriptor<ListViewColumn>>();
-        left.addAll(all);
-        for (Descriptor d: defaultColumnDescriptors) {
-            Descriptor<ListViewColumn> des = all.find(d.getClass().getName());
+        ArrayList<Descriptor<ListViewColumn>> left = new ArrayList<Descriptor<ListViewColumn>>(all);
+
+        for (Class<? extends ListViewColumn> d: DEFAULT_COLUMNS) {
+            Descriptor<ListViewColumn> des = all.find(d);
             if (des  != null) {
                 try {
-                    r.add (des.newInstance(null, null));
-                   left.remove(des);
+                    r.add(des.newInstance(null, null));
+                    left.remove(des);
                 } catch (FormException e) {
-                    // so far impossible. TODO: report
+                    LOGGER.log(Level.WARNING, "Failed to instantiate "+des.clazz,e);
                 }
-                
             }
         }
         for (Descriptor<ListViewColumn> d : left)
             try {
-                r.add(d.newInstance(null,null));
+                if (d instanceof ListViewColumnDescriptor) {
+                    ListViewColumnDescriptor ld = (ListViewColumnDescriptor) d;
+                    if (!ld.shownByDefault())       continue;   // skip this
+                }
+                ListViewColumn lvc = d.newInstance(null, null);
+                if (!lvc.shownByDefault())      continue; // skip this
+
+                r.add(lvc);
             } catch (FormException e) {
-                // so far impossible. TODO: report
+                LOGGER.log(Level.WARNING, "Failed to instantiate "+d.clazz,e);
             }
-        Iterator<ListViewColumn> filter = r.iterator();
-        while (filter.hasNext()) {
-            if (!filter.next().shownByDefault()) {
-                filter.remove();
-            }
-        }
-        columns = new DescribableList<ListViewColumn, Descriptor<ListViewColumn>>(Saveable.NOOP);
-        try {
-            columns.replaceBy(r);
-        } catch (IOException ex) {
-            Logger.getLogger(ListView.class.getName()).log(Level.SEVERE, null, ex);
-        }
+
+        columns = new DescribableList<ListViewColumn, Descriptor<ListViewColumn>>(this,r);
     }
 
     /**
@@ -167,23 +162,6 @@ public class ListView extends View {
         return columns;
     }
     
-    public static List<ListViewColumn> getDefaultColumns() {
-        ArrayList<ListViewColumn> r = new ArrayList<ListViewColumn>();
-        DescriptorExtensionList<ListViewColumn, Descriptor<ListViewColumn>> all = ListViewColumn.all();
-        for (Descriptor d: defaultColumnDescriptors) {
-            Descriptor<ListViewColumn> des = all.find(d.getClass().getName());
-            if (des  != null) {
-                try {
-                    r.add (des.newInstance(null, null));
-                } catch (FormException e) {
-                    // so far impossible. TODO: report
-                }
-                
-            }
-        }
-        return Collections.unmodifiableList(r);
-    }
-
     /**
      * Returns a read-only view of all {@link Job}s in this view.
      *
@@ -283,4 +261,36 @@ public class ListView extends View {
             return FormValidation.ok();
         }
     }
+
+    public static List<ListViewColumn> getDefaultColumns() {
+        ArrayList<ListViewColumn> r = new ArrayList<ListViewColumn>();
+        DescriptorExtensionList<ListViewColumn, Descriptor<ListViewColumn>> all = ListViewColumn.all();
+        for (Class<? extends ListViewColumn> t : DEFAULT_COLUMNS) {
+            Descriptor<ListViewColumn> d = all.find(t);
+            if (d  != null) {
+                try {
+                    r.add (d.newInstance(null, null));
+                } catch (FormException e) {
+                    LOGGER.log(Level.WARNING, "Failed to instantiate "+d.clazz,e);
+                }
+            }
+        }
+        return Collections.unmodifiableList(r);
+    }
+
+
+    private static final Logger LOGGER = Logger.getLogger(ListView.class.getName());
+
+    /**
+     * Traditional column layout before the {@link ListViewColumn} becomes extensible.
+     */
+    private static final List<Class<? extends ListViewColumn>> DEFAULT_COLUMNS =  Arrays.asList(
+        StatusColumn.class,
+        WeatherColumn.class,
+        JobColumn.class,
+        LastSuccessColumn.class,
+        LastFailureColumn.class,
+        LastDurationColumn.class,
+        BuildButtonColumn.class
+    );
 }
