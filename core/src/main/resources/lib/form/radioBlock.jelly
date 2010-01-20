@@ -48,14 +48,12 @@ THE SOFTWARE.
     </st:attribute>
   </st:documentation>
 
-	<j:set target="${requestScope}" property="rb_id" value="${rb_id+1}" />
-
-	<tr id="rb_s${rb_id}" hasHelp="${attrs.help!=null}"><!-- this ID marks the beginning -->
+	<tr class="radio-block-start" hasHelp="${attrs.help!=null}"><!-- this ID marks the beginning -->
 	  <td colspan="3">
 	    <input type="radio" name="${name}" value="${value}"
-             id="Rb${rb_id}" checked="${checked?'true':null}" />
+             class="radio-block-control" checked="${checked?'true':null}" />
       <st:nbsp/>
-      <label for="Rb${rb_id}">${title}</label>
+      <label class="attach-previous">${title}</label>
     </td>
     <j:if test="${attrs.help!=null}">
       <td>
@@ -68,7 +66,5 @@ THE SOFTWARE.
   </j:if>
 	<d:invokeBody />
 	<!-- end marker -->
-	<tr id="rb_e${rb_id}" style="display:none">
-    <script>addRadioBlock("${rb_id}");</script>
-	</tr>
+	<tr class="radio-block-end" style="display:none" />
 </j:jelly>

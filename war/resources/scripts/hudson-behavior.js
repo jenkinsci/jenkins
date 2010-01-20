@@ -140,6 +140,13 @@ function findAncestor(e, tagName) {
     return e;
 }
 
+function findAncestorClass(e, cssClass) {
+    do {
+        e = e.parentNode;
+    } while (e != null && !Element.hasClassName(e,cssClass));
+    return e;
+}
+
 function findFollowingTR(input, className) {
     // identify the parent TR
     var tr = input;
@@ -643,6 +650,54 @@ var hudsonRules = {
             return false;
         };
         e = null; // memory leak prevention
+    },
+
+    // radioBlock.jelly
+    "INPUT.radio-block-control" : function(r) {
+        r.id = "radio-block-"+(iota++);
+
+        // when one radio button is clicked, we need to update foldable block for
+        // other radio buttons with the same name. To do this, group all the
+        // radio buttons with the same name together and hang it under the form object
+        var f = r.form;
+        var radios = f.radios;
+        if (radios == null)
+            f.radios = radios = {};
+
+        var g = radios[r.name];
+        if (g == null) {
+            radios[r.name] = g = object(radioBlockSupport);
+            g.buttons = [];
+        }
+
+        var s = findAncestorClass(r,"radio-block-start");
+
+        // find the end node
+        var e = (function() {
+            var e = s;
+            var cnt=1;
+            while(cnt>0) {
+                e = e.nextSibling;
+                if (Element.hasClassName(e,"radio-block-start"))
+                    cnt++;
+                if (Element.hasClassName(e,"radio-block-end"))
+                    cnt--;
+            }
+            return e;
+        })();
+
+        var u = function() {
+            g.updateSingleButton(r,s,e);
+        };
+        applyNameRef(s,e,r.id);
+        g.buttons.push(u);
+
+        // apply the initial visibility
+        u();
+
+        // install event handlers to update visibility.
+        // needs to use onclick and onchange for Safari compatibility
+        r.onclick = r.onchange = function() { g.updateButtons(); };
     }
 };
 
@@ -1047,78 +1102,43 @@ var repeatableSupport = {
     }
 };
 
-// Used by radioBlock.jelly to wire up expandable radio block
-function addRadioBlock(id) {
-    // prototype object to be duplicated for each radio button group
-    var radioBlockSupport = {
-        buttons : null,
+// prototype object to be duplicated for each radio button group
+var radioBlockSupport = {
+    buttons : null,
 
-        updateButtons : function() {
-            for( var i=0; i<this.buttons.length; i++ )
-                this.buttons[i]();
-        },
+    updateButtons : function() {
+        for( var i=0; i<this.buttons.length; i++ )
+            this.buttons[i]();
+    },
 
-        // update one block based on the status of the given radio button
-        updateSingleButton : function(radio, blockStart, blockEnd) {
-            var tbl = blockStart.parentNode;
-            var i = false;
-            var o = false;
-            var show = radio.checked;
+    // update one block based on the status of the given radio button
+    updateSingleButton : function(radio, blockStart, blockEnd) {
+        var tbl = blockStart.parentNode;
+        var i = false;
+        var o = false;
+        var show = radio.checked;
 
-            for (var j = 0; tbl.rows[j]; j++) {
-                var n = tbl.rows[j];
+        for (var j = 0; tbl.rows[j]; j++) {
+            var n = tbl.rows[j];
 
-                if (n == blockEnd)
-                    o = true;
+            if (n == blockEnd)
+                o = true;
 
-                if (i && !o) {
-                    if (show)
-                        n.style.display = "";
-                    else
-                        n.style.display = "none";
-                }
+            if (i && !o) {
+                if (show)
+                    n.style.display = "";
+                else
+                    n.style.display = "none";
+            }
 
-                if (n == blockStart) {
-                    i = true;
-                    if (n.getAttribute('hasHelp') == 'true')
-                        j++;
-                }
+            if (n == blockStart) {
+                i = true;
+                if (n.getAttribute('hasHelp') == 'true')
+                    j++;
             }
         }
-    };
-
-    // when one radio button is clicked, we need to update foldable block for
-    // other radio buttons with the same name. To do this, group all the
-    // radio buttons with the same name together and hang it under the form object
-    var r = document.getElementById('Rb' + id);
-    var f = r.form;
-    var radios = f.radios;
-    if (radios == null)
-        f.radios = radios = {};
-
-    var g = radios[r.name];
-    if (g == null) {
-        radios[r.name] = g = object(radioBlockSupport);
-        g.buttons = [];
     }
-
-    var s = document.getElementById("rb_s"+id);
-    var e = document.getElementById("rb_e"+id);
-
-    var u = function() {
-        g.updateSingleButton(r,s,e);
-    };
-    applyNameRef(s,e,'Rb'+id);
-    g.buttons.push(u);
-
-    // apply the initial visibility
-    u();
-
-    // install event handlers to update visibility.
-    // needs to use onclick and onchange for Safari compatibility
-    r.onclick = r.onchange = function() { g.updateButtons(); };
-}
-
+};
 
 function updateBuildHistory(ajaxUrl,nBuild) {
     if(isRunAsTest) return;
