@@ -37,6 +37,8 @@ import hudson.remoting.Pipe;
 import hudson.remoting.RemoteOutputStream;
 import hudson.remoting.VirtualChannel;
 import hudson.remoting.RemoteInputStream;
+import hudson.util.DirScanner;
+import hudson.util.FileVisitor;
 import hudson.util.IOException2;
 import hudson.util.HeadBufferingStream;
 import hudson.util.FormValidation;
@@ -303,6 +305,13 @@ public final class FilePath implements Serializable {
     }
 
     /**
+     * Uses the given scanner on 'this' directory to list up files and then archive it to a zip stream.
+     */
+    public int zip(OutputStream out, DirScanner scanner) throws IOException, InterruptedException {
+        return archive(new ZipArchiverFactory(), out, scanner);
+    }
+
+    /**
      * Archives this directory into the specified archive format, to the given {@link OutputStream}, by using
      * {@link DirScanner} to choose what files to include.
      *
@@ -310,7 +319,7 @@ public final class FilePath implements Serializable {
      *      number of files/directories archived. This is only really useful to check for a situation where nothing
      *      is archived.
      */
-    private int archive(final ArchiverFactory factory, OutputStream os, final DirScanner scanner) throws IOException, InterruptedException {
+    public int archive(final ArchiverFactory factory, OutputStream os, final DirScanner scanner) throws IOException, InterruptedException {
         final OutputStream out = (channel!=null)?new RemoteOutputStream(os):os;
         return act(new FileCallable<Integer>() {
             public Integer invoke(File f, VirtualChannel channel) throws IOException {
@@ -1439,128 +1448,6 @@ public final class FilePath implements Serializable {
         }
     }
 
-    private static abstract class DirScanner implements Serializable {
-        abstract void scan(File dir, FileVisitor visitor) throws IOException;
-
-        /**
-         * Scans everything recursively.
-         */
-        private static class Full extends DirScanner {
-            private void scan(File f, String path, FileVisitor visitor) throws IOException {
-                if (f.canRead()) {
-                    visitor.visit(f,path+f.getName());
-                    if(f.isDirectory()) {
-                        for( File child : f.listFiles() )
-                            scan(child,path+f.getName()+'/',visitor);
-                    }
-                }
-            }
-            
-            void scan(File dir, FileVisitor visitor) throws IOException {
-                scan(dir,"",visitor);
-            }
-
-            private static final long serialVersionUID = 1L;
-        }
-
-        /**
-         * Scans by filtering things out from {@link FileFilter}
-         */
-        private static class Filter extends Full {
-            private final FileFilter filter;
-
-            Filter(FileFilter filter) {
-                this.filter = filter;
-            }
-
-            @Override
-            void scan(File dir, FileVisitor visitor) throws IOException {
-                super.scan(dir,visitor.with(filter));
-            }
-
-            private static final long serialVersionUID = 1L;
-        }
-
-        /**
-         * Scans by using Ant GLOB syntax.
-         */
-        private static class Glob extends DirScanner {
-            private final String includes, excludes;
-
-            private Glob(String includes, String excludes) {
-                this.includes = includes;
-                this.excludes = excludes;
-            }
-
-            void scan(File dir, FileVisitor visitor) throws IOException {
-                if(fixEmpty(includes)==null && excludes==null) {
-                    // optimization
-                    new Full().scan(dir,visitor);
-                    return;
-                }
-
-                FileSet fs = Util.createFileSet(dir,includes,excludes);
-
-                if(dir.exists()) {
-                    DirectoryScanner ds = fs.getDirectoryScanner(new org.apache.tools.ant.Project());
-                    for( String f : ds.getIncludedFiles()) {
-                        File file = new File(dir, f);
-                        visitor.visit(file,f);
-                    }
-                }
-            }
-
-            private static final long serialVersionUID = 1L;
-        }
-
-        private static final long serialVersionUID = 1L;
-    }
-
-    /**
-     * Visits files in a directory recursively.
-     * Primarily used for building an archive with various filtering.
-     */
-    private static abstract class FileVisitor {
-        /**
-         * Caleld for each file and directory that matches the criteria.
-         *
-         * @param relativePath
-         *      The file/directory name in question
-         */
-        abstract void visit(File f, String relativePath) throws IOException;
-
-        /**
-         * Decorates by a given filter.
-         */
-        FileVisitor with(FileFilter f) {
-            if(f==null) return this;
-            return new FilterFileVisitor(f,this);
-        }
-    }
-
-    private static final class FilterFileVisitor extends FileVisitor implements Serializable {
-        private final FileFilter filter;
-        private final FileVisitor visitor;
-
-        private FilterFileVisitor(FileFilter filter, FileVisitor visitor) {
-            this.filter = filter!=null ? filter : PASS_THROUGH;
-            this.visitor = visitor;
-        }
-
-        public void visit(File f, String relativePath) throws IOException {
-            if(f.isDirectory() || filter.accept(f))
-                visitor.visit(f,relativePath);
-        }
-
-        private static final FileFilter PASS_THROUGH = new FileFilter() {
-            public boolean accept(File pathname) {
-                return true;
-            }
-        };
-
-        private static final long serialVersionUID = 1L;
-    }
-
     private static interface ArchiverFactory extends Serializable {
         Archiver create(OutputStream out);
     }
@@ -1697,6 +1584,13 @@ public final class FilePath implements Serializable {
 
     public int tar(OutputStream out, FileFilter filter) throws IOException, InterruptedException {
         return archive(new TarArchiverFactory(), out, filter);
+    }
+
+    /**
+     * Uses the given scanner on 'this' directory to list up files and then archive it to a tar stream.
+     */
+    public int tar(OutputStream out, DirScanner scanner) throws IOException, InterruptedException {
+        return archive(new TarArchiverFactory(), out, scanner);
     }
 
     /**
