@@ -42,6 +42,7 @@ import javax.xml.transform.stream.StreamResult;
 import java.io.IOException;
 import java.io.StringReader;
 import java.io.StringWriter;
+import java.io.Writer;
 import java.util.List;
 
 /**
@@ -141,21 +142,27 @@ public class Api extends AbstractModelObject {
             throw new IOException2(e);
         }
 
-        if(result instanceof CharacterData) {
-            rsp.setContentType("text/plain");
-            rsp.getCompressedWriter(req).write(((CharacterData)result).getText());
-            return;
-        }
+        Writer w = rsp.getCompressedWriter(req);
 
-        if(result instanceof String || result instanceof Number || result instanceof Boolean) {
-            rsp.setContentType("text/plain");
-            rsp.getCompressedWriter(req).write(result.toString());
-            return;
-        }
+        try {
+            if(result instanceof CharacterData) {
+                rsp.setContentType("text/plain");
+                w.write(((CharacterData)result).getText());
+                return;
+            }
 
-        // otherwise XML
-        rsp.setContentType("application/xml;charset=UTF-8");
-        new XMLWriter(rsp.getCompressedWriter(req)).write(result);
+            if(result instanceof String || result instanceof Number || result instanceof Boolean) {
+                rsp.setContentType("text/plain");
+                w.write(result.toString());
+                return;
+            }
+
+            // otherwise XML
+            rsp.setContentType("application/xml;charset=UTF-8");
+            new XMLWriter(w).write(result);
+        } finally {
+            w.close();
+        }
     }
 
     /**
