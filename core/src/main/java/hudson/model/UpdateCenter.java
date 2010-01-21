@@ -909,6 +909,10 @@ public class UpdateCenter extends AbstractModelObject implements Saveable {
 
     private static final Logger LOGGER = Logger.getLogger(UpdateCenter.class.getName());
 
+    /**
+     * @deprecated as of 1.333
+     *      Use {@link UpdateSite#neverUpdate}
+     */
     public static boolean neverUpdate = Boolean.getBoolean(UpdateCenter.class.getName()+".never");
 
     public static final XStream2 XSTREAM = new XStream2();

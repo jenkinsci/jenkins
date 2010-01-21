@@ -255,7 +255,6 @@ public abstract class HudsonTestCase extends TestCase implements RootAction {
         
         // don't waste bandwidth talking to the update center
         DownloadService.neverUpdate = true;
-        UpdateCenter.neverUpdate = true;
         UpdateSite.neverUpdate = true;
 
         PersistedList<UpdateSite> sites = hudson.getUpdateCenter().getSites();

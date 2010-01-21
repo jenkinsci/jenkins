@@ -604,6 +604,7 @@ public class UpdateSite {
 
     private static final Logger LOGGER = Logger.getLogger(UpdateSite.class.getName());
 
+    // The name uses UpdateCenter for compatibility reason.
     public static boolean neverUpdate = Boolean.getBoolean(UpdateCenter.class.getName()+".never");
 
     /**
