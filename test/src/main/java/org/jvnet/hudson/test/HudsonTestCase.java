@@ -250,16 +250,7 @@ public abstract class HudsonTestCase extends TestCase implements RootAction {
         // set a default JDK to be the one that the harness is using.
         hudson.getJDKs().add(new JDK("default",System.getProperty("java.home")));
 
-        // load updates from local proxy to avoid network traffic.
-        final String updateCenterUrl = "http://localhost:"+JavaNetReverseProxy.getInstance().localPort+"/update-center.json";
-        
-        // don't waste bandwidth talking to the update center
-        DownloadService.neverUpdate = true;
-        UpdateSite.neverUpdate = true;
-
-        PersistedList<UpdateSite> sites = hudson.getUpdateCenter().getSites();
-        sites.clear();
-        sites.add(new UpdateSite("default", updateCenterUrl));
+        configureUpdateCenter();
 
         // expose the test instance as a part of URL tree.
         // this allows tests to use a part of the URL space for itself.
@@ -270,6 +261,22 @@ public abstract class HudsonTestCase extends TestCase implements RootAction {
         Mailer.descriptor().setHudsonUrl(null);
         for( Descriptor d : hudson.getExtensionList(Descriptor.class) )
             d.load();
+    }
+
+    /**
+     * Configures the update center setting for the test.
+     * By default, we load updates from local proxy to avoid network traffic as much as possible.
+     */
+    protected void configureUpdateCenter() throws Exception {
+        final String updateCenterUrl = "http://localhost:"+ JavaNetReverseProxy.getInstance().localPort+"/update-center.json";
+
+        // don't waste bandwidth talking to the update center
+        DownloadService.neverUpdate = true;
+        UpdateSite.neverUpdate = true;
+
+        PersistedList<UpdateSite> sites = hudson.getUpdateCenter().getSites();
+        sites.clear();
+        sites.add(new UpdateSite("default", updateCenterUrl));
     }
 
     @Override
