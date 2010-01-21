@@ -368,7 +368,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable {
      * Strategy object for controlling the update center's behaviors.
      *
      * <p>
-     * Until 1.MULTIUPDATE, this extension point used to control the configuration of
+     * Until 1.333, this extension point used to control the configuration of
      * where to get updates (hence the name of this class), but with the introduction
      * of multiple update center sites capability, that functionality is achieved by
      * simply installing another {@link UpdateSite}.
@@ -517,7 +517,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable {
         /**
          * Returns an "always up" server for Internet connectivity testing.
          *
-         * @deprecated as of 1.MULTIUPDATE
+         * @deprecated as of 1.333
          *      With the introduction of multiple update center capability, this information
          *      is now a part of the <tt>update-center.json</tt> file. See
          *      <tt>http://hudson-ci.org/update-center.json</tt> as an example.
@@ -530,7 +530,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable {
          * Returns the URL of the server that hosts the update-center.json
          * file.
          *
-         * @deprecated as of 1.MULTIUPDATE
+         * @deprecated as of 1.333
          *      With the introduction of multiple update center capability, this information
          *      is now moved to {@link UpdateSite}.
          * @return
@@ -543,7 +543,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable {
         /**
          * Returns the URL of the server that hosts plugins and core updates.
          *
-         * @deprecated as of 1.MULTIUPDATE
+         * @deprecated as of 1.333
          *      <tt>update-center.json</tt> is now signed, so we don't have to further make sure that
          *      we aren't downloading from anywhere unsecure.
          */

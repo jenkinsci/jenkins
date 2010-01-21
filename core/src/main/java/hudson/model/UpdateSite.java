@@ -77,7 +77,7 @@ import javax.servlet.ServletContext;
  *
  * @author Andrew Bayer
  * @author Kohsuke Kawaguchi
- * @since 1.MULTIUPDATE
+ * @since 1.333
  */
 public class UpdateSite {
     /**
