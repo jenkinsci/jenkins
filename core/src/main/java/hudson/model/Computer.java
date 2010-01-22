@@ -615,6 +615,8 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
      */
     @Exported
     public final boolean isIdle() {
+        if (!oneOffExecutors.isEmpty())
+            return false;
         for (Executor e : executors)
             if(!e.isIdle())
                 return false;
