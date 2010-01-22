@@ -24,4 +24,34 @@ THE SOFTWARE.
 
 <html><body>
 Maven support.
+
+<h2>General Idea</h2>
+<p>
+  One of the pain points of the freestyle project is that you have to configure a lot of things, such as
+  where to look for test reports, what files to archive, where the findbugs report would go.
+
+  But if we focus on Maven, we should be able to eliminate much of the configuration, since it introduces
+  more uniform structures. So that's what this plugin does &mdash; at the expense of limiting the build tool
+  to Maven, automate much of the configuration.
+</p>
+
+<h2>Implementation Approach</h2>
+<p>
+  The core idea of the implementation is to monitor what Maven does, so that we can see which mojos are
+  executed with what parameters. In this way, we can tell when/where javadoc is generated, if source code
+  compilation had an error, and access other rich information about the project build process.
+</p><p>
+  To make communication between Hudson JVM and Maven JVM easier, we use the remoting technology that Hudson
+  uses between the master and the slave. We start a new JVM and bootstraps to the remoting, then use a socket
+  to establish a connection to this process. This part of the code is in the "maven-agent" module.
+  We then bootstrap Maven.
+</p><p>
+  To intercept what's going on in Maven, we extend some key components in Maven, and configure Plexus
+  in such a way that our components are used instead of default ones. Because injected components need to live
+  in a different classloader, they are packaged in a separate "maven-interceptor" module.
+
+   We also bring in objects (MavenReporters) from plugins
+  via remoting, and distribute intercepted events to these guys. They can then digest information and send it back to
+  Hudson JVM.
+</p>
 </body></html>
