@@ -258,8 +258,7 @@ final class RemoteClassLoader extends URLClassLoader {
 
 
     private File makeResource(String name, byte[] image) throws IOException {
-        File tmpFile = File.createTempFile("hudson-remoting", "");
-        tmpFile.delete();
+        File tmpFile = createTempDir();
         File resource = new File(tmpFile, name);
         resource.getParentFile().mkdirs();
 
@@ -270,6 +269,24 @@ final class RemoteClassLoader extends URLClassLoader {
         deleteDirectoryOnExit(tmpFile);
 
         return resource;
+    }
+
+    private File createTempDir() throws IOException {
+    	// work around sun bug 6325169 on windows
+    	// see http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=6325169
+        int nRetry=0;
+        while (true) {
+            try {
+                File tmpFile = File.createTempFile("hudson-remoting", "");
+                tmpFile.delete();
+                tmpFile.mkdir();
+                return tmpFile;
+            } catch (IOException e) {
+                if (nRetry++ < 100)
+                    continue;
+                throw e;
+            }
+        }
     }
 
     /**
