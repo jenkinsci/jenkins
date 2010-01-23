@@ -53,5 +53,10 @@ Maven support.
    We also bring in objects (MavenReporters) from plugins
   via remoting, and distribute intercepted events to these guys. They can then digest information and send it back to
   Hudson JVM.
+</p><p>
+  In addition to all this, we use embedded Maven to parse POMs, so that we can figure out the structure
+  of the project before we even do a build (this information is used for example to set up dependencies among
+  jobs.) This turns out to be rather fragile (in the presence of profiles that are activated by system property,
+  platform, etc., which makes the effective POM different when in Hudson vs when built for real.)
 </p>
 </body></html>
