@@ -109,7 +109,8 @@ public final class ProxyConfiguration implements Saveable {
      * This method should be used wherever {@link URL#openConnection()} to internet URLs is invoked directly.
      */
     public static URLConnection open(URL url) throws IOException {
-        ProxyConfiguration p = Hudson.getInstance().proxy;
+        Hudson h = Hudson.getInstance(); // this code might run on slaves
+        ProxyConfiguration p = h!=null ? h.proxy : null;
         if(p==null)
             return url.openConnection();
 
