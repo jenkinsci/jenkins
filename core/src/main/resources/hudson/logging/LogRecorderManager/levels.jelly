@@ -23,18 +23,52 @@ THE SOFTWARE.
 -->
 
 <!--
-  Show all hudson.* logs
+  Show form to adjust log levels
 -->
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
-<l:layout title="Log">
+<l:layout title="Log Levels">
   <st:include page="sidepanel.jelly" />
   <l:main-panel>
-    <h1><img src="${rootURL}/images/48x48/clipboard.gif" alt=""/>${%Hudson Log}</h1>
-    <j:forEach var="log" items="${h.logRecords}">
-      <pre>${h.printLogRecord(log)}</pre>
-    </j:forEach>
-
-    <st:include page="feeds.jelly" />
+    <h1>
+      ${%Logger Configuration}
+      <t:help href="${%url}" />
+    </h1>
+    <table class="sortable pane bigtable" style="width:auto" id="logLevels">
+      <tr>
+        <th>${%Name}</th>
+        <th>${%Level}</th>
+      </tr>
+      <j:invokeStatic var="lm" className="java.util.logging.LogManager" method="getLogManager"/>
+      <j:forEach var="name" items="${lm.loggerNames}">
+        <j:set var="logger" value="${lm.getLogger(name)}"/>
+        <j:if test="${logger.level != null}">
+          <tr>
+            <td>${name}</td>
+            <td>${logger.level}</td>
+          </tr>
+        </j:if>
+      </j:forEach>
+    </table>
+    <p>${%defaultLoggerMsg}</p>
+    <h2>${%Adjust Levels}</h2>
+    <form action="configLogger" method="post" name="configLogger">
+      ${%Name}: <input type="text" name="name" width="40" />
+      ${%Level}:
+      <select name="level">
+        <option>inherit</option>
+        <option>off</option>
+        <option>severe</option>
+        <option>warning</option>
+        <option>info</option>
+        <option>config</option>
+        <option>fine</option>
+        <option>finer</option>
+        <option>finest</option>
+        <option>all</option>
+      </select>
+      <st:nbsp/>
+      <f:submit value="${%Submit}"/>
+    </form>
   </l:main-panel>
 </l:layout>
 </j:jelly>

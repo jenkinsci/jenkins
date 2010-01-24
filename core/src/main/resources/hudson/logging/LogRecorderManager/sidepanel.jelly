@@ -33,6 +33,7 @@ THE SOFTWARE.
       <l:task icon="images/24x24/clipboard.gif" href="." title="${%Logger List}" />
       <l:task icon="images/24x24/notepad.gif" href="all" title="${%All Logs}" />
       <l:task icon="images/24x24/new-package.gif" href="new" title="${%New Log Recorder}" />
+      <l:task icon="images/24x24/gear.gif" href="levels" title="${%Log Levels}" />
     </l:tasks>
   </l:side-panel>
 </j:jelly>
