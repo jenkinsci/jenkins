@@ -777,7 +777,10 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
                 LOGGER.log(Level.FINE, "Failed to parse "+address,e);
             }
         }
-        
+
+        // allow the administrator to manually specify the host name as a fallback. HUDSON-5373
+        cachedHostName = channel.call(new GetFallbackName());
+
         hostNameCached = true;
         return null;
     }
@@ -821,6 +824,13 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
                 }
             }
             return names;
+        }
+        private static final long serialVersionUID = 1L;
+    }
+
+    private static class GetFallbackName implements Callable<String,IOException> {
+        public String call() throws IOException {
+            return System.getProperty("host.name");
         }
         private static final long serialVersionUID = 1L;
     }
