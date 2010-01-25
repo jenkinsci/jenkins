@@ -590,6 +590,12 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
         return countExecutors()-countIdle();
     }
 
+    /**
+     * Returns the current size of the executor pool for this computer.
+     * This number may temporarily differ from {@link #getNumExecutors()} if there
+     * are busy tasks when the configured size is decreased.  OneOffExecutors are
+     * not included in this count.
+     */
     public final int countExecutors() {
         return executors.size();
     }
@@ -611,7 +617,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
     }
 
     /**
-     * Returns true if all the executors of this computer is idle.
+     * Returns true if all the executors of this computer are idle.
      */
     @Exported
     public final boolean isIdle() {
@@ -636,6 +642,9 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
      */
     public final long getIdleStartMilliseconds() {
         long firstIdle = Long.MIN_VALUE;
+        for (Executor e : oneOffExecutors) {
+            firstIdle = Math.max(firstIdle, e.getIdleStartMilliseconds());
+        }
         for (Executor e : executors) {
             firstIdle = Math.max(firstIdle, e.getIdleStartMilliseconds());
         }
