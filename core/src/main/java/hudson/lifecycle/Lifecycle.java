@@ -55,11 +55,12 @@ public abstract class Lifecycle implements ExtensionPoint {
      */
     public synchronized static Lifecycle get() {
         if(INSTANCE==null) {
+            Lifecycle instance;
             String p = System.getProperty("hudson.lifecycle");
             if(p!=null) {
                 try {
                     ClassLoader cl = Hudson.getInstance().getPluginManager().uberClassLoader;
-                    INSTANCE = (Lifecycle)cl.loadClass(p).newInstance();
+                    instance = (Lifecycle)cl.loadClass(p).newInstance();
                 } catch (InstantiationException e) {
                     InstantiationError x = new InstantiationError(e.getMessage());
                     x.initCause(e);
@@ -74,19 +75,32 @@ public abstract class Lifecycle implements ExtensionPoint {
                     throw x;
                 }
             } else {
-                // if run on Unix, we can do restart 
-                if(!Hudson.isWindows()) {
+                if(Hudson.isWindows()) {
+                    instance = new Lifecycle() {
+                        @Override
+                        public void verifyRestartable() throws RestartNotSupportedException {
+                            throw new RestartNotSupportedException(
+                                    "Default Windows lifecycle does not support restart.");
+                        }
+                    };
+                } else {
+                    // if run on Unix, we can do restart
                     try {
-                        INSTANCE = new UnixLifecycle();
-                    } catch (IOException e) {
+                        instance = new UnixLifecycle();
+                    } catch (final IOException e) {
                         LOGGER.log(Level.WARNING, "Failed to install embedded lifecycle implementation",e);
+                        instance = new Lifecycle() {
+                            @Override
+                            public void verifyRestartable() throws RestartNotSupportedException {
+                                throw new RestartNotSupportedException(
+                                        "Failed to install embedded lifecycle implementation, so cannot restart: " + e, e);
+                            }
+                        };
                     }
                 }
-
-                // use the default one. final fallback.
-                if(INSTANCE==null)
-                    INSTANCE = new Lifecycle() {};
             }
+            assert instance != null;
+            INSTANCE = instance;
         }
 
         return INSTANCE;
