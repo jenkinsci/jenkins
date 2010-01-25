@@ -168,7 +168,7 @@ public class SlaveComputer extends Computer {
         if(!forceReconnect && isConnecting())
             return lastConnectActivity;
         if(forceReconnect && isConnecting())
-            logger.fine("Forcing a reconnect");
+            logger.fine("Forcing a reconnect on "+getName());
 
         closeChannel();
         return lastConnectActivity = Computer.threadPoolForRemoting.submit(new java.util.concurrent.Callable<Object>() {
