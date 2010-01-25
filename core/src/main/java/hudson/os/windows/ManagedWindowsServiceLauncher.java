@@ -37,6 +37,8 @@ import hudson.remoting.SocketOutputStream;
 import hudson.remoting.Channel.Listener;
 import hudson.Extension;
 import static hudson.Util.copyStreamAndClose;
+
+import jcifs.smb.NtStatus;
 import jcifs.smb.SmbFile;
 import jcifs.smb.SmbException;
 import jcifs.smb.NtlmPasswordAuthentication;
@@ -60,6 +62,11 @@ import java.io.StringReader;
 import java.io.PrintStream;
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
+import java.net.Inet4Address;
+import java.net.InetAddress;
+import java.net.InetSocketAddress;
+import java.net.MalformedURLException;
+import java.net.SocketAddress;
 import java.net.UnknownHostException;
 import java.net.Socket;
 import java.util.logging.Logger;
@@ -99,22 +106,70 @@ public class ManagedWindowsServiceLauncher extends ComputerLauncher {
     @Override
     public void launch(final SlaveComputer computer, final TaskListener listener) throws IOException, InterruptedException {
         try {
-            PrintStream logger = listener.getLogger();
+            final PrintStream logger = listener.getLogger();
+            final String name = computer.getName();
 
-            logger.println(Messages.ManagedWindowsServiceLauncher_ConnectingTo(computer.getName()));
+            logger.println(Messages.ManagedWindowsServiceLauncher_ConnectingTo(name));
+
+            InetAddress host = InetAddress.getByName(name);
+
+            /*
+                Somehow this didn't work for me, so I'm disabling it.
+             */
+            // ping check
+//            if (!host.isReachable(3000)) {
+//                logger.println("Failed to ping "+name+". Is this a valid reachable host name?");
+//                // continue anyway, just in case it's just ICMP that's getting filtered
+//            }
+
+            try {
+                Socket s = new Socket();
+                s.connect(new InetSocketAddress(host,135),5000);
+                s.close();
+            } catch (IOException e) {
+                logger.println("Failed to connect to port 135 of "+name+". Is Windows firewall blocking this port? Or did you disable DCOM service?");
+                // again, let it continue.
+            }
+
             JIDefaultAuthInfoImpl auth = createAuth();
             JISession session = JISession.createSession(auth);
             session.setGlobalSocketTimeout(60000);
-            SWbemServices services = WMI.connect(session, computer.getName());
+            SWbemServices services = WMI.connect(session, name);
 
             String path = computer.getNode().getRemoteFS();
             if (path.indexOf(':')==-1)   throw new IOException("Remote file system root path of the slave needs to be absolute: "+path);
-            SmbFile remoteRoot = new SmbFile("smb://" + computer.getName() + "/" + path.replace('\\', '/').replace(':', '$')+"/",createSmbAuth());
+            SmbFile remoteRoot = new SmbFile("smb://" + name + "/" + path.replace('\\', '/').replace(':', '$')+"/",createSmbAuth());
+
+// this just doesn't work --- trying to obtain the type or check the existence of smb://server/C$/ results in "access denied"    
+//            {// check if the administrative share exists
+//                String fullpath = remoteRoot.getPath();
+//                int idx = fullpath.indexOf("$/");
+//                if (idx>=0) {// this must be true but be defensive since all we are trying to do here is a friendlier error check
+//                    boolean exists;
+//                    try {
+//                        // SmbFile.exists() doesn't work on a share
+//                        new SmbFile(fullpath.substring(0, idx + 2)).getType();
+//                        exists = true;
+//                    } catch (SmbException e) {
+//                        // on Windows XP that I was using for the test, if the share doesn't exist I get this error
+//                        // a thread in jcifs library ML confirms this, too:
+//                        // http://old.nabble.com/"The-network-name-cannot-be-found"-after-30-seconds-td18859163.html
+//                        if (e.getNtStatus()== NtStatus.NT_STATUS_BAD_NETWORK_NAME)
+//                            exists = false;
+//                        else
+//                            throw e;
+//                    }
+//                    if (!exists) {
+//                        logger.println(name +" appears to be missing the administrative share "+fullpath.substring(idx-1,idx+1)/*C$*/);
+//                        return;
+//                    }
+//                }
+//            }
 
             Win32Service slaveService = services.getService("hudsonslave");
             if(slaveService==null) {
                 logger.println(Messages.ManagedWindowsServiceLauncher_InstallingSlaveService());
-                if(!DotNet.isInstalled(2,0,computer.getName(), auth)) {
+                if(!DotNet.isInstalled(2,0, name, auth)) {
                     // abort the launch
                     logger.println(Messages.ManagedWindowsServiceLauncher_DotNetRequired());
                     return;
@@ -169,7 +224,7 @@ public class ManagedWindowsServiceLauncher extends ComputerLauncher {
 
             // connect
             logger.println(Messages.ManagedWindowsServiceLauncher_ConnectingToPort(p));
-            final Socket s = new Socket(computer.getName(),p);
+            final Socket s = new Socket(name,p);
 
             // ready
             computer.setChannel(new BufferedInputStream(new SocketInputStream(s)),
