@@ -25,6 +25,7 @@ package hudson.security;
 
 import hudson.model.Hudson;
 import hudson.util.Scrambler;
+import org.acegisecurity.Authentication;
 import org.acegisecurity.GrantedAuthorityImpl;
 import org.acegisecurity.context.SecurityContextHolder;
 import org.kohsuke.stapler.StaplerRequest;
@@ -106,7 +107,7 @@ public class BasicAuthenticationFilter implements Filter {
                 // to Acegi. For anonymous users that doesn't have user principal,
                 // AnonymousProcessingFilter that follows this should create
                 // an Authentication object.
-                SecurityContextHolder.getContext().setAuthentication(ContainerAuthentication.create(req));
+                SecurityContextHolder.getContext().setAuthentication(new ContainerAuthentication(req));
             }
             try {
                 chain.doFilter(request,response);

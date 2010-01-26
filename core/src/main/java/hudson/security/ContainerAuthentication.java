@@ -49,23 +49,15 @@ public final class ContainerAuthentication implements Authentication {
     private final Principal principal;
     private GrantedAuthority[] authorities;
 
-    public static Authentication create(HttpServletRequest request) {
-        Principal p = request.getUserPrincipal();
-        if (p!=null)
-            return new ContainerAuthentication(request);
-        return Hudson.ANONYMOUS;
-    }
-
     /**
      * Servlet container can tie a {@link ServletRequest} to the request handling thread,
      * so we need to capture all the information upfront to allow {@link Authentication}
      * to be passed to other threads, like update center does. See HUDSON-5382. 
-     *
-     * @deprecated as of 1.343
-     *      Use {@link #create(HttpServletRequest)} instead. Will be eventually converted into a private method.
      */
     public ContainerAuthentication(HttpServletRequest request) {
         this.principal = request.getUserPrincipal();
+        if (principal==null)
+            throw new IllegalStateException(); // for anonymous users, we just don't call SecurityContextHolder.getContext().setAuthentication.   
 
         // Servlet API doesn't provide a way to list up all roles the current user
         // has, so we need to ask AuthorizationStrategy what roles it is going to check against.
