@@ -83,6 +83,9 @@ public abstract class Lifecycle implements ExtensionPoint {
                                     "Default Windows lifecycle does not support restart.");
                         }
                     };
+                } else if (System.getenv("SMF_FMRI")!=null && System.getenv("SMF_RESTARTER")!=null) {
+                    // when we are run by Solaris SMF, these environment variables are set.
+                    instance = new SolarisSMFLifecycle();
                 } else {
                     // if run on Unix, we can do restart
                     try {
