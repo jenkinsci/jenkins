@@ -41,6 +41,8 @@ import java.util.Arrays;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import static java.util.logging.Level.WARNING;
+
 /**
  * {@link List}-like implementation that has copy-on-write semantics.
  *
@@ -184,7 +186,9 @@ public class CopyOnWriteList<E> implements Iterable<E> {
                     Object item = readItem(reader, context, items);
                     items.add(item);
                 } catch (CannotResolveClassException e) {
-                    LOGGER.log(Level.WARNING,"Failed to resolve class",e);
+                    LOGGER.log(WARNING,"Failed to resolve class",e);
+                } catch (LinkageError e) {
+                    LOGGER.log(WARNING,"Failed to resolve class",e);
                 }
                 reader.moveUp();
             }
