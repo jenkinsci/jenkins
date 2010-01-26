@@ -1,7 +1,7 @@
 <!--
 The MIT License
 
-Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, Tom Huybrechts
+Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, Tom Huybrechts, Yahoo!, Inc.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -30,9 +30,9 @@ THE SOFTWARE.
   <l:side-panel>
     <l:tasks>
       <j:set var="buildUrl" value="${h.decompose(request)}" />
-      <st:include it="${it.owner}" page="tasks.jelly"/>
+      <st:include it="${it.owner}" page="tasks.jelly" optional="true"/>
       <l:task icon="images/24x24/graph.gif" href="history" title="${%History}"/>
-      <st:include it="${it.owner}" page="actions.jelly" />
+      <st:include it="${it.owner}" page="actions.jelly" optional="true" />
       
 	  <j:forEach var="action" items="${it.testActions}">
 	    <j:if test="${action.iconFileName!=null}">

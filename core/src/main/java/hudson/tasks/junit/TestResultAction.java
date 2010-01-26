@@ -1,7 +1,7 @@
 /*
  * The MIT License
  * 
- * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, Daniel Dyer, Red Hat, Inc., Tom Huybrechts
+ * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, Daniel Dyer, Red Hat, Inc., Tom Huybrechts, Yahoo!, Inc.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,13 +23,16 @@
  */
 package hudson.tasks.junit;
 
+import com.thoughtworks.xstream.XStream;
 import hudson.XmlFile;
 import hudson.model.AbstractBuild;
 import hudson.model.Action;
 import hudson.model.BuildListener;
 import hudson.tasks.test.AbstractTestResultAction;
+import hudson.tasks.test.TestObject;
 import hudson.util.HeapSpaceStringConverter;
 import hudson.util.XStream2;
+import org.kohsuke.stapler.StaplerProxy;
 
 import java.io.File;
 import java.io.IOException;
@@ -41,10 +44,6 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
-import org.kohsuke.stapler.StaplerProxy;
-
-import com.thoughtworks.xstream.XStream;
 
 /**
  * {@link Action} that displays the JUnit test result.
@@ -64,7 +63,6 @@ public class TestResultAction extends AbstractTestResultAction<TestResultAction>
     private int skipCount;
     private Integer totalCount;
     private List<Data> testData = new ArrayList<Data>();
-    private Map<String,String> descriptions = new ConcurrentHashMap<String, String>();
 
     public TestResultAction(AbstractBuild owner, TestResult result, BuildListener listener) {
         super(owner);
@@ -161,14 +159,6 @@ public class TestResultAction extends AbstractTestResultAction<TestResultAction>
         return getResult();
     }
     
-    public String getDescription(TestObject object) {
-    	return descriptions.get(object.getId());
-    }
-    
-    public void setDescription(TestObject object, String description) {
-    	descriptions.put(object.getId(), description);
-    }
-    
     public List<TestAction> getActions(TestObject object) {
     	List<TestAction> result = new ArrayList<TestAction>();
 	// Added check for null testData to avoid NPE from issue 4257.
@@ -199,13 +189,11 @@ public class TestResultAction extends AbstractTestResultAction<TestResultAction>
          * @return
          *      Can be empty but never null. The caller must assume that the returned list is read-only.
     	 */
-    	public abstract List<TestAction> getTestAction(TestObject testObject);
+    	public abstract List<TestAction> getTestAction(hudson.tasks.junit.TestObject testObject);
     }
 
     public Object readResolve() {
-    	if (descriptions == null) {
-    		descriptions = new ConcurrentHashMap<String, String>();
-    	}
+        super.readResolve(); // let it do the post-deserialization work
     	if (testData == null) {
     		testData = new ArrayList<Data>();
     	}

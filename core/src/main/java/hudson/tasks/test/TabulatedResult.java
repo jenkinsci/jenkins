@@ -1,7 +1,7 @@
 /*
  * The MIT License
  * 
- * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, Yahoo!, Inc.
+ * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, Daniel Dyer, Tom Huybrechts, Yahoo!, Inc.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,38 +23,29 @@
  */
 package hudson.tasks.test;
 
-import hudson.Launcher;
-import hudson.matrix.MatrixAggregator;
-import hudson.matrix.MatrixBuild;
-import hudson.matrix.MatrixRun;
-import hudson.model.BuildListener;
-
-import java.io.IOException;
+import java.util.Collection;
 
 /**
- * Aggregates {@link AbstractTestResultAction}s of {@link MatrixRun}s
- * into {@link MatrixBuild}.
- * 
+ * Cumulated result of multiple tests.
+ *
+ * This class doesn't have a purpose anymore. TestResult
+ * is a sufficient replacement, but we'll keep this one for
+ * backward-compatibility.  
+ *
  * @author Kohsuke Kawaguchi
  */
-public class TestResultAggregator extends MatrixAggregator {
-    private MatrixTestResult result;
+public abstract class TabulatedResult extends TestResult {
 
-    public TestResultAggregator(MatrixBuild build, Launcher launcher, BuildListener listener) {
-        super(build, launcher, listener);
-    }
+    /**
+     * Gets the child test result objects.
+     *
+     * @see TestObject#getParent()
+     */
+    public abstract Collection<? extends TestResult> getChildren();
 
-    @Override
-    public boolean startBuild() throws InterruptedException, IOException {
-        result = new MatrixTestResult(build);
-        build.addAction(result);
-        return true;
-    }
+    public abstract boolean hasChildren();
 
-    @Override
-    public boolean endRun(MatrixRun run) throws InterruptedException, IOException {
-        AbstractTestResultAction atr = run.getAction(AbstractTestResultAction.class);
-        if(atr!=null)   result.add(atr);
-        return true;
+    public String getChildTitle() {
+        return "";
     }
 }

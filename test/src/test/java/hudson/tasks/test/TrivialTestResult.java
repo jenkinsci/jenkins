@@ -1,7 +1,7 @@
 /*
  * The MIT License
  * 
- * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, Daniel Dyer, Tom Huybrechts
+ * Copyright (c) 2009, Yahoo!, Inc.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -21,32 +21,36 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package hudson.tasks.junit;
+package hudson.tasks.test;
 
-import java.util.Collection;
+import hudson.Extension;
+
 
 /**
- * Cumulated result of multiple tests.
- *
- * @author Kohsuke Kawaguchi
+ * A class to exercise the TestResult extension mechanism.
  */
-public abstract class TabulatedResult extends TestObject {
+@Extension
+public class TrivialTestResult extends SimpleCaseResult {
 
-    /**
-     * Gets the human readable title of this result object.
-     */
-    public abstract String getTitle();
 
-    /**
-     * Gets the child test result objects.
-     *
-     * @see TestObject#getParent()
+    /** A list only containing this one result. Useful for returning
+     * from getXXXTests() methods.
      */
-    public abstract Collection<? extends TestObject> getChildren();
+    
 
-    /**
-     * Gets the name of this object.
-     */
-    public @Override abstract String getName();
+    /** A silly world that is all the data associated with this test result */
+    private String sillyWord;
+
+    public TrivialTestResult() {
+        this("unwordy");
+    }
+
+    public TrivialTestResult(String sillyWord) {
+        this.sillyWord = sillyWord;
+    }
+
+    public String getSillyWord() {
+        return sillyWord;
+    }
 
 }

@@ -1,7 +1,7 @@
 /*
  * The MIT License
  * 
- * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, Erik Ramfelt, Xavier Le Vourch, Tom Huybrechts
+ * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, Erik Ramfelt, Xavier Le Vourch, Tom Huybrechts, Yahoo!, Inc.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,19 +23,20 @@
  */
 package hudson.tasks.junit;
 
-import java.io.File;
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-
+import hudson.tasks.test.TestObject;
 import org.dom4j.Document;
 import org.dom4j.DocumentException;
 import org.dom4j.Element;
 import org.dom4j.io.SAXReader;
 import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.export.ExportedBean;
+
+import java.io.File;
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 /**
  * Result of one test suite.
@@ -67,7 +68,7 @@ public final class SuiteResult implements Serializable {
      * All test cases.
      */
     private final List<CaseResult> cases = new ArrayList<CaseResult>();
-    private transient TestResult parent;
+    private transient hudson.tasks.junit.TestResult parent;
 
     SuiteResult(String name, String stdout, String stderr) {
         this.name = name;
@@ -196,7 +197,7 @@ public final class SuiteResult implements Serializable {
 		return file;
 	}
 
-	public TestResult getParent() {
+	public hudson.tasks.junit.TestResult getParent() {
         return parent;
     }
 
@@ -211,9 +212,11 @@ public final class SuiteResult implements Serializable {
     }
 
     public SuiteResult getPreviousResult() {
-        TestResult pr = parent.getPreviousResult();
+        hudson.tasks.test.TestResult pr = parent.getPreviousResult();
         if(pr==null)    return null;
-        return pr.getSuite(name);
+        if(pr instanceof hudson.tasks.junit.TestResult)
+            return ((hudson.tasks.junit.TestResult)pr).getSuite(name);
+        return null;
     }
 
     /**
@@ -239,7 +242,17 @@ public final class SuiteResult implements Serializable {
 		return result;
 	}
 
-    /*package*/ boolean freeze(TestResult owner) {
+    /** KLUGE. We have to call this to prevent freeze()
+     * from calling c.freeze() on all its children,
+     * because that in turn calls c.getOwner(),
+     * which requires a non-null parent. 
+     * @param parent
+     */
+    void setParent(hudson.tasks.junit.TestResult parent) {
+        this.parent = parent;
+    }
+
+    /*package*/ boolean freeze(hudson.tasks.junit.TestResult owner) {
         if(this.parent!=null)
             return false;   // already frozen
 

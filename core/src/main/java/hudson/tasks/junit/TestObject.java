@@ -1,7 +1,7 @@
 /*
  * The MIT License
  * 
- * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, Tom Huybrechts
+ * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, Tom Huybrechts, Yahoo! Inc.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -39,6 +39,7 @@ import java.util.WeakHashMap;
 
 import javax.servlet.ServletException;
 
+import hudson.tasks.test.AbstractTestResultAction;
 import org.kohsuke.stapler.HttpRedirect;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.QueryParameter;
@@ -47,59 +48,35 @@ import org.kohsuke.stapler.StaplerResponse;
 import org.kohsuke.stapler.export.ExportedBean;
 
 /**
- * Base class for all test result objects.
+ * Stub of base class for all test result objects. The real implementation of
+ * the TestObject is in hudson.tasks.test.TestObject. This class simply
+ * defines abstract methods so that legacy code will continue to compile.
+ * @deprecated
  * 
  * @author Kohsuke Kawaguchi
  */
 @ExportedBean
 public abstract class TestObject extends AbstractModelObject implements Serializable {
-	private volatile transient String id;
+    public abstract AbstractBuild<?,?> getOwner() ; 
 
-    public AbstractBuild<?,?> getOwner() {
-        return getParent().getOwner();
-    }
-
-    /**
-     * Reverse pointer of {@link TabulatedResult#getChildren()}.
-     */
+   
     public abstract TestObject getParent();
 
-	public String getId() {
-		if (id == null) {
-			id = getParent().getId() + "/" + getSafeName();
-		}
-		return id;
-	}
-	
+	public abstract String getId(); 	
 	/**
 	 * Returns url relative to TestResult
 	 */
-	public String getUrl() {
-		return getId();
-	}
+	public abstract String getUrl(); 
 
-	public TestResult getTestResult() {
-		return getParent().getTestResult();
-	}
+	public abstract TestResult getTestResult();
 
-	public TestResultAction getTestResultAction() {
-		return getOwner().getAction(TestResultAction.class);
-	}
+    public  abstract AbstractTestResultAction getTestResultAction();
 
-	public List<TestAction> getTestActions() {
-		return getTestResultAction().getActions(this);
-	}
+    public  abstract  List<TestAction> getTestActions();
 
-	public <T> T getTestAction(Class<T> klazz) {
-		for (TestAction action : getTestActions()) {
-			if (klazz.isAssignableFrom(action.getClass())) {
-				return klazz.cast(action);
-			}
-		}
-		return null;
-	}
+    public abstract <T> T getTestAction(Class<T> klazz);
 
-	/**
+    /**
 	 * Gets the counter part of this {@link TestObject} in the previous run.
 	 * 
 	 * @return null if no such counter part exists.
@@ -117,70 +94,29 @@ public abstract class TestObject extends AbstractModelObject implements Serializ
 	 * Returns the string representation of the {@link #getDuration()}, in a
 	 * human readable format.
 	 */
-	public String getDurationString() {
-		return Util.getTimeSpanString((long) (getDuration() * 1000));
-	}
-	
-	public String getDescription() {
-		return getTestResultAction().getDescription(this);
-	}
-	
-	public void setDescription(String description) {
-		getTestResultAction().setDescription(this, description);
-	}
+	public abstract String getDurationString();
 
-	/**
+    public abstract String getDescription();
+
+    public abstract void setDescription(String description);
+
+    /**
 	 * Exposes this object through the remote API.
 	 */
-	public Api getApi() {
-		return new Api(this);
-	}
+	public abstract Api getApi();
 
-	/**
+    /**
 	 * Gets the name of this object.
 	 */
-	public/* abstract */String getName() {
-		return "";
-	}
+	public abstract String getName();
 
-	/**
+    /**
 	 * Gets the version of {@link #getName()} that's URL-safe.
 	 */
-	public String getSafeName() {
-		return safe(getName());
-	}
-	
-	public String getSearchUrl() {
-		return getSafeName();
-	}
+	public abstract String getSafeName();
 
-	/**
-	 * #2988: uniquifies a {@link #getSafeName} amongst children of the parent.
-	 */
-	protected final synchronized String uniquifyName(
-			Collection<? extends TestObject> siblings, String base) {
-		String uniquified = base;
-		int sequence = 1;
-		for (TestObject sibling : siblings) {
-			if (sibling != this
-					&& uniquified.equals(UNIQUIFIED_NAMES.get(sibling))) {
-				uniquified = base + '_' + ++sequence;
-			}
-		}
-		UNIQUIFIED_NAMES.put(this, uniquified);
-		return uniquified;
-	}
+    public abstract String getSearchUrl();
 
-	private static final Map<TestObject, String> UNIQUIFIED_NAMES = new WeakHashMap<TestObject, String>();
-
-	/**
-	 * Replaces URL-unsafe characters.
-	 */
-	protected static String safe(String s) {
-		// 3 replace calls is still 2-3x faster than a regex replaceAll
-		return s.replace('/', '_').replace('\\', '_').replace(':', '_');
-	}
-	
     /**
      * Gets the total number of passed tests.
      */
@@ -199,38 +135,15 @@ public abstract class TestObject extends AbstractModelObject implements Serializ
     /**
      * Gets the total number of tests.
      */
-    public final int getTotalCount() {
-        return getPassCount()+getFailCount()+getSkipCount();
-    }
-	
-	public History getHistory() {
-		return new History(this);
-	}
-	
-	public Object getDynamic(String token, StaplerRequest req,
-			StaplerResponse rsp) {
-		for (Action a : getTestActions()) {
-			if (a == null)
-				continue; // be defensive
-			String urlName = a.getUrlName();
-			if (urlName == null)
-				continue;
-			if (urlName.equals(token))
-				return a;
-		}
-		return null;
-	}
+    public abstract int getTotalCount();
 
-	public synchronized HttpResponse doSubmitDescription(
-			@QueryParameter String description) throws IOException,
-			ServletException {
-		getOwner().checkPermission(Item.BUILD);
+    public abstract History getHistory();
 
-		setDescription(description);
-		getOwner().save();
-		
-		return new HttpRedirect(".");
-	}
+//    public abstract Object getDynamic(String token, StaplerRequest req,
+//			StaplerResponse rsp);
+//
+//    public abstract  HttpResponse doSubmitDescription(
+//			@QueryParameter String description) throws IOException,
+//			ServletException;
 
-    private static final long serialVersionUID = 1L;
 }

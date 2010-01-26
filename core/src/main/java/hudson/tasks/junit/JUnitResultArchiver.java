@@ -1,7 +1,7 @@
 /*
  * The MIT License
  * 
- * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, Martin Eigenbrodt, Tom Huybrechts
+ * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, Martin Eigenbrodt, Tom Huybrechts, Yahoo!, Inc.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -27,8 +27,6 @@ import hudson.AbortException;
 import hudson.Extension;
 import hudson.FilePath;
 import hudson.Launcher;
-import hudson.Util;
-import hudson.FilePath.FileCallable;
 import hudson.matrix.MatrixAggregatable;
 import hudson.matrix.MatrixAggregator;
 import hudson.matrix.MatrixBuild;
@@ -40,7 +38,6 @@ import hudson.model.CheckPoint;
 import hudson.model.Descriptor;
 import hudson.model.Result;
 import hudson.model.Saveable;
-import hudson.remoting.VirtualChannel;
 import hudson.tasks.BuildStepDescriptor;
 import hudson.tasks.BuildStepMonitor;
 import hudson.tasks.Publisher;
@@ -50,23 +47,20 @@ import hudson.tasks.test.TestResultAggregator;
 import hudson.tasks.test.TestResultProjectAction;
 import hudson.util.DescribableList;
 import hudson.util.FormValidation;
-
-import java.io.File;
-import java.io.IOException;
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-
 import net.sf.json.JSONObject;
-
 import org.apache.tools.ant.DirectoryScanner;
 import org.apache.tools.ant.types.FileSet;
 import org.kohsuke.stapler.AncestorInPath;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.StaplerRequest;
+
+import java.io.IOException;
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
 
 /**
  * Generates HTML report from JUnit test result XML files.
@@ -105,6 +99,16 @@ public class JUnitResultArchiver extends Recorder implements Serializable,
 		this.testDataPublishers = testDataPublishers;
 	}
 
+    /**
+     * In progress. Working on delegating the actual parsing to the JUnitParser.
+     */
+    protected TestResult parse(String expandedTestResults, AbstractBuild build, Launcher launcher, BuildListener listener)
+            throws IOException, InterruptedException
+    {
+        TestResult result = (new JUnitParser()).parse(expandedTestResults, build, launcher, listener);        
+        return result;
+    }
+
 	public boolean perform(AbstractBuild build, Launcher launcher,
 			BuildListener listener) throws InterruptedException, IOException {
 		listener.getLogger().println(Messages.JUnitResultArchiver_Recording());
@@ -113,20 +117,18 @@ public class JUnitResultArchiver extends Recorder implements Serializable,
 		final String testResults = build.getEnvironment(listener).expand(this.testResults);
 
 		try {
-			final long buildTime = build.getTimeInMillis();
-			final long nowMaster = System.currentTimeMillis();
-
-			TestResult result = build.getWorkspace().act(
-					new ParseResultCallable(testResults, buildTime, nowMaster));
+			TestResult result = parse(testResults, build, launcher, listener);
 
 			try {
 				action = new TestResultAction(build, result, listener);
 			} catch (NullPointerException npe) {
 				throw new AbortException(Messages.JUnitResultArchiver_BadXML(testResults));
 			}
+            result.freeze(action);
 			if (result.getPassCount() == 0 && result.getFailCount() == 0)
 				throw new AbortException(Messages.JUnitResultArchiver_ResultIsEmpty());
 
+            // TODO: Move into JUnitParser [BUG 3123310]
 			List<Data> data = new ArrayList<Data>();
 			if (testDataPublishers != null) {
 				for (TestDataPublisher tdp : testDataPublishers) {
@@ -208,34 +210,6 @@ public class JUnitResultArchiver extends Recorder implements Serializable,
 
 	private static final long serialVersionUID = 1L;
 
-	private static final class ParseResultCallable implements
-			FileCallable<TestResult> {
-		private final long buildTime;
-		private final String testResults;
-		private final long nowMaster;
-
-		private ParseResultCallable(String testResults, long buildTime, long nowMaster) {
-			this.buildTime = buildTime;
-			this.testResults = testResults;
-			this.nowMaster = nowMaster;
-		}
-
-		public TestResult invoke(File ws, VirtualChannel channel) throws IOException {
-			final long nowSlave = System.currentTimeMillis();
-
-			FileSet fs = Util.createFileSet(ws, testResults);
-			DirectoryScanner ds = fs.getDirectoryScanner();
-
-			String[] files = ds.getIncludedFiles();
-			if (files.length == 0) {
-				// no test result. Most likely a configuration
-				// error or fatal problem
-				throw new AbortException(Messages.JUnitResultArchiver_NoTestReportFound());
-			}
-
-			return new TestResult(buildTime + (nowSlave - nowMaster), ds);
-		}
-	}
 
     @Extension
     public static class DescriptorImpl extends BuildStepDescriptor<Publisher> {

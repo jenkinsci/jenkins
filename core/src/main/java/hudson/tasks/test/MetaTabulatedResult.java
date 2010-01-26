@@ -23,38 +23,22 @@
  */
 package hudson.tasks.test;
 
-import hudson.Launcher;
-import hudson.matrix.MatrixAggregator;
-import hudson.matrix.MatrixBuild;
-import hudson.matrix.MatrixRun;
-import hudson.model.BuildListener;
 
-import java.io.IOException;
+import java.util.Collection;
 
 /**
- * Aggregates {@link AbstractTestResultAction}s of {@link MatrixRun}s
- * into {@link MatrixBuild}.
- * 
+ * The purpose of this class is to provide a good place for the
+ * jelly to bind to.  
+ * {@link TabulatedResult} whose immediate children
+ * are other {@link TabulatedResult}s.
+ *
  * @author Kohsuke Kawaguchi
  */
-public class TestResultAggregator extends MatrixAggregator {
-    private MatrixTestResult result;
+public abstract class MetaTabulatedResult extends TabulatedResult {
 
-    public TestResultAggregator(MatrixBuild build, Launcher launcher, BuildListener listener) {
-        super(build, launcher, listener);
-    }
+    /**
+     * All failed tests.
+     */
+    public abstract Collection<? extends TestResult> getFailedTests();
 
-    @Override
-    public boolean startBuild() throws InterruptedException, IOException {
-        result = new MatrixTestResult(build);
-        build.addAction(result);
-        return true;
-    }
-
-    @Override
-    public boolean endRun(MatrixRun run) throws InterruptedException, IOException {
-        AbstractTestResultAction atr = run.getAction(AbstractTestResultAction.class);
-        if(atr!=null)   result.add(atr);
-        return true;
-    }
 }

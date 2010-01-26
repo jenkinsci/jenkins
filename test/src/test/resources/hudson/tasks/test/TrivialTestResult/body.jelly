@@ -1,7 +1,7 @@
 <!--
 The MIT License
 
-Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, id:cactusman, Tom Huybrechts
+Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, id:cactusman, Tom Huybrechts, Yahoo!, Inc.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -23,27 +23,7 @@ THE SOFTWARE.
 -->
 
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
-
-	<script type="text/javascript">
-		<!-- TODO make sure load doesn't happen every time -->
-		function showStackTrace(id,query) {
-			var element = document.getElementById(id);
-			element.style.display = "";
-			document.getElementById(id + "-showlink").style.display = "none";
-			document.getElementById(id + "-hidelink").style.display = "";
-			
-			var rqo = new XMLHttpRequest();
-			rqo.open('GET', query, true);
-			rqo.onreadystatechange = function() { element.innerHTML = rqo.responseText; };
-			rqo.send(null);
-		}
-		
-		function hideStackTrace(id) {
-			document.getElementById(id).style.display = "none";
-			document.getElementById(id + "-showlink").style.display = "";
-			document.getElementById(id + "-hidelink").style.display = "none";
-		}
-  </script>
+    <h1>TrivialTestResult body.jelly</h1>
 
   <j:if test="${it.failCount!=0}">
     <h2>${%All Failed Tests}</h2>
@@ -56,11 +36,11 @@ THE SOFTWARE.
       <j:forEach var="f" items="${it.failedTests}" varStatus="i">
         <tr>
           <td class="pane">
-            <a id="test-${f.fullName}-showlink" href="#"
-               onclick='showStackTrace("test-${f.fullName}","${f.getRelativePathFrom(it)}/summary"); return false;'>&gt;&gt;&gt;</a>
-            <a id="test-${f.fullName}-hidelink" href="#" style="display:none"
-               onclick='hideStackTrace("test-${f.fullName}"); return false;'>&lt;&lt;&lt;</a>
-            <st:nbsp/>
+			<a id="test-${f.fullName}-showlink" href="#"
+				onclick='javascript:showStackTrace("test-${f.fullName}","${f.getRelativePathFrom(it)}/summary")'>&gt;&gt;&gt;</a>
+			<a id="test-${f.fullName}-hidelink" href="#" style="display:none"
+				onclick='javascript:hideStackTrace("test-${f.fullName}")'>&lt;&lt;&lt;</a>
+          	<st:nbsp/>
             <a href="${f.getRelativePathFrom(it)}"><st:out value="${f.fullName}"/></a>
           	<st:nbsp/>
 	        <j:forEach var="badge" items="${f.testActions}">
@@ -70,7 +50,7 @@ THE SOFTWARE.
 			${%Loading...}
 			</div>
           </td>
-          
+
           <td class="pane" style="text-align:right;">
             ${f.duration}
           </td>

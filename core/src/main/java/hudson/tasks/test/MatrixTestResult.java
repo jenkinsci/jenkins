@@ -1,7 +1,7 @@
 /*
  * The MIT License
  * 
- * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi
+ * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, Yahoo!, Inc.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,12 +23,11 @@
  */
 package hudson.tasks.test;
 
+import hudson.matrix.Combination;
+import hudson.matrix.MatrixBuild;
+import hudson.matrix.MatrixRun;
 import hudson.model.AbstractBuild;
 import hudson.model.Action;
-import hudson.matrix.MatrixBuild;
-import hudson.matrix.Combination;
-import hudson.matrix.MatrixRun;
-import hudson.tasks.junit.CaseResult;
 
 /**
  * {@link Action} that aggregates all the test results from {@link MatrixRun}s.
@@ -58,7 +57,7 @@ public class MatrixTestResult extends AggregatedTestResultAction {
     }
 
     @Override
-    public String getTestResultPath(CaseResult it) {
+    public String getTestResultPath(TestResult it) {
         // Prepend Configuration path
         return it.getOwner().getParent().getShortUrl() + super.getTestResultPath(it);
     }

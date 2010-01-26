@@ -145,13 +145,13 @@ import com.gargoylesoftware.htmlunit.BrowserVersion;
 import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
 import com.gargoylesoftware.htmlunit.Page;
 import com.gargoylesoftware.htmlunit.WebRequestSettings;
-import com.gargoylesoftware.htmlunit.html.HtmlButton;
-import com.gargoylesoftware.htmlunit.html.HtmlForm;
-import com.gargoylesoftware.htmlunit.html.HtmlPage;
-import com.gargoylesoftware.htmlunit.html.HtmlElement;
-import com.gargoylesoftware.htmlunit.html.HtmlInput;
+import com.gargoylesoftware.htmlunit.xml.XmlPage;
+import com.gargoylesoftware.htmlunit.html.*;
 import com.gargoylesoftware.htmlunit.javascript.JavaScriptEngine;
 import com.gargoylesoftware.htmlunit.javascript.host.Stylesheet;
+import hudson.model.Computer;
+import hudson.slaves.ComputerListener;
+import java.util.concurrent.CountDownLatch;
 
 /**
  * Base class for all Hudson test cases.
@@ -553,6 +553,43 @@ public abstract class HudsonTestCase extends TestCase implements RootAction {
     }
 
     /**
+     * Create a new slave on the local host and wait for it to come onilne
+     * before returning.
+     */
+    public DumbSlave createOnlineSlave() throws Exception {
+        return createOnlineSlave(null);
+    }
+    
+    /**
+     * Create a new slave on the local host and wait for it to come onilne
+     * before returning.
+     */
+    public DumbSlave createOnlineSlave(Label l) throws Exception {
+        return createOnlineSlave(l, null);
+    }
+
+    /**
+     * Create a new slave on the local host and wait for it to come online
+     * before returning
+     */
+    public DumbSlave createOnlineSlave(Label l, EnvVars env) throws Exception {
+        final CountDownLatch latch = new CountDownLatch(1);
+        ComputerListener waiter = new ComputerListener() {
+                                            @Override
+                                            public void onOnline(Computer C, TaskListener t) {
+                                                latch.countDown();
+                                                unregister();
+                                            }
+                                        };
+        waiter.register();
+
+        DumbSlave s = createSlave(l, env);
+        latch.await();
+
+        return s;
+    }
+    
+    /**
      * Blocks until the ENTER key is hit.
      * This is useful during debugging a test so that one can inspect the state of Hudson through the web browser.
      */
@@ -604,6 +641,8 @@ public abstract class HudsonTestCase extends TestCase implements RootAction {
         return new WebClient().search(q);
     }
 
+
+
     /**
      * Asserts that the outcome of the build is a specific outcome.
      */
@@ -622,6 +661,26 @@ public abstract class HudsonTestCase extends TestCase implements RootAction {
         assertEquals(msg, status,r.getResult());
         return r;
     }
+
+    /** Determines whether the specifed HTTP status code is generally "good" */
+    public boolean isGoodHttpStatus(int status) {
+        if ((400 <= status) && (status <= 417)) {
+            return false;
+        }
+        if ((500 <= status) && (status <= 505)) {
+            return false;
+        }
+        return true;
+    }
+
+    /** Assert that the specifed page can be served with a "good" HTTP status,
+     * eg, the page is not missing and can be served without a server error 
+     * @param page
+     */
+    public void assertGoodStatus(Page page) {
+        assertTrue(isGoodHttpStatus(page.getWebResponse().getStatusCode()));
+    }
+
 
     public <R extends Run> R assertBuildStatusSuccess(R r) throws Exception {
         assertBuildStatus(Result.SUCCESS,r);
@@ -654,6 +713,73 @@ public abstract class HudsonTestCase extends TestCase implements RootAction {
     public void assertXPath(HtmlPage page, String xpath) {
         assertNotNull("There should be an object that matches XPath:"+xpath,
                 page.getDocumentElement().selectSingleNode(xpath));
+    }
+
+    /** Asserts that the XPath matches the contents of a DomNode page. This
+     * variant of assertXPath(HtmlPage page, String xpath) allows us to
+     * examine XmlPages.
+     * @param page
+     * @param xpath
+     */
+    public void assertXPath(DomNode page, String xpath) {
+        List< ? extends Object> nodes = page.getByXPath(xpath);
+        assertFalse("There should be an object that matches XPath:"+xpath, nodes.isEmpty());
+    }
+
+    public void assertXPathValue(DomNode page, String xpath, String expectedValue) {
+        Object node = page.getFirstByXPath(xpath);
+        assertNotNull("no node found", node);
+        assertTrue("the found object was not a Node " + xpath, node instanceof org.w3c.dom.Node);
+
+        org.w3c.dom.Node n = (org.w3c.dom.Node) node;
+        String textString = n.getTextContent();
+        assertEquals("xpath value should match for " + xpath, expectedValue, textString);
+    }
+
+    public void assertXPathValueContains(DomNode page, String xpath, String needle) {
+        Object node = page.getFirstByXPath(xpath);
+        assertNotNull("no node found", node);
+        assertTrue("the found object was not a Node " + xpath, node instanceof org.w3c.dom.Node);
+
+        org.w3c.dom.Node n = (org.w3c.dom.Node) node;
+        String textString = n.getTextContent();
+        assertTrue("needle found in haystack", textString.contains(needle)); 
+    }
+
+    public void assertXPathResultsContainText(DomNode page, String xpath, String needle) {
+        List<? extends Object> nodes = page.getByXPath(xpath);
+        assertFalse("no nodes matching xpath found", nodes.isEmpty());
+        boolean found = false;
+        for (Object o : nodes) {
+            if (o instanceof org.w3c.dom.Node) {
+                org.w3c.dom.Node n = (org.w3c.dom.Node) o;
+                String textString = n.getTextContent();
+                if ((textString != null) && textString.contains(needle)) {
+                    found = true;
+                    break;
+                }
+            }
+        }
+        assertTrue("needle found in haystack", found); 
+    }
+
+
+    public void assertStringContains(String message, String haystack, String needle) {
+        if (haystack.contains(needle)) {
+            // good
+            return;
+        } else {
+            fail(message + " (seeking '" + needle + "')");
+        }
+    }
+
+    public void assertStringContains(String haystack, String needle) {
+        if (haystack.contains(needle)) {
+            // good
+            return;
+        } else {
+            fail("Could not find '" + needle + "'.");
+        }
     }
 
     /**
@@ -1164,6 +1290,22 @@ public abstract class HudsonTestCase extends TestCase implements RootAction {
             assertEquals(expectedContentType,p.getWebResponse().getContentType());
             return p;
         }
+
+        /** Loads a page as XML. Useful for testing Hudson's xml api, in concert with
+         * assertXPath(DomNode page, String xpath)
+         * @param path   the path part of the url to visit
+         * @return  the XmlPage found at that url
+         * @throws IOException
+         * @throws SAXException
+         */
+        public XmlPage goToXml(String path) throws IOException, SAXException {
+            Page page = goTo(path, "application/xml");
+            if (page instanceof XmlPage)
+                return (XmlPage) page;
+            else
+                return null;
+        }
+        
 
         /**
          * Returns the URL of the webapp top page.

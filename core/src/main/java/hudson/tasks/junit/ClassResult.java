@@ -1,7 +1,7 @@
 /*
  * The MIT License
  * 
- * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, Daniel Dyer, id:cactusman, Tom Huybrechts
+ * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, Daniel Dyer, id:cactusman, Tom Huybrechts, Yahoo!, Inc.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,6 +24,9 @@
 package hudson.tasks.junit;
 
 import hudson.model.AbstractBuild;
+import hudson.tasks.test.*;
+import hudson.tasks.test.TestResult;
+import hudson.tasks.test.TestObject;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 import org.kohsuke.stapler.export.Exported;
@@ -53,25 +56,53 @@ public final class ClassResult extends TabulatedResult implements Comparable<Cla
         this.className = className;
     }
 
+    @Override
+    public AbstractBuild<?, ?> getOwner() {
+        return (parent==null ? null: parent.getOwner()); 
+    }
+
     public PackageResult getParent() {
         return parent;
     }
 
+    @Override
     public ClassResult getPreviousResult() {
-        PackageResult pr = parent.getPreviousResult();
+        if(parent==null)   return null;
+        TestResult pr = parent.getPreviousResult();
         if(pr==null)    return null;
-        return pr.getClassResult(getName());
+        if(pr instanceof PackageResult) {
+            return ((PackageResult)pr).getClassResult(getName());
+    }
+        return null;
     }
 
     @Override
-    public ClassResult getResultInBuild(AbstractBuild<?, ?> build) {
-        PackageResult pr = getParent().getResultInBuild(build);
-        if(pr==null)    return null;
-        return pr.getClassResult(getName());
+    public hudson.tasks.test.TestResult findCorrespondingResult(String id) {
+        String myID = safe(getName());
+        int base = id.indexOf(myID);
+        String caseName;
+        if (base > 0) {
+            int caseNameStart = base + myID.length() + 1;
+            caseName = id.substring(caseNameStart);
+        } else {
+            caseName = id;
+    }
+
+        CaseResult child = getCaseResult(caseName);
+        if (child != null) {
+            return child;
+        }
+
+        return null;
     }
 
     public String getTitle() {
         return Messages.ClassResult_getTitle(getName());
+    }
+
+    @Override
+    public String getChildTitle() {
+        return "Class Reults"; 
     }
 
     @Exported(visibility=999)
@@ -109,6 +140,10 @@ public final class ClassResult extends TabulatedResult implements Comparable<Cla
         return cases;
     }
 
+    public boolean hasChildren() {
+        return ((cases != null) && (cases.size() > 0));
+    }
+
     // TODO: wait for stapler 1.60     @Exported
     public float getDuration() {
         return duration; 
@@ -132,6 +167,29 @@ public final class ClassResult extends TabulatedResult implements Comparable<Cla
     public void add(CaseResult r) {
         cases.add(r);
     }
+
+    /**
+     * Recount my children.
+     */
+    @Override
+    public void tally() {
+        passCount=failCount=skipCount=0;
+        duration=0;
+        for (CaseResult r : cases) {
+            r.setClass(this);
+            if (r.isSkipped()) {
+                skipCount++;
+            }
+            else if(r.isPassed()) {
+                passCount++;
+            }
+            else {
+                failCount++;
+            }
+            duration += r.getDuration();
+        }
+    }
+
 
     void freeze() {
         passCount=failCount=skipCount=0;
@@ -171,19 +229,12 @@ public final class ClassResult extends TabulatedResult implements Comparable<Cla
     /**
      * Gets the relative path to this test case from the given object.
      */
+    @Override
     public String getRelativePathFrom(TestObject it) {
-        if(it==this)
-            return ".";
-        
-        if (it instanceof TestResult) {
-        	return getParent().getSafeName() + "/" + getSafeName();
-        } else if (it instanceof PackageResult) {
-        	return getSafeName();
-        } else if (it instanceof CaseResult) {
+        if(it instanceof CaseResult) {
         	return "..";
         } else {
-        	throw new UnsupportedOperationException();
+            return super.getRelativePathFrom(it);
         }
-
     }
 }

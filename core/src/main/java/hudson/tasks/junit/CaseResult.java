@@ -1,7 +1,7 @@
 /*
  * The MIT License
  * 
- * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, Daniel Dyer, Seiji Sogabe, Tom Huybrechts
+ * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, Daniel Dyer, Seiji Sogabe, Tom Huybrechts, Yahoo!, Inc.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -25,20 +25,24 @@ package hudson.tasks.junit;
 
 import hudson.model.AbstractBuild;
 import hudson.model.Run;
+import hudson.tasks.test.TestResult;
+import org.dom4j.Element;
+import org.kohsuke.stapler.export.Exported;
 
 import java.text.DecimalFormat;
 import java.text.ParseException;
-import java.util.Comparator;
+import java.util.*;
+import java.util.logging.Logger;
 
-import org.dom4j.Element;
-import org.kohsuke.stapler.export.Exported;
+import static java.util.Collections.emptyList;
 
 /**
  * One test result.
  *
  * @author Kohsuke Kawaguchi
  */
-public final class CaseResult extends TestObject implements Comparable<CaseResult> {
+public final class CaseResult extends TestResult implements Comparable<CaseResult> {
+    private static final Logger LOGGER = Logger.getLogger(CaseResult.class.getName());
     private final float duration;
     /**
      * In JUnit, a test is a method of a class. This field holds the fully qualified class name
@@ -127,7 +131,7 @@ public final class CaseResult extends TestObject implements Comparable<CaseResul
      * Used to create a fake failure, when Hudson fails to load data from XML files.
      */
     CaseResult(SuiteResult parent, String testName, String errorStackTrace) {
-        this( parent, parent.getName(), testName, errorStackTrace, "", null, null, 0.0f, false );
+        this( parent, (parent==null? "unnamed" : parent.getName()), testName, errorStackTrace, "", null, null, 0.0f, false );
     }
 
     CaseResult(SuiteResult parent, String testClassName, String testName, String errorStackTrace, String errorDetails, String stdout, String stderr, float duration, boolean skipped) {
@@ -190,6 +194,14 @@ public final class CaseResult extends TestObject implements Comparable<CaseResul
     }
 
     /**
+     * Gets the human readable title of this result object.
+     */
+    @Override
+    public String getTitle() {
+        return "Case Result: " + getName();
+    }
+
+    /**
      * Gets the duration of the test, in seconds
      */
     @Exported(visibility=9)
@@ -201,13 +213,14 @@ public final class CaseResult extends TestObject implements Comparable<CaseResul
      * Gets the version of {@link #getName()} that's URL-safe.
      */
     public @Override String getSafeName() {
-        StringBuffer buf = new StringBuffer(testName);
+        StringBuilder buf = new StringBuilder(testName);
         for( int i=0; i<buf.length(); i++ ) {
             char ch = buf.charAt(i);
             if(!Character.isJavaIdentifierPart(ch))
                 buf.setCharAt(i,'_');
         }
-        return uniquifyName(classResult.getChildren(), buf.toString());
+        Collection<CaseResult> siblings = (classResult ==null ? Collections.<CaseResult>emptyList(): classResult.getChildren());
+        return uniquifyName(siblings, buf.toString());
     }
 
     /**
@@ -261,11 +274,24 @@ public final class CaseResult extends TestObject implements Comparable<CaseResul
      */
     @Exported(visibility=9)
     public int getFailedSince() {
+        // If we haven't calculated failedSince yet, and we should,
+        // do it now.
+        if (failedSince==0 && getFailCount()==1) {
+            CaseResult prev = getPreviousResult();
+            if(prev!=null && !prev.isPassed())
+                this.failedSince = prev.failedSince;
+            else if (getOwner() != null) {
+                this.failedSince = getOwner().getNumber();
+            } else {
+                LOGGER.warning("trouble calculating getFailedSince. We've got prev, but no owner.");
+                // failedSince will be 0, which isn't correct. 
+            }
+        }
         return failedSince;
     }
     
     public Run<?,?> getFailedSinceRun() {
-    	return getOwner().getParent().getBuildByNumber(failedSince);
+    	return getOwner().getParent().getBuildByNumber(getFailedSince());
     }
 
     /**
@@ -276,8 +302,12 @@ public final class CaseResult extends TestObject implements Comparable<CaseResul
     public int getAge() {
         if(isPassed())
             return 0;
-        else
-            return getOwner().getNumber()-failedSince+1;
+        else if (getOwner() != null) {
+            return getOwner().getNumber()-getFailedSince()+1;
+        } else {
+            LOGGER.fine("Trying to get age of a CaseResult without an owner");
+            return 0; 
+    }
     }
 
     /**
@@ -296,6 +326,8 @@ public final class CaseResult extends TestObject implements Comparable<CaseResul
     @Exported
     public String getStdout() {
         if(stdout!=null)    return stdout;
+        SuiteResult sr = getSuiteResult();
+        if (sr==null) return "";         
         return getSuiteResult().getStdout();
     }
 
@@ -308,21 +340,66 @@ public final class CaseResult extends TestObject implements Comparable<CaseResul
     @Exported
     public String getStderr() {
         if(stderr!=null)    return stderr;
+        SuiteResult sr = getSuiteResult();
+        if (sr==null) return "";
         return getSuiteResult().getStderr();
     }
 
     @Override
     public CaseResult getPreviousResult() {
+        if (parent == null) return null;
         SuiteResult pr = parent.getPreviousResult();
         if(pr==null)    return null;
         return pr.getCase(getName());
     }
     
+    /**
+     * Case results have no children
+     * @return null
+     */
     @Override
-    public CaseResult getResultInBuild(AbstractBuild<?, ?> build) {
-        ClassResult pr = getParent().getResultInBuild(build);
-        if(pr==null)    return null;
-        return pr.getCaseResult(getName());
+    public TestResult findCorrespondingResult(String id) {
+        if (id.equals(safe(getName()))) {
+            return this;
+    }
+        return null;
+    }
+
+    /**
+     * Gets the "children" of this test result that failed
+     *
+     * @return the children of this test result, if any, or an empty collection
+     */
+    @Override
+    public Collection<? extends TestResult> getFailedTests() {
+        return singletonListOrEmpty(!isPassed());
+    }
+
+    /**
+     * Gets the "children" of this test result that passed
+     *
+     * @return the children of this test result, if any, or an empty collection
+     */
+    @Override
+    public Collection<? extends TestResult> getPassedTests() {
+        return singletonListOrEmpty(isPassed());
+    }
+
+    /**
+     * Gets the "children" of this test result that were skipped
+     *
+     * @return the children of this test result, if any, or an empty list
+     */
+    @Override
+    public Collection<? extends TestResult> getSkippedTests() {
+        return singletonListOrEmpty(isSkipped());
+    }
+
+    private Collection<? extends hudson.tasks.test.TestResult> singletonListOrEmpty(boolean f) {
+        if (f)
+            return Collections.singletonList(this);
+        else
+            return emptyList();
     }
 
     /**
@@ -363,47 +440,20 @@ public final class CaseResult extends TestObject implements Comparable<CaseResul
         return parent;
     }
     
-    public String annotate(String text) {
-        if (text == null)
-                return null;
-        text = text.replace("&", "&amp;").replace("<", "&lt;").replaceAll(
-                        "\\b(https?://[^\\s)>]+)", "<a href=\"$1\">$1</a>");
-
-        for (TestAction action: getTestActions()) {
-                text = action.annotate(text);
-        }
-
-        return text;
-    }
-
     @Override
     public AbstractBuild<?,?> getOwner() {
-        return getSuiteResult().getParent().getOwner();
+        SuiteResult sr = getSuiteResult();
+        if (sr==null) {
+            LOGGER.warning("In getOwner(), getSuiteResult is null"); return null; }
+        hudson.tasks.junit.TestResult tr = sr.getParent();
+        if (tr==null) {
+            LOGGER.warning("In getOwner(), suiteResult.getParent() is null."); return null; }
+        return tr.getOwner(); 
     }
 
-    /**
-     * Gets the relative path to this test case from the given object.
-     */
-    public String getRelativePathFrom(TestObject it) {
-        if(it==this)
-            return ".";
-
-        // package, then class
-        StringBuilder buf = new StringBuilder();
-        buf.append(getSafeName());
-        if(it!=classResult) {
-            buf.insert(0,'/');
-            buf.insert(0,classResult.getSafeName());
-
-            PackageResult pkg = classResult.getParent();
-            if(it!=pkg) {
-                buf.insert(0,'/');
-                buf.insert(0,pkg.getSafeName());
+    public void setParentSuiteResult(SuiteResult parent) {
+        this.parent = parent;
             }
-        }
-
-        return buf.toString();
-    }
 
     public void freeze(SuiteResult parent) {
         this.parent = parent;
