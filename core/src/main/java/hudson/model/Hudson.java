@@ -3033,7 +3033,7 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
         // run the request through filters when this is the login request.
         // see http://www.nabble.com/Matrix-authorization-problem-tp14602081p14886312.html
         if(a==null)
-            a = new AnonymousAuthenticationToken("anonymous","anonymous",new GrantedAuthority[]{new GrantedAuthorityImpl("anonymous")});
+            a = ANONYMOUS;
         return a;
     }
 
@@ -3609,6 +3609,16 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
     public static final PermissionGroup PERMISSIONS = Permission.HUDSON_PERMISSIONS;
     public static final Permission ADMINISTER = Permission.HUDSON_ADMINISTER;
     public static final Permission READ = new Permission(PERMISSIONS,"Read",Messages._Hudson_ReadPermission_Description(),Permission.READ);
+
+    /**
+     * {@link Authentication} object that represents the anonymous user.
+     * Because Acegi creates its own {@link AnonymousAuthenticationToken} instances, the code must not
+     * expect the singleton semantics. This is just a convenient instance.
+     *
+     * @since 1.343
+     */
+    public static final Authentication ANONYMOUS = new AnonymousAuthenticationToken(
+            "anonymous","anonymous",new GrantedAuthority[]{new GrantedAuthorityImpl("anonymous")});
 
     static {
         XSTREAM.alias("hudson",Hudson.class);

@@ -27,6 +27,7 @@ import org.acegisecurity.Authentication;
 import org.acegisecurity.GrantedAuthority;
 import org.acegisecurity.GrantedAuthorityImpl;
 
+import javax.servlet.ServletRequest;
 import javax.servlet.http.HttpServletRequest;
 import java.security.Principal;
 import java.util.List;
@@ -45,25 +46,39 @@ import hudson.model.Hudson;
  * @author Kohsuke Kawaguchi
  */
 public final class ContainerAuthentication implements Authentication {
-    private final HttpServletRequest request;
+    private final Principal principal;
     private GrantedAuthority[] authorities;
 
+    public static Authentication create(HttpServletRequest request) {
+        Principal p = request.getUserPrincipal();
+        if (p!=null)
+            return new ContainerAuthentication(request);
+        return Hudson.ANONYMOUS;
+    }
+
+    /**
+     * Servlet container can tie a {@link ServletRequest} to the request handling thread,
+     * so we need to capture all the information upfront to allow {@link Authentication}
+     * to be passed to other threads, like update center does. See HUDSON-5382. 
+     *
+     * @deprecated as of 1.343
+     *      Use {@link #create(HttpServletRequest)} instead. Will be eventually converted into a private method.
+     */
     public ContainerAuthentication(HttpServletRequest request) {
-        this.request = request;
+        this.principal = request.getUserPrincipal();
+
+        // Servlet API doesn't provide a way to list up all roles the current user
+        // has, so we need to ask AuthorizationStrategy what roles it is going to check against.
+        List<GrantedAuthority> l = new ArrayList<GrantedAuthority>();
+        for( String g : Hudson.getInstance().getAuthorizationStrategy().getGroups()) {
+            if(request.isUserInRole(g))
+                l.add(new GrantedAuthorityImpl(g));
+        }
+        l.add(SecurityRealm.AUTHENTICATED_AUTHORITY);
+        authorities = l.toArray(new GrantedAuthority[l.size()]);
     }
 
     public GrantedAuthority[] getAuthorities() {
-        if(authorities==null) {
-            // Servlet API doesn't provide a way to list up all roles the current user
-            // has, so we need to ask AuthorizationStrategy what roles it is going to check against.
-            List<GrantedAuthority> l = new ArrayList<GrantedAuthority>();
-            for( String g : Hudson.getInstance().getAuthorizationStrategy().getGroups()) {
-                if(request.isUserInRole(g))
-                    l.add(new GrantedAuthorityImpl(g));
-            }
-            l.add(SecurityRealm.AUTHENTICATED_AUTHORITY);
-            authorities = l.toArray(new GrantedAuthority[l.size()]);
-        }
         return authorities;
     }
 
@@ -76,7 +91,7 @@ public final class ContainerAuthentication implements Authentication {
     }
 
     public String getPrincipal() {
-        return request.getUserPrincipal().getName();
+        return principal.getName();
     }
 
     public boolean isAuthenticated() {

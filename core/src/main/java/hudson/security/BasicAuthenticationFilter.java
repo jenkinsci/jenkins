@@ -106,7 +106,7 @@ public class BasicAuthenticationFilter implements Filter {
                 // to Acegi. For anonymous users that doesn't have user principal,
                 // AnonymousProcessingFilter that follows this should create
                 // an Authentication object.
-                SecurityContextHolder.getContext().setAuthentication(new ContainerAuthentication(req));
+                SecurityContextHolder.getContext().setAuthentication(ContainerAuthentication.create(req));
             }
             try {
                 chain.doFilter(request,response);
