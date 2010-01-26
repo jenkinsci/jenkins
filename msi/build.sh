@@ -1,4 +1,6 @@
 #!/bin/bash -ex
+export PATH=~/tools/native/wix:$PATH
+
 war="$1"
 if [ ! -e "$war" ]; then
   echo "build.sh path/to/hudson.war"
@@ -26,3 +28,6 @@ echo version=$v
 candle -dVERSION=$v -dJreDir="$JREDIR" -dWAR="$war" -nologo -ext WixUIExtension -ext WixUtilExtension hudson.wxs jre.wxs
 # '-sval' skips validation. without this, light somehow doesn't work on automated build environment
 light -o hudson-$v.msi -sval -nologo -dcl:high -ext WixUIExtension -ext WixUtilExtension hudson.wixobj jre.wixobj
+
+# avoid bringing back files that we don't care
+rm -rf tmp *.class *.wixpdb *.wixobj *.wxs
