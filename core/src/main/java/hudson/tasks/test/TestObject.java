@@ -89,7 +89,7 @@ public abstract class TestObject extends hudson.tasks.junit.TestObject {
      * Returns the top level test result data.
      *
      * @deprecated This method returns a JUnit specific class. Use
-     * {@link #topLevelTestResult()} instead for a more general interface.
+     * {@link #getTopLevelTestResult()} instead for a more general interface.
      * @return
      */
     @Override
@@ -175,7 +175,7 @@ public abstract class TestObject extends hudson.tasks.junit.TestObject {
                 // We're not in a stapler request. Okay, give up.
                 LOGGER.info("trying to get relative path, but it is not my ancestor, and we're not in a stapler request. Trying absolute hudson url...");
                 String hudsonRootUrl = Hudson.getInstance().getRootUrl();
-                if (hudsonRootUrl==null||hudsonRootUrl.isEmpty()) {
+                if (hudsonRootUrl==null||hudsonRootUrl.length()==0) {
                     LOGGER.warning("Can't find anything like a decent hudson url. Punting, returning empty string."); 
                     return "";
 
