@@ -30,4 +30,4 @@ candle -dVERSION=$v -dJreDir="$JREDIR" -dWAR="$war" -nologo -ext WixUIExtension 
 light -o hudson-$v.msi -sval -nologo -dcl:high -ext WixUIExtension -ext WixUtilExtension hudson.wixobj jre.wixobj
 
 # avoid bringing back files that we don't care
-rm -rf tmp *.class *.wixpdb *.wixobj *.wxs
+rm -rf tmp *.class *.wixpdb *.wixobj
