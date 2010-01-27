@@ -656,13 +656,16 @@ public final class FilePath implements Serializable {
         /**
          * Performs the computational task on the node where the data is located.
          *
+         * <p>
+         * All the exceptions are forwarded to the caller.
+         *
          * @param f
          *      {@link File} that represents the local file that {@link FilePath} has represented.
          * @param channel
          *      The "back pointer" of the {@link Channel} that represents the communication
          *      with the node from where the code was sent.
          */
-        T invoke(File f, VirtualChannel channel) throws IOException;
+        T invoke(File f, VirtualChannel channel) throws IOException, InterruptedException;
     }
 
     /**
@@ -678,6 +681,8 @@ public final class FilePath implements Serializable {
             // run this on a remote system
             try {
                 return channel.call(new FileCallableWrapper<T>(callable,cl));
+            } catch (TunneledInterruptedException e) {
+                throw (InterruptedException)new InterruptedException().initCause(e);
             } catch (AbortException e) {
                 throw e;    // pass through so that the caller can catch it as AbortException
             } catch (IOException e) {
@@ -735,16 +740,12 @@ public final class FilePath implements Serializable {
      */
     public void mkdirs() throws IOException, InterruptedException {
         if(!act(new FileCallable<Boolean>() {
-            public Boolean invoke(File f, VirtualChannel channel) throws IOException {
+            public Boolean invoke(File f, VirtualChannel channel) throws IOException, InterruptedException {
                 if(f.mkdirs() || f.exists())
                     return true;    // OK
 
                 // following Ant <mkdir> task to avoid possible race condition.
-                try {
-                    Thread.sleep(10);
-                } catch (InterruptedException e) {
-                    // ignore
-                }
+                Thread.sleep(10);
 
                 return f.mkdirs() || f.exists();
             }
@@ -1957,13 +1958,27 @@ public final class FilePath implements Serializable {
         }
 
         public T call() throws IOException {
-            return callable.invoke(new File(remote), Channel.current());
+            try {
+                return callable.invoke(new File(remote), Channel.current());
+            } catch (InterruptedException e) {
+                throw new TunneledInterruptedException(e);
+            }
         }
 
         public ClassLoader getClassLoader() {
             return classLoader;
         }
 
+        private static final long serialVersionUID = 1L;
+    }
+
+    /**
+     * Used to tunnel {@link InterruptedException} over a Java signature that only allows {@link IOException}
+     */
+    private static class TunneledInterruptedException extends IOException2 {
+        private TunneledInterruptedException(InterruptedException cause) {
+            super(cause);
+        }
         private static final long serialVersionUID = 1L;
     }
 
