@@ -27,6 +27,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import hudson.model.Queue.*;
 import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.export.ExportedBean;
 
@@ -45,6 +46,7 @@ import org.kohsuke.stapler.export.ExportedBean;
  *
  * @author Michael Donohue
  * @see Run#getCauses()
+ * @see Queue.Item#getCauses()
  */
 @ExportedBean
 public abstract class Cause {

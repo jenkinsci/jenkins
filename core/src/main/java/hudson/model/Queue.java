@@ -30,8 +30,11 @@ import hudson.Util;
 import hudson.XmlFile;
 import hudson.init.Initializer;
 import static hudson.init.InitMilestone.JOB_LOADED;
+import static hudson.util.Iterators.reverse;
+
 import hudson.cli.declarative.CLIMethod;
 import hudson.cli.declarative.CLIResolver;
+import hudson.model.queue.QueueSorter;
 import hudson.remoting.AsyncFutureImpl;
 import hudson.model.Node.Mode;
 import hudson.model.listeners.SaveableListener;
@@ -43,6 +46,7 @@ import hudson.model.queue.CauseOfBlockage.BecauseLabelIsOffline;
 import hudson.model.queue.CauseOfBlockage.BecauseNodeIsBusy;
 import hudson.triggers.SafeTimerTask;
 import hudson.triggers.Trigger;
+import hudson.util.Iterators;
 import hudson.util.OneShotEvent;
 import hudson.util.TimeUnit2;
 import hudson.util.XStream2;
@@ -58,6 +62,7 @@ import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
+import java.util.Collections;
 import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -130,6 +135,7 @@ public class Queue extends ResourceController implements Saveable {
     /**
      * {@link Task}s that can be built immediately
      * that are waiting for available {@link Executor}.
+     * This list is sorted in such a way that earlier items are built earlier.
      */
     private final ItemList<BuildableItem> buildables = new ItemList<BuildableItem>();
 
@@ -207,7 +213,7 @@ public class Queue extends ResourceController implements Saveable {
 
     private volatile transient LoadBalancer loadBalancer;
 
-    public volatile QueueSortingHandler sortingHandler = null;
+    private volatile transient QueueSorter sorter;
     
     public Queue(LoadBalancer loadBalancer) {
         this.loadBalancer =  loadBalancer.sanitize();
@@ -223,6 +229,14 @@ public class Queue extends ResourceController implements Saveable {
     public void setLoadBalancer(LoadBalancer loadBalancer) {
         if(loadBalancer==null)  throw new IllegalArgumentException();
         this.loadBalancer = loadBalancer;
+    }
+
+    public QueueSorter getSorter() {
+        return sorter;
+    }
+
+    public void setSorter(QueueSorter sorter) {
+        this.sorter = sorter;
     }
 
     /**
@@ -534,6 +548,9 @@ public class Queue extends ResourceController implements Saveable {
 
     /**
      * Gets a snapshot of items in the queue.
+     *
+     * Generally speaking the array is sorted such that the items that are most likely built sooner are
+     * at the end.
      */
     @Exported(inline=true)
     public synchronized Item[] getItems() {
@@ -542,7 +559,7 @@ public class Queue extends ResourceController implements Saveable {
         int idx = waitingList.size();
         for (BlockedItem p : blockedProjects.values())
             r[idx++] = p;
-        for (BuildableItem p : buildables.values())
+        for (BuildableItem p : reverse(buildables.values()))
             r[idx++] = p;
         return r;
     }
@@ -891,9 +908,10 @@ public class Queue extends ResourceController implements Saveable {
                 blockedProjects.put(p,new BlockedItem(top));
             }
         }
-        
-        if (sortingHandler != null)
-        	sortingHandler.sortBuildableItems(buildables);
+
+        final QueueSorter s = sorter;
+        if (s != null)
+        	s.sortBuildableItems(buildables);
     }
 
     private void makeBuildable(BuildableItem p) {
@@ -1157,6 +1175,19 @@ public class Queue extends ResourceController implements Saveable {
          */
         public Future<Executable> getFuture() { return future; }
 
+        /**
+         * Convenience method that returns a read only view of the {@link Cause}s associated with this item in the queue.
+         *
+         * @return can be empty but never null
+         * @since 1.343
+         */
+        public final List<Cause> getCauses() {
+            CauseAction ca = getAction(CauseAction.class);
+            if (ca!=null)
+                return Collections.unmodifiableList(ca.getCauses());
+            return Collections.emptyList();
+        }
+
         protected Item(Task task, List<Action> actions, int id, FutureImpl future) {
             this.task = task;
             this.id = id;
@@ -1275,32 +1306,6 @@ public class Queue extends ResourceController implements Saveable {
     	 */
     	public static ExtensionList<QueueDecisionHandler> all() {
     		return Hudson.getInstance().getExtensionList(QueueDecisionHandler.class);
-    	}
-    }
-    
-    /**
-     * Extension point for sorting buildable items
-     *
-     * <p>
-     * This extension point is still a subject to change, as we are seeking more
-     * comprehensive Queue pluggability. See HUDSON-2072.
-     *
-     * @since 1.316
-     */
-    public static abstract class QueueSortingHandler implements ExtensionPoint {
-    	/**
-    	 * Sorts the buildable items list. The items at the beginning will be executed
-    	 * before the items at the end of the list
-    	 * @param buildables 
-    	 */
-    	public abstract void sortBuildableItems(ItemList<BuildableItem> buildables);
-    	
-    	/**
-    	 * All registered {@link QueueSortingHandler}s
-    	 * @return
-    	 */
-    	public static ExtensionList<QueueSortingHandler> all() {
-    		return Hudson.getInstance().getExtensionList(QueueSortingHandler.class);
     	}
     }
     
@@ -1517,8 +1522,7 @@ public class Queue extends ResourceController implements Saveable {
     }
     
     /**
-     * A MultiMap -  LinkedMap crossover as a drop-in replacement for the previously used LinkedHashMap
-     * And no, I don't care about performance ;)
+     * {@link ArrayList} of {@link Item} with more convenience methods.
      */
     private static class ItemList<T extends Item> extends ArrayList<T> {
     	public T get(Task task) {
