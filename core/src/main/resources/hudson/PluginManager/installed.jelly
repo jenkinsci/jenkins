@@ -29,7 +29,8 @@ THE SOFTWARE.
   <l:layout title="Update Center" permission="${app.ADMINISTER}" norefresh="true">
     <st:include page="sidepanel.jelly"/>
     <l:main-panel>
-      <local:tabBar page="installed" xmlns:local="/hudson/PluginManager">
+      <local:tabBar page="installed" xmlns:local="/hudson/PluginManager" />
+      <table id="plugins" class="sortable pane bigtable">
         <j:choose>
           <j:when test="${empty(app.pluginManager.plugins) and empty(app.pluginManager.failedPlugins)}">
             <tr><td>
@@ -83,7 +84,7 @@ THE SOFTWARE.
             </j:forEach>
           </j:otherwise>
         </j:choose>
-      </local:tabBar>
+      </table>
 
       <j:if test="${it.isPluginUploaded()}">
         <div style="margin: 1em; height: 1em">
@@ -100,7 +101,6 @@ THE SOFTWARE.
           </j:if>
         </form>
       </div>
-
 
 
       <script>

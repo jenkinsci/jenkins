@@ -1,7 +1,7 @@
 <!--
 The MIT License
 
-Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, Harald Wellmann, Seiji Sogabe
+Copyright (c) 2004-2010, Sun Microsystems, Inc., Kohsuke Kawaguchi, Harald Wellmann, Seiji Sogabe
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -24,16 +24,14 @@ THE SOFTWARE.
 
 <!--
   Update Center main page
-
-  TODO:
-      categorize plugins
-      find excerpt from Wiki
-      
 -->
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
   <local:table page="updates" list="${app.updateCenter.updates}" xmlns:local="/hudson/PluginManager">
     <div style="margin-top:1em">
       ${%UpdatePageDescription}
+      <j:if test="${!empty(app.updateCenter.jobs)}">
+        &lt;br/&gt; ${%UpdatePageLegend(rootURL+'/updateCenter/')}
+      </j:if>
     </div>
   </local:table>
 </j:jelly>

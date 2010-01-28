@@ -1,7 +1,7 @@
 /*
  * The MIT License
  * 
- * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, Daniel Dyer, Stephen Connolly
+ * Copyright (c) 2004-2010, Sun Microsystems, Inc., Kohsuke Kawaguchi, Daniel Dyer, Stephen Connolly
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -659,29 +659,18 @@ TABLE.fingerprint-in-build TD {
 
 
 /* ========================= plugin manager ========================= */
-#pluginList {
-  width:100%;
-  border: 1px solid #bbb;
-  border-spacing: 0px;
+#plugins {
+  margin-top: 0;
+  border-top: none;
 }
 
-#pluginList TR:hover {
-  background-color: #eeeeec;
+#plugins tr:hover {
+  background-color: #eeeee8;
 }
 
-#pluginList TD {
-  padding: 0.5em;
-  vertical-align: middle;
+#plugins tr.already-upgraded {
+  background-color: #e8eeee;
 }
-
-/* Doesn't work because gear2.gif is not transparent
-#pluginList TD.plugin-description {
-  background: url(../images/24x24/gear2.gif) no-repeat;
-  background-position: center left;
-  padding-left: 32px;
-}
-*/
-
 
 
 /* ========================= repeatable elements ========================= */
