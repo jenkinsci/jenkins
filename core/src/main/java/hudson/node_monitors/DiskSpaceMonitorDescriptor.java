@@ -36,6 +36,7 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.text.ParseException;
+import java.util.Locale;
 
 import org.kohsuke.stapler.export.ExportedBean;
 import org.kohsuke.stapler.export.Exported;
@@ -106,7 +107,7 @@ import org.kohsuke.stapler.export.Exported;
          *      If failed to parse.
          */
         public static DiskSpace parse(String size) throws ParseException {
-            size = size.toUpperCase().trim();
+            size = size.toUpperCase(Locale.ENGLISH).trim();
             if (size.endsWith("B"))    // cut off 'B' from KB, MB, etc.
                 size = size.substring(0,size.length()-1);
 

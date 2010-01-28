@@ -35,6 +35,7 @@
  */
 package hudson.util;
 
+import java.util.Locale;
 import java.util.StringTokenizer;
 
 /**
@@ -78,7 +79,7 @@ public class VersionNumber implements Comparable<VersionNumber> {
 
         int i=0;
         while( tokens.hasMoreTokens() ) {
-            String token = tokens.nextToken().toLowerCase();
+            String token = tokens.nextToken().toLowerCase(Locale.ENGLISH);
             if(token.equals("*")) {
                 digits[i++] = 1000;
             } else

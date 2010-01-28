@@ -42,6 +42,7 @@ import org.jvnet.hudson.test.recipes.PresetData.DataSet;
 import java.net.URL;
 import java.util.Collections;
 import java.util.List;
+import java.util.Locale;
 
 /**
  * Makes sure that the jars that web start needs are readable, even when the anonymous user doesn't have any read access. 
@@ -77,7 +78,7 @@ public class JnlpAccessWithSecuredHudsonTest extends HudsonTestCase {
             
             // now make sure that these URLs are unprotected
             Page jarResource = jnlpAgent.getPage(url);
-            assertTrue(jarResource.getWebResponse().getContentType().toLowerCase().startsWith("application/"));
+            assertTrue(jarResource.getWebResponse().getContentType().toLowerCase(Locale.ENGLISH).startsWith("application/"));
         }
     }
 }

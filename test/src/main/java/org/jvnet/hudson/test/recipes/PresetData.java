@@ -30,6 +30,7 @@ import static java.lang.annotation.ElementType.METHOD;
 import java.lang.annotation.Retention;
 import static java.lang.annotation.RetentionPolicy.RUNTIME;
 import java.lang.annotation.Target;
+import java.util.Locale;
 
 /**
  * Runs a test case with one of the preset HUDSON_HOME data set.
@@ -62,7 +63,7 @@ public @interface PresetData {
 
     public class RunnerImpl extends Recipe.Runner<PresetData> {
         public void setup(HudsonTestCase testCase, PresetData recipe) {
-            testCase.withPresetData(recipe.value().name().toLowerCase().replace('_','-'));
+            testCase.withPresetData(recipe.value().name().toLowerCase(Locale.ENGLISH).replace('_','-'));
         }
     }
 }

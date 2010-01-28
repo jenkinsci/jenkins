@@ -35,6 +35,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.io.IOException;
 import java.awt.*;
+import java.util.Locale;
 
 import org.jfree.data.category.DefaultCategoryDataset;
 import org.jfree.chart.JFreeChart;
@@ -178,7 +179,7 @@ public class MultiStageTimeSeries {
          */
         public static TimeScale parse(String type) {
             if(type==null)   return TimeScale.MIN;
-            return Enum.valueOf(TimeScale.class, type.toUpperCase());
+            return Enum.valueOf(TimeScale.class, type.toUpperCase(Locale.ENGLISH));
         }
     }
 

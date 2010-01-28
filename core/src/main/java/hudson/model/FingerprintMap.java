@@ -28,6 +28,7 @@ import hudson.util.KeyedDataStorage;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Locale;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -77,7 +78,7 @@ public final class FingerprintMap extends KeyedDataStorage<Fingerprint,Fingerpri
         // sanity check
         if(md5sum.length()!=32)
             return null;    // illegal input
-        md5sum = md5sum.toLowerCase();
+        md5sum = md5sum.toLowerCase(Locale.ENGLISH);
 
         return super.get(md5sum,createIfNotExist,createParams);
     }
