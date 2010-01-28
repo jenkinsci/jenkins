@@ -109,7 +109,7 @@ public final class PluginManager extends AbstractModelObject {
      * This is used to report a message that Hudson needs to be restarted
      * for new plugins to take effect.
      */
-    public volatile boolean pluginUploaded =false;
+    public volatile boolean pluginUploaded = false;
     
     /**
      * Strategy for creating and initializing plugins
@@ -324,7 +324,7 @@ public final class PluginManager extends AbstractModelObject {
     /**
      * Creates a hudson.PluginStrategy, looking at the corresponding system property. 
      */
-	private PluginStrategy createPluginStrategy() {
+    private PluginStrategy createPluginStrategy() {
 		String strategyName = System.getProperty(PluginStrategy.class.getName());
 		if (strategyName != null) {
 			try {
@@ -350,14 +350,15 @@ public final class PluginManager extends AbstractModelObject {
 		
 		// default and fallback
 		return new ClassicPluginStrategy(this);
-	}
-	
-	public PluginStrategy getPluginStrategy() {
-		return strategy;
-	}
+    }
 
-	/**
-     * Retrurns true if any new plugin was added, which means a restart is required for the change to take effect.
+    public PluginStrategy getPluginStrategy() {
+        return strategy;
+    }
+
+    /**
+     * Returns true if any new plugin was added, which means a restart is required
+     * for the change to take effect.
      */
     public boolean isPluginUploaded() {
         return pluginUploaded;
@@ -520,7 +521,7 @@ public final class PluginManager extends AbstractModelObject {
             fileItem.write(new File(rootDir, fileName));
             fileItem.delete();
 
-            pluginUploaded=true;
+            pluginUploaded = true;
 
             return new HttpRedirect(".");
         } catch (IOException e) {
