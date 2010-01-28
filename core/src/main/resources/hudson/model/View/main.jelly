@@ -27,7 +27,7 @@ THE SOFTWARE.
     <j:when test="${empty(items)}">
       <j:if test="${!empty(app.items)}">
         <st:include page="viewTabs.jelly" />
-        <br/>
+        &lt;br/&gt;
       </j:if>
       <st:include page="noJob.jelly" />
     </j:when>
