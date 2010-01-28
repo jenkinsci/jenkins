@@ -759,7 +759,8 @@ public final class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,Ma
         return FormValidation.ok();
     }
 
-    public TopLevelItemDescriptor getDescriptor() {
+    @Override
+    public DescriptorImpl getDescriptor() {
         return DESCRIPTOR;
     }
 
@@ -772,6 +773,11 @@ public final class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,Ma
          */
         private String globalMavenOpts;
 
+        public DescriptorImpl() {
+            super();
+            load();
+        }
+        
         public String getGlobalMavenOpts() {
             return globalMavenOpts;
         }
