@@ -1,7 +1,7 @@
 /*
  * The MIT License
  * 
- * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, Daniel Dyer, Red Hat, Inc.
+ * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, Daniel Dyer, Red Hat, Inc., Yahoo!, Inc.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -159,5 +159,29 @@ public abstract class AggregatedTestResultAction extends AbstractTestResultActio
         AbstractBuild<?,?> b = resolveChild(child);
         if(b==null) return null;
         return b.getAction(AbstractTestResultAction.class);
+    }
+
+    /**
+     * Since there's no TestObject that points this action as the owner
+     * (aggregated {@link TestObject}s point to their respective real owners, not 'this'),
+     * so this method should be never invoked.
+     *
+     * @deprecated
+     *      so that IDE warns you if you accidentally try to call it.
+     */
+    @Override
+    protected final String getDescription(TestObject object) {
+        throw new AssertionError();
+    }
+
+    /**
+     * See {@link #getDescription(TestObject)}
+     *
+     * @deprecated
+     *      so that IDE warns you if you accidentally try to call it.
+     */
+    @Override
+    protected final void setDescription(TestObject object, String description) {
+        throw new AssertionError();
     }
 }

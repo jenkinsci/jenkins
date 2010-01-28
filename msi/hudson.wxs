@@ -24,8 +24,7 @@
                      Description="Hudson Continuous Integration Server"
                      Account="[SERVICEACCOUNT]"
                      Password="[SERVICEPASSWORD]" />
-                 <ServiceControl Id="StartHudsonService" Name="Hudson" Start="install" Wait="no" />
-                 <ServiceControl Id="StopHudsonService" Name="Hudson" Stop="both" Wait="yes" Remove="uninstall" />
+                 <ServiceControl Id="ControlHudsonService" Name="Hudson" Start="install" Stop="both" Wait="yes" Remove="uninstall"/>
               </Component>
           </Directory>
         </Directory>
@@ -35,7 +34,27 @@
       <UpgradeVersion Minimum="0.0.0" Maximum="99.99.99" Property="PREVIOUSVERSIONINSTALLED" />
     </Upgrade>
     <InstallExecuteSequence>
-      <RemoveExistingProducts After="InstallFinalize"/>
+      <!--
+        Earlier I suffered a problem where after an upgrade, all the JRE files are removed
+        (if I then repair the installation, it'll work, so it's not the missing definitions in the msi file.)
+        
+        I'm still new to MSI/WiX to be able to really understand what's going on, but
+        http://www.mail-archive.com/wix-users@lists.sourceforge.net/msg32537.html seems to explain the problem,
+        (as caused by the interaction between deferred removal), and the take away from this thread
+        as a whole seems to be that for auto-generated wxs files (from heat), it's just not possible
+        to get the file updates done right (WTF?!).
+        
+        The InstallInitialize seems to work. My naive hypothesis is that this stops the service and
+        deletes all the files before new ones are added (OTOH, I still get a dialog that some files
+        are in use and I need to reboot, so I could be all wrong, or maybe the installer is showing
+        this dialog incorrectly as a precaution, as alluded in http://www.mail-archive.com/wix-users@lists.sourceforge.net/msg06878.html)
+        
+        I remember seeing another e-mail on the wix-users list about <ServiceControl> not actually
+        waiting until the full termination of the service, and if so, this still might not work.
+        
+        In any case, noting my experiments so that future changes to this value will be done very carefully.
+      -->
+      <RemoveExistingProducts After="InstallInitialize"/>
     </InstallExecuteSequence>
 
     <Feature Id='Complete' Level='1'>

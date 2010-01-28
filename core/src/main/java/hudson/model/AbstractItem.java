@@ -105,8 +105,9 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
     /**
      * Sets the project description HTML.
      */
-    public void setDescription(String description) {
+    public void setDescription(String description) throws IOException {
         this.description = description;
+        save();
     }
 
     /**
@@ -236,7 +237,6 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
 
         req.setCharacterEncoding("UTF-8");
         setDescription(req.getParameter("description"));
-        save();
         rsp.sendRedirect(".");  // go to the top page
     }
 

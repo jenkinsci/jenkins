@@ -25,6 +25,7 @@ package hudson.security;
 
 import hudson.model.Hudson;
 import hudson.util.Scrambler;
+import org.acegisecurity.Authentication;
 import org.acegisecurity.GrantedAuthorityImpl;
 import org.acegisecurity.context.SecurityContextHolder;
 import org.kohsuke.stapler.StaplerRequest;

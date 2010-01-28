@@ -1,7 +1,7 @@
 /*
  * The MIT License
  *
- * Copyright (c) 2004-2009, Sun Microsystems, Inc., Tom Huybrechts
+ * Copyright (c) 2004-2009, Sun Microsystems, Inc., Tom Huybrechts, Yahoo!, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,18 +24,10 @@
 package hudson.tasks.junit;
 
 import hudson.model.AbstractBuild;
-import hudson.util.ChartUtil;
-import hudson.util.ColorPalette;
-import hudson.util.DataSetBuilder;
-import hudson.util.ShiftedCategoryAxis;
-import hudson.util.StackedAreaRenderer2;
-import hudson.util.Graph;
-
-import java.awt.Color;
-import java.awt.Paint;
-import java.util.ArrayList;
-import java.util.List;
-
+import hudson.model.Hudson;
+import hudson.tasks.test.TestResult;
+import hudson.tasks.test.TestObject;
+import hudson.util.*;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.JFreeChart;
 import org.jfree.chart.axis.CategoryAxis;
@@ -47,8 +39,12 @@ import org.jfree.chart.renderer.category.StackedAreaRenderer;
 import org.jfree.data.category.CategoryDataset;
 import org.jfree.ui.RectangleInsets;
 
+import java.awt.*;
+import java.util.ArrayList;
+import java.util.List;
+
 /**
- * History of {@link TestObject} over time.
+ * History of {@link hudson.tasks.test.TestObject} over time.
  *
  * @since 1.320
  */
@@ -63,11 +59,18 @@ public class History {
 		return testObject;
 	}
 	
-	public List<TestObject> getList() {
-		List<TestObject> list = new ArrayList<TestObject>();
+    public boolean historyAvailable() {
+       if (testObject.getOwner().getParent().getBuilds().size() > 1)
+           return true;
+        else
+           return false; 
+    }
+	
+	public List<TestResult> getList() {
+		List<TestResult> list = new ArrayList<TestResult>();
 		for (AbstractBuild<?,?> b: testObject.getOwner().getParent().getBuilds()) {
 			if (b.isBuilding()) continue;
-			TestObject o = testObject.getResultInBuild(b);
+			TestResult o = testObject.getResultInBuild(b);
 			if (o != null) {
 				list.add(o);
 			}
@@ -82,7 +85,7 @@ public class History {
        return new GraphImpl("seconds") {
            protected DataSetBuilder<String, ChartLabel> createDataSet() {
                DataSetBuilder<String, ChartLabel> data = new DataSetBuilder<String, ChartLabel>();
-               for (TestObject o: getList()) {
+               for (hudson.tasks.test.TestResult o: getList()) {
                    data.add(((double) o.getDuration()) / (1000), "", new ChartLabel(o)  {
                        @Override
                        public Color getColor() {
@@ -108,7 +111,7 @@ public class History {
             protected DataSetBuilder<String, ChartLabel> createDataSet() {
                 DataSetBuilder<String, ChartLabel> data = new DataSetBuilder<String, ChartLabel>();
 
-                for (TestObject o: getList()) {
+                for (TestResult o: getList()) {
                     data.add(o.getPassCount(), "2Passed", new ChartLabel(o));
                     data.add(o.getFailCount(), "1Failed", new ChartLabel(o));
                     data.add(o.getSkipCount(), "0Skipped", new ChartLabel(o));
@@ -122,7 +125,7 @@ public class History {
         private final String yLabel;
 
         protected GraphImpl(String yLabel) {
-            super(testObject.getOwner().getTimestamp(),500,400);
+            super(testObject.getOwner().getTimestamp(),600,300);
             this.yLabel =  yLabel;
         }
 
@@ -179,7 +182,7 @@ public class History {
                 public String generateURL(CategoryDataset dataset, int row,
                         int column) {
                     ChartLabel label = (ChartLabel) dataset.getColumnKey(column);
-                    return String.valueOf(label.o.getOwner().number);
+                    return label.getUrl();
                 }
 
                 @Override
@@ -203,9 +206,23 @@ public class History {
     }
 
     class ChartLabel implements Comparable<ChartLabel> {
-    	TestObject o;
-        public ChartLabel(TestObject o) {
+    	TestResult o;
+        String url;
+        public ChartLabel(TestResult o) {
             this.o = o;
+            this.url = null;
+        }
+
+        public String getUrl() {
+            if (this.url == null) generateUrl();
+            return url;
+        }
+
+         private void generateUrl() {
+            AbstractBuild<?,?> build = o.getOwner();
+            String buildLink = build.getUrl();
+            String actionUrl = o.getTestResultAction().getUrlName();
+            this.url = Hudson.getInstance().getRootUrl() + buildLink + actionUrl + o.getUrl();             
         }
 
         public int compareTo(ChartLabel that) {

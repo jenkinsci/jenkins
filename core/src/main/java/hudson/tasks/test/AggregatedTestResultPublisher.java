@@ -1,7 +1,7 @@
 /*
  * The MIT License
  * 
- * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, Michael B. Donohue
+ * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, Michael B. Donohue, Yahoo!, Inc.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,30 +23,23 @@
  */
 package hudson.tasks.test;
 
+import hudson.Extension;
 import hudson.Launcher;
 import hudson.Util;
-import hudson.Extension;
 import static hudson.Util.fixNull;
-import hudson.model.AbstractBuild;
-import hudson.model.AbstractProject;
-import hudson.model.BuildListener;
+import hudson.model.*;
 import hudson.model.Fingerprint.RangeSet;
-import hudson.model.Hudson;
-import hudson.model.Item;
-import hudson.model.Result;
-import hudson.model.Run;
-import hudson.model.TaskListener;
 import hudson.model.listeners.RunListener;
 import hudson.tasks.BuildStepDescriptor;
-import hudson.tasks.Publisher;
-import hudson.tasks.Recorder;
 import hudson.tasks.BuildStepMonitor;
 import hudson.tasks.Fingerprinter.FingerprintAction;
+import hudson.tasks.Publisher;
+import hudson.tasks.Recorder;
 import hudson.util.FormValidation;
 import net.sf.json.JSONObject;
+import org.kohsuke.stapler.AncestorInPath;
 import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.StaplerRequest;
-import org.kohsuke.stapler.AncestorInPath;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -157,6 +150,30 @@ public class AggregatedTestResultPublisher extends Recorder {
         public Object getResult() {
             upToDateCheck();
             return this;
+        }
+
+        /**
+         * Since there's no TestObject that points this action as the owner
+         * (aggregated {@link TestObject}s point to their respective real owners, not 'this'),
+         * so this method should be never invoked.
+         *
+         * @deprecated
+         *      so that IDE warns you if you accidentally try to call it.
+         */
+        @Override
+        protected final String getDescription(TestObject object) {
+            throw new AssertionError();
+        }
+
+        /**
+         * See {@link #getDescription(TestObject)}
+         *
+         * @deprecated
+         *      so that IDE warns you if you accidentally try to call it.
+         */
+        @Override
+        protected final void setDescription(TestObject object, String description) {
+            throw new AssertionError();
         }
 
         /**

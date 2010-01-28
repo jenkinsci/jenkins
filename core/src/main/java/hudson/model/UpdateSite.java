@@ -77,7 +77,7 @@ import javax.servlet.ServletContext;
  *
  * @author Andrew Bayer
  * @author Kohsuke Kawaguchi
- * @since 1.MULTIUPDATE
+ * @since 1.333
  */
 public class UpdateSite {
     /**
@@ -604,6 +604,7 @@ public class UpdateSite {
 
     private static final Logger LOGGER = Logger.getLogger(UpdateSite.class.getName());
 
+    // The name uses UpdateCenter for compatibility reason.
     public static boolean neverUpdate = Boolean.getBoolean(UpdateCenter.class.getName()+".never");
 
     /**

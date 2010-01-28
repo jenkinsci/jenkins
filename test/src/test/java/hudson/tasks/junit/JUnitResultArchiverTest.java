@@ -1,43 +1,47 @@
+/*
+ * The MIT License
+ * 
+ * Copyright (c) 2009, Yahoo!, Inc.
+ * 
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ * 
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ * 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ */
 package hudson.tasks.junit;
 
 import hudson.FilePath;
-import hudson.Launcher;
-import hudson.model.AbstractBuild;
-import hudson.model.BuildListener;
 import hudson.model.FreeStyleBuild;
 import hudson.model.FreeStyleProject;
 import hudson.model.Hudson;
-import hudson.tasks.Builder;
+import hudson.slaves.DumbSlave;
+import hudson.tasks.test.TestObject;
 
-import java.io.IOException;
-import java.io.Serializable;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.util.List;
 import java.util.concurrent.TimeUnit;
 
-import junit.framework.Assert;
-
 import org.jvnet.hudson.test.HudsonTestCase;
+import org.jvnet.hudson.test.TouchBuilder;
 import org.jvnet.hudson.test.recipes.LocalData;
-import org.xml.sax.SAXException;
 
 import com.gargoylesoftware.htmlunit.html.HtmlForm;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 
 public class JUnitResultArchiverTest extends HudsonTestCase {
-
-	public static final class TouchBuilder extends Builder implements Serializable {
-		@Override
-		public boolean perform(AbstractBuild<?, ?> build,
-				Launcher launcher, BuildListener listener)
-				throws InterruptedException, IOException {
-			for (FilePath f: build.getWorkspace().list()) {
-				f.touch(System.currentTimeMillis());
-			}
-			return true;
-		}
-	}
 
 	private FreeStyleProject project;
 	private JUnitResultArchiver archiver;
@@ -69,6 +73,20 @@ public class JUnitResultArchiverTest extends HudsonTestCase {
 
 	}
 
+   @LocalData
+    public void testSlave() throws Exception {
+        DumbSlave s = createOnlineSlave();
+        project.setAssignedLabel(s.getSelfLabel());
+
+        FilePath src = new FilePath(hudson.getRootPath(), "jobs/junit/workspace/");
+        assertNotNull(src);
+        FilePath dest = s.getWorkspaceFor(project);
+        assertNotNull(dest);
+        src.copyRecursiveTo("*.xml", dest);
+        
+        testBasic();
+    }
+
 	private void assertTestResults(FreeStyleBuild build) {
 		TestResultAction testResultAction = build.getAction(TestResultAction.class);
 		assertNotNull("no TestResultAction", testResultAction);
@@ -85,7 +103,7 @@ public class JUnitResultArchiverTest extends HudsonTestCase {
 	
 	@LocalData
 	public void testPersistence() throws Exception {
-		project.scheduleBuild2(0).get(10, TimeUnit.SECONDS);
+        project.scheduleBuild2(0).get(60, TimeUnit.SECONDS);
 		
 		reloadHudson();
 		

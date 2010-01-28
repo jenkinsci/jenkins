@@ -1,7 +1,7 @@
 /*
  * The MIT License
  *
- * Copyright (c) 2004-2009, Sun Microsystems, Inc., Tom Huybrechts
+ * Copyright (c) 2004-2009, Sun Microsystems, Inc., Tom Huybrechts, Yahoo!, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,17 +23,13 @@
  */
 package hudson.tasks.junit;
 
-import java.io.IOException;
-
 import hudson.DescriptorExtensionList;
+import hudson.Extension;
 import hudson.ExtensionPoint;
 import hudson.Launcher;
-import hudson.Extension;
-import hudson.model.AbstractBuild;
-import hudson.model.BuildListener;
-import hudson.model.Describable;
-import hudson.model.Descriptor;
-import hudson.model.Hudson;
+import hudson.model.*;
+
+import java.io.IOException;
 
 /**
  * Contributes {@link TestAction}s to test results.

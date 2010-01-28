@@ -27,7 +27,7 @@ import java.io.IOException;
 
 /**
  * Signals a failure where the error was anticipated and diagnosed.
- * When this exception is caughted,
+ * When this exception is caught,
  * the stack trace will not be printed, and the build will be marked as a failure.
  *
  * @author Kohsuke Kawaguchi

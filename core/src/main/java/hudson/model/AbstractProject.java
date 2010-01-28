@@ -524,6 +524,8 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
     public void doConfigSubmit( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException, FormException {
         super.doConfigSubmit(req,rsp);
 
+        updateTransientActions();
+
         Set<AbstractProject> upstream = Collections.emptySet();
         if(req.getParameter("pseudoUpstreamTrigger")!=null) {
             upstream = new HashSet<AbstractProject>(Items.fromNameList(req.getParameter("upstreamProjects"),AbstractProject.class));
@@ -1403,8 +1405,6 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
         triggers = buildDescribable(req, Trigger.for_(this));
         for (Trigger t : triggers)
             t.start(this,true);
-
-        updateTransientActions();
     }
 
     /**

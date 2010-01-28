@@ -1,7 +1,7 @@
 /*
  * The MIT License
  * 
- * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, Erik Ramfelt, Xavier Le Vourch
+ * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, Erik Ramfelt, Xavier Le Vourch, Yahoo!, Inc.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -29,6 +29,8 @@ import java.net.URISyntaxException;
 
 import junit.framework.TestCase;
 import org.dom4j.DocumentException;
+
+import hudson.XmlFile;
 
 /**
  * Test cases for parsing JUnit report XML files.
@@ -117,5 +119,28 @@ public class SuiteResultTest extends TestCase {
             assertEquals("Test class name is incorrect in " + caseResult.getDisplayName(), "some.package.somewhere.WhooHoo", caseResult.getClassName());
         }
         assertEquals("this normally has the string like, expected mullet, but got bream", cases.get(0).getErrorDetails());
+    }
+
+    public void testSuiteResultPersistence() throws Exception {
+        SuiteResult source = parseOne(getDataFile("junit-report-1233.xml"));
+
+        File dest = File.createTempFile("testSuiteResultPersistence", ".xml");
+        try {
+            XmlFile xmlFile = new XmlFile(dest);
+            xmlFile.write(source);
+
+            SuiteResult result = (SuiteResult)xmlFile.read();
+            assertNotNull(result);
+
+            assertEquals(source.getName(), result.getName());
+            assertEquals(source.getTimestamp(), result.getTimestamp());
+            assertEquals(source.getDuration(), result.getDuration());
+            assertEquals(source.getStderr(), result.getStderr());
+            assertEquals(source.getStdout(), result.getStdout());
+            assertEquals(source.getCases().size(), result.getCases().size());
+            assertNotNull(result.getCase("testGetBundle"));
+        } finally {
+            dest.delete();
+}
     }
 }

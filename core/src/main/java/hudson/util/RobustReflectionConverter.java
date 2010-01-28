@@ -51,6 +51,8 @@ import java.util.HashMap;
 import java.util.logging.Logger;
 import java.util.logging.Level;
 
+import static java.util.logging.Level.WARNING;
+
 /**
  * Custom {@link ReflectionConverter} that handle errors more gracefully.
  *
@@ -240,9 +242,11 @@ public class RobustReflectionConverter implements Converter {
                     }
                 }
             } catch (NonExistentFieldException e) {
-                LOGGER.log(Level.WARNING,"Skipping a non-existent field "+e.getFieldName(),e);
+                LOGGER.log(WARNING,"Skipping a non-existent field "+e.getFieldName(),e);
             } catch (CannotResolveClassException e) {
-                LOGGER.log(Level.WARNING,"Skipping a non-existend type",e);
+                LOGGER.log(WARNING,"Skipping a non-existend type",e);
+            } catch (LinkageError e) {
+                LOGGER.log(WARNING,"Failed to resolve a type",e);
             }
 
             reader.moveUp();

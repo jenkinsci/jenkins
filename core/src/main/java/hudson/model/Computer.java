@@ -590,6 +590,12 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
         return countExecutors()-countIdle();
     }
 
+    /**
+     * Returns the current size of the executor pool for this computer.
+     * This number may temporarily differ from {@link #getNumExecutors()} if there
+     * are busy tasks when the configured size is decreased.  OneOffExecutors are
+     * not included in this count.
+     */
     public final int countExecutors() {
         return executors.size();
     }
@@ -611,10 +617,12 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
     }
 
     /**
-     * Returns true if all the executors of this computer is idle.
+     * Returns true if all the executors of this computer are idle.
      */
     @Exported
     public final boolean isIdle() {
+        if (!oneOffExecutors.isEmpty())
+            return false;
         for (Executor e : executors)
             if(!e.isIdle())
                 return false;
@@ -634,6 +642,9 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
      */
     public final long getIdleStartMilliseconds() {
         long firstIdle = Long.MIN_VALUE;
+        for (Executor e : oneOffExecutors) {
+            firstIdle = Math.max(firstIdle, e.getIdleStartMilliseconds());
+        }
         for (Executor e : executors) {
             firstIdle = Math.max(firstIdle, e.getIdleStartMilliseconds());
         }
@@ -775,7 +786,10 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
                 LOGGER.log(Level.FINE, "Failed to parse "+address,e);
             }
         }
-        
+
+        // allow the administrator to manually specify the host name as a fallback. HUDSON-5373
+        cachedHostName = channel.call(new GetFallbackName());
+
         hostNameCached = true;
         return null;
     }
@@ -819,6 +833,13 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
                 }
             }
             return names;
+        }
+        private static final long serialVersionUID = 1L;
+    }
+
+    private static class GetFallbackName implements Callable<String,IOException> {
+        public String call() throws IOException {
+            return System.getProperty("host.name");
         }
         private static final long serialVersionUID = 1L;
     }

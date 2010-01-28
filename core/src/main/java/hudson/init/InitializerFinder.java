@@ -38,8 +38,12 @@ import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import hudson.model.Hudson;
+
+import static java.util.logging.Level.WARNING;
 
 /**
  * Discovers initialization tasks from {@link Initializer}.
@@ -83,7 +87,8 @@ public class InitializerFinder extends TaskBuilder {
             if (key.length()==0)  return c.getSimpleName()+"."+e.getName();
             return rb.format(key);
         } catch (ClassNotFoundException x) {
-            throw (Error)new NoClassDefFoundError(x.getMessage()+" for "+e.toString()).initCause(x);
+            LOGGER.log(WARNING, "Failed to load "+x.getMessage()+" for "+e.toString(),x);
+            return "";
         }
     }
 
@@ -180,4 +185,6 @@ public class InitializerFinder extends TaskBuilder {
             return r;
         }
     }
+
+    private static final Logger LOGGER = Logger.getLogger(InitializerFinder.class.getName());
 }

@@ -596,7 +596,6 @@ public class MatrixProject extends AbstractProject<MatrixProject,MatrixBuild> im
         buildWrappers.rebuild(req, json, BuildWrappers.getFor(this));
         builders.rebuildHetero(req, json, Builder.all(), "builder");
         publishers.rebuild(req, json, BuildStepDescriptor.filter(Publisher.all(),this.getClass()));
-        updateTransientActions(); // to pick up transient actions from builder, publisher, etc.
 
         rebuildConfigurations();
     }
