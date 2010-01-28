@@ -1,7 +1,7 @@
 <!--
 The MIT License
 
-Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, Seiji Sogabe, Yahoo! Inc.
+Copyright (c) 2004-2010, Sun Microsystems, Inc., Kohsuke Kawaguchi, Seiji Sogabe, Yahoo! Inc.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -44,8 +44,8 @@ THE SOFTWARE.
             </tr>
             <j:forEach var="p" items="${app.pluginManager.plugins}">
               <tr>
-                <td class="center pane">
-                  <j:set var="state" value="${p.enabled?'true':null}"/>
+                <j:set var="state" value="${p.enabled?'true':null}"/>
+                <td class="center pane" data="${state}">
                   <input type="checkbox" checked="${state}" onclick="flip(event)"
                          url="plugin/${p.shortName}"
                          original="${p.active?'true':'false'}"/>
