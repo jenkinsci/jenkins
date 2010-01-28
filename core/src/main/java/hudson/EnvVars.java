@@ -38,13 +38,27 @@ import java.util.UUID;
  * Environment variables.
  *
  * <p>
+ * While all the platforms I tested (Linux 2.6, Solaris, and Windows XP) have the case sensitive
+ * environment variable table, Windows batch script handles environment variable in the case preserving
+ * but case <b>insensitive</b> way (that is, cmd.exe can get both FOO and foo as environment variables
+ * when it's launched, and the "set" command will display it accordingly, but "echo %foo%" results in
+ * echoing the value of "FOO", not "foo" &mdash; this is presumably caused by the behavior of the underlying
+ * Win32 API <tt>GetEnvironmentVariable</tt> acting in case insensitive way.) Windows users are also
+ * used to write environment variable case-insensitively (like %Path% vs %PATH%), and you can see many
+ * documents on the web that claims Windows environment variables are case insensitive.
+ *
+ * <p>
+ * So for a consistent cross platform behavior, it creates the least confusion to make the table
+ * case insensitive but case preserving.
+ *
+ * <p>
  * In Hudson, often we need to build up "environment variable overrides"
  * on master, then to execute the process on slaves. This causes a problem
  * when working with variables like <tt>PATH</tt>. So to make this work,
  * we introduce a special convention <tt>PATH+FOO</tt> &mdash; all entries
  * that starts with <tt>PATH+</tt> are merged and prepended to the inherited
  * <tt>PATH</tt> variable, on the process where a new process is executed. 
- * 
+ *
  * @author Kohsuke Kawaguchi
  */
 public class EnvVars extends TreeMap<String,String> {
@@ -80,6 +94,9 @@ public class EnvVars extends TreeMap<String,String> {
         this((Map)m);
     }
 
+    /**
+     * Builds an environment variables from an array of the form <tt>"key","value","key","value"...</tt>
+     */
     public EnvVars(String... keyValuePairs) {
         this();
         if(keyValuePairs.length%2!=0)
