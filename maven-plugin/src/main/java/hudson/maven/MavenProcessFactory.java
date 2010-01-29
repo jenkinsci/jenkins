@@ -378,9 +378,25 @@ final class MavenProcessFactory implements ProcessCache.Factory {
         return Executor.currentExecutor().getOwner().getNode();
     }
 
+    /**
+     * Locates classworlds jar file.
+     *
+     * Note that Maven 3.0 changed the name to plexus-classworlds 
+     *
+     * <pre>
+     * $ find tools/ -name "*classworlds*.jar"
+     * tools/maven/boot/classworlds-1.1.jar
+     * tools/maven-2.2.1/boot/classworlds-1.1.jar
+     * tools/maven-3.0-alpha-2/boot/plexus-classworlds-1.3.jar
+     * tools/maven-3.0-alpha-3/boot/plexus-classworlds-2.2.2.jar
+     * tools/maven-3.0-alpha-4/boot/plexus-classworlds-2.2.2.jar
+     * tools/maven-3.0-alpha-5/boot/plexus-classworlds-2.2.2.jar
+     * tools/maven-3.0-alpha-6/boot/plexus-classworlds-2.2.2.jar
+     * </pre>
+     */
     private static final FilenameFilter CLASSWORLDS_FILTER = new FilenameFilter() {
         public boolean accept(File dir, String name) {
-            return name.startsWith("classworlds") && name.endsWith(".jar");
+            return name.contains("classworlds") && name.endsWith(".jar");
         }
     };
 
