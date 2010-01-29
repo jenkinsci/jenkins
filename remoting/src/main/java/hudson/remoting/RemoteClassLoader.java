@@ -385,7 +385,8 @@ final class RemoteClassLoader extends URLClassLoader {
 
         public ClassFile fetch2(String className) throws ClassNotFoundException {
             ClassLoader ecl = cl.loadClass(className).getClassLoader();
-
+            if (ecl == null) ecl = ClassLoader.getSystemClassLoader(); 
+            
             try {
                 return new ClassFile(
                         exportId(ecl,channel),
