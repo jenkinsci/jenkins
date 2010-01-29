@@ -70,10 +70,20 @@ final class UserRequest<RSP,EXC extends Throwable> extends Request<UserResponse<
     }
 
     /*package*/ static ClassLoader getClassLoader(Callable<?,?> c) {
-        if(c instanceof DelegatingCallable)
-            return ((DelegatingCallable)c).getClassLoader();
-        else
-            return c.getClass().getClassLoader();
+    	ClassLoader result = null;
+        
+    	if(c instanceof DelegatingCallable) {
+        	result =((DelegatingCallable)c).getClassLoader();
+        }
+        else {
+        	result = c.getClass().getClassLoader();
+        }
+        
+        if (result == null) {
+        	result = ClassLoader.getSystemClassLoader();
+        }
+        
+        return result;
     }
 
     protected UserResponse<RSP,EXC> perform(Channel channel) throws EXC {
