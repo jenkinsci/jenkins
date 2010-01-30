@@ -49,12 +49,16 @@ dt {
   text-align: center;
 }
 
-table.middle-align td {
+.middle-align td, td.middle-align {
   vertical-align: middle;
 }
 
-table.center-align td {
+.center-align td, td.center-align {
   text-align: center;
+}
+
+.no-wrap td, td.no-wrap {
+  white-space: nowrap;
 }
 
 #main-table {
@@ -549,6 +553,15 @@ th.pane {
 #buildHistory .healthReport {
     display: inline;
     margin-right: 1em;
+}
+
+#buildHistory tr.no-wrap td.middle-align {
+    padding: 0;
+}
+
+#buildHistory td.desc {
+    padding: 0;
+    white-space: normal;
 }
 
 /* ========================= editable combobox style ========================= */

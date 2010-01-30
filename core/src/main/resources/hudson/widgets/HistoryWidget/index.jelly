@@ -1,7 +1,7 @@
 <!--
 The MIT License
 
-Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, Seiji Sogabe, id:cactusman, Yahoo! Inc.
+Copyright (c) 2004-2010, Sun Microsystems, Inc., Kohsuke Kawaguchi, Seiji Sogabe, id:cactusman, Yahoo! Inc.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -33,7 +33,7 @@ THE SOFTWARE.
       <t:buildHealth job="${it.owner}" iconSize="16x16" link="${it.baseUrl}/lastBuild"/>
     </j:if>
   </j:parse>
-  <l:pane width="2" title="${h.runScript(paneTitle)}${it.displayName}" id="buildHistory">
+  <l:pane width="3" title="${h.runScript(paneTitle)}${it.displayName}" id="buildHistory">
 
     <!-- build history -->
     <st:include page="entries.jelly" />
@@ -44,7 +44,7 @@ THE SOFTWARE.
     -->
     <j:if test="${it.trimmed}">
       <tr class="build-row">
-        <td colspan="2" align="right">
+        <td colspan="3" align="right">
           <script>
             function loadAllBuildHistory() {
               // first display the "loading..." icon
@@ -80,7 +80,7 @@ THE SOFTWARE.
       RSS link
     -->
     <tr class="build-row">
-      <td colspan="2" align="right">
+      <td colspan="3" align="right">
         <a href="${it.baseUrl}/rssAll"><img src="${imagesURL}/atom.gif" border="0" alt="Feed"/> ${%for all}</a>
         <st:nbsp/>
         <a href="${it.baseUrl}/rssFailed"><img src="${imagesURL}/atom.gif" border="0" alt="Feed"/> ${%for failures}</a>
