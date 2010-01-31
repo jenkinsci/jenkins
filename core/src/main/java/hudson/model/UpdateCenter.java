@@ -170,6 +170,19 @@ public class UpdateCenter extends AbstractModelObject implements Saveable {
     }
 
     /**
+     * Returns latest Hudson upgrade job.
+     * @return HudsonUpgradeJob or null if not found
+     */
+    public HudsonUpgradeJob getHudsonJob() {
+        List<UpdateCenterJob> jobList = getJobs();
+        Collections.reverse(jobList);
+        for (UpdateCenterJob job : jobList)
+            if (job instanceof HudsonUpgradeJob)
+                return (HudsonUpgradeJob)job;
+        return null;
+    }
+
+    /**
      * Returns the list of {@link UpdateSite}s to be used.
      * This is a live list, whose change will be persisted automatically.
      *
@@ -759,6 +772,9 @@ public class UpdateCenter extends AbstractModelObject implements Saveable {
          */
         public abstract class InstallationStatus {
             public final int id = iota.incrementAndGet();
+            public boolean isSuccess() {
+                return false;
+            }
         }
 
         /**
@@ -780,6 +796,9 @@ public class UpdateCenter extends AbstractModelObject implements Saveable {
          * Indicates that the plugin was successfully installed.
          */
         public class Success extends InstallationStatus {
+            @Override public boolean isSuccess() {
+                return true;
+            }
         }
 
         /**
