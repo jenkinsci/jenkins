@@ -58,7 +58,7 @@ THE SOFTWARE.
       </j:otherwise>
     </j:choose>
   </div>  
-  <img src="${prefix?:'loadStatistics'}/graph?type=${type}&amp;width=500&amp;height=300" />
+  <img src="${prefix?:'loadStatistics'}/graph?type=${type}&amp;width=500&amp;height=300" alt="[${%Load statistics graph}]" />
   <div style="margin-top: 2em;">
     ${%blurb}
   </div>
