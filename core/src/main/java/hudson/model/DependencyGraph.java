@@ -1,7 +1,7 @@
 /*
  * The MIT License
  * 
- * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, Martin Eigenbrodt
+ * Copyright (c) 2004-2010, Sun Microsystems, Inc., Kohsuke Kawaguchi, Martin Eigenbrodt. Seiji Sogabe
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -432,6 +432,28 @@ public final class DependencyGraph implements Comparator<AbstractProject> {
         public boolean shouldTriggerBuild(AbstractBuild build, TaskListener listener,
                                           List<Action> actions) {
             return true;
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (obj == null) return false;
+            if (getClass() != obj.getClass()) return false;
+
+            final Dependency other = (Dependency) obj;
+            if (this.upstream != other.upstream && (this.upstream == null || !this.upstream.equals(other.upstream))) 
+                return false;
+            if (this.downstream != other.downstream && (this.downstream == null || !this.downstream.equals(other.downstream))) 
+                return false;
+
+            return true;
+        }
+
+        @Override
+        public int hashCode() {
+            int hash = 7;
+            hash = 23 * hash + (this.upstream != null ? this.upstream.hashCode() : 0);
+            hash = 23 * hash + (this.downstream != null ? this.downstream.hashCode() : 0);
+            return hash;
         }
     }
 }

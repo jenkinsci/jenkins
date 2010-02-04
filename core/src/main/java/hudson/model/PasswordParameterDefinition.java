@@ -1,7 +1,7 @@
 /*
  * The MIT License
  *
- * Copyright (c) 2004-2009, Sun Microsystems, Inc.
+ * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, Romain Seguy
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -27,18 +27,48 @@ import net.sf.json.JSONObject;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.DataBoundConstructor;
 import hudson.Extension;
+import hudson.util.Secret;
 
 /**
- * Parameter whose value is a string, but is hidden from the UI.
- * Useful for passwords, even though its protection is still somewhat limited.
+ * Parameter whose value is a {@link Secret} and is hidden from the UI.
  *
  * @author Kohsuke Kawaguchi
  * @since 1.319
  */
-public class PasswordParameterDefinition extends StringParameterDefinition {
+public class PasswordParameterDefinition extends SimpleParameterDefinition {
+
+    private Secret defaultValue;
+
     @DataBoundConstructor
     public PasswordParameterDefinition(String name, String defaultValue, String description) {
-        super(name, defaultValue, description);
+        super(name, description);
+        this.defaultValue = Secret.fromString(defaultValue);
+    }
+
+    @Override
+    public ParameterValue createValue(String value) {
+        return new PasswordParameterValue(getName(), value, getDescription());
+    }
+
+    @Override
+    public PasswordParameterValue createValue(StaplerRequest req, JSONObject jo) {
+        PasswordParameterValue value = req.bindJSON(PasswordParameterValue.class, jo);
+        value.setDescription(getDescription());
+        return value;
+    }
+
+    @Override
+    public ParameterValue getDefaultParameterValue() {
+        return new PasswordParameterValue(getName(), getDefaultValue(), getDescription());
+    }
+
+    public String getDefaultValue() {
+        return defaultValue != null ? defaultValue.toString() : null;
+    }
+
+    // kept for backward compatibility
+    public void setDefaultValue(String defaultValue) {
+        this.defaultValue = Secret.fromString(defaultValue);
     }
 
     @Extension
@@ -47,12 +77,10 @@ public class PasswordParameterDefinition extends StringParameterDefinition {
         public String getDisplayName() {
             return Messages.PasswordParameterDefinition_DisplayName();
         }
-    }
-
-    @Override
-    public PasswordParameterValue createValue(StaplerRequest req, JSONObject jo) {
-        PasswordParameterValue value = req.bindJSON(PasswordParameterValue.class, jo);
-        value.setDescription(getDescription());
-        return value;
+        
+        @Override
+        public String getHelpFile() {
+            return "/help/parameter/string.html";
+        }
     }
 }

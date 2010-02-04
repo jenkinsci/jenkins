@@ -204,11 +204,6 @@ THE SOFTWARE.
               <name>hudson.model.UsageStatistics.disabled</name>
               <value>true</value>
             </systemProperty>
-            <systemProperty>
-              <!-- update-center.json is too big for the default hard-coded Jetty limit for POST -->
-              <name>org.mortbay.jetty.Request.maxFormContentSize</name>
-              <value>-1</value>
-            </systemProperty>
           </systemProperties>
         </configuration>
       </plugin>

@@ -42,6 +42,7 @@ import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLConnection;
+import java.util.Locale;
 
 import javax.servlet.ServletException;
 
@@ -295,7 +296,7 @@ public abstract class FormFieldValidator {
          */
         private String getCharset(URLConnection con) {
             for( String t : con.getContentType().split(";") ) {
-                t = t.trim().toLowerCase();
+                t = t.trim().toLowerCase(Locale.ENGLISH);
                 if(t.startsWith("charset="))
                     return t.substring(8);
             }

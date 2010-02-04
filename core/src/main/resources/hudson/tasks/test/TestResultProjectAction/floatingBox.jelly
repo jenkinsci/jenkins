@@ -41,12 +41,9 @@ THE SOFTWARE.
       <div style="text-align:right">
         <a href="test/flipTrend">
           <j:choose>
-            <j:when test="${mode}">
-              (${%show test # and failure #})
-            </j:when>
-            <j:otherwise>
-              (${%just show failures})
-            </j:otherwise>
+            <!-- needs to strip whitespace here -->
+            <j:when test="${mode}">(${%show test # and failure #})</j:when>
+            <j:otherwise>(${%just show failures})</j:otherwise>
           </j:choose>
         </a> <st:nbsp/>
         <a href="test/?width=800&amp;height=600${trendQueryString2}">${%enlarge}</a>

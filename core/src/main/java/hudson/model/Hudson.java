@@ -196,6 +196,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
@@ -3293,7 +3294,7 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
     
     public static boolean isDarwin() {
         // according to http://developer.apple.com/technotes/tn2002/tn2110.html
-        return System.getProperty("os.name").toLowerCase().startsWith("mac");
+        return System.getProperty("os.name").toLowerCase(Locale.ENGLISH).startsWith("mac");
     }
 
     /**

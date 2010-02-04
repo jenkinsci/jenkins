@@ -423,7 +423,7 @@ public class JDKInstaller extends ToolInstaller {
         }
 
         public static Platform current() throws DetectionFailedException {
-            String arch = System.getProperty("os.name").toLowerCase();
+            String arch = System.getProperty("os.name").toLowerCase(Locale.ENGLISH);
             if(arch.contains("linux"))  return LINUX;
             if(arch.contains("windows"))   return WINDOWS;
             if(arch.contains("sun") || arch.contains("solaris"))    return SOLARIS;
@@ -480,7 +480,7 @@ public class JDKInstaller extends ToolInstaller {
          * http://lopica.sourceforge.net/os.html was useful in writing this code.
          */
         public static CPU current() throws DetectionFailedException {
-            String arch = System.getProperty("os.arch").toLowerCase();
+            String arch = System.getProperty("os.arch").toLowerCase(Locale.ENGLISH);
             if(arch.contains("sparc"))  return Sparc;
             if(arch.contains("ia64"))   return Itanium;
             if(arch.contains("amd64") || arch.contains("86_64"))    return amd64;

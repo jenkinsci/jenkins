@@ -214,7 +214,6 @@ public class Maven extends Builder {
         String targets = Util.replaceMacro(this.targets,vr);
         targets = env.expand(targets);
         String pom = env.expand(this.pom);
-        String jvmOptions = env.expand(this.jvmOptions);
         String properties = env.expand(this.properties);
 
         int startIndex = 0;
@@ -249,27 +248,12 @@ public class Maven extends Builder {
                 args.add("-f",pom);
             args.addKeyValuePairs("-D",build.getBuildVariables());
             args.addKeyValuePairsFromPropertyString("-D",properties,vr);
-	    if(usesPrivateRepository())
-		args.add("-Dmaven.repo.local="+build.getWorkspace().child(".repository"));
+            if (usesPrivateRepository())
+                args.add("-Dmaven.repo.local=" + build.getWorkspace().child(".repository"));
             args.addTokenized(normalizedTarget);
+            wrapUpArguments(args,normalizedTarget,build,launcher,listener);
 
-            if(mi!=null) {
-                // if somebody has use M2_HOME they will get a classloading error
-                // when M2_HOME points to a different version of Maven2 from
-                // MAVEN_HOME (as Maven 2 gives M2_HOME priority.)
-                // 
-                // The other solution would be to set M2_HOME if we are calling Maven2 
-                // and MAVEN_HOME for Maven1 (only of use for strange people that
-                // are calling Maven2 from Maven1)
-                env.put("M2_HOME",mi.getHome());
-                env.put("MAVEN_HOME",mi.getHome());
-            }
-            // just as a precaution
-            // see http://maven.apache.org/continuum/faqs.html#how-does-continuum-detect-a-successful-build
-            env.put("MAVEN_TERMINATE_CMD","on");
-
-            if(jvmOptions!=null)
-                env.put("MAVEN_OPTS",jvmOptions);
+            buildEnvVars(env, mi);
 
             try {
                 int r = launcher.launch().cmds(args).envs(env).stdout(listener).pwd(build.getModuleRoot()).join();
@@ -284,6 +268,36 @@ public class Maven extends Builder {
             startIndex = endIndex + 1;
         } while (startIndex < targets.length());
         return true;
+    }
+
+    /**
+     * Allows the derived type to make additional modifications to the arguments list.
+     */
+    protected void wrapUpArguments(ArgumentListBuilder args, String normalizedTarget, AbstractBuild<?,?> build, Launcher launcher, BuildListener listener) throws IOException, InterruptedException {
+    }
+
+    /**
+     * Build up the environment variables toward the Maven launch.
+     */
+    protected void buildEnvVars(EnvVars env, MavenInstallation mi) throws IOException, InterruptedException {
+        if(mi!=null) {
+            // if somebody has use M2_HOME they will get a classloading error
+            // when M2_HOME points to a different version of Maven2 from
+            // MAVEN_HOME (as Maven 2 gives M2_HOME priority.)
+            //
+            // The other solution would be to set M2_HOME if we are calling Maven2
+            // and MAVEN_HOME for Maven1 (only of use for strange people that
+            // are calling Maven2 from Maven1)
+            env.put("M2_HOME",mi.getHome());
+            env.put("MAVEN_HOME",mi.getHome());
+        }
+        // just as a precaution
+        // see http://maven.apache.org/continuum/faqs.html#how-does-continuum-detect-a-successful-build
+        env.put("MAVEN_TERMINATE_CMD","on");
+
+        String jvmOptions = env.expand(this.jvmOptions);
+        if(jvmOptions!=null)
+            env.put("MAVEN_OPTS",jvmOptions);
     }
 
     @Override

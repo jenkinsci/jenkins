@@ -1,7 +1,7 @@
 <!--
 The MIT License
 
-Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi
+Copyright (c) 2004-2010, Sun Microsystems, Inc., Kohsuke Kawaguchi
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -25,11 +25,22 @@ THE SOFTWARE.
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
   <div class="warning">
     <j:set var="ucData" value="${it.data}" />
-    <form method="post" action="${rootURL}/updateCenter/upgrade">
-      ${%NewVersionAvailable(ucData.core.version,ucData.core.url)}
-      <j:if test="${ucData.canUpgrade()}">
-        <f:submit value="${%Or Upgrade Automatically}"/>
-      </j:if>
-    </form>
+    <j:set var="upJob" value="${app.updateCenter.hudsonJob}" />
+    <j:choose>
+      <j:when test="${upJob.status.success}">
+        ${%UpgradeComplete(ucData.core.version)}
+      </j:when>
+      <j:when test="${upJob!=null}">
+        ${%UpgradeProgress(ucData.core.version,rootURL+'/updateCenter/')}
+      </j:when>
+      <j:otherwise>
+        <form method="post" action="${rootURL}/updateCenter/upgrade">
+        ${%NewVersionAvailable(ucData.core.version,ucData.core.url)}
+          <j:if test="${ucData.canUpgrade()}">
+            <f:submit value="${%Or Upgrade Automatically}"/>
+          </j:if>
+        </form>
+      </j:otherwise>
+    </j:choose>
   </div>
 </j:jelly>

@@ -1,7 +1,7 @@
 /*
  * The MIT License
  * 
- * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi
+ * Copyright (c) 2004-2010, Sun Microsystems, Inc., Kohsuke Kawaguchi
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -84,6 +84,7 @@ public final class RSS {
 
         String flavor = req.getParameter("flavor");
         if(flavor==null)    flavor="atom";
+        flavor = flavor.replace('/', '_'); // Don't allow path to any jelly
 
         req.getView(Hudson.getInstance(),"/hudson/"+flavor+".jelly").forward(req,rsp);
     }

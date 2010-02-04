@@ -58,7 +58,8 @@ public enum InitMilestone implements Milestone {
      */
     PLUGINS_PREPARED("Prepared all plugins"),
     /**
-     * By this milestone, all plugins start executing.
+     * By this milestone, all plugins start executing, all extension points loaded, descriptors instantiated
+     * and loaded.
      *
      * <p>
      * This is a separate milestone from {@link #PLUGINS_PREPARED} since the execution

@@ -241,6 +241,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
      * Does this project perform concurrent builds?
      * @since 1.319
      */
+    @Exported
     public boolean isConcurrentBuild() {
         return Hudson.CONCURRENT_BUILD && concurrentBuild;
     }

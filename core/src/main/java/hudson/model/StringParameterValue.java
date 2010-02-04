@@ -23,6 +23,7 @@
  */
 package hudson.model;
 
+import hudson.EnvVars;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.export.Exported;
 
@@ -51,8 +52,8 @@ public class StringParameterValue extends ParameterValue {
      * Exposes the name/value as an environment variable.
      */
     @Override
-    public void buildEnvVars(AbstractBuild<?,?> build, Map<String,String> env) {
-        env.put(name.toUpperCase(),value);
+    public void buildEnvVars(AbstractBuild<?,?> build, EnvVars env) {
+        env.put(name,value);
     }
 
     @Override

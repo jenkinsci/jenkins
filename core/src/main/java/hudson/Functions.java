@@ -1152,14 +1152,6 @@ public class Functions {
     public static Date getCurrentTime() {
         return new Date();
     }
-
-    /**
-     * In tribute to Sun Microsystems and all the people that were a part of it.
-     */
-    public static String getBackgroundImage() {
-        // for one week.
-        return System.currentTimeMillis() < 1265443200000L ? "rip.jpg" : "hudson.png";
-    }
     
     private static final Pattern SCHEME = Pattern.compile("[a-z]+://.+");
 

@@ -53,6 +53,7 @@ import java.util.HashSet;
  * @author Kohsuke Kawaguchi
  */
 final class RemoteClassLoader extends URLClassLoader {
+	
     /**
      * Proxy to the code running on remote end.
      */
@@ -363,6 +364,8 @@ final class RemoteClassLoader extends URLClassLoader {
         final Channel channel;
 
         public ClassLoaderProxy(ClassLoader cl, Channel channel) {
+        	assert cl != null;
+        	
             this.cl = cl;
             this.channel = channel;
         }
@@ -372,6 +375,10 @@ final class RemoteClassLoader extends URLClassLoader {
         }
 
         public byte[] fetch(String className) throws ClassNotFoundException {
+        	if (!USE_SYSTEM_CLASSLOADER && cl.equals(ClassLoader.getSystemClassLoader())) {
+        		throw new ClassNotFoundException("Classloading from system classloader disabled");
+        	}
+        	
             InputStream in = cl.getResourceAsStream(className.replace('.', '/') + ".class");
             if(in==null)
                 throw new ClassNotFoundException(className);
@@ -385,7 +392,14 @@ final class RemoteClassLoader extends URLClassLoader {
 
         public ClassFile fetch2(String className) throws ClassNotFoundException {
             ClassLoader ecl = cl.loadClass(className).getClassLoader();
-
+            if (ecl == null) {
+            	if (USE_SYSTEM_CLASSLOADER) {
+            		ecl = ClassLoader.getSystemClassLoader();
+            	} else {
+            		throw new ClassNotFoundException("Classloading from system classloader disabled");
+            	}
+            }
+            
             try {
                 return new ClassFile(
                         exportId(ecl,channel),
@@ -396,18 +410,39 @@ final class RemoteClassLoader extends URLClassLoader {
         }
 
         public byte[] getResource(String name) throws IOException {
-            InputStream in = cl.getResourceAsStream(name);
-            if(in==null)   return null;
-
-            return readFully(in);
+        	URL resource = cl.getResource(name);
+        	if (resource == null) {
+        		return null;
+        	}
+        	
+        	if (!USE_SYSTEM_CLASSLOADER) {
+        		URL systemResource = ClassLoader.getSystemResource(name);
+        		if (resource.equals(systemResource)) {
+        			return null;
+        		}
+        	}
+        	
+            return readFully(resource.openStream());
         }
 
         public byte[][] getResources(String name) throws IOException {
             List<byte[]> images = new ArrayList<byte[]>();
+            
+            Set<URL> systemResources = null;
+            if (!USE_SYSTEM_CLASSLOADER) {
+            	systemResources = new HashSet<URL>();
+            	Enumeration<URL> e = ClassLoader.getSystemResources(name);
+            	while (e.hasMoreElements()) {
+            		systemResources.add(e.nextElement());
+            	}
+            }
 
             Enumeration<URL> e = cl.getResources(name);
             while(e.hasMoreElements()) {
-                images.add(readFully(e.nextElement().openStream()));
+            	URL url = e.nextElement();
+            	if (systemResources == null || !systemResources.contains(url)) {
+            		images.add(readFully(url.openStream()));
+            	}
             }
 
             return images.toArray(new byte[images.size()][]);
@@ -481,4 +516,10 @@ final class RemoteClassLoader extends URLClassLoader {
         private static final long serialVersionUID = 1L;
     }
 
+    /**
+     * If set to true, classes loaded by the system classloader will be also remoted to the remote JVM.
+     * By default, classes that belong to the system classloader will NOT be remoted, as each JVM gets its own JRE
+     * and their versions can be potentially different.
+     */
+    private static final boolean USE_SYSTEM_CLASSLOADER = Boolean.getBoolean(RemoteClassLoader.class.getName() + ".useSystemClassLoader"); 
 }

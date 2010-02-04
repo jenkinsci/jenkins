@@ -1578,8 +1578,11 @@ var downloadService = {
             id = data.id;
         }
         var o = this.continuations[id];
+        // send the payload back in the body. We used to send this in as a form submission, but that hits the form size check in Jetty.
         new Ajax.Request(o.postBack, {
-            parameters:{json:Object.toJSON(data)},
+            contentType:"application/json",
+            encoding:"UTF-8",
+            postBody:Object.toJSON(data),
             onSuccess: function() {
                 if(o.completionHandler!=null)
                     o.completionHandler();

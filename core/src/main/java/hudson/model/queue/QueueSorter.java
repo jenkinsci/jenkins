@@ -41,7 +41,7 @@ public abstract class QueueSorter implements ExtensionPoint {
      *
      * {@link Queue#Queue(LoadBalancer)} is too early to do this
      */
-    @Initializer(after=JOB_LOADED,displayName="Installing default queue sorter")
+    @Initializer(after=JOB_LOADED)
     public static void installDefaultQueueSorter() {
         ExtensionList<QueueSorter> all = all();
         if (all.isEmpty())  return;

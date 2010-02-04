@@ -49,6 +49,7 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
@@ -123,7 +124,7 @@ public class LogRecorderManager extends AbstractModelObject {
         if(level.equals("inherit"))
             lv = null;
         else
-            lv = Level.parse(level.toUpperCase());
+            lv = Level.parse(level.toUpperCase(Locale.ENGLISH));
         Logger.getLogger(name).setLevel(lv);
         return new HttpRedirect("levels");
     }

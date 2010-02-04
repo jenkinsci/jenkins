@@ -1,7 +1,7 @@
 /*
  * The MIT License
  * 
- * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, Yahoo! Inc., Seiji Sogabe
+ * Copyright (c) 2004-2010, Sun Microsystems, Inc., Kohsuke Kawaguchi, Yahoo! Inc., Seiji Sogabe
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -59,6 +59,7 @@ import java.net.URL;
 import java.net.URLConnection;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -150,6 +151,35 @@ public class UpdateCenter extends AbstractModelObject implements Saveable {
         synchronized (jobs) {
             return new ArrayList<UpdateCenterJob>(jobs);
         }
+    }
+
+    /**
+     * Returns latest install/upgrade job for the given plugin.
+     * @return InstallationJob or null if not found
+     */
+    public InstallationJob getJob(Plugin plugin) {
+        List<UpdateCenterJob> jobList = getJobs();
+        Collections.reverse(jobList);
+        for (UpdateCenterJob job : jobList)
+            if (job instanceof InstallationJob) {
+                InstallationJob ij = (InstallationJob)job;
+                if (ij.plugin.name.equals(plugin.name) && ij.plugin.sourceId.equals(plugin.sourceId))
+                    return ij;
+            }
+        return null;
+    }
+
+    /**
+     * Returns latest Hudson upgrade job.
+     * @return HudsonUpgradeJob or null if not found
+     */
+    public HudsonUpgradeJob getHudsonJob() {
+        List<UpdateCenterJob> jobList = getJobs();
+        Collections.reverse(jobList);
+        for (UpdateCenterJob job : jobList)
+            if (job instanceof HudsonUpgradeJob)
+                return (HudsonUpgradeJob)job;
+        return null;
     }
 
     /**
@@ -742,6 +772,9 @@ public class UpdateCenter extends AbstractModelObject implements Saveable {
          */
         public abstract class InstallationStatus {
             public final int id = iota.incrementAndGet();
+            public boolean isSuccess() {
+                return false;
+            }
         }
 
         /**
@@ -763,6 +796,9 @@ public class UpdateCenter extends AbstractModelObject implements Saveable {
          * Indicates that the plugin was successfully installed.
          */
         public class Success extends InstallationStatus {
+            @Override public boolean isSuccess() {
+                return true;
+            }
         }
 
         /**

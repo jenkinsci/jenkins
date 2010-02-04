@@ -23,6 +23,9 @@
  */
 package hudson.model;
 
+import hudson.EnvVars;
+import hudson.Util;
+import hudson.slaves.OfflineCause;
 import hudson.tasks.BuildWrapper;
 import hudson.tasks.Builder;
 import hudson.util.VariableResolver;
@@ -109,18 +112,46 @@ public abstract class ParameterValue implements Serializable {
      * expected to add more values to this map (or do nothing)
      *
      * <p>
-     * Environment variables should be by convention all upper case.
-     * (This is so that a Windows/Unix heterogenous environment
+     * <strike>Environment variables should be by convention all upper case.
+     * (This is so that a Windows/Unix heterogeneous environment
      * won't get inconsistent result depending on which platform to
-     * execute.)
+     * execute.)</strike> (see {@link EnvVars} why upper casing is a bad idea.)
+     *
+     * @param env
+     *      never null.
+     * @param build
+     *      The build for which this parameter is being used. Never null.
+     * @deprecated as of 1.344
+     *      Use {@link #buildEnvVars(AbstractBuild, EnvVars)} instead.
+     */
+    public void buildEnvVars(AbstractBuild<?,?> build, Map<String,String> env) {
+        if (env instanceof EnvVars && Util.isOverridden(ParameterValue.class,getClass(),"buildEnvVars", AbstractBuild.class,EnvVars.class))
+            // if the subtype already derives buildEnvVars(AbstractBuild,Map), then delegate to it
+            buildEnvVars(build,(EnvVars)env);
+
+        // otherwise no-op by default
+    }
+
+    /**
+     * Adds environmental variables for the builds to the given map.
+     *
+     * <p>
+     * This provides a means for a parameter to pass the parameter
+     * values to the build to be performed.
+     *
+     * <p>
+     * When this method is invoked, the map already contains the
+     * current "planned export" list. The implementation is
+     * expected to add more values to this map (or do nothing)
      *
      * @param env
      *      never null.
      * @param build
      *      The build for which this parameter is being used. Never null.
      */
-    public void buildEnvVars(AbstractBuild<?,?> build, Map<String,String> env) {
-        // no-op by default
+    public void buildEnvVars(AbstractBuild<?,?> build, EnvVars env) {
+        // for backward compatibility
+        buildEnvVars(build,(Map<String,String>)env);
     }
 
     /**

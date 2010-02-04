@@ -45,6 +45,7 @@ import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.net.URL;
 import java.net.URLConnection;
+import java.util.Locale;
 
 /**
  * Represents the result of the form field validation.
@@ -189,7 +190,7 @@ public abstract class FormValidation extends IOException implements HttpResponse
         return new FormValidation(kind) {
             public String renderHtml() {
                 // 1x16 spacer needed for IE since it doesn't support min-height
-                return "<div class="+ kind.name().toLowerCase() +"><img src='"+
+                return "<div class="+ kind.name().toLowerCase(Locale.ENGLISH) +"><img src='"+
                         Stapler.getCurrentRequest().getContextPath()+ Hudson.RESOURCE_PATH+"/images/none.gif' height=16 width=1>"+
                         message+"</div>";
             }
@@ -403,7 +404,7 @@ public abstract class FormValidation extends IOException implements HttpResponse
          */
         private String getCharset(URLConnection con) {
             for( String t : con.getContentType().split(";") ) {
-                t = t.trim().toLowerCase();
+                t = t.trim().toLowerCase(Locale.ENGLISH);
                 if(t.startsWith("charset="))
                     return t.substring(8);
             }

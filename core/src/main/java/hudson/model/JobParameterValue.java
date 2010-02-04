@@ -23,6 +23,7 @@
  */
 package hudson.model;
 
+import hudson.EnvVars;
 import org.kohsuke.stapler.DataBoundConstructor;
 
 import java.util.Map;
@@ -40,8 +41,8 @@ public class JobParameterValue extends ParameterValue {
      * Exposes the name/value as an environment variable.
      */
     @Override
-    public void buildEnvVars(AbstractBuild<?,?> build, Map<String,String> env) {
+    public void buildEnvVars(AbstractBuild<?,?> build, EnvVars env) {
         // TODO: check with Tom if this is really what he had in mind
-        env.put(name.toUpperCase(),job.toString());
+        env.put(name,job.toString());
     }
 }

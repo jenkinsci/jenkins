@@ -61,6 +61,7 @@ import java.net.Authenticator;
 import java.net.PasswordAuthentication;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.security.cert.X509Certificate;
@@ -90,7 +91,7 @@ public class Launcher {
             "Useful for running slave over 8-bit unsafe protocol like telnet")
     public void setTextMode(boolean b) {
         mode = b?Mode.TEXT:Mode.BINARY;
-        System.out.println("Running in "+mode.name().toLowerCase()+" mode");
+        System.out.println("Running in "+mode.name().toLowerCase(Locale.ENGLISH)+" mode");
     }
 
     @Option(name="-jnlpUrl",usage="instead of talking to the master via stdin/stdout, " +

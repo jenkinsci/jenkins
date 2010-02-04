@@ -1,7 +1,7 @@
 /*
  * The MIT License
  *
- * Copyright (c) 2004-2009, Sun Microsystems, Inc.
+ * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, Romain Seguy
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,14 +23,40 @@
  */
 package hudson.model;
 
+import hudson.EnvVars;
+import hudson.util.Secret;
+import hudson.util.VariableResolver;
 import org.kohsuke.stapler.DataBoundConstructor;
 
 /**
  * @author Kohsuke Kawaguchi
  */
-public class PasswordParameterValue extends StringParameterValue {
-    @DataBoundConstructor
+public class PasswordParameterValue extends ParameterValue {
+
+    private final Secret value;
+
+    // kept for backward compatibility
     public PasswordParameterValue(String name, String value) {
-        super(name, value);
+        this(name, value, null);
+    }
+
+    @DataBoundConstructor
+    public PasswordParameterValue(String name, String value, String description) {
+        super(name, description);
+        this.value = Secret.fromString(value);
+    }
+
+    @Override
+    public void buildEnvVars(AbstractBuild<?,?> build, EnvVars env) {
+        env.put(name, value != null ? value.toString() : null);
+    }
+
+    @Override
+    public VariableResolver<String> createVariableResolver(AbstractBuild<?, ?> build) {
+        return new VariableResolver<String>() {
+            public String resolve(String name) {
+                return PasswordParameterValue.this.name.equals(name) ? (value != null ? value.toString() : null) : null;
+            }
+        };
     }
 }
