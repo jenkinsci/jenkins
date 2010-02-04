@@ -54,8 +54,6 @@ import java.util.HashSet;
  */
 final class RemoteClassLoader extends URLClassLoader {
 	
-	private static final boolean USE_SYSTEM_CLASSLOADER = Boolean.getBoolean(RemoteClassLoader.class.getName() + ".useSystemClassLoader"); 
-	
     /**
      * Proxy to the code running on remote end.
      */
@@ -518,4 +516,10 @@ final class RemoteClassLoader extends URLClassLoader {
         private static final long serialVersionUID = 1L;
     }
 
+    /**
+     * If set to true, classes loaded by the system classloader will be also remoted to the remote JVM.
+     * By default, classes that belong to the system classloader will NOT be remoted, as each JVM gets its own JRE
+     * and their versions can be potentially different.
+     */
+    private static final boolean USE_SYSTEM_CLASSLOADER = Boolean.getBoolean(RemoteClassLoader.class.getName() + ".useSystemClassLoader"); 
 }
