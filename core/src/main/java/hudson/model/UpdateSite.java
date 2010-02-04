@@ -29,12 +29,14 @@ import hudson.PluginWrapper;
 import hudson.PluginManager;
 import hudson.model.UpdateCenter.UpdateCenterJob;
 import hudson.lifecycle.Lifecycle;
+import hudson.util.IOUtils;
 import hudson.util.TextFile;
 import hudson.util.VersionNumber;
 import static hudson.util.TimeUnit2.DAYS;
 import net.sf.json.JSONObject;
 import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.DataBoundConstructor;
+import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 import org.jvnet.hudson.crypto.CertificateUtil;
 import org.jvnet.hudson.crypto.SignatureOutputStream;
@@ -132,8 +134,9 @@ public class UpdateSite {
     /**
      * This is the endpoint that receives the update center data file from the browser.
      */
-    public void doPostBack(@QueryParameter String json) throws IOException, GeneralSecurityException {
+    public void doPostBack(StaplerRequest req) throws IOException, GeneralSecurityException {
         dataTimestamp = System.currentTimeMillis();
+        String json = IOUtils.toString(req.getInputStream(),"UTF-8");
         JSONObject o = JSONObject.fromObject(json);
 
         int v = o.getInt("updateCenterVersion");

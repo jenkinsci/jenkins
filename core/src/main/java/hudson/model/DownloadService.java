@@ -26,6 +26,7 @@ package hudson.model;
 import hudson.Extension;
 import hudson.ExtensionList;
 import hudson.ExtensionPoint;
+import hudson.util.IOUtils;
 import hudson.util.QuotedStringTokenizer;
 import hudson.util.TextFile;
 import hudson.util.TimeUnit2;
@@ -37,6 +38,7 @@ import java.io.IOException;
 import java.util.logging.Logger;
 
 import net.sf.json.JSONObject;
+import org.kohsuke.stapler.StaplerRequest;
 
 /**
  * Service for plugins to periodically retrieve update data files
@@ -198,10 +200,10 @@ public class DownloadService extends PageDecorator {
         /**
          * This is where the browser sends us the data. 
          */
-        public void doPostBack(@QueryParameter String json) throws IOException {
+        public void doPostBack(StaplerRequest req) throws IOException {
             long dataTimestamp = System.currentTimeMillis();
             TextFile df = getDataFile();
-            df.write(json);
+            df.write(IOUtils.toString(req.getInputStream(),"UTF-8"));
             df.file.setLastModified(dataTimestamp);
             due = dataTimestamp+getInterval();
             LOGGER.info("Obtained the updated data file for "+id);
