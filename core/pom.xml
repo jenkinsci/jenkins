@@ -333,12 +333,8 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.kohsuke.stapler</groupId>
       <artifactId>stapler-jelly</artifactId>
-      <version>1.131</version>
+      <version>1.132</version>
       <exclusions>
-        <exclusion>
-          <groupId>dom4j</groupId>
-          <artifactId>dom4j</artifactId>
-        </exclusion>
         <exclusion>
           <groupId>commons-jelly</groupId>
           <artifactId>commons-jelly</artifactId>
@@ -468,17 +464,6 @@ THE SOFTWARE.
       <groupId>org.jvnet.hudson</groupId>
       <artifactId>activation</artifactId>
       <version>1.1.1-hudson-1</version>
-    </dependency>
-    <dependency>
-      <groupId>org.jvnet.hudson.dom4j</groupId>
-      <artifactId>dom4j</artifactId>
-      <version>1.6.1-hudson-1</version>
-      <exclusions>
-        <exclusion>
-          <groupId>xml-apis</groupId>
-          <artifactId>xml-apis</artifactId>
-        </exclusion>
-      </exclusions>
     </dependency>
     <dependency>
       <groupId>jaxen</groupId>

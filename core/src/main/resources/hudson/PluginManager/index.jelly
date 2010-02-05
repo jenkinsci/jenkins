@@ -30,7 +30,7 @@ THE SOFTWARE.
     <div style="margin-top:1em">
       ${%UpdatePageDescription}
       <j:if test="${!empty(app.updateCenter.jobs)}">
-        &lt;br/&gt; ${%UpdatePageLegend(rootURL+'/updateCenter/')}
+        <br/> ${%UpdatePageLegend(rootURL+'/updateCenter/')}
       </j:if>
     </div>
   </local:table>
