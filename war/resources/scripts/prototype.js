@@ -1030,9 +1030,12 @@ Ajax.Request.prototype = Object.extend(new Ajax.Base(), {
   initialize: function(url, options) {
     this.transport = Ajax.getTransport();
     this.setOptions(options);
-    // KK patch -- handle crumb for POST automatically
-    if(this.options.method=="post")
-      crumb.wrap(this.options.parameters);
+    // KK patch -- handle crumb for POST automatically by adding a header
+    if(this.options.method=="post") {
+        if(this.options.requestHeaders==undefined)
+            this.options.requestHeaders = {};
+        crumb.wrap(this.options.requestHeaders);
+    }
     // KK patch until here
     this.request(url);
   },
