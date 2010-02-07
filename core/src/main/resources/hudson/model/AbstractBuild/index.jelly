@@ -144,12 +144,6 @@ THE SOFTWARE.
           </j:forEach>
         </ul>
       </j:if>
-
-
-      <h2>${%Permalinks}</h2>
-      <ul>
-        <li><a href="buildNumber">${%Build number}</a></li>
-      </ul>
     </l:main-panel>
   </l:layout>
 </j:jelly>
