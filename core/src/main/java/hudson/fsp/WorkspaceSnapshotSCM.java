@@ -23,9 +23,11 @@
  */
 package hudson.fsp;
 
+import hudson.scm.PollingResult;
 import hudson.scm.SCM;
 import hudson.scm.ChangeLogParser;
 import hudson.scm.SCMDescriptor;
+import hudson.scm.SCMRevisionState;
 import hudson.model.AbstractProject;
 import hudson.model.TaskListener;
 import hudson.model.AbstractBuild;
@@ -118,15 +120,12 @@ public class WorkspaceSnapshotSCM extends SCM {
         return new Snapshot(snapshot,b);
     }
 
-    public boolean pollChanges(AbstractProject project, Launcher launcher, FilePath workspace, TaskListener listener) throws IOException, InterruptedException {
-        AbstractBuild lastBuild = (AbstractBuild) project.getLastBuild();
-        if (lastBuild == null) {
-            listener.getLogger().println("No existing build. Starting a new one");
-            return true;
-        }
+    public SCMRevisionState calcRevisionsFromBuild(AbstractBuild<?, ?> build, Launcher launcher, TaskListener listener) throws IOException, InterruptedException {
+        return null;
+    }
 
-
-        return false;
+    protected PollingResult compareRemoteRevisionWith(AbstractProject project, Launcher launcher, FilePath workspace, TaskListener listener, SCMRevisionState baseline) throws IOException, InterruptedException {
+        return PollingResult.NO_CHANGES;
     }
 
     public boolean checkout(AbstractBuild build, Launcher launcher, FilePath workspace, BuildListener listener, File changelogFile) throws IOException, InterruptedException {

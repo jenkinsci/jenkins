@@ -54,7 +54,7 @@ public class BuildCommandTest extends HudsonTestCase {
         }] as TestBuilder);
 
         // this should be asynchronous
-        new CLI(getURL()).execute(["build", p.name])
+        assertEquals(0,new CLI(getURL()).execute(["build", p.name]))
         started.block();
         assertTrue(p.getBuildByNumber(1).isBuilding())
         completed.signal();

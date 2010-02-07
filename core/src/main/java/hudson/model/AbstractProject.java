@@ -44,6 +44,10 @@ import hudson.scm.ChangeLogSet.Entry;
 import hudson.scm.NullSCM;
 import hudson.scm.SCM;
 import hudson.scm.SCMS;
+import hudson.scm.PollingResult;
+import hudson.scm.SCMRevisionState;
+import static hudson.scm.PollingResult.NO_CHANGES;
+import static hudson.scm.PollingResult.BUILD_NOW;
 import hudson.search.SearchIndexBuilder;
 import hudson.security.Permission;
 import hudson.tasks.BuildStep;
@@ -106,6 +110,11 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
      * access to this variable should always go through {@link #getScm()}.
      */
     private volatile SCM scm = new NullSCM();
+
+    /**
+     * State returned from {@link SCM#poll(AbstractProject, Launcher, FilePath, TaskListener, SCMRevisionState)}.
+     */
+    private volatile transient SCMRevisionState pollingBaseline = null;
 
     /**
      * All the builds keyed by their build number.
@@ -1011,7 +1020,34 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
 
         FilePath workspace = build.getWorkspace();
         workspace.mkdirs();
-        return scm.checkout(build, launcher, workspace, listener, changelogFile);
+        
+        boolean r = scm.checkout(build, launcher, workspace, listener, changelogFile);
+        calcPollingBaseline(build, launcher, listener);
+        return r;
+    }
+
+    /**
+     * Pushes the baseline up to the newly checked out revision.
+     */
+    private void calcPollingBaseline(AbstractBuild build, Launcher launcher, TaskListener listener) throws IOException, InterruptedException {
+        SCMRevisionState baseline = build.getAction(SCMRevisionState.class);
+        if (baseline==null) {
+            try {
+                baseline = safeCalcRevisionsFromBuild(build, launcher, listener);
+            } catch (AbstractMethodError e) {
+                baseline = SCMRevisionState.NONE; // pre-1.345 SCM implementations, which doesn't use the baseline in polling
+            }
+            if (baseline!=null)
+                build.addAction(baseline);
+        }
+        pollingBaseline = baseline;
+    }
+
+    /**
+     * For reasons I don't understand, if I inline this method, AbstractMethodError escapes try/catch block.
+     */
+    private SCMRevisionState safeCalcRevisionsFromBuild(AbstractBuild build, Launcher launcher, TaskListener listener) throws IOException, InterruptedException {
+        return getScm().calcRevisionsFromBuild(build, launcher, listener);
     }
 
     /**
@@ -1022,22 +1058,54 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
      * a build and polling, as both touches the workspace.
      */
     public boolean pollSCMChanges( TaskListener listener ) {
+        return poll(listener).hasChanges();
+    }
+
+    /**
+     * Checks if there's any update in SCM, and returns true if any is found.
+     *
+     * <p>
+     * The caller is responsible for coordinating the mutual exclusion between
+     * a build and polling, as both touches the workspace.
+     *
+     * @since 1.345
+     */
+    public PollingResult poll( TaskListener listener ) {
         SCM scm = getScm();
         if(scm==null) {
             listener.getLogger().println(Messages.AbstractProject_NoSCM());
-            return false;
+            return NO_CHANGES;
         }
         if(isDisabled()) {
             listener.getLogger().println(Messages.AbstractProject_Disabled());
-            return false;
+            return NO_CHANGES;
+        }
+
+        R lb = getLastBuild();
+        if (lb==null) {
+            listener.getLogger().println("No builds have done yet. Scheduling a new one");
+            return BUILD_NOW;
+        }
+
+        if (pollingBaseline==null) {
+            R success = getLastSuccessfulBuild(); // if we have a persisted baseline, we'll find it by this
+            for (R r=lb; r!=null; r=r.getPreviousBuild()) {
+                SCMRevisionState s = r.getAction(SCMRevisionState.class);
+                if (s!=null) {
+                    pollingBaseline = s;
+                    break;
+                }
+                if (r==success) break;  // searched far enough
+            }
+            // NOTE-NO-BASELINE:
+            // if we don't have baseline yet, it means the data is built by old Hudson that doesn't set the baseline
+            // as action, so we need to compute it. This happens later.
         }
 
         try {
             if(scm.requiresWorkspaceForPolling()) {
                 // lock the workspace of the last build
-                FilePath ws=null;
-                R lb = getLastBuild();
-                if (lb!=null)   ws = lb.getWorkspace();
+                FilePath ws=lb.getWorkspace();
 
                 if (ws==null || !ws.exists()) {
                     // workspace offline. build now, or nothing will ever be built
@@ -1046,14 +1114,13 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
                         // if the build is fixed on a node, then attempting a build will do us
                         // no good. We should just wait for the slave to come back.
                         listener.getLogger().println(Messages.AbstractProject_NoWorkspace());
-                        return false;
+                        return NO_CHANGES;
                     }
-                    if (ws == null)
-                        listener.getLogger().println(Messages.AbstractProject_WorkspaceOffline());
-                    else
-                        listener.getLogger().println(Messages.AbstractProject_NoWorkspace());
+                    listener.getLogger().println( ws==null
+                        ? Messages.AbstractProject_WorkspaceOffline()
+                        : Messages.AbstractProject_NoWorkspace());
                     listener.getLogger().println(Messages.AbstractProject_NewBuildForWorkspace());
-                    return true;
+                    return BUILD_NOW;
                 } else {
                     WorkspaceList l = lb.getBuiltOn().toComputer().getWorkspaceList();
                     // if doing non-concurrent build, acquite a workspace in a way that causes builds to block for this workspace.
@@ -1063,9 +1130,14 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
                     // so better throughput is achieved over time (modulo the initial cost of creating that many workspaces)
                     // by having multiple workspaces
                     WorkspaceList.Lease lease = l.acquire(ws, !concurrentBuild);
+                    Launcher launcher = ws.createLauncher(listener);
                     try {
                         LOGGER.fine("Polling SCM changes of " + getName());
-                        return scm.pollChanges(this, ws.createLauncher(listener), ws, listener);
+                        if (pollingBaseline==null) // see NOTE-NO-BASELINE above
+                            calcPollingBaseline(lb,launcher,listener);
+                        PollingResult r = scm.poll(this, launcher, ws, listener, pollingBaseline);
+                        pollingBaseline = r.remote;
+                        return r;
                     } finally {
                         lease.release();
                     }
@@ -1073,18 +1145,23 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
             } else {
                 // polling without workspace
                 LOGGER.fine("Polling SCM changes of " + getName());
-                return scm.pollChanges(this, null, null, listener);
+
+                if (pollingBaseline==null) // see NOTE-NO-BASELINE above
+                    calcPollingBaseline(lb,null,listener);
+                PollingResult r = scm.poll(this, null, null, listener, pollingBaseline);
+                pollingBaseline = r.remote;
+                return r;
             }
         } catch (AbortException e) {
             listener.fatalError(Messages.AbstractProject_Aborted());
             LOGGER.log(Level.FINE, "Polling "+this+" aborted",e);
-            return false;
+            return NO_CHANGES;
         } catch (IOException e) {
             e.printStackTrace(listener.fatalError(e.getMessage()));
-            return false;
+            return NO_CHANGES;
         } catch (InterruptedException e) {
             e.printStackTrace(listener.fatalError(Messages.AbstractProject_PollingABorted()));
-            return false;
+            return NO_CHANGES;
         }
     }
 
@@ -1338,7 +1415,6 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
         ParametersDefinitionProperty pp = getProperty(ParametersDefinitionProperty.class);
         if (pp != null) {
             pp.buildWithParameters(req,rsp);
-            return;
         } else {
         	throw new IllegalStateException("This build is not parameterized!");
         }
