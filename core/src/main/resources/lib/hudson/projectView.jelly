@@ -77,7 +77,7 @@ THE SOFTWARE.
           <t:projectViewRow />
         </j:forEach>
       </table>
-      <t:rssBar-with-iconSize/>
+      <t:iconSize><t:rssBar/></t:iconSize>
     </j:if>
   </div>
 </j:jelly>

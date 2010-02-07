@@ -23,9 +23,10 @@ THE SOFTWARE.
 -->
 
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
-	<l:layout title="People - ${it.parent.viewName}">
-		<st:include page="sidepanel.jelly" it="${it.parent}" />
-		<l:main-panel>
+  <l:layout title="People - ${it.parent.viewName}">
+    <st:include page="sidepanel.jelly" it="${it.parent}" />
+    <t:setIconSize/>
+    <l:main-panel>
       <table class="sortable pane bigtable" id="people">
         <tr>
           <th />
@@ -35,13 +36,15 @@ THE SOFTWARE.
         </tr>
         <j:forEach var="p" items="${it.users}">
           <tr>
-            <td><a href="${rootURL}/${p.user.url}/"><img src="${imagesURL}/32x32/user.gif" alt=""/></a></td>
+            <td><a href="${rootURL}/${p.user.url}/"><img src="${imagesURL}/${iconSize}/user.gif"
+                 alt=""/></a></td>
             <td><a href="${rootURL}/${p.user.url}/">${p.user}</a></td>
             <td data="${p.timeSortKey}">${p.lastChangeTimeString}</td>
             <td><a href="${rootURL}/${p.project.url}">${p.project.name}</a></td>
           </tr>
         </j:forEach>
       </table>
+      <t:iconSize/>
     </l:main-panel>
-	</l:layout>
+  </l:layout>
 </j:jelly>

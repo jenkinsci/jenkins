@@ -22,7 +22,30 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 -->
 
-<!-- Deprecated since 1.345: use <t:iconSize><t:rssBar/></t:iconSize> -->
-<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:l="/lib/layout" xmlns:t="/lib/hudson">
-  <t:iconSize><t:rssBar/></t:iconSize>
+<j:jelly xmlns:j="jelly:core" xmlns:x="jelly:xml" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
+  <table style="width:100%">
+    <tr>
+      <d:taglib uri="local">
+        <d:tag name="iconSizeLink">
+          <st:nbsp/>
+          <j:choose>
+            <j:when test="${sz==iconSize}">
+              ${title}
+            </j:when>
+            <j:otherwise>
+              <a href="${rootURL}/iconSize?${sz}">${title}</a>
+            </j:otherwise>
+          </j:choose>
+        </d:tag>
+      </d:taglib>
+
+      <td xmlns:local="local">${%Icon}:
+        <local:iconSizeLink title="S" sz="16x16" />
+        <local:iconSizeLink title="M" sz="24x24" />
+        <local:iconSizeLink title="L" sz="32x32" />
+      </td><td>
+        <d:invokeBody />
+      </td>
+    </tr>
+  </table>
 </j:jelly>
