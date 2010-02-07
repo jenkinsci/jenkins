@@ -45,6 +45,10 @@ dt {
   font-weight: bold;
 }
 
+.fixed-width {
+  font-family: Courier, monospace;
+}
+
 .center {
   text-align: center;
 }
