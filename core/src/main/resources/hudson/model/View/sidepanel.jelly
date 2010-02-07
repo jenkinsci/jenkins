@@ -1,7 +1,8 @@
 <!--
 The MIT License
 
-Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, Daniel Dyer, id:cactusman, Tom Huybrechts
+Copyright (c) 2004-2010, Sun Microsystems, Inc., Kohsuke Kawaguchi, Daniel Dyer,
+id:cactusman, Tom Huybrechts, Alan Harder
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -36,9 +37,14 @@ THE SOFTWARE.
     <l:tasks>
       <l:task icon="images/24x24/new-package.gif" href="${rootURL}/${it.viewUrl}newJob" title="${%New Job}" permission="${it.itemCreatePermission}" />
       <l:task icon="images/24x24/setting.gif" href="${rootURL}/manage" title="${%Manage Hudson}" permission="${app.ADMINISTER}" />
-      <j:if test="${it.hasPeople()}">
-        <l:task icon="images/24x24/user.gif" href="${rootURL}/people/" title="${%People}" />
-      </j:if>
+      <j:choose>
+        <j:when test="${it.class.name=='hudson.model.AllView'}">
+          <l:task icon="images/24x24/user.gif" href="${rootURL}/people/" title="${%People}" />
+        </j:when>
+        <j:when test="${it.isDefault() or it.hasPeople()}">
+          <l:task icon="images/24x24/user.gif" href="${rootURL}/${it.viewUrl}people/" title="${%People}" />
+        </j:when>
+      </j:choose>
       <l:task icon="images/24x24/notepad.gif" href="${rootURL}/${it.url}builds" title="${%Build History}"/>
       <j:if test="${it.isEditable()}">
         <!-- /configure URL on Hudson object is overloaded with Hudson's system config, so always use the explicit name. -->

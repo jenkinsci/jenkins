@@ -455,9 +455,9 @@ public abstract class View extends AbstractModelObject implements AccessControll
         public People(Hudson parent) {
             this.parent = parent;
             // for Hudson, really load all users
-            Map<User,UserInfo> users = getUserInfo(parent.getPrimaryView());
+            Map<User,UserInfo> users = getUserInfo(parent.getItems());
             User unknown = User.getUnknown();
-            for(User u : User.getAll()) {
+            for (User u : User.getAll()) {
                 if(u==unknown)  continue;   // skip the special 'unknown' user
                 if(!users.containsKey(u))
                     users.put(u,new UserInfo(u,null,null));
@@ -467,12 +467,12 @@ public abstract class View extends AbstractModelObject implements AccessControll
 
         public People(View parent) {
             this.parent = parent;
-            this.users = toList(getUserInfo(parent));
+            this.users = toList(getUserInfo(parent.getItems()));
         }
 
-        private Map<User,UserInfo> getUserInfo(View parent) {
+        private Map<User,UserInfo> getUserInfo(Collection<? extends Item> items) {
             Map<User,UserInfo> users = new HashMap<User,UserInfo>();
-            for (Item item : parent.getItems()) {
+            for (Item item : items) {
                 for (Job job : item.getAllJobs()) {
                     if (job instanceof AbstractProject) {
                         AbstractProject<?,?> p = (AbstractProject) job;
