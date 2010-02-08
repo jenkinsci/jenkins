@@ -134,7 +134,7 @@ public class UpdateSite {
     /**
      * This is the endpoint that receives the update center data file from the browser.
      */
-    public void doPostBack(StaplerRequest req) throws IOException, GeneralSecurityException {
+    public void doPostBack(StaplerRequest req, StaplerResponse rsp) throws IOException, GeneralSecurityException {
         dataTimestamp = System.currentTimeMillis();
         String json = IOUtils.toString(req.getInputStream(),"UTF-8");
         JSONObject o = JSONObject.fromObject(json);
@@ -150,6 +150,7 @@ public class UpdateSite {
 
         LOGGER.info("Obtained the latest update center data file for UpdateSource "+ id);
         getDataFile().write(json);
+        rsp.setContentType("text/plain");  // So browser won't try to parse response
     }
 
     /**
