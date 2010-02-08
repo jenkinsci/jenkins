@@ -28,6 +28,8 @@ import hudson.util.Secret;
 import hudson.util.VariableResolver;
 import org.kohsuke.stapler.DataBoundConstructor;
 
+import java.util.Locale;
+
 /**
  * @author Kohsuke Kawaguchi
  */
@@ -48,7 +50,9 @@ public class PasswordParameterValue extends ParameterValue {
 
     @Override
     public void buildEnvVars(AbstractBuild<?,?> build, EnvVars env) {
-        env.put(name, value != null ? value.toString() : null);
+        String v = value != null ? value.toString() : null;
+        env.put(name, v);
+        env.put(name.toUpperCase(Locale.ENGLISH),v); // backward compatibility pre 1.345
     }
 
     @Override

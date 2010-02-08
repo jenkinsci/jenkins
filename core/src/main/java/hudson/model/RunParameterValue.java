@@ -23,6 +23,7 @@
  */
 package hudson.model;
 
+import java.util.Locale;
 import java.util.Map;
 
 import hudson.EnvVars;
@@ -68,7 +69,10 @@ public class RunParameterValue extends ParameterValue {
      */
     @Override
     public void buildEnvVars(AbstractBuild<?,?> build, EnvVars env) {
-        env.put(name, Hudson.getInstance().getRootUrl() + getRun().getUrl());
+        String value = Hudson.getInstance().getRootUrl() + getRun().getUrl();
+        env.put(name, value);
+        env.put(name.toUpperCase(Locale.ENGLISH),value); // backward compatibility pre 1.345
+
     }
     
     @Override

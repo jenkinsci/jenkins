@@ -49,7 +49,7 @@ mv hudson_${ver}_all.deb binary
 sudo apt-get install apt-utils
 apt-ftparchive packages binary | tee binary/Packages | gzip -9c > binary/Packages.gz
 apt-ftparchive contents binary | gzip -9c > binary/Contents.gz
-apt-ftparchive -c debian/release.conf release  binary > binary/Release
+apt-ftparchive -c main/debian/release.conf release  binary > binary/Release
 # sign the release file
 rm binary/Release.gpg || true
 gpg --no-use-agent --passphrase-file ~/.gpg.passphrase -abs -o binary/Release.gpg binary/Release

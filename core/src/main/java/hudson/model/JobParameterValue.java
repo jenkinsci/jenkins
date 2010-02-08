@@ -26,6 +26,7 @@ package hudson.model;
 import hudson.EnvVars;
 import org.kohsuke.stapler.DataBoundConstructor;
 
+import java.util.Locale;
 import java.util.Map;
 
 public class JobParameterValue extends ParameterValue {
@@ -44,5 +45,6 @@ public class JobParameterValue extends ParameterValue {
     public void buildEnvVars(AbstractBuild<?,?> build, EnvVars env) {
         // TODO: check with Tom if this is really what he had in mind
         env.put(name,job.toString());
+        env.put(name.toUpperCase(Locale.ENGLISH),job.toString()); // backward compatibility pre 1.345
     }
 }

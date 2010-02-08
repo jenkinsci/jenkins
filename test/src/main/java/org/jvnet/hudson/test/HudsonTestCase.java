@@ -156,7 +156,7 @@ import java.util.concurrent.CountDownLatch;
 /**
  * Base class for all Hudson test cases.
  *
- * @see <a href="http://wiki.hudson-ci.org/wiki/display/HUDSON/Unit+Test">Wiki article about unit testing in Hudson</a>
+ * @see <a href="http://wiki.hudson-ci.org/display/HUDSON/Unit+Test">Wiki article about unit testing in Hudson</a>
  * @author Kohsuke Kawaguchi
  */
 public abstract class HudsonTestCase extends TestCase implements RootAction {
