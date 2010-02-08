@@ -44,6 +44,7 @@ var crumb = {
     value: null,
 
     init: function(crumbField, crumbValue) {
+        if (crumbField=="") return; // layout.jelly passes in "" whereas it means null.
         this.fieldName = crumbField;
         this.value = crumbValue;
     },
