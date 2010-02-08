@@ -1,11 +1,11 @@
 package hudson.scm;
 
-import hudson.model.AbstractProject;
-import hudson.model.InvisibleAction;
-import hudson.model.TaskListener;
-import hudson.model.AbstractBuild;
-import hudson.Launcher;
 import hudson.FilePath;
+import hudson.Launcher;
+import hudson.model.AbstractBuild;
+import hudson.model.AbstractProject;
+import hudson.model.Action;
+import hudson.model.TaskListener;
 
 /**
  * Immutable object that represents revisions of the files in the repository,
@@ -23,7 +23,19 @@ import hudson.FilePath;
  * @author Kohsuke Kawaguchi
  * @since 1.345
  */
-public abstract class SCMRevisionState extends InvisibleAction {
+public abstract class SCMRevisionState implements Action {
+    public String getIconFileName() {
+        return null;
+    }
+
+    public String getDisplayName() {
+        return null;
+    }
+
+    public String getUrlName() {
+        return null;
+    }
+
     /*
       I can't really make this comparable because comparing two revision states often requires
       non-trivial computation and conversations with the repository (mainly to figure out
