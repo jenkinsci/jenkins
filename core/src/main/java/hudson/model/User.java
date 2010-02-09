@@ -56,7 +56,6 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -156,11 +155,11 @@ public class User extends AbstractModelObject implements AccessControlled, Savea
     }
 
     public String getUrl() {
-        return "user/"+id;
+        return "user/"+Util.rawEncode(id);
     }
 
     public String getSearchUrl() {
-        return "/user/"+id;
+        return "/user/"+Util.rawEncode(id);
     }
 
     /**
