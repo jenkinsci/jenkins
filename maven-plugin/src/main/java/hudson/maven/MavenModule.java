@@ -143,6 +143,12 @@ public final class MavenModule extends AbstractMavenProject<MavenModule,MavenBui
         return false;
     }
 
+    @Override
+    public boolean isBuildable() {
+        // not buildable if the parent project is disabled
+        return super.isBuildable() && getParent().isBuildable();
+    }
+
     /**
      * Computes the list of {@link MavenModule}s that are 'under' this POM filesystem-wise. The list doens't include
      * this module itself.

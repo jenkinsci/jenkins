@@ -425,7 +425,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
         return scmCheckoutRetryCount != null;
     }
 
-    public final boolean isBuildable() {
+    public boolean isBuildable() {
         return !isDisabled();
     }
 
@@ -661,7 +661,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
      *      For the convenience of the caller, this array can contain null, and those will be silently ignored.
      */
     public Future<R> scheduleBuild2(int quietPeriod, Cause c, Action... actions) {
-        if (isDisabled())
+        if (!isBuildable())
             return null;
 
         List<Action> queueActions = new ArrayList<Action>(Arrays.asList(actions));
@@ -1388,7 +1388,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
 
         String delay = req.getParameter("delay");
         if (delay!=null) {
-            if (!isDisabled()) {
+            if (isBuildable()) {
                 try {
                     // TODO: more unit handling
                     if(delay.endsWith("sec"))   delay=delay.substring(0,delay.length()-3);
