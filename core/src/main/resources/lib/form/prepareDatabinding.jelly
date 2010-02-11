@@ -29,8 +29,8 @@ THE SOFTWARE.
   </st:documentation>
   <j:set var="pattrs" value="${parentScope.attrs}" />
   <j:if test="${pattrs.field==null}">
-    <j:set target="${pattrs}" property="field"
-           value="${h.findAncestorTag(pattrs,'/lib/form','entry').attributes.field}" />
+    <!-- this looks up the ancestor <entry> set by entry.jelly -->
+    <j:set target="${pattrs}" property="field" value="${entry.field}" />
   </j:if>
   <j:set target="${pattrs}" property="checkUrl"
          value="${h.getCheckUrl(pattrs.checkUrl,descriptor,pattrs.field)}" />

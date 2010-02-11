@@ -77,7 +77,6 @@ import org.kohsuke.stapler.Ancestor;
 import org.kohsuke.stapler.Stapler;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
-import org.kohsuke.stapler.jelly.CustomTagLibrary.StaplerDynamicTag;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.Cookie;
@@ -1098,24 +1097,6 @@ public class Functions {
     
     public static List<Descriptor<Cloud>> getCloudDescriptors() {
         return Cloud.all();
-    }
-
-    /**
-     * Used to assist form databinding. Given the "attrs" object,
-     * find the ancestor tag file of the given name.
-     */
-    public Tag findAncestorTag(Map attributes, String nsUri, String local) {
-        Tag tag = (Tag) attributes.get("ownerTag");
-        if(tag==null)   return null;
-
-        while(true) {
-            tag = TagSupport.findAncestorWithClass(tag.getParent(), StaplerDynamicTag.class);
-            if(tag==null)
-                return null;
-            StaplerDynamicTag stag = (StaplerDynamicTag)tag;
-            if(stag.getLocalName().equals(local) && stag.getNsUri().equals(nsUri))
-                return tag;
-        }
     }
 
     /**

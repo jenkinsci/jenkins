@@ -61,6 +61,8 @@ THE SOFTWARE.
     <j:set target="${attrs}" property="help"
            value="${descriptor.getHelpFile(attrs.field)}" />
   </j:if>
+  <!-- expose this so that we can look up the @field value later from prepareDatabinding.jelly -->
+  <j:set var="entry" value="${attrs}" />
   <tr>
     <td class="setting-leftspace"><st:nbsp/></td>
     <td class="setting-name">

@@ -333,7 +333,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.kohsuke.stapler</groupId>
       <artifactId>stapler-jelly</artifactId>
-      <version>1.132</version>
+      <version>1.133</version>
       <exclusions>
         <exclusion>
           <groupId>commons-jelly</groupId>
@@ -555,7 +555,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.jvnet.hudson</groupId>
       <artifactId>commons-jelly</artifactId>
-      <version>1.1-hudson-20100114</version>
+      <version>1.1-hudson-20100210</version>
     </dependency>
     <dependency>
       <groupId>org.acegisecurity</groupId>
