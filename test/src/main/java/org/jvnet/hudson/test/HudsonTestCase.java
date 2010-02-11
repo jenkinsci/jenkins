@@ -223,6 +223,19 @@ public abstract class HudsonTestCase extends TestCase implements RootAction {
     }
 
     @Override
+    public void runBare() throws Throwable {
+        // override the thread name to make the thread dump more useful.
+        Thread t = Thread.currentThread();
+        String o = getClass().getName()+'.'+t.getName();
+        t.setName("Executing "+getName());
+        try {
+            super.runBare();
+        } finally {
+            t.setName(o);
+        }
+    }
+
+    @Override
     protected void setUp() throws Exception {
         env.pin();
         recipe();
