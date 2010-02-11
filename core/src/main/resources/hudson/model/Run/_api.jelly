@@ -25,11 +25,11 @@ THE SOFTWARE.
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
   <h2>Other Useful URLs</h2>
   <dl>
-    <dt><a href="../buildNumber">build number</a></dt>
+    <dt><a href="../buildNumber">Build number</a></dt>
     <dd>
-      This URL returns the build number in the <tt>text/plain</tt> format.
+      This URL returns the build number in <tt>text/plain</tt> format.
     </dd>
-    <dt><a href="../buildTimestamp">build timestamp</a></dt>
+    <dt><a href="../buildTimestamp">Build timestamp</a></dt>
     <dd>
       This URL returns the build timestamp. You can also use the <tt>format</tt> query parameter
       to control the date format, which follows

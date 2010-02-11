@@ -28,7 +28,6 @@ import hudson.Util;
 import hudson.Functions;
 import hudson.maven.reporters.MavenMailer;
 import hudson.model.AbstractProject;
-import hudson.model.Action;
 import hudson.model.DependencyGraph;
 import hudson.model.Descriptor;
 import hudson.model.Descriptor.FormException;
@@ -142,6 +141,12 @@ public final class MavenModule extends AbstractMavenProject<MavenModule,MavenBui
     @Override
     public boolean supportsLogRotator() {
         return false;
+    }
+
+    @Override
+    public boolean isBuildable() {
+        // not buildable if the parent project is disabled
+        return super.isBuildable() && getParent().isBuildable();
     }
 
     /**
@@ -397,9 +402,9 @@ public final class MavenModule extends AbstractMavenProject<MavenModule,MavenBui
             MavenModule src = modules.get(d);
             if(src!=null) {
                 if(src.getParent().isAggregatorStyleBuild())
-                    graph.addDependency(src.getParent(),dest);
+                    graph.addDependency(new DependencyGraph.Dependency(src.getParent(),dest));
                 else
-                    graph.addDependency(src,dest);
+                    graph.addDependency(new DependencyGraph.Dependency(src,dest));
             }
         }
     }

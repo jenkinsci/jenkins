@@ -39,6 +39,7 @@ import java.util.logging.Logger;
 
 import net.sf.json.JSONObject;
 import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.StaplerResponse;
 
 /**
  * Service for plugins to periodically retrieve update data files
@@ -200,13 +201,14 @@ public class DownloadService extends PageDecorator {
         /**
          * This is where the browser sends us the data. 
          */
-        public void doPostBack(StaplerRequest req) throws IOException {
+        public void doPostBack(StaplerRequest req, StaplerResponse rsp) throws IOException {
             long dataTimestamp = System.currentTimeMillis();
             TextFile df = getDataFile();
             df.write(IOUtils.toString(req.getInputStream(),"UTF-8"));
             df.file.setLastModified(dataTimestamp);
             due = dataTimestamp+getInterval();
             LOGGER.info("Obtained the updated data file for "+id);
+            rsp.setContentType("text/plain");  // So browser won't try to parse response
         }
 
         /**

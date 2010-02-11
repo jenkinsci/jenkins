@@ -333,12 +333,8 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.kohsuke.stapler</groupId>
       <artifactId>stapler-jelly</artifactId>
-      <version>1.131</version>
+      <version>1.133</version>
       <exclusions>
-        <exclusion>
-          <groupId>dom4j</groupId>
-          <artifactId>dom4j</artifactId>
-        </exclusion>
         <exclusion>
           <groupId>commons-jelly</groupId>
           <artifactId>commons-jelly</artifactId>
@@ -470,17 +466,6 @@ THE SOFTWARE.
       <version>1.1.1-hudson-1</version>
     </dependency>
     <dependency>
-      <groupId>org.jvnet.hudson.dom4j</groupId>
-      <artifactId>dom4j</artifactId>
-      <version>1.6.1-hudson-1</version>
-      <exclusions>
-        <exclusion>
-          <groupId>xml-apis</groupId>
-          <artifactId>xml-apis</artifactId>
-        </exclusion>
-      </exclusions>
-    </dependency>
-    <dependency>
       <groupId>jaxen</groupId>
       <artifactId>jaxen</artifactId>
       <version>1.1-beta-11</version>
@@ -570,7 +555,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.jvnet.hudson</groupId>
       <artifactId>commons-jelly</artifactId>
-      <version>1.1-hudson-20100114</version>
+      <version>1.1-hudson-20100210</version>
     </dependency>
     <dependency>
       <groupId>org.acegisecurity</groupId>

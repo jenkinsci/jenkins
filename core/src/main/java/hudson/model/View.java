@@ -205,17 +205,17 @@ public abstract class View extends AbstractModelObject implements AccessControll
      * If true, only show relevant executors
      */
     public boolean isFilterExecutors() {
-		return filterExecutors;
-	}
+        return filterExecutors;
+    }
     
     /**
      * If true, only show relevant queue items
      */
     public boolean isFilterQueue() {
-    	return filterQueue;
+        return filterQueue;
     }
 
-	/**
+    /**
      * Gets the {@link Widget}s registered on this object.
      *
      * <p>
@@ -455,9 +455,9 @@ public abstract class View extends AbstractModelObject implements AccessControll
         public People(Hudson parent) {
             this.parent = parent;
             // for Hudson, really load all users
-            Map<User,UserInfo> users = getUserInfo(parent.getPrimaryView());
+            Map<User,UserInfo> users = getUserInfo(parent.getItems());
             User unknown = User.getUnknown();
-            for(User u : User.getAll()) {
+            for (User u : User.getAll()) {
                 if(u==unknown)  continue;   // skip the special 'unknown' user
                 if(!users.containsKey(u))
                     users.put(u,new UserInfo(u,null,null));
@@ -467,12 +467,12 @@ public abstract class View extends AbstractModelObject implements AccessControll
 
         public People(View parent) {
             this.parent = parent;
-            this.users = toList(getUserInfo(parent));
+            this.users = toList(getUserInfo(parent.getItems()));
         }
 
-        private Map<User,UserInfo> getUserInfo(View parent) {
+        private Map<User,UserInfo> getUserInfo(Collection<? extends Item> items) {
             Map<User,UserInfo> users = new HashMap<User,UserInfo>();
-            for (Item item : parent.getItems()) {
+            for (Item item : items) {
                 for (Job job : item.getAllJobs()) {
                     if (job instanceof AbstractProject) {
                         AbstractProject<?,?> p = (AbstractProject) job;
@@ -671,7 +671,8 @@ public abstract class View extends AbstractModelObject implements AccessControll
         return Item.CREATE;
     }
     
-    public static View create(StaplerRequest req, StaplerResponse rsp, ViewGroup owner) throws ParseException, FormException, IOException, ServletException {
+    public static View create(StaplerRequest req, StaplerResponse rsp, ViewGroup owner)
+            throws ParseException, FormException, IOException, ServletException {
         req.setCharacterEncoding("UTF-8");
 
         String name = req.getParameter("name");
@@ -679,8 +680,12 @@ public abstract class View extends AbstractModelObject implements AccessControll
         if(owner.getView(name)!=null)
             throw new FormException(Messages.Hudson_ViewAlreadyExists(name),"name");
 
+        String mode = req.getParameter("mode");
+        if (mode==null || mode.length()==0)
+            throw new FormException(Messages.View_MissingMode(),"mode");
+
         // create a view
-        View v = all().findByName(req.getParameter("mode")).newInstance(req,req.getSubmittedForm());
+        View v = all().findByName(mode).newInstance(req,req.getSubmittedForm());
         v.owner = owner;
 
         // redirect to the config screen

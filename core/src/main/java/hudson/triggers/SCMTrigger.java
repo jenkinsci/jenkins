@@ -316,7 +316,7 @@ public class SCMTrigger extends Trigger<SCMedItem> {
                     PrintStream logger = listener.getLogger();
                     long start = System.currentTimeMillis();
                     logger.println("Started on "+ DateFormat.getDateTimeInstance().format(new Date()));
-                    boolean result = job.pollSCMChanges(listener);
+                    boolean result = job.poll(listener).hasChanges();
                     logger.println("Done. Took "+ Util.getTimeSpanString(System.currentTimeMillis()-start));
                     if(result)
                         logger.println("Changes found");

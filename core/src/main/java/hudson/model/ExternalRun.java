@@ -26,13 +26,17 @@ package hudson.model;
 import hudson.Proc;
 import hudson.util.DecodingStream;
 import hudson.util.DualOutputStream;
-import org.xmlpull.mxp1.MXParser;
-import org.xmlpull.v1.XmlPullParser;
+import org.jvnet.animal_sniffer.IgnoreJRERequirement;
 
+import javax.xml.stream.XMLInputFactory;
+import javax.xml.stream.XMLStreamException;
+import javax.xml.stream.XMLStreamReader;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.io.Reader;
+
+import static javax.xml.stream.XMLStreamConstants.*;
 
 /**
  * {@link Run} for {@link ExternalJob}.
@@ -89,31 +93,47 @@ public class ExternalRun extends Run<ExternalJob,ExternalRun> {
      * </run>
      * </xmp></pre>
      */
+    @SuppressWarnings({"Since15"})
+    @IgnoreJRERequirement
     public void acceptRemoteSubmission(final Reader in) throws IOException {
         final long[] duration = new long[1];
         run(new Runner() {
+            private String elementText(XMLStreamReader r) throws XMLStreamException {
+                StringBuilder buf = new StringBuilder();
+                while(true) {
+                    int type = r.next();
+                    if(type== CHARACTERS || type== CDATA)
+                        buf.append(r.getTextCharacters(), r.getTextStart(), r.getTextLength());
+                    else
+                        return buf.toString();
+                }
+            }
+
             public Result run(BuildListener listener) throws Exception {
                 PrintStream logger = new PrintStream(new DecodingStream(listener.getLogger()));
 
-                XmlPullParser xpp = new MXParser();
-                xpp.setInput(in);
-                xpp.nextTag();  // get to the <run>
-                xpp.nextTag();  // get to the <log>
-                charset=xpp.getAttributeValue(null,"content-encoding");
-                while(xpp.nextToken()!=XmlPullParser.END_TAG) {
-                    int type = xpp.getEventType();
-                    if(type==XmlPullParser.TEXT
-                    || type==XmlPullParser.CDSECT)
-                        logger.print(xpp.getText());
+                XMLInputFactory xif = XMLInputFactory.newInstance();
+                XMLStreamReader p = xif.createXMLStreamReader(in);
+
+                p.nextTag();    // get to the <run>
+                p.nextTag();    // get to the <log>
+
+                charset=p.getAttributeValue(null,"content-encoding");
+                while(p.next()!= END_ELEMENT) {
+                    int type = p.getEventType();
+                    if(type== CHARACTERS || type== CDATA)
+                        logger.print(p.getText());
                 }
-                xpp.nextTag(); // get to <result>
+                p.nextTag(); // get to <result>
 
-                Result r = Integer.parseInt(xpp.nextText())==0?Result.SUCCESS:Result.FAILURE;
 
-                xpp.nextTag();  // get to <duration> (optional)
-                if(xpp.getEventType()==XmlPullParser.START_TAG
-                && xpp.getName().equals("duration")) {
-                    duration[0] = Long.parseLong(xpp.nextText());
+
+                Result r = Integer.parseInt(elementText(p))==0?Result.SUCCESS:Result.FAILURE;
+
+                p.nextTag();  // get to <duration> (optional)
+                if(p.getEventType()== START_ELEMENT
+                && p.getLocalName().equals("duration")) {
+                    duration[0] = Long.parseLong(elementText(p));
                 }
 
                 return r;

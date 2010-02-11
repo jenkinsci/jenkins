@@ -41,6 +41,7 @@ import hudson.model.WorkspaceCleanupThread;
 import hudson.model.Hudson;
 import hudson.model.Descriptor;
 import hudson.model.Api;
+import hudson.model.Action;
 import hudson.model.AbstractProject.AbstractProjectDescriptor;
 
 import java.io.File;
@@ -133,7 +134,7 @@ public abstract class SCM implements Describable<SCM>, ExtensionPoint {
 
     /**
      * Returns true if this SCM supports
-     * {@link #pollChanges(AbstractProject, Launcher, FilePath, TaskListener) polling}.
+     * {@link #poll(AbstractProject, Launcher, FilePath, TaskListener, SCMRevisionState) poling}.
      *
      * @since 1.105
      */
@@ -236,8 +237,113 @@ public abstract class SCM implements Describable<SCM>, ExtensionPoint {
      *      this exception should be simply propagated all the way up.
      *
      * @see #supportsPolling()
+     *
+     * @deprecated as of 1.345
+     *      Override {@link #calcRevisionsFromBuild(AbstractBuild, Launcher, TaskListener)} and
+     *      {@link #compareRemoteRevisionWith(AbstractProject, Launcher, FilePath, TaskListener, SCMRevisionState)} for implementation.
+     *
+     *      The implementation is now separated in two pieces, one that computes the revision of the current workspace,
+     *      and the other that computes the revision of the remote repository.
+     *
+     *      Call {@link #poll(AbstractProject, Launcher, FilePath, TaskListener, SCMRevisionState)} for use instead.
      */
-    public abstract boolean pollChanges(AbstractProject project, Launcher launcher, FilePath workspace, TaskListener listener) throws IOException, InterruptedException;
+    public boolean pollChanges(AbstractProject project, Launcher launcher, FilePath workspace, TaskListener listener) throws IOException, InterruptedException {
+        // up until 1.336, this method was abstract, so everyone should have overridden this method
+        // without calling super.pollChanges. So the compatibility implementation is purely for
+        // new implementations that doesn't override this method.
+
+        // not sure if this can be implemented any better
+        return false;
+    }
+
+    /**
+     * Calculates the {@link SCMRevisionState} that represents the state of the workspace of the given build.
+     *
+     * <p>
+     * The returned object is then fed into the
+     * {@link #compareRemoteRevisionWith(AbstractProject, Launcher, FilePath, TaskListener, SCMRevisionState)} method
+     * as the baseline {@link SCMRevisionState} to determine if the build is necessary.
+     *
+     * <p>
+     * This method is called after source code is checked out for the given build (that is, after
+     * {@link SCM#checkout(AbstractBuild, Launcher, FilePath, BuildListener, File)} has finished successfully.)
+     *
+     * <p>
+     * The obtained object is added to the build as an {@link Action} for later retrieval. As an optimization,
+     * {@link SCM} implementation can choose to compute {@link SCMRevisionState} and add it as an action
+     * during check out, in which case this method will not called. 
+     *
+     * @param build
+     *      The calculated {@link SCMRevisionState} is for the files checked out in this build. Never null.
+     *      If {@link #requiresWorkspaceForPolling()} returns true, Hudson makes sure that the workspace of this
+     *      build is available and accessible by the callee.
+     * @param launcher
+     *      Abstraction of the machine where the polling will take place. If SCM declares
+     *      that {@linkplain #requiresWorkspaceForPolling() the polling doesn't require a workspace},
+     *      this parameter is null. Otherwise never null.
+     * @param listener
+     *      Logs during the polling should be sent here.
+     *
+     * @return can be null.
+     *
+     * @throws InterruptedException
+     *      interruption is usually caused by the user aborting the computation.
+     *      this exception should be simply propagated all the way up. 
+     */
+    public abstract SCMRevisionState calcRevisionsFromBuild(AbstractBuild<?,?> build, Launcher launcher, TaskListener listener) throws IOException, InterruptedException;
+
+    /**
+     * Compares the current state of the remote repository against the given baseline {@link SCMRevisionState}.
+     *
+     * <p>
+     * Conceptually, the act of polling is to take two states of the repository and to compare them to see
+     * if there's any difference. In practice, however, comparing two arbitrary repository states is an expensive
+     * operation, so in this abstraction, we chose to mix (1) the act of building up a repository state and
+     * (2) the act of comparing it with the earlier state, so that SCM implementations can implement this
+     * more easily. 
+     *
+     * <p>
+     * Multiple invocations of this method may happen over time to make sure that the remote repository
+     * is "quiet" before Hudson schedules a new build.
+     *
+     * @param project
+     *      The project to check for updates
+     * @param launcher
+     *      Abstraction of the machine where the polling will take place. If SCM declares
+     *      that {@linkplain #requiresWorkspaceForPolling() the polling doesn't require a workspace}, this parameter is null.
+     * @param workspace
+     *      The workspace directory that contains baseline files. If SCM declares
+     *      that {@linkplain #requiresWorkspaceForPolling() the polling doesn't require a workspace}, this parameter is null.
+     * @param listener
+     *      Logs during the polling should be sent here.
+     * @param baseline
+     *      The baseline of the comparison. This object is the return value from earlier
+     *      {@link #compareRemoteRevisionWith(AbstractProject, Launcher, FilePath, TaskListener, SCMRevisionState)} or
+     *      {@link #calcRevisionsFromBuild(AbstractBuild, Launcher, TaskListener)}.
+     *
+     * @return
+     *      This method returns multiple values that are bundled together into the {@link PollingResult} value type.
+     *      {@link PollingResult#baseline} should be the value of the baseline parameter, {@link PollingResult#remote}
+     *      is the current state of the remote repository (this object only needs to be understandable to the future
+     *      invocations of this method),
+     *      and {@link PollingResult#change} that indicates the degree of changes found during the comparison.
+     *
+     * @throws InterruptedException
+     *      interruption is usually caused by the user aborting the computation.
+     *      this exception should be simply propagated all the way up.
+     */
+    protected abstract PollingResult compareRemoteRevisionWith(AbstractProject<?,?> project, Launcher launcher, FilePath workspace, TaskListener listener, SCMRevisionState baseline) throws IOException, InterruptedException;
+
+    /**
+     * Convenience method for the caller to handle the backward compatibility between pre 1.345 SCMs.
+     */
+    public final PollingResult poll(AbstractProject<?,?> project, Launcher launcher, FilePath workspace, TaskListener listener, SCMRevisionState baseline) throws IOException, InterruptedException {
+        try {
+            return compareRemoteRevisionWith(project,launcher,workspace,listener,baseline);
+        } catch (AbstractMethodError e) {// pre 1.345 SCM that doesn't implement new polling methods
+            return pollChanges(project,launcher,workspace,listener) ? PollingResult.SIGNIFICANT : PollingResult.NO_CHANGES;
+        }
+    }
 
     /**
      * Obtains a fresh workspace of the module(s) into the specified directory

@@ -71,6 +71,7 @@ public class MorphTagLibrary extends TagLibrary {
                 throw new IllegalArgumentException("Expected collection for exclusion but found :"+exclusion);
             }
 
+            @Override
             public void run(JellyContext context, XMLOutput output) throws JellyTagException {
                 AttributesImpl actual = new AttributesImpl();
 
@@ -80,6 +81,10 @@ public class MorphTagLibrary extends TagLibrary {
                 if (meta!=null) {
                     for (Map.Entry<String,?> e : meta.entrySet()) {
                         String key = e.getKey();
+                        // @see jelly.impl.DynamicTag.setAttribute() -- ${attrs} has duplicates with "Attr" suffix
+                        if (key.endsWith("Attr") && meta.containsKey(key.substring(0, key.length()-4))) continue;
+                        // @see http://github.com/hudson/jelly/commit/4ae67d15957b5b4d32751619997a3cb2a6ad56ed
+                        if (key.equals("ownerTag")) continue;
                         if (!exclusions.contains(key)) {
                             Object v = e.getValue();
                             if (v!=null)

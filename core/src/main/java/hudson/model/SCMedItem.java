@@ -23,6 +23,7 @@
  */
 package hudson.model;
 
+import hudson.scm.PollingResult;
 import hudson.scm.SCM;
 import hudson.triggers.SCMTrigger;
 
@@ -54,9 +55,21 @@ public interface SCMedItem extends BuildableItem {
     /**
      * Checks if there's any update in SCM, and returns true if any is found.
      *
-     * <p>
-     * The caller is responsible for coordinating the mutual exclusion between
-     * a build and polling, as both touches the workspace.
+     * @deprecated as of 1.346
+     *      Use {@link #poll(TaskListener)} instead.
      */
     boolean pollSCMChanges( TaskListener listener );
+
+    /**
+     * Checks if there's any update in SCM, and returns true if any is found.
+     *
+     * <p>
+     * The implementation is responsible for ensuring mutual exclusion between polling and builds
+     * if necessary.
+     *
+     * @return never null.
+     *
+     * @since 1.345
+     */
+    public PollingResult poll( TaskListener listener );
 }

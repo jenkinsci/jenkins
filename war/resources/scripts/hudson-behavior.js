@@ -469,8 +469,11 @@ var hudsonRules = {
                 // make it visible
                 new Ajax.Request(this.getAttribute("helpURL"), {
                     method : 'get',
-                    onComplete : function(x) {
+                    onSuccess : function(x) {
                         div.innerHTML = x.responseText;
+                    },
+                    onFailure : function(x) {
+                        div.innerHTML = "<b>ERROR</b>: Failed to load help file: " + x.statusText;
                     }
                 });
             } else {
