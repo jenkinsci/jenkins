@@ -1053,9 +1053,8 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
     /**
      * Checks if there's any update in SCM, and returns true if any is found.
      *
-     * <p>
-     * The caller is responsible for coordinating the mutual exclusion between
-     * a build and polling, as both touches the workspace.
+     * @deprecated as of 1.346
+     *      Use {@link #poll(TaskListener)} instead.
      */
     public boolean pollSCMChanges( TaskListener listener ) {
         return poll(listener).hasChanges();
@@ -1065,8 +1064,8 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
      * Checks if there's any update in SCM, and returns true if any is found.
      *
      * <p>
-     * The caller is responsible for coordinating the mutual exclusion between
-     * a build and polling, as both touches the workspace.
+     * The implementation is responsible for ensuring mutual exclusion between polling and builds
+     * if necessary.
      *
      * @since 1.345
      */
@@ -1123,7 +1122,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
                     return BUILD_NOW;
                 } else {
                     WorkspaceList l = lb.getBuiltOn().toComputer().getWorkspaceList();
-                    // if doing non-concurrent build, acquite a workspace in a way that causes builds to block for this workspace.
+                    // if doing non-concurrent build, acquire a workspace in a way that causes builds to block for this workspace.
                     // this prevents multiple workspaces of the same job --- the behavior of Hudson < 1.319.
                     //
                     // OTOH, if a concurrent build is chosen, the user is willing to create a multiple workspace,
