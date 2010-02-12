@@ -31,6 +31,8 @@ import hudson.model.listeners.SaveableListener;
 import hudson.views.ListViewColumn;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
+import org.kohsuke.stapler.ClassDescriptor;
+import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.Stapler;
 import org.kohsuke.stapler.StaplerResponse;
@@ -47,8 +49,10 @@ import javax.servlet.RequestDispatcher;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.annotation.Annotation;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Hashtable;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -129,7 +133,7 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable {
      */
     public transient final Class<? extends T> clazz;
 
-    private transient final Map<String,Method> checkMethods = new ConcurrentHashMap<String,Method>();
+    private transient final Map<String,String> checkMethods = new ConcurrentHashMap<String,String>();
 
     /**
      * Lazily computed list of properties on {@link #clazz}.
@@ -252,30 +256,62 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable {
      * This method is used to hook up the form validation method to
      */
     public String getCheckUrl(String fieldName) {
-        String capitalizedFieldName = StringUtils.capitalize(fieldName);
-
-        Method method = checkMethods.get(fieldName);
+        String method = checkMethods.get(fieldName);
         if(method==null) {
-            method = NONE;
-            String methodName = "doCheck"+ capitalizedFieldName;
-            for (Class c=getClass(); c!=null; c=c.getSuperclass()) {
-                for( Method m : c.getMethods() ) {
-                    if(m.getName().equals(methodName)) {
-                        method = m;
-                        break;
-                    }
-                }
-            }
+            method = calcCheckUrl(fieldName);
             checkMethods.put(fieldName,method);
         }
 
-        if(method==NONE)
-            return null;
+        return method==NONE ? null : method;
+    }
+
+    private String calcCheckUrl(String fieldName) {
+        String capitalizedFieldName = StringUtils.capitalize(fieldName);
+
+        Method method = null;
+        String methodName = "doCheck"+ capitalizedFieldName;
+        for (Class c=getClass(); c!=null; c=c.getSuperclass()) {
+            for( Method m : c.getMethods() ) {
+                if(m.getName().equals(methodName)) {
+                    method = m;
+                    break;
+                }
+            }
+        }
+
+        if(method==null)
+            return NONE;
+
+        // build query parameter line by figuring out what should be submitted
+        StringBuilder query = new StringBuilder();
+        String[] names = ClassDescriptor.loadParameterNames(method);
+        boolean first = true;
+        Annotation[][] all = method.getParameterAnnotations();
+        for (int i = 0, allLength = all.length; i < allLength; i++) {
+            for (Annotation a : all[i]) {
+                if (a instanceof QueryParameter) {
+                    QueryParameter qp = (QueryParameter) a;
+                    String name = qp.value();
+                    if (name.length()==0 && i<names.length) name = names[i];
+                    if (name.length()==0)
+                        continue;   // unknown parameter name. we'll report the error when the form is submitted.
+
+                    if (first)  first = false;
+                    else        query.append('+').append(singleQuote("&"));
+                    if (name.equals("value")) {
+                        // The special 'value' parameter binds to the the current field
+                        query.append('+').append(singleQuote("value=")).append("+toValue(this)");
+                    } else {
+                        query.append('+').append(singleQuote(name+'=')).append("+toValue(findNearBy(this,'"+name+"'))");
+                    }
+                }
+            }
+        }
 
         StaplerRequest req = Stapler.getCurrentRequest();
         Ancestor a = req.findAncestor(DescriptorByNameOwner.class);
         // a is always non-null because we already have Hudson as the sentinel
-        return singleQuote(a.getUrl()+"/descriptorByName/"+clazz.getName()+"/check"+capitalizedFieldName+"?value=")+"+toValue(this)";
+        return singleQuote(a.getUrl()+"/descriptorByName/"+clazz.getName()+"/check"+capitalizedFieldName+"?")+query;
     }
 
     /**
@@ -704,13 +740,5 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable {
     /**
      * Used in {@link #checkMethods} to indicate that there's no check method.
      */
-    private static final Method NONE;
-
-    static {
-        try {
-            NONE = Object.class.getMethod("toString");
-        } catch (NoSuchMethodException e) {
-            throw new AssertionError();
-        }
-    }
+    private static final String NONE = "\u0000";
 }
