@@ -2307,18 +2307,18 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
                 }
             }
 
-            numExecutors = Integer.parseInt(req.getParameter("_.numExecutors"));
+            numExecutors = json.getInt("numExecutors");
             if(req.hasParameter("master.mode"))
                 mode = Mode.valueOf(req.getParameter("master.mode"));
             else
                 mode = Mode.NORMAL;
 
-            label = fixNull(req.getParameter("_.labelString"));
+            label = json.optString("labelString","");
             labelSet=null;
 
-            quietPeriod = Integer.parseInt(req.getParameter("quiet_period"));
+            quietPeriod = json.getInt("quiet_period");
             
-            scmCheckoutRetryCount = Integer.parseInt(req.getParameter("retry_count"));
+            scmCheckoutRetryCount = json.getInt("retry_count");
 
             systemMessage = Util.nullify(req.getParameter("system_message"));
 
