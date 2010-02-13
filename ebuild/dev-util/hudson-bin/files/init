@@ -1,0 +1,28 @@
+#!/sbin/runscript
+
+depend() {
+    need net
+    use dns logger mysql postgresql
+}
+
+HUDSON_PIDFILE=/var/run/hudson/hudson.pid
+RUN_AS=hudson
+
+JAVA_HOME=`java-config --jre-home`
+COMMAND=$JAVA_HOME/bin/java
+OPTS="-Xmx256m -jar /usr/lib/hudson/hudson.war --logfile=/var/log/hudson/hudson.log"
+
+start() {
+    ebegin "Starting ${SVCNAME}"
+    start-stop-daemon --start --quiet --background \
+	--make-pidfile --pidfile $HUDSON_PIDFILE \
+	--chuid $RUN_AS \
+	--exec "${COMMAND}" -- $OPTS
+    eend $?
+}
+
+stop() {
+    ebegin "Stopping ${SVCNAME}"
+    start-stop-daemon --stop --quiet --pidfile $HUDSON_PIDFILE
+    eend $?
+}
