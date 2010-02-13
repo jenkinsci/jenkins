@@ -3288,10 +3288,14 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
         return !"ISO-8859-1".equalsIgnoreCase(System.getProperty("file.encoding"));
     }
 
+    /**
+     * @deprecated
+     *      Use {@link Functions#isWindows()}.
+     */
     public static boolean isWindows() {
         return File.pathSeparatorChar==';';
     }
-    
+
     public static boolean isDarwin() {
         // according to http://developer.apple.com/technotes/tn2002/tn2110.html
         return System.getProperty("os.name").toLowerCase(Locale.ENGLISH).startsWith("mac");

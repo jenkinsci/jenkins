@@ -24,6 +24,7 @@
 package hudson.tasks;
 
 import hudson.FilePath;
+import hudson.Functions;
 import hudson.Util;
 import hudson.Extension;
 import hudson.model.AbstractProject;
@@ -138,7 +139,7 @@ public class Shell extends CommandInterpreter {
 
         public String getShellOrDefault() {
             if(shell==null)
-                return isWindows()?"sh":"/bin/sh";
+                return Functions.isWindows() ?"sh":"/bin/sh";
             return shell;
         }
 

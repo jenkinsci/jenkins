@@ -27,6 +27,7 @@ import hudson.CopyOnWrite;
 import hudson.EnvVars;
 import hudson.Extension;
 import hudson.FilePath;
+import hudson.Functions;
 import hudson.Launcher;
 import hudson.Util;
 import hudson.model.*;
@@ -358,7 +359,7 @@ public class Ant extends Builder {
 
         private File getExeFile() {
             String execName;
-            if(Hudson.isWindows())
+            if(Functions.isWindows())
                 execName = "ant.bat";
             else
                 execName = "ant";
