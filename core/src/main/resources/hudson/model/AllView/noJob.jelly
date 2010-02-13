@@ -28,6 +28,7 @@ THE SOFTWARE.
   -->
   ${%Welcome to Hudson!}
   <j:choose xmlns:j="jelly:core">
+    <j:whitespace> </j:whitespace>
     <!-- Only show the create new jobs link to those users that have permission to use it. -->
     <j:getStatic var="permission" className="hudson.model.Item" field="CREATE"/>
     <j:when test="${h.hasPermission(permission)}">
