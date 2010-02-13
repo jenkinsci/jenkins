@@ -131,7 +131,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.jvnet.hudson.plugins</groupId>
       <artifactId>subversion</artifactId>
-      <version>1.7</version>
+      <version>1.11</version>
     </dependency>
     <dependency>
       <groupId>org.mortbay.jetty</groupId>
