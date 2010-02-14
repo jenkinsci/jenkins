@@ -25,6 +25,7 @@ package hudson.maven;
 
 import hudson.model.Result;
 import org.jvnet.hudson.test.Bug;
+import org.jvnet.hudson.test.ExtractResourceSCM;
 import org.jvnet.hudson.test.HudsonTestCase;
 import org.jvnet.hudson.test.SingleFileSCM;
 import org.jvnet.hudson.test.Email;
@@ -43,7 +44,7 @@ public class RedeployPublisherTest extends HudsonTestCase {
 
         // a fake build
         m2.setScm(new SingleFileSCM("pom.xml",getClass().getResource("big-artifact.pom")));
-        m2.getPublishersList().add(new RedeployPublisher("",repo.toURI().toString(),true));
+        m2.getPublishersList().add(new RedeployPublisher("",repo.toURI().toString(),true, false));
 
         MavenModuleSetBuild b = m2.scheduleBuild2(0).get();
         assertBuildStatus(Result.SUCCESS, b);
@@ -57,10 +58,10 @@ public class RedeployPublisherTest extends HudsonTestCase {
 
     public void testConfigRoundtrip() throws Exception {
         MavenModuleSet p = createMavenProject();
-        RedeployPublisher rp = new RedeployPublisher("theId", "http://some.url/", true);
+        RedeployPublisher rp = new RedeployPublisher("theId", "http://some.url/", true, true);
         p.getPublishersList().add(rp);
         submit(new WebClient().getPage(p,"configure").getFormByName("config"));
-        assertEqualBeans(rp,p.getPublishersList().get(RedeployPublisher.class),"id,url,uniqueVersion");
+        assertEqualBeans(rp,p.getPublishersList().get(RedeployPublisher.class),"id,url,uniqueVersion,evenIfUnstable");
     }
 
 //    /**
@@ -90,11 +91,28 @@ public class RedeployPublisherTest extends HudsonTestCase {
 
         // a fake build
         m2.setScm(new SingleFileSCM("pom.xml",getClass().getResource("targz-artifact.pom")));
-        m2.getPublishersList().add(new RedeployPublisher("",repo.toURI().toString(),false));
+        m2.getPublishersList().add(new RedeployPublisher("",repo.toURI().toString(),false, false));
 
         MavenModuleSetBuild b = m2.scheduleBuild2(0).get();
         assertBuildStatus(Result.SUCCESS, b);
 
         assertTrue("tar.gz doesn't exist",new File(repo,"test/test/0.1-SNAPSHOT/test-0.1-SNAPSHOT-bin.tar.gz").exists());
+    }
+
+    @Bug(3773)
+    public void testDeployUnstable() throws Exception {
+        configureDefaultMaven();
+        MavenModuleSet m2 = createMavenProject();
+        File repo = createTmpDir();
+
+        // a build with a failing unit tests
+        m2.setScm(new ExtractResourceSCM(getClass().getResource("maven-test-failure-findbugs.zip")));
+        m2.getPublishersList().add(new RedeployPublisher("",repo.toURI().toString(),false, true));
+
+        MavenModuleSetBuild b = m2.scheduleBuild2(0).get();
+        assertBuildStatus(Result.UNSTABLE, b);
+
+        assertTrue("Artifact should have been published even when the build is unstable",
+                   new File(repo,"test/test/1.0-SNAPSHOT/test-1.0-SNAPSHOT.jar").exists());
     }
 }
