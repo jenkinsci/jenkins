@@ -65,6 +65,16 @@ public class RedeployPublisher extends Recorder {
     public final boolean uniqueVersion;
     public final boolean evenIfUnstable;
 
+    /**
+     * For backward compatibility
+     */
+    public RedeployPublisher(String id, String url, boolean uniqueVersion) {
+    	this(id, url, uniqueVersion, false);
+    }
+    
+    /**
+     * @since 1.347
+     */
     @DataBoundConstructor
     public RedeployPublisher(String id, String url, boolean uniqueVersion, boolean evenIfUnstable) {
         this.id = id;
