@@ -308,7 +308,7 @@ public class Mailer extends Notifier {
 
         public String getAdminAddress() {
             String v = adminAddress;
-            if(v==null)     v = "address not configured yet <nobody@nowhere>";
+            if(v==null)     v = Messages.Mailer_Address_Not_Configured();
             return v;
         }
 
@@ -386,7 +386,7 @@ public class Mailer extends Notifier {
          */
         public FormValidation doCheckUrl(@QueryParameter String value) {
             if(value.startsWith("http://localhost"))
-                return FormValidation.warning("Please set a valid host name, instead of localhost");
+                return FormValidation.warning(Messages.Mailer_Localhost_Error());
             return FormValidation.ok();
         }
 
@@ -405,7 +405,7 @@ public class Mailer extends Notifier {
                     InetAddress.getByName(value);
                 return FormValidation.ok();
             } catch (UnknownHostException e) {
-                return FormValidation.error("Unknown host name: "+value);
+                return FormValidation.error(Messages.Mailer_Unknown_Host_Name()+value);
             }
         }
 
@@ -417,7 +417,7 @@ public class Mailer extends Notifier {
             if (value.matches("@[A-Za-z0-9.\\-]+") || fixEmptyAndTrim(value)==null)
                 return FormValidation.ok();
             else
-                return FormValidation.error("This field should be '@' followed by a domain name.");
+                return FormValidation.error(Messages.Mailer_Suffix_Error());
         }
 
         /**
