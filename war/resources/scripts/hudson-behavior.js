@@ -1376,7 +1376,7 @@ function buildFormTree(form) {
                 // this is a new grouping node
                 doms.push(p);
                 p.formDom = m = {};
-                addProperty(findParent(p), name, m);
+                addProperty(findParent(p), p.getAttribute("name"), m);
             }
             return m;
         }
