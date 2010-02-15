@@ -262,7 +262,7 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable {
             checkMethods.put(fieldName,method);
         }
 
-        return method==NONE ? null : method;
+        return method.equals(NONE) ? null : method; // == would do, but it makes IDE flag a warning
     }
 
     private String calcCheckUrl(String fieldName) {
