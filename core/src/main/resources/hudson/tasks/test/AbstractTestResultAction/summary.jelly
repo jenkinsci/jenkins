@@ -39,7 +39,6 @@ THE SOFTWARE.
   <!-- summary -->
   <t:summary icon="clipboard.gif">
     <a href="${it.urlName}/">${it.displayName}</a>
-    <j:whitespace> </j:whitespace>
     <t:test-result />
     
     <j:set var="failedTests" value="${it.failedTests}" />
