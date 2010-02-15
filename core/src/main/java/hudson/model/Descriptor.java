@@ -52,7 +52,6 @@ import java.io.InputStream;
 import java.lang.annotation.Annotation;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Hashtable;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -253,7 +252,7 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable {
      * If the field "xyz" of a {@link Describable} has the corresponding "doCheckXyz" method,
      * return the form-field validation string. Otherwise null.
      * <p>
-     * This method is used to hook up the form validation method to
+     * This method is used to hook up the form validation method to the corresponding HTML input element.
      */
     public String getCheckUrl(String fieldName) {
         String method = checkMethods.get(fieldName);
