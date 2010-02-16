@@ -8,6 +8,7 @@ import hudson.Launcher;
 import hudson.model.BuildListener;
 import hudson.model.Result;
 import hudson.util.NullStream;
+import hudson.tasks.Maven.MavenInstallation;
 
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -83,4 +84,21 @@ public class MavenOptsTest extends HudsonTestCase {
 
         assertLogContains("[hudson.mavenOpt.test=foo]", m.getLastBuild());
     }
+    
+    @Bug(5651)
+    public void testNewlinesInOptsRemoved() throws Exception {
+        configureDefaultMaven("apache-maven-2.2.1", MavenInstallation.MAVEN_21);
+        MavenModuleSet m = createMavenProject();
+	m.setScm(new ExtractResourceSCM(getClass().getResource("maven-surefire-unstable.zip")));
+        m.setMavenOpts("-XX:MaxPermSize=512m\r\n-Xms128m\r\n-Xmx512m");
+        m.setGoals("install");
+        
+	assertBuildStatus(Result.UNSTABLE, m.scheduleBuild2(0).get());
+	MavenModuleSetBuild pBuild = m.getLastBuild();
+
+	assertEquals("Parent build should have Result.UNSTABLE", Result.UNSTABLE, pBuild.getResult());
+	
+    }
+
 }
+

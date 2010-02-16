@@ -297,7 +297,7 @@ public class Maven extends Builder {
 
         String jvmOptions = env.expand(this.jvmOptions);
         if(jvmOptions!=null)
-            env.put("MAVEN_OPTS",jvmOptions);
+            env.put("MAVEN_OPTS",jvmOptions.replaceAll("[\t\r\n]+"," "));
     }
 
     @Override
