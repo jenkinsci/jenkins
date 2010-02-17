@@ -31,6 +31,7 @@ import hudson.model.Hudson;
 import hudson.model.User;
 
 import java.util.List;
+import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -77,15 +78,20 @@ public abstract class MailAddressResolver implements ExtensionPoint {
     public abstract String findMailAddressFor(User u);
     
     public static String resolve(User u) {
+        LOGGER.fine("Resolving e-mail address for \""+u+"\" ID="+u.getId());
+
         for (MailAddressResolver r : all()) {
             String email = r.findMailAddressFor(u);
-            if(email!=null) return email;
+            if(email!=null) {
+                LOGGER.fine(r+" resolved "+u.getId()+" to "+email);
+                return email;
+            }
         }
 
         // fall back logic
         String extractedAddress = extractAddressFromId(u.getFullName());
         if (extractedAddress != null)
-                return extractedAddress;
+            return extractedAddress;
 
         if(u.getFullName().contains("@"))
             // this already looks like an e-mail ID
@@ -139,4 +145,6 @@ public abstract class MailAddressResolver implements ExtensionPoint {
     public static ExtensionList<MailAddressResolver> all() {
         return Hudson.getInstance().getExtensionList(MailAddressResolver.class);
     }
+
+    private static final Logger LOGGER = Logger.getLogger(MailAddressResolver.class.getName());
 }
