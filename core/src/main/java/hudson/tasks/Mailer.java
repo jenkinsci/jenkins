@@ -1,7 +1,7 @@
 /*
  * The MIT License
  * 
- * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, Bruce Chapman, Erik Ramfelt, Jean-Baptiste Quenot, Luca Domenico Milanesio
+ * Copyright (c) 2004-2010, Sun Microsystems, Inc., Kohsuke Kawaguchi, Bruce Chapman, Erik Ramfelt, Jean-Baptiste Quenot, Luca Domenico Milanesio
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -54,7 +54,6 @@ import javax.servlet.ServletException;
 import java.io.File;
 import java.io.IOException;
 import java.util.Date;
-import java.util.Map;
 import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -191,19 +190,6 @@ public class Mailer extends Notifier {
         public DescriptorImpl() {
             load();
             DESCRIPTOR = this;
-        }
-
-        /**
-         * For backward compatibility.
-         */
-        @Override
-        protected void convert(Map<String, Object> oldPropertyBag) {
-            defaultSuffix = (String)oldPropertyBag.get("mail.default.suffix");
-            hudsonUrl = (String)oldPropertyBag.get("mail.hudson.url");
-            smtpAuthUsername = (String)oldPropertyBag.get("mail.hudson.smtpauth.username");
-            smtpAuthPassword = Secret.fromString((String)oldPropertyBag.get("mail.hudson.smtpauth.password"));
-            adminAddress = (String)oldPropertyBag.get("mail.admin.address");
-            smtpHost = (String)oldPropertyBag.get("mail.smtp.host");
         }
 
         public String getDisplayName() {

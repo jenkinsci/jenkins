@@ -1,7 +1,8 @@
 /*
  * The MIT License
  * 
- * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, Erik Ramfelt, Koichi Fujikawa, Red Hat, Inc., Seiji Sogabe, Stephen Connolly, Tom Huybrechts, Yahoo! Inc.
+ * Copyright (c) 2004-2010, Sun Microsystems, Inc., Kohsuke Kawaguchi, Erik Ramfelt, Koichi Fujikawa, Red Hat, Inc.,
+ * Seiji Sogabe, Stephen Connolly, Tom Huybrechts, Yahoo! Inc., Alan Harder
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -61,8 +62,6 @@ import hudson.logging.LogRecorderManager;
 import hudson.lifecycle.RestartNotSupportedException;
 import hudson.model.Descriptor.FormException;
 import hudson.model.listeners.ItemListener;
-import hudson.model.listeners.JobListener;
-import hudson.model.listeners.JobListener.JobListenerAdapter;
 import hudson.model.listeners.SCMListener;
 import hudson.model.listeners.SaveableListener;
 import hudson.remoting.Channel;
@@ -535,7 +534,7 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
     private transient final LogRecorderManager log = new LogRecorderManager();
 
     public Hudson(File root, ServletContext context) throws IOException, InterruptedException, ReactorException {
-    	// As hudson is starting, grant this process full controll
+    	// As hudson is starting, grant this process full control
     	SecurityContextHolder.getContext().setAuthentication(ACL.SYSTEM);
         try {
             this.root = root;
@@ -634,6 +633,7 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
             /**
              * Sets the thread name to the task for better diagnostics.
              */
+            @Override
             protected void runTask(Task task) throws Exception {
                 if (is!=null && is.skipInitTask(task))  return;
 
@@ -937,26 +937,6 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
                 return d;
         }
         return null;
-    }
-
-    /**
-     * Adds a new {@link JobListener}.
-     *
-     * @deprecated since 2007-01-04.
-     *      Use {@code getJobListeners().add(l)} instead.
-     */
-    public void addListener(JobListener l) {
-        itemListeners.add(new JobListenerAdapter(l));
-    }
-
-    /**
-     * Deletes an existing {@link JobListener}.
-     *
-     * @deprecated since 2007-01-04.
-     *      Use {@code getJobListeners().remove(l)} instead.
-     */
-    public boolean removeListener(JobListener l ) {
-        return itemListeners.remove(new JobListenerAdapter(l));
     }
 
     /**

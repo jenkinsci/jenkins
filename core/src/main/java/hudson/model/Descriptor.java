@@ -1,7 +1,7 @@
 /*
  * The MIT License
  * 
- * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi
+ * Copyright (c) 2004-2010, Sun Microsystems, Inc., Kohsuke Kawaguchi
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -42,7 +42,6 @@ import org.springframework.util.StringUtils;
 import org.jvnet.tiger_types.Types;
 import org.apache.commons.io.IOUtils;
 
-import javax.servlet.http.HttpServletRequest;
 import static javax.servlet.http.HttpServletResponse.SC_NOT_FOUND;
 import javax.servlet.ServletException;
 import javax.servlet.RequestDispatcher;
@@ -476,20 +475,10 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable {
 
     /**
      * @deprecated
-     *      As of 1.64. Use {@link #configure(StaplerRequest)}.
-     */
-    @Deprecated
-    public boolean configure( HttpServletRequest req ) throws FormException {
-        return true;
-    }
-
-    /**
-     * @deprecated
      *      As of 1.239, use {@link #configure(StaplerRequest, JSONObject)}.
      */
     public boolean configure( StaplerRequest req ) throws FormException {
-        // compatibility
-        return configure( (HttpServletRequest) req );
+        return true;
     }
 
     /**
@@ -559,25 +548,10 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable {
             return;
 
         try {
-            Object o = file.unmarshal(this);
-            if(o instanceof Map) {
-                // legacy format
-                @SuppressWarnings("unchecked")
-                Map<String,Object> _o = (Map) o;
-                convert(_o);
-                save();     // convert to the new format
-            }
+            file.unmarshal(this);
         } catch (IOException e) {
             LOGGER.log(Level.WARNING, "Failed to load "+file, e);
         }
-    }
-
-    /**
-     * {@link Descriptor}s that has existed &lt;= 1.61 needs to
-     * be able to read in the old configuration in a property bag
-     * and reflect that into the new layout.
-     */
-    protected void convert(Map<String, Object> oldPropertyBag) {
     }
 
     private XmlFile getConfigFile() {

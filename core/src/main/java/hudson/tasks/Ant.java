@@ -1,7 +1,7 @@
 /*
  * The MIT License
  * 
- * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, Tom Huybrechts
+ * Copyright (c) 2004-2010, Sun Microsystems, Inc., Kohsuke Kawaguchi, Tom Huybrechts
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -48,7 +48,6 @@ import org.kohsuke.stapler.QueryParameter;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Map;
 import java.util.Properties;
 import java.util.List;
 import java.util.Collections;
@@ -264,11 +263,6 @@ public class Ant extends Builder {
 
         public boolean isApplicable(Class<? extends AbstractProject> jobType) {
             return true;
-        }
-
-        protected void convert(Map<String,Object> oldPropertyBag) {
-            if(oldPropertyBag.containsKey("installations"))
-                installations = (AntInstallation[]) oldPropertyBag.get("installations");
         }
 
         @Override

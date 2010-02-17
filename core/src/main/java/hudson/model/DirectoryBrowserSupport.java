@@ -1,7 +1,7 @@
 /*
  * The MIT License
  * 
- * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, Erik Ramfelt
+ * Copyright (c) 2004-2010, Sun Microsystems, Inc., Kohsuke Kawaguchi, Erik Ramfelt
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -25,7 +25,6 @@ package hudson.model;
 
 import hudson.FilePath;
 import hudson.Util;
-import hudson.Functions;
 import hudson.util.IOException2;
 import hudson.FilePath.FileCallable;
 import hudson.remoting.VirtualChannel;
@@ -71,14 +70,6 @@ public final class DirectoryBrowserSupport implements HttpResponse {
     private final String icon;
     private final boolean serveDirIndex;
     private String indexFileName = "index.html";
-
-    /**
-     * @deprecated since 2007-08-12.
-     *      Use {@link #DirectoryBrowserSupport(ModelObject, FilePath, String, String, boolean)}
-     */
-    public DirectoryBrowserSupport(ModelObject owner) {
-        this(owner,owner.getDisplayName());
-    }
 
     /**
      * @deprecated as of 1.297
