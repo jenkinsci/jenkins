@@ -323,18 +323,20 @@ public class SCMTrigger extends Trigger<SCMedItem> {
                     else
                         logger.println("No changes");
                     return result;
+                } catch (Error e) {
+                    e.printStackTrace(listener.error("Failed to record SCM polling"));
+                    LOGGER.log(Level.SEVERE,"Failed to record SCM polling",e);
+                    throw e;
+                } catch (RuntimeException e) {
+                    e.printStackTrace(listener.error("Failed to record SCM polling"));
+                    LOGGER.log(Level.SEVERE,"Failed to record SCM polling",e);
+                    throw e;
                 } finally {
                     listener.close();
                 }
             } catch (IOException e) {
                 LOGGER.log(Level.SEVERE,"Failed to record SCM polling",e);
                 return false;
-            } catch (RuntimeException e) {
-                LOGGER.log(Level.SEVERE,"Failed to record SCM polling",e);
-                throw e;
-            } catch (Error e) {
-                LOGGER.log(Level.SEVERE,"Failed to record SCM polling",e);
-                throw e;
             }
         }
 
