@@ -24,6 +24,7 @@
 
 package hudson.tools;
 
+import hudson.Functions;
 import hudson.model.*;
 import hudson.slaves.DumbSlave;
 import hudson.tasks.Maven;
@@ -117,7 +118,7 @@ public class ToolLocationNodePropertyTest extends HudsonTestCase {
     }
 
     private void configureDumpEnvBuilder() throws IOException {
-        if(Hudson.isWindows())
+        if(Functions.isWindows())
             project.getBuildersList().add(new BatchFile("set"));
         else
             project.getBuildersList().add(new Shell("export"));

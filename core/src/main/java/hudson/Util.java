@@ -963,7 +963,7 @@ public class Util {
      * If there's a prior symlink at baseDir+symlinkPath, it will be overwritten.
      */
     public static void createSymlink(File baseDir, String targetPath, String symlinkPath, TaskListener listener) throws InterruptedException {
-        if(isWindows() || NO_SYMLINK)   return;
+        if(Functions.isWindows() || NO_SYMLINK)   return;
 
         try {
             // if a file or a directory exists here, delete it first.
@@ -1009,7 +1009,7 @@ public class Util {
      *      (TODO: try readlink(1) available on some platforms)
      */
     public static String resolveSymlink(File link, TaskListener listener) throws InterruptedException, IOException {
-        if(isWindows())     return null;
+        if(Functions.isWindows())     return null;
 
         String filename = link.getAbsolutePath();
         try {

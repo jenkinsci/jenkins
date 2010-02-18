@@ -63,16 +63,28 @@ public class RedeployPublisher extends Recorder {
      */
     public final String url;
     public final boolean uniqueVersion;
+    public final boolean evenIfUnstable;
 
-    @DataBoundConstructor
+    /**
+     * For backward compatibility
+     */
     public RedeployPublisher(String id, String url, boolean uniqueVersion) {
+    	this(id, url, uniqueVersion, false);
+    }
+    
+    /**
+     * @since 1.347
+     */
+    @DataBoundConstructor
+    public RedeployPublisher(String id, String url, boolean uniqueVersion, boolean evenIfUnstable) {
         this.id = id;
         this.url = url;
         this.uniqueVersion = uniqueVersion;
+        this.evenIfUnstable = evenIfUnstable;
     }
 
     public boolean perform(AbstractBuild<?,?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
-        if(build.getResult().isWorseThan(Result.SUCCESS))
+        if(build.getResult().isWorseThan(getTreshold()))
             return true;    // build failed. Don't publish
 
         MavenAbstractArtifactRecord mar = getAction(build);
@@ -121,6 +133,14 @@ public class RedeployPublisher extends Recorder {
     public BuildStepMonitor getRequiredMonitorService() {
         return BuildStepMonitor.NONE;
     }
+
+    protected Result getTreshold() {
+        if (evenIfUnstable) {
+            return Result.UNSTABLE;
+        } else {
+            return Result.SUCCESS;
+        }
+    }
     
     @Extension
     public static class DescriptorImpl extends BuildStepDescriptor<Publisher> {
@@ -145,6 +165,11 @@ public class RedeployPublisher extends Recorder {
 
         public String getDisplayName() {
             return Messages.RedeployPublisher_getDisplayName();
+        }
+
+        public boolean showEvenIfUnstableOption() {
+            // little hack to avoid showing this option on the redeploy action's screen
+            return true;
         }
     }
 }

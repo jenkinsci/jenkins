@@ -365,7 +365,7 @@ final class RemoteClassLoader extends URLClassLoader {
 
         public ClassLoaderProxy(ClassLoader cl, Channel channel) {
         	assert cl != null;
-        	
+
             this.cl = cl;
             this.channel = channel;
         }
@@ -375,8 +375,8 @@ final class RemoteClassLoader extends URLClassLoader {
         }
 
         public byte[] fetch(String className) throws ClassNotFoundException {
-        	if (!USE_SYSTEM_CLASSLOADER && cl.equals(ClassLoader.getSystemClassLoader())) {
-        		throw new ClassNotFoundException("Classloading from system classloader disabled");
+        	if (!USE_BOOTSTRAP_CLASSLOADER && cl==PSEUDO_BOOTSTRAP) {
+        		throw new ClassNotFoundException("Classloading from bootstrap classloader disabled");
         	}
         	
             InputStream in = cl.getResourceAsStream(className.replace('.', '/') + ".class");
@@ -393,13 +393,13 @@ final class RemoteClassLoader extends URLClassLoader {
         public ClassFile fetch2(String className) throws ClassNotFoundException {
             ClassLoader ecl = cl.loadClass(className).getClassLoader();
             if (ecl == null) {
-            	if (USE_SYSTEM_CLASSLOADER) {
-            		ecl = ClassLoader.getSystemClassLoader();
+            	if (USE_BOOTSTRAP_CLASSLOADER) {
+            		ecl = PSEUDO_BOOTSTRAP;
             	} else {
             		throw new ClassNotFoundException("Classloading from system classloader disabled");
             	}
             }
-            
+
             try {
                 return new ClassFile(
                         exportId(ecl,channel),
@@ -415,8 +415,8 @@ final class RemoteClassLoader extends URLClassLoader {
         		return null;
         	}
         	
-        	if (!USE_SYSTEM_CLASSLOADER) {
-        		URL systemResource = ClassLoader.getSystemResource(name);
+        	if (!USE_BOOTSTRAP_CLASSLOADER) {
+        		URL systemResource = PSEUDO_BOOTSTRAP.getResource(name);
         		if (resource.equals(systemResource)) {
         			return null;
         		}
@@ -429,9 +429,9 @@ final class RemoteClassLoader extends URLClassLoader {
             List<byte[]> images = new ArrayList<byte[]>();
             
             Set<URL> systemResources = null;
-            if (!USE_SYSTEM_CLASSLOADER) {
+            if (!USE_BOOTSTRAP_CLASSLOADER) {
             	systemResources = new HashSet<URL>();
-            	Enumeration<URL> e = ClassLoader.getSystemResources(name);
+            	Enumeration<URL> e = PSEUDO_BOOTSTRAP.getResources(name);
             	while (e.hasMoreElements()) {
             		systemResources.add(e.nextElement());
             	}
@@ -470,6 +470,17 @@ final class RemoteClassLoader extends URLClassLoader {
         public int hashCode() {
             return cl.hashCode();
         }
+
+        /**
+         * Since bootstrap classloader by itself doesn't have the {@link ClassLoader} object
+         * representing it (a crazy design, really), accessing it is unnecessarily hard.
+         *
+         * <p>
+         * So we create a child classloader that delegates directly to the bootstrap, without adding
+         * any new classpath. In this way, we can effectively use this classloader as a representation
+         * of the bootstrap classloader.
+         */
+        private static final ClassLoader PSEUDO_BOOTSTRAP = new URLClassLoader(new URL[0],null);
     }
 
     /**
@@ -517,9 +528,9 @@ final class RemoteClassLoader extends URLClassLoader {
     }
 
     /**
-     * If set to true, classes loaded by the system classloader will be also remoted to the remote JVM.
-     * By default, classes that belong to the system classloader will NOT be remoted, as each JVM gets its own JRE
+     * If set to true, classes loaded by the bootstrap classloader will be also remoted to the remote JVM.
+     * By default, classes that belong to the bootstrap classloader will NOT be remoted, as each JVM gets its own JRE
      * and their versions can be potentially different.
      */
-    private static final boolean USE_SYSTEM_CLASSLOADER = Boolean.getBoolean(RemoteClassLoader.class.getName() + ".useSystemClassLoader"); 
+    private static final boolean USE_BOOTSTRAP_CLASSLOADER = Boolean.getBoolean(RemoteClassLoader.class.getName() + ".useBootstrapClassLoader"); 
 }

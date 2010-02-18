@@ -1,7 +1,7 @@
 /*
  * The MIT License
  * 
- * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, Bruce Chapman, Erik Ramfelt, Jean-Baptiste Quenot, Luca Domenico Milanesio
+ * Copyright (c) 2004-2010, Sun Microsystems, Inc., Kohsuke Kawaguchi, Bruce Chapman, Erik Ramfelt, Jean-Baptiste Quenot, Luca Domenico Milanesio
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -54,7 +54,6 @@ import javax.servlet.ServletException;
 import java.io.File;
 import java.io.IOException;
 import java.util.Date;
-import java.util.Map;
 import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -193,19 +192,6 @@ public class Mailer extends Notifier {
             DESCRIPTOR = this;
         }
 
-        /**
-         * For backward compatibility.
-         */
-        @Override
-        protected void convert(Map<String, Object> oldPropertyBag) {
-            defaultSuffix = (String)oldPropertyBag.get("mail.default.suffix");
-            hudsonUrl = (String)oldPropertyBag.get("mail.hudson.url");
-            smtpAuthUsername = (String)oldPropertyBag.get("mail.hudson.smtpauth.username");
-            smtpAuthPassword = Secret.fromString((String)oldPropertyBag.get("mail.hudson.smtpauth.password"));
-            adminAddress = (String)oldPropertyBag.get("mail.admin.address");
-            smtpHost = (String)oldPropertyBag.get("mail.smtp.host");
-        }
-
         public String getDisplayName() {
             return Messages.Mailer_DisplayName();
         }
@@ -308,7 +294,7 @@ public class Mailer extends Notifier {
 
         public String getAdminAddress() {
             String v = adminAddress;
-            if(v==null)     v = "address not configured yet <nobody@nowhere>";
+            if(v==null)     v = Messages.Mailer_Address_Not_Configured();
             return v;
         }
 
@@ -386,7 +372,7 @@ public class Mailer extends Notifier {
          */
         public FormValidation doCheckUrl(@QueryParameter String value) {
             if(value.startsWith("http://localhost"))
-                return FormValidation.warning("Please set a valid host name, instead of localhost");
+                return FormValidation.warning(Messages.Mailer_Localhost_Error());
             return FormValidation.ok();
         }
 
@@ -405,7 +391,7 @@ public class Mailer extends Notifier {
                     InetAddress.getByName(value);
                 return FormValidation.ok();
             } catch (UnknownHostException e) {
-                return FormValidation.error("Unknown host name: "+value);
+                return FormValidation.error(Messages.Mailer_Unknown_Host_Name()+value);
             }
         }
 
@@ -417,7 +403,7 @@ public class Mailer extends Notifier {
             if (value.matches("@[A-Za-z0-9.\\-]+") || fixEmptyAndTrim(value)==null)
                 return FormValidation.ok();
             else
-                return FormValidation.error("This field should be '@' followed by a domain name.");
+                return FormValidation.error(Messages.Mailer_Suffix_Error());
         }
 
         /**

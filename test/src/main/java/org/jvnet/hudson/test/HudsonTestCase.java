@@ -57,7 +57,6 @@ import hudson.model.Result;
 import hudson.model.Run;
 import hudson.model.Saveable;
 import hudson.model.TaskListener;
-import hudson.model.UpdateCenter;
 import hudson.model.UpdateSite;
 import hudson.model.AbstractProject;
 import hudson.model.View;
@@ -147,9 +146,6 @@ import com.gargoylesoftware.htmlunit.Page;
 import com.gargoylesoftware.htmlunit.WebRequestSettings;
 import com.gargoylesoftware.htmlunit.xml.XmlPage;
 import com.gargoylesoftware.htmlunit.html.*;
-import com.gargoylesoftware.htmlunit.javascript.JavaScriptEngine;
-import com.gargoylesoftware.htmlunit.javascript.host.Stylesheet;
-import hudson.model.Computer;
 import hudson.slaves.ComputerListener;
 import java.util.concurrent.CountDownLatch;
 
@@ -435,7 +431,7 @@ public abstract class HudsonTestCase extends TestCase implements RootAction {
         File mvnHome = createTmpDir();
         mvn.unzip(new FilePath(mvnHome));
         // TODO: switch to tar that preserves file permissions more easily
-        if(!Hudson.isWindows())
+        if(!Functions.isWindows())
             GNUCLibrary.LIBC.chmod(new File(mvnHome,mavenVersion+"/bin/mvn").getPath(),0755);
 
         MavenInstallation mavenInstallation = new MavenInstallation("default",
@@ -459,7 +455,7 @@ public abstract class HudsonTestCase extends TestCase implements RootAction {
             File antHome = createTmpDir();
             ant.unzip(new FilePath(antHome));
             // TODO: switch to tar that preserves file permissions more easily
-            if(!Hudson.isWindows())
+            if(!Functions.isWindows())
                 GNUCLibrary.LIBC.chmod(new File(antHome,"apache-ant-1.7.1/bin/ant").getPath(),0755);
 
             antInstallation = new AntInstallation("default", new File(antHome,"apache-ant-1.7.1").getAbsolutePath(),NO_PROPERTIES);

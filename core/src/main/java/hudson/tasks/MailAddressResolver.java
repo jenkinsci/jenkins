@@ -29,8 +29,11 @@ import hudson.ExtensionListView;
 import hudson.ExtensionPoint;
 import hudson.model.Hudson;
 import hudson.model.User;
+import hudson.model.UserProperty;
+import hudson.scm.SCM;
 
 import java.util.List;
+import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -47,6 +50,17 @@ import java.util.regex.Pattern;
  *   ...
  * }
  * </pre>
+ *
+ * <h2>Techniques</h2>
+ * <p>
+ * User identity in Hudson is global, and not specific to a particular job. As a result, mail address resolution
+ * only receives {@link User}, which by itself doesn't really have that much information in it.
+ *
+ * <p>
+ * So the common technique for a mail address resolution is to define your own {@link UserProperty} types and
+ * add it to {@link User} objects where more context is available. For example, an {@link SCM} implementation
+ * can have a lot more information about a particular user during a check out, so that would be a good place
+ * to capture information as {@link UserProperty}, which then later used by a {@link MailAddressResolver}. 
  *
  * @author Kohsuke Kawaguchi
  * @since 1.192
@@ -77,15 +91,20 @@ public abstract class MailAddressResolver implements ExtensionPoint {
     public abstract String findMailAddressFor(User u);
     
     public static String resolve(User u) {
+        LOGGER.fine("Resolving e-mail address for \""+u+"\" ID="+u.getId());
+
         for (MailAddressResolver r : all()) {
             String email = r.findMailAddressFor(u);
-            if(email!=null) return email;
+            if(email!=null) {
+                LOGGER.fine(r+" resolved "+u.getId()+" to "+email);
+                return email;
+            }
         }
 
         // fall back logic
         String extractedAddress = extractAddressFromId(u.getFullName());
         if (extractedAddress != null)
-                return extractedAddress;
+            return extractedAddress;
 
         if(u.getFullName().contains("@"))
             // this already looks like an e-mail ID
@@ -139,4 +158,6 @@ public abstract class MailAddressResolver implements ExtensionPoint {
     public static ExtensionList<MailAddressResolver> all() {
         return Hudson.getInstance().getExtensionList(MailAddressResolver.class);
     }
+
+    private static final Logger LOGGER = Logger.getLogger(MailAddressResolver.class.getName());
 }

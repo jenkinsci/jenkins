@@ -125,6 +125,24 @@ var FormChecker = {
     }
 }
 
+/**
+ * Find the sibling (in the sense of the structured form submission) form item of the given name,
+ * and returns that DOM node.
+ */
+function findNearBy(e,name) {
+    var owner = findFormParent(e,null);
+
+    var p = findPreviousFormItem(e,name);
+    if (p!=null && findFormParent(p,null)==owner)
+        return p;
+
+    var n = findNextFormItem(e,name);
+    if (n!=null && findFormParent(n,null)==owner)
+        return n;
+
+    return null; // not found
+}
+
 function toValue(e) {
     // compute the form validation value to be sent to the server
     var type = e.getAttribute("type");
@@ -162,33 +180,54 @@ function findFollowingTR(input, className) {
     return tr;
 }
 
-/**
- * Traverses a form in the reverse document order starting from the given element (but excluding it),
- * until the given filter matches, or run out of an element.
- */
-function findPrevious(src,filter) {
-    function prev(e) {
-        var p = e.previousSibling;
-        if(p==null) return e.parentNode;
-        while(p.lastChild!=null)
-            p = p.lastChild;
-        return p;
-    }
-
+function find(src,filter,traversalF) {
     while(src!=null) {
-        src = prev(src);
+        src = traversalF(src);
         if(src==null)   break;
         if(filter(src))
             return src;
     }
     return null;
 }
+
+/**
+ * Traverses a form in the reverse document order starting from the given element (but excluding it),
+ * until the given filter matches, or run out of an element.
+ */
+function findPrevious(src,filter) {
+    return find(src,filter,function (e) {
+        var p = e.previousSibling;
+        if(p==null) return e.parentNode;
+        while(p.lastChild!=null)
+            p = p.lastChild;
+        return p;
+    });
+}
+
+function findNext(src,filter) {
+    return find(src,filter,function (e) {
+        var n = e.nextSibling;
+        if(n==null) return e.parentNode;
+        while(n.firstChild!=null)
+            n = n.firstChild;
+        return n;
+    });
+}
+
+function findFormItem(src,name,directionF) {
+    var name2 = "_."+name; // handles <textbox field="..." /> notation silently
+    return directionF(src,function(e){ return (e.tagName=="INPUT" || e.tagName=="TEXTAREA" || e.tagName=="SELECT") && (e.name==name || e.name==name2); });
+}
+
 /**
  * Traverses a form in the reverse document order and finds an INPUT element that matches the given name.
  */
 function findPreviousFormItem(src,name) {
-    var name2 = "_."+name; // handles <textbox field="..." /> notation silently
-    return findPrevious(src,function(e){ return (e.tagName=="INPUT" || e.tagName=="TEXTAREA" || e.tagName=="SELECT") && (e.name==name || e.name==name2); });
+    return findFormItem(src,name,findPrevious);
+}
+
+function findNextFormItem(src,name) {
+    return findFormItem(src,name,findNext);
 }
 
 
@@ -1256,6 +1295,41 @@ function createSearchBox(searchURL) {
 }
 
 
+/**
+ * Finds the DOM node of the given DOM node that acts as a parent in the form submission.
+ *
+ * @return null
+ *      if the given element shouldn't be a part of the final submission.
+ */
+function findFormParent(e,form) {
+    if (form==null) // caller can pass in null to have this method compute the owning form
+        form = findAncestor(e,"FORM");
+
+    while(e!=form) {
+        e = e.parentNode;
+
+        // this is used to create a group where no single containing parent node exists,
+        // like <optionalBlock>
+        var nameRef = e.getAttribute("nameRef");
+        if(nameRef!=null)
+            e = $(nameRef);
+
+        if(e.getAttribute("field-disabled")!=null)
+            return null;  // this field shouldn't contribute to the final result
+
+        var name = e.getAttribute("name");
+        if(name!=null) {
+            if(e.tagName=="INPUT" && !xor(e.checked,Element.hasClassName(e,"negative")))
+                return null;  // field is not active
+
+            return e;
+        }
+    }
+
+    return form;
+}
+
+
 //
 // structured form submission handling
 //   see http://hudson.gotdns.com/wiki/display/HUDSON/Structured+Form+Submission
@@ -1294,35 +1368,17 @@ function buildFormTree(form) {
         // find the grouping parent node, which will have @name.
         // then return the corresponding object in the map
         function findParent(e) {
-            while(e!=form) {
-                e = e.parentNode;
+            var p = findFormParent(e,form);
+            if (p==null)    return {};
 
-                // this is used to create a group where no single containing parent node exists,
-                // like <optionalBlock>
-                var nameRef = e.getAttribute("nameRef");
-                if(nameRef!=null)
-                    e = $(nameRef);
-
-                if(e.getAttribute("field-disabled")!=null)
-                    return {};  // this field shouldn't contribute to the final result
-
-                var name = e.getAttribute("name");
-                if(name!=null) {
-                    if(e.tagName=="INPUT" && !xor(e.checked,Element.hasClassName(e,"negative")))
-                        return {};  // field is not active
-
-                    var m = e.formDom;
-                    if(m==null) {
-                        // this is a new grouping node
-                        doms.push(e);
-                        e.formDom = m = {};
-                        addProperty(findParent(e), name, m);
-                    }
-                    return m;
-                }
+            var m = p.formDom;
+            if(m==null) {
+                // this is a new grouping node
+                doms.push(p);
+                p.formDom = m = {};
+                addProperty(findParent(p), p.getAttribute("name"), m);
             }
-
-            return form.formDom; // guaranteed non-null
+            return m;
         }
 
         var jsonElement = null;

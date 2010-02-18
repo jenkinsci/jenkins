@@ -33,7 +33,6 @@ import hudson.Functions;
 import hudson.os.PosixAPI;
 import hudson.model.Node;
 import hudson.model.TaskListener;
-import hudson.model.Hudson;
 import hudson.remoting.VirtualChannel;
 import hudson.util.FormValidation;
 import hudson.util.jna.GNUCLibrary;
@@ -123,7 +122,7 @@ public class ZipExtractionInstaller extends ToolInstaller {
     static class ChmodRecAPlusX implements FileCallable<Void> {
         private static final long serialVersionUID = 1L;
         public Void invoke(File d, VirtualChannel channel) throws IOException {
-            if(!Hudson.isWindows())
+            if(!Functions.isWindows())
                 process(d);
             return null;
         }

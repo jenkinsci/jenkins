@@ -1,7 +1,7 @@
 /*
  * The MIT License
  * 
- * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, Tom Huybrechts
+ * Copyright (c) 2004-2010, Sun Microsystems, Inc., Kohsuke Kawaguchi, Tom Huybrechts
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -27,6 +27,7 @@ import hudson.CopyOnWrite;
 import hudson.EnvVars;
 import hudson.Extension;
 import hudson.FilePath;
+import hudson.Functions;
 import hudson.Launcher;
 import hudson.Util;
 import hudson.model.*;
@@ -47,7 +48,6 @@ import org.kohsuke.stapler.QueryParameter;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Map;
 import java.util.Properties;
 import java.util.List;
 import java.util.Collections;
@@ -265,11 +265,6 @@ public class Ant extends Builder {
             return true;
         }
 
-        protected void convert(Map<String,Object> oldPropertyBag) {
-            if(oldPropertyBag.containsKey("installations"))
-                installations = (AntInstallation[]) oldPropertyBag.get("installations");
-        }
-
         @Override
         public String getHelpFile() {
             return "/help/project-config/ant.html";
@@ -358,7 +353,7 @@ public class Ant extends Builder {
 
         private File getExeFile() {
             String execName;
-            if(Hudson.isWindows())
+            if(Functions.isWindows())
                 execName = "ant.bat";
             else
                 execName = "ant";

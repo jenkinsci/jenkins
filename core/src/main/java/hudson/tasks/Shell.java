@@ -1,7 +1,7 @@
 /*
  * The MIT License
  * 
- * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, Jene Jasper, Yahoo! Inc.
+ * Copyright (c) 2004-2010, Sun Microsystems, Inc., Kohsuke Kawaguchi, Jene Jasper, Yahoo! Inc.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,16 +24,15 @@
 package hudson.tasks;
 
 import hudson.FilePath;
+import hudson.Functions;
 import hudson.Util;
 import hudson.Extension;
 import hudson.model.AbstractProject;
-import static hudson.model.Hudson.isWindows;
 import hudson.util.FormValidation;
 import net.sf.json.JSONObject;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.QueryParameter;
 
-import java.util.Map;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -127,18 +126,13 @@ public class Shell extends CommandInterpreter {
             return true;
         }
 
-        @Override
-        protected void convert(Map<String, Object> oldPropertyBag) {
-            shell = (String)oldPropertyBag.get("shell");
-        }
-
         public String getShell() {
             return shell;
         }
 
         public String getShellOrDefault() {
             if(shell==null)
-                return isWindows()?"sh":"/bin/sh";
+                return Functions.isWindows() ?"sh":"/bin/sh";
             return shell;
         }
 

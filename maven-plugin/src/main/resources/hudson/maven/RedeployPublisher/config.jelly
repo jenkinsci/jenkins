@@ -34,5 +34,11 @@ THE SOFTWARE.
       <f:checkbox />
       <label class="attach-previous">${%Assign unique versions to snapshots}</label>
     </f:entry>
+    <j:if test="${descriptor.showEvenIfUnstableOption()}">
+      <f:entry field="evenIfUnstable">
+        <f:checkbox />
+        <label>${%Deploy even if the build is unstable}</label>
+      </f:entry>
+    </j:if>
   </f:advanced>
 </j:jelly>

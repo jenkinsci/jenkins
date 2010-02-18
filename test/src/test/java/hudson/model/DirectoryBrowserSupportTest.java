@@ -23,6 +23,7 @@
  */
 package hudson.model;
 
+import hudson.Functions;
 import hudson.tasks.Shell;
 import hudson.tasks.BatchFile;
 import hudson.Launcher;
@@ -43,7 +44,7 @@ public class DirectoryBrowserSupportTest extends HudsonTestCase {
     public void testDoubleDots() throws Exception {
         // create a problematic file name in the workspace
         FreeStyleProject p = createFreeStyleProject();
-        if(Hudson.isWindows())
+        if(Functions.isWindows())
             p.getBuildersList().add(new BatchFile("echo > abc..def"));
         else
             p.getBuildersList().add(new Shell("touch abc..def"));
@@ -67,7 +68,7 @@ public class DirectoryBrowserSupportTest extends HudsonTestCase {
      */
     @Email("http://www.nabble.com/Status-Code-400-viewing-or-downloading-artifact-whose-filename-contains-two-consecutive-periods-tt21407604.html")
     public void testDoubleDots2() throws Exception {
-        if(Hudson.isWindows())  return; // can't test this on Windows
+        if(Functions.isWindows())  return; // can't test this on Windows
 
         // create a problematic file name in the workspace
         FreeStyleProject p = createFreeStyleProject();

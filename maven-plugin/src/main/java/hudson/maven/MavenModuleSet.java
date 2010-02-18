@@ -622,10 +622,16 @@ public final class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,Ma
      */
     public String getMavenOpts() {
         if ((mavenOpts!=null) && (mavenOpts.trim().length()>0)) { 
-            return mavenOpts;
+            return mavenOpts.replaceAll("[\t\r\n]+"," ");
         }
         else {
-            return DESCRIPTOR.getGlobalMavenOpts();
+            String globalOpts = DESCRIPTOR.getGlobalMavenOpts();
+            if (globalOpts!=null) {
+                return globalOpts.replaceAll("[\t\r\n]+"," ");
+            }
+            else {
+                return globalOpts;
+            }
         }
     }
 

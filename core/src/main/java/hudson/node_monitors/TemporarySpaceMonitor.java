@@ -93,8 +93,6 @@ public class TemporarySpaceMonitor extends AbstractDiskSpaceMonitor {
             } catch (LinkageError e) {
                 // pre-mustang
                 return null;
-            } finally {
-                f.delete();
             }
         }
         private static final long serialVersionUID = 1L;

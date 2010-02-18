@@ -22,12 +22,13 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 -->
 
-<!--
-  string that reports the test result number in text, like "(5 failures / +3)".
-
-  @it : AbstractTestResultAction object
--->
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
+  <st:documentation>
+    Evaluates to a sstring that reports the test result number in text, like "(5 failures / +3)".
+    <st:attribute name="it" type="AbstractTestResultAction">
+      Either the "it" has to be available in the context or specified as an attribute.
+    </st:attribute>
+  </st:documentation>
   <j:choose>
     <j:when test="${it.totalCount==0}">
       (${%no tests})

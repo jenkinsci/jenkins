@@ -24,6 +24,7 @@
 package hudson.security;
 
 import groovy.lang.Binding;
+import hudson.Functions;
 import hudson.model.Descriptor;
 import hudson.model.Hudson;
 import hudson.Util;
@@ -170,7 +171,7 @@ public class PAMSecurityRealm extends SecurityRealm {
 
     @Extension
     public static DescriptorImpl install() {
-        if(!Hudson.isWindows()) return new DescriptorImpl();
+        if(!Functions.isWindows()) return new DescriptorImpl();
         return null;
     }
 }

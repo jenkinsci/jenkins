@@ -341,6 +341,7 @@ public class SlaveComputer extends Computer {
         }
         for (ComputerListener cl : ComputerListener.all())
             cl.onOnline(this,taskListener);
+        log.println("Slave successfully connected and online");
         Hudson.getInstance().getQueue().scheduleMaintenance();
     }
 

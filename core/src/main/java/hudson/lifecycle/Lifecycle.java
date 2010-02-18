@@ -24,6 +24,7 @@
 package hudson.lifecycle;
 
 import hudson.ExtensionPoint;
+import hudson.Functions;
 import hudson.Util;
 import hudson.model.Hudson;
 
@@ -75,7 +76,7 @@ public abstract class Lifecycle implements ExtensionPoint {
                     throw x;
                 }
             } else {
-                if(Hudson.isWindows()) {
+                if(Functions.isWindows()) {
                     instance = new Lifecycle() {
                         @Override
                         public void verifyRestartable() throws RestartNotSupportedException {

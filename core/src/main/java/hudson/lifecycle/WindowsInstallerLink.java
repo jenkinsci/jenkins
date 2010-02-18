@@ -23,10 +23,10 @@
  */
 package hudson.lifecycle;
 
+import hudson.Functions;
 import hudson.model.ManagementLink;
 import hudson.model.Hudson;
 import hudson.AbortException;
-import hudson.FilePath;
 import hudson.Extension;
 import hudson.util.StreamTaskListener;
 import hudson.util.jna.DotNet;
@@ -241,7 +241,7 @@ public class WindowsInstallerLink extends ManagementLink {
      */
     @Extension
     public static WindowsInstallerLink registerIfApplicable() {
-        if(!Hudson.isWindows())
+        if(!Functions.isWindows())
             return null; // this is a Windows only feature
 
         if(Lifecycle.get() instanceof WindowsServiceLifecycle)

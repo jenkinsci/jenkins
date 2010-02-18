@@ -1628,7 +1628,7 @@ public final class FilePath implements Serializable {
                     IOUtils.copy(t,f);
                     f.setLastModified(te.getModTime().getTime());
                     int mode = te.getMode()&0777;
-                    if(mode!=0 && !Hudson.isWindows()) // be defensive
+                    if(mode!=0 && !Functions.isWindows()) // be defensive
                         try {
                             LIBC.chmod(f.getPath(),mode);
                         } catch (NoClassDefFoundError e) {

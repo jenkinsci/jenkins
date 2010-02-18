@@ -30,7 +30,6 @@ import java.util.HashMap;
 import java.util.Locale;
 import java.io.File;
 
-import hudson.model.Hudson;
 import hudson.util.StreamTaskListener;
 
 /**
@@ -144,7 +143,7 @@ public class UtilTest extends TestCase {
     }
 
     public void testSymlink() throws Exception {
-        if (Hudson.isWindows())     return;
+        if (Functions.isWindows())     return;
 
         StreamTaskListener l = new StreamTaskListener(System.out);
         File d = Util.createTempDir();
