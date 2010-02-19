@@ -130,9 +130,15 @@ var FormChecker = {
  * and returns that DOM node.
  */
 function findNearBy(e,name) {
+    var p = findFormItem(e,name,function(e,filter) {
+        if (filter(e))    return e;
+        return null;
+    });
+    if (p!=null)    return p;   // including self, as some plugins use the field name as a parameter value, instead of 'value'
+
     var owner = findFormParent(e,null);
 
-    var p = findPreviousFormItem(e,name);
+    p = findPreviousFormItem(e,name);
     if (p!=null && findFormParent(p,null)==owner)
         return p;
 
@@ -247,7 +253,15 @@ function registerValidator(e) {
     var method = e.getAttribute("checkMethod");
     if (!method) method = "get";
 
-    FormChecker.delayedCheck(e.targetUrl(), method, e.targetElement);
+    var url = e.targetUrl();
+    try {
+      FormChecker.delayedCheck(url, method, e.targetElement);
+    } catch (x) {
+        // this happens if the checkUrl refers to a non-existing element.
+        // don't let this kill off the entire JavaScript
+        YAHOO.log("Failed to register validation method: "+e.getAttribute("checkUrl")+" : "+e);
+        return;
+    }
 
     var checker = function() {
         var target = this.targetElement;
