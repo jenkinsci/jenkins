@@ -37,7 +37,7 @@ THE SOFTWARE.
       If the hyperlink to artifacts are at another URL, specify the prefix.
     </st:attribute>
   </st:documentation>
-	<j:set var="artifacts" value="${build.artifacts}" />
+	<j:set var="artifacts" value="${build.getArtifactsUpTo(build.TREE_CUTOFF+1)}" />
 	<j:if test="${!build.building and !empty(artifacts)}">
 	  <t:summary icon="package.gif">
 	    <a href="${baseURL}artifact/">${caption}</a>
