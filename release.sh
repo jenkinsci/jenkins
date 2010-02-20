@@ -120,3 +120,5 @@ pushd opensuse
 ./build.sh ../hudson.war
 ./rsync.sh
 popd
+
+echo success
