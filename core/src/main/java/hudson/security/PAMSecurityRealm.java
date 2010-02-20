@@ -163,7 +163,18 @@ public class PAMSecurityRealm extends SecurityRealm {
                 Group g = api.getgrgid(st.gid());
                 if(g!=null)     group=g.getName();
                 else            group=String.valueOf(st.gid());
-                return FormValidation.error(user+" needs to belong to group "+group+" to read /etc/shadow");
+
+                if ((st.mode()&FileStat.S_IRGRP)!=0) {
+                    // the file is readable to group. Hudson should be in the right group, then
+                    return FormValidation.error(user+" needs to belong to group "+group+" to read /etc/shadow");
+                } else {
+                    Passwd opwd = api.getpwuid(st.uid());
+                    String owner;
+                    if(opwd!=null)  owner=opwd.getLoginName();
+                    else            owner="uid:"+st.uid();
+
+                    return FormValidation.error("Either Hudson needs to run as "+owner+" or "+user+" needs to belong to group "+group+" and 'chmod g+r /etc/shadow' needs to be done to enable Hudson to read /etc/shadow");
+                }
             }
             return FormValidation.ok("Success");
         }
