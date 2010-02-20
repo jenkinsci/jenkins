@@ -271,6 +271,8 @@ public class Maven extends Builder {
 
     /**
      * Allows the derived type to make additional modifications to the arguments list.
+     *
+     * @since 1.344
      */
     protected void wrapUpArguments(ArgumentListBuilder args, String normalizedTarget, AbstractBuild<?,?> build, Launcher launcher, BuildListener listener) throws IOException, InterruptedException {
     }
