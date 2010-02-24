@@ -61,15 +61,15 @@ THE SOFTWARE.
           <version>1.2</version>
         </dependency>
         <dependency>
-          <groupId>org.apache.maven</groupId>
+          <groupId>org.jvnet.hudson</groupId>
           <artifactId>maven-embedder</artifactId>
-          <version>${maven.embedder.version}</version>
+          <version>2.0.4-hudson-1</version>
           <!--exclusions>   These are needed for Maven embedder to resolve parent POMs in remote repositories
             <exclusion>
               <groupId>org.apache.maven.wagon</groupId>
               <artifactId>wagon-file</artifactId>
             </exclusion>
-            <exclusion>t r
+            <exclusion>
               <groupId>org.apache.maven.wagon</groupId>
               <artifactId>wagon-http-lightweight</artifactId>
             </exclusion>
@@ -82,11 +82,6 @@ THE SOFTWARE.
               <artifactId>wagon-ssh</artifactId>
             </exclusion>
           </exclusions-->
-        </dependency>
-        <dependency>
-          <groupId>org.apache.maven</groupId>
-          <artifactId>maven-core</artifactId>
-          <version>${maven.version}</version>
           <exclusions>
             <exclusion><!-- we'll add our own patched version. see http://www.nabble.com/Issue-1680-td18383889.html -->
               <groupId>jtidy</groupId>
@@ -101,7 +96,7 @@ THE SOFTWARE.
               <artifactId>xml-apis</artifactId>
             </exclusion>
             <exclusion>
-              <!-- we bundle our own version below --> 
+              <!-- we bundle our own version below -->
               <groupId>org.apache.maven.wagon</groupId>
               <artifactId>wagon-webdav</artifactId>
             </exclusion>
