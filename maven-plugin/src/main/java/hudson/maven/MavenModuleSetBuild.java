@@ -796,7 +796,7 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
         private final Properties properties;
         private final String privateRepository;
         private final String alternateSettings;
-	private final boolean nonRecursive;
+        private final boolean nonRecursive;
 	
         public PomParser(BuildListener listener, MavenInstallation mavenHome, MavenModuleSet project) {
             // project cannot be shipped to the remote JVM, so all the relevant properties need to be captured now.
@@ -805,11 +805,10 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
             this.rootPOM = project.getRootPOM();
             this.profiles = project.getProfiles();
             this.properties = project.getMavenProperties();
-	    this.nonRecursive = project.isNonRecursive();
-	    if (project.usesPrivateRepository()) {
+            this.nonRecursive = project.isNonRecursive();
+            if (project.usesPrivateRepository()) {
                 this.privateRepository = project.getLastBuild().getWorkspace().child(".repository").getRemote();
-            }
-            else {
+            } else {
                 this.privateRepository = null;
             }
             this.alternateSettings = project.getAlternateSettings();
