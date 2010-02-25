@@ -740,8 +740,15 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
      */
     @Exported
     public List<Artifact> getArtifacts() {
+        return getArtifactsUpTo(Integer.MAX_VALUE);
+    }
+
+    /**
+     * Gets the first N artifacts.
+     */
+    public List<Artifact> getArtifactsUpTo(int n) {
         ArtifactList r = new ArtifactList();
-        addArtifacts(getArtifactsDir(),"","",r,null);
+        addArtifacts(getArtifactsDir(),"","",r,null,n);
         r.computeDisplayName();
         return r;
     }
@@ -753,26 +760,29 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
      * The strange method name is so that we can access it from EL.
      */
     public boolean getHasArtifacts() {
-        return !getArtifacts().isEmpty();
+        return !getArtifactsUpTo(1).isEmpty();
     }
 
-    private void addArtifacts( File dir, String path, String pathHref, ArtifactList r, Artifact parent ) {
+    private int addArtifacts( File dir, String path, String pathHref, ArtifactList r, Artifact parent, int upTo ) {
         String[] children = dir.list();
-        if(children==null)  return;
+        if(children==null)  return 0;
         Arrays.sort(children, String.CASE_INSENSITIVE_ORDER);
-        String childPath, childHref;
-        boolean collapsed;
-        Artifact a;
+
+        int n = 0;
         for (String child : children) {
-            childPath = path + child;
-            childHref = pathHref + Util.rawEncode(child);
+            if (n>upTo)     break;  // collected enough
+
+            String childPath = path + child;
+            String childHref = pathHref + Util.rawEncode(child);
             File sub = new File(dir, child);
-            collapsed = (children.length==1 && parent!=null);
+            boolean collapsed = (children.length==1 && parent!=null);
+            Artifact a;
             if (collapsed) {
                 // Collapse single items into parent node where possible:
                 a = new Artifact(parent.getFileName() + '/' + child, childPath,
                                  sub.isDirectory() ? null : childHref, parent.getTreeNodeId());
                 r.tree.put(a, r.tree.remove(parent));
+                n++;
             } else {
                 // Use null href for a directory:
                 a = new Artifact(child, childPath,
@@ -780,12 +790,14 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
                 r.tree.put(a, parent!=null ? parent.getTreeNodeId() : null);
             }
             if (sub.isDirectory()) {
-                addArtifacts(sub, childPath + '/', childHref + '/', r, a);
+                n += addArtifacts(sub, childPath + '/', childHref + '/', r, a, upTo-n);
             } else {
                 // Don't store collapsed path in ArrayList (for correct data in external API)
                 r.add(collapsed ? new Artifact(child, a.relativePath, a.href, a.treeNodeId) : a);
+                n++;
             }
         }
+        return n;
     }
 
     /**
