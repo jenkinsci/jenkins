@@ -175,7 +175,6 @@ import static javax.servlet.http.HttpServletResponse.SC_NOT_FOUND;
 import java.io.File;
 import java.io.FileFilter;
 import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintWriter;
@@ -454,7 +453,6 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
      * as much as possible, even though that's not a strict requirement.
      */
     private transient final ConcurrentHashMap<String,Label> labels = new ConcurrentHashMap<String,Label>();
-    private transient volatile Set<Label> labelSet;
 
     /**
      * Load statistics of the entire system.
@@ -2067,7 +2065,7 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
             public void run(Reactor session) throws Exception {
                 XmlFile cfg = getConfigFile();
                 if (cfg.exists()) {
-                    // reset some data that may not exit in the disk file
+                    // reset some data that may not exist in the disk file
                     // so that we can take a proper compensation action later.
                     primaryView = null;
                     views.clear();
@@ -2294,7 +2292,6 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
                 mode = Mode.NORMAL;
 
             label = json.optString("labelString","");
-            labelSet=null;
 
             quietPeriod = json.getInt("quiet_period");
             
