@@ -26,7 +26,7 @@ THE SOFTWARE.
   <l:layout>
     <st:include it="${it.owner}" page="sidepanel.jelly" />
     <l:main-panel>
-      <h1>${%Test Result}</h1>
+      <h1>${%maven-junit-plugin Test Result}</h1>
 
       <j:set var="prev" value="${it.previousResult}" />
       <test:bar />
