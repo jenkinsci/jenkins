@@ -185,7 +185,7 @@ public final class FilePath implements Serializable {
      */
     public FilePath(VirtualChannel channel, String remote) {
         this.channel = channel;
-        this.remote = remote;
+        this.remote = normalize(remote);
     }
 
     /**
@@ -197,7 +197,7 @@ public final class FilePath implements Serializable {
      */
     public FilePath(File localPath) {
         this.channel = null;
-        this.remote = localPath.getPath();
+        this.remote = normalize(localPath.getPath());
     }
 
     /**
@@ -209,12 +209,12 @@ public final class FilePath implements Serializable {
         this.channel = base.channel;
         if(isAbsolute(rel)) {
             // absolute
-            this.remote = rel;
+            this.remote = normalize(rel);
         } else 
         if(base.isUnix()) {
-            this.remote = base.remote+'/'+rel;
+            this.remote = normalize(base.remote+'/'+rel);
         } else {
-            this.remote = base.remote+'\\'+rel;
+            this.remote = normalize(base.remote+'\\'+rel);
         }
     }
 
@@ -223,6 +223,57 @@ public final class FilePath implements Serializable {
     }
 
     private static final Pattern DRIVE_PATTERN = Pattern.compile("[A-Za-z]:[\\\\/].*");
+
+    /**
+     * {@link File#getParent()} etc cannot handle ".." and "." in the path component very well,
+     * so remove them.
+     */
+    private static String normalize(String path) {
+        if (path.indexOf('.')<0)    return path;    // common case
+
+        path = _normalize(path,'/');
+        path = _normalize(path,'\\');
+
+        // if the normalization results in a bare drive letter, like "C:", it needs to be fixed up to "C:\\"
+        if (path.length()==2 && path.charAt(1)==':')    path+='\\';
+        return path;
+    }
+
+    private static String _normalize(String path, char separator) {
+        List<String> tokens = new ArrayList<String>();
+        int s=0; // start of the next token
+        while (true) {
+            int idx = path.indexOf(separator,s);
+            if (idx<0) {
+                tokens.add(path.substring(s));
+                break;
+            }
+            tokens.add(path.substring(s,idx));
+            s = idx+1;
+        }
+
+        boolean modified=false;
+
+        for (int i=0; i<tokens.size(); ) {
+            String token = tokens.get(i);
+            if (token.equals(".")) {
+                tokens.remove(i);
+                modified = true;
+            } else
+            if (token.equals("..") && i>0) {
+                tokens.remove(i);
+                tokens.remove(i-1);
+                i--;
+                modified = true;
+            } else
+                i++;
+        }
+
+        if (modified)
+            path = Util.join(tokens,""+separator);
+
+        return path;
+    }
 
     /**
      * Checks if the remote path is Unix.

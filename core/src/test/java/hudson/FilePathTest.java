@@ -23,6 +23,7 @@
  */
 package hudson;
 
+import hudson.remoting.VirtualChannel;
 import hudson.util.NullStream;
 
 import java.io.File;
@@ -70,5 +71,33 @@ public class FilePathTest extends ChannelTestCase {
         } finally {
             Util.deleteRecursive(tmp);
         }
+    }
+
+    public void testNormalization() throws Exception {
+        compare("abc/def\\ghi","abc/def\\ghi"); // allow mixed separators
+
+        {// basic '.' trimming
+            compare("./abc/def","abc/def");
+            compare("abc/./def","abc/def");
+            compare("abc/def/.","abc/def");
+
+            compare(".\\abc\\def","abc\\def");
+            compare("abc\\.\\def","abc\\def");
+            compare("abc\\def\\.","abc\\def");
+        }
+
+        compare("abc/../def","def");
+        compare("abc/def/../../ghi","ghi");
+        compare("abc/./def/../././../ghi","ghi");   // interleaving . and ..
+
+        compare("../abc/def","../abc/def");     // uncollapsible ..
+        compare("abc/def/..","abc");
+
+        compare("c:\\abc\\..","c:\\");      // we want c:\\, not c:
+        compare("c:\\abc\\def\\..","c:\\abc");
+    }
+
+    private void compare(String original, String answer) {
+        assertEquals(answer,new FilePath((VirtualChannel)null,original).getRemote());
     }
 }
