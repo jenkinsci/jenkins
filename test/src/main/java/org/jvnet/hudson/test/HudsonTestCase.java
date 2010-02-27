@@ -37,6 +37,7 @@ import hudson.Util;
 import hudson.model.Computer;
 import hudson.model.Executor;
 import hudson.model.Queue.Executable;
+import hudson.slaves.ComputerLauncher;
 import hudson.tools.ToolProperty;
 import hudson.remoting.Which;
 import hudson.Launcher.LocalLauncher;
@@ -85,6 +86,7 @@ import java.lang.ref.WeakReference;
 import java.lang.reflect.Method;
 import java.lang.reflect.Field;
 import java.net.MalformedURLException;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.ArrayList;
@@ -547,18 +549,37 @@ public abstract class HudsonTestCase extends TestCase implements RootAction {
             // this synchronization block is so that we don't end up adding the same slave name more than once.
 
             int sz = hudson.getNodes().size();
-            CommandLauncher launcher = new CommandLauncher(
-                    String.format("\"%s/bin/java\" %s -jar \"%s\"",
-                            System.getProperty("java.home"),
-                            SLAVE_DEBUG_PORT>0 ? " -Xdebug -Xrunjdwp:transport=dt_socket,server=y,address="+(SLAVE_DEBUG_PORT+sz): "",
-                            new File(hudson.getJnlpJars("slave.jar").getURL().toURI()).getAbsolutePath()),
-                    env);
-    	
+
             DumbSlave slave = new DumbSlave("slave" + sz, "dummy",
-    				createTmpDir().getPath(), "1", Mode.NORMAL, l==null?"":l.getName(), launcher, RetentionStrategy.NOOP, Collections.EMPTY_LIST);
+    				createTmpDir().getPath(), "1", Mode.NORMAL, l==null?"":l.getName(), createComputerLauncher(env), RetentionStrategy.NOOP, Collections.EMPTY_LIST);
     		hudson.addNode(slave);
     		return slave;
     	}
+    }
+
+    public PretendSlave createPretendSlave(FakeLauncher faker) throws Exception {
+        synchronized (hudson) {
+            int sz = hudson.getNodes().size();
+            PretendSlave slave = new PretendSlave("slave" + sz, createTmpDir().getPath(), "", createComputerLauncher(null), faker);
+    		hudson.addNode(slave);
+    		return slave;
+        }
+    }
+
+    /**
+     * Creates a {@link CommandLauncher} for launching a slave locally.
+     *
+     * @param env
+     *      Environment variables to add to the slave process. Can be null.
+     */
+    public CommandLauncher createComputerLauncher(EnvVars env) throws URISyntaxException, MalformedURLException {
+        int sz = hudson.getNodes().size();
+        return new CommandLauncher(
+                String.format("\"%s/bin/java\" %s -jar \"%s\"",
+                        System.getProperty("java.home"),
+                        SLAVE_DEBUG_PORT>0 ? " -Xdebug -Xrunjdwp:transport=dt_socket,server=y,address="+(SLAVE_DEBUG_PORT+sz): "",
+                        new File(hudson.getJnlpJars("slave.jar").getURL().toURI()).getAbsolutePath()),
+                env);
     }
 
     /**

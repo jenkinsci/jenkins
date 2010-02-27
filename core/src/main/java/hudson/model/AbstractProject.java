@@ -289,6 +289,13 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
     }
 
     /**
+     * Assigns this job to the given node. A convenience method over {@link #setAssignedLabel(Label)}.
+     */
+    public void setAssignedNode(Node l) throws IOException {
+        setAssignedLabel(l.getSelfLabel());
+    }
+
+    /**
      * Get the term used in the UI to represent this kind of {@link AbstractProject}.
      * Must start with a capital letter.
      */
