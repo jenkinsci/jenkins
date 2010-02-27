@@ -367,11 +367,10 @@ public abstract class Slave extends Node implements Serializable {
          */
         public FormValidation doCheckRemoteFS(@QueryParameter String value) throws IOException, ServletException {
             if(Util.fixEmptyAndTrim(value)==null)
-                return FormValidation.error("Remote directory is mandatory");
+                return FormValidation.error(Messages.Slave_Remote_Director_Mandatory());
 
             if(value.startsWith("\\\\") || value.startsWith("/net/"))
-                return FormValidation.warning("Are you sure you want to use network mounted file system for FS root? " +
-                        "Note that this directory does not need to be visible to the master.");
+                return FormValidation.warning(Messages.Slave_Network_Mounted_File_System_Warning());
 
             return FormValidation.ok();
         }
