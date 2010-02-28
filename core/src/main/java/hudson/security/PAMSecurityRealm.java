@@ -152,12 +152,12 @@ public class PAMSecurityRealm extends SecurityRealm {
                 POSIX api = PosixAPI.get();
                 FileStat st = api.stat("/etc/shadow");
                 if(st==null)
-                    return FormValidation.error("Hudson needs to be able to read /etc/shadow");
+                    return FormValidation.error(Messages.PAMSecurityRealm_ReadPermission());
 
                 Passwd pwd = api.getpwuid(api.geteuid());
                 String user;
-                if(pwd!=null)   user="User '"+pwd.getLoginName()+"'";
-                else            user="Current user";
+                if(pwd!=null)   user=Messages.PAMSecurityRealm_User(pwd.getLoginName());
+                else            user=Messages.PAMSecurityRealm_CurrentUser();
 
                 String group;
                 Group g = api.getgrgid(st.gid());
@@ -166,17 +166,17 @@ public class PAMSecurityRealm extends SecurityRealm {
 
                 if ((st.mode()&FileStat.S_IRGRP)!=0) {
                     // the file is readable to group. Hudson should be in the right group, then
-                    return FormValidation.error(user+" needs to belong to group "+group+" to read /etc/shadow");
+                    return FormValidation.error(Messages.PAMSecurityRealm_BelongToGroup(user, group));
                 } else {
                     Passwd opwd = api.getpwuid(st.uid());
                     String owner;
                     if(opwd!=null)  owner=opwd.getLoginName();
-                    else            owner="uid:"+st.uid();
+                    else            owner=Messages.PAMSecurityRealm_Uid(st.uid());
 
-                    return FormValidation.error("Either Hudson needs to run as "+owner+" or "+user+" needs to belong to group "+group+" and 'chmod g+r /etc/shadow' needs to be done to enable Hudson to read /etc/shadow");
+                    return FormValidation.error(Messages.PAMSecurityRealm_RunAsUserOrBelongToGroupAndChmod(owner, user, group));
                 }
             }
-            return FormValidation.ok("Success");
+            return FormValidation.ok(Messages.PAMSecurityRealm_Success());
         }
     }
 
