@@ -1,7 +1,7 @@
 /*
  * The MIT License
  * 
- * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi
+ * Copyright (c) 2004-2010, Sun Microsystems, Inc., Kohsuke Kawaguchi, Alan Harder
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -38,6 +38,7 @@ import com.thoughtworks.xstream.core.JVM;
 import com.thoughtworks.xstream.io.HierarchicalStreamDriver;
 import com.thoughtworks.xstream.io.HierarchicalStreamReader;
 import com.thoughtworks.xstream.io.HierarchicalStreamWriter;
+import com.thoughtworks.xstream.mapper.CannotResolveClassException;
 import hudson.model.Hudson;
 import hudson.model.Result;
 
@@ -70,11 +71,6 @@ public class XStream2 extends XStream {
         return super.unmarshal(reader,root,dataHolder);
     }
 
-    @Override
-    protected boolean useXStream11XmlFriendlyMapper() {
-        return true;
-    }
-
     private void init() {
         registerConverter(new RobustCollectionConverter(getMapper(),getReflectionProvider()),10);
         registerConverter(new CopyOnWriteMap.Tree.ConverterImpl(getMapper()),10); // needs to override MapConverter
@@ -93,7 +89,34 @@ public class XStream2 extends XStream {
         // list up types that should be marshalled out like a value, without referencial integrity tracking. 
         ImmutableTypesMapper itm = new ImmutableTypesMapper(next);
         itm.addImmutableType(Result.class);
-        return itm;
+        return new CompatibilityMapper(itm);
+    }
+
+    /**
+     * Prior to Hudson 1.106, XStream 1.1.x was used which encoded "$" in class names
+     * as "-" instead of "_-" that is used now.  Up through Hudson 1.348 compatibility
+     * for old serialized data was maintained via {@code XStream11XmlFriendlyMapper}.
+     * However, it was found (HUDSON-5768) that this caused fields with "__" to fail
+     * deserialization due to double decoding.  Now this class is used for compatibility.
+     */
+    private class CompatibilityMapper extends MapperWrapper {
+        private CompatibilityMapper(Mapper wrapped) {
+            super(wrapped);
+        }
+
+        @Override
+        public Class realClass(String elementName) {
+            try {
+                return super.realClass(elementName);
+            } catch (CannotResolveClassException e) {
+                // If a "-" is found, retry with mapping this to "$"
+                if (elementName.indexOf('-') >= 0) try {
+                    return super.realClass(elementName.replace('-', '$'));
+                } catch (CannotResolveClassException e2) { }
+                // Throw original exception
+                throw e;
+            }
+        }
     }
 
     /**
