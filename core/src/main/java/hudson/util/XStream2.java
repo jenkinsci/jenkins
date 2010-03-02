@@ -26,7 +26,6 @@ package hudson.util;
 import com.thoughtworks.xstream.XStream;
 import com.thoughtworks.xstream.mapper.Mapper;
 import com.thoughtworks.xstream.mapper.MapperWrapper;
-import com.thoughtworks.xstream.mapper.ImmutableTypesMapper;
 import com.thoughtworks.xstream.converters.Converter;
 import com.thoughtworks.xstream.converters.ConverterMatcher;
 import com.thoughtworks.xstream.converters.DataHolder;
@@ -72,6 +71,9 @@ public class XStream2 extends XStream {
     }
 
     private void init() {
+        // list up types that should be marshalled out like a value, without referencial integrity tracking. 
+        addImmutableType(Result.class);
+
         registerConverter(new RobustCollectionConverter(getMapper(),getReflectionProvider()),10);
         registerConverter(new CopyOnWriteMap.Tree.ConverterImpl(getMapper()),10); // needs to override MapConverter
         registerConverter(new DescribableList.ConverterImpl(getMapper()),10); // explicitly added to handle subtypes 
@@ -86,10 +88,7 @@ public class XStream2 extends XStream {
 
     @Override
     protected MapperWrapper wrapMapper(MapperWrapper next) {
-        // list up types that should be marshalled out like a value, without referencial integrity tracking. 
-        ImmutableTypesMapper itm = new ImmutableTypesMapper(next);
-        itm.addImmutableType(Result.class);
-        return new CompatibilityMapper(itm);
+        return new CompatibilityMapper(next);
     }
 
     /**
