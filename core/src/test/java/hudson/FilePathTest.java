@@ -95,6 +95,9 @@ public class FilePathTest extends ChannelTestCase {
 
         compare("c:\\abc\\..","c:\\");      // we want c:\\, not c:
         compare("c:\\abc\\def\\..","c:\\abc");
+
+        compare("abc/..",".");
+        compare(".",".");
     }
 
     private void compare(String original, String answer) {

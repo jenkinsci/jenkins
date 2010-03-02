@@ -269,8 +269,10 @@ public final class FilePath implements Serializable {
                 i++;
         }
 
-        if (modified)
+        if (modified) {
             path = Util.join(tokens,""+separator);
+            if (path.length()==0)   path="."; // "../abc" -> "."
+        }
 
         return path;
     }
