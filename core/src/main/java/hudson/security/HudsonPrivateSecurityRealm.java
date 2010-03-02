@@ -1,7 +1,7 @@
 /*
  * The MIT License
  * 
- * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, David Calavera, Seiji Sogabe
+ * Copyright (c) 2004-2010, Sun Microsystems, Inc., Kohsuke Kawaguchi, David Calavera, Seiji Sogabe
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,9 +23,11 @@
  */
 package hudson.security;
 
+import com.thoughtworks.xstream.converters.UnmarshallingContext;
 import groovy.lang.Binding;
 import hudson.Extension;
 import hudson.Util;
+import hudson.diagnosis.OldDataMonitor;
 import hudson.model.Descriptor;
 import hudson.model.Hudson;
 import hudson.model.ManagementLink;
@@ -37,6 +39,7 @@ import hudson.tasks.Mailer;
 import hudson.util.PluginServletFilter;
 import hudson.util.Protector;
 import hudson.util.Scrambler;
+import hudson.util.XStream2;
 import hudson.util.spring.BeanBuilder;
 import net.sf.json.JSONObject;
 import org.acegisecurity.Authentication;
@@ -405,11 +408,15 @@ public class HudsonPrivateSecurityRealm extends SecurityRealm implements ModelOb
             return user==null;
         }
 
-        private Object readResolve() {
-            // If we are being read back in from an older version
-            if (password!=null && passwordHash==null)
-                passwordHash = PASSWORD_ENCODER.encodePassword(Scrambler.descramble(password),null);
-            return this;
+        public static class ConverterImpl extends XStream2.PassthruConverter<Details> {
+            public ConverterImpl(XStream2 xstream) { super(xstream); }
+            @Override protected void callback(Details d, UnmarshallingContext context) {
+                // Convert to hashed password and report to monitor if we load old data
+                if (d.password!=null && d.passwordHash==null) {
+                    d.passwordHash = PASSWORD_ENCODER.encodePassword(Scrambler.descramble(d.password),null);
+                    OldDataMonitor.report(context, "1.283");
+                }
+            }
         }
 
         @Extension

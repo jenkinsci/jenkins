@@ -1,7 +1,7 @@
 /*
  * The MIT License
  * 
- * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, Yahoo! Inc.
+ * Copyright (c) 2004-2010, Sun Microsystems, Inc., Kohsuke Kawaguchi, Yahoo! Inc.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -28,12 +28,14 @@ import com.thoughtworks.xstream.converters.MarshallingContext;
 import com.thoughtworks.xstream.converters.UnmarshallingContext;
 import com.thoughtworks.xstream.io.HierarchicalStreamReader;
 import com.thoughtworks.xstream.io.HierarchicalStreamWriter;
+import hudson.diagnosis.OldDataMonitor;
 import hudson.model.Descriptor;
 import hudson.model.Hudson;
 import hudson.model.Item;
 import hudson.util.FormValidation;
-import hudson.util.VersionNumber;
 import hudson.util.FormValidation.Kind;
+import hudson.util.VersionNumber;
+import hudson.util.RobustReflectionConverter;
 import hudson.Functions;
 import hudson.Extension;
 import net.sf.json.JSONObject;
@@ -56,7 +58,6 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.io.IOException;
-import java.io.Serializable;
 
 /**
  * Role-based authorization via a matrix.
@@ -114,30 +115,26 @@ public class GlobalMatrixAuthorizationStrategy extends AuthorizationStrategy {
     }
 
     /**
-     * In earlier version of Hudson we used to use reflection converter, which calls this method.
-     * This is now unmarshaller via {@link ConverterImpl}
-     */
-    private Object readResolve() {
-        migrateHudson2324(grantedPermissions);
-        acl = new AclImpl();
-        return this;
-    }
-
-    /**
      * Due to HUDSON-2324, we want to inject Item.READ permission to everyone who has Hudson.READ,
-     * to remain backward compatible
+     * to remain backward compatible.
      * @param grantedPermissions
      */
-    /*package*/ static void migrateHudson2324(Map<Permission,Set<String>> grantedPermissions) {
+    /*package*/ static boolean migrateHudson2324(Map<Permission,Set<String>> grantedPermissions) {
+        boolean result = false;
         if(Hudson.getInstance().isUpgradedFromBefore(new VersionNumber("1.300.*"))) {
             Set<String> f = grantedPermissions.get(Hudson.READ);
-            if(f!=null) {
+            if (f!=null) {
                 Set<String> t = grantedPermissions.get(Item.READ);
-                if(t!=null) t.addAll(f);
-                else        t=new HashSet<String>(f);
+                if (t!=null)
+                    result = t.addAll(f);
+                else {
+                    t = new HashSet<String>(f);
+                    result = true;
+                }
                 grantedPermissions.put(Item.READ,t);
             }
         }
+        return result;
     }
 
     /**
@@ -221,11 +218,13 @@ public class GlobalMatrixAuthorizationStrategy extends AuthorizationStrategy {
                 } catch (IllegalArgumentException ex) {
                     Logger.getLogger(GlobalMatrixAuthorizationStrategy.class.getName())
                           .log(Level.WARNING,"Skipping a non-existent permission",ex);
+                    RobustReflectionConverter.addErrorInContext(context, ex);
                 }
                 reader.moveUp();
             }
 
-            migrateHudson2324(as.grantedPermissions);
+            if (migrateHudson2324(as.grantedPermissions))
+                OldDataMonitor.report(context, "1.301");
 
             return as;
         }

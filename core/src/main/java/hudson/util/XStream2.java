@@ -38,17 +38,23 @@ import com.thoughtworks.xstream.io.HierarchicalStreamDriver;
 import com.thoughtworks.xstream.io.HierarchicalStreamReader;
 import com.thoughtworks.xstream.io.HierarchicalStreamWriter;
 import com.thoughtworks.xstream.mapper.CannotResolveClassException;
+import hudson.diagnosis.OldDataMonitor;
 import hudson.model.Hudson;
 import hudson.model.Result;
+import hudson.model.Saveable;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * {@link XStream} enhanced for additional Java5 support and improved robustness.
  * @author Kohsuke Kawaguchi
  */
 public class XStream2 extends XStream {
+    private Converter reflectionConverter;
+    private ThreadLocal<Boolean> oldData = new ThreadLocal<Boolean>();
+
     public XStream2() {
         init();
     }
@@ -67,13 +73,19 @@ public class XStream2 extends XStream {
             setClassLoader(h.pluginManager.uberClassLoader);
         }
 
-        return super.unmarshal(reader,root,dataHolder);
+        Object o = super.unmarshal(reader,root,dataHolder);
+        if (oldData.get()!=null) {
+            oldData.remove();
+            if (o instanceof Saveable) OldDataMonitor.report((Saveable)o, "1.106");
+        }
+        return o;
     }
 
     @Override
     protected Converter createDefaultConverter() {
         // replace default reflection converter
-        return new RobustReflectionConverter(getMapper(),new JVM().bestReflectionProvider());
+        reflectionConverter = new RobustReflectionConverter(getMapper(),new JVM().bestReflectionProvider());
+        return reflectionConverter;
     }
 
     private void init() {
@@ -113,7 +125,9 @@ public class XStream2 extends XStream {
             } catch (CannotResolveClassException e) {
                 // If a "-" is found, retry with mapping this to "$"
                 if (elementName.indexOf('-') >= 0) try {
-                    return super.realClass(elementName.replace('-', '$'));
+                    Class c = super.realClass(elementName.replace('-', '$'));
+                    oldData.set(Boolean.TRUE);
+                    return c;
                 } catch (CannotResolveClassException e2) { }
                 // Throw original exception
                 throw e;
@@ -123,15 +137,22 @@ public class XStream2 extends XStream {
 
     /**
      * If a class defines a nested {@code ConverterImpl} subclass, use that as a {@link Converter}.
+     * Its constructor may have XStream/XStream2 and/or Mapper parameters (or no params).
      */
     private static final class AssociatedConverterImpl implements Converter {
         private final XStream xstream;
+        private final ConcurrentHashMap<Class,Converter> cache =
+                new ConcurrentHashMap<Class,Converter>();
 
         private AssociatedConverterImpl(XStream xstream) {
             this.xstream = xstream;
         }
 
         private Converter findConverter(Class t) {
+            Converter result = cache.get(t);
+            if (result != null)
+                // ConcurrentHashMap does not allow null, so use this object to represent null
+                return result == this ? null : result;
             try {
                 if(t==null || t.getClassLoader()==null)
                     return null;
@@ -141,7 +162,7 @@ public class XStream2 extends XStream {
                 Class<?>[] p = c.getParameterTypes();
                 Object[] args = new Object[p.length];
                 for (int i = 0; i < p.length; i++) {
-                    if(p[i]==XStream.class)
+                    if(p[i]==XStream.class || p[i]==XStream2.class)
                         args[i] = xstream;
                     else if(p[i]== Mapper.class)
                         args[i] = xstream.getMapper();
@@ -150,10 +171,13 @@ public class XStream2 extends XStream {
 
                 }
                 ConverterMatcher cm = (ConverterMatcher)c.newInstance(args);
-                return cm instanceof SingleValueConverter
+                result = cm instanceof SingleValueConverter
                         ? new SingleValueConverterWrapper((SingleValueConverter)cm)
                         : (Converter)cm;
+                cache.put(t, result);
+                return result;
             } catch (ClassNotFoundException e) {
+                cache.put(t, this);  // See above.. this object in cache represents null
                 return null;
             } catch (IllegalAccessException e) {
                 IllegalAccessError x = new IllegalAccessError();
@@ -181,5 +205,39 @@ public class XStream2 extends XStream {
         public Object unmarshal(HierarchicalStreamReader reader, UnmarshallingContext context) {
             return findConverter(context.getRequiredType()).unmarshal(reader,context);
         }
+    }
+
+    /**
+     * Create a nested {@code ConverterImpl} subclass that extends this class to run some
+     * callback code just after a type is unmarshalled by RobustReflectionConverter.
+     * Example: <pre> public static class ConverterImpl extends XStream2.PassthruConverter&lt;MyType&gt; {
+     *   public ConverterImpl(XStream2 xstream) { super(xstream); }
+     *   @Override protected void callback(MyType obj, UnmarshallingContext context) {
+     *     ...
+     * </pre>
+     */
+    public static abstract class PassthruConverter<T> implements Converter {
+        private Converter converter;
+
+        public PassthruConverter(XStream2 xstream) {
+            converter = xstream.reflectionConverter;
+        }
+
+        public boolean canConvert(Class type) {
+            // marshal/unmarshal called directly from AssociatedConverterImpl
+            return false;
+        }
+
+        public void marshal(Object source, HierarchicalStreamWriter writer, MarshallingContext context) {
+            converter.marshal(source, writer, context);
+        }
+
+        public Object unmarshal(HierarchicalStreamReader reader, UnmarshallingContext context) {
+            Object obj = converter.unmarshal(reader, context);
+            callback((T)obj, context);
+            return obj;
+        }
+
+        protected abstract void callback(T obj, UnmarshallingContext context);
     }
 }

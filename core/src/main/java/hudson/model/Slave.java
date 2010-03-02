@@ -1,7 +1,7 @@
 /*
  * The MIT License
  * 
- * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, Erik Ramfelt, Martin Eigenbrodt, Stephen Connolly, Tom Huybrechts
+ * Copyright (c) 2004-2010, Sun Microsystems, Inc., Kohsuke Kawaguchi, Erik Ramfelt, Martin Eigenbrodt, Stephen Connolly, Tom Huybrechts
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -27,6 +27,7 @@ import hudson.FilePath;
 import hudson.Launcher;
 import hudson.Util;
 import hudson.Launcher.RemoteLauncher;
+import hudson.diagnosis.OldDataMonitor;
 import hudson.model.Descriptor.FormException;
 import hudson.remoting.Callable;
 import hudson.remoting.VirtualChannel;
@@ -51,7 +52,6 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
@@ -117,7 +117,7 @@ public abstract class Slave extends Node implements Serializable {
      */
     private String label="";
     
-	private /*almost final*/ DescribableList<NodeProperty<?>,NodePropertyDescriptor> nodeProperties = new DescribableList<NodeProperty<?>,NodePropertyDescriptor>(Hudson.getInstance());
+    private /*almost final*/ DescribableList<NodeProperty<?>,NodePropertyDescriptor> nodeProperties = new DescribableList<NodeProperty<?>,NodePropertyDescriptor>(Hudson.getInstance());
 
     /**
      * Lazily computed set of labels from {@link #label}.
@@ -155,12 +155,6 @@ public abstract class Slave extends Node implements Serializable {
 
         if (name.equals(""))
             throw new FormException(Messages.Slave_InvalidConfig_NoName(), null);
-
-        // this prevents the config from being saved when slaves are offline.
-        // on a large deployment with a lot of slaves, some slaves are bound to be offline,
-        // so this check is harmful.
-        //if (!localFS.exists())
-        //    throw new FormException("Invalid slave configuration for " + name + ". No such directory exists: " + localFS, null);
 
 //        if (remoteFS.equals(""))
 //            throw new FormException(Messages.Slave_InvalidConfig_NoRemoteDir(name), null);
@@ -340,6 +334,8 @@ public abstract class Slave extends Node implements Serializable {
             if(command.length()>0)  command += ' ';
             agentCommand = command+"java -jar ~/bin/slave.jar";
         }
+        if (command!=null || localFS!=null)
+            OldDataMonitor.report(Hudson.getInstance(), "1.69");
         if (launcher == null) {
             launcher = (agentCommand == null || agentCommand.trim().length() == 0)
                     ? new JNLPLauncher()

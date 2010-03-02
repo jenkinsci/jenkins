@@ -1,7 +1,7 @@
 /*
  * The MIT License
  * 
- * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, Brian Westrich, Erik Ramfelt, Ertan Deniz, Jean-Baptiste Quenot, Luca Domenico Milanesio, R. Tyler Ballance, Stephen Connolly, Tom Huybrechts, id:cactusman
+ * Copyright (c) 2004-2010, Sun Microsystems, Inc., Kohsuke Kawaguchi, Brian Westrich, Erik Ramfelt, Ertan Deniz, Jean-Baptiste Quenot, Luca Domenico Milanesio, R. Tyler Ballance, Stephen Connolly, Tom Huybrechts, id:cactusman
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -29,6 +29,7 @@ import hudson.FilePath;
 import hudson.Launcher;
 import hudson.Util;
 import hudson.cli.declarative.CLIMethod;
+import hudson.diagnosis.OldDataMonitor;
 import hudson.slaves.WorkspaceList;
 import hudson.model.Cause.LegacyCodeCause;
 import hudson.model.Cause.UserCause;
@@ -219,9 +220,13 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
             }
         });
 
-        if(triggers==null)
+        // boolean! Can't tell if xml file contained false..
+        if (enableRemoteTrigger) OldDataMonitor.report(this, "1.77");
+        if(triggers==null) {
             // it didn't exist in < 1.28
             triggers = new Vector<Trigger<?>>();
+            OldDataMonitor.report(this, "1.28");
+        }
         for (Trigger t : triggers)
             t.start(this,false);
         if(scm==null)
