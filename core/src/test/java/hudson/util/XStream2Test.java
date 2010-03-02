@@ -28,7 +28,7 @@ import hudson.model.Result;
 import hudson.model.Run;
 
 /**
- *
+ * Tests for XML serialization of java objects.
  * @author Kohsuke Kawaguchi, Mike Dillon, Alan Harder
  */
 public class XStream2Test extends TestCase {
@@ -66,6 +66,7 @@ public class XStream2Test extends TestCase {
 
     /**
      * Test marshal/unmarshal round trip for class/field names with _ and $ characters.
+     * (HUDSON-5768)
      */
     public void testXmlRoundTrip() {
         XStream2 xs = new XStream2();
@@ -80,5 +81,35 @@ public class XStream2Test extends TestCase {
         assertEquals(xml, b.__leadUnder2, b2.__leadUnder2);
         assertEquals(xml, b.$dollar, b2.$dollar);
         assertEquals(xml, b.dollar$2, b2.dollar$2);
+    }
+
+    private static class Baz {
+        private Exception myFailure;
+    }
+
+    /**
+     * Verify RobustReflectionConverter can handle missing fields in a class extending
+     * Throwable/Exception (default ThrowableConverter registered by XStream calls
+     * ReflectionConverter directly, rather than our RobustReflectionConverter replacement).
+     * (HUDSON-5769)
+     */
+    public void testUnmarshalThrowableMissingField() {
+        Baz baz = new Baz();
+        baz.myFailure = new Exception("foo");
+
+        XStream2 xs = new XStream2();
+        String xml = xs.toXML(baz);
+        baz = (Baz)xs.fromXML(xml);
+        assertEquals("foo", baz.myFailure.getMessage());
+
+        baz = (Baz)xs.fromXML("<hudson.util.XStream2Test_-Baz><myFailure>"
+                + "<missingField>true</missingField>"
+                + "<detailMessage>hoho</detailMessage>"
+                + "<stackTrace><trace>"
+                + "hudson.util.XStream2Test.testUnmarshalThrowableMissingField(XStream2Test.java:97)"
+                + "</trace></stackTrace>"
+                + "</myFailure></hudson.util.XStream2Test_-Baz>");
+        // Object should load, despite "missingField" in XML above
+        assertEquals("hoho", baz.myFailure.getMessage());
     }
 }

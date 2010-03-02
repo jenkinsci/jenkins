@@ -70,20 +70,23 @@ public class XStream2 extends XStream {
         return super.unmarshal(reader,root,dataHolder);
     }
 
+    @Override
+    protected Converter createDefaultConverter() {
+        // replace default reflection converter
+        return new RobustReflectionConverter(getMapper(),new JVM().bestReflectionProvider());
+    }
+
     private void init() {
-        // list up types that should be marshalled out like a value, without referencial integrity tracking. 
+        // list up types that should be marshalled out like a value, without referencial integrity tracking.
         addImmutableType(Result.class);
 
         registerConverter(new RobustCollectionConverter(getMapper(),getReflectionProvider()),10);
         registerConverter(new CopyOnWriteMap.Tree.ConverterImpl(getMapper()),10); // needs to override MapConverter
-        registerConverter(new DescribableList.ConverterImpl(getMapper()),10); // explicitly added to handle subtypes 
+        registerConverter(new DescribableList.ConverterImpl(getMapper()),10); // explicitly added to handle subtypes
 
         // this should come after all the XStream's default simpler converters,
         // but before reflection-based one kicks in.
         registerConverter(new AssociatedConverterImpl(this),-10);
-
-        // replace default reflection converter
-        registerConverter(new RobustReflectionConverter(getMapper(),new JVM().bestReflectionProvider()),-19);
     }
 
     @Override
