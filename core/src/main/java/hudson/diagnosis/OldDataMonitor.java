@@ -64,6 +64,7 @@ public class OldDataMonitor extends AdministrativeMonitor {
     private static Logger LOGGER = Logger.getLogger(OldDataMonitor.class.getName());
 
     private HashMap<Saveable,VersionRange> data = new HashMap<Saveable,VersionRange>();
+    private boolean updating = false;
 
     public OldDataMonitor() {
         super("OldData");
@@ -82,11 +83,15 @@ public class OldDataMonitor extends AdministrativeMonitor {
         return Collections.unmodifiableMap(data);
     }
 
-    private synchronized void remove(Saveable obj) {
-        data.remove(obj);
-        if (obj instanceof Job<?,?>)
-            for (Run r : ((Job<?,?>)obj).getBuilds())
-                data.remove(r);
+    private static void remove(Saveable obj, boolean isDelete) {
+        OldDataMonitor odm = (OldDataMonitor)Hudson.getInstance().getAdministrativeMonitor("OldData");
+        synchronized (odm) {
+            if (odm.updating) return; // Skip during doUpgrade or doDiscard
+            odm.data.remove(obj);
+            if (isDelete && obj instanceof Job<?,?>)
+                for (Run r : ((Job<?,?>)obj).getBuilds())
+                    odm.data.remove(r);
+        }
     }
 
     // Listeners to remove data here if resaved or deleted in regular Hudson usage
@@ -95,7 +100,7 @@ public class OldDataMonitor extends AdministrativeMonitor {
     public static final SaveableListener changeListener = new SaveableListener() {
         @Override
         public void onChange(Saveable obj, XmlFile file) {
-            ((OldDataMonitor)Hudson.getInstance().getAdministrativeMonitor("OldData")).remove(obj);
+            remove(obj, false);
         }
     };
 
@@ -103,7 +108,7 @@ public class OldDataMonitor extends AdministrativeMonitor {
     public static final ItemListener itemDeleteListener = new ItemListener() {
         @Override
         public void onDeleted(Item item) {
-            ((OldDataMonitor)Hudson.getInstance().getAdministrativeMonitor("OldData")).remove(item);
+            remove(item, true);
         }
     };
 
@@ -111,7 +116,7 @@ public class OldDataMonitor extends AdministrativeMonitor {
     public static final RunListener<Run> runDeleteListener = new RunListener<Run>(Run.class) {
         @Override
         public void onDeleted(Run run) {
-            ((OldDataMonitor)Hudson.getInstance().getAdministrativeMonitor("OldData")).remove(run);
+            remove(run, true);
         }
     };
 
@@ -231,7 +236,7 @@ public class OldDataMonitor extends AdministrativeMonitor {
      * Depending on whether the user said "yes" or "no", send him to the right place.
      */
     public HttpResponse doAct(StaplerRequest req, StaplerResponse rsp) throws IOException {
-        if(req.hasParameter("no")) {
+        if (req.hasParameter("no")) {
             disable(true);
             return HttpResponses.redirectViaContextPath("/manage");
         } else {
@@ -246,6 +251,7 @@ public class OldDataMonitor extends AdministrativeMonitor {
     public synchronized HttpResponse doUpgrade(StaplerRequest req, StaplerResponse rsp) throws IOException {
         String thruVerParam = req.getParameter("thruVer");
         VersionNumber thruVer = thruVerParam.equals("all") ? null : new VersionNumber(thruVerParam);
+        updating = true;
         for (Iterator<Map.Entry<Saveable,VersionRange>> it = data.entrySet().iterator(); it.hasNext();) {
             Map.Entry<Saveable,VersionRange> entry = it.next();
             VersionNumber version = entry.getValue().max;
@@ -254,6 +260,7 @@ public class OldDataMonitor extends AdministrativeMonitor {
                 it.remove();
             }
         }
+        updating = false;
         return HttpResponses.forwardToPreviousPage();
     }
 
@@ -262,6 +269,7 @@ public class OldDataMonitor extends AdministrativeMonitor {
      * Remove those items from the data map.
      */
     public synchronized HttpResponse doDiscard(StaplerRequest req, StaplerResponse rsp) throws IOException {
+        updating = true;
         for (Iterator<Map.Entry<Saveable,VersionRange>> it = data.entrySet().iterator(); it.hasNext();) {
             Map.Entry<Saveable,VersionRange> entry = it.next();
             if (entry.getValue().max == null) {
@@ -269,6 +277,7 @@ public class OldDataMonitor extends AdministrativeMonitor {
                 it.remove();
             }
         }
+        updating = false;
         return HttpResponses.forwardToPreviousPage();
     }
 }
