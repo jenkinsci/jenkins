@@ -23,7 +23,6 @@
  */
 package hudson.util;
 
-import java.io.StringWriter;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.TreeMap;
@@ -44,24 +43,24 @@ public class CopyOnWriteMapTest extends TestCase {
     public void testHashSerialization() throws Exception {
         HashData td = new HashData();
         XStream2 xs = new XStream2();
-        StringWriter out = new StringWriter();
-        xs.toXML(td, out);
+
+        String out = xs.toXML(td);
         assertEquals("empty maps", "<hudson.util.CopyOnWriteMapTest_-HashData>"
                 + "<map1/><map2/></hudson.util.CopyOnWriteMapTest_-HashData>",
-                out.toString().replaceAll("\\s+", ""));
-        HashData td2 = (HashData)xs.fromXML(out.toString());
+                out.replaceAll("\\s+", ""));
+        HashData td2 = (HashData)xs.fromXML(out);
         assertTrue(td2.map1.isEmpty());
         assertTrue(td2.map2.isEmpty());
 
         td.map1.put("foo1", "bar1");
         td.map2.put("foo2", "bar2");
-        xs.toXML(td, out = new StringWriter());
+        out = xs.toXML(td);
         assertEquals("maps", "<hudson.util.CopyOnWriteMapTest_-HashData><map1>"
                 + "<entry><string>foo1</string><string>bar1</string></entry></map1>"
                 + "<map2><entry><string>foo2</string><string>bar2</string></entry>"
                 + "</map2></hudson.util.CopyOnWriteMapTest_-HashData>",
-                out.toString().replaceAll("\\s+", ""));
-        td2 = (HashData)xs.fromXML(out.toString());
+                out.replaceAll("\\s+", ""));
+        td2 = (HashData)xs.fromXML(out);
         assertEquals("bar1", td2.map1.get("foo1"));
         assertEquals("bar2", td2.map2.get("foo2"));
     }
@@ -86,20 +85,20 @@ public class CopyOnWriteMapTest extends TestCase {
     public void testTreeSerialization() throws Exception {
         TreeData td = new TreeData();
         XStream2 xs = new XStream2();
-        StringWriter out = new StringWriter();
-        xs.toXML(td, out);
+
+        String out = xs.toXML(td);
         assertEquals("empty maps", "<hudson.util.CopyOnWriteMapTest_-TreeData>"
                 + "<map1><no-comparator/></map1><map2><no-comparator/></map2>"
                 + "</hudson.util.CopyOnWriteMapTest_-TreeData>",
-                out.toString().replaceAll("\\s+", ""));
-        TreeData td2 = (TreeData)xs.fromXML(out.toString());
+                out.replaceAll("\\s+", ""));
+        TreeData td2 = (TreeData)xs.fromXML(out);
         assertTrue(td2.map1.isEmpty());
         assertTrue(td2.map2.isEmpty());
 
         td = new TreeData(String.CASE_INSENSITIVE_ORDER);
         td.map1.put("foo1", "bar1");
         td.map2.put("foo2", "bar2");
-        xs.toXML(td, out = new StringWriter());
+        out = xs.toXML(td);
         assertEquals("maps", "<hudson.util.CopyOnWriteMapTest_-TreeData><map1>"
                 + "<comparator class=\"java.lang.String$CaseInsensitiveComparator\"/>"
                 + "<entry><string>foo1</string><string>bar1</string></entry></map1>"
@@ -107,8 +106,8 @@ public class CopyOnWriteMapTest extends TestCase {
                 + " reference=\"../../map1/comparator\"/>"
                 + "<entry><string>foo2</string><string>bar2</string></entry></map2>"
                 + "</hudson.util.CopyOnWriteMapTest_-TreeData>",
-                out.toString().replaceAll(">\\s+<", "><"));
-        td2 = (TreeData)xs.fromXML(out.toString());
+                out.replaceAll(">\\s+<", "><"));
+        td2 = (TreeData)xs.fromXML(out);
         assertEquals("bar1", td2.map1.get("foo1"));
         assertEquals("bar2", td2.map2.get("foo2"));
     }

@@ -27,7 +27,6 @@ import junit.framework.TestCase;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.io.StringWriter;
 
 /**
  * @author Kohsuke Kawaguchi, Alan Harder
@@ -44,23 +43,22 @@ public class CopyOnWriteListTest extends TestCase {
     public void testSerialization() throws Exception {
         XStream2 xs = new XStream2();
         TestData td = new TestData();
-        StringWriter out = new StringWriter();
 
-        xs.toXML(td, out);
+        String out = xs.toXML(td);
         assertEquals("empty lists", "<hudson.util.CopyOnWriteListTest_-TestData>"
                 + "<list1/><list2/></hudson.util.CopyOnWriteListTest_-TestData>",
-                out.toString().replaceAll("\\s+", ""));
+                out.replaceAll("\\s+", ""));
         TestData td2 = (TestData)xs.fromXML(out.toString());
         assertTrue(td2.list1.isEmpty());
         assertTrue(td2.list2.isEmpty());
 
         td.list1.add("foobar1");
         td.list2.add("foobar2");
-        xs.toXML(td, out = new StringWriter());
+        out = xs.toXML(td);
         assertEquals("lists", "<hudson.util.CopyOnWriteListTest_-TestData>"
                 + "<list1><string>foobar1</string></list1><list2><string>foobar2"
                 + "</string></list2></hudson.util.CopyOnWriteListTest_-TestData>",
-                out.toString().replaceAll("\\s+", ""));
+                out.replaceAll("\\s+", ""));
         td2 = (TestData)xs.fromXML(out.toString());
         assertEquals("foobar1", td2.list1.getView().get(0));
         assertEquals("foobar2", td2.list2.get(0));
