@@ -120,7 +120,7 @@ public class ConsoleAnnotatorTest extends HudsonTestCase {
                 listener.getLogger().println("line1");
                 lock.phase(4);
                 listener.getLogger().println("line2");
-                lock.done();
+                lock.phase(6);
                 return true;
             }
         });
@@ -139,6 +139,8 @@ public class ConsoleAnnotatorTest extends HudsonTestCase {
         // the new invocation should start from where the previous call left off
         lock.phase(5);
         assertEquals("<b tag=2>line2</b>\r\n",plc.next());
+
+        lock.done();
 
         // should complete successfully
         assertBuildStatusSuccess(f);
