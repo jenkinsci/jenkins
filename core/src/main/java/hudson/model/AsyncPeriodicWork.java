@@ -1,15 +1,12 @@
 package hudson.model;
 
-import hudson.util.StreamTaskListener;
-import hudson.util.NullStream;
 import hudson.security.ACL;
+import hudson.util.StreamTaskListener;
+import org.acegisecurity.context.SecurityContextHolder;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.logging.Level;
-
-import org.acegisecurity.context.SecurityContextHolder;
 
 /**
  * {@link PeriodicWork} that takes a long time to run.
@@ -57,7 +54,7 @@ public abstract class AsyncPeriodicWork extends PeriodicWork {
                     } catch (InterruptedException e) {
                         e.printStackTrace(l.fatalError("aborted"));
                     } finally {
-                        l.close();
+                        l.closeQuietly();
                     }
 
                     logger.log(Level.INFO, "Finished "+name+". "+
@@ -73,8 +70,8 @@ public abstract class AsyncPeriodicWork extends PeriodicWork {
     protected StreamTaskListener createListener() {
         try {
             return new StreamTaskListener(getLogFile());
-        } catch (FileNotFoundException e) {
-            return new StreamTaskListener(new NullStream());
+        } catch (IOException e) {
+            throw new Error(e);
         }
     }
 

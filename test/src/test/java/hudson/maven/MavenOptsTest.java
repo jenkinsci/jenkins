@@ -26,7 +26,7 @@ public class MavenOptsTest extends HudsonTestCase {
         m.setGoals("validate");
         m.setAssignedLabel(createSlave(null, new EnvVars("MAVEN_OPTS", "-Dhudson.mavenOpt.test=foo")).getSelfLabel());
         
-        assertBuildStatusSuccess(m.scheduleBuild2(0).get());
+        buildAndAssertSuccess(m);
 
         assertLogContains("[hudson.mavenOpt.test=foo]", m.getLastBuild());
     }
@@ -40,7 +40,7 @@ public class MavenOptsTest extends HudsonTestCase {
         m.setMavenOpts("-Dhudson.mavenOpt.test=bar");
         m.setAssignedLabel(createSlave(null, new EnvVars("MAVEN_OPTS", "-Dhudson.mavenOpt.test=foo")).getSelfLabel());
         
-        assertBuildStatusSuccess(m.scheduleBuild2(0).get());
+        buildAndAssertSuccess(m);
 
         assertLogContains("[hudson.mavenOpt.test=bar]", m.getLastBuild());
     }
@@ -54,7 +54,7 @@ public class MavenOptsTest extends HudsonTestCase {
         m.setAssignedLabel(createSlave(null, new EnvVars("MAVEN_OPTS", "-Dhudson.mavenOpt.test=foo")).getSelfLabel());
         m.setMavenOpts("-Dhudson.mavenOpt.test=baz");
         
-        assertBuildStatusSuccess(m.scheduleBuild2(0).get());
+        buildAndAssertSuccess(m);
 
         assertLogContains("[hudson.mavenOpt.test=baz]", m.getLastBuild());
     }
@@ -67,7 +67,7 @@ public class MavenOptsTest extends HudsonTestCase {
         m.setGoals("validate");
         m.DESCRIPTOR.setGlobalMavenOpts("-Dhudson.mavenOpt.test=bar");
         
-        assertBuildStatusSuccess(m.scheduleBuild2(0).get());
+        buildAndAssertSuccess(m);
 
         assertLogContains("[hudson.mavenOpt.test=bar]", m.getLastBuild());
     }
@@ -80,7 +80,7 @@ public class MavenOptsTest extends HudsonTestCase {
         m.DESCRIPTOR.setGlobalMavenOpts("-Dhudson.mavenOpt.test=bar");
         m.setMavenOpts("-Dhudson.mavenOpt.test=foo");
        
-        assertBuildStatusSuccess(m.scheduleBuild2(0).get());
+        buildAndAssertSuccess(m);
 
         assertLogContains("[hudson.mavenOpt.test=foo]", m.getLastBuild());
     }

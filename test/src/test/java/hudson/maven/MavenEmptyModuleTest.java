@@ -26,7 +26,7 @@ public class MavenEmptyModuleTest extends HudsonTestCase {
         MavenModuleSet m = createMavenProject();
         m.getReporters().add(new TestReporter());
         m.setScm(new ExtractResourceSCM(getClass().getResource("maven-empty-mod.zip")));
-        assertBuildStatusSuccess(m.scheduleBuild2(0).get());
+        buildAndAssertSuccess(m);
     }
     
     private static class TestReporter extends MavenReporter {

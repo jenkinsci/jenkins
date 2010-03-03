@@ -39,7 +39,7 @@ public class AbstractBuildTest extends GroovyHudsonTestCase {
 		def builder = new CaptureEnvironmentBuilder();
 		project.getBuildersList().add(builder);
 		
-		assertBuildStatusSuccess(project.scheduleBuild2(0).get());
+		buildAndAssertSuccess(project);
 		
 		def envVars = builder.getEnvVars();
 		Assert.assertEquals("value", envVars.get("KEY1"));
@@ -56,7 +56,7 @@ public class AbstractBuildTest extends GroovyHudsonTestCase {
         p.buildersList.add(builder { builder,launcher,BuildListener listener ->
             listener.logger.println(out);
         })
-        def b = assertBuildStatusSuccess(p.scheduleBuild2(0).get());
+        def b = buildAndAssertSuccess(p);
         Page rsp = createWebClient().goTo("${b.url}/consoleText", "text/plain");
         println "Output:\n"+rsp.webResponse.contentAsString
         assertTrue(rsp.webResponse.contentAsString.contains(out));

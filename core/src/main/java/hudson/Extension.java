@@ -26,10 +26,11 @@ package hudson;
 import net.java.sezpoz.Indexable;
 
 import java.lang.annotation.Documented;
-import static java.lang.annotation.ElementType.*;
 import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
+
+import static java.lang.annotation.ElementType.*;
+import static java.lang.annotation.RetentionPolicy.RUNTIME;
 
 /**
  * Marks a field, a method, or a class for automatic discovery, so that Hudson can locate
@@ -64,7 +65,7 @@ import java.lang.annotation.Target;
  * @see ExtensionList
  */
 @Indexable
-@Retention(RetentionPolicy.RUNTIME)
+@Retention(RUNTIME)
 @Target({TYPE, FIELD, METHOD})
 @Documented
 public @interface Extension {

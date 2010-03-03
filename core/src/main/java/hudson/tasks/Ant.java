@@ -33,6 +33,7 @@ import hudson.Util;
 import hudson.model.*;
 import hudson.remoting.Callable;
 import hudson.slaves.NodeSpecific;
+import hudson.tasks._ant.AntConsoleAnnotator;
 import hudson.tools.ToolDescriptor;
 import hudson.tools.ToolInstallation;
 import hudson.tools.DownloadFromUrlInstaller;
@@ -205,7 +206,13 @@ public class Ant extends Builder {
 
         long startTime = System.currentTimeMillis();
         try {
-            int r = launcher.launch().cmds(args).envs(env).stdout(listener).pwd(buildFilePath.getParent()).join();
+            AntConsoleAnnotator aca = new AntConsoleAnnotator(listener.getLogger(),build.getCharset());
+            int r;
+            try {
+                r = launcher.launch().cmds(args).envs(env).stdout(aca).pwd(buildFilePath.getParent()).join();
+            } finally {
+                aca.forceEol();
+            }
             return r==0;
         } catch (IOException e) {
             Util.displayIOException(e,listener);

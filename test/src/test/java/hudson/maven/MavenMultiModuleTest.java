@@ -29,8 +29,8 @@ public class MavenMultiModuleTest extends HudsonTestCase {
         MavenModuleSet m = createMavenProject();
         m.getReporters().add(new TestReporter());
         m.setScm(new ExtractResourceSCM(getClass().getResource("maven-multimod.zip")));
-	assertFalse("MavenModuleSet.isNonRecursive() should be false", m.isNonRecursive());
-        assertBuildStatusSuccess(m.scheduleBuild2(0).get());
+	    assertFalse("MavenModuleSet.isNonRecursive() should be false", m.isNonRecursive());
+        buildAndAssertSuccess(m);
     }
 
     public void testIncrementalMultiModMaven() throws Exception {
@@ -40,11 +40,11 @@ public class MavenMultiModuleTest extends HudsonTestCase {
 	m.setScm(new ExtractResourceWithChangesSCM(getClass().getResource("maven-multimod.zip"),
 						   getClass().getResource("maven-multimod-changes.zip")));
 
-	assertBuildStatusSuccess(m.scheduleBuild2(0).get());
+	buildAndAssertSuccess(m);
 
 	// Now run a second build with the changes.
 	m.setIncrementalBuild(true);
-        assertBuildStatusSuccess(m.scheduleBuild2(0).get());
+    buildAndAssertSuccess(m);
 
 	MavenModuleSetBuild pBuild = m.getLastBuild();
 	ExtractChangeLogSet changeSet = (ExtractChangeLogSet) pBuild.getChangeSet();
@@ -73,12 +73,11 @@ public class MavenMultiModuleTest extends HudsonTestCase {
         configureDefaultMaven("apache-maven-2.2.1", MavenInstallation.MAVEN_21);
         MavenModuleSet m = createMavenProject();
         m.getReporters().add(new TestReporter());
-	m.setScm(new ExtractResourceWithChangesSCM(getClass().getResource("maven-multimod.zip"),
-						   getClass().getResource("maven-multimod-changes.zip")));
+        m.setScm(new ExtractResourceWithChangesSCM(getClass().getResource("maven-multimod.zip"),
+                getClass().getResource("maven-multimod-changes.zip")));
 
-	m.setIncrementalBuild(true);
-
-	assertBuildStatusSuccess(m.scheduleBuild2(0).get());
+        m.setIncrementalBuild(true);
+        buildAndAssertSuccess(m);
     }
 
     /**
@@ -92,7 +91,7 @@ public class MavenMultiModuleTest extends HudsonTestCase {
         m.getReporters().add(new TestReporter());
 	m.setScm(new ExtractResourceSCM(getClass().getResource("maven-multimod.zip")));
 
-	assertBuildStatusSuccess(m.scheduleBuild2(0).get());
+	buildAndAssertSuccess(m);
 
 	MavenModuleSetBuild pBuild = m.getLastBuild();
 

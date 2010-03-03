@@ -103,7 +103,7 @@ public class FreeStyleProjectTest extends HudsonTestCase {
         FreeStyleProject f = createFreeStyleProject();
         File d = createTmpDir();
         f.setCustomWorkspace(d.getPath());
-        assertBuildStatusSuccess(f.scheduleBuild2(0).get());
+        buildAndAssertSuccess(f);
     }
 
     /**
@@ -114,7 +114,7 @@ public class FreeStyleProjectTest extends HudsonTestCase {
         FreeStyleProject f = createFreeStyleProject();
         File d = new File(createTmpDir(),"${JOB_NAME}");
         f.setCustomWorkspace(d.getPath());
-        FreeStyleBuild b = assertBuildStatusSuccess(f.scheduleBuild2(0).get());
+        FreeStyleBuild b = buildAndAssertSuccess(f);
 
         String path = b.getWorkspace().getRemote();
         System.out.println(path);

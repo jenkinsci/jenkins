@@ -23,6 +23,8 @@
  */
 package hudson;
 
+import hudson.console.ConsoleAnnotationDescriptor;
+import hudson.console.ConsoleAnnotatorFactory;
 import hudson.model.AbstractProject;
 import hudson.model.Action;
 import hudson.model.Descriptor;
@@ -1132,6 +1134,24 @@ public class Functions {
 
     public static Date getCurrentTime() {
         return new Date();
+    }
+
+    /**
+     * Generate a series of &lt;script> tags to include <tt>script.js</tt>
+     * from {@link ConsoleAnnotatorFactory}s and {@link ConsoleAnnotationDescriptor}s.
+     */
+    public static String generateConsoleAnnotationScript() {
+        String cp = Stapler.getCurrentRequest().getContextPath();
+        StringBuilder buf = new StringBuilder();
+        for (ConsoleAnnotatorFactory f : ConsoleAnnotatorFactory.all()) {
+            if (f.hasScript())
+                buf.append("<script src='"+cp+"/extensionList/"+ConsoleAnnotatorFactory.class.getName()+"/"+f.getClass().getName()+"/script.js'></script>");
+        }
+        for (ConsoleAnnotationDescriptor d : ConsoleAnnotationDescriptor.all()) {
+            if (d.hasScript())
+                buf.append("<script src='"+cp+"/descriptor/"+d.clazz.getName()+"/script.js'></script>");
+        }
+        return buf.toString();
     }
     
     private static final Pattern SCHEME = Pattern.compile("[a-z]+://.+");

@@ -75,7 +75,7 @@ THE SOFTWARE.
           <f:radio name="slaveAgentPortType" value="fixed" id="sat.fixed"
                    checked="${it.slaveAgentPort gt 0}" onclick="$('sat.port').disabled=false"/>
           <label for="sat.fixed">${%Fixed}</label> :
-          <input type="text" class="setting-input number" name="slaveAgentPort" id="sat.port"
+          <input type="text" class="number" name="slaveAgentPort" id="sat.port"
              value="${it.slaveAgentPort gt 0 ? it.slaveAgentPort : null}"
              disabled="${it.slaveAgentPort gt 0 ? null : 'true'}"/>
 

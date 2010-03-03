@@ -147,7 +147,7 @@ public class MatrixProjectTest extends HudsonTestCase {
         p.getBuildersList().add(new Shell("touch p"));
         p.getPublishersList().add(new ArtifactArchiver("p",null,false));
         p.getPublishersList().add(new Fingerprinter("",true));
-        assertBuildStatusSuccess(p.scheduleBuild2(0).get());
+        buildAndAssertSuccess(p);
     }
 
     void assertRectangleTable(MatrixProject p) {

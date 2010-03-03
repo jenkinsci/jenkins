@@ -70,5 +70,20 @@ public class MarkupTextTest extends TestCase {
         assertEquals("$9AAA$9 test $9AAA$9",text.toString());
     }
 
+    /**
+     * Start/end tag nesting should be correct regardless of the order tags are added.
+     */
+    public void testAdjacent() {
+        MarkupText text = new MarkupText("abcdef");
+        text.addMarkup(0,3,"$","$");
+        text.addMarkup(3,6,"#","#");
+        assertEquals("$abc$#def#",text.toString());
+
+        text = new MarkupText("abcdef");
+        text.addMarkup(3,6,"#","#");
+        text.addMarkup(0,3,"$","$");
+        assertEquals("$abc$#def#",text.toString());
+    }
+
     private static final Pattern pattern = Pattern.compile("issue #([0-9]+)");
 }

@@ -80,7 +80,7 @@ public class JDKInstallerTest extends HudsonTestCase {
         FreeStyleProject p = createFreeStyleProject();
         p.setJDK(jdk);
         p.getBuildersList().add(new Shell("java -fullversion\necho $JAVA_HOME"));
-        FreeStyleBuild b = assertBuildStatusSuccess(p.scheduleBuild2(0).get());
+        FreeStyleBuild b = buildAndAssertSuccess(p);
         @SuppressWarnings("deprecation") String log = b.getLog();
         System.out.println(log);
         // make sure it runs with the JDK that just got installed

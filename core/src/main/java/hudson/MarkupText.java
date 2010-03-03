@@ -52,8 +52,13 @@ public class MarkupText extends AbstractMarkupText {
      * Represents one mark up inserted into text.
      */
     private static final class Tag implements Comparable<Tag> {
+        /**
+         * Char position of this tag in {@link MarkupText#text}.
+         * This tag is placed in front of the character of this index.
+         */
         private final int pos;
         private final String markup;
+
 
         public Tag(int pos, String markup) {
             this.pos = pos;
@@ -214,10 +219,15 @@ public class MarkupText extends AbstractMarkupText {
         if(startPos>endPos) throw new IndexOutOfBoundsException();
 
         // when multiple tags are added to the same range, we want them to show up like
-        // <b><i>abc</i></b>, not <b><i>abc</b></i>. Do this by inserting them to different
-        // places.
-        tags.add(0,new Tag(startPos, startTag));
-        tags.add(new Tag(endPos,endTag));
+        // <b><i>abc</i></b>, not <b><i>abc</b></i>. Also, we'd like <b>abc</b><i>def</i>,
+        // not <b>abc<i></b>def</i>. Do this by inserting them to different places.
+        tags.add(new Tag(startPos, startTag));
+        tags.add(0,new Tag(endPos,endTag));
+    }
+
+    public void addMarkup(int pos, String tag) {
+        rangeCheck(pos);
+        tags.add(new Tag(pos,tag));
     }
 
     private void rangeCheck(int pos) {

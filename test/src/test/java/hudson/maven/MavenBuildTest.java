@@ -35,7 +35,7 @@ public class MavenBuildTest extends HudsonTestCase {
         MavenModuleSet m = createMavenProject();
         m.getReporters().add(new TestReporter());
         m.setScm(new ExtractResourceSCM(getClass().getResource("HUDSON-4192.zip")));
-        assertBuildStatusSuccess(m.scheduleBuild2(0).get());
+        buildAndAssertSuccess(m);
     }
     
     /**
@@ -82,12 +82,12 @@ public class MavenBuildTest extends HudsonTestCase {
         setJavaNetCredential(scm);
         m.setScm(scm);
         
-        assertBuildStatusSuccess(m.scheduleBuild2(0).get());
+        buildAndAssertSuccess(m);
 
         m.setAggregatorStyleBuild(false);
 
         // run module builds
-        assertBuildStatusSuccess(m.getModule("test$module1").scheduleBuild2(0).get());
-        assertBuildStatusSuccess(m.getModule("test$module1").scheduleBuild2(0).get());
+        buildAndAssertSuccess(m.getModule("test$module1"));
+        buildAndAssertSuccess(m.getModule("test$module1"));
     }
 }

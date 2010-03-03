@@ -23,11 +23,11 @@ public class MavenSnapshotTriggerTest extends HudsonTestCase {
         projB.setQuietPeriod(0);
         projB.setScm(new ExtractResourceSCM(getClass().getResource("maven-dep-test-B.zip")));
 
-        assertBuildStatusSuccess(projA.scheduleBuild2(0).get());
-        assertBuildStatusSuccess(projB.scheduleBuild2(0).get());
+        buildAndAssertSuccess(projA);
+        buildAndAssertSuccess(projB);
 
         projA.setScm(new ExtractResourceSCM(getClass().getResource("maven-dep-test-A-changed.zip")));
-        assertBuildStatusSuccess(projA.scheduleBuild2(0).get());
+        buildAndAssertSuccess(projA);
 
         // at this point runB2 should be in the queue, so wait until that completes.
         waitUntilNoActivity();
@@ -58,13 +58,13 @@ public class MavenSnapshotTriggerTest extends HudsonTestCase {
         projC.setQuietPeriod(0);
         projC.setScm(new ExtractResourceSCM(getClass().getResource("maven-dep-test-C.zip")));
 
-        assertBuildStatusSuccess(projA.scheduleBuild2(0).get());
-        assertBuildStatusSuccess(projB.scheduleBuild2(0).get());
-        assertBuildStatusSuccess(projC.scheduleBuild2(0).get());
+        buildAndAssertSuccess(projA);
+        buildAndAssertSuccess(projB);
+        buildAndAssertSuccess(projC);
 
         projA.setScm(new ExtractResourceSCM(getClass().getResource("maven-dep-test-A-changed.zip")));
 
-        assertBuildStatusSuccess(projA.scheduleBuild2(0).get());
+        buildAndAssertSuccess(projA);
 
         waitUntilNoActivity();  // wait until dependency build trickles down
         assertEquals("Expected most recent build of second project to be #2", 2, projB.getLastBuild().getNumber());
