@@ -41,6 +41,7 @@ import hudson.tools.ToolProperty;
 import hudson.util.ArgumentListBuilder;
 import hudson.util.VariableResolver;
 import hudson.util.FormValidation;
+import hudson.util.XStream2;
 import net.sf.json.JSONObject;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.StaplerRequest;
@@ -102,7 +103,7 @@ public class Ant extends Builder {
 		return properties;
 	}
 
-	public String getTargets() {
+    public String getTargets() {
         return targets;
     }
 
@@ -296,12 +297,11 @@ public class Ant extends Builder {
             EnvironmentSpecific<AntInstallation>, NodeSpecific<AntInstallation> {
         // to remain backward compatible with earlier Hudson that stored this field here.
         @Deprecated
-        private final String antHome;
+        private transient String antHome;
 
         @DataBoundConstructor
         public AntInstallation(String name, String home, List<? extends ToolProperty<?>> properties) {
             super(name, launderHome(home), properties);
-            this.antHome = super.getHome();
         }
 
         /**
@@ -331,12 +331,6 @@ public class Ant extends Builder {
             return getHome();
         }
 
-        @Override
-        public String getHome() {
-            if (antHome != null) return antHome;
-            return super.getHome();
-        }
-
         /**
          * Gets the executable path of this Ant on the given target system.
          */
@@ -352,15 +346,10 @@ public class Ant extends Builder {
         }
 
         private File getExeFile() {
-            String execName;
-            if(Functions.isWindows())
-                execName = "ant.bat";
-            else
-                execName = "ant";
+            String execName = Functions.isWindows() ? "ant.bat" : "ant";
+            String home = Util.replaceMacro(getHome(), EnvVars.masterEnvVars);
 
-            String antHome = Util.replaceMacro(getHome(),EnvVars.masterEnvVars);
-
-            return new File(antHome,"bin/"+execName);
+            return new File(home,"bin/"+execName);
         }
 
         /**
@@ -423,6 +412,13 @@ public class Ant extends Builder {
                     return FormValidation.error(Messages.Ant_NotAntDirectory(value));
 
                 return FormValidation.ok();
+            }
+        }
+
+        public static class ConverterImpl extends ToolConverter {
+            public ConverterImpl(XStream2 xstream) { super(xstream); }
+            @Override protected String oldHomeField(ToolInstallation obj) {
+                return ((AntInstallation)obj).antHome;
             }
         }
     }

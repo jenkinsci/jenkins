@@ -1,7 +1,7 @@
 /*
  * The MIT License
  * 
- * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi
+ * Copyright (c) 2004-2010, Sun Microsystems, Inc., Kohsuke Kawaguchi
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -34,6 +34,7 @@ import hudson.tools.ToolInstallation;
 import hudson.tools.ToolDescriptor;
 import hudson.tools.ToolProperty;
 import hudson.tools.JDKInstaller;
+import hudson.util.XStream2;
 
 import java.io.File;
 import java.io.IOException;
@@ -55,7 +56,7 @@ public final class JDK extends ToolInstallation implements NodeSpecific<JDK>, En
      * @deprecated since 2009-02-25
      */
     @Deprecated // kept for backward compatibility - use getHome() instead
-    private String javaHome;
+    private transient String javaHome;
 
     public JDK(String name, String javaHome) {
         super(name, javaHome, Collections.<ToolProperty<?>>emptyList());
@@ -76,12 +77,6 @@ public final class JDK extends ToolInstallation implements NodeSpecific<JDK>, En
         return getHome();
     }
 
-    @SuppressWarnings({"deprecation"})
-    public @Override String getHome() {
-        if (javaHome != null) return javaHome;
-        return super.getHome();
-    }
-
     /**
      * Gets the path to the bin directory.
      */
@@ -92,12 +87,7 @@ public final class JDK extends ToolInstallation implements NodeSpecific<JDK>, En
      * Gets the path to 'java'.
      */
     private File getExecutable() {
-        String execName;
-        if(File.separatorChar=='\\')
-            execName = "java.exe";
-        else
-            execName = "java";
-
+        String execName = (File.separatorChar == '\\') ? "java.exe" : "java";
         return new File(getHome(),"bin/"+execName);
     }
 
@@ -186,6 +176,13 @@ public final class JDK extends ToolInstallation implements NodeSpecific<JDK>, En
                 return FormValidation.error(Messages.Hudson_NotJDKDir(value));
 
             return FormValidation.ok();
+        }
+    }
+
+    public static class ConverterImpl extends ToolConverter {
+        public ConverterImpl(XStream2 xstream) { super(xstream); }
+        @Override protected String oldHomeField(ToolInstallation obj) {
+            return ((JDK)obj).javaHome;
         }
     }
 }
