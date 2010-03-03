@@ -30,6 +30,7 @@ import com.thoughtworks.xstream.core.util.Base64Encoder;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.net.HttpRetryException;
@@ -86,7 +87,7 @@ public class Main {
         if(auth != null) auth = "Basic " + new Base64Encoder().encode(auth.getBytes("UTF-8"));
 
         {// check if the home is set correctly
-            HttpURLConnection con = (HttpURLConnection)new URL(home).openConnection();
+            HttpURLConnection con = open(new URL(home));
             if (auth != null) con.setRequestProperty("Authorization", auth);
             con.connect();
             if(con.getResponseCode()!=200
@@ -99,7 +100,7 @@ public class Main {
         String projectNameEnc = URLEncoder.encode(projectName,"UTF-8").replaceAll("\\+","%20");
 
         {// check if the job name is correct
-            HttpURLConnection con = (HttpURLConnection)new URL(home+"job/"+projectNameEnc+"/acceptBuildResult").openConnection();
+            HttpURLConnection con = open(new URL(home+"job/"+projectNameEnc+"/acceptBuildResult"));
             if (auth != null) con.setRequestProperty("Authorization", auth);
             con.connect();
             if(con.getResponseCode()!=200) {
@@ -136,7 +137,7 @@ public class Main {
             while(true) {
                 try {
                     // start a remote connection
-                    HttpURLConnection con = (HttpURLConnection) new URL(location).openConnection();
+                    HttpURLConnection con = open(new URL(location));
                     if (auth != null) con.setRequestProperty("Authorization", auth);
                     con.setDoOutput(true);
                     // this tells HttpURLConnection not to buffer the whole thing
@@ -168,7 +169,22 @@ public class Main {
     }
 
     /**
+     * Connects to the given HTTP URL and configure time out, to avoid infinite hang.
+     */
+    private static HttpURLConnection open(URL url) throws IOException {
+        HttpURLConnection c = (HttpURLConnection)url.openConnection();
+        c.setReadTimeout(TIMEOUT);
+        c.setConnectTimeout(TIMEOUT);
+        return c;
+    }
+
+    /**
      * Set to true if we are running unit tests.
      */
     public static boolean isUnitTest = false;
+
+    /**
+     * Time out for socket connection to Hudson.
+     */
+    public static final int TIMEOUT = Integer.getInteger(Main.class.getName()+".timeout",15000);
 }
