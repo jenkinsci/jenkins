@@ -134,7 +134,7 @@ public class StreamTaskListener implements TaskListener, Serializable, Closeable
     }
 
     public PrintWriter fatalError(String msg) {
-        return error("FATAL: ",msg);
+        return _error("FATAL: ",msg);
     }
 
     public PrintWriter fatalError(String format, Object... args) {
