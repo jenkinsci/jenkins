@@ -121,6 +121,14 @@ public final class Result implements Serializable, CustomExportedBean {
         return FAILURE;
     }
 
+    // Maintain each Result as a singleton deserialized (like build result from a slave node)
+    private Object readResolve() {
+        for (Result r : all)
+            if (ordinal==r.ordinal)
+                return r;
+        return FAILURE;
+    }
+
     private static final long serialVersionUID = 1L;
 
     private static final Result[] all = new Result[] {SUCCESS,UNSTABLE,FAILURE,NOT_BUILT,ABORTED};
