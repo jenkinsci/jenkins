@@ -186,7 +186,7 @@ public class ConsoleAnnotatorTest extends HudsonTestCase {
                 listener.annotate(new DollarMark());
                 listener.getLogger().println("789");
 
-                lock.done();
+                lock.phase(6);
                 return true;
             }
         });
@@ -203,6 +203,8 @@ public class ConsoleAnnotatorTest extends HudsonTestCase {
 
         lock.phase(5);
         assertEquals("123$$$456$$$789\r\n",plc.next());
+
+        lock.done();
 
         // should complete successfully
         assertBuildStatusSuccess(f);
