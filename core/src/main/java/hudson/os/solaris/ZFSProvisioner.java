@@ -95,7 +95,14 @@ public class ZFSProvisioner extends FileSystemProvisioner implements Serializabl
         });
     }
 
+    /**
+     * @deprecated as of 1.350
+     */
     public WorkspaceSnapshot snapshot(AbstractBuild<?, ?> build, FilePath ws, TaskListener listener) throws IOException, InterruptedException {
+        throw new UnsupportedOperationException();
+    }
+
+    public WorkspaceSnapshot snapshot(AbstractBuild<?, ?> build, FilePath ws, String glob, TaskListener listener) throws IOException, InterruptedException {
         throw new UnsupportedOperationException();
     }
 

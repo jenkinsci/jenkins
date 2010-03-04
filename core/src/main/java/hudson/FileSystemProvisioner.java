@@ -167,8 +167,11 @@ public abstract class FileSystemProvisioner implements ExtensionPoint, Describab
      * @param ws
      *      New workspace should be prepared in this location. This is the same value as
      *      {@code build.getProject().getWorkspace()} but passed separately for convenience.
+     * @param glob
+     *      Ant-style file glob for files to include in the snapshot. May not be pertinent for all
+     *      implementations.
      */
-    public abstract WorkspaceSnapshot snapshot(AbstractBuild<?,?> build, FilePath ws, TaskListener listener) throws IOException, InterruptedException;
+    public abstract WorkspaceSnapshot snapshot(AbstractBuild<?,?> build, FilePath ws, String glob, TaskListener listener) throws IOException, InterruptedException;
 
     public FileSystemProvisionerDescriptor getDescriptor() {
         return (FileSystemProvisionerDescriptor) Hudson.getInstance().getDescriptorOrDie(getClass());
@@ -198,13 +201,20 @@ public abstract class FileSystemProvisioner implements ExtensionPoint, Describab
         }
 
         /**
-         * Creates a tar ball.
+         * @deprecated as of 1.350
          */
         public WorkspaceSnapshot snapshot(AbstractBuild<?, ?> build, FilePath ws, TaskListener listener) throws IOException, InterruptedException {
+            return snapshot(build, ws, "**/*", listener);
+        }
+        
+        /**
+         * Creates a tar ball.
+         */
+        public WorkspaceSnapshot snapshot(AbstractBuild<?, ?> build, FilePath ws, String glob, TaskListener listener) throws IOException, InterruptedException {
             File wss = new File(build.getRootDir(),"workspace.zip");
             OutputStream os = new BufferedOutputStream(new FileOutputStream(wss));
             try {
-                ws.zip(os);
+                ws.zip(os,glob);
             } finally {
                 os.close();
             }
