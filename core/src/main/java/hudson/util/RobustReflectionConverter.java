@@ -251,7 +251,7 @@ public class RobustReflectionConverter implements Converter {
                 LOGGER.log(WARNING,"Skipping a non-existent field "+e.getFieldName(),e);
                 addErrorInContext(context, e);
             } catch (CannotResolveClassException e) {
-                LOGGER.log(WARNING,"Skipping a non-existend type",e);
+                LOGGER.log(WARNING,"Skipping a non-existent type",e);
                 addErrorInContext(context, e);
             } catch (LinkageError e) {
                 LOGGER.log(WARNING,"Failed to resolve a type",e);
