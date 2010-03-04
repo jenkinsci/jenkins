@@ -99,6 +99,10 @@ public class VersionNumber implements Comparable<VersionNumber> {
         }
     }
 
+    public int digit(int idx) {
+        return digits[idx];
+    }
+
     @Override
     public String toString() {
         StringBuffer buf = new StringBuffer();

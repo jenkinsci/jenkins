@@ -1,7 +1,7 @@
 /*
  * The MIT License
  * 
- * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi
+ * Copyright (c) 2004-2010, Sun Microsystems, Inc., Kohsuke Kawaguchi
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -34,7 +34,7 @@ import hudson.model.Hudson;
  * @author Kohsuke Kawaguchi
  */
 public class SecretTest extends TestCase {
-    protected void setUp() throws Exception {
+    @Override protected void setUp() throws Exception {
         SecureRandom sr = new SecureRandom();
         byte[] random = new byte[32];
         sr.nextBytes(random);
@@ -42,7 +42,7 @@ public class SecretTest extends TestCase {
 
     }
 
-    protected void tearDown() throws Exception {
+    @Override protected void tearDown() throws Exception {
         Secret.SECRET = null;
     }
 
@@ -65,11 +65,10 @@ public class SecretTest extends TestCase {
     public void testSerialization() {
         Secret s = Secret.fromString("Mr.Hudson");
         String xml = Hudson.XSTREAM.toXML(s);
-        System.out.println(xml);
-        assertTrue(!xml.contains(s.toString()));
-        assertTrue(xml.contains(s.getEncryptedValue()));
+        assertTrue(xml, !xml.contains(s.toString()));
+        assertTrue(xml, xml.contains(s.getEncryptedValue()));
         Object o = Hudson.XSTREAM.fromXML(xml);
-        assertEquals(o,s);
+        assertEquals(xml, o, s);
     }
 
     public static class Foo {
@@ -80,7 +79,7 @@ public class SecretTest extends TestCase {
      * Makes sure the serialization form is backward compatible with String.
      */
     public void testCompatibilityFromString() {
-        String tagName = Foo.class.getName().replace("$","-");
+        String tagName = Foo.class.getName().replace("$","_-");
         String xml = "<"+tagName+"><password>secret</password></"+tagName+">";
         Foo foo = new Foo();
         Hudson.XSTREAM.fromXML(xml, foo);

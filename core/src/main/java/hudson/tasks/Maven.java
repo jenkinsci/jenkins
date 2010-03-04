@@ -52,6 +52,7 @@ import hudson.util.NullStream;
 import hudson.util.StreamTaskListener;
 import hudson.util.VariableResolver;
 import hudson.util.FormValidation;
+import hudson.util.XStream2;
 import net.sf.json.JSONObject;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.StaplerRequest;
@@ -179,12 +180,9 @@ public class Maven extends Builder {
                     File file = new File(ws,tokens.nextToken());
                     if(!file.exists())
                         continue;   // looks like an error, but let the execution fail later
-                    if(file.isDirectory())
-                        // in M1, you specify a directory in -f
-                        seed = "maven";
-                    else
-                        // in M2, you specify a POM file name.
-                        seed = "mvn";
+                    seed = file.isDirectory() ?
+                        /* in M1, you specify a directory in -f */ "maven"
+                        /* in M2, you specify a POM file name.  */ : "mvn";
                     break;
                 }
             }
@@ -192,10 +190,7 @@ public class Maven extends Builder {
             if(seed==null) {
                 // as of 1.212 (2008 April), I think Maven2 mostly replaced Maven1, so
                 // switching to err on M2 side.
-                if(new File(ws,"project.xml").exists())
-                    seed = "maven";
-                else
-                    seed = "mvn";
+                seed = new File(ws,"project.xml").exists() ? "maven" : "mvn";
             }
 
             if(Functions.isWindows())
@@ -367,7 +362,7 @@ public class Maven extends Builder {
          * @deprecated since 2009-02-25.
          */
         @Deprecated // kept for backward compatiblity - use getHome()
-        private String mavenHome;
+        private transient String mavenHome;
 
         /**
          * @deprecated as of 1.308.
@@ -393,12 +388,6 @@ public class Maven extends Builder {
 
         public File getHomeDir() {
             return new File(getHome());
-        }
-
-        @Override
-        public String getHome() {
-            if (mavenHome != null) return mavenHome;
-            return super.getHome();
         }
 
         /**
@@ -551,6 +540,13 @@ public class Maven extends Builder {
                     return FormValidation.error(Messages.Maven_NotMavenDirectory(value));
 
                 return FormValidation.ok();
+            }
+        }
+
+        public static class ConverterImpl extends ToolConverter {
+            public ConverterImpl(XStream2 xstream) { super(xstream); }
+            @Override protected String oldHomeField(ToolInstallation obj) {
+                return ((MavenInstallation)obj).mavenHome;
             }
         }
     }

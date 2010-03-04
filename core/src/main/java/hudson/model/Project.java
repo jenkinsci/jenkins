@@ -1,7 +1,7 @@
 /*
  * The MIT License
  * 
- * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, Jorg Heymans, Stephen Connolly, Tom Huybrechts
+ * Copyright (c) 2004-2010, Sun Microsystems, Inc., Kohsuke Kawaguchi, Jorg Heymans, Stephen Connolly, Tom Huybrechts
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,6 +24,7 @@
 package hudson.model;
 
 import hudson.Util;
+import hudson.diagnosis.OldDataMonitor;
 import hudson.model.Descriptor.FormException;
 import hudson.tasks.BuildStep;
 import hudson.tasks.BuildStepDescriptor;
@@ -85,9 +86,11 @@ public abstract class Project<P extends Project<P,B>,B extends Build<P,B>>
     public void onLoad(ItemGroup<? extends Item> parent, String name) throws IOException {
         super.onLoad(parent, name);
 
-        if(buildWrappers==null)
+        if (buildWrappers==null) {
             // it didn't exist in < 1.64
             buildWrappers = new DescribableList<BuildWrapper, Descriptor<BuildWrapper>>(this);
+            OldDataMonitor.report(this, "1.64");
+        }
         builders.setOwner(this);
         publishers.setOwner(this);
         buildWrappers.setOwner(this);
@@ -217,4 +220,9 @@ public abstract class Project<P extends Project<P,B>,B extends Build<P,B>>
      */
     @Deprecated
     private transient String slave;
+
+    private Object readResolve() {
+        if (slave != null) OldDataMonitor.report(this, "1.60");
+        return this;
+    }
 }

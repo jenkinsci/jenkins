@@ -162,7 +162,7 @@ public class AbstractProjectTest extends HudsonTestCase {
         final OneShotEvent sync = new OneShotEvent();
 
         final FreeStyleProject p = createFreeStyleProject();
-        FreeStyleBuild b1 = assertBuildStatusSuccess(p.scheduleBuild2(0).get());
+        FreeStyleBuild b1 = buildAndAssertSuccess(p);
 
         p.setScm(new NullSCM() {
             @Override
@@ -194,7 +194,7 @@ public class AbstractProjectTest extends HudsonTestCase {
             // release the polling
             sync.signal();
 
-            FreeStyleBuild b2 = assertBuildStatusSuccess(f.get());
+            FreeStyleBuild b2 = assertBuildStatusSuccess(f);
 
             // they should have used the same workspace.
             assertEquals(b1.getWorkspace(), b2.getWorkspace());

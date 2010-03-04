@@ -33,7 +33,7 @@ import java.lang.reflect.Proxy;
 /**
  * {@link ObjectInputStream} that uses a specific class loader.
  */
-class ObjectInputStreamEx extends ObjectInputStream {
+public class ObjectInputStreamEx extends ObjectInputStream {
     private final ClassLoader cl;
 
     public ObjectInputStreamEx(InputStream in, ClassLoader cl) throws IOException {

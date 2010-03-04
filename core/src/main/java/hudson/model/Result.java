@@ -1,7 +1,7 @@
 /*
  * The MIT License
  * 
- * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi
+ * Copyright (c) 2004-2010, Sun Microsystems, Inc., Kohsuke Kawaguchi
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -109,13 +109,6 @@ public final class Result implements Serializable, CustomExportedBean {
     public String toString() {
         return name;
     }
-    
-    private Object readResolve() {
-        for (Result r : all)
-            if (ordinal==r.ordinal)
-                return r;
-        return FAILURE;
-    }
 
     public String toExportedObject() {
         return name;
@@ -124,6 +117,14 @@ public final class Result implements Serializable, CustomExportedBean {
     public static Result fromString(String s) {
         for (Result r : all)
             if (s.equals(r.name))
+                return r;
+        return FAILURE;
+    }
+
+    // Maintain each Result as a singleton deserialized (like build result from a slave node)
+    private Object readResolve() {
+        for (Result r : all)
+            if (ordinal==r.ordinal)
                 return r;
         return FAILURE;
     }

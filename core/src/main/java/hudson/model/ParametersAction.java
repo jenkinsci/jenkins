@@ -1,7 +1,7 @@
 /*
  * The MIT License
  * 
- * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, Jean-Baptiste Quenot, Seiji Sogabe, Tom Huybrechts
+ * Copyright (c) 2004-2010, Sun Microsystems, Inc., Kohsuke Kawaguchi, Jean-Baptiste Quenot, Seiji Sogabe, Tom Huybrechts
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -25,6 +25,7 @@ package hudson.model;
 
 import hudson.Util;
 import hudson.EnvVars;
+import hudson.diagnosis.OldDataMonitor;
 import hudson.model.Queue.QueueAction;
 import hudson.tasks.BuildStep;
 import hudson.tasks.BuildWrapper;
@@ -139,11 +140,17 @@ public class ParametersAction implements Action, Iterable<ParameterValue>, Queue
             return !parameters.isEmpty();
         } else {
             // I don't think we need multiple ParametersActions, but let's be defensive
-            Set<ParameterValue> parameters = new HashSet<ParameterValue>();
+            Set<ParameterValue> params = new HashSet<ParameterValue>();
             for (ParametersAction other: others) {
-                parameters.addAll(other.parameters);
+                params.addAll(other.parameters);
             }
-            return !parameters.equals(new HashSet<ParameterValue>(this.parameters));
+            return !params.equals(new HashSet<ParameterValue>(this.parameters));
         }
+    }
+
+    private Object readResolve() {
+        if (build != null)
+            OldDataMonitor.report(build, "1.283");
+        return this;
     }
 }

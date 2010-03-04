@@ -1,7 +1,7 @@
 /*
  * The MIT License
  * 
- * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, Stephen Connolly
+ * Copyright (c) 2004-2010, Sun Microsystems, Inc., Kohsuke Kawaguchi, Stephen Connolly
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,6 +23,9 @@
  */
 package hudson.model;
 
+import com.thoughtworks.xstream.converters.UnmarshallingContext;
+import hudson.diagnosis.OldDataMonitor;
+import hudson.util.XStream2;
 import org.jvnet.localizer.Localizable;
 import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.export.ExportedBean;
@@ -304,15 +307,16 @@ public class HealthReport implements Serializable, Comparable<HealthReport> {
 
     /**
      * Fix deserialization of older data.
-     *
-     * @return this.
      */
-    private Object readResolve() {
-        // If we are being read back in from an older version
-        if (localizibleDescription == null) {
-            localizibleDescription = new NonLocalizable(description == null ? "" : description);
+    public static class ConverterImpl extends XStream2.PassthruConverter<HealthReport> {
+        public ConverterImpl(XStream2 xstream) { super(xstream); }
+        @Override protected void callback(HealthReport hr, UnmarshallingContext context) {
+            // If we are being read back in from an older version
+            if (hr.localizibleDescription == null) {
+                hr.localizibleDescription = new NonLocalizable(hr.description == null ? "" : hr.description);
+                OldDataMonitor.report(context, "1.256");
+            }
         }
-        return this;
     }
 
     /**
@@ -339,7 +343,7 @@ public class HealthReport implements Serializable, Comparable<HealthReport> {
          */
         @Override
         public String toString(Locale locale) {
-            return nonLocalizable;    //To change body of overridden methods use File | Settings | File Templates.
+            return nonLocalizable;
         }
 
         /**
@@ -347,8 +351,7 @@ public class HealthReport implements Serializable, Comparable<HealthReport> {
          */
         @Override
         public String toString() {
-            return nonLocalizable;    //To change body of overridden methods use File | Settings | File Templates.
+            return nonLocalizable;
         }
     }
-
 }

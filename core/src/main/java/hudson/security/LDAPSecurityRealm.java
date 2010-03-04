@@ -1,7 +1,7 @@
 /*
  * The MIT License
  * 
- * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, Seiji Sogabe
+ * Copyright (c) 2004-2010, Sun Microsystems, Inc., Kohsuke Kawaguchi, Seiji Sogabe
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -507,7 +507,7 @@ public class LDAPSecurityRealm extends SecurityRealm {
                 // trouble-shoot
                 Matcher m = Pattern.compile("(ldaps://)?([^:]+)(?:\\:(\\d+))?").matcher(server.trim());
                 if(!m.matches())
-                    return FormValidation.error("Syntax of server field is SERVER or SERVER:PORT or ldaps://SERVER[:PORT]");
+                    return FormValidation.error(Messages.LDAPSecurityRealm_SyntaxOfServerField());
 
                 try {
                     InetAddress adrs = InetAddress.getByName(m.group(2));
@@ -517,17 +517,17 @@ public class LDAPSecurityRealm extends SecurityRealm {
                     Socket s = new Socket(adrs,port);
                     s.close();
                 } catch (UnknownHostException x) {
-                    return FormValidation.error("Unknown host: "+x.getMessage());
+                    return FormValidation.error(Messages.LDAPSecurityRealm_UnknownHost(x.getMessage()));
                 } catch (IOException x) {
-                    return FormValidation.error("Unable to connect to "+server+" : "+x.getMessage());
+                    return FormValidation.error(Messages.LDAPSecurityRealm_UnableToConnect(server, x.getMessage()));
                 }
 
                 // otherwise we don't know what caused it, so fall back to the general error report
                 // getMessage() alone doesn't offer enough
-                return FormValidation.error("Unable to connect to "+server+": "+e);
+                return FormValidation.error(Messages.LDAPSecurityRealm_UnableToConnect(server, e));
             } catch (NumberFormatException x) {
                 // The getLdapCtxInstance method throws this if it fails to parse the port number
-                return FormValidation.error("Invalid port number");
+                return FormValidation.error(Messages.LDAPSecurityRealm_InvalidPortNumber());
             }
         }
     }

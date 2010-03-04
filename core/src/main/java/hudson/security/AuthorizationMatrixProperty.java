@@ -1,7 +1,7 @@
 /*
  * The MIT License
  * 
- * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, Yahoo! Inc., Peter Hayes, Tom Huybrechts
+ * Copyright (c) 2004-2010, Sun Microsystems, Inc., Kohsuke Kawaguchi, Yahoo! Inc., Peter Hayes, Tom Huybrechts
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,6 +23,7 @@
  */
 package hudson.security;
 
+import hudson.diagnosis.OldDataMonitor;
 import hudson.model.AbstractProject;
 import hudson.model.Item;
 import hudson.model.Job;
@@ -32,6 +33,7 @@ import hudson.model.Hudson;
 import hudson.model.Run;
 import hudson.Extension;
 import hudson.util.FormValidation;
+import hudson.util.RobustReflectionConverter;
 
 import java.util.Arrays;
 import java.util.HashMap;
@@ -188,12 +190,6 @@ public class AuthorizationMatrixProperty extends JobProperty<Job<?, ?>> {
 		}
 	}
 
-	private Object readResolve() {
-        GlobalMatrixAuthorizationStrategy.migrateHudson2324(grantedPermissions);
-		acl = new AclImpl();
-		return this;
-	}
-
 	public SidACL getACL() {
 		return acl;
 	}
@@ -264,20 +260,22 @@ public class AuthorizationMatrixProperty extends JobProperty<Job<?, ?>> {
 				reader.getValue(); // we used to use this but not any more.
 				reader.moveUp();
 			}
-			while (reader.hasMoreChildren()) {
-				reader.moveDown();
+            while (reader.hasMoreChildren()) {
+                reader.moveDown();
                 try {
                     as.add(reader.getValue());
                 } catch (IllegalArgumentException ex) {
                      Logger.getLogger(AuthorizationMatrixProperty.class.getName())
                            .log(Level.WARNING,"Skipping a non-existent permission",ex);
+                     RobustReflectionConverter.addErrorInContext(context, ex);
                 }
-				reader.moveUp();
-			}
+                reader.moveUp();
+            }
 
-            GlobalMatrixAuthorizationStrategy.migrateHudson2324(as.grantedPermissions);
+            if (GlobalMatrixAuthorizationStrategy.migrateHudson2324(as.grantedPermissions))
+                OldDataMonitor.report(context, "1.301");
 
-			return as;
-		}
-	}
+            return as;
+        }
+    }
 }

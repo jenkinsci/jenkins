@@ -54,4 +54,14 @@ public class IOUtils extends org.apache.commons.io.IOUtils {
 
         throw new IOException("Failed to create a directory at "+dir);
     }
+
+    /**
+     * Fully skips the specified size from the given input stream
+     * @since 1.349
+     */
+    public static InputStream skip(InputStream in, long size) throws IOException {
+        while (size>0)
+            size -= in.skip(size);
+        return in;
+    }
 }

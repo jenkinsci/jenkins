@@ -44,7 +44,7 @@ public class MavenProjectTest extends HudsonTestCase {
         MavenModuleSet project = createSimpleProject();
         project.setGoals("validate");
 
-        assertBuildStatusSuccess(project.scheduleBuild2(0).get());
+        buildAndAssertSuccess(project);
     }
 
     private MavenModuleSet createSimpleProject() throws Exception {
@@ -61,7 +61,7 @@ public class MavenProjectTest extends HudsonTestCase {
         project.setGoals("validate");
         project.setAssignedLabel(createSlave().getSelfLabel());
 
-        assertBuildStatusSuccess(project.scheduleBuild2(0).get());
+        buildAndAssertSuccess(project);
     }
 
     /**
@@ -72,7 +72,7 @@ public class MavenProjectTest extends HudsonTestCase {
         MavenModuleSet project = createSimpleProject();
         project.setGoals("site");
 
-        assertBuildStatusSuccess(project.scheduleBuild2(0).get());
+        buildAndAssertSuccess(project);
 
         // this should succeed
         HudsonTestCase.WebClient wc = new WebClient();

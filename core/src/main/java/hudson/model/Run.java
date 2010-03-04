@@ -25,7 +25,6 @@ package hudson.model;
 
 import hudson.AbortException;
 import hudson.BulkChange;
-import hudson.CloseProofOutputStream;
 import hudson.EnvVars;
 import hudson.ExtensionPoint;
 import hudson.FeedAdapter;
@@ -33,6 +32,7 @@ import hudson.FilePath;
 import hudson.Util;
 import hudson.XmlFile;
 import hudson.cli.declarative.CLIMethod;
+import hudson.console.AnnotatedLargeText;
 import hudson.matrix.MatrixBuild;
 import hudson.matrix.MatrixRun;
 import hudson.model.listeners.RunListener;
@@ -48,6 +48,7 @@ import hudson.tasks.BuildWrapper;
 import hudson.tasks.BuildStep;
 import hudson.tasks.test.AbstractTestResultAction;
 import hudson.util.IOException2;
+import hudson.util.IOUtils;
 import hudson.util.LogTaskListener;
 import hudson.util.XStream2;
 import hudson.util.ProcessTree;
@@ -55,12 +56,10 @@ import hudson.util.ProcessTree;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.FileReader;
 import java.io.FilterOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.io.Reader;
 import java.io.Writer;
@@ -90,13 +89,13 @@ import java.util.zip.GZIPInputStream;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.commons.io.input.NullInputStream;
+import org.apache.commons.jelly.XMLOutput;
 import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.export.ExportedBean;
-import org.kohsuke.stapler.framework.io.LargeText;
-import org.apache.commons.io.IOUtils;
 
 import com.thoughtworks.xstream.XStream;
 
@@ -977,29 +976,46 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
     }
 
     /**
-     * Returns a Reader that reads from the log file.
+     * Returns an input stream that reads from the log file.
      * It will use a gzip-compressed log file (log.gz) if that exists.
+     *
      * @throws IOException 
-     * @return a reader from the log file, or null if none exists
+     * @return an input stream from the log file, or null if none exists
+     * @since 1.349
      */
-    public Reader getLogReader() throws IOException {
+    public InputStream getLogInputStream() throws IOException {
     	File logFile = getLogFile();
     	if (logFile.exists() ) {
-            if (charset==null)  return new FileReader(logFile); // fall back
-    		return new InputStreamReader(new FileInputStream(logFile),charset);
-    	} 
+            return new FileInputStream(logFile);
+    	}
 
     	File compressedLogFile = new File(logFile.getParentFile(), logFile.getName()+ ".gz");
     	if (compressedLogFile.exists()) {
-            GZIPInputStream is = new GZIPInputStream(new FileInputStream(compressedLogFile));
-
-            if (charset==null)  return new InputStreamReader(is);
-            else                return new InputStreamReader(is,charset);
-    	} 
+            return new GZIPInputStream(new FileInputStream(compressedLogFile));
+    	}
     	
-    	return null;
+    	return new NullInputStream(0);
     }
-    
+
+    public Reader getLogReader() throws IOException {
+        if (charset==null)  return new InputStreamReader(getLogInputStream());
+        else                return new InputStreamReader(getLogInputStream(),charset);
+    }
+
+    /**
+     * Used from <tt>console.jelly</tt> to write annotated log to the given output.
+     *
+     * @since 1.349
+     */
+    public void writeLogTo(long offset, XMLOutput out) throws IOException {
+        // TODO: resurrect compressed log file support
+        createAnnotatedLargeText().writeLogTo(offset,out.asWriter());
+    }
+
+    private AnnotatedLargeText createAnnotatedLargeText() {
+        return new AnnotatedLargeText(getLogFile(),getCharset(),!isLogUpdated(),this);
+    }
+
     @Override
     protected SearchIndexBuilder makeSearchIndex() {
         SearchIndexBuilder builder = super.makeSearchIndex()
@@ -1182,8 +1198,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
         if(result!=null)
             return;     // already built.
 
-        BuildListener listener=null;
-        PrintStream log = null;
+        StreamBuildListener listener=null;
 
         runner = job;
         onStartBuilding();
@@ -1195,10 +1210,9 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
 
             try {
                 try {
-                    log = new PrintStream(new FileOutputStream(getLogFile()));
                     Charset charset = Computer.currentComputer().getDefaultCharset();
                     this.charset = charset.name();
-                    listener = new StreamBuildListener(new PrintStream(new CloseProofOutputStream(log)),charset);
+                    listener = new StreamBuildListener(getLogFile(),charset);
 
                     listener.started(getCauses());
 
@@ -1259,8 +1273,8 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
 
                 if(listener!=null)
                     listener.finished(result);
-                if(log!=null)
-                    log.close();
+                if(listener!=null)
+                    listener.closeQuietly();
 
                 try {
                     save();
@@ -1516,7 +1530,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
      * Handles incremental log output.
      */
     public void doProgressiveLog( StaplerRequest req, StaplerResponse rsp) throws IOException {
-        new LargeText(getLogFile(),getCharset(),!isLogUpdated()).doProgressText(req,rsp);
+        createAnnotatedLargeText().doProgressText(req,rsp);
     }
 
     public void doToggleLogKeep( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {

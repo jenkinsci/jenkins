@@ -1,7 +1,7 @@
 /*
  * The MIT License
  *
- * Copyright (c) 2004-2009, Sun Microsystems, Inc., Michael B. Donohue, Seiji Sogabe
+ * Copyright (c) 2004-2010, Sun Microsystems, Inc., Michael B. Donohue, Seiji Sogabe
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -27,9 +27,12 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import hudson.diagnosis.OldDataMonitor;
 import hudson.model.Queue.*;
+import hudson.util.XStream2;
 import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.export.ExportedBean;
+import com.thoughtworks.xstream.converters.UnmarshallingContext;
 
 /**
  * Cause object base class.  This class hierarchy is used to keep track of why 
@@ -122,14 +125,17 @@ public abstract class Cause {
         public String getShortDescription() {
             return Messages.Cause_UpstreamCause_ShortDescription(upstreamProject, Integer.toString(upstreamBuild));
         }
-        
-        private Object readResolve() {
-            if(upstreamCause != null) {
-                if(upstreamCauses == null) upstreamCauses = new ArrayList<Cause>();
-                upstreamCauses.add(upstreamCause);
-                upstreamCause=null;
+
+        public static class ConverterImpl extends XStream2.PassthruConverter<UpstreamCause> {
+            public ConverterImpl(XStream2 xstream) { super(xstream); }
+            @Override protected void callback(UpstreamCause uc, UnmarshallingContext context) {
+                if (uc.upstreamCause != null) {
+                    if (uc.upstreamCauses == null) uc.upstreamCauses = new ArrayList<Cause>();
+                    uc.upstreamCauses.add(uc.upstreamCause);
+                    uc.upstreamCause = null;
+                    OldDataMonitor.report(context, "1.288");
+                }
             }
-            return this;
         }
     }
 

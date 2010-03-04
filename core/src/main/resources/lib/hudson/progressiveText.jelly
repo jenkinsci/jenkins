@@ -40,21 +40,36 @@ THE SOFTWARE.
     var scroller = new AutoScroller(document.body);
     <j:if test="${requestScope.progressiveTextScript==null}">
 	    <j:set target="${requestScope}" property="progressiveTextScript" value="initialized" />
-	    <!-- fetches the latest update from the server -->
+	    <!--
+	      fetches the latest update from the server
+
+	      @param e
+	          DOM node that gets the text appended to
+	      @param href
+	          Where to retrieve additional text from
+	    -->
 	    function fetchNext(e,href) {
+        var headers = {};
+        if (e.consoleAnnotator!=undefined)
+          headers["X-ConsoleAnnotator"] = e.consoleAnnotator;
+
 	      new Ajax.Request(href,{
 	          method: "post",
 	          parameters: {"start":e.fetchedBytes},
+            requestHeaders: headers,
 	          onComplete: function(rsp,_) {
               <!-- append text and do autoscroll if applicable-->
               var stickToBottom = scroller.isSticking();
               var text = rsp.responseText;
               if(text!="") {
-                e.appendChild(document.createTextNode(text));
+                var p = document.createElement("DIV");
+                p.innerHTML = text;
+                e.appendChild(p);
                 if(stickToBottom) scroller.scrollToBottom();
               }
 
-              e.fetchedBytes = rsp.getResponseHeader("X-Text-Size");
+              e.fetchedBytes     = rsp.getResponseHeader("X-Text-Size");
+              e.consoleAnnotator = rsp.getResponseHeader("X-ConsoleAnnotator");
 	            if(rsp.getResponseHeader("X-More-Data")=="true")
 	              setTimeout(function(){fetchNext(e,href);},1000);
 	          <j:if test="${spinner!=null}">

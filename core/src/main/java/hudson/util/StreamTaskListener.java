@@ -24,11 +24,14 @@
 package hudson.util;
 
 import hudson.CloseProofOutputStream;
+import hudson.console.ConsoleNote;
+import hudson.console.HudsonExceptionNote;
 import hudson.model.TaskListener;
 import hudson.remoting.RemoteOutputStream;
+import org.kohsuke.stapler.framework.io.WriterOutputStream;
 
+import java.io.Closeable;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -38,9 +41,11 @@ import java.io.OutputStreamWriter;
 import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.io.Serializable;
+import java.io.UnsupportedEncodingException;
 import java.io.Writer;
-
-import org.kohsuke.stapler.framework.io.WriterOutputStream;
+import java.nio.charset.Charset;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * {@link TaskListener} that generates output into a single stream.
@@ -50,32 +55,53 @@ import org.kohsuke.stapler.framework.io.WriterOutputStream;
  * 
  * @author Kohsuke Kawaguchi
  */
-public final class StreamTaskListener implements TaskListener, Serializable {
+public class StreamTaskListener implements TaskListener, Serializable, Closeable {
     private PrintStream out;
+    private Charset charset;
 
+    /**
+     * @deprecated as of 1.349
+     *      The caller should use {@link #StreamTaskListener(OutputStream, Charset)} to pass in
+     *      the charset and output stream separately, so that this class can handle encoding correctly.
+     */
     public StreamTaskListener(PrintStream out) {
-        this.out = out;
+        this(out,null);
     }
 
     public StreamTaskListener(OutputStream out) {
-        this(new PrintStream(out));
+        this(out,null);
     }
 
-    public StreamTaskListener(File out) throws FileNotFoundException {
+    public StreamTaskListener(OutputStream out, Charset charset) {
+        try {
+            this.out = charset==null ? new PrintStream(out,false) : new PrintStream(out,false,charset.name());
+            this.charset = charset;
+        } catch (UnsupportedEncodingException e) {
+            // it's not very pretty to do this, but otherwise we'd have to touch too many call sites.
+            throw new Error(e);
+        }
+    }
+
+    public StreamTaskListener(File out) throws IOException {
+        this(out,null);
+    }
+
+    public StreamTaskListener(File out, Charset charset) throws IOException {
         // don't do buffering so that what's written to the listener
         // gets reflected to the file immediately, which can then be
         // served to the browser immediately
-        this(new FileOutputStream(out));
+        this(new FileOutputStream(out),charset);
     }
 
-    public StreamTaskListener(Writer w) {
+    public StreamTaskListener(Writer w) throws IOException {
         this(new WriterOutputStream(w));
     }
 
     /**
-     * Creates {@link StreamTaskListener} that swallows the result.
+     * @deprecated as of 1.349
+     *      Use {@link #NULL}
      */
-    public StreamTaskListener() {
+    public StreamTaskListener() throws IOException {
         this(new NullStream());
     }
 
@@ -83,9 +109,24 @@ public final class StreamTaskListener implements TaskListener, Serializable {
         return out;
     }
 
-    public PrintWriter error(String msg) {
+    private PrintWriter _error(String prefix, String msg) {
+        out.print(prefix);
         out.println(msg);
-        return new PrintWriter(new OutputStreamWriter(out),true);
+
+        // the idiom in Hudson is to use the returned writer for writing stack trace,
+        // so put the marker here to indicate an exception. if the stack trace isn't actually written,
+        // HudsonExceptionNote.annotate recovers gracefully.
+        try {
+            annotate(new HudsonExceptionNote());
+        } catch (IOException e) {
+            // for signature compatibility, we have to swallow this error
+        }
+        return new PrintWriter(
+            charset!=null ? new OutputStreamWriter(out,charset) : new OutputStreamWriter(out),true);
+    }
+
+    public PrintWriter error(String msg) {
+        return _error("ERROR: ",msg);
     }
 
     public PrintWriter error(String format, Object... args) {
@@ -93,24 +134,46 @@ public final class StreamTaskListener implements TaskListener, Serializable {
     }
 
     public PrintWriter fatalError(String msg) {
-        return error(msg);
+        return _error("FATAL: ",msg);
     }
 
     public PrintWriter fatalError(String format, Object... args) {
         return fatalError(String.format(format,args));
     }
 
+    public void annotate(ConsoleNote ann) throws IOException {
+        ann.encodeTo(out);
+    }
+
     private void writeObject(ObjectOutputStream out) throws IOException {
         out.writeObject(new RemoteOutputStream(new CloseProofOutputStream(this.out)));
+        out.writeObject(charset==null? null : charset.name());
     }
 
     private void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException {
         out = new PrintStream((OutputStream)in.readObject(),true);
+        String name = (String)in.readObject();
+        charset = name==null ? null : Charset.forName(name);
     }
 
-    public void close() {
+    public void close() throws IOException {
         out.close();
     }
 
+    /**
+     * Closes this listener and swallows any exceptions, if raised.
+     *
+     * @since 1.349
+     */
+    public void closeQuietly() {
+        try {
+            close();
+        } catch (IOException e) {
+            LOGGER.log(Level.WARNING,"Failed to close",e);
+        }
+    }
+
     private static final long serialVersionUID = 1L;
+
+    private static final Logger LOGGER = Logger.getLogger(StreamTaskListener.class.getName());
 }

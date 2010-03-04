@@ -30,7 +30,16 @@ package org.jvnet.hudson.test;
  * @author Kohsuke Kawaguchi
  */
 public class TestEnvironment {
+    /**
+     * Current test case being run.
+     */
+    public final HudsonTestCase testCase;
+
     public final TemporaryDirectoryAllocator temporaryDirectoryAllocator = new TemporaryDirectoryAllocator();
+
+    public TestEnvironment(HudsonTestCase testCase) {
+        this.testCase = testCase;
+    }
 
     /**
      * Associates (or pin down) this {@link TestEnvironment} to the current thread, so that

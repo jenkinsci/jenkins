@@ -236,6 +236,16 @@ function findNextFormItem(src,name) {
     return findFormItem(src,name,findNext);
 }
 
+/**
+ * Parse HTML into DOM.
+ */
+function parseHtml(html) {
+    var c = document.createElement("div");
+    c.innerHTML = html;
+    return c.firstChild;
+}
+
+
 
 // shared tooltip object
 var tooltip;

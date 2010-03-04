@@ -24,6 +24,7 @@
 
 package hudson.util;
 
+import hudson.console.ConsoleNote;
 import hudson.model.TaskListener;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -63,6 +64,10 @@ public class LogTaskListener implements TaskListener {
 
     public PrintWriter fatalError(String format, Object... args) {
         return delegate.fatalError(format, args);
+    }
+
+    public void annotate(ConsoleNote ann) {
+        // no annotation support
     }
 
     public void close() {

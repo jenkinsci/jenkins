@@ -1,7 +1,7 @@
 /*
  * The MIT License
  *
- * Copyright (c) 2004-2009, Sun Microsystems, Inc., Michael B. Donohue
+ * Copyright (c) 2004-2010, Sun Microsystems, Inc., Michael B. Donohue
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,10 +23,13 @@
  */
 package hudson.model;
 
+import hudson.diagnosis.OldDataMonitor;
 import hudson.model.Queue.Task;
 import hudson.model.queue.FoldableAction;
+import hudson.util.XStream2;
 import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.export.ExportedBean;
+import com.thoughtworks.xstream.converters.UnmarshallingContext;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -42,7 +45,7 @@ public class CauseAction implements FoldableAction {
     // there can be multiple causes, so this is deprecated
     private transient Cause cause;
 	
-	private List<Cause> causes = new ArrayList<Cause>();
+    private List<Cause> causes = new ArrayList<Cause>();
 
 	@Exported(visibility=2)
 	public List<Cause> getCauses() {
@@ -101,13 +104,16 @@ public class CauseAction implements FoldableAction {
         // no CauseAction found, so add a copy of this one
         item.getActions().add(new CauseAction(this));
     }
-	
-    private Object readResolve() {
-		// if we are being read in from an older version
-		if(cause != null) {
-			if(causes == null) causes=new ArrayList<Cause>();
-			causes.add(cause);
-		}
-		return this;
+
+    public static class ConverterImpl extends XStream2.PassthruConverter<CauseAction> {
+        public ConverterImpl(XStream2 xstream) { super(xstream); }
+        @Override protected void callback(CauseAction ca, UnmarshallingContext context) {
+            // if we are being read in from an older version
+            if (ca.cause != null) {
+                if (ca.causes == null) ca.causes = new ArrayList<Cause>();
+                ca.causes.add(ca.cause);
+                OldDataMonitor.report(context, "1.288");
+            }
+        }
     }
 }

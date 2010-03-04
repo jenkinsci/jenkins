@@ -1017,6 +1017,14 @@ Ajax.Base.prototype = {
     this.options.method = this.options.method.toLowerCase();
     if (typeof this.options.parameters == 'string')
       this.options.parameters = this.options.parameters.toQueryParams();
+
+    // KK patch -- handle crumb for POST automatically by adding a header
+    if(this.options.method=="post") {
+        if(this.options.requestHeaders==undefined)
+            this.options.requestHeaders = {};
+        crumb.wrap(this.options.requestHeaders);
+    }
+    // KK patch until here
   }
 }
 
@@ -1030,13 +1038,6 @@ Ajax.Request.prototype = Object.extend(new Ajax.Base(), {
   initialize: function(url, options) {
     this.transport = Ajax.getTransport();
     this.setOptions(options);
-    // KK patch -- handle crumb for POST automatically by adding a header
-    if(this.options.method=="post") {
-        if(this.options.requestHeaders==undefined)
-            this.options.requestHeaders = {};
-        crumb.wrap(this.options.requestHeaders);
-    }
-    // KK patch until here
     this.request(url);
   },
 

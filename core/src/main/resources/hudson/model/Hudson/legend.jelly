@@ -1,7 +1,8 @@
 <!--
 The MIT License
 
-Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, Seiji Sogabe, Stephen Connolly, id:lecric
+Copyright (c) 2004-2010, Sun Microsystems, Inc., Kohsuke Kawaguchi, Seiji Sogabe,
+Stephen Connolly, id:lecric, Alan Harder
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -62,24 +63,23 @@ THE SOFTWARE.
         </td></tr>
         <tr><td>
           <img src="images/48x48/health-80plus.gif" alt=""/>
-          ${%health-80plus}
+          ${%health-81plus}
         </td></tr>
         <tr><td>
           <img src="images/48x48/health-60to79.gif" alt=""/>
-          ${%health-60to79}
+          ${%health-61to80}
         </td></tr>
         <tr><td>
           <img src="images/48x48/health-40to59.gif" alt=""/>
-          ${%health-40to59}
+          ${%health-41to60}
         </td></tr>
         <tr><td>
           <img src="images/48x48/health-20to39.gif" alt=""/>
-          ${%health-20to39}
-          
+          ${%health-21to40}
         </td></tr>
         <tr><td>
           <img src="images/48x48/health-00to19.gif" alt=""/>
-          ${%health-00to19}
+          ${%health-00to20}
         </td></tr>
       </table>
     </l:main-panel>

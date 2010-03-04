@@ -1,7 +1,7 @@
 /*
  * The MIT License
  * 
- * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi
+ * Copyright (c) 2004-2010, Sun Microsystems, Inc., Kohsuke Kawaguchi
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -35,7 +35,6 @@ import com.thoughtworks.xstream.XStream;
 import java.util.Collection;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.CopyOnWriteArraySet;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import static java.util.logging.Level.WARNING;
@@ -87,8 +86,10 @@ public class RobustCollectionConverter extends CollectionConverter {
                 collection.add(item);
             } catch (CannotResolveClassException e) {
                 LOGGER.log(WARNING,"Failed to resolve class",e);
+                RobustReflectionConverter.addErrorInContext(context, e);
             } catch (LinkageError e) {
                 LOGGER.log(WARNING,"Failed to resolve class",e);
+                RobustReflectionConverter.addErrorInContext(context, e);
             }
             reader.moveUp();
         }

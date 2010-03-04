@@ -27,6 +27,7 @@ import hudson.XmlFile;
 import hudson.BulkChange;
 import hudson.Util;
 import static hudson.Util.singleQuote;
+import hudson.diagnosis.OldDataMonitor;
 import hudson.model.listeners.SaveableListener;
 import hudson.views.ListViewColumn;
 import net.sf.json.JSONArray;
@@ -260,7 +261,15 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable {
             checkMethods.put(fieldName,method);
         }
 
-        return method.equals(NONE) ? null : method; // == would do, but it makes IDE flag a warning
+        if (method.equals(NONE)) // == would do, but it makes IDE flag a warning
+            return null;
+
+        // put this under the right contextual umbrella.
+        // a is always non-null because we already have Hudson as the sentinel
+        StaplerRequest req = Stapler.getCurrentRequest();
+        Ancestor a = req.findAncestor(DescriptorByNameOwner.class);
+
+        return singleQuote(a.getUrl())+'+'+method;
     }
 
     private String calcCheckUrl(String fieldName) {
@@ -306,10 +315,7 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable {
             }
         }
 
-        StaplerRequest req = Stapler.getCurrentRequest();
-        Ancestor a = req.findAncestor(DescriptorByNameOwner.class);
-        // a is always non-null because we already have Hudson as the sentinel
-        return singleQuote(a.getUrl()+"/descriptorByName/"+clazz.getName()+"/check"+capitalizedFieldName+"?")+query;
+        return singleQuote("/descriptorByName/"+clazz.getName()+"/check"+capitalizedFieldName+"?")+query;
     }
 
     /**
@@ -714,4 +720,10 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable {
      * Used in {@link #checkMethods} to indicate that there's no check method.
      */
     private static final String NONE = "\u0000";
+
+    private Object readResolve() {
+        if (properties!=null)
+            OldDataMonitor.report(this, "1.62");
+        return this;
+    }
 }

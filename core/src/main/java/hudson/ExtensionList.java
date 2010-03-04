@@ -161,6 +161,17 @@ public class ExtensionList<T> extends AbstractList<T> {
         add(element);
     }
 
+    /**
+     * Used to bind extension to URLs by their class names.
+     *
+     * @since 1.349
+     */
+    public T getDynamic(String className) {
+        for (T t : this)
+            if (t.getClass().getName().equals(className))
+                return t;
+        return null;
+    }
 
 
     /**
