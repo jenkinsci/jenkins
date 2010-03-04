@@ -13,6 +13,8 @@ import org.mozilla.javascript.tools.debugger.Dim;
  * @author Kohsuke Kawaguchi
  */
 public class AntTargetAnnotationTest extends HudsonTestCase {
+    public void testDummy() {}
+
 //    public void test1() throws Exception {
 //        FreeStyleProject p = createFreeStyleProject();
 //        p.getBuildersList().add(new Ant("foo",null,null,null,null));
