@@ -43,7 +43,10 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
+import java.util.List;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 
@@ -185,15 +188,18 @@ public abstract class ConsoleNote<T> implements Serializable, Describable<Consol
 
     private static final long serialVersionUID = 1L;
 
+    public static final String PREAMBLE_STR = "\u001B[8mha:";
+    public static final String POSTAMBLE_STR = "\u001B[0m";
+
     /**
      * Preamble of the encoded form. ANSI escape sequence to stop echo back
      * plus a few magic characters.
      */
-    public static final byte[] PREAMBLE = "\u001B[8mha:".getBytes();
+    public static final byte[] PREAMBLE = PREAMBLE_STR.getBytes();
     /**
      * Post amble is the ANSI escape sequence that brings back the echo.
      */
-    public static final byte[] POSTAMBLE = "\u001B[0m".getBytes();
+    public static final byte[] POSTAMBLE = POSTAMBLE_STR.getBytes();
 
     /**
      * Locates the preamble in the given buffer.
@@ -213,5 +219,28 @@ public abstract class ConsoleNote<T> implements Serializable, Describable<Consol
             }
         }
         return -1; // not found
+    }
+
+    /**
+     * Removes the embedded console notes in the given log lines
+     */
+    public static List<String> removeNotes(Collection<String> logLines) {
+        List<String> r = new ArrayList<String>(logLines.size());
+        for (String l : logLines)
+            r.add(removeNotes(l));
+        return r;
+    }
+
+    /**
+     * Removes the embedded console notes in the given log line.
+     */
+    public static String removeNotes(String line) {
+        while (true) {
+            int idx = line.indexOf(PREAMBLE_STR);
+            if (idx<0)  return line;
+            int e = line.indexOf(POSTAMBLE_STR,idx);
+            if (e<0)    return line;
+            line = line.substring(0,idx)+line.substring(e+POSTAMBLE_STR.length());
+        }
     }
 }

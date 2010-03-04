@@ -33,6 +33,7 @@ import hudson.Util;
 import hudson.XmlFile;
 import hudson.cli.declarative.CLIMethod;
 import hudson.console.AnnotatedLargeText;
+import hudson.console.ConsoleNote;
 import hudson.matrix.MatrixBuild;
 import hudson.matrix.MatrixRun;
 import hudson.model.listeners.RunListener;
@@ -78,6 +79,7 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.ListIterator;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
@@ -1405,7 +1407,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
         if (lineCount > maxLines)
             logLines.set(0, "[...truncated " + (lineCount - (maxLines - 1)) + " lines...]");
 
-        return logLines;
+        return ConsoleNote.removeNotes(logLines);
     }
 
     public void doBuildStatus( StaplerRequest req, StaplerResponse rsp ) throws IOException {
