@@ -24,6 +24,7 @@
 package org.jvnet.hudson.test;
 
 import com.gargoylesoftware.htmlunit.DefaultCssErrorHandler;
+import com.gargoylesoftware.htmlunit.javascript.HtmlUnitContextFactory;
 import com.gargoylesoftware.htmlunit.javascript.host.xml.XMLHttpRequest;
 import hudson.CloseProofOutputStream;
 import hudson.FilePath;
@@ -139,6 +140,7 @@ import org.mortbay.jetty.webapp.Configuration;
 import org.mortbay.jetty.webapp.WebAppContext;
 import org.mortbay.jetty.webapp.WebXmlConfiguration;
 import org.mozilla.javascript.tools.debugger.Dim;
+import org.mozilla.javascript.tools.shell.Global;
 import org.w3c.css.sac.CSSException;
 import org.w3c.css.sac.CSSParseException;
 import org.w3c.css.sac.ErrorHandler;
@@ -200,20 +202,6 @@ public abstract class HudsonTestCase extends TestCase implements RootAction {
      * expression evaluation capability of your Java debugger.)
      */
     protected JavaScriptDebugger jsDebugger = new JavaScriptDebugger();
-
-    /**
-     * If no other debugger is installed, install {@link #jsDebugger},
-     * so as not to interfere with {@link Dim}.
-     */
-    private Listener rhinoContextListener = new Listener() {
-        public void contextCreated(Context cx) {
-            if(cx.getDebugger()==null)
-                cx.setDebugger(jsDebugger,null);
-        }
-
-        public void contextReleased(Context cx) {
-        }
-    };
 
 
     protected HudsonTestCase(String name) {
@@ -325,14 +313,7 @@ public abstract class HudsonTestCase extends TestCase implements RootAction {
     @Override
     protected void runTest() throws Throwable {
         System.out.println("=== Starting "+ getClass().getSimpleName() + "." + getName());
-//        new JavaScriptEngine(null);   // ensure that ContextFactory is initialized
-
-        ContextFactory.getGlobal().addListener(rhinoContextListener);
-        try {
-            super.runTest();
-        } finally {
-            ContextFactory.getGlobal().removeListener(rhinoContextListener);
-        }
+        super.runTest();
     }
 
     public String getIconFileName() {
@@ -629,25 +610,6 @@ public abstract class HudsonTestCase extends TestCase implements RootAction {
     public void interactiveBreak() throws Exception {
         System.out.println("Hudson is running at http://localhost:"+localPort+"/");
         new BufferedReader(new InputStreamReader(System.in)).readLine();
-    }
-
-    /**
-     * Starts an interactive JavaScript debugger, and break at the next JavaScript execution.
-     *
-     * <p>
-     * This is useful during debugging a test so that you can step execute and inspect state of JavaScript.
-     * This will launch a Swing GUI, and the method returns immediately.
-     *
-     * <p>
-     * Note that installing a debugger appears to make an execution of JavaScript substantially slower.
-     */
-    public Dim interactiveJavaScriptDebugger() {
-        // this can be too late, depending on when this method is invoked.
-        Functions.DEBUG_YUI = true;
-
-        // TODO: port this back later
-//        return net.sourceforge.htmlunit.corejs.javascript.tools.debugger.Main.mainEmbedded("Rhino debugger: "+getName());
-        return null;
     }
 
     /**
@@ -1222,6 +1184,18 @@ public abstract class HudsonTestCase extends TestCase implements RootAction {
                     return e.getURI().contains("/yui/");
                 }
             });
+
+            // if no other debugger is installed, install jsDebugger,
+            // so as not to interfere with the 'Dim' class.
+            getJavaScriptEngine().getContextFactory().addListener(new Listener() {
+                public void contextCreated(Context cx) {
+                    if (cx.getDebugger() == null)
+                        cx.setDebugger(jsDebugger, null);
+                }
+
+                public void contextReleased(Context cx) {
+                }
+            });
         }
 
         /**
@@ -1388,6 +1362,38 @@ public abstract class HudsonTestCase extends TestCase implements RootAction {
             UUID id = UUID.randomUUID();
             cea.add(id,requestHandler);
             return goTo("closures/?uuid="+id);
+        }
+
+        /**
+         * Starts an interactive JavaScript debugger, and break at the next JavaScript execution.
+         *
+         * <p>
+         * This is useful during debugging a test so that you can step execute and inspect state of JavaScript.
+         * This will launch a Swing GUI, and the method returns immediately.
+         *
+         * <p>
+         * Note that installing a debugger appears to make an execution of JavaScript substantially slower.
+         *
+         * <p>
+         * TODO: because each script block evaluation in HtmlUnit is done in a separate Rhino context,
+         * if you step over from one script block, the debugger fails to kick in on the beginning of the next script block.
+         * This makes it difficult to set a break point on arbitrary script block in the HTML page. We need to fix this
+         * by tweaking {@link Dim.StackFrame#onLineChange(Context, int)}.
+         */
+        public Dim interactiveJavaScriptDebugger() {
+            // this can be too late, depending on when this method is invoked.
+            Functions.DEBUG_YUI = true;
+
+            Global global = new Global();
+            HtmlUnitContextFactory cf = getJavaScriptEngine().getContextFactory();
+            global.init(cf);
+
+            Dim dim = org.mozilla.javascript.tools.debugger.Main.mainEmbedded(cf, global, "Rhino debugger: " + getName());
+
+            // break on exceptions. this catch most of the errors
+            dim.setBreakOnExceptions(true);
+
+            return dim;
         }
     }
 
