@@ -1783,3 +1783,11 @@ function createComboBox(id,valueFunction) {
         }
     });
 }
+
+
+if (isRunAsTest) {
+    // during the unit test, make Ajax errors fatal
+    Ajax.Request.prototype.dispatchException = function(e) {
+        throw e;
+    }
+}
