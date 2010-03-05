@@ -1048,6 +1048,20 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
     }
 
     /**
+     * Deletes this build's artifacts. 
+     *
+     * @throws IOException
+     *      if we fail to delete.
+     *
+     * @since 1.350
+     */
+    public synchronized void deleteArtifacts() throws IOException {
+        File artifactsDir = getArtifactsDir();
+
+        Util.deleteContentsRecursive(artifactsDir);
+    }
+
+    /**
      * Deletes this build and its entire log
      *
      * @throws IOException
