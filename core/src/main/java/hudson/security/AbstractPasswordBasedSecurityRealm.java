@@ -1,18 +1,25 @@
 package hudson.security;
 
 import groovy.lang.Binding;
+import hudson.FilePath;
+import hudson.cli.CLICommand;
 import hudson.model.Hudson;
 import hudson.tasks.MailAddressResolver;
 import hudson.util.spring.BeanBuilder;
+import org.acegisecurity.Authentication;
 import org.acegisecurity.AuthenticationException;
 import org.acegisecurity.AuthenticationManager;
+import org.acegisecurity.BadCredentialsException;
 import org.acegisecurity.providers.UsernamePasswordAuthenticationToken;
 import org.acegisecurity.providers.dao.AbstractUserDetailsAuthenticationProvider;
 import org.acegisecurity.userdetails.UserDetails;
 import org.acegisecurity.userdetails.UserDetailsService;
 import org.acegisecurity.userdetails.UsernameNotFoundException;
+import org.kohsuke.args4j.Option;
 import org.springframework.dao.DataAccessException;
 import org.springframework.web.context.WebApplicationContext;
+
+import java.io.IOException;
 
 /**
  * Partial implementation of {@link SecurityRealm} for username/password based authentication.
@@ -38,6 +45,35 @@ public abstract class AbstractPasswordBasedSecurityRealm extends SecurityRealm i
         WebApplicationContext context = builder.createApplicationContext();
         return new SecurityComponents(
                 findBean(AuthenticationManager.class, context),this);
+    }
+
+    @Override
+    public CliAuthenticator createCliAuthenticator(final CLICommand command) {
+        return new CliAuthenticator() {
+            @Option(name="--username",usage="User name to authenticate yourself to Hudson")
+            public String userName;
+
+            @Option(name="--password",usage="Password for authentication. Note that passing a password in arguments is insecure.")
+            public String password;
+
+            @Option(name="--password-file",usage="File that contains the password")
+            public String passwordFile;
+
+            public Authentication authenticate() throws AuthenticationException {
+                if (userName==null)
+                    return Hudson.ANONYMOUS;    // no authentication parameter. run as anonymous
+
+                if (passwordFile!=null)
+                    try {
+                        password = new FilePath(command.channel,passwordFile).readToString().trim();
+                    } catch (IOException e) {
+                        throw new BadCredentialsException("Failed to read "+passwordFile,e);
+                    }
+
+                UserDetails d = AbstractPasswordBasedSecurityRealm.this.authenticate(userName, password);
+                return new UsernamePasswordAuthenticationToken(d, password, d.getAuthorities());
+            }
+        };
     }
 
     /**

@@ -51,12 +51,13 @@ import java.io.Serializable;
  */
 public class CliManagerImpl implements CliEntryPoint, Serializable {
     /**
-     * CLI should be executed under this credential.
+     * If the transport has already authenticated this CLI command execution, a valid {@link Authentication} object.
+     * Otherwise {@link Hudson#ANONYMOUS}
      */
     private final Authentication auth;
 
     public CliManagerImpl(Authentication auth) {
-        this.auth = auth;
+        this.auth = auth!=null ? auth : Hudson.ANONYMOUS;
     }
 
     public int main(List<String> args, Locale locale, InputStream stdin, OutputStream stdout, OutputStream stderr) {
@@ -71,14 +72,8 @@ public class CliManagerImpl implements CliEntryPoint, Serializable {
         String subCmd = args.get(0);
         CLICommand cmd = CLICommand.clone(subCmd);
         if(cmd!=null) {
-            Authentication old = SecurityContextHolder.getContext().getAuthentication();
-            SecurityContextHolder.getContext().setAuthentication(auth);
-            try {
-                // execute the command, do so with the originator of the request as the principal
-                return cmd.main(args.subList(1,args.size()),locale, stdin, out, err);
-            } finally {
-                SecurityContextHolder.getContext().setAuthentication(old);
-            }
+            // execute the command, do so with the originator of the request as the principal
+            return cmd.main(args.subList(1,args.size()),locale, stdin, out, err,auth);
         }
 
         err.println("No such command: "+subCmd);

@@ -29,6 +29,7 @@ import groovy.lang.Binding;
 import hudson.ExtensionPoint;
 import hudson.DescriptorExtensionList;
 import hudson.Extension;
+import hudson.cli.CLICommand;
 import hudson.model.Describable;
 import hudson.model.Descriptor;
 import hudson.model.Hudson;
@@ -140,6 +141,24 @@ public abstract class SecurityRealm implements Describable<SecurityRealm>, Exten
      * overriding {@link #createFilter(FilterConfig)}.
      */
     public abstract SecurityComponents createSecurityComponents();
+
+    /**
+     * Creates a {@link CliAuthenticator} object that authenticates an invocation of a CLI command.
+     * See {@link CliAuthenticator} for more details.
+     *
+     * @param command
+     *      The command about to be executed.
+     * @return
+     *      never null. By default, this method returns a no-op authenticator that always authenticates
+     *      the session as an anonymous user.
+     */
+    public CliAuthenticator createCliAuthenticator(CLICommand command) {
+        return new CliAuthenticator() {
+            public Authentication authenticate() {
+                return Hudson.ANONYMOUS;
+            }
+        };
+    }
 
     /**
      * {@inheritDoc}
