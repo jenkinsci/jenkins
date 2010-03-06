@@ -3549,6 +3549,28 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
     public static String VERSION="?";
 
     /**
+     * Parses {@link #VERSION} into {@link VersionNumber}, or null if it's not parseable as a version number
+     * (such as when Hudson is run with "mvn hudson-dev:run")
+     */
+    public static VersionNumber getVersion() {
+        try {
+            return new VersionNumber(VERSION);
+        } catch (NumberFormatException e) {
+            try {
+                // for non-released version of Hudson, this looks like "1.345 (private-foobar), so try to approximate.
+                int idx = VERSION.indexOf(' ');
+                if (idx>0)
+                    return new VersionNumber(VERSION.substring(0,idx));
+            } catch (NumberFormatException _) {
+                // fall through
+            }
+
+            // totally unparseable
+            return null;
+        }
+    }
+
+    /**
      * Hash of {@link #VERSION}.
      */
     public static String VERSION_HASH;

@@ -183,7 +183,7 @@ public class OldDataMonitor extends AdministrativeMonitor {
     }
 
     public static class VersionRange {
-        private static VersionNumber currentVersion = new VersionNumber(Hudson.VERSION);
+        private static VersionNumber currentVersion = Hudson.getVersion();
 
         VersionNumber min, max;
         boolean single = true;
@@ -214,11 +214,9 @@ public class OldDataMonitor extends AdministrativeMonitor {
          * @return True if the major version# differs or the minor# differs by >= threshold
          */
         public boolean isOld(int threshold) {
-            if (min!=null && (currentVersion.digit(0) > min.digit(0)
-                              || (currentVersion.digit(0) == min.digit(0)
-                                  && currentVersion.digit(1) - min.digit(1) >= threshold)))
-                return true;
-            return false;
+            return currentVersion != null && min != null && (currentVersion.digit(0) > min.digit(0)
+                    || (currentVersion.digit(0) == min.digit(0)
+                    && currentVersion.digit(1) - min.digit(1) >= threshold));
         }
     }
 
