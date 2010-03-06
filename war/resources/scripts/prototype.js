@@ -1534,7 +1534,7 @@ Element.Methods = {
   hasClassName: function(element, className) {
     if (!(element = $(element))) return;
     var elementClassName = element.className;
-    if (elementClassName.length == 0) return false;
+    if (!elementClassName || elementClassName.length == 0) return false;
     if (elementClassName == className ||
         elementClassName.match(new RegExp("(^|\\s)" + className + "(\\s|$)")))
       return true;

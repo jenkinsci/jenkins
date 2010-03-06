@@ -381,7 +381,7 @@ var hudsonRules = {
             var h = e;
             // locate a handle
             while(!Element.hasClassName(h,"dd-handle"))
-                h = h.firstChild;
+                h = h.firstChild ? h.firstChild : h.nextSibling;
             dd.setHandleElId(h);
         }
         var withDragDrop = Element.hasClassName(e,"with-drag-drop");
