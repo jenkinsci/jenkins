@@ -1,7 +1,8 @@
 /*
  * The MIT License
  * 
- * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, Daniel Dyer, Yahoo! Inc.
+ * Copyright (c) 2004-2010, Sun Microsystems, Inc., Kohsuke Kawaguchi,
+ * Daniel Dyer, Yahoo! Inc., Alan Harder
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -765,6 +766,20 @@ var hudsonRules = {
         // install event handlers to update visibility.
         // needs to use onclick and onchange for Safari compatibility
         r.onclick = r.onchange = function() { g.updateButtons(); };
+    },
+
+    // editableComboBox.jelly
+    "INPUT.combobox" : function(c) {
+        // Next element after <input class="combobox"/> should be <div class="combobox-values">
+        var vdiv = c.nextSibling;
+        if (Element.hasClassName(vdiv, "combobox-values")) {
+            createComboBox(c, function() {
+                var values = [];
+                for (var value = vdiv.firstChild; value; value = value.nextSibling)
+                    values.push(value.getAttribute('value'));
+                return values;
+            });
+        }
     }
 };
 
@@ -780,7 +795,7 @@ function applyTooltip(e,text) {
         e.onmouseout  = function(ev) { return tooltip.onContextMouseOut .call(this,YAHOO.util.Event.getEvent(ev),tooltip); }
         e.title = text;
         e = null; // avoid memory leak
-    }
+}
 
 Behaviour.register(hudsonRules);
 
@@ -1755,15 +1770,18 @@ function validateButton(checkUrl,paramList,button) {
 }
 
 // create a combobox.
-// @param id
-//      ID of the <input type=text> element that becomes a combobox.
+// @param idOrField
+//      ID of the <input type=text> element that becomes a combobox, or the field itself.
+//      Passing an ID is @deprecated since 1.350; use <input class="combobox"/> instead.
 // @param valueFunction
 //      Function that returns all the candidates as an array
-function createComboBox(id,valueFunction) {
+function createComboBox(idOrField,valueFunction) {
     var candidates = valueFunction();
-
-    Behaviour.addLoadEvent(function() {
-        var callback = function(value /*, comboBox*/) {
+    var creator = function() {
+        if (typeof idOrField == "string")
+          idOrField = document.getElementById(idOrField);
+        if (!idOrField) return;
+        new ComboBox(idOrField, function(value /*, comboBox*/) {
           var items = new Array();
           if (value.length > 0) { // if no value, we'll not provide anything
             value = value.toLowerCase();
@@ -1776,12 +1794,10 @@ function createComboBox(id,valueFunction) {
             }
           }
           return items; // equiv to: comboBox.setItems(items);
-        };
-
-        if (document.getElementById(id) != null) {
-          new ComboBox(id,callback);
-        }
-    });
+        });
+    };
+    // If an ID given, create when page has loaded (backward compatibility); otherwise now.
+    if (typeof idOrField == "string") Behaviour.addLoadEvent(creator); else creator();
 }
 
 

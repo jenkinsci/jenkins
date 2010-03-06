@@ -1,7 +1,7 @@
 /*
  * The MIT License
  * 
- * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi
+ * Copyright (c) 2004-2010, Sun Microsystems, Inc., Kohsuke Kawaguchi
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -68,7 +68,7 @@ Sample CSS for the combobox
  *	valueDelimiter - if allowMultipleValues is set to true, this is the
  *		character used to delimit the values.  Defaults to a comma.
  *
- * @param id The ID of the text field the combobox is based around.
+ * @param idOrField The ID of the text field the combobox is based around, or the field itself.
  * @param callback The function to call when the typed value changes.
  *		The function will be passed the current value of the field, and
  *		must return an array of values to display in the dropdown.
@@ -76,15 +76,14 @@ Sample CSS for the combobox
  * @param config An object containing configuration parameters for the
  *		instance.
  */
-function ComboBox(id, callback, config) {
+function ComboBox(idOrField, callback, config) {
 	var self = this;
 	// instance variables
 	this.config = config || new Object();
 	this.callback = callback;
 	this.availableItems = new Array();
 	this.selectedItemIndex = -1;
-	this.id = id;
-	this.field = document.getElementById(id);
+	this.field = typeof idOrField == "string" ? document.getElementById(idOrField) : idOrField;
 	if (typeof this.field == "undefined")
 		alert("You have specified an invalid id for the field you want to turn into a combo box");
 	this.dropdown = document.createElement("div");

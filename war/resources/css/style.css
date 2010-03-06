@@ -579,7 +579,9 @@ th.pane {
   background-color: Highlight;
   color: HighlightText;
 }
-
+.combobox-values {
+  display: none;
+}
 
 
 /* ========================= directory tree ========================= */
