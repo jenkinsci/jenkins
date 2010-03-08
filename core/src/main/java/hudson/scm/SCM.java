@@ -335,11 +335,19 @@ public abstract class SCM implements Describable<SCM>, ExtensionPoint {
     protected abstract PollingResult compareRemoteRevisionWith(AbstractProject<?,?> project, Launcher launcher, FilePath workspace, TaskListener listener, SCMRevisionState baseline) throws IOException, InterruptedException;
 
     /**
+     * To work around the HotSpot problem as discussed in HUDSON-5756.
+     * In this way we can reliably catch {@link AbstractMethodError}. 
+     */
+    private PollingResult _compareRemoteRevisionWith(AbstractProject<?, ?> project, Launcher launcher, FilePath workspace, TaskListener listener, SCMRevisionState baseline) throws IOException, InterruptedException {
+        return compareRemoteRevisionWith(project,launcher,workspace,listener,baseline);
+    }
+
+    /**
      * Convenience method for the caller to handle the backward compatibility between pre 1.345 SCMs.
      */
     public final PollingResult poll(AbstractProject<?,?> project, Launcher launcher, FilePath workspace, TaskListener listener, SCMRevisionState baseline) throws IOException, InterruptedException {
         try {
-            return compareRemoteRevisionWith(project,launcher,workspace,listener,baseline);
+            return _compareRemoteRevisionWith(project, launcher, workspace, listener, baseline);
         } catch (AbstractMethodError e) {// pre 1.345 SCM that doesn't implement new polling methods
             return pollChanges(project,launcher,workspace,listener) ? PollingResult.SIGNIFICANT : PollingResult.NO_CHANGES;
         }
