@@ -172,7 +172,7 @@ public abstract class ChangeLogSet<T extends ChangeLogSet.Entry> implements Iter
             for (ChangeLogAnnotator a : ChangeLogAnnotator.all())
                 a.annotate(parent.build,this,markup);
 
-            return markup.toString();
+            return markup.toString(false);
         }
 
         /**

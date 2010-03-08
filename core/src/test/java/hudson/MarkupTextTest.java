@@ -40,7 +40,7 @@ public class MarkupTextTest extends TestCase {
         for (SubText st : t.findTokens(pattern))
             st.surroundWith("<$1>","<$1>");
 
-        assertEquals("I fixed <155>issue #155<155>. The rest is trick text: xissue #155 issue #123x", t.toString());
+        assertEquals("I fixed <155>issue #155<155>. The rest is trick text: xissue #155 issue #123x", t.toString(false));
     }
 
     public void testBoundary() {
@@ -48,7 +48,7 @@ public class MarkupTextTest extends TestCase {
         for (SubText st : t.findTokens(pattern))
             st.surroundWith("<$1>","<$1>");
 
-        assertEquals("<155>issue #155<155>---<123>issue #123<123>", t.toString());
+        assertEquals("<155>issue #155<155>---<123>issue #123<123>", t.toString(false));
     }
 
     public void testFindTokensOnSubText() {
@@ -59,7 +59,7 @@ public class MarkupTextTest extends TestCase {
         for (SubText st : tokens.get(0).findTokens(Pattern.compile("([0-9]+)")))
             st.surroundWith("<$1>","<$1>");
 
-        assertEquals("Fixed 2 issues in this commit, fixing issue <155>155<155>, <145>145<145>", t.toString());
+        assertEquals("Fixed 2 issues in this commit, fixing issue <155>155<155>, <145>145<145>", t.toString(false));
     }
 
     public void testLiteralTextSurround() {
@@ -67,7 +67,7 @@ public class MarkupTextTest extends TestCase {
         for(SubText token : text.findTokens(Pattern.compile("AAA"))) {
             token.surroundWithLiteral("$9","$9");
         }
-        assertEquals("$9AAA$9 test $9AAA$9",text.toString());
+        assertEquals("$9AAA$9 test $9AAA$9",text.toString(false));
     }
 
     /**
@@ -77,21 +77,21 @@ public class MarkupTextTest extends TestCase {
         MarkupText text = new MarkupText("abcdef");
         text.addMarkup(0,3,"$","$");
         text.addMarkup(3,6,"#","#");
-        assertEquals("$abc$#def#",text.toString());
+        assertEquals("$abc$#def#",text.toString(false));
 
         text = new MarkupText("abcdef");
         text.addMarkup(3,6,"#","#");
         text.addMarkup(0,3,"$","$");
-        assertEquals("$abc$#def#",text.toString());
+        assertEquals("$abc$#def#",text.toString(false));
     }
 
     public void testEscape() {
         MarkupText text = new MarkupText("&&&");
-        assertEquals("&amp;&amp;&amp;",text.toString());
+        assertEquals("&amp;&amp;&amp;",text.toString(false));
 
         text.addMarkup(1,"<foo>");
         text.addMarkup(2,"&nbsp;");
-        assertEquals("&amp;<foo>&amp;&nbsp;&amp;",text.toString());
+        assertEquals("&amp;<foo>&amp;&nbsp;&amp;",text.toString(false));
     }
 
     private static final Pattern pattern = Pattern.compile("issue #([0-9]+)");
