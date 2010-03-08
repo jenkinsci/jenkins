@@ -1094,7 +1094,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
 
         R lb = getLastBuild();
         if (lb==null) {
-            listener.getLogger().println("No builds have done yet. Scheduling a new one");
+            listener.getLogger().println(Messages.AbstractProject_NoBuilds());
             return BUILD_NOW;
         }
 
@@ -1509,9 +1509,9 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
         JSONObject data = req.getSubmittedForm();
         List<T> r = new Vector<T>();
         for (Descriptor<T> d : descriptors) {
-            String name = d.getJsonSafeClassName();
-            if (req.getParameter(name) != null) {
-                T instance = d.newInstance(req, data.getJSONObject(name));
+            String safeName = d.getJsonSafeClassName();
+            if (req.getParameter(safeName) != null) {
+                T instance = d.newInstance(req, data.getJSONObject(safeName));
                 r.add(instance);
             }
         }
@@ -1685,4 +1685,3 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
      */
     public static final Permission ABORT = BUILD;
 }
-    
