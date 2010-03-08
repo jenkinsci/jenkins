@@ -45,7 +45,7 @@ public abstract class AbstractMarkupText {
 
     /**
      * Returns the plain text portion of this {@link MarkupText} without
-     * any markup.
+     * any markup, nor any escape.
      */
     public abstract String getText();
 

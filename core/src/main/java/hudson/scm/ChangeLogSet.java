@@ -168,7 +168,7 @@ public abstract class ChangeLogSet<T extends ChangeLogSet.Entry> implements Iter
          * Gets the text fully marked up by {@link ChangeLogAnnotator}.
          */
         public String getMsgAnnotated() {
-            MarkupText markup = new MarkupText(getMsgEscaped());
+            MarkupText markup = new MarkupText(getMsg());
             for (ChangeLogAnnotator a : ChangeLogAnnotator.all())
                 a.annotate(parent.build,this,markup);
 

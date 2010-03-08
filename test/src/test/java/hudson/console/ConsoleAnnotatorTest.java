@@ -10,6 +10,7 @@ import hudson.model.BuildListener;
 import hudson.model.FreeStyleBuild;
 import hudson.model.FreeStyleProject;
 import hudson.model.Run;
+import org.jvnet.hudson.test.Bug;
 import org.jvnet.hudson.test.HudsonTestCase;
 import org.jvnet.hudson.test.SequenceLock;
 import org.jvnet.hudson.test.TestBuilder;
@@ -261,5 +262,28 @@ public class ConsoleAnnotatorTest extends HudsonTestCase {
         public ConsoleAnnotator newInstance(Object context) {
             return null;
         }
+    }
+
+
+    /**
+     * Makes sure '<', '&', are escaped.
+     */
+    @Bug(5952)
+    public void testEscape() throws Exception {
+        FreeStyleProject p = createFreeStyleProject();
+        p.getBuildersList().add(new TestBuilder() {
+            @Override
+            public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
+                listener.getLogger().println("<b>&amp;</b>");
+                return true;
+            }
+        });
+
+        FreeStyleBuild b = buildAndAssertSuccess(p);
+        HtmlPage html = createWebClient().getPage(b, "console");
+        String text = html.asText();
+        System.out.println(text);
+        assertTrue(text.contains("<b>&amp;</b>"));
+        assertTrue(b.getLog().contains("<b>&amp;</b>"));
     }
 }

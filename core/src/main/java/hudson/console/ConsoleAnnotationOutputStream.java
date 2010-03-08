@@ -143,7 +143,7 @@ public class ConsoleAnnotationOutputStream<T> extends LineTransformationOutputSt
         MarkupText mt = new MarkupText(strBuf.toString());
         if (ann!=null)
             ann = ann.annotate(context,mt);
-        out.write(mt.toString());
+        out.write(mt.toString()); // this perform escapes
     }
 
     @Override

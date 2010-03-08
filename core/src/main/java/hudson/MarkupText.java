@@ -203,6 +203,11 @@ public class MarkupText extends AbstractMarkupText {
         }
     }
 
+    /**
+     *
+     * @param text
+     *      Plain text. This shouldn't include any markup nor escape. Those are done later in {@link #toString()}.
+     */
     public MarkupText(String text) {
         this.text = text;
     }
@@ -241,17 +246,22 @@ public class MarkupText extends AbstractMarkupText {
     @Override
     public String toString() {
         if(tags.isEmpty())
-            return text;    // the most common case
+            return Util.escape(text);    // the most common case
 
-        // somewhat inefficient implementation, if there are a lot of mark up and text is large.
         Collections.sort(tags);
+
         StringBuilder buf = new StringBuilder();
-        buf.append(text);
-        int offset = 0;     // remember the # of chars inserted.
+        int copied = 0; // # of chars already copied from text to buf
+
         for (Tag tag : tags) {
-            buf.insert(tag.pos+offset,tag.markup);
-            offset += tag.markup.length();
+            if (copied<tag.pos) {
+                buf.append(Util.escape(text.substring(copied,tag.pos)));
+                copied = tag.pos;
+            }
+            buf.append(tag.markup);
         }
+        if (copied<text.length())
+            buf.append(Util.escape(text.substring(copied,text.length())));
 
         return buf.toString();
     }

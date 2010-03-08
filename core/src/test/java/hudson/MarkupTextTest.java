@@ -85,5 +85,14 @@ public class MarkupTextTest extends TestCase {
         assertEquals("$abc$#def#",text.toString());
     }
 
+    public void testEscape() {
+        MarkupText text = new MarkupText("&&&");
+        assertEquals("&amp;&amp;&amp;",text.toString());
+
+        text.addMarkup(1,"<foo>");
+        text.addMarkup(2,"&nbsp;");
+        assertEquals("&amp;<foo>&amp;&nbsp;&amp;",text.toString());
+    }
+
     private static final Pattern pattern = Pattern.compile("issue #([0-9]+)");
 }
