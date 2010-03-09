@@ -23,6 +23,7 @@
  */
 package hudson.maven.reporters;
 
+import hudson.console.AnnotatedLargeText;
 import hudson.maven.MavenEmbedder;
 import hudson.maven.MavenUtil;
 import hudson.model.AbstractBuild;
@@ -55,6 +56,7 @@ import org.kohsuke.stapler.framework.io.LargeText;
 import javax.servlet.ServletException;
 import java.io.File;
 import java.io.IOException;
+import java.nio.charset.Charset;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -96,8 +98,8 @@ public abstract class MavenAbstractArtifactRecord<T extends AbstractBuild<?,?>> 
         /**
          * Returns the log of this deployment record.
          */
-        public LargeText getLog() {
-            return new LargeText(new File(getBuild().getRootDir(),fileName),true);
+        public AnnotatedLargeText getLog() {
+            return new AnnotatedLargeText<Record>(new File(getBuild().getRootDir(),fileName), Charset.defaultCharset(), true, this);
         }
 
         /**

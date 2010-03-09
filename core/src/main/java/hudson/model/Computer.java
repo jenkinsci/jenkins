@@ -26,6 +26,7 @@ package hudson.model;
 import hudson.EnvVars;
 import hudson.Util;
 import hudson.cli.declarative.CLIMethod;
+import hudson.console.AnnotatedLargeText;
 import hudson.model.Descriptor.FormException;
 import hudson.node_monitors.NodeMonitor;
 import hudson.remoting.Channel;
@@ -983,7 +984,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
      * Handles incremental log.
      */
     public void doProgressiveLog( StaplerRequest req, StaplerResponse rsp) throws IOException {
-        new org.kohsuke.stapler.framework.io.LargeText(getLogFile(),false).doProgressText(req,rsp);
+        new AnnotatedLargeText<Computer>(getLogFile(), Charset.defaultCharset(), false, this).doProgressText(req,rsp);
     }
 
     /**
