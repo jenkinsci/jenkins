@@ -37,8 +37,10 @@ THE SOFTWARE.
     </j:when>
     <!-- output is completed now. -->
     <j:otherwise>
-      <st:getOutput var="output" />
-      <j:whitespace>${it.obtainLog().writeLogTo(0,output)}</j:whitespace>
+      <pre>
+        <st:getOutput var="output" />
+        <j:whitespace>${it.obtainLog().writeLogTo(0,output)}</j:whitespace>
+      </pre>
       <form method="get" action="clearError">
         <f:submit value="${%Clear error to retry}" />
       </form>
