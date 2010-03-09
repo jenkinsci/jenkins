@@ -3,20 +3,31 @@ package hudson.console;
 import com.gargoylesoftware.htmlunit.Page;
 import com.gargoylesoftware.htmlunit.WebRequestSettings;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
+import hudson.FilePath;
 import hudson.Launcher;
 import hudson.MarkupText;
 import hudson.model.AbstractBuild;
+import hudson.model.AbstractProject;
 import hudson.model.BuildListener;
 import hudson.model.FreeStyleBuild;
 import hudson.model.FreeStyleProject;
 import hudson.model.Run;
+import hudson.model.TaskListener;
+import hudson.scm.PollingResult;
+import hudson.scm.PollingResult.Change;
+import hudson.scm.RepositoryBrowser;
+import hudson.scm.SCMDescriptor;
+import hudson.scm.SCMRevisionState;
+import hudson.triggers.SCMTrigger;
 import org.jvnet.hudson.test.Bug;
 import org.jvnet.hudson.test.HudsonTestCase;
 import org.jvnet.hudson.test.SequenceLock;
+import org.jvnet.hudson.test.SingleFileSCM;
 import org.jvnet.hudson.test.TestBuilder;
 import org.jvnet.hudson.test.TestExtension;
 
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
@@ -216,8 +227,8 @@ public class ConsoleAnnotatorTest extends HudsonTestCase {
     /**
      * Places a triple dollar mark at the specified position.
      */
-    public static final class DollarMark extends ConsoleNote<Run> {
-        public ConsoleAnnotator annotate(Run build, MarkupText text, int charPos) {
+    public static final class DollarMark extends ConsoleNote<Object> {
+        public ConsoleAnnotator annotate(Object context, MarkupText text, int charPos) {
             text.addMarkup(charPos,"$$$");
             return null;
         }
@@ -285,5 +296,51 @@ public class ConsoleAnnotatorTest extends HudsonTestCase {
         System.out.println(text);
         assertTrue(text.contains("<b>&amp;</b>"));
         assertTrue(b.getLog().contains("<b>&amp;</b>"));
+    }
+
+
+    /**
+     * Makes sure that annotations in the polling output is handled correctly.
+     */
+    public void testPollingOutput() throws Exception {
+        FreeStyleProject p = createFreeStyleProject();
+        p.setScm(new PollingSCM());
+        SCMTrigger t = new SCMTrigger("@daily");
+        t.start(p,true);
+        p.addTrigger(t);
+
+        buildAndAssertSuccess(p);
+
+        // poll now
+        t.new Runner().run();
+
+        HtmlPage log = createWebClient().getPage(p, "scmPollLog");
+        String text = log.asText();
+        assertTrue(text, text.contains("$$$hello from polling"));
+    }
+
+    public static class PollingSCM extends SingleFileSCM {
+        public PollingSCM() throws UnsupportedEncodingException {
+            super("abc", "def");
+        }
+
+        @Override
+        protected PollingResult compareRemoteRevisionWith(AbstractProject project, Launcher launcher, FilePath workspace, TaskListener listener, SCMRevisionState baseline) throws IOException, InterruptedException {
+            listener.annotate(new DollarMark());
+            listener.getLogger().println("hello from polling");
+            return new PollingResult(Change.NONE);
+        }
+
+        @TestExtension
+        public static final class DescriptorImpl extends SCMDescriptor<PollingSCM> {
+            public DescriptorImpl() {
+                super(PollingSCM.class, RepositoryBrowser.class);
+            }
+
+            @Override
+            public String getDisplayName() {
+                return "Test SCM";
+            }
+        }
     }
 }

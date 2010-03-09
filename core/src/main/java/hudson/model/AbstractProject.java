@@ -1221,6 +1221,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
         // add
         collection.add(item);
         save();
+        updateTransientActions();
     }
 
     protected final synchronized <T extends Describable<T>>
@@ -1230,6 +1231,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
                 // found it
                 collection.remove(i);
                 save();
+                updateTransientActions();
                 return;
             }
         }
