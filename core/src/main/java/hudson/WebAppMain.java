@@ -201,15 +201,13 @@ public final class WebAppMain implements ServletContextListener {
                 // if this works we are all happy
             } catch (TransformerFactoryConfigurationError x) {
                 // no it didn't.
-                Logger logger = Logger.getLogger(WebAppMain.class.getName());
-
-                logger.log(Level.WARNING, "XSLT not configured correctly. Hudson will try to fix this. See http://issues.apache.org/bugzilla/show_bug.cgi?id=40895 for more details",x);
+                LOGGER.log(Level.WARNING, "XSLT not configured correctly. Hudson will try to fix this. See http://issues.apache.org/bugzilla/show_bug.cgi?id=40895 for more details",x);
                 System.setProperty(TransformerFactory.class.getName(),"com.sun.org.apache.xalan.internal.xsltc.trax.TransformerFactoryImpl");
                 try {
                     TransformerFactory.newInstance();
-                    logger.info("XSLT is set to the JAXP RI in JRE");
+                    LOGGER.info("XSLT is set to the JAXP RI in JRE");
                 } catch(TransformerFactoryConfigurationError y) {
-                    logger.log(Level.SEVERE, "Failed to correct the problem.");
+                    LOGGER.log(Level.SEVERE, "Failed to correct the problem.");
                 }
             }
 
