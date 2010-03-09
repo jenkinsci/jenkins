@@ -22,7 +22,6 @@ public class AntTargetAnnotationTest extends HudsonTestCase {
         AntTargetNote.ENABLED = true;
         try {
             HudsonTestCase.WebClient wc = createWebClient();
-            wc.interactiveJavaScriptDebugger();
             HtmlPage c = wc.getPage(b, "console");
             System.out.println(c.asText());
 
