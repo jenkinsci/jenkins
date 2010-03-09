@@ -47,6 +47,7 @@ import hudson.model.AbstractProject.AbstractProjectDescriptor;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.lang.NoSuchMethodException;
 import java.util.Map;
 import java.util.List;
 import java.util.ArrayList;
@@ -335,20 +336,28 @@ public abstract class SCM implements Describable<SCM>, ExtensionPoint {
     protected abstract PollingResult compareRemoteRevisionWith(AbstractProject<?,?> project, Launcher launcher, FilePath workspace, TaskListener listener, SCMRevisionState baseline) throws IOException, InterruptedException;
 
     /**
-     * To work around the HotSpot problem as discussed in HUDSON-5756.
-     * In this way we can reliably catch {@link AbstractMethodError}. 
-     */
-    private PollingResult _compareRemoteRevisionWith(AbstractProject<?, ?> project, Launcher launcher, FilePath workspace, TaskListener listener, SCMRevisionState baseline) throws IOException, InterruptedException {
-        return compareRemoteRevisionWith(project,launcher,workspace,listener,baseline);
-    }
-
-    /**
      * Convenience method for the caller to handle the backward compatibility between pre 1.345 SCMs.
      */
     public final PollingResult poll(AbstractProject<?,?> project, Launcher launcher, FilePath workspace, TaskListener listener, SCMRevisionState baseline) throws IOException, InterruptedException {
-        try {
-            return _compareRemoteRevisionWith(project, launcher, workspace, listener, baseline);
-        } catch (AbstractMethodError e) {// pre 1.345 SCM that doesn't implement new polling methods
+        boolean uses1346OrLaterSCM = false;
+        for (Class c = getClass(); c != SCM.class; c = c.getSuperclass()) {
+            try {
+                c.getDeclaredMethod("compareRemoteRevisionWith", AbstractProject.class, Launcher.class, FilePath.class, TaskListener.class, SCMRevisionState.class);
+                uses1346OrLaterSCM = true;
+                break;
+            } catch (NoSuchMethodException e) { }
+        }
+        
+        if (uses1346OrLaterSCM) {
+            // This is to work around HUDSON-5827 in a general way.
+            SCMRevisionState baseline2 = null;
+            if (baseline!=SCMRevisionState.NONE) {
+                baseline2 = baseline;
+            }
+
+            return compareRemoteRevisionWith(project, launcher, workspace, listener, baseline2);
+        }
+        else {
             return pollChanges(project,launcher,workspace,listener) ? PollingResult.SIGNIFICANT : PollingResult.NO_CHANGES;
         }
     }
