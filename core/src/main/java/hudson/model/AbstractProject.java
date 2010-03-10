@@ -29,6 +29,7 @@ import hudson.FilePath;
 import hudson.Launcher;
 import hudson.Util;
 import hudson.cli.declarative.CLIMethod;
+import hudson.cli.declarative.CLIResolver;
 import hudson.diagnosis.OldDataMonitor;
 import hudson.slaves.WorkspaceList;
 import hudson.model.Cause.LegacyCodeCause;
@@ -66,6 +67,8 @@ import hudson.util.FormValidation;
 import hudson.widgets.BuildHistoryWidget;
 import hudson.widgets.HistoryWidget;
 import net.sf.json.JSONObject;
+import org.kohsuke.args4j.Argument;
+import org.kohsuke.args4j.CmdLineException;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 import org.kohsuke.stapler.export.Exported;
@@ -1686,4 +1689,16 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
      * Permission to abort a build. For now, let's make it the same as {@link #BUILD}
      */
     public static final Permission ABORT = BUILD;
+
+    /**
+     * Used for CLI binding.
+     */
+    @CLIResolver
+    public static AbstractProject resolveForCLI(
+            @Argument(required=true,metaVar="NAME",usage="Job name") String name) throws CmdLineException {
+        AbstractProject item = Hudson.getInstance().getItemByFullName(name, AbstractProject.class);
+        if (item==null)
+            throw new CmdLineException(null,Messages.AbstractItem_NoSuchJobExists(name,AbstractProject.findNearest(name).getFullName()));
+        return item;
+    }
 }
