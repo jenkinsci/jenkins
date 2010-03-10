@@ -1572,10 +1572,13 @@ public final class FilePath implements Serializable {
 
             if (!file.isDirectory()) {
                 FileInputStream in = new FileInputStream(file);
-                int len;
-                while((len=in.read(buf))>=0)
-                    tar.write(buf,0,len);
-                in.close();
+                try {
+                    int len;
+                    while((len=in.read(buf))>=0)
+                        tar.write(buf,0,len);
+                } finally {
+                    in.close();
+                }
             }
 
             tar.closeEntry();
