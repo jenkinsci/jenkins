@@ -76,3 +76,12 @@ HUDSON_HANDLER_MAX="100"
 # Maximum number of idle HTTP worker threads.
 #
 HUDSON_HANDLER_IDLE="20"
+
+## Type:        string
+## Default:     ""
+## ServiceRestart: hudson
+#
+# Pass arbitrary arguments to Hudson.
+# Full option list: java -jar hudson.war --help
+#
+HUDSON_ARGS=""
