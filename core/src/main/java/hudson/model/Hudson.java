@@ -2832,13 +2832,12 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
 
         UUID uuid = UUID.fromString(req.getHeader("Session"));
         rsp.setHeader("Hudson-Duplex",""); // set the header so that the client would know
-        final Authentication auth = getAuthentication();
 
         FullDuplexHttpChannel server;
         if(req.getHeader("Side").equals("download")) {
             duplexChannels.put(uuid,server=new FullDuplexHttpChannel(uuid, !hasPermission(ADMINISTER)) {
                 protected void main(Channel channel) throws IOException, InterruptedException {
-                    channel.setProperty(CliEntryPoint.class.getName(),new CliManagerImpl(auth));
+                    channel.setProperty(CliEntryPoint.class.getName(),new CliManagerImpl());
                 }
             });
             try {

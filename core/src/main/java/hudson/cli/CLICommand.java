@@ -148,15 +148,7 @@ public abstract class CLICommand implements ExtensionPoint, Cloneable {
      */
     public abstract String getShortDescription();
 
-    /**
-     * @deprecated as of 1.350
-     *      Use {@link #main(List, Locale, InputStream, PrintStream, PrintStream, Authentication)}
-     */
     public int main(List<String> args, Locale locale, InputStream stdin, PrintStream stdout, PrintStream stderr) {
-        return main(args,locale,stdin,stdout,stderr,Hudson.ANONYMOUS);
-    }
-
-    public int main(List<String> args, Locale locale, InputStream stdin, PrintStream stdout, PrintStream stderr, Authentication auth) {
         this.stdin = new BufferedInputStream(stdin);
         this.stdout = stdout;
         this.stderr = stderr;
@@ -168,15 +160,12 @@ public abstract class CLICommand implements ExtensionPoint, Cloneable {
         SecurityContext sc = SecurityContextHolder.getContext();
         Authentication old = sc.getAuthentication();
 
-        CliAuthenticator authenticator = null;
-        if (shouldPerformAuthentication(auth)) {
-            authenticator = Hudson.getInstance().getSecurityRealm().createCliAuthenticator(this);
-            new ClassParser().parse(authenticator,p);
-        }
+        CliAuthenticator authenticator = Hudson.getInstance().getSecurityRealm().createCliAuthenticator(this);
+        new ClassParser().parse(authenticator,p);
 
         try {
             p.parseArgument(args.toArray(new String[args.size()]));
-            sc.setAuthentication(authenticator!=null? authenticator.authenticate() : auth); // run the CLI with the right credential
+            sc.setAuthentication(authenticator.authenticate()); // run the CLI with the right credential
             return run();
         } catch (CmdLineException e) {
             stderr.println(e.getMessage());

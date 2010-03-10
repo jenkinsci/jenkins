@@ -43,7 +43,7 @@ public class CliAuthenticationTest extends HudsonTestCase {
             }
         });
 
-        assertEquals(0,new CliManagerImpl(null).main(Arrays.asList("test","--username","abc","--password","abc"),
+        assertEquals(0,new CliManagerImpl().main(Arrays.asList("test","--username","abc","--password","abc"),
                 Locale.ENGLISH, System.in, System.out, System.err));
     }
 

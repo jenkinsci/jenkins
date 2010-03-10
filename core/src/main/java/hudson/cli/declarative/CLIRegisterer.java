@@ -101,7 +101,7 @@ public class CLIRegisterer extends ExtensionFinder {
                         }
 
                         @Override
-                        public int main(List<String> args, Locale locale, InputStream stdin, PrintStream stdout, PrintStream stderr, Authentication a) {
+                        public int main(List<String> args, Locale locale, InputStream stdin, PrintStream stdout, PrintStream stderr) {
                             CmdLineParser parser = new CmdLineParser(null);
                             try {
                                 try {
