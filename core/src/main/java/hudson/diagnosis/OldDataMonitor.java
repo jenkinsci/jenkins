@@ -278,4 +278,8 @@ public class OldDataMonitor extends AdministrativeMonitor {
         updating = false;
         return HttpResponses.forwardToPreviousPage();
     }
+
+    public HttpResponse doIndex(StaplerResponse rsp) throws IOException {
+        return new HttpRedirect("manage");
+    }
 }
