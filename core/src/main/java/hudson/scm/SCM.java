@@ -356,7 +356,7 @@ public abstract class SCM implements Describable<SCM>, ExtensionPoint {
     }
 
     private boolean is1_346OrLater() {
-        for (Class c = getClass(); c != SCM.class; c = c.getSuperclass()) {
+        for (Class<?> c = getClass(); c != SCM.class; c = c.getSuperclass()) {
             try {
                 c.getDeclaredMethod("compareRemoteRevisionWith", AbstractProject.class, Launcher.class, FilePath.class, TaskListener.class, SCMRevisionState.class);
                 return true;
