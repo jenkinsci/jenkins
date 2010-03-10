@@ -1,7 +1,8 @@
 /*
  * The MIT License
  * 
- * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, Daniel Dyer, Erik Ramfelt, Richard Bair, id:cactusman
+ * Copyright (c) 2004-2010, Sun Microsystems, Inc., Kohsuke Kawaguchi,
+ * Daniel Dyer, Erik Ramfelt, Richard Bair, id:cactusman
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -28,6 +29,7 @@ import junit.framework.TestCase;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.Locale;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 
 import hudson.util.StreamTaskListener;
@@ -145,7 +147,8 @@ public class UtilTest extends TestCase {
     public void testSymlink() throws Exception {
         if (Functions.isWindows())     return;
 
-        StreamTaskListener l = new StreamTaskListener(System.out);
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        StreamTaskListener l = new StreamTaskListener(baos);
         File d = Util.createTempDir();
         try {
             new FilePath(new File(d, "a")).touch(0);
@@ -157,6 +160,19 @@ public class UtilTest extends TestCase {
             for( int i=0; i<768; i++)
                 buf.append('0'+(i%10));
             Util.createSymlink(d,buf.toString(),"x", l);
+
+            String log = baos.toString();
+            if (log.length() > 0) {
+                System.err.println("log output: " + log);
+                if (s.contains("ln failed: 78" /*ENAMETOOLONG*/)) {
+                    buf.setLength(0);
+                    // Try again with shorter name for this system
+                    for( int i=0; i<254; i++)
+                        buf.append('0'+(i%10));
+                    Util.createSymlink(d,buf.toString(),"x", l);
+                }
+            }
+
             assertEquals(buf.toString(),Util.resolveSymlink(new File(d,"x"),l));
         } finally {
             Util.deleteRecursive(d);
