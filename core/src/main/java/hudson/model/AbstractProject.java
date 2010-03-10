@@ -24,6 +24,7 @@
 package hudson.model;
 
 import hudson.AbortException;
+import hudson.CopyOnWrite;
 import hudson.FeedAdapter;
 import hudson.FilePath;
 import hudson.Launcher;
@@ -198,7 +199,8 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
      * We don't want to persist them separately, and these actions
      * come and go as configuration change, so it's kept separate.
      */
-    protected transient /*final*/ List<Action> transientActions = new Vector<Action>();
+    @CopyOnWrite
+    protected transient volatile List<Action> transientActions = new Vector<Action>();
 
     private boolean concurrentBuild;
 
@@ -508,16 +510,15 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
     }
 
     protected void updateTransientActions() {
-        synchronized(transientActions) {
-            transientActions.clear();
+        Vector<Action> ta = new Vector<Action>();
 
-            for (JobProperty<? super P> p : properties) {
-                transientActions.addAll(p.getJobActions((P)this));
-            }
+        for (JobProperty<? super P> p : properties)
+            ta.addAll(p.getJobActions((P)this));
 
-            for (TransientProjectActionFactory tpaf : TransientProjectActionFactory.all())
-                transientActions.addAll(Util.fixNull(tpaf.createFor(this))); // be defensive against null
-        }
+        for (TransientProjectActionFactory tpaf : TransientProjectActionFactory.all())
+            ta.addAll(Util.fixNull(tpaf.createFor(this))); // be defensive against null
+
+        transientActions = ta;
     }
 
     /**
