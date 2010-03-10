@@ -1049,7 +1049,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
         SCMRevisionState baseline = build.getAction(SCMRevisionState.class);
         if (baseline==null) {
             try {
-                baseline = safeCalcRevisionsFromBuild(build, launcher, listener);
+                baseline = getScm()._calcRevisionsFromBuild(build, launcher, listener);
             } catch (AbstractMethodError e) {
                 baseline = SCMRevisionState.NONE; // pre-1.345 SCM implementations, which doesn't use the baseline in polling
             }
@@ -1063,7 +1063,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
      * For reasons I don't understand, if I inline this method, AbstractMethodError escapes try/catch block.
      */
     private SCMRevisionState safeCalcRevisionsFromBuild(AbstractBuild build, Launcher launcher, TaskListener listener) throws IOException, InterruptedException {
-        return getScm().calcRevisionsFromBuild(build, launcher, listener);
+        return getScm()._calcRevisionsFromBuild(build, launcher, listener);
     }
 
     /**
