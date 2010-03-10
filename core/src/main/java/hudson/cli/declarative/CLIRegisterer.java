@@ -29,9 +29,13 @@ import hudson.Util;
 import hudson.cli.CLICommand;
 import hudson.cli.CloneableCLICommand;
 import hudson.model.Hudson;
+import hudson.security.CliAuthenticator;
 import org.acegisecurity.Authentication;
+import org.acegisecurity.context.SecurityContext;
+import org.acegisecurity.context.SecurityContextHolder;
 import org.jvnet.hudson.annotation_indexer.Index;
 import org.jvnet.localizer.ResourceBundleHolder;
+import org.kohsuke.args4j.ClassParser;
 import org.kohsuke.args4j.CmdLineParser;
 import org.kohsuke.args4j.CmdLineException;
 
@@ -104,6 +108,8 @@ public class CLIRegisterer extends ExtensionFinder {
                         public int main(List<String> args, Locale locale, InputStream stdin, PrintStream stdout, PrintStream stderr) {
                             CmdLineParser parser = new CmdLineParser(null);
                             try {
+                                SecurityContext sc = SecurityContextHolder.getContext();
+                                Authentication old = sc.getAuthentication();
                                 try {
                                     //  build up the call sequence
                                     Stack<Method> chains = new Stack<Method>();
@@ -127,8 +133,14 @@ public class CLIRegisterer extends ExtensionFinder {
                                     while (!chains.isEmpty())
                                         binders.add(new MethodBinder(chains.pop(),parser));
 
+                                    // authentication
+                                    CliAuthenticator authenticator = Hudson.getInstance().getSecurityRealm().createCliAuthenticator(this);
+                                    new ClassParser().parse(authenticator,parser);
+
                                     // fill up all the binders
                                     parser.parseArgument(args);
+
+                                    sc.setAuthentication(authenticator.authenticate()); // run the CLI with the right credential
 
                                     // resolve them
                                     Object instance = null;
@@ -144,6 +156,8 @@ public class CLIRegisterer extends ExtensionFinder {
                                     if (t instanceof Exception)
                                         throw (Exception) t;
                                     throw e;
+                                } finally {
+                                    sc.setAuthentication(old); // restore
                                 }
                             } catch (CmdLineException e) {
                                 stderr.println(e.getMessage());
