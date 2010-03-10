@@ -339,30 +339,38 @@ public abstract class SCM implements Describable<SCM>, ExtensionPoint {
      * Convenience method for the caller to handle the backward compatibility between pre 1.345 SCMs.
      */
     public final PollingResult poll(AbstractProject<?,?> project, Launcher launcher, FilePath workspace, TaskListener listener, SCMRevisionState baseline) throws IOException, InterruptedException {
-        boolean uses1346OrLaterSCM = false;
-        for (Class c = getClass(); c != SCM.class; c = c.getSuperclass()) {
-            try {
-                c.getDeclaredMethod("compareRemoteRevisionWith", AbstractProject.class, Launcher.class, FilePath.class, TaskListener.class, SCMRevisionState.class);
-                uses1346OrLaterSCM = true;
-                break;
-            } catch (NoSuchMethodException e) { }
-        }
-        
-        if (uses1346OrLaterSCM) {
+        if (is1_346OrLater()) {
             // This is to work around HUDSON-5827 in a general way.
+            // don't let the SCM.compareRemoteRevisionWith(...) see SCMRevisionState that it didn't produce.
             SCMRevisionState baseline2;
             if (baseline!=SCMRevisionState.NONE) {
                 baseline2 = baseline;
-            }
-            else {
+            } else {
                 baseline2 = calcRevisionsFromBuild(project.getLastBuild(), launcher, listener);
             }
 
-            return compareRemoteRevisionWith(project, launcher, workspace, listener, baseline2);
-        }
-        else {
+            return _compareRemoteRevisionWith(project, launcher, workspace, listener, baseline2);
+        } else {
             return pollChanges(project,launcher,workspace,listener) ? PollingResult.SIGNIFICANT : PollingResult.NO_CHANGES;
         }
+    }
+
+    private boolean is1_346OrLater() {
+        for (Class c = getClass(); c != SCM.class; c = c.getSuperclass()) {
+            try {
+                c.getDeclaredMethod("compareRemoteRevisionWith", AbstractProject.class, Launcher.class, FilePath.class, TaskListener.class, SCMRevisionState.class);
+                return true;
+            } catch (NoSuchMethodException e) { }
+        }
+        return false;
+    }
+
+    /**
+     * A pointless function to work around what appears to be a HotSpot problem. See HUDSON-5756 and bug 6933067
+     * on BugParade for more details.
+     */
+    private PollingResult _compareRemoteRevisionWith(AbstractProject<?, ?> project, Launcher launcher, FilePath workspace, TaskListener listener, SCMRevisionState baseline2) throws IOException, InterruptedException {
+        return compareRemoteRevisionWith(project, launcher, workspace, listener, baseline2);
     }
 
     /**
