@@ -1,7 +1,7 @@
 <!--
 The MIT License
 
-Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, id:cactusman
+Copyright (c) 2004-2010, Sun Microsystems, Inc., Kohsuke Kawaguchi, id:cactusman
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -30,7 +30,7 @@ THE SOFTWARE.
   <l:layout norefresh="true" permission="${permission}">
     <st:include page="sidepanel.jelly" />
     <l:main-panel>
-      <j:getStatic var="jobs" className="hudson.model.Items" field="LIST" />
+      <j:invokeStatic var="jobs" className="hudson.model.Items" method="all" />
       <n:form nameTitle="${%Job name}" copyTitle="${%Copy existing job}" copyNames="${app.topLevelItemNames}"
               descriptors="${jobs}" checkUrl="checkJobName" xmlns:n="/lib/hudson/newFromList" />
     </l:main-panel>

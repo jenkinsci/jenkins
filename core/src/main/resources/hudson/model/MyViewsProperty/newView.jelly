@@ -1,7 +1,7 @@
 <!--
 The MIT License
 
-Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, id:cactusman, Yahoo! Inc., Tom Huybrechts
+Copyright (c) 2004-2010, Sun Microsystems, Inc., Kohsuke Kawaguchi, id:cactusman, Yahoo! Inc., Tom Huybrechts
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -41,7 +41,7 @@ THE SOFTWARE.
           </script>
         </f:entry>
 
-        <j:getStatic var="views" className="hudson.model.View" field="LIST" />
+        <j:invokeStatic var="views" className="hudson.model.View" method="all" />
         <j:forEach var="d" items="${views}">
           <j:if test="${d.isInstantiable()}">
             <f:block>

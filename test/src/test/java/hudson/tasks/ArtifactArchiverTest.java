@@ -148,7 +148,7 @@ public class ArtifactArchiverTest extends HudsonTestCase {
         assertEquals("file", kids[0].getName());
     }
 
-    private static class CreateArtifact extends TestBuilder {
+    static class CreateArtifact extends TestBuilder {
         public boolean perform(AbstractBuild<?,?> build, Launcher launcher, BuildListener listener) throws IOException, InterruptedException {
             build.getWorkspace().child("f").write("content", "UTF-8");
             return true;

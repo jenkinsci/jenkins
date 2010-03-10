@@ -48,6 +48,7 @@ public class HudsonExceptionNote extends ConsoleNote<Object> {
                 if (idx>=0) {
                     int s = idx + CAUSED_BY.length();
                     int e = line.indexOf(':', s);
+                    if (e<0)    e = line.length();
                     text.addHyperlink(s,e,annotateClassName(line.substring(s,e)));
                     return this;
                 }

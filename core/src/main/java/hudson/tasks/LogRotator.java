@@ -57,10 +57,21 @@ public class LogRotator implements Describable<LogRotator> {
      * If not -1, only this number of build logs are kept.
      */
     private final int numToKeep;
-    
+
+    /**
+     * If not -1, artifacts are only kept up to this days.
+     */
+    private final int artifactDaysToKeep;
+
+    /**
+     * If not -1, only this number of builds have their artifacts kept.
+     */
+    private final int artifactNumToKeep;
+
     @DataBoundConstructor
-    public LogRotator (String logrotate_days, String logrotate_nums) {
-        this (parse(logrotate_days),parse(logrotate_nums));     	
+    public LogRotator (String logrotate_days, String logrotate_nums, String logrotate_artifact_days, String logrotate_artifact_nums) {
+        this (parse(logrotate_days),parse(logrotate_nums),
+              parse(logrotate_artifact_days),parse(logrotate_artifact_nums));     	
     }
 
     public static int parse(String p) {
@@ -72,10 +83,18 @@ public class LogRotator implements Describable<LogRotator> {
         }
     }
 
-    
+    /**
+     * @deprecated since 1.350
+     */
     public LogRotator(int daysToKeep, int numToKeep) {
+        this(daysToKeep, numToKeep, -1, -1);
+    }
+    
+    public LogRotator(int daysToKeep, int numToKeep, int artifactDaysToKeep, int artifactNumToKeep) {
         this.daysToKeep = daysToKeep;
         this.numToKeep = numToKeep;
+        this.artifactDaysToKeep = artifactDaysToKeep;
+        this.artifactNumToKeep = artifactNumToKeep;
     }
 
     public void perform(Job<?,?> job) throws IOException, InterruptedException {
@@ -129,6 +148,52 @@ public class LogRotator implements Describable<LogRotator> {
                 r.delete();
             }
         }
+
+        if(artifactNumToKeep!=-1) {
+            Run[] builds = job.getBuilds().toArray(new Run[0]);
+            for( int i=artifactNumToKeep; i<builds.length; i++ ) {
+                Run r = builds[i];
+                if (r.isKeepLog()) {
+                    LOGGER.log(FINER,r.getFullDisplayName()+" is not purged of artifacts because it's marked as a keeper");
+                    continue;
+                }
+                if (r==lsb) {
+                    LOGGER.log(FINER,r.getFullDisplayName()+" is not purged of artifacts because it's the last successful build");
+                    continue;
+                }
+                if (r==lstb) {
+                    LOGGER.log(FINER,r.getFullDisplayName()+" is not purged of artifacts because it's the last stable build");
+                    continue;
+                }
+                r.deleteArtifacts();
+            }
+        }
+
+        if(artifactDaysToKeep!=-1) {
+            Calendar cal = new GregorianCalendar();
+            cal.add(Calendar.DAY_OF_YEAR,-artifactDaysToKeep);
+            // copy it to the array because we'll be deleting builds as we go.
+            for( Run r : job.getBuilds().toArray(new Run[0]) ) {
+                if (r.isKeepLog()) {
+                    LOGGER.log(FINER,r.getFullDisplayName()+" is not purged of artifacts because it's marked as a keeper");
+                    continue;
+                }
+                if (r==lsb) {
+                    LOGGER.log(FINER,r.getFullDisplayName()+" is not purged of artifacts because it's the last successful build");
+                    continue;
+                }
+                if (r==lstb) {
+                    LOGGER.log(FINER,r.getFullDisplayName()+" is not purged of artifacts because it's the last stable build");
+                    continue;
+                }
+                if (!r.getTimestamp().before(cal)) {
+                    LOGGER.log(FINER,r.getFullDisplayName()+" is not purged of artifacts because it's still new");
+                    continue;
+                }
+                r.deleteArtifacts();
+            }
+        }
+
     }
 
     public int getDaysToKeep() {
@@ -139,6 +204,14 @@ public class LogRotator implements Describable<LogRotator> {
         return numToKeep;
     }
 
+    public int getArtifactDaysToKeep() {
+        return artifactDaysToKeep;
+    }
+
+    public int getArtifactNumToKeep() {
+        return artifactNumToKeep;
+    }
+
     public String getDaysToKeepStr() {
         if(daysToKeep==-1)  return "";
         else                return String.valueOf(daysToKeep);
@@ -147,6 +220,16 @@ public class LogRotator implements Describable<LogRotator> {
     public String getNumToKeepStr() {
         if(numToKeep==-1)   return "";
         else                return String.valueOf(numToKeep);
+    }
+
+    public String getArtifactDaysToKeepStr() {
+        if(artifactDaysToKeep==-1)  return "";
+        else                        return String.valueOf(artifactDaysToKeep);
+    }
+
+    public String getArtifactNumToKeepStr() {
+        if(artifactNumToKeep==-1)   return "";
+        else                        return String.valueOf(artifactNumToKeep);
     }
 
     public LRDescriptor getDescriptor() {

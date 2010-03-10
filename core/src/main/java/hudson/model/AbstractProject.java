@@ -24,11 +24,13 @@
 package hudson.model;
 
 import hudson.AbortException;
+import hudson.CopyOnWrite;
 import hudson.FeedAdapter;
 import hudson.FilePath;
 import hudson.Launcher;
 import hudson.Util;
 import hudson.cli.declarative.CLIMethod;
+import hudson.cli.declarative.CLIResolver;
 import hudson.diagnosis.OldDataMonitor;
 import hudson.slaves.WorkspaceList;
 import hudson.model.Cause.LegacyCodeCause;
@@ -66,6 +68,8 @@ import hudson.util.FormValidation;
 import hudson.widgets.BuildHistoryWidget;
 import hudson.widgets.HistoryWidget;
 import net.sf.json.JSONObject;
+import org.kohsuke.args4j.Argument;
+import org.kohsuke.args4j.CmdLineException;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 import org.kohsuke.stapler.export.Exported;
@@ -195,7 +199,8 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
      * We don't want to persist them separately, and these actions
      * come and go as configuration change, so it's kept separate.
      */
-    protected transient /*final*/ List<Action> transientActions = new Vector<Action>();
+    @CopyOnWrite
+    protected transient volatile List<Action> transientActions = new Vector<Action>();
 
     private boolean concurrentBuild;
 
@@ -505,16 +510,15 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
     }
 
     protected void updateTransientActions() {
-        synchronized(transientActions) {
-            transientActions.clear();
+        Vector<Action> ta = new Vector<Action>();
 
-            for (JobProperty<? super P> p : properties) {
-                transientActions.addAll(p.getJobActions((P)this));
-            }
+        for (JobProperty<? super P> p : properties)
+            ta.addAll(p.getJobActions((P)this));
 
-            for (TransientProjectActionFactory tpaf : TransientProjectActionFactory.all())
-                transientActions.addAll(Util.fixNull(tpaf.createFor(this))); // be defensive against null
-        }
+        for (TransientProjectActionFactory tpaf : TransientProjectActionFactory.all())
+            ta.addAll(Util.fixNull(tpaf.createFor(this))); // be defensive against null
+
+        transientActions = ta;
     }
 
     /**
@@ -1094,7 +1098,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
 
         R lb = getLastBuild();
         if (lb==null) {
-            listener.getLogger().println("No builds have done yet. Scheduling a new one");
+            listener.getLogger().println(Messages.AbstractProject_NoBuilds());
             return BUILD_NOW;
         }
 
@@ -1221,6 +1225,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
         // add
         collection.add(item);
         save();
+        updateTransientActions();
     }
 
     protected final synchronized <T extends Describable<T>>
@@ -1230,6 +1235,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
                 // found it
                 collection.remove(i);
                 save();
+                updateTransientActions();
                 return;
             }
         }
@@ -1509,9 +1515,9 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
         JSONObject data = req.getSubmittedForm();
         List<T> r = new Vector<T>();
         for (Descriptor<T> d : descriptors) {
-            String name = d.getJsonSafeClassName();
-            if (req.getParameter(name) != null) {
-                T instance = d.newInstance(req, data.getJSONObject(name));
+            String safeName = d.getJsonSafeClassName();
+            if (req.getParameter(safeName) != null) {
+                T instance = d.newInstance(req, data.getJSONObject(safeName));
                 r.add(instance);
             }
         }
@@ -1684,5 +1690,16 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
      * Permission to abort a build. For now, let's make it the same as {@link #BUILD}
      */
     public static final Permission ABORT = BUILD;
+
+    /**
+     * Used for CLI binding.
+     */
+    @CLIResolver
+    public static AbstractProject resolveForCLI(
+            @Argument(required=true,metaVar="NAME",usage="Job name") String name) throws CmdLineException {
+        AbstractProject item = Hudson.getInstance().getItemByFullName(name, AbstractProject.class);
+        if (item==null)
+            throw new CmdLineException(null,Messages.AbstractItem_NoSuchJobExists(name,AbstractProject.findNearest(name).getFullName()));
+        return item;
+    }
 }
-    

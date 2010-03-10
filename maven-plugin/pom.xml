@@ -35,7 +35,8 @@ THE SOFTWARE.
   <name>Maven Integration plugin</name>
   <description>This plug-in provides deep integration of Hudson and Maven. This functionality used to be part of the Hudson core.
   Now it is a plug-in that is installed by default, but can be disabled.</description>
-
+  <url>http://wiki.hudson-ci.org/display/HUDSON/Building+a+maven2+project</url>
+    
     <dependencies>
         <dependency>
             <groupId>org.jvnet.hudson.main</groupId>

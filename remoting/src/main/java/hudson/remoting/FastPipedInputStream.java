@@ -22,6 +22,7 @@ package hudson.remoting;
 
 import java.io.InputStream;
 import java.io.IOException;
+import java.lang.ref.WeakReference;
 
 /**
  * This class is equivalent to <code>java.io.PipedInputStream</code>. In the
@@ -36,14 +37,14 @@ import java.io.IOException;
  */
 public class FastPipedInputStream extends InputStream {
 
-    byte[] buffer;
+    final byte[] buffer;
     /**
      * Once closed, this is set to the stack trace of who closed it.
      */
     ClosedBy closed = null;
     int readLaps = 0;
     int readPosition = 0;
-    FastPipedOutputStream source;
+    WeakReference<FastPipedOutputStream> source;
     int writeLaps = 0;
     int writePosition = 0;
 
@@ -73,6 +74,12 @@ public class FastPipedInputStream extends InputStream {
             connect(source);
         }
         this.buffer = new byte[bufferSize];
+    }
+
+    private FastPipedOutputStream source() throws IOException {
+        FastPipedOutputStream s = source.get();
+        if (s==null)    throw new IOException("Writer side has already been abandoned");
+        return s;
     }
 
     @Override
@@ -113,8 +120,8 @@ public class FastPipedInputStream extends InputStream {
         if(this.source != null) {
             throw new IOException("Pipe already connected");
         }
-        this.source = source;
-        source.sink = this;
+        this.source = new WeakReference<FastPipedOutputStream>(source);
+        source.sink = new WeakReference<FastPipedInputStream>(this);
     }
 
     @Override
@@ -157,9 +164,11 @@ public class FastPipedInputStream extends InputStream {
                     if(closed!=null) {
                         return -1;
                     }
+                    source(); // make sure the sink is still trying to read, or else fail the write.
+
                     // Wait for any writer to put something in the circular buffer.
                     try {
-                        buffer.wait();
+                        buffer.wait(FastPipedOutputStream.TIMEOUT);
                     } catch (InterruptedException e) {
                         throw new IOException(e.getMessage());
                     }
@@ -175,8 +184,7 @@ public class FastPipedInputStream extends InputStream {
                 System.arraycopy(buffer, readPosition, b, off, amount);
                 readPosition += amount;
 
-                if(readPosition == buffer.length) // A lap was completed, so go back.
-                {
+                if(readPosition == buffer.length) {// A lap was completed, so go back.
                     readPosition = 0;
                     ++readLaps;
                 }

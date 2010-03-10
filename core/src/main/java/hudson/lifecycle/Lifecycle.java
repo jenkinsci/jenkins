@@ -147,7 +147,8 @@ public abstract class Lifecycle implements ExtensionPoint {
      */
     public boolean canRewriteHudsonWar() {
         // if we don't know where hudson.war is, it's impossible to replace.
-        return getHudsonWar()!=null;
+        File f = getHudsonWar();
+        return f!=null && f.canWrite();
     }
 
     /**

@@ -96,7 +96,8 @@ public class RedeployPublisher extends Recorder {
 
         listener.getLogger().println("Deploying artifacts to "+url);
         try {
-            MavenEmbedder embedder = MavenUtil.createEmbedder(listener,build.getProject(),null);
+            
+            MavenEmbedder embedder = MavenUtil.createEmbedder(listener,build);
             ArtifactRepositoryLayout layout =
                 (ArtifactRepositoryLayout) embedder.getContainer().lookup( ArtifactRepositoryLayout.ROLE,"default");
             ArtifactRepositoryFactory factory =

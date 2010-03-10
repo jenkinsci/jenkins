@@ -1,18 +1,18 @@
 /*
  * The MIT License
- * 
+ *
  * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, Seiji Sogabe
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -26,12 +26,14 @@ package hudson.maven.reporters;
 import hudson.FilePath;
 import hudson.Util;
 import hudson.Extension;
+import hudson.maven.MavenBuild;
 import hudson.maven.MavenBuildProxy;
 import hudson.maven.MavenModule;
 import hudson.maven.MavenModuleSet;
 import hudson.maven.MavenReporter;
 import hudson.maven.MavenReporterDescriptor;
 import hudson.maven.MojoInfo;
+import hudson.maven.MavenBuildProxy.BuildCallable;
 import hudson.model.AbstractItem;
 import hudson.model.Action;
 import hudson.model.BuildListener;
@@ -48,9 +50,14 @@ import java.util.Collections;
 
 /**
  * Watches out for the execution of maven-site-plugin and records its output.
+ * Simple projects with one POM will find the site directly beneath {@code site}.
+ * For multi module projects the project whose pom is referenced in the configuration (i.e. the {@link MavenBuild#getParentBuild()} will be recorded to
+ * the {@code site}, module projects' sites will be stored beneath {@code site/${moduleProject.artifactId}}.
+ *
  * @author Kohsuke Kawaguchi
  */
 public class MavenSiteArchiver extends MavenReporter {
+
     public boolean postExecute(MavenBuildProxy build, MavenProject pom, MojoInfo mojo, BuildListener listener, Throwable error) throws InterruptedException, IOException {
         if(!mojo.is("org.apache.maven.plugins","maven-site-plugin","site"))
             return true;
@@ -65,13 +72,12 @@ public class MavenSiteArchiver extends MavenReporter {
         }
 
         if(destDir.exists()) {
-            // be defensive. I suspect there's some interaction with this and multi-module builds
-            FilePath target;
-            // store at MavenModuleSet level.
-            target = build.getModuleSetRootDir().child("site");
-
+            // try to get the storage location if this is a multi-module project.
+            final String moduleName = getModuleName(build, pom);
+            // store at MavenModuleSet level and moduleName
+            final FilePath target = build.getModuleSetRootDir().child("site").child(moduleName);
             try {
-                listener.getLogger().println("[HUDSON] Archiving site");
+                listener.getLogger().printf("[HUDSON] Archiving site from %s to %s\n", destDir, target);
                 new FilePath(destDir).copyRecursiveTo("**/*",target);
             } catch (IOException e) {
                 Util.displayIOException(e,listener);
@@ -83,6 +89,36 @@ public class MavenSiteArchiver extends MavenReporter {
         }
 
         return true;
+    }
+
+    /**
+     * In multi module builds pomBaseDir of the parent project is the same as parent build module root.
+     *
+     * @param build
+     * @param pom
+     *
+     * @return the relative path component to copy sites of multi module builds.
+     * @throws IOException
+     */
+    private String getModuleName(MavenBuildProxy build, MavenProject pom) throws IOException {
+        final FilePath moduleRoot;
+        try {
+            moduleRoot = build.execute(new BuildCallable<FilePath, IOException>() {
+                //@Override
+                public FilePath call(MavenBuild mavenBuild) throws IOException, InterruptedException {
+                    return mavenBuild.getParentBuild().getModuleRoot();
+                }
+            });
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
+        final File pomBaseDir = pom.getBasedir();
+        final File remoteWorkspaceDir = new File(moduleRoot.getRemote());
+        if (pomBaseDir.equals(remoteWorkspaceDir)) {
+            return "";
+        } else {
+            return pom.getArtifactId();
+        }
     }
 
 

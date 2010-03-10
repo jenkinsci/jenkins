@@ -23,12 +23,14 @@
  */
 package hudson.model;
 
+import hudson.console.AnnotatedLargeText;
 import hudson.util.StreamTaskListener;
 
 import java.io.File;
 import java.io.IOException;
 import java.io.Reader;
 import java.lang.ref.WeakReference;
+import java.nio.charset.Charset;
 import org.kohsuke.stapler.framework.io.LargeText;
 import org.kohsuke.stapler.framework.io.ByteBuffer;
 
@@ -46,9 +48,15 @@ import org.kohsuke.stapler.framework.io.ByteBuffer;
  */
 public abstract class TaskThread extends Thread {
     /**
-     * Represents the output from this task thread.
+     * @deprecated as of Hudson 1.350
+     *      Use {@link #log}. It's the same object, in a better type.
      */
     private final LargeText text;
+
+    /**
+     * Represents the output from this task thread.
+     */
+    private final AnnotatedLargeText<TaskThread> log;
 
     /**
      * Represents the interface to produce output.
@@ -70,7 +78,7 @@ public abstract class TaskThread extends Thread {
         //if you want it in the thread's name.
         super(owner.getDisplayName());
         this.owner = owner;
-        this.text = output.text;
+        this.text = this.log = output.text;
         this.listener = output.listener;
     }
 
@@ -86,7 +94,7 @@ public abstract class TaskThread extends Thread {
      */
     protected final void associateWith(TaskAction action) {
         action.workerThread = this;
-        action.log = new WeakReference<LargeText>(text);
+        action.log = new WeakReference<AnnotatedLargeText>(log);
     }
 
     /**
@@ -126,7 +134,7 @@ public abstract class TaskThread extends Thread {
             listener = null;
             isRunning =false;
         }
-        text.markAsComplete();
+        log.markAsComplete();
     }
 
     /**
@@ -138,38 +146,54 @@ public abstract class TaskThread extends Thread {
     protected abstract void perform(TaskListener listener) throws Exception;
 
     /**
-     * Tuple of {@link TaskListener} and {@link LargeText}, representing
+     * Tuple of {@link TaskListener} and {@link AnnotatedLargeText}, representing
      * the interface for producing output and how to retrieve it later.
      */
     public static final class ListenerAndText {
         final TaskListener listener;
-        final LargeText text;
+        final AnnotatedLargeText<TaskThread> text;
 
-        public ListenerAndText(TaskListener listener, LargeText text) {
+        public ListenerAndText(TaskListener listener, AnnotatedLargeText<TaskThread> text) {
             this.listener = listener;
             this.text = text;
         }
 
         /**
-         * Creates one that's backed by memory.
+         * @deprecated as of Hudson 1.350
+         *      Use {@link #forMemory(TaskThread)} and pass in the calling {@link TaskAction}
          */
         public static ListenerAndText forMemory() {
+            return forMemory(null);
+        }
+
+        /**
+         * @deprecated as of Hudson 1.350
+         *      Use {@link #forFile(File, TaskThread)} and pass in the calling {@link TaskAction}
+         */
+        public static ListenerAndText forFile(File f) throws IOException {
+            return forFile(f,null);
+        }
+
+        /**
+         * Creates one that's backed by memory.
+         */
+        public static ListenerAndText forMemory(TaskThread context) {
             // StringWriter is synchronized
             ByteBuffer log = new ByteBuffer();
 
             return new ListenerAndText(
                 new StreamTaskListener(log),
-                new LargeText(log,false)
+                new AnnotatedLargeText<TaskThread>(log,Charset.defaultCharset(),false,context)
             );
         }
 
         /**
          * Creates one that's backed by a file. 
          */
-        public static ListenerAndText forFile(File f) throws IOException {
+        public static ListenerAndText forFile(File f, TaskThread context) throws IOException {
             return new ListenerAndText(
                 new StreamTaskListener(f),
-                new LargeText(f,false)
+                new AnnotatedLargeText<TaskThread>(f,Charset.defaultCharset(),false,context)
             );
         }
     }

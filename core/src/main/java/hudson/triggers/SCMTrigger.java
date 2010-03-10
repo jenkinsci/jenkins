@@ -26,6 +26,7 @@ package hudson.triggers;
 import antlr.ANTLRException;
 import hudson.Util;
 import hudson.Extension;
+import hudson.console.AnnotatedLargeText;
 import hudson.model.AbstractProject;
 import hudson.model.Action;
 import hudson.model.Cause;
@@ -37,12 +38,14 @@ import hudson.model.AdministrativeMonitor;
 import hudson.util.StreamTaskListener;
 import hudson.util.TimeUnit2;
 import hudson.util.SequentialExecutionQueue;
+import org.apache.commons.jelly.XMLOutput;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.DataBoundConstructor;
 
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;
+import java.nio.charset.Charset;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
@@ -263,6 +266,14 @@ public class SCMTrigger extends Trigger<SCMedItem> {
 
         public String getLog() throws IOException {
             return Util.loadFile(getLogFile());
+        }
+
+        /**
+         * Writes the annotated log to the given output.
+         * @since 1.350
+         */
+        public void writeLogTo(XMLOutput out) throws IOException {
+            new AnnotatedLargeText<SCMAction>(getLogFile(),Charset.defaultCharset(),true,this).writeLogTo(0,out.asWriter());
         }
     }
 

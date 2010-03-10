@@ -32,6 +32,11 @@ import hudson.ExtensionPoint.LegacyInstancesAreScopedToHudson;
 import hudson.model.Hudson;
 import hudson.remoting.Callable;
 import hudson.remoting.Channel;
+import hudson.security.CliAuthenticator;
+import org.acegisecurity.Authentication;
+import org.acegisecurity.context.SecurityContext;
+import org.acegisecurity.context.SecurityContextHolder;
+import org.kohsuke.args4j.ClassParser;
 import org.kohsuke.args4j.CmdLineException;
 import org.kohsuke.args4j.CmdLineParser;
 
@@ -128,6 +133,7 @@ public abstract class CLICommand implements ExtensionPoint, Cloneable {
     public String getName() {
         String name = getClass().getName();
         name = name.substring(name.lastIndexOf('.')+1); // short name
+        name = name.substring(name.lastIndexOf('$')+1);
         if(name.endsWith("Command"))
             name = name.substring(0,name.length()-7); // trim off the command
 
@@ -142,15 +148,35 @@ public abstract class CLICommand implements ExtensionPoint, Cloneable {
      */
     public abstract String getShortDescription();
 
+    /**
+     * @deprecated as of 1.350
+     *      Use {@link #main(List, Locale, InputStream, PrintStream, PrintStream, Authentication)}
+     */
     public int main(List<String> args, Locale locale, InputStream stdin, PrintStream stdout, PrintStream stderr) {
+        return main(args,locale,stdin,stdout,stderr,Hudson.ANONYMOUS);
+    }
+
+    public int main(List<String> args, Locale locale, InputStream stdin, PrintStream stdout, PrintStream stderr, Authentication auth) {
         this.stdin = new BufferedInputStream(stdin);
         this.stdout = stdout;
         this.stderr = stderr;
         this.locale = locale;
         this.channel = Channel.current();
         CmdLineParser p = new CmdLineParser(this);
+
+        // add options from the authenticator
+        SecurityContext sc = SecurityContextHolder.getContext();
+        Authentication old = sc.getAuthentication();
+
+        CliAuthenticator authenticator = null;
+        if (shouldPerformAuthentication(auth)) {
+            authenticator = Hudson.getInstance().getSecurityRealm().createCliAuthenticator(this);
+            new ClassParser().parse(authenticator,p);
+        }
+
         try {
             p.parseArgument(args.toArray(new String[args.size()]));
+            sc.setAuthentication(authenticator!=null? authenticator.authenticate() : auth); // run the CLI with the right credential
             return run();
         } catch (CmdLineException e) {
             stderr.println(e.getMessage());
@@ -163,7 +189,29 @@ public abstract class CLICommand implements ExtensionPoint, Cloneable {
         } catch (Exception e) {
             e.printStackTrace(stderr);
             return -1;
+        } finally {
+            sc.setAuthentication(old); // restore
         }
+    }
+
+    /**
+     * Determines if the user authentication is attempted through CLI before running this command.
+     *
+     * <p>
+     * If your command doesn't require any authentication whatsoever, and if you don't even want to let the user
+     * authenticate, then override this method to always return false &mdash; doing so will result in all the commands
+     * running as anonymous user credential.
+     *
+     * <p>
+     * Note that even if this method returns true, the user can still skip aut 
+     *
+     * @param auth
+     *      Always non-null.
+     *      If the underlying transport had already performed authentication, this object is something other than
+     *      {@link Hudson#ANONYMOUS}.
+     */
+    protected boolean shouldPerformAuthentication(Authentication auth) {
+        return auth==Hudson.ANONYMOUS;
     }
 
     /**

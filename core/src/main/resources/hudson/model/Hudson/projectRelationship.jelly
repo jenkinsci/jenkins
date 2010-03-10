@@ -70,7 +70,7 @@ THE SOFTWARE.
                 <j:set var="relation" value="${jl.getRelationship(jr)}"/>
                 <j:if test="${empty(relation)}">
                   <tr><td colspan="3" class="error">
-                    There are no fingerprint records that connect these two projects.
+                    ${%There are no fingerprint records that connect these two projects.}
                   </td></tr>
                 </j:if>
                 <j:forEach var="e" items="${relation}">

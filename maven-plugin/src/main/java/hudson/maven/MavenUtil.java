@@ -28,6 +28,7 @@ import hudson.Util;
 import hudson.model.BuildListener;
 import hudson.model.TaskListener;
 import hudson.model.AbstractProject;
+import hudson.model.AbstractBuild;
 import hudson.model.Hudson;
 import hudson.tasks.Maven.MavenInstallation;
 import hudson.tasks.Maven.ProjectWithMaven;
@@ -74,6 +75,44 @@ public class MavenUtil {
             m = ((ProjectWithMaven) project).inferMavenInstallation().forNode(Hudson.getInstance(),listener);
 
         return createEmbedder(listener,m!=null?m.getHomeDir():null,profiles);
+    }
+
+    /**
+     * This version tries to infer mavenHome and other options by looking at a build.
+     *
+     * @see #createEmbedder(TaskListener, File, String)
+     */
+    public static MavenEmbedder createEmbedder(TaskListener listener, AbstractBuild<?,?> build) throws MavenEmbedderException, IOException, InterruptedException {
+        MavenInstallation m=null;
+        File settingsLoc = null;
+        String profiles = null;
+        Properties systemProperties = null;
+        String privateRepository = null;
+        
+        AbstractProject project = build.getProject();
+        
+        if (project instanceof ProjectWithMaven) {
+            m = ((ProjectWithMaven) project).inferMavenInstallation().forNode(Hudson.getInstance(),listener);
+        }
+        if (project instanceof MavenModuleSet) {
+            String altSet = ((MavenModuleSet) project).getAlternateSettings();
+            settingsLoc = (altSet == null) ? null 
+                : new File(build.getWorkspace().child(altSet).getRemote());
+
+            if (((MavenModuleSet) project).usesPrivateRepository()) {
+                privateRepository = build.getWorkspace().child(".repository").getRemote();
+            }
+
+            profiles = ((MavenModuleSet) project).getProfiles();
+            systemProperties = ((MavenModuleSet) project).getMavenProperties();
+        }
+        
+        return createEmbedder(listener,
+                              m!=null?m.getHomeDir():null,
+                              profiles,
+                              systemProperties,
+                              privateRepository,
+                              settingsLoc);
     }
 
     public static MavenEmbedder createEmbedder(TaskListener listener, File mavenHome, String profiles) throws MavenEmbedderException, IOException {

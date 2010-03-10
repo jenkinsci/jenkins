@@ -48,10 +48,14 @@ public class MavenProjectTest extends HudsonTestCase {
     }
 
     private MavenModuleSet createSimpleProject() throws Exception {
+        return createProject("/simple-projects.zip");
+    }
+
+    private MavenModuleSet createProject(final String scmResource) throws IOException, Exception {
         MavenModuleSet project = createMavenProject();
         MavenInstallation mi = configureDefaultMaven();
         project.setScm(new ExtractResourceSCM(getClass().getResource(
-                "/simple-projects.zip")));
+                scmResource)));
         project.setMaven(mi.getName());
         return project;
     }
@@ -83,5 +87,21 @@ public class MavenProjectTest extends HudsonTestCase {
         } catch (FailingHttpStatusCodeException e) {
             assertEquals(404,e.getStatusCode());
         }
+    }
+
+    /**
+     * Check if the generated site is linked correctly for multi module projects.
+     */
+    public void testMultiModuleSiteBuild() throws Exception {
+        MavenModuleSet project = createProject("maven-multimodule-site.zip");
+        project.setGoals("site");
+
+        buildAndAssertSuccess(project);
+
+        // this should succeed
+        HudsonTestCase.WebClient wc = new WebClient();
+        wc.getPage(project, "site");
+        wc.getPage(project, "site/core");
+        wc.getPage(project, "site/client");
     }
 }

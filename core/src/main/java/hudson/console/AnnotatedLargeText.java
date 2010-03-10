@@ -31,6 +31,7 @@ import hudson.util.TimeUnit2;
 import org.apache.commons.io.output.ByteArrayOutputStream;
 import org.kohsuke.stapler.Stapler;
 import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.framework.io.ByteBuffer;
 import org.kohsuke.stapler.framework.io.LargeText;
 
 import javax.crypto.Cipher;
@@ -67,12 +68,15 @@ import static java.lang.Math.abs;
  * @since 1.349
  */
 public class AnnotatedLargeText<T> extends LargeText {
-    private final File logFile;
     private T context;
 
     public AnnotatedLargeText(File file, Charset charset, boolean completed, T context) {
         super(file, charset, completed);
-        this.logFile = file;
+        this.context = context;
+    }
+
+    public AnnotatedLargeText(ByteBuffer memory, Charset charset, boolean completed, T context) {
+        super(memory, charset, completed);
         this.context = context;
     }
 

@@ -1154,11 +1154,10 @@ public abstract class HudsonTestCase extends TestCase implements RootAction {
 //            setJavaScriptEnabled(false);
             setPageCreator(HudsonPageCreator.INSTANCE);
             clients.add(new WeakReference<WebClient>(this));
-            // make ajax calls synchronous for predictable behaviors that simplify debugging
+            // make ajax calls run as post-action for predictable behaviors that simplify debugging
             setAjaxController(new AjaxController() {
-                @Override
                 public boolean processSynchron(HtmlPage page, WebRequestSettings settings, boolean async) {
-                    return true;
+                    return false;
                 }
             });
 

@@ -22,6 +22,7 @@ package hudson.remoting;
 
 import java.io.OutputStream;
 import java.io.IOException;
+import java.lang.ref.WeakReference;
 
 /**
  * This class is equivalent to <code>java.io.PipedOutputStream</code>. In the
@@ -36,7 +37,7 @@ import java.io.IOException;
  */
 public class FastPipedOutputStream extends OutputStream {
 
-    FastPipedInputStream sink;
+    WeakReference<FastPipedInputStream> sink;
 
     /**
      * Creates an unconnected PipedOutputStream.
@@ -51,20 +52,24 @@ public class FastPipedOutputStream extends OutputStream {
      * @exception IOException It was already connected.
      */
     public FastPipedOutputStream(FastPipedInputStream sink) throws IOException {
-        this(sink, 65536);
+        connect(sink);
     }
 
     /**
      * Creates a PipedOutputStream with buffer size <code>bufferSize</code> and
      * connects it to <code>sink</code>.
      * @exception IOException It was already connected.
+     * @deprecated as of 1.350
+     *      bufferSize parameter is ignored.
      */
     public FastPipedOutputStream(FastPipedInputStream sink, int bufferSize) throws IOException {
-        super();
-        if(sink != null) {
-            connect(sink);
-            sink.buffer = new byte[bufferSize];
-        }
+        this(sink);
+    }
+
+    private FastPipedInputStream sink() throws IOException {
+        FastPipedInputStream s = sink.get();
+        if (s==null)    throw new IOException("Reader side has already been abandoned");
+        return s;
     }
 
     /**
@@ -75,8 +80,9 @@ public class FastPipedOutputStream extends OutputStream {
         if(sink == null) {
             throw new IOException("Unconnected pipe");
         }
-        synchronized(sink.buffer) {
-            sink.closed = new FastPipedInputStream.ClosedBy();
+        FastPipedInputStream s = sink();
+        synchronized(s.buffer) {
+            s.closed = new FastPipedInputStream.ClosedBy();
             flush();
         }
     }
@@ -88,8 +94,8 @@ public class FastPipedOutputStream extends OutputStream {
         if(this.sink != null) {
             throw new IOException("Pipe already connected");
         }
-        this.sink = sink;
-        sink.source = this;
+        this.sink = new WeakReference<FastPipedInputStream>(sink);
+        sink.source = new WeakReference<FastPipedOutputStream>(this);
     }
 
     @Override
@@ -100,9 +106,10 @@ public class FastPipedOutputStream extends OutputStream {
 
     @Override
     public void flush() throws IOException {
-        synchronized(sink.buffer) {
+        FastPipedInputStream s = sink();
+        synchronized(s.buffer) {
             // Release all readers.
-            sink.buffer.notifyAll();
+            s.buffer.notifyAll();
         }
     }
 
@@ -123,17 +130,21 @@ public class FastPipedOutputStream extends OutputStream {
         if(sink == null) {
             throw new IOException("Unconnected pipe");
         }
-        if(sink.closed!=null) {
-            throw (IOException)new IOException("Pipe is already closed").initCause(sink.closed);
+        FastPipedInputStream s = sink();
+        if(s.closed!=null) {
+            throw (IOException)new IOException("Pipe is already closed").initCause(s.closed);
         }
 
         while (len>0) {
-            synchronized(sink.buffer) {
-                if(sink.writePosition == sink.readPosition && sink.writeLaps > sink.readLaps) {
+            synchronized(s.buffer) {
+                if(s.writePosition == s.readPosition && s.writeLaps > s.readLaps) {
                     // The circular buffer is full, so wait for some reader to consume
                     // something.
+
+                    sink(); // make sure the sink is still trying to read, or else fail the write.
+
                     try {
-                        sink.buffer.wait();
+                        s.buffer.wait(TIMEOUT);
                     } catch (InterruptedException e) {
                         throw new IOException(e.getMessage());
                     }
@@ -143,22 +154,24 @@ public class FastPipedOutputStream extends OutputStream {
 
                 // Don't write more than the capacity indicated by len or the space
                 // available in the circular buffer.
-                int amount = Math.min(len, (sink.writePosition < sink.readPosition ? sink.readPosition
-                        : sink.buffer.length)
-                        - sink.writePosition);
-                System.arraycopy(b, off, sink.buffer, sink.writePosition, amount);
-                sink.writePosition += amount;
+                int amount = Math.min(len, (s.writePosition < s.readPosition ? s.readPosition
+                        : s.buffer.length)
+                        - s.writePosition);
+                System.arraycopy(b, off, s.buffer, s.writePosition, amount);
+                s.writePosition += amount;
 
-                if(sink.writePosition == sink.buffer.length) {
-                    sink.writePosition = 0;
-                    ++sink.writeLaps;
+                if(s.writePosition == s.buffer.length) {
+                    s.writePosition = 0;
+                    ++s.writeLaps;
                 }
 
                 off += amount;
                 len -= amount;
 
-                sink.buffer.notifyAll();
+                s.buffer.notifyAll();
             }
         }
     }
+
+    static final int TIMEOUT = Integer.getInteger(FastPipedOutputStream.class.getName()+".timeout",10*1000);
 }

@@ -23,6 +23,7 @@
  */
 package hudson.model;
 
+import hudson.console.AnnotatedLargeText;
 import org.kohsuke.stapler.framework.io.LargeText;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
@@ -56,7 +57,7 @@ public abstract class TaskAction extends AbstractModelObject implements Action {
     /**
      * Hold the log of the tagging operation.
      */
-    protected transient WeakReference<LargeText> log;
+    protected transient WeakReference<AnnotatedLargeText> log;
 
     /**
      * Gets the permission object that represents the permission to perform this task.
@@ -69,6 +70,14 @@ public abstract class TaskAction extends AbstractModelObject implements Action {
     protected abstract ACL getACL();
 
     /**
+     * @deprecated as of 1.350
+     *      Use {@link #obtainLog()}, which returns the same object in a more type-safe signature.
+     */
+    public LargeText getLog() {
+        return obtainLog();
+    }
+
+    /**
      * Obtains the log file.
      *
      * <p>
@@ -79,8 +88,8 @@ public abstract class TaskAction extends AbstractModelObject implements Action {
      * Derived classes that persist the text should override this
      * method so that it fetches the file from disk.
      */
-    public LargeText getLog() {
-        WeakReference<LargeText> l = log;
+    public AnnotatedLargeText obtainLog() {
+        WeakReference<AnnotatedLargeText> l = log;
         if(l==null) return null;
         return l.get();
     }
@@ -97,7 +106,7 @@ public abstract class TaskAction extends AbstractModelObject implements Action {
      * Handles incremental log output.
      */
     public void doProgressiveLog( StaplerRequest req, StaplerResponse rsp) throws IOException {
-        LargeText text = getLog();
+        AnnotatedLargeText text = obtainLog();
         if(text!=null) {
             text.doProgressText(req,rsp);
             return;

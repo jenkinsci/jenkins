@@ -203,6 +203,11 @@ public class MarkupText extends AbstractMarkupText {
         }
     }
 
+    /**
+     *
+     * @param text
+     *      Plain text. This shouldn't include any markup nor escape. Those are done later in {@link #toString(boolean)}.
+     */
     public MarkupText(String text) {
         this.text = text;
     }
@@ -237,20 +242,42 @@ public class MarkupText extends AbstractMarkupText {
 
     /**
      * Returns the fully marked-up text.
+     *
+     * @deprecated as of 1.350.
+     *      Use {@link #toString(boolean)} to be explicit about the escape mode.
      */
     @Override
     public String toString() {
-        if(tags.isEmpty())
-            return text;    // the most common case
+        return toString(false);
+    }
 
-        // somewhat inefficient implementation, if there are a lot of mark up and text is large.
+    /**
+     * Returns the fully marked-up text.
+     *
+     * @param preEscape
+     *      If true, the escaping is for the &lt;PRE> context. This leave SP and CR/LF intact.
+     *      If false, the escape is for the normal HTML, thus SP becomes &amp;nbsp; and CR/LF becomes &lt;BR>
+     */
+    public String toString(boolean preEscape) {
+        if(tags.isEmpty())
+            return Util.escape(text);    // the most common case
+
         Collections.sort(tags);
+
         StringBuilder buf = new StringBuilder();
-        buf.append(text);
-        int offset = 0;     // remember the # of chars inserted.
+        int copied = 0; // # of chars already copied from text to buf
+
         for (Tag tag : tags) {
-            buf.insert(tag.pos+offset,tag.markup);
-            offset += tag.markup.length();
+            if (copied<tag.pos) {
+                String portion = text.substring(copied, tag.pos);
+                buf.append(preEscape ? Util.xmlEscape(portion) : Util.escape(portion));
+                copied = tag.pos;
+            }
+            buf.append(tag.markup);
+        }
+        if (copied<text.length()) {
+            String portion = text.substring(copied, text.length());
+            buf.append(preEscape ? Util.xmlEscape(portion) : Util.escape(portion));
         }
 
         return buf.toString();

@@ -29,6 +29,7 @@ import hudson.Util;
 import hudson.cli.CLICommand;
 import hudson.cli.CloneableCLICommand;
 import hudson.model.Hudson;
+import org.acegisecurity.Authentication;
 import org.jvnet.hudson.annotation_indexer.Index;
 import org.jvnet.localizer.ResourceBundleHolder;
 import org.kohsuke.args4j.CmdLineParser;
@@ -100,7 +101,7 @@ public class CLIRegisterer extends ExtensionFinder {
                         }
 
                         @Override
-                        public int main(List<String> args, Locale locale, InputStream stdin, PrintStream stdout, PrintStream stderr) {
+                        public int main(List<String> args, Locale locale, InputStream stdin, PrintStream stdout, PrintStream stderr, Authentication a) {
                             CmdLineParser parser = new CmdLineParser(null);
                             try {
                                 try {

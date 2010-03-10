@@ -151,7 +151,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.jvnet.hudson</groupId>
       <artifactId>htmlunit</artifactId>
-      <version>2.6-hudson-1</version>
+      <version>2.6-hudson-2</version>
       <exclusions>
       	<exclusion>
 	      	<!--  hides JDK DOM classes in Eclipse -->
