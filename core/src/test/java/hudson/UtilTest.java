@@ -164,7 +164,7 @@ public class UtilTest extends TestCase {
             String log = baos.toString();
             if (log.length() > 0) {
                 System.err.println("log output: " + log);
-                if (s.contains("ln failed: 78" /*ENAMETOOLONG*/)) {
+                if (log.contains("ln failed: 78" /*ENAMETOOLONG*/)) {
                     buf.setLength(0);
                     // Try again with shorter name for this system
                     for( int i=0; i<254; i++)
