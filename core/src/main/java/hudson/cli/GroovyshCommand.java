@@ -28,6 +28,7 @@ import hudson.model.Hudson;
 import hudson.remoting.ChannelClosedException;
 import groovy.lang.Binding;
 import groovy.lang.Closure;
+import org.acegisecurity.Authentication;
 import org.codehaus.groovy.tools.shell.Groovysh;
 import org.codehaus.groovy.tools.shell.IO;
 import org.codehaus.groovy.tools.shell.Shell;
@@ -56,7 +57,7 @@ public class GroovyshCommand extends CLICommand {
     }
 
     @Override
-    public int main(List<String> args, Locale locale, InputStream stdin, PrintStream stdout, PrintStream stderr) {
+    public int main(List<String> args, Locale locale, InputStream stdin, PrintStream stdout, PrintStream stderr, Authentication a) {
         // this allows the caller to manipulate the JVM state, so require the admin privilege.
         Hudson.getInstance().checkPermission(Hudson.ADMINISTER);
 
