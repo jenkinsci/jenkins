@@ -350,9 +350,12 @@ public abstract class SCM implements Describable<SCM>, ExtensionPoint {
         
         if (uses1346OrLaterSCM) {
             // This is to work around HUDSON-5827 in a general way.
-            SCMRevisionState baseline2 = null;
+            SCMRevisionState baseline2;
             if (baseline!=SCMRevisionState.NONE) {
                 baseline2 = baseline;
+            }
+            else {
+                baseline2 = calcRevisionsFromBuild(project.getLastBuild(), launcher, listener);
             }
 
             return compareRemoteRevisionWith(project, launcher, workspace, listener, baseline2);
