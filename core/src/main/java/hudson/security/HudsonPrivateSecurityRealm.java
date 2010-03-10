@@ -24,7 +24,6 @@
 package hudson.security;
 
 import com.thoughtworks.xstream.converters.UnmarshallingContext;
-import groovy.lang.Binding;
 import hudson.Extension;
 import hudson.Util;
 import hudson.diagnosis.OldDataMonitor;
@@ -40,24 +39,22 @@ import hudson.util.PluginServletFilter;
 import hudson.util.Protector;
 import hudson.util.Scrambler;
 import hudson.util.XStream2;
-import hudson.util.spring.BeanBuilder;
 import net.sf.json.JSONObject;
 import org.acegisecurity.Authentication;
-import org.acegisecurity.AuthenticationManager;
+import org.acegisecurity.AuthenticationException;
+import org.acegisecurity.BadCredentialsException;
 import org.acegisecurity.GrantedAuthority;
 import org.acegisecurity.context.SecurityContextHolder;
 import org.acegisecurity.providers.UsernamePasswordAuthenticationToken;
 import org.acegisecurity.providers.encoding.PasswordEncoder;
 import org.acegisecurity.providers.encoding.ShaPasswordEncoder;
 import org.acegisecurity.userdetails.UserDetails;
-import org.acegisecurity.userdetails.UserDetailsService;
 import org.acegisecurity.userdetails.UsernameNotFoundException;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.Stapler;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 import org.springframework.dao.DataAccessException;
-import org.springframework.web.context.WebApplicationContext;
 
 import javax.servlet.Filter;
 import javax.servlet.FilterChain;
@@ -83,7 +80,7 @@ import java.util.List;
  *
  * @author Kohsuke Kawaguchi
  */
-public class HudsonPrivateSecurityRealm extends SecurityRealm implements ModelObject, AccessControlled {
+public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRealm implements ModelObject, AccessControlled {
     /**
      * If true, sign up is not allowed.
      * <p>
@@ -132,16 +129,22 @@ public class HudsonPrivateSecurityRealm extends SecurityRealm implements ModelOb
     }
 
     @Override
-    public SecurityComponents createSecurityComponents() {
-        Binding binding = new Binding();
-        binding.setVariable("passwordEncoder", PASSWORD_ENCODER);
+    public Details loadUserByUsername(String username) throws UsernameNotFoundException, DataAccessException {
+        User u = User.get(username,false);
+        Details p = u!=null ? u.getProperty(Details.class) : null;
+        if(p==null)
+            throw new UsernameNotFoundException("Password is not set: "+username);
+        if(p.getUser()==null)
+            throw new AssertionError();
+        return p;
+    }
 
-        BeanBuilder builder = new BeanBuilder();
-        builder.parse(Hudson.getInstance().servletContext.getResourceAsStream("/WEB-INF/security/HudsonPrivateSecurityRealm.groovy"),binding);
-        WebApplicationContext context = builder.createApplicationContext();
-        return new SecurityComponents(
-                findBean(AuthenticationManager.class, context),
-                findBean(UserDetailsService.class, context));
+    @Override
+    protected Details authenticate(String username, String password) throws AuthenticationException {
+        Details u = loadUserByUsername(username);
+        if (!PASSWORD_ENCODER.isPasswordValid(u.getPassword(),password,null))
+            throw new BadCredentialsException("Failed to login as "+username);
+        return u;
     }
 
     /**
@@ -454,21 +457,6 @@ public class HudsonPrivateSecurityRealm extends SecurityRealm implements ModelOb
             public UserProperty newInstance(User user) {
                 return null;
             }
-        }
-    }
-
-    /**
-     * {@link UserDetailsService} that loads user information from {@link User} object. 
-     */
-    public static final class HudsonUserDetailsService implements UserDetailsService {
-        public UserDetails loadUserByUsername(String username) {
-            User u = User.get(username,false);
-            Details p = u!=null ? u.getProperty(Details.class) : null;
-            if(p==null)
-                throw new UsernameNotFoundException("Password is not set: "+username);
-            if(p.getUser()==null)
-                throw new AssertionError();
-            return p;
         }
     }
 
