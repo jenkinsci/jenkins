@@ -200,13 +200,16 @@ public class NodeProvisioner {
          * Give some initial warm up time so that statically connected slaves
          * can be brought online before we start allocating more.
          */
+    	 public static int INITIALDELAY = Integer.getInteger(NodeProvisioner.class.getName()+".initialDelay",LoadStatistics.CLOCK*10);
+    	 public static int RECURRENCEPERIOD = Integer.getInteger(NodeProvisioner.class.getName()+".recurrencePeriod",LoadStatistics.CLOCK);
+    	 
         @Override
         public long getInitialDelay() {
-            return LoadStatistics.CLOCK*10;
+            return INITIALDELAY;
         }
 
         public long getRecurrencePeriod() {
-            return LoadStatistics.CLOCK;
+            return RECURRENCEPERIOD;
         }
 
         @Override
@@ -218,7 +221,7 @@ public class NodeProvisioner {
         }
     }
 
-    private static final float MARGIN = 0.1f;
+    private static final float MARGIN = (float)(Integer.getInteger(NodeProvisioner.class.getName()+".MARGIN",10)/100);
     private static final Logger LOGGER = Logger.getLogger(NodeProvisioner.class.getName());
 
     // TODO: picker should be selectable
