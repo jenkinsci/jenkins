@@ -1,7 +1,7 @@
 /*
  * The MIT License
  * 
- * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, Erik Ramfelt, Tom Huybrechts
+ * Copyright (c) 2004-2010, Sun Microsystems, Inc., Kohsuke Kawaguchi, Erik Ramfelt, Tom Huybrechts
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -269,7 +269,8 @@ public class User extends AbstractModelObject implements AccessControlled, Savea
     public static User get(String idOrFullName, boolean create) {
         if(idOrFullName==null)
             return null;
-        String id = idOrFullName.replace('\\', '_').replace('/', '_').replace('<','_');
+        String id = idOrFullName.replace('\\', '_').replace('/', '_').replace('<','_')
+                                .replace('>','_');  // 4 replace() still faster than regex
         
         synchronized(byName) {
             User u = byName.get(id);
