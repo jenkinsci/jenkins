@@ -294,6 +294,14 @@ public abstract class SCM implements Describable<SCM>, ExtensionPoint {
     public abstract SCMRevisionState calcRevisionsFromBuild(AbstractBuild<?,?> build, Launcher launcher, TaskListener listener) throws IOException, InterruptedException;
 
     /**
+     * A pointless function to work around what appears to be a HotSpot problem. See HUDSON-5756 and bug 6933067
+     * on BugParade for more details.
+     */
+    public SCMRevisionState _calcRevisionsFromBuild(AbstractBuild<?, ?> build, Launcher launcher, TaskListener listener) throws IOException, InterruptedException {
+        return calcRevisionsFromBuild(build, launcher, listener);
+    }
+    
+    /**
      * Compares the current state of the remote repository against the given baseline {@link SCMRevisionState}.
      *
      * <p>
@@ -336,6 +344,14 @@ public abstract class SCM implements Describable<SCM>, ExtensionPoint {
     protected abstract PollingResult compareRemoteRevisionWith(AbstractProject<?,?> project, Launcher launcher, FilePath workspace, TaskListener listener, SCMRevisionState baseline) throws IOException, InterruptedException;
 
     /**
+     * A pointless function to work around what appears to be a HotSpot problem. See HUDSON-5756 and bug 6933067
+     * on BugParade for more details.
+     */
+    private PollingResult _compareRemoteRevisionWith(AbstractProject<?, ?> project, Launcher launcher, FilePath workspace, TaskListener listener, SCMRevisionState baseline2) throws IOException, InterruptedException {
+        return compareRemoteRevisionWith(project, launcher, workspace, listener, baseline2);
+    }
+
+    /**
      * Convenience method for the caller to handle the backward compatibility between pre 1.345 SCMs.
      */
     public final PollingResult poll(AbstractProject<?,?> project, Launcher launcher, FilePath workspace, TaskListener listener, SCMRevisionState baseline) throws IOException, InterruptedException {
@@ -346,7 +362,7 @@ public abstract class SCM implements Describable<SCM>, ExtensionPoint {
             if (baseline!=SCMRevisionState.NONE) {
                 baseline2 = baseline;
             } else {
-                baseline2 = calcRevisionsFromBuild(project.getLastBuild(), launcher, listener);
+                baseline2 = _calcRevisionsFromBuild(project.getLastBuild(), launcher, listener);
             }
 
             return _compareRemoteRevisionWith(project, launcher, workspace, listener, baseline2);
@@ -363,14 +379,6 @@ public abstract class SCM implements Describable<SCM>, ExtensionPoint {
             } catch (NoSuchMethodException e) { }
         }
         return false;
-    }
-
-    /**
-     * A pointless function to work around what appears to be a HotSpot problem. See HUDSON-5756 and bug 6933067
-     * on BugParade for more details.
-     */
-    private PollingResult _compareRemoteRevisionWith(AbstractProject<?, ?> project, Launcher launcher, FilePath workspace, TaskListener listener, SCMRevisionState baseline2) throws IOException, InterruptedException {
-        return compareRemoteRevisionWith(project, launcher, workspace, listener, baseline2);
     }
 
     /**
