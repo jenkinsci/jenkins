@@ -70,7 +70,7 @@ import java.util.Collection;
  *
  * <p>
  * The first argument is the SELECT element or the ID of it (see Prototype.js <tt>$(...)</tt> function.)
- * The second arugment is the URL that returns the options list.
+ * The second argument is the URL that returns the options list.
  *
  * <p>
  * The URL usually maps to the <tt>doXXX</tt> method on the server, which uses {@link ListBoxModel}
