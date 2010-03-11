@@ -40,5 +40,5 @@ import java.lang.annotation.Target;
 @Documented
 @Target({ElementType.METHOD, ElementType.TYPE})
 public @interface For {
-    Class value();
+    Class[] value();
 }

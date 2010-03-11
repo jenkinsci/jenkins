@@ -1,20 +1,19 @@
 package hudson.security;
 
+import hudson.cli.CLI;
 import hudson.cli.CLICommand;
 import hudson.cli.CliManagerImpl;
+import hudson.cli.ClientAuthenticationCache;
+import hudson.cli.LoginCommand;
+import hudson.cli.LogoutCommand;
 import hudson.model.Hudson;
 import org.acegisecurity.Authentication;
-import org.acegisecurity.AuthenticationException;
-import org.acegisecurity.BadCredentialsException;
-import org.acegisecurity.GrantedAuthority;
-import org.acegisecurity.userdetails.User;
-import org.acegisecurity.userdetails.UserDetails;
-import org.acegisecurity.userdetails.UsernameNotFoundException;
+import org.jvnet.hudson.test.For;
 import org.jvnet.hudson.test.HudsonTestCase;
 import org.jvnet.hudson.test.TestExtension;
-import org.springframework.dao.DataAccessException;
 import junit.framework.Assert;
 
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.Locale;
 
@@ -24,27 +23,17 @@ import java.util.Locale;
 public class CliAuthenticationTest extends HudsonTestCase {
     public void test1() throws Exception {
         // dummy security realm that authenticates when username==password
-        hudson.setSecurityRealm(new AbstractPasswordBasedSecurityRealm() {
-            @Override
-            protected UserDetails authenticate(String username, String password) throws AuthenticationException {
-                if (username.equals(password))
-                    return new User(username,password,true,true,true,true,new GrantedAuthority[]{AUTHENTICATED_AUTHORITY});
-                throw new BadCredentialsException(username);
-            }
+        hudson.setSecurityRealm(createDummySecurityRealm());
 
-            @Override
-            public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException, DataAccessException {
-                throw new UsernameNotFoundException(username);
-            }
+        successfulCommand("test","--username","abc","--password","abc");
+    }
 
-            @Override
-            public GroupDetails loadGroupByGroupname(String groupname) throws UsernameNotFoundException, DataAccessException {
-                throw new UsernameNotFoundException(groupname);
-            }
-        });
+    private void successfulCommand(String... args) throws Exception {
+        assertEquals(0, command(args));
+    }
 
-        assertEquals(0,new CliManagerImpl().main(Arrays.asList("test","--username","abc","--password","abc"),
-                Locale.ENGLISH, System.in, System.out, System.err));
+    private int command(String... args) throws Exception {
+        return new CLI(getURL()).execute(args);
     }
 
     @TestExtension
@@ -56,11 +45,35 @@ public class CliAuthenticationTest extends HudsonTestCase {
 
         @Override
         protected int run() throws Exception {
-            Authentication auth = Hudson.getInstance().getAuthentication();
+            Authentication auth = Hudson.getAuthentication();
             Assert.assertNotSame(Hudson.ANONYMOUS,auth);
             Assert.assertEquals("abc", auth.getName());
             return 0;
         }
     }
 
+    @TestExtension
+    public static class AnonymousCommand extends CLICommand {
+        @Override
+        public String getShortDescription() {
+            return "makes sure that the command is running as anonymous user";
+        }
+
+        @Override
+        protected int run() throws Exception {
+            Authentication auth = Hudson.getAuthentication();
+            Assert.assertSame(Hudson.ANONYMOUS,auth);
+            return 0;
+        }
+    }
+
+    @For({LoginCommand.class, LogoutCommand.class, ClientAuthenticationCache.class})
+    public void testLogin() throws Exception {
+        hudson.setSecurityRealm(createDummySecurityRealm());
+
+        successfulCommand("login","--username","abc","--password","abc");
+        successfulCommand("test"); // now we can run without an explicit credential
+        successfulCommand("logout");
+        successfulCommand("anonymous"); // now we should run as anonymous
+    }
 }

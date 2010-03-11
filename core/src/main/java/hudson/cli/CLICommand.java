@@ -41,10 +41,12 @@ import org.kohsuke.args4j.CmdLineException;
 import org.kohsuke.args4j.CmdLineParser;
 
 import java.io.BufferedInputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintStream;
 import java.util.List;
 import java.util.Locale;
+import java.util.logging.Logger;
 
 /**
  * Base class for Hudson CLI.
@@ -165,7 +167,10 @@ public abstract class CLICommand implements ExtensionPoint, Cloneable {
 
         try {
             p.parseArgument(args.toArray(new String[args.size()]));
-            sc.setAuthentication(authenticator.authenticate()); // run the CLI with the right credential
+            Authentication auth = authenticator.authenticate();
+            if (auth==Hudson.ANONYMOUS)
+                auth = loadStoredAuthentication();
+            sc.setAuthentication(auth); // run the CLI with the right credential
             return run();
         } catch (CmdLineException e) {
             stderr.println(e.getMessage());
@@ -180,6 +185,19 @@ public abstract class CLICommand implements ExtensionPoint, Cloneable {
             return -1;
         } finally {
             sc.setAuthentication(old); // restore
+        }
+    }
+
+    /**
+     * Loads the persisted authentication information from {@link ClientAuthenticationCache}.
+     */
+    protected Authentication loadStoredAuthentication() throws InterruptedException {
+        try {
+            return new ClientAuthenticationCache(channel).get();
+        } catch (IOException e) {
+            stderr.println("Failed to access the stored credential");
+            e.printStackTrace(stderr);  // recover
+            return Hudson.ANONYMOUS;
         }
     }
 
@@ -233,6 +251,27 @@ public abstract class CLICommand implements ExtensionPoint, Cloneable {
     }
 
     /**
+     * Convenience method for subtypes to obtain the system property of the client.
+     */
+    protected String getClientSystemProperty(String name) throws IOException, InterruptedException {
+        return channel.call(new GetSystemProperty(name));
+    }
+
+    private static final class GetSystemProperty implements Callable<String, IOException> {
+        private final String name;
+
+        private GetSystemProperty(String name) {
+            this.name = name;
+        }
+
+        public String call() throws IOException {
+            return System.getProperty(name);
+        }
+
+        private static final long serialVersionUID = 1L;
+    }
+
+    /**
      * Creates a clone to be used to execute a command.
      */
     protected CLICommand createClone() {
@@ -263,4 +302,6 @@ public abstract class CLICommand implements ExtensionPoint, Cloneable {
                 return cmd.createClone();
         return null;
     }
+
+    private static final Logger LOGGER = Logger.getLogger(CLICommand.class.getName());
 }
