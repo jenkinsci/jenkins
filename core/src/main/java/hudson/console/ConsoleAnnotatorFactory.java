@@ -23,6 +23,7 @@
  */
 package hudson.console;
 
+import hudson.Extension;
 import hudson.ExtensionList;
 import hudson.ExtensionPoint;
 import hudson.model.Hudson;
@@ -52,6 +53,9 @@ import java.net.URL;
  * an arbitrary line of the output, because typically browsers do not request the entire console output.
  * Because of this, {@link ConsoleAnnotatorFactory} is generally suitable for peep-hole local annotation
  * that only requires a small contextual information, such as keyword coloring, URL hyperlinking, and so on.
+ *
+ * <p>
+ * To register, put @{@link Extension} on your {@link ConsoleAnnotatorFactory} subtype.
  *
  * @author Kohsuke Kawaguchi
  * @since 1.349

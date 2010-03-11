@@ -120,6 +120,13 @@ public class MarkupText extends AbstractMarkupText {
         }
 
         /**
+         * Surrounds this subtext with &lt;a>...&lt;/a>. 
+         */
+        public void href(String url) {
+            addHyperlink(0,length(),url);
+        }
+
+        /**
          * Gets the start index of the captured group within {@link MarkupText#getText()}.
          *
          * @param groupIndex
