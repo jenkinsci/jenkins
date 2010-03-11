@@ -23,6 +23,7 @@
  */
 package hudson.util;
 
+import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 import org.kohsuke.stapler.export.Exported;
@@ -76,20 +77,20 @@ import java.util.Collection;
  * for producing option values. See the following example:
  *
  * <pre>
- * public void doOptionValues(StaplerRequest req, StaplerResponse rsp, @QueryParameter("value") String value) throws IOException, ServletException {
+ * public ListBoxModel doOptionValues(@QueryParameter("value") String value) throws IOException, ServletException {
  *   ListBoxModel m = new ListBoxModel();
  *   for(int i=0; i<5; i++)
  *     m.add(value+i,value+i);
  *   // make the third option selected initially
  *   m.get(3).selected = true;
- *   m.writeTo(req,rsp);
+ *   return m;
  * }
  * </pre>
  * @since 1.123
  * @author Kohsuke Kawaguchi
  */
 @ExportedBean
-public class ListBoxModel extends ArrayList<ListBoxModel.Option> {
+public class ListBoxModel extends ArrayList<ListBoxModel.Option> implements HttpResponse {
 
     @ExportedBean(defaultVisibility=999)
     public static final class Option {
@@ -146,6 +147,10 @@ public class ListBoxModel extends ArrayList<ListBoxModel.Option> {
 
     public void writeTo(StaplerRequest req,StaplerResponse rsp) throws IOException, ServletException {
         rsp.serveExposedBean(req,this,Flavor.JSON);
+    }
+
+    public void generateResponse(StaplerRequest req, StaplerResponse rsp, Object node) throws IOException, ServletException {
+        writeTo(req,rsp);
     }
 
     /**
