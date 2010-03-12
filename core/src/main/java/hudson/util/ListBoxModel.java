@@ -141,8 +141,16 @@ public class ListBoxModel extends ArrayList<ListBoxModel.Option> implements Http
         super(Arrays.asList(data));
     }
 
-    public void add(String name, String value) {
-        add(new Option(name,value));
+    public void add(String displayName, String value) {
+        add(new Option(displayName,value));
+    }
+
+    /**
+     * A version of the {@link #add(String, String)} method where the display name and the value are the same. 
+     */
+    public ListBoxModel add(String nameAndValue) {
+        add(nameAndValue,nameAndValue);
+        return this;
     }
 
     public void writeTo(StaplerRequest req,StaplerResponse rsp) throws IOException, ServletException {
