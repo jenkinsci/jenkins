@@ -228,7 +228,10 @@ public class ListView extends View implements Saveable {
 
         if (req.getParameter("useincluderegex") != null) {
             includeRegex = Util.nullify(req.getParameter("includeRegex"));
-            includePattern = Pattern.compile(includeRegex);
+            if (includeRegex == null)
+                includePattern = null;
+            else
+                includePattern = Pattern.compile(includeRegex);
         } else {
             includeRegex = null;
             includePattern = null;
