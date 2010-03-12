@@ -26,6 +26,9 @@ THE SOFTWARE.
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
   <st:documentation>
     Glorified &lt;select> control that supports the data binding and AJAX updates.
+    Your descriptor should have the 'doFillXyzItems' method, which returns a ListBoxModel
+    representation of the items in your drop-down list box, and your instance field should
+    hold the current value.
 
     <st:attribute name="clazz">
       Additional CSS classes that the control gets.
