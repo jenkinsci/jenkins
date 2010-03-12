@@ -29,6 +29,8 @@ import hudson.Util;
 import static hudson.Util.singleQuote;
 import hudson.diagnosis.OldDataMonitor;
 import hudson.model.listeners.SaveableListener;
+import hudson.util.ReflectionUtils;
+import hudson.util.ReflectionUtils.Parameter;
 import hudson.views.ListViewColumn;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
@@ -249,6 +251,20 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable {
     public abstract String getDisplayName();
 
     /**
+     * Gets the URL that this Descriptor is bound to, relative to the nearest {@link DescriptorByNameOwner}.
+     * Since {@link Hudson} is a {@link DescriptorByNameOwner}, there's always one such ancestor to any request.
+     */
+    public String getUrl() {
+        return "descriptorByName/"+clazz.getName();
+    }
+
+    private String getCurrentDescriptorByNameUrl() {
+        StaplerRequest req = Stapler.getCurrentRequest();
+        Ancestor a = req.findAncestor(DescriptorByNameOwner.class);
+        return a.getUrl();
+    }
+
+    /**
      * If the field "xyz" of a {@link Describable} has the corresponding "doCheckXyz" method,
      * return the form-field validation string. Otherwise null.
      * <p>
@@ -266,56 +282,71 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable {
 
         // put this under the right contextual umbrella.
         // a is always non-null because we already have Hudson as the sentinel
-        StaplerRequest req = Stapler.getCurrentRequest();
-        Ancestor a = req.findAncestor(DescriptorByNameOwner.class);
-
-        return singleQuote(a.getUrl())+'+'+method;
+        return singleQuote(getCurrentDescriptorByNameUrl()+'/')+'+'+method;
     }
 
     private String calcCheckUrl(String fieldName) {
         String capitalizedFieldName = StringUtils.capitalize(fieldName);
 
-        Method method = null;
-        String methodName = "doCheck"+ capitalizedFieldName;
-        for (Class c=getClass(); c!=null; c=c.getSuperclass()) {
-            for( Method m : c.getMethods() ) {
-                if(m.getName().equals(methodName)) {
-                    method = m;
-                    break;
-                }
-            }
-        }
+        Method method = ReflectionUtils.getPublicMethodNamed(getClass(),"doCheck"+ capitalizedFieldName);
 
         if(method==null)
             return NONE;
 
         // build query parameter line by figuring out what should be submitted
         StringBuilder query = new StringBuilder();
-        String[] names = ClassDescriptor.loadParameterNames(method);
         boolean first = true;
-        Annotation[][] all = method.getParameterAnnotations();
-        for (int i = 0, allLength = all.length; i < allLength; i++) {
-            for (Annotation a : all[i]) {
-                if (a instanceof QueryParameter) {
-                    QueryParameter qp = (QueryParameter) a;
-                    String name = qp.value();
-                    if (name.length()==0 && i<names.length) name = names[i];
-                    if (name.length()==0)
-                        continue;   // unknown parameter name. we'll report the error when the form is submitted.
+        for (Parameter p : ReflectionUtils.getParameters(method)) {
+            QueryParameter qp = p.annotation(QueryParameter.class);
+            if (qp==null)   continue;
 
-                    if (first)  first = false;
-                    else        query.append('+').append(singleQuote("&"));
-                    if (name.equals("value")) {
-                        // The special 'value' parameter binds to the the current field
-                        query.append('+').append(singleQuote("value=")).append("+toValue(this)");
-                    } else {
-                        query.append('+').append(singleQuote(name+'=')).append("+toValue(findNearBy(this,'"+name+"'))");
-                    }
-                }
+            String name = qp.value();
+            if (name.length()==0) name = p.name();
+            if (name==null || name.length()==0)
+                continue;   // unknown parameter name. we'll report the error when the form is submitted.
+
+            if (first)  first = false;
+            else        query.append('+').append(singleQuote("&"));
+            if (name.equals("value")) {
+                // The special 'value' parameter binds to the the current field
+                query.append('+').append(singleQuote("value=")).append("+toValue(this)");
+            } else {
+                query.append('+').append(singleQuote(name+'=')).append("+toValue(findNearBy(this,'"+name+"'))");
             }
         }
 
-        return singleQuote("/descriptorByName/"+clazz.getName()+"/check"+capitalizedFieldName+"?")+query;
+        return singleQuote(getUrl() +"/check"+capitalizedFieldName+"?")+query;
+    }
+
+    /**
+     * Computes the list of other form fields that the given field depends on, via the doFillXyzItems method,
+     * and sets that as the 'fillDependsOn' attribute. Also computes the URL of the doFillXyzItems and
+     * sets that as the 'fillUrl' attribute.
+     */
+    public void calcFillSettings(String field, Map<String,Object> attributes) {
+        String capitalizedFieldName = StringUtils.capitalize(field);
+        String methodName = "doFill" + capitalizedFieldName + "Items";
+        Method method = ReflectionUtils.getPublicMethodNamed(getClass(), methodName);
+        if(method==null)
+            throw new IllegalStateException(String.format("%s doesn't have the %s method for filling a drop-down list", getClass(), methodName));
+
+        // build query parameter line by figuring out what should be submitted
+        List<String> depends = new ArrayList<String>();
+
+        for (Parameter p : ReflectionUtils.getParameters(method)) {
+            QueryParameter qp = p.annotation(QueryParameter.class);
+            if (qp==null)   continue;
+
+            String name = qp.value();
+            if (name.length()==0) name = p.name();
+            if (name==null || name.length()==0)
+                continue;   // unknown parameter name. we'll report the error when the form is submitted.
+
+            depends.add(name);
+        }
+
+        attributes.put("fillDependsOn",Util.join(depends," "));
+        attributes.put("fillUrl", String.format("%s/%s/fill%sItems", getCurrentDescriptorByNameUrl(), getUrl(), capitalizedFieldName));
     }
 
     /**
