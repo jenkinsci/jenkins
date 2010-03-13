@@ -399,22 +399,7 @@ var hudsonRules = {
         }
         Element.remove(prototypes);
 
-        // D&D support
-        function prepareDD(e) {
-            var dd = new DragDrop(e);
-            var h = e;
-            // locate a handle
-            while(!Element.hasClassName(h,"dd-handle"))
-                h = h.firstChild ? h.firstChild : h.nextSibling;
-            dd.setHandleElId(h);
-        }
-        var withDragDrop = Element.hasClassName(e,"with-drag-drop");
-        if(withDragDrop) {
-            for(e=e.firstChild; e!=null; e=e.nextSibling) {
-                if(Element.hasClassName(e,"repeated-chunk"))
-                    prepareDD(e);
-            }
-        }
+        var withDragDrop = initContainerDD(e);
 
         var menuButton = new YAHOO.widget.Button(btn, { type: "menu", menu: menu });
         menuButton.getMenu().clickEvent.subscribe(function(type,args,value) {
@@ -1174,6 +1159,8 @@ var repeatableSupport = {
     // block name for structured HTML
     name : null,
 
+    withDragDrop: false,
+
     // do the initialization
     init : function(container,master,insertionPoint) {
         this.container = $(container);
@@ -1184,6 +1171,7 @@ var repeatableSupport = {
         this.insertionPoint = $(insertionPoint);
         this.name = master.getAttribute("name");
         this.update();
+        this.withDragDrop = initContainerDD(container);
     },
 
     // insert one more block at the insertion position
@@ -1195,6 +1183,7 @@ var repeatableSupport = {
         nc.setAttribute("name",this.name);
         nc.innerHTML = this.blockHTML;
         this.insertionPoint.parentNode.insertBefore(nc, this.insertionPoint);
+        if (this.withDragDrop) prepareDD(nc);
 
         Behaviour.applySubtree(nc);
         this.update();
@@ -1640,8 +1629,28 @@ var hoverNotification = (function() {
 })();
 
 /*
-    D&D implementation for heterogeneous list.
+    Drag&Drop implementation for heterogeneous/repeatable lists.
  */
+function initContainerDD(e) {
+    if (!Element.hasClassName(e,"with-drag-drop")) return false;
+
+    for (e=e.firstChild; e!=null; e=e.nextSibling) {
+        if (Element.hasClassName(e,"repeated-chunk"))
+            prepareDD(e);
+    }
+    return true;
+}
+function prepareDD(e) {
+    var h = e;
+    // locate a handle
+    while (h!=null && !Element.hasClassName(h,"dd-handle"))
+        h = h.firstChild ? h.firstChild : h.nextSibling;
+    if (h!=null) {
+        var dd = new DragDrop(e);
+        dd.setHandleElId(h);
+    }
+}
+
 var DragDrop = function(id, sGroup, config) {
     DragDrop.superclass.constructor.apply(this, arguments);
 };
@@ -1715,7 +1724,9 @@ var DragDrop = function(id, sGroup, config) {
 
             // We are only concerned with list items, we ignore the dragover
             // notifications for the list.
-            if (destEl.nodeName == "DIV" && Dom.hasClass(destEl,"repeated-chunk")) {
+            if (destEl.nodeName == "DIV" && Dom.hasClass(destEl,"repeated-chunk")
+                    // Nested lists.. ensure we don't drag out of this list or into a nested one:
+                    && destEl.parentNode==srcEl.parentNode) {
                 var p = destEl.parentNode;
 
                 // if going up, insert above the target element

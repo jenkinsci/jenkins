@@ -1,7 +1,7 @@
 <!--
 The MIT License
 
-Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi
+Copyright (c) 2004-2010, Sun Microsystems, Inc., Kohsuke Kawaguchi
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -88,6 +88,10 @@ THE SOFTWARE.
       At least provide this number of copies initially.
       minimum="1" is useful to make sure there's always at least one entry for the user to fill in.
     </st:attribute>
+    <st:attribute name="header">
+      For each item, add this header.
+      This also activates drag&amp;drop (where the header is a grip).
+    </st:attribute>
   </st:documentation>
 
 
@@ -108,15 +112,17 @@ THE SOFTWARE.
     </j:otherwise>
   </j:choose>
 
-  <div class="repeated-container">
+  <div class="repeated-container${!empty(header)?' with-drag-drop':''}">
     <!-- The first DIV is the master copy. -->
     <div class="repeated-chunk to-be-removed" name="${name}">
+      <j:if test="${!empty(header)}"><div class="dd-handle">${header}</div></j:if>
       <d:invokeBody />
     </div>
     <!-- then populate them for each item -->
     <j:forEach var="loop" varStatus="loopStatus" items="${items}">
       <div class="repeated-chunk" name="${name}">
         <j:set var="${var}" value="${loop}" />
+        <j:if test="${!empty(header)}"><div class="dd-handle">${header}</div></j:if>
         <d:invokeBody />
       </div>
     </j:forEach>
@@ -126,6 +132,7 @@ THE SOFTWARE.
       <j:forEach begin="${h.size2(items)}" end="${minimum-1}" var="i">
         <j:set var="${var}" value="${null}" />
         <div class="repeated-chunk" name="${name}">
+          <j:if test="${!empty(header)}"><div class="dd-handle">${header}</div></j:if>
           <d:invokeBody />
         </div>
       </j:forEach>
