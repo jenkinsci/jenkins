@@ -26,6 +26,7 @@ package hudson.slaves;
 import hudson.BulkChange;
 import hudson.Launcher;
 import hudson.model.*;
+import hudson.slaves.NodeProvisioner.NodeProvisionerInvoker;
 import hudson.tasks.Builder;
 import org.jvnet.hudson.test.HudsonTestCase;
 import org.jvnet.hudson.test.SleepBuilder;
