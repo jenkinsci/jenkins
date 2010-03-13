@@ -1,7 +1,7 @@
 <!--
 The MIT License
 
-Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi
+Copyright (c) 2004-2010, Sun Microsystems, Inc., Kohsuke Kawaguchi
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -48,8 +48,8 @@ THE SOFTWARE.
       the type for which descriptors will be configured. Defaults to ${it.class} (optional)
     </st:attribute>
     <st:attribute name="hasHeader">
-      for each item, add a caption from descriptor.getDisplayName().
-     this also activates D&amp;D (where the header is a grip), and help text support.
+      For each item, add a caption from descriptor.getDisplayName().
+      This also activates drag&amp;drop (where the header is a grip), and help text support.
     </st:attribute>
   </st:documentation>
   <d:taglib uri="local">
@@ -90,7 +90,7 @@ THE SOFTWARE.
   </d:taglib>
 
   <j:set var="targetType" value="${attrs.targetType?:it.class}"/>
-  <div class="hetero-list-container ${attrs.hasHeader!=null?'with-drag-drop':''}">
+  <div class="hetero-list-container${hasHeader?' with-drag-drop':''}">
     <!-- display existing items -->
     <j:forEach var="i" items="${attrs.items}">
       <j:set var="descriptor" value="${i.descriptor}" />
