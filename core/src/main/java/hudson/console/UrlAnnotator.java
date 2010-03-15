@@ -26,6 +26,13 @@ public class UrlAnnotator extends ConsoleAnnotatorFactory<Object> {
         }
 
         private static final long serialVersionUID = 1L;
-        private static final Pattern URL = Pattern.compile("\\b(http|https|ftp)://[^\\s<>]+");
+
+        /**
+         * Starts with a word boundary and protocol identifier,
+         * don't include any whitespace, '&lt;', nor '>'.
+         * In addition, the last character shouldn't be ',' ':', '"', etc, as often those things show up right next
+         * to URL in plain text (e.g., test="http://www.example.com/")
+         */
+        private static final Pattern URL = Pattern.compile("\\b(http|https|ftp)://[^\\s<>]+[^\\s<>,:\"'()\\[\\]=]");
     }
 }
