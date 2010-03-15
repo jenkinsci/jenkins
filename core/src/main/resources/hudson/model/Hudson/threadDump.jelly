@@ -1,7 +1,7 @@
 <!--
 The MIT License
 
-Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, Tom Huybrechts
+Copyright (c) 2004-2010, Sun Microsystems, Inc., Kohsuke Kawaguchi, Tom Huybrechts
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -34,9 +34,11 @@ THE SOFTWARE.
       <j:choose>
         <j:when test="${h.isMustangOrAbove()}">
           <!-- use a new Mustang feature to get more detailed dump -->
-          <j:forEach var="t" items="${h.getThreadInfos()}">
+          <j:set var="data" value="${h.getThreadInfos()}"/>
+          <j:set var="map" value="${h.sortThreadsAndGetGroupMap(data)}"/>
+          <j:forEach var="t" items="${data}">
             <h2>${t.threadName}</h2>
-            <pre>${h.dumpThreadInfo(t)}</pre>
+            <pre>${h.dumpThreadInfo(t,map)}</pre>
           </j:forEach>
         </j:when>
         <j:otherwise>

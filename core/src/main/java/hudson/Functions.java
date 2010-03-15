@@ -1,7 +1,8 @@
 /*
  * The MIT License
  * 
- * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, Yahoo! Inc., Stephen Connolly, Tom Huybrechts
+ * Copyright (c) 2004-2010, Sun Microsystems, Inc., Kohsuke Kawaguchi,
+ * Yahoo! Inc., Stephen Connolly, Tom Huybrechts, Alan Harder
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -68,8 +69,6 @@ import org.acegisecurity.providers.anonymous.AnonymousAuthenticationToken;
 import org.apache.commons.jelly.JellyContext;
 import org.apache.commons.jelly.JellyTagException;
 import org.apache.commons.jelly.Script;
-import org.apache.commons.jelly.Tag;
-import org.apache.commons.jelly.TagSupport;
 import org.apache.commons.jelly.XMLOutput;
 import org.apache.commons.jexl.parser.ASTSizeFunction;
 import org.apache.commons.jexl.util.Introspector;
@@ -100,9 +99,11 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLDecoder;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -739,13 +740,70 @@ public class Functions {
     }
 
     public static Map<Thread,StackTraceElement[]> dumpAllThreads() {
-        return Thread.getAllStackTraces();
+        Map<Thread,StackTraceElement[]> sorted = new TreeMap<Thread,StackTraceElement[]>(new ThreadSorter());
+        sorted.putAll(Thread.getAllStackTraces());
+        return sorted;
     }
 
     @IgnoreJRERequirement
     public static ThreadInfo[] getThreadInfos() {
         ThreadMXBean mbean = ManagementFactory.getThreadMXBean();
-        return mbean.getThreadInfo(mbean.getAllThreadIds(),mbean.isObjectMonitorUsageSupported(),mbean.isSynchronizerUsageSupported());
+        return mbean.dumpAllThreads(mbean.isObjectMonitorUsageSupported(),mbean.isSynchronizerUsageSupported());
+    }
+
+    public static ThreadGroupMap sortThreadsAndGetGroupMap(ThreadInfo[] list) {
+        ThreadGroupMap sorter = new ThreadGroupMap();
+        Arrays.sort(list, sorter);
+        return sorter;
+    }
+
+    // Common code for sorting Threads/ThreadInfos by ThreadGroup
+    private static class ThreadSorterBase {
+        protected Map<Long,String> map = new HashMap<Long,String>();
+
+        private ThreadSorterBase() {
+            ThreadGroup tg = Thread.currentThread().getThreadGroup();
+            while (tg.getParent() != null) tg = tg.getParent();
+            Thread[] threads = new Thread[tg.activeCount()*2];
+            int threadsLen = tg.enumerate(threads, true);
+            for (int i = 0; i < threadsLen; i++)
+                map.put(threads[i].getId(), threads[i].getThreadGroup().getName());
+        }
+
+        protected int compare(long idA, long idB) {
+            String tga = map.get(idA), tgb = map.get(idB);
+            int result = (tga!=null?-1:0) + (tgb!=null?1:0);  // Will be non-zero if only one is null
+            if (result==0 && tga!=null)
+                result = tga.compareToIgnoreCase(tgb);
+            return result;
+        }
+    }
+
+    public static class ThreadGroupMap extends ThreadSorterBase implements Comparator<ThreadInfo> {
+
+        /**
+         * @return ThreadGroup name or null if unknown
+         */
+        public String getThreadGroup(ThreadInfo ti) {
+            return map.get(ti.getThreadId());
+        }
+
+        public int compare(ThreadInfo a, ThreadInfo b) {
+            int result = compare(a.getThreadId(), b.getThreadId());
+            if (result == 0)
+                result = a.getThreadName().compareToIgnoreCase(b.getThreadName());
+            return result;
+        }
+    }
+
+    private static class ThreadSorter extends ThreadSorterBase implements Comparator<Thread> {
+
+        public int compare(Thread a, Thread b) {
+            int result = compare(a.getId(), b.getId());
+            if (result == 0)
+                result = a.getName().compareToIgnoreCase(b.getName());
+            return result;
+        }
     }
 
     /**
@@ -763,9 +821,11 @@ public class Functions {
 
     // ThreadInfo.toString() truncates the stack trace by first 8, so needed my own version
     @IgnoreJRERequirement
-    public static String dumpThreadInfo(ThreadInfo ti) {
+    public static String dumpThreadInfo(ThreadInfo ti, ThreadGroupMap map) {
+        String grp = map.getThreadGroup(ti);
         StringBuilder sb = new StringBuilder("\"" + ti.getThreadName() + "\"" +
-                                             " Id=" + ti.getThreadId() + " " +
+                                             " Id=" + ti.getThreadId() + " Group=" +
+                                             (grp != null ? grp : "?") + " " +
                                              ti.getThreadState());
         if (ti.getLockName() != null) {
             sb.append(" on " + ti.getLockName());
