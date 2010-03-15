@@ -135,7 +135,7 @@ public class LogRotator implements Describable<LogRotator> {
             Calendar cal = new GregorianCalendar();
             cal.add(Calendar.DAY_OF_YEAR,-daysToKeep);
             // copy it to the array because we'll be deleting builds as we go.
-            for( Run r : job.getBuilds().toArray(new Run[0]) ) {
+            for( Run r : job.getBuilds() ) {
                 if (r.isKeepLog()) {
                     LOGGER.log(FINER,r.getFullDisplayName()+" is not GC-ed because it's marked as a keeper");
                     continue;
