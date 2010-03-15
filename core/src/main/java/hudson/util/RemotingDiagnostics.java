@@ -1,7 +1,7 @@
 /*
  * The MIT License
  * 
- * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi
+ * Copyright (c) 2004-2010, Sun Microsystems, Inc., Kohsuke Kawaguchi
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -72,13 +72,15 @@ public final class RemotingDiagnostics {
         public Map<String,String> call() {
             Map<String,String> r = new LinkedHashMap<String,String>();
             try {
-                for (ThreadInfo ti : Functions.getThreadInfos())
-                    r.put(ti.getThreadName(),Functions.dumpThreadInfo(ti));
+                ThreadInfo[] data = Functions.getThreadInfos();
+                Functions.ThreadGroupMap map = Functions.sortThreadsAndGetGroupMap(data);
+                for (ThreadInfo ti : data)
+                    r.put(ti.getThreadName(),Functions.dumpThreadInfo(ti,map));
             } catch (LinkageError _) {
                 // not in JDK6. fall back to JDK5
                 r.clear();
-                for (Map.Entry<Thread,StackTraceElement[]> t : Thread.getAllStackTraces().entrySet()) {
-                    StringBuffer buf = new StringBuffer();
+                for (Map.Entry<Thread,StackTraceElement[]> t : Functions.dumpAllThreads().entrySet()) {
+                    StringBuilder buf = new StringBuilder();
                     for (StackTraceElement e : t.getValue())
                         buf.append(e).append('\n');
                     r.put(t.getKey().getName(),buf.toString());
