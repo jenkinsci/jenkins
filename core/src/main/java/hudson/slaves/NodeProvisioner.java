@@ -221,7 +221,7 @@ public class NodeProvisioner {
         }
     }
 
-    private static final float MARGIN = (float)(Integer.getInteger(NodeProvisioner.class.getName()+".MARGIN",10)/100);
+    private static final float MARGIN = Integer.getInteger(NodeProvisioner.class.getName()+".MARGIN",10)/100f;
     private static final Logger LOGGER = Logger.getLogger(NodeProvisioner.class.getName());
 
     // TODO: picker should be selectable

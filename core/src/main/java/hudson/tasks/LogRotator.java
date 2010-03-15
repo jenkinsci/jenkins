@@ -36,6 +36,8 @@ import java.util.Calendar;
 import java.util.GregorianCalendar;
 import static java.util.logging.Level.FINE;
 import static java.util.logging.Level.FINER;
+
+import java.util.List;
 import java.util.logging.Logger;
 
 /**
@@ -59,19 +61,23 @@ public class LogRotator implements Describable<LogRotator> {
     private final int numToKeep;
 
     /**
-     * If not -1, artifacts are only kept up to this days.
+     * If not -1 nor null, artifacts are only kept up to this days.
+     * Null handling is necessary to remain data compatible with old versions.
+     * @since 1.350
      */
-    private final int artifactDaysToKeep;
+    private final Integer artifactDaysToKeep;
 
     /**
-     * If not -1, only this number of builds have their artifacts kept.
+     * If not -1 nor null, only this number of builds have their artifacts kept.
+     * Null handling is necessary to remain data compatible with old versions.
+     * @since 1.350
      */
-    private final int artifactNumToKeep;
+    private final Integer artifactNumToKeep;
 
     @DataBoundConstructor
     public LogRotator (String logrotate_days, String logrotate_nums, String logrotate_artifact_days, String logrotate_artifact_nums) {
         this (parse(logrotate_days),parse(logrotate_nums),
-              parse(logrotate_artifact_days),parse(logrotate_artifact_nums));     	
+              parse(logrotate_artifact_days),parse(logrotate_artifact_nums));
     }
 
     public static int parse(String p) {
@@ -84,7 +90,8 @@ public class LogRotator implements Describable<LogRotator> {
     }
 
     /**
-     * @deprecated since 1.350
+     * @deprecated since 1.350.
+     *      Use {@link #LogRotator(int, int, int, int)}
      */
     public LogRotator(int daysToKeep, int numToKeep) {
         this(daysToKeep, numToKeep, -1, -1);
@@ -95,19 +102,19 @@ public class LogRotator implements Describable<LogRotator> {
         this.numToKeep = numToKeep;
         this.artifactDaysToKeep = artifactDaysToKeep;
         this.artifactNumToKeep = artifactNumToKeep;
+        
     }
 
     public void perform(Job<?,?> job) throws IOException, InterruptedException {
         LOGGER.log(FINE,"Running the log rotation for "+job.getFullDisplayName());
-
+        
         // keep the last successful build regardless of the status
         Run lsb = job.getLastSuccessfulBuild();
         Run lstb = job.getLastStableBuild();
 
         if(numToKeep!=-1) {
-            Run[] builds = job.getBuilds().toArray(new Run[0]);
-            for( int i=numToKeep; i<builds.length; i++ ) {
-                Run r = builds[i];
+            List<? extends Run<?,?>> builds = job.getBuilds();
+            for (Run r : builds.subList(Math.min(builds.size(),numToKeep),builds.size())) {
                 if (r.isKeepLog()) {
                     LOGGER.log(FINER,r.getFullDisplayName()+" is not GC-ed because it's marked as a keeper");
                     continue;
@@ -128,7 +135,7 @@ public class LogRotator implements Describable<LogRotator> {
             Calendar cal = new GregorianCalendar();
             cal.add(Calendar.DAY_OF_YEAR,-daysToKeep);
             // copy it to the array because we'll be deleting builds as we go.
-            for( Run r : job.getBuilds().toArray(new Run[0]) ) {
+            for( Run r : job.getBuilds() ) {
                 if (r.isKeepLog()) {
                     LOGGER.log(FINER,r.getFullDisplayName()+" is not GC-ed because it's marked as a keeper");
                     continue;
@@ -149,10 +156,9 @@ public class LogRotator implements Describable<LogRotator> {
             }
         }
 
-        if(artifactNumToKeep!=-1) {
-            Run[] builds = job.getBuilds().toArray(new Run[0]);
-            for( int i=artifactNumToKeep; i<builds.length; i++ ) {
-                Run r = builds[i];
+        if(artifactNumToKeep!=null && artifactNumToKeep!=-1) {
+            List<? extends Run<?,?>> builds = job.getBuilds();
+            for (Run r : builds.subList(Math.min(builds.size(),artifactNumToKeep),builds.size())) {
                 if (r.isKeepLog()) {
                     LOGGER.log(FINER,r.getFullDisplayName()+" is not purged of artifacts because it's marked as a keeper");
                     continue;
@@ -169,11 +175,11 @@ public class LogRotator implements Describable<LogRotator> {
             }
         }
 
-        if(artifactDaysToKeep!=-1) {
+        if(artifactDaysToKeep!=null && artifactDaysToKeep!=-1) {
             Calendar cal = new GregorianCalendar();
             cal.add(Calendar.DAY_OF_YEAR,-artifactDaysToKeep);
             // copy it to the array because we'll be deleting builds as we go.
-            for( Run r : job.getBuilds().toArray(new Run[0]) ) {
+            for( Run r : job.getBuilds() ) {
                 if (r.isKeepLog()) {
                     LOGGER.log(FINER,r.getFullDisplayName()+" is not purged of artifacts because it's marked as a keeper");
                     continue;
@@ -205,32 +211,38 @@ public class LogRotator implements Describable<LogRotator> {
     }
 
     public int getArtifactDaysToKeep() {
-        return artifactDaysToKeep;
+        return unbox(artifactDaysToKeep);
     }
 
     public int getArtifactNumToKeep() {
-        return artifactNumToKeep;
+        return unbox(artifactNumToKeep);
     }
 
     public String getDaysToKeepStr() {
-        if(daysToKeep==-1)  return "";
-        else                return String.valueOf(daysToKeep);
+        return toString(daysToKeep);
     }
 
     public String getNumToKeepStr() {
-        if(numToKeep==-1)   return "";
-        else                return String.valueOf(numToKeep);
+        return toString(numToKeep);
     }
 
     public String getArtifactDaysToKeepStr() {
-        if(artifactDaysToKeep==-1)  return "";
-        else                        return String.valueOf(artifactDaysToKeep);
+        return toString(artifactDaysToKeep);
     }
 
     public String getArtifactNumToKeepStr() {
-        if(artifactNumToKeep==-1)   return "";
-        else                        return String.valueOf(artifactNumToKeep);
+        return toString(artifactNumToKeep);
     }
+
+    private int unbox(Integer i) {
+        return i==null ? -1: i;
+    }
+
+    private String toString(Integer i) {
+        if (i==null || i==-1)   return "";
+        return String.valueOf(i);
+    }
+
 
     public LRDescriptor getDescriptor() {
         return DESCRIPTOR;

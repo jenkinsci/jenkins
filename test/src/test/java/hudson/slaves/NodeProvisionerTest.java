@@ -26,6 +26,7 @@ package hudson.slaves;
 import hudson.BulkChange;
 import hudson.Launcher;
 import hudson.model.*;
+import hudson.slaves.NodeProvisioner.NodeProvisionerInvoker;
 import hudson.tasks.Builder;
 import org.jvnet.hudson.test.HudsonTestCase;
 import org.jvnet.hudson.test.SleepBuilder;
@@ -48,6 +49,8 @@ public class NodeProvisionerTest extends HudsonTestCase {
     protected void setUp() throws Exception {
         original = LoadStatistics.CLOCK;
         LoadStatistics.CLOCK = 10; // run x1000 the regular speed to speed up the test
+        NodeProvisionerInvoker.INITIALDELAY = 100;
+        NodeProvisionerInvoker.RECURRENCEPERIOD = 10;
         super.setUp();
     }
 
@@ -55,6 +58,8 @@ public class NodeProvisionerTest extends HudsonTestCase {
     protected void tearDown() throws Exception {
         super.tearDown();
         LoadStatistics.CLOCK = original;
+        NodeProvisionerInvoker.INITIALDELAY = original*10;
+        NodeProvisionerInvoker.RECURRENCEPERIOD = original;
     }
 
     /**
