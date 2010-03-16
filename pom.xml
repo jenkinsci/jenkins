@@ -51,6 +51,10 @@ THE SOFTWARE.
     <module>cli</module>
   </modules>
   
+  <ciManagement>
+      <system>Hudson</system>
+      <url>http://hudson.glassfish.org/job/hudson-trunk</url>
+  </ciManagement>
   <scm>
     <!-- release comes from the RC branch now -->
     <connection>scm:svn:https://guest@svn.dev.java.net/svn/hudson/branches/rc/</connection>
