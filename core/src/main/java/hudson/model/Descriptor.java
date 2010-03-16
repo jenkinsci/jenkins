@@ -34,7 +34,6 @@ import hudson.util.ReflectionUtils.Parameter;
 import hudson.views.ListViewColumn;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
-import org.kohsuke.stapler.ClassDescriptor;
 import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.Stapler;
@@ -51,7 +50,6 @@ import javax.servlet.RequestDispatcher;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.lang.annotation.Annotation;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.LinkedHashMap;
@@ -254,7 +252,7 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable {
      * Gets the URL that this Descriptor is bound to, relative to the nearest {@link DescriptorByNameOwner}.
      * Since {@link Hudson} is a {@link DescriptorByNameOwner}, there's always one such ancestor to any request.
      */
-    public String getUrl() {
+    public String getDescriptorUrl() {
         return "descriptorByName/"+clazz.getName();
     }
 
@@ -315,7 +313,7 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable {
             }
         }
 
-        return singleQuote(getUrl() +"/check"+capitalizedFieldName+"?")+query;
+        return singleQuote(getDescriptorUrl() +"/check"+capitalizedFieldName+"?")+query;
     }
 
     /**
@@ -346,7 +344,7 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable {
         }
 
         attributes.put("fillDependsOn",Util.join(depends," "));
-        attributes.put("fillUrl", String.format("%s/%s/fill%sItems", getCurrentDescriptorByNameUrl(), getUrl(), capitalizedFieldName));
+        attributes.put("fillUrl", String.format("%s/%s/fill%sItems", getCurrentDescriptorByNameUrl(), getDescriptorUrl(), capitalizedFieldName));
     }
 
     /**
