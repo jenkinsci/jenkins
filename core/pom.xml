@@ -232,7 +232,7 @@ THE SOFTWARE.
       </build>
     </profile>
     <profile>
-      <!-- run findbugs for better error detection -->
+      <!-- run FindBugs for better error detection -->
       <id>findbugs</id>
       <reporting>
         <plugins>
