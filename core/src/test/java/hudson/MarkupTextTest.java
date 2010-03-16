@@ -1,7 +1,7 @@
 /*
  * The MIT License
  * 
- * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi
+ * Copyright (c) 2004-2010, Sun Microsystems, Inc., Kohsuke Kawaguchi
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -92,6 +92,13 @@ public class MarkupTextTest extends TestCase {
         text.addMarkup(1,"<foo>");
         text.addMarkup(2,"&nbsp;");
         assertEquals("&amp;<foo>&amp;&nbsp;&amp;",text.toString(false));
+    }
+
+    public void testPreEscape() {
+        MarkupText text = new MarkupText("Line\n2   & 3\n<End>\n");
+        assertEquals("Line\n2   &amp; 3\n&lt;End>\n", text.toString(true));
+        text.addMarkup(4, "<hr/>");
+        assertEquals("Line<hr/>\n2   &amp; 3\n&lt;End>\n", text.toString(true));
     }
 
     private static final Pattern pattern = Pattern.compile("issue #([0-9]+)");

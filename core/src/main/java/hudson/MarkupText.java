@@ -1,7 +1,7 @@
 /*
  * The MIT License
  * 
- * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi
+ * Copyright (c) 2004-2010, Sun Microsystems, Inc., Kohsuke Kawaguchi
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -267,7 +267,7 @@ public class MarkupText extends AbstractMarkupText {
      */
     public String toString(boolean preEscape) {
         if(tags.isEmpty())
-            return Util.escape(text);    // the most common case
+            return preEscape? Util.xmlEscape(text) : Util.escape(text);  // the most common case
 
         Collections.sort(tags);
 
