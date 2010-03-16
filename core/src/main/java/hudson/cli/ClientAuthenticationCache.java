@@ -3,6 +3,7 @@ package hudson.cli;
 import hudson.FilePath;
 import hudson.FilePath.FileCallable;
 import hudson.model.Hudson;
+import hudson.model.Hudson.MasterComputer;
 import hudson.os.PosixAPI;
 import hudson.remoting.Callable;
 import hudson.remoting.Channel;
@@ -43,7 +44,7 @@ public class ClientAuthenticationCache implements Serializable {
     private final Properties props = new Properties();
 
     public ClientAuthenticationCache(Channel channel) throws IOException, InterruptedException {
-        store = channel.call(new Callable<FilePath, IOException>() {
+        store = (channel==null ? MasterComputer.localChannel :  channel).call(new Callable<FilePath, IOException>() {
             public FilePath call() throws IOException {
                 File home = new File(System.getProperty("user.home"));
                 return new FilePath(new File(home, ".hudson/cli-credentials"));
