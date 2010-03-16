@@ -101,19 +101,19 @@ public class MavenSiteArchiver extends MavenReporter {
      * @throws IOException
      */
     private String getModuleName(MavenBuildProxy build, MavenProject pom) throws IOException {
-        final FilePath moduleRoot;
+        final String moduleRoot;
         try {
-            moduleRoot = build.execute(new BuildCallable<FilePath, IOException>() {
+            moduleRoot = build.execute(new BuildCallable<String, IOException>() {
                 //@Override
-                public FilePath call(MavenBuild mavenBuild) throws IOException, InterruptedException {
-                    return mavenBuild.getParentBuild().getModuleRoot();
+                public String call(MavenBuild mavenBuild) throws IOException, InterruptedException {
+                    return mavenBuild.getParentBuild().getModuleRoot().getRemote();
                 }
             });
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         }
         final File pomBaseDir = pom.getBasedir();
-        final File remoteWorkspaceDir = new File(moduleRoot.getRemote());
+        final File remoteWorkspaceDir = new File(moduleRoot);
         if (pomBaseDir.equals(remoteWorkspaceDir)) {
             return "";
         } else {
