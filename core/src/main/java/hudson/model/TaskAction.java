@@ -115,6 +115,18 @@ public abstract class TaskAction extends AbstractModelObject implements Action {
     }
 
     /**
+     * Handles incremental log output.
+     */
+    public void doProgressiveHtml( StaplerRequest req, StaplerResponse rsp) throws IOException {
+        AnnotatedLargeText text = obtainLog();
+        if(text!=null) {
+            text.doProgressiveHtml(req,rsp);
+            return;
+        }
+        rsp.setStatus(HttpServletResponse.SC_OK);
+    }
+
+    /**
      * Clears the error status.
      */
     public synchronized void doClearError(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {

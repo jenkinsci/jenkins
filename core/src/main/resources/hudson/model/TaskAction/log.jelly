@@ -33,7 +33,7 @@ THE SOFTWARE.
       <div id="spinner">
         <img src="${imagesURL}/spinner.gif" alt=""/>
       </div>
-      <t:progressiveText href="progressiveLog" idref="out" spinner="spinner" />
+      <t:progressiveText href="progressiveHtml" idref="out" spinner="spinner" />
     </j:when>
     <!-- output is completed now. -->
     <j:otherwise>

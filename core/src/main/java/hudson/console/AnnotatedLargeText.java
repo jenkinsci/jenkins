@@ -31,12 +31,16 @@ import hudson.util.TimeUnit2;
 import org.apache.commons.io.output.ByteArrayOutputStream;
 import org.kohsuke.stapler.Stapler;
 import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.StaplerResponse;
 import org.kohsuke.stapler.framework.io.ByteBuffer;
+import org.kohsuke.stapler.framework.io.CharSpool;
 import org.kohsuke.stapler.framework.io.LargeText;
+import org.kohsuke.stapler.framework.io.LineEndNormalizingWriter;
 
 import javax.crypto.Cipher;
 import javax.crypto.CipherInputStream;
 import javax.crypto.CipherOutputStream;
+import javax.servlet.http.HttpServletResponse;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
@@ -80,6 +84,31 @@ public class AnnotatedLargeText<T> extends LargeText {
         this.context = context;
     }
 
+    public void doProgressiveHtml(StaplerRequest req, StaplerResponse rsp) throws IOException {
+        req.setAttribute("html",true);
+        doProgressText(req,rsp);
+    }
+
+    /**
+     * Aliasing what I think was a wrong name in {@link LargeText}
+     */
+    public void doProgressiveText(StaplerRequest req, StaplerResponse rsp) throws IOException {
+        doProgressText(req,rsp);
+    }
+
+    /**
+     * For reusing code between text/html and text/plain, we run them both through the same code path
+     * and use this request attribute to differentiate. 
+     */
+    private boolean isHtml() {
+        return Stapler.getCurrentRequest().getAttribute("html")!=null;
+    }
+
+    @Override
+    protected void setContentType(StaplerResponse rsp) {
+        rsp.setContentType(isHtml() ? "text/html;charset=UTF-8" : "text/plain;charset=UTF-8");
+    }
+
     private ConsoleAnnotator createAnnotator(StaplerRequest req) throws IOException {
         try {
             String base64 = req.getHeader("X-ConsoleAnnotator");
@@ -106,6 +135,13 @@ public class AnnotatedLargeText<T> extends LargeText {
 
     @Override
     public long writeLogTo(long start, Writer w) throws IOException {
+        if (isHtml())
+            return writeHtmlTo(start, w);
+        else
+            return super.writeLogTo(start,w);
+    }
+
+    public long writeHtmlTo(long start, Writer w) throws IOException {
         ConsoleAnnotationOutputStream caw = new ConsoleAnnotationOutputStream(
                 w, createAnnotator(Stapler.getCurrentRequest()), context, charset);
         long r = super.writeLogTo(start,caw);
@@ -113,7 +149,7 @@ public class AnnotatedLargeText<T> extends LargeText {
         try {
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
             Cipher sym = Cipher.getInstance("AES");
-            sym.init(Cipher.ENCRYPT_MODE,Hudson.getInstance().getSecretKeyAsAES128());
+            sym.init(Cipher.ENCRYPT_MODE, Hudson.getInstance().getSecretKeyAsAES128());
             ObjectOutputStream oos = new ObjectOutputStream(new GZIPOutputStream(new CipherOutputStream(baos,sym)));
             oos.writeLong(System.currentTimeMillis()); // send timestamp to prevent a replay attack
             oos.writeObject(caw.getConsoleAnnotator());

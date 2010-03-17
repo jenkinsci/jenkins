@@ -102,7 +102,7 @@ public class ConsoleAnnotatorTest extends HudsonTestCase {
         }
 
         String next() throws IOException {
-            WebRequestSettings req = new WebRequestSettings(new URL(getURL() + run.getUrl() + "/progressiveLog"+(start!=null?"?start="+start:"")));
+            WebRequestSettings req = new WebRequestSettings(new URL(getURL() + run.getUrl() + "/logText/progressiveHtml"+(start!=null?"?start="+start:"")));
             Map headers = new HashMap();
             if (consoleAnnotator!=null)
                 headers.put("X-ConsoleAnnotator",consoleAnnotator);

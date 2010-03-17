@@ -166,6 +166,13 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
         return Util.loadFile(getLogFile());
     }
 
+    /**
+     * Used to URL-bind {@link AnnotatedLargeText}.
+     */
+    public AnnotatedLargeText<Computer> getLogText() {
+        return new AnnotatedLargeText<Computer>(getLogFile(), Charset.defaultCharset(), false, this);
+    }
+
     public ACL getACL() {
         return Hudson.getInstance().getAuthorizationStrategy().getACL(this);
     }
@@ -984,7 +991,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
      * Handles incremental log.
      */
     public void doProgressiveLog( StaplerRequest req, StaplerResponse rsp) throws IOException {
-        new AnnotatedLargeText<Computer>(getLogFile(), Charset.defaultCharset(), false, this).doProgressText(req,rsp);
+        getLogText().doProgressText(req,rsp);
     }
 
     /**

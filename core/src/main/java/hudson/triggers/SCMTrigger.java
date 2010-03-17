@@ -273,7 +273,7 @@ public class SCMTrigger extends Trigger<SCMedItem> {
          * @since 1.350
          */
         public void writeLogTo(XMLOutput out) throws IOException {
-            new AnnotatedLargeText<SCMAction>(getLogFile(),Charset.defaultCharset(),true,this).writeLogTo(0,out.asWriter());
+            new AnnotatedLargeText<SCMAction>(getLogFile(),Charset.defaultCharset(),true,this).writeHtmlTo(0,out.asWriter());
         }
     }
 
