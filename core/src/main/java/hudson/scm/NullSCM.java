@@ -50,7 +50,7 @@ public class NullSCM extends SCM {
         return PollingResult.NO_CHANGES;
     }
 
-    public boolean checkout(AbstractBuild build, Launcher launcher, FilePath remoteDir, BuildListener listener, File changeLogFile) throws IOException, InterruptedException {
+    public boolean checkout(AbstractBuild<?,?> build, Launcher launcher, FilePath remoteDir, BuildListener listener, File changeLogFile) throws IOException, InterruptedException {
         return createEmptyChangeLog(changeLogFile, listener, "log");
     }
 

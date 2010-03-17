@@ -79,7 +79,7 @@ public class SCMTriggerTest extends HudsonTestCase {
         }
 
         @Override
-        public boolean checkout(AbstractBuild build, Launcher launcher, FilePath remoteDir, BuildListener listener, File changeLogFile) throws IOException, InterruptedException {
+        public boolean checkout(AbstractBuild<?,?> build, Launcher launcher, FilePath remoteDir, BuildListener listener, File changeLogFile) throws IOException, InterruptedException {
             checkoutStarted.signal();
             Thread.sleep(400);  // processing time for mock update
             synchronized (this) { if (myRev < 2) myRev = 2; }
