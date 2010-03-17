@@ -552,11 +552,10 @@ public abstract class SCM implements Describable<SCM>, ExtensionPoint {
     /**
      * Returns the list of {@link SCMDescriptor}s that are applicable to the given project.
      */
-    public static List<SCMDescriptor<?>> _for(final AbstractProject<?,?> project) {
+    public static List<SCMDescriptor<?>> _for(final AbstractProject project) {
         if(project==null)   return all();
         
-        @SuppressWarnings("unchecked")
-        final Descriptor<?> pd = Hudson.getInstance().getDescriptor((Class<? extends Describable<?>>) project.getClass());
+        final Descriptor pd = Hudson.getInstance().getDescriptor((Class) project.getClass());
         List<SCMDescriptor<?>> r = new ArrayList<SCMDescriptor<?>>();
         for (SCMDescriptor<?> scmDescriptor : all()) {
             if(!scmDescriptor.isApplicable(project))    continue;
