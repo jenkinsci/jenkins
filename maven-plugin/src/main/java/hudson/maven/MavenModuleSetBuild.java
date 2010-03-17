@@ -363,7 +363,7 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
             String moduleFsName = newBuild.getProject().getModuleName().toFileSystemName();
             Util.createSymlink(getRootDir(),
                     "../../modules/"+ moduleFsName +"/builds/"+newBuild.getId() /*ugly!*/,
-                    moduleFsName, new StreamTaskListener());
+                    moduleFsName, StreamTaskListener.NULL);
         } catch (IOException e) {
             LOGGER.log(Level.WARNING,"Failed to update "+this,e);
         } catch (InterruptedException e) {
