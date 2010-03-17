@@ -78,6 +78,7 @@ PARAMS="--logfile=/var/log/hudson/hudson.log --daemon"
 [ -n "$HUDSON_HANDLER_STARTUP" ] && PARAMS="$PARAMS --handlerCountStartup=$HUDSON_HANDLER_STARTUP"
 [ -n "$HUDSON_HANDLER_MAX" ] && PARAMS="$PARAMS --handlerCountMax=$HUDSON_HANDLER_MAX"
 [ -n "$HUDSON_HANDLER_IDLE" ] && PARAMS="$PARAMS --handlerCountMaxIdle=$HUDSON_HANDLER_IDLE"
+[ -n "$HUDSON_ARGS" ] && PARAMS="$PARAMS $HUDSON_ARGS"
 
 if [ "$HUDSON_ENABLE_ACCESS_LOG" = "yes" ]; then
     PARAMS="$PARAMS --accessLoggerClassName=winstone.accesslog.SimpleAccessLogger --simpleAccessLogger.format=combined --simpleAccessLogger.file=/var/log/hudson/access_log"

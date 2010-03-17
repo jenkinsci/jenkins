@@ -4,6 +4,7 @@ import groovy.lang.Binding;
 import hudson.FilePath;
 import hudson.cli.CLICommand;
 import hudson.model.Hudson;
+import hudson.remoting.Callable;
 import hudson.tasks.MailAddressResolver;
 import hudson.util.spring.BeanBuilder;
 import org.acegisecurity.Authentication;
@@ -15,10 +16,12 @@ import org.acegisecurity.providers.dao.AbstractUserDetailsAuthenticationProvider
 import org.acegisecurity.userdetails.UserDetails;
 import org.acegisecurity.userdetails.UserDetailsService;
 import org.acegisecurity.userdetails.UsernameNotFoundException;
+import org.jvnet.animal_sniffer.IgnoreJRERequirement;
 import org.kohsuke.args4j.Option;
 import org.springframework.dao.DataAccessException;
 import org.springframework.web.context.WebApplicationContext;
 
+import java.io.Console;
 import java.io.IOException;
 
 /**
@@ -59,7 +62,7 @@ public abstract class AbstractPasswordBasedSecurityRealm extends SecurityRealm i
             @Option(name="--password-file",usage="File that contains the password")
             public String passwordFile;
 
-            public Authentication authenticate() throws AuthenticationException {
+            public Authentication authenticate() throws AuthenticationException, IOException, InterruptedException {
                 if (userName==null)
                     return Hudson.ANONYMOUS;    // no authentication parameter. run as anonymous
 
@@ -69,6 +72,11 @@ public abstract class AbstractPasswordBasedSecurityRealm extends SecurityRealm i
                     } catch (IOException e) {
                         throw new BadCredentialsException("Failed to read "+passwordFile,e);
                     }
+                if (password==null)
+                    password = command.channel.call(new InteractivelyAskForPassword());
+
+                if (password==null)
+                    throw new BadCredentialsException("No password specified");
 
                 UserDetails d = AbstractPasswordBasedSecurityRealm.this.authenticate(userName, password);
                 return new UsernamePasswordAuthenticationToken(d, password, d.getAuthorities());
@@ -128,5 +136,22 @@ public abstract class AbstractPasswordBasedSecurityRealm extends SecurityRealm i
         protected UserDetails retrieveUser(String username, UsernamePasswordAuthenticationToken authentication) throws AuthenticationException {
             return AbstractPasswordBasedSecurityRealm.this.authenticate(username,authentication.getCredentials().toString());
         }
+    }
+
+    /**
+     * Asks for the password.
+     */
+    private static class InteractivelyAskForPassword implements Callable<String,IOException> {
+        @IgnoreJRERequirement
+        public String call() throws IOException {
+            Console console = System.console();
+            if (console == null)    return null;    // no terminal
+
+            char[] w = console.readPassword("Password:");
+            if (w==null)    return null;
+            return new String(w);
+        }
+
+        private static final long serialVersionUID = 1L;
     }
 }

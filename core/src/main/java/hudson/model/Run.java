@@ -1011,10 +1011,13 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
      */
     public void writeLogTo(long offset, XMLOutput out) throws IOException {
         // TODO: resurrect compressed log file support
-        createAnnotatedLargeText().writeLogTo(offset,out.asWriter());
+        getLogText().writeHtmlTo(offset,out.asWriter());
     }
 
-    private AnnotatedLargeText createAnnotatedLargeText() {
+    /**
+     * Used to URL-bind {@link AnnotatedLargeText}.
+     */
+    public AnnotatedLargeText getLogText() {
         return new AnnotatedLargeText(getLogFile(),getCharset(),!isLogUpdated(),this);
     }
 
@@ -1505,7 +1508,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
     /**
      * Returns the build number in the body.
      */
-    public void doBuildNumber( StaplerRequest req, StaplerResponse rsp ) throws IOException {
+    public void doBuildNumber(StaplerResponse rsp) throws IOException {
         rsp.setContentType("text/plain");
         rsp.setCharacterEncoding("US-ASCII");
         rsp.setStatus(HttpServletResponse.SC_OK);
@@ -1544,9 +1547,11 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
 
     /**
      * Handles incremental log output.
+     * @deprecated as of 1.352
+     *      Use {@code getLogText().doProgressiveText(req,rsp)}
      */
     public void doProgressiveLog( StaplerRequest req, StaplerResponse rsp) throws IOException {
-        createAnnotatedLargeText().doProgressText(req,rsp);
+        getLogText().doProgressText(req,rsp);
     }
 
     public void doToggleLogKeep( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {

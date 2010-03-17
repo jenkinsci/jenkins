@@ -104,4 +104,23 @@ public class MavenProjectTest extends HudsonTestCase {
         wc.getPage(project, "site/core");
         wc.getPage(project, "site/client");
     }
+
+    /**
+     * Check if the the site goal will work when run from a slave.
+     */
+    @Bug(5943)
+    public void testMultiModuleSiteBuildOnSlave() throws Exception {
+        MavenModuleSet project = createProject("maven-multimodule-site.zip");
+        project.setGoals("site");
+        project.setAssignedLabel(createSlave(null, null).getSelfLabel());
+
+        buildAndAssertSuccess(project);
+
+        // this should succeed
+        HudsonTestCase.WebClient wc = new WebClient();
+        wc.getPage(project, "site");
+        wc.getPage(project, "site/core");
+        wc.getPage(project, "site/client");
+    }
+
 }

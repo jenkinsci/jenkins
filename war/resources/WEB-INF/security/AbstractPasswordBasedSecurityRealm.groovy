@@ -25,10 +25,6 @@
     Configure Hudson's own user database as the authentication realm.
 */
 import org.acegisecurity.providers.ProviderManager
-import hudson.security.HudsonPrivateSecurityRealm.HudsonUserDetailsService
-import org.acegisecurity.providers.dao.DaoAuthenticationProvider
-import org.acegisecurity.providers.dao.salt.SystemWideSaltSource
-import org.acegisecurity.providers.encoding.ShaPasswordEncoder
 import org.acegisecurity.providers.anonymous.AnonymousAuthenticationProvider
 import org.acegisecurity.providers.rememberme.RememberMeAuthenticationProvider
 import hudson.model.Hudson

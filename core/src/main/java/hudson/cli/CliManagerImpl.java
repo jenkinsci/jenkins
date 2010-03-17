@@ -25,8 +25,6 @@ package hudson.cli;
 
 import hudson.remoting.Channel;
 import hudson.model.Hudson;
-import org.acegisecurity.Authentication;
-import org.acegisecurity.context.SecurityContextHolder;
 import org.apache.commons.discovery.resource.ClassLoaders;
 import org.apache.commons.discovery.resource.classes.DiscoverClasses;
 import org.apache.commons.discovery.resource.names.DiscoverServiceNames;
@@ -50,14 +48,7 @@ import java.io.Serializable;
  * @author Kohsuke Kawaguchi
  */
 public class CliManagerImpl implements CliEntryPoint, Serializable {
-    /**
-     * If the transport has already authenticated this CLI command execution, a valid {@link Authentication} object.
-     * Otherwise {@link Hudson#ANONYMOUS}
-     */
-    private final Authentication auth;
-
-    public CliManagerImpl(Authentication auth) {
-        this.auth = auth!=null ? auth : Hudson.ANONYMOUS;
+    public CliManagerImpl() {
     }
 
     public int main(List<String> args, Locale locale, InputStream stdin, OutputStream stdout, OutputStream stderr) {
@@ -73,7 +64,7 @@ public class CliManagerImpl implements CliEntryPoint, Serializable {
         CLICommand cmd = CLICommand.clone(subCmd);
         if(cmd!=null) {
             // execute the command, do so with the originator of the request as the principal
-            return cmd.main(args.subList(1,args.size()),locale, stdin, out, err,auth);
+            return cmd.main(args.subList(1,args.size()),locale, stdin, out, err);
         }
 
         err.println("No such command: "+subCmd);

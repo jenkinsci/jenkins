@@ -104,6 +104,9 @@ public abstract class ExtensionFinder implements ExtensionPoint {
                     }
                 } catch (InstantiationException e) {
                     LOGGER.log(Level.WARNING, "Failed to load "+item.className(),e);
+                } catch (LinkageError e) {
+                    // work around for SEZPOZ-11: https://sezpoz.dev.java.net/issues/show_bug.cgi?id=11
+                    LOGGER.log(Level.WARNING, "Failed to load "+item.className(),e);
                 }
             }
 

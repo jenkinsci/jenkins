@@ -199,7 +199,7 @@ public final class TcpSlaveAgentListener extends Thread {
                     Computer.threadPoolForRemoting, Mode.BINARY,
                     new BufferedInputStream(new SocketInputStream(this.s)),
                     new BufferedOutputStream(new SocketOutputStream(this.s)), null, true);
-            channel.setProperty(CliEntryPoint.class.getName(),new CliManagerImpl(null));
+            channel.setProperty(CliEntryPoint.class.getName(),new CliManagerImpl());
             channel.join();
         }
 

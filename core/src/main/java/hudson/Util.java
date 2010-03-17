@@ -961,6 +961,13 @@ public class Util {
      * Creates a symlink to baseDir+targetPath at baseDir+symlinkPath.
      * <p>
      * If there's a prior symlink at baseDir+symlinkPath, it will be overwritten.
+     *
+     * @param baseDir
+     *      Base directory to resolve the 'symlinkPath' parameter.
+     * @param targetPath
+     *      The file that the symlink should point to.
+     * @param symlinkPath
+     *      Where to create a symlink in.
      */
     public static void createSymlink(File baseDir, String targetPath, String symlinkPath, TaskListener listener) throws InterruptedException {
         if(Functions.isWindows() || NO_SYMLINK)   return;
@@ -990,10 +997,10 @@ public class Util {
                     "ln","-s", targetPath, symlinkPath},
                     new String[0],listener.getLogger(), baseDir).join();
             if(r!=0)
-                listener.getLogger().println("ln failed: "+r);
+                listener.getLogger().println(String.format("ln -s %s %s failed: %d",targetPath, symlinkFile, r));
         } catch (IOException e) {
             PrintStream log = listener.getLogger();
-            log.println("ln failed");
+            log.printf("ln %s %s failed\n",targetPath, new File(baseDir, symlinkPath));
             Util.displayIOException(e,listener);
             e.printStackTrace( log );
         }

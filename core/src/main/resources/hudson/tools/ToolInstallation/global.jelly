@@ -1,7 +1,7 @@
 <!--
 The MIT License
 
-Copyright (c) 2009, Sun Microsystems, Inc.
+Copyright (c) 2009-2010, Sun Microsystems, Inc.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -25,7 +25,7 @@ THE SOFTWARE.
   <f:section title="${descriptor.displayName}">
     <f:entry title="${%title(descriptor.displayName)}" description="${%description(descriptor.displayName)}">
       <f:repeatable name="tool" var="instance" items="${descriptor.installations}"
-                    add="${%label.add(descriptor.displayName)}">
+                    add="${%label.add(descriptor.displayName)}" header="${descriptor.displayName}">
         <j:set var="toolDescriptor" value="${descriptor}" /><!-- to make this descriptor accessible from properties -->
         <table width="100%">
           <st:include page="config.jelly" from="${descriptor}" class="${descriptor.clazz}"/>

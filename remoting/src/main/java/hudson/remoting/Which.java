@@ -111,10 +111,13 @@ public class Which {
             // JBoss5
             InputStream is = res.openStream();
             try {
-                Field f = is.getClass().getDeclaredField("delegate");
-                f.setAccessible(true);
-                Object delegate = f.get(is);
-                f = delegate.getClass().getDeclaredField("this$0");
+                Object delegate = is;
+                while (delegate.getClass().getEnclosingClass()!=ZipFile.class) {
+                    Field f = is.getClass().getDeclaredField("delegate");
+                    f.setAccessible(true);
+                    delegate = f.get(is);
+                }
+                Field f = delegate.getClass().getDeclaredField("this$0");
                 f.setAccessible(true);
                 ZipFile zipFile = (ZipFile)f.get(delegate);
                 return new File(zipFile.getName());

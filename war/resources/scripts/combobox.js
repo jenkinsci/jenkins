@@ -250,7 +250,7 @@ ComboBox.prototype.populateDropdown = function() {
 			item.comboBox = this;
 			item.comboBoxIndex = i;
 			item.onmouseover = function() {this.comboBox.select(this.comboBoxIndex);};
-			item.onclick = function() {this.comboBox.choose(this.comboBoxIndex);};
+			item.onmousedown = function() {this.comboBox.choose(this.comboBoxIndex);};
 			this.dropdown.appendChild(item);
 		}
 		this.selectedItemIndex = 0;

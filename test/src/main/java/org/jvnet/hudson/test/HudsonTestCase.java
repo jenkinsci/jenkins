@@ -40,6 +40,9 @@ import hudson.model.Computer;
 import hudson.model.Executor;
 import hudson.model.Job;
 import hudson.model.Queue.Executable;
+import hudson.security.AbstractPasswordBasedSecurityRealm;
+import hudson.security.GroupDetails;
+import hudson.security.SecurityRealm;
 import hudson.slaves.ComputerLauncher;
 import hudson.tools.ToolProperty;
 import hudson.remoting.Which;
@@ -116,6 +119,11 @@ import junit.framework.TestCase;
 import net.sourceforge.htmlunit.corejs.javascript.Context;
 import net.sourceforge.htmlunit.corejs.javascript.ContextFactory;
 import net.sourceforge.htmlunit.corejs.javascript.ContextFactory.Listener;
+import org.acegisecurity.AuthenticationException;
+import org.acegisecurity.BadCredentialsException;
+import org.acegisecurity.GrantedAuthority;
+import org.acegisecurity.userdetails.UserDetails;
+import org.acegisecurity.userdetails.UsernameNotFoundException;
 import org.apache.commons.httpclient.NameValuePair;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.beanutils.PropertyUtils;
@@ -141,6 +149,7 @@ import org.mortbay.jetty.webapp.WebAppContext;
 import org.mortbay.jetty.webapp.WebXmlConfiguration;
 import org.mozilla.javascript.tools.debugger.Dim;
 import org.mozilla.javascript.tools.shell.Global;
+import org.springframework.dao.DataAccessException;
 import org.w3c.css.sac.CSSException;
 import org.w3c.css.sac.CSSParseException;
 import org.w3c.css.sac.ErrorHandler;
@@ -515,6 +524,30 @@ public abstract class HudsonTestCase extends TestCase implements RootAction {
      */
     public DumbSlave createSlave(Label l) throws Exception {
     	return createSlave(l, null);
+    }
+
+    /**
+     * Creates a test {@link SecurityRealm} that recognizes username==password as valid.
+     */
+    public SecurityRealm createDummySecurityRealm() {
+        return new AbstractPasswordBasedSecurityRealm() {
+            @Override
+            protected UserDetails authenticate(String username, String password) throws AuthenticationException {
+                if (username.equals(password))
+                    return loadUserByUsername(username);
+                throw new BadCredentialsException(username);
+            }
+
+            @Override
+            public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException, DataAccessException {
+                return new org.acegisecurity.userdetails.User(username,"",true,true,true,true,new GrantedAuthority[]{AUTHENTICATED_AUTHORITY});
+            }
+
+            @Override
+            public GroupDetails loadGroupByGroupname(String groupname) throws UsernameNotFoundException, DataAccessException {
+                throw new UsernameNotFoundException(groupname);
+            }
+        };
     }
 
     /**

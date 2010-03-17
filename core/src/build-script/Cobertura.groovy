@@ -55,7 +55,8 @@ public class Cobertura {
                 formatter(type:"xml")
             }
             sysproperty(key:"net.sourceforge.cobertura.datafile",value:ser)
-	    sysproperty(key:"hudson.ClassicPluginStrategy.useAntClassLoader",value:"true")
+            sysproperty(key:"hudson.ClassicPluginStrategy.useAntClassLoader",value:"true")
+            jvmarg(value:"-XX:MaxPermSize=128m")
         }
     }
 

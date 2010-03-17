@@ -31,6 +31,8 @@ import org.kohsuke.args4j.Argument;
 import org.kohsuke.args4j.CmdLineParser;
 import org.kohsuke.args4j.Option;
 
+import java.io.IOException;
+
 /**
  * Handles authentication for CLI commands.
  *
@@ -73,6 +75,15 @@ import org.kohsuke.args4j.Option;
 public abstract class CliAuthenticator {
     /**
      * Authenticates the CLI invocation. See class javadoc for the semantics.
+     *
+     * @throws AuthenticationException
+     *      If the authentication failed and hence the processing shouldn't proceed.
+     * @throws IOException
+     *      Can be thrown if the {@link CliAuthenticator} fails to interact with the client.
+     *      This exception is treated as a failure of authentication. It's just that allowing this
+     *      would often simplify the callee.
+     * @throws InterruptedException
+     *      Same motivation as {@link IOException}. Treated as an authentication failure. 
      */
-    public abstract Authentication authenticate() throws AuthenticationException;
+    public abstract Authentication authenticate() throws AuthenticationException, IOException, InterruptedException;
 }

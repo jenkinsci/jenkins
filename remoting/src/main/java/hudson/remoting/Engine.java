@@ -140,11 +140,11 @@ public class Engine extends Thread {
 
                     // find out the TCP port
                     HttpURLConnection con = (HttpURLConnection)salURL.openConnection();
-                if (con instanceof HttpURLConnection && credentials != null) {
-                    HttpURLConnection http = (HttpURLConnection) con;
-		    String encoding = new sun.misc.BASE64Encoder().encode (credentials.getBytes());
-		    http.setRequestProperty ("Authorization", "Basic " + encoding);
-		}
+                    if (con instanceof HttpURLConnection && credentials != null) {
+                        HttpURLConnection http = (HttpURLConnection) con;
+                        String encoding = new sun.misc.BASE64Encoder().encode(credentials.getBytes());
+                        http.setRequestProperty("Authorization", "Basic " + encoding);
+                    }
                     try {
                         con.connect();
                     } catch (IOException x) {
@@ -259,6 +259,12 @@ public class Engine extends Thread {
             try {
                 Socket s = new Socket(host, Integer.parseInt(port));
                 s.setTcpNoDelay(true); // we'll do buffering by ourselves
+
+                // set read time out to avoid infinite hang. the time out should be long enough so as not
+                // to interfere with normal operation. the main purpose of this is that when the other peer dies
+                // abruptly, we shouldn't hang forever, and at some point we should notice that the connection
+                // is gone.
+                s.setSoTimeout(30*60*1000); // 30 mins. See PingThread for the ping interval
                 return s;
             } catch (IOException e) {
                 if(retry++>10)

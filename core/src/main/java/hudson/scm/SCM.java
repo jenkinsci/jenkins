@@ -100,7 +100,7 @@ public abstract class SCM implements Describable<SCM>, ExtensionPoint {
      *
      * @see #getEffectiveBrowser()
      */
-    public RepositoryBrowser getBrowser() {
+    public RepositoryBrowser<?> getBrowser() {
         return null;
     }
 
@@ -123,8 +123,8 @@ public abstract class SCM implements Describable<SCM>, ExtensionPoint {
      * from other job configurations.
      */
     @Exported(name="browser")
-    public final RepositoryBrowser getEffectiveBrowser() {
-        RepositoryBrowser b = getBrowser();
+    public final RepositoryBrowser<?> getEffectiveBrowser() {
+        RepositoryBrowser<?> b = getBrowser();
         if(b!=null)
             return b;
         if(autoBrowserHolder==null)
@@ -248,7 +248,7 @@ public abstract class SCM implements Describable<SCM>, ExtensionPoint {
      *
      *      Call {@link #poll(AbstractProject, Launcher, FilePath, TaskListener, SCMRevisionState)} for use instead.
      */
-    public boolean pollChanges(AbstractProject project, Launcher launcher, FilePath workspace, TaskListener listener) throws IOException, InterruptedException {
+    public boolean pollChanges(AbstractProject<?,?> project, Launcher launcher, FilePath workspace, TaskListener listener) throws IOException, InterruptedException {
         // up until 1.336, this method was abstract, so everyone should have overridden this method
         // without calling super.pollChanges. So the compatibility implementation is purely for
         // new implementations that doesn't override this method.
@@ -409,7 +409,7 @@ public abstract class SCM implements Describable<SCM>, ExtensionPoint {
      *      interruption is usually caused by the user aborting the build.
      *      this exception will cause the build to fail.
      */
-    public abstract boolean checkout(AbstractBuild build, Launcher launcher, FilePath workspace, BuildListener listener, File changelogFile) throws IOException, InterruptedException;
+    public abstract boolean checkout(AbstractBuild<?,?> build, Launcher launcher, FilePath workspace, BuildListener listener, File changelogFile) throws IOException, InterruptedException;
 
     /**
      * Adds environmental variables for the builds to the given map.
@@ -424,7 +424,7 @@ public abstract class SCM implements Describable<SCM>, ExtensionPoint {
      * check out (like SVN revision number that was checked out), be prepared for the possibility that the
      * check out hasn't happened yet.
      */
-    public void buildEnvVars(AbstractBuild build, Map<String, String> env) {
+    public void buildEnvVars(AbstractBuild<?,?> build, Map<String, String> env) {
         // default implementation is noop.
     }
 

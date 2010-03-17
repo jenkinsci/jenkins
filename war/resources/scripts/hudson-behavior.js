@@ -150,12 +150,16 @@ function findNearBy(e,name) {
     return null; // not found
 }
 
-function toValue(e) {
+function controlValue(e) {
     // compute the form validation value to be sent to the server
     var type = e.getAttribute("type");
     if(type!=null && type.toLowerCase()=="checkbox")
         return e.checked;
-    return encodeURIComponent(e.value);
+    return e.value;
+}
+
+function toValue(e) {
+    return encodeURIComponent(controlValue(e));
 }
 
 // find the nearest ancestor node that has the given tag name
@@ -246,7 +250,26 @@ function parseHtml(html) {
     return c.firstChild;
 }
 
-
+/**
+ * Emulate the firing of an event.
+ *
+ * @param {HTMLElement} element
+ *      The element that will fire the event
+ * @param {String} event
+ *      like 'change', 'blur', etc.
+ */
+function fireEvent(element,event){
+    if (document.createEvent) {
+        // dispatch for firefox + others
+        var evt = document.createEvent("HTMLEvents");
+        evt.initEvent(event, true, true ); // event type,bubbling,cancelable
+        return !element.dispatchEvent(evt);
+    } else {
+        // dispatch for IE
+        var evt = document.createEventObject();
+        return element.fireEvent('on'+event,evt)
+    }
+}
 
 // shared tooltip object
 var tooltip;
@@ -376,22 +399,7 @@ var hudsonRules = {
         }
         Element.remove(prototypes);
 
-        // D&D support
-        function prepareDD(e) {
-            var dd = new DragDrop(e);
-            var h = e;
-            // locate a handle
-            while(!Element.hasClassName(h,"dd-handle"))
-                h = h.firstChild ? h.firstChild : h.nextSibling;
-            dd.setHandleElId(h);
-        }
-        var withDragDrop = Element.hasClassName(e,"with-drag-drop");
-        if(withDragDrop) {
-            for(e=e.firstChild; e!=null; e=e.nextSibling) {
-                if(Element.hasClassName(e,"repeated-chunk"))
-                    prepareDD(e);
-            }
-        }
+        var withDragDrop = initContainerDD(e);
 
         var menuButton = new YAHOO.widget.Button(btn, { type: "menu", menu: menu });
         menuButton.getMenu().clickEvent.subscribe(function(type,args,value) {
@@ -780,7 +788,48 @@ var hudsonRules = {
                 return values;
             });
         }
+    },
+
+    // select.jelly
+    "SELECT.select" : function(e) {
+        var dep; // controls that this SELECT box depends on
+
+        function refill() {
+            var params = {};
+            dep.each(function (d) {
+                params[shortenName(d.getAttribute("name"))] = controlValue(d);
+            });
+
+            var value = e.value;
+            updateListBox(e,e.getAttribute("fillUrl"),{
+                parameters: params,
+                onSuccess: function() {
+                    if (value=="") {
+                        // reflect the initial value. if the control depends on several other SELECT.select,
+                        // it may take several updates before we get the right items, which is why all these precautions.
+                        var v = e.getAttribute("value");
+                        if (v) {
+                            e.value = v;
+                            if (e.value==v) e.removeAttribute("value"); // we were able to apply our initial value
+                        }
+                    }
+
+                    // if the update changed the current selection, others listening to this control needs to be notified.
+                    if (e.value!=value) fireEvent(e,"change");
+                }
+            });
+        }
+
+        // install change handlers
+        dep = e.getAttribute("fillDependsOn").split(" ").collect(function (name) {
+            var c = findNearBy(e,name);
+            c.addEventListener("change",refill,false);
+            return c;
+        });
+
+        refill(); // initial fill
     }
+
 };
 
 function applyTooltip(e,text) {
@@ -1110,6 +1159,8 @@ var repeatableSupport = {
     // block name for structured HTML
     name : null,
 
+    withDragDrop: false,
+
     // do the initialization
     init : function(container,master,insertionPoint) {
         this.container = $(container);
@@ -1120,6 +1171,7 @@ var repeatableSupport = {
         this.insertionPoint = $(insertionPoint);
         this.name = master.getAttribute("name");
         this.update();
+        this.withDragDrop = initContainerDD(container);
     },
 
     // insert one more block at the insertion position
@@ -1131,6 +1183,7 @@ var repeatableSupport = {
         nc.setAttribute("name",this.name);
         nc.innerHTML = this.blockHTML;
         this.insertionPoint.parentNode.insertBefore(nc, this.insertionPoint);
+        if (this.withDragDrop) prepareDD(nc);
 
         Behaviour.applySubtree(nc);
         this.update();
@@ -1259,24 +1312,29 @@ function updateBuildHistory(ajaxUrl,nBuild) {
 
 // send async request to the given URL (which will send back serialized ListBoxModel object),
 // then use the result to fill the list box.
-function updateListBox(listBox,url) {
-    new Ajax.Request(url, {
-        onSuccess: function(rsp) {
-            var l = $(listBox);
-            while(l.length>0)   l.options[0] = null;
+function updateListBox(listBox,url,config) {
+    config = config || {};
+    config = object(config);
+    var originalOnSuccess = config.onSuccess;
+    config.onSuccess = function(rsp) {
+        var l = $(listBox);
+        while(l.length>0)   l.options[0] = null;
 
-            var opts = eval('('+rsp.responseText+')').values;
-            for( var i=0; i<opts.length; i++ ) {
-                l.options[i] = new Option(opts[i].name,opts[i].value);
-                if(opts[i].selected)
-                    l.selectedIndex = i;
-            }
-        },
-        onFailure: function(rsp) {
-            var l = $(listBox);
-            l.options[0] = null;
+        var opts = eval('('+rsp.responseText+')').values;
+        for( var i=0; i<opts.length; i++ ) {
+            l.options[i] = new Option(opts[i].name,opts[i].value);
+            if(opts[i].selected)
+                l.selectedIndex = i;
         }
-    });
+        if (originalOnSuccess!=undefined)
+            originalOnSuccess(rsp);
+    },
+    config.onFailure = function(rsp) {
+        var l = $(listBox);
+        l.options[0] = null;
+    }
+
+    new Ajax.Request(url, config);
 }
 
 // get the cascaded computed style value. 'a' is the style name like 'backgroundColor'
@@ -1368,6 +1426,19 @@ function findFormParent(e,form) {
     return form;
 }
 
+// compute the form field name from the control name
+function shortenName(name) {
+    // [abc.def.ghi] -> abc.def.ghi
+    if(name.startsWith('['))
+        return name.substring(1,name.length-1);
+
+    // abc.def.ghi -> ghi
+    var idx = name.lastIndexOf('.');
+    if(idx>=0)  name = name.substring(idx+1);
+    return name;
+}
+
+
 
 //
 // structured form submission handling
@@ -1381,17 +1452,6 @@ function buildFormTree(form) {
 
         var doms = []; // DOMs that we added 'formDom' for.
         doms.push(form);
-
-        function shortenName(name) {
-            // [abc.def.ghi] -> abc.def.ghi
-            if(name.startsWith('['))
-                return name.substring(1,name.length-1);
-
-            // abc.def.ghi -> ghi
-            var idx = name.lastIndexOf('.');
-            if(idx>=0)  name = name.substring(idx+1);
-            return name;
-        }
 
         function addProperty(parent,name,value) {
             name = shortenName(name);
@@ -1569,8 +1629,28 @@ var hoverNotification = (function() {
 })();
 
 /*
-    D&D implementation for heterogeneous list.
+    Drag&Drop implementation for heterogeneous/repeatable lists.
  */
+function initContainerDD(e) {
+    if (!Element.hasClassName(e,"with-drag-drop")) return false;
+
+    for (e=e.firstChild; e!=null; e=e.nextSibling) {
+        if (Element.hasClassName(e,"repeated-chunk"))
+            prepareDD(e);
+    }
+    return true;
+}
+function prepareDD(e) {
+    var h = e;
+    // locate a handle
+    while (h!=null && !Element.hasClassName(h,"dd-handle"))
+        h = h.firstChild ? h.firstChild : h.nextSibling;
+    if (h!=null) {
+        var dd = new DragDrop(e);
+        dd.setHandleElId(h);
+    }
+}
+
 var DragDrop = function(id, sGroup, config) {
     DragDrop.superclass.constructor.apply(this, arguments);
 };
@@ -1644,7 +1724,9 @@ var DragDrop = function(id, sGroup, config) {
 
             // We are only concerned with list items, we ignore the dragover
             // notifications for the list.
-            if (destEl.nodeName == "DIV" && Dom.hasClass(destEl,"repeated-chunk")) {
+            if (destEl.nodeName == "DIV" && Dom.hasClass(destEl,"repeated-chunk")
+                    // Nested lists.. ensure we don't drag out of this list or into a nested one:
+                    && destEl.parentNode==srcEl.parentNode) {
                 var p = destEl.parentNode;
 
                 // if going up, insert above the target element
