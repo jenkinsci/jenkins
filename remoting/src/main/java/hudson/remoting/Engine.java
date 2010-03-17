@@ -140,11 +140,11 @@ public class Engine extends Thread {
 
                     // find out the TCP port
                     HttpURLConnection con = (HttpURLConnection)salURL.openConnection();
-                if (con instanceof HttpURLConnection && credentials != null) {
-                    HttpURLConnection http = (HttpURLConnection) con;
-		    String encoding = new sun.misc.BASE64Encoder().encode (credentials.getBytes());
-		    http.setRequestProperty ("Authorization", "Basic " + encoding);
-		}
+                    if (con instanceof HttpURLConnection && credentials != null) {
+                        HttpURLConnection http = (HttpURLConnection) con;
+                        String encoding = new sun.misc.BASE64Encoder().encode(credentials.getBytes());
+                        http.setRequestProperty("Authorization", "Basic " + encoding);
+                    }
                     try {
                         con.connect();
                     } catch (IOException x) {
