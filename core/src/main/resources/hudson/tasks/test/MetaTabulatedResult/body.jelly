@@ -1,7 +1,8 @@
 <!--
 The MIT License
 
-Copyright (c) 2004-2010, Sun Microsystems, Inc., Kohsuke Kawaguchi, id:cactusman, Tom Huybrechts, Yahoo!, Inc.
+Copyright (c) 2004-2010, Sun Microsystems, Inc., Kohsuke Kawaguchi,
+id:cactusman, Tom Huybrechts, Yahoo!, Inc.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -24,7 +25,7 @@ THE SOFTWARE.
 
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
 
-	<script type="text/javascript">
+  <script type="text/javascript">
 		<!-- TODO make sure load doesn't happen every time -->
 		function showStackTrace(id,query) {
 			var element = document.getElementById(id)
@@ -56,19 +57,19 @@ THE SOFTWARE.
       <j:forEach var="f" items="${it.failedTests}" varStatus="i">
         <tr>
           <td class="pane">
-			<a id="test-${f.fullName}-showlink"
-				href="javascript:showStackTrace('test-${h.jsStringEscape(f.fullName)}','${f.getRelativePathFrom(it)}/summary')">&gt;&gt;&gt;</a>
-			<a id="test-${f.fullName}-hidelink" style="display:none"
-				href="javascript:hideStackTrace('test-${h.jsStringEscape(f.fullName)}')">&lt;&lt;&lt;</a>
-          	<st:nbsp/>
+            <a id="test-${f.fullName}-showlink"
+               href="javascript:showStackTrace('test-${h.jsStringEscape(f.fullName)}','${f.getRelativePathFrom(it)}/summary')">&gt;&gt;&gt;</a>
+            <a id="test-${f.fullName}-hidelink" style="display:none"
+               href="javascript:hideStackTrace('test-${h.jsStringEscape(f.fullName)}')">&lt;&lt;&lt;</a>
+            <st:nbsp/>
             <a href="${f.getRelativePathFrom(it)}"><st:out value="${f.fullName}"/></a>
-          	<st:nbsp/>
-	        <j:forEach var="badge" items="${f.testActions}">
-	          <st:include it="${badge}" page="badge.jelly" optional="true"/>
-	        </j:forEach>
-			<div id="test-${f.fullName}" class="hidden" style="display:none">
-			${%Loading...}
-			</div>
+            <st:nbsp/>
+            <j:forEach var="badge" items="${f.testActions}">
+              <st:include it="${badge}" page="badge.jelly" optional="true"/>
+            </j:forEach>
+            <div id="test-${f.fullName}" class="hidden" style="display:none">
+              ${%Loading...}
+            </div>
           </td>
           
           <td class="pane" style="text-align:right;">
@@ -100,11 +101,11 @@ THE SOFTWARE.
           <j:set var="prev" value="${p.previousResult}" />
           <tr>
             <td class="pane">
-	            <a href="${p.safeName}/"><span style='${prev==null?"font-weight:bold":""}'>${p.name}</span></a>
-	          	<st:nbsp/>
-		        <j:forEach var="badge" items="${p.testActions}">
-		          <st:include it="${badge}" page="badge.jelly" optional="true"/>
-		        </j:forEach>
+              <a href="${p.safeName}/"><span style="${prev==null?'font-weight:bold':''}"><st:out value="${p.name}" /></span></a>
+                <st:nbsp/>
+                <j:forEach var="badge" items="${p.testActions}">
+                  <st:include it="${badge}" page="badge.jelly" optional="true"/>
+                </j:forEach>
             </td>
             <td class="pane" style="text-align:right" data="${p.duration}">${p.durationString}</td>
             <td class="pane" style="text-align:right">${p.failCount}</td>
