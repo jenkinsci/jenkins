@@ -736,7 +736,7 @@ public final class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,Ma
     public FormValidation doCheckFileInWorkspace(@QueryParameter String value) throws IOException, ServletException {
         MavenModuleSetBuild lb = getLastBuild();
         if (lb!=null) {
-            FilePath ws = lb.getWorkspace();
+            FilePath ws = lb.getModuleRoot();
             if(ws!=null)
                 return ws.validateRelativePath(value,true,true);
         }
