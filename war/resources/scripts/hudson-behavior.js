@@ -1788,8 +1788,15 @@ function applySafeRedirector(url) {
     new PeriodicalExecuter(function() {
       i = (i+1)%4;
       var s = "";
-      for( var j=0; j<i; j++ )
+      var j=0;
+      for( j=0; j<i; j++ )
         s+='.';
+      // put the rest of dots as hidden so that the layout doesn't change
+      // depending on the # of dots.
+      s+="<span style='visibility:hidden'>";
+      for( ; j<4; j++ )
+        s+='.';
+      s+="</span>";
       $('progress').innerHTML = s;
     },1);
 
