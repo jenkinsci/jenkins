@@ -72,6 +72,9 @@ import static java.lang.Math.abs;
  * @since 1.349
  */
 public class AnnotatedLargeText<T> extends LargeText {
+    /**
+     * Can be null.
+     */
     private T context;
 
     public AnnotatedLargeText(File file, Charset charset, boolean completed, T context) {
@@ -130,7 +133,7 @@ public class AnnotatedLargeText<T> extends LargeText {
             throw new IOException2(e);
         }
         // start from scratch
-        return ConsoleAnnotator.initial(context.getClass());
+        return ConsoleAnnotator.initial(context==null ? null : context.getClass());
     }
 
     @Override
