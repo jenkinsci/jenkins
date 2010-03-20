@@ -147,7 +147,9 @@ THE SOFTWARE.
                   	<img width="16" height="16" src="${imagesURL}/16x16/${r.buildStatusUrl}" alt="${r.iconColor.description}" />
                   </td>
                   <td data="${r.number}">
+                    <a href="${r.number}">
                     ${r.displayName}
+                    </a>
                   </td>
                   <td data="${r.duration}">
                     ${r.durationString}
