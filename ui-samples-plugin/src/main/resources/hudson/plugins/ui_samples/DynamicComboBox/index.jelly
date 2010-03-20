@@ -22,8 +22,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 -->
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:s="/lib/samples"
-         xmlns:this="this">
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:s="/lib/samples">
 	<l:layout title="Dynamic ComboBox Sample">
 		<l:main-panel>
       <h1>Dynamic ComboBox Sample</h1>
@@ -31,8 +30,6 @@ THE SOFTWARE.
       <p>
         <j:out value="${it.description}"/>
       </p>
-
-      <this:_sources />
 
       <s:sample>
         <form>

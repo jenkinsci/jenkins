@@ -192,7 +192,7 @@ THE SOFTWARE.
             <systemProperty>
               <!-- load view resources from the source directly, again for real time change -->
               <name>stapler.resourcePath</name>
-              <value>../core/src/main/resources;../ui-samples-plugin/src/main/resources;../maven-plugin/src/main/resources</value>
+              <value>../core/src/main/resources</value>
             </systemProperty>
             <systemProperty>
               <!-- enable the plugins in main by default -->
