@@ -411,7 +411,8 @@ var hudsonRules = {
             nc.innerHTML = t.html;
             insertionPoint.parentNode.insertBefore(nc, insertionPoint);
             if(withDragDrop)    prepareDD(nc);
-            
+
+            hudsonRules['DIV.repeated-chunk'](nc);  // applySubtree doesn't get nc itself
             Behaviour.applySubtree(nc);
         });
 
@@ -726,6 +727,23 @@ var hudsonRules = {
             return false;
         };
         e = null; // memory leak prevention
+    },
+
+    // radio buttons in repeatable content
+    "DIV.repeated-chunk" : function(d) {
+        var inputs = d.getElementsByTagName('INPUT');
+        for (var i = 0; i < inputs.length; i++) {
+            if (inputs[i].type == 'radio') {
+                // Need to uniquify each set of radio buttons in repeatable content.
+                // buildFormTree will remove the prefix before form submission.
+                var prefix = d.getAttribute('radioPrefix');
+                if (!prefix) {
+                    prefix = 'removeme' + (iota++) + '_';
+                    d.setAttribute('radioPrefix', prefix);
+                }
+                inputs[i].name = prefix + inputs[i].name;
+            }
+        }
     },
 
     // radioBlock.jelly
@@ -1185,6 +1203,7 @@ var repeatableSupport = {
         this.insertionPoint.parentNode.insertBefore(nc, this.insertionPoint);
         if (this.withDragDrop) prepareDD(nc);
 
+        hudsonRules['DIV.repeated-chunk'](nc);  // applySubtree doesn't get nc itself
         Behaviour.applySubtree(nc);
         this.update();
     },
@@ -1541,6 +1560,8 @@ function buildFormTree(form) {
                 break;
             case "radio":
                 if(!e.checked)  break;
+                if (e.name.substring(0,8)=='removeme')
+                    e.name = e.name.substring(e.name.indexOf('_',8)+1);
                 if(e.groupingNode) {
                     p = findParent(e);
                     addProperty(p, e.name, e.formDom = { value: e.value });
