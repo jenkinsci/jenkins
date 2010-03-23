@@ -1560,7 +1560,7 @@ function buildFormTree(form) {
                 break;
             case "radio":
                 if(!e.checked)  break;
-                if (e.name.substring(0,8)=='removeme')
+                while (e.name.substring(0,8)=='removeme')
                     e.name = e.name.substring(e.name.indexOf('_',8)+1);
                 if(e.groupingNode) {
                     p = findParent(e);
