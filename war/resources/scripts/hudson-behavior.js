@@ -742,6 +742,8 @@ var hudsonRules = {
                     d.setAttribute('radioPrefix', prefix);
                 }
                 inputs[i].name = prefix + inputs[i].name;
+                // Reselect anything unselected by browser before names uniquified:
+                if (inputs[i].defaultChecked) inputs[i].checked = true;
             }
         }
     },
@@ -1581,7 +1583,6 @@ function buildFormTree(form) {
         // clean up
         for( i=0; i<doms.length; i++ )
             doms[i].formDom = null;
-
 
         return jsonElement.value;
     } catch(e) {
