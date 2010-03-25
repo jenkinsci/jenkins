@@ -114,17 +114,15 @@ function ComboBox(idOrField, callback, config) {
 	this.field.form.oldonsubmit = this.field.form.onsubmit;
 	this.field.onfocus = function() {
 		this.form.onsubmit = function() {
+			if (self.isDropdownShowing) return false;
 			if (this.oldonsubmit) this.oldonsubmit();
-			return ! self.isDropdownShowing;
+			return true;
 		};
 	}
 	this.field.onblur = function() {
 		var cb = this.comboBox;
 		this.hideTimeout = setTimeout(function() { cb.hideDropdown(); }, 100);
-		this.form.onsubmit = function() {
-			if (this.oldonsubmit) this.oldonsubmit();
-			return true;
-		};
+                this.form.onsubmit = this.form.oldonsubmit;
 	}
 	
 	// privileged methods

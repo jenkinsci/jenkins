@@ -25,6 +25,9 @@ package hudson.cli;
 
 import hudson.Extension;
 
+import java.util.Map;
+import java.util.TreeMap;
+
 /**
  * Show the list of all commands.
  *
@@ -38,10 +41,15 @@ public class HelpCommand extends CLICommand {
     }
 
     protected int run() {
-        for (CLICommand c : CLICommand.all()) {
+        Map<String,CLICommand> commands = new TreeMap<String,CLICommand>();
+        for (CLICommand c : CLICommand.all())
+            commands.put(c.getName(),c);
+
+        for (CLICommand c : commands.values()) {
             stderr.println("  "+c.getName());
             stderr.println("    "+c.getShortDescription());
         }
+        
         return 0;
     }
 }

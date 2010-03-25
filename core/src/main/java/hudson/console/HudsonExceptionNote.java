@@ -53,6 +53,9 @@ public class HudsonExceptionNote extends ConsoleNote<Object> {
                     return this;
                 }
 
+                if (AND_MORE.matcher(line).matches())
+                    return this;
+
                 // looks like we are done with the stack trace
                 return null;
             }
@@ -93,4 +96,6 @@ public class HudsonExceptionNote extends ConsoleNote<Object> {
     private static final Pattern STACK_TRACE_ELEMENT = Pattern.compile("\tat ("+CLASSNAME_PATTERN+")\\.([\\p{L}0-9$_<>]+)\\((\\S+):([0-9]+)\\)");
 
     private static final String CAUSED_BY = "Caused by: ";
+
+    private static final Pattern AND_MORE = Pattern.compile("\t... [0-9]+ more");
 }

@@ -39,6 +39,14 @@ import static hudson.init.InitMilestone.COMPLETED;
  * Placed on static methods to indicate that this method is to be run during the Hudson start up to perform
  * some sort of initialization tasks.
  *
+ * <h3>Example</h3>
+ * <pre>
+   &#64;Initializer(after=JOB_LOADED)
+   public static void init() throws IOException {
+       ....
+   }
+ * </pre>
+ * 
  * @author Kohsuke Kawaguchi
  */
 @Indexed

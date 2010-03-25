@@ -40,6 +40,9 @@ public class StreamCopyThread extends Thread {
     public StreamCopyThread(String threadName, InputStream in, OutputStream out, boolean closeOut) {
         super(threadName);
         this.in = in;
+        if (out == null) {
+            throw new NullPointerException("out is null");
+        }
         this.out = out;
         this.closeOut = closeOut;
     }
