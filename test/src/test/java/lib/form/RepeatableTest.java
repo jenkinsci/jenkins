@@ -137,6 +137,26 @@ public class RepeatableTest extends HudsonTestCase {
                      formData.get("foos").toString());
     }
 
+    public static class FooRadio {
+        public String txt, radio;
+        public FooRadio(String txt, String radio) { this.txt = txt; this.radio = radio; }
+    }
+
+    public void testRadio_ExistingData() throws Exception {
+        list.add(new FooRadio("1", "one"));
+        list.add(new FooRadio("2", "two"));
+        list.add(new FooRadio("three", "one"));
+        HtmlPage p = createWebClient().goTo("self/testRadio");
+        HtmlForm f = p.getFormByName("config");
+        f.getButtonByCaption("Add").click();
+        f.getInputByValue("").setValueAttribute("txt 4");
+        f.getElementsByAttribute("INPUT", "type", "radio").get(7).click();
+        submit(f);
+        assertEquals("[{\"radio\":\"one\",\"txt\":\"1\"},{\"radio\":\"two\",\"txt\":\"2\"},"
+                + "{\"radio\":\"one\",\"txt\":\"three\"},{\"radio\":\"two\",\"txt\":\"txt 4\"}]",
+                formData.get("foos").toString());
+    }
+
     // hudson-behavior uniquifies radiobutton names so the browser properly handles each group,
     // then converts back to original names when submitting form.
     public void testRadioBlock() throws Exception {
@@ -213,6 +233,7 @@ public class RepeatableTest extends HudsonTestCase {
             f.getElementsByAttribute("input", "type", "radio").get(2).click(); // inner=inone
             f.getButtonByCaption("Add").click();
             f.getElementsByAttribute("input", "type", "radio").get(4).click(); // outer=one
+            Thread.sleep(500);
             f.getElementsByTagName("button").get(1).click(); // 2nd "Add Moo" button
             f.getElementsByAttribute("input", "type", "radio").get(7).click(); // inner=intwo
             Thread.sleep(500);
