@@ -31,6 +31,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintStream;
 import java.io.PrintWriter;
+import java.io.Serializable;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
@@ -38,7 +39,7 @@ import java.util.logging.Logger;
 /**
  * {@link TaskListener} which sends messages to a {@link Logger}.
  */
-public class LogTaskListener implements TaskListener {
+public class LogTaskListener implements TaskListener, Serializable {
     
     private final TaskListener delegate;
 
@@ -114,4 +115,5 @@ public class LogTaskListener implements TaskListener {
 
     }
 
+    private static final long serialVersionUID = 1L;
 }

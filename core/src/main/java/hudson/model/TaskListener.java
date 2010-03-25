@@ -50,6 +50,7 @@ import java.util.Formatter;
  *
  * <p>
  * {@link StreamTaskListener} is the most typical implementation of this interface.
+ * All the {@link TaskListener} implementations passed to plugins from Hudson core are remotable.
  *
  * @author Kohsuke Kawaguchi
  */
