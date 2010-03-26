@@ -797,7 +797,9 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
         private final String privateRepository;
         private final String alternateSettings;
         private final boolean nonRecursive;
-	
+        // We're called against the module root, not the workspace, which can cause a lot of confusion.
+        private final String workspaceProper;
+        
         public PomParser(BuildListener listener, MavenInstallation mavenHome, MavenModuleSet project) {
             // project cannot be shipped to the remote JVM, so all the relevant properties need to be captured now.
             this.listener = listener;
@@ -806,6 +808,7 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
             this.profiles = project.getProfiles();
             this.properties = project.getMavenProperties();
             this.nonRecursive = project.isNonRecursive();
+            this.workspaceProper = project.getLastBuild().getWorkspace().getRemote();
             if (project.usesPrivateRepository()) {
                 this.privateRepository = project.getLastBuild().getWorkspace().child(".repository").getRemote();
             } else {
@@ -847,7 +850,7 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
 			       + pom);
 	    
             File settingsLoc = (alternateSettings == null) ? null 
-                : new File(ws, alternateSettings);
+                : new File(workspaceProper, alternateSettings);
 
             if ((settingsLoc != null) && (!settingsLoc.exists())) {
                 throw new AbortException(Messages.MavenModuleSetBuild_NoSuchAlternateSettings(settingsLoc.getAbsolutePath()));
