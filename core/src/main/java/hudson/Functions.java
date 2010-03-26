@@ -104,12 +104,15 @@ import java.util.Calendar;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.ConcurrentModificationException;
+import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.SortedMap;
 import java.util.TreeMap;
 import java.util.Date;
+import java.util.logging.LogManager;
 import java.util.logging.LogRecord;
 import java.util.logging.SimpleFormatter;
 import java.util.regex.Pattern;
@@ -1212,6 +1215,23 @@ public class Functions {
                 buf.append("<script src='"+cp+"/descriptor/"+d.clazz.getName()+"/script.js'></script>");
         }
         return buf.toString();
+    }
+
+    /**
+     * Work around for bug 6935026.
+     */
+    public List<String> getLoggerNames() {
+        while (true) {
+            try {
+                List<String> r = new ArrayList<String>();
+                Enumeration<String> e = LogManager.getLogManager().getLoggerNames();
+                while (e.hasMoreElements())
+                    r.add(e.nextElement());
+                return r;
+            } catch (ConcurrentModificationException e) {
+                // retry
+            }
+        }
     }
     
     private static final Pattern SCHEME = Pattern.compile("[a-z]+://.+");

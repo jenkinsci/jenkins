@@ -39,7 +39,7 @@ THE SOFTWARE.
         <th>${%Level}</th>
       </tr>
       <j:invokeStatic var="lm" className="java.util.logging.LogManager" method="getLogManager"/>
-      <j:forEach var="name" items="${lm.loggerNames}">
+      <j:forEach var="name" items="${h.loggerNames}">
         <j:set var="logger" value="${lm.getLogger(name)}"/>
         <j:if test="${logger.level != null}">
           <tr>
