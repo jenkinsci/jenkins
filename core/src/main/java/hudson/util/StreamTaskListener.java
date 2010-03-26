@@ -74,7 +74,10 @@ public class StreamTaskListener implements TaskListener, Serializable, Closeable
 
     public StreamTaskListener(OutputStream out, Charset charset) {
         try {
-            this.out = charset==null ? new PrintStream(out,false) : new PrintStream(out,false,charset.name());
+            if (charset == null)
+                this.out = (out instanceof PrintStream) ? (PrintStream)out : new PrintStream(out, false);
+            else
+                this.out = new PrintStream(out, false, charset.name());
             this.charset = charset;
         } catch (UnsupportedEncodingException e) {
             // it's not very pretty to do this, but otherwise we'd have to touch too many call sites.
