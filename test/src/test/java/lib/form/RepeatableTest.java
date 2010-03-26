@@ -24,10 +24,16 @@
 package lib.form;
 
 import com.gargoylesoftware.htmlunit.ElementNotFoundException;
+import com.gargoylesoftware.htmlunit.Page;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import com.gargoylesoftware.htmlunit.html.HtmlForm;
+
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+
+import com.gargoylesoftware.htmlunit.javascript.background.JavaScriptJob;
+import com.gargoylesoftware.htmlunit.javascript.background.JavaScriptJobManagerImpl;
 import net.sf.json.JSONObject;
 import org.jvnet.hudson.test.HudsonTestCase;
 import org.kohsuke.stapler.DataBoundConstructor;
@@ -180,15 +186,14 @@ public class RepeatableTest extends HudsonTestCase {
         HtmlPage p = createWebClient().goTo("self/testNested");
         HtmlForm f = p.getFormByName("config");
         try {
-            f.getButtonByCaption("Add").click();
+            clickButton(p, f, "Add");
             f.getInputByValue("").setValueAttribute("title one");
-            Thread.sleep(1000);  // Saw intermittent failures w/o this
-            f.getButtonByCaption("Add Foo").click();
+            clickButton(p,f,"Add Foo");
             f.getInputByValue("").setValueAttribute("txt one");
-            f.getButtonByCaption("Add Foo").click();
+            clickButton(p,f,"Add Foo");
             f.getInputByValue("").setValueAttribute("txt two");
             f.getInputsByName("bool").get(1).click();
-            f.getButtonByCaption("Add").click();
+            clickButton(p, f, "Add");
             f.getInputByValue("").setValueAttribute("title two");
             f.getElementsByTagName("button").get(1).click(); // 2nd "Add Foo" button
             f.getInputByValue("").setValueAttribute("txt 2.1");
@@ -202,21 +207,26 @@ public class RepeatableTest extends HudsonTestCase {
                      + "FooList:title two:[foo:txt 2.1:false]]", bindResult.toString());
     }
 
+    private void clickButton(HtmlPage p, HtmlForm f, String caption) throws IOException {
+        f.getButtonByCaption(caption).click();
+        waitForJavaScript(p);
+    }
+
     public void testNestedRadio() throws Exception {
         HtmlPage p = createWebClient().goTo("self/testNestedRadio");
         HtmlForm f = p.getFormByName("config");
         try {
-            f.getButtonByCaption("Add").click();
+            clickButton(p, f, "Add");
             f.getElementsByAttribute("input", "type", "radio").get(1).click(); // outer=two
-            Thread.sleep(500);  // Saw intermittent failures w/o this
             f.getButtonByCaption("Add Moo").click();
             f.getElementsByAttribute("input", "type", "radio").get(2).click(); // inner=inone
             f.getButtonByCaption("Add").click();
             f.getElementsByAttribute("input", "type", "radio").get(4).click(); // outer=one
             f.getElementsByTagName("button").get(1).click(); // 2nd "Add Moo" button
+            waitForJavaScript(p);
             f.getElementsByAttribute("input", "type", "radio").get(7).click(); // inner=intwo
-            Thread.sleep(500);
             f.getElementsByTagName("button").get(1).click();
+            waitForJavaScript(p);
             f.getElementsByAttribute("input", "type", "radio").get(8).click(); // inner=inone
         } catch (Exception e) {
             System.err.println("HTML at time of failure:\n" + p.getBody().asXml());
@@ -226,5 +236,18 @@ public class RepeatableTest extends HudsonTestCase {
         assertEquals("[{\"moo\":{\"inner\":\"inone\"},\"outer\":\"two\"},"
                      + "{\"moo\":[{\"inner\":\"intwo\"},{\"inner\":\"inone\"}],\"outer\":\"one\"}]",
                      formData.get("items").toString());
+    }
+
+    /**
+     * YUI internally partially relies on setTimeout/setInterval when we add a new chunk of HTML
+     * to the page. So wait for the completion of it.
+     *
+     * <p>
+     * To see where such asynchronous activity is happening, set a breakpoint to
+     * {@link JavaScriptJobManagerImpl#addJob(JavaScriptJob, Page)} and look at the call stack.
+     * Also see {@link #jsDebugger} at that time to see the JavaScript callstack.
+     */
+    private void waitForJavaScript(HtmlPage p) {
+        p.getEnclosingWindow().getJobManager().waitForJobsStartingBefore(50);
     }
 }

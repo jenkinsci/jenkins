@@ -1413,9 +1413,6 @@ public abstract class HudsonTestCase extends TestCase implements RootAction {
          * by tweaking {@link Dim.StackFrame#onLineChange(Context, int)}.
          */
         public Dim interactiveJavaScriptDebugger() {
-            // this can be too late, depending on when this method is invoked.
-            Functions.DEBUG_YUI = true;
-
             Global global = new Global();
             HtmlUnitContextFactory cf = getJavaScriptEngine().getContextFactory();
             global.init(cf);
@@ -1479,5 +1476,6 @@ public abstract class HudsonTestCase extends TestCase implements RootAction {
     public static final MimeTypes MIME_TYPES = new MimeTypes();
     static {
         MIME_TYPES.addMimeMapping("js","application/javascript");
+        Functions.DEBUG_YUI = true;
     }
 }
