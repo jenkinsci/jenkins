@@ -127,7 +127,7 @@ public abstract class ViewJob<JobT extends ViewJob<JobT,RunT>, RunT extends Run<
             reload();
         } finally {
             reloadingInProgress = false;
-            nextUpdate = System.currentTimeMillis()+1000*60;
+            nextUpdate = reloadPeriodically ? System.currentTimeMillis()+1000*60 : Long.MAX_VALUE;
         }
     }
 
@@ -186,4 +186,15 @@ public abstract class ViewJob<JobT extends ViewJob<JobT,RunT>, RunT extends Run<
     }
 
     // private static final Logger logger = Logger.getLogger(ViewJob.class.getName());
+
+    /**
+     * In the very old version of Hudson, an external job submission was just creating files on the file system,
+     * so we needed to periodically reload the jobs from a file system to pick up new records.
+     *
+     * <p>
+     * We then switched to submission via HTTP, so this reloading is no longer necessary, so only do this
+     * when explicitly requested.
+     * 
+     */
+    public static boolean reloadPeriodically = Boolean.getBoolean(ViewJob.class.getName()+".reloadPeriodically");
 }
