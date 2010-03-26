@@ -20,8 +20,15 @@ public class UrlAnnotator extends ConsoleAnnotatorFactory<Object> {
 
     private static class UrlConsoleAnnotator extends ConsoleAnnotator {
         public ConsoleAnnotator annotate(Object context, MarkupText text) {
-            for (SubText t : text.findTokens(URL))
+            for (SubText t : text.findTokens(URL)) {
+                int prev = t.start() - 1;
+                char ch = prev>=0 ? text.charAt(prev) : ' ';
+                int idx = OPEN.indexOf(ch);
+                if (idx>=0) {// if inside a bracket, exclude the end bracket.
+                    t=t.subText(0,t.getText().indexOf(CLOSE.charAt(idx)));
+                }
                 t.href(t.getText());
+            }
             return this;
         }
 
@@ -34,5 +41,8 @@ public class UrlAnnotator extends ConsoleAnnotatorFactory<Object> {
          * to URL in plain text (e.g., test="http://www.example.com/")
          */
         private static final Pattern URL = Pattern.compile("\\b(http|https|ftp)://[^\\s<>]+[^\\s<>,:\"'()\\[\\]=]");
+
+        private static final String OPEN = "'\"([<";
+        private static final String CLOSE= "'\")]>";
     }
 }

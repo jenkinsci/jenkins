@@ -49,12 +49,24 @@ public abstract class AbstractMarkupText {
      */
     public abstract String getText();
 
+    public char charAt(int idx) {
+        return getText().charAt(idx);
+    }
+
     /**
      * Length of the plain text.
      */
     public final int length() {
         return getText().length();
     }
+
+    /**
+     * Returns a subtext.
+     *
+     * @param end
+     *      If negative, -N means "trim the last N-1 chars". That is, (s,-1) is the same as (s,length)
+     */
+    public abstract MarkupText.SubText subText(int start, int end);
 
     /**
      * Adds a start tag and end tag at the specified position.
