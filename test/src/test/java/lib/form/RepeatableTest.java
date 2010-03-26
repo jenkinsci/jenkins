@@ -92,7 +92,7 @@ public class RepeatableTest extends HudsonTestCase {
     }
 
     public void testMinimum() throws Exception {
-        minimum = new Integer(3);
+        minimum = 3;
         HtmlPage p = createWebClient().goTo("self/testSimple");
         HtmlForm f = p.getFormByName("config");
         f.getInputByValue("").setValueAttribute("value one");
@@ -108,7 +108,7 @@ public class RepeatableTest extends HudsonTestCase {
 
     public void testMinimum_ExistingData() throws Exception {
         addData();
-        minimum = new Integer(3);
+        minimum = 3;
         HtmlPage p = createWebClient().goTo("self/testSimple");
         HtmlForm f = p.getFormByName("config");
         f.getInputByValue("").setValueAttribute("new one");
