@@ -1,10 +1,10 @@
 <html>
     <head>
         <title>利用可能な環境変数</title>
+        <style type="text/css">
+          dt { font-weight: bold; }
+        </style>
     </head>
-    <style type="text/css">
-        dt { font-weight: bold; }
-    </style>
 <body>
     シェルスクリプトでは、次の変数を利用できます。
 
@@ -36,6 +36,12 @@
 
     <dt>HUDSON_URL</dt>
     <dd>HudsonのURL。例 <tt>http://server:port/hudson/</tt></dd>
+
+    <dt>BUILD_URL</dt>
+    <dd>このビルドのURL。 例 <tt>http://server:port/hudson/job/foo/15/</tt></dd>
+
+    <dt>JOB_URL</dt>
+    <dd>このジョブのURL。 例 <tt>http://server:port/hudson/job/foo/</tt></dd>
 
     <dt>SVN_REVISION</dt>
     <dd>Subversionを使用するプロジェクトにおける、モジュールのリビジョン番号。</dd>
