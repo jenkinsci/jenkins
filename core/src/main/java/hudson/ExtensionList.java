@@ -239,7 +239,7 @@ public class ExtensionList<T> extends AbstractList<T> {
         if(type==ExtensionFinder.class)
             return new ExtensionList<T>(hudson,type) {
                 /**
-                 * If this ExtensionList is searching for ExtensionFinders, calling hudosn.getExtensionList
+                 * If this ExtensionList is searching for ExtensionFinders, calling hudson.getExtensionList
                  * results in infinite recursion.
                  */
                 @Override
