@@ -219,8 +219,10 @@ public class RepeatableTest extends HudsonTestCase {
             clickButton(p, f, "Add");
             f.getElementsByAttribute("input", "type", "radio").get(1).click(); // outer=two
             f.getButtonByCaption("Add Moo").click();
+            waitForJavaScript(p);
             f.getElementsByAttribute("input", "type", "radio").get(2).click(); // inner=inone
             f.getButtonByCaption("Add").click();
+            waitForJavaScript(p);
             f.getElementsByAttribute("input", "type", "radio").get(4).click(); // outer=one
             f.getElementsByTagName("button").get(1).click(); // 2nd "Add Moo" button
             waitForJavaScript(p);
