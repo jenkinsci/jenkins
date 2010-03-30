@@ -51,12 +51,16 @@ var crumb = {
     },
 
     /**
-     * Adds the crumb value into the given hash and returns the hash.
+     * Adds the crumb value into the given hash or array and returns it.
      */
-    wrap: function(hash) {
-        if(this.fieldName!=null)
-            hash[this.fieldName]=this.value;
-        return hash;
+    wrap: function(headers) {
+        if (this.fieldName!=null) {
+            if (headers instanceof Array)
+                headers.push(this.fieldName, this.value);
+            else
+                headers[this.fieldName]=this.value;
+        }
+        return headers;
     },
 
     /**
