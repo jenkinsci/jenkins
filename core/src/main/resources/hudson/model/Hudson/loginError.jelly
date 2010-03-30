@@ -33,6 +33,11 @@ THE SOFTWARE.
         <br/>       
         <a href="login?from=${request.session.getAttribute('from')}">${%Try again}</a>
       </div>
+      <div align="middle">
+        <div style="margin-top:2em; color:gray; width:20em">
+          $(%If you are a system administrator and suspect this to be a configuration problem, see the server console output for more details.}
+        </div>
+      </div>
     </l:main-panel>
   </l:layout>
 </j:jelly>
