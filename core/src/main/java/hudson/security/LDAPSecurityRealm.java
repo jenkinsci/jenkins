@@ -519,12 +519,12 @@ public class LDAPSecurityRealm extends SecurityRealm {
                 } catch (UnknownHostException x) {
                     return FormValidation.error(Messages.LDAPSecurityRealm_UnknownHost(x.getMessage()));
                 } catch (IOException x) {
-                    return FormValidation.error(Messages.LDAPSecurityRealm_UnableToConnect(server, x.getMessage()));
+                    return FormValidation.error(x,Messages.LDAPSecurityRealm_UnableToConnect(server, x.getMessage()));
                 }
 
                 // otherwise we don't know what caused it, so fall back to the general error report
                 // getMessage() alone doesn't offer enough
-                return FormValidation.error(Messages.LDAPSecurityRealm_UnableToConnect(server, e));
+                return FormValidation.error(e,Messages.LDAPSecurityRealm_UnableToConnect(server, e));
             } catch (NumberFormatException x) {
                 // The getLdapCtxInstance method throws this if it fails to parse the port number
                 return FormValidation.error(Messages.LDAPSecurityRealm_InvalidPortNumber());

@@ -122,6 +122,7 @@ var FormChecker = {
             method : next.method,
             onComplete : function(x) {
                 next.target.innerHTML = x.responseText;
+                Behaviour.applySubtree(next.target);
                 FormChecker.inProgress--;
                 FormChecker.schedule();
             }
@@ -307,6 +308,7 @@ function registerValidator(e) {
             method : method,
             onComplete : function(x) {
                 target.innerHTML = x.responseText;
+                Behaviour.applySubtree(target);
             }
         });
     }
@@ -852,8 +854,16 @@ var hudsonRules = {
         });
 
         refill(); // initial fill
-    }
+    },
 
+    "A.showDetails" : function(e) {
+        e.onclick = function() {
+            this.style.display = 'none';
+            this.nextSibling.style.display = 'block';
+            return false;
+        };
+        e = null; // avoid memory leak
+    }
 };
 
 function applyTooltip(e,text) {

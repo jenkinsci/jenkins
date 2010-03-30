@@ -24,6 +24,7 @@
 package hudson.util;
 
 import hudson.EnvVars;
+import hudson.Functions;
 import hudson.Launcher;
 import hudson.ProxyConfiguration;
 import hudson.Util;
@@ -160,6 +161,42 @@ public abstract class FormValidation extends IOException implements HttpResponse
     public static FormValidation ok(String format, Object... args) {
         return ok(String.format(format,args));
     }
+
+    /**
+     * Sends out a string error message, with optional "show details" link that expands to the full stack trace.
+     *
+     * <p>
+     * Use this with caution, so that anonymous users do not gain too much insights into the state of the system,
+     * as error stack trace often reveals a lot of information. Consider if a check operation needs to be exposed
+     * to everyone or just those who have higher access to job/hudson/etc.
+     */
+    public static FormValidation error(Throwable e, String message) {
+        return _error(Kind.ERROR, e, message);
+    }
+
+    public static FormValidation warning(Throwable e, String message) {
+        return _error(Kind.WARNING, e, message);
+    }
+
+    private static FormValidation _error(Kind kind, Throwable e, String message) {
+        if (e==null)    return _errorWithMarkup(Util.escape(message),kind);
+
+        return _errorWithMarkup(Util.escape(message)+
+            " <a href='#' class='showDetails'>(show details)</a><pre style='display:none'>"
+                  + Functions.printThrowable(e) +
+            "</pre>",kind
+        );
+    }
+
+    public static FormValidation error(Throwable e, String format, Object... args) {
+        return error(e,String.format(format,args));
+    }
+
+    public static FormValidation warning(Throwable e, String format, Object... args) {
+        return warning(e,String.format(format,args));
+    }
+
+
 
     /**
      * Sends out an HTML fragment that indicates an error.

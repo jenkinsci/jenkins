@@ -109,7 +109,7 @@ public class ZipExtractionInstaller extends ToolInstaller {
             } catch (MalformedURLException x) {
                 return FormValidation.error(Messages.ZipExtractionInstaller_malformed_url());
             } catch (IOException x) {
-                return FormValidation.error(Messages.ZipExtractionInstaller_could_not_connect());
+                return FormValidation.error(x,Messages.ZipExtractionInstaller_could_not_connect());
             }
         }
 
