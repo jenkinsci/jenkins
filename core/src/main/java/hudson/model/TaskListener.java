@@ -30,6 +30,7 @@ import hudson.util.StreamTaskListener;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.io.PrintWriter;
+import java.io.Serializable;
 import java.util.Formatter;
 
 /**
@@ -54,7 +55,7 @@ import java.util.Formatter;
  *
  * @author Kohsuke Kawaguchi
  */
-public interface TaskListener {
+public interface TaskListener extends Serializable {
     /**
      * This writer will receive the output of the build.
      *
