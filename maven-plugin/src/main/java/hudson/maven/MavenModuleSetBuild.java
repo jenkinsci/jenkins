@@ -388,9 +388,9 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
                                              "Either your server has no Maven installations defined, or the requested Maven version does not exist.");
                 
                 mvn = mvn.forEnvironment(envVars).forNode(Computer.currentComputer().getNode(), listener);
-                parsePoms(listener, logger, envVars, mvn);
 
                 if(!project.isAggregatorStyleBuild()) {
+                    parsePoms(listener, logger, envVars, mvn);
                     // start module builds
                     logger.println("Triggering "+project.getRootModule().getModuleName());
                     project.getRootModule().scheduleBuild(new UpstreamCause((Run<?,?>)MavenModuleSetBuild.this));
@@ -415,6 +415,7 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
                         if(!preBuild(listener, project.getPublishers()))
                             return Result.FAILURE;
 
+                        parsePoms(listener, logger, envVars, mvn); // #5428 : do pre-build *before* parsing pom
                         SplittableBuildListener slistener = new SplittableBuildListener(listener);
                         proxies = new HashMap<ModuleName, ProxyImpl2>();
                         List<String> changedModules = new ArrayList<String>();
