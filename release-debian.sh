@@ -38,6 +38,7 @@ cat debian/changelog ) > debian/changelog.tmp
 mv debian/changelog.tmp debian/changelog
 
 # build the debian package
+sudo apt-get install -y devscripts || true
 debuild -us -uc -B
 scp ../hudson_${ver}_all.deb hudson-ci.org:~/public_html_hudson/debian/binary
 
