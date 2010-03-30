@@ -226,9 +226,9 @@ public class LDAPSecurityRealm extends SecurityRealm {
     /**
      * Query to locate an entry that identifies the user, given the user name string.
      *
-     * Normally "uid={0}"
+     * Normally something like "uid={0}"
      *
-     * @see FilterBasedLdapUserSearch
+     * @see FilterBasedLdapUserSearch#searchFilter
      */
     public final String userSearch;
     
@@ -282,7 +282,7 @@ public class LDAPSecurityRealm extends SecurityRealm {
         this.rootDN = rootDN.trim();
         this.userSearchBase = fixNull(userSearchBase).trim();
         userSearch = fixEmptyAndTrim(userSearch);
-        this.userSearch = userSearch!=null ? userSearch : "uid={0}";
+        this.userSearch = userSearch!=null ? userSearch : "(| (uid={0}) (mail={0}) (cn={0}))";
         this.groupSearchBase = fixEmptyAndTrim(groupSearchBase);
     }
 
