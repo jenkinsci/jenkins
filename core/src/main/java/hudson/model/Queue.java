@@ -46,7 +46,6 @@ import hudson.model.queue.CauseOfBlockage.BecauseLabelIsOffline;
 import hudson.model.queue.CauseOfBlockage.BecauseNodeIsBusy;
 import hudson.triggers.SafeTimerTask;
 import hudson.triggers.Trigger;
-import hudson.util.Iterators;
 import hudson.util.OneShotEvent;
 import hudson.util.TimeUnit2;
 import hudson.util.XStream2;
@@ -381,6 +380,9 @@ public class Queue extends ResourceController implements Saveable {
      * Schedules an execution of a task.
      *
      * @param actions
+     *      These actions can be used for associating information scoped to a particular build, to
+     *      the task being queued. Upon the start of the build, these {@link Action}s will be automatically
+     *      added to the {@link Run} object, and hence avaialable to everyone.
      *      For the convenience of the caller, this list can contain null, and those will be silently ignored.
      * @since 1.311
      * @return
@@ -501,9 +503,7 @@ public class Queue extends ResourceController implements Saveable {
     }
 
     /**
-     * @param actions
-     *      For convenience of the caller, some of the items in the array can be null,
-     *      and they'll be ignored.
+     * Convenience wrapper method around {@link #schedule(Task, int, List)}
      */
     public synchronized WaitingItem schedule(Task p, int quietPeriod, Action... actions) {
     	return schedule(p, quietPeriod, Arrays.asList(actions));
