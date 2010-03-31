@@ -1,6 +1,7 @@
 package hudson.console;
 
 import com.gargoylesoftware.htmlunit.Page;
+import com.gargoylesoftware.htmlunit.TextPage;
 import com.gargoylesoftware.htmlunit.WebRequestSettings;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import hudson.FilePath;
@@ -40,6 +41,7 @@ public class ConsoleAnnotatorTest extends HudsonTestCase {
     /**
      * Let the build complete, and see if stateless {@link ConsoleAnnotator} annotations happen as expected.
      */
+    @Bug(6031)
     public void testCompletedStatelessLogAnnotation() throws Exception {
         FreeStyleProject p = createFreeStyleProject();
         p.getBuildersList().add(new TestBuilder() {
@@ -56,6 +58,12 @@ public class ConsoleAnnotatorTest extends HudsonTestCase {
         // make sure we see the annotation
         HtmlPage rsp = createWebClient().getPage(b, "console");
         assertEquals(1,rsp.selectNodes("//B[@class='demo']").size());
+
+        // make sure raw console output doesn't include the garbage
+        TextPage raw = (TextPage)createWebClient().goTo(b.getUrl()+"consoleText","text/plain");
+        System.out.println(raw.getContent());
+        String nl = System.getProperty("line.separator");
+        assertTrue(raw.getContent().contains(nl+"---"+nl+"ooo"+nl+"ooo"+nl));
 
         // there should be two 'ooo's
         assertEquals(3,rsp.asXml().split("ooo").length);

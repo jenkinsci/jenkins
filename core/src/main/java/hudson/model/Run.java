@@ -48,6 +48,7 @@ import hudson.tasks.Mailer;
 import hudson.tasks.BuildWrapper;
 import hudson.tasks.BuildStep;
 import hudson.tasks.test.AbstractTestResultAction;
+import hudson.util.FlushProofOutputStream;
 import hudson.util.IOException2;
 import hudson.util.IOUtils;
 import hudson.util.LogTaskListener;
@@ -1534,14 +1535,8 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
     public void doConsoleText(StaplerRequest req, StaplerResponse rsp) throws IOException {
         rsp.setContentType("text/plain;charset=UTF-8");
         // Prevent jelly from flushing stream so Content-Length header can be added afterwards
-        FilterOutputStream out = new FilterOutputStream(rsp.getCompressedOutputStream(req)) {
-            @Override public void flush() { }
-            @Override public void write(byte[] b, int off, int len) throws IOException {
-                out.write(b,off,len);
-            }
-        };
-        IOUtils.copy(getLogReader(), out);
-        out.flush();
+        FlushProofOutputStream out = new FlushProofOutputStream(rsp.getCompressedOutputStream(req));
+        getLogText().writeLogTo(0,out);
         out.close();
     }
 
