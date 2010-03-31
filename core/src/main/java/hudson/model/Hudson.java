@@ -2823,12 +2823,15 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
      * Handles HTTP requests for duplex channels for CLI.
      */
     public void doCli(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException, InterruptedException {
-        checkPermission(READ);
         if(!"POST".equals(Stapler.getCurrentRequest().getMethod())) {
             // for GET request, serve _cli.jelly, assuming this is a browser
+            checkPermission(READ);
             req.getView(this,"_cli.jelly").forward(req,rsp);
             return;
         }
+
+        // do not require any permission to establish a CLI connection
+        // the actual authentication for the connecting Channel is done by CLICommand
 
         UUID uuid = UUID.fromString(req.getHeader("Session"));
         rsp.setHeader("Hudson-Duplex",""); // set the header so that the client would know
@@ -3334,6 +3337,7 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
             || rest.startsWith("/signup")
             || rest.startsWith("/jnlpJars/")
             || rest.startsWith("/tcpSlaveAgentListener")
+            || rest.startsWith("/cli"))
             || rest.startsWith("/securityRealm"))
                 return this;    // URLs that are always visible without READ permission
             throw e;
