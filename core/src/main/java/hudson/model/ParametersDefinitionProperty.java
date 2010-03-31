@@ -132,8 +132,8 @@ public class ParametersDefinitionProperty extends JobProperty<AbstractProject<?,
         // send the user back to the job top page.
         rsp.sendRedirect(".");
     }
-    
-    public void buildWithParameters(StaplerRequest req, StaplerResponse rsp) throws IOException {
+
+    public void buildWithParameters(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
         List<ParameterValue> values = new ArrayList<ParameterValue>();
         for (ParameterDefinition d: parameterDefinitions) {
         	ParameterValue value = d.createValue(req);
@@ -145,7 +145,7 @@ public class ParametersDefinitionProperty extends JobProperty<AbstractProject<?,
         }
 
     	Hudson.getInstance().getQueue().schedule(
-    			owner, 0, new ParametersAction(values), new CauseAction(new Cause.UserCause()));
+    			owner, owner.getDelay(req), new ParametersAction(values), new CauseAction(new Cause.UserCause()));
 
         // send the user back to the job top page.
         rsp.sendRedirect(".");

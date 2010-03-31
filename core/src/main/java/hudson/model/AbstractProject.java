@@ -1410,28 +1410,32 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
         if (!isBuildable())
             throw HttpResponses.error(SC_INTERNAL_SERVER_ERROR,new IOException(getFullName()+" is not buildable"));
 
-        String delay = req.getParameter("delay");
-        if (delay!=null) {
-            try {
-                // TODO: more unit handling
-                if(delay.endsWith("sec"))   delay=delay.substring(0,delay.length()-3);
-                if(delay.endsWith("secs"))  delay=delay.substring(0,delay.length()-4);
-                Hudson.getInstance().getQueue().schedule(this, Integer.parseInt(delay),
-                        new CauseAction(cause));
-            } catch (NumberFormatException e) {
-                throw new ServletException("Invalid delay parameter value: "+delay);
-            }
-        } else {
-            scheduleBuild(cause);
-        }
+        Hudson.getInstance().getQueue().schedule(this, getDelay(req), new CauseAction(cause));
         rsp.forwardToPreviousPage(req);
+    }
+
+    /**
+     * Computes the delay by taking the default value and the override in the request parameter into the account.
+     */
+    public int getDelay(StaplerRequest req) throws ServletException {
+        String delay = req.getParameter("delay");
+        if (delay==null)    return getQuietPeriod();
+
+        try {
+            // TODO: more unit handling
+            if(delay.endsWith("sec"))   delay=delay.substring(0,delay.length()-3);
+            if(delay.endsWith("secs"))  delay=delay.substring(0,delay.length()-4);
+            return Integer.parseInt(delay);
+        } catch (NumberFormatException e) {
+            throw new ServletException("Invalid delay parameter value: "+delay);
+        }
     }
 
     /**
      * Supports build trigger with parameters via an HTTP GET or POST.
      * Currently only String parameters are supported.
      */
-    public void doBuildWithParameters(StaplerRequest req, StaplerResponse rsp) throws IOException {
+    public void doBuildWithParameters(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
         BuildAuthorizationToken.checkPermission(this, authToken, req, rsp);
 
         ParametersDefinitionProperty pp = getProperty(ParametersDefinitionProperty.class);
