@@ -75,7 +75,7 @@ public final class ComputerSet extends AbstractModelObject {
 
     @Exported
     public String getDisplayName() {
-        return "nodes";
+        return Messages.ComputerSet_DisplayName();
     }
 
     /**
