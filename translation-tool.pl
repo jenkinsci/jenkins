@@ -42,7 +42,7 @@ use strict;
 use File::Find;
 
 my ($lang, $editor, $dir, $toiso, $toascii, $add, $remove, $reuse) = (undef, undef, "./", undef, undef, undef, undef, undef);
-
+my ($tfiles, $tkeys, $tmissing, $tunused, $tempty, $tsame) = (0, 0, 0, 0, 0, 0);
 ## read arguments
 foreach (@ARGV) {
   if (/^--lang=(.*)$/) {
@@ -71,17 +71,29 @@ if (!$lang || $lang eq "en") {
   exit();
 }
 
+print STDERR "\rWait ...";
 ## look for Message.properties and *.jelly files in the provided folder 
 my @files = findTranslatableFiles($dir);
 
 ## load a cache with keys already translated to utilize in the case the same key is used
 my %cache = loadAllTranslatedKeys($reuse, $lang) if ($reuse && -e $reuse);
+print STDERR "\r             ";
 
 ## process each file
 foreach (@files) {
+   $tfiles ++;
    processFile($_);
 }
+
+## print statistics
+my $tdone = $tkeys - $tmissing - $tunused - $tempty - $tsame;
+printf ("\nTOTAL: Files: %d Keys: %d Done: %d(%.2f\%)\n       Missing: %d(%.2f\%) Orphan: %d(%.2f\%) Empty: %d(%.2f\%) Same: %d(%.2f\%)\n\n",
+        $tfiles, $tkeys, $tdone, 
+        $tdone/$tkeys*100, $tmissing, $tmissing/$tkeys*100, $tunused, $tunused/$tkeys*100, 
+        $tempty, $tempty/$tkeys*100, $tsame, $tsame/$tkeys*100);
+## end
 exit();
+
 
 ### This is the main method with is run for each file
 sub processFile {
@@ -112,25 +124,37 @@ sub processFile {
    # calculate missing keys in the file
    my $missing = "";
    foreach (keys %keys) {
-      next if ($okeys{$_});
-      $_ .=  "=" . $cache{$_} if (defined($cache{$_}));
-      $missing .= ($add ? "  Adding " : "  Missing") . " -> $_\n";
+      $tkeys ++;
+      if (!defined($okeys{$_})) {
+         $_ .=  "=" . $cache{$_} if (defined($cache{$_}));
+         $missing .= ($add ? "  Adding " : "  Missing") . " -> $_\n";
+         $tmissing ++;
+      } elsif ($okeys{$_} eq ''){
+         $missing .= "  Empty   -> $_\n";
+         $tempty ++;
+      }
    }
 
    # calculate old keys in the file which are currently unused 
    my $unused = "";
    foreach (keys %okeys) {
-      $unused .= "  Unused  -> $_\n" unless (defined $keys{$_});
+      if (!defined $keys{$_}) {
+         $unused .= "  Unused  -> $_\n";
+         $tunused ++;
+      }
    }
 
    # calculate keys which has the same value in english 
    my $same = "";
    foreach (keys %okeys) {
-      $same .= "  Same    -> $_\n" if ($okeys{$_} && $ekeys{$_} && $okeys{$_} eq $ekeys{$_});
+      if ($okeys{$_} && $ekeys{$_} && $okeys{$_} eq $ekeys{$_}) {
+         $same .= "  Same    -> $_\n" ;
+         $tsame ++;
+      }
    }
 
    # Show Alerts   
-   print "File: $ofile\n$missing$unused$same" if ($missing ne "" || $unused ne '' || $same ne '');
+   print "\nFile: $ofile\n$missing$unused$same" if ($missing ne "" || $unused ne '' || $same ne '');
 
    # write new keys in our file adding the English translation as a reference
    if ($add && $missing ne "") {
@@ -178,13 +202,11 @@ sub loadAllTranslatedKeys {
 sub findTranslatableFiles {
    my $dir = shift;
    die "Folder doesn't exist: $dir\n" unless (-e $dir);
-   print STDERR "Searching internationalizable files in '$dir'";
    my @ret;
    find(sub {
      my $file = $File::Find::name;
      push(@ret, $file) if ($file !~ m#(/src/test/)|(/target/)|(\.svn)# && $file =~ /(Messages.properties)$|(.*\.jelly)$/);
    }, $dir);
-   print STDERR ", found " . ($#ret + 1) .  "\n";
    return @ret;
 }
 
@@ -265,7 +287,7 @@ sub removeUnusedKeys {
 sub convert {
    my ($ofile, $toiso, $toascii) = @_;
    if (isUtf8($ofile) && ($toiso || $toascii)) {
-      print "Converting file $ofile to " . ($toiso ? "ISO-8859" : "ASCII") . "\n";
+      print "\nConverting file $ofile to " . ($toiso ? "ISO-8859" : "ASCII") . "\n";
       my $back = $ofile . "~~";
       if (rename($ofile, $back) && open(FI, $back) && open(FO, ">$ofile")) {
          while(<FI>) {
@@ -328,12 +350,12 @@ sub printLicense {
 ### Usage 
 sub usage {
    print "
-   Hudson's Translation Tool.
+Translation Tool for Hudson
    
-Usage: $0 --lang=xx [more_options] [dir]
+Usage: $0 --lang=xx [options] [dir]
 
-   Options:
-     dir                  -> source folder for searching files (default current)
+   dir:                   -> source folder for searching files (default current)
+   options:
      --lang=xx            -> language code to use (it is mandatory and it has to be different to English)
      --toiso=true|false   -> convert files in UTF-8 to ISO-8859 (default false)
      --toascii=true|false -> convert files in UTF-8 to ASCII using the native2ascii command (default false)

@@ -28,9 +28,9 @@ import java.util.Collection;
 /**
  * Cumulated result of multiple tests.
  *
- * This class doesn't have a purpose anymore. TestResult
- * is a sufficient replacement, but we'll keep this one for
- * backward-compatibility.  
+ * <p>
+ * On top of {@link TestResult}, this class introduces a tree structure
+ * of {@link TestResult}s.
  *
  * @author Kohsuke Kawaguchi
  */

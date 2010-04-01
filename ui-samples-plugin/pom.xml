@@ -56,6 +56,14 @@ THE SOFTWARE.
     -->
     <finalName>${project.artifactId}</finalName>
     <defaultGoal>package</defaultGoal>
+    <resources>
+      <resource>
+        <directory>src/main/resources</directory>
+      </resource>
+      <resource><!-- copy all Java source files as resources -->
+        <directory>src/main/java</directory>
+      </resource>
+    </resources>
     <plugins>
       <plugin>
         <groupId>org.jvnet.hudson.tools</groupId>

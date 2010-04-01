@@ -30,6 +30,7 @@ import hudson.util.StreamTaskListener;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.io.PrintWriter;
+import java.io.Serializable;
 import java.util.Formatter;
 
 /**
@@ -50,10 +51,11 @@ import java.util.Formatter;
  *
  * <p>
  * {@link StreamTaskListener} is the most typical implementation of this interface.
+ * All the {@link TaskListener} implementations passed to plugins from Hudson core are remotable.
  *
  * @author Kohsuke Kawaguchi
  */
-public interface TaskListener {
+public interface TaskListener extends Serializable {
     /**
      * This writer will receive the output of the build.
      *

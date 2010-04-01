@@ -76,9 +76,15 @@ public class TemporaryDirectoryAllocator {
      * Deletes all allocated temporary directories.
      */
     public synchronized void dispose() throws IOException, InterruptedException {
+        IOException x = null;
         for (File dir : tmpDirectories)
-            new FilePath(dir).deleteRecursive();
+            try {
+                new FilePath(dir).deleteRecursive();
+            } catch (IOException e) {
+                x = e;
+            }
         tmpDirectories.clear();
+        if (x!=null)    throw new IOException2("Failed to clean up temp dirs",x);
     }
 
     /**

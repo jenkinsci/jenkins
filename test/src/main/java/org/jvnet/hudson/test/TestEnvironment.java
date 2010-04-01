@@ -26,6 +26,8 @@ package org.jvnet.hudson.test;
 import hudson.model.Computer;
 import hudson.model.Hudson;
 
+import java.io.IOException;
+
 /**
  * TODO: deprecate this, and just consolidate this to {@link HudsonTestCase}.
  * We can then pin down the current HudsonTestCase to the thread for easier access.
@@ -48,7 +50,8 @@ public class TestEnvironment {
         CURRENT = this;
     }
 
-    public void dispose() {
+    public void dispose() throws IOException, InterruptedException {
+        temporaryDirectoryAllocator.dispose();
         CURRENT = null;
     }
 

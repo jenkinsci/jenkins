@@ -36,12 +36,18 @@ HUDSON_LOG=/var/log/hudson/$NAME.log
 #   descriptors are forced to 1024 regardless of /etc/security/limits.conf
 MAXOPENFILES=8192
 
+# port for HTTP connector (default 8080; disable with -1)
+HTTP_PORT=8000
+
+# port for AJP connector (disabled by default)
+AJP_PORT=-1
 
 # arguments to pass to hudson.
 # --javahome=$JAVA_HOME
 # --httpPort=$HTTP_PORT (default 8080; disable with -1)
 # --httpsPort=$HTTP_PORT
+# --ajp13Port=$AJP_PORT
 # --argumentsRealm.passwd.$ADMIN_USER=[password]
 # --argumentsRealm.$ADMIN_USER=admin
 # --webroot=~/.hudson/war
-HUDSON_ARGS="--webroot=/var/run/hudson/war"
+HUDSON_ARGS="--webroot=/var/run/hudson/war --httpPort=$HTTP_PORT --ajp13Port=$AJP_PORT"

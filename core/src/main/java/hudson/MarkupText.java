@@ -89,6 +89,18 @@ public class MarkupText extends AbstractMarkupText {
             }
         }
 
+        public SubText(int start, int end) {
+            this.start = start;
+            this.end = end;
+            groups = new int[0];
+        }
+
+        @Override
+        public SubText subText(int start, int end) {
+            return MarkupText.this.subText(this.start+start,
+                    end<0 ? this.end+1+end : this.end+end);
+        }
+
         @Override
         public String getText() {
             return text.substring(start,end);
@@ -222,6 +234,16 @@ public class MarkupText extends AbstractMarkupText {
     @Override
     public String getText() {
         return text;
+    }
+
+    /**
+     * Returns a subtext.
+     *
+     * @param end
+     *      If negative, -N means "trim the last N-1 chars". That is, (s,-1) is the same as (s,length)
+     */
+    public SubText subText(int start, int end) {
+        return new SubText(start, end<0 ? text.length()+1+end : end);
     }
 
     @Override

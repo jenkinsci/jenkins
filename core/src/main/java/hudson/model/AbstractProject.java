@@ -51,6 +51,8 @@ import hudson.scm.PollingResult;
 import hudson.scm.SCMRevisionState;
 import static hudson.scm.PollingResult.NO_CHANGES;
 import static hudson.scm.PollingResult.BUILD_NOW;
+import static javax.servlet.http.HttpServletResponse.SC_INTERNAL_SERVER_ERROR;
+
 import hudson.search.SearchIndexBuilder;
 import hudson.security.Permission;
 import hudson.tasks.BuildStep;
@@ -70,6 +72,7 @@ import hudson.widgets.HistoryWidget;
 import net.sf.json.JSONObject;
 import org.kohsuke.args4j.Argument;
 import org.kohsuke.args4j.CmdLineException;
+import org.kohsuke.stapler.HttpResponses;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 import org.kohsuke.stapler.export.Exported;
@@ -79,6 +82,7 @@ import org.kohsuke.stapler.HttpRedirect;
 import org.kohsuke.stapler.ForwardToView;
 
 import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletResponse;
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
@@ -1403,30 +1407,35 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
             cause = new UserCause();
         }
 
-        String delay = req.getParameter("delay");
-        if (delay!=null) {
-            if (isBuildable()) {
-                try {
-                    // TODO: more unit handling
-                    if(delay.endsWith("sec"))   delay=delay.substring(0,delay.length()-3);
-                    if(delay.endsWith("secs"))  delay=delay.substring(0,delay.length()-4);
-                    Hudson.getInstance().getQueue().schedule(this, Integer.parseInt(delay),
-                    		new CauseAction(cause));
-                } catch (NumberFormatException e) {
-                    throw new ServletException("Invalid delay parameter value: "+delay);
-                }
-            }
-        } else {
-            scheduleBuild(cause);
-        }
+        if (!isBuildable())
+            throw HttpResponses.error(SC_INTERNAL_SERVER_ERROR,new IOException(getFullName()+" is not buildable"));
+
+        Hudson.getInstance().getQueue().schedule(this, getDelay(req), new CauseAction(cause));
         rsp.forwardToPreviousPage(req);
+    }
+
+    /**
+     * Computes the delay by taking the default value and the override in the request parameter into the account.
+     */
+    public int getDelay(StaplerRequest req) throws ServletException {
+        String delay = req.getParameter("delay");
+        if (delay==null)    return getQuietPeriod();
+
+        try {
+            // TODO: more unit handling
+            if(delay.endsWith("sec"))   delay=delay.substring(0,delay.length()-3);
+            if(delay.endsWith("secs"))  delay=delay.substring(0,delay.length()-4);
+            return Integer.parseInt(delay);
+        } catch (NumberFormatException e) {
+            throw new ServletException("Invalid delay parameter value: "+delay);
+        }
     }
 
     /**
      * Supports build trigger with parameters via an HTTP GET or POST.
      * Currently only String parameters are supported.
      */
-    public void doBuildWithParameters(StaplerRequest req, StaplerResponse rsp) throws IOException {
+    public void doBuildWithParameters(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
         BuildAuthorizationToken.checkPermission(this, authToken, req, rsp);
 
         ParametersDefinitionProperty pp = getProperty(ParametersDefinitionProperty.class);

@@ -49,6 +49,7 @@ import java.util.Collection;
  *
  * @author Kohsuke Kawaguchi
  * @see NodeProvisioner
+ * @see AbstractCloudImpl
  */
 public abstract class Cloud extends AbstractModelObject implements ExtensionPoint, Describable<Cloud>, AccessControlled {
 

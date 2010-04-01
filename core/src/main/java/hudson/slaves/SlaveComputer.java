@@ -57,6 +57,7 @@ import java.nio.charset.Charset;
 import java.util.concurrent.Future;
 import java.security.Security;
 
+import org.apache.commons.io.IOUtils;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 import org.kohsuke.stapler.QueryParameter;
@@ -175,21 +176,25 @@ public class SlaveComputer extends Computer {
             public Object call() throws Exception {
                 // do this on another thread so that the lengthy launch operation
                 // (which is typical) won't block UI thread.
-                TaskListener listener = new StreamTaskListener(openLogFile());
+                OutputStream out = openLogFile();
                 try {
-                    launcher.launch(SlaveComputer.this, listener);
-                    return null;
-                } catch (AbortException e) {
-                    listener.error(e.getMessage());
-                    throw e;
-                } catch (IOException e) {
-                    Util.displayIOException(e,listener);
-                    e.printStackTrace(listener.error(Messages.ComputerLauncher_unexpectedError()));
-                    throw e;
-                } catch (InterruptedException e) {
-                    e.printStackTrace(listener.error(Messages.ComputerLauncher_abortedLaunch()));
-                    throw e;
+                    TaskListener listener = new StreamTaskListener(out);
+                    try {
+                        launcher.launch(SlaveComputer.this, listener);
+                        return null;
+                    } catch (AbortException e) {
+                        listener.error(e.getMessage());
+                        throw e;
+                    } catch (IOException e) {
+                        Util.displayIOException(e,listener);
+                        e.printStackTrace(listener.error(Messages.ComputerLauncher_unexpectedError()));
+                        throw e;
+                    } catch (InterruptedException e) {
+                        e.printStackTrace(listener.error(Messages.ComputerLauncher_abortedLaunch()));
+                        throw e;
+                    }
                 } finally {
+                    IOUtils.closeQuietly(out);
                     if (channel==null)
                         offlineCause = new OfflineCause.LaunchFailed();
                 }
@@ -385,10 +390,15 @@ public class SlaveComputer extends Computer {
             public void run() {
                 // do this on another thread so that any lengthy disconnect operation
                 // (which could be typical) won't block UI thread.
-                TaskListener listener = new StreamTaskListener(openLogFile());
-                launcher.beforeDisconnect(SlaveComputer.this, listener);
-                closeChannel();
-                launcher.afterDisconnect(SlaveComputer.this, listener);
+                OutputStream out = openLogFile();
+                try {
+                    TaskListener listener = new StreamTaskListener(out);
+                    launcher.beforeDisconnect(SlaveComputer.this, listener);
+                    closeChannel();
+                    launcher.afterDisconnect(SlaveComputer.this, listener);
+                } finally {
+                    IOUtils.closeQuietly(out);
+                }
             }
         });
     }

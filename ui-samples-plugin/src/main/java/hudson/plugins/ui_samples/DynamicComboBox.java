@@ -4,6 +4,9 @@ import hudson.Extension;
 import hudson.util.ListBoxModel;
 import org.kohsuke.stapler.QueryParameter;
 
+import java.util.Arrays;
+import java.util.Collection;
+
 import static java.util.Arrays.asList;
 
 /**

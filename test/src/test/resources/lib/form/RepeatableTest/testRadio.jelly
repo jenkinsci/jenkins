@@ -27,9 +27,9 @@ THE SOFTWARE.
   <l:main-panel>
     <f:form method="post" name="config" action="submitTest">
       <f:repeatable var="foo" items="${it.list}" name="foos">
-        <f:textbox name="txt" value=""/>
-        <f:radio name="radio" value="one" checked="${true}"/>
-        <f:radio name="radio" value="two" checked="${false}"/>
+        <f:textbox name="txt" value="${foo.txt}"/>
+        <f:radio name="radio" value="one" checked="${foo.radio=='one' or foo.radio==null}"/>
+        <f:radio name="radio" value="two" checked="${foo.radio=='two'}"/>
       </f:repeatable>
       <f:entry>
         <f:submit value="submit"/>

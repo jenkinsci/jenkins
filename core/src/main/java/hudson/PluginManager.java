@@ -410,7 +410,7 @@ public final class PluginManager extends AbstractModelObject {
     }
 
     public String getDisplayName() {
-        return "Plugin Manager";
+        return Messages.PluginManager_DisplayName();
     }
 
     public String getSearchUrl() {

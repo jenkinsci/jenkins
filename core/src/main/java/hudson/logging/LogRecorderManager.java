@@ -67,7 +67,7 @@ public class LogRecorderManager extends AbstractModelObject {
     public transient final Map<String,LogRecorder> logRecorders = new CopyOnWriteMap.Tree<String,LogRecorder>();
 
     public String getDisplayName() {
-        return "log";
+        return Messages.LogRecorderManager_DisplayName();
     }
 
     public String getSearchUrl() {
