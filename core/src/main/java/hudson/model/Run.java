@@ -1476,9 +1476,9 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
             return new Summary(false, Messages.Run_Summary_Aborted());
 
         if(getResult()==Result.UNSTABLE) {
-            if(((Run)this) instanceof Build) {
-                AbstractTestResultAction trN = ((Build)(Run)this).getTestResultAction();
-                AbstractTestResultAction trP = prev==null ? null : ((Build) prev).getTestResultAction();
+            if(((Run)this) instanceof AbstractBuild) {
+                AbstractTestResultAction trN = ((AbstractBuild)(Run)this).getTestResultAction();
+                AbstractTestResultAction trP = prev==null ? null : ((AbstractBuild) prev).getTestResultAction();
                 if(trP==null) {
                     if(trN!=null && trN.getFailCount()>0)
                         return new Summary(false, Messages.Run_Summary_TestFailures(trN.getFailCount()));
