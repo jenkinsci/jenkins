@@ -2542,6 +2542,7 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
             items.put(name,result);
 
             ItemListener.fireOnCreated(result);
+            rebuildDependencyGraph();
 
             return result;
         } catch (IOException e) {
