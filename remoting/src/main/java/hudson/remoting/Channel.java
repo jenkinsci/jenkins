@@ -858,6 +858,8 @@ public class Channel implements VirtualChannel, IChannel {
                         } finally {
                             Channel.setCurrent(old);
                         }
+                    } catch (EOFException e) {
+                        throw new IOException("Unexpected termination of the channel",e);
                     } catch (ClassNotFoundException e) {
                         logger.log(Level.SEVERE, "Unable to read a command",e);
                     }
