@@ -7,6 +7,10 @@
     so in most cases you should leave this field empty and let this default kick in.
 
     <p>
+    If your LDAP server doesn't have uid or doesn't use a meaningful uid value, try <tt>"mail={0}"</tt>,
+    which lets people login by their e-mail address.
+
+    <p>
     If you do specify a different query, specify an LDAP query string with marker token "{0}",
     which is to be replaced by the user name string entered by the user.
 </div>
