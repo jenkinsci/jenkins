@@ -38,6 +38,8 @@ import java.util.Collection;
 import java.util.List;
 import java.util.logging.Logger;
 
+import static hudson.model.Result.FAILURE;
+
 /**
  * A build of a {@link Project}.
  *
@@ -110,9 +112,9 @@ public abstract class Build <P extends Project<P,B>,B extends Build<P,B>>
     protected class RunnerImpl extends AbstractRunner {
         protected Result doRun(BuildListener listener) throws Exception {
             if(!preBuild(listener,project.getBuilders()))
-                return Result.FAILURE;
+                return FAILURE;
             if(!preBuild(listener,project.getPublishers()))
-                return Result.FAILURE;
+                return FAILURE;
 
             Result r = null;
             try {
@@ -125,12 +127,12 @@ public abstract class Build <P extends Project<P,B>,B extends Build<P,B>>
                 for( BuildWrapper w : wrappers ) {
                     Environment e = w.setUp((AbstractBuild<?,?>)Build.this, launcher, listener);
                     if(e==null)
-                        return (r = Result.FAILURE);
+                        return (r = FAILURE);
                     buildEnvironments.add(e);
                 }
 
                 if(!build(listener,project.getBuilders()))
-                    r = Result.FAILURE;
+                    r = FAILURE;
             } finally {
                 if (r != null) setResult(r);
                 // tear down in reverse order
@@ -142,21 +144,24 @@ public abstract class Build <P extends Project<P,B>,B extends Build<P,B>>
                 }
                 buildEnvironments = null;
                 // WARNING The return in the finally clause will trump any return before
-                if (failed) return Result.FAILURE;
+                if (failed) return FAILURE;
             }
 
             return r;
         }
 
         public void post2(BuildListener listener) throws IOException, InterruptedException {
-            performAllBuildStep(listener, project.getPublishers(),true);
-            performAllBuildStep(listener, project.getProperties(),true);
+            if (!performAllBuildStep(listener, project.getPublishers(), true))
+                setResult(FAILURE);
+            if (!performAllBuildStep(listener, project.getProperties(), true))
+                setResult(FAILURE);
         }
 
         @Override
         public void cleanUp(BuildListener listener) throws Exception {
-            performAllBuildStep(listener, project.getPublishers(),false);
-            performAllBuildStep(listener, project.getProperties(),false);
+            // at this point it's too late to mark the build as a failure, so ignore return value.
+            performAllBuildStep(listener, project.getPublishers(), false);
+            performAllBuildStep(listener, project.getProperties(), false);
             BuildTrigger.execute(Build.this, listener);
         }
 

@@ -546,8 +546,8 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
             // default is no-op
         }
 
-        protected final void performAllBuildStep(BuildListener listener, Map<?,? extends BuildStep> buildSteps, boolean phase) throws InterruptedException, IOException {
-            performAllBuildStep(listener,buildSteps.values(),phase);
+        protected final boolean performAllBuildStep(BuildListener listener, Map<?,? extends BuildStep> buildSteps, boolean phase) throws InterruptedException, IOException {
+            return performAllBuildStep(listener,buildSteps.values(),phase);
         }
 
         /**
@@ -556,17 +556,19 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
          * @param phase
          *      true for the post build processing, and false for the final "run after finished" execution.
          */
-        protected final void performAllBuildStep(BuildListener listener, Iterable<? extends BuildStep> buildSteps, boolean phase) throws InterruptedException, IOException {
+        protected final boolean performAllBuildStep(BuildListener listener, Iterable<? extends BuildStep> buildSteps, boolean phase) throws InterruptedException, IOException {
+            boolean r = true;
             for (BuildStep bs : buildSteps) {
                 if ((bs instanceof Publisher && ((Publisher)bs).needsToRunAfterFinalized()) ^ phase)
                     try {
-                        perform(bs,listener);
+                        r &= perform(bs,listener);
                     } catch (Exception e) {
                         String msg = "Publisher " + bs.getClass().getName() + " aborted due to exception";
                         e.printStackTrace(listener.error(msg));
                         LOGGER.log(Level.WARNING, msg, e);
                     }
             }
+            return r;
         }
 
         /**
