@@ -93,12 +93,13 @@ public class Mailer extends Notifier {
     private transient String from;
     private transient String subject;
     private transient boolean failureOnly;
+    private transient String charSet;
 
     @Override
     public boolean perform(AbstractBuild<?,?> build, Launcher launcher, BuildListener listener) throws InterruptedException {
         if(debug)
             listener.getLogger().println("Running mailer");
-        return new MailSender(recipients,dontNotifyEveryUnstableBuild,sendToIndividuals) {
+        return new MailSender(recipients,dontNotifyEveryUnstableBuild,sendToIndividuals, charSet) {
             /** Check whether a path (/-separated) will be archived. */
             @Override
             public boolean artifactMatches(String path, AbstractBuild<?,?> build) {
@@ -184,6 +185,11 @@ public class Mailer extends Notifier {
          */
         private String smtpPort;
 
+        /**
+         * The charset to use for the text and subject.
+         */
+        private String charSet;
+        
         /**
          * Used to keep track of number test e-mails.
          */
@@ -282,6 +288,10 @@ public class Mailer extends Notifier {
             }
             smtpPort = nullify(json.getString("smtpPort"));
             useSsl = json.getBoolean("useSsl");
+            charSet = json.getString("charSet");
+            if (charSet == null || charSet.length() == 0)
+            	charSet = "UTF-8";
+            
             save();
             return true;
         }
@@ -320,6 +330,12 @@ public class Mailer extends Notifier {
         public String getSmtpPort() {
         	return smtpPort;
         }
+        
+        public String getCharSet() {
+        	String c = charSet;
+        	if (c == null || c.length() == 0)	c = "UTF-8";
+        	return c;
+        }
 
         public void setDefaultSuffix(String defaultSuffix) {
             this.defaultSuffix = defaultSuffix;
@@ -348,6 +364,10 @@ public class Mailer extends Notifier {
 
         public void setSmtpPort(String smtpPort) {
             this.smtpPort = smtpPort;
+        }
+        
+        public void setCharSet(String charSet) {
+            this.charSet = charSet;
         }
 
         public void setSmtpAuth(String userName, String password) {
@@ -490,7 +510,7 @@ public class Mailer extends Notifier {
     public static class ConverterImpl extends XStream2.PassthruConverter<Mailer> {
         public ConverterImpl(XStream2 xstream) { super(xstream); }
         @Override protected void callback(Mailer m, UnmarshallingContext context) {
-            if (m.from != null || m.subject != null || m.failureOnly)
+            if (m.from != null || m.subject != null || m.failureOnly || m.charSet != null)
                 OldDataMonitor.report(context, "1.10");
         }
     }

@@ -69,12 +69,22 @@ public class MailSender {
      * If true, individuals will receive e-mails regarding who broke the build.
      */
     private boolean sendToIndividuals;
+    
+    /**
+     * The charset to use for the text and subject.
+     */
+    private String charSet;
 
 
     public MailSender(String recipients, boolean dontNotifyEveryUnstableBuild, boolean sendToIndividuals) {
+    	this(recipients, dontNotifyEveryUnstableBuild, sendToIndividuals, "UTF-8");
+    }
+    
+    public MailSender(String recipients, boolean dontNotifyEveryUnstableBuild, boolean sendToIndividuals, String charSet) {
         this.recipients = recipients;
         this.dontNotifyEveryUnstableBuild = dontNotifyEveryUnstableBuild;
         this.sendToIndividuals = sendToIndividuals;
+        this.charSet = charSet;
     }
 
     public boolean execute(AbstractBuild<?, ?> build, BuildListener listener) throws InterruptedException {
@@ -156,10 +166,10 @@ public class MailSender {
     private MimeMessage createBackToNormalMail(AbstractBuild<?, ?> build, String subject, BuildListener listener) throws MessagingException {
         MimeMessage msg = createEmptyMail(build, listener);
 
-        msg.setSubject(getSubject(build, Messages.MailSender_BackToNormalMail_Subject(subject)),MAIL_CHARSET);
+        msg.setSubject(getSubject(build, Messages.MailSender_BackToNormalMail_Subject(subject)),charSet);
         StringBuilder buf = new StringBuilder();
         appendBuildUrl(build, buf);
-        msg.setText(buf.toString(),MAIL_CHARSET);
+        msg.setText(buf.toString(),charSet);
 
         return msg;
     }
@@ -180,14 +190,14 @@ public class MailSender {
             }
         }
 
-        msg.setSubject(getSubject(build, subject),MAIL_CHARSET);
+        msg.setSubject(getSubject(build, subject),charSet);
         StringBuilder buf = new StringBuilder();
         // Link to project changes summary for "still unstable" if this or last build has changes
         if (still && !(build.getChangeSet().isEmptySet() && prev.getChangeSet().isEmptySet()))
             appendUrl(Util.encode(build.getProject().getUrl()) + "changes", buf);
         else
             appendBuildUrl(build, buf);
-        msg.setText(buf.toString(), MAIL_CHARSET);
+        msg.setText(buf.toString(), charSet);
 
         return msg;
     }
@@ -206,7 +216,7 @@ public class MailSender {
     private MimeMessage createFailureMail(AbstractBuild<?, ?> build, BuildListener listener) throws MessagingException, InterruptedException {
         MimeMessage msg = createEmptyMail(build, listener);
 
-        msg.setSubject(getSubject(build, Messages.MailSender_FailureMail_Subject()),MAIL_CHARSET);
+        msg.setSubject(getSubject(build, Messages.MailSender_FailureMail_Subject()),charSet);
 
         StringBuilder buf = new StringBuilder();
         appendBuildUrl(build, buf);
@@ -283,7 +293,7 @@ public class MailSender {
             buf.append(Messages.MailSender_FailureMail_FailedToAccessBuildLog()).append("\n\n").append(Functions.printThrowable(e));
         }
 
-        msg.setText(buf.toString(),MAIL_CHARSET);
+        msg.setText(buf.toString(),charSet);
 
         return msg;
     }
@@ -384,10 +394,6 @@ public class MailSender {
 
     private static final int MAX_LOG_LINES = Integer.getInteger(MailSender.class.getName()+".maxLogLines",250);
 
-    /**
-     * The charset to use for the text and subject.
-     */
-    private static final String MAIL_CHARSET = "UTF-8";
 
     /**
      * Sometimes the outcome of the previous build affects the e-mail we send, hence this checkpoint.

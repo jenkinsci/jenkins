@@ -52,7 +52,10 @@ THE SOFTWARE.
       <f:entry title="${%SMTP Port}" field="smtpPort">
         <f:textbox />
       </f:entry>
+      <f:entry title="${%Char Set}" field="charSet">
+        <f:textbox />
+      </f:entry>
     </f:advanced>
-    <f:validateButton method="sendTestMail" title="${%Test configuration by sending e-mail to System Admin Address}" with="smtpServer,adminAddress,useSMTPAuth,smtpAuthUserName,smtpAuthPassword,useSsl,smtpPort" />
+    <f:validateButton method="sendTestMail" title="${%Test configuration by sending e-mail to System Admin Address}" with="smtpServer,adminAddress,useSMTPAuth,smtpAuthUserName,smtpAuthPassword,useSsl,smtpPort,charSet" />
   </f:section>
 </j:jelly>
