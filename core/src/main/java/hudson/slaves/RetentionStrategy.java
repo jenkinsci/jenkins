@@ -39,8 +39,6 @@ import java.util.logging.Logger;
 
 /**
  * Controls when to take {@link Computer} offline, bring it back online, or even to destroy it.
- * <p/>
- * <b>EXPERIMENTAL: SIGNATURE MAY CHANGE IN FUTURE RELEASES</b>
  *
  * @author Stephen Connolly
  * @author Kohsuke Kawaguchi

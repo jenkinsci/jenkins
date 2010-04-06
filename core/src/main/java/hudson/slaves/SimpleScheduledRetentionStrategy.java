@@ -221,17 +221,7 @@ public class SimpleScheduledRetentionStrategy extends RetentionStrategy<SlaveCom
         return (lastStart < now && lastStop > now) || (nextStart < now && nextStop > now);
     }
 
-    /**
-     * This feature is activated only when a property is set, while we test this feature.
-     */
     @Extension
-    public static DescriptorImpl init() {
-        if (Boolean.getBoolean("hudson.scheduledRetention"))
-            return new DescriptorImpl();
-        else
-            return null;
-    }
-
     public static class DescriptorImpl extends Descriptor<RetentionStrategy<?>> {
         public String getDisplayName() {
             return Messages.SimpleScheduledRetentionStrategy_displayName();
