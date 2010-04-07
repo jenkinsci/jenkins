@@ -174,7 +174,6 @@ import static javax.servlet.http.HttpServletResponse.SC_BAD_REQUEST;
 import static javax.servlet.http.HttpServletResponse.SC_NOT_FOUND;
 import java.io.File;
 import java.io.FileFilter;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintWriter;
@@ -2766,46 +2765,6 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
         } finally {
             p.cleanUp();
         }
-    }
-
-    /**
-     * Serves static resources without the "Last-Modified" header to work around
-     * a bug in Firefox.
-     *
-     * <p>
-     * See https://bugzilla.mozilla.org/show_bug.cgi?id=89419
-     */
-    public void doNocacheImages( StaplerRequest req, StaplerResponse rsp ) throws IOException {
-        String path = req.getRestOfPath();
-
-        if(path.length()==0)
-            path = "/";
-
-        if(path.indexOf("..")!=-1 || path.length()<1) {
-            // don't serve anything other than files in the artifacts dir
-            rsp.sendError(SC_BAD_REQUEST);
-            return;
-        }
-
-        File f = new File(req.getServletContext().getRealPath("/images"),path.substring(1));
-        if(!f.exists()) {
-            rsp.sendError(SC_NOT_FOUND);
-            return;
-        }
-
-        if(f.isDirectory()) {
-            // listing not allowed
-            rsp.sendError(HttpServletResponse.SC_FORBIDDEN);
-            return;
-        }
-
-        FileInputStream in = new FileInputStream(f);
-        // serve the file
-        String contentType = req.getServletContext().getMimeType(f.getPath());
-        rsp.setContentType(contentType);
-        rsp.setContentLength((int)f.length());
-        Util.copyStream(in,rsp.getOutputStream());
-        in.close();
     }
 
     /**
