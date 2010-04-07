@@ -220,10 +220,10 @@ public class Channel implements VirtualChannel, IChannel {
          * but this is useful where stream is binary-unsafe, such as telnet.
          */
         TEXT("<===[HUDSON TRANSMISSION BEGINS]===>") {
-            protected OutputStream wrap(OutputStream os) {
+            @Override protected OutputStream wrap(OutputStream os) {
                 return BinarySafeStream.wrap(os);
             }
-            protected InputStream wrap(InputStream is) {
+            @Override protected InputStream wrap(InputStream is) {
                 return BinarySafeStream.wrap(is);
             }
         },
@@ -859,7 +859,9 @@ public class Channel implements VirtualChannel, IChannel {
                             Channel.setCurrent(old);
                         }
                     } catch (EOFException e) {
-                        throw new IOException("Unexpected termination of the channel",e);
+                        IOException ioe = new IOException("Unexpected termination of the channel");
+                        ioe.initCause(e);
+                        throw ioe;
                     } catch (ClassNotFoundException e) {
                         logger.log(Level.SEVERE, "Unable to read a command",e);
                     }
