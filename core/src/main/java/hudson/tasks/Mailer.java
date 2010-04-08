@@ -99,7 +99,7 @@ public class Mailer extends Notifier {
     public boolean perform(AbstractBuild<?,?> build, Launcher launcher, BuildListener listener) throws InterruptedException {
         if(debug)
             listener.getLogger().println("Running mailer");
-        return new MailSender(recipients,dontNotifyEveryUnstableBuild,sendToIndividuals, charset) {
+        return new MailSender(recipients,dontNotifyEveryUnstableBuild,sendToIndividuals, descriptor().getCharset()) {
             /** Check whether a path (/-separated) will be archived. */
             @Override
             public boolean artifactMatches(String path, AbstractBuild<?,?> build) {
