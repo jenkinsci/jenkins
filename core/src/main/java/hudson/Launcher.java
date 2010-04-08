@@ -38,6 +38,7 @@ import hudson.remoting.VirtualChannel;
 import hudson.util.StreamCopyThread;
 import hudson.util.ArgumentListBuilder;
 import hudson.util.ProcessTree;
+import org.apache.commons.io.input.NullInputStream;
 
 import java.io.BufferedOutputStream;
 import java.io.File;
@@ -48,6 +49,8 @@ import java.util.Arrays;
 import java.util.Map;
 import java.util.List;
 import java.util.ArrayList;
+
+import static org.apache.commons.io.output.NullOutputStream.NULL_OUTPUT_STREAM;
 
 /**
  * Starts a process.
@@ -138,8 +141,8 @@ public abstract class Launcher {
         protected List<String> commands;
         protected boolean[] masks;
         protected FilePath pwd;
-        protected OutputStream stdout,stderr;
-        protected InputStream stdin;
+        protected OutputStream stdout = NULL_OUTPUT_STREAM, stderr;
+        protected InputStream stdin = new NullInputStream(0);
         protected String[] envs;
 
         public ProcStarter cmds(String... args) {
