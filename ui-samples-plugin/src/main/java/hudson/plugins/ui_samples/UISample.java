@@ -37,7 +37,8 @@ public abstract class UISample implements ExtensionPoint, Action, Describable<UI
      * Source files associated with this sample.
      */
     public List<SourceFile> getSourceFiles() {
-        return Arrays.asList(new SourceFile(getClass().getSimpleName()+".java"));
+        return Arrays.asList(new SourceFile(getClass().getSimpleName()+".java"),
+                             new SourceFile("index.jelly"));
     }
 
     /**
@@ -78,7 +79,8 @@ public abstract class UISample implements ExtensionPoint, Action, Describable<UI
         }
 
         public URL resolve() {
-            return UISample.this.getClass().getResource(name);
+            return UISample.this.getClass().getResource(
+                name.endsWith(".jelly") ? UISample.this.getClass().getSimpleName()+"/"+name : name);
         }
 
         /**

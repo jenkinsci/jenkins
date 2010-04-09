@@ -23,8 +23,8 @@ THE SOFTWARE.
 -->
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:s="/lib/samples">
-	<l:layout title="Dynamic ComboBox Sample">
-		<l:main-panel>
+  <l:layout title="Dynamic ComboBox Sample">
+    <l:main-panel>
       <h1>UI Samples</h1>
 
       <table>
@@ -40,5 +40,5 @@ THE SOFTWARE.
         </j:forEach>
       </table>
     </l:main-panel>
-	</l:layout>
+  </l:layout>
 </j:jelly>

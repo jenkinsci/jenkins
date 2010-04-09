@@ -24,8 +24,8 @@ THE SOFTWARE.
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:s="/lib/samples"
          xmlns:this="this">
-	<l:layout title="Dynamic ComboBox Sample">
-		<l:main-panel>
+  <l:layout title="Dynamic ComboBox Sample">
+    <l:main-panel>
       <h1>Dynamic ComboBox Sample</h1>
 
       <p>
@@ -50,5 +50,5 @@ THE SOFTWARE.
         </form>
       </s:sample>
     </l:main-panel>
-	</l:layout>
+  </l:layout>
 </j:jelly>
