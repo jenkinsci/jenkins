@@ -106,7 +106,11 @@ public abstract class Build <P extends Project<P,B>,B extends Build<P,B>>
 //
     @Override
     public void run() {
-        run(new RunnerImpl());
+        run(createRunner());
+    }
+
+    protected Runner createRunner() {
+        return new RunnerImpl();
     }
     
     protected class RunnerImpl extends AbstractRunner {
