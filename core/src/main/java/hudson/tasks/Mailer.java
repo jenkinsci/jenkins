@@ -26,6 +26,7 @@ package hudson.tasks;
 import hudson.Launcher;
 import hudson.Functions;
 import hudson.Extension;
+import hudson.RestrictedSince;
 import hudson.Util;
 import hudson.diagnosis.OldDataMonitor;
 import static hudson.Util.fixEmptyAndTrim;
@@ -39,6 +40,9 @@ import hudson.util.FormValidation;
 import hudson.util.Secret;
 import hudson.util.XStream2;
 import org.apache.tools.ant.types.selectors.SelectorUtils;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.DoNotUse;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.export.Exported;
@@ -136,6 +140,8 @@ public class Mailer extends Notifier {
      * @deprecated as of 1.286
      *      Use {@link #descriptor()} to obtain the current instance.
      */
+    @Restricted(NoExternalUse.class)
+    @RestrictedSince("1.355")
     public static DescriptorImpl DESCRIPTOR;
 
     public static DescriptorImpl descriptor() {

@@ -88,6 +88,18 @@ THE SOFTWARE.
         </executions>
       </plugin>
       <plugin>
+        <groupId>org.kohsuke</groupId>
+        <artifactId>access-modifier-checker</artifactId>
+        <version>1.0</version>
+        <executions>
+          <execution>
+            <goals>
+              <goal>enforce</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
         <artifactId>maven-antlr-plugin</artifactId>
         <configuration>
           <sourceDirectory>${basedir}/src/main/grammar</sourceDirectory>
@@ -746,6 +758,12 @@ THE SOFTWARE.
       <groupId>asm</groupId>
       <artifactId>asm-commons</artifactId>
       <version>2.2.3</version>
+    </dependency>
+
+    <dependency>
+      <groupId>org.kohsuke</groupId>
+      <artifactId>access-modifier-annotation</artifactId>
+      <version>1.0</version>
     </dependency>
 
     <!-- offline profiler API to put in the classpath if we need it -->
