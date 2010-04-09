@@ -66,6 +66,7 @@ THE SOFTWARE.
             </manifest>
             <manifestEntries>
               <Implementation-Version>${project.version}</Implementation-Version>
+              <Hudson-Version>${project.version}</Hudson-Version>
             </manifestEntries>
           </archive>
           <!--outputFileNameMapping>@{artifactId}@.@{extension}@</outputFileNameMapping-->
