@@ -713,7 +713,7 @@ public abstract class Launcher {
             final InputStream  in  = ps.stdin==null ? null : new RemoteInputStream(ps.stdin);
             final String workDir = ps.pwd==null ? null : ps.pwd.getRemote();
 
-            return new RemoteProc(getChannel().callAsync(new RemoteLaunchCallable(ps.commands, ps.envs, in, out, err, workDir, listener)));
+            return new RemoteProc(getChannel().callAsync(new RemoteLaunchCallable(ps.commands, ps.masks, ps.envs, in, out, err, workDir, listener)));
         }
 
         public Channel launchChannel(String[] cmd, OutputStream err, FilePath _workDir, Map<String,String> envOverrides) throws IOException, InterruptedException {
@@ -756,6 +756,7 @@ public abstract class Launcher {
 
     private static class RemoteLaunchCallable implements Callable<Integer,IOException> {
         private final List<String> cmd;
+        private final boolean[] masks;
         private final String[] env;
         private final InputStream in;
         private final OutputStream out;
@@ -763,8 +764,9 @@ public abstract class Launcher {
         private final String workDir;
         private final TaskListener listener;
 
-        RemoteLaunchCallable(List<String> cmd, String[] env, InputStream in, OutputStream out, OutputStream err, String workDir, TaskListener listener) {
+        RemoteLaunchCallable(List<String> cmd, boolean[] masks, String[] env, InputStream in, OutputStream out, OutputStream err, String workDir, TaskListener listener) {
             this.cmd = new ArrayList<String>(cmd);
+            this.masks = masks;
             this.env = env;
             this.in = in;
             this.out = out;
@@ -775,7 +777,7 @@ public abstract class Launcher {
 
         public Integer call() throws IOException {
             Launcher.ProcStarter ps = new LocalLauncher(listener).launch();
-            ps.cmds(cmd).envs(env).stdin(in).stdout(out).stderr(err);
+            ps.cmds(cmd).masks(masks).envs(env).stdin(in).stdout(out).stderr(err);
             if(workDir!=null)   ps.pwd(workDir);
 
             Proc p = ps.start();
