@@ -5,6 +5,7 @@ import hudson.ExtensionPoint;
 import hudson.model.Action;
 import hudson.model.Describable;
 import hudson.model.Hudson;
+import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 
 import java.io.IOException;
@@ -44,11 +45,14 @@ public abstract class UISample implements ExtensionPoint, Action, Describable<UI
     /**
      * Binds {@link SourceFile}s into URL.
      */
-    public SourceFile getSourceFile(String name) {
+    public void doSourceFile(StaplerRequest req, StaplerResponse rsp) throws IOException {
+        String name = req.getRestOfPath().substring(1); // Remove leading /
         for (SourceFile sf : getSourceFiles())
-            if (sf.name.equals(name))
-                return sf;
-        return null;
+            if (sf.name.equals(name)) {
+                sf.doIndex(rsp);
+                return;
+            }
+        rsp.sendError(rsp.SC_NOT_FOUND);
     }
 
     /**

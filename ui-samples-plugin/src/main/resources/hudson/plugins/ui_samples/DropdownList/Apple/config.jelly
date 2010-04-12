@@ -1,7 +1,7 @@
 <!--
 The MIT License
 
-Copyright (c) 2004-2010, Sun Microsystems, Inc., Kohsuke Kawaguchi, Alan Harder
+Copyright (c) 2004-2010, Sun Microsystems, Inc., Alan Harder
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -22,29 +22,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 -->
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
-  <st:documentation>
-    Page layout for UI samples and variable bindings that emulate the form environment.
-    <st:attribute name="title" use="required">
-      Page title
-    </st:attribute>
-  </st:documentation>
-  <j:set var="instance" value="${it}" />
-  <j:set var="descriptor" value="${it.descriptor}" />
-  <l:layout title="${title}">
-    <l:main-panel>
-      <h1>${title}</h1>
-      <p>
-        <j:out value="${it.description}"/>
-      </p>
-      <h3>Source Files</h3>
-      <ul>
-        <j:forEach var="f" items="${it.sourceFiles}">
-          <li><a href="sourceFile/${f.name}">${f.name}</a></li>
-        </j:forEach>
-      </ul>
-      <h3>Sample</h3>
-      <d:invokeBody/>
-    </l:main-panel>
-  </l:layout>
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
+<f:entry title="Seeds">
+  <f:textbox clazz="number" name="seeds" value="${fruit.seeds}"/>
+</f:entry>
 </j:jelly>

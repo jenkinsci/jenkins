@@ -23,17 +23,26 @@ THE SOFTWARE.
 -->
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:s="/lib/samples">
-  <s:sample title="Dynamic ComboBox Sample">
-    <form>
+  <s:sample title="Dropdown List Sample">
+    <form action="submit" method="post">
       <table>
-        <f:entry title="Country" field="country">
-          <f:textbox />
-        </f:entry>
-        <f:entry title="State" field="state">
-          <f:select />
-        </f:entry>
-        <f:entry title="City" field="city">
-          <f:select />
+        <j:set var="currentFruit" value="${it.fruit}"/>
+        <!-- getJSONObject("fruit") in java code gets data for this block -->
+        <!-- A @DataBoundConstructor with parameter "Fruit fruit" can also be used -->
+        <f:dropdownList name="fruit" title="Fruits">
+          <!-- Loop through available fruit types -->
+          <j:forEach var="descriptor" items="${it.fruitDescriptors}" varStatus="loop">
+            <!-- Set "fruit" only if it matches this descriptor -->
+            <j:set var="fruit" value="${descriptor==currentFruit.descriptor?currentFruit:null}"/>
+            <f:dropdownListBlock title="${descriptor.displayName}" value="${loop.index}"
+                                 selected="${fruit!=null}" staplerClass="${descriptor.clazz.name}">
+              <!-- Include config.jelly for this fruit type -->
+              <st:include page="${descriptor.configPage}" from="${descriptor}"/>
+            </f:dropdownListBlock>
+          </j:forEach>
+        </f:dropdownList>
+        <f:entry title="" >
+          <f:submit value="Submit"/>
         </f:entry>
       </table>
     </form>
