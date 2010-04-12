@@ -34,6 +34,10 @@ THE SOFTWARE.
     <st:attribute name="selected" type="boolean">
       is this value initially selected?
     </st:attribute>
+    <st:attribute name="staplerClass">
+      provide hint for stapler data binding.
+      typically set to ${descriptor.clazz.name} if dropdownList is for a list of descriptors.
+    </st:attribute>
   </st:documentation>
   <j:choose>
     <j:when test="${dropdownListMode=='createSelectField'}">
@@ -41,17 +45,13 @@ THE SOFTWARE.
     </j:when>
     <j:when test="${dropdownListMode=='generateEntries'}">
       <!-- sandwich them by markers so that we know what to show/hide -->
-      <j:set var="sid" value="${h.generateId()}"/>
-      <j:set var="eid" value="${h.generateId()}"/>
-      <tr id="${sid}" style="display:none" />
+      <tr class="dropdownList-start" style="display:none">
+        <j:if test="${!empty(attrs.staplerClass)}">
+          <td><input type="hidden" name="stapler-class" value="${attrs.staplerClass}"/></td>
+        </j:if>
+      </tr>
       <d:invokeBody />
-      <tr id="${eid}" style="display:none" />
-      <script>
-        $$('${id}').subForms.push({
-          start: $$('${sid}'),
-          end: $$('${eid}')
-        });
-      </script>
+      <tr class="dropdownList-end" style="display:none" />
     </j:when>
   </j:choose>
 </j:jelly>
