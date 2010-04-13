@@ -187,8 +187,10 @@ public class CopyOnWriteList<E> implements Iterable<E> {
                     items.add(item);
                 } catch (CannotResolveClassException e) {
                     LOGGER.log(WARNING,"Failed to resolve class",e);
+                    RobustReflectionConverter.addErrorInContext(context, e);
                 } catch (LinkageError e) {
                     LOGGER.log(WARNING,"Failed to resolve class",e);
+                    RobustReflectionConverter.addErrorInContext(context, e);
                 }
                 reader.moveUp();
             }
