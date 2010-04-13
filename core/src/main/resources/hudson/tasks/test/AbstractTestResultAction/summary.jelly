@@ -40,7 +40,7 @@ THE SOFTWARE.
   <!-- summary -->
   <t:summary icon="clipboard.gif">
     <a href="${it.urlName}/">${it.displayName}</a>
-    <b> </b>
+    &#160;
     <t:test-result />
 
     <j:set var="failedTests" value="${it.failedTests}" />

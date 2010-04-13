@@ -33,8 +33,8 @@ THE SOFTWARE.
   <d:taglib uri="local">
     <d:tag name="computerCaption">
       <a href="${rootURL}/${c.url}">${title}</a>
-      <j:if test="${c.offline}"> (${%offline})</j:if>
-      <j:if test="${!c.acceptingTasks}"> (${%suspended})</j:if>
+      <j:if test="${c.offline}">&#160;(${%offline})</j:if>
+      <j:if test="${!c.acceptingTasks}">&#160;(${%suspended})</j:if>
     </d:tag>
     <d:tag name="executor">
       <tr>
