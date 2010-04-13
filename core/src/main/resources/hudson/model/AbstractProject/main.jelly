@@ -47,7 +47,7 @@ THE SOFTWARE.
     <j:if test="${tr!=null}">
       <t:summary icon="clipboard.gif">
         <a href="lastCompletedBuild/testReport/">${%Latest Test Result}</a>
-        &#160;
+        <st:nbsp/>
         <t:test-result it="${tr}" />
       </t:summary>
     </j:if>
