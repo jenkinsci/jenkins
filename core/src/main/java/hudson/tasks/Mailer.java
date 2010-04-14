@@ -26,6 +26,7 @@ package hudson.tasks;
 import hudson.Launcher;
 import hudson.Functions;
 import hudson.Extension;
+import hudson.RestrictedSince;
 import hudson.Util;
 import hudson.diagnosis.OldDataMonitor;
 import static hudson.Util.fixEmptyAndTrim;
@@ -39,6 +40,9 @@ import hudson.util.FormValidation;
 import hudson.util.Secret;
 import hudson.util.XStream2;
 import org.apache.tools.ant.types.selectors.SelectorUtils;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.DoNotUse;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.export.Exported;
@@ -93,12 +97,13 @@ public class Mailer extends Notifier {
     private transient String from;
     private transient String subject;
     private transient boolean failureOnly;
+    private transient String charset;
 
     @Override
     public boolean perform(AbstractBuild<?,?> build, Launcher launcher, BuildListener listener) throws InterruptedException {
         if(debug)
             listener.getLogger().println("Running mailer");
-        return new MailSender(recipients,dontNotifyEveryUnstableBuild,sendToIndividuals) {
+        return new MailSender(recipients,dontNotifyEveryUnstableBuild,sendToIndividuals, descriptor().getCharset()) {
             /** Check whether a path (/-separated) will be archived. */
             @Override
             public boolean artifactMatches(String path, AbstractBuild<?,?> build) {
@@ -135,6 +140,8 @@ public class Mailer extends Notifier {
      * @deprecated as of 1.286
      *      Use {@link #descriptor()} to obtain the current instance.
      */
+    @Restricted(NoExternalUse.class)
+    @RestrictedSince("1.355")
     public static DescriptorImpl DESCRIPTOR;
 
     public static DescriptorImpl descriptor() {
@@ -184,6 +191,11 @@ public class Mailer extends Notifier {
          */
         private String smtpPort;
 
+        /**
+         * The charset to use for the text and subject.
+         */
+        private String charset;
+        
         /**
          * Used to keep track of number test e-mails.
          */
@@ -282,6 +294,10 @@ public class Mailer extends Notifier {
             }
             smtpPort = nullify(json.getString("smtpPort"));
             useSsl = json.getBoolean("useSsl");
+            charset = json.getString("charset");
+            if (charset == null || charset.length() == 0)
+            	charset = "UTF-8";
+            
             save();
             return true;
         }
@@ -320,6 +336,12 @@ public class Mailer extends Notifier {
         public String getSmtpPort() {
         	return smtpPort;
         }
+        
+        public String getCharset() {
+        	String c = charset;
+        	if (c == null || c.length() == 0)	c = "UTF-8";
+        	return c;
+        }
 
         public void setDefaultSuffix(String defaultSuffix) {
             this.defaultSuffix = defaultSuffix;
@@ -348,6 +370,10 @@ public class Mailer extends Notifier {
 
         public void setSmtpPort(String smtpPort) {
             this.smtpPort = smtpPort;
+        }
+        
+        public void setCharset(String chaset) {
+            this.charset = chaset;
         }
 
         public void setSmtpAuth(String userName, String password) {
@@ -490,7 +516,7 @@ public class Mailer extends Notifier {
     public static class ConverterImpl extends XStream2.PassthruConverter<Mailer> {
         public ConverterImpl(XStream2 xstream) { super(xstream); }
         @Override protected void callback(Mailer m, UnmarshallingContext context) {
-            if (m.from != null || m.subject != null || m.failureOnly)
+            if (m.from != null || m.subject != null || m.failureOnly || m.charset != null)
                 OldDataMonitor.report(context, "1.10");
         }
     }

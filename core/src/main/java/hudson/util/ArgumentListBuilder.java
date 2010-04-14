@@ -47,6 +47,9 @@ import org.jvnet.animal_sniffer.IgnoreJRERequirement;
  */
 public class ArgumentListBuilder implements Serializable {
     private final List<String> args = new ArrayList<String>();
+    /**
+     * Bit mask indicating arguments that shouldn't be echoed-back (e.g., password)
+     */
     private BitSet mask = new BitSet();
 
     public ArgumentListBuilder() {

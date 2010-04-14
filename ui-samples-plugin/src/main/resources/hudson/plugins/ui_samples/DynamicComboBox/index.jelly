@@ -22,33 +22,20 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 -->
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:s="/lib/samples"
-         xmlns:this="this">
-	<l:layout title="Dynamic ComboBox Sample">
-		<l:main-panel>
-      <h1>Dynamic ComboBox Sample</h1>
-
-      <p>
-        <j:out value="${it.description}"/>
-      </p>
-
-      <this:_sources />
-
-      <s:sample>
-        <form>
-          <table>
-            <f:entry title="Country" field="country">
-              <f:textbox />
-            </f:entry>
-            <f:entry title="State" field="state">
-              <f:select />
-            </f:entry>
-            <f:entry title="City" field="city">
-              <f:select />
-            </f:entry>
-          </table>
-        </form>
-      </s:sample>
-    </l:main-panel>
-	</l:layout>
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:s="/lib/samples">
+  <s:sample title="Dynamic ComboBox Sample">
+    <form>
+      <table>
+        <f:entry title="Country" field="country">
+          <f:textbox />
+        </f:entry>
+        <f:entry title="State" field="state">
+          <f:select />
+        </f:entry>
+        <f:entry title="City" field="city">
+          <f:select />
+        </f:entry>
+      </table>
+    </form>
+  </s:sample>
 </j:jelly>

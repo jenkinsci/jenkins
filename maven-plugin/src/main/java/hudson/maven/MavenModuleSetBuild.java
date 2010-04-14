@@ -83,6 +83,8 @@ import org.apache.maven.project.ProjectBuildingException;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 
+import static hudson.model.Result.FAILURE;
+
 /**
  * {@link Build} for {@link MavenModuleSet}.
  *
@@ -592,8 +594,11 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
             for (MavenBuild b : getModuleLastBuilds().values())
                 b.save();
 
-            performAllBuildStep(listener, project.getPublishers(), true);
-            performAllBuildStep(listener, project.getProperties(), true);
+            // at this point the result is all set, so ignore the return value
+            if (!performAllBuildStep(listener, project.getPublishers(), true))
+                setResult(FAILURE);
+            if (!performAllBuildStep(listener, project.getProperties(), true))
+                setResult(FAILURE);
 
             // aggregate all module fingerprints to us,
             // so that dependencies between module builds can be understood as
@@ -612,16 +617,18 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
                 scheduleDownstreamBuilds(listener);
             }
 
-	    MavenMailer mailer = project.getReporters().get(MavenMailer.class);
-	    if (mailer != null) {
-		new MailSender(mailer.recipients,
-			       mailer.dontNotifyEveryUnstableBuild,
-			       mailer.sendToIndividuals).execute(MavenModuleSetBuild.this,listener);
-	    }
-	    
-            performAllBuildStep(listener, project.getPublishers(),false);
-            performAllBuildStep(listener, project.getProperties(),false);
+            MavenMailer mailer = project.getReporters().get(MavenMailer.class);
+            if (mailer != null) {
+                new MailSender(mailer.recipients,
+                        mailer.dontNotifyEveryUnstableBuild,
+                        mailer.sendToIndividuals).execute(MavenModuleSetBuild.this, listener);
+            }
+
+            // too late to set the build result at this point. so ignore failures.
+            performAllBuildStep(listener, project.getPublishers(), false);
+            performAllBuildStep(listener, project.getProperties(), false);
         }
+
     }
 
     /**

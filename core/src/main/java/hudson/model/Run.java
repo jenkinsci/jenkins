@@ -1181,7 +1181,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
         /**
          * Performs the post-build action.
          * <p>
-         * This method is called after the status of the build is determined.
+         * This method is called after {@linkplain #run(BuildListener) the main portion of the build is completed.}
          * This is a good opportunity to do notifications based on the result
          * of the build. When this method is called, the build is not really
          * finalized yet, and the build is still considered in progress --- for example,
@@ -1429,8 +1429,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
     }
 
     public void doBuildStatus( StaplerRequest req, StaplerResponse rsp ) throws IOException {
-        // see Hudson.doNocacheImages. this is a work around for a bug in Firefox
-        rsp.sendRedirect2(req.getContextPath()+"/nocacheImages/48x48/"+getBuildStatusUrl());
+        rsp.sendRedirect2(req.getContextPath()+"/images/48x48/"+getBuildStatusUrl());
     }
 
     public String getBuildStatusUrl() {
@@ -1476,9 +1475,9 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
             return new Summary(false, Messages.Run_Summary_Aborted());
 
         if(getResult()==Result.UNSTABLE) {
-            if(((Run)this) instanceof Build) {
-                AbstractTestResultAction trN = ((Build)(Run)this).getTestResultAction();
-                AbstractTestResultAction trP = prev==null ? null : ((Build) prev).getTestResultAction();
+            if(((Run)this) instanceof AbstractBuild) {
+                AbstractTestResultAction trN = ((AbstractBuild)(Run)this).getTestResultAction();
+                AbstractTestResultAction trP = prev==null ? null : ((AbstractBuild) prev).getTestResultAction();
                 if(trP==null) {
                     if(trN!=null && trN.getFailCount()>0)
                         return new Summary(false, Messages.Run_Summary_TestFailures(trN.getFailCount()));

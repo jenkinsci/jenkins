@@ -191,7 +191,7 @@ function findFollowingTR(input, className) {
     // then next TR that matches the CSS
     do {
         tr = tr.nextSibling;
-    } while (tr.tagName != "TR" || tr.className != className);
+    } while (tr != null && (tr.tagName != "TR" || tr.className != className));
 
     return tr;
 }
@@ -199,8 +199,7 @@ function findFollowingTR(input, className) {
 function find(src,filter,traversalF) {
     while(src!=null) {
         src = traversalF(src);
-        if(src==null)   break;
-        if(filter(src))
+        if(src!=null && filter(src))
             return src;
     }
     return null;
@@ -816,6 +815,24 @@ var hudsonRules = {
         }
     },
 
+    // dropdownList.jelly
+    "SELECT.dropdownList" : function(e) {
+        if(isInsideRemovable(e))    return;
+
+        e.subForms = [];
+        var start = findFollowingTR(e, 'dropdownList-container').firstChild.nextSibling, end;
+        do { start = start.firstChild; } while (start.tagName != 'TR');
+        if (start.className != 'dropdownList-start')
+            start = findFollowingTR(start, 'dropdownList-start');
+        while (start != null) {
+            end = findFollowingTR(start, 'dropdownList-end');
+            e.subForms.push({ 'start': start, 'end': end });
+            start = findFollowingTR(end, 'dropdownList-start');
+        }
+
+        updateDropDownList(e);
+    },
+
     // select.jelly
     "SELECT.select" : function(e) {
         var dep; // controls that this SELECT box depends on
@@ -1165,15 +1182,15 @@ function updateDropDownList(sel) {
     for (var i = 0; i < sel.subForms.length; i++) {
         var show = sel.selectedIndex == i;
         var f = sel.subForms[i];
-        var td = f.start;
+        var tr = f.start;
         while (true) {
-            td.style.display = (show ? "" : "none");
+            tr.style.display = (show ? "" : "none");
             if(show)
-                td.removeAttribute("field-disabled");
+                tr.removeAttribute("field-disabled");
             else    // buildFormData uses this attribute and ignores the contents
-                td.setAttribute("field-disabled","true");
-            if (td == f.end) break;
-            td = td.nextSibling;
+                tr.setAttribute("field-disabled","true");
+            if (tr == f.end) break;
+            tr = tr.nextSibling;
         }
     }
 }
@@ -1477,7 +1494,7 @@ function shortenName(name) {
 
 //
 // structured form submission handling
-//   see http://hudson.gotdns.com/wiki/display/HUDSON/Structured+Form+Submission
+//   see http://wiki.hudson-ci.org/display/HUDSON/Structured+Form+Submission
 function buildFormTree(form) {
     try {
         // I initially tried to use an associative array with DOM elemnets as keys

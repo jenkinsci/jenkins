@@ -1116,8 +1116,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
      */
     public void doBuildStatus(StaplerRequest req, StaplerResponse rsp)
             throws IOException {
-        rsp.sendRedirect2(req.getContextPath() + "/nocacheImages/48x48/"
-                + getBuildStatusUrl());
+        rsp.sendRedirect2(req.getContextPath() + "/images/48x48/" + getBuildStatusUrl());
     }
 
     public String getBuildStatusUrl() {

@@ -24,9 +24,9 @@
 package lib.form;
 
 import com.gargoylesoftware.htmlunit.ElementNotFoundException;
-import com.gargoylesoftware.htmlunit.Page;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import com.gargoylesoftware.htmlunit.html.HtmlForm;
+import com.gargoylesoftware.htmlunit.html.HtmlSelect;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -34,6 +34,12 @@ import java.util.List;
 
 import com.gargoylesoftware.htmlunit.javascript.background.JavaScriptJob;
 import com.gargoylesoftware.htmlunit.javascript.background.JavaScriptJobManagerImpl;
+import hudson.DescriptorExtensionList;
+import hudson.Extension;
+import hudson.ExtensionPoint;
+import hudson.model.Describable;
+import hudson.model.Descriptor;
+import hudson.model.Hudson;
 import net.sf.json.JSONObject;
 import org.jvnet.hudson.test.HudsonTestCase;
 import org.kohsuke.stapler.DataBoundConstructor;
@@ -55,6 +61,8 @@ public class RepeatableTest extends HudsonTestCase {
             bindResult = req.bindJSONToList(bindClass, formData.get("items"));
     }
 
+    // ========================================================================
+
     private void doTestSimple() throws Exception {
         HtmlPage p = createWebClient().goTo("self/testSimple");
         HtmlForm f = p.getFormByName("config");
@@ -74,6 +82,8 @@ public class RepeatableTest extends HudsonTestCase {
             + "{\"bool\":false,\"txt\":\"value two\"},{\"bool\":true,\"txt\":\"value three\"}]",
             formData.get("foos").toString());
     }
+
+    // ========================================================================
 
     public static class Foo {
         public String txt;
@@ -125,6 +135,8 @@ public class RepeatableTest extends HudsonTestCase {
             + "{\"bool\":true,\"txt\":\"existing two\"},{\"bool\":false,\"txt\":\"new one\"}]",
             formData.get("foos").toString());
     }
+
+    // ========================================================================
 
     // hudson-behavior uniquifies radiobutton names so the browser properly handles each group,
     // then converts back to original names when submitting form.
@@ -182,6 +194,75 @@ public class RepeatableTest extends HudsonTestCase {
                      + "{\"radio\":{\"a\":\"avalue two\",\"value\":\"one\"},\"txt\":\"txt two\"}]",
                      formData.get("foos").toString());
     }
+
+    // ========================================================================
+
+    public static class Fruit implements ExtensionPoint, Describable<Fruit> {
+        protected String name;
+        private Fruit(String name) { this.name = name; }
+
+        public Descriptor<Fruit> getDescriptor() {
+            return Hudson.getInstance().getDescriptor(getClass());
+        }
+    }
+
+    public static class FruitDescriptor extends Descriptor<Fruit> {
+        public FruitDescriptor(Class<? extends Fruit> clazz) {
+            super(clazz);
+        }
+        public String getDisplayName() {
+            return clazz.getSimpleName();
+        }
+    }
+
+    public static class Apple extends Fruit {
+        private int seeds;
+        @DataBoundConstructor public Apple(int seeds) { super("Apple"); this.seeds = seeds; }
+        @Extension public static final FruitDescriptor D = new FruitDescriptor(Apple.class);
+        @Override public String toString() { return name + " with " + seeds + " seeds"; }
+    }
+    public static class Banana extends Fruit {
+        private boolean yellow;
+        @DataBoundConstructor public Banana(boolean yellow) { super("Banana"); this.yellow = yellow; }
+        @Extension public static final FruitDescriptor D = new FruitDescriptor(Banana.class);
+        @Override public String toString() { return (yellow ? "Yellow" : "Green") + " " + name; }
+    }
+
+    public static class Fruity {
+        public Fruit fruit;
+        public String word;
+        @DataBoundConstructor public Fruity(Fruit fruit, String word) {
+            this.fruit = fruit;
+            this.word = word;
+        }
+        @Override public String toString() { return fruit + " " + word; }
+    }
+
+    public DescriptorExtensionList<Fruit,Descriptor<Fruit>> getFruitDescriptors() {
+        return hudson.getDescriptorList(Fruit.class);
+    }
+
+    public void testDropdownList() throws Exception {
+        HtmlPage p = createWebClient().goTo("self/testDropdownList");
+        HtmlForm f = p.getFormByName("config");
+        f.getButtonByCaption("Add").click();
+        waitForJavaScript(p);
+        f.getInputByValue("").setValueAttribute("17"); // seeds
+        f.getInputByValue("").setValueAttribute("pie"); // word
+        f.getButtonByCaption("Add").click();
+        waitForJavaScript(p);
+        // select banana in 2nd select element:
+        ((HtmlSelect)f.getElementsByTagName("select").get(1)).getOption(1).click();
+        f.getInputsByName("yellow").get(1).click(); // checkbox
+        f.getInputsByValue("").get(1).setValueAttribute("split"); // word
+        String xml = f.asXml();
+        bindClass = Fruity.class;
+        submit(f);
+        assertEquals(formData + "\n" + xml,
+                     "[Apple with 17 seeds pie, Yellow Banana split]", bindResult.toString());
+    }
+
+    // ========================================================================
 
     public static class FooList {
         public String title;

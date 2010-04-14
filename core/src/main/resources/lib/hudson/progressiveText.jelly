@@ -63,8 +63,11 @@ THE SOFTWARE.
               var text = rsp.responseText;
               if(text!="") {
                 var p = document.createElement("DIV");
-                p.innerHTML = text;
-                e.appendChild(p);
+                e.appendChild(p); // Needs to be first for IE
+                // Use "outerHTML" for IE; workaround for:
+                // http://www.quirksmode.org/bugreports/archives/2004/11/innerhtml_and_t.html
+                if (p.outerHTML) p.outerHTML = '<pre>'+text+'</pre>';
+                else p.innerHTML = text;
                 if(stickToBottom) scroller.scrollToBottom();
               }
 

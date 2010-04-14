@@ -38,7 +38,6 @@ THE SOFTWARE.
     </st:attribute>
   </st:documentation>
 
-    <j:set var="id" value="${h.generateId()}"/>
     <tr>
         <td class="setting-leftspace"><st:nbsp/></td>
         <td class="setting-name">
@@ -46,13 +45,10 @@ THE SOFTWARE.
         </td>
         <td class="setting-main">
             <!-- create drop-down list -->
-            <select class="setting-input" id="${id}" onchange="updateDropDownList(this)">
+            <select class="setting-input dropdownList" onchange="updateDropDownList(this)">
                 <j:set var="dropdownListMode" value="createSelectField"/>
                 <d:invokeBody/>
             </select>
-            <script>
-                $$('${id}').subForms = [];
-            </script>
         </td>
         <j:if test="${attrs.help!=null}">
             <td class="setting-help">
@@ -63,17 +59,16 @@ THE SOFTWARE.
     </tr>
 
     <!-- generate the actual form entries -->
-    <f:nested>
+    <tr class="dropdownList-container">
+      <td colspan="2"/>
+      <td colspan="2">
         <table width="100%" name="${name}">
             <j:set var="dropdownListMode" value="generateEntries"/>
             <d:invokeBody/>
         </table>
-    </f:nested>
+      </td>
+    </tr>
 
-    <!-- set the initial visibility -->
-    <script>
-        updateDropDownList($$('${id}'));
-    </script>
     <j:if test="${!empty(attrs.description)}">
         <f:description>
             ${description}

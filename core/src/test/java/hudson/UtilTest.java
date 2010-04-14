@@ -158,20 +158,12 @@ public class UtilTest extends TestCase {
             // test a long name
             StringBuilder buf = new StringBuilder(768);
             for( int i=0; i<768; i++)
-                buf.append('0'+(i%10));
+                buf.append((char)('0'+(i%10)));
             Util.createSymlink(d,buf.toString(),"x", l);
 
             String log = baos.toString();
-            if (log.length() > 0) {
+            if (log.length() > 0)
                 System.err.println("log output: " + log);
-                if (log.contains("ln failed: 78" /*ENAMETOOLONG*/)) {
-                    buf.setLength(0);
-                    // Try again with shorter name for this system
-                    for( int i=0; i<254; i++)
-                        buf.append('0'+(i%10));
-                    Util.createSymlink(d,buf.toString(),"x", l);
-                }
-            }
 
             assertEquals(buf.toString(),Util.resolveSymlink(new File(d,"x"),l));
         } finally {
