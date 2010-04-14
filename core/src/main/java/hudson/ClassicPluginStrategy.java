@@ -166,7 +166,7 @@ public class ClassicPluginStrategy implements PluginStrategy {
 
         ClassLoader dependencyLoader = new DependencyClassLoader(getBaseClassLoader(atts), archive, Util.join(dependencies,optionalDependencies));
 
-        return new PluginWrapper(archive, manifest, baseResourceURL,
+        return new PluginWrapper(pluginManager, archive, manifest, baseResourceURL,
                 createClassLoader(paths, dependencyLoader), disableFile, dependencies, optionalDependencies);
     }
 
@@ -239,12 +239,6 @@ public class ClassicPluginStrategy implements PluginStrategy {
     }
 
     public void load(PluginWrapper wrapper) throws IOException {
-        loadPluginDependencies(wrapper.getDependencies(),
-                wrapper.getOptionalDependencies());
-
-        if (!wrapper.isActive())
-            return;
-
         // override the context classloader so that XStream activity in plugin.start()
         // will be able to resolve classes in this plugin
         ClassLoader old = Thread.currentThread().getContextClassLoader();
@@ -354,36 +348,6 @@ public class ClassicPluginStrategy implements PluginStrategy {
         }
     }
 
-    /**
-     * Loads the dependencies to other plugins.
-     *
-     * @throws IOException
-     *             thrown if one or several mandatory dependencies doesnt
-     *             exists.
-     */
-    private void loadPluginDependencies(List<Dependency> dependencies,
-            List<Dependency> optionalDependencies) throws IOException {
-        List<String> missingDependencies = new ArrayList<String>();
-        // make sure dependencies exist
-        for (Dependency d : dependencies) {
-            if (pluginManager.getPlugin(d.shortName) == null)
-                missingDependencies.add(d.toString());
-        }
-        if (!missingDependencies.isEmpty()) {
-            StringBuilder builder = new StringBuilder();
-            builder.append("Dependency ");
-            builder.append(Util.join(missingDependencies, ", "));
-            builder.append(" doesn't exist");
-            throw new IOException(builder.toString());
-        }
-
-        // add the optional dependencies that exists
-        for (Dependency d : optionalDependencies) {
-            if (pluginManager.getPlugin(d.shortName) != null)
-                dependencies.add(d);
-        }
-    }
-    
     /**
      * Used to load classes from dependency plugins.
      */

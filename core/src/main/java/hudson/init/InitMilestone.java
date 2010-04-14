@@ -57,6 +57,7 @@ public enum InitMilestone implements Milestone {
      * By this milestone, all plugin metadata are loaded and its classloader set up.
      */
     PLUGINS_PREPARED("Prepared all plugins"),
+
     /**
      * By this milestone, all plugins start executing, all extension points loaded, descriptors instantiated
      * and loaded.
@@ -67,10 +68,12 @@ public enum InitMilestone implements Milestone {
      * require all the classes from all the plugins to be loadable.
      */
     PLUGINS_STARTED("Started all plugins"),
+
     /**
      * By this milestone, all jobs and their build records are loaded from disk.
      */
     JOB_LOADED("Loaded all jobs"),
+
     /**
      * The very last milestone
      *

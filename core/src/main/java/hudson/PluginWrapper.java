@@ -23,6 +23,7 @@
  */
 package hudson;
 
+import hudson.PluginManager.PluginInstanceStore;
 import hudson.model.Hudson;
 import hudson.model.UpdateCenter;
 import hudson.model.UpdateSite;
@@ -34,6 +35,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.io.Closeable;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.jar.Manifest;
 import java.util.logging.Logger;
@@ -67,16 +69,15 @@ import org.kohsuke.stapler.HttpResponses;
  */
 public final class PluginWrapper {
     /**
+     * {@link PluginManager} to which this belongs to.
+     */
+    public final PluginManager parent;
+
+    /**
      * Plugin manifest.
      * Contains description of the plugin.
      */
     private final Manifest manifest;
-
-    /**
-     * Loaded plugin instance.
-     * Null if disabled.
-     */
-    private Plugin plugin;
 
     /**
      * {@link ClassLoader} for loading classes from this plugin.
@@ -171,9 +172,10 @@ public final class PluginWrapper {
      *  @param dependencies a list of mandatory dependencies
      *  @param optionalDependencies a list of optional dependencies
      */
-	public PluginWrapper(File archive, Manifest manifest, URL baseResourceURL, 
+	public PluginWrapper(PluginManager parent, File archive, Manifest manifest, URL baseResourceURL, 
 			ClassLoader classLoader, File disableFile, 
 			List<Dependency> dependencies, List<Dependency> optionalDependencies) {
+        this.parent = parent;
 		this.manifest = manifest;
 		this.shortName = computeShortName(manifest, archive);
 		this.baseResourceURL = baseResourceURL;
@@ -239,7 +241,7 @@ public final class PluginWrapper {
      * Gets the instance of {@link Plugin} contributed by this plugin.
      */
     public Plugin getPlugin() {
-        return plugin;
+        return Hudson.lookup(PluginInstanceStore.class).store.get(this);
     }
 
     /**
@@ -311,17 +313,19 @@ public final class PluginWrapper {
     /**
      * Terminates the plugin.
      */
-    void stop() {
+    public void stop() {
         LOGGER.info("Stopping "+shortName);
         try {
-            plugin.stop();
+            getPlugin().stop();
         } catch(Throwable t) {
             LOGGER.log(WARNING, "Failed to shut down "+shortName, t);
         }
         // Work around a bug in commons-logging.
         // See http://www.szegedi.org/articles/memleak.html
         LogFactory.release(classLoader);
-        
+    }
+
+    public void releaseClassLoader() {
         if (classLoader instanceof Closeable)
             try {
                 ((Closeable) classLoader).close();
@@ -371,12 +375,36 @@ public final class PluginWrapper {
     }
 
     public void setPlugin(Plugin plugin) {
-        this.plugin = plugin;
+        Hudson.lookup(PluginInstanceStore.class).store.put(this,plugin);
         plugin.wrapper = this;
     }
 
     public String getPluginClass() {
         return manifest.getMainAttributes().getValue("Plugin-Class");
+    }
+
+    /**
+     * Makes sure that all the dependencies exist, and then accept optional dependencies
+     * as real dependencies.
+     *
+     * @throws IOException
+     *             thrown if one or several mandatory dependencies doesn't exists.
+     */
+    /*package*/ void resolvePluginDependencies() throws IOException {
+        List<String> missingDependencies = new ArrayList<String>();
+        // make sure dependencies exist
+        for (Dependency d : dependencies) {
+            if (parent.getPlugin(d.shortName) == null)
+                missingDependencies.add(d.toString());
+        }
+        if (!missingDependencies.isEmpty())
+            throw new IOException("Dependency "+Util.join(missingDependencies, ", ")+" doesn't exist");
+
+        // add the optional dependencies that exists
+        for (Dependency d : optionalDependencies) {
+            if (parent.getPlugin(d.shortName) != null)
+                dependencies.add(d);
+        }
     }
 
     /**

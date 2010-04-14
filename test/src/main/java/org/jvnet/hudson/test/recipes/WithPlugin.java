@@ -58,6 +58,7 @@ public @interface WithPlugin {
         @Override
         public void setup(HudsonTestCase testCase, WithPlugin recipe) throws Exception {
             a = recipe;
+            testCase.useLocalPluginManager = true;
         }
 
         @Override

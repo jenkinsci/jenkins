@@ -35,6 +35,8 @@ import hudson.FilePath;
 import hudson.Functions;
 import hudson.Launcher;
 import hudson.Launcher.LocalLauncher;
+import hudson.LocalPluginManager;
+import hudson.Lookup;
 import hudson.Plugin;
 import hudson.PluginManager;
 import hudson.PluginWrapper;
@@ -145,8 +147,6 @@ import org.jvnet.hudson.reactor.Milestone;
 import org.jvnet.hudson.reactor.Reactor;
 import org.jvnet.hudson.reactor.ReactorListener;
 import org.jvnet.hudson.reactor.TaskGraphBuilder.Handle;
-import org.kohsuke.accmod.Restricted;
-import org.kohsuke.accmod.restrictions.DoNotUse;
 import org.kohsuke.stapler.Ancestor;
 import org.kohsuke.stapler.HttpRedirect;
 import org.kohsuke.stapler.HttpResponse;
@@ -230,6 +230,11 @@ import java.util.regex.Pattern;
 @ExportedBean
 public final class Hudson extends Node implements ItemGroup<TopLevelItem>, StaplerProxy, StaplerFallback, ViewGroup, AccessControlled, DescriptorByNameOwner {
     private transient final Queue queue;
+
+    /**
+     * Stores various objects scoped to {@link Hudson}.
+     */
+    public transient final Lookup lookup = new Lookup();
 
     /**
      * {@link Computer}s in this Hudson system. Read-only.
@@ -533,6 +538,14 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
     private transient final LogRecorderManager log = new LogRecorderManager();
 
     public Hudson(File root, ServletContext context) throws IOException, InterruptedException, ReactorException {
+        this(root,context,null);
+    }
+
+    /**
+     * @param pluginManager
+     *      If non-null, use existing plugin manager. Otherwise create a new one.
+     */
+    public Hudson(File root, ServletContext context, PluginManager pluginManager) throws IOException, InterruptedException, ReactorException {
     	// As hudson is starting, grant this process full control
     	SecurityContextHolder.getContext().setAuthentication(ACL.SYSTEM);
         try {
@@ -576,7 +589,11 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
                 LOGGER.log(SEVERE, "Failed to load proxy configuration", e);
             }
 
-            pluginManager = new PluginManager(context);
+            if (pluginManager==null)
+                pluginManager = new LocalPluginManager(this);
+            this.pluginManager = pluginManager;
+            // JSON binding needs to be able to see all the classes from all the plugins
+            WebApp.get(servletContext).setClassLoader(pluginManager.uberClassLoader);
 
             adjuncts = new AdjunctManager(servletContext, pluginManager.uberClassLoader,"adjuncts/"+VERSION_HASH);
 
@@ -3412,6 +3429,13 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
         public static final LocalChannel localChannel = new LocalChannel(threadPoolForRemoting);
     }
 
+    /**
+     * Shortcut for {@code Hudson.getInstance().lookup.get(type)}
+     */
+    public static <T> T lookup(Class<T> type) {
+        return Hudson.getInstance().lookup.get(type);
+    }
+    
     /**
      * @deprecated since 2007-12-18.
      *      Use {@link #checkPermission(Permission)}

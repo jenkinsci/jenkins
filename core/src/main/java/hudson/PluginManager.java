@@ -51,7 +51,6 @@ import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
-import org.kohsuke.stapler.WebApp;
 
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
@@ -63,6 +62,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashSet;
+import java.util.Hashtable;
 import java.util.List;
 import java.util.Set;
 import java.util.Map;
@@ -75,24 +75,29 @@ import java.util.logging.Logger;
  *
  * @author Kohsuke Kawaguchi
  */
-public final class PluginManager extends AbstractModelObject {
+public abstract class PluginManager extends AbstractModelObject {
     /**
      * All discovered plugins.
      */
-    private final List<PluginWrapper> plugins = new ArrayList<PluginWrapper>();
+    protected final List<PluginWrapper> plugins = new ArrayList<PluginWrapper>();
 
     /**
      * All active plugins.
      */
-    private final List<PluginWrapper> activePlugins = new ArrayList<PluginWrapper>();
+    protected final List<PluginWrapper> activePlugins = new ArrayList<PluginWrapper>();
 
-    private final List<FailedPlugin> failedPlugins = new ArrayList<FailedPlugin>();
+    protected final List<FailedPlugin> failedPlugins = new ArrayList<FailedPlugin>();
 
     /**
      * Plug-in root directory.
      */
     public final File rootDir;
 
+    /**
+     * @deprecated as of 1.355
+     *      {@link PluginManager} can now live longer than {@link Hudson} instance, so
+     *      use {@code Hudson.getInstance().servletContext} instead.
+     */
     public final ServletContext context;
 
     /**
@@ -110,18 +115,24 @@ public final class PluginManager extends AbstractModelObject {
      * for new plugins to take effect.
      */
     public volatile boolean pluginUploaded = false;
+
+    /**
+     * The initialization of {@link PluginManager} splits into two parts;
+     * one is the part about listing them, extracting them, and preparing classloader for them.
+     * The 2nd part is about creating instances. Once the former completes this flags become true,
+     * as the 2nd part can be repeated for each Hudson instance.
+     */
+    private boolean pluginListed = false;
     
     /**
      * Strategy for creating and initializing plugins
      */
     private final PluginStrategy strategy;
 
-    public PluginManager(ServletContext context) {
+    public PluginManager(ServletContext context, File rootDir) {
         this.context = context;
-        // JSON binding needs to be able to see all the classes from all the plugins
-        WebApp.get(context).setClassLoader(uberClassLoader);
 
-        rootDir = new File(Hudson.getInstance().getRootDir(),"plugins");
+        this.rootDir = rootDir;
         if(!rootDir.exists())
             rootDir.mkdirs();
         
@@ -134,143 +145,155 @@ public final class PluginManager extends AbstractModelObject {
      * {@link Hudson#pluginManager}. 
      */
     public TaskBuilder initTasks(final InitStrategy initStrategy) {
-        return new TaskGraphBuilder() {
-            List<File> archives;
-            Collection<String> bundledPlugins;
+        TaskBuilder builder;
+        if (!pluginListed) {
+            builder = new TaskGraphBuilder() {
+                List<File> archives;
+                Collection<String> bundledPlugins;
 
-            {
-                Handle loadBundledPlugins = add("Loading bundled plugins", new Executable() {
-                    public void run(Reactor session) throws Exception {
-                        bundledPlugins = loadBundledPlugins();
-                    }
-                });
+                {
+                    Handle loadBundledPlugins = add("Loading bundled plugins", new Executable() {
+                        public void run(Reactor session) throws Exception {
+                            bundledPlugins = loadBundledPlugins();
+                        }
+                    });
 
-                Handle listUpPlugins = requires(loadBundledPlugins).add("Listing up plugins", new Executable() {
-                    public void run(Reactor session) throws Exception {
-                        archives = initStrategy.listPluginArchives(PluginManager.this);
-                    }
-                });
+                    Handle listUpPlugins = requires(loadBundledPlugins).add("Listing up plugins", new Executable() {
+                        public void run(Reactor session) throws Exception {
+                            archives = initStrategy.listPluginArchives(PluginManager.this);
+                        }
+                    });
 
-                requires(listUpPlugins).attains(PLUGINS_LISTED).add("Preparing plugins",new Executable() {
-                    public void run(Reactor session) throws Exception {
-                        TaskGraphBuilder g = new TaskGraphBuilder();
+                    requires(listUpPlugins).attains(PLUGINS_LISTED).add("Preparing plugins",new Executable() {
+                        public void run(Reactor session) throws Exception {
+                            // once we've listed plugins, we can fill in the reactor with plugin-specific initialization tasks
+                            TaskGraphBuilder g = new TaskGraphBuilder();
 
-                        final Map<String,File> inspectedShortNames = new HashMap<String,File>();
+                            final Map<String,File> inspectedShortNames = new HashMap<String,File>();
 
-                        for( final File arc : archives ) {
-                            g.followedBy().notFatal().attains(PLUGINS_LISTED).add("Inspecting plugin " + arc, new Executable() {
-                                public void run(Reactor session) throws Exception {
-                                    try {
-                                        PluginWrapper p = strategy.createPluginWrapper(arc);
-                                        if (isDuplicate(p)) return;
+                            for( final File arc : archives ) {
+                                g.followedBy().notFatal().attains(PLUGINS_LISTED).add("Inspecting plugin " + arc, new Executable() {
+                                    public void run(Reactor session1) throws Exception {
+                                        try {
+                                            PluginWrapper p = strategy.createPluginWrapper(arc);
+                                            if (isDuplicate(p)) return;
 
-                                        p.isBundled = bundledPlugins.contains(arc.getName());
-                                        plugins.add(p);
-                                        if(p.isActive())
-                                            activePlugins.add(p);
-                                    } catch (IOException e) {
-                                        failedPlugins.add(new FailedPlugin(arc.getName(),e));
-                                        throw e;
+                                            p.isBundled = bundledPlugins.contains(arc.getName());
+                                            plugins.add(p);
+                                            if(p.isActive())
+                                                activePlugins.add(p);
+                                        } catch (IOException e) {
+                                            failedPlugins.add(new FailedPlugin(arc.getName(),e));
+                                            throw e;
+                                        }
                                     }
-                                }
 
+                                    /**
+                                     * Inspects duplication. this happens when you run hpi:run on a bundled plugin,
+                                     * as well as putting numbered hpi files, like "cobertura-1.0.hpi" and "cobertura-1.1.hpi"
+                                     */
+                                    private boolean isDuplicate(PluginWrapper p) {
+                                        String shortName = p.getShortName();
+                                        if (inspectedShortNames.containsKey(shortName)) {
+                                            LOGGER.info("Ignoring "+arc+" because "+inspectedShortNames.get(shortName)+" is already loaded");
+                                            return true;
+                                        }
+
+                                        inspectedShortNames.put(shortName,arc);
+                                        return false;
+                                    }
+                                });
+                            }
+
+                            g.requires(PLUGINS_LISTED).add("Checking cyclic dependencies",new Executable() {
                                 /**
-                                 * Inspects duplication. this happens when you run hpi:run on a bundled plugin,
-                                 * as well as putting numbered hpi files, like "cobertura-1.0.hpi" and "cobertura-1.1.hpi"
+                                 * Makes sure there's no cycle in dependencies.
                                  */
-                                private boolean isDuplicate(PluginWrapper p) {
-                                    String shortName = p.getShortName();
-                                    if (inspectedShortNames.containsKey(shortName)) {
-                                        LOGGER.info("Ignoring "+arc+" because "+inspectedShortNames.get(shortName)+" is already loaded");
-                                        return true;
-                                    }
+                                public void run(Reactor reactor) throws Exception {
+                                    try {
+                                        new CyclicGraphDetector<PluginWrapper>() {
+                                            @Override
+                                            protected List<PluginWrapper> getEdges(PluginWrapper p) {
+                                                List<PluginWrapper> next = new ArrayList<PluginWrapper>();
+                                                addTo(p.getDependencies(),next);
+                                                addTo(p.getOptionalDependencies(),next);
+                                                return next;
+                                            }
 
-                                    inspectedShortNames.put(shortName,arc);
-                                    return false;
+                                            private void addTo(List<Dependency> dependencies, List<PluginWrapper> r) {
+                                                for (Dependency d : dependencies) {
+                                                    PluginWrapper p = getPlugin(d.shortName);
+                                                    if (p!=null)
+                                                        r.add(p);
+                                                }
+                                            }
+                                        }.run(getPlugins());
+                                    } catch (CycleDetectedException e) {
+                                        stop(); // disable all plugins since classloading from them can lead to StackOverflow
+                                        throw e;    // let Hudson fail
+                                    }
                                 }
                             });
+
+                            session.addAll(g.discoverTasks(session));
+
+                            pluginListed = true; // technically speaking this is still too early, as at this point tasks are merely scheduled, not necessarily executed.
                         }
+                    });
+                }
+            };
+        } else {
+            builder = TaskBuilder.EMPTY_BUILDER;
+        }
 
-                        g.requires(PLUGINS_LISTED).add("Checking cyclic dependencies",new Executable() {
-                            /**
-                             * Makes sure there's no cycle in dependencies.
-                             */
-                            public void run(Reactor reactor) throws Exception {
-                                try {
-                                    new CyclicGraphDetector<PluginWrapper>() {
-                                        @Override
-                                        protected List<PluginWrapper> getEdges(PluginWrapper p) {
-                                            List<PluginWrapper> next = new ArrayList<PluginWrapper>();
-                                            addTo(p.getDependencies(),next);
-                                            addTo(p.getOptionalDependencies(),next);
-                                            return next;
-                                        }
+        // lists up initialization tasks about loading plugins.
+        return TaskBuilder.union(builder,new TaskGraphBuilder() {{
+            requires(PLUGINS_LISTED).attains(PLUGINS_PREPARED).add("Loading plugins",new Executable() {
+                /**
+                 * Once the plugins are listed, schedule their initialization.
+                 */
+                public void run(Reactor session) throws Exception {
+                    Hudson.getInstance().lookup.set(PluginInstanceStore.class,new PluginInstanceStore());
+                    TaskGraphBuilder g = new TaskGraphBuilder();
 
-                                        private void addTo(List<Dependency> dependencies, List<PluginWrapper> r) {
-                                            for (Dependency d : dependencies) {
-                                                PluginWrapper p = getPlugin(d.shortName);
-                                                if (p!=null)
-                                                    r.add(p);
-                                            }
-                                        }
-                                    }.run(getPlugins());
-                                } catch (CycleDetectedException e) {
-                                    stop(); // disable all plugins since classloading from them can lead to StackOverflow
-                                    throw e;    // let Hudson fail
-                                }
-                            }
-                        });
-
-                        g.requires(PLUGINS_LISTED).attains(PLUGINS_PREPARED).add("Loading plugins",new Executable() {
-                            /**
-                             * Once the plugins are listed, schedule their initialization.
-                             */
+                    // schedule execution of loading plugins
+                    for (final PluginWrapper p : activePlugins.toArray(new PluginWrapper[activePlugins.size()])) {
+                        g.followedBy().notFatal().attains(PLUGINS_PREPARED).add("Loading plugin " + p.getShortName(), new Executable() {
                             public void run(Reactor session) throws Exception {
-                                TaskGraphBuilder g = new TaskGraphBuilder();
-
-                                // schedule execution of loading plugins
-                                for (final PluginWrapper p : activePlugins.toArray(new PluginWrapper[activePlugins.size()])) {
-                                    g.followedBy().notFatal().attains(PLUGINS_PREPARED).add("Loading plugin " + p.getShortName(), new Executable() {
-                                        public void run(Reactor session) throws Exception {
-                                            try {
-                                                strategy.load(p);
-                                            } catch (IOException e) {
-                                                failedPlugins.add(new FailedPlugin(p.getShortName(), e));
-                                                activePlugins.remove(p);
-                                                plugins.remove(p);
-                                                throw e;
-                                            }
-                                        }
-                                    });
+                                try {
+                                    p.resolvePluginDependencies();
+                                    strategy.load(p);
+                                } catch (IOException e) {
+                                    failedPlugins.add(new FailedPlugin(p.getShortName(), e));
+                                    activePlugins.remove(p);
+                                    plugins.remove(p);
+                                    throw e;
                                 }
-
-                                // schedule execution of initializing plugins
-                                for (final PluginWrapper p : activePlugins.toArray(new PluginWrapper[activePlugins.size()])) {
-                                    g.followedBy().notFatal().attains(PLUGINS_STARTED).add("Initializing plugin " + p.getShortName(), new Executable() {
-                                        public void run(Reactor session) throws Exception {
-                                            try {
-                                                p.getPlugin().postInitialize();
-                                            } catch (Exception e) {
-                                                failedPlugins.add(new FailedPlugin(p.getShortName(), e));
-                                                activePlugins.remove(p);
-                                                plugins.remove(p);
-                                                throw e;
-                                            }
-                                        }
-                                    });
-                                }
-
-                                // register them all
-                                session.addAll(g.discoverTasks(session));
                             }
                         });
-
-                        // register them all
-                        session.addAll(g.discoverTasks(session));
                     }
-                });
-            }
-        };
+
+                    // schedule execution of initializing plugins
+                    for (final PluginWrapper p : activePlugins.toArray(new PluginWrapper[activePlugins.size()])) {
+                        g.followedBy().notFatal().attains(PLUGINS_STARTED).add("Initializing plugin " + p.getShortName(), new Executable() {
+                            public void run(Reactor session) throws Exception {
+                                try {
+                                    p.getPlugin().postInitialize();
+                                } catch (Exception e) {
+                                    failedPlugins.add(new FailedPlugin(p.getShortName(), e));
+                                    activePlugins.remove(p);
+                                    plugins.remove(p);
+                                    throw e;
+                                }
+                            }
+                        });
+                    }
+
+                    // register them all
+                    session.addAll(g.discoverTasks(session));
+                }
+            });
+        }});
     }
 
     /**
@@ -278,47 +301,31 @@ public final class PluginManager extends AbstractModelObject {
      *
      * @return
      *      File names of the bundled plugins. Like {"ssh-slaves.hpi","subvesrion.hpi"}
+     * @throws Exception
+     *      Any exception will be reported and halt the startup.
      */
-    private Collection<String> loadBundledPlugins() {
-        // this is used in tests, when we want to override the default bundled plugins with .hpl versions
-        if (System.getProperty("hudson.bundled.plugins") != null) {
-            return Collections.emptySet();
+    protected abstract Collection<String> loadBundledPlugins() throws Exception;
+
+    /**
+     * Copies the bundled plugin from the given URL to the destination of the given file name (like 'abc.hpi'),
+     * with a reasonable up-to-date check. A convenience method to be used by the {@link #loadBundledPlugins()}.
+     */
+    protected void copyBundledPlugin(URL src, String fileName) throws IOException {
+        long lastModified = src.openConnection().getLastModified();
+        File file = new File(rootDir, fileName);
+        File pinFile = new File(rootDir, fileName+".pinned");
+
+        // update file if:
+        //  - no file exists today
+        //  - bundled version and current version differs (by timestamp), and the file isn't pinned.
+        if (!file.exists() || (file.lastModified() != lastModified && !pinFile.exists())) {
+            FileUtils.copyURLToFile(src, file);
+            file.setLastModified(src.openConnection().getLastModified());
+            // lastModified is set for two reasons:
+            // - to avoid unpacking as much as possible, but still do it on both upgrade and downgrade
+            // - to make sure the value is not changed after each restart, so we can avoid
+            // unpacking the plugin itself in ClassicPluginStrategy.explode
         }
-
-        Set<String> names = new HashSet<String>();
-
-        for( String path : Util.fixNull((Set<String>)context.getResourcePaths("/WEB-INF/plugins"))) {
-            String fileName = path.substring(path.lastIndexOf('/')+1);
-            if(fileName.length()==0) {
-                // see http://www.nabble.com/404-Not-Found-error-when-clicking-on-help-td24508544.html
-                // I suspect some containers are returning directory names.
-                continue;
-            }
-            try {
-                names.add(fileName);
-
-                URL url = context.getResource(path);
-                long lastModified = url.openConnection().getLastModified();
-                File file = new File(rootDir, fileName);
-                File pinFile = new File(rootDir, fileName+".pinned");
-
-                // update file if:
-                //  - no file exists today
-                //  - bundled version and current version differs (by timestamp), and the file isn't pinned.
-                if (!file.exists() || (file.lastModified() != lastModified && !pinFile.exists())) {
-                    FileUtils.copyURLToFile(url, file);
-                    file.setLastModified(url.openConnection().getLastModified());
-                    // lastModified is set for two reasons:
-                    // - to avoid unpacking as much as possible, but still do it on both upgrade and downgrade
-                    // - to make sure the value is not changed after each restart, so we can avoid
-                    // unpacking the plugin itself in ClassicPluginStrategy.explode
-                }
-            } catch (IOException e) {
-                LOGGER.log(Level.SEVERE, "Failed to extract the bundled plugin "+fileName,e);
-            }
-        }
-
-        return names;
     }
 
     /**
@@ -435,8 +442,10 @@ public final class PluginManager extends AbstractModelObject {
      * Orderly terminates all the plugins.
      */
     public void stop() {
-        for (PluginWrapper p : activePlugins)
+        for (PluginWrapper p : activePlugins) {
             p.stop();
+            p.releaseClassLoader();
+        }
         activePlugins.clear();
         // Work around a bug in commons-logging.
         // See http://www.szegedi.org/articles/memleak.html
@@ -599,5 +608,12 @@ public final class PluginManager extends AbstractModelObject {
         public String getExceptionString() {
             return Functions.printThrowable(cause);
         }
+    }
+
+    /**
+     * Stores {@link Plugin} instances.
+     */
+    /*package*/ static final class PluginInstanceStore {
+        final Map<PluginWrapper,Plugin> store = new Hashtable<PluginWrapper,Plugin>();
     }
 }

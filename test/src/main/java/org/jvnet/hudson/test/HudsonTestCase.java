@@ -30,17 +30,20 @@ import hudson.CloseProofOutputStream;
 import hudson.FilePath;
 import hudson.Functions;
 import hudson.Main;
+import hudson.PluginManager;
 import hudson.WebAppMain;
 import hudson.EnvVars;
 import hudson.ExtensionList;
 import hudson.DescriptorExtensionList;
 import hudson.Util;
+import hudson.model.AbstractBuild;
+import hudson.model.Computer;
+import hudson.model.Executor;
 import hudson.model.*;
 import hudson.model.Queue.Executable;
 import hudson.security.AbstractPasswordBasedSecurityRealm;
 import hudson.security.GroupDetails;
 import hudson.security.SecurityRealm;
-import hudson.slaves.ComputerLauncher;
 import hudson.tools.ToolProperty;
 import hudson.remoting.Which;
 import hudson.Launcher.LocalLauncher;
@@ -97,7 +100,6 @@ import javax.servlet.ServletContextEvent;
 import junit.framework.TestCase;
 
 import net.sourceforge.htmlunit.corejs.javascript.Context;
-import net.sourceforge.htmlunit.corejs.javascript.ContextFactory;
 import net.sourceforge.htmlunit.corejs.javascript.ContextFactory.Listener;
 import org.acegisecurity.AuthenticationException;
 import org.acegisecurity.BadCredentialsException;
@@ -112,6 +114,7 @@ import org.apache.maven.artifact.resolver.AbstractArtifactResolutionException;
 import org.jvnet.hudson.test.HudsonHomeLoader.CopyExisting;
 import org.jvnet.hudson.test.recipes.Recipe;
 import org.jvnet.hudson.test.recipes.Recipe.Runner;
+import org.jvnet.hudson.test.recipes.WithPlugin;
 import org.jvnet.hudson.test.rhino.JavaScriptDebugger;
 import org.kohsuke.stapler.Dispatcher;
 import org.kohsuke.stapler.MetaClass;
@@ -191,6 +194,14 @@ public abstract class HudsonTestCase extends TestCase implements RootAction {
      * expression evaluation capability of your Java debugger.)
      */
     protected JavaScriptDebugger jsDebugger = new JavaScriptDebugger();
+
+    /**
+     * If this test case has additional {@link WithPlugin} annotations, set to true.
+     * This will cause a fresh {@link PluginManager} to be created for this test.
+     * Leaving this to false enables the test harness to use a pre-loaded plugin manager,
+     * which runs faster.
+     */
+    public boolean useLocalPluginManager;
 
 
     protected HudsonTestCase(String name) {
@@ -325,7 +336,7 @@ public abstract class HudsonTestCase extends TestCase implements RootAction {
         File home = homeLoader.allocate();
         for (Runner r : recipes)
             r.decorateHome(this,home);
-        return new Hudson(home, createWebServer());
+        return new Hudson(home, createWebServer(), useLocalPluginManager ? null : TestPluginManager.INSTANCE);
     }
 
     /**
@@ -1027,79 +1038,76 @@ public abstract class HudsonTestCase extends TestCase implements RootAction {
      * packaging is <tt>hpi</tt>.
      */
     protected void recipeLoadCurrentPlugin() throws Exception {
-        Enumeration<URL> e = getClass().getClassLoader().getResources("the.hpl");
+        final Enumeration<URL> e = getClass().getClassLoader().getResources("the.hpl");
         if(!e.hasMoreElements())    return; // nope
 
         final URL hpl = e.nextElement();
 
-        if(e.hasMoreElements()) {
-            // this happens if one plugin produces a test jar and another plugin depends on it.
-            // I can't think of a good way to make this work, so for now, just detect that and report an error.
-            URL hpl2 = e.nextElement();
-            throw new Error("We have both "+hpl+" and "+hpl2);
-        }
-
         recipes.add(new Runner() {
             @Override
             public void decorateHome(HudsonTestCase testCase, File home) throws Exception {
-                // make the plugin itself available
-                Manifest m = new Manifest(hpl.openStream());
-                String shortName = m.getMainAttributes().getValue("Short-Name");
-                if(shortName==null)
-                    throw new Error(hpl+" doesn't have the Short-Name attribute");
-                FileUtils.copyURLToFile(hpl,new File(home,"plugins/"+shortName+".hpl"));
+                while (e.hasMoreElements()) {
+                    final URL hpl = e.nextElement();
 
-                // make dependency plugins available
-                // TODO: probably better to read POM, but where to read from?
-                // TODO: this doesn't handle transitive dependencies
+                    // make the plugin itself available
+                    Manifest m = new Manifest(hpl.openStream());
+                    String shortName = m.getMainAttributes().getValue("Short-Name");
+                    if(shortName==null)
+                        throw new Error(hpl+" doesn't have the Short-Name attribute");
+                    FileUtils.copyURLToFile(hpl,new File(home,"plugins/"+shortName+".hpl"));
 
-                // Tom: plugins are now searched on the classpath first. They should be available on
-                // the compile or test classpath. As a backup, we do a best-effort lookup in the Maven repository
-                // For transitive dependencies, we could evaluate Plugin-Dependencies transitively. 
+                    // make dependency plugins available
+                    // TODO: probably better to read POM, but where to read from?
+                    // TODO: this doesn't handle transitive dependencies
 
-                String dependencies = m.getMainAttributes().getValue("Plugin-Dependencies");
-                if(dependencies!=null) {
-                    MavenEmbedder embedder = new MavenEmbedder(null);
-                    embedder.setClassLoader(getClass().getClassLoader());
-                    embedder.start();
-                    for( String dep : dependencies.split(",")) {
-                        String[] tokens = dep.split(":");
-                        String artifactId = tokens[0];
-                        String version = tokens[1];
-                        File dependencyJar=null;
-                        // need to search multiple group IDs
-                        // TODO: extend manifest to include groupID:artifactID:version
-                        Exception resolutionError=null;
-                        for (String groupId : new String[]{"org.jvnet.hudson.plugins","org.jvnet.hudson.main"}) {
+                    // Tom: plugins are now searched on the classpath first. They should be available on
+                    // the compile or test classpath. As a backup, we do a best-effort lookup in the Maven repository
+                    // For transitive dependencies, we could evaluate Plugin-Dependencies transitively.
 
-                            // first try to find it on the classpath.
-                            // this takes advantage of Maven POM located in POM
-                            URL dependencyPomResource = getClass().getResource("/META-INF/maven/"+groupId+"/"+artifactId+"/pom.xml");
-                            if (dependencyPomResource != null) {
-                                // found it
-                                dependencyJar = Which.jarFile(dependencyPomResource);
-                                break;
-                            } else {
-                                Artifact a;
-                                a = embedder.createArtifact(groupId, artifactId, version, "compile"/*doesn't matter*/, "hpi");
-                                try {
-                                    embedder.resolve(a, Arrays.asList(embedder.createRepository("http://maven.glassfish.org/content/groups/public/","repo")),embedder.getLocalRepository());
-                                    dependencyJar = a.getFile();
-                                } catch (AbstractArtifactResolutionException x) {
-                                    // could be a wrong groupId
-                                    resolutionError = x;
+                    String dependencies = m.getMainAttributes().getValue("Plugin-Dependencies");
+                    if(dependencies!=null) {
+                        MavenEmbedder embedder = new MavenEmbedder(null);
+                        embedder.setClassLoader(getClass().getClassLoader());
+                        embedder.start();
+                        for( String dep : dependencies.split(",")) {
+                            String[] tokens = dep.split(":");
+                            String artifactId = tokens[0];
+                            String version = tokens[1];
+                            File dependencyJar=null;
+                            // need to search multiple group IDs
+                            // TODO: extend manifest to include groupID:artifactID:version
+                            Exception resolutionError=null;
+                            for (String groupId : new String[]{"org.jvnet.hudson.plugins","org.jvnet.hudson.main"}) {
+
+                                // first try to find it on the classpath.
+                                // this takes advantage of Maven POM located in POM
+                                URL dependencyPomResource = getClass().getResource("/META-INF/maven/"+groupId+"/"+artifactId+"/pom.xml");
+                                if (dependencyPomResource != null) {
+                                    // found it
+                                    dependencyJar = Which.jarFile(dependencyPomResource);
+                                    break;
+                                } else {
+                                    Artifact a;
+                                    a = embedder.createArtifact(groupId, artifactId, version, "compile"/*doesn't matter*/, "hpi");
+                                    try {
+                                        embedder.resolve(a, Arrays.asList(embedder.createRepository("http://maven.glassfish.org/content/groups/public/","repo")),embedder.getLocalRepository());
+                                        dependencyJar = a.getFile();
+                                    } catch (AbstractArtifactResolutionException x) {
+                                        // could be a wrong groupId
+                                        resolutionError = x;
+                                    }
                                 }
                             }
-                        }
-                        if(dependencyJar==null)
-                            throw new Exception("Failed to resolve plugin: "+dep,resolutionError);
+                            if(dependencyJar==null)
+                                throw new Exception("Failed to resolve plugin: "+dep,resolutionError);
 
-                        File dst = new File(home, "plugins/" + artifactId + ".hpi");
-                        if(!dst.exists() || dst.lastModified()!=dependencyJar.lastModified()) {
-                            FileUtils.copyFile(dependencyJar, dst);
+                            File dst = new File(home, "plugins/" + artifactId + ".hpi");
+                            if(!dst.exists() || dst.lastModified()!=dependencyJar.lastModified()) {
+                                FileUtils.copyFile(dependencyJar, dst);
+                            }
                         }
+                        embedder.stop();
                     }
-                    embedder.stop();
                 }
             }
         });
