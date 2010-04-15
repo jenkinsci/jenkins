@@ -224,7 +224,7 @@ public class ExtensionList<T> extends AbstractList<T> {
         List<ExtensionComponent<T>> r = new ArrayList<ExtensionComponent<T>>();
         for (ExtensionFinder finder : finders()) {
             try {
-                r.addAll(finder.find(extensionType, hudson));
+                r.addAll(finder._find(extensionType, hudson));
             } catch (AbstractMethodError e) {
                 // backward compatibility
                 for (T t : finder.findExtensions(extensionType, hudson))
