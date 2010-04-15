@@ -137,7 +137,6 @@ final class SplittableBuildListener implements BuildListener, Serializable {
     }
 
     private Object writeReplace() throws IOException {
-        // TODO: fix this before HUDSON-2137 integration
         return new StreamBuildListener(logger);
     }
 
