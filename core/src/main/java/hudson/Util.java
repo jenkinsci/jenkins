@@ -26,6 +26,8 @@ package hudson;
 import hudson.model.TaskListener;
 import hudson.model.Hudson;
 import static hudson.model.Hudson.isWindows;
+import static hudson.util.jna.GNUCLibrary.LIBC;
+
 import hudson.util.IOException2;
 import hudson.util.QuotedStringTokenizer;
 import hudson.util.VariableResolver;
@@ -973,6 +975,7 @@ public class Util {
         if(Functions.isWindows() || NO_SYMLINK)   return;
 
         try {
+            String errmsg = "";
             // if a file or a directory exists here, delete it first.
             // try simple delete first (whether exists() or not, as it may be symlink pointing
             // to non-existent target), but fallback to "rm -rf" to delete non-empty dir.
@@ -984,20 +987,23 @@ public class Util {
             int r;
             if (!SYMLINK_ESCAPEHATCH) {
                 try {
-                    r = GNUCLibrary.LIBC.symlink(targetPath,symlinkFile.getAbsolutePath());
-                    if (r!=0)
+                    r = LIBC.symlink(targetPath,symlinkFile.getAbsolutePath());
+                    if (r!=0) {
                         r = Native.getLastError();
+                        errmsg = LIBC.strerror(r);
+                    }
                 } catch (LinkageError e) {
                     // if JNA is unavailable, fall back.
                     // we still prefer to try JNA first as PosixAPI supports even smaller platforms.
                     r = PosixAPI.get().symlink(targetPath,symlinkFile.getAbsolutePath());
                 }
+                if (r!=0)   errmsg = LIBC.strerror(r);
             } else // escape hatch, until we know that the above works well.
                 r = new LocalProc(new String[]{
                     "ln","-s", targetPath, symlinkPath},
                     new String[0],listener.getLogger(), baseDir).join();
             if(r!=0)
-                listener.getLogger().println(String.format("ln -s %s %s failed: %d",targetPath, symlinkFile, r));
+                listener.getLogger().println(String.format("ln -s %s %s failed: %d %s",targetPath, symlinkFile, r, errmsg));
         } catch (IOException e) {
             PrintStream log = listener.getLogger();
             log.printf("ln %s %s failed\n",targetPath, new File(baseDir, symlinkPath));
@@ -1022,12 +1028,12 @@ public class Util {
         try {
             for (int sz=512; sz < 65536; sz*=2) {
                 Memory m = new Memory(sz);
-                int r = GNUCLibrary.LIBC.readlink(filename,m,new NativeLong(sz));
+                int r = LIBC.readlink(filename,m,new NativeLong(sz));
                 if (r<0) {
                     int err = Native.getLastError();
                     if (err==22/*EINVAL --- but is this really portable?*/)
                         return null; // this means it's not a symlink
-                    throw new IOException("Failed to readlink "+link+" error="+ err);
+                    throw new IOException("Failed to readlink "+link+" error="+ err+" "+ LIBC.strerror(err));
                 }
                 if (r==sz)
                     continue;   // buffer too small
