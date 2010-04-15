@@ -33,6 +33,7 @@ import hudson.ExtensionPoint.LegacyInstancesAreScopedToHudson;
 
 import java.util.AbstractList;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
@@ -133,19 +134,23 @@ public class ExtensionList<T> extends AbstractList<T> {
 
     @Override
     public synchronized boolean remove(Object o) {
-        legacyInstances.remove(o);
+        removeComponent(legacyInstances,o);
         if(extensions!=null) {
             List<ExtensionComponent<T>> r = new ArrayList<ExtensionComponent<T>>(extensions);
-
-            for (Iterator<ExtensionComponent<T>> itr = r.iterator(); itr.hasNext();) {
-                ExtensionComponent<T> c = itr.next();
-                if (c.getInstance().equals(o))
-                    itr.remove();
-            }
-            r.remove(o);
+            removeComponent(r,o);
             extensions = sort(r);
         }
         return true;
+    }
+
+    private <T> void removeComponent(Collection<ExtensionComponent<T>> collection, Object t) {
+        for (Iterator<ExtensionComponent<T>> itr = collection.iterator(); itr.hasNext();) {
+            ExtensionComponent<T> c =  itr.next();
+            if (c.getInstance().equals(t)) {
+                collection.remove(c);
+                return;
+            }
+        }
     }
 
     @Override

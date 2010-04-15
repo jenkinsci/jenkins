@@ -715,6 +715,13 @@ public abstract class HudsonTestCase extends TestCase implements RootAction {
     }
 
     /**
+     * Should be unnecessary, but otherwise IntelliJ complains.
+     */
+    public FreeStyleBuild buildAndAssertSuccess(FreeStyleProject job) throws Exception {
+        return assertBuildStatusSuccess(job.scheduleBuild2(0));
+    }
+
+    /**
      * Asserts that the console output of the build contains the given substring.
      */
     public void assertLogContains(String substring, Run run) throws Exception {
