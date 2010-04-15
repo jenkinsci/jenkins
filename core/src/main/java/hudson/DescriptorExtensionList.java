@@ -28,6 +28,8 @@ import hudson.model.Describable;
 import hudson.model.Hudson;
 import hudson.model.ViewDescriptor;
 import hudson.model.Descriptor.FormException;
+import hudson.util.AdaptedIterator;
+import hudson.util.CopyOnWriteList;
 import hudson.util.Memoizer;
 import hudson.util.Iterators.FlattenIterator;
 import hudson.slaves.NodeDescriptor;
@@ -79,7 +81,7 @@ public class DescriptorExtensionList<T extends Describable<T>, D extends Descrip
     private final Class<T> describableType;
 
     protected DescriptorExtensionList(Hudson hudson, Class<T> describableType) {
-        super(hudson, (Class)Descriptor.class, legacyDescriptors.get(describableType));
+        super(hudson, (Class)Descriptor.class, (CopyOnWriteArrayList)getLegacyDescriptors(describableType));
         this.describableType = describableType;
     }
 
@@ -136,16 +138,17 @@ public class DescriptorExtensionList<T extends Describable<T>, D extends Descrip
      * Loading the descriptors in this case means filtering the descriptor from the master {@link ExtensionList}.
      */
     @Override
-    protected List<D> load() {
-        List r = new ArrayList();
-        for( Descriptor d : hudson.getExtensionList(Descriptor.class) ) {
+    protected List<ExtensionComponent<D>> load() {
+        List<ExtensionComponent<D>> r = new ArrayList<ExtensionComponent<D>>();
+        for( ExtensionComponent<Descriptor> c : hudson.getExtensionList(Descriptor.class).getComponents() ) {
+            Descriptor d = c.getInstance();
             Type subTyping = Types.getBaseClass(d.getClass(), Descriptor.class);
             if (!(subTyping instanceof ParameterizedType)) {
                 LOGGER.severe(d.getClass()+" doesn't extend Descriptor with a type parameter");
                 continue;   // skip this one
             }
             if(Types.erasure(Types.getTypeArgument(subTyping,0))==(Class)describableType)
-                r.add(d);
+                r.add((ExtensionComponent)c);
         }
         return r;
     }
@@ -153,11 +156,15 @@ public class DescriptorExtensionList<T extends Describable<T>, D extends Descrip
     /**
      * Stores manually registered Descriptor instances. Keyed by the {@link Describable} type.
      */
-    private static final Memoizer<Class,CopyOnWriteArrayList> legacyDescriptors = new Memoizer<Class,CopyOnWriteArrayList>() {
+    private static final Memoizer<Class,CopyOnWriteArrayList<ExtensionComponent<Descriptor>>> legacyDescriptors = new Memoizer<Class,CopyOnWriteArrayList<ExtensionComponent<Descriptor>>>() {
         public CopyOnWriteArrayList compute(Class key) {
             return new CopyOnWriteArrayList();
         }
     };
+
+    private static <T extends Describable<T>> CopyOnWriteArrayList<ExtensionComponent<Descriptor<T>>> getLegacyDescriptors(Class<T> type) {
+        return (CopyOnWriteArrayList)legacyDescriptors.get(type);
+    }
 
     /**
      * List up all the legacy instances currently in use.
@@ -165,9 +172,15 @@ public class DescriptorExtensionList<T extends Describable<T>, D extends Descrip
     public static Iterable<Descriptor> listLegacyInstances() {
         return new Iterable<Descriptor>() {
             public Iterator<Descriptor> iterator() {
-                return new FlattenIterator<Descriptor,CopyOnWriteArrayList>(legacyDescriptors.values()) {
-                    protected Iterator expand(CopyOnWriteArrayList v) {
-                        return v.iterator();
+                return new AdaptedIterator<ExtensionComponent<Descriptor>,Descriptor>(
+                    new FlattenIterator<ExtensionComponent<Descriptor>,CopyOnWriteArrayList<ExtensionComponent<Descriptor>>>(legacyDescriptors.values()) {
+                        protected Iterator<ExtensionComponent<Descriptor>> expand(CopyOnWriteArrayList<ExtensionComponent<Descriptor>> v) {
+                            return v.iterator();
+                        }
+                    }) {
+
+                    protected Descriptor adapt(ExtensionComponent<Descriptor> item) {
+                        return item.getInstance();
                     }
                 };
             }

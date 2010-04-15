@@ -27,7 +27,10 @@ import net.java.sezpoz.Index;
 import net.java.sezpoz.IndexItem;
 import hudson.model.Hudson;
 import hudson.model.Descriptor;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 
+import java.util.Collections;
 import java.util.logging.Logger;
 import java.util.logging.Level;
 import java.util.List;
@@ -53,6 +56,15 @@ import java.lang.reflect.Method;
  */
 public abstract class ExtensionFinder implements ExtensionPoint {
     /**
+     * @deprecated as of 1.356
+     *      Use and implement {@link #find(Class, Hudson)} that allows us to put some metadata.
+     */
+    @Restricted(NoExternalUse.class)
+    public <T> Collection<T> findExtensions(Class<T> type, Hudson hudson) {
+        return Collections.emptyList();
+    }
+
+    /**
      * Discover extensions of the given type.
      *
      * <p>
@@ -67,8 +79,10 @@ public abstract class ExtensionFinder implements ExtensionPoint {
      *      Hudson whose behalf this extension finder is performing lookup.
      * @return
      *      Can be empty but never null.
+     * @since 1.356
+     *      Older implementations provide {@link #findExtensions(Class, Hudson)}
      */
-    public abstract <T> Collection<T> findExtensions(Class<T> type, Hudson hudson);
+    public abstract <T> Collection<ExtensionComponent<T>> find(Class<T> type, Hudson hudson);
 
     /**
      * The default implementation that looks for the {@link Extension} marker.
@@ -78,8 +92,8 @@ public abstract class ExtensionFinder implements ExtensionPoint {
      */
     @Extension
     public static final class Sezpoz extends ExtensionFinder {
-        public <T> Collection<T> findExtensions(Class<T> type, Hudson hudson) {
-            List<T> result = new ArrayList<T>();
+        public <T> Collection<ExtensionComponent<T>> find(Class<T> type, Hudson hudson) {
+            List<ExtensionComponent<T>> result = new ArrayList<ExtensionComponent<T>>();
 
             ClassLoader cl = hudson.getPluginManager().uberClassLoader;
             for (IndexItem<Extension,Object> item : Index.load(Extension.class, Object.class, cl)) {
@@ -100,7 +114,7 @@ public abstract class ExtensionFinder implements ExtensionPoint {
                     if(type.isAssignableFrom(extType)) {
                         Object instance = item.instance();
                         if(instance!=null)
-                            result.add(type.cast(instance));
+                            result.add(new ExtensionComponent<T>(type.cast(instance),item.annotation()));
                     }
                 } catch (InstantiationException e) {
                     LOGGER.log(Level.WARNING, "Failed to load "+item.className(),e);
