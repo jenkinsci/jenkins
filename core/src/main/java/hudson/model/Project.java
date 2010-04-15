@@ -199,7 +199,7 @@ public abstract class Project<P extends Project<P,B>,B extends Build<P,B>>
     }
 
     @Override
-    protected void updateTransientActions() {
+    protected synchronized void updateTransientActions() {
         synchronized(transientActions) {
             super.updateTransientActions();
 
