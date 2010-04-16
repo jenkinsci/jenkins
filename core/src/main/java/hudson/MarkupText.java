@@ -98,7 +98,7 @@ public class MarkupText extends AbstractMarkupText {
         @Override
         public SubText subText(int start, int end) {
             return MarkupText.this.subText(this.start+start,
-                    end<0 ? this.end+1+end : this.end+end);
+                    end<0 ? this.end+1+end : this.start+end);
         }
 
         @Override
