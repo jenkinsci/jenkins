@@ -1,7 +1,7 @@
 /*
  * The MIT License
  * 
- * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi
+ * Copyright (c) 2004-2010, Sun Microsystems, Inc., Kohsuke Kawaguchi, Seiji Sogabe
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -40,10 +40,11 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletResponse;
 import javax.xml.transform.stream.StreamResult;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.io.StringReader;
 import java.io.StringWriter;
-import java.io.Writer;
 import java.util.List;
+import java.util.logging.Logger;
 
 /**
  * Used to expose remote access API for ".../api/"
@@ -142,26 +143,25 @@ public class Api extends AbstractModelObject {
             throw new IOException2(e);
         }
 
-        Writer w = rsp.getCompressedWriter(req);
-
+        OutputStream o = rsp.getCompressedOutputStream(req);
         try {
             if(result instanceof CharacterData) {
                 rsp.setContentType("text/plain");
-                w.write(((CharacterData)result).getText());
+                o.write(((CharacterData)result).getText().getBytes("UTF-8"));
                 return;
             }
 
             if(result instanceof String || result instanceof Number || result instanceof Boolean) {
                 rsp.setContentType("text/plain");
-                w.write(result.toString());
+                o.write(result.toString().getBytes("UTF-8"));
                 return;
             }
 
             // otherwise XML
             rsp.setContentType("application/xml;charset=UTF-8");
-            new XMLWriter(w).write(result);
+            new XMLWriter(o).write(result);
         } finally {
-            w.close();
+            o.close();
         }
     }
 
