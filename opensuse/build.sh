@@ -16,8 +16,3 @@ mkdir -p BUILD RPMS SRPMS
 
 # real action happens here
 rpmbuild -ba --define="_topdir $PWD" --define="_tmppath $PWD/tmp" --define="ver $version" SPECS/hudson.spec
-
-# sign the results
-for rpm in $(find . -name '*.rpm'); do
-   ./rpm-sign $(cat ~/.gpg.passphrase) $rpm
-done
