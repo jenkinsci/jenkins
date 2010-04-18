@@ -1,4 +1,0 @@
-[hudson]
-name=Hudson
-baseurl=http://hudson-ci.org/redhat/
-gpgcheck=1
