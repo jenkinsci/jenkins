@@ -63,7 +63,7 @@ public class PasswordParameterDefinition extends SimpleParameterDefinition {
     }
 
     public String getDefaultValue() {
-        return defaultValue != null ? defaultValue.toString() : null;
+        return Secret.toString(defaultValue);
     }
 
     // kept for backward compatibility

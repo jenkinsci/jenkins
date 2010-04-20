@@ -258,8 +258,7 @@ public class Mailer extends Notifier {
             props.put("mail.smtp.timeout","60000");
             props.put("mail.smtp.connectiontimeout","60000");
 
-            return Session.getInstance(props,getAuthenticator(smtpAuthUserName,
-                    smtpAuthPassword!=null ? smtpAuthPassword.toString() : null));
+            return Session.getInstance(props,getAuthenticator(smtpAuthUserName,Secret.toString(smtpAuthPassword)));
         }
 
         private static Authenticator getAuthenticator(final String smtpAuthUserName, final String smtpAuthPassword) {
@@ -326,7 +325,7 @@ public class Mailer extends Notifier {
         }
 
         public String getSmtpAuthPassword() {
-            return smtpAuthPassword!=null ? smtpAuthPassword.toString() : null;
+            return Secret.toString(smtpAuthPassword);
         }
         
         public boolean getUseSsl() {

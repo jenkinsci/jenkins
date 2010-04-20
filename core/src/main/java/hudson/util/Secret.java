@@ -65,9 +65,21 @@ public final class Secret {
      * Obtains the secret in a plain text.
      *
      * @see #getEncryptedValue()
+     * @deprecated as of 1.356
+     *      Use {@link #toString(Secret)} to avoid NPE in case Secret is null.
+     *      Or if you really know what you are doing, use the {@link #getPlainText()} method.
      */
     @Override
     public String toString() {
+        return value;
+    }
+
+    /**
+     * Obtains the plain text password.
+     * Before using this method, ask yourself if you'd be better off using {@link Secret#toString(Secret)}
+     * to avoid NPE.
+     */
+    public String getPlainText() {
         return value;
     }
 
@@ -140,9 +152,19 @@ public final class Secret {
      * @return never null
      */
     public static Secret fromString(String data) {
+        data = Util.fixNull(data);
         Secret s = decrypt(data);
         if(s==null) s=new Secret(data);
         return s;
+    }
+
+    /**
+     * Works just like {@link Secret#toString()} but avoids NPE when the secret is null.
+     * To be consistent with {@link #fromString(String)}, this method doesn't distinguish
+     * empty password and null password.
+     */
+    public static String toString(Secret s) {
+        return s==null ? "" : s.value;
     }
 
     public static final class ConverterImpl implements Converter {
