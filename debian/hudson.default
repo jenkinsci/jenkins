@@ -37,7 +37,7 @@ HUDSON_LOG=/var/log/hudson/$NAME.log
 MAXOPENFILES=8192
 
 # port for HTTP connector (default 8080; disable with -1)
-HTTP_PORT=8000
+HTTP_PORT=8080
 
 # port for AJP connector (disabled by default)
 AJP_PORT=-1
