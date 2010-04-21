@@ -42,7 +42,7 @@ public class UrlAnnotator extends ConsoleAnnotatorFactory<Object> {
          */
         private static final Pattern URL = Pattern.compile("\\b(http|https|ftp)://[^\\s<>]+[^\\s<>,:\"'()\\[\\]=]");
 
-        private static final String OPEN = "'\"([<";
-        private static final String CLOSE= "'\")]>";
+        private static final String OPEN = "'\"()[]<>";
+        private static final String CLOSE= "'\")(][><";
     }
 }
