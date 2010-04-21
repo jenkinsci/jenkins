@@ -121,7 +121,11 @@ var FormChecker = {
         this.sendRequest(next.url, {
             method : next.method,
             onComplete : function(x) {
-                next.target.innerHTML = x.responseText;
+                var i;
+                next.target.innerHTML = x.status==200 ? x.responseText
+                    : '<a href="" onclick="document.getElementById(\'valerr' + (i=iota++)
+                    + '\').style.display=\'block\';return false">ERROR</a><div id="valerr'
+                    + i + '" style="display:none">' + x.responseText + '</div>';
                 Behaviour.applySubtree(next.target);
                 FormChecker.inProgress--;
                 FormChecker.schedule();
@@ -1899,7 +1903,11 @@ function validateButton(checkUrl,paramList,button) {
       parameters: parameters,
       onComplete: function(rsp) {
           spinner.style.display="none";
-          target.innerHTML = rsp.responseText;
+          var i;
+          target.innerHTML = rsp.status==200 ? rsp.responseText
+                : '<a href="" onclick="document.getElementById(\'valerr' + (i=iota++)
+                + '\').style.display=\'block\';return false">ERROR</a><div id="valerr'
+                + i + '" style="display:none">' + rsp.responseText + '</div>';
           var s = rsp.getResponseHeader("script");
           if(s!=null)
             try {
