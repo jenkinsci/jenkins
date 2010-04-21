@@ -546,8 +546,24 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
             // default is no-op
         }
 
-        protected final boolean performAllBuildStep(BuildListener listener, Map<?,? extends BuildStep> buildSteps, boolean phase) throws InterruptedException, IOException {
-            return performAllBuildStep(listener,buildSteps.values(),phase);
+        /**
+         * @deprecated as of 1.356
+         *      Use {@link #performAllBuildSteps(BuildListener, Map, boolean)}
+         */
+        protected final void performAllBuildStep(BuildListener listener, Map<?,? extends BuildStep> buildSteps, boolean phase) throws InterruptedException, IOException {
+            performAllBuildSteps(listener,buildSteps.values(),phase);
+        }
+
+        protected final boolean performAllBuildSteps(BuildListener listener, Map<?,? extends BuildStep> buildSteps, boolean phase) throws InterruptedException, IOException {
+            return performAllBuildSteps(listener,buildSteps.values(),phase);
+        }
+
+        /**
+         * @deprecated as of 1.356
+         *      Use {@link #performAllBuildSteps(BuildListener, Iterable, boolean)}
+         */
+        protected final void performAllBuildStep(BuildListener listener, Iterable<? extends BuildStep> buildSteps, boolean phase) throws InterruptedException, IOException {
+            performAllBuildSteps(listener,buildSteps,phase);
         }
 
         /**
@@ -556,7 +572,7 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
          * @param phase
          *      true for the post build processing, and false for the final "run after finished" execution.
          */
-        protected final boolean performAllBuildStep(BuildListener listener, Iterable<? extends BuildStep> buildSteps, boolean phase) throws InterruptedException, IOException {
+        protected final boolean performAllBuildSteps(BuildListener listener, Iterable<? extends BuildStep> buildSteps, boolean phase) throws InterruptedException, IOException {
             boolean r = true;
             for (BuildStep bs : buildSteps) {
                 if ((bs instanceof Publisher && ((Publisher)bs).needsToRunAfterFinalized()) ^ phase)

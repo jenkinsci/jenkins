@@ -595,9 +595,9 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
                 b.save();
 
             // at this point the result is all set, so ignore the return value
-            if (!performAllBuildStep(listener, project.getPublishers(), true))
+            if (!performAllBuildSteps(listener, project.getPublishers(), true))
                 setResult(FAILURE);
-            if (!performAllBuildStep(listener, project.getProperties(), true))
+            if (!performAllBuildSteps(listener, project.getProperties(), true))
                 setResult(FAILURE);
 
             // aggregate all module fingerprints to us,
@@ -625,8 +625,8 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
             }
 
             // too late to set the build result at this point. so ignore failures.
-            performAllBuildStep(listener, project.getPublishers(), false);
-            performAllBuildStep(listener, project.getProperties(), false);
+            performAllBuildSteps(listener, project.getPublishers(), false);
+            performAllBuildSteps(listener, project.getProperties(), false);
         }
 
     }

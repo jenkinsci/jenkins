@@ -155,17 +155,17 @@ public abstract class Build <P extends Project<P,B>,B extends Build<P,B>>
         }
 
         public void post2(BuildListener listener) throws IOException, InterruptedException {
-            if (!performAllBuildStep(listener, project.getPublishers(), true))
+            if (!performAllBuildSteps(listener, project.getPublishers(), true))
                 setResult(FAILURE);
-            if (!performAllBuildStep(listener, project.getProperties(), true))
+            if (!performAllBuildSteps(listener, project.getProperties(), true))
                 setResult(FAILURE);
         }
 
         @Override
         public void cleanUp(BuildListener listener) throws Exception {
             // at this point it's too late to mark the build as a failure, so ignore return value.
-            performAllBuildStep(listener, project.getPublishers(), false);
-            performAllBuildStep(listener, project.getProperties(), false);
+            performAllBuildSteps(listener, project.getPublishers(), false);
+            performAllBuildSteps(listener, project.getProperties(), false);
             BuildTrigger.execute(Build.this, listener);
         }
 
