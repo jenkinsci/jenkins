@@ -3210,8 +3210,7 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
         // cut off the "..." portion of /resources/.../path/to/file
         // as this is only used to make path unique (which in turn
         // allows us to set a long expiration date
-        path = path.substring(1);
-        path = path.substring(path.indexOf('/')+1);
+        path = path.substring(path.indexOf('/',1)+1);
 
         int idx = path.lastIndexOf('.');
         String extension = path.substring(idx+1);
