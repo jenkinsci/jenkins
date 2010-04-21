@@ -27,6 +27,7 @@ import hudson.EnvVars;
 import hudson.Util;
 import hudson.Extension;
 import hudson.model.Descriptor;
+import hudson.model.Hudson;
 import hudson.model.TaskListener;
 import hudson.remoting.Channel;
 import hudson.util.StreamCopyThread;
@@ -96,7 +97,13 @@ public class CommandLauncher extends ComputerLauncher {
             ProcessBuilder pb = new ProcessBuilder(Util.tokenize(getCommand()));
             final EnvVars cookie = _cookie = EnvVars.createCookie();
             pb.environment().putAll(cookie);
-            
+
+            {// system defined variables
+                String rootUrl = Hudson.getInstance().getRootUrl();
+                pb.environment().put("HUDSON_URL", rootUrl);
+                pb.environment().put("SLAVEJAR_URL", rootUrl+"/jnlpJars/slave.jar");
+            }
+
             if (env != null) {
             	pb.environment().putAll(env);
             }
