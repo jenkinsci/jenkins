@@ -36,8 +36,14 @@ public class PluginAutomaticTestBuilder {
     /**
      * @param params
      *      Various information about the plugin that maven-hpi-plugin adds.
+     *      As of 1.52, this includes the followings:
+     *
+     *      basedir (String) : directory that contains pom.xml
+     *      artifactId (String) : artifact ID of the plugin
+     *      outputDirectory (String) : target/classes dir where class files and resources can be found
+     *      testOutputDirectory (String) : target/test-classes.
      */
-    public static TestSuite build(Map params) {
+    public static TestSuite build(Map<String,?> params) {
         return new TestSuite();
     }
 }
