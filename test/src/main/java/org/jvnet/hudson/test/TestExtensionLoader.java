@@ -24,6 +24,7 @@
 package org.jvnet.hudson.test;
 
 import hudson.Extension;
+import hudson.ExtensionComponent;
 import hudson.ExtensionFinder;
 import hudson.model.Hudson;
 import net.java.sezpoz.Index;
@@ -46,10 +47,10 @@ import java.util.logging.Logger;
 @Extension
 public class TestExtensionLoader extends ExtensionFinder {
     @Override
-    public <T> Collection<T> findExtensions(Class<T> type, Hudson hudson) {
+    public <T> Collection<ExtensionComponent<T>> find(Class<T> type, Hudson hudson) {
         TestEnvironment env = TestEnvironment.get();
 
-        List<T> result = new ArrayList<T>();
+        List<ExtensionComponent<T>> result = new ArrayList<ExtensionComponent<T>>();
 
         ClassLoader cl = hudson.getPluginManager().uberClassLoader;
         for (IndexItem<TestExtension,Object> item : Index.load(TestExtension.class, Object.class, cl)) {
@@ -81,7 +82,7 @@ public class TestExtensionLoader extends ExtensionFinder {
                 if(type.isAssignableFrom(extType)) {
                     Object instance = item.instance();
                     if(instance!=null)
-                        result.add(type.cast(instance));
+                        result.add(new ExtensionComponent<T>(type.cast(instance)));
                 }
             } catch (InstantiationException e) {
                 LOGGER.log(Level.WARNING, "Failed to load "+item.className(),e);

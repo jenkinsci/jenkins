@@ -35,7 +35,9 @@ THE SOFTWARE.
         <td nowrap="nowrap">
           <img width="16" height="16" src="${imagesURL}/16x16/grey.gif" alt="${%pending}"/>
           <st:nbsp/>
-          #${it.owner.nextBuildNumber+queuedItems.size()-i-1}
+          <!-- Don't use math unless needed, in case nextBuildNumber is not numeric -->
+          #${queuedItems.size()==1 ? it.owner.nextBuildNumber
+             : it.owner.nextBuildNumber+queuedItems.size()-i-1}
         </td>
         <td style="white-space:normal;">
           <div style="float:right">

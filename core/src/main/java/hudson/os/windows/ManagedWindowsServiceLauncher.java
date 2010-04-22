@@ -94,8 +94,8 @@ public class ManagedWindowsServiceLauncher extends ComputerLauncher {
     private JIDefaultAuthInfoImpl createAuth() {
         String[] tokens = userName.split("\\\\");
         if(tokens.length==2)
-            return new JIDefaultAuthInfoImpl(tokens[0], tokens[1], password.toString());
-        return new JIDefaultAuthInfoImpl("", userName, password.toString());
+            return new JIDefaultAuthInfoImpl(tokens[0], tokens[1], Secret.toString(password));
+        return new JIDefaultAuthInfoImpl("", userName, Secret.toString(password));
     }
 
     private NtlmPasswordAuthentication createSmbAuth() {

@@ -55,7 +55,7 @@ public class AccessDeniedHandlerImpl implements AccessDeniedHandler {
         Stapler stapler = new Stapler();
         stapler.init(new ServletConfig() {
             public String getServletName() {
-                throw new UnsupportedOperationException();
+                return "Stapler";
             }
 
             public ServletContext getServletContext() {

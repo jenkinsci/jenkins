@@ -24,6 +24,7 @@
 package hudson.cli.declarative;
 
 import hudson.Extension;
+import hudson.ExtensionComponent;
 import hudson.ExtensionFinder;
 import hudson.Util;
 import hudson.cli.CLICommand;
@@ -61,9 +62,9 @@ import java.util.logging.Logger;
  */
 @Extension
 public class CLIRegisterer extends ExtensionFinder {
-    public <T> Collection<T> findExtensions(Class<T> type, Hudson hudson) {
+    public <T> Collection<ExtensionComponent<T>> find(Class<T> type, Hudson hudson) {
         if (type==CLICommand.class)
-            return (List<T>)discover(hudson);
+            return (List)discover(hudson);
         else
             return Collections.emptyList();
     }
@@ -80,9 +81,9 @@ public class CLIRegisterer extends ExtensionFinder {
         return null;
     }
 
-    private List<CLICommand> discover(final Hudson hudson) {
+    private List<ExtensionComponent<CLICommand>> discover(final Hudson hudson) {
         LOGGER.fine("Listing up @CLIMethod");
-        List<CLICommand> r = new ArrayList<CLICommand>();
+        List<ExtensionComponent<CLICommand>> r = new ArrayList<ExtensionComponent<CLICommand>>();
 
         try {
             for ( final Method m : Util.filter(Index.list(CLIMethod.class, hudson.getPluginManager().uberClassLoader),Method.class)) {
@@ -93,7 +94,7 @@ public class CLIRegisterer extends ExtensionFinder {
                     final ResourceBundleHolder res = loadMessageBundle(m);
                     res.format("CLI."+name+".shortDescription");   // make sure we have the resource, to fail early
 
-                    r.add(new CloneableCLICommand() {
+                    r.add(new ExtensionComponent<CLICommand>(new CloneableCLICommand() {
                         @Override
                         public String getName() {
                             return name;
@@ -172,7 +173,7 @@ public class CLIRegisterer extends ExtensionFinder {
                         protected int run() throws Exception {
                             throw new UnsupportedOperationException();
                         }
-                    });
+                    }));
                 } catch (ClassNotFoundException e) {
                     LOGGER.log(SEVERE,"Failed to process @CLIMethod: "+m,e);
                 }

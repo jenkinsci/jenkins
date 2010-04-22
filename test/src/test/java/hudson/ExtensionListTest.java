@@ -150,4 +150,36 @@ public class ExtensionListTest extends HudsonTestCase {
         LIST = new DescriptorList<Fish>();
         assertEquals(0,LIST.size());
     }
+
+    public static class Car implements ExtensionPoint {
+        final String name;
+
+        public Car(String name) {
+            this.name = name;
+        }
+    }
+
+    @Extension(ordinal=1)
+    public static class Toyota extends Car {
+        public Toyota() {
+            super("toyota");
+        }
+    }
+
+    @Extension(ordinal=3)
+    public static Car honda() { return new Car("honda"); }
+
+
+    @Extension(ordinal=2)
+    public static final Car mazda = new Car("mazda");
+
+    /**
+     * Makes sure sorting of the components work as expected.
+     */
+    public void testOrdinals() {
+        ExtensionList<Car> list = hudson.getExtensionList(Car.class);
+        assertEquals("honda",list.get(0).name);
+        assertEquals("mazda",list.get(1).name);
+        assertEquals("toyota",list.get(2).name);
+    }
 }

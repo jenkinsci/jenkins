@@ -1646,6 +1646,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
             env.put("BUILD_URL", rootUrl+getUrl());
             env.put("JOB_URL", rootUrl+getParent().getUrl());
         }
+        
         if(!env.containsKey("HUDSON_HOME"))
             env.put("HUDSON_HOME", Hudson.getInstance().getRootDir().getPath() );
 

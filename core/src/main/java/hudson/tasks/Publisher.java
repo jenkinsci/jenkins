@@ -25,6 +25,7 @@ package hudson.tasks;
 
 import hudson.DescriptorExtensionList;
 import hudson.Extension;
+import hudson.ExtensionComponent;
 import hudson.Launcher;
 import hudson.model.Action;
 import hudson.model.Build;
@@ -130,20 +131,22 @@ public abstract class Publisher extends BuildStepCompatibilityLayer implements B
      * @see DescriptorExtensionList#create(Hudson, Class) 
      */
     public static final class DescriptorExtensionListImpl extends DescriptorExtensionList<Publisher,Descriptor<Publisher>>
-            implements Comparator<Descriptor<Publisher>> {
+            implements Comparator<ExtensionComponent<Descriptor<Publisher>>> {
         public DescriptorExtensionListImpl(Hudson hudson) {
             super(hudson,Publisher.class);
         }
 
         @Override
-        protected List<Descriptor<Publisher>> sort(List<Descriptor<Publisher>> r) {
-            List<Descriptor<Publisher>> copy = new ArrayList<Descriptor<Publisher>>(r);
+        protected List<ExtensionComponent<Descriptor<Publisher>>> sort(List<ExtensionComponent<Descriptor<Publisher>>> r) {
+            List<ExtensionComponent<Descriptor<Publisher>>> copy = new ArrayList<ExtensionComponent<Descriptor<Publisher>>>(r);
             Collections.sort(copy,this);
             return copy;
         }
 
-        public int compare(Descriptor<Publisher> lhs, Descriptor<Publisher> rhs) {
-            return classify(lhs)-classify(rhs);
+        public int compare(ExtensionComponent<Descriptor<Publisher>> lhs, ExtensionComponent<Descriptor<Publisher>> rhs) {
+            int r = classify(lhs.getInstance())-classify(rhs.getInstance());
+            if (r!=0)   return r;
+            return lhs.compareTo(rhs);
         }
 
         /**

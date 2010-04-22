@@ -48,7 +48,7 @@ public class SecretTest extends TestCase {
 
     public void testEncrypt() {
         Secret secret = Secret.fromString("abc");
-        assertEquals("abc",secret.toString());
+        assertEquals("abc",secret.getPlainText());
 
         // make sure we got some encryption going
         System.out.println(secret.getEncryptedValue());
@@ -59,13 +59,13 @@ public class SecretTest extends TestCase {
     }
 
     public void testDecrypt() {
-        assertEquals("abc",Secret.fromString("abc").toString());
+        assertEquals("abc",Secret.toString(Secret.fromString("abc")));
     }
 
     public void testSerialization() {
         Secret s = Secret.fromString("Mr.Hudson");
         String xml = Hudson.XSTREAM.toXML(s);
-        assertTrue(xml, !xml.contains(s.toString()));
+        assertTrue(xml, !xml.contains(s.getPlainText()));
         assertTrue(xml, xml.contains(s.getEncryptedValue()));
         Object o = Hudson.XSTREAM.fromXML(xml);
         assertEquals(xml, o, s);
@@ -83,6 +83,6 @@ public class SecretTest extends TestCase {
         String xml = "<"+tagName+"><password>secret</password></"+tagName+">";
         Foo foo = new Foo();
         Hudson.XSTREAM.fromXML(xml, foo);
-        assertEquals("secret",foo.password.toString());
+        assertEquals("secret",Secret.toString(foo.password));
     }
 }

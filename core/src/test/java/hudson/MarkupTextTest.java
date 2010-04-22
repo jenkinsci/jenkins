@@ -28,8 +28,6 @@ import hudson.MarkupText.SubText;
 
 import java.util.List;
 import java.util.regex.Pattern;
-import java.net.URL;
-import java.net.MalformedURLException;
 
 /**
  * @author Kohsuke Kawaguchi
@@ -99,6 +97,21 @@ public class MarkupTextTest extends TestCase {
         assertEquals("Line\n2   &amp; 3\n&lt;End>\n", text.toString(true));
         text.addMarkup(4, "<hr/>");
         assertEquals("Line<hr/>\n2   &amp; 3\n&lt;End>\n", text.toString(true));
+    }
+
+    /* @Bug(6252) */
+    public void testSubTextSubText() {
+        MarkupText text = new MarkupText("abcdefgh");
+        SubText sub = text.subText(2, 7);
+        assertEquals("cdefg", sub.getText());
+        sub = sub.subText(1, 4);
+        assertEquals("def", sub.getText());
+
+        // test negative end
+        sub = text.subText(2, -3);
+        assertEquals("cdef", sub.getText());
+        sub = sub.subText(1, -2);
+        assertEquals("de", sub.getText());
     }
 
     private static final Pattern pattern = Pattern.compile("issue #([0-9]+)");

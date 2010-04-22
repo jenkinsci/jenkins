@@ -1,7 +1,8 @@
 <!--
 The MIT License
 
-Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, Stephen Connolly, id:cactusman, Yahoo! Inc.
+Copyright (c) 2004-2010, Sun Microsystems, Inc., Kohsuke Kawaguchi,
+Stephen Connolly, id:cactusman, Yahoo! Inc., Alan Harder
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -44,7 +45,7 @@ THE SOFTWARE.
         <j:choose>
           <j:when test="${!e.alive}">
             <td class="pane">
-              <a href="${rootURL}/computers/${cloop.index}/${url}/causeOfDeath">
+              <a href="${rootURL}/${c.url}${url}/causeOfDeath">
                 <div class="error">${%Dead} (!)</div>
               </a>
             </td>
@@ -79,7 +80,7 @@ THE SOFTWARE.
             </td>
             <td class="pane" align="center" valign="middle">
               <j:if test="${e.hasStopPermission()}">
-                <a href="${rootURL}/computers/${cloop.index}/${url}/stop"><img src="${imagesURL}/16x16/stop.gif" alt="${%terminate this build}" /></a>
+                <a href="${rootURL}/${c.url}${url}/stop"><img src="${imagesURL}/16x16/stop.gif" alt="${%terminate this build}" /></a>
               </j:if>
             </td>
           </j:otherwise>
@@ -91,7 +92,7 @@ THE SOFTWARE.
     <l:pane width="3" id="executors"
         title="&lt;a href='${rootURL}/computer/'>${%Build Executor Status}&lt;/a>">
       <colgroup><col width="1*"/><col width="200*"/><col width="24"/></colgroup>
-      <j:forEach var="c" items="${computers}" varStatus="cloop">
+      <j:forEach var="c" items="${computers}">
         <tr>
           <j:choose>
             <j:when test="${c.node==app or computers.size()==1}">
