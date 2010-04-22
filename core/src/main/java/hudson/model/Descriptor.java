@@ -192,12 +192,7 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable {
          * Returns {@link Descriptor} whose 'clazz' is the same as {@link #getItemType() the item type}.
          */
         public Descriptor getItemTypeDescriptor() {
-            Class itemType = getItemType();
-            for( Descriptor d : Hudson.getInstance().getExtensionList(Descriptor.class) )
-                if(d.clazz==itemType)
-                    return d;
-            return null;
-
+            return Hudson.getInstance().getDescriptor(getItemType());
         }
     }
 
