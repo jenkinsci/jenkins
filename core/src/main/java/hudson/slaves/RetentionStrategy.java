@@ -27,10 +27,7 @@ import hudson.ExtensionPoint;
 import hudson.Util;
 import hudson.DescriptorExtensionList;
 import hudson.Extension;
-import hudson.model.Computer;
-import hudson.model.Describable;
-import hudson.model.Descriptor;
-import hudson.model.Hudson;
+import hudson.model.*;
 import hudson.util.DescriptorList;
 import org.kohsuke.stapler.DataBoundConstructor;
 
@@ -43,7 +40,7 @@ import java.util.logging.Logger;
  * @author Stephen Connolly
  * @author Kohsuke Kawaguchi
  */
-public abstract class RetentionStrategy<T extends Computer> implements Describable<RetentionStrategy<?>>, ExtensionPoint {
+public abstract class RetentionStrategy<T extends Computer> extends AbstractDescribableImpl<RetentionStrategy<?>> implements ExtensionPoint {
 
     /**
      * This method will be called periodically to allow this strategy to decide what to do with it's owning slave.
@@ -78,10 +75,6 @@ public abstract class RetentionStrategy<T extends Computer> implements Describab
      */
     public void start(T c) {
         check(c);
-    }
-
-    public Descriptor<RetentionStrategy<?>> getDescriptor() {
-        return Hudson.getInstance().getDescriptorOrDie(getClass());
     }
 
     /**

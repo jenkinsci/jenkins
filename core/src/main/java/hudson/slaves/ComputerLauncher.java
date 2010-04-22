@@ -25,15 +25,14 @@ package hudson.slaves;
 
 import hudson.ExtensionPoint;
 import hudson.Extension;
-import hudson.model.Computer;
-import hudson.model.Describable;
-import hudson.model.Descriptor;
-import hudson.model.Hudson;
-import hudson.model.TaskListener;
+import hudson.model.*;
+import hudson.remoting.Channel;
 import hudson.util.DescriptorList;
 import hudson.util.StreamTaskListener;
 
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 
 /**
  * Extension point to allow control over how {@link Computer}s are "launched",
@@ -50,7 +49,7 @@ import java.io.IOException;
  * @author Stephen Connolly
  * @since 24-Apr-2008 22:12:35
  */
-public abstract class ComputerLauncher implements Describable<ComputerLauncher>, ExtensionPoint {
+public abstract class ComputerLauncher extends AbstractDescribableImpl<ComputerLauncher> implements ExtensionPoint {
     /**
      * Returns true if this {@link ComputerLauncher} supports
      * programatic launch of the slave agent in the target {@link Computer}.
@@ -63,7 +62,7 @@ public abstract class ComputerLauncher implements Describable<ComputerLauncher>,
      * Launches the slave agent for the given {@link Computer}.
      *
      * <p>
-     * If the slave agent is launched successfully, {@link SlaveComputer#setChannel(InputStream, OutputStream, OutputStream, Listener)}
+     * If the slave agent is launched successfully, {@link SlaveComputer#setChannel(InputStream, OutputStream, OutputStream, Channel.Listener)}
      * should be invoked in the end to notify Hudson of the established connection.
      * The operation could also fail, in which case there's no need to make any callback notification,
      * (except to notify the user of the failure through {@link StreamTaskListener}.)
@@ -127,10 +126,6 @@ public abstract class ComputerLauncher implements Describable<ComputerLauncher>,
         if (listener instanceof StreamTaskListener)
             return (StreamTaskListener) listener;
         return new StreamTaskListener(listener.getLogger());
-    }
-
-    public Descriptor<ComputerLauncher> getDescriptor() {
-        return (Descriptor<ComputerLauncher>)Hudson.getInstance().getDescriptorOrDie(getClass());
     }
 
     /**

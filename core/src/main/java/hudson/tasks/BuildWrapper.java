@@ -27,15 +27,7 @@ import hudson.ExtensionPoint;
 import hudson.Launcher;
 import hudson.DescriptorExtensionList;
 import hudson.LauncherDecorator;
-import hudson.model.AbstractBuild;
-import hudson.model.Build;
-import hudson.model.BuildListener;
-import hudson.model.Describable;
-import hudson.model.Project;
-import hudson.model.Action;
-import hudson.model.AbstractProject;
-import hudson.model.Hudson;
-import hudson.model.Descriptor;
+import hudson.model.*;
 import hudson.model.Run.RunnerAbortedException;
 
 import java.io.IOException;
@@ -60,7 +52,7 @@ import java.util.Collections;
  *
  * @author Kohsuke Kawaguchi
  */
-public abstract class BuildWrapper implements ExtensionPoint, Describable<BuildWrapper> {
+public abstract class BuildWrapper extends AbstractDescribableImpl<BuildWrapper> implements ExtensionPoint {
     /**
      * Represents the environment set up by {@link BuildWrapper#setUp(Build,Launcher,BuildListener)}.
      *
@@ -209,12 +201,6 @@ public abstract class BuildWrapper implements ExtensionPoint, Describable<BuildW
         Action a = getProjectAction(job);
         if (a==null)    return Collections.emptyList();
         return Collections.singletonList(a);
-    }
-
-
-    public Descriptor<BuildWrapper> getDescriptor() {
-        return (Descriptor<BuildWrapper>) Hudson.getInstance().getDescriptorOrDie(getClass());
-
     }
 
     /**

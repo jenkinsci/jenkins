@@ -42,7 +42,7 @@ import java.io.IOException;
  *
  * @since 1.320
  */
-public abstract class TestDataPublisher implements Describable<TestDataPublisher>, ExtensionPoint {
+public abstract class TestDataPublisher extends AbstractDescribableImpl<TestDataPublisher> implements ExtensionPoint {
 
     /**
      * Called after test results are collected by Hudson, to create a resolver for {@link TestAction}s.
@@ -53,11 +53,6 @@ public abstract class TestDataPublisher implements Describable<TestDataPublisher
 	public abstract TestResultAction.Data getTestData(
 			AbstractBuild<?, ?> build, Launcher launcher,
 			BuildListener listener, TestResult testResult) throws IOException, InterruptedException;
-
-	@SuppressWarnings("unchecked")
-	public Descriptor<TestDataPublisher> getDescriptor() {
-		return Hudson.getInstance().getDescriptorOrDie(getClass());
-	}
 
 	public static DescriptorExtensionList<TestDataPublisher, Descriptor<TestDataPublisher>> all() {
 		return Hudson.getInstance().getDescriptorList(TestDataPublisher.class);
