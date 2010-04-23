@@ -12,6 +12,7 @@ import static java.util.Arrays.asList;
  *
  * @author Kohsuke Kawaguchi
  */
+@Extension
 public class DynamicComboBox extends UISample {
 
     @Override
@@ -55,9 +56,12 @@ public class DynamicComboBox extends UISample {
                 return new ComboBoxModel("Come Together","Something","I Want You");
             case 3:
                 return new ComboBoxModel("The One After 909","Rocker","Get Back");
+            default:
+                // if no value is selected in the album, we'll get 0
+                return new ComboBoxModel();
             }
-            throw new AssertionError(); // impossible
         }
+
     }
 }
 
