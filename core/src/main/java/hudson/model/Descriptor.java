@@ -34,12 +34,7 @@ import hudson.util.ReflectionUtils.Parameter;
 import hudson.views.ListViewColumn;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
-import org.kohsuke.stapler.QueryParameter;
-import org.kohsuke.stapler.StaplerRequest;
-import org.kohsuke.stapler.Stapler;
-import org.kohsuke.stapler.StaplerResponse;
-import org.kohsuke.stapler.Ancestor;
-import org.kohsuke.stapler.HttpResponse;
+import org.kohsuke.stapler.*;
 import org.springframework.util.StringUtils;
 import org.jvnet.tiger_types.Types;
 import org.apache.commons.io.IOUtils;
@@ -286,29 +281,36 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable {
         if(method==null)
             return NONE;
 
-        // build query parameter line by figuring out what should be submitted
-        StringBuilder query = new StringBuilder();
-        boolean first = true;
+        return singleQuote(getDescriptorUrl() +"/check"+capitalizedFieldName+"?") + buildParameterList(method, new StringBuilder());
+    }
+
+    /**
+     * Builds query parameter line by figuring out what should be submitted
+     */
+    private StringBuilder buildParameterList(Method method, StringBuilder query) {
         for (Parameter p : ReflectionUtils.getParameters(method)) {
             QueryParameter qp = p.annotation(QueryParameter.class);
-            if (qp==null)   continue;
+            if (qp!=null) {
+                String name = qp.value();
+                if (name.length()==0) name = p.name();
+                if (name==null || name.length()==0)
+                    continue;   // unknown parameter name. we'll report the error when the form is submitted.
 
-            String name = qp.value();
-            if (name.length()==0) name = p.name();
-            if (name==null || name.length()==0)
-                continue;   // unknown parameter name. we'll report the error when the form is submitted.
+                if (query.length()>0)  query.append('+').append(singleQuote("&"));
 
-            if (first)  first = false;
-            else        query.append('+').append(singleQuote("&"));
-            if (name.equals("value")) {
-                // The special 'value' parameter binds to the the current field
-                query.append('+').append(singleQuote("value=")).append("+toValue(this)");
-            } else {
-                query.append('+').append(singleQuote(name+'=')).append("+toValue(findNearBy(this,'"+name+"'))");
+                if (name.equals("value")) {
+                    // The special 'value' parameter binds to the the current field
+                    query.append('+').append(singleQuote("value=")).append("+toValue(this)");
+                } else {
+                    query.append('+').append(singleQuote(name+'=')).append("+toValue(findNearBy(this,'"+name+"'))");
+                }
+                continue;
             }
-        }
 
-        return singleQuote(getDescriptorUrl() +"/check"+capitalizedFieldName+"?")+query;
+            Method m = ReflectionUtils.getPublicMethodNamed(p.type(), "fromStapler");
+            if (m!=null)    buildParameterList(m,query);
+        }
+        return query;
     }
 
     /**
@@ -338,7 +340,8 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable {
             depends.add(name);
         }
 
-        attributes.put("fillDependsOn",Util.join(depends," "));
+        if (!depends.isEmpty())
+            attributes.put("fillDependsOn",Util.join(depends," "));
         attributes.put("fillUrl", String.format("%s/%s/fill%sItems", getCurrentDescriptorByNameUrl(), getDescriptorUrl(), capitalizedFieldName));
     }
 

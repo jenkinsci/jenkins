@@ -23,17 +23,14 @@ THE SOFTWARE.
 -->
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:s="/lib/samples">
-  <s:sample title="Dynamic Drop DownList Box Sample">
+  <s:sample title="Dynamic ComboBox Sample">
     <form>
       <table>
-        <f:entry title="Country" field="country">
-          <f:textbox />
-        </f:entry>
-        <f:entry title="State" field="state">
+        <f:entry title="Beatles Album" field="album">
           <f:select />
         </f:entry>
-        <f:entry title="City" field="city">
-          <f:select />
+        <f:entry title="Title" field="title">
+          <f:combobox />
         </f:entry>
       </table>
     </form>

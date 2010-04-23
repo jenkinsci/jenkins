@@ -839,14 +839,8 @@ var hudsonRules = {
 
     // select.jelly
     "SELECT.select" : function(e) {
-        var dep; // controls that this SELECT box depends on
-
-        function refill() {
-            var params = {};
-            dep.each(function (d) {
-                params[shortenName(d.getAttribute("name"))] = controlValue(d);
-            });
-
+        // controls that this SELECT box depends on
+        refillOnChange(e,function(params) {
             var value = e.value;
             updateListBox(e,e.getAttribute("fillUrl"),{
                 parameters: params,
@@ -865,16 +859,32 @@ var hudsonRules = {
                     if (e.value!=value) fireEvent(e,"change");
                 }
             });
-        }
-
-        // install change handlers
-        dep = e.getAttribute("fillDependsOn").split(" ").collect(function (name) {
-            var c = findNearBy(e,name);
-            c.addEventListener("change",refill,false);
-            return c;
         });
+    },
 
-        refill(); // initial fill
+    // combobox.jelly
+    "INPUT.combobox2" : function(e) {
+        var items = [];
+
+        var c = new ComboBox(e,function(value) {
+            var candidates = [];
+            for (var i=0; i<items.length; i++) {
+                if (items[i].indexOf(value)==0) {
+                    candidates.push(items[i]);
+                    if (candidates.length>20)   break;
+                }
+            } 
+            return candidates;
+        }, {});
+
+        refillOnChange(e,function(params) {
+            new Ajax.Request(e.getAttribute("fillUrl"),{
+                parameters: params,
+                onSuccess : function(rsp) {
+                    items = eval('('+rsp.responseText+')');
+                }
+            });
+        });
     },
 
     "A.showDetails" : function(e) {
@@ -899,6 +909,35 @@ function applyTooltip(e,text) {
         e.onmouseout  = function(ev) { return tooltip.onContextMouseOut .call(this,YAHOO.util.Event.getEvent(ev),tooltip); }
         e.title = text;
         e = null; // avoid memory leak
+}
+
+/**
+ * Install change handlers based on the 'fillDependsOn' attribute.
+ */
+function refillOnChange(e,onChange) {
+    var deps = [];
+
+    function h() {
+        var params = {};
+        deps.each(function (d) {
+            params[shortenName(d.getAttribute("name"))] = controlValue(d);
+        });
+        onChange(params);
+    }
+    var v = e.getAttribute("fillDependsOn");
+    if (v!=null) {
+        v.split(" ").each(function (name) {
+            var c = findNearBy(e,name);
+            if (c==null) {
+                console.warn("Unable to find nearby "+name);
+                YUI.log("Unable to find a nearby control of the name "+name,"warn")
+                return;
+            }
+            c.addEventListener("change",h,false);
+            deps.push(c);
+        });
+    }
+    h();   // initial fill
 }
 
 Behaviour.register(hudsonRules);

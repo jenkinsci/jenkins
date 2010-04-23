@@ -64,9 +64,9 @@ THE SOFTWARE.
       on the last row. There are a few CSS classes already defined in style.css
       for this purpose.
   ]]>
-    <st:attribute name="var" use="required">
+    <st:attribute name="var">
       variable that receives the item of the current iteration.
-      Accessible from the body.
+      Accessible from the body. Required unless @field is given.
     </st:attribute>
     <st:attribute name="varStatus">
       Status variable that indicates the loop status.
@@ -95,6 +95,7 @@ THE SOFTWARE.
       For each item, add this header.
       This also activates drag&amp;drop (where the header is a grip).
     </st:attribute>
+    <st:attributeConstraints expr="((var,items,name?)|field),varStatus?,noAddButton?,add?,minimum?,header?"/>
   </st:documentation>
 
 
