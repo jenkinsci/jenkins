@@ -31,6 +31,7 @@ import hudson.Util;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URL;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
@@ -70,6 +71,14 @@ public class TestPluginManager extends PluginManager {
             } catch (IOException e) {
                 LOGGER.log(Level.SEVERE, "Failed to extract the bundled plugin "+child,e);
             }
+        }
+        // If running tests for a plugin, include the plugin being tested
+        URL u = getClass().getClassLoader().getResource("the.hpl");
+        if (u!=null) try {
+            names.add("the.hpl");
+            copyBundledPlugin(u, "the.hpl");
+        } catch (IOException e) {
+            LOGGER.log(Level.SEVERE, "Failed to copy the.hpl",e);
         }
 
         return names;
