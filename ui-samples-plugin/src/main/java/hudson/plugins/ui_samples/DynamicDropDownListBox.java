@@ -7,10 +7,12 @@ import org.kohsuke.stapler.QueryParameter;
 import static java.util.Arrays.asList;
 
 /**
+ * Example of a dynamic drop-down list box that changes the contents dynamically based on the values of other controls. 
+ *
  * @author Kohsuke Kawaguchi
  */
 @Extension
-public class DynamicComboBox extends UISample {
+public class DynamicDropDownListBox extends UISample {
 
     @Override
     public String getDescription() {
