@@ -100,8 +100,10 @@ public class CommandLauncher extends ComputerLauncher {
 
             {// system defined variables
                 String rootUrl = Hudson.getInstance().getRootUrl();
-                pb.environment().put("HUDSON_URL", rootUrl);
-                pb.environment().put("SLAVEJAR_URL", rootUrl+"/jnlpJars/slave.jar");
+                if (rootUrl!=null) {
+                    pb.environment().put("HUDSON_URL", rootUrl);
+                    pb.environment().put("SLAVEJAR_URL", rootUrl+"/jnlpJars/slave.jar");
+                }
             }
 
             if (env != null) {
