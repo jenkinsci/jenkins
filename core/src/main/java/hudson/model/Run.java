@@ -59,6 +59,8 @@ import hudson.util.ProcessTree;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FilterOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -92,6 +94,7 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.io.input.NullInputStream;
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.jelly.XMLOutput;
 import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.StaplerRequest;
@@ -1034,8 +1037,19 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
      * @since 1.349
      */
     public void writeLogTo(long offset, XMLOutput out) throws IOException {
-        // TODO: resurrect compressed log file support
-        getLogText().writeHtmlTo(offset,out.asWriter());
+        try {
+			getLogText().writeHtmlTo(offset,out.asWriter());
+		} catch (IOException e) {
+			// try to fall back to the old getLogInputStream()
+			// mainly to support .gz compressed files
+			// In this case, console annotation handling will be turned off.
+			InputStream input = getLogInputStream();
+			try {
+				IOUtils.copy(input, out.asWriter());
+			} finally {
+				IOUtils.closeQuietly(input);
+			}
+		}
     }
 
     /**
