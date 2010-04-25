@@ -34,7 +34,7 @@ THE SOFTWARE.
         <td class="pane-header" style="width:5em">${%Total}</td>
       </tr>
       <tbody>
-	        <j:forEach var="b" items="${it.owner.parent.builds}">
+	        <j:forEach var="b" items="${it.owner.parent.builds}" begin="${start}" end="${end}">
 	          <j:set var="p" value="${it.getResultInBuild(b)}"/>
 	          <j:if test="${p != null}">
           <tr>
