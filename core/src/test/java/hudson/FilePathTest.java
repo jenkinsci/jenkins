@@ -61,6 +61,23 @@ public class FilePathTest extends ChannelTestCase {
         }
     }
 
+    public void testRepeatCopyRecursiveTo() throws Exception {
+        // local->local copy used to return 0 if all files were "up to date"
+        // should return number of files processed, whether or not they were copied or already current
+        File tmp = Util.createTempDir(), src = new File(tmp, "src"), dst = new File(tmp, "dst");
+        try {
+            assertTrue(src.mkdir());
+            assertTrue(dst.mkdir());
+            File f = File.createTempFile("foo", ".tmp", src);
+            FilePath fp = new FilePath(src);
+            assertEquals(1, fp.copyRecursiveTo(new FilePath(dst)));
+            // copy again should still report 1
+            assertEquals(1, fp.copyRecursiveTo(new FilePath(dst)));
+        } finally {
+            Util.deleteRecursive(tmp);
+        }
+    }
+
     public void testArchiveBug4039() throws Exception {
         File tmp = Util.createTempDir();
         try {

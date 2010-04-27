@@ -1436,6 +1436,7 @@ public final class FilePath implements Serializable {
                         CopyImpl copyTask = new CopyImpl();
                         copyTask.setTodir(new File(target.remote));
                         copyTask.addFileset(Util.createFileSet(base,fileMask,excludes));
+                        copyTask.setOverwrite(true);
                         copyTask.setIncludeEmptyDirs(false);
 
                         copyTask.execute();
