@@ -160,6 +160,7 @@ function findNearBy(e,name) {
 }
 
 function controlValue(e) {
+    if (e==null)    return null;
     // compute the form validation value to be sent to the server
     var type = e.getAttribute("type");
     if(type!=null && type.toLowerCase()=="checkbox")
@@ -169,6 +170,38 @@ function controlValue(e) {
 
 function toValue(e) {
     return encodeURIComponent(controlValue(e));
+}
+
+/**
+ * Builds a query string in a fluent API pattern.
+ * @param {HTMLElement} owner
+ *      The 'this' control.
+ */
+function qs(owner) {
+    return {
+        params : "",
+
+        append : function(s) {
+            if (this.params.length==0)  this.params+='?';
+            else                        this.params+='&';
+            this.params += s;
+            return this;
+        },
+
+        nearBy : function(name) {
+            var e = findNearBy(owner,name);
+            if (e==null)    return this;    // skip
+            return this.append(name+'='+toValue(e));
+        },
+
+        addThis : function() {
+            return this.append("value="+toValue(owner));
+        },
+
+        toString : function() {
+            return this.params;
+        }
+    };
 }
 
 // find the nearest ancestor node that has the given tag name

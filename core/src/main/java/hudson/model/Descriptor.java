@@ -285,7 +285,7 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable {
         if(method==null)
             return NONE;
 
-        return singleQuote(getDescriptorUrl() +"/check"+capitalizedFieldName+"?") + buildParameterList(method, new StringBuilder());
+        return singleQuote(getDescriptorUrl() +"/check"+capitalizedFieldName) + buildParameterList(method, new StringBuilder()).append(".toString()");
     }
 
     /**
@@ -300,13 +300,13 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable {
                 if (name==null || name.length()==0)
                     continue;   // unknown parameter name. we'll report the error when the form is submitted.
 
-                if (query.length()>0)  query.append('+').append(singleQuote("&"));
+                if (query.length()==0)  query.append("+qs(this)");
 
                 if (name.equals("value")) {
                     // The special 'value' parameter binds to the the current field
-                    query.append('+').append(singleQuote("value=")).append("+toValue(this)");
+                    query.append(".addThis()");
                 } else {
-                    query.append('+').append(singleQuote(name+'=')).append("+toValue(findNearBy(this,'"+name+"'))");
+                    query.append(".nearBy('"+name+"')");
                 }
                 continue;
             }
