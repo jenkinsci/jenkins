@@ -5,8 +5,6 @@ import hudson.util.ComboBoxModel;
 import hudson.util.ListBoxModel;
 import org.kohsuke.stapler.QueryParameter;
 
-import static java.util.Arrays.asList;
-
 /**
  * Combo box that changes the contents based on the values of other controls.
  *
@@ -64,4 +62,3 @@ public class DynamicComboBox extends UISample {
 
     }
 }
-
