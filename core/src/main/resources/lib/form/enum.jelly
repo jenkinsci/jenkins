@@ -33,7 +33,7 @@ THE SOFTWARE.
     </st:attribute>
   </st:documentation>
   <select class="setting-input" name="${field}">
-    <j:forEach var="it" items="${descriptor.getPropertyType(field).enumConstants}">
+    <j:forEach var="it" items="${descriptor.getPropertyType(instance,field).enumConstants}">
       <f:option value="${it.name()}" selected="${it==instance[field]}">
         <d:invokeBody />
       </f:option>

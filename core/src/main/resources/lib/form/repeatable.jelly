@@ -109,7 +109,7 @@ THE SOFTWARE.
       <j:set var="items" value="${instance[name]}"/>
 
       <!-- and expose update descriptor to the body of this tag -->
-      <j:set var="descriptor" value="${descriptor.getPropertyType(field).itemTypeDescriptor}" />
+      <j:set var="descriptor" value="${descriptor.getPropertyType(instance,field).itemTypeDescriptor}" />
     </j:when>
     <j:otherwise>
       <j:set var="name" value="${attrs.name?:attrs.var}"/>

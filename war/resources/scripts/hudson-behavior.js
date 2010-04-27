@@ -1523,6 +1523,10 @@ function createSearchBox(searchURL) {
 /**
  * Finds the DOM node of the given DOM node that acts as a parent in the form submission.
  *
+ * @param {HTMLElement} e
+ *      The node whose parent we are looking for.
+ * @param {HTMLFormElement} form
+ *      The form element that owns 'e'. Passed in as a performance improvement. Can be null.
  * @return null
  *      if the given element shouldn't be a part of the final submission.
  */
@@ -1531,13 +1535,13 @@ function findFormParent(e,form) {
         form = findAncestor(e,"FORM");
 
     while(e!=form) {
-        e = e.parentNode;
-
         // this is used to create a group where no single containing parent node exists,
         // like <optionalBlock>
         var nameRef = e.getAttribute("nameRef");
         if(nameRef!=null)
             e = $(nameRef);
+        else
+            e = e.parentNode;
 
         if(e.getAttribute("field-disabled")!=null)
             return null;  // this field shouldn't contribute to the final result

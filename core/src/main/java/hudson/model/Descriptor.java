@@ -130,9 +130,9 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable {
     private transient final Map<String,String> checkMethods = new ConcurrentHashMap<String,String>();
 
     /**
-     * Lazily computed list of properties on {@link #clazz}.
+     * Lazily computed list of properties on {@link #clazz} and on the descriptor itself.
      */
-    private transient volatile Map<String, PropertyType> propertyTypes;
+    private transient volatile Map<String, PropertyType> propertyTypes,globalPropertyTypes;
 
     /**
      * Represents a readable property on {@link Describable}.
@@ -358,21 +358,44 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable {
     }
 
     /**
+     * Used by Jelly to abstract away the handlign of global.jelly vs config.jelly databinding difference.
+     */
+    public PropertyType getPropertyType(Object instance, String field) {
+        // in global.jelly, instance==descriptor
+        return instance==this ? getGlobalPropertyType(field) : getPropertyType(field);
+    }
+
+    /**
      * Obtains the property type of the given field of {@link #clazz}
      */
     public PropertyType getPropertyType(String field) {
-        if(propertyTypes ==null) {
-            Map<String, PropertyType> r = new HashMap<String, PropertyType>();
-            for (Field f : clazz.getFields())
-                r.put(f.getName(),new PropertyType(f));
-
-            for (Method m : clazz.getMethods())
-                if(m.getName().startsWith("get"))
-                    r.put(Introspector.decapitalize(m.getName().substring(3)),new PropertyType(m));
-
-            propertyTypes = r;
-        }
+        if(propertyTypes==null)
+            propertyTypes = buildPropertyTypes(clazz);
         return propertyTypes.get(field);
+    }
+
+    /**
+     * Obtains the property type of the given field of this descriptor.
+     */
+    public PropertyType getGlobalPropertyType(String field) {
+        if(globalPropertyTypes==null)
+            globalPropertyTypes = buildPropertyTypes(getClass());
+        return globalPropertyTypes.get(field);
+    }
+
+    /**
+     * Given the class, list up its {@link PropertyType}s from its public fields/getters.
+     */
+    private Map<String, PropertyType> buildPropertyTypes(Class<?> clazz) {
+        Map<String, PropertyType> r = new HashMap<String, PropertyType>();
+        for (Field f : clazz.getFields())
+            r.put(f.getName(),new PropertyType(f));
+
+        for (Method m : clazz.getMethods())
+            if(m.getName().startsWith("get"))
+                r.put(Introspector.decapitalize(m.getName().substring(3)),new PropertyType(m));
+
+        return r;
     }
 
     /**
