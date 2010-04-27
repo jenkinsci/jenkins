@@ -55,10 +55,10 @@ var Behaviour = {
     },
 
     applySubtree : function(startNode) {
-        Behaviour.list.each(function(sheet) {
+        Behaviour.list._each(function(sheet) {
             for (var selector in sheet){
                 var list = findElementsBySelector(startNode,selector);
-                list.each(sheet[selector]);
+                list._each(sheet[selector]);
             }
         });
     },
