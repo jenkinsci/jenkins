@@ -189,6 +189,10 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable {
         public Descriptor getItemTypeDescriptor() {
             return Hudson.getInstance().getDescriptor(getItemType());
         }
+
+        public Descriptor getItemTypeDescriptorOrDie() {
+            return Hudson.getInstance().getDescriptorOrDie(getItemType());
+        }
     }
 
     protected Descriptor(Class<? extends T> clazz) {
