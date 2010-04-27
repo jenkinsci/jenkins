@@ -330,23 +330,31 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable {
             throw new IllegalStateException(String.format("%s doesn't have the %s method for filling a drop-down list", getClass(), methodName));
 
         // build query parameter line by figuring out what should be submitted
-        List<String> depends = new ArrayList<String>();
-
-        for (Parameter p : ReflectionUtils.getParameters(method)) {
-            QueryParameter qp = p.annotation(QueryParameter.class);
-            if (qp==null)   continue;
-
-            String name = qp.value();
-            if (name.length()==0) name = p.name();
-            if (name==null || name.length()==0)
-                continue;   // unknown parameter name. we'll report the error when the form is submitted.
-
-            depends.add(name);
-        }
+        List<String> depends = buildFillDependencies(method, new ArrayList<String>());
 
         if (!depends.isEmpty())
             attributes.put("fillDependsOn",Util.join(depends," "));
         attributes.put("fillUrl", String.format("%s/%s/fill%sItems", getCurrentDescriptorByNameUrl(), getDescriptorUrl(), capitalizedFieldName));
+    }
+
+    private List<String> buildFillDependencies(Method method, List<String> depends) {
+        for (Parameter p : ReflectionUtils.getParameters(method)) {
+            QueryParameter qp = p.annotation(QueryParameter.class);
+            if (qp!=null) {
+                String name = qp.value();
+                if (name.length()==0) name = p.name();
+                if (name==null || name.length()==0)
+                    continue;   // unknown parameter name. we'll report the error when the form is submitted.
+
+                depends.add(name);
+                continue;
+            }
+
+            Method m = ReflectionUtils.getPublicMethodNamed(p.type(), "fromStapler");
+            if (m!=null)
+                buildFillDependencies(m,depends);
+        }
+        return depends;
     }
 
     /**
