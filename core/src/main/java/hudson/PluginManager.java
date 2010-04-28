@@ -1,7 +1,7 @@
 /*
  * The MIT License
  * 
- * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, Stephen Connolly, Tom Huybrechts
+ * Copyright (c) 2004-2010, Sun Microsystems, Inc., Kohsuke Kawaguchi, Stephen Connolly, Tom Huybrechts
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -48,6 +48,7 @@ import org.jvnet.hudson.reactor.TaskBuilder;
 import org.jvnet.hudson.reactor.TaskGraphBuilder;
 import org.kohsuke.stapler.HttpRedirect;
 import org.kohsuke.stapler.HttpResponse;
+import org.kohsuke.stapler.HttpResponses;
 import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
@@ -492,12 +493,11 @@ public abstract class PluginManager extends AbstractModelObject {
         rsp.sendRedirect("../updateCenter/");
     }
 
-    public void doProxyConfigure(
+    public HttpResponse doProxyConfigure(
             @QueryParameter("proxy.server") String server,
             @QueryParameter("proxy.port") String port,
             @QueryParameter("proxy.userName") String userName,
-            @QueryParameter("proxy.password") String password,
-            StaplerResponse rsp) throws IOException {
+            @QueryParameter("proxy.password") String password) throws IOException {
         Hudson hudson = Hudson.getInstance();
         hudson.checkPermission(Hudson.ADMINISTER);
 
@@ -505,12 +505,15 @@ public abstract class PluginManager extends AbstractModelObject {
         if(server==null) {
             hudson.proxy = null;
             ProxyConfiguration.getXmlFile().delete();
-        } else {
-            hudson.proxy = new ProxyConfiguration(server,Integer.parseInt(Util.fixEmptyAndTrim(port)),
+        } else try {
+            hudson.proxy = new ProxyConfiguration(server,Integer.parseInt(Util.fixNull(port)),
                     Util.fixEmptyAndTrim(userName),Util.fixEmptyAndTrim(password));
             hudson.proxy.save();
+        } catch (NumberFormatException nfe) {
+            return HttpResponses.error(StaplerResponse.SC_BAD_REQUEST,
+                    new IllegalArgumentException("Invalid proxy port: " + port, nfe));
         }
-        rsp.sendRedirect("./advanced");
+        return new HttpRedirect("advanced");
     }
 
     /**
