@@ -772,8 +772,6 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
 
         int n = 0;
         for (String child : children) {
-            if (n>upTo)     break;  // collected enough
-
             String childPath = path + child;
             String childHref = pathHref + Util.rawEncode(child);
             File sub = new File(dir, child);
@@ -784,7 +782,6 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
                 a = new Artifact(parent.getFileName() + '/' + child, childPath,
                                  sub.isDirectory() ? null : childHref, parent.getTreeNodeId());
                 r.tree.put(a, r.tree.remove(parent));
-                n++;
             } else {
                 // Use null href for a directory:
                 a = new Artifact(child, childPath,
@@ -793,10 +790,11 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
             }
             if (sub.isDirectory()) {
                 n += addArtifacts(sub, childPath + '/', childHref + '/', r, a, upTo-n);
+                if (n>=upTo) break;
             } else {
                 // Don't store collapsed path in ArrayList (for correct data in external API)
                 r.add(collapsed ? new Artifact(child, a.relativePath, a.href, a.treeNodeId) : a);
-                n++;
+                if (++n>=upTo) break;;
             }
         }
         return n;

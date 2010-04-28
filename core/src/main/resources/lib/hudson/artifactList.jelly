@@ -37,51 +37,51 @@ THE SOFTWARE.
       If the hyperlink to artifacts are at another URL, specify the prefix.
     </st:attribute>
   </st:documentation>
-	<j:set var="artifacts" value="${build.getArtifactsUpTo(build.TREE_CUTOFF+1)}" />
-	<j:if test="${!build.building and !empty(artifacts)}">
-	  <t:summary icon="package.gif">
-	    <a href="${baseURL}artifact/">${caption}</a>
-	    <j:choose>
-	      <j:when test="${size(artifacts) le build.LIST_CUTOFF}">
-	        <!-- if not too many, just list them -->
-	        <ul>
-	          <j:forEach var="f" items="${artifacts}">
-	            <li>
-                      <a href="${baseURL}artifact/${f.href}">${h.xmlEscape(f.displayPath)}</a>
+  <j:set var="artifacts" value="${build.getArtifactsUpTo(build.TREE_CUTOFF+1)}" />
+  <j:if test="${!build.building and !empty(artifacts)}">
+    <t:summary icon="package.gif">
+      <a href="${baseURL}artifact/">${caption}</a>
+      <j:choose>
+        <j:when test="${size(artifacts) le build.LIST_CUTOFF}">
+          <!-- if not too many, just list them -->
+          <ul>
+            <j:forEach var="f" items="${artifacts}">
+              <li>
+                <a href="${baseURL}artifact/${f.href}">${h.xmlEscape(f.displayPath)}</a>
                 <st:nbsp/>
                 <a href="${baseURL}artifact/${f.href}/*fingerprint*/"><img src="${imagesURL}/16x16/fingerprint.gif" alt="[fingerprint]" /></a>
-	            </li>
-	          </j:forEach>
-	        </ul>
-	      </j:when>
-	      <j:when test="${size(artifacts) le build.TREE_CUTOFF}">
-	          <!-- otherwise (unless way too many) use a tree view -->
-	          <l:yui module="treeview"/>
-	          <link rel="stylesheet" href="${resURL}/scripts/yui/treeview/assets/skins/sam/treeview.css" type="text/css"/>
-	          <link rel="stylesheet" href="${resURL}/scripts/yui/fonts/fonts-min.css" type="text/css"/>
-	          <style type="text/css">#artifact-tree td { vertical-align:middle; }</style>
-	          <div id="artifact-tree"></div>
-	          <script language="javascript">// &lt;![CDATA[
-	           YAHOO.util.Event.onContentReady('artifact-tree', function () {
-	            var artifactTree = new YAHOO.widget.TreeView('artifact-tree');
-	            var artifactRoot = new YAHOO.widget.TextNode('${h.jsStringEscape('%View')}',
-	                                                         artifactTree.getRoot(), false);
-	            <j:forEach var="e" items="${artifacts.getTree().entrySet()}">
-	              <j:set var="f" value="${e.key}"/>
-	              var ${f.treeNodeId} = new YAHOO.widget.TextNode(
-	                '${h.jsStringEscape(f.fileName)}', ${e.value?:'artifactRoot'}, false);
+              </li>
+            </j:forEach>
+          </ul>
+        </j:when>
+        <j:when test="${size(artifacts) le build.TREE_CUTOFF}">
+            <!-- otherwise (unless way too many) use a tree view -->
+            <l:yui module="treeview"/>
+            <link rel="stylesheet" href="${resURL}/scripts/yui/treeview/assets/skins/sam/treeview.css" type="text/css"/>
+            <link rel="stylesheet" href="${resURL}/scripts/yui/fonts/fonts-min.css" type="text/css"/>
+            <style type="text/css">#artifact-tree td { vertical-align:middle; }</style>
+            <div id="artifact-tree"></div>
+            <script language="javascript">// &lt;![CDATA[
+              YAHOO.util.Event.onContentReady('artifact-tree', function () {
+              var artifactTree = new YAHOO.widget.TreeView('artifact-tree');
+              var artifactRoot = new YAHOO.widget.TextNode('${h.jsStringEscape('%View')}',
+                                                           artifactTree.getRoot(), false);
+              <j:forEach var="e" items="${artifacts.getTree().entrySet()}">
+                <j:set var="f" value="${e.key}"/>
+                var ${f.treeNodeId} = new YAHOO.widget.TextNode(
+                  '${h.jsStringEscape(f.fileName)}', ${e.value?:'artifactRoot'}, false);
                       <j:if test="${f.href!=null}">
                         <!-- Assign href property instead of passing to constructor above,
                              as constructor does urlencoding, but f.href is already encoded -->
                         ${f.treeNodeId}.href = '${baseURL}artifact/${h.jsStringEscape(f.href)}';
                       </j:if>
-	            </j:forEach>
-	            artifactTree.draw();
-	           });
-	          // ]]&gt;</script>
-	      </j:when>
-	      <!-- otherwise just show link to directory browser -->
-	    </j:choose>
-	  </t:summary>
-	</j:if>
+              </j:forEach>
+              artifactTree.draw();
+             });
+           // ]]&gt;</script>
+        </j:when>
+        <!-- otherwise just show link to directory browser -->
+      </j:choose>
+    </t:summary>
+  </j:if>
 </j:jelly>
