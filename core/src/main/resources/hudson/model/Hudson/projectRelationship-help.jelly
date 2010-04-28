@@ -35,7 +35,7 @@ THE SOFTWARE.
       </p>
       <ol>
         <li>${%The upstream project records the fingerprints of its build artifacts}</li>
-        <li>${%The downstream project records the fingerprints of the upstream jar files it uses}</li>
+        <li>${%The downstream project records the fingerprints of the upstream files it uses}</li>
       </ol>
       <p>
         ${%This allows Hudson to correlate two projects.}
