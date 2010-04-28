@@ -204,6 +204,6 @@ public class ParametersDefinitionProperty extends JobProperty<AbstractProject<?,
     }
 
     public String getUrlName() {
-        return "parameters";
+        return null;
     }
 }
