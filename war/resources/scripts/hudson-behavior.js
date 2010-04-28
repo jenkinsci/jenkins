@@ -684,14 +684,20 @@ var hudsonRules = {
     // structured form submission
     "FORM" : function(form) {
         crumb.appendToForm(form);
-        if(Element.hasClassName("no-json"))
+        if(Element.hasClassName(form, "no-json"))
             return;
         // add the hidden 'json' input field, which receives the form structure in JSON
         var div = document.createElement("div");
         div.innerHTML = "<input type=hidden name=json value=init>";
         form.appendChild(div);
-        
-        form.onsubmit = function() { buildFormTree(this); };
+
+        var oldOnsubmit = form.onsubmit;
+        if (typeof oldOnsubmit == "function") {
+            form.onsubmit = function() { buildFormTree(this); return oldOnsubmit.call(this); }
+        } else {
+            form.onsubmit = function() { buildFormTree(this); };
+        }
+
         form = null; // memory leak prevention
     },
 
