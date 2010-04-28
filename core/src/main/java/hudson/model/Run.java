@@ -1,7 +1,8 @@
 /*
  * The MIT License
  * 
- * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, Daniel Dyer, Red Hat, Inc., Tom Huybrechts
+ * Copyright (c) 2004-2010, Sun Microsystems, Inc., Kohsuke Kawaguchi,
+ * Daniel Dyer, Red Hat, Inc., Tom Huybrechts
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -50,7 +51,6 @@ import hudson.tasks.BuildStep;
 import hudson.tasks.test.AbstractTestResultAction;
 import hudson.util.FlushProofOutputStream;
 import hudson.util.IOException2;
-import hudson.util.IOUtils;
 import hudson.util.LogTaskListener;
 import hudson.util.XStream2;
 import hudson.util.ProcessTree;
@@ -58,7 +58,6 @@ import hudson.util.ProcessTree;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FilterOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -80,7 +79,6 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.ListIterator;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
@@ -522,7 +520,8 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
      */
     public String getDurationString() {
         if(isBuilding())
-            return Util.getTimeSpanString(System.currentTimeMillis()-timestamp)+" and counting";
+            return Messages.Run_InProgressDuration(
+                    Util.getTimeSpanString(System.currentTimeMillis()-timestamp));
         return Util.getTimeSpanString(duration);
     }
 
@@ -1271,7 +1270,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
                 result = Result.FAILURE;
             } finally {
                 long end = System.currentTimeMillis();
-                duration = end-start;
+                duration = Math.max(end - start, 0);  // @see HUDSON-5844
 
                 // advance the state.
                 // the significance of doing this is that Hudson
