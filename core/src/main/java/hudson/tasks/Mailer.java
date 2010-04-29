@@ -33,6 +33,7 @@ import static hudson.Util.fixEmptyAndTrim;
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
 import hudson.model.BuildListener;
+import hudson.model.ParametersAction;
 import hudson.model.User;
 import hudson.model.UserPropertyDescriptor;
 import hudson.model.Hudson;
@@ -103,6 +104,11 @@ public class Mailer extends Notifier {
     public boolean perform(AbstractBuild<?,?> build, Launcher launcher, BuildListener listener) throws InterruptedException {
         if(debug)
             listener.getLogger().println("Running mailer");
+        // substitute build parameters if available
+        ParametersAction parameters = build.getAction(ParametersAction.class);
+        if (parameters!=null)
+            recipients = parameters.substitute(build, recipients);
+            
         return new MailSender(recipients,dontNotifyEveryUnstableBuild,sendToIndividuals, descriptor().getCharset()) {
             /** Check whether a path (/-separated) will be archived. */
             @Override
