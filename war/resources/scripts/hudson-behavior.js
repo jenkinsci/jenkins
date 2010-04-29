@@ -968,8 +968,8 @@ function refillOnChange(e,onChange) {
         v.split(" ").each(function (name) {
             var c = findNearBy(e,name);
             if (c==null) {
-                if (console!=null)  console.warn("Unable to find nearby "+name);
-                YUI.log("Unable to find a nearby control of the name "+name,"warn")
+                if (window.console!=null)  console.warn("Unable to find nearby "+name);
+                if (window.YUI!=null)      YUI.log("Unable to find a nearby control of the name "+name,"warn")
                 return;
             }
             c.addEventListener("change",h,false);
