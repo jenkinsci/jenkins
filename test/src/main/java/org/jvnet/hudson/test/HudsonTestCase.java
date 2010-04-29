@@ -850,6 +850,7 @@ public abstract class HudsonTestCase extends TestCase implements RootAction {
             if (p.startsWith("-"))
                 props.remove(p.substring(1));
         }
+        return props;
     }
 
     /**
