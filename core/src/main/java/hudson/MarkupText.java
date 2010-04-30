@@ -182,6 +182,14 @@ public class MarkupText extends AbstractMarkupText {
         }
 
         /**
+         * How many captured groups are in this subtext.
+         * @since 1.357
+         */
+        public int groupCount() {
+            return groups.length / 2;
+        }
+
+        /**
          * Replaces the group tokens like "$0", "$1", and etc with their actual matches.
          */
         public String replace(String s) {

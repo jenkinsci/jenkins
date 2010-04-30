@@ -35,8 +35,10 @@ import java.util.regex.Pattern;
 public class MarkupTextTest extends TestCase {
     public void test1() {
         MarkupText t = new MarkupText("I fixed issue #155. The rest is trick text: xissue #155 issue #123x");
-        for (SubText st : t.findTokens(pattern))
+        for (SubText st : t.findTokens(pattern)) {
+            assertEquals(1, st.groupCount());
             st.surroundWith("<$1>","<$1>");
+        }
 
         assertEquals("I fixed <155>issue #155<155>. The rest is trick text: xissue #155 issue #123x", t.toString(false));
     }
