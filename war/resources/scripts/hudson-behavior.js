@@ -551,10 +551,14 @@ var hudsonRules = {
 // <label> that doesn't use ID, so that it can be copied in <repeatable>
     "LABEL.attach-previous" : function(e) {
         e.onclick = function() {
-            var e = this;
-            while(e.tagName!="INPUT")
-                e=e.previousSibling;
-            e.click();
+            var e = this.previousSibling;
+            while (e!=null) {
+                if (e.tagName=="INPUT") {
+                    e.click();
+                    break;
+                }
+                e = e.previousSibling;
+            }
         }
         e = null;
     },

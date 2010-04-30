@@ -98,8 +98,8 @@ public class JellyTestSuiteBuilder {
         private void checkLabelFor(Document dom) {
             if (isConfigJelly() || isGlobalJelly()) {
                 if (!dom.selectNodes("//label[@for]").isEmpty())
-                    throw new AssertionError("<label for='...> shouldn't be used because it doesn't work " +
-                            "when th configuration item is repeated. Use <label class='attach-previous'>" +
+                    throw new AssertionError("<label for=...> shouldn't be used because it doesn't work " +
+                            "when the configuration item is repeated. Use <label class=\"attach-previous\"> " +
                             "to have your label attach to the previous DOM node instead.");
             }
         }
