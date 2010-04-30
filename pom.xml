@@ -113,7 +113,7 @@ THE SOFTWARE.
           -->
           <groupId>org.kohsuke.stapler</groupId>
           <artifactId>maven-stapler-plugin</artifactId>
-          <version>1.14</version>
+          <version>1.15</version>
           <extensions>true</extensions>
           <dependencies>
             <dependency>
