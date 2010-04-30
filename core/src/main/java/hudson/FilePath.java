@@ -273,7 +273,7 @@ public final class FilePath implements Serializable {
                 } else {
                     // Normalize: remove something/.. plus separator before/after
                     i -= 2;
-                    for (int j = 0; j < 2; j++) tokens.remove(i);
+                    for (int j = 0; j < 3; j++) tokens.remove(i);
                     if (i > 0) tokens.remove(i-1);
                     else if (tokens.size() > 0) tokens.remove(0);
                 }
