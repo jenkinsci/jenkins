@@ -129,10 +129,11 @@ THE SOFTWARE.
             <plugin>
                 <groupId>org.jvnet.hudson.tools</groupId>
                 <artifactId>maven-hpi-plugin</artifactId>
-                <version>1.43</version>
+                <version>1.51</version>
                 <extensions>true</extensions>
                 <configuration>
                   <showDeprecation>true</showDeprecation>
+                  <disabledTestInjection>true</disabledTestInjection>
                 </configuration>
             </plugin>
             <plugin>
