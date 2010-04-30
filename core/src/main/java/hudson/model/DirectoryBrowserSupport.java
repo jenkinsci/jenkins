@@ -288,11 +288,11 @@ public final class DirectoryBrowserSupport implements HttpResponse {
     }
 
     private static final class ContentInfo implements FileCallable<ContentInfo> {
-        int contentLength;
+        long contentLength;
         long lastModified;
 
         public ContentInfo invoke(File f, VirtualChannel channel) throws IOException {
-            contentLength = (int) f.length();
+            contentLength = f.length();
             lastModified = f.lastModified();
             return this;
         }
