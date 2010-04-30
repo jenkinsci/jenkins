@@ -1,7 +1,8 @@
 /*
  * The MIT License
  * 
- * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, Tom Huybrechts, Yahoo!, Inc.
+ * Copyright (c) 2004-2010, Sun Microsystems, Inc., Kohsuke Kawaguchi,
+ * Tom Huybrechts, Yahoo!, Inc.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -398,13 +399,9 @@ public abstract class TestObject extends hudson.tasks.junit.TestObject {
             ServletException {
         if (getOwner() == null) {
             LOGGER.severe("getOwner() is null, can't save description.");
-        }
-        if (getOwner() != null) {
-            getOwner().checkPermission(Item.BUILD);
-        }
-
-        setDescription(description);
-        if (getOwner() != null) {
+        } else {
+            getOwner().checkPermission(Run.UPDATE);
+            setDescription(description);
             getOwner().save();
         }
 
