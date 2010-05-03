@@ -428,6 +428,14 @@ th.pane {
     color: white;
 }
 
+.loading {
+    position: absolute; width: 80%; height:100%;
+    background-color: #eee; text-align: center; font-size: 300%;
+    opacity: 0.5;
+    -ms-filter: "progid:DXImageTransform.Microsoft.Alpha(Opacity=50)";
+    filter: alpha(opacity=50);
+}
+
 /* ======================== error/warning message (mainly in the form.) Use them on block elements ======================== */
 .error {
     color: #CC0000;

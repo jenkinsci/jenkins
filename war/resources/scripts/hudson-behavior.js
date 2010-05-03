@@ -937,7 +937,9 @@ var hudsonRules = {
             return false;
         };
         e = null; // avoid memory leak
-    }
+    },
+
+    "DIV.loading" : function(e) { e.style.display = 'none' }
 };
 
 function applyTooltip(e,text) {
