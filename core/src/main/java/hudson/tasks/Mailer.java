@@ -325,6 +325,7 @@ public class Mailer extends Notifier {
         }
 
         public String getSmtpAuthPassword() {
+            if (smtpAuthPassword==null) return null;
             return Secret.toString(smtpAuthPassword);
         }
         
