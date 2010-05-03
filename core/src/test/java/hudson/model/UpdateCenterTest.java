@@ -39,19 +39,19 @@ public class UpdateCenterTest extends TestCase {
     public void testData() throws IOException {
         // check if we have the internet connectivity. See HUDSON-2095
         try {
-            new URL("http://hudson-ci.org/").openStream();
+            new URL("http://updates.hudson-labs.org/").openStream();
         } catch (IOException e) {
             System.out.println("Skipping this test. No internet connectivity");
             return;
         }
 
-        URL url = new URL("http://hudson-ci.org/update-center.json?version=build");
+        URL url = new URL("http://updates.hudson-labs.org/update-center.json?version=build");
         String jsonp = IOUtils.toString(url.openStream());
         String json = jsonp.substring(jsonp.indexOf('(')+1,jsonp.lastIndexOf(')'));
 
         UpdateSite us = new UpdateSite("default", url.toExternalForm());
         UpdateSite.Data data = us.new Data(JSONObject.fromObject(json));
-        assertTrue(data.core.url.startsWith("http://hudson-ci.org/"));
+        assertTrue(data.core.url.startsWith("http://updates.hudson-labs.org/"));
         assertTrue(data.plugins.containsKey("rake"));
         System.out.println(data.core.url);
     }
