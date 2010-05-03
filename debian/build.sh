@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash -ex
 # The MIT License
 # 
 # Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, Jamie Whitehouse
@@ -21,7 +21,11 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-# build a debian package from a Maven build
-cp war/target/hudson.war hudson.war
+if [ -z "$1" ]; then
+  echo "Usage: build.sh path/to/hudson.war"
+  exit 1
+fi
+
+cp "$1" hudson.war
 
 exec debuild -us -uc -B

@@ -12,6 +12,7 @@ Source:		hudson.war
 Source1:	hudson.init.in
 Source2:	hudson.sysconfig.in
 Source3:	hudson.logrotate
+Source4:    hudson.repo
 URL:		https://hudson.dev.java.net/
 Group:		Development/Tools/Building
 License:	MIT/X License, GPL/CDDL, ASL2
@@ -78,6 +79,7 @@ rm -rf "%{buildroot}"
 
 %__install -D -m0644 "%{SOURCE3}" "%{buildroot}/etc/logrotate.d/%{name}"
 
+%__install -D -m0644 "%{SOURCE4}" "%{buildroot}/etc/zypp/repos.d/hudson.repo"
 %pre
 /usr/sbin/groupadd -r hudson &>/dev/null || :
 # SUSE version had -o here, but in Fedora -o isn't allowed without -u
@@ -113,6 +115,7 @@ exit 0
 %config /etc/logrotate.d/%{name}
 %config /etc/init.d/%{name}
 %config /etc/sysconfig/%{name}
+/etc/zypp/repos.d/hudson.repo
 /usr/sbin/rc%{name}
 
 %changelog
