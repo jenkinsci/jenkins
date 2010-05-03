@@ -1,7 +1,7 @@
 <!--
 The MIT License
 
-Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi
+Copyright (c) 2004-2010, Sun Microsystems, Inc., Kohsuke Kawaguchi, Alan Harder
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -25,6 +25,9 @@ THE SOFTWARE.
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
   <div>
     <img src="${imagesURL}/24x24/red.gif" alt=""/> ${%Failure}
+    -
+    <a href="" onclick="var n=findNext(this,function(e){return e.tagName=='PRE'});
+               n.style.display='block';this.style.display='none';return false">${%Details}</a>
   </div>
-  <pre>${it.stackTrace}</pre>
+  <pre style="display:none">${it.stackTrace}</pre>
 </j:jelly>
