@@ -137,7 +137,7 @@ public abstract class Cloud extends AbstractModelObject implements ExtensionPoin
      * Returns all the registered {@link Cloud} descriptors.
      */
     public static DescriptorExtensionList<Cloud,Descriptor<Cloud>> all() {
-        return Hudson.getInstance().getDescriptorList(Cloud.class);
+        return Hudson.getInstance().<Cloud,Descriptor<Cloud>>getDescriptorList(Cloud.class);
     }
 
     /**

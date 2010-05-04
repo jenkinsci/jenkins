@@ -26,15 +26,12 @@ package hudson.tasks;
 import hudson.ExtensionPoint;
 import hudson.Extension;
 import hudson.DescriptorExtensionList;
-import hudson.model.Action;
 import hudson.model.Build;
 import hudson.model.BuildListener;
 import hudson.model.Describable;
-import hudson.model.Project;
 import hudson.model.Descriptor;
 import hudson.model.Hudson;
 
-import java.util.Collection;
 
 /**
  * {@link BuildStep}s that perform the actual build.
@@ -75,6 +72,6 @@ public abstract class Builder extends BuildStepCompatibilityLayer implements Bui
      */
     // for backward compatibility, the signature is not BuildStepDescriptor
     public static DescriptorExtensionList<Builder,Descriptor<Builder>> all() {
-        return Hudson.getInstance().getDescriptorList(Builder.class);
+        return Hudson.getInstance().<Builder,Descriptor<Builder>>getDescriptorList(Builder.class);
     }
 }

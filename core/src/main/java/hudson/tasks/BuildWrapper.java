@@ -209,6 +209,6 @@ public abstract class BuildWrapper extends AbstractDescribableImpl<BuildWrapper>
     // for compatibility we can't use BuildWrapperDescriptor
     public static DescriptorExtensionList<BuildWrapper,Descriptor<BuildWrapper>> all() {
         // use getDescriptorList and not getExtensionList to pick up legacy instances
-        return Hudson.getInstance().getDescriptorList(BuildWrapper.class);
+        return Hudson.getInstance().<BuildWrapper,Descriptor<BuildWrapper>>getDescriptorList(BuildWrapper.class);
     }
 }

@@ -348,7 +348,7 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
      */
     private transient final Memoizer<Class,DescriptorExtensionList> descriptorLists = new Memoizer<Class,DescriptorExtensionList>() {
         public DescriptorExtensionList compute(Class key) {
-            return DescriptorExtensionList.create(Hudson.this,key);
+            return (DescriptorExtensionList) DescriptorExtensionList.create(Hudson.this,key);
         }
     };
 

@@ -170,7 +170,7 @@ public abstract class AuthorizationStrategy extends AbstractDescribableImpl<Auth
      * Returns all the registered {@link AuthorizationStrategy} descriptors.
      */
     public static DescriptorExtensionList<AuthorizationStrategy,Descriptor<AuthorizationStrategy>> all() {
-        return Hudson.getInstance().getDescriptorList(AuthorizationStrategy.class);
+        return Hudson.getInstance().<AuthorizationStrategy,Descriptor<AuthorizationStrategy>>getDescriptorList(AuthorizationStrategy.class);
     }
 
     /**

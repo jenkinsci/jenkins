@@ -498,7 +498,7 @@ public abstract class SecurityRealm extends AbstractDescribableImpl<SecurityReal
      * Returns all the registered {@link SecurityRealm} descriptors.
      */
     public static DescriptorExtensionList<SecurityRealm,Descriptor<SecurityRealm>> all() {
-        return Hudson.getInstance().getDescriptorList(SecurityRealm.class);
+        return Hudson.getInstance().<SecurityRealm,Descriptor<SecurityRealm>>getDescriptorList(SecurityRealm.class);
     }
 
 

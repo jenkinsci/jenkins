@@ -546,7 +546,7 @@ public abstract class SCM implements Describable<SCM>, ExtensionPoint {
      * Returns all the registered {@link SCMDescriptor}s.
      */
     public static DescriptorExtensionList<SCM,SCMDescriptor<?>> all() {
-        return Hudson.getInstance().getDescriptorList(SCM.class);
+        return Hudson.getInstance().<SCM,SCMDescriptor<?>>getDescriptorList(SCM.class);
     }
 
     /**

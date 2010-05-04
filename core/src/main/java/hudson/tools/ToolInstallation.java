@@ -180,7 +180,7 @@ public abstract class ToolInstallation extends AbstractDescribableImpl<ToolInsta
      */
     public static DescriptorExtensionList<ToolInstallation,ToolDescriptor<?>> all() {
         // use getDescriptorList and not getExtensionList to pick up legacy instances
-        return Hudson.getInstance().getDescriptorList(ToolInstallation.class);
+        return Hudson.getInstance().<ToolInstallation,ToolDescriptor<?>>getDescriptorList(ToolInstallation.class);
     }
 
     private static final long serialVersionUID = 1L;

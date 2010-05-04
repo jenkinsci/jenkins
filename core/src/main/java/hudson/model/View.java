@@ -649,7 +649,7 @@ public abstract class View extends AbstractModelObject implements AccessControll
      * Returns all the registered {@link ViewDescriptor}s.
      */
     public static DescriptorExtensionList<View,ViewDescriptor> all() {
-        return Hudson.getInstance().getDescriptorList(View.class);
+        return Hudson.getInstance().<View,ViewDescriptor>getDescriptorList(View.class);
     }
 
     public static final Comparator<View> SORTER = new Comparator<View>() {

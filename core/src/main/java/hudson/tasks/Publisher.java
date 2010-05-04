@@ -26,7 +26,6 @@ package hudson.tasks;
 import hudson.DescriptorExtensionList;
 import hudson.Extension;
 import hudson.ExtensionComponent;
-import hudson.Launcher;
 import hudson.model.Action;
 import hudson.model.Build;
 import hudson.model.BuildListener;
@@ -34,7 +33,6 @@ import hudson.model.Describable;
 import hudson.model.Project;
 import hudson.model.Descriptor;
 import hudson.model.Hudson;
-import hudson.model.AbstractBuild;
 
 import java.util.List;
 import java.util.ArrayList;
@@ -171,6 +169,6 @@ public abstract class Publisher extends BuildStepCompatibilityLayer implements B
      */
     // for backward compatibility, the signature is not BuildStepDescriptor
     public static DescriptorExtensionList<Publisher,Descriptor<Publisher>> all() {
-        return Hudson.getInstance().getDescriptorList(Publisher.class);
+        return Hudson.getInstance().<Publisher,Descriptor<Publisher>>getDescriptorList(Publisher.class);
     }
 }

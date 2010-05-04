@@ -55,7 +55,7 @@ public abstract class TestDataPublisher extends AbstractDescribableImpl<TestData
 			BuildListener listener, TestResult testResult) throws IOException, InterruptedException;
 
 	public static DescriptorExtensionList<TestDataPublisher, Descriptor<TestDataPublisher>> all() {
-		return Hudson.getInstance().getDescriptorList(TestDataPublisher.class);
+		return Hudson.getInstance().<TestDataPublisher, Descriptor<TestDataPublisher>>getDescriptorList(TestDataPublisher.class);
 	}
 
 }
