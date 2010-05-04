@@ -1,0 +1,4 @@
+[hudson]
+name=Hudson
+baseurl=http://hudson-labs.org/redhat/
+gpgcheck=1

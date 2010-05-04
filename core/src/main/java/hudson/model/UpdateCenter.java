@@ -307,6 +307,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable {
      * Loads the data from the disk into this object.
      */
     public synchronized void load() throws IOException {
+        UpdateSite defaultSite = new UpdateSite("default", config.getUpdateCenterUrl() + "update-center.json");
         XmlFile file = getConfigFile();
         if(file.exists()) {
             try {
@@ -314,11 +315,19 @@ public class UpdateCenter extends AbstractModelObject implements Saveable {
             } catch (IOException e) {
                 LOGGER.log(Level.WARNING, "Failed to load "+file, e);
             }
+            for (UpdateSite site : sites) {
+                // replace the legacy site with the new site
+                if (site.isLegacyDefault()) {
+                    sites.remove(site);
+                    sites.add(defaultSite);
+                    break;
+                }
+            }
         } else {
-            // If there aren't already any UpdateSources, add the default one.
             if (sites.isEmpty()) {
+                // If there aren't already any UpdateSources, add the default one.
                 // to maintain compatibility with existing UpdateCenterConfiguration, create the default one as specified by UpdateCenterConfiguration
-                sites.add(new UpdateSite("default",config.getUpdateCenterUrl()+"update-center.json"));
+                sites.add(defaultSite);
             }
         }
     }
@@ -567,7 +576,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable {
          *      Absolute URL that ends with '/'.
          */
         public String getUpdateCenterUrl() {
-            return "http://hudson-ci.org/";
+            return "http://updates.hudson-labs.org/";
         }
 
         /**

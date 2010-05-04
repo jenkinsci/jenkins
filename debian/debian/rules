@@ -51,7 +51,6 @@ install: build
 	#cp hudson.war $(CURDIR)/debian/hudson/usr/share/hudson/hudson.war
 
 
-
 # Build architecture-independent files here.
 binary-indep: build install
 # We have nothing to do by default.

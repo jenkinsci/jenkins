@@ -33,7 +33,7 @@ THE SOFTWARE.
   
   <groupId>org.jvnet.hudson.main</groupId>
   <artifactId>pom</artifactId>
-  <version>1.356-SNAPSHOT</version>
+  <version>1.357-SNAPSHOT</version>
   <packaging>pom</packaging>
   
   <name>Hudson main module</name>
@@ -132,7 +132,7 @@ THE SOFTWARE.
         <version>2.0-beta-9</version>
         <configuration>
           <!-- enable release profile during the release, create IPS package, and sign bits. -->
-          <prepareVerifyArgs>-P release,ips,sign</prepareVerifyArgs>
+          <prepareVerifyArgs>-P release,sign</prepareVerifyArgs>
           <goals>-DskipTests javadoc:javadoc animal-sniffer:check deploy javadoc:aggregate</goals>
           <remoteTagging>true</remoteTagging><!-- work around http://jira.codehaus.org/browse/SCM-406 -->
         </configuration>

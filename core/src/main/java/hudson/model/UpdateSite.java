@@ -336,6 +336,13 @@ public class UpdateSite {
     }
 
     /**
+     * Is this the legacy default update center site?
+     */
+    public boolean isLegacyDefault() {
+        return id.equals("default") && url.startsWith("http://hudson-ci.org/");
+    }
+
+    /**
      * In-memory representation of the update center data.
      */
     public final class Data {
