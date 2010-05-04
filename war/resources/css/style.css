@@ -430,7 +430,7 @@ th.pane {
 
 .loading {
     position: absolute; width: 80%; height:100%;
-    background-color: #eee; text-align: center; font-size: 300%;
+    background-color: #e4e4e4; text-align: center; font-size: 300%;
     opacity: 0.5;
     -ms-filter: "progid:DXImageTransform.Microsoft.Alpha(Opacity=50)";
     filter: alpha(opacity=50);
