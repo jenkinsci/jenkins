@@ -697,9 +697,9 @@ var hudsonRules = {
 
         var oldOnsubmit = form.onsubmit;
         if (typeof oldOnsubmit == "function") {
-            form.onsubmit = function() { buildFormTree(this); return oldOnsubmit.call(this); }
+            form.onsubmit = function() { return buildFormTree(this) && oldOnsubmit.call(this); }
         } else {
-            form.onsubmit = function() { buildFormTree(this); };
+            form.onsubmit = function() { return buildFormTree(this); };
         }
 
         form = null; // memory leak prevention
@@ -1707,9 +1707,10 @@ function buildFormTree(form) {
         for( i=0; i<doms.length; i++ )
             doms[i].formDom = null;
 
-        return jsonElement.value;
+        return true;
     } catch(e) {
-        alert(e);
+        alert(e+'\n(form not submitted)');
+        return false;
     }
 }
 
