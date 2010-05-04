@@ -1,7 +1,7 @@
 /*
  * The MIT License
  * 
- * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi
+ * Copyright (c) 2004-2010, Sun Microsystems, Inc., Kohsuke Kawaguchi
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -92,7 +92,8 @@ Object.extend(Object, {
       case 'boolean': return object.toString();
     }
     if (object === null) return 'null';
-    if (object.toJSON) return object.toJSON();
+    // "|| object.toJSON" below is workaround for Opera 10.52/53 bug, see HUDSON-6424
+    if (object.toJSON || object.toJSON) return object.toJSON();
     if (object.ownerDocument === document) return;
     var results = [];
     for (var property in object) {
