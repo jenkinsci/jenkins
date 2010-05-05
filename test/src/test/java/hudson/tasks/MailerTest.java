@@ -123,6 +123,6 @@ public class MailerTest extends HudsonTestCase {
         submit(new WebClient().goTo("configure").getFormByName("config"));
         assertEquals(false,d.getUseSsl());
         assertNull("expected null, got: " + d.getSmtpAuthUserName(), d.getSmtpAuthUserName());
-        assertEquals("", d.getSmtpAuthPassword());
+        assertNull("expected null, got: " + d.getSmtpAuthPassword(), d.getSmtpAuthPassword());
     }
 }
