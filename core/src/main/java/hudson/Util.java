@@ -41,6 +41,8 @@ import org.apache.tools.ant.taskdefs.Chmod;
 import org.apache.tools.ant.taskdefs.Copy;
 import org.apache.commons.lang.time.FastDateFormat;
 import org.apache.commons.io.IOUtils;
+import org.jruby.ext.posix.FileStat;
+import org.jruby.ext.posix.POSIX;
 import org.kohsuke.stapler.Stapler;
 import org.jvnet.animal_sniffer.IgnoreJRERequirement;
 
@@ -263,7 +265,7 @@ public class Util {
     }
 
     /**
-     * Makes the given file writable.
+     * Makes the given file writable by any means possible.
      */
     @IgnoreJRERequirement
     private static void makeWritable(File f) {
@@ -284,6 +286,16 @@ public class Util {
         } catch (NoSuchMethodError e) {
             // not JDK6
         }
+
+        try {// try libc chmod
+            POSIX posix = PosixAPI.get();
+            String path = f.getAbsolutePath();
+            FileStat stat = posix.stat(path);
+            posix.chmod(path, stat.mode()|0200); // u+w
+        } catch (Throwable t) {
+            LOGGER.log(Level.FINE,"Failed to chmod(2) "+f,t);
+        }
+
     }
 
     public static void deleteRecursive(File dir) throws IOException {
