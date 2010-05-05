@@ -49,6 +49,34 @@ fi
 # Depend on lsb-base (>= 3.0-6) to ensure that this file is present.
 . /lib/lsb/init-functions
 
+# Make sure we run as root, since setting the max open files through
+# ulimit requires root access
+if [ `id -u` -ne 0 ]; then
+    echo "The $NAME init script can only be run as root"
+    exit 1
+fi
+
+
+check_tcp_port() {
+    local service=$1
+    local assigned=$2
+    local default=$3
+
+    if [ -n "$assigned" ]; then 
+	port=$default
+    else
+	port=$assigned
+    fi
+    
+    count=`netstat --listen --numeric-ports | grep \:$port | grep -c . `
+    
+    if [ $count -ne 0 ]; then
+        echo "The selected $service port ($port) seems to be in use by another program "
+        echo "Please select another port to use for $NAME"
+        return 1
+    fi
+}
+
 #
 # Function that starts the daemon/service
 #
@@ -63,17 +91,46 @@ do_start()
     #   2 if daemon could not be started
     $DAEMON $DAEMON_ARGS --running && return 1
 
+    # Verify that the hudson port is not already in use, winstone does not exit
+    # even for BindException
+    check_tcp_port "http" "$HTTP_PORT" "8080" || return 1
+    
     # If the var MAXOPENFILES is enabled in /etc/default/hudson then set the max open files to the 
     # proper value
     if [ ! -z "$MAXOPENFILES" ]; then
-      echo Setting up max open files limit to $MAXOPENFILES
-      ulimit -n $MAXOPENFILES
+	[ "$VERBOSE" != no ] && echo Setting up max open files limit to $MAXOPENFILES
+	ulimit -n $MAXOPENFILES
     fi
     
     # --user in daemon doesn't prepare environment variables like HOME, USER, LOGNAME or USERNAME,
     # so we let su do so for us now
     $SU $HUDSON_USER --shell=/bin/bash -c "$DAEMON $DAEMON_ARGS -- $JAVA $JAVA_ARGS -jar $HUDSON_WAR $HUDSON_ARGS" || return 2
 }
+
+
+#
+# Verify that all hudson processes have been shutdown
+# and if not, then do killall for them
+# 
+get_running() 
+{
+    return `ps -U $HUDSON_USER --no-headers -f | egrep -e '(java|daemon)' | grep -c . `
+}
+
+force_stop() 
+{
+    get_running
+    if [ $? -ne 0 ]; then 
+	killall -u $HUDSON_USER java daemon || return 3
+    fi
+}
+
+# Get the status of the daemon process
+get_daemon_status()
+{
+    $DAEMON $DAEMON_ARGS --running || return 1
+}
+
 
 #
 # Function that stops the daemon/service
@@ -85,8 +142,16 @@ do_stop()
     #   1 if daemon was already stopped
     #   2 if daemon could not be stopped
     #   other if a failure occurred
-    $DAEMON $DAEMON_ARGS --running || return 1
-    $DAEMON $DAEMON_ARGS --stop || return 2
+    get_daemon_status 
+    case "$?" in
+	0) 
+	    $DAEMON $DAEMON_ARGS --stop || return 2
+	    ;;
+	*)
+	    force_stop || return 3
+	    ;;
+    esac
+
     # Many daemons don't delete their pidfiles when they exit.
     rm -f $PIDFILE
     return 0
@@ -131,8 +196,30 @@ case "$1" in
 	;;
     esac
     ;;
+  status)
+      get_daemon_status
+      case "$?" in 
+	 0) echo "Hudson is running with the pid `cat $PIDFILE`";;
+         *) 
+	      get_running
+	      procs=$?
+	      if [ $procs -eq 0 ]; then 
+		  echo -n "Hudson is not running"
+		  if [ -f $PIDFILE ]; then 
+		      echo ", but the pidfile ($PIDFILE) still exists"
+		  else 
+		      echo
+		  fi
+
+	      else 
+		  echo "$procs instances of hudson are running at the moment"
+		  echo "but the pidfile $PIDFILE is missing"
+	      fi
+	      ;;
+      esac
+    ;;
   *)
-    echo "Usage: $SCRIPTNAME {start|stop|restart|force-reload}" >&2
+    echo "Usage: $SCRIPTNAME {start|stop|status|restart|force-reload}" >&2
     exit 3
     ;;
 esac
