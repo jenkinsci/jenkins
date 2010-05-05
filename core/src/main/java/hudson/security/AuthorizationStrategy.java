@@ -26,16 +26,7 @@ package hudson.security;
 import hudson.DescriptorExtensionList;
 import hudson.Extension;
 import hudson.ExtensionPoint;
-import hudson.model.AbstractItem;
-import hudson.model.AbstractProject;
-import hudson.model.Computer;
-import hudson.model.Describable;
-import hudson.model.Descriptor;
-import hudson.model.Hudson;
-import hudson.model.Job;
-import hudson.model.Node;
-import hudson.model.User;
-import hudson.model.View;
+import hudson.model.*;
 import hudson.slaves.Cloud;
 import hudson.util.DescriptorList;
 
@@ -68,7 +59,7 @@ import org.kohsuke.stapler.StaplerRequest;
  * @author Kohsuke Kawaguchi
  * @see SecurityRealm
  */
-public abstract class AuthorizationStrategy implements Describable<AuthorizationStrategy>, ExtensionPoint {
+public abstract class AuthorizationStrategy extends AbstractDescribableImpl<AuthorizationStrategy> implements ExtensionPoint {
     /**
      * Returns the instance of {@link ACL} where all the other {@link ACL} instances
      * for all the other model objects eventually delegate.
@@ -175,15 +166,11 @@ public abstract class AuthorizationStrategy implements Describable<Authorization
      */
     public abstract Collection<String> getGroups();
 
-    public Descriptor<AuthorizationStrategy> getDescriptor() {
-        return Hudson.getInstance().getDescriptorOrDie(getClass());
-    }
-
     /**
      * Returns all the registered {@link AuthorizationStrategy} descriptors.
      */
     public static DescriptorExtensionList<AuthorizationStrategy,Descriptor<AuthorizationStrategy>> all() {
-        return Hudson.getInstance().getDescriptorList(AuthorizationStrategy.class);
+        return Hudson.getInstance().<AuthorizationStrategy,Descriptor<AuthorizationStrategy>>getDescriptorList(AuthorizationStrategy.class);
     }
 
     /**

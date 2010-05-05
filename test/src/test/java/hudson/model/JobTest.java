@@ -30,6 +30,7 @@ import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import hudson.util.TextFile;
 import java.io.IOException;
 import java.util.concurrent.CountDownLatch;
+import org.jvnet.hudson.test.Bug;
 import org.jvnet.hudson.test.HudsonTestCase;
 import org.jvnet.hudson.test.recipes.LocalData;
 
@@ -214,5 +215,16 @@ public class JobTest extends HudsonTestCase {
             assertEquals(msg, status, expected.getStatusCode());
         }
         wc.goTo("logout");
+    }
+
+    @LocalData @Bug(6371)
+    public void testGetArtifactsUpTo() throws Exception {
+        // There was a bug where intermediate directories were counted,
+        // so too few artifacts were returned.
+        Run r = hudson.getItemByFullName("testJob", Job.class).getLastCompletedBuild();
+        assertEquals(3, r.getArtifacts().size());
+        assertEquals(3, r.getArtifactsUpTo(3).size());
+        assertEquals(2, r.getArtifactsUpTo(2).size());
+        assertEquals(1, r.getArtifactsUpTo(1).size());
     }
 }

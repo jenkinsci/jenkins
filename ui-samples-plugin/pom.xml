@@ -41,6 +41,13 @@ THE SOFTWARE.
       <version>${project.version}</version>
       <scope>provided</scope>
     </dependency>
+      <!-- UI-samples plugin is also used as a test bed for automatic test injection -->
+      <dependency>
+        <groupId>org.jvnet.hudson.main</groupId>
+        <artifactId>hudson-test-harness</artifactId>
+        <version>${project.version}</version>
+        <scope>test</scope>
+      </dependency>
     <dependency>
       <groupId>javax.servlet</groupId>
       <artifactId>servlet-api</artifactId>
@@ -68,7 +75,7 @@ THE SOFTWARE.
       <plugin>
         <groupId>org.jvnet.hudson.tools</groupId>
         <artifactId>maven-hpi-plugin</artifactId>
-        <version>1.43</version>
+        <version>1.51</version>
         <extensions>true</extensions>
         <configuration>
           <showDeprecation>true</showDeprecation>
@@ -77,7 +84,7 @@ THE SOFTWARE.
       <plugin>
         <groupId>org.kohsuke.stapler</groupId>
         <artifactId>maven-stapler-plugin</artifactId>
-        <version>1.12</version>
+        <version>1.15</version>
         <extensions>true</extensions>
       </plugin>
       <plugin>

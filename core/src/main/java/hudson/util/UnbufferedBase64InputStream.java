@@ -39,6 +39,7 @@ public class UnbufferedBase64InputStream extends FilterInputStream {
         if (pos==decoded.length) {
             din.readFully(encoded);
             decoded = Base64.decodeBase64(encoded);
+            if (decoded.length==0)  return -1; // EOF
             pos = 0;
         }
 

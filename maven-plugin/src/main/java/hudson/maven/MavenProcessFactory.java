@@ -160,7 +160,7 @@ final class MavenProcessFactory implements ProcessCache.Factory {
                 this.serverSocket = new ServerSocket();
                 serverSocket.bind(null); // new InetSocketAddress(InetAddress.getLocalHost(),0));
                 // prevent a hang at the accept method in case the forked process didn't start successfully
-                serverSocket.setSoTimeout(10*1000);
+                serverSocket.setSoTimeout(30*1000);
             }
 
             public Connection accept() throws IOException {

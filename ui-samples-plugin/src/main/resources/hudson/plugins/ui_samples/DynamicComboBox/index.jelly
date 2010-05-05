@@ -26,14 +26,11 @@ THE SOFTWARE.
   <s:sample title="Dynamic ComboBox Sample">
     <form>
       <table>
-        <f:entry title="Country" field="country">
-          <f:textbox />
-        </f:entry>
-        <f:entry title="State" field="state">
+        <f:entry title="Beatles Album" field="album">
           <f:select />
         </f:entry>
-        <f:entry title="City" field="city">
-          <f:select />
+        <f:entry title="Title" field="title">
+          <f:combobox />
         </f:entry>
       </table>
     </form>

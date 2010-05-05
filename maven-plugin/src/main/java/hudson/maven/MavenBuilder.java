@@ -54,6 +54,7 @@ import org.codehaus.plexus.configuration.PlexusConfiguration;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.lang.reflect.InvocationTargetException;
+import java.util.Hashtable;
 import java.util.List;
 import java.util.Map;
 import java.util.ArrayList;
@@ -153,7 +154,12 @@ public abstract class MavenBuilder implements DelegatingCallable<Result,IOExcept
 
             markAsSuccess = false;
 
-            System.getProperties().putAll(systemProps);
+            // working around NPE when someone puts a null value into systemProps.
+            for (Map.Entry<String,String> e : systemProps.entrySet()) {
+                if (e.getValue()==null)
+                    throw new IllegalArgumentException("System property "+e.getKey()+" has a null value");
+                System.getProperties().put(e.getKey(), e.getValue());
+            }
 
             listener.getLogger().println(formatArgs(goals));
             int r = Main.launch(goals.toArray(new String[goals.size()]));

@@ -34,12 +34,7 @@ import hudson.util.ReflectionUtils.Parameter;
 import hudson.views.ListViewColumn;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
-import org.kohsuke.stapler.QueryParameter;
-import org.kohsuke.stapler.StaplerRequest;
-import org.kohsuke.stapler.Stapler;
-import org.kohsuke.stapler.StaplerResponse;
-import org.kohsuke.stapler.Ancestor;
-import org.kohsuke.stapler.HttpResponse;
+import org.kohsuke.stapler.*;
 import org.springframework.util.StringUtils;
 import org.jvnet.tiger_types.Types;
 import org.apache.commons.io.IOUtils;
@@ -135,9 +130,9 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable {
     private transient final Map<String,String> checkMethods = new ConcurrentHashMap<String,String>();
 
     /**
-     * Lazily computed list of properties on {@link #clazz}.
+     * Lazily computed list of properties on {@link #clazz} and on the descriptor itself.
      */
-    private transient volatile Map<String, PropertyType> propertyTypes;
+    private transient volatile Map<String, PropertyType> propertyTypes,globalPropertyTypes;
 
     /**
      * Represents a readable property on {@link Describable}.
@@ -192,12 +187,11 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable {
          * Returns {@link Descriptor} whose 'clazz' is the same as {@link #getItemType() the item type}.
          */
         public Descriptor getItemTypeDescriptor() {
-            Class itemType = getItemType();
-            for( Descriptor d : Hudson.getInstance().getExtensionList(Descriptor.class) )
-                if(d.clazz==itemType)
-                    return d;
-            return null;
+            return Hudson.getInstance().getDescriptor(getItemType());
+        }
 
+        public Descriptor getItemTypeDescriptorOrDie() {
+            return Hudson.getInstance().getDescriptorOrDie(getItemType());
         }
     }
 
@@ -291,29 +285,36 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable {
         if(method==null)
             return NONE;
 
-        // build query parameter line by figuring out what should be submitted
-        StringBuilder query = new StringBuilder();
-        boolean first = true;
+        return singleQuote(getDescriptorUrl() +"/check"+capitalizedFieldName) + buildParameterList(method, new StringBuilder()).append(".toString()");
+    }
+
+    /**
+     * Builds query parameter line by figuring out what should be submitted
+     */
+    private StringBuilder buildParameterList(Method method, StringBuilder query) {
         for (Parameter p : ReflectionUtils.getParameters(method)) {
             QueryParameter qp = p.annotation(QueryParameter.class);
-            if (qp==null)   continue;
+            if (qp!=null) {
+                String name = qp.value();
+                if (name.length()==0) name = p.name();
+                if (name==null || name.length()==0)
+                    continue;   // unknown parameter name. we'll report the error when the form is submitted.
 
-            String name = qp.value();
-            if (name.length()==0) name = p.name();
-            if (name==null || name.length()==0)
-                continue;   // unknown parameter name. we'll report the error when the form is submitted.
+                if (query.length()==0)  query.append("+qs(this)");
 
-            if (first)  first = false;
-            else        query.append('+').append(singleQuote("&"));
-            if (name.equals("value")) {
-                // The special 'value' parameter binds to the the current field
-                query.append('+').append(singleQuote("value=")).append("+toValue(this)");
-            } else {
-                query.append('+').append(singleQuote(name+'=')).append("+toValue(findNearBy(this,'"+name+"'))");
+                if (name.equals("value")) {
+                    // The special 'value' parameter binds to the the current field
+                    query.append(".addThis()");
+                } else {
+                    query.append(".nearBy('"+name+"')");
+                }
+                continue;
             }
-        }
 
-        return singleQuote(getDescriptorUrl() +"/check"+capitalizedFieldName+"?")+query;
+            Method m = ReflectionUtils.getPublicMethodNamed(p.type(), "fromStapler");
+            if (m!=null)    buildParameterList(m,query);
+        }
+        return query;
     }
 
     /**
@@ -329,40 +330,72 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable {
             throw new IllegalStateException(String.format("%s doesn't have the %s method for filling a drop-down list", getClass(), methodName));
 
         // build query parameter line by figuring out what should be submitted
-        List<String> depends = new ArrayList<String>();
+        List<String> depends = buildFillDependencies(method, new ArrayList<String>());
 
+        if (!depends.isEmpty())
+            attributes.put("fillDependsOn",Util.join(depends," "));
+        attributes.put("fillUrl", String.format("%s/%s/fill%sItems", getCurrentDescriptorByNameUrl(), getDescriptorUrl(), capitalizedFieldName));
+    }
+
+    private List<String> buildFillDependencies(Method method, List<String> depends) {
         for (Parameter p : ReflectionUtils.getParameters(method)) {
             QueryParameter qp = p.annotation(QueryParameter.class);
-            if (qp==null)   continue;
+            if (qp!=null) {
+                String name = qp.value();
+                if (name.length()==0) name = p.name();
+                if (name==null || name.length()==0)
+                    continue;   // unknown parameter name. we'll report the error when the form is submitted.
 
-            String name = qp.value();
-            if (name.length()==0) name = p.name();
-            if (name==null || name.length()==0)
-                continue;   // unknown parameter name. we'll report the error when the form is submitted.
+                depends.add(name);
+                continue;
+            }
 
-            depends.add(name);
+            Method m = ReflectionUtils.getPublicMethodNamed(p.type(), "fromStapler");
+            if (m!=null)
+                buildFillDependencies(m,depends);
         }
+        return depends;
+    }
 
-        attributes.put("fillDependsOn",Util.join(depends," "));
-        attributes.put("fillUrl", String.format("%s/%s/fill%sItems", getCurrentDescriptorByNameUrl(), getDescriptorUrl(), capitalizedFieldName));
+    /**
+     * Used by Jelly to abstract away the handlign of global.jelly vs config.jelly databinding difference.
+     */
+    public PropertyType getPropertyType(Object instance, String field) {
+        // in global.jelly, instance==descriptor
+        return instance==this ? getGlobalPropertyType(field) : getPropertyType(field);
     }
 
     /**
      * Obtains the property type of the given field of {@link #clazz}
      */
     public PropertyType getPropertyType(String field) {
-        if(propertyTypes ==null) {
-            Map<String, PropertyType> r = new HashMap<String, PropertyType>();
-            for (Field f : clazz.getFields())
-                r.put(f.getName(),new PropertyType(f));
-
-            for (Method m : clazz.getMethods())
-                if(m.getName().startsWith("get"))
-                    r.put(Introspector.decapitalize(m.getName().substring(3)),new PropertyType(m));
-
-            propertyTypes = r;
-        }
+        if(propertyTypes==null)
+            propertyTypes = buildPropertyTypes(clazz);
         return propertyTypes.get(field);
+    }
+
+    /**
+     * Obtains the property type of the given field of this descriptor.
+     */
+    public PropertyType getGlobalPropertyType(String field) {
+        if(globalPropertyTypes==null)
+            globalPropertyTypes = buildPropertyTypes(getClass());
+        return globalPropertyTypes.get(field);
+    }
+
+    /**
+     * Given the class, list up its {@link PropertyType}s from its public fields/getters.
+     */
+    private Map<String, PropertyType> buildPropertyTypes(Class<?> clazz) {
+        Map<String, PropertyType> r = new HashMap<String, PropertyType>();
+        for (Field f : clazz.getFields())
+            r.put(f.getName(),new PropertyType(f));
+
+        for (Method m : clazz.getMethods())
+            if(m.getName().startsWith("get"))
+                r.put(Introspector.decapitalize(m.getName().substring(3)),new PropertyType(m));
+
+        return r;
     }
 
     /**

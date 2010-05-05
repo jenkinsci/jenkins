@@ -156,6 +156,12 @@ public class EnvVars extends TreeMap<String,String> {
 			entry.setValue(Util.replaceMacro(entry.getValue(), env));
 		}
 	}
+
+    @Override
+    public String put(String key, String value) {
+        if (value==null)    throw new IllegalArgumentException("Null value not allowed as an environment variable: "+key);
+        return super.put(key,value);
+    }
     
     /**
      * Takes a string that looks like "a=b" and adds that to this map.

@@ -30,7 +30,7 @@ import hudson.ExtensionPoint;
 import hudson.DescriptorExtensionList;
 import hudson.Extension;
 import hudson.cli.CLICommand;
-import hudson.model.Describable;
+import hudson.model.AbstractDescribableImpl;
 import hudson.model.Descriptor;
 import hudson.model.Hudson;
 import hudson.util.DescriptorList;
@@ -123,7 +123,7 @@ import java.util.logging.Logger;
  * @since 1.160
  * @see PluginServletFilter
  */
-public abstract class SecurityRealm implements Describable<SecurityRealm>, ExtensionPoint {
+public abstract class SecurityRealm extends AbstractDescribableImpl<SecurityRealm> implements ExtensionPoint {
     /**
      * Creates fully-configured {@link AuthenticationManager} that performs authentication
      * against the user realm. The implementation hides how such authentication manager
@@ -169,7 +169,7 @@ public abstract class SecurityRealm implements Describable<SecurityRealm>, Exten
      * <tt>global.jelly</tt>. 
      */
     public Descriptor<SecurityRealm> getDescriptor() {
-        return Hudson.getInstance().getDescriptorOrDie(getClass());
+        return super.getDescriptor();
     }
 
     /**
@@ -498,7 +498,7 @@ public abstract class SecurityRealm implements Describable<SecurityRealm>, Exten
      * Returns all the registered {@link SecurityRealm} descriptors.
      */
     public static DescriptorExtensionList<SecurityRealm,Descriptor<SecurityRealm>> all() {
-        return Hudson.getInstance().getDescriptorList(SecurityRealm.class);
+        return Hudson.getInstance().<SecurityRealm,Descriptor<SecurityRealm>>getDescriptorList(SecurityRealm.class);
     }
 
 

@@ -1,7 +1,7 @@
 /*
  * The MIT License
  * 
- * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi
+ * Copyright (c) 2004-2010, Sun Microsystems, Inc., Kohsuke Kawaguchi, Alan Harder
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -61,6 +61,23 @@ public class FilePathTest extends ChannelTestCase {
         }
     }
 
+    public void testRepeatCopyRecursiveTo() throws Exception {
+        // local->local copy used to return 0 if all files were "up to date"
+        // should return number of files processed, whether or not they were copied or already current
+        File tmp = Util.createTempDir(), src = new File(tmp, "src"), dst = new File(tmp, "dst");
+        try {
+            assertTrue(src.mkdir());
+            assertTrue(dst.mkdir());
+            File f = File.createTempFile("foo", ".tmp", src);
+            FilePath fp = new FilePath(src);
+            assertEquals(1, fp.copyRecursiveTo(new FilePath(dst)));
+            // copy again should still report 1
+            assertEquals(1, fp.copyRecursiveTo(new FilePath(dst)));
+        } finally {
+            Util.deleteRecursive(tmp);
+        }
+    }
+
     public void testArchiveBug4039() throws Exception {
         File tmp = Util.createTempDir();
         try {
@@ -96,8 +113,30 @@ public class FilePathTest extends ChannelTestCase {
         compare("c:\\abc\\..","c:\\");      // we want c:\\, not c:
         compare("c:\\abc\\def\\..","c:\\abc");
 
+        compare("/abc/../","/");
         compare("abc/..",".");
         compare(".",".");
+
+        // @Bug(5951)
+        compare("C:\\Hudson\\jobs\\foo\\workspace/../../otherjob/workspace/build.xml",
+                "C:\\Hudson\\jobs/otherjob/workspace/build.xml");
+        // Other cases that failed before
+        compare("../../abc/def","../../abc/def");
+        compare("..\\..\\abc\\def","..\\..\\abc\\def");
+        compare("/abc//../def","/def");
+        compare("c:\\abc\\\\..\\def","c:\\def");
+        compare("/../abc/def","/abc/def");
+        compare("c:\\..\\abc\\def","c:\\abc\\def");
+        compare("abc/def/","abc/def");
+        compare("abc\\def\\","abc\\def");
+        // The new code can collapse extra separator chars
+        compare("abc//def/\\//\\ghi","abc/def/ghi");
+        compare("\\\\host\\\\abc\\\\\\def","\\\\host\\abc\\def"); // don't collapse for \\ prefix
+        compare("\\\\\\foo","\\\\foo");
+        compare("//foo","/foo");
+        // Other edge cases
+        compare("abc/def/../../../ghi","../ghi");
+        compare("\\abc\\def\\..\\..\\..\\ghi\\","\\ghi");
     }
 
     private void compare(String original, String answer) {

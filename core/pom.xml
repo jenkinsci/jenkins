@@ -346,7 +346,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.kohsuke.stapler</groupId>
       <artifactId>stapler-jelly</artifactId>
-      <version>1.140</version>
+      <version>1.141</version>
       <exclusions>
         <exclusion>
           <groupId>commons-jelly</groupId>

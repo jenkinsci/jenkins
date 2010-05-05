@@ -29,8 +29,11 @@ import hudson.PluginManager;
 import hudson.PluginWrapper;
 import hudson.Util;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.net.URL;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
@@ -71,10 +74,29 @@ public class TestPluginManager extends PluginManager {
                 LOGGER.log(Level.SEVERE, "Failed to extract the bundled plugin "+child,e);
             }
         }
+        // If running tests for a plugin, include the plugin being tested
+        URL u = getClass().getClassLoader().getResource("the.hpl");
+        if (u!=null) try {
+            names.add("the.hpl");
+            copyBundledPlugin(u, "the.hpl");
+        } catch (IOException e) {
+            LOGGER.log(Level.SEVERE, "Failed to copy the.hpl",e);
+        }
+
+        // and pick up test dependency *.hpi that are placed by maven-hpi-plugin TestDependencyMojo.
+        // and copy them into $HUDSON_HOME/plugins.
+        URL index = getClass().getResource("/test-dependencies/index");
+        if (index!=null) {// if built with maven-hpi-plugin < 1.52 this file won't exist.
+            BufferedReader r = new BufferedReader(new InputStreamReader(index.openStream(),"UTF-8"));
+            String line;
+            while ((line=r.readLine())!=null) {
+                copyBundledPlugin(new URL(index, line + ".hpi"), line + ".hpi");
+            }
+        }
 
         return names;
     }
-
+    
     @Override
     public void stop() {
         for (PluginWrapper p : activePlugins)

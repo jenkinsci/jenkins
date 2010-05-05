@@ -1,7 +1,8 @@
 /*
  * The MIT License
  * 
- * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, Eric Lefevre-Ardant, Erik Ramfelt, Michael B. Donohue
+ * Copyright (c) 2004-2010, Sun Microsystems, Inc., Kohsuke Kawaguchi,
+ * Eric Lefevre-Ardant, Erik Ramfelt, Michael B. Donohue, Alan Harder
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -86,6 +87,7 @@ import java.util.List;
 import java.util.StringTokenizer;
 import java.util.Arrays;
 import java.util.Comparator;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
@@ -222,59 +224,66 @@ public final class FilePath implements Serializable {
         return rel.startsWith("/") || DRIVE_PATTERN.matcher(rel).matches();
     }
 
-    private static final Pattern DRIVE_PATTERN = Pattern.compile("[A-Za-z]:[\\\\/].*");
+    private static final Pattern DRIVE_PATTERN = Pattern.compile("[A-Za-z]:[\\\\/].*"),
+            ABSOLUTE_PREFIX_PATTERN = Pattern.compile("^(\\\\\\\\|(?:[A-Za-z]:)?[\\\\/])[\\\\/]*");
 
     /**
      * {@link File#getParent()} etc cannot handle ".." and "." in the path component very well,
      * so remove them.
      */
     private static String normalize(String path) {
-        if (path.indexOf('.')<0)    return path;    // common case
-
-        path = _normalize(path,'/');
-        path = _normalize(path,'\\');
-
-        // if the normalization results in a bare drive letter, like "C:", it needs to be fixed up to "C:\\"
-        if (path.length()==2 && path.charAt(1)==':')    path+='\\';
-        return path;
-    }
-
-    private static String _normalize(String path, char separator) {
-        List<String> tokens = new ArrayList<String>();
-        int s=0; // start of the next token
-        while (true) {
-            int idx = path.indexOf(separator,s);
-            if (idx<0) {
-                tokens.add(path.substring(s));
-                break;
-            }
-            tokens.add(path.substring(s,idx));
-            s = idx+1;
+        StringBuilder buf = new StringBuilder();
+        // Check for prefix designating absolute path
+        Matcher m = ABSOLUTE_PREFIX_PATTERN.matcher(path);
+        if (m.find()) {
+            buf.append(m.group(1));
+            path = path.substring(m.end());
         }
-
-        boolean modified=false;
-
-        for (int i=0; i<tokens.size(); ) {
+        boolean isAbsolute = buf.length() > 0;
+        // Split remaining path into tokens, trimming any duplicate or trailing separators
+        List<String> tokens = new ArrayList<String>();
+        int s = 0, end = path.length();
+        for (int i = 0; i < end; i++) {
+            char c = path.charAt(i);
+            if (c == '/' || c == '\\') {
+                tokens.add(path.substring(s, i));
+                s = i;
+                // Skip any extra separator chars
+                while (++i < end && ((c = path.charAt(i)) == '/' || c == '\\')) { }
+                // Add token for separator unless we reached the end
+                if (i < end) tokens.add(path.substring(s, s+1));
+                s = i;
+            }
+        }
+        if (s < end) tokens.add(path.substring(s));
+        // Look through tokens for "." or ".."
+        for (int i = 0; i < tokens.size();) {
             String token = tokens.get(i);
             if (token.equals(".")) {
                 tokens.remove(i);
-                modified = true;
+                if (tokens.size() > 0)
+                    tokens.remove(i > 0 ? i - 1 : i);
+            } else if (token.equals("..")) {
+                if (i == 0) {
+                    // If absolute path, just remove: /../something
+                    // If relative path, not collapsible so leave as-is
+                    tokens.remove(0);
+                    if (tokens.size() > 0) token += tokens.remove(0);
+                    if (!isAbsolute) buf.append(token);
+                } else {
+                    // Normalize: remove something/.. plus separator before/after
+                    i -= 2;
+                    for (int j = 0; j < 3; j++) tokens.remove(i);
+                    if (i > 0) tokens.remove(i-1);
+                    else if (tokens.size() > 0) tokens.remove(0);
+                }
             } else
-            if (token.equals("..") && i>0) {
-                tokens.remove(i);
-                tokens.remove(i-1);
-                i--;
-                modified = true;
-            } else
-                i++;
+                i += 2;
         }
-
-        if (modified) {
-            path = Util.join(tokens,""+separator);
-            if (path.length()==0)   path="."; // "../abc" -> "."
-        }
-
-        return path;
+        // Recombine tokens
+        for (String token : tokens) buf.append(token);
+        if (buf.length() == 0) buf.append('.');
+        return buf.toString();
     }
 
     /**
@@ -1436,6 +1445,7 @@ public final class FilePath implements Serializable {
                         CopyImpl copyTask = new CopyImpl();
                         copyTask.setTodir(new File(target.remote));
                         copyTask.addFileset(Util.createFileSet(base,fileMask,excludes));
+                        copyTask.setOverwrite(true);
                         copyTask.setIncludeEmptyDirs(false);
 
                         copyTask.execute();

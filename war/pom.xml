@@ -129,11 +129,18 @@ THE SOFTWARE.
                 <resolveArtifact groupId="org.jvnet.hudson.winstone" artifactId="winstone" version="0.9.10-hudson-16" type="jar" tofile="${basedir}/target/generated-resources/winstone.jar" />
 
                 <!-- bundled plugins -->
-                <resolveArtifact groupId="${project.groupId}" artifactId="maven-plugin" version="${project.version}" type="hpi" tofile="${basedir}/target/generated-resources/WEB-INF/plugins/maven-plugin.hpi" />
-                <resolveArtifact groupId="org.jvnet.hudson.plugins" artifactId="ssh-slaves" version="0.9" type="hpi" tofile="${basedir}/target/generated-resources/WEB-INF/plugins/ssh-slaves.hpi" />
-                <resolveArtifact groupId="org.jvnet.hudson.plugins" artifactId="subversion" version="1.13" type="hpi" tofile="${basedir}/target/generated-resources/WEB-INF/plugins/subversion.hpi" />
-                <resolveArtifact groupId="org.jvnet.hudson.plugins" artifactId="cvs" version="1.0" type="hpi" tofile="${basedir}/target/generated-resources/WEB-INF/plugins/cvs.hpi" />
-                <resolveArtifact groupId="org.jvnet.hudson.plugins" artifactId="scis-ad" version="1.2" type="hpi" tofile="${basedir}/target/generated-resources/WEB-INF/plugins/scis-ad.hpi" />
+                <resolveArtifact type="hpi" groupId="${project.groupId}"
+                 artifactId="maven-plugin" version="${project.version}"
+                 tofile="${basedir}/target/generated-resources/WEB-INF/plugins/maven-plugin.hpi" />
+                <resolveArtifact type="hpi" groupId="org.jvnet.hudson.plugins"
+                 artifactId="ssh-slaves" version="0.10"
+                 tofile="${basedir}/target/generated-resources/WEB-INF/plugins/ssh-slaves.hpi" />
+                <resolveArtifact type="hpi" groupId="org.jvnet.hudson.plugins"
+                 artifactId="subversion" version="1.17"
+                 tofile="${basedir}/target/generated-resources/WEB-INF/plugins/subversion.hpi" />
+                <resolveArtifact type="hpi" groupId="org.jvnet.hudson.plugins"
+                 artifactId="cvs" version="1.1"
+                 tofile="${basedir}/target/generated-resources/WEB-INF/plugins/cvs.hpi" />
               </tasks>
             </configuration>
           </execution>

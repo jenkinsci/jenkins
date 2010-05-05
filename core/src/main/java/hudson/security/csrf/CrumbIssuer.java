@@ -146,7 +146,7 @@ public abstract class CrumbIssuer implements Describable<CrumbIssuer>, Extension
      * Returns all the registered {@link CrumbIssuer} descriptors.
      */
     public static DescriptorExtensionList<CrumbIssuer, Descriptor<CrumbIssuer>> all() {
-        return Hudson.getInstance().getDescriptorList(CrumbIssuer.class);
+        return Hudson.getInstance().<CrumbIssuer, Descriptor<CrumbIssuer>>getDescriptorList(CrumbIssuer.class);
     }
 
     public Api getApi() {

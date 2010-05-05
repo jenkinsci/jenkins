@@ -113,7 +113,7 @@ THE SOFTWARE.
           -->
           <groupId>org.kohsuke.stapler</groupId>
           <artifactId>maven-stapler-plugin</artifactId>
-          <version>1.14</version>
+          <version>1.15</version>
           <extensions>true</extensions>
           <dependencies>
             <dependency>
@@ -340,7 +340,7 @@ THE SOFTWARE.
   <distributionManagement>
     <site>
       <id>hudson-www</id>
-      <url>scp://hudson-ci.org/home/kohsuke/www/hudson-ci.org/maven-site/</url>
+      <url>scp://hudson-labs.org/home/kohsuke/www/hudson-labs.org/maven-site/</url>
     </site>
   </distributionManagement>
 </project>

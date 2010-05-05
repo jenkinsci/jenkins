@@ -428,6 +428,14 @@ th.pane {
     color: white;
 }
 
+.loading {
+    position: absolute; width: 80%; height:100%;
+    background-color: #e4e4e4; text-align: center; font-size: 300%;
+    opacity: 0.5;
+    -ms-filter: "progid:DXImageTransform.Microsoft.Alpha(Opacity=50)";
+    filter: alpha(opacity=50);
+}
+
 /* ======================== error/warning message (mainly in the form.) Use them on block elements ======================== */
 .error {
     color: #CC0000;
@@ -702,6 +710,26 @@ TABLE.fingerprint-in-build TD {
 
 .repeated-chunk .show-if-not-only      { visibility: visible; }
 .repeated-chunk.only .show-if-not-only { visibility: hidden; }
+
+/* == nested erpeatable elements / 2 deep == */
+.repeated-chunk .repeated-chunk .show-if-last      { visibility: hidden; }
+.repeated-chunk .repeated-chunk.last .show-if-last { visibility: visible; }
+
+.repeated-chunk .repeated-chunk .show-if-not-last      { visibility: visible; }
+.repeated-chunk .repeated-chunk.last .show-if-not-last { visibility: hidden; }
+
+.repeated-chunk .repeated-chunk .show-if-not-only      { visibility: visible; }
+.repeated-chunk .repeated-chunk.only .show-if-not-only { visibility: hidden; }
+
+/* == nested erpeatable elements / 3 deep == */
+.repeated-chunk .repeated-chunk .repeated-chunk .show-if-last      { visibility: hidden; }
+.repeated-chunk .repeated-chunk .repeated-chunk.last .show-if-last { visibility: visible; }
+
+.repeated-chunk .repeated-chunk .repeated-chunk .show-if-not-last      { visibility: visible; }
+.repeated-chunk .repeated-chunk .repeated-chunk.last .show-if-not-last { visibility: hidden; }
+
+.repeated-chunk .repeated-chunk .repeated-chunk .show-if-not-only      { visibility: visible; }
+.repeated-chunk .repeated-chunk .repeated-chunk.only .show-if-not-only { visibility: hidden; }
 
 /*
     <DIV>s marked with to-be-removed is used in conjunction with repetable.jelly and hetero-list.jelly

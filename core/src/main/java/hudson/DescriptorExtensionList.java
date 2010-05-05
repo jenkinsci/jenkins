@@ -29,7 +29,6 @@ import hudson.model.Hudson;
 import hudson.model.ViewDescriptor;
 import hudson.model.Descriptor.FormException;
 import hudson.util.AdaptedIterator;
-import hudson.util.CopyOnWriteList;
 import hudson.util.Memoizer;
 import hudson.util.Iterators.FlattenIterator;
 import hudson.slaves.NodeDescriptor;
@@ -68,10 +67,12 @@ public class DescriptorExtensionList<T extends Describable<T>, D extends Descrip
     /**
      * Creates a new instance.
      */
+    @SuppressWarnings({"unchecked", "rawtypes"})
     public static <T extends Describable<T>,D extends Descriptor<T>>
-    DescriptorExtensionList<T,D> create(Hudson hudson, Class<T> describableType) {
-        if(describableType==(Class)Publisher.class) // javac or IntelliJ compiler complains if I don't have this cast
-            return (DescriptorExtensionList)new DescriptorExtensionListImpl(hudson);
+    DescriptorExtensionList<T,D> createDescriptorList(Hudson hudson, Class<T> describableType) {
+        if (describableType == (Class) Publisher.class) {
+            return (DescriptorExtensionList) new DescriptorExtensionListImpl(hudson);
+        }
         return new DescriptorExtensionList<T,D>(hudson,describableType);
     }
 

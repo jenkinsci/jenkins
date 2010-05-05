@@ -27,6 +27,8 @@ import junit.framework.TestCase;
 import junit.framework.TestResult;
 import junit.framework.TestSuite;
 import org.apache.commons.io.FileUtils;
+import org.dom4j.Document;
+import org.dom4j.io.SAXReader;
 import org.jvnet.hudson.test.junit.GroupedTest;
 import org.kohsuke.stapler.MetaClassLoader;
 import org.kohsuke.stapler.jelly.JellyClassLoaderTearOff;
@@ -85,7 +87,29 @@ public class JellyTestSuiteBuilder {
         @Override
         protected void runTest() throws Exception {
             jct.createContext().compileScript(jelly);
+            Document dom = new SAXReader().read(jelly);
+            checkLabelFor(dom);
             // TODO: what else can we check statically? use of taglibs?
+        }
+
+        /**
+         * Makes sure that &lt;label for=...> is not used inside config.jelly nor global.jelly
+         */
+        private void checkLabelFor(Document dom) {
+            if (isConfigJelly() || isGlobalJelly()) {
+                if (!dom.selectNodes("//label[@for]").isEmpty())
+                    throw new AssertionError("<label for=...> shouldn't be used because it doesn't work " +
+                            "when the configuration item is repeated. Use <label class=\"attach-previous\"> " +
+                            "to have your label attach to the previous DOM node instead.");
+            }
+        }
+
+        private boolean isConfigJelly() {
+            return jelly.toString().endsWith("/config.jelly");
+        }
+
+        private boolean isGlobalJelly() {
+            return jelly.toString().endsWith("/global.jelly");
         }
     }
 

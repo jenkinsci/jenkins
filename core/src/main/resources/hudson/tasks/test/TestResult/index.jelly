@@ -32,19 +32,19 @@ THE SOFTWARE.
 
       <test:bar />
 
-        <div style="text-align:right;">
+      <div style="text-align:right;">
         <a href="history">
           ${%took(it.durationString)}
         </a>
-        </div>
+      </div>
 
-      <t:editableDescription permission="${it.owner.BUILD}"/>
+      <t:editableDescription permission="${it.owner.UPDATE}"/>
 
       <table style="margin-top: 1em; margin-left:0em;">
 	  <j:forEach var="action" items="${it.testActions}">
           <st:include page="summary.jelly" from="${action}" optional="true" it="${action}" />
 	  </j:forEach>
-	  </table>
+      </table>
 
       <st:include page="body.jelly" />
     </l:main-panel>

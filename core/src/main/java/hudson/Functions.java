@@ -657,7 +657,7 @@ public class Functions {
     }
 
     public static List<Descriptor<ComputerLauncher>> getComputerLauncherDescriptors() {
-        return Hudson.getInstance().getDescriptorList(ComputerLauncher.class);
+        return Hudson.getInstance().<ComputerLauncher,Descriptor<ComputerLauncher>>getDescriptorList(ComputerLauncher.class);
     }
 
     public static List<Descriptor<RetentionStrategy<?>>> getRetentionStrategyDescriptors() {

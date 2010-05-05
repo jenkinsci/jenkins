@@ -29,12 +29,7 @@ import hudson.EnvVars;
 import hudson.Extension;
 import hudson.ExtensionPoint;
 import hudson.diagnosis.OldDataMonitor;
-import hudson.model.Describable;
-import hudson.model.EnvironmentSpecific;
-import hudson.model.Hudson;
-import hudson.model.Node;
-import hudson.model.Saveable;
-import hudson.model.TaskListener;
+import hudson.model.*;
 import hudson.slaves.NodeSpecific;
 import hudson.util.DescribableList;
 import hudson.util.XStream2;
@@ -74,7 +69,7 @@ import com.thoughtworks.xstream.converters.UnmarshallingContext;
  * @author huybrechts
  * @since 1.286
  */
-public abstract class ToolInstallation implements Serializable, Describable<ToolInstallation>, ExtensionPoint {
+public abstract class ToolInstallation extends AbstractDescribableImpl<ToolInstallation> implements Serializable, ExtensionPoint {
     private final String name;
     private /*almost final*/ String home;
 
@@ -135,10 +130,6 @@ public abstract class ToolInstallation implements Serializable, Describable<Tool
         return properties;
     }
 
-    public ToolDescriptor<?> getDescriptor() {
-        return (ToolDescriptor) Hudson.getInstance().getDescriptorOrDie(getClass());
-    }
-
     /**
      * Finds a tool on a node.
      * Checks if the location of the tool is overridden for the given node, and if so,
@@ -189,7 +180,7 @@ public abstract class ToolInstallation implements Serializable, Describable<Tool
      */
     public static DescriptorExtensionList<ToolInstallation,ToolDescriptor<?>> all() {
         // use getDescriptorList and not getExtensionList to pick up legacy instances
-        return Hudson.getInstance().getDescriptorList(ToolInstallation.class);
+        return Hudson.getInstance().<ToolInstallation,ToolDescriptor<?>>getDescriptorList(ToolInstallation.class);
     }
 
     private static final long serialVersionUID = 1L;

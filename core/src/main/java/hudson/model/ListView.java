@@ -52,7 +52,6 @@ import java.util.List;
 import java.util.TreeSet;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.SortedSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -240,7 +239,7 @@ public class ListView extends View implements Saveable {
         if (columns == null) {
             columns = new DescribableList<ListViewColumn,Descriptor<ListViewColumn>>(Saveable.NOOP);
         }
-        columns.rebuildHetero(req, req.getSubmittedForm(), Hudson.getInstance().getDescriptorList(ListViewColumn.class), "columns");
+        columns.rebuildHetero(req, req.getSubmittedForm(), ListViewColumn.all(), "columns");
     }
 
     @Extension

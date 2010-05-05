@@ -49,6 +49,9 @@ THE SOFTWARE.
     <st:attribute name="negative">
       if present, the foldable section expands when the checkbox is unchecked.
     </st:attribute>
+    <st:attribute name="inline">
+      if present, the foldable section will not be grouped into a separate JSON object upon submission
+    </st:attribute>
   </st:documentation>
   <j:if test="${attrs.help==null}">
     <!-- infer the help page from the current descriptor and field if possible -->
@@ -56,7 +59,7 @@ THE SOFTWARE.
            value="${descriptor.getHelpFile(attrs.field)}" />
   </j:if>
 
-  <tr class="optional-block-start row-set-start" hasHelp="${attrs.help!=null}"><!-- this ID marks the beginning -->
+  <tr class="optional-block-start ${attrs.inline?'':'row-set-start'}" hasHelp="${attrs.help!=null}"><!-- this ID marks the beginning -->
     <td colspan="3">
       <f:checkbox name="${attrs.name}" onclick="javascript:updateOptionalBlock(this,true)"
                   negative="${attrs.negative}" checked="${attrs.checked}" field="${attrs.field}" />
@@ -74,5 +77,5 @@ THE SOFTWARE.
   </j:if>
   <d:invokeBody />
   <!-- end marker -->
-  <tr class="row-set-end optional-block-end" />
+  <tr class="${attrs.inline?'':'row-set-end'} optional-block-end" />
 </j:jelly>

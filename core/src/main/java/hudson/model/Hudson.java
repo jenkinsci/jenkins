@@ -348,7 +348,7 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
      */
     private transient final Memoizer<Class,DescriptorExtensionList> descriptorLists = new Memoizer<Class,DescriptorExtensionList>() {
         public DescriptorExtensionList compute(Class key) {
-            return DescriptorExtensionList.create(Hudson.this,key);
+            return DescriptorExtensionList.createDescriptorList(Hudson.this,key);
         }
     };
 
@@ -1675,7 +1675,7 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
     }
 
     public FilePath getWorkspaceFor(TopLevelItem item) {
-        return new FilePath(new File(item.getRootDir(),"workspace"));
+        return new FilePath(new File(item.getRootDir(), WORKSPACE_DIRNAME));
     }
 
     public FilePath getRootPath() {
@@ -3597,6 +3597,11 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
      * @see AbstractProject#isConcurrentBuild()
      */
     public static boolean CONCURRENT_BUILD = true;
+
+    /**
+     * Switch to enable people to use a shorter workspace name.
+     */
+    private static final String WORKSPACE_DIRNAME = System.getProperty(Hudson.class.getName()+".workspaceDirName","workspace");
 
     /**
      * Automatically try to launch a slave when Hudson is initialized or a new slave is created.

@@ -99,14 +99,14 @@ THE SOFTWARE.
           <dependency>
             <groupId>org.apache.ant</groupId>
             <artifactId>ant</artifactId>
-            <version>1.7.0</version>
+            <version>1.8.0</version>
           </dependency>
         </dependencies>
       </plugin>
       <plugin>
         <groupId>org.kohsuke.stapler</groupId>
         <artifactId>maven-stapler-plugin</artifactId>
-        <version>1.14</version>
+        <version>1.15</version>
         <extensions>true</extensions>
       </plugin>
     </plugins>

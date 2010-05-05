@@ -64,9 +64,9 @@ THE SOFTWARE.
       on the last row. There are a few CSS classes already defined in style.css
       for this purpose.
   ]]>
-    <st:attribute name="var" use="required">
+    <st:attribute name="var">
       variable that receives the item of the current iteration.
-      Accessible from the body.
+      Accessible from the body. Required unless @field is given.
     </st:attribute>
     <st:attribute name="varStatus">
       Status variable that indicates the loop status.
@@ -74,8 +74,11 @@ THE SOFTWARE.
     <st:attribute name="name">
       name used in the structured form submission. Defaults to the same name as @var.
     </st:attribute>
-    <st:attribute name="items" use="required">
-      The item collection to loop over.
+    <st:attribute name="field">
+      Used for the data binding.
+    </st:attribute>
+    <st:attribute name="items">
+      The item collection to loop over. Required unless @field is given. 
     </st:attribute>
     <st:attribute name="noAddButton">
       true if the default 'add' button (that adds a new copy) shouldn't be displayed.
@@ -92,6 +95,7 @@ THE SOFTWARE.
       For each item, add this header.
       This also activates drag&amp;drop (where the header is a grip).
     </st:attribute>
+    <st:attributeConstraints expr="((var,items,name?)|field),varStatus?,noAddButton?,add?,minimum?,header?"/>
   </st:documentation>
 
 
@@ -105,7 +109,7 @@ THE SOFTWARE.
       <j:set var="items" value="${instance[name]}"/>
 
       <!-- and expose update descriptor to the body of this tag -->
-      <j:set var="descriptor" value="${descriptor.getPropertyType(field).itemTypeDescriptor}" />
+      <j:set var="descriptor" value="${descriptor.getPropertyType(instance,field).itemTypeDescriptor}" />
     </j:when>
     <j:otherwise>
       <j:set var="name" value="${attrs.name?:attrs.var}"/>

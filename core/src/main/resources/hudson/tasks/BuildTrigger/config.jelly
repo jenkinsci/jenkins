@@ -29,8 +29,8 @@ THE SOFTWARE.
 	</f:entry>
   <j:if test="${descriptor.showEvenIfUnstableOption(targetType)}">
     <f:entry title="">
-      <f:checkbox id="buildTrigger.evenIfUnstable" name="buildTrigger.evenIfUnstable" checked="${instance.threshold.toString()=='UNSTABLE'}" />
-      <label for="buildTrigger.evenIfUnstable">${%Trigger even if the build is unstable}</label>
+      <f:checkbox name="evenIfUnstable" checked="${instance.threshold.toString()=='UNSTABLE'}" />
+      <label class="attach-previous">${%Trigger even if the build is unstable}</label>
     </f:entry>
   </j:if>
 </j:jelly>

@@ -1,7 +1,7 @@
 <!--
 The MIT License
 
-Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, Erik Ramfelt
+Copyright (c) 2004-2010, Sun Microsystems, Inc., Kohsuke Kawaguchi, Erik Ramfelt, Seiji Sogabe
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -27,7 +27,7 @@ THE SOFTWARE.
   <l:layout title="${%title(it.displayName)}">
 		<st:include page="sidepanel.jelly" />
 		<l:main-panel>
-      <h1>Timeline</h1>
+      <h1>${%Timeline}</h1>
       <st:adjunct includes="org.kohsuke.stapler.simile.timeline" />
 
       <div id="tl" style="height:250px; border:1px solid black;" />
@@ -123,7 +123,7 @@ THE SOFTWARE.
 
       
 
-      <h1>Build Time Trend</h1>
+      <h1>${%Build Time Trend}</h1>
       <j:choose>
         <j:when test="${it.builds.size()&gt;1}">
           <div align="center">

@@ -160,6 +160,7 @@ function findNearBy(e,name) {
 }
 
 function controlValue(e) {
+    if (e==null)    return null;
     // compute the form validation value to be sent to the server
     var type = e.getAttribute("type");
     if(type!=null && type.toLowerCase()=="checkbox")
@@ -169,6 +170,38 @@ function controlValue(e) {
 
 function toValue(e) {
     return encodeURIComponent(controlValue(e));
+}
+
+/**
+ * Builds a query string in a fluent API pattern.
+ * @param {HTMLElement} owner
+ *      The 'this' control.
+ */
+function qs(owner) {
+    return {
+        params : "",
+
+        append : function(s) {
+            if (this.params.length==0)  this.params+='?';
+            else                        this.params+='&';
+            this.params += s;
+            return this;
+        },
+
+        nearBy : function(name) {
+            var e = findNearBy(owner,name);
+            if (e==null)    return this;    // skip
+            return this.append(name+'='+toValue(e));
+        },
+
+        addThis : function() {
+            return this.append("value="+toValue(owner));
+        },
+
+        toString : function() {
+            return this.params;
+        }
+    };
 }
 
 // find the nearest ancestor node that has the given tag name
@@ -518,10 +551,14 @@ var hudsonRules = {
 // <label> that doesn't use ID, so that it can be copied in <repeatable>
     "LABEL.attach-previous" : function(e) {
         e.onclick = function() {
-            var e = this;
-            while(e.tagName!="INPUT")
-                e=e.previousSibling;
-            e.click();
+            var e = this.previousSibling;
+            while (e!=null) {
+                if (e.tagName=="INPUT") {
+                    e.click();
+                    break;
+                }
+                e = e.previousSibling;
+            }
         }
         e = null;
     },
@@ -651,14 +688,20 @@ var hudsonRules = {
     // structured form submission
     "FORM" : function(form) {
         crumb.appendToForm(form);
-        if(Element.hasClassName("no-json"))
+        if(Element.hasClassName(form, "no-json"))
             return;
         // add the hidden 'json' input field, which receives the form structure in JSON
         var div = document.createElement("div");
         div.innerHTML = "<input type=hidden name=json value=init>";
         form.appendChild(div);
-        
-        form.onsubmit = function() { buildFormTree(this); };
+
+        var oldOnsubmit = form.onsubmit;
+        if (typeof oldOnsubmit == "function") {
+            form.onsubmit = function() { return buildFormTree(this) && oldOnsubmit.call(this); }
+        } else {
+            form.onsubmit = function() { return buildFormTree(this); };
+        }
+
         form = null; // memory leak prevention
     },
 
@@ -839,14 +882,8 @@ var hudsonRules = {
 
     // select.jelly
     "SELECT.select" : function(e) {
-        var dep; // controls that this SELECT box depends on
-
-        function refill() {
-            var params = {};
-            dep.each(function (d) {
-                params[shortenName(d.getAttribute("name"))] = controlValue(d);
-            });
-
+        // controls that this SELECT box depends on
+        refillOnChange(e,function(params) {
             var value = e.value;
             updateListBox(e,e.getAttribute("fillUrl"),{
                 parameters: params,
@@ -865,16 +902,32 @@ var hudsonRules = {
                     if (e.value!=value) fireEvent(e,"change");
                 }
             });
-        }
-
-        // install change handlers
-        dep = e.getAttribute("fillDependsOn").split(" ").collect(function (name) {
-            var c = findNearBy(e,name);
-            c.addEventListener("change",refill,false);
-            return c;
         });
+    },
 
-        refill(); // initial fill
+    // combobox.jelly
+    "INPUT.combobox2" : function(e) {
+        var items = [];
+
+        var c = new ComboBox(e,function(value) {
+            var candidates = [];
+            for (var i=0; i<items.length; i++) {
+                if (items[i].indexOf(value)==0) {
+                    candidates.push(items[i]);
+                    if (candidates.length>20)   break;
+                }
+            } 
+            return candidates;
+        }, {});
+
+        refillOnChange(e,function(params) {
+            new Ajax.Request(e.getAttribute("fillUrl"),{
+                parameters: params,
+                onSuccess : function(rsp) {
+                    items = eval('('+rsp.responseText+')');
+                }
+            });
+        });
     },
 
     "A.showDetails" : function(e) {
@@ -884,7 +937,9 @@ var hudsonRules = {
             return false;
         };
         e = null; // avoid memory leak
-    }
+    },
+
+    "DIV.loading" : function(e) { e.style.display = 'none' }
 };
 
 function applyTooltip(e,text) {
@@ -899,6 +954,35 @@ function applyTooltip(e,text) {
         e.onmouseout  = function(ev) { return tooltip.onContextMouseOut .call(this,YAHOO.util.Event.getEvent(ev),tooltip); }
         e.title = text;
         e = null; // avoid memory leak
+}
+
+/**
+ * Install change handlers based on the 'fillDependsOn' attribute.
+ */
+function refillOnChange(e,onChange) {
+    var deps = [];
+
+    function h() {
+        var params = {};
+        deps.each(function (d) {
+            params[shortenName(d.getAttribute("name"))] = controlValue(d);
+        });
+        onChange(params);
+    }
+    var v = e.getAttribute("fillDependsOn");
+    if (v!=null) {
+        v.split(" ").each(function (name) {
+            var c = findNearBy(e,name);
+            if (c==null) {
+                if (window.console!=null)  console.warn("Unable to find nearby "+name);
+                if (window.YUI!=null)      YUI.log("Unable to find a nearby control of the name "+name,"warn")
+                return;
+            }
+            c.addEventListener("change",h,false);
+            deps.push(c);
+        });
+    }
+    h();   // initial fill
 }
 
 Behaviour.register(hudsonRules);
@@ -1451,6 +1535,10 @@ function createSearchBox(searchURL) {
 /**
  * Finds the DOM node of the given DOM node that acts as a parent in the form submission.
  *
+ * @param {HTMLElement} e
+ *      The node whose parent we are looking for.
+ * @param {HTMLFormElement} form
+ *      The form element that owns 'e'. Passed in as a performance improvement. Can be null.
  * @return null
  *      if the given element shouldn't be a part of the final submission.
  */
@@ -1459,13 +1547,13 @@ function findFormParent(e,form) {
         form = findAncestor(e,"FORM");
 
     while(e!=form) {
-        e = e.parentNode;
-
         // this is used to create a group where no single containing parent node exists,
         // like <optionalBlock>
         var nameRef = e.getAttribute("nameRef");
         if(nameRef!=null)
             e = $(nameRef);
+        else
+            e = e.parentNode;
 
         if(e.getAttribute("field-disabled")!=null)
             return null;  // this field shouldn't contribute to the final result
@@ -1619,9 +1707,10 @@ function buildFormTree(form) {
         for( i=0; i<doms.length; i++ )
             doms[i].formDom = null;
 
-        return jsonElement.value;
+        return true;
     } catch(e) {
-        alert(e);
+        alert(e+'\n(form not submitted)');
+        return false;
     }
 }
 

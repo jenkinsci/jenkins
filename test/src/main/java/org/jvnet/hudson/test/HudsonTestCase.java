@@ -72,6 +72,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.lang.annotation.Annotation;
 import java.lang.ref.WeakReference;
+import java.lang.reflect.Array;
 import java.lang.reflect.Method;
 import java.lang.reflect.Field;
 import java.net.MalformedURLException;
@@ -829,7 +830,7 @@ public abstract class HudsonTestCase extends TestCase implements RootAction {
             public Object call() throws Exception {
                 Descriptor d = hudson.getDescriptor(type);
                 WebClient wc = createWebClient();
-                for (String property : properties.split(",")) {
+                for (String property : listProperties(properties)) {
                     String url = d.getHelpFile(property);
                     assertNotNull("Help file for the property "+property+" is missing on "+type, url);
                     wc.goTo(url); // make sure it successfully loads
@@ -837,6 +838,21 @@ public abstract class HudsonTestCase extends TestCase implements RootAction {
                 return null;
             }
         });
+    }
+
+    /**
+     * Tokenizes "foo,bar,zot,-bar" and returns "foo,zot" (the token that starts with '-' is handled as
+     * a cancellation.
+     */
+    private List<String> listProperties(String properties) {
+        List<String> props = new ArrayList<String>(Arrays.asList(properties.split(",")));
+        for (String p : props.toArray(new String[props.size()])) {
+            if (p.startsWith("-")) {
+                props.remove(p);
+                props.remove(p.substring(1));
+            }
+        }
+        return props;
     }
 
     /**
@@ -935,6 +951,17 @@ public abstract class HudsonTestCase extends TestCase implements RootAction {
                 lp = PropertyUtils.getProperty(lhs, p);
                 rp = PropertyUtils.getProperty(rhs, p);
             }
+
+            if (lp!=null && rp!=null && lp.getClass().isArray() && rp.getClass().isArray()) {
+                // deep array equality comparison
+                int m = Array.getLength(lp);
+                int n = Array.getLength(rp);
+                assertEquals("Array length is different for property "+p, m,n);
+                for (int i=0; i<m; i++)
+                    assertEquals(p+"["+i+"] is different", Array.get(lp,i),Array.get(rp,i));
+                return;
+            }
+
             assertEquals("Property "+p+" is different",lp,rp);
         }
     }

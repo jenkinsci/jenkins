@@ -33,9 +33,6 @@ THE SOFTWARE.
     <st:attribute name="clazz">
       Additional CSS classes that the control gets.
     </st:attribute>
-    <st:attribute name="items">
-      List of possible values. Either this or nested &lt;f:editableComboBoxValue/>s are required.
-    </st:attribute>
     <st:attribute name="field">
       Used for databinding.
     </st:attribute>
@@ -48,6 +45,5 @@ THE SOFTWARE.
          class="setting-input ${attrs.checkUrl!=null?'validated':''} select ${attrs.clazz}"
          name="${attrs.name ?: '_.'+attrs.field}"
          value="${attrs.value ?: instance[attrs.field] ?: attrs.default}"
-         ATTRIBUTES="${attrs}" EXCEPT="field clazz">
-  </m:select>
+         ATTRIBUTES="${attrs}" EXCEPT="field clazz" />
 </j:jelly>
