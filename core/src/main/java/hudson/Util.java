@@ -1009,7 +1009,6 @@ public class Util {
                     // we still prefer to try JNA first as PosixAPI supports even smaller platforms.
                     r = PosixAPI.get().symlink(targetPath,symlinkFile.getAbsolutePath());
                 }
-                if (r!=0)   errmsg = LIBC.strerror(r);
             } else // escape hatch, until we know that the above works well.
                 r = new LocalProc(new String[]{
                     "ln","-s", targetPath, symlinkPath},
