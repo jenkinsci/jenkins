@@ -30,6 +30,7 @@ THE SOFTWARE.
 <l:layout norefresh="true" permission="${it.ADMINISTER}">
   <st:include page="sidepanel.jelly" />
   <l:main-panel xmlns:local="local">
+    <div class="loading">${%LOADING}</div>
     <f:form method="post" name="config" action="configSubmit">
       <j:set var="instance" value="${it}" />
       <j:set var="descriptor" value="${instance.descriptor}" />
