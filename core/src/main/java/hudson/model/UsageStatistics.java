@@ -1,7 +1,7 @@
 /*
  * The MIT License
  * 
- * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi
+ * Copyright (c) 2004-2010, Sun Microsystems, Inc., Kohsuke Kawaguchi
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -28,6 +28,7 @@ import hudson.PluginWrapper;
 import hudson.Util;
 import hudson.Extension;
 import hudson.node_monitors.ArchitectureMonitor.DescriptorImpl;
+import hudson.util.Secret;
 import static hudson.util.TimeUnit2.DAYS;
 import net.sf.json.JSONObject;
 import org.apache.commons.io.output.ByteArrayOutputStream;
@@ -105,7 +106,7 @@ public class UsageStatistics extends PageDecorator {
                 key = keyFactory.generatePublic(new X509EncodedKeySpec(Util.fromHexString(keyImage)));
             }
 
-            Cipher cipher = Cipher.getInstance("RSA");
+            Cipher cipher = Secret.getCipher("RSA");
             cipher.init(Cipher.ENCRYPT_MODE, key);
             return cipher;
         } catch (GeneralSecurityException e) {
@@ -188,11 +189,11 @@ public class UsageStatistics extends PageDecorator {
             // create a new symmetric cipher key used for this stream
             SecretKey symKey = KeyGenerator.getInstance(algorithm).generateKey();
 
-            // place the symmetric key by encrypting it with assymetric cipher
+            // place the symmetric key by encrypting it with asymmetric cipher
             out.write(asym.doFinal(symKey.getEncoded()));
 
             // the rest of the data will be encrypted by this symmetric cipher
-            Cipher sym = Cipher.getInstance(algorithm);
+            Cipher sym = Secret.getCipher(algorithm);
             sym.init(Cipher.ENCRYPT_MODE,symKey);
             super.out = new CipherOutputStream(out,sym);
         }
@@ -204,7 +205,7 @@ public class UsageStatistics extends PageDecorator {
     public static final class CombinedCipherInputStream extends FilterInputStream {
         /**
          * @param keyLength
-         *      Block size of the assymetric cipher, in bits. I thought I can get it from {@code asym.getBlockSize()}
+         *      Block size of the asymmetric cipher, in bits. I thought I can get it from {@code asym.getBlockSize()}
          *      but that doesn't work with Sun's implementation.
          */
         public CombinedCipherInputStream(InputStream in, Cipher asym, String algorithm, int keyLength) throws IOException, GeneralSecurityException {
@@ -216,7 +217,7 @@ public class UsageStatistics extends PageDecorator {
             SecretKey symKey = new SecretKeySpec(asym.doFinal(symKeyBytes),algorithm);
 
             // the rest of the data will be decrypted by this symmetric cipher
-            Cipher sym = Cipher.getInstance(algorithm);
+            Cipher sym = Secret.getCipher(algorithm);
             sym.init(Cipher.DECRYPT_MODE,symKey);
             super.in = new CipherInputStream(in,sym);
         }

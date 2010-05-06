@@ -1,7 +1,7 @@
 /*
  * The MIT License
  * 
- * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi
+ * Copyright (c) 2004-2010, Sun Microsystems, Inc., Kohsuke Kawaguchi
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -109,7 +109,7 @@ public final class Secret {
      */
     public String getEncryptedValue() {
         try {
-            Cipher cipher = Cipher.getInstance("AES");
+            Cipher cipher = getCipher("AES");
             cipher.init(Cipher.ENCRYPT_MODE, getKey());
             // add the magic suffix which works like a check sum.
             return new String(Base64.encode(cipher.doFinal((value+MAGIC).getBytes("UTF-8"))));
@@ -127,7 +127,7 @@ public final class Secret {
     public static Secret decrypt(String data) {
         if(data==null)      return null;
         try {
-            Cipher cipher = Cipher.getInstance("AES");
+            Cipher cipher = getCipher("AES");
             cipher.init(Cipher.DECRYPT_MODE, getKey());
             String plainText = new String(cipher.doFinal(Base64.decode(data.toCharArray())), "UTF-8");
             if(plainText.endsWith(MAGIC))
@@ -139,6 +139,18 @@ public final class Secret {
             throw new Error(e); // impossible
         } catch (IOException e) {
             return null;
+        }
+    }
+
+    /**
+     * Workaround for HUDSON-6459 / https://glassfish.dev.java.net/issues/show_bug.cgi?id=11862 .
+     * Falls back to "SunJCE" provider if unable to get the Cipher from the default provider.
+     */
+    public static Cipher getCipher(String algorithm) throws GeneralSecurityException {
+        try {
+            return Cipher.getInstance(algorithm);
+        } catch (Exception e) {
+            return Cipher.getInstance(algorithm, "SunJCE");
         }
     }
 

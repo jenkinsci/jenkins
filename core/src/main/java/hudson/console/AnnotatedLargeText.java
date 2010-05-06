@@ -27,20 +27,18 @@ import com.trilead.ssh2.crypto.Base64;
 import hudson.model.Hudson;
 import hudson.remoting.ObjectInputStreamEx;
 import hudson.util.IOException2;
+import hudson.util.Secret;
 import hudson.util.TimeUnit2;
 import org.apache.commons.io.output.ByteArrayOutputStream;
 import org.kohsuke.stapler.Stapler;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 import org.kohsuke.stapler.framework.io.ByteBuffer;
-import org.kohsuke.stapler.framework.io.CharSpool;
 import org.kohsuke.stapler.framework.io.LargeText;
-import org.kohsuke.stapler.framework.io.LineEndNormalizingWriter;
 
 import javax.crypto.Cipher;
 import javax.crypto.CipherInputStream;
 import javax.crypto.CipherOutputStream;
-import javax.servlet.http.HttpServletResponse;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
@@ -116,7 +114,7 @@ public class AnnotatedLargeText<T> extends LargeText {
         try {
             String base64 = req.getHeader("X-ConsoleAnnotator");
             if (base64!=null) {
-                Cipher sym = Cipher.getInstance("AES");
+                Cipher sym = Secret.getCipher("AES");
                 sym.init(Cipher.DECRYPT_MODE, Hudson.getInstance().getSecretKeyAsAES128());
 
                 ObjectInputStream ois = new ObjectInputStreamEx(new GZIPInputStream(
@@ -151,7 +149,7 @@ public class AnnotatedLargeText<T> extends LargeText {
 
         try {
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
-            Cipher sym = Cipher.getInstance("AES");
+            Cipher sym = Secret.getCipher("AES");
             sym.init(Cipher.ENCRYPT_MODE, Hudson.getInstance().getSecretKeyAsAES128());
             ObjectOutputStream oos = new ObjectOutputStream(new GZIPOutputStream(new CipherOutputStream(baos,sym)));
             oos.writeLong(System.currentTimeMillis()); // send timestamp to prevent a replay attack
