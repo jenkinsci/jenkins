@@ -124,7 +124,8 @@ THE SOFTWARE.
                 <tstamp>
                   <format property="now" pattern="MM/dd/yyyy hh:mm" unit="hour" />
                 </tstamp>
-                <property name="build.version" value="${version} (private-${now}-${user.name})" />
+                <property name="build.type" value="private" /> <!-- override for "rc" build -->
+                <property name="build.version" value="${version} (${build.type}-${now}-${user.name})" />
                 <!-- default to release version -->
                 <!-- put the version file -->
                 <echo message="The build id is: ${build.version}" />
