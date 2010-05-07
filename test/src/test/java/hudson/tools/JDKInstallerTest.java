@@ -43,7 +43,7 @@ public class JDKInstallerTest extends HudsonTestCase {
      */
     public void testLocate() throws Exception {
         JDKInstaller i = new JDKInstaller("jdk-6u13-oth-JPR@CDS-CDS_Developer", true);
-        StreamTaskListener listener = new StreamTaskListener(System.out);
+        StreamTaskListener listener = StreamTaskListener.fromStdout();
         i.locate(listener, Platform.LINUX, CPU.i386);
         i.locate(listener, Platform.WINDOWS, CPU.amd64);
         i.locate(listener, Platform.SOLARIS, CPU.Sparc);
@@ -98,7 +98,7 @@ public class JDKInstallerTest extends HudsonTestCase {
                     "#!/bin/bash -ex\n" +
                     "mkdir -p jdk1.6.0_dummy/bin\n" +
                     "touch jdk1.6.0_dummy/bin/java","ASCII");
-            TaskListener l = new StreamTaskListener(System.out);
+            TaskListener l = StreamTaskListener.fromStdout();
 
             File d = env.temporaryDirectoryAllocator.allocate();
 

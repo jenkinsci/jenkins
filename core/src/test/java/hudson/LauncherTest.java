@@ -44,7 +44,7 @@ public class LauncherTest extends ChannelTestCase {
 
         try {
             FilePath f = new FilePath(french, tmp.getPath());
-            Launcher l = f.createLauncher(new StreamTaskListener(System.err));
+            Launcher l = f.createLauncher(StreamTaskListener.fromStderr());
             Proc p = l.launch().cmds("sh", "-c", "echo $$$$ > "+tmp+"; sleep 30").stdout(System.out).stderr(System.err).start();
             while (!tmp.exists())
                 Thread.sleep(100);

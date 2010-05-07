@@ -61,7 +61,7 @@ public class SCMTriggerTest extends HudsonTestCase {
 
         Future<FreeStyleBuild> build = p.scheduleBuild2(0, new Cause.UserCause());
         checkoutStarted.block();
-        assertFalse("SCM-poll after build has started should wait until that build finishes SCM-update", p.pollSCMChanges(new StreamTaskListener(System.out)));
+        assertFalse("SCM-poll after build has started should wait until that build finishes SCM-update", p.pollSCMChanges(StreamTaskListener.fromStdout()));
         build.get();  // let mock build finish
     }
 

@@ -62,7 +62,8 @@ public class StreamTaskListener implements TaskListener, Serializable, Closeable
     /**
      * @deprecated as of 1.349
      *      The caller should use {@link #StreamTaskListener(OutputStream, Charset)} to pass in
-     *      the charset and output stream separately, so that this class can handle encoding correctly.
+     *      the charset and output stream separately, so that this class can handle encoding correctly,
+     *      or use {@link #fromStdout()} or {@link #fromStderr()}.
      */
     public StreamTaskListener(PrintStream out) {
         this(out,null);
@@ -106,6 +107,14 @@ public class StreamTaskListener implements TaskListener, Serializable, Closeable
      */
     public StreamTaskListener() throws IOException {
         this(new NullStream());
+    }
+
+    public static StreamTaskListener fromStdout() {
+        return new StreamTaskListener(System.out,Charset.defaultCharset());
+    }
+
+    public static StreamTaskListener fromStderr() {
+        return new StreamTaskListener(System.err,Charset.defaultCharset());
     }
 
     public PrintStream getLogger() {

@@ -489,7 +489,7 @@ public abstract class HudsonTestCase extends TestCase implements RootAction {
      * Creates {@link LocalLauncher}. Useful for launching processes.
      */
     protected LocalLauncher createLocalLauncher() {
-        return new LocalLauncher(new StreamTaskListener(System.out));
+        return new LocalLauncher(StreamTaskListener.fromStdout());
     }
 
     /**
