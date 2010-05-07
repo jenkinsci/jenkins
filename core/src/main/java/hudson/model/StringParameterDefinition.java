@@ -23,14 +23,10 @@
  */
 package hudson.model;
 
+import hudson.Extension;
 import net.sf.json.JSONObject;
-
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.StaplerRequest;
-import hudson.Extension;
-import hudson.cli.CLICommand;
-
-import java.io.IOException;
 
 /**
  * Parameter whose value is a string value.
