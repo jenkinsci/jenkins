@@ -26,15 +26,7 @@ package org.jvnet.hudson.test;
 import com.gargoylesoftware.htmlunit.DefaultCssErrorHandler;
 import com.gargoylesoftware.htmlunit.javascript.HtmlUnitContextFactory;
 import com.gargoylesoftware.htmlunit.javascript.host.xml.XMLHttpRequest;
-import hudson.CloseProofOutputStream;
-import hudson.FilePath;
-import hudson.Functions;
-import hudson.Main;
-import hudson.PluginManager;
-import hudson.WebAppMain;
-import hudson.EnvVars;
-import hudson.ExtensionList;
-import hudson.DescriptorExtensionList;
+import hudson.*;
 import hudson.Util;
 import hudson.model.AbstractBuild;
 import hudson.model.Computer;
@@ -1524,5 +1516,9 @@ public abstract class HudsonTestCase extends TestCase implements RootAction {
     static {
         MIME_TYPES.addMimeMapping("js","application/javascript");
         Functions.DEBUG_YUI = true;
+
+        // during the unit test, predictably releasing classloader is important to avoid
+        // file descriptor leak.
+        ClassicPluginStrategy.useAntClassLoader = true;
     }
 }
