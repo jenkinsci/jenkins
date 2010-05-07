@@ -24,20 +24,32 @@ THE SOFTWARE.
 
 <!-- report a login error -->
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
-  <st:statusCode value="401" />
-  <l:layout>
-    <st:include page="sidepanel.jelly" />
-    <l:main-panel>
-      <div style="margin: 2em; text-align:center; color:red; font-weight:bold">
-        ${%Invalid login information. Please try again.}
-        <br/>       
-        <a href="login?from=${request.session.getAttribute('from')}">${%Try again}</a>
-      </div>
-      <div align="middle">
-        <div style="margin-top:2em; color:gray; width:20em">
-          ${%If you are a system administrator and suspect this to be a configuration problem, see the server console output for more details.}
-        </div>
-      </div>
-    </l:main-panel>
-  </l:layout>
+  <j:choose>
+    <j:new var="h" className="hudson.Functions" />
+    <j:when test="${app.isUseSecurity() and h.isAnonymous()}">
+      <!--
+        The only time the error message makes sense is when Hudson is protected and the user failed to authenticate.
+        If the user accidentally comes to this page (by back button, etc), redirect away to prevent a confusion.
+      -->
+      <st:statusCode value="401" />
+      <l:layout title="${%Login Error}">
+        <st:include page="sidepanel.jelly" />
+        <l:main-panel>
+          <div style="margin: 2em; text-align:center; color:red; font-weight:bold">
+            ${%Invalid login information. Please try again.}
+            <br/>       
+            <a href="login?from=${request.session.getAttribute('from')}">${%Try again}</a>
+          </div>
+          <div align="middle">
+            <div style="margin-top:2em; color:gray; width:20em">
+              ${%If you are a system administrator and suspect this to be a configuration problem, see the server console output for more details.}
+            </div>
+          </div>
+        </l:main-panel>
+      </l:layout>
+    </j:when>
+    <j:otherwise>
+      <st:redirect url="." />
+    </j:otherwise>
+  </j:choose>
 </j:jelly>
