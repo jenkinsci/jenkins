@@ -27,7 +27,7 @@ THE SOFTWARE.
   <parent>
     <groupId>org.jvnet.hudson.main</groupId>
     <artifactId>pom</artifactId>
-    <version>1.357</version>
+    <version>1.358-SNAPSHOT</version>
   </parent>
 
   <artifactId>ui-samples-plugin</artifactId>
