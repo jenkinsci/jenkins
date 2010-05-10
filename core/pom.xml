@@ -125,6 +125,13 @@ THE SOFTWARE.
                   <format property="now" pattern="MM/dd/yyyy hh:mm" unit="hour" />
                 </tstamp>
                 <property name="build.type" value="private" /> <!-- override for "rc" build -->
+                <pathconvert property="version.rc">
+                  <path path="${version}"/>
+                  <chainedmapper><flattenmapper/><globmapper from="*-SNAPSHOT" to="*-RC"/></chainedmapper>
+                </pathconvert>
+                <condition property="build.version" value="${version.rc} (${now})">
+                  <equals arg1="${build.type}" arg2="rc"/>
+                </condition>
                 <property name="build.version" value="${version} (${build.type}-${now}-${user.name})" />
                 <!-- default to release version -->
                 <!-- put the version file -->
