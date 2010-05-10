@@ -66,7 +66,7 @@ THE SOFTWARE.
           </j:when>
           <j:otherwise>
             <td class="pane">
-              <div nowrap="true">${%Building}
+              <div style="white-space: normal">${%Building}
                 <j:choose>
                   <j:when test="${h.hasPermission(e.currentExecutable.parent,e.currentExecutable.parent.READ)}">
                     <a href="${rootURL}/${e.currentExecutable.parent.url}">${e.currentExecutable.parent.fullDisplayName}</a>&#160;<a href="${rootURL}/${e.currentExecutable.url}">#${e.currentExecutable.number}</a>
