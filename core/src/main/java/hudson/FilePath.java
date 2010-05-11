@@ -896,17 +896,17 @@ public final class FilePath implements Serializable {
 
     /**
      * Gets the parent file.
+     * @return parent FilePath or null if there is no parent
      */
     public FilePath getParent() {
-        int len = remote.length()-1;
-        while(len>=0) {
-            char ch = remote.charAt(len);
+        int i = remote.length() - 2;
+        for (; i >= 0; i--) {
+            char ch = remote.charAt(i);
             if(ch=='\\' || ch=='/')
                 break;
-            len--;
         }
 
-        return new FilePath( channel, remote.substring(0,len) );
+        return i >= 0 ? new FilePath( channel, remote.substring(0,i+1) ) : null;
     }
 
     /**
