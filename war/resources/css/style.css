@@ -327,6 +327,10 @@ th.pane {
   padding: 3px 4px 3px 4px;
 }
 
+.bigtable tr:hover {
+  background-color: #f0f0f0;
+}
+
 .bigtable th {
   font-weight: bold;
   border: none;
