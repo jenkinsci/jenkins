@@ -29,7 +29,7 @@ THE SOFTWARE.
   <l:layout title="${it.displayName} Config" norefresh="true" permission="${it.EXTENDED_READ}">
     <st:include page="sidepanel.jelly" />
     <l:main-panel>
-      <div class="loading">${%LOADING}</div>
+      <div class="behavior-loading">${%LOADING}</div>
       <f:form method="post" action="configSubmit" name="config">
         <j:set var="descriptor" value="${it.descriptor}" />
         <j:set var="instance" value="${it}" />

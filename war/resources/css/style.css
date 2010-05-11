@@ -432,7 +432,7 @@ th.pane {
     color: white;
 }
 
-.loading {
+div.behavior-loading {
     position: absolute; width: 80%; height:100%;
     background-color: #e4e4e4; text-align: center; font-size: 300%;
     opacity: 0.5;
