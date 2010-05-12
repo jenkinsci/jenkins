@@ -57,7 +57,6 @@ import java.io.InputStream;
 import java.net.URL;
 import java.net.HttpURLConnection;
 import java.net.URLEncoder;
-import java.net.MalformedURLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
@@ -361,7 +360,7 @@ public class JDKInstaller extends ToolInstaller {
         }
     }
 
-    private URL locateStage2(TaskListener log, String page) throws MalformedURLException {
+    private URL locateStage2(TaskListener log, String page) throws IOException {
         Pattern HREF = Pattern.compile("<a href=\"(http://cds.sun.com/[^\"]+/VerifyItem-Start[^\"]+)\"");
         Matcher m = HREF.matcher(page);
         // this page contains a missing --> that confuses dom4j/jtidy
@@ -382,6 +381,10 @@ public class JDKInstaller extends ToolInstaller {
 
             urls.add(url);
             LOGGER.fine("Found a download candidate: "+ url);
+        }
+
+        if (urls.isEmpty()) {
+            throw new IOException("found no matches in: " + page);
         }
 
         // prefer the first match because sometimes "optional downloads" follow the main bundle
