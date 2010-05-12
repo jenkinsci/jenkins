@@ -532,5 +532,5 @@ final class RemoteClassLoader extends URLClassLoader {
      * By default, classes that belong to the bootstrap classloader will NOT be remoted, as each JVM gets its own JRE
      * and their versions can be potentially different.
      */
-    private static final boolean USE_BOOTSTRAP_CLASSLOADER = Boolean.getBoolean(RemoteClassLoader.class.getName() + ".useBootstrapClassLoader"); 
+    public static boolean USE_BOOTSTRAP_CLASSLOADER = Boolean.getBoolean(RemoteClassLoader.class.getName() + ".useBootstrapClassLoader");
 }
