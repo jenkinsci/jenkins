@@ -1,7 +1,7 @@
 /*
  * The MIT License
  *
- * Copyright (c) 2004-2009, Sun Microsystems, Inc.
+ * Copyright (c) 2004-2010, Sun Microsystems, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -78,4 +78,10 @@ public @interface Extension {
      * @since 1.306
      */
     double ordinal() default 0;
+
+    /**
+     * If an extension is optional, don't log any class loading errors when reading it.
+     * @since 1.358
+     */
+    boolean optional() default false;
 }
