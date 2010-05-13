@@ -25,6 +25,7 @@ package org.jvnet.hudson.test;
 
 import hudson.FilePath;
 import hudson.Launcher;
+import hudson.Util;
 import hudson.model.AbstractBuild;
 import hudson.model.BuildListener;
 import hudson.scm.ChangeLogParser;
@@ -90,40 +91,8 @@ public class ExtractResourceWithChangesSCM extends NullSCM {
         return new ExtractChangeLogParser();
     }
 
-    public static String escapeForXml(String string) {
-        if (string == null) {
-            return "";
-        }
-
-        // Loop through and replace the special chars.
-        int size = string.length();
-        char ch = 0;
-        StringBuffer escapedString = new StringBuffer(size);
-        for (int index = 0; index < size; index++) {
-            // Convert special chars.
-            ch = string.charAt(index);
-            switch (ch) {
-            case '&':
-                escapedString.append("&amp;");
-                break;
-            case '<':
-                escapedString.append("&lt;");
-                break;
-            case '>':
-                escapedString.append("&gt;");
-                break;
-            case '\'':
-                escapedString.append("&apos;");
-                break;
-            case '\"':
-                escapedString.append("&quot;");
-                break;
-            default:
-                escapedString.append(ch);
-            }
-        }
-
-        return escapedString.toString().trim();
+    private static String escapeForXml(String string) {
+        return Util.xmlEscape(Util.fixNull(string));
     }
 
     public void saveToChangeLog(File changeLogFile, ExtractChangeLogParser.ExtractChangeLogEntry changeLog) throws IOException {
