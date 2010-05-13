@@ -147,6 +147,7 @@ import org.jvnet.hudson.reactor.Milestone;
 import org.jvnet.hudson.reactor.Reactor;
 import org.jvnet.hudson.reactor.ReactorListener;
 import org.jvnet.hudson.reactor.TaskGraphBuilder.Handle;
+import org.kohsuke.args4j.Option;
 import org.kohsuke.stapler.Ancestor;
 import org.kohsuke.stapler.HttpRedirect;
 import org.kohsuke.stapler.HttpResponse;
@@ -2444,10 +2445,26 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
         doQuietDown().generateResponse(null,rsp,this);
     }
 
-    @CLIMethod(name="quiet-down")
     public synchronized HttpRedirect doQuietDown() {
+        try {
+            return doQuietDown(false,0);
+        } catch (InterruptedException e) {
+            throw new AssertionError(); // impossible
+        }
+    }
+
+    @CLIMethod(name="quiet-down")
+    public synchronized HttpRedirect doQuietDown(
+            @Option(name="-block",usage="Block until the system really quiets down and no builds are running") @QueryParameter boolean block,
+            @Option(name="-timeout",usage="If non-zero, only block up to the specified number of milliseconds") @QueryParameter int timeout) throws InterruptedException {
         checkPermission(ADMINISTER);
         isQuietingDown = true;
+        if (block) {
+            long start = System.currentTimeMillis();
+            while (isQuietingDown && (overallLoad.computeTotalExecutors() > overallLoad.computeIdleExecutors()) && (timeout>0 && start+timeout>System.currentTimeMillis())) {
+                Thread.sleep(1000);
+            }
+        }
         return new HttpRedirect(".");
     }
 
@@ -2916,10 +2933,8 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
             public void run() {
                 try {
                     // Wait 'til we have no active executors.
-                    while (isQuietingDown
-                           && (overallLoad.computeTotalExecutors() > overallLoad.computeIdleExecutors())) {
-                        Thread.sleep(5000);
-                    }
+                    doQuietDown(true);
+
                     // Make sure isQuietingDown is still true.
                     if (isQuietingDown) {
                         servletContext.setAttribute("app",new HudsonIsRestarting());
