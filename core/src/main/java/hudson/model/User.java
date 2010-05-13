@@ -26,6 +26,7 @@ package hudson.model;
 import com.thoughtworks.xstream.XStream;
 import hudson.CopyOnWrite;
 import hudson.FeedAdapter;
+import hudson.Functions;
 import hudson.Util;
 import hudson.XmlFile;
 import hudson.BulkChange;
@@ -271,7 +272,8 @@ public class User extends AbstractModelObject implements AccessControlled, Savea
             return null;
         String id = idOrFullName.replace('\\', '_').replace('/', '_').replace('<','_')
                                 .replace('>','_');  // 4 replace() still faster than regex
-        
+        if (Functions.isWindows()) id = id.replace(':','_');
+
         synchronized(byName) {
             User u = byName.get(id);
             if(u==null) {

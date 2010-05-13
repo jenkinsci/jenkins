@@ -43,6 +43,7 @@ import hudson.model.ParameterDefinition.ParameterDescriptor;
 import hudson.model.Project;
 import hudson.model.Run;
 import hudson.model.TopLevelItem;
+import hudson.model.User;
 import hudson.model.View;
 import hudson.model.JDK;
 import hudson.search.SearchableModelObject;

@@ -181,7 +181,7 @@ public class AbstractProjectTest extends HudsonTestCase {
         });
         Thread t = new Thread() {
             @Override public void run() {
-                p.pollSCMChanges(new StreamTaskListener(System.out));
+                p.pollSCMChanges(StreamTaskListener.fromStdout());
             }
         };
         try {

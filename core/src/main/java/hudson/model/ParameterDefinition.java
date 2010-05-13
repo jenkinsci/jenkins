@@ -128,18 +128,26 @@ public abstract class ParameterDefinition implements
     }
 
     /**
-     * Create a parameter value from a form submission
-     * @param req
-     * @param jo
-     * @return
+     * Create a parameter value from a form submission.
+     *
+     * <p>
+     * This method is invoked when the user fills in the parameter values in the HTML form
+     * and submits it to the server.
      */
     public abstract ParameterValue createValue(StaplerRequest req, JSONObject jo);
     
     /**
-     * Create a parameter value from a GET (with query string) or POST.
+     * Create a parameter value from a GET with query string.
      * If no value is available in the request, it returns a default value if possible, or null.
-     * @param req
-     * @return
+     *
+     * <p>
+     * Unlike {@link #createValue(StaplerRequest, JSONObject)}, this method is intended to support
+     * the programmatic POST-ing of the build URL. This form is less expressive (as it doesn't support
+     * the tree form), but it's more scriptable.
+     *
+     * <p>
+     * If a {@link ParameterDefinition} can't really support this mode of creating a value,
+     * you may just always return null.
      */
     public abstract ParameterValue createValue(StaplerRequest req);
 

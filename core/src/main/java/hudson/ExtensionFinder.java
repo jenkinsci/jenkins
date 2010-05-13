@@ -1,7 +1,7 @@
 /*
  * The MIT License
  *
- * Copyright (c) 2004-2009, Sun Microsystems, Inc.
+ * Copyright (c) 2004-2010, Sun Microsystems, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -125,10 +125,8 @@ public abstract class ExtensionFinder implements ExtensionPoint {
                             result.add(new ExtensionComponent<T>(type.cast(instance),item.annotation()));
                     }
                 } catch (InstantiationException e) {
-                    LOGGER.log(Level.WARNING, "Failed to load "+item.className(),e);
-                } catch (LinkageError e) {
-                    // work around for SEZPOZ-11: https://sezpoz.dev.java.net/issues/show_bug.cgi?id=11
-                    LOGGER.log(Level.WARNING, "Failed to load "+item.className(),e);
+                    LOGGER.log(item.annotation().optional() ? Level.FINE : Level.WARNING,
+                               "Failed to load "+item.className(), e);
                 }
             }
 

@@ -120,9 +120,6 @@ public final class SuiteResult implements Serializable {
         this.name = TestObject.safe(name);
         this.timestamp = suite.attributeValue("timestamp");
 
-        stdout = suite.elementText("system-out");
-        stderr = suite.elementText("system-err");
-
         Element ex = suite.element("error");
         if(ex!=null) {
             // according to junit-noframes.xsl l.229, this happens when the test class failed to load
@@ -151,6 +148,9 @@ public final class SuiteResult implements Serializable {
 
             addCase(new CaseResult(this, e, classname));
         }
+
+        stdout = CaseResult.possiblyTrimStdio(cases, suite.elementText("system-out"));
+        stderr = CaseResult.possiblyTrimStdio(cases, suite.elementText("system-err"));
     }
 
     /*package*/ void addCase(CaseResult cr) {

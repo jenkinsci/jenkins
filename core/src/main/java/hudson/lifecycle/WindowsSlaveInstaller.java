@@ -145,7 +145,7 @@ public class WindowsSlaveInstaller implements Callable<Void,RuntimeException>, A
             Runtime.getRuntime().addShutdownHook(new Thread("service starter") {
                 public void run() {
                     try {
-                        StreamTaskListener task = new StreamTaskListener(System.out);
+                        StreamTaskListener task = StreamTaskListener.fromStdout();
                         int r = new LocalLauncher(task).launch().cmds(slaveExe, "start").stdout(task).pwd(dir).join();
                         task.getLogger().println(r==0?"Successfully started":"start service failed. Exit code="+r);
                     } catch (IOException e) {

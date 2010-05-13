@@ -142,4 +142,22 @@ public class FilePathTest extends ChannelTestCase {
     private void compare(String original, String answer) {
         assertEquals(answer,new FilePath((VirtualChannel)null,original).getRemote());
     }
+
+    // @Bug(6494)
+    public void testGetParent() throws Exception {
+        FilePath fp = new FilePath((VirtualChannel)null, "/abc/def");
+        assertEquals("/abc", (fp = fp.getParent()).getRemote());
+        assertEquals("/", (fp = fp.getParent()).getRemote());
+        assertNull(fp.getParent());
+
+        fp = new FilePath((VirtualChannel)null, "abc/def\\ghi");
+        assertEquals("abc/def", (fp = fp.getParent()).getRemote());
+        assertEquals("abc", (fp = fp.getParent()).getRemote());
+        assertNull(fp.getParent());
+
+        fp = new FilePath((VirtualChannel)null, "C:\\abc\\def");
+        assertEquals("C:\\abc", (fp = fp.getParent()).getRemote());
+        assertEquals("C:\\", (fp = fp.getParent()).getRemote());
+        assertNull(fp.getParent());
+    }
 }

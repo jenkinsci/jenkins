@@ -939,7 +939,7 @@ var hudsonRules = {
         e = null; // avoid memory leak
     },
 
-    "DIV.loading" : function(e) { e.style.display = 'none' }
+    "DIV.behavior-loading" : function(e) { e.style.display = 'none' }
 };
 
 function applyTooltip(e,text) {

@@ -1,7 +1,7 @@
 /*
  * The MIT License
  * 
- * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi
+ * Copyright (c) 2004-2010, Sun Microsystems, Inc., Kohsuke Kawaguchi
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -47,7 +47,7 @@ public class Protector {
 
     public static String protect(String secret) {
         try {
-            Cipher cipher = Cipher.getInstance(ALGORITHM);
+            Cipher cipher = Secret.getCipher(ALGORITHM);
             cipher.init(Cipher.ENCRYPT_MODE, DES_KEY);
             return new String(Base64.encode(cipher.doFinal((secret+ MAGIC).getBytes("UTF-8"))));
         } catch (GeneralSecurityException e) {
@@ -63,7 +63,7 @@ public class Protector {
     public static String unprotect(String data) {
         if(data==null)      return null;
         try {
-            Cipher cipher = Cipher.getInstance(ALGORITHM);
+            Cipher cipher = Secret.getCipher(ALGORITHM);
             cipher.init(Cipher.DECRYPT_MODE, DES_KEY);
             String plainText = new String(cipher.doFinal(Base64.decode(data.toCharArray())), "UTF-8");
             if(plainText.endsWith(MAGIC))

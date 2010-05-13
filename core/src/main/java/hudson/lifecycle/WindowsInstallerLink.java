@@ -196,7 +196,7 @@ public class WindowsInstallerLink extends ManagementLink {
                                     mv.execute();
                                 }
                                 LOGGER.info("Starting a Windows service");
-                                StreamTaskListener task = new StreamTaskListener(System.out);
+                                StreamTaskListener task = StreamTaskListener.fromStdout();
                                 int r = new LocalLauncher(task).launch().cmds(new File(installationDir, "hudson.exe"), "start")
                                         .stdout(task).pwd(installationDir).join();
                                 task.getLogger().println(r==0?"Successfully started":"start service failed. Exit code="+r);
