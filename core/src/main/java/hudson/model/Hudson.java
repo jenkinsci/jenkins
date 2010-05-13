@@ -2933,7 +2933,7 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
             public void run() {
                 try {
                     // Wait 'til we have no active executors.
-                    doQuietDown(true);
+                    doQuietDown(true, 5000);
 
                     // Make sure isQuietingDown is still true.
                     if (isQuietingDown) {
