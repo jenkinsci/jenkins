@@ -63,9 +63,9 @@ check_tcp_port() {
     local default=$3
 
     if [ -n "$assigned" ]; then 
-	port=$default
+        port=$assigned
     else
-	port=$assigned
+        port=$default
     fi
     
     count=`netstat --listen --numeric-ports | grep \:$port | grep -c . `
