@@ -76,6 +76,12 @@ public class JUnitResultArchiver extends Recorder implements Serializable,
     private final String testResults;
 
     /**
+     * If true, retain a suite's complete stdout/stderr even if this is huge and the suite passed.
+     * @since 1.358
+     */
+    private final boolean keepLongStdio;
+
+    /**
      * {@link TestDataPublisher}s configured for this archiver, to process the recorded data.
      * For compatibility reasons, can be null.
      * @since 1.320
@@ -88,14 +94,22 @@ public class JUnitResultArchiver extends Recorder implements Serializable,
 	 */
 	@Deprecated
 	public JUnitResultArchiver(String testResults) {
-		this(testResults, null);
+		this(testResults, false, null);
 	}
+
+    @Deprecated
+    public JUnitResultArchiver(String testResults,
+            DescribableList<TestDataPublisher, Descriptor<TestDataPublisher>> testDataPublishers) {
+        this(testResults, false, testDataPublishers);
+    }
 	
 	@DataBoundConstructor
 	public JUnitResultArchiver(
 			String testResults,
+            boolean keepLongStdio,
 			DescribableList<TestDataPublisher, Descriptor<TestDataPublisher>> testDataPublishers) {
 		this.testResults = testResults;
+        this.keepLongStdio = keepLongStdio;
 		this.testDataPublishers = testDataPublishers;
 	}
 
@@ -105,8 +119,7 @@ public class JUnitResultArchiver extends Recorder implements Serializable,
     protected TestResult parse(String expandedTestResults, AbstractBuild build, Launcher launcher, BuildListener listener)
             throws IOException, InterruptedException
     {
-        TestResult result = (new JUnitParser()).parse(expandedTestResults, build, launcher, listener);        
-        return result;
+        return new JUnitParser(keepLongStdio).parse(expandedTestResults, build, launcher, listener);
     }
 
 	public boolean perform(AbstractBuild build, Launcher launcher,
@@ -226,6 +239,7 @@ public class JUnitResultArchiver extends Recorder implements Serializable,
 		public Publisher newInstance(StaplerRequest req, JSONObject formData)
 				throws hudson.model.Descriptor.FormException {
 			String testResults = formData.getString("testResults");
+            boolean keepLongStdio = formData.getBoolean("keepLongStdio");
 			DescribableList<TestDataPublisher, Descriptor<TestDataPublisher>> testDataPublishers = new DescribableList<TestDataPublisher, Descriptor<TestDataPublisher>>(
 					new Saveable() {
 						public void save() throws IOException {
@@ -234,7 +248,7 @@ public class JUnitResultArchiver extends Recorder implements Serializable,
 					});
 			testDataPublishers.rebuild(req, formData, TestDataPublisher.all());
 
-			return new JUnitResultArchiver(testResults, testDataPublishers);
+			return new JUnitResultArchiver(testResults, keepLongStdio, testDataPublishers);
 		}
 
 		/**

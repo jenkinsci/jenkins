@@ -86,19 +86,29 @@ public final class TestResult extends MetaTabulatedResult {
      * Number of failed/error tests.
      */
     private transient List<CaseResult> failedTests;
+
+    private final boolean keepLongStdio;
     
     /**
      * Creates an empty result.
      */
     public TestResult() {
+        keepLongStdio = false;
+    }
+
+    @Deprecated
+    public TestResult(long buildTime, DirectoryScanner results) throws IOException {
+        this(buildTime, results, false);
     }
 
     /**
      * Collect reports from the given {@link DirectoryScanner}, while
      * filtering out all files that were created before the given time.
+     * @param keepLongStdio if true, retain a suite's complete stdout/stderr even if this is huge and the suite passed
+     * @since 1.358
      */
-    public TestResult(long buildTime, DirectoryScanner results) throws IOException {
-        this();
+    public TestResult(long buildTime, DirectoryScanner results, boolean keepLongStdio) throws IOException {
+        this.keepLongStdio = keepLongStdio;
         parse(buildTime, results);
     }
     
@@ -180,7 +190,7 @@ public final class TestResult extends MetaTabulatedResult {
      */
     public void parse(File reportFile) throws IOException {
         try {
-            for( SuiteResult suiteResult : SuiteResult.parse(reportFile) )
+            for (SuiteResult suiteResult : SuiteResult.parse(reportFile, keepLongStdio))
                 add(suiteResult);
         } catch (RuntimeException e) {
             throw new IOException2("Failed to read "+reportFile,e);
