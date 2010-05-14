@@ -653,6 +653,16 @@ public abstract class HudsonTestCase extends TestCase implements RootAction {
         return new WebClient().search(q);
     }
 
+    /**
+     * Loads a configuration page and submits it without any modifications, to
+     * perform a round-trip configuration test.
+     * @see http://wiki.hudson-ci.org/display/HUDSON/Unit+Test#UnitTest-Configurationroundtriptesting
+     */
+    protected <P extends Job> P configRoundtrip(P job) throws Exception {
+        submit(createWebClient().getPage(job,"configure").getFormByName("config"));
+        return job;
+    }
+
 
 
     /**
