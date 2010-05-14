@@ -36,6 +36,8 @@ import hudson.model.Queue.Executable;
 import hudson.security.AbstractPasswordBasedSecurityRealm;
 import hudson.security.GroupDetails;
 import hudson.security.SecurityRealm;
+import hudson.tasks.Builder;
+import hudson.tasks.Publisher;
 import hudson.tools.ToolProperty;
 import hudson.remoting.Which;
 import hudson.Launcher.LocalLauncher;
@@ -663,6 +665,25 @@ public abstract class HudsonTestCase extends TestCase implements RootAction {
         return job;
     }
 
+    /**
+     * Performs a configuration round-trip testing for a builder.
+     */
+    protected <B extends Builder> B configRoundtrip(B before) throws Exception {
+        FreeStyleProject p = createFreeStyleProject();
+        p.getBuildersList().add(before);
+        configRoundtrip(p);
+        return (B)p.getBuildersList().get(before.getClass());
+    }
+
+    /**
+     * Performs a configuration round-trip testing for a publisher.
+     */
+    protected <P extends Publisher> P configRoundtrip(P before) throws Exception {
+        FreeStyleProject p = createFreeStyleProject();
+        p.getPublishersList().add(before);
+        configRoundtrip(p);
+        return (P)p.getPublishersList().get(before.getClass());
+    }
 
 
     /**
