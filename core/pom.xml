@@ -28,7 +28,7 @@ THE SOFTWARE.
   <parent>
     <groupId>org.jvnet.hudson.main</groupId>
     <artifactId>pom</artifactId>
-    <version>1.358-SNAPSHOT</version>
+    <version>1.359-SNAPSHOT</version>
     <relativePath>../pom.xml</relativePath>
   </parent>
 
@@ -126,11 +126,11 @@ THE SOFTWARE.
                 </tstamp>
                 <property name="build.type" value="private" /> <!-- override for "rc" build -->
                 <pathconvert property="version.rc">
-                  <path path="${version}"/>
-                  <chainedmapper><flattenmapper/><globmapper from="*-SNAPSHOT" to="*-RC"/></chainedmapper>
+                  <path path="${version}" />
+                  <chainedmapper><flattenmapper /><globmapper from="*-SNAPSHOT" to="*-RC" /></chainedmapper>
                 </pathconvert>
                 <condition property="build.version" value="${version.rc} (${now})">
-                  <equals arg1="${build.type}" arg2="rc"/>
+                  <equals arg1="${build.type}" arg2="rc" />
                 </condition>
                 <property name="build.version" value="${version} (${build.type}-${now}-${user.name})" />
                 <!-- default to release version -->
