@@ -7,7 +7,7 @@ import java.io.Serializable;
 
 /**
  * Visits files in a directory recursively.
-
+ *
  * @since 1.343
  * @see DirScanner
  */
