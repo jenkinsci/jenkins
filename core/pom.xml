@@ -701,6 +701,11 @@ THE SOFTWARE.
       <version>3.2.7</version>
     </dependency>
     <dependency>
+      <groupId>org.jvnet.hudson</groupId>
+      <artifactId>jmdns</artifactId>
+      <version>3.1.6</version>
+    </dependency>
+    <dependency>
       <groupId>com.sun.winsw</groupId>
       <artifactId>winsw</artifactId>
       <version>1.8</version>

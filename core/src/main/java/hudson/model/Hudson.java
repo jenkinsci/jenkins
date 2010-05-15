@@ -26,6 +26,7 @@ package hudson.model;
 
 import com.thoughtworks.xstream.XStream;
 import hudson.BulkChange;
+import hudson.DNSMultiCast;
 import hudson.DescriptorExtensionList;
 import hudson.Extension;
 import hudson.ExtensionList;
@@ -422,6 +423,8 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
 
     private transient UDPBroadcastThread udpBroadcastThread;
 
+    private transient DNSMultiCast dnsMultiCast;
+
     /**
      * List of registered {@link ItemListener}s.
      * @deprecated as of 1.286
@@ -622,6 +625,7 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
 
             udpBroadcastThread = new UDPBroadcastThread(this);
             udpBroadcastThread.start();
+            dnsMultiCast = new DNSMultiCast(this);
 
             updateComputerList();
 
@@ -2198,6 +2202,8 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
         }
         if(udpBroadcastThread!=null)
             udpBroadcastThread.shutdown();
+        if(dnsMultiCast!=null)
+            dnsMultiCast.close();
         ExternalJob.reloadThread.interrupt();
         Trigger.timer.cancel();
         // TODO: how to wait for the completion of the last job?
