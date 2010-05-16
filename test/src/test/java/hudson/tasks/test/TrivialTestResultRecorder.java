@@ -56,7 +56,6 @@ public class TrivialTestResultRecorder extends Recorder implements Serializable 
         return true;
     }
 
-    @Override
     public BuildStepMonitor getRequiredMonitorService() {
         return BuildStepMonitor.NONE;
     }
