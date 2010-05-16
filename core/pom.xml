@@ -100,7 +100,9 @@ THE SOFTWARE.
         </executions>
       </plugin>
       <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-antlr-plugin</artifactId>
+        <version>2.0-beta-1</version>
         <configuration>
           <sourceDirectory>${basedir}/src/main/grammar</sourceDirectory>
           <grammars>crontab.g</grammars>
