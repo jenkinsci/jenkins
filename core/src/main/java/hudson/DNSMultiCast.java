@@ -24,7 +24,9 @@ public class DNSMultiCast implements Closeable {
             this.jmdns = JmDNS.create();
 
             Map<String,String> props = new HashMap<String, String>();
-            props.put("url",hudson.getRootUrl());
+            String rootURL = hudson.getRootUrl();
+            if (rootURL!=null)
+                props.put("url", rootURL);
             props.put("version",Hudson.getVersion().toString());
 
             TcpSlaveAgentListener tal = hudson.getTcpSlaveAgentListener();
