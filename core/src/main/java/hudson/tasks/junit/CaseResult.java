@@ -93,7 +93,7 @@ public final class CaseResult extends TestResult implements Comparable<CaseResul
         return 0.0f;
     }
 
-    CaseResult(SuiteResult parent, Element testCase, String testClassName) {
+    CaseResult(SuiteResult parent, Element testCase, String testClassName, boolean keepLongStdio) {
         // schema for JUnit report XML format is not available in Ant,
         // so I don't know for sure what means what.
         // reports in http://www.nabble.com/difference-in-junit-publisher-and-ant-junitreport-tf4308604.html#a12265700
@@ -125,14 +125,17 @@ public final class CaseResult extends TestResult implements Comparable<CaseResul
         skipped = isMarkedAsSkipped(testCase);
         @SuppressWarnings("LeakingThisInConstructor")
         Collection<CaseResult> _this = Collections.singleton(this);
-        stdout = possiblyTrimStdio(_this, testCase.elementText("system-out"));
-        stderr = possiblyTrimStdio(_this, testCase.elementText("system-err"));
+        stdout = possiblyTrimStdio(_this, keepLongStdio, testCase.elementText("system-out"));
+        stderr = possiblyTrimStdio(_this, keepLongStdio, testCase.elementText("system-err"));
     }
 
     private static final int HALF_MAX_SIZE = 500;
-    static String possiblyTrimStdio(Collection<CaseResult> results, String stdio) { // HUDSON-6516
+    static String possiblyTrimStdio(Collection<CaseResult> results, boolean keepLongStdio, String stdio) { // HUDSON-6516
         if (stdio == null) {
             return null;
+        }
+        if (keepLongStdio) {
+            return stdio;
         }
         for (CaseResult result : results) {
             if (result.errorStackTrace != null) {

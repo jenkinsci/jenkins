@@ -59,7 +59,7 @@ THE SOFTWARE.
             <configuration>
               <fork>true</fork>
               <concurrency>1</concurrency> <!-- -1 means # of processors in the system -->
-              <argLine>-XX:MaxPermSize=192m -Dfile.encoding=UTF-8</argLine>
+              <argLine>-XX:MaxPermSize=192m -Xmx256m -Dfile.encoding=UTF-8</argLine>
               <systemProperties>
                 <property>
                   <!-- use AntClassLoader that supports predictable file handle release -->

@@ -39,7 +39,6 @@ import hudson.remoting.RemoteOutputStream;
 import hudson.remoting.VirtualChannel;
 import hudson.remoting.RemoteInputStream;
 import hudson.util.DirScanner;
-import hudson.util.FileVisitor;
 import hudson.util.IOException2;
 import hudson.util.HeadBufferingStream;
 import hudson.util.FormValidation;
@@ -48,16 +47,15 @@ import static hudson.util.jna.GNUCLibrary.LIBC;
 import static hudson.Util.fixEmpty;
 import static hudson.FilePath.TarCompression.GZIP;
 import hudson.os.PosixAPI;
-import hudson.org.apache.tools.tar.TarOutputStream;
 import hudson.org.apache.tools.tar.TarInputStream;
+import hudson.util.io.Archiver;
+import hudson.util.io.ArchiverFactory;
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.DirectoryScanner;
 import org.apache.tools.ant.Project;
 import org.apache.tools.ant.taskdefs.Copy;
 import org.apache.tools.ant.types.FileSet;
 import org.apache.tools.tar.TarEntry;
-import org.apache.tools.zip.ZipOutputStream;
-import org.apache.tools.zip.ZipEntry;
 import org.apache.commons.io.input.CountingInputStream;
 import org.apache.commons.fileupload.FileItem;
 import org.kohsuke.stapler.Stapler;
@@ -78,7 +76,6 @@ import java.io.OutputStream;
 import java.io.Serializable;
 import java.io.Writer;
 import java.io.OutputStreamWriter;
-import java.io.Closeable;
 import java.net.URI;
 import java.net.URL;
 import java.net.URLConnection;
@@ -335,7 +332,7 @@ public final class FilePath implements Serializable {
      * @since 1.315
      */
     public void zip(OutputStream os, FileFilter filter) throws IOException, InterruptedException {
-        archive(new ZipArchiverFactory(),os,filter);
+        archive(ArchiverFactory.ZIP,os,filter);
     }
 
     /**
@@ -350,7 +347,7 @@ public final class FilePath implements Serializable {
      *      Use {@link #zip(OutputStream,String)} that has more consistent name.
      */
     public void createZipArchive(OutputStream os, final String glob) throws IOException, InterruptedException {
-        archive(new ZipArchiverFactory(),os,glob);
+        archive(ArchiverFactory.ZIP,os,glob);
     }
 
     /**
@@ -363,14 +360,14 @@ public final class FilePath implements Serializable {
      * @since 1.315
      */
     public void zip(OutputStream os, final String glob) throws IOException, InterruptedException {
-        archive(new ZipArchiverFactory(),os,glob);
+        archive(ArchiverFactory.ZIP,os,glob);
     }
 
     /**
      * Uses the given scanner on 'this' directory to list up files and then archive it to a zip stream.
      */
     public int zip(OutputStream out, DirScanner scanner) throws IOException, InterruptedException {
-        return archive(new ZipArchiverFactory(), out, scanner);
+        return archive(ArchiverFactory.ZIP, out, scanner);
     }
 
     /**
@@ -1512,132 +1509,6 @@ public final class FilePath implements Serializable {
         }
     }
 
-    private static interface ArchiverFactory extends Serializable {
-        Archiver create(OutputStream out);
-    }
-
-    private static final class TarArchiverFactory implements ArchiverFactory, Serializable {
-        public Archiver create(OutputStream out) {
-            return new TarWriter(out);
-        }
-
-        private static final long serialVersionUID = 1L;
-    }
-
-    private static final class ZipArchiverFactory implements ArchiverFactory, Serializable {
-        public Archiver create(OutputStream out) {
-            return new ZipWriter(out);
-        }
-
-        private static final long serialVersionUID = 1L;
-    }
-
-
-    /**
-     * Base for {@link TarWriter} and {@link ZipWriter}.
-     */
-    private static abstract class Archiver extends FileVisitor implements Closeable {
-        protected int entriesWritten =0;
-
-        /**
-         * Number of files/directories archived.
-         */
-        public int countEntries() {
-            return entriesWritten;
-        }
-    }
-
-    /**
-     * {@link FileVisitor} that creates a tar archive.
-     */
-    private static final class TarWriter extends Archiver {
-        private final byte[] buf = new byte[8192];
-        private final TarOutputStream tar;
-
-        private TarWriter(OutputStream out) {
-            tar = new TarOutputStream(new BufferedOutputStream(out) {
-                // TarOutputStream uses TarBuffer internally,
-                // which flushes the stream for each block. this creates unnecessary
-                // data stream fragmentation, and flush request to a remote, which slows things down.
-                @Override
-                public void flush() throws IOException {
-                    // so don't do anything in flush
-                }
-            });
-            tar.setLongFileMode(TarOutputStream.LONGFILE_GNU);
-        }
-
-        public void visit(File file, String relativePath) throws IOException {
-            if(Functions.isWindows())
-                relativePath = relativePath.replace('\\','/');
-
-            if(file.isDirectory())
-                relativePath+='/';
-            TarEntry te = new TarEntry(relativePath);
-            te.setModTime(file.lastModified());
-            if(!file.isDirectory())
-                te.setSize(file.length());
-
-            tar.putNextEntry(te);
-
-            if (!file.isDirectory()) {
-                FileInputStream in = new FileInputStream(file);
-                try {
-                    int len;
-                    while((len=in.read(buf))>=0)
-                        tar.write(buf,0,len);
-                } finally {
-                    in.close();
-                }
-            }
-
-            tar.closeEntry();
-            entriesWritten++;
-        }
-
-        public void close() throws IOException {
-            tar.close();
-        }
-    }
-
-    /**
-     * {@link FileVisitor} that creates a zip archive.
-     */
-    private static final class ZipWriter extends Archiver {
-        private final byte[] buf = new byte[8192];
-        private final ZipOutputStream zip;
-
-        private ZipWriter(OutputStream out) {
-            zip = new ZipOutputStream(out);
-            zip.setEncoding(System.getProperty("file.encoding"));
-        }
-
-        public void visit(File f, String relativePath) throws IOException {
-            if(f.isDirectory()) {
-                ZipEntry dirZipEntry = new ZipEntry(relativePath+'/');
-                // Setting this bit explicitly is needed by some unzipping applications (see HUDSON-3294).
-                dirZipEntry.setExternalAttributes(BITMASK_IS_DIRECTORY);
-                zip.putNextEntry(dirZipEntry);
-                zip.closeEntry();
-            } else {
-                zip.putNextEntry(new ZipEntry(relativePath));
-                FileInputStream in = new FileInputStream(f);
-                int len;
-                while((len=in.read(buf))>0)
-                    zip.write(buf,0,len);
-                in.close();
-                zip.closeEntry();
-            }
-            entriesWritten++;
-        }
-
-        public void close() throws IOException {
-            zip.close();
-        }
-
-        // Bitmask indicating directories in 'external attributes' of a ZIP archive entry.
-        private static final long BITMASK_IS_DIRECTORY = 1<<4;
-    }
 
     /**
      * Writes files in 'this' directory to a tar stream.
@@ -1646,18 +1517,18 @@ public final class FilePath implements Serializable {
      *      Ant file pattern mask, like "**&#x2F;*.java".
      */
     public int tar(OutputStream out, final String glob) throws IOException, InterruptedException {
-        return archive(new TarArchiverFactory(), out, glob);
+        return archive(ArchiverFactory.TAR, out, glob);
     }
 
     public int tar(OutputStream out, FileFilter filter) throws IOException, InterruptedException {
-        return archive(new TarArchiverFactory(), out, filter);
+        return archive(ArchiverFactory.TAR, out, filter);
     }
 
     /**
      * Uses the given scanner on 'this' directory to list up files and then archive it to a tar stream.
      */
     public int tar(OutputStream out, DirScanner scanner) throws IOException, InterruptedException {
-        return archive(new TarArchiverFactory(), out, scanner);
+        return archive(ArchiverFactory.TAR, out, scanner);
     }
 
     /**
@@ -1667,13 +1538,13 @@ public final class FilePath implements Serializable {
      *      number of files/directories that are written.
      */
     private Integer writeToTar(File baseDir, String fileMask, String excludes, OutputStream out) throws IOException {
-        TarWriter tw = new TarWriter(out);
+        Archiver tw = ArchiverFactory.TAR.create(out);
         try {
             new DirScanner.Glob(fileMask,excludes).scan(baseDir,tw);
         } finally {
             tw.close();
         }
-        return tw.entriesWritten;
+        return tw.countEntries();
     }
 
     /**

@@ -82,7 +82,7 @@ public final class SuiteResult implements Serializable {
      * This method returns a collection, as a single XML may have multiple &lt;testsuite>
      * elements wrapped into the top-level &lt;testsuites>.
      */
-    static List<SuiteResult> parse(File xmlReport) throws DocumentException {
+    static List<SuiteResult> parse(File xmlReport, boolean keepLongStdio) throws DocumentException {
         List<SuiteResult> r = new ArrayList<SuiteResult>();
 
         // parse into DOM
@@ -97,16 +97,16 @@ public final class SuiteResult implements Serializable {
         if(root.getName().equals("testsuites")) {
             // multi-suite file
             for (Element suite : (List<Element>)root.elements("testsuite"))
-                r.add(new SuiteResult(xmlReport,suite));
+                r.add(new SuiteResult(xmlReport, suite, keepLongStdio));
         } else {
             // single suite file
-            r.add(new SuiteResult(xmlReport,root));
+            r.add(new SuiteResult(xmlReport, root, keepLongStdio));
         }
 
         return r;
     }
 
-    private SuiteResult(File xmlReport, Element suite) throws DocumentException {
+    private SuiteResult(File xmlReport, Element suite, boolean keepLongStdio) throws DocumentException {
     	this.file = xmlReport.getAbsolutePath();
         String name = suite.attributeValue("name");
         if(name==null)
@@ -123,7 +123,7 @@ public final class SuiteResult implements Serializable {
         Element ex = suite.element("error");
         if(ex!=null) {
             // according to junit-noframes.xsl l.229, this happens when the test class failed to load
-            addCase(new CaseResult(this,suite,"<init>"));
+            addCase(new CaseResult(this, suite, "<init>", keepLongStdio));
         }
 
         for (Element e : (List<Element>)suite.elements("testcase")) {
@@ -146,11 +146,11 @@ public final class SuiteResult implements Serializable {
             // one wants to use @name from <testsuite>,
             // the other wants to use @classname from <testcase>.
 
-            addCase(new CaseResult(this, e, classname));
+            addCase(new CaseResult(this, e, classname, keepLongStdio));
         }
 
-        stdout = CaseResult.possiblyTrimStdio(cases, suite.elementText("system-out"));
-        stderr = CaseResult.possiblyTrimStdio(cases, suite.elementText("system-err"));
+        stdout = CaseResult.possiblyTrimStdio(cases, keepLongStdio, suite.elementText("system-out"));
+        stderr = CaseResult.possiblyTrimStdio(cases, keepLongStdio, suite.elementText("system-err"));
     }
 
     /*package*/ void addCase(CaseResult cr) {

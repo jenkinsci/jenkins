@@ -23,6 +23,8 @@
  */
 package hudson.cli.declarative;
 
+import hudson.util.ReflectionUtils;
+import hudson.util.ReflectionUtils.Parameter;
 import org.kohsuke.args4j.Argument;
 import org.kohsuke.args4j.CmdLineException;
 import org.kohsuke.args4j.CmdLineParser;
@@ -33,7 +35,7 @@ import org.kohsuke.args4j.spi.OptionHandler;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.lang.reflect.Type;
+import java.util.List;
 
 /**
  * Binds method parameters to CLI arguments and parameters via args4j.
@@ -53,39 +55,41 @@ class MethodBinder {
     public MethodBinder(Method method, CmdLineParser parser) {
         this.method = method;
 
-        Type[] params = method.getGenericParameterTypes();
-        final Class[] paramTypes = method.getParameterTypes();
-        arguments = new Object[params.length];
+        List<Parameter> params = ReflectionUtils.getParameters(method);
+        arguments = new Object[params.size()];
 
         // to work in cooperation with earlier arguments, add bias to all the ones that this one defines.
         final int bias = parser.getArguments().size();
 
-        Annotation[][] pa = method.getParameterAnnotations();
-        for (int i=0; i<params.length; i++) {
-            final int index = i;
-            for (Annotation a : pa[i]) {
-                // TODO: collection and map support
-                Setter setter = new Setter() {
-                    public void addValue(Object value) throws CmdLineException {
-                        arguments[index] = value;
-                    }
+        for (final Parameter p : params) {
+            final int index = p.index();
 
-                    public Class getType() {
-                        return paramTypes[index];
-                    }
+            // TODO: collection and map support
+            Setter setter = new Setter() {
+                public void addValue(Object value) throws CmdLineException {
+                    arguments[index] = value;
+                }
 
-                    public boolean isMultiValued() {
-                        return false;
-                    }
-                };
-                if (a instanceof Option) {
-                    parser.addOption(setter,(Option)a);
+                public Class getType() {
+                    return p.type();
                 }
-                if (a instanceof Argument) {
-                    if (bias>0) a = new ArgumentImpl((Argument)a,bias);
-                    parser.addArgument(setter,(Argument)a);
+
+                public boolean isMultiValued() {
+                    return false;
                 }
+            };
+            Option option = p.annotation(Option.class);
+            if (option!=null) {
+                parser.addOption(setter,option);
             }
+            Argument arg = p.annotation(Argument.class);
+            if (arg!=null) {
+                if (bias>0) arg = new ArgumentImpl(arg,bias);
+                parser.addArgument(setter,arg);
+            }
+
+            if (p.type().isPrimitive())
+                arguments[index] = ReflectionUtils.getVmDefaultValueForPrimitiveType(p.type());
         }
     }
 

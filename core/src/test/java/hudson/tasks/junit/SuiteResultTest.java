@@ -49,7 +49,7 @@ public class SuiteResultTest extends TestCase {
     }
 
     private SuiteResult parseOne(File file) throws DocumentException {
-        List<SuiteResult> results = SuiteResult.parse(file);
+        List<SuiteResult> results = SuiteResult.parse(file, false);
         assertEquals(1,results.size());
         return results.get(0);
     }
@@ -94,7 +94,7 @@ public class SuiteResultTest extends TestCase {
      * https://hudson.dev.java.net/issues/show_bug.cgi?id=1472
      */
     public void testIssue1472() throws Exception {
-        List<SuiteResult> results = SuiteResult.parse(getDataFile("junit-report-1472.xml"));
+        List<SuiteResult> results = SuiteResult.parse(getDataFile("junit-report-1472.xml"), false);
         assertTrue(results.size()>20); // lots of data here
 
         SuiteResult sr0 = results.get(0);

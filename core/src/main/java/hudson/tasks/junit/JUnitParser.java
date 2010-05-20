@@ -41,6 +41,23 @@ import org.apache.tools.ant.DirectoryScanner;
  */
 @Extension
 public class JUnitParser extends TestResultParser {
+
+    private final boolean keepLongStdio;
+
+    /** XXX TestResultParser.all does not seem to ever be called so why must this be an Extension? */
+    @Deprecated
+    public JUnitParser() {
+        this(false);
+    }
+
+    /**
+     * @param keepLongStdio if true, retain a suite's complete stdout/stderr even if this is huge and the suite passed
+     * @since 1.358
+     */
+    public JUnitParser(boolean keepLongStdio) {
+        this.keepLongStdio = keepLongStdio;
+    }
+
     @Override
     public String getDisplayName() {
         return "JUnit Parser";
@@ -63,7 +80,7 @@ public class JUnitParser extends TestResultParser {
         // [BUG 3123310] TODO - Test Result Refactor: review and fix TestDataPublisher/TestAction subsystem]
         // also get code that deals with testDataPublishers from JUnitResultArchiver.perform
         
-        TestResult testResult = build.getWorkspace().act( new ParseResultCallable(testResultLocations, buildTime, timeOnMaster));
+        TestResult testResult = build.getWorkspace().act( new ParseResultCallable(testResultLocations, buildTime, timeOnMaster, keepLongStdio));
         return testResult;        
     }
 
@@ -72,11 +89,13 @@ public class JUnitParser extends TestResultParser {
         private final long buildTime;
         private final String testResults;
         private final long nowMaster;
+        private final boolean keepLongStdio;
 
-        private ParseResultCallable(String testResults, long buildTime, long nowMaster) {
+        private ParseResultCallable(String testResults, long buildTime, long nowMaster, boolean keepLongStdio) {
             this.buildTime = buildTime;
             this.testResults = testResults;
             this.nowMaster = nowMaster;
+            this.keepLongStdio = keepLongStdio;
         }
 
         public TestResult invoke(File ws, VirtualChannel channel) throws IOException {
@@ -92,7 +111,7 @@ public class JUnitParser extends TestResultParser {
                 throw new AbortException(Messages.JUnitResultArchiver_NoTestReportFound());
             }
 
-            TestResult result = new TestResult(buildTime + (nowSlave - nowMaster), ds);
+            TestResult result = new TestResult(buildTime + (nowSlave - nowMaster), ds, keepLongStdio);
             result.tally();
             return result; 
         }

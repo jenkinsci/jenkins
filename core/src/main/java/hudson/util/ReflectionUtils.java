@@ -29,7 +29,9 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
 import java.util.AbstractList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Utility code for reflection.
@@ -111,6 +113,13 @@ public class ReflectionUtils extends org.springframework.util.ReflectionUtils {
         }
 
         /**
+         * 0-origin index of this parameter.
+         */
+        public int index() {
+            return index;
+        }
+
+        /**
          * Gets the type of this parameter.
          */
         public Class<?> type() {
@@ -152,5 +161,19 @@ public class ReflectionUtils extends org.springframework.util.ReflectionUtils {
                 return names[index];
             return null;
         }
+    }
+
+    /**
+     * Given the primitive type, returns the VM default value for that type in a boxed form.
+     */
+    public static Object getVmDefaultValueForPrimitiveType(Class<?> type) {
+        return defaultPrimitiveValue.get(type);
+    }
+
+    private static final Map<Class,Object> defaultPrimitiveValue = new HashMap<Class, Object>();
+    static {
+        defaultPrimitiveValue.put(boolean.class,false);
+        defaultPrimitiveValue.put(int.class,0);
+        defaultPrimitiveValue.put(long.class,0L);
     }
 }

@@ -28,6 +28,10 @@ THE SOFTWARE.
 		field="testResults">
 		<f:textbox />
 	</f:entry>
+        <f:entry field="keepLongStdio" title="">
+            <f:checkbox/>
+            <label class="attach-previous">${%Retain long standard output/error}</label>
+	</f:entry>
 	<j:invokeStatic var="testDataPublisherDescriptors"
 		className="hudson.tasks.junit.TestDataPublisher" method="all" />
 	<j:if test="${testDataPublisherDescriptors.size() > 0}">

@@ -100,7 +100,9 @@ THE SOFTWARE.
         </executions>
       </plugin>
       <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-antlr-plugin</artifactId>
+        <version>2.0-beta-1</version>
         <configuration>
           <sourceDirectory>${basedir}/src/main/grammar</sourceDirectory>
           <grammars>crontab.g</grammars>
@@ -417,7 +419,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.jvnet.hudson</groupId>
       <artifactId>xstream</artifactId>
-      <version>1.3.1-hudson-6</version>
+      <version>1.3.1-hudson-7</version>
     </dependency>
     <dependency>
       <groupId>jfree</groupId>
@@ -699,6 +701,11 @@ THE SOFTWARE.
       <groupId>org.codehaus.woodstox</groupId>
       <artifactId>wstx-asl</artifactId>
       <version>3.2.7</version>
+    </dependency>
+    <dependency>
+      <groupId>org.jvnet.hudson</groupId>
+      <artifactId>jmdns</artifactId>
+      <version>3.1.6</version>
     </dependency>
     <dependency>
       <groupId>com.sun.winsw</groupId>
