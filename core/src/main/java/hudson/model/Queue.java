@@ -35,6 +35,7 @@ import static hudson.util.Iterators.reverse;
 import hudson.cli.declarative.CLIMethod;
 import hudson.cli.declarative.CLIResolver;
 import hudson.model.queue.QueueSorter;
+import hudson.model.queue.QueueTaskDispatcher;
 import hudson.remoting.AsyncFutureImpl;
 import hudson.model.Node.Mode;
 import hudson.model.listeners.SaveableListener;
@@ -179,12 +180,12 @@ public class Queue extends ResourceController implements Saveable {
             Node node = getNode();
             if (node==null)     return false;   // this executor is about to die
 
-            Label l = task.getAssignedLabel();
-            if(l!=null && !l.contains(node))
-                return false;   // the task needs to be executed on label that this node doesn't have.
+            if(node.canTake(task)!=null)
+                return false;   // this node is not able to take the task
 
-            if(l==null && node.getMode()== Mode.EXCLUSIVE)
-                return false;   // this node is reserved for tasks that are tied to it
+            for (QueueTaskDispatcher d : QueueTaskDispatcher.all())
+                if (d.canTake(node,task)!=null)
+                    return false;
 
             return isAvailable();
         }
