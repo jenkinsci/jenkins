@@ -119,7 +119,12 @@ public class ArtifactArchiver extends Recorder {
                     // If the build failed, don't complain that there was no matching artifact.
                     // The build probably didn't even get to the point where it produces artifacts. 
                     listenerWarnOrError(listener, Messages.ArtifactArchiver_NoMatchFound(artifacts));
-                    String msg = ws.validateAntFileMask(artifacts);
+                    String msg = null;
+                    try {
+                    	msg = ws.validateAntFileMask(artifacts);
+                    } catch (Exception e) {
+                    	listenerWarnOrError(listener, e.getMessage());
+                    }
                     if(msg!=null)
                         listenerWarnOrError(listener, msg);
                 }
