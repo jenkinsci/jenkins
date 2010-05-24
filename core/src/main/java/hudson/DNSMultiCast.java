@@ -27,7 +27,11 @@ public class DNSMultiCast implements Closeable {
             String rootURL = hudson.getRootUrl();
             if (rootURL!=null)
                 props.put("url", rootURL);
-            props.put("version",Hudson.getVersion().toString());
+            try {
+                props.put("version",String.valueOf(Hudson.getVersion()));
+            } catch (IllegalArgumentException e) {
+                // failed to parse the version number
+            }
 
             TcpSlaveAgentListener tal = hudson.getTcpSlaveAgentListener();
             if (tal!=null)
