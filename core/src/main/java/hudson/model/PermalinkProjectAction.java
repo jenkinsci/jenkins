@@ -146,6 +146,34 @@ public interface PermalinkProjectAction extends Action {
                     return job.getLastFailedBuild();
                 }
             });
+
+            BUILTIN.add(new Permalink() {
+                public String getDisplayName() {
+                    return Messages.Permalink_LastUnstableBuild();
+                }
+
+                public String getId() {
+                    return "lastUnstableBuild";
+                }
+
+                public Run<?,?> resolve(Job<?,?> job) {
+                    return job.getLastUnstableBuild();
+                }
+            });
+
+            BUILTIN.add(new Permalink() {
+                public String getDisplayName() {
+                    return Messages.Permalink_LastUnsuccessfulBuild();
+                }
+
+                public String getId() {
+                    return "lastUnsuccessfulBuild";
+                }
+
+                public Run<?,?> resolve(Job<?,?> job) {
+                    return job.getLastUnsuccessfulBuild();
+                }
+            });
         }
     }
 }
