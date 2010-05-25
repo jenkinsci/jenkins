@@ -133,6 +133,20 @@ public class Queue extends ResourceController implements Saveable {
     private final ItemList<BlockedItem> blockedProjects = new ItemList<BlockedItem>();
 
     /**
+     * Popped items are the keys, the value is when the item was placed in the Map.
+     * When an item is popped it is placed here.  The Executor that popped it should
+     * remove it via {@link #completePop()} once it creates the {@link Executable}.
+     */
+    private final Map<Item,Long> popped = new HashMap<Item,Long> ();
+    
+    /**
+     * How long we wait for an {@link Executor} to call {@link #completePop()} before
+     * we assume that something has gone wrong and remove an {@link Item} from
+     * {@link #popped}.
+     */
+    private final long poppedWaitTime = 1000*60*1; // One minute
+    
+    /**
      * {@link Task}s that can be built immediately
      * that are waiting for available {@link Executor}.
      * This list is sorted in such a way that earlier items are built earlier.
@@ -743,6 +757,7 @@ public class Queue extends ResourceController implements Saveable {
                         // if so, just build it
                         LOGGER.fine("Pop returning " + offer.item + " for " + exec.getName());
                         offer.item.future.startExecuting(exec);
+                        popped.put(offer.item, System.currentTimeMillis());
                         return offer.item;
                     }
                     // otherwise run a queue maintenance
@@ -866,9 +881,35 @@ public class Queue extends ResourceController implements Saveable {
         } catch (AbstractMethodError e) {
             // earlier versions don't have the "isConcurrentBuild" method, so fall back gracefully
         }
-        return !buildables.containsKey(t);
+        return !(buildables.containsKey(t) || taskIsPopped(t));
     }
 
+    /**
+     * Check if an {@link Item} of a given {@link Task} has been recently popped and
+     * the {@Executor} has not yet created an {@link Executable} for it. 
+     */
+    private boolean taskIsPopped (Task t) {
+    	long cutoff = System.currentTimeMillis() - poppedWaitTime;
+    	for (Map.Entry<Item,Long> e : popped.entrySet()) {
+    		if (e.getValue() < cutoff) {
+    			popped.remove(e.getKey());
+    		} else if (e.getKey().task == t) {
+    			return true;
+    		}
+    	}
+    	return false;
+    }
+    
+    /**
+     * Queue maintenance.
+     * <p>
+     * Tell the Queue that a popped item has been started, so we don't have to track
+     * it in the Queue anymore.
+     */
+    public synchronized void completePop (Item i) {
+    	popped.remove(i);
+    }
+        
     /**
      * Queue maintenance.
      * <p>
