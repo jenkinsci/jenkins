@@ -926,10 +926,12 @@ public class Queue extends ResourceController implements Saveable {
             hash.add(h, h.getNumExecutors()*100);
             for (Node n : h.getNodes())
                 hash.add(n,n.getNumExecutors()*100);
-            
+
+            Label lbl = p.task.getAssignedLabel();
             for (Node n : hash.list(p.task.getFullDisplayName())) {
                 Computer c = n.toComputer();
                 if (c==null || c.isOffline())    continue;
+                if (lbl!=null && !lbl.contains(n))  continue;
                 c.startFlyWeightTask(p);
                 return;
             }
