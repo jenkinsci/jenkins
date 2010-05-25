@@ -502,7 +502,7 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
                 }
             } catch (InterruptedException e) {
                 listener.getLogger().println(Messages.AbstractProject_ScmAborted());
-                LOGGER.log(Level.INFO,toString()+" aborted",e);
+                LOGGER.log(Level.INFO, AbstractBuild.this + " aborted", e);
                 throw new RunnerAbortedException();
             }
         }
