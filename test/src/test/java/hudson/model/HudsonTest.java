@@ -51,6 +51,13 @@ import java.util.List;
  */
 public class HudsonTest extends HudsonTestCase {
     /**
+     * Tests the basic UI sanity and HtmlUnit set up.
+     */
+    public void testGlobalConfigRoundtrip() throws Exception {
+        submit(createWebClient().goTo("configure").getFormByName("config"));
+    }
+
+    /**
      * Performs a very basic round-trip of a non-empty system configuration screen.
      * This makes sure that the structured form submission is working (to some limited extent.)
      */
