@@ -34,7 +34,9 @@ import static hudson.util.Iterators.reverse;
 
 import hudson.cli.declarative.CLIMethod;
 import hudson.cli.declarative.CLIResolver;
+import hudson.model.queue.AbstractQueueTask;
 import hudson.model.queue.QueueSorter;
+import hudson.model.queue.QueueTaskDispatcher;
 import hudson.remoting.AsyncFutureImpl;
 import hudson.model.Node.Mode;
 import hudson.model.listeners.SaveableListener;
@@ -132,6 +134,20 @@ public class Queue extends ResourceController implements Saveable {
     private final ItemList<BlockedItem> blockedProjects = new ItemList<BlockedItem>();
 
     /**
+     * Popped items are the keys, the value is when the item was placed in the Map.
+     * When an item is popped it is placed here.  The Executor that popped it should
+     * remove it via {@link #completePop()} once it creates the {@link Executable}.
+     */
+    private final Map<Item,Long> popped = new HashMap<Item,Long> ();
+    
+    /**
+     * How long we wait for an {@link Executor} to call {@link #completePop()} before
+     * we assume that something has gone wrong and remove an {@link Item} from
+     * {@link #popped}.
+     */
+    private final long poppedWaitTime = 1000*60*1; // One minute
+    
+    /**
      * {@link Task}s that can be built immediately
      * that are waiting for available {@link Executor}.
      * This list is sorted in such a way that earlier items are built earlier.
@@ -179,12 +195,12 @@ public class Queue extends ResourceController implements Saveable {
             Node node = getNode();
             if (node==null)     return false;   // this executor is about to die
 
-            Label l = task.getAssignedLabel();
-            if(l!=null && !l.contains(node))
-                return false;   // the task needs to be executed on label that this node doesn't have.
+            if(node.canTake(task)!=null)
+                return false;   // this node is not able to take the task
 
-            if(l==null && node.getMode()== Mode.EXCLUSIVE)
-                return false;   // this node is reserved for tasks that are tied to it
+            for (QueueTaskDispatcher d : QueueTaskDispatcher.all())
+                if (d.canTake(node,task)!=null)
+                    return false;
 
             return isAvailable();
         }
@@ -742,6 +758,7 @@ public class Queue extends ResourceController implements Saveable {
                         // if so, just build it
                         LOGGER.fine("Pop returning " + offer.item + " for " + exec.getName());
                         offer.item.future.startExecuting(exec);
+                        popped.put(offer.item, System.currentTimeMillis());
                         return offer.item;
                     }
                     // otherwise run a queue maintenance
@@ -865,9 +882,35 @@ public class Queue extends ResourceController implements Saveable {
         } catch (AbstractMethodError e) {
             // earlier versions don't have the "isConcurrentBuild" method, so fall back gracefully
         }
-        return !buildables.containsKey(t);
+        return !(buildables.containsKey(t) || taskIsPopped(t));
     }
 
+    /**
+     * Check if an {@link Item} of a given {@link Task} has been recently popped and
+     * the {@Executor} has not yet created an {@link Executable} for it. 
+     */
+    private boolean taskIsPopped (Task t) {
+    	long cutoff = System.currentTimeMillis() - poppedWaitTime;
+    	for (Map.Entry<Item,Long> e : popped.entrySet()) {
+    		if (e.getValue() < cutoff) {
+    			popped.remove(e.getKey());
+    		} else if (e.getKey().task == t) {
+    			return true;
+    		}
+    	}
+    	return false;
+    }
+    
+    /**
+     * Queue maintenance.
+     * <p>
+     * Tell the Queue that a popped item has been started, so we don't have to track
+     * it in the Queue anymore.
+     */
+    public synchronized void completePop (Item i) {
+    	popped.remove(i);
+    }
+        
     /**
      * Queue maintenance.
      * <p>
@@ -925,10 +968,12 @@ public class Queue extends ResourceController implements Saveable {
             hash.add(h, h.getNumExecutors()*100);
             for (Node n : h.getNodes())
                 hash.add(n,n.getNumExecutors()*100);
-            
+
+            Label lbl = p.task.getAssignedLabel();
             for (Node n : hash.list(p.task.getFullDisplayName())) {
                 Computer c = n.toComputer();
                 if (c==null || c.isOffline())    continue;
+                if (lbl!=null && !lbl.contains(n))  continue;
                 c.startFlyWeightTask(p);
                 return;
             }
@@ -976,6 +1021,11 @@ public class Queue extends ResourceController implements Saveable {
      * Pending {@link Task}s are persisted when Hudson shuts down, so
      * it needs to be persistable via XStream. To create a non-persisted
      * transient Task, extend {@link TransientTask} marker interface.
+     *
+     * <p>
+     * Plugins are encouraged to extend from {@link AbstractQueueTask}
+     * instead of implementing this interface directly, to maintain
+     * compatibility with future changes to this interface.
      */
     public interface Task extends ModelObject, ResourceActivity {
         /**

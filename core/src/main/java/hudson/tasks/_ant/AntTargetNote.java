@@ -32,7 +32,7 @@ import hudson.console.ConsoleAnnotator;
 import java.util.regex.Pattern;
 
 /**
- * Marks the log line "TARGET:" that And uses to mark the beginning of the new target.
+ * Marks the log line "TARGET:" that Ant uses to mark the beginning of the new target.
  * @sine 1.349
  */
 public final class AntTargetNote extends ConsoleNote {

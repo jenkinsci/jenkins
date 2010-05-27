@@ -791,6 +791,34 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
     }
 
     /**
+     * Returns the last build that was anything but stable, if any. Otherwise null.
+     * @see #getLastSuccessfulBuild
+     */
+    @Exported
+    @QuickSilver
+    public RunT getLastUnsuccessfulBuild() {
+        RunT r = getLastBuild();
+        while (r != null
+                && (r.isBuilding() || r.getResult() == Result.SUCCESS))
+            r = r.getPreviousBuild();
+        return r;
+    }
+
+    /**
+     * Returns the last unstable build, if any. Otherwise null.
+     * @see #getLastSuccessfulBuild
+     */
+    @Exported
+    @QuickSilver
+    public RunT getLastUnstableBuild() {
+        RunT r = getLastBuild();
+        while (r != null
+                && (r.isBuilding() || r.getResult() != Result.UNSTABLE))
+            r = r.getPreviousBuild();
+        return r;
+    }
+
+    /**
      * Returns the last stable build, if any. Otherwise null.
      * @see #getLastSuccessfulBuild
      */

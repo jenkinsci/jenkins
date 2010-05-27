@@ -27,6 +27,8 @@ import hudson.ExtensionPoint;
 import hudson.FilePath;
 import hudson.FileSystemProvisioner;
 import hudson.Launcher;
+import hudson.model.Queue.Task;
+import hudson.model.queue.CauseOfBlockage;
 import hudson.node_monitors.NodeMonitor;
 import hudson.remoting.VirtualChannel;
 import hudson.security.ACL;
@@ -219,6 +221,35 @@ public abstract class Node extends AbstractModelObject implements Describable<No
      */
     public Label getSelfLabel() {
         return Label.get(getNodeName());
+    }
+
+    /**
+     * Called by the {@link Queue} to determine whether or not this node can
+     * take the given task. The default checks include whether or not this node
+     * is part of the task's assigned label, whether this node is in
+     * {@link Mode#EXCLUSIVE} mode if it is not in the task's assigned label,
+     * and whether or not any of this node's {@link NodeProperty}s say that the
+     * task cannot be run.
+     *
+     * @since 1.360
+     */
+    public CauseOfBlockage canTake(Task task) {
+        Label l = task.getAssignedLabel();
+        if(l!=null && !l.contains(this))
+            return CauseOfBlockage.fromMessage(Messages._Node_LabelMissing(getNodeName(),l));   // the task needs to be executed on label that this node doesn't have.
+
+        if(l==null && getMode()== Mode.EXCLUSIVE)
+            return CauseOfBlockage.fromMessage(Messages._Node_BecauseNodeIsReserved(getNodeName()));   // this node is reserved for tasks that are tied to it
+
+        // Check each NodeProperty to see whether they object to this node
+        // taking the task
+        for (NodeProperty prop: getNodeProperties()) {
+            CauseOfBlockage c = prop.canTake(task);
+            if (c!=null)    return c;
+        }
+
+        // Looks like we can take the task
+        return null;
     }
 
     /**

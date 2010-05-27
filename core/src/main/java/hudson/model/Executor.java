@@ -113,6 +113,8 @@ public class Executor extends Thread implements ModelObject {
                     try {
                         startTime = System.currentTimeMillis();
                         executable = task.createExecutable();
+                        queue.completePop(queueItem);
+                        
                         if (executable instanceof Actionable) {
                         	for (Action action: queueItem.getActions()) {
                         		((Actionable) executable).addAction(action);
