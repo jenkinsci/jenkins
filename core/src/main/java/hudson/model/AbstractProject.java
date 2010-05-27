@@ -447,7 +447,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
     }
 
     public boolean isBuildable() {
-        return !isDisabled();
+        return !isDisabled() && !isHoldOffBuildUntilSave();
     }
 
     /**
