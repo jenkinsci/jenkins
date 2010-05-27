@@ -45,7 +45,10 @@ public class DNSMultiCast implements Closeable {
     }
 
     public void close() {
-        jmdns.close();
+        if (jmdns!=null) {
+            jmdns.close();
+            jmdns = null;
+        }
     }
 
     private static final Logger LOGGER = Logger.getLogger(DNSMultiCast.class.getName());
