@@ -34,6 +34,7 @@ import static hudson.util.Iterators.reverse;
 
 import hudson.cli.declarative.CLIMethod;
 import hudson.cli.declarative.CLIResolver;
+import hudson.model.queue.AbstractQueueTask;
 import hudson.model.queue.QueueSorter;
 import hudson.model.queue.QueueTaskDispatcher;
 import hudson.remoting.AsyncFutureImpl;
@@ -1020,6 +1021,11 @@ public class Queue extends ResourceController implements Saveable {
      * Pending {@link Task}s are persisted when Hudson shuts down, so
      * it needs to be persistable via XStream. To create a non-persisted
      * transient Task, extend {@link TransientTask} marker interface.
+     *
+     * <p>
+     * Plugins are encouraged to extend from {@link AbstractQueueTask}
+     * instead of implementing this interface directly, to maintain
+     * compatibility with future changes to this interface.
      */
     public interface Task extends ModelObject, ResourceActivity {
         /**
