@@ -705,7 +705,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.jvnet.hudson</groupId>
       <artifactId>jmdns</artifactId>
-      <version>3.1.6</version>
+      <version>3.1.6-hudson-2</version>
     </dependency>
     <dependency>
       <groupId>com.sun.winsw</groupId>
