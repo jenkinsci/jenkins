@@ -79,6 +79,10 @@ public class PersistedList<T> implements Iterable<T> {
         onModified();
     }
 
+    public T get(int index) {
+        return data.get(index);
+    }
+
     public <U extends T> U get(Class<U> type) {
         for (T t : data)
             if(type.isInstance(t))
