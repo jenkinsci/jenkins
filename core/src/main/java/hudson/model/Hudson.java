@@ -2466,9 +2466,26 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
         checkPermission(ADMINISTER);
         isQuietingDown = true;
         if (block) {
+            LOGGER.info("Entering the blocking quiet down mode");
             long start = System.currentTimeMillis();
-            while (isQuietingDown && (overallLoad.computeTotalExecutors() > overallLoad.computeIdleExecutors()) && (timeout>0 && start+timeout>System.currentTimeMillis())) {
+            int cnt=0;
+            while (true) {
+                if (!isQuietingDown) {
+                    LOGGER.info("Quiet mode cancelled");
+                    break;
+                }
+                if (overallLoad.computeTotalExecutors() <= overallLoad.computeIdleExecutors()) {// should be really == but be defensive
+                    LOGGER.info("System became fully quiet");
+                    break;
+                }
+                if (timeout>0 && start+timeout<=System.currentTimeMillis()) {
+                    LOGGER.info("Quiet mode time out after "+timeout+"ms");
+                    break;
+                }
+
                 Thread.sleep(1000);
+                if (((cnt++)%60)==0)
+                    LOGGER.info("Waiting for all the jobs to finish. Total="+overallLoad.computeTotalExecutors()+" idle="+overallLoad.computeIdleExecutors());
             }
         }
         return new HttpRedirect(".");
@@ -2945,8 +2962,11 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
                     if (isQuietingDown) {
                         servletContext.setAttribute("app",new HudsonIsRestarting());
                         // give some time for the browser to load the "reloading" page
+                        LOGGER.info("Restart in 5 seconds");
                         Thread.sleep(5000);
                         lifecycle.restart();
+                    } else {
+                        LOGGER.info("Safe-restart mode cancelled");
                     }
                 } catch (InterruptedException e) {
                     LOGGER.log(Level.WARNING, "Failed to restart Hudson",e);
