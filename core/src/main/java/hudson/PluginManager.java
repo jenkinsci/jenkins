@@ -206,7 +206,7 @@ public abstract class PluginManager extends AbstractModelObject {
                                 });
                             }
 
-                            g.requires(PLUGINS_LISTED).add("Checking cyclic dependencies",new Executable() {
+                            g.requires(PLUGINS_PREPARED).add("Checking cyclic dependencies",new Executable() {
                                 /**
                                  * Makes sure there's no cycle in dependencies.
                                  */
