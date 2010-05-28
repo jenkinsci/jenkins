@@ -144,14 +144,13 @@ public final class Secret {
 
     /**
      * Workaround for HUDSON-6459 / https://glassfish.dev.java.net/issues/show_bug.cgi?id=11862 .
-     * Falls back to "SunJCE" provider if unable to get the Cipher from the default provider.
+     * This method uses specific provider selected via hudson.util.Secret.provider system property
+     * to provide a workaround for the above bug where default provide gives an unusable instance.
+     * (Glassfish Enterprise users should set value of this property to "SunJCE")
      */
     public static Cipher getCipher(String algorithm) throws GeneralSecurityException {
-        try {
-            return Cipher.getInstance(algorithm);
-        } catch (Exception e) {
-            return Cipher.getInstance(algorithm, "SunJCE");
-        }
+        return PROVIDER != null ? Cipher.getInstance(algorithm, PROVIDER)
+                                : Cipher.getInstance(algorithm);
     }
 
     /**
@@ -198,6 +197,12 @@ public final class Secret {
     }
 
     private static final String MAGIC = "::::MAGIC::::";
+
+    /**
+     * Workaround for HUDSON-6459 / https://glassfish.dev.java.net/issues/show_bug.cgi?id=11862 .
+     * @see #getCipher(String)
+     */
+    private static final String PROVIDER = System.getProperty(Secret.class.getName()+".provider");
 
     /**
      * For testing only. Override the secret key so that we can test this class without {@link Hudson}.
