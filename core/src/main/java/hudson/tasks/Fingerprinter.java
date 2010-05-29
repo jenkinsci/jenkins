@@ -1,7 +1,7 @@
 /*
  * The MIT License
  * 
- * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi
+ * Copyright (c) 2004-2010, Sun Microsystems, Inc., Kohsuke Kawaguchi
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -45,6 +45,7 @@ import net.sf.json.JSONObject;
 import org.apache.tools.ant.DirectoryScanner;
 import org.apache.tools.ant.types.FileSet;
 import org.kohsuke.stapler.AncestorInPath;
+import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.StaplerRequest;
 
@@ -79,6 +80,7 @@ public class Fingerprinter extends Recorder implements Serializable {
      */
     private final boolean recordBuildArtifacts;
 
+    @DataBoundConstructor
     public Fingerprinter(String targets, boolean recordBuildArtifacts) {
         this.targets = targets;
         this.recordBuildArtifacts = recordBuildArtifacts;
@@ -219,9 +221,7 @@ public class Fingerprinter extends Recorder implements Serializable {
 
         @Override
         public Publisher newInstance(StaplerRequest req, JSONObject formData) {
-            return new Fingerprinter(
-                req.getParameter("fingerprint_targets").trim(),
-                req.getParameter("fingerprint_artifacts")!=null);
+            return req.bindJSON(Fingerprinter.class, formData);
         }
 
         public boolean isApplicable(Class<? extends AbstractProject> jobType) {
