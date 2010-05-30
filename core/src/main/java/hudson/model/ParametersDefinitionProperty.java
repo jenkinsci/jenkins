@@ -127,7 +127,7 @@ public class ParametersDefinitionProperty extends JobProperty<AbstractProject<?,
         }
 
     	Hudson.getInstance().getQueue().schedule(
-    			owner, 0, new ParametersAction(values), new CauseAction(new Cause.UserCause()));
+                owner, owner.getDelay(req), new ParametersAction(values), new CauseAction(new Cause.UserCause()));
 
         // send the user back to the job top page.
         rsp.sendRedirect(".");
@@ -145,7 +145,7 @@ public class ParametersDefinitionProperty extends JobProperty<AbstractProject<?,
         }
 
     	Hudson.getInstance().getQueue().schedule(
-    			owner, owner.getDelay(req), new ParametersAction(values), new CauseAction(new Cause.UserCause()));
+                owner, owner.getDelay(req), new ParametersAction(values), new CauseAction(new Cause.UserCause()));
 
         // send the user back to the job top page.
         rsp.sendRedirect(".");
