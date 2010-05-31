@@ -120,6 +120,9 @@ public class DescribableList<T extends Describable<T>, D extends Descriptor<T>> 
         }
     }
 
+    /**
+     * Creates a detached map from the current snapshot of the data, keyed from a descriptor to an instance.
+     */
     @SuppressWarnings("unchecked")
     public Map<D,T> toMap() {
         return (Map)Descriptor.toMap(data);
