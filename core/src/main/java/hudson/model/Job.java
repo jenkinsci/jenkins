@@ -303,12 +303,13 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
      * <p>
      * Much of Hudson assumes that the build number is unique and monotonic, so
      * this method can only accept a new value that's bigger than
-     * {@link #getNextBuildNumber()} returns. Otherwise it'll be no-op.
+     * {@link #getLastBuild()} returns. Otherwise it'll be no-op.
      * 
      * @since 1.199 (before that, this method was package private.)
      */
     public synchronized void updateNextBuildNumber(int next) throws IOException {
-        if (next > nextBuildNumber) {
+        RunT lb = getLastBuild();
+        if (lb!=null ?  next>lb.getNumber() : next>0) {
             this.nextBuildNumber = next;
             saveNextBuildNumber();
         }
