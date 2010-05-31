@@ -23,9 +23,14 @@
  */
 package hudson.util;
 
+import org.apache.commons.beanutils.PropertyUtils;
 import org.kohsuke.stapler.ClassDescriptor;
 
+import java.beans.PropertyDescriptor;
 import java.lang.annotation.Annotation;
+import java.lang.reflect.Array;
+import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
 import java.util.AbstractList;
@@ -55,6 +60,21 @@ public class ReflectionUtils extends org.springframework.util.ReflectionUtils {
      */
     public static List<Parameter> getParameters(Method m) {
         return new MethodInfo(m);
+    }
+
+    public static Object getPublicProperty(Object o, String p) throws InvocationTargetException, NoSuchMethodException, IllegalAccessException {
+        PropertyDescriptor pd = PropertyUtils.getPropertyDescriptor(o, p);
+        if(pd==null) {
+            // field?
+            try {
+                Field f = o.getClass().getField(p);
+                return f.get(o);
+            } catch (NoSuchFieldException e) {
+                throw new IllegalArgumentException("No such property "+p+" on "+o.getClass());
+            }
+        } else {
+            return PropertyUtils.getProperty(o, p);
+        }
     }
 
     /**
