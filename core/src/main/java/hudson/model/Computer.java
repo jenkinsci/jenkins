@@ -898,12 +898,17 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
         rsp.setContentType("text/plain");
         rsp.setCharacterEncoding("UTF-8");
         PrintWriter w = new PrintWriter(rsp.getCompressedWriter(req));
-        w.println("Master to slave");
-        ((Channel)getChannel()).dumpExportTable(w);
-        w.flush(); // flush here once so that even if the dump from the slave fails, the client gets some useful info
+        VirtualChannel vc = getChannel();
+        if (vc instanceof Channel) {
+            w.println("Master to slave");
+            ((Channel)vc).dumpExportTable(w);
+            w.flush(); // flush here once so that even if the dump from the slave fails, the client gets some useful info
 
-        w.println("\n\n\nSlave to master");
-        w.print(getChannel().call(new DumpExportTableTask()));
+            w.println("\n\n\nSlave to master");
+            w.print(vc.call(new DumpExportTableTask()));
+        } else {
+            w.println(Messages.Computer_BadChannel());
+        }
         w.close();
     }
 
