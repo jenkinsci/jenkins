@@ -115,7 +115,7 @@ THE SOFTWARE.
                 <mkdir dir="target/generated-resources" />
 
                 <!-- put executable war header -->
-                <resolveArtifact groupId="org.jvnet.hudson" artifactId="executable-war" version="1.16" type="jar" property="executable-war.jar" />
+                <resolveArtifact groupId="org.jvnet.hudson" artifactId="executable-war" version="1.17" type="jar" property="executable-war.jar" />
                 <unjar src="${executable-war.jar}" dest="target/generated-resources">
                   <patternset>
                     <include name="**/*.class" />
