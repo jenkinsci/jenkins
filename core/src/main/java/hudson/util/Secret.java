@@ -31,6 +31,7 @@ import com.thoughtworks.xstream.io.HierarchicalStreamWriter;
 import com.trilead.ssh2.crypto.Base64;
 import hudson.model.Hudson;
 import hudson.Util;
+import org.kohsuke.stapler.Stapler;
 
 import javax.crypto.SecretKey;
 import javax.crypto.Cipher;
@@ -208,4 +209,12 @@ public final class Secret {
      * For testing only. Override the secret key so that we can test this class without {@link Hudson}.
      */
     /*package*/ static String SECRET = null;
+
+    static {
+        Stapler.CONVERT_UTILS.register(new org.apache.commons.beanutils.Converter() {
+            public Secret convert(Class type, Object value) {
+                return Secret.fromString(value.toString());
+            }
+        }, Secret.class);
+    }
 }
