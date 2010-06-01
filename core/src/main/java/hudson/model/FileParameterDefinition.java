@@ -79,6 +79,8 @@ public class FileParameterDefinition extends ParameterDefinition {
         File local = File.createTempFile("hudson","parameter");
         src.copyTo(new FilePath(local));
 
-        return new FileParameterValue(getName(), local, getDescription());
+        FileParameterValue p = new FileParameterValue(getName(), local, getDescription());
+        p.setLocation(getName());
+        return p;
     }
 }
