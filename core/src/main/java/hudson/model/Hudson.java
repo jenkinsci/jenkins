@@ -1975,7 +1975,7 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
     public synchronized TopLevelItem createProject( TopLevelItemDescriptor type, String name, boolean notify )
             throws IOException {
         if(items.containsKey(name))
-            throw new IllegalArgumentException();
+            throw new IllegalArgumentException("Project of the name "+name+" already exists");
 
         TopLevelItem item;
         try {
