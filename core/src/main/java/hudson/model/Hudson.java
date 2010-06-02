@@ -2961,7 +2961,7 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
                     SecurityContextHolder.getContext().setAuthentication(ACL.SYSTEM);
 
                     // Wait 'til we have no active executors.
-                    doQuietDown(true, 5000);
+                    doQuietDown(true, 0);
 
                     // Make sure isQuietingDown is still true.
                     if (isQuietingDown) {
