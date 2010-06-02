@@ -2786,6 +2786,7 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
             @Override
             public void run() {
                 try {
+                    SecurityContextHolder.getContext().setAuthentication(ACL.SYSTEM);
                     reload();
                 } catch (IOException e) {
                     LOGGER.log(SEVERE,"Failed to reload Hudson config",e);
@@ -2928,6 +2929,8 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
             @Override
             public void run() {
                 try {
+                    SecurityContextHolder.getContext().setAuthentication(ACL.SYSTEM);
+
                     // give some time for the browser to load the "reloading" page
                     Thread.sleep(5000);
                     lifecycle.restart();
@@ -2955,6 +2958,8 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
             @Override
             public void run() {
                 try {
+                    SecurityContextHolder.getContext().setAuthentication(ACL.SYSTEM);
+
                     // Wait 'til we have no active executors.
                     doQuietDown(true, 5000);
 
@@ -3013,6 +3018,7 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
             @Override
             public void run() {
                 try {
+                    SecurityContextHolder.getContext().setAuthentication(ACL.SYSTEM);
                     LOGGER.severe(String.format("Shutting down VM as requested by %s from %s",
                                                 exitUser, exitAddr));
                     // Wait 'til we have no active executors.
