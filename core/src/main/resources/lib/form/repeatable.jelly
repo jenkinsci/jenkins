@@ -113,6 +113,7 @@ THE SOFTWARE.
     </j:when>
     <j:otherwise>
       <j:set var="name" value="${attrs.name?:attrs.var}"/>
+      <j:set var="items" value="${attrs.items}"/>
     </j:otherwise>
   </j:choose>
 
