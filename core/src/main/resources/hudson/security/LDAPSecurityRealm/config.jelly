@@ -1,7 +1,7 @@
 <!--
 The MIT License
 
-Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi
+Copyright (c) 2004-2010, Sun Microsystems, Inc., Kohsuke Kawaguchi
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -41,12 +41,12 @@ THE SOFTWARE.
       <f:textbox name="ldap.groupSearchBase" value="${instance.groupSearchBase}" />
     </f:entry>
     <f:entry title="${%Manager DN}" help="/help/security/ldap/managerDN.html">
-      <f:textbox name="ldap.managerDN" value="${instance.managerDN}"
+      <f:textbox name="ldap.managerDN" value="${instance.managerDN}" autocomplete="off"
       checkUrl="'${rootURL}/securityRealms/LDAPSecurityRealm/serverCheck?field=managerDN&amp;server='+encodeURIComponent(this.form.elements['ldap.server'].value)+'&amp;managerDN='+encodeURIComponent(this.value)+'&amp;managerPassword='+encodeURIComponent(this.form.elements['ldap.managerPassword'].value)"
       />
     </f:entry>
     <f:entry title="${%Manager Password}" help="/help/security/ldap/managerPassword.html">
-      <f:password name="ldap.managerPassword" value="${instance.managerPassword}"
+      <f:password name="ldap.managerPassword" value="${instance.managerPassword}" autocomplete="off"
       checkUrl="'${rootURL}/securityRealms/LDAPSecurityRealm/serverCheck?field=password&amp;server='+encodeURIComponent(this.form.elements['ldap.server'].value)+'&amp;managerDN='+encodeURIComponent(this.form.elements['ldap.managerDN'].value)+'&amp;managerPassword='+encodeURIComponent(this.value)" 
       />
     </f:entry>

@@ -1,12 +1,14 @@
 package hudson.util;
 
 import hudson.Util;
+import hudson.model.TaskListener;
 import org.apache.tools.ant.DirectoryScanner;
 import org.apache.tools.ant.types.FileSet;
 
 import java.io.File;
 import java.io.FileFilter;
 import java.io.IOException;
+import java.io.InterruptedIOException;
 import java.io.Serializable;
 
 import static hudson.Util.fixEmpty;
@@ -31,6 +33,17 @@ public abstract class DirScanner implements Serializable {
     public static class Full extends DirScanner {
         private void scan(File f, String path, FileVisitor visitor) throws IOException {
             if (f.canRead()) {
+                if (visitor.understandsSymlink()) {
+                    try {
+                        String target = Util.resolveSymlink(f, TaskListener.NULL);
+                        if (target!=null) {
+                            visitor.visitSymlink(f,target,path+f.getName());
+                            return;
+                        }
+                    } catch (InterruptedException e) {
+                        throw (IOException)new InterruptedIOException().initCause(e);
+                    }
+                }
                 visitor.visit(f,path+f.getName());
                 if(f.isDirectory()) {
                     for( File child : f.listFiles() )

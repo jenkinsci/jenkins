@@ -43,7 +43,7 @@ import org.kohsuke.stapler.StaplerResponse;
  * <h2>How to implement?</h2>
  * <p>
  * Plugins who wish to contribute such notifications can implement this
- * class and put to {@link Extension} to register it to Hudson.
+ * class and put {@link Extension} on it to register it to Hudson.
  *
  * <p>
  * Once installed, it's the implementor's responsibility to perform

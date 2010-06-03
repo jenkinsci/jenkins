@@ -1,7 +1,7 @@
 <!--
 The MIT License
 
-Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, Tom Huybrechts
+Copyright (c) 2004-2010, Sun Microsystems, Inc., Kohsuke Kawaguchi, Tom Huybrechts
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -34,19 +34,23 @@ THE SOFTWARE.
   -->
   <st:statusCode value="405" />
   <l:layout title="${it.displayName}">
-	<st:include page="sidepanel.jelly" it="${it.project}" />
-		<l:main-panel>
-			<h1>${it.owner.pronoun} ${it.owner.displayName}</h1>
+    <st:include page="sidepanel.jelly" it="${it.project}" />
+    <l:main-panel>
+      <h1>${it.owner.pronoun} ${it.owner.displayName}</h1>
       <p>${%description}</p>
       <f:form method="post" action="build" name="parameters">
-				<j:forEach var="parameterDefinition" items="${it.parameterDefinitions}">
-					<st:include it="${parameterDefinition}"
-						page="${parameterDefinition.descriptor.valuePage}" />
-				</j:forEach>
-				<f:block>
-					<f:submit value="${%Build}" />
-				</f:block>
-			</f:form>
-		</l:main-panel>
-	</l:layout>
+        <j:forEach var="parameterDefinition" items="${it.parameterDefinitions}">
+          <st:include it="${parameterDefinition}"
+                      page="${parameterDefinition.descriptor.valuePage}" />
+        </j:forEach>
+        <f:block>
+          <j:set var="delay" value="${request.getParameter('delay')}" />
+          <j:if test="${!empty(delay)}">
+            <input type="hidden" name="delay" value="${delay}" />
+          </j:if>
+          <f:submit value="${%Build}" />
+        </f:block>
+      </f:form>
+    </l:main-panel>
+  </l:layout>
 </j:jelly>

@@ -1,7 +1,7 @@
 <!--
 The MIT License
 
-Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi
+Copyright (c) 2004-2010, Sun Microsystems, Inc., Kohsuke Kawaguchi
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -21,17 +21,18 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 -->
-
+<?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
   <f:entry title="${%Files to fingerprint}"
     description="${%description}">
-    <f:textbox name="fingerprint_targets" value="${instance.targets}"
+    <f:textbox name="targets" value="${instance.targets}"
                checkUrl="'descriptorByName/Fingerprinter/check?value='+encodeURIComponent(this.value)" />
   </f:entry>
   <f:entry title="">
-    <f:checkbox name="fingerprint_artifacts" checked="${instance.recordBuildArtifacts}" />
+    <f:checkbox name="recordBuildArtifacts" checked="${instance.recordBuildArtifacts}" />
     <label class="attach-previous">${%Fingerprint all archived artifacts}</label>
   </f:entry>
+  <!-- keepDependencies is actually a property of the Job, not Fingerprinter: -->
   <f:entry title="" help="/help/tasks/fingerprint/keepDependencies.html">
     <f:checkbox name="keepDependencies" checked="${it.keepDependencies}" />
     <label class="attach-previous">${%Keep the build logs of dependencies}</label> 

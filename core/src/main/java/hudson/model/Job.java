@@ -135,6 +135,12 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
      */
     protected transient volatile int nextBuildNumber = 1;
 
+    /**
+     * Newly copied jobs get this flag set, so that Hudson doesn't try to run the job until its configuration
+     * is saved once.
+     */
+    private transient volatile boolean holdOffBuildUntilSave;
+
     private volatile LogRotator logRotator;
 
     /**
@@ -154,6 +160,12 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
 
     protected Job(ItemGroup parent, String name) {
         super(parent, name);
+    }
+
+    @Override
+    public synchronized void save() throws IOException {
+        super.save();
+        holdOffBuildUntilSave = false;
     }
 
     @Override
@@ -191,6 +203,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
         super.onCopiedFrom(src);
         synchronized (this) {
             this.nextBuildNumber = 1; // reset the next build number
+            this.holdOffBuildUntilSave = true;
         }
     }
 
@@ -210,6 +223,10 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
 
     /*package*/ TextFile getNextBuildNumberFile() {
         return new TextFile(new File(this.getRootDir(), "nextBuildNumber"));
+    }
+
+    protected boolean isHoldOffBuildUntilSave() {
+        return holdOffBuildUntilSave;
     }
 
     protected synchronized void saveNextBuildNumber() throws IOException {
@@ -286,12 +303,13 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
      * <p>
      * Much of Hudson assumes that the build number is unique and monotonic, so
      * this method can only accept a new value that's bigger than
-     * {@link #getNextBuildNumber()} returns. Otherwise it'll be no-op.
+     * {@link #getLastBuild()} returns. Otherwise it'll be no-op.
      * 
      * @since 1.199 (before that, this method was package private.)
      */
     public synchronized void updateNextBuildNumber(int next) throws IOException {
-        if (next > nextBuildNumber) {
+        RunT lb = getLastBuild();
+        if (lb!=null ?  next>lb.getNumber() : next>0) {
             this.nextBuildNumber = next;
             saveNextBuildNumber();
         }

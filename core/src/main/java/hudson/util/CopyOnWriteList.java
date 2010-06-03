@@ -151,6 +151,10 @@ public class CopyOnWriteList<E> implements Iterable<E> {
         dst.addAll(core);
     }
 
+    public E get(int index) {
+        return core.get(index);
+    }
+
     public boolean isEmpty() {
         return core.isEmpty();
     }

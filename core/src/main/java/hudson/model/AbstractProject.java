@@ -447,7 +447,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
     }
 
     public boolean isBuildable() {
-        return !isDisabled();
+        return !isDisabled() && !isHoldOffBuildUntilSave();
     }
 
     /**
@@ -1201,8 +1201,9 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
         return scm;
     }
 
-    public void setScm(SCM scm) {
+    public void setScm(SCM scm) throws IOException {
         this.scm = scm;
+        save();
     }
 
     /**

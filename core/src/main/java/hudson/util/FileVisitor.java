@@ -23,6 +23,26 @@ public abstract class FileVisitor {
     public abstract void visit(File f, String relativePath) throws IOException;
 
     /**
+     * Some visitors can handle symlinks as symlinks. Those visitors should implement
+     * this method to provide a different handling for symlink.
+     * <p>
+     * This method is invoked by those {@link DirScanner}s that can handle symlinks as symlinks
+     * (not every {@link DirScanner}s are capable of doing that, as proper symlink handling requires
+     * letting visitors decide whether or not to descend into a symlink directory.
+     */
+    public void visitSymlink(File link, String target, String relativePath) throws IOException {
+        visit(link,relativePath);
+    }
+
+    /**
+     * Some visitors can handle symlinks as symlinks. Those visitors should implement
+     * this method and return true to have callers invoke {@link #visitSymlink(File, String, String)}
+     */
+    public boolean understandsSymlink() {
+        return false;
+    }
+    
+    /**
      * Decorates a visitor by a given filter.
      */
     public final FileVisitor with(FileFilter f) {

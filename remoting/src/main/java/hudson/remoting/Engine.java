@@ -141,28 +141,33 @@ public class Engine extends Thread {
                     // find out the TCP port
                     HttpURLConnection con = (HttpURLConnection)salURL.openConnection();
                     if (con instanceof HttpURLConnection && credentials != null) {
-                        HttpURLConnection http = (HttpURLConnection) con;
                         String encoding = new sun.misc.BASE64Encoder().encode(credentials.getBytes());
-                        http.setRequestProperty("Authorization", "Basic " + encoding);
+                        con.setRequestProperty("Authorization", "Basic " + encoding);
                     }
                     try {
-                        con.connect();
-                    } catch (IOException x) {
-                        if (firstError == null) {
-                            firstError = new IOException("Failed to connect to " + salURL + ": " + x.getMessage()).initCause(x);
+                        try {
+                            con.setConnectTimeout(30000);
+                            con.setReadTimeout(60000);
+                            con.connect();
+                        } catch (IOException x) {
+                            if (firstError == null) {
+                                firstError = new IOException("Failed to connect to " + salURL + ": " + x.getMessage()).initCause(x);
+                            }
+                            continue;
                         }
-                        continue;
-                    }
-                    port = con.getHeaderField("X-Hudson-JNLP-Port");
-                    if(con.getResponseCode()!=200) {
-                        if(firstError==null)
-                            firstError = new Exception(salURL+" is invalid: "+con.getResponseCode()+" "+con.getResponseMessage());
-                        continue;
-                    }
-                    if(port ==null) {
-                        if(firstError==null)
-                            firstError = new Exception(url+" is not Hudson");
-                        continue;
+                        port = con.getHeaderField("X-Hudson-JNLP-Port");
+                        if(con.getResponseCode()!=200) {
+                            if(firstError==null)
+                                firstError = new Exception(salURL+" is invalid: "+con.getResponseCode()+" "+con.getResponseMessage());
+                            continue;
+                        }
+                        if(port ==null) {
+                            if(firstError==null)
+                                firstError = new Exception(url+" is not Hudson");
+                            continue;
+                        }
+                    } finally {
+                        con.disconnect();
                     }
 
                     // this URL works. From now on, only try this URL

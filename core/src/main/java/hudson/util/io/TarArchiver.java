@@ -27,6 +27,7 @@ package hudson.util.io;
 import hudson.Functions;
 import hudson.org.apache.tools.tar.TarOutputStream;
 import hudson.util.FileVisitor;
+import hudson.util.IOException2;
 import org.apache.tools.tar.TarEntry;
 
 import java.io.BufferedOutputStream;
@@ -34,6 +35,9 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.lang.reflect.Field;
+
+import static org.apache.tools.tar.TarConstants.LF_SYMLINK;
 
 /**
  * {@link FileVisitor} that creates a tar archive.
@@ -55,6 +59,27 @@ final class TarArchiver extends Archiver {
             }
         });
         tar.setLongFileMode(TarOutputStream.LONGFILE_GNU);
+    }
+
+    @Override
+    public void visitSymlink(File link, String target, String relativePath) throws IOException {
+        TarEntry e = new TarEntry(relativePath, LF_SYMLINK);
+
+        try {
+            StringBuffer linkName = (StringBuffer) LINKNAME_FIELD.get(e);
+            linkName.setLength(0);
+            linkName.append(target);
+        } catch (IllegalAccessException x) {
+            throw new IOException2("Failed to set linkName", x);
+        }
+
+        tar.putNextEntry(e);
+        entriesWritten++;
+    }
+
+    @Override
+    public boolean understandsSymlink() {
+        return true;
     }
 
     public void visit(File file, String relativePath) throws IOException {
@@ -87,5 +112,19 @@ final class TarArchiver extends Archiver {
 
     public void close() throws IOException {
         tar.close();
+    }
+
+    private static final Field LINKNAME_FIELD = getTarEntryLinkNameField();
+
+    private static Field getTarEntryLinkNameField() {
+        try {
+            Field f = TarEntry.class.getDeclaredField("linkName");
+            f.setAccessible(true);
+            return f;
+        } catch (SecurityException e) {
+            throw new AssertionError(e);
+        } catch (NoSuchFieldException e) {
+            throw new AssertionError(e);
+        }
     }
 }
