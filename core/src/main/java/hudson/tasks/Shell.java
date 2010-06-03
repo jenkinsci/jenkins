@@ -141,11 +141,6 @@ public class Shell extends CommandInterpreter {
             save();
         }
 
-        @Override
-        public String getHelpFile() {
-            return "/help/project-config/shell.html";
-        }
-
         public String getDisplayName() {
             return Messages.Shell_DisplayName();
         }
