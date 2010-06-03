@@ -116,4 +116,9 @@ public class ExtractResourceWithChangesSCM extends NullSCM {
 
         stream.close();
     }
+
+    /**
+     * Don't write 'this', so that subtypes can be implemented as anonymous class.
+     */
+    private Object writeReplace() { return new Object(); }
 }

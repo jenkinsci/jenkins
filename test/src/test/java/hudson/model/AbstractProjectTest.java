@@ -175,6 +175,11 @@ public class AbstractProjectTest extends HudsonTestCase {
                 return true;
             }
 
+            /**
+             * Don't write 'this', so that subtypes can be implemented as anonymous class.
+             */
+            private Object writeReplace() { return new Object(); }
+            
             @Override public boolean requiresWorkspaceForPolling() {
                 return true;
             }
