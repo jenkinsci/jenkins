@@ -77,6 +77,7 @@ import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.ArrayList;
 import java.util.Enumeration;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Arrays;
@@ -662,7 +663,8 @@ public abstract class HudsonTestCase extends TestCase implements RootAction {
     /**
      * Loads a configuration page and submits it without any modifications, to
      * perform a round-trip configuration test.
-     * @see http://wiki.hudson-ci.org/display/HUDSON/Unit+Test#UnitTest-Configurationroundtriptesting
+     * <p>
+     * See http://wiki.hudson-ci.org/display/HUDSON/Unit+Test#UnitTest-Configurationroundtriptesting
      */
     protected <P extends Job> P configRoundtrip(P job) throws Exception {
         submit(createWebClient().getPage(job,"configure").getFormByName("config"));
@@ -1008,11 +1010,28 @@ public abstract class HudsonTestCase extends TestCase implements RootAction {
         Class<?>[] types = lc.getParameterTypes();
         assertEquals(names.length,types.length);
         for (int i=0; i<types.length; i++) {
+            Object lv = ReflectionUtils.getPublicProperty(lhs, names[i]);
+            Object rv = ReflectionUtils.getPublicProperty(rhs, names[i]);
+
+            if (Iterable.class.isAssignableFrom(types[i])) {
+                Iterable lcol = (Iterable) lv;
+                Iterable rcol = (Iterable) rv;
+                Iterator ltr,rtr;
+                for (ltr=lcol.iterator(), rtr=rcol.iterator(); ltr.hasNext() && rtr.hasNext();) {
+                    Object litem = ltr.next();
+                    Object ritem = rtr.next();
+
+                    if (findDataBoundConstructor(litem.getClass())!=null) {
+                        assertEqualDataBoundBeans(litem,ritem);
+                    } else {
+                        assertEquals(litem,ritem);
+                    }
+                }
+                assertFalse("collection size mismatch between "+lhs+" and "+rhs, ltr.hasNext() ^ rtr.hasNext());
+            } else
             if (findDataBoundConstructor(types[i])!=null) {
                 // recurse into nested databound objects
-                assertEqualDataBoundBeans(
-                        ReflectionUtils.getPublicProperty(lhs, names[i]),
-                        ReflectionUtils.getPublicProperty(rhs, names[i]));
+                assertEqualDataBoundBeans(lv,rv);
             } else {
                 primitiveProperties.add(names[i]);
             }
