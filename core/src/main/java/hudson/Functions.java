@@ -1139,7 +1139,7 @@ public class Functions {
      */
     public boolean hyperlinkMatchesCurrentPage(String href) throws UnsupportedEncodingException {
         String url = Stapler.getCurrentRequest().getRequestURL().toString();
-        if (href.length() <= 1) return href.equals(".") && url.endsWith("/");
+        if (href == null || href.length() <= 1) return ".".equals(href) && url.endsWith("/");
         url = URLDecoder.decode(url,"UTF-8");
         href = URLDecoder.decode(href,"UTF-8");
         if (url.endsWith("/")) url = url.substring(0, url.length() - 1);
