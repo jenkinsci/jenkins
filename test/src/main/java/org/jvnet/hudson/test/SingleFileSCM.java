@@ -75,7 +75,7 @@ public class SingleFileSCM extends NullSCM {
     }
 
     /**
-     * Don't write 'this', so that subtypes can be implemented as anonymous clas.
+     * Don't write 'this', so that subtypes can be implemented as anonymous class.
      */
     private Object writeReplace() { return new Object(); }
 }
