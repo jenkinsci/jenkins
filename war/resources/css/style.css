@@ -538,6 +538,24 @@ div.behavior-loading {
   text-align: left;
 }
 
+/* ============================ parameters form ========================== */
+
+table.parameters {
+  border-collapse: collapse;
+}
+
+table.parameters > tbody > tr:first-child > td {
+  padding-top: 4px;
+}
+
+table.parameters .setting-description {
+  padding-bottom: 4px;
+}
+
+table.parameters > tbody:hover {
+  background-color: #f0f0f0;
+}
+
 /* ============================ health report hover ========================== */
 
 .healthReport a {
