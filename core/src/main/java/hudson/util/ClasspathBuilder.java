@@ -2,6 +2,8 @@ package hudson.util;
 
 import hudson.FilePath;
 import hudson.Util;
+import hudson.remoting.Channel;
+import hudson.remoting.Which;
 
 import java.io.Serializable;
 import java.io.File;
@@ -38,6 +40,14 @@ public class ClasspathBuilder implements Serializable {
     public ClasspathBuilder add(String path) {
         args.add(path);
         return this;
+    }
+
+    /**
+     * Adds a jar file that contains the given class.
+     * @since 1.361
+     */
+    public ClasspathBuilder addJarOf(Class c) throws IOException {
+        return add(Which.jarFile(c));
     }
 
     /**
