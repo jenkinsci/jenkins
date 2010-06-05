@@ -131,7 +131,7 @@ public class JVMBuilder implements Serializable {
      * Fills a {@link ProcStarter} with all the parameters configured by this builder.
      */
     public ProcStarter launch(Launcher launcher) {
-        return launcher.launch().cmds(args).pwd(pwd);
+        return launcher.launch().cmds(toFullArguments()).pwd(pwd);
     }
 
 
