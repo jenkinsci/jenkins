@@ -1249,6 +1249,10 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
             if(v.getViewName().equals(name))
                 return v;
         }
+        // Fallback to subview of primary view if it is a ViewGroup
+        View pv = getPrimaryView();
+        if (pv instanceof ViewGroup)
+            return ((ViewGroup)pv).getView(name);
         return null;
     }
 
