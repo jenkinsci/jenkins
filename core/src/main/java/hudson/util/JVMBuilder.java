@@ -43,6 +43,7 @@ public class JVMBuilder implements Serializable {
     private final ClasspathBuilder classpath = new ClasspathBuilder();
     private final Map<String,String> systemProperties = new TreeMap<String,String>();
     private final ArgumentListBuilder args = new ArgumentListBuilder();
+    private final ArgumentListBuilder vmopts = new ArgumentListBuilder();
     private FilePath pwd;
 
     private String mainClass;
@@ -76,10 +77,25 @@ public class JVMBuilder implements Serializable {
     }
 
     /**
+     * JVM options.
+     */
+    public ArgumentListBuilder vmopts() {
+        return vmopts;
+    }
+
+    /**
      * Sets the current directory for the new JVM.
      */
     public JVMBuilder pwd(FilePath pwd) {
         this.pwd = pwd;
+        return this;
+    }
+
+    /**
+     * Enables the debugger support on the given port.
+     */
+    public JVMBuilder debug(int port) {
+        vmopts.add("-Xrunjdwp:transport=dt_socket,server=y,address="+port);
         return this;
     }
 
@@ -105,6 +121,7 @@ public class JVMBuilder implements Serializable {
         args.add(new File(System.getProperty("java.home"),"bin/java")); // TODO: if we are to support a remote launch, JVM would be on a different path.
         args.addKeyValuePairs("-D",systemProperties);
         args.add("-cp").add(classpath.toString());
+        args.add(this.vmopts.toCommandArray());
         args.add(mainClass);
         args.add(this.args.toCommandArray());
         return args;
