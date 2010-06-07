@@ -36,6 +36,7 @@ import hudson.model.UpdateCenter;
 import hudson.model.UpdateSite;
 import hudson.util.CyclicGraphDetector;
 import hudson.util.CyclicGraphDetector.CycleDetectedException;
+import hudson.util.PersistedList;
 import hudson.util.Service;
 import org.apache.commons.fileupload.FileItem;
 import org.apache.commons.fileupload.disk.DiskFileItemFactory;
@@ -493,6 +494,24 @@ public abstract class PluginManager extends AbstractModelObject {
         }
         rsp.sendRedirect("../updateCenter/");
     }
+
+    /**
+     * Bare-minimum configuration mechanism to change the update center.
+     */
+    public HttpResponse doSiteConfigure(@QueryParameter String site) throws IOException {
+        Hudson hudson = Hudson.getInstance();
+        hudson.checkPermission(Hudson.ADMINISTER);
+        UpdateCenter uc = hudson.getUpdateCenter();
+        PersistedList<UpdateSite> sites = uc.getSites();
+        for (UpdateSite s : sites) {
+            if (s.getId().equals("default"))
+                sites.remove(s);
+        }
+        sites.add(new UpdateSite("default",site));
+        
+        return HttpResponses.redirectToContextRoot();
+    }
+
 
     public HttpResponse doProxyConfigure(
             @QueryParameter("proxy.server") String server,
