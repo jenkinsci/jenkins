@@ -49,6 +49,12 @@ THE SOFTWARE.
             }
           }
         }
+        function showhideCategory(col) {
+          var row = col.parentNode.nextSibling;
+          var newDisplay = row &amp;&amp; row.style.display == 'none' ? '' : 'none';
+          for (; row &amp;&amp; row.cells.length &gt; 1; row = row.nextSibling)
+            row.style.display = newDisplay;
+        }
       // ]]&gt;
       </script>
       <form method="post" action="install">
@@ -56,7 +62,8 @@ THE SOFTWARE.
         <local:tabBar page="${attrs.page}" xmlns:local="/hudson/PluginManager" />
         <table id="plugins" class="sortable pane bigtable">
             <tr style="border-top: 0px;">
-              <th initialSortDir="${isUpdates?null:'down'}" tooltip="${%Check to install the plugin}"
+              <th initialSortDir="${isUpdates?null:'down'}"
+                  tooltip="${%Check to install the plugin}${isUpdates?'':'&lt;br/&gt;'+'%Click this heading to sort by category'}"
                   width="32" onclick="showhideCategories(this,1)">${%Install}</th>
               <th initialSortDir="${isUpdates?'down':null}"
                   onclick="showhideCategories(this,0)">${%Name}</th>
@@ -72,7 +79,7 @@ THE SOFTWARE.
                     <j:set var="p" value="${p.plugin}" />
                     <j:if test="${thisCat != lastCat}">
                       <tr>
-                        <td class="pane" colspan="3">${thisCat}</td>
+                        <td class="pane" colspan="3" onclick="showhideCategory(this)">${thisCat}</td>
                       </tr>
                     </j:if>
                     <j:set var="lastCat" value="${thisCat}" />

@@ -1,7 +1,8 @@
 /*
  * The MIT License
  * 
- * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, Yahoo! Inc., Erik Ramfelt, Tom Huybrechts
+ * Copyright (c) 2004-2010, Sun Microsystems, Inc., Kohsuke Kawaguchi,
+ * Yahoo! Inc., Erik Ramfelt, Tom Huybrechts
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -67,7 +68,7 @@ import org.kohsuke.stapler.HttpResponses;
  *
  * @author Kohsuke Kawaguchi
  */
-public final class PluginWrapper {
+public final class PluginWrapper implements Comparable<PluginWrapper> {
     /**
      * {@link PluginManager} to which this belongs to.
      */
@@ -439,6 +440,13 @@ public final class PluginWrapper {
      */
     public boolean hasUpdate() {
         return getUpdateInfo()!=null;
+    }
+
+    /**
+     * Sort by short name.
+     */
+    public int compareTo(PluginWrapper pw) {
+        return shortName.compareToIgnoreCase(pw.shortName);
     }
 
 //

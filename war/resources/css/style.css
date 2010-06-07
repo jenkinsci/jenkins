@@ -714,8 +714,8 @@ TABLE.fingerprint-in-build TD {
   border-top: none;
 }
 
-#plugins tr:hover {
-  background-color: #eeeee8;
+#pluginsAdv tr:hover {
+  background-color: inherit;
 }
 
 #plugins tr.already-upgraded {

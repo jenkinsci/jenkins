@@ -233,6 +233,7 @@ public abstract class PluginManager extends AbstractModelObject {
                                         stop(); // disable all plugins since classloading from them can lead to StackOverflow
                                         throw e;    // let Hudson fail
                                     }
+                                    Collections.sort(plugins);
                                 }
                             });
 
