@@ -1671,7 +1671,7 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
     public String getRootUrlFromRequest() {
         StaplerRequest req = Stapler.getCurrentRequest();
         StringBuilder buf = new StringBuilder();
-        buf.append("http://");
+        buf.append(req.getScheme()+"://");
         buf.append(req.getServerName());
         if(req.getServerPort()!=80)
             buf.append(':').append(req.getServerPort());
