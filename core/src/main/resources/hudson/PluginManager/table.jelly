@@ -85,7 +85,8 @@ THE SOFTWARE.
                     <j:set var="lastCat" value="${thisCat}" />
                   </j:if>
                   <j:set var="installJob" value="${isUpdates ? app.updateCenter.getJob(p) : null}" />
-                  <j:set var="installedOk" value="${installJob.status.success}" />
+                  <j:set var="installedOk"
+                     value="${installJob.status.success and installJob.plugin.version==p.version}" />
                   <tr class="${installJob!=null ? 'already-upgraded' : null}">
                     <td class="pane" align="center" data="${thisCat}_">
                       <input type="checkbox" name="plugin.${p.name}.${p.sourceId}"
