@@ -24,9 +24,12 @@
 package hudson.model;
 
 import org.kohsuke.stapler.DataBoundConstructor;
+import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.StaplerResponse;
 import org.apache.commons.fileupload.FileItem;
 import org.apache.commons.fileupload.disk.DiskFileItem;
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
 
 import hudson.tasks.BuildWrapper;
@@ -40,6 +43,7 @@ import java.io.UnsupportedEncodingException;
 import java.io.OutputStream;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import javax.servlet.ServletException;
 
 /**
  * {@link ParameterValue} for {@link FileParameterDefinition}.
@@ -55,16 +59,23 @@ import java.io.FileOutputStream;
 public class FileParameterValue extends ParameterValue {
     private FileItem file;
 
+    /**
+     * The name of the originally uploaded file.
+     */
+    private final String originalFileName;
+
     private String location;
 
     @DataBoundConstructor
     public FileParameterValue(String name, FileItem file) {
         this(name, file, null);
     }
+
     public FileParameterValue(String name, FileItem file, String description) {
         super(name, description);
         assert file!=null;
         this.file = file;
+        this.originalFileName = FilenameUtils.getName(file.getName());
     }
 
     public FileParameterValue(String name, File file, String desc) {
@@ -76,14 +87,28 @@ public class FileParameterValue extends ParameterValue {
         this.location = location;
     }
 
+    /**
+     * Get the name of the originally uploaded file. If this
+     * {@link FileParameterValue} was created prior to 1.362, this method will
+     * return {@code null}.
+     *
+     * @return the name of the originally uploaded file
+     */
+    public String getOriginalFileName() {
+        return originalFileName;
+    }
+
     @Override
     public BuildWrapper createBuildWrapper(AbstractBuild<?,?> build) {
         return new BuildWrapper() {
+            @Override
             public Environment setUp(AbstractBuild build, Launcher launcher, BuildListener listener) throws IOException, InterruptedException {
             	if (!StringUtils.isEmpty(file.getName())) {
-            		listener.getLogger().println("Copying file to "+location);
-            		build.getWorkspace().child(location).copyFrom(file);
-            		file = null;
+            	    listener.getLogger().println("Copying file to "+location);
+                    FilePath locationFilePath = build.getWorkspace().child(location);
+            	    locationFilePath.copyFrom(file);
+            	    file = null;
+                    locationFilePath.copyTo(new FilePath(getLocationUnderBuild(build)));
             	}
                 return new Environment() {};
             }
@@ -121,7 +146,35 @@ public class FileParameterValue extends ParameterValue {
 	
     @Override
     public String getShortDescription() {
-    	return "(FileParameterValue) " + getName() + "='" + file.getName() + "'";
+    	return "(FileParameterValue) " + getName() + "='" + originalFileName + "'";
+    }
+
+    /**
+     * Serve this file parameter in response to a {@link StaplerRequest}.
+     *
+     * @param request
+     * @param response
+     * @throws ServletException
+     * @throws IOException
+     */
+    public void doDynamic(StaplerRequest request, StaplerResponse response) throws ServletException, IOException {
+        if (("/" + originalFileName).equals(request.getRestOfPath())) {
+            AbstractBuild build = (AbstractBuild)request.findAncestor(AbstractBuild.class).getObject();
+            File fileParameter = getLocationUnderBuild(build);
+            if (fileParameter.isFile()) {
+                response.serveFile(request, fileParameter.toURI().toURL());
+            }
+        }
+    }
+
+    /**
+     * Get the location under the build directory to store the file parameter.
+     *
+     * @param build the build
+     * @return the location to store the file parameter
+     */
+    private File getLocationUnderBuild(AbstractBuild build) {
+        return new File(build.getRootDir(), "fileParameters/" + location);
     }
 
     /**
