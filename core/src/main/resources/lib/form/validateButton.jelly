@@ -38,6 +38,9 @@ THE SOFTWARE.
     <st:attribute name="title" use="required">
       Caption of the validate button. Should be internationalized.
     </st:attribute>
+    <st:attribute name="progress">
+      Caption of the text shown while the AJAX call is in progress. For example, "checking..."
+    </st:attribute>
     <st:attribute name="with">
       ','-separated list of fields that are sent to the server.
     </st:attribute>
@@ -47,7 +50,7 @@ THE SOFTWARE.
       <input type="button" value="${title}" class="yui-button" onclick="validateButton('${rootURL}/descriptor/${descriptor.clazz.name}/${method}','${with}',this)" />
     </div>
     <div style="display:none;">
-      <img src="${imagesURL}/spinner.gif" /> ${progress}
+      <img src="${imagesURL}/spinner.gif" /> ${attrs.progress}
     </div>
     <div><!-- this is where the error message goes --></div>
   </f:nested>
