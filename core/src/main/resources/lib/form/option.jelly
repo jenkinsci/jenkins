@@ -21,18 +21,16 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 -->
-
-<!--
-	<option> tag that takes true/false for selected
--->
+<?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:d="jelly:define" xmlns:st="jelly:stapler">
   <st:documentation>
-    &lt;option> tag for the &lt;select> element.
+    &lt;option> tag for the &lt;select> element that takes true/false for selected.
 
-    <st:attribute name="value" use="required">
+    <st:attribute name="value">
       The value to be sent when the form is submitted.
-      Due to the browser incompatibility between IE and Firefox,
-      this parameter is mandatory.
+      If omitted, the body of the tag will be placed in the value attribute as well
+      (due to the browser incompatibility between IE and Firefox, value attribute
+       must be included).
     </st:attribute>
     <st:attribute name="selected" type="boolean">
       If true, the option value appears as selected.
