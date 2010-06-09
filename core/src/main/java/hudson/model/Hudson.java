@@ -2864,7 +2864,7 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
         if(req.getHeader("Side").equals("download")) {
             duplexChannels.put(uuid,server=new FullDuplexHttpChannel(uuid, !hasPermission(ADMINISTER)) {
                 protected void main(Channel channel) throws IOException, InterruptedException {
-                    channel.setProperty(CliEntryPoint.class.getName(),new CliManagerImpl());
+                    channel.setProperty(CliEntryPoint.class.getName(),new CliManagerImpl(getAuthentication()));
                 }
             });
             try {
@@ -3692,3 +3692,4 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
         assert ADMINISTER!=null;
     }
 }
+

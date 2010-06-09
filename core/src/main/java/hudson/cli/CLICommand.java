@@ -60,7 +60,7 @@ import java.util.logging.Logger;
  *
  * <p>
  * The Hudson master then picks the right {@link CLICommand} to execute, clone it, and
- * calls {@link #main(List, Locale, InputStream, PrintStream, PrintStream)} method.
+ * calls {@link #main(List, Locale, InputStream, PrintStream, PrintStream, Authentication)} method.
  *
  * <h2>Note for CLI command implementor</h2>
  * Start with <a href="http://wiki.hudson-ci.org/display/HUDSON/Writing+CLI+commands">this document</a>
@@ -73,7 +73,7 @@ import java.util.logging.Logger;
  * <li>
  * Use <a href="http://args4j.dev.java.net/">args4j</a> annotation on your implementation to define
  * options and arguments (however, if you don't like that, you could override
- * the {@link #main(List, Locale, InputStream, PrintStream, PrintStream)} method directly.
+ * the {@link #main(List, Locale, InputStream, PrintStream, PrintStream, Authentication)} method directly.
  *
  * <li>
  * stdin, stdout, stderr are remoted, so proper buffering is necessary for good user experience.
@@ -150,7 +150,7 @@ public abstract class CLICommand implements ExtensionPoint, Cloneable {
      */
     public abstract String getShortDescription();
 
-    public int main(List<String> args, Locale locale, InputStream stdin, PrintStream stdout, PrintStream stderr) {
+    public int main(List<String> args, Locale locale, InputStream stdin, PrintStream stdout, PrintStream stderr, Authentication auth) {
         this.stdin = new BufferedInputStream(stdin);
         this.stdout = stdout;
         this.stderr = stderr;
@@ -162,15 +162,15 @@ public abstract class CLICommand implements ExtensionPoint, Cloneable {
         SecurityContext sc = SecurityContextHolder.getContext();
         Authentication old = sc.getAuthentication();
 
-        CliAuthenticator authenticator = Hudson.getInstance().getSecurityRealm().createCliAuthenticator(this);
+        CliAuthenticator authenticator = Hudson.getInstance().getSecurityRealm().createCliAuthenticator(this, auth);
         new ClassParser().parse(authenticator,p);
 
         try {
             p.parseArgument(args.toArray(new String[args.size()]));
-            Authentication auth = authenticator.authenticate();
-            if (auth==Hudson.ANONYMOUS)
-                auth = loadStoredAuthentication();
-            sc.setAuthentication(auth); // run the CLI with the right credential
+            Authentication a = authenticator.authenticate();
+            if (a == Hudson.ANONYMOUS)
+                a = loadStoredAuthentication();
+            sc.setAuthentication(a); // run the CLI with the right credential
             return run();
         } catch (CmdLineException e) {
             stderr.println(e.getMessage());
@@ -305,3 +305,4 @@ public abstract class CLICommand implements ExtensionPoint, Cloneable {
 
     private static final Logger LOGGER = Logger.getLogger(CLICommand.class.getName());
 }
+

@@ -23,16 +23,17 @@
  */
 package hudson.security;
 
-import org.acegisecurity.AuthenticationManager;
-import org.acegisecurity.Authentication;
-import org.acegisecurity.AuthenticationException;
-import org.springframework.web.context.WebApplicationContext;
-import org.kohsuke.stapler.StaplerRequest;
 import groovy.lang.Binding;
+import hudson.Extension;
+import hudson.cli.CLICommand;
 import hudson.model.Descriptor;
 import hudson.util.spring.BeanBuilder;
-import hudson.Extension;
 import net.sf.json.JSONObject;
+import org.acegisecurity.Authentication;
+import org.acegisecurity.AuthenticationException;
+import org.acegisecurity.AuthenticationManager;
+import org.kohsuke.stapler.StaplerRequest;
+import org.springframework.web.context.WebApplicationContext;
 
 import javax.servlet.Filter;
 import javax.servlet.FilterConfig;
@@ -70,6 +71,19 @@ public final class LegacySecurityRealm extends SecurityRealm implements Authenti
         return "loginEntry";
     }
 
+    @Override
+    public CliAuthenticator createCliAuthenticator(CLICommand command, final Authentication auth) {
+        if (auth == null) {
+            return createCliAuthenticator(command);
+        } else {
+            return new CliAuthenticator() {
+                public Authentication authenticate() {
+                    return auth;
+                }
+            };
+        }
+    }
+
     /**
      * Filter to run for the LegacySecurityRealm is the
      * ChainServletFilter legacy from /WEB-INF/security/SecurityFilters.groovy.
@@ -102,3 +116,4 @@ public final class LegacySecurityRealm extends SecurityRealm implements Authenti
         }
     };
 }
+

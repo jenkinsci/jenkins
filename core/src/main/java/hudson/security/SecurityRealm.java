@@ -161,6 +161,22 @@ public abstract class SecurityRealm extends AbstractDescribableImpl<SecurityReal
     }
 
     /**
+     * Creates a {@link CliAuthenticator} object that authenticates an invocation of a CLI command.
+     * See {@link CliAuthenticator} for more details.
+     *
+     * @param command
+     *      The command about to be executed.
+     *
+     * @param auth Authentication to use; not used in default implementation of this method 
+     * @return
+     *      never null. By default, this method returns a no-op authenticator that always authenticates
+     *      the session as an anonymous user.
+     */
+    public CliAuthenticator createCliAuthenticator(CLICommand command, Authentication auth) {
+        return createCliAuthenticator(command);
+    }
+
+    /**
      * {@inheritDoc}
      *
      * <p>
