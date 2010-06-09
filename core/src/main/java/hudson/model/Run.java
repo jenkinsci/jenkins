@@ -396,6 +396,18 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
     }
 
     /**
+     * Returns a {@link Cause} of a particular type.
+     *
+     * @since 1.362
+     */
+    public <T extends Cause> T getCause(Class<T> type) {
+        for (Cause c : getCauses())
+            if (type.isInstance(c))
+                return type.cast(c);
+        return null;
+    }
+
+    /**
      * Returns true if this log file should be kept and not deleted.
      *
      * This is used as a signal to the {@link LogRotator}.
