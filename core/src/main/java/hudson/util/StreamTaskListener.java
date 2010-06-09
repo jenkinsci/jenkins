@@ -55,7 +55,7 @@ import java.util.logging.Logger;
  * 
  * @author Kohsuke Kawaguchi
  */
-public class StreamTaskListener implements TaskListener, Serializable, Closeable {
+public class StreamTaskListener extends AbstractTaskListener implements Serializable, Closeable {
     private PrintStream out;
     private Charset charset;
 

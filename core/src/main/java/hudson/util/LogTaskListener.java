@@ -39,7 +39,7 @@ import java.util.logging.Logger;
 /**
  * {@link TaskListener} which sends messages to a {@link Logger}.
  */
-public class LogTaskListener implements TaskListener, Serializable {
+public class LogTaskListener extends AbstractTaskListener implements Serializable {
     
     private final TaskListener delegate;
 

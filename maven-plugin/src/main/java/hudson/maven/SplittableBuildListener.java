@@ -28,6 +28,7 @@ import hudson.model.BuildListener;
 import hudson.model.Cause;
 import hudson.model.Result;
 import hudson.model.StreamBuildListener;
+import hudson.util.AbstractTaskListener;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -44,7 +45,7 @@ import java.util.List;
  * @author Kohsuke Kawaguchi
  * @since 1.133
  */
-final class SplittableBuildListener implements BuildListener, Serializable {
+final class SplittableBuildListener extends AbstractTaskListener implements BuildListener, Serializable {
     /**
      * The actual {@link BuildListener} where the output goes.
      */
