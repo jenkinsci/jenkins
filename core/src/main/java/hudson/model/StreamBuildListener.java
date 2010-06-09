@@ -70,7 +70,7 @@ public class StreamBuildListener extends StreamTaskListener implements BuildList
         if (causes==null || causes.isEmpty())
             l.println("Started");
         else for (Cause cause : causes) {
-            l.println(cause.getShortDescription());
+            cause.print(this);
         }
     }
 

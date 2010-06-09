@@ -28,7 +28,6 @@ import java.util.Arrays;
 import java.util.List;
 
 import hudson.diagnosis.OldDataMonitor;
-import hudson.model.Queue.*;
 import hudson.util.XStream2;
 import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.export.ExportedBean;
@@ -61,6 +60,14 @@ public abstract class Cause {
      */
     @Exported(visibility=3)
     abstract public String getShortDescription();
+
+    /**
+     * Report a line to the listener about this cause.
+     * @since 1.362
+     */
+    public void print(TaskListener listener) {
+        listener.getLogger().println(getShortDescription());
+    }
 
     /**
      * Fall back implementation when no other type is available.

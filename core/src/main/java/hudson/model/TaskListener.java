@@ -60,7 +60,7 @@ import java.util.Formatter;
  */
 public interface TaskListener extends Serializable {
     /**
-     * This writer will receive the output of the build.
+     * This writer will receive the output of the build
      *
      * @return
      *      must be non-null.
