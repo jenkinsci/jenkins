@@ -31,7 +31,7 @@ import java.net.URL;
  *
  * @author Kohsuke Kawaguchi
  */
-final class PreloadJarTask implements DelegatingCallable<Boolean,IOException> {
+public final class PreloadJarTask implements DelegatingCallable<Boolean,IOException> {
     /**
      * Jar file to be preloaded.
      */
