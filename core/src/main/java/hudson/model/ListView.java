@@ -1,8 +1,9 @@
 /*
  * The MIT License
  * 
- * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, Erik Ramfelt, Seiji Sogabe, Martin Eigenbrodt
- * 
+ * Copyright (c) 2004-2010, Sun Microsystems, Inc., Kohsuke Kawaguchi,
+ * Erik Ramfelt, Seiji Sogabe, Martin Eigenbrodt, Alan Harder
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
@@ -81,6 +82,12 @@ public class ListView extends View implements Saveable {
      * Compiled include pattern from the includeRegex string.
      */
     private transient Pattern includePattern;
+
+    /**
+     * Filter by enabled/disabled status of jobs.
+     * Null for no filter, true for enabled-only, false for disabled-only.
+     */
+    private Boolean statusFilter;
 
     @DataBoundConstructor
     public ListView(String name) {
@@ -183,7 +190,9 @@ public class ListView extends View implements Saveable {
         List<TopLevelItem> items = new ArrayList<TopLevelItem>(names.size());
         for (String n : names) {
             TopLevelItem item = Hudson.getInstance().getItem(n);
-            if(item!=null)
+            // Add if no status filter or filter matches enabled/disabled status:
+            if(item!=null && (statusFilter == null || !(item instanceof AbstractProject)
+                              || ((AbstractProject)item).isDisabled() ^ statusFilter))
                 items.add(item);
         }
         return items;
@@ -195,6 +204,14 @@ public class ListView extends View implements Saveable {
 
     public String getIncludeRegex() {
         return includeRegex;
+    }
+
+    /**
+     * Filter by enabled/disabled status of jobs.
+     * Null for no filter, true for enabled-only, false for disabled-only.
+     */
+    public Boolean getStatusFilter() {
+        return statusFilter;
     }
 
     public Item doCreateItem(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
@@ -240,6 +257,9 @@ public class ListView extends View implements Saveable {
             columns = new DescribableList<ListViewColumn,Descriptor<ListViewColumn>>(Saveable.NOOP);
         }
         columns.rebuildHetero(req, req.getSubmittedForm(), ListViewColumn.all(), "columns");
+
+        String filter = Util.fixEmpty(req.getParameter("statusFilter"));
+        statusFilter = filter != null ? "1".equals(filter) : null;
     }
 
     @Extension
