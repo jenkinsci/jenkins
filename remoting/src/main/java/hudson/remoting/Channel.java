@@ -761,6 +761,11 @@ public class Channel implements VirtualChannel, IChannel {
         }
     }
 
+    /**
+     * Sets the property value on this side of the channel.
+     * 
+     * @see #getProperty(Object)
+     */
     public Object setProperty(Object key, Object value) {
         synchronized (properties) {
             Object old = value!=null ? properties.put(key, value) : properties.remove(key);
