@@ -540,6 +540,10 @@ public class Channel implements VirtualChannel, IChannel {
         return call(new PreloadJarTask(jars,local));
     }
 
+    public boolean preloadJar(ClassLoader local, URL... jars) throws IOException, InterruptedException {
+        return call(new PreloadJarTask(jars,local));
+    }
+
     /**
      * {@inheritDoc}
      */
