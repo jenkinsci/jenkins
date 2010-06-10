@@ -177,8 +177,6 @@ public final class DependencyGraph implements Comparator<AbstractProject> {
     public void addDependency(Dependency dep) {
         if(built)
             throw new IllegalStateException();
-        if(dep.getUpstreamProject()==dep.getDownstreamProject())
-            return;
         add(forward,dep.getUpstreamProject(),dep);
         add(backward,dep.getDownstreamProject(),dep);
     }
