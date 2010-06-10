@@ -52,7 +52,7 @@ THE SOFTWARE.
   </f:optionalBlock>
 
   <j:if test="${it.hasJobFilterExtensions()}">
-   <j:invokeStatic var="allJobFilters" className="hudson.jobs.JobFilter" method="all"/>
+   <j:invokeStatic var="allJobFilters" className="hudson.views.ViewJobFilter" method="all"/>
    <f:block>
       <f:hetero-list name="jobFilters" hasHeader="true"
       	descriptors="${allJobFilters}"
