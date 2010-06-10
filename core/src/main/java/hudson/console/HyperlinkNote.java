@@ -4,6 +4,10 @@ import hudson.Extension;
 import hudson.MarkupText;
 import hudson.model.Hudson;
 
+import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 /**
  * Turns a text into a hyperlink by specifying the URL separately.
  *
@@ -31,10 +35,22 @@ public class HyperlinkNote extends ConsoleNote {
         return null;
     }
 
+    public static String encodeTo(String url, String text) {
+        try {
+            return new HyperlinkNote(url,text.length()).encode()+text;
+        } catch (IOException e) {
+            // impossible, but don't make this a fatal problem
+            LOGGER.log(Level.WARNING, "Failed to serialize "+HyperlinkNote.class,e);
+            return text;
+        }
+    }
+
     @Extension
     public static final class DescriptorImpl extends ConsoleAnnotationDescriptor {
         public String getDisplayName() {
             return "Hyperlinks";
         }
     }
+
+    private static final Logger LOGGER = Logger.getLogger(HyperlinkNote.class.getName());
 }
