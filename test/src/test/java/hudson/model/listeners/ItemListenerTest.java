@@ -23,14 +23,14 @@
  */
 package hudson.model.listeners;
 
-import hudson.cli.CreateJobCommand;
+import hudson.cli.CLI;
 import hudson.model.Item;
+import org.jvnet.hudson.test.HudsonTestCase;
+
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
-import java.util.Collections;
-import java.util.Locale;
-import org.jvnet.hudson.test.HudsonTestCase;
+import java.util.Arrays;
 
 /**
  * Tests for ItemListener events.
@@ -53,14 +53,13 @@ public class ItemListenerTest extends HudsonTestCase {
         ItemListener.all().add(0, listener);
     }
 
-    public void testOnCreatedviaCLI() {
-        CreateJobCommand cmd = new CreateJobCommand();
+    public void testOnCreatedViaCLI() throws Exception {
         ByteArrayOutputStream buf = new ByteArrayOutputStream();
         PrintStream out = new PrintStream(buf);
-        cmd.main(Collections.singletonList("testJob"), Locale.ENGLISH,
+        new CLI(getURL()).execute(Arrays.asList("create-job","testJob"),
                  new ByteArrayInputStream(("<project><actions/><builders/><publishers/>"
                     + "<buildWrappers/></project>").getBytes()),
-                 out, out);
+                out, out);
         out.flush();
         assertNotNull("job should be created: " + buf, hudson.getItem("testJob"));
         assertEquals("onCreated event should be triggered: " + buf, "C", events.toString());
