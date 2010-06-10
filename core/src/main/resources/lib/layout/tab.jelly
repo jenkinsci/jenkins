@@ -1,7 +1,7 @@
 <!--
 The MIT License
 
-Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi
+Copyright (c) 2004-2010, Sun Microsystems, Inc., Kohsuke Kawaguchi
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -26,6 +26,7 @@ THE SOFTWARE.
 <%@ attribute name="name" required="true" type="java.lang.String" %>
 <%@ attribute name="href" required="true" type="java.lang.String" %>
 <%@ attribute name="active" required="true" type="java.lang.Boolean" %>
+<%@ attribute name="title" required="false" type="java.lang.String" %>
 -->
 <j:jelly xmlns:j="jelly:core">
   <j:choose>
@@ -53,7 +54,7 @@ THE SOFTWARE.
           </j:when>
         </j:choose>
         <td class="inactive ${cssClass}">
-          <a href="${href}">${name}</a>
+          <a href="${href}" title="${attrs.title}">${name}</a>
         </td>
       </j:if>
     </j:otherwise>

@@ -29,7 +29,8 @@ THE SOFTWARE.
       <l:tab name="${v.viewName}" active="${v==it}" href="${rootURL}/${v.url}" />
     </j:forEach>
     <j:if test="${it.hasPermission(it.CREATE)}">
-      <l:tab name="+" href="${rootURL}/${it.owner.url}newView" active="false" />
+      <l:tab name="+" href="${rootURL}/${it.owner.url}newView" active="false"
+             title="${%New View}" />
     </j:if>
   </l:tabBar>
 </j:jelly>
