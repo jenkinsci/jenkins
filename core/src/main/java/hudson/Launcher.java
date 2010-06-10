@@ -49,6 +49,8 @@ import java.util.Arrays;
 import java.util.Map;
 import java.util.List;
 import java.util.ArrayList;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import static org.apache.commons.io.output.NullOutputStream.NULL_OUTPUT_STREAM;
 
@@ -651,7 +653,7 @@ public abstract class Launcher {
         }
 
         @Override
-        public void kill(Map<String, String> modelEnvVars) {
+        public void kill(Map<String, String> modelEnvVars) throws InterruptedException {
             ProcessTree.get().killAll(modelEnvVars);
         }
 
@@ -678,7 +680,11 @@ public abstract class Launcher {
                 protected synchronized void terminate(IOException e) {
                     super.terminate(e);
                     ProcessTree pt = ProcessTree.get();
-                    pt.killAll(proc,cookie);
+                    try {
+                        pt.killAll(proc,cookie);
+                    } catch (InterruptedException x) {
+                        LOGGER.log(Level.INFO, "Interrupted", x);
+                    }
                 }
 
                 @Override
@@ -746,7 +752,11 @@ public abstract class Launcher {
             }
 
             public Void call() throws RuntimeException {
-                ProcessTree.get().killAll(modelEnvVars);
+                try {
+                    ProcessTree.get().killAll(modelEnvVars);
+                } catch (InterruptedException e) {
+                    // we are asked to terminate early by the caller, so no need to do anything
+                }
                 return null;
             }
 
@@ -855,4 +865,6 @@ public abstract class Launcher {
      * Debug option to display full current path instead of just the last token.
      */
     public static boolean showFullPath = false;
+
+    private static final Logger LOGGER = Logger.getLogger(Launcher.class.getName());
 }
