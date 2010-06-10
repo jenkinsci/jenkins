@@ -169,7 +169,8 @@ THE SOFTWARE.
             <f:hetero-list name="cloud" hasHeader="true"
                            descriptors="${h.getCloudDescriptors()}"
                            items="${it.clouds}"
-                           addCaption="${%Add a new cloud}"/>
+                           addCaption="${%Add a new cloud}"
+                           deleteCaption="${%Delete cloud}"/>
           </f:block>
         </f:section>
       </j:if>
