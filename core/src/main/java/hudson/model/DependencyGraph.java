@@ -1,7 +1,8 @@
 /*
  * The MIT License
  * 
- * Copyright (c) 2004-2010, Sun Microsystems, Inc., Kohsuke Kawaguchi, Martin Eigenbrodt. Seiji Sogabe
+ * Copyright (c) 2004-2010, Sun Microsystems, Inc., Kohsuke Kawaguchi,
+ * Martin Eigenbrodt. Seiji Sogabe, Alan Harder
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -41,6 +42,7 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.ListIterator;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
@@ -273,8 +275,22 @@ public final class DependencyGraph implements Comparator<AbstractProject> {
             set = new ArrayList<Dependency>();
             map.put(key,set);
         }
-        if(!set.contains(dep))
-            set.add(dep);
+        for (ListIterator<Dependency> it = set.listIterator(); it.hasNext();) {
+            Dependency d = it.next();
+            // Check for existing edge that connects the same two projects:
+            if (d.equals(dep)) {
+                if (d instanceof DependencyGroup)
+                    ((DependencyGroup)d).add(dep);
+                else {
+                    DependencyGroup group = new DependencyGroup(d);
+                    group.add(dep);
+                    it.set(group);
+                }
+                return;
+            }
+        }
+        // Otherwise add to list:
+        set.add(dep);
     }
 
     private Map<AbstractProject, List<Dependency>> finalize(Map<AbstractProject, List<Dependency>> m) {
@@ -454,6 +470,36 @@ public final class DependencyGraph implements Comparator<AbstractProject> {
             hash = 23 * hash + (this.upstream != null ? this.upstream.hashCode() : 0);
             hash = 23 * hash + (this.downstream != null ? this.downstream.hashCode() : 0);
             return hash;
+        }
+    }
+
+    /**
+     * Collect multiple dependencies between the same two projects.
+     */
+    private static class DependencyGroup extends Dependency {
+        private List<Dependency> group = new ArrayList<Dependency>();
+
+        DependencyGroup(Dependency first) {
+            super(first.getUpstreamProject(), first.getDownstreamProject());
+            group.add(first);
+        }
+
+        void add(Dependency next) {
+            group.add(next);
+        }
+
+        @Override
+        public boolean shouldTriggerBuild(AbstractBuild build, TaskListener listener,
+                                          List<Action> actions) {
+            List<Action> check = new ArrayList<Action>();
+            for (Dependency d : group) {
+                if (d.shouldTriggerBuild(build, listener, check)) {
+                    actions.addAll(check);
+                    return true;
+                } else
+                    check.clear();
+            }
+            return false;
         }
     }
 }
