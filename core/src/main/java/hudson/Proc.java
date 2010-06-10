@@ -235,7 +235,7 @@ public abstract class Proc {
         /**
          * Destroys the child process without join.
          */
-        private void destroy() {
+        private void destroy() throws InterruptedException {
             ProcessTree.get().killAll(proc,cookie);
         }
 
