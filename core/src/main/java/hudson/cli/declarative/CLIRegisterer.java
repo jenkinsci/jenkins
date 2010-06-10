@@ -30,6 +30,7 @@ import hudson.Util;
 import hudson.cli.CLICommand;
 import hudson.cli.CloneableCLICommand;
 import hudson.model.Hudson;
+import hudson.remoting.Channel;
 import hudson.security.CliAuthenticator;
 import org.acegisecurity.Authentication;
 import org.acegisecurity.context.SecurityContext;
@@ -107,6 +108,11 @@ public class CLIRegisterer extends ExtensionFinder {
 
                         @Override
                         public int main(List<String> args, Locale locale, InputStream stdin, PrintStream stdout, PrintStream stderr) {
+                            this.stdout = stdout;
+                            this.stderr = stderr;
+                            this.locale = locale;
+                            this.channel = Channel.current();
+                            
                             CmdLineParser parser = new CmdLineParser(null);
                             try {
                                 SecurityContext sc = SecurityContextHolder.getContext();
