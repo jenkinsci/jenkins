@@ -50,6 +50,7 @@ import static hudson.Util.fixEmpty;
 import static hudson.Util.fixNull;
 import hudson.WebAppMain;
 import hudson.XmlFile;
+import hudson.cli.CLICommand;
 import hudson.cli.CliEntryPoint;
 import hudson.cli.CliManagerImpl;
 import hudson.cli.declarative.CLIMethod;
@@ -2864,7 +2865,9 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
         if(req.getHeader("Side").equals("download")) {
             duplexChannels.put(uuid,server=new FullDuplexHttpChannel(uuid, !hasPermission(ADMINISTER)) {
                 protected void main(Channel channel) throws IOException, InterruptedException {
-                    channel.setProperty(CliEntryPoint.class.getName(),new CliManagerImpl(getAuthentication()));
+                    // capture the identity given by the transport, since this can be useful for SecurityRealm.createCliAuthenticator()
+                    channel.setProperty(CLICommand.TRANSPORT_AUTHENTICATION,getAuthentication());
+                    channel.setProperty(CliEntryPoint.class.getName(),new CliManagerImpl());
                 }
             });
             try {
@@ -3692,4 +3695,3 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
         assert ADMINISTER!=null;
     }
 }
-

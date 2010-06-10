@@ -23,25 +23,24 @@
  */
 package hudson.cli;
 
-import hudson.model.Hudson;
 import hudson.remoting.Channel;
-import org.acegisecurity.Authentication;
-import org.apache.commons.discovery.ResourceClassIterator;
-import org.apache.commons.discovery.ResourceNameIterator;
+import hudson.model.Hudson;
 import org.apache.commons.discovery.resource.ClassLoaders;
 import org.apache.commons.discovery.resource.classes.DiscoverClasses;
 import org.apache.commons.discovery.resource.names.DiscoverServiceNames;
-import org.jvnet.tiger_types.Types;
-import org.kohsuke.args4j.CmdLineParser;
+import org.apache.commons.discovery.ResourceNameIterator;
+import org.apache.commons.discovery.ResourceClassIterator;
 import org.kohsuke.args4j.spi.OptionHandler;
+import org.kohsuke.args4j.CmdLineParser;
+import org.jvnet.tiger_types.Types;
 
+import java.util.List;
+import java.util.Locale;
+import java.util.Collections;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.PrintStream;
 import java.io.Serializable;
-import java.util.Collections;
-import java.util.List;
-import java.util.Locale;
 
 /**
  * {@link CliEntryPoint} implementation exposed to the remote CLI.
@@ -49,15 +48,7 @@ import java.util.Locale;
  * @author Kohsuke Kawaguchi
  */
 public class CliManagerImpl implements CliEntryPoint, Serializable {
-
-    private final Authentication auth;
-
-    public CliManagerImpl(Authentication auth) {
-        this.auth = auth!=null ? auth : Hudson.ANONYMOUS;
-    }
-
     public CliManagerImpl() {
-        this(null);
     }
 
     public int main(List<String> args, Locale locale, InputStream stdin, OutputStream stdout, OutputStream stderr) {
@@ -73,11 +64,11 @@ public class CliManagerImpl implements CliEntryPoint, Serializable {
         CLICommand cmd = CLICommand.clone(subCmd);
         if(cmd!=null) {
             // execute the command, do so with the originator of the request as the principal
-            return cmd.main(args.subList(1,args.size()),locale, stdin, out, err, auth);
+            return cmd.main(args.subList(1,args.size()),locale, stdin, out, err);
         }
 
         err.println("No such command: "+subCmd);
-        new HelpCommand().main(Collections.<String>emptyList(), locale, stdin, out, err, auth);
+        new HelpCommand().main(Collections.<String>emptyList(), locale, stdin, out, err);
         return -1;
     }
 
@@ -110,5 +101,3 @@ public class CliManagerImpl implements CliEntryPoint, Serializable {
         }
     }
 }
-
-

@@ -106,7 +106,7 @@ public class CLIRegisterer extends ExtensionFinder {
                         }
 
                         @Override
-                        public int main(List<String> args, Locale locale, InputStream stdin, PrintStream stdout, PrintStream stderr, Authentication auth) {
+                        public int main(List<String> args, Locale locale, InputStream stdin, PrintStream stdout, PrintStream stderr) {
                             CmdLineParser parser = new CmdLineParser(null);
                             try {
                                 SecurityContext sc = SecurityContextHolder.getContext();
@@ -135,7 +135,7 @@ public class CLIRegisterer extends ExtensionFinder {
                                         binders.add(new MethodBinder(chains.pop(),parser));
 
                                     // authentication
-                                    CliAuthenticator authenticator = Hudson.getInstance().getSecurityRealm().createCliAuthenticator(this, auth);
+                                    CliAuthenticator authenticator = Hudson.getInstance().getSecurityRealm().createCliAuthenticator(this);
                                     new ClassParser().parse(authenticator,parser);
 
                                     // fill up all the binders
@@ -196,4 +196,3 @@ public class CLIRegisterer extends ExtensionFinder {
 
     private static final Logger LOGGER = Logger.getLogger(CLIRegisterer.class.getName());
 }
-

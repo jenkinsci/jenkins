@@ -32,7 +32,9 @@ import hudson.ExtensionPoint.LegacyInstancesAreScopedToHudson;
 import hudson.model.Hudson;
 import hudson.remoting.Callable;
 import hudson.remoting.Channel;
+import hudson.remoting.ChannelProperty;
 import hudson.security.CliAuthenticator;
+import hudson.security.SecurityRealm;
 import org.acegisecurity.Authentication;
 import org.acegisecurity.context.SecurityContext;
 import org.acegisecurity.context.SecurityContextHolder;
@@ -60,7 +62,7 @@ import java.util.logging.Logger;
  *
  * <p>
  * The Hudson master then picks the right {@link CLICommand} to execute, clone it, and
- * calls {@link #main(List, Locale, InputStream, PrintStream, PrintStream, Authentication)} method.
+ * calls {@link #main(List, Locale, InputStream, PrintStream, PrintStream)} method.
  *
  * <h2>Note for CLI command implementor</h2>
  * Start with <a href="http://wiki.hudson-ci.org/display/HUDSON/Writing+CLI+commands">this document</a>
@@ -73,7 +75,7 @@ import java.util.logging.Logger;
  * <li>
  * Use <a href="http://args4j.dev.java.net/">args4j</a> annotation on your implementation to define
  * options and arguments (however, if you don't like that, you could override
- * the {@link #main(List, Locale, InputStream, PrintStream, PrintStream, Authentication)} method directly.
+ * the {@link #main(List, Locale, InputStream, PrintStream, PrintStream)} method directly.
  *
  * <li>
  * stdin, stdout, stderr are remoted, so proper buffering is necessary for good user experience.
@@ -150,7 +152,7 @@ public abstract class CLICommand implements ExtensionPoint, Cloneable {
      */
     public abstract String getShortDescription();
 
-    public int main(List<String> args, Locale locale, InputStream stdin, PrintStream stdout, PrintStream stderr, Authentication auth) {
+    public int main(List<String> args, Locale locale, InputStream stdin, PrintStream stdout, PrintStream stderr) {
         this.stdin = new BufferedInputStream(stdin);
         this.stdout = stdout;
         this.stderr = stderr;
@@ -162,15 +164,15 @@ public abstract class CLICommand implements ExtensionPoint, Cloneable {
         SecurityContext sc = SecurityContextHolder.getContext();
         Authentication old = sc.getAuthentication();
 
-        CliAuthenticator authenticator = Hudson.getInstance().getSecurityRealm().createCliAuthenticator(this, auth);
+        CliAuthenticator authenticator = Hudson.getInstance().getSecurityRealm().createCliAuthenticator(this);
         new ClassParser().parse(authenticator,p);
 
         try {
             p.parseArgument(args.toArray(new String[args.size()]));
-            Authentication a = authenticator.authenticate();
-            if (a == Hudson.ANONYMOUS)
-                a = loadStoredAuthentication();
-            sc.setAuthentication(a); // run the CLI with the right credential
+            Authentication auth = authenticator.authenticate();
+            if (auth==Hudson.ANONYMOUS)
+                auth = loadStoredAuthentication();
+            sc.setAuthentication(auth); // run the CLI with the right credential
             return run();
         } catch (CmdLineException e) {
             stderr.println(e.getMessage());
@@ -219,6 +221,28 @@ public abstract class CLICommand implements ExtensionPoint, Cloneable {
      */
     protected boolean shouldPerformAuthentication(Authentication auth) {
         return auth==Hudson.ANONYMOUS;
+    }
+
+    /**
+     * Returns the identity of the client as determined at the CLI transport level.
+     *
+     * <p>
+     * When the CLI connection to the server is tunneled over HTTP, that HTTP connection
+     * can authenticate the client, just like any other HTTP connections to the server
+     * can authenticate the client. This method returns that information, if one is available.
+     * By generalizing it, this method returns the identity obtained at the transport-level authentication.
+     *
+     * <p>
+     * For example, imagine if the current {@link SecurityRealm} is doing Kerberos authentication,
+     * then this method can return a valid identity of the client.
+     *
+     * <p>
+     * If the transport doesn't do authentication, this method returns {@link Hudson#ANONYMOUS}.
+     */
+    public Authentication getTransportAuthentication() {
+        Authentication a = channel.getProperty(TRANSPORT_AUTHENTICATION);
+        if (a==null)    a = Hudson.ANONYMOUS;
+        return a;
     }
 
     /**
@@ -304,5 +328,10 @@ public abstract class CLICommand implements ExtensionPoint, Cloneable {
     }
 
     private static final Logger LOGGER = Logger.getLogger(CLICommand.class.getName());
-}
 
+    /**
+     * Key for {@link Channel#getProperty(Object)} that links to the {@link Authentication} object
+     * which captures the identity of the client given by the transport layer.
+     */
+    public static final ChannelProperty<Authentication> TRANSPORT_AUTHENTICATION = new ChannelProperty<Authentication>(Authentication.class,"transportAuthentication");
+}

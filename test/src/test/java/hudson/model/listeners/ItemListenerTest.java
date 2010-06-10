@@ -60,7 +60,7 @@ public class ItemListenerTest extends HudsonTestCase {
         cmd.main(Collections.singletonList("testJob"), Locale.ENGLISH,
                  new ByteArrayInputStream(("<project><actions/><builders/><publishers/>"
                     + "<buildWrappers/></project>").getBytes()),
-                 out, out, null);
+                 out, out);
         out.flush();
         assertNotNull("job should be created: " + buf, hudson.getItem("testJob"));
         assertEquals("onCreated event should be triggered: " + buf, "C", events.toString());

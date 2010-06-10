@@ -23,31 +23,26 @@
  */
 package hudson.cli;
 
-import groovy.lang.Binding;
-import groovy.lang.Closure;
-import hudson.AbortException;
 import hudson.Extension;
 import hudson.model.Hudson;
 import hudson.remoting.ChannelClosedException;
-import hudson.security.CliAuthenticator;
-import jline.Terminal;
-import jline.UnsupportedTerminal;
+import groovy.lang.Binding;
+import groovy.lang.Closure;
 import org.acegisecurity.Authentication;
-import org.acegisecurity.context.SecurityContext;
-import org.acegisecurity.context.SecurityContextHolder;
 import org.codehaus.groovy.tools.shell.Groovysh;
 import org.codehaus.groovy.tools.shell.IO;
 import org.codehaus.groovy.tools.shell.Shell;
 import org.codehaus.groovy.tools.shell.util.XmlCommandRegistrar;
-import org.kohsuke.args4j.ClassParser;
-import org.kohsuke.args4j.CmdLineParser;
 
-import java.io.BufferedInputStream;
-import java.io.InputStream;
-import java.io.PrintStream;
-import java.io.PrintWriter;
 import java.util.List;
 import java.util.Locale;
+import java.io.PrintStream;
+import java.io.InputStream;
+import java.io.BufferedInputStream;
+import java.io.PrintWriter;
+
+import jline.UnsupportedTerminal;
+import jline.Terminal;
 
 /**
  * Executes Groovy shell.
@@ -62,40 +57,16 @@ public class GroovyshCommand extends CLICommand {
     }
 
     @Override
-    public int main(List<String> args, Locale locale, InputStream stdin, PrintStream stdout, PrintStream stderr, Authentication auth) {
+    public int main(List<String> args, Locale locale, InputStream stdin, PrintStream stdout, PrintStream stderr) {
+        // this allows the caller to manipulate the JVM state, so require the admin privilege.
+        Hudson.getInstance().checkPermission(Hudson.ADMINISTER);
 
-        CmdLineParser p = new CmdLineParser(this);
+        // this being remote means no jline capability is available
+        System.setProperty("jline.terminal", UnsupportedTerminal.class.getName());
+        Terminal.resetTerminal();
 
-        // add options from the authenticator
-        SecurityContext sc = SecurityContextHolder.getContext();
-        Authentication old = sc.getAuthentication();
-        CliAuthenticator authenticator = Hudson.getInstance().getSecurityRealm().createCliAuthenticator(this, auth);
-        new ClassParser().parse(authenticator, p);
-        
-        try {
-
-            sc.setAuthentication(authenticator.authenticate());
-
-            // this allows the caller to manipulate the JVM state, so require the admin privilege.
-            Hudson.getInstance().checkPermission(Hudson.ADMINISTER);
-
-            // this being remote means no jline capability is available
-            System.setProperty("jline.terminal", UnsupportedTerminal.class.getName());
-            Terminal.resetTerminal();
-
-            Groovysh shell = createShell(stdin, stdout, stderr);
-            return shell.run(args.toArray(new String[args.size()]));
-        } catch (AbortException e) {
-            // signals an error without stack trace
-            stderr.println(e.getMessage());
-            return -1;
-        } catch (Exception e) {
-            e.printStackTrace(stderr);
-            return -1;
-        } finally {
-            sc.setAuthentication(old); // restore
-        }
-
+        Groovysh shell = createShell(stdin, stdout, stderr);
+        return shell.run(args.toArray(new String[args.size()]));
     }
 
     protected Groovysh createShell(InputStream stdin, PrintStream stdout,
