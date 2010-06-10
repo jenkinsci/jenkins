@@ -124,7 +124,11 @@ public class CommandLauncher extends ComputerLauncher {
                         cause.printStackTrace(
                             listener.error(hudson.model.Messages.Slave_Terminated(getTimestamp())));
                     }
-                    ProcessTree.get().killAll(proc, cookie);
+                    try {
+                        ProcessTree.get().killAll(proc, cookie);
+                    } catch (InterruptedException e) {
+                        LOGGER.log(Level.INFO, "interrupted", e);
+                    }
                 }
             });
 
@@ -149,7 +153,11 @@ public class CommandLauncher extends ComputerLauncher {
             e.printStackTrace(listener.error(msg));
 
             if(_proc!=null)
-                ProcessTree.get().killAll(_proc, _cookie);
+                try {
+                    ProcessTree.get().killAll(_proc, _cookie);
+                } catch (InterruptedException x) {
+                    x.printStackTrace(listener.error(Messages.ComputerLauncher_abortedLaunch()));
+                }
         }
     }
 

@@ -41,7 +41,7 @@ public final class ProcessTreeKiller {
      *
      * @deprecated Use {@link OSProcess#killRecursively()}
      */
-    public void kill(Process proc) {
+    public void kill(Process proc) throws InterruptedException {
         kill(proc,null);
     }
 
@@ -73,7 +73,7 @@ public final class ProcessTreeKiller {
      *      If non-null, search-and-destroy will be performed.
      * @deprecated Use {@link ProcessTree#killAll(Map)} and {@link OSProcess#killRecursively()}
      */
-    public void kill(Process proc, Map<String, String> modelEnvVars) {
+    public void kill(Process proc, Map<String, String> modelEnvVars) throws InterruptedException {
         ProcessTree pt = ProcessTree.get();
         if(proc!=null)
             pt.get(proc).killRecursively();
@@ -85,7 +85,7 @@ public final class ProcessTreeKiller {
      * Short for {@code kill(null,modelEnvVars)}
      * @deprecated Use {@link ProcessTree#killAll(Map)}
      */
-    public void kill(Map<String, String> modelEnvVars) {
+    public void kill(Map<String, String> modelEnvVars) throws InterruptedException {
         kill(null,modelEnvVars);
     }
 
