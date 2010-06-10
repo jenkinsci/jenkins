@@ -2766,6 +2766,10 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
         return new Slave.JnlpJar(fileName);
     }
 
+    public Slave.JnlpJar doJnlpJars(StaplerRequest req) {
+        return new Slave.JnlpJar(req.getRestOfPath());
+    }
+
     /**
      * RSS feed for log entries.
      *
