@@ -43,6 +43,8 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 import java.io.Serializable;
+import java.io.StringWriter;
+import java.io.Writer;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -155,6 +157,40 @@ public abstract class ConsoleNote<T> implements Serializable, Describable<Consol
         dos.close();
 
         out.write(POSTAMBLE);
+    }
+
+    /**
+     * Prints this note into a writer.
+     *
+     * <p>
+     * Technically, this method only works if the {@link Writer} to {@link OutputStream}
+     * encoding is ASCII compatible.
+     */
+    public void encodeTo(Writer out) throws IOException {
+        out.write(PREAMBLE_STR);
+        ByteArrayOutputStream buf = new ByteArrayOutputStream();
+        ObjectOutputStream oos = new ObjectOutputStream(new GZIPOutputStream(buf));
+        oos.writeObject(this);
+        oos.close();
+
+        ByteArrayOutputStream encoded = new ByteArrayOutputStream();
+        DataOutputStream dos = new DataOutputStream(new Base64OutputStream(encoded,true,-1,null));
+        dos.writeInt(buf.size());
+        buf.writeTo(dos);
+        dos.close();
+
+        out.write(encoded.toString());
+
+        out.write(POSTAMBLE_STR);
+    }
+
+    /**
+     * Works like {@link #encodeTo(Writer)} but obtain the result as a string.
+     */
+    public String encode() throws IOException {
+        StringWriter sw = new StringWriter();
+        encodeTo(sw);
+        return sw.toString();
     }
 
     /**

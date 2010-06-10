@@ -150,12 +150,12 @@ public abstract class SecurityRealm extends AbstractDescribableImpl<SecurityReal
      *      The command about to be executed.
      * @return
      *      never null. By default, this method returns a no-op authenticator that always authenticates
-     *      the session as an anonymous user.
+     *      the session as authenticated by the transport (which is often just {@link Hudson#ANONYMOUS}.)
      */
-    public CliAuthenticator createCliAuthenticator(CLICommand command) {
+    public CliAuthenticator createCliAuthenticator(final CLICommand command) {
         return new CliAuthenticator() {
             public Authentication authenticate() {
-                return Hudson.ANONYMOUS;
+                return command.getTransportAuthentication();
             }
         };
     }

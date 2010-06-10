@@ -55,6 +55,11 @@ public class NodeProvisioner {
      * The node addition activity in progress.
      */
     public static final class PlannedNode {
+        /**
+         * Used to display this planned node to UI. Should ideally include the identifier unique to the node
+         * being provisioned (like the instance ID), but if such an identifier doesn't readily exist, this
+         * can be just a name of the template being provisioned (like the machine image ID.)
+         */
         public final String displayName;
         public final Future<Node> future;
         public final int numExecutors;

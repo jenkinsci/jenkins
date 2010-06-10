@@ -868,8 +868,8 @@ var hudsonRules = {
 
         e.subForms = [];
         var start = findFollowingTR(e, 'dropdownList-container').firstChild.nextSibling, end;
-        do { start = start.firstChild; } while (start.tagName != 'TR');
-        if (start.className != 'dropdownList-start')
+        do { start = start.firstChild; } while (start && start.tagName != 'TR');
+        if (start && start.className != 'dropdownList-start')
             start = findFollowingTR(start, 'dropdownList-start');
         while (start != null) {
             end = findFollowingTR(start, 'dropdownList-end');

@@ -32,7 +32,9 @@ import hudson.ExtensionPoint.LegacyInstancesAreScopedToHudson;
 import hudson.model.Hudson;
 import hudson.remoting.Callable;
 import hudson.remoting.Channel;
+import hudson.remoting.ChannelProperty;
 import hudson.security.CliAuthenticator;
+import hudson.security.SecurityRealm;
 import org.acegisecurity.Authentication;
 import org.acegisecurity.context.SecurityContext;
 import org.acegisecurity.context.SecurityContextHolder;
@@ -222,6 +224,28 @@ public abstract class CLICommand implements ExtensionPoint, Cloneable {
     }
 
     /**
+     * Returns the identity of the client as determined at the CLI transport level.
+     *
+     * <p>
+     * When the CLI connection to the server is tunneled over HTTP, that HTTP connection
+     * can authenticate the client, just like any other HTTP connections to the server
+     * can authenticate the client. This method returns that information, if one is available.
+     * By generalizing it, this method returns the identity obtained at the transport-level authentication.
+     *
+     * <p>
+     * For example, imagine if the current {@link SecurityRealm} is doing Kerberos authentication,
+     * then this method can return a valid identity of the client.
+     *
+     * <p>
+     * If the transport doesn't do authentication, this method returns {@link Hudson#ANONYMOUS}.
+     */
+    public Authentication getTransportAuthentication() {
+        Authentication a = channel.getProperty(TRANSPORT_AUTHENTICATION);
+        if (a==null)    a = Hudson.ANONYMOUS;
+        return a;
+    }
+
+    /**
      * Executes the command, and return the exit code.
      *
      * @return
@@ -304,4 +328,10 @@ public abstract class CLICommand implements ExtensionPoint, Cloneable {
     }
 
     private static final Logger LOGGER = Logger.getLogger(CLICommand.class.getName());
+
+    /**
+     * Key for {@link Channel#getProperty(Object)} that links to the {@link Authentication} object
+     * which captures the identity of the client given by the transport layer.
+     */
+    public static final ChannelProperty<Authentication> TRANSPORT_AUTHENTICATION = new ChannelProperty<Authentication>(Authentication.class,"transportAuthentication");
 }

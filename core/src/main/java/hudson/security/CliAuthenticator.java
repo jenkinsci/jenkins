@@ -60,6 +60,11 @@ import java.io.IOException;
  * a password, you can do so by using {@link CLICommand#channel}.)
  *
  * <p>
+ * If no explicit credential is provided, or if the {@link SecurityRealm} depends on a mode of authentication
+ * that doesn't involve in explicit password (such as Kerberos), it's also often useful to fall back to
+ * {@link CLICommand#getTransportAuthentication()}, in case the user is authenticated at the transport level.
+ *
+ * <p>
  * Many commands do not require any authentication (for example, the "help" command), and still more commands
  * can be run successfully with the anonymous permission. So the authenticator should normally allow unauthenticated
  * CLI command invocations. For those, return {@link Hudson#ANONYMOUS} from the {@link #authenticate()} method.

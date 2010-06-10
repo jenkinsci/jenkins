@@ -193,6 +193,13 @@ public class UpdateCenter extends AbstractModelObject implements Saveable {
         return sites;
     }
 
+    public UpdateSite getSite(String id) {
+        for (UpdateSite site : sites)
+            if (site.getId().equals(id))
+                return site;
+        return null;
+    }
+
     /**
      * Gets the string representing how long ago the data was obtained.
      * Will be the newest of all {@link UpdateSite}s.

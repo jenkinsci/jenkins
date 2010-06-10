@@ -17,14 +17,14 @@ import java.util.Map;
  */
 public class ProcessTreeRemoting {
     public interface IProcessTree {
-        void killAll(Map<String, String> modelEnvVars);
+        void killAll(Map<String, String> modelEnvVars) throws InterruptedException;
     }
 
     public interface IOSProcess {
         int getPid();
         IOSProcess getParent();
-        void kill();
-        void killRecursively();
+        void kill() throws InterruptedException;
+        void killRecursively() throws InterruptedException;
         List<String> getArguments();
         EnvVars getEnvironmentVariables();
         <T> T act(ProcessCallable<T> callable) throws IOException, InterruptedException;

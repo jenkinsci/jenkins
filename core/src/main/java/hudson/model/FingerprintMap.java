@@ -74,6 +74,10 @@ public final class FingerprintMap extends KeyedDataStorage<Fingerprint,Fingerpri
         return super.getOrCreate(md5sum, new FingerprintParams(build,fileName));
     }
 
+    public Fingerprint getOrCreate(Run build, String fileName, String md5sum) throws IOException {
+        return super.getOrCreate(md5sum, new FingerprintParams(build,fileName));
+    }
+
     @Override
     protected Fingerprint get(String md5sum, boolean createIfNotExist, FingerprintParams createParams) throws IOException {
         // sanity check
@@ -109,10 +113,10 @@ class FingerprintParams {
     /**
      * Null if the build isn't claiming to be the owner.
      */
-    final AbstractBuild build;
+    final Run build;
     final String fileName;
 
-    public FingerprintParams(AbstractBuild build, String fileName) {
+    public FingerprintParams(Run build, String fileName) {
         this.build = build;
         this.fileName = fileName;
 

@@ -27,8 +27,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import hudson.console.HyperlinkNote;
 import hudson.diagnosis.OldDataMonitor;
-import hudson.model.Queue.*;
 import hudson.util.XStream2;
 import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.export.ExportedBean;
@@ -61,6 +61,14 @@ public abstract class Cause {
      */
     @Exported(visibility=3)
     abstract public String getShortDescription();
+
+    /**
+     * Report a line to the listener about this cause.
+     * @since 1.362
+     */
+    public void print(TaskListener listener) {
+        listener.getLogger().println(getShortDescription());
+    }
 
     /**
      * Fall back implementation when no other type is available.
@@ -101,9 +109,23 @@ public abstract class Cause {
         
         public UpstreamCause(Run<?, ?> up) {
             upstreamBuild = up.getNumber();
-            upstreamProject = up.getParent().getName();
+            upstreamProject = up.getParent().getFullName();
             upstreamUrl = up.getParent().getUrl();
             upstreamCauses = new ArrayList<Cause>(up.getCauses());
+        }
+
+        /**
+         * Returns true if this cause points to a build in the specified job.
+         */
+        public boolean pointsTo(Job<?,?> j) {
+            return j.getFullName().equals(upstreamProject);
+        }
+
+        /**
+         * Returns true if this cause points to the specified build.
+         */
+        public boolean pointsTo(Run<?,?> r) {
+            return r.getNumber()==upstreamBuild && pointsTo(r.getParent());
         }
 
         @Exported(visibility=3)
@@ -123,7 +145,16 @@ public abstract class Cause {
         
         @Override
         public String getShortDescription() {
-            return Messages.Cause_UpstreamCause_ShortDescription(upstreamProject, Integer.toString(upstreamBuild));
+            return Messages.Cause_UpstreamCause_ShortDescription(upstreamProject, upstreamBuild);
+        }
+
+        @Override
+        public void print(TaskListener listener) {
+            listener.getLogger().println(
+                Messages.Cause_UpstreamCause_ShortDescription(
+                    HyperlinkNote.encodeTo('/'+upstreamUrl, upstreamProject),
+                    HyperlinkNote.encodeTo('/'+upstreamUrl+upstreamBuild, Integer.toString(upstreamBuild)))
+            );
         }
 
         public static class ConverterImpl extends XStream2.PassthruConverter<UpstreamCause> {

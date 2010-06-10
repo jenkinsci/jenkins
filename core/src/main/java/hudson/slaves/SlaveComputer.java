@@ -24,6 +24,7 @@
 package hudson.slaves;
 
 import hudson.model.*;
+import hudson.model.Hudson.MasterComputer;
 import hudson.remoting.Channel;
 import hudson.remoting.VirtualChannel;
 import hudson.remoting.Callable;
@@ -548,8 +549,31 @@ public class SlaveComputer extends Computer {
                 // ignore this error.
             }
 
+            Channel.current().setProperty("slave",Boolean.TRUE); // indicate that this side of the channel is the slave side.
+            
             return null;
         }
         private static final long serialVersionUID = 1L;
+    }
+
+    /**
+     * Obtains a {@link VirtualChannel} that allows some computation to be performed on the master.
+     * This method can be called from any thread on the master, or from slave (more precisely,
+     * it only works from the remoting request-handling thread in slaves, which means if you've started
+     * separate thread on slaves, that'll fail.)
+     *
+     * @return null if the calling thread doesn't have any trace of where its master is.
+     * @since 1.362
+     */
+    public static VirtualChannel getChannelToMaster() {
+        if (Hudson.getInstance()!=null)
+            return MasterComputer.localChannel;
+
+        // if this method is called from within the slave computation thread, this should work
+        Channel c = Channel.current();
+        if (c!=null && c.getProperty("slave")==Boolean.TRUE)
+            return c;
+
+        return null;
     }
 }

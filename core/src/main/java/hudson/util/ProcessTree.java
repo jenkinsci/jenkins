@@ -30,8 +30,10 @@ import com.sun.jna.ptr.IntByReference;
 import hudson.EnvVars;
 import hudson.Util;
 import hudson.model.Hudson;
+import hudson.remoting.Callable;
 import hudson.remoting.Channel;
 import hudson.remoting.VirtualChannel;
+import hudson.slaves.SlaveComputer;
 import hudson.util.ProcessTree.OSProcess;
 import static hudson.util.jna.GNUCLibrary.LIBC;
 
@@ -89,6 +91,11 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
      */
     protected final Map<Integer/*pid*/, OSProcess> processes = new HashMap<Integer, OSProcess>();
 
+    /**
+     * Lazily obtained {@link ProcessKiller}s to be applied on this process tree.
+     */
+    private transient volatile List<ProcessKiller> killers;
+
     // instantiation only allowed for subtypes in this class
     private ProcessTree() {}
 
@@ -125,7 +132,7 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
      * them all. This is suitable for locating daemon processes
      * that cannot be tracked by the regular
      */
-    public abstract void killAll(Map<String, String> modelEnvVars);
+    public abstract void killAll(Map<String, String> modelEnvVars) throws InterruptedException;
 
     /**
      * Convenience method that does {@link #killAll(Map)} and {@link OSProcess#killRecursively()}.
@@ -134,12 +141,30 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
      *
      * Either of the parameter can be null.
      */
-    public void killAll(Process proc, Map<String, String> modelEnvVars) {
+    public void killAll(Process proc, Map<String, String> modelEnvVars) throws InterruptedException {
         LOGGER.fine("killAll: process="+proc+" and envs="+modelEnvVars);
         OSProcess p = get(proc);
         if(p!=null) p.killRecursively();
         if(modelEnvVars!=null)
             killAll(modelEnvVars);
+    }
+
+    /**
+     * Obtains the list of killers.
+     */
+    /*package*/ final List<ProcessKiller> getKillers() throws InterruptedException {
+        if (killers==null)
+            try {
+                killers = SlaveComputer.getChannelToMaster().call(new Callable<List<ProcessKiller>, IOException>() {
+                    public List<ProcessKiller> call() throws IOException {
+                        return new ArrayList<ProcessKiller>(ProcessKiller.all());
+                    }
+                });
+            } catch (IOException e) {
+                LOGGER.log(Level.WARNING, "Failed to obtain killers",e);
+                killers = Collections.emptyList();
+            }
+        return killers;
     }
 
     /**
@@ -181,7 +206,17 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
         /**
          * Kills this process.
          */
-        public abstract void kill();
+        public abstract void kill() throws InterruptedException;
+
+        void killByKiller() throws InterruptedException {
+            for (ProcessKiller killer : getKillers())
+                try {
+                    if (killer.kill(this))
+                        break;
+                } catch (IOException e) {
+                    LOGGER.log(Level.WARNING, "Failed to kill pid="+getPid(),e);
+                }
+        }
 
         /**
          * Kills this process and all the descendants.
@@ -191,7 +226,7 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
          * where the recursive operation is not supported, this just kills
          * the current process. 
          */
-        public abstract void killRecursively();
+        public abstract void killRecursively() throws InterruptedException;
 
         /**
          * Gets the command-line arguments of this process.
@@ -316,7 +351,7 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
     /**
      * Empty process list as a default value if the platform doesn't support it.
      */
-    private static final ProcessTree DEFAULT = new ProcessTree() {
+    private static final ProcessTree DEFAULT = new Local() {
         public OSProcess get(final Process proc) {
             return new OSProcess(-1) {
                 public OSProcess getParent() {
@@ -328,8 +363,9 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
                     proc.destroy();
                 }
 
-                public void kill() {
+                public void kill() throws InterruptedException {
                     proc.destroy();
+                    killByKiller();
                 }
 
                 public List<String> getArguments() {
@@ -348,7 +384,7 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
     };
 
 
-    private static final class Windows extends ProcessTree {
+    private static final class Windows extends Local {
         Windows() {
             for (final WinProcess p : WinProcess.all()) {
                 int pid = p.getPid();
@@ -366,9 +402,10 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
                         p.killRecursively();
                     }
 
-                    public void kill() {
+                    public void kill() throws InterruptedException {
                         LOGGER.finer("Killing "+getPid());
                         p.kill();
+                        killByKiller();
                     }
 
                     @Override
@@ -392,7 +429,7 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
             return get(new WinProcess(proc).getPid());
         }
 
-        public void killAll(Map<String, String> modelEnvVars) {
+        public void killAll(Map<String, String> modelEnvVars) throws InterruptedException {
             for( OSProcess p : this) {
                 if(p.getPid()<10)
                     continue;   // ignore system processes like "idle process"
@@ -421,7 +458,7 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
         }
     }
 
-    static abstract class Unix extends ProcessTree {
+    static abstract class Unix extends Local {
         @Override
         public OSProcess get(Process proc) {
             try {
@@ -433,7 +470,7 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
             }
         }
 
-        public void killAll(Map<String, String> modelEnvVars) {
+        public void killAll(Map<String, String> modelEnvVars) throws InterruptedException {
             for (OSProcess p : this)
                 if(p.hasMatchingEnvVars(modelEnvVars))
                     p.killRecursively();
@@ -488,7 +525,7 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
         /**
          * Tries to kill this process.
          */
-        public void kill() {
+        public void kill() throws InterruptedException {
             try {
                 int pid = getPid();
                 LOGGER.fine("Killing pid="+pid);
@@ -505,10 +542,10 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
                 // otherwise log and let go. I need to see when this happens
                 LOGGER.log(Level.INFO, "Failed to terminate pid="+getPid(),e);
             }
-
+            killByKiller();
         }
 
-        public void killRecursively() {
+        public void killRecursively() throws InterruptedException {
             LOGGER.fine("Recursively killing pid="+getPid());
             for (OSProcess p : getChildren())
                 p.killRecursively();
@@ -1027,6 +1064,15 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
     }
 
     /**
+     * Represents a local process tree, where this JVM and the process tree run on the same system.
+     * (The opposite of {@link Remote}.)
+     */
+    public static abstract class Local extends ProcessTree {
+        Local() {
+        }
+    }
+
+    /**
      * Represents a process tree over a channel.
      */
     public static class Remote extends ProcessTree implements Serializable {
@@ -1044,7 +1090,7 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
         }
 
         @Override
-        public void killAll(Map<String, String> modelEnvVars) {
+        public void killAll(Map<String, String> modelEnvVars) throws InterruptedException {
             proxy.killAll(modelEnvVars);
         }
 
@@ -1068,11 +1114,11 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
                 return get(p.getPid());
             }
 
-            public void kill() {
+            public void kill() throws InterruptedException {
                 proxy.kill();
             }
 
-            public void killRecursively() {
+            public void killRecursively() throws InterruptedException {
                 proxy.killRecursively();
             }
 

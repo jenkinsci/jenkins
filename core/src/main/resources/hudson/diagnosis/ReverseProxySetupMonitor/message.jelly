@@ -1,7 +1,7 @@
 <!--
 The MIT License
 
-Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi
+Copyright (c) 2004-2009, InfraDNA, Inc.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -22,12 +22,24 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 -->
 
-<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define"
-	xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form"
-	xmlns:i="jelly:fmt" xmlns:p="/lib/hudson/project">
-    <f:entry title="${it.name}">
-        <j:if test="${it.originalFileName != null}">
-            <a href="parameter/${it.name}/${it.originalFileName}">${it.originalFileName}</a>
-        </j:if>
-    </f:entry>
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
+  <script>
+    var checkAjax=new Ajax.Request('${rootURL}/${it.url}/test', {
+        onComplete : function(transport) {
+          if (transport.status==0 || transport.status==404) {
+            // redirect failed. Unfortunately, according to the spec http://www.w3.org/TR/XMLHttpRequest/
+            // in case of error, we can either get 0 or a failure code
+            $$('redirect-error').style.display = "block";
+          }
+        }
+      }
+    );
+  </script>
+  <div class="error" id="redirect-error" style="display:none">
+    <form method="post" action="${rootURL}/${it.url}/act" name="${it.id}">
+      ${%blurb}
+      <f:submit name="yes" value="${%More Info}"/>
+      <f:submit name="no" value="${%Dismiss}"/>
+    </form>
+  </div>
 </j:jelly>

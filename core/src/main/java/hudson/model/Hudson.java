@@ -50,6 +50,7 @@ import static hudson.Util.fixEmpty;
 import static hudson.Util.fixNull;
 import hudson.WebAppMain;
 import hudson.XmlFile;
+import hudson.cli.CLICommand;
 import hudson.cli.CliEntryPoint;
 import hudson.cli.CliManagerImpl;
 import hudson.cli.declarative.CLIMethod;
@@ -1249,6 +1250,10 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
             if(v.getViewName().equals(name))
                 return v;
         }
+        // Fallback to subview of primary view if it is a ViewGroup
+        View pv = getPrimaryView();
+        if (pv instanceof ViewGroup)
+            return ((ViewGroup)pv).getView(name);
         return null;
     }
 
@@ -1667,7 +1672,7 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
     public String getRootUrlFromRequest() {
         StaplerRequest req = Stapler.getCurrentRequest();
         StringBuilder buf = new StringBuilder();
-        buf.append("http://");
+        buf.append(req.getScheme()+"://");
         buf.append(req.getServerName());
         if(req.getServerPort()!=80)
             buf.append(':').append(req.getServerPort());
@@ -2860,6 +2865,8 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
         if(req.getHeader("Side").equals("download")) {
             duplexChannels.put(uuid,server=new FullDuplexHttpChannel(uuid, !hasPermission(ADMINISTER)) {
                 protected void main(Channel channel) throws IOException, InterruptedException {
+                    // capture the identity given by the transport, since this can be useful for SecurityRealm.createCliAuthenticator()
+                    channel.setProperty(CLICommand.TRANSPORT_AUTHENTICATION,getAuthentication());
                     channel.setProperty(CliEntryPoint.class.getName(),new CliManagerImpl());
                 }
             });

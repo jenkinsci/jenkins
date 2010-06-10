@@ -30,6 +30,7 @@ import hudson.Extension;
 import hudson.model.AbstractProject;
 import hudson.util.FormValidation;
 import net.sf.json.JSONObject;
+import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.QueryParameter;
 
@@ -43,6 +44,7 @@ import java.util.Arrays;
  * @author Kohsuke Kawaguchi
  */
 public class Shell extends CommandInterpreter {
+    @DataBoundConstructor
     public Shell(String command) {
         super(fixCrLf(command));
     }
@@ -139,11 +141,6 @@ public class Shell extends CommandInterpreter {
         public void setShell(String shell) {
             this.shell = Util.fixEmptyAndTrim(shell);
             save();
-        }
-
-        @Override
-        public String getHelpFile() {
-            return "/help/project-config/shell.html";
         }
 
         public String getDisplayName() {

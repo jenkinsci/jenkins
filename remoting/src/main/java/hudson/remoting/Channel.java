@@ -540,6 +540,10 @@ public class Channel implements VirtualChannel, IChannel {
         return call(new PreloadJarTask(jars,local));
     }
 
+    public boolean preloadJar(ClassLoader local, URL... jars) throws IOException, InterruptedException {
+        return call(new PreloadJarTask(jars,local));
+    }
+
     /**
      * {@inheritDoc}
      */
@@ -748,6 +752,10 @@ public class Channel implements VirtualChannel, IChannel {
         return properties.get(key);
     }
 
+    public <T> T getProperty(ChannelProperty<T> key) {
+        return key.type.cast(properties.get(key));
+    }
+
     /**
      * Works like {@link #getProperty(Object)} but wait until some value is set by someone.
      */
@@ -761,6 +769,11 @@ public class Channel implements VirtualChannel, IChannel {
         }
     }
 
+    /**
+     * Sets the property value on this side of the channel.
+     * 
+     * @see #getProperty(Object)
+     */
     public Object setProperty(Object key, Object value) {
         synchronized (properties) {
             Object old = value!=null ? properties.put(key, value) : properties.remove(key);

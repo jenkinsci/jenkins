@@ -69,6 +69,16 @@ THE SOFTWARE.
               <f:submit value="${%Upload}" />
             </f:block>
           </f:form>
+
+          <h1>${%Update Site}</h1>
+          <f:form method="post" action="siteConfigure">
+            <f:entry title="${%URL}" >
+              <f:textbox name="site" value="${app.updateCenter.getSite('default').url}" />
+            </f:entry>
+            <f:block>
+              <f:submit value="${%Submit}" />
+            </f:block>
+          </f:form>
         </td>
       </tr>
     </table>

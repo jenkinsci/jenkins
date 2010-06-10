@@ -24,6 +24,8 @@
 package hudson.model;
 
 import hudson.console.ConsoleNote;
+import hudson.console.HyperlinkNote;
+import hudson.util.AbstractTaskListener;
 import hudson.util.NullStream;
 import hudson.util.StreamTaskListener;
 
@@ -53,11 +55,12 @@ import java.util.Formatter;
  * {@link StreamTaskListener} is the most typical implementation of this interface.
  * All the {@link TaskListener} implementations passed to plugins from Hudson core are remotable.
  *
+ * @see AbstractTaskListener
  * @author Kohsuke Kawaguchi
  */
 public interface TaskListener extends Serializable {
     /**
-     * This writer will receive the output of the build.
+     * This writer will receive the output of the build
      *
      * @return
      *      must be non-null.
@@ -70,6 +73,11 @@ public interface TaskListener extends Serializable {
      * @since 1.349
      */
     void annotate(ConsoleNote ann) throws IOException;
+
+    /**
+     * Places a {@link HyperlinkNote} on the given text.
+     */
+    void hyperlink(String url, String text) throws IOException;
 
     /**
      * An error in the build.
