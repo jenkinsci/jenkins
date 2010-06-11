@@ -37,7 +37,7 @@ THE SOFTWARE.
   </l:header>
   <l:main-panel>
     <j:set var="monitors" value="${it._monitors}"/>
-    <j:set var="tableWidth" value="${2}"/>
+    <j:set var="tableWidth" value="${3}"/>
     <table id="computers" class="sortable pane bigtable">
       <tr>
         <th width="32">S</th>
