@@ -29,6 +29,7 @@ import hudson.FilePath;
 import hudson.ProxyConfiguration;
 import hudson.Util;
 import hudson.Launcher;
+import hudson.model.Hudson;
 import hudson.util.FormValidation;
 import hudson.util.ArgumentListBuilder;
 import hudson.util.IOException2;
@@ -38,6 +39,7 @@ import hudson.model.DownloadService.Downloadable;
 import hudson.model.JDK;
 import static hudson.tools.JDKInstaller.Preference.*;
 import hudson.remoting.Callable;
+import org.jvnet.robust_http_client.RetryableHttpStream;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.QueryParameter;
 import org.apache.commons.io.IOUtils;
@@ -48,6 +50,8 @@ import org.dom4j.Document;
 import org.dom4j.Element;
 
 import java.io.ByteArrayInputStream;
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.io.InputStreamReader;
@@ -272,12 +276,39 @@ public class JDKInstaller extends ToolInstaller {
     }
 
     /**
+     * This is where we locally cache this JDK.
+     */
+    private File getLocalCacheFile(Platform platform, CPU cpu) {
+        return new File(Hudson.getInstance().getRootDir(),"cahce/jdks/"+platform+"/"+cpu+"/"+id);
+    }
+
+    /**
      * Performs a license click through and obtains the one-time URL for downloading bits.
      */
     public URL locate(TaskListener log, Platform platform, CPU cpu) throws IOException {
+        File cache = getLocalCacheFile(platform, cpu);
+        if (cache.exists()) return cache.toURL();
+
         HttpURLConnection con = locateStage1(platform, cpu);
         String page = IOUtils.toString(con.getInputStream());
-        return locateStage2(log, page);
+        URL src = locateStage2(log, page);
+
+        // download to a temporary file and rename it in to handle concurrency and failure correctly,
+        File tmp = new File(cache.getPath()+".tmp");
+        tmp.getParentFile().mkdirs();
+        try {
+            FileOutputStream out = new FileOutputStream(tmp);
+            try {
+                IOUtils.copy(new RetryableHttpStream(src), out);
+            } finally {
+                out.close();
+            }
+
+            tmp.renameTo(cache);
+            return cache.toURL();
+        } finally {
+            tmp.delete();
+        }
     }
 
     @SuppressWarnings("unchecked") // dom4j doesn't do generics, apparently... should probably switch to XOM
