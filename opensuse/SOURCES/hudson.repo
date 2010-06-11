@@ -2,6 +2,6 @@
 name=hudson
 enabled=1
 autorefresh=0
-baseurl=http://hudson-labs.org/opensuse/
+baseurl=http://pkg.hudson-labs.org/opensuse/
 type=rpm-md
 keeppackages=0
