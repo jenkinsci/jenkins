@@ -50,7 +50,7 @@ THE SOFTWARE.
         <!-- see http://maven-junit-plugin.kenai.com/ for more info -->
         <groupId>com.sun.maven</groupId>
         <artifactId>maven-junit-plugin</artifactId>
-        <version>1.2</version>
+        <version>1.5</version>
         <executions>
           <execution>
             <goals>
