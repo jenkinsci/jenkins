@@ -53,6 +53,8 @@ import java.util.List;
  * <dd>Added to the configuration page of the node.
  * <dt>global.jelly</dt>
  * <dd>Added to the system configuration page.
+ * <dt>summary.jelly</dt>
+ * <dd>Added to the index page of the {@link Computer} associated with the node
  * <dl>
  *
  * @param <N>
