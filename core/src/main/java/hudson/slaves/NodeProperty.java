@@ -53,9 +53,9 @@ import java.util.List;
  * <dd>Added to the configuration page of the node.
  * <dt>global.jelly</dt>
  * <dd>Added to the system configuration page.
- * <dt>summary.jelly</dt>
- * <dd>Added to the index page of the {@link Computer} associated with the node
- * <dl>
+ * <dt>summary.jelly (optional)</dt>
+ * <dd>Added to the index page of the {@link hudson.model.Computer} associated with the node
+ * </dl>
  *
  * @param <N>
  *      {@link NodeProperty} can choose to only work with a certain subtype of {@link Node}, and this 'N'

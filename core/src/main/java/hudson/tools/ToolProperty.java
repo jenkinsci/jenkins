@@ -40,7 +40,7 @@ import hudson.model.Hudson;
  * <dl>
  * <dt>config.jelly</dt>
  * <dd>Added to the configuration page of the tool.
- * <dl>
+ * </dl>
  *
  * @param <T>
  *      {@link ToolProperty} can choose to only work with a certain subtype of {@link ToolInstallation}, and this 'T'
