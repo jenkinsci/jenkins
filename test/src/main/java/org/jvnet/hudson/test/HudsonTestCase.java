@@ -437,14 +437,14 @@ public abstract class HudsonTestCase extends TestCase implements RootAction {
             LOGGER.warning("Extracting a copy of Ant bundled in the test harness. " +
                     "To avoid a performance hit, set the environment variable ANT_HOME to point to an  Ant installation.");
             FilePath ant = hudson.getRootPath().createTempFile("ant", "zip");
-            ant.copyFrom(HudsonTestCase.class.getClassLoader().getResource("apache-ant-1.7.1-bin.zip"));
+            ant.copyFrom(HudsonTestCase.class.getClassLoader().getResource("apache-ant-1.8.1-bin.zip"));
             File antHome = createTmpDir();
             ant.unzip(new FilePath(antHome));
             // TODO: switch to tar that preserves file permissions more easily
             if(!Functions.isWindows())
-                GNUCLibrary.LIBC.chmod(new File(antHome,"apache-ant-1.7.1/bin/ant").getPath(),0755);
+                GNUCLibrary.LIBC.chmod(new File(antHome,"apache-ant-1.8.1/bin/ant").getPath(),0755);
 
-            antInstallation = new AntInstallation("default", new File(antHome,"apache-ant-1.7.1").getAbsolutePath(),NO_PROPERTIES);
+            antInstallation = new AntInstallation("default", new File(antHome,"apache-ant-1.8.1").getAbsolutePath(),NO_PROPERTIES);
         }
 		hudson.getDescriptorByType(Ant.DescriptorImpl.class).setInstallations(antInstallation);
 		return antInstallation;
