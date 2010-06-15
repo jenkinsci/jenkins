@@ -737,6 +737,7 @@ public abstract class HudsonTestCase extends TestCase implements RootAction {
     }
 
     public <R extends Run> R assertBuildStatusSuccess(Future<? extends R> r) throws Exception {
+        assertNotNull("build was actually scheduled", r);
         return assertBuildStatusSuccess(r.get());
     }
 
