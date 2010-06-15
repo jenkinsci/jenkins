@@ -111,8 +111,10 @@ public class JDKInstaller extends ToolInstaller {
             }
             // already installed?
             FilePath marker = expectedLocation.child(".installedByHudson");
-            if(marker.exists())
+            if (marker.exists() && marker.readToString().equals(id)) {
                 return expectedLocation;
+            }
+            expectedLocation.deleteRecursive();
             expectedLocation.mkdirs();
 
             Platform p = Platform.of(node);
@@ -127,7 +129,7 @@ public class JDKInstaller extends ToolInstaller {
 
             // successfully installed
             file.delete();
-            marker.touch(System.currentTimeMillis());
+            marker.write(id, null);
 
         } catch (DetectionFailedException e) {
             out.println("JDK installation skipped: "+e.getMessage());
