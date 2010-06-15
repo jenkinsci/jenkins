@@ -48,7 +48,7 @@ THE SOFTWARE.
       </s:block>
       <s:entry>
         <st:set var="instance" value="${descriptor}" />
-        <st:include page="${d.newInstanceDetailPage()}" from="${d}" optional="true"/>
+        <st:include page="${descriptor.newInstanceDetailPage()}" from="${descriptor}" optional="true"/>
       </s:entry>
     </j:forEach>
     <j:if test="${!empty(copyNames)}">
