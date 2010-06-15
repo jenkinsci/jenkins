@@ -157,7 +157,7 @@ public abstract class View extends AbstractModelObject implements AccessControll
     /**
      * Renames this view.
      */
-    public void rename(String newName) throws ParseException, FormException {
+    public void rename(String newName) throws Failure, FormException {
         if(name.equals(newName))    return; // noop
         checkGoodName(newName);
         if(owner.getView(newName)!=null)
@@ -564,12 +564,7 @@ public abstract class View extends AbstractModelObject implements AccessControll
         filterExecutors = req.getParameter("filterExecutors") != null;
         filterQueue = req.getParameter("filterQueue") != null;
 
-        try {
-            rename(req.getParameter("name"));
-        } catch (ParseException e) {
-            sendError(e, req, rsp);
-            return;
-        }
+        rename(req.getParameter("name"));
 
         owner.save();
 
@@ -672,7 +667,7 @@ public abstract class View extends AbstractModelObject implements AccessControll
     }
     
     public static View create(StaplerRequest req, StaplerResponse rsp, ViewGroup owner)
-            throws ParseException, FormException, IOException, ServletException {
+            throws FormException, IOException, ServletException {
         req.setCharacterEncoding("UTF-8");
 
         String name = req.getParameter("name");

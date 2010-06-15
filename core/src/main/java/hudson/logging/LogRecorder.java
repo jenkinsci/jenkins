@@ -28,7 +28,6 @@ import hudson.BulkChange;
 import hudson.Util;
 import hudson.XmlFile;
 import hudson.model.AbstractModelObject;
-import hudson.model.Failure;
 import hudson.model.Hudson;
 import hudson.model.Saveable;
 import hudson.model.listeners.SaveableListener;
@@ -43,7 +42,6 @@ import org.kohsuke.stapler.StaplerResponse;
 import javax.servlet.ServletException;
 import java.io.File;
 import java.io.IOException;
-import java.text.ParseException;
 import java.util.List;
 import java.util.Arrays;
 import java.util.Locale;
@@ -164,11 +162,7 @@ public class LogRecorder extends AbstractModelObject implements Saveable {
         String newName = src.getString("name"), redirect = ".";
         XmlFile oldFile = null;
         if(!name.equals(newName)) {
-            try {
-                Hudson.checkGoodName(newName);
-            } catch (ParseException e) {
-                throw new Failure(e.getMessage());
-            }
+            Hudson.checkGoodName(newName);
             oldFile = getConfigFile();
             // rename
             getParent().logRecorders.remove(name);

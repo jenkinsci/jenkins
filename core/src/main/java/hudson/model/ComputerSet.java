@@ -43,7 +43,6 @@ import javax.servlet.ServletException;
 import static javax.servlet.http.HttpServletResponse.SC_BAD_REQUEST;
 import java.io.File;
 import java.io.IOException;
-import java.text.ParseException;
 import java.util.AbstractList;
 import java.util.List;
 import java.util.Map;
@@ -212,15 +211,9 @@ public final class ComputerSet extends AbstractModelObject {
         final Hudson app = Hudson.getInstance();
         app.checkPermission(Hudson.ADMINISTER);  // TODO: new permission?
 
-        try {
-            name = checkName(name);
-        } catch (ParseException e) {
-            rsp.setStatus(SC_BAD_REQUEST);
-            sendError(e,req,rsp);
-            return;
-        }
-
         if(mode!=null && mode.equals("copy")) {
+            name = checkName(name);
+
             Node src = app.getNode(from);
             if(src==null) {
                 rsp.setStatus(SC_BAD_REQUEST);
@@ -249,7 +242,7 @@ public final class ComputerSet extends AbstractModelObject {
             }
 
             NodeDescriptor d = NodeDescriptor.all().find(mode);
-            d.handleNewNodePage(this,req,rsp);
+            d.handleNewNodePage(this,name,req,rsp);
         }
     }
 
@@ -259,35 +252,30 @@ public final class ComputerSet extends AbstractModelObject {
     public synchronized void doDoCreateItem( StaplerRequest req, StaplerResponse rsp,
                                            @QueryParameter String name,
                                            @QueryParameter String type ) throws IOException, ServletException, FormException {
-        try {
-            final Hudson app = Hudson.getInstance();
-            app.checkPermission(Hudson.ADMINISTER);  // TODO: new permission?
-            checkName(name);
+        final Hudson app = Hudson.getInstance();
+        app.checkPermission(Hudson.ADMINISTER);  // TODO: new permission?
+        checkName(name);
 
-            Node result = NodeDescriptor.all().find(type).newInstance(req, req.getSubmittedForm());
-            app.addNode(result);
+        Node result = NodeDescriptor.all().find(type).newInstance(req, req.getSubmittedForm());
+        app.addNode(result);
 
-            // take the user back to the slave list top page
-            rsp.sendRedirect2(".");
-        } catch (ParseException e) {
-            rsp.setStatus(SC_BAD_REQUEST);
-            sendError(e,req,rsp);
-        }
+        // take the user back to the slave list top page
+        rsp.sendRedirect2(".");
     }
 
     /**
      * Makes sure that the given name is good as a slave name.
      * @return trimmed name if valid; throws ParseException if not
      */
-    private String checkName(String name) throws ParseException {
+    public String checkName(String name) throws Failure {
         if(name==null)
-            throw new ParseException("Query parameter 'name' is required",0);
+            throw new Failure("Query parameter 'name' is required");
 
         name = name.trim();
         Hudson.checkGoodName(name);
 
         if(Hudson.getInstance().getNode(name)!=null)
-            throw new ParseException(Messages.ComputerSet_SlaveAlreadyExists(name),0);
+            throw new Failure(Messages.ComputerSet_SlaveAlreadyExists(name));
 
         // looks good
         return name;
@@ -305,7 +293,7 @@ public final class ComputerSet extends AbstractModelObject {
         try {
             checkName(value);
             return FormValidation.ok();
-        } catch (ParseException e) {
+        } catch (Failure e) {
             return FormValidation.error(e.getMessage());
         }
     }

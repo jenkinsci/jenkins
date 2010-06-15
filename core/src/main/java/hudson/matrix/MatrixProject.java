@@ -28,9 +28,9 @@ import hudson.XmlFile;
 import hudson.Util;
 import hudson.Extension;
 import hudson.model.AbstractProject;
-import hudson.model.Action;
 import hudson.model.DependencyGraph;
 import hudson.model.Descriptor;
+import hudson.model.Failure;
 import hudson.model.Hudson;
 import hudson.model.Item;
 import hudson.model.ItemGroup;
@@ -60,7 +60,6 @@ import hudson.util.FormValidation;
 import java.io.File;
 import java.io.FileFilter;
 import java.io.IOException;
-import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -557,15 +556,13 @@ public class MatrixProject extends AbstractProject<MatrixProject,MatrixBuild> im
         if(req.getParameter("hasAxes")!=null) {
             newAxes.addAll(req.bindParametersToList(Axis.class,"axis."));
             // get rid of empty values
-            for (Iterator<Axis> itr = newAxes.iterator(); itr.hasNext();) try {
+            for (Iterator<Axis> itr = newAxes.iterator(); itr.hasNext();) {
                 Axis a = itr.next();
                 if(a.values.isEmpty()) { itr.remove(); continue; }
                 checkAxisName(a.name);
                 if (axisNames.contains(a.name))
                     throw new FormException(Messages.MatrixProject_DuplicateAxisName(),"axis.name");
                 axisNames.add(a.name);
-            } catch (ParseException e) {
-                throw new FormException(e.getMessage(),"axis.name");
             }
         }
         
@@ -623,7 +620,7 @@ public class MatrixProject extends AbstractProject<MatrixProject,MatrixBuild> im
         try {
             checkAxisName(value);
             return FormValidation.ok();
-        } catch (ParseException e) {
+        } catch (Failure e) {
             return FormValidation.error(e.getMessage());
         }
     }
@@ -632,7 +629,7 @@ public class MatrixProject extends AbstractProject<MatrixProject,MatrixBuild> im
      * Makes sure that the given name is good as a axis name.
      * TODO: maybe be even more restrictive since these are used as shell variables
      */
-    private static void checkAxisName(String name) throws ParseException {
+    private static void checkAxisName(String name) throws Failure {
         Hudson.checkGoodName(name);
     }
 

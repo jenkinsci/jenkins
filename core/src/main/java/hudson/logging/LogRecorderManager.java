@@ -44,7 +44,6 @@ import javax.servlet.ServletException;
 import java.io.File;
 import java.io.FileFilter;
 import java.io.IOException;
-import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
@@ -74,7 +73,7 @@ public class LogRecorderManager extends AbstractModelObject {
         return "/log";
     }
 
-    public LogRecorder getDynamic(String token, StaplerRequest req, StaplerResponse rsp) {
+    public LogRecorder getDynamic(String token) {
         return getLogRecorder(token);
     }
 
@@ -103,11 +102,7 @@ public class LogRecorderManager extends AbstractModelObject {
      * Creates a new log recorder.
      */
     public HttpResponse doNewLogRecorder(@QueryParameter String name) {
-        try {
-            Hudson.checkGoodName(name);
-        } catch (ParseException e) {
-            throw new Failure(e.getMessage());
-        }
+        Hudson.checkGoodName(name);
         
         logRecorders.put(name,new LogRecorder(name));
 

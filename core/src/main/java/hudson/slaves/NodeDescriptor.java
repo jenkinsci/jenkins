@@ -23,6 +23,7 @@
  */
 package hudson.slaves;
 
+import hudson.Extension;
 import hudson.model.ComputerSet;
 import hudson.model.Descriptor;
 import hudson.model.Slave;
@@ -79,8 +80,12 @@ public abstract class NodeDescriptor extends Descriptor<Node> {
     /**
      * Handles the form submission from the "/computer/new" page, which is the first form for creating a new node.
      * By default, it shows the configuration page for entering details, but subtypes can override this differently.
+     *
+     * @param name
+     *      Name of the new node.
      */
-    public void handleNewNodePage(ComputerSet computerSet, StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
+    public void handleNewNodePage(ComputerSet computerSet, String name, StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
+        computerSet.checkName(name);
         req.setAttribute("descriptor", this);
         req.getView(computerSet,"_new.jelly").forward(req,rsp);
     }
