@@ -23,6 +23,7 @@
  */
 package hudson.slaves;
 
+import hudson.model.ComputerSet;
 import hudson.model.Descriptor;
 import hudson.model.Slave;
 import hudson.model.Node;
@@ -32,10 +33,15 @@ import hudson.util.FormValidation;
 import hudson.DescriptorExtensionList;
 import hudson.Util;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.ArrayList;
 
 import org.kohsuke.stapler.QueryParameter;
+import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.StaplerResponse;
+
+import javax.servlet.ServletException;
 
 /**
  * {@link Descriptor} for {@link Slave}.
@@ -68,6 +74,15 @@ public abstract class NodeDescriptor extends Descriptor<Node> {
 
     public final String newInstanceDetailPage() {
         return '/'+clazz.getName().replace('.','/').replace('$','/')+"/newInstanceDetail.jelly";
+    }
+
+    /**
+     * Handles the form submission from the "/computer/new" page, which is the first form for creating a new node.
+     * By default, it shows the configuration page for entering details, but subtypes can override this differently.
+     */
+    public void handleNewNodePage(ComputerSet computerSet, StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
+        req.setAttribute("descriptor", this);
+        req.getView(computerSet,"_new.jelly").forward(req,rsp);
     }
 
     @Override

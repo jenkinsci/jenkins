@@ -207,8 +207,8 @@ public final class ComputerSet extends AbstractModelObject {
      * First check point in creating a new slave.
      */
     public synchronized void doCreateItem( StaplerRequest req, StaplerResponse rsp,
-                                           @QueryParameter("name") String name, @QueryParameter("mode") String mode,
-                                           @QueryParameter("from") String from ) throws IOException, ServletException {
+                                           @QueryParameter String name, @QueryParameter String mode,
+                                           @QueryParameter String from ) throws IOException, ServletException {
         final Hudson app = Hudson.getInstance();
         app.checkPermission(Hudson.ADMINISTER);  // TODO: new permission?
 
@@ -248,8 +248,8 @@ public final class ComputerSet extends AbstractModelObject {
                 return;
             }
 
-            req.setAttribute("descriptor", NodeDescriptor.all().find(mode));
-            req.getView(this,"_new.jelly").forward(req,rsp);
+            NodeDescriptor d = NodeDescriptor.all().find(mode);
+            d.handleNewNodePage(this,req,rsp);
         }
     }
 
