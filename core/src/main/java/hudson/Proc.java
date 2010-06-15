@@ -23,7 +23,7 @@
  */
 package hudson;
 
-import hudson.remoting.Channel;
+import hudson.model.TaskListener;
 import hudson.util.IOException2;
 import hudson.util.StreamCopyThread;
 import hudson.util.ProcessTree;
@@ -32,10 +32,15 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.CancellationException;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -79,6 +84,44 @@ public abstract class Proc {
      */
     public abstract int join() throws IOException, InterruptedException;
 
+    private static final ExecutorService executor = Executors.newCachedThreadPool();
+    /**
+     * Like {@link #join} but can be given a maximum time to wait.
+     * @param timeout number of time units
+     * @param unit unit of time
+     * @param listener place to send messages if there are problems, incl. timeout
+     * @return exit code from the process
+     * @throws IOException for the same reasons as {@link #join}
+     * @throws InterruptedException for the same reasons as {@link #join}
+     * @since 1.363
+     */
+    public final int joinWithTimeout(final long timeout, final TimeUnit unit,
+            final TaskListener listener) throws IOException, InterruptedException {
+        final CountDownLatch latch = new CountDownLatch(1);
+        try {
+            executor.submit(new Runnable() {
+                public void run() {
+                    try {
+                        if (!latch.await(timeout, unit)) {
+                            listener.error("Timeout after " + timeout + " " +
+                                    unit.toString().toLowerCase(Locale.ENGLISH));
+                            kill();
+                        }
+                    } catch (InterruptedException x) {
+                        listener.error(x.toString());
+                    } catch (IOException x) {
+                        listener.error(x.toString());
+                    } catch (RuntimeException x) {
+                        listener.error(x.toString());
+                    }
+                }
+            });
+            return join();
+        } finally {
+            latch.countDown();
+        }
+    }
+    
     /**
      * Locally launched process.
      */
