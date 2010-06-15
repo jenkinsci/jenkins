@@ -3368,6 +3368,7 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
             || rest.startsWith("/jnlpJars/")
             || rest.startsWith("/tcpSlaveAgentListener")
             || rest.startsWith("/cli")
+            || rest.startsWith("/whoAmI")
             || rest.startsWith("/securityRealm"))
                 return this;    // URLs that are always visible without READ permission
             throw e;
