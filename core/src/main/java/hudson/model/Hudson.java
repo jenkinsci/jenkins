@@ -368,6 +368,13 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
         public CloudList() {// needed for XStream deserialization
         }
 
+        public Cloud getByName(String name) {
+            for (Cloud c : this)
+                if (c.name.equals(name))
+                    return c;
+            return null;
+        }
+
         @Override
         protected void onModified() throws IOException {
             super.onModified();
@@ -1433,10 +1440,7 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
      * Gets a {@link Cloud} by {@link Cloud#name its name}, or null.
      */
     public Cloud getCloud(String name) {
-        for (Cloud nf : clouds)
-            if(nf.name.equals(name))
-                return nf;
-        return null;
+        return clouds.getByName(name);
     }
 
     /**
