@@ -40,13 +40,14 @@ THE SOFTWARE.
       <script>$('name').focus();</script>
     </s:entry>
 
-    <j:forEach var="d" items="${descriptors}">
+    <j:forEach var="descriptor" items="${descriptors}">
       <s:block>
-        <input type="radio" name="mode" value="${d.class.name}" onchange="updateOk(this.form)" onclick="updateOk(this.form)" />
+        <input type="radio" name="mode" value="${descriptor.class.name}" onchange="updateOk(this.form)" onclick="updateOk(this.form)" />
         <st:nbsp/>
-        <label class="attach-previous"><b>${d.displayName}</b></label>
+        <label class="attach-previous"><b>${descriptor.displayName}</b></label>
       </s:block>
       <s:entry>
+        <st:set var="instance" value="${descriptor}" />
         <st:include page="${d.newInstanceDetailPage()}" from="${d}" optional="true"/>
       </s:entry>
     </j:forEach>
