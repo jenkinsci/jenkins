@@ -23,6 +23,7 @@
  */
 package hudson.util;
 
+import hudson.model.ModelObject;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
@@ -143,6 +144,10 @@ public class ListBoxModel extends ArrayList<ListBoxModel.Option> implements Http
 
     public void add(String displayName, String value) {
         add(new Option(displayName,value));
+    }
+
+    public void add(ModelObject usedForDisplayName, String value) {
+        add(usedForDisplayName.getDisplayName(), value);
     }
 
     /**
