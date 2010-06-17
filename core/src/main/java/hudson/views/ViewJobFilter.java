@@ -29,6 +29,7 @@ import hudson.model.Describable;
 import hudson.model.Descriptor;
 import hudson.model.Hudson;
 import hudson.model.TopLevelItem;
+import hudson.model.View;
 
 import java.util.List;
 
@@ -54,7 +55,8 @@ public abstract class ViewJobFilter implements ExtensionPoint, Describable<ViewJ
      * Choose which jobs to show for a view.
      * @param added which jobs have been added so far.  This JobFilter can remove or add to this list.
      * @param all All jobs that are possible.
+     * @param filteringView The view that we are filtering jobs for.
      * @return a new list based off of the jobs added so far, and all jobs available.
      */
-    abstract public List<TopLevelItem> filter(List<TopLevelItem> added, List<TopLevelItem> all);
+    abstract public List<TopLevelItem> filter(List<TopLevelItem> added, List<TopLevelItem> all, View filteringView);
 }

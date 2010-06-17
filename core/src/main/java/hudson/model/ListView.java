@@ -221,7 +221,7 @@ public class ListView extends View implements Saveable {
         Iterable<ViewJobFilter> jobFilters = getJobFilters();
         List<TopLevelItem> allItems = Hudson.getInstance().getItems();
     	for (ViewJobFilter jobFilter: jobFilters) {
-    		items = jobFilter.filter(items, allItems);
+    		items = jobFilter.filter(items, allItems, this);
     	}
         
         return items;
