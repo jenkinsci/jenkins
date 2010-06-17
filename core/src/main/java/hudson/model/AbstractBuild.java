@@ -491,7 +491,7 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
                         // checkout error already reported
                     } catch (IOException e) {
                         // checkout error not yet reported
-                        listener.getLogger().println(e.getMessage());
+                        e.printStackTrace(listener.getLogger());
                     }
 
                     if (retryCount == 0)   // all attempts failed

@@ -149,13 +149,9 @@ public class TreeView extends View implements ViewGroup {
     }
 
     public void doCreateView( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException, FormException {
-        try {
-            checkPermission(View.CREATE);
-            views.add(View.create(req,rsp,this));
-            save();
-        } catch (ParseException e) {
-            sendError(e,req,rsp);
-        }
+        checkPermission(View.CREATE);
+        views.add(View.create(req,rsp,this));
+        save();
     }
 
     // this feature is not public yet

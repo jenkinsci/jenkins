@@ -548,6 +548,8 @@ public abstract class PluginManager extends AbstractModelObject {
             // Parse the request
             FileItem fileItem = (FileItem) upload.parseRequest(req).get(0);
             String fileName = Util.getFileName(fileItem.getName());
+            if("".equals(fileName))
+                return new HttpRedirect("advanced");
             if(!fileName.endsWith(".hpi"))
                 throw new Failure(hudson.model.Messages.Hudson_NotAPlugin(fileName));
             fileItem.write(new File(rootDir, fileName));

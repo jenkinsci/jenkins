@@ -239,7 +239,7 @@ public class RepeatableTest extends HudsonTestCase {
     }
 
     public DescriptorExtensionList<Fruit,Descriptor<Fruit>> getFruitDescriptors() {
-        return hudson.getDescriptorList(Fruit.class);
+        return hudson.<Fruit,Descriptor<Fruit>>getDescriptorList(Fruit.class);
     }
 
     public void testDropdownList() throws Exception {

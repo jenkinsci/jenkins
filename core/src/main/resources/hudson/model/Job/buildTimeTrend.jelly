@@ -1,7 +1,8 @@
 <!--
 The MIT License
 
-Copyright (c) 2004-2010, Sun Microsystems, Inc., Kohsuke Kawaguchi, Erik Ramfelt, Seiji Sogabe
+Copyright (c) 2004-2010, Sun Microsystems, Inc., Kohsuke Kawaguchi,
+Erik Ramfelt, Seiji Sogabe, Alan Harder
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -32,7 +33,10 @@ THE SOFTWARE.
 
       <div id="tl" style="height:250px; border:1px solid black;" />
       <div id="status" />
-      <script><![CDATA[
+      <script>
+        <j:invokeStatic var="tz" className="java.util.TimeZone" method="getDefault"/>
+        var tz = ${tz.rawOffset / 3600000};
+        <![CDATA[
         window.addEventListener('load', function() {
             var tl_el = document.getElementById("tl");
             var eventSource1 = new Timeline.DefaultEventSource();
@@ -78,6 +82,7 @@ THE SOFTWARE.
                     intervalPixels: 200,
                     eventSource:    eventSource1,
                     date:           d,
+                    timeZone:       tz,
                     theme:          theme1,
                     layout:         'overview'  // original, overview, detailed
                 }),
@@ -85,6 +90,7 @@ THE SOFTWARE.
                 Timeline.createBandInfo({
                     width:          "200px",
                     eventSource:    eventSource1,
+                    timeZone:       tz,
                     theme:          theme1,
                     intervalUnit:   Timeline.DateTime.HOUR,
                     intervalPixels: 200

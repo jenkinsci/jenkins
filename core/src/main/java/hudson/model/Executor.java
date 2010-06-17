@@ -84,6 +84,8 @@ public class Executor extends Thread implements ModelObject {
         try {
             finishTime = System.currentTimeMillis();
             while(shouldRun()) {
+                executable = null;
+
                 synchronized(owner) {
                     if(owner.getNumExecutors()<owner.getExecutors().size()) {
                         // we've got too many executors.
@@ -98,37 +100,37 @@ public class Executor extends Thread implements ModelObject {
                 Thread.interrupted();
 
                 Queue.Item queueItem;
+                Queue.Task task;
                 try {
                 	queueItem = grabJob();
+                    task = queueItem.task;
+                    startTime = System.currentTimeMillis();
+                    executable = task.createExecutable();
+                } catch (IOException e) {
+                    LOGGER.log(Level.SEVERE, "Executor throw an exception unexpectedly", e);
+                    continue;
                 } catch (InterruptedException e) {
                     continue;
                 }
 
-                Queue.Task task = queueItem.task;
                 Throwable problems = null;
-                owner.taskAccepted(this, task);
-
                 final String threadName = getName();
                 try {
-                    try {
-                        startTime = System.currentTimeMillis();
-                        executable = task.createExecutable();
-                        queue.completePop(queueItem);
-                        
-                        if (executable instanceof Actionable) {
-                        	for (Action action: queueItem.getActions()) {
-                        		((Actionable) executable).addAction(action);
-                        	}
+                    owner.taskAccepted(this, task);
+
+                    if (executable instanceof Actionable) {
+                        for (Action action: queueItem.getActions()) {
+                            ((Actionable) executable).addAction(action);
                         }
-                        setName(threadName+" : executing "+executable.toString());
-                        queue.execute(executable, task);
-                    } catch (Throwable e) {
-                        // for some reason the executor died. this is really
-                        // a bug in the code, but we don't want the executor to die,
-                        // so just leave some info and go on to build other things
-                        LOGGER.log(Level.SEVERE, "Executor throw an exception unexpectedly", e);
-                        problems = e;
                     }
+                    setName(threadName+" : executing "+executable.toString());
+                    queue.execute(executable, task);
+                } catch (Throwable e) {
+                    // for some reason the executor died. this is really
+                    // a bug in the code, but we don't want the executor to die,
+                    // so just leave some info and go on to build other things
+                    LOGGER.log(Level.SEVERE, "Executor throw an exception unexpectedly", e);
+                    problems = e;
                 } finally {
                     setName(threadName);
                     finishTime = System.currentTimeMillis();
@@ -140,7 +142,6 @@ public class Executor extends Thread implements ModelObject {
                         owner.taskCompletedWithProblems(this, task, finishTime - startTime, problems);
                     }
                 }
-                executable = null;
             }
         } catch(RuntimeException e) {
             causeOfDeath = e;

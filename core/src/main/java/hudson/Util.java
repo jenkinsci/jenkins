@@ -25,13 +25,11 @@ package hudson;
 
 import hudson.model.TaskListener;
 import hudson.model.Hudson;
-import static hudson.model.Hudson.isWindows;
 import static hudson.util.jna.GNUCLibrary.LIBC;
 
 import hudson.util.IOException2;
 import hudson.util.QuotedStringTokenizer;
 import hudson.util.VariableResolver;
-import hudson.util.jna.GNUCLibrary;
 import hudson.Proc.LocalProc;
 import hudson.os.PosixAPI;
 import org.apache.tools.ant.BuildException;
@@ -574,7 +572,7 @@ public class Util {
     }
 
     /**
-     * Returns a human readable text of the time duration.
+     * Returns a human readable text of the time duration, for example "3 minutes 40 seconds".
      * This version should be used for representing a duration of some activity (like build)
      *
      * @param duration

@@ -368,6 +368,13 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
         public CloudList() {// needed for XStream deserialization
         }
 
+        public Cloud getByName(String name) {
+            for (Cloud c : this)
+                if (c.name.equals(name))
+                    return c;
+            return null;
+        }
+
         @Override
         protected void onModified() throws IOException {
             super.onModified();
@@ -1433,10 +1440,7 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
      * Gets a {@link Cloud} by {@link Cloud#name its name}, or null.
      */
     public Cloud getCloud(String name) {
-        for (Cloud nf : clouds)
-            if(nf.name.equals(name))
-                return nf;
-        return null;
+        return clouds.getByName(name);
     }
 
     /**
@@ -2536,13 +2540,7 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
             return null;
         }
 
-        try {
-            name = checkJobName(name);
-        } catch (ParseException e) {
-            rsp.setStatus(SC_BAD_REQUEST);
-            sendError(e,req,rsp);
-            return null;
-        }
+        name = checkJobName(name);
 
         String mode = req.getParameter("mode");
         if(mode!=null && mode.equals("copy")) {
@@ -2649,12 +2647,8 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
     }
 
     public synchronized void doCreateView( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException, FormException {
-        try {
-            checkPermission(View.CREATE);
-            addView(View.create(req,rsp, this));
-        } catch (ParseException e) {
-            sendError(e,req,rsp);
-        }
+        checkPermission(View.CREATE);
+        addView(View.create(req,rsp, this));
     }
 
     /**
@@ -2664,17 +2658,17 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
      * @throws ParseException
      *      if the given name is not good
      */
-    public static void checkGoodName(String name) throws ParseException {
+    public static void checkGoodName(String name) throws Failure {
         if(name==null || name.length()==0)
-            throw new ParseException(Messages.Hudson_NoName(),0);
+            throw new Failure(Messages.Hudson_NoName());
 
         for( int i=0; i<name.length(); i++ ) {
             char ch = name.charAt(i);
             if(Character.isISOControl(ch)) {
-                throw new ParseException(Messages.Hudson_ControlCodeNotAllowed(toPrintableName(name)),i);
+                throw new Failure(Messages.Hudson_ControlCodeNotAllowed(toPrintableName(name)));
             }
             if("?*/\\%!@#$^&|<>[]:;".indexOf(ch)!=-1)
-                throw new ParseException(Messages.Hudson_UnsafeChar(ch),i);
+                throw new Failure(Messages.Hudson_UnsafeChar(ch));
         }
 
         // looks good
@@ -2684,11 +2678,11 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
      * Makes sure that the given name is good as a job name.
      * @return trimmed name if valid; throws ParseException if not
      */
-    private String checkJobName(String name) throws ParseException {
+    private String checkJobName(String name) throws Failure {
         checkGoodName(name);
         name = name.trim();
         if(getItem(name)!=null)
-            throw new ParseException(Messages.Hudson_JobAlreadyExists(name),0);
+            throw new Failure(Messages.Hudson_JobAlreadyExists(name));
         // looks good
         return name;
     }
@@ -2764,6 +2758,10 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
      */
     public Slave.JnlpJar getJnlpJars(String fileName) {
         return new Slave.JnlpJar(fileName);
+    }
+
+    public Slave.JnlpJar doJnlpJars(StaplerRequest req) {
+        return new Slave.JnlpJar(req.getRestOfPath());
     }
 
     /**
@@ -3175,7 +3173,7 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
         try {
             checkJobName(value);
             return FormValidation.ok();
-        } catch (ParseException e) {
+        } catch (Failure e) {
             return FormValidation.error(e.getMessage());
         }
     }
@@ -3291,7 +3289,7 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
      * Checks if container uses UTF-8 to decode URLs. See
      * http://hudson.gotdns.com/wiki/display/HUDSON/Tomcat#Tomcat-i18n
      */
-    public FormValidation doCheckURIEncoding(StaplerRequest request, StaplerResponse response) throws IOException {
+    public FormValidation doCheckURIEncoding(StaplerRequest request) throws IOException {
         request.setCharacterEncoding("UTF-8");
         // expected is non-ASCII String
         final String expected = "\u57f7\u4e8b";
@@ -3370,6 +3368,7 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
             || rest.startsWith("/jnlpJars/")
             || rest.startsWith("/tcpSlaveAgentListener")
             || rest.startsWith("/cli")
+            || rest.startsWith("/whoAmI")
             || rest.startsWith("/securityRealm"))
                 return this;    // URLs that are always visible without READ permission
             throw e;

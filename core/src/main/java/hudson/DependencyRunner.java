@@ -1,7 +1,8 @@
 /*
  * The MIT License
  * 
- * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, Brian Westrich, Jean-Baptiste Quenot
+ * Copyright (c) 2004-2010, Sun Microsystems, Inc., Kohsuke Kawaguchi,
+ * Brian Westrich, Jean-Baptiste Quenot
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -25,6 +26,7 @@ package hudson;
 
 import hudson.model.AbstractProject;
 import hudson.model.Hudson;
+import hudson.security.ACL;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -32,6 +34,8 @@ import java.util.List;
 import java.util.Set;
 import java.util.Collection;
 import java.util.logging.Logger;
+import org.acegisecurity.Authentication;
+import org.acegisecurity.context.SecurityContextHolder;
 
 /**
  * Runs a job on all projects in the order of dependencies
@@ -49,22 +53,27 @@ public class DependencyRunner implements Runnable {
     }
 
     public void run() {
-        Set<AbstractProject> topLevelProjects = new HashSet<AbstractProject>();
-        // Get all top-level projects
-    	LOGGER.fine("assembling top level projects");
-        for (AbstractProject p : Hudson.getInstance().getAllItems(
-                    AbstractProject.class))
-            if (p.getUpstreamProjects().size() == 0) {
-            	LOGGER.fine("adding top level project " + p.getName());
-                topLevelProjects.add(p);
-            } else { 
-            	LOGGER.fine("skipping project since not a top level project: " 
-            			+ p.getName());
+        Authentication saveAuth = SecurityContextHolder.getContext().getAuthentication();
+        SecurityContextHolder.getContext().setAuthentication(ACL.SYSTEM);
+
+        try {
+            Set<AbstractProject> topLevelProjects = new HashSet<AbstractProject>();
+            // Get all top-level projects
+            LOGGER.fine("assembling top level projects");
+            for (AbstractProject p : Hudson.getInstance().getAllItems(AbstractProject.class))
+                if (p.getUpstreamProjects().size() == 0) {
+                    LOGGER.fine("adding top level project " + p.getName());
+                    topLevelProjects.add(p);
+                } else {
+                    LOGGER.fine("skipping project since not a top level project: " + p.getName());
+                }
+            populate(topLevelProjects);
+            for (AbstractProject p : polledProjects) {
+                    LOGGER.fine("running project in correct dependency order: " + p.getName());
+                runnable.run(p);
             }
-        populate(topLevelProjects);
-        for (AbstractProject p : polledProjects) {
-        	LOGGER.fine("running project in correct dependency order: " + p.getName());
-            runnable.run(p);
+        } finally {
+            SecurityContextHolder.getContext().setAuthentication(saveAuth);
         }
     }
 
@@ -77,7 +86,7 @@ public class DependencyRunner implements Runnable {
                 polledProjects.remove(p);
             }
 
-        	LOGGER.fine("adding project " + p.getName());
+            LOGGER.fine("adding project " + p.getName());
             polledProjects.add(p);
 
             // Add all downstream dependencies

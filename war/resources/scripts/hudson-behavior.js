@@ -939,7 +939,13 @@ var hudsonRules = {
         e = null; // avoid memory leak
     },
 
-    "DIV.behavior-loading" : function(e) { e.style.display = 'none' }
+    "DIV.behavior-loading" : function(e) {
+        e.style.display = 'none';
+    },
+
+    ".button-with-dropdown" : function (e) {
+        new YAHOO.widget.Button(e, { type: "menu", menu: e.nextSibling });
+    }
 };
 
 function applyTooltip(e,text) {

@@ -59,6 +59,7 @@ import javax.servlet.ServletException;
 
 import org.apache.commons.io.IOUtils;
 import org.kohsuke.stapler.DataBoundConstructor;
+import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
@@ -255,7 +256,7 @@ public abstract class Slave extends Node implements Serializable {
     /**
      * Web-bound object used to serve jar files for JNLP.
      */
-    public static final class JnlpJar {
+    public static final class JnlpJar implements HttpResponse {
         private final String fileName;
 
         public JnlpJar(String fileName) {
@@ -271,6 +272,10 @@ public abstract class Slave extends Node implements Serializable {
             InputStream in = con.getInputStream();
             rsp.serveFile(req, in, con.getLastModified(), con.getContentLength(), "*.jar" );
             in.close();
+        }
+
+        public void generateResponse(StaplerRequest req, StaplerResponse rsp, Object node) throws IOException, ServletException {
+            doIndex(req,rsp);
         }
 
         private URLConnection connect() throws IOException {

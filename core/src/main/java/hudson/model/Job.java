@@ -66,7 +66,6 @@ import java.io.IOException;
 import java.io.StringWriter;
 import java.io.PrintWriter;
 import java.net.URLEncoder;
-import java.text.ParseException;
 import java.util.AbstractList;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -1055,12 +1054,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
             String newName = req.getParameter("name");
             if (newName != null && !newName.equals(name)) {
                 // check this error early to avoid HTTP response splitting.
-                try {
-                    Hudson.checkGoodName(newName);
-                } catch (ParseException e) {
-                    sendError(e, req, rsp);
-                    return;
-                }
+                Hudson.checkGoodName(newName);
                 rsp.sendRedirect("rename?newName=" + URLEncoder.encode(newName, "UTF-8"));
             } else {
                 rsp.sendRedirect(".");
@@ -1316,12 +1310,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
         checkPermission(DELETE);
 
         String newName = req.getParameter("newName");
-        try {
-            Hudson.checkGoodName(newName);
-        } catch (ParseException e) {
-            sendError(e, req, rsp);
-            return;
-        }
+        Hudson.checkGoodName(newName);
 
         if (isBuilding()) {
             // redirect to page explaining that we can't rename now

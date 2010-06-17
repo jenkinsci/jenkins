@@ -78,6 +78,7 @@ THE SOFTWARE.
         </div>
       </j:if>
 
+      <st:include page="nodepropertysummaries.jelly" />
 
       <h2>${%title.projects_tied_on(it.displayName)}</h2>
       <j:set var="jobs" value="${it.tiedJobs}" />

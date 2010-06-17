@@ -38,7 +38,9 @@ THE SOFTWARE.
     <l:main-panel>
       <h1>${it.owner.pronoun} ${it.owner.displayName}</h1>
       <p>${%description}</p>
-      <f:form method="post" action="build" name="parameters" tableClass="parameters">
+      <j:set var="delay" value="${request.getParameter('delay')}" />
+      <f:form method="post" action="build${empty(delay)?'':'?delay='+delay}" name="parameters"
+              tableClass="parameters">
         <j:forEach var="parameterDefinition" items="${it.parameterDefinitions}">
           <tbody>
             <st:include it="${parameterDefinition}"
@@ -46,10 +48,6 @@ THE SOFTWARE.
           </tbody>
         </j:forEach>
         <f:block>
-          <j:set var="delay" value="${request.getParameter('delay')}" />
-          <j:if test="${!empty(delay)}">
-            <input type="hidden" name="delay" value="${delay}" />
-          </j:if>
           <f:submit value="${%Build}" />
         </f:block>
       </f:form>

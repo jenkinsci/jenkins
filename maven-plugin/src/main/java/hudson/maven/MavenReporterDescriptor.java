@@ -102,6 +102,6 @@ public abstract class MavenReporterDescriptor extends Descriptor<MavenReporter> 
      */
     public static Collection<MavenReporterDescriptor> all() {
         // use getDescriptorList and not getExtensionList to pick up legacy instances
-        return (Collection)Hudson.getInstance().getDescriptorList(MavenReporter.class);
+        return Hudson.getInstance().<MavenReporter,MavenReporterDescriptor>getDescriptorList(MavenReporter.class);
     }
 }

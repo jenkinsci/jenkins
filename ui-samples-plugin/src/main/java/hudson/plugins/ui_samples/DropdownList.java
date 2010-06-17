@@ -31,7 +31,7 @@ public class DropdownList extends UISample {
     }
 
     public DescriptorExtensionList<Fruit,Descriptor<Fruit>> getFruitDescriptors() {
-        return Hudson.getInstance().getDescriptorList(Fruit.class);
+        return Hudson.getInstance().<Fruit,Descriptor<Fruit>>getDescriptorList(Fruit.class);
     }
 
     // Process form data and show it as serialized XML

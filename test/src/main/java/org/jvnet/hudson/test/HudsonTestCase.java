@@ -28,12 +28,8 @@ import com.gargoylesoftware.htmlunit.javascript.HtmlUnitContextFactory;
 import com.gargoylesoftware.htmlunit.javascript.host.xml.XMLHttpRequest;
 import hudson.*;
 import hudson.Util;
-import hudson.model.AbstractBuild;
-import hudson.model.Computer;
-import hudson.model.Executor;
 import hudson.model.*;
 import hudson.model.Queue.Executable;
-import hudson.security.ACL;
 import hudson.security.AbstractPasswordBasedSecurityRealm;
 import hudson.security.GroupDetails;
 import hudson.security.SecurityRealm;
@@ -103,7 +99,6 @@ import net.sourceforge.htmlunit.corejs.javascript.ContextFactory.Listener;
 import org.acegisecurity.AuthenticationException;
 import org.acegisecurity.BadCredentialsException;
 import org.acegisecurity.GrantedAuthority;
-import org.acegisecurity.context.SecurityContextHolder;
 import org.acegisecurity.userdetails.UserDetails;
 import org.acegisecurity.userdetails.UsernameNotFoundException;
 import org.apache.commons.httpclient.NameValuePair;
@@ -147,6 +142,9 @@ import com.gargoylesoftware.htmlunit.Page;
 import com.gargoylesoftware.htmlunit.WebRequestSettings;
 import com.gargoylesoftware.htmlunit.xml.XmlPage;
 import com.gargoylesoftware.htmlunit.html.*;
+import hudson.maven.MavenBuild;
+import hudson.maven.MavenModule;
+import hudson.maven.MavenModuleSetBuild;
 import hudson.slaves.ComputerListener;
 import java.util.concurrent.CountDownLatch;
 
@@ -439,14 +437,14 @@ public abstract class HudsonTestCase extends TestCase implements RootAction {
             LOGGER.warning("Extracting a copy of Ant bundled in the test harness. " +
                     "To avoid a performance hit, set the environment variable ANT_HOME to point to an  Ant installation.");
             FilePath ant = hudson.getRootPath().createTempFile("ant", "zip");
-            ant.copyFrom(HudsonTestCase.class.getClassLoader().getResource("apache-ant-1.7.1-bin.zip"));
+            ant.copyFrom(HudsonTestCase.class.getClassLoader().getResource("apache-ant-1.8.1-bin.zip"));
             File antHome = createTmpDir();
             ant.unzip(new FilePath(antHome));
             // TODO: switch to tar that preserves file permissions more easily
             if(!Functions.isWindows())
-                GNUCLibrary.LIBC.chmod(new File(antHome,"apache-ant-1.7.1/bin/ant").getPath(),0755);
+                GNUCLibrary.LIBC.chmod(new File(antHome,"apache-ant-1.8.1/bin/ant").getPath(),0755);
 
-            antInstallation = new AntInstallation("default", new File(antHome,"apache-ant-1.7.1").getAbsolutePath(),NO_PROPERTIES);
+            antInstallation = new AntInstallation("default", new File(antHome,"apache-ant-1.8.1").getAbsolutePath(),NO_PROPERTIES);
         }
 		hudson.getDescriptorByType(Ant.DescriptorImpl.class).setInstallations(antInstallation);
 		return antInstallation;
@@ -739,6 +737,7 @@ public abstract class HudsonTestCase extends TestCase implements RootAction {
     }
 
     public <R extends Run> R assertBuildStatusSuccess(Future<? extends R> r) throws Exception {
+        assertNotNull("build was actually scheduled", r);
         return assertBuildStatusSuccess(r.get());
     }
 
@@ -747,9 +746,15 @@ public abstract class HudsonTestCase extends TestCase implements RootAction {
     }
 
     /**
-     * Should be unnecessary, but otherwise IntelliJ complains.
+     * Avoids need for cumbersome {@code this.<J,R>buildAndAssertSuccess(...)} type hints under JDK 7 javac (and supposedly also IntelliJ).
      */
     public FreeStyleBuild buildAndAssertSuccess(FreeStyleProject job) throws Exception {
+        return assertBuildStatusSuccess(job.scheduleBuild2(0));
+    }
+    public MavenModuleSetBuild buildAndAssertSuccess(MavenModuleSet job) throws Exception {
+        return assertBuildStatusSuccess(job.scheduleBuild2(0));
+    }
+    public MavenBuild buildAndAssertSuccess(MavenModule job) throws Exception {
         return assertBuildStatusSuccess(job.scheduleBuild2(0));
     }
 
