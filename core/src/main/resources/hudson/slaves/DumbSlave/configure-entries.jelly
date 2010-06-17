@@ -47,7 +47,7 @@ THE SOFTWARE.
 
   <f:dropdownList name="slave.launcher" title="${%Launch method}"
                   help="${descriptor.getHelpFile('launcher')}">
-    <j:forEach var="d" items="${h.getComputerLauncherDescriptors()}" varStatus="loop">
+    <j:forEach var="d" items="${h.getComputerLauncherDescriptors()}">
       <f:dropdownListBlock value="${d.clazz.name}" name="${d.displayName}"
                            selected="${it.launcher.descriptor==d}"
                            title="${d.displayName}">
