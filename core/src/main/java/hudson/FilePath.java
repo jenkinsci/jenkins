@@ -1185,7 +1185,7 @@ public final class FilePath implements Serializable {
      */
     private static String[] glob(File dir, String includes) throws IOException {
         if(isAbsolute(includes))
-            throw new IOException("Expecting Ant GLOB pattern, but saw '"+includes+"'. See http://ant.apache.org/manual/CoreTypes/fileset.html for syntax");
+            throw new IOException("Expecting Ant GLOB pattern, but saw '"+includes+"'. See http://ant.apache.org/manual/Types/fileset.html for syntax");
         FileSet fs = Util.createFileSet(dir,includes);
         DirectoryScanner ds = fs.getDirectoryScanner(new Project());
         String[] files = ds.getIncludedFiles();
