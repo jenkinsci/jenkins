@@ -41,6 +41,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
@@ -276,14 +277,14 @@ public final class DependencyGraph implements Comparator<AbstractProject> {
         for (ListIterator<Dependency> it = set.listIterator(); it.hasNext();) {
             Dependency d = it.next();
             // Check for existing edge that connects the same two projects:
-            if (d.equals(dep)) {
+            if (d.getUpstreamProject()==dep.getUpstreamProject() && d.getDownstreamProject()==dep.getDownstreamProject()) {
+                if (d.equals(dep))
+                    return; // identical with existing edge
+
                 if (d instanceof DependencyGroup)
                     ((DependencyGroup)d).add(dep);
-                else {
-                    DependencyGroup group = new DependencyGroup(d);
-                    group.add(dep);
-                    it.set(group);
-                }
+                else
+                    it.set(new DependencyGroup(d,dep));
                 return;
             }
         }
@@ -448,6 +449,13 @@ public final class DependencyGraph implements Comparator<AbstractProject> {
             return true;
         }
 
+        /**
+         * Does this method point to itself?
+         */
+        public boolean pointsItself() {
+            return upstream==downstream;
+        }
+
         @Override
         public boolean equals(Object obj) {
             if (obj == null) return false;
@@ -475,11 +483,12 @@ public final class DependencyGraph implements Comparator<AbstractProject> {
      * Collect multiple dependencies between the same two projects.
      */
     private static class DependencyGroup extends Dependency {
-        private List<Dependency> group = new ArrayList<Dependency>();
+        private Set<Dependency> group = new LinkedHashSet<Dependency>();
 
-        DependencyGroup(Dependency first) {
+        DependencyGroup(Dependency first, Dependency second) {
             super(first.getUpstreamProject(), first.getDownstreamProject());
             group.add(first);
+            group.add(second);
         }
 
         void add(Dependency next) {

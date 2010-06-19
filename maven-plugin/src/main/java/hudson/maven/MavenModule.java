@@ -401,10 +401,10 @@ public final class MavenModule extends AbstractMavenProject<MavenModule,MavenBui
         for (ModuleDependency d : dependencies) {
             MavenModule src = modules.get(d);
             if(src!=null) {
-                if(src.getParent().isAggregatorStyleBuild())
-                    graph.addDependency(new DependencyGraph.Dependency(src.getParent(),dest));
-                else
-                    graph.addDependency(new DependencyGraph.Dependency(src,dest));
+                DependencyGraph.Dependency dep = new DependencyGraph.Dependency(
+                        src.getParent().isAggregatorStyleBuild() ? src.getParent() : src,dest);
+                if (!dep.pointsItself())
+                    graph.addDependency(dep);
             }
         }
     }
