@@ -23,6 +23,7 @@
  */
 package hudson.tasks.junit;
 
+import org.jvnet.localizer.Localizable;
 import hudson.model.AbstractBuild;
 import hudson.model.Run;
 import hudson.tasks.test.TestResult;
@@ -518,30 +519,30 @@ public final class CaseResult extends TestResult implements Comparable<CaseResul
         /**
          * This test runs OK, just like its previous run.
          */
-        PASSED("result-passed",Messages.CaseResult_Status_Passed(),true),
+        PASSED("result-passed",Messages._CaseResult_Status_Passed(),true),
         /**
          * This test was skipped due to configuration or the
          * failure or skipping of a method that it depends on.
          */
-        SKIPPED("result-skipped",Messages.CaseResult_Status_Skipped(),false),
+        SKIPPED("result-skipped",Messages._CaseResult_Status_Skipped(),false),
         /**
          * This test failed, just like its previous run.
          */
-        FAILED("result-failed",Messages.CaseResult_Status_Failed(),false),
+        FAILED("result-failed",Messages._CaseResult_Status_Failed(),false),
         /**
          * This test has been failing, but now it runs OK.
          */
-        FIXED("result-fixed",Messages.CaseResult_Status_Fixed(),true),
+        FIXED("result-fixed",Messages._CaseResult_Status_Fixed(),true),
         /**
          * This test has been running OK, but now it failed.
          */
-        REGRESSION("result-regression",Messages.CaseResult_Status_Regression(),false);
+        REGRESSION("result-regression",Messages._CaseResult_Status_Regression(),false);
 
         private final String cssClass;
-        private final String message;
+        private final Localizable message;
         public final boolean isOK;
 
-        Status(String cssClass, String message, boolean OK) {
+        Status(String cssClass, Localizable message, boolean OK) {
            this.cssClass = cssClass;
            this.message = message;
            isOK = OK;
@@ -552,7 +553,7 @@ public final class CaseResult extends TestResult implements Comparable<CaseResul
         }
 
         public String getMessage() {
-            return message;
+            return message.toString();
         }
 
         public boolean isRegression() {
