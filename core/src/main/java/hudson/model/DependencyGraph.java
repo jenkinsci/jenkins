@@ -461,20 +461,15 @@ public final class DependencyGraph implements Comparator<AbstractProject> {
             if (obj == null) return false;
             if (getClass() != obj.getClass()) return false;
 
-            final Dependency other = (Dependency) obj;
-            if (this.upstream != other.upstream && (this.upstream == null || !this.upstream.equals(other.upstream))) 
-                return false;
-            if (this.downstream != other.downstream && (this.downstream == null || !this.downstream.equals(other.downstream))) 
-                return false;
-
-            return true;
+            final Dependency that = (Dependency) obj;
+            return this.upstream == that.upstream || this.downstream == that.downstream;
         }
 
         @Override
         public int hashCode() {
             int hash = 7;
-            hash = 23 * hash + (this.upstream != null ? this.upstream.hashCode() : 0);
-            hash = 23 * hash + (this.downstream != null ? this.downstream.hashCode() : 0);
+            hash = 23 * hash + this.upstream.hashCode();
+            hash = 23 * hash + this.downstream.hashCode();
             return hash;
         }
     }
