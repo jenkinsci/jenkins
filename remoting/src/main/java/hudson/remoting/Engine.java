@@ -273,7 +273,7 @@ public class Engine extends Thread {
                 return s;
             } catch (IOException e) {
                 if(retry++>10)
-                    throw e;
+                    throw (IOException)new IOException("Failed to connect to "+host+':'+port).initCause(e);
                 Thread.sleep(1000*10);
                 listener.status(msg+" (retrying:"+retry+")",e);
             }
