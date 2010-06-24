@@ -504,7 +504,7 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable {
      */
     public String getHelpFile(final String fieldName) {
         for(Class c=clazz; c!=null; c=c.getSuperclass()) {
-            String page = "/descriptor/" + clazz.getName() + "/help";
+            String page = "/descriptorByName/" + clazz.getName() + "/help";
             String suffix;
             if(fieldName==null) {
                 suffix="";
