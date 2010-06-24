@@ -33,6 +33,7 @@ import hudson.model.Run.RunnerAbortedException;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Map;
 
 /**
  * Pluggability point for performing pre/post actions for the build process.
@@ -201,6 +202,22 @@ public abstract class BuildWrapper extends AbstractDescribableImpl<BuildWrapper>
         Action a = getProjectAction(job);
         if (a==null)    return Collections.emptyList();
         return Collections.singletonList(a);
+    }
+
+    /**
+     * Called to define {@linkplain AbstractBuild#getBuildVariables()}.
+     *
+     * This provides an opportunity for a BuildWrapper to append any additional
+     * build variables defined for the current build.
+     * 
+     * @param build
+     *      The build in progress for which this {@link BuildWrapper} is called. Never null.
+     * @param variables
+     *      Contains existing build variables. Add additional build variables that you contribute
+     *      to this map.
+     */
+    public void makeBuildVariables(AbstractBuild build, Map<String,String> variables) {
+    	// noop
     }
 
     /**
