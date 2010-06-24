@@ -222,8 +222,15 @@ public abstract class MavenBuilder implements DelegatingCallable<Result,IOExcept
 
     private String formatArgs(List<String> args) {
         StringBuilder buf = new StringBuilder("Executing Maven: ");
-        for (String arg : args)
-            buf.append(' ').append(arg);
+        for (String arg : args) {
+            final String argPassword = "-Dpassword=" ;
+            String filteredArg = arg ;
+            // check if current arg is password arg. Then replace password by ***** 
+            if (arg.startsWith(argPassword)) {
+                filteredArg=argPassword+"*********";
+            }
+            buf.append(' ').append(filteredArg);
+        }
         return buf.toString();
     }
 

@@ -83,8 +83,8 @@ import java.awt.image.BufferedImage;
  */
 public final class DependencyGraph implements Comparator<AbstractProject> {
 
-    private Map<AbstractProject, List<Dependency>> forward = new HashMap<AbstractProject, List<Dependency>>();
-    private Map<AbstractProject, List<Dependency>> backward = new HashMap<AbstractProject, List<Dependency>>();
+    private Map<AbstractProject, List<DependencyGroup>> forward = new HashMap<AbstractProject, List<DependencyGroup>>();
+    private Map<AbstractProject, List<DependencyGroup>> backward = new HashMap<AbstractProject, List<DependencyGroup>>();
 
     private boolean built;
 
@@ -136,8 +136,8 @@ public final class DependencyGraph implements Comparator<AbstractProject> {
         return get(backward,p,true);
     }
 
-    private List<AbstractProject> get(Map<AbstractProject, List<Dependency>> map, AbstractProject src, boolean up) {
-        List<Dependency> v = map.get(src);
+    private List<AbstractProject> get(Map<AbstractProject, List<DependencyGroup>> map, AbstractProject src, boolean up) {
+        List<DependencyGroup> v = map.get(src);
         if(v==null) return Collections.emptyList();
         List<AbstractProject> result = new ArrayList<AbstractProject>(v.size());
         for (Dependency d : v) result.add(up ? d.getUpstreamProject() : d.getDownstreamProject());
@@ -158,9 +158,9 @@ public final class DependencyGraph implements Comparator<AbstractProject> {
         return get(backward,p);
     }
 
-    private List<Dependency> get(Map<AbstractProject, List<Dependency>> map, AbstractProject src) {
-        List<Dependency> v = map.get(src);
-        if(v!=null) return v;
+    private List<Dependency> get(Map<AbstractProject, List<DependencyGroup>> map, AbstractProject src) {
+        List<DependencyGroup> v = map.get(src);
+        if(v!=null) return Collections.<Dependency>unmodifiableList(v);
         else        return Collections.emptyList();
     }
 
@@ -250,7 +250,7 @@ public final class DependencyGraph implements Comparator<AbstractProject> {
         return getTransitive(forward,src,false);
     }
 
-    private Set<AbstractProject> getTransitive(Map<AbstractProject, List<Dependency>> direction, AbstractProject src, boolean up) {
+    private Set<AbstractProject> getTransitive(Map<AbstractProject, List<DependencyGroup>> direction, AbstractProject src, boolean up) {
         Set<AbstractProject> visited = new HashSet<AbstractProject>();
         Stack<AbstractProject> queue = new Stack<AbstractProject>();
 
@@ -268,32 +268,26 @@ public final class DependencyGraph implements Comparator<AbstractProject> {
         return visited;
     }
 
-    private void add(Map<AbstractProject, List<Dependency>> map, AbstractProject key, Dependency dep) {
-        List<Dependency> set = map.get(key);
+    private void add(Map<AbstractProject, List<DependencyGroup>> map, AbstractProject key, Dependency dep) {
+        List<DependencyGroup> set = map.get(key);
         if(set==null) {
-            set = new ArrayList<Dependency>();
+            set = new ArrayList<DependencyGroup>();
             map.put(key,set);
         }
-        for (ListIterator<Dependency> it = set.listIterator(); it.hasNext();) {
-            Dependency d = it.next();
+        for (ListIterator<DependencyGroup> it = set.listIterator(); it.hasNext();) {
+            DependencyGroup d = it.next();
             // Check for existing edge that connects the same two projects:
             if (d.getUpstreamProject()==dep.getUpstreamProject() && d.getDownstreamProject()==dep.getDownstreamProject()) {
-                if (d.equals(dep))
-                    return; // identical with existing edge
-
-                if (d instanceof DependencyGroup)
-                    ((DependencyGroup)d).add(dep);
-                else
-                    it.set(new DependencyGroup(d,dep));
+                d.add(dep);
                 return;
             }
         }
         // Otherwise add to list:
-        set.add(dep);
+        set.add(new DependencyGroup(dep));
     }
 
-    private Map<AbstractProject, List<Dependency>> finalize(Map<AbstractProject, List<Dependency>> m) {
-        for (Entry<AbstractProject, List<Dependency>> e : m.entrySet()) {
+    private Map<AbstractProject, List<DependencyGroup>> finalize(Map<AbstractProject, List<DependencyGroup>> m) {
+        for (Entry<AbstractProject, List<DependencyGroup>> e : m.entrySet()) {
             Collections.sort( e.getValue(), NAME_COMPARATOR );
             e.setValue( Collections.unmodifiableList(e.getValue()) );
         }
@@ -461,20 +455,15 @@ public final class DependencyGraph implements Comparator<AbstractProject> {
             if (obj == null) return false;
             if (getClass() != obj.getClass()) return false;
 
-            final Dependency other = (Dependency) obj;
-            if (this.upstream != other.upstream && (this.upstream == null || !this.upstream.equals(other.upstream))) 
-                return false;
-            if (this.downstream != other.downstream && (this.downstream == null || !this.downstream.equals(other.downstream))) 
-                return false;
-
-            return true;
+            final Dependency that = (Dependency) obj;
+            return this.upstream == that.upstream || this.downstream == that.downstream;
         }
 
         @Override
         public int hashCode() {
             int hash = 7;
-            hash = 23 * hash + (this.upstream != null ? this.upstream.hashCode() : 0);
-            hash = 23 * hash + (this.downstream != null ? this.downstream.hashCode() : 0);
+            hash = 23 * hash + this.upstream.hashCode();
+            hash = 23 * hash + this.downstream.hashCode();
             return hash;
         }
     }
@@ -485,10 +474,9 @@ public final class DependencyGraph implements Comparator<AbstractProject> {
     private static class DependencyGroup extends Dependency {
         private Set<Dependency> group = new LinkedHashSet<Dependency>();
 
-        DependencyGroup(Dependency first, Dependency second) {
+        DependencyGroup(Dependency first) {
             super(first.getUpstreamProject(), first.getDownstreamProject());
             group.add(first);
-            group.add(second);
         }
 
         void add(Dependency next) {

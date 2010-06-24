@@ -281,7 +281,7 @@ public class JDKInstaller extends ToolInstaller {
      * This is where we locally cache this JDK.
      */
     private File getLocalCacheFile(Platform platform, CPU cpu) {
-        return new File(Hudson.getInstance().getRootDir(),"cahce/jdks/"+platform+"/"+cpu+"/"+id);
+        return new File(Hudson.getInstance().getRootDir(),"cache/jdks/"+platform+"/"+cpu+"/"+id);
     }
 
     /**

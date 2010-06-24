@@ -740,6 +740,13 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
                 if (v!=null) r.put(p.getName(),v);
             }
         }
+
+        // allow the BuildWrappers to contribute additional build variables
+        if (project instanceof BuildableItemWithBuildWrappers) {
+            for (BuildWrapper bw : ((BuildableItemWithBuildWrappers) project).getBuildWrappersList())
+                bw.makeBuildVariables(this,r);
+        }
+
         return r;
     }
 
