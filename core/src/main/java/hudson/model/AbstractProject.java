@@ -82,7 +82,6 @@ import org.kohsuke.stapler.HttpRedirect;
 import org.kohsuke.stapler.ForwardToView;
 
 import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletResponse;
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
@@ -446,6 +445,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
         return scmCheckoutRetryCount != null;
     }
 
+    @Override
     public boolean isBuildable() {
         return !isDisabled() && !isHoldOffBuildUntilSave();
     }
@@ -784,10 +784,12 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
         return authToken;
     }
 
+    @Override
     public SortedMap<Integer, ? extends R> _getRuns() {
         return builds.getView();
     }
 
+    @Override
     public void removeRun(R run) {
         this.builds.remove(run);
     }
@@ -916,6 +918,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
             this.build = build;
         }
 
+        @Override
         public String getShortDescription() {
             Executor e = build.getExecutor();
             String eta = "";
@@ -936,6 +939,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
             this.up = up;
         }
 
+        @Override
         public String getShortDescription() {
             return Messages.AbstractProject_UpstreamBuildInProgress(up.getName());
         }
@@ -968,16 +972,6 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
                 return tup;
         }
         return null;
-    }
-
-    public final long getEstimatedDuration() {
-        AbstractBuild b = getLastSuccessfulBuild();
-        if(b==null)     return -1;
-
-        long duration = b.getDuration();
-        if(duration==0) return -1;
-
-        return duration;
     }
 
     public R createExecutable() throws IOException {

@@ -872,6 +872,42 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
             r = r.getPreviousBuild();
         return r;
     }
+    
+    /**
+     * Returns the last 'numberOfBuilds' builds with a build result >= 'threshold'
+     * 
+     * @return a list with the builds. May be smaller than 'numberOfBuilds' or even empty
+     *   if not enough builds satisfying the threshold have been found. Never null.
+     */
+    public List<RunT> getLastBuildsOverThreshold(int numberOfBuilds, Result threshold) {
+        
+        List<RunT> result = new ArrayList<RunT>(numberOfBuilds);
+        
+        RunT r = getLastBuild();
+        while (r != null && result.size() < numberOfBuilds) {
+            if (!r.isBuilding() && 
+                 (r.getResult() != null && r.getResult().isBetterOrEqualTo(threshold))) {
+                result.add(r);
+            }
+            r = r.getPreviousBuild();
+        }
+        
+        return result;
+    }
+    
+    public final long getEstimatedDuration() {
+        List<RunT> builds = getLastBuildsOverThreshold(3, Result.UNSTABLE);
+        
+        if(builds.isEmpty())     return -1;
+
+        long totalDuration = 0;
+        for (RunT b : builds) {
+            totalDuration += b.getDuration();
+        }
+        if(totalDuration==0) return -1;
+
+        return Math.round((double)totalDuration / builds.size());
+    }
 
     /**
      * Gets all the {@link Permalink}s defined for this job.
