@@ -1280,9 +1280,13 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
         save();
     }
 
+    public boolean canDelete(View view) {
+        return !view.isDefault();  // Cannot delete primary view
+    }
+
     public synchronized void deleteView(View view) throws IOException {
-        if(views.size()<=1)
-            throw new IllegalStateException();
+        if (views.size() <= 1)
+            throw new IllegalStateException("Cannot delete last view");
         views.remove(view);
         save();
     }

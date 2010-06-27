@@ -1,7 +1,7 @@
 /*
  * The MIT License
  * 
- * Copyright (c) 2004-2009, Sun Microsystems, Inc., Tom Huybrechts
+ * Copyright (c) 2004-2010, Sun Microsystems, Inc., Tom Huybrechts
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -113,9 +113,13 @@ public class MyViewsProperty extends UserProperty implements ViewGroup, Action {
         return null;
     }
 
+    public boolean canDelete(View view) {
+        return views.size() > 1;  // Cannot delete last view
+    }
+
     public void deleteView(View view) throws IOException {
         if (views.size() <= 1) {
-            throw new IllegalStateException();
+            throw new IllegalStateException("Cannot delete last view");
         }
         views.remove(view);
         if (view.getViewName().equals(primaryViewName)) {
@@ -194,7 +198,7 @@ public class MyViewsProperty extends UserProperty implements ViewGroup, Action {
 
     ///// Action methods /////
     public String getDisplayName() {
-        return "My Views";
+        return Messages.MyViewsProperty_DisplayName();
     }
 
     public String getIconFileName() {
@@ -210,7 +214,7 @@ public class MyViewsProperty extends UserProperty implements ViewGroup, Action {
 
         @Override
         public String getDisplayName() {
-            return "My Views";
+            return Messages.MyViewsProperty_DisplayName();
         }
 
         @Override
