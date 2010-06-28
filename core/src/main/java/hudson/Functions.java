@@ -444,7 +444,7 @@ public class Functions {
             response.addCookie(c);
         }
         if (refresh) {
-            response.addHeader("Refresh", "10");
+            response.addHeader("Refresh", System.getProperty("hudson.Functions.autoRefreshSeconds", "10"));
         }
     }
 
