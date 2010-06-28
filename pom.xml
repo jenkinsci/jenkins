@@ -245,6 +245,39 @@ THE SOFTWARE.
 
   <profiles>
     <profile>
+      <id>metrics</id>
+      <reporting>
+        <plugins>
+          <plugin>
+            <groupId>org.codehaus.mojo</groupId>
+            <artifactId>findbugs-maven-plugin</artifactId>
+            <version>2.4</version>
+            <configuration>
+              <threshold>High</threshold>
+            </configuration>
+          </plugin>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-pmd-plugin</artifactId>
+            <version>2.5</version>
+            <configuration>
+              <!--rulesets>
+                  <ruleset>ruleset.xml</ruleset>
+                  </rulesets-->
+              <targetJdk>1.5</targetJdk>
+            </configuration>
+          </plugin>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-checkstyle-plugin</artifactId>
+            <version>2.5</version>
+            <configuration>
+            </configuration>
+          </plugin>
+        </plugins>
+      </reporting>
+    </profile>
+    <profile>
       <id>debug</id>
       <activation>
         <activeByDefault>true</activeByDefault>
