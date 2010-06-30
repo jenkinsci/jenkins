@@ -106,6 +106,7 @@ public class FileParameterValue extends ParameterValue {
             	if (!StringUtils.isEmpty(file.getName())) {
             	    listener.getLogger().println("Copying file to "+location);
                     FilePath locationFilePath = build.getWorkspace().child(location);
+                    locationFilePath.getParent().mkdirs();
             	    locationFilePath.copyFrom(file);
             	    file = null;
                     locationFilePath.copyTo(new FilePath(getLocationUnderBuild(build)));
