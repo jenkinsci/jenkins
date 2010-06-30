@@ -149,7 +149,7 @@ public class Shell extends CommandInterpreter {
 
         @Override
         public Builder newInstance(StaplerRequest req, JSONObject data) {
-            return new Shell(data.getString("shell"));
+            return new Shell(data.getString("command"));
         }
 
         @Override
