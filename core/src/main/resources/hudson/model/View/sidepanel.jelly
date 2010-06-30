@@ -50,7 +50,7 @@ THE SOFTWARE.
         <!-- /configure URL on Hudson object is overloaded with Hudson's system config, so always use the explicit name. -->
         <l:task icon="images/24x24/gear.gif" href="${rootURL}/${it.viewUrl}configure" title="${%Edit View}" permission="${it.CONFIGURE}" />
       </j:if>
-      <j:if test="${it.owner.canDelete(it)!=false}"><!-- !=false for backward compatibility -->
+      <j:if test="${it.owner.canDelete(it)}">
         <l:task icon="images/24x24/edit-delete.gif" href="delete" title="${%Delete View}" permission="${it.CONFIGURE}" />
       </j:if>
       <j:if test="${app.fingerprintMap.ready}">
