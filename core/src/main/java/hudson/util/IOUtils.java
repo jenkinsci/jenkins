@@ -14,6 +14,14 @@ import java.io.OutputStream;
  * @since 1.337
  */
 public class IOUtils extends org.apache.commons.io.IOUtils {
+    /**
+     * Drains the input stream and closes it.
+     */
+    public static void drain(InputStream in) throws IOException {
+        copy(in,new NullStream());
+        in.close();
+    }
+
     public static void copy(File src, OutputStream out) throws IOException {
         FileInputStream in = new FileInputStream(src);
         try {
