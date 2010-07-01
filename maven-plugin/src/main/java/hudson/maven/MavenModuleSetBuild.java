@@ -1,7 +1,8 @@
 /*
  * The MIT License
  * 
- * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, Red Hat, Inc., Victor Glushenkov
+ * Copyright (c) 2004-2010, Sun Microsystems, Inc., Kohsuke Kawaguchi,
+ * Red Hat, Inc., Victor Glushenkov, Alan Harder
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -237,6 +238,15 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
     }
 
     @Override
+    public synchronized void delete() throws IOException {
+        super.delete();
+        // Delete all contained module builds too
+        for (List<MavenBuild> list : getModuleBuilds().values())
+            for (MavenBuild build : list)
+                build.delete();
+    }
+
+    @Override
     public Object getDynamic(String token, StaplerRequest req, StaplerResponse rsp) {
         // map corresponding module build under this object
         if(token.indexOf('$')>0) {
@@ -248,6 +258,8 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
 
     /**
      * Computes the latest module builds that correspond to this build.
+     * (when indivudual modules are built, a new ModuleSetBuild is not created,
+     *  but rather the new module build falls under the previous ModuleSetBuild)
      */
     public Map<MavenModule,MavenBuild> getModuleLastBuilds() {
         Collection<MavenModule> mods = getParent().getModules();
