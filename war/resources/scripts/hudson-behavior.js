@@ -140,13 +140,21 @@ var FormChecker = {
  * and returns that DOM node.
  */
 function findNearBy(e,name) {
+    // does 'e' itself match the criteria?
+    // as some plugins use the field name as a parameter value, instead of 'value'
     var p = findFormItem(e,name,function(e,filter) {
         if (filter(e))    return e;
         return null;
     });
-    if (p!=null)    return p;   // including self, as some plugins use the field name as a parameter value, instead of 'value'
+    if (p!=null)    return p;
 
     var owner = findFormParent(e,null);
+
+    // handle "../foo" syntax
+    while (name.startsWith("../")) {
+        owner = findFormParent(owner,null);
+        name = name.substring(3);
+    }
 
     p = findPreviousFormItem(e,name);
     if (p!=null && findFormParent(p,null)==owner)
@@ -971,7 +979,7 @@ function refillOnChange(e,onChange) {
     function h() {
         var params = {};
         deps.each(function (d) {
-            params[shortenName(d.getAttribute("name"))] = controlValue(d);
+            params[d.name] = controlValue(d.control);
         });
         onChange(params);
     }
@@ -985,7 +993,7 @@ function refillOnChange(e,onChange) {
                 return;
             }
             c.addEventListener("change",h,false);
-            deps.push(c);
+            deps.push({name:name,control:c});
         });
     }
     h();   // initial fill
