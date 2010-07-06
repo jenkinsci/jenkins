@@ -102,7 +102,7 @@ public class Executor extends Thread implements ModelObject {
                 Queue.Item queueItem;
                 Queue.Task task;
                 try {
-                    synchronized (queue) {
+                    synchronized (queue) {// perform this state change as an atomic operation wrt other queue operations
                         queueItem = grabJob();
                         task = queueItem.task;
                         startTime = System.currentTimeMillis();
