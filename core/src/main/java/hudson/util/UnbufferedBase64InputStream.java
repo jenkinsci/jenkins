@@ -56,4 +56,15 @@ public class UnbufferedBase64InputStream extends FilterInputStream {
         }
         return i==0 ? -1 : i;
     }
+
+    @Override
+    public long skip(long n) throws IOException {
+        long r=0;
+        while (n>0) {
+            int ch = read();
+            if (ch<0)   break;
+            n--; r++;
+        }
+        return r;
+    }
 }

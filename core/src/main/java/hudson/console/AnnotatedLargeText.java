@@ -44,6 +44,8 @@ import java.io.File;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.nio.charset.Charset;
 import java.security.GeneralSecurityException;
@@ -140,6 +142,11 @@ public class AnnotatedLargeText<T> extends LargeText {
             return writeHtmlTo(start, w);
         else
             return super.writeLogTo(start,w);
+    }
+
+    @Override
+    public long writeLogTo(long start, OutputStream out) throws IOException {
+        return super.writeLogTo(start, new PlainTextConsoleOutputStream(out));
     }
 
     public long writeHtmlTo(long start, Writer w) throws IOException {
