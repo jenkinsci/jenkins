@@ -141,7 +141,8 @@ public class Queue extends ResourceController implements Saveable {
     private final ItemList<BuildableItem> buildables = new ItemList<BuildableItem>();
 
     /**
-     * {@link Task}s that are being handed over to the executor.
+     * {@link Task}s that are being handed over to the executor, but execution
+     * has not started yet.
      */
     private final ItemList<BuildableItem> pendings = new ItemList<BuildableItem>();
 
@@ -610,6 +611,23 @@ public class Queue extends ResourceController implements Saveable {
         ArrayList<BuildableItem> r = new ArrayList<BuildableItem>(buildables.values());
         r.addAll(pendings.values());
         return r;
+    }
+
+    /**
+     * Gets the snapshot of all {@link BuildableItem}s.
+     */
+    public synchronized List<BuildableItem> getPendingItems() {
+        return new ArrayList<BuildableItem>(pendings.values());
+    }
+
+    /**
+     * Is the given task currently pending execution?
+     */
+    public synchronized boolean isPending(Task t) {
+        for (BuildableItem i : pendings)
+            if (i.task.equals(t))
+                return true;
+        return false;
     }
 
     /**
