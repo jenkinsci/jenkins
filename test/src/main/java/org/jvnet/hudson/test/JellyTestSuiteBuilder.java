@@ -120,12 +120,12 @@ public class JellyTestSuiteBuilder {
         HudsonTestCase h = new HudsonTestCase("Jelly test wrapper") {};
 
         @Override
-            protected void setUp() throws Exception {
+        protected void setUp() throws Exception {
             h.setUp();
         }
 
         @Override
-            protected void tearDown() throws Exception {
+        protected void tearDown() throws Exception {
             h.tearDown();
         }
 
@@ -134,7 +134,7 @@ public class JellyTestSuiteBuilder {
         }
 
         @Override
-            protected void runGroupedTests(final TestResult result) throws Exception {
+        protected void runGroupedTests(final TestResult result) throws Exception {
             h.executeOnServer(new Callable<Object>() {
                 // this code now inside a request handling thread
                 public Object call() throws Exception {
