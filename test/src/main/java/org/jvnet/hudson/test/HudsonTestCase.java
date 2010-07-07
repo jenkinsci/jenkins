@@ -1095,7 +1095,7 @@ public abstract class HudsonTestCase extends TestCase implements RootAction {
         int streak = 0;
 
         while (true) {
-            Thread.sleep(100);
+            Thread.sleep(10);
             if (isSomethingHappening())
                 streak=0;
             else
