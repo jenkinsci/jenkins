@@ -1329,7 +1329,12 @@ public class Queue extends ResourceController implements Saveable {
     }
 
     /**
-     * Extension point for deciding if particular job should be scheduled or not
+     * Extension point for deciding if particular job should be scheduled or not.
+     *
+     * <p>
+     * This handler is consulted every time someone tries to submit a task to the queue.
+     * If any of the registered handlers returns false, the task will not be added
+     * to the queue, and the task will never get executed. 
      *
      * <p>
      * This extension point is still a subject to change, as we are seeking more
@@ -1339,7 +1344,7 @@ public class Queue extends ResourceController implements Saveable {
      */
     public static abstract class QueueDecisionHandler implements ExtensionPoint {
     	/**
-    	 * Returns whether the new item should be scheduled. 
+    	 * Returns whether the new item should be scheduled.
     	 */
     	public abstract boolean shouldSchedule(Task p, List<Action> actions);
     	    	
