@@ -38,6 +38,10 @@ THE SOFTWARE.
     Unit test harness (src/main) and Unit tests for Hudson core (src/test)
   </description>
 
+  <properties>
+    <concurrency>1</concurrency> <!-- -1 means # of processors in the system -->
+  </properties>
+
   <build>
     <plugins>
       <plugin>
@@ -58,7 +62,7 @@ THE SOFTWARE.
             </goals>
             <configuration>
               <fork>true</fork>
-              <concurrency>1</concurrency> <!-- -1 means # of processors in the system -->
+              <concurrency>${concurrency}</concurrency>
               <argLine>-XX:MaxPermSize=192m -Xmx256m -Dfile.encoding=UTF-8</argLine>
               <systemProperties>
                 <property>
