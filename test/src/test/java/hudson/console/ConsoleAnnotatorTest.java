@@ -90,7 +90,28 @@ public class ConsoleAnnotatorTest extends HudsonTestCase {
         }
     }
 
+    @Bug(6034)
+    public void testConsoleAnnotationFilterOut() throws Exception {
+        FreeStyleProject p = createFreeStyleProject();
+        p.getBuildersList().add(new TestBuilder() {
+            public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
+                listener.getLogger().print("abc\n");
+                listener.getLogger().print(HyperlinkNote.encodeTo("http://infradna.com/","def")+"\n");
+                return true;
+            }
+        });
 
+        FreeStyleBuild b = buildAndAssertSuccess(p);
+
+        // make sure we see the annotation
+        HtmlPage rsp = createWebClient().getPage(b, "console");
+        assertEquals(1,rsp.selectNodes("//A[@href='http://infradna.com/']").size());
+
+        // make sure raw console output doesn't include the garbage
+        TextPage raw = (TextPage)createWebClient().goTo(b.getUrl()+"consoleText","text/plain");
+        System.out.println(raw.getContent());
+        assertTrue(raw.getContent().contains("\nabc\ndef\n"));
+    }
 
 
 

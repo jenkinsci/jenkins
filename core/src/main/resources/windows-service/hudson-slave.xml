@@ -29,7 +29,7 @@ THE SOFTWARE.
   Both commands don't produce any output if the execution is successful. 
 -->
 <service>
-  <id>hudsonslave</id>
+  <id>@ID@</id>
   <name>Hudson Slave</name>
   <description>This service runs a slave for Hudson continuous integration system.</description>
   <!--

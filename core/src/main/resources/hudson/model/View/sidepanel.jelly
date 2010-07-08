@@ -35,8 +35,8 @@ THE SOFTWARE.
   </l:header>
   <l:side-panel>
     <l:tasks>
-      <l:task icon="images/24x24/new-package.gif" href="${rootURL}/${it.viewUrl}newJob" title="${%New Job}" permission="${it.itemCreatePermission}" />
-      <l:task icon="images/24x24/setting.gif" href="${rootURL}/manage" title="${%Manage Hudson}" permission="${app.ADMINISTER}" />
+      <l:task icon="images/24x24/new-package.gif" href="${rootURL}/${it.viewUrl}newJob" title="${%New Job}" permission="${it.itemCreatePermission}" it="${app}" />
+      <l:task icon="images/24x24/setting.gif" href="${rootURL}/manage" title="${%Manage Hudson}" permission="${app.ADMINISTER}" it="${app}" />
       <j:choose>
         <j:when test="${it.class.name=='hudson.model.AllView'}">
           <l:task icon="images/24x24/user.gif" href="${rootURL}/people/" title="${%People}" />
@@ -50,8 +50,7 @@ THE SOFTWARE.
         <!-- /configure URL on Hudson object is overloaded with Hudson's system config, so always use the explicit name. -->
         <l:task icon="images/24x24/gear.gif" href="${rootURL}/${it.viewUrl}configure" title="${%Edit View}" permission="${it.CONFIGURE}" />
       </j:if>
-      <j:if test="${!it.isDefault()}">
-        <!-- this is ugly, but Hudson delegates the rendering of its pages to its primary view -->
+      <j:if test="${it.owner.canDelete(it)}">
         <l:task icon="images/24x24/edit-delete.gif" href="delete" title="${%Delete View}" permission="${it.CONFIGURE}" />
       </j:if>
       <j:if test="${app.fingerprintMap.ready}">

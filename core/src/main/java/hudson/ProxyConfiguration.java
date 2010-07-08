@@ -120,6 +120,7 @@ public final class ProxyConfiguration implements Saveable {
             Authenticator.setDefault(new Authenticator() {
                 @Override
                 public PasswordAuthentication getPasswordAuthentication() {
+                    if (getRequestorType()!=RequestorType.PROXY)    return null;
                     ProxyConfiguration p = Hudson.getInstance().proxy;
                     return new PasswordAuthentication(p.getUserName(),
                             p.getPassword().toCharArray());

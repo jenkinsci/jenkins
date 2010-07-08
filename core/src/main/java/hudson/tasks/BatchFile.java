@@ -66,7 +66,7 @@ public class BatchFile extends CommandInterpreter {
 
         @Override
         public Builder newInstance(StaplerRequest req, JSONObject data) {
-            return new BatchFile(data.getString("batchFile"));
+            return new BatchFile(data.getString("command"));
         }
 
         public boolean isApplicable(Class<? extends AbstractProject> jobType) {

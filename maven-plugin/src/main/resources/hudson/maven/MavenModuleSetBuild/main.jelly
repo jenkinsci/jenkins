@@ -1,7 +1,7 @@
 <!--
 The MIT License
 
-Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, Seiji Sogabe
+Copyright (c) 2004-2010, Sun Microsystems, Inc., Kohsuke Kawaguchi, Seiji Sogabe
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -21,59 +21,47 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 -->
-
+<?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
   <h2>${%Module Builds}</h2>
-  <j:choose>
-    <!-- there's 1:1 relationship between modules and the module set -->
-    <j:when test="${it.project.aggregatorStyleBuild}">
-      <j:forEach var="m" items="${it.project.modules}">
-        <div>
-          <j:set var="mb" value="${m.getBuildByNumber(it.number)}"/>
-          <j:choose>
-            <j:when test="${mb!=null}">
-              <a href="${m.shortUrl}">
-                <img src="${imagesURL}/16x16/${mb.buildStatusUrl}"
-                     alt="${mb.iconColor.description}"/>
-              </a>
-              <st:nbsp/>
-              <a href="${m.shortUrl}">
-                ${m.displayName}
-              </a>
-            </j:when>
-            <j:otherwise><!-- module build non-existent, so no link -->
+  <table>
+    <j:forEach var="m" items="${it.moduleBuilds}">
+      <tr>
+        <j:choose>
+          <j:when test="${m.value.size()==0}">
+            <td class="no-wrap">
               <img src="${imagesURL}/16x16/grey.gif" alt=""/>
+              <st:nbsp/>${m.key.displayName} (${%noRun})
+            </td><td>
+            </td>
+          </j:when>
+          <j:when test="${m.value.size()==1 and m.value.get(0).number==it.number}">
+            <td class="no-wrap">
+              <a href="${m.key.shortUrl}">
+                <img src="${imagesURL}/16x16/${m.value.get(0).buildStatusUrl}"
+                     alt="${m.value.get(0).iconColor.description}"/>
+              </a>
               <st:nbsp/>
-              ${m.displayName} (didn't run)
-            </j:otherwise>
-          </j:choose>
-        </div>
-      </j:forEach>
-    </j:when>
-    <!-- there might be multiple module builds for this job, so use a different format -->
-    <j:otherwise>
-      <j:set var="builds" value="${it.moduleBuilds}" />
-      <table>
-        <j:forEach var="m" items="${builds}">
-          <tr>
-            <td style="white-space:nowrap;">
+              <a href="${m.key.shortUrl}">
+                ${m.key.displayName}
+              </a>
+            </td><td>
+            </td>
+          </j:when>
+          <j:otherwise>
+            <!-- there are multiple builds for this module, so use a different format -->
+            <td class="no-wrap">
+              <img src="${imagesURL}/16x16/empty.gif" alt=""/>
+              <st:nbsp/>
               <a href="${rootURL}/${m.key.url}">${m.key.displayName}</a>
+            </td><td>
+              <j:forEach var="b" items="${m.value}">
+                <t:buildLink job="${m.key}" number="${b.number}" />
+              </j:forEach>
             </td>
-            <td>
-              <j:choose>
-                <j:when test="${empty(m.value)}">
-                  (none)
-                </j:when>
-                <j:otherwise>
-                  <j:forEach var="b" items="${m.value}">
-                    <t:buildLink job="${m.key}" number="${b.number}" />
-                  </j:forEach>
-                </j:otherwise>
-              </j:choose>
-            </td>
-          </tr>
-        </j:forEach>
-      </table>
-    </j:otherwise>
-  </j:choose>
+          </j:otherwise>
+        </j:choose>
+      </tr>
+    </j:forEach>
+  </table>
 </j:jelly>

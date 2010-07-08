@@ -23,54 +23,55 @@
  */
 package hudson.os.windows;
 
+import hudson.Extension;
 import hudson.lifecycle.WindowsSlaveInstaller;
 import hudson.model.Descriptor;
 import hudson.model.Hudson;
 import hudson.model.TaskListener;
-import hudson.slaves.ComputerLauncher;
-import hudson.slaves.SlaveComputer;
-import hudson.util.Secret;
-import hudson.util.jna.DotNet;
 import hudson.remoting.Channel;
+import hudson.remoting.Channel.Listener;
 import hudson.remoting.SocketInputStream;
 import hudson.remoting.SocketOutputStream;
-import hudson.remoting.Channel.Listener;
-import hudson.Extension;
-import static hudson.Util.copyStreamAndClose;
-
-import jcifs.smb.NtStatus;
-import jcifs.smb.SmbFile;
-import jcifs.smb.SmbException;
+import hudson.slaves.ComputerLauncher;
+import hudson.slaves.SlaveComputer;
+import hudson.tools.JDKInstaller;
+import hudson.tools.JDKInstaller.CPU;
+import hudson.tools.JDKInstaller.Platform;
+import hudson.util.IOUtils;
+import hudson.util.Secret;
+import hudson.util.jna.DotNet;
 import jcifs.smb.NtlmPasswordAuthentication;
-import org.apache.commons.io.IOUtils;
-import org.jinterop.dcom.common.JIException;
-import org.jinterop.dcom.common.JIDefaultAuthInfoImpl;
-import org.jinterop.dcom.core.JISession;
-import org.kohsuke.stapler.DataBoundConstructor;
-import org.jvnet.hudson.wmi.WMI;
-import org.jvnet.hudson.wmi.SWbemServices;
-import org.jvnet.hudson.wmi.Win32Service;
-import static org.jvnet.hudson.wmi.Win32Service.Win32OwnProcess;
-import org.dom4j.io.SAXReader;
+import jcifs.smb.SmbException;
+import jcifs.smb.SmbFile;
 import org.dom4j.Document;
 import org.dom4j.DocumentException;
+import org.dom4j.io.SAXReader;
+import org.jinterop.dcom.common.JIDefaultAuthInfoImpl;
+import org.jinterop.dcom.common.JIException;
+import org.jinterop.dcom.core.JISession;
+import org.jvnet.hudson.remcom.WindowsRemoteProcessLauncher;
+import org.jvnet.hudson.wmi.SWbemServices;
+import org.jvnet.hudson.wmi.WMI;
+import org.jvnet.hudson.wmi.Win32Service;
+import org.kohsuke.stapler.DataBoundConstructor;
 
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.StringReader;
 import java.io.PrintStream;
-import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
-import java.net.Inet4Address;
+import java.io.StringReader;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
-import java.net.MalformedURLException;
-import java.net.SocketAddress;
-import java.net.UnknownHostException;
 import java.net.Socket;
-import java.util.logging.Logger;
+import java.net.URL;
+import java.net.UnknownHostException;
 import java.util.logging.Level;
+import java.util.logging.Logger;
+
+import static hudson.Util.copyStreamAndClose;
+import static org.jvnet.hudson.wmi.Win32Service.Win32OwnProcess;
 
 /**
  * Windows slave installed/managed as a service entirely remotely
@@ -136,9 +137,41 @@ public class ManagedWindowsServiceLauncher extends ComputerLauncher {
             session.setGlobalSocketTimeout(60000);
             SWbemServices services = WMI.connect(session, name);
 
+
             String path = computer.getNode().getRemoteFS();
             if (path.indexOf(':')==-1)   throw new IOException("Remote file system root path of the slave needs to be absolute: "+path);
             SmbFile remoteRoot = new SmbFile("smb://" + name + "/" + path.replace('\\', '/').replace(':', '$')+"/",createSmbAuth());
+
+            if(!remoteRoot.exists())
+                remoteRoot.mkdirs();
+
+            try {// does Java exist?
+                logger.println("Checking if Java exists");
+                WindowsRemoteProcessLauncher wrpl = new WindowsRemoteProcessLauncher(name,auth);
+                Process proc = wrpl.launch("java -fullversion","c:\\");
+                proc.getOutputStream().close();
+                IOUtils.copy(proc.getInputStream(),logger);
+                proc.getInputStream().close();
+                int exitCode = proc.waitFor();
+                if (exitCode==1) {// we'll get this error code if Java is not found
+                    logger.println("No Java found. Downloading JDK");
+                    JDKInstaller jdki = new JDKInstaller("jdk-6u16-oth-JPR@CDS-CDS_Developer",true);
+                    URL jdk = jdki.locate(listener, Platform.WINDOWS, CPU.i386);
+
+                    listener.getLogger().println("Installing JDK");
+                    copyStreamAndClose(jdk.openStream(), new SmbFile(remoteRoot, "jdk.exe").getOutputStream());
+
+                    String javaDir = path + "\\jdk"; // this is where we install Java to
+
+                    WindowsRemoteFileSystem fs = new WindowsRemoteFileSystem(name, createSmbAuth());
+                    fs.mkdirs(javaDir);
+                    
+                    jdki.install(new WindowsRemoteLauncher(listener,wrpl), Platform.WINDOWS,
+                            fs, listener, javaDir ,path+"\\jdk.exe");
+                }
+            } catch (Exception e) {
+                e.printStackTrace(listener.error("Failed to prepare Java"));
+            }
 
 // this just doesn't work --- trying to obtain the type or check the existence of smb://server/C$/ results in "access denied"    
 //            {// check if the administrative share exists
@@ -166,7 +199,8 @@ public class ManagedWindowsServiceLauncher extends ComputerLauncher {
 //                }
 //            }
 
-            Win32Service slaveService = services.getService("hudsonslave");
+            String id = WindowsSlaveInstaller.generateServiceId(path);
+            Win32Service slaveService = services.getService(id);
             if(slaveService==null) {
                 logger.println(Messages.ManagedWindowsServiceLauncher_InstallingSlaveService());
                 if(!DotNet.isInstalled(2,0, name, auth)) {
@@ -174,9 +208,6 @@ public class ManagedWindowsServiceLauncher extends ComputerLauncher {
                     logger.println(Messages.ManagedWindowsServiceLauncher_DotNetRequired());
                     return;
                 }
-
-                if(!remoteRoot.exists())
-                    remoteRoot.mkdirs();
 
                 // copy exe
                 logger.println(Messages.ManagedWindowsServiceLauncher_CopyingSlaveExe());
@@ -186,7 +217,7 @@ public class ManagedWindowsServiceLauncher extends ComputerLauncher {
 
                 // copy hudson-slave.xml
                 logger.println(Messages.ManagedWindowsServiceLauncher_CopyingSlaveXml());
-                String xml = WindowsSlaveInstaller.generateSlaveXml("javaw.exe","-tcp %BASE%\\port.txt");
+                String xml = WindowsSlaveInstaller.generateSlaveXml(id,"javaw.exe","-tcp %BASE%\\port.txt");
                 copyStreamAndClose(new ByteArrayInputStream(xml.getBytes("UTF-8")), new SmbFile(remoteRoot,"hudson-slave.xml").getOutputStream());
 
                 // install it as a service
@@ -194,15 +225,15 @@ public class ManagedWindowsServiceLauncher extends ComputerLauncher {
                 Document dom = new SAXReader().read(new StringReader(xml));
                 Win32Service svc = services.Get("Win32_Service").cast(Win32Service.class);
                 int r = svc.Create(
-                        dom.selectSingleNode("/service/id").getText(),
-                        dom.selectSingleNode("/service/name").getText(),
+                        id,
+                        dom.selectSingleNode("/service/name").getText()+" at "+path,
                         path+"\\hudson-slave.exe",
                         Win32OwnProcess, 0, "Manual", true);
                 if(r!=0) {
                     listener.error("Failed to create a service: "+svc.getErrorMessage(r));
                     return;
                 }
-                slaveService = services.getService("hudsonslave");
+                slaveService = services.getService(id);
             } else {
                 copySlaveJar(logger, remoteRoot);                
             }

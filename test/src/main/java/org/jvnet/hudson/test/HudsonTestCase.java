@@ -1095,7 +1095,7 @@ public abstract class HudsonTestCase extends TestCase implements RootAction {
         int streak = 0;
 
         while (true) {
-            Thread.sleep(100);
+            Thread.sleep(10);
             if (isSomethingHappening())
                 streak=0;
             else
@@ -1619,5 +1619,9 @@ public abstract class HudsonTestCase extends TestCase implements RootAction {
         // during the unit test, predictably releasing classloader is important to avoid
         // file descriptor leak.
         ClassicPluginStrategy.useAntClassLoader = true;
+
+        // DNS multicast support takes up a lot of time during tests, so just disable it altogether
+        // this also prevents tests from falsely advertising Hudson
+        DNSMultiCast.disabled = true;
     }
 }

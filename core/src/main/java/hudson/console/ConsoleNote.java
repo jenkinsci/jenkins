@@ -30,6 +30,7 @@ import hudson.model.Hudson;
 import hudson.model.Run;
 import hudson.remoting.ObjectInputStreamEx;
 import hudson.util.FlushProofOutputStream;
+import hudson.util.IOUtils;
 import hudson.util.UnbufferedBase64InputStream;
 import org.apache.commons.codec.binary.Base64OutputStream;
 import org.apache.commons.io.output.ByteArrayOutputStream;
@@ -220,6 +221,23 @@ public abstract class ConsoleNote<T> implements Serializable, Describable<Consol
         ObjectInputStream ois = new ObjectInputStreamEx(
                 new GZIPInputStream(new ByteArrayInputStream(buf)), Hudson.getInstance().pluginManager.uberClassLoader);
         return (ConsoleNote) ois.readObject();
+    }
+
+    /**
+     * Skips the encoded console note.
+     */
+    public static void skip(DataInputStream in) throws IOException {
+        byte[] preamble = new byte[PREAMBLE.length];
+        in.readFully(preamble);
+        if (!Arrays.equals(preamble,PREAMBLE))
+            return;    // not a valid preamble
+
+        DataInputStream decoded = new DataInputStream(new UnbufferedBase64InputStream(in));
+        int sz = decoded.readInt();
+        IOUtils.skip(decoded,sz);
+
+        byte[] postamble = new byte[POSTAMBLE.length];
+        in.readFully(postamble);
     }
 
     private static final long serialVersionUID = 1L;

@@ -141,7 +141,8 @@ public class Queue extends ResourceController implements Saveable {
     private final ItemList<BuildableItem> buildables = new ItemList<BuildableItem>();
 
     /**
-     * {@link Task}s that are being handed over to the executor.
+     * {@link Task}s that are being handed over to the executor, but execution
+     * has not started yet.
      */
     private final ItemList<BuildableItem> pendings = new ItemList<BuildableItem>();
 
@@ -610,6 +611,23 @@ public class Queue extends ResourceController implements Saveable {
         ArrayList<BuildableItem> r = new ArrayList<BuildableItem>(buildables.values());
         r.addAll(pendings.values());
         return r;
+    }
+
+    /**
+     * Gets the snapshot of all {@link BuildableItem}s.
+     */
+    public synchronized List<BuildableItem> getPendingItems() {
+        return new ArrayList<BuildableItem>(pendings.values());
+    }
+
+    /**
+     * Is the given task currently pending execution?
+     */
+    public synchronized boolean isPending(Task t) {
+        for (BuildableItem i : pendings)
+            if (i.task.equals(t))
+                return true;
+        return false;
     }
 
     /**
@@ -1311,7 +1329,12 @@ public class Queue extends ResourceController implements Saveable {
     }
 
     /**
-     * Extension point for deciding if particular job should be scheduled or not
+     * Extension point for deciding if particular job should be scheduled or not.
+     *
+     * <p>
+     * This handler is consulted every time someone tries to submit a task to the queue.
+     * If any of the registered handlers returns false, the task will not be added
+     * to the queue, and the task will never get executed. 
      *
      * <p>
      * This extension point is still a subject to change, as we are seeking more
@@ -1321,7 +1344,7 @@ public class Queue extends ResourceController implements Saveable {
      */
     public static abstract class QueueDecisionHandler implements ExtensionPoint {
     	/**
-    	 * Returns whether the new item should be scheduled. 
+    	 * Returns whether the new item should be scheduled.
     	 */
     	public abstract boolean shouldSchedule(Task p, List<Action> actions);
     	    	

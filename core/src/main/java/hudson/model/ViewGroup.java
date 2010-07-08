@@ -1,7 +1,8 @@
 /*
  * The MIT License
  * 
- * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, Tom Huybrechts
+ * Copyright (c) 2004-2010, Sun Microsystems, Inc., Kohsuke Kawaguchi,
+ * Tom Huybrechts, Alan Harder
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -31,12 +32,16 @@ import java.util.Collection;
 /**
  * Container of {@link View}s.
  *
- * <h2>STILL EXPERIMENTAL: DO NOT IMPLEMENT</h2>
- * 
  * @author Kohsuke Kawaguchi
  * @since 1.269
  */
 public interface ViewGroup extends Saveable, ModelObject, AccessControlled {
+    /**
+     * Determine whether a view may be deleted.
+     * @since 1.365
+     */
+    boolean canDelete(View view);
+
     /**
      * Deletes a view in this group.
      */

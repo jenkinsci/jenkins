@@ -102,10 +102,12 @@ public class Executor extends Thread implements ModelObject {
                 Queue.Item queueItem;
                 Queue.Task task;
                 try {
-                	queueItem = grabJob();
-                    task = queueItem.task;
-                    startTime = System.currentTimeMillis();
-                    executable = task.createExecutable();
+                    synchronized (queue) {// perform this state change as an atomic operation wrt other queue operations
+                        queueItem = grabJob();
+                        task = queueItem.task;
+                        startTime = System.currentTimeMillis();
+                        executable = task.createExecutable();
+                    }
                 } catch (IOException e) {
                     LOGGER.log(Level.SEVERE, "Executor throw an exception unexpectedly", e);
                     continue;

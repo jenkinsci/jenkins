@@ -27,7 +27,10 @@ THE SOFTWARE.
 	xmlns:i="jelly:fmt" xmlns:p="/lib/hudson/project">
     <f:entry title="${it.name}">
         <j:if test="${it.originalFileName != null}">
-            <a href="parameter/${it.name}/${it.originalFileName}">${it.originalFileName}</a>
+            <j:invokeStatic var="encodedName" className="hudson.Util" method="rawEncode">
+                <j:arg value="${it.name}" />
+            </j:invokeStatic>
+            <a href="parameter/${encodedName}/${it.originalFileName}">${it.originalFileName}</a>
         </j:if>
     </f:entry>
 </j:jelly>

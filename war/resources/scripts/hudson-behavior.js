@@ -140,13 +140,21 @@ var FormChecker = {
  * and returns that DOM node.
  */
 function findNearBy(e,name) {
+    // does 'e' itself match the criteria?
+    // as some plugins use the field name as a parameter value, instead of 'value'
     var p = findFormItem(e,name,function(e,filter) {
         if (filter(e))    return e;
         return null;
     });
-    if (p!=null)    return p;   // including self, as some plugins use the field name as a parameter value, instead of 'value'
+    if (p!=null)    return p;
 
     var owner = findFormParent(e,null);
+
+    // handle "../foo" syntax
+    while (name.startsWith("../")) {
+        owner = findFormParent(owner,null);
+        name = name.substring(3);
+    }
 
     p = findPreviousFormItem(e,name);
     if (p!=null && findFormParent(p,null)==owner)
@@ -971,7 +979,7 @@ function refillOnChange(e,onChange) {
     function h() {
         var params = {};
         deps.each(function (d) {
-            params[shortenName(d.getAttribute("name"))] = controlValue(d);
+            params[d.name] = controlValue(d.control);
         });
         onChange(params);
     }
@@ -985,7 +993,7 @@ function refillOnChange(e,onChange) {
                 return;
             }
             c.addEventListener("change",h,false);
-            deps.push(c);
+            deps.push({name:name,control:c});
         });
     }
     h();   // initial fill
@@ -1464,14 +1472,28 @@ function updateListBox(listBox,url,config) {
     var originalOnSuccess = config.onSuccess;
     config.onSuccess = function(rsp) {
         var l = $(listBox);
+        var currentSelection = l.value;
+
+        // clear the contents
         while(l.length>0)   l.options[0] = null;
 
+        var selectionSet = false; // is the selection forced by the server?
+        var possibleIndex = null; // if there's a new option that matches the current value, remember its index
         var opts = eval('('+rsp.responseText+')').values;
         for( var i=0; i<opts.length; i++ ) {
             l.options[i] = new Option(opts[i].name,opts[i].value);
-            if(opts[i].selected)
+            if(opts[i].selected) {
                 l.selectedIndex = i;
+                selectionSet = true;
+            }
+            if (opts[i].value==currentSelection)
+                possibleIndex = i;
         }
+
+        // if no value is explicitly selected by the server, try to select the same value
+        if (!selectionSet && possibleIndex!=null)
+            l.selectedIndex = possibleIndex;
+
         if (originalOnSuccess!=undefined)
             originalOnSuccess(rsp);
     },
