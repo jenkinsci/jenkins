@@ -57,5 +57,5 @@ public final class AntTargetNote extends ConsoleNote {
         }
     }
 
-    public static boolean ENABLED = Boolean.getBoolean(AntTargetNote.class.getName()+".enabled");
+    public static boolean ENABLED = !Boolean.getBoolean(AntTargetNote.class.getName()+".disabled");
 }
