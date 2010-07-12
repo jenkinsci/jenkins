@@ -334,4 +334,19 @@ public abstract class CLICommand implements ExtensionPoint, Cloneable {
      * which captures the identity of the client given by the transport layer.
      */
     public static final ChannelProperty<Authentication> TRANSPORT_AUTHENTICATION = new ChannelProperty<Authentication>(Authentication.class,"transportAuthentication");
+
+    private static final ThreadLocal<CLICommand> CURRENT_COMMAND = new ThreadLocal<CLICommand>();
+
+    /*package*/ static CLICommand setCurrent(CLICommand cmd) {
+        CLICommand old = getCurrent();
+        CURRENT_COMMAND.set(cmd);
+        return old;
+    }
+
+    /**
+     * If the calling thread is in the middle of executing a CLI command, return it. Otherwise null.
+     */
+    public static CLICommand getCurrent() {
+        return CURRENT_COMMAND.get();
+    }
 }
