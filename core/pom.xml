@@ -371,7 +371,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.kohsuke.stapler</groupId>
       <artifactId>stapler-adjunct-timeline</artifactId>
-      <version>1.1</version>
+      <version>1.2</version>
     </dependency>
     <dependency><!-- this helps us see the source code of the control while we edit Hudson. -->
       <groupId>org.kohsuke.stapler</groupId>
