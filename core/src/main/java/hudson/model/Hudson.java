@@ -2473,32 +2473,19 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
     }
 
     @CLIMethod(name="quiet-down")
-    public synchronized HttpRedirect doQuietDown(
+    public HttpRedirect doQuietDown(
             @Option(name="-block",usage="Block until the system really quiets down and no builds are running") @QueryParameter boolean block,
             @Option(name="-timeout",usage="If non-zero, only block up to the specified number of milliseconds") @QueryParameter int timeout) throws InterruptedException {
-        checkPermission(ADMINISTER);
-        isQuietingDown = true;
+        synchronized (this) {
+            checkPermission(ADMINISTER);
+            isQuietingDown = true;
+        }
         if (block) {
-            LOGGER.info("Entering the blocking quiet down mode");
-            long start = System.currentTimeMillis();
-            int cnt=0;
-            while (true) {
-                if (!isQuietingDown) {
-                    LOGGER.info("Quiet mode cancelled");
-                    break;
-                }
-                if (overallLoad.computeTotalExecutors() <= overallLoad.computeIdleExecutors()) {// should be really == but be defensive
-                    LOGGER.info("System became fully quiet");
-                    break;
-                }
-                if (timeout>0 && start+timeout<=System.currentTimeMillis()) {
-                    LOGGER.info("Quiet mode time out after "+timeout+"ms");
-                    break;
-                }
-
+            if (timeout > 0) timeout += System.currentTimeMillis();
+            while (isQuietingDown
+                   && (overallLoad.computeTotalExecutors() > overallLoad.computeIdleExecutors())
+                   && (timeout <= 0 || System.currentTimeMillis() < timeout)) {
                 Thread.sleep(1000);
-                if (((cnt++)%60)==0)
-                    LOGGER.info("Waiting for all the jobs to finish. Total="+overallLoad.computeTotalExecutors()+" idle="+overallLoad.computeIdleExecutors());
             }
         }
         return new HttpRedirect(".");
