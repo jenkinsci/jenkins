@@ -25,11 +25,11 @@ THE SOFTWARE.
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
   <div class="warning">
     <form method="post" action="${rootURL}/${it.url}/act" name="${it.id}">
-      <div style="float:right">
-        <f:submit name="yes" value="${%Manage}"/>
-        <f:submit name="no" value="${%Dismiss}"/>
-      </div>
       ${%You have data stored in an older format and/or unreadable data.}
+      <st:nbsp/>
+      <st:nbsp/>
+      <f:submit name="yes" value="${%Manage}"/>
+      <f:submit name="no" value="${%Dismiss}"/>
     </form>
   </div>
 </j:jelly>
