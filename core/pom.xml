@@ -124,7 +124,7 @@ THE SOFTWARE.
             <configuration>
               <tasks>
                 <tstamp>
-                  <format property="now" pattern="MM/dd/yyyy hh:mm" unit="hour" />
+                  <format property="now" pattern="MM/dd/yyyy HH:mm" unit="hour" />
                 </tstamp>
                 <property name="build.type" value="private" /> <!-- override for "rc" build -->
                 <pathconvert property="version.rc">
