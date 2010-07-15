@@ -110,7 +110,11 @@ public class CLI {
      */
     private int getCliTcpPort(String url) throws IOException {
         URLConnection head = new URL(url).openConnection();
-        head.connect();
+        try {
+            head.connect();
+        } catch (IOException e) {
+            throw (IOException)new IOException("Failed to connect to "+url).initCause(e);
+        }
         String p = head.getHeaderField("X-Hudson-CLI-Port");
         if(p==null) return -1;
         return Integer.parseInt(p);

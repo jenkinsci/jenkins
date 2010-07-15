@@ -63,8 +63,12 @@ public class CliManagerImpl implements CliEntryPoint, Serializable {
         String subCmd = args.get(0);
         CLICommand cmd = CLICommand.clone(subCmd);
         if(cmd!=null) {
-            // execute the command, do so with the originator of the request as the principal
-            return cmd.main(args.subList(1,args.size()),locale, stdin, out, err);
+            final CLICommand old = CLICommand.setCurrent(cmd);
+            try {
+                return cmd.main(args.subList(1,args.size()),locale, stdin, out, err);
+            } finally {
+                CLICommand.setCurrent(old);
+            }
         }
 
         err.println("No such command: "+subCmd);

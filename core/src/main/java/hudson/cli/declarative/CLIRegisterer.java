@@ -112,7 +112,8 @@ public class CLIRegisterer extends ExtensionFinder {
                             this.stderr = stderr;
                             this.locale = locale;
                             this.channel = Channel.current();
-                            
+
+                            registerOptionHandlers();
                             CmdLineParser parser = new CmdLineParser(null);
                             try {
                                 SecurityContext sc = SecurityContextHolder.getContext();

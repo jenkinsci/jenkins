@@ -1,7 +1,8 @@
 <!--
 The MIT License
 
-Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, Matthew R. Harrah
+Copyright (c) 2004-2010, Sun Microsystems, Inc., Kohsuke Kawaguchi,
+Matthew R. Harrah, Alan Harder
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -22,4 +23,10 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 -->
 
-<a style="color:inherit" href="${rootURL}/${app.securityRealm.loginUrl}?from=${if (request.session.attribute('from')!=null) request.session.getAttribute('from');  else if (request.getParameter('from')!=null) request.getParameter('from'); else if (request.requestURI=='/loginError' || request.requestURI=='/login') '/'; else request.requestURI;} "><b>${%login}</b></a>
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler">
+  <j:invokeStatic var="from" className="java.net.URLEncoder" method="encode">
+    <j:arg value="${if (request.session.attribute('from')!=null) request.session.getAttribute('from');  else if (request.getParameter('from')!=null) request.getParameter('from'); else if (request.requestURI=='/loginError' || request.requestURI=='/login') '/'; else request.requestURI;}"/>
+    <j:arg value="UTF-8"/>
+  </j:invokeStatic>
+  <a style="color:inherit" href="${rootURL}/${app.securityRealm.loginUrl}?from=${from}"><b>${%login}</b></a>
+</j:jelly>

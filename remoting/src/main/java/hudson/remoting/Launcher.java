@@ -1,7 +1,7 @@
 /*
  * The MIT License
  * 
- * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi
+ * Copyright (c) 2004-2010, Sun Microsystems, Inc., Kohsuke Kawaguchi
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -403,9 +403,12 @@ public class Launcher {
         ExecutorService executor = Executors.newCachedThreadPool();
         Channel channel = new Channel("channel", executor, mode, is, os);
         System.err.println("channel started");
-        if(performPing) {
-//            System.err.println("Starting periodic ping thread");
-            new PingThread(channel) {
+        long timeout = 1000 * Long.parseLong(
+                System.getProperty("hudson.remoting.Launcher.pingTimeoutSec", "240")),
+             interval = 1000 * Long.parseLong(
+                System.getProperty("hudson.remoting.Launcher.pingIntervalSec", "600"));
+        if (performPing && timeout > 0 && interval > 0) {
+            new PingThread(channel, timeout, interval) {
                 @Override
                 protected void onDead() {
                     System.err.println("Ping failed. Terminating");

@@ -39,9 +39,12 @@ import java.io.Closeable;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.ArrayList;
-import java.util.List;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.Enumeration;
+import java.util.HashSet;
+import java.util.List;
 import java.util.jar.Manifest;
 import java.util.jar.Attributes;
 import java.util.logging.Logger;
@@ -380,7 +383,20 @@ public class ClassicPluginStrategy implements PluginStrategy {
             throw new ClassNotFoundException(name);
         }
 
-        // TODO: delegate resources? watch out for diamond dependencies
+        @Override
+        protected Enumeration<URL> findResources(String name) throws IOException {
+            HashSet<URL> result = new HashSet<URL>();
+            for (Dependency dep : dependencies) {
+                PluginWrapper p = pluginManager.getPlugin(dep.shortName);
+                if (p!=null) {
+                    Enumeration<URL> urls = p.classLoader.getResources(name);
+                    while (urls != null && urls.hasMoreElements())
+                        result.add(urls.nextElement());
+                }
+            }
+
+            return Collections.enumeration(result);
+        }
 
         @Override
         protected URL findResource(String name) {

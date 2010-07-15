@@ -43,7 +43,7 @@ THE SOFTWARE.
             <td class="pane">
               <a href="../${report.child.project.shortUrl}testReport">${report.child.project.name}</a>
             </td>
-            <td class="pane" style="text-align:right;">
+            <td data="${report.result.duration}" class="pane" style="text-align:right">
               ${report.result.durationString}
             </td>
             <td class="pane" style="text-align:right;">
