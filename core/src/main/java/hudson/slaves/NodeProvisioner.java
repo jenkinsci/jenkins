@@ -174,8 +174,9 @@ public class NodeProvisioner {
             plannedCapacity = Math.max(plannedCapacitiesEMA.getLatest(TIME_SCALE),plannedCapacity);
 
             float excessWorkload = qlen - plannedCapacity;
-            if(excessWorkload>1-MARGIN) {// and there's more work to do...
-                LOGGER.fine("Excess workload "+excessWorkload+" detected. (planned capacity="+plannedCapacity+",Qlen="+qlen+",idle="+idle+"&"+idleSnapshot+",total="+totalSnapshot+")");
+            float m = calcThresholdMargin(totalSnapshot);
+            if(excessWorkload>1-m) {// and there's more work to do...
+                LOGGER.fine("Excess workload "+excessWorkload+" detected. (planned capacity="+plannedCapacity+",Qlen="+qlen+",idle="+idle+"&"+idleSnapshot+",total="+totalSnapshot+"m,="+m+")");
                 for( Cloud c : hudson.clouds ) {
                     if(excessWorkload<0)    break;  // enough slaves allocated
 
@@ -185,7 +186,7 @@ public class NodeProvisioner {
                     // something like 0.95, in which case we want to allocate one node.
                     // so the threshold here is 1-MARGIN, and hence floor(excessWorkload+MARGIN) is needed to handle this.
 
-                    Collection<PlannedNode> additionalCapacities = c.provision(label, (int)Math.round(Math.floor(excessWorkload+MARGIN)));
+                    Collection<PlannedNode> additionalCapacities = c.provision(label, (int)Math.round(Math.floor(excessWorkload+m)));
                     for (PlannedNode ac : additionalCapacities) {
                         excessWorkload -= ac.numExecutors;
                         LOGGER.info("Started provisioning "+ac.displayName+" from "+c.name+" with "+ac.numExecutors+" executors. Remaining excess workload:"+excessWorkload);
@@ -194,6 +195,51 @@ public class NodeProvisioner {
                 }
             }
         }
+    }
+
+    /**
+     * Computes the threshold for triggering an allocation.
+     *
+     * <p>
+     * Because the excessive workload value is EMA, even when the snapshot value of the excessive
+     * workload is 1, the value never really gets to 1. So we need to introduce a notion of the margin M,
+     * where we provision a new node if the EMA of the excessive workload goes beyond 1-M (where M is a small value
+     * in the (0,1) range.)
+     *
+     * <p>
+     * M effectively controls how long Hudson waits until allocating a new node, in the face of workload.
+     * This delay is justified for absorbing temporary ups and downs, and can be interpreted as Hudson
+     * holding off provisioning in the hope that one of the existing nodes will become available.
+     *
+     * <p>
+     * M can be a constant value, but there's a benefit in adjusting M based on the total current capacity,
+     * based on the above justification; that is, if there's no existing capacity at all, holding off
+     * an allocation doesn't make much sense, as there won't be any executors available no matter how long we wait.
+     * On the other hand, if we have a large number of existing executors, chances are good that some
+     * of them become available &mdash; the chance gets better and better as the number of current total
+     * capacity increases.
+     *
+     * <p>
+     * Therefore, we compute the threshold margin as follows:
+     *
+     * <pre>
+     *   M(t) = M* + (M0 - M*) alpha ^ t
+     * </pre>
+     *
+     * ... where:
+     *
+     * <ul>
+     * <li>M* is the ultimate margin value that M(t) converges to with t->inf,
+     * <li>M0 is the value of M(0), the initial value.
+     * <li>alpha is the decay factor in (0,1). M(t) converges to M* faster if alpha is smaller.
+     * </ul>
+     */
+    private float calcThresholdMargin(int totalSnapshot) {
+        float f = (float) (MARGIN + (MARGIN0 - MARGIN) * Math.pow(MARGIN_DECAY, totalSnapshot));
+        // defensively ensure that the threshold margin is in (0,1)
+        f = Math.max(f,0);
+        f = Math.min(f,1);
+        return f;
     }
 
     /**
@@ -226,9 +272,22 @@ public class NodeProvisioner {
         }
     }
 
-    private static final float MARGIN = Integer.getInteger(NodeProvisioner.class.getName()+".MARGIN",10)/100f;
     private static final Logger LOGGER = Logger.getLogger(NodeProvisioner.class.getName());
+    private static final float MARGIN = Integer.getInteger(NodeProvisioner.class.getName()+".MARGIN",10)/100f;
+    private static final float MARGIN0 = Math.max(MARGIN, getFloatSystemProperty(NodeProvisioner.class.getName()+".MARGIN0",0.5f));
+    private static final float MARGIN_DECAY = getFloatSystemProperty(NodeProvisioner.class.getName()+".MARGIN_DECAY",0.5f);
 
     // TODO: picker should be selectable
     private static final TimeScale TIME_SCALE = TimeScale.SEC10;
+
+    private static float getFloatSystemProperty(String propName, float defaultValue) {
+        String v = System.getProperty(propName);
+        if (v!=null)
+            try {
+                return Float.parseFloat(v);
+            } catch (NumberFormatException e) {
+                LOGGER.warning("Failed to parse a float value from system property "+propName+". value was "+v);
+            }
+        return defaultValue;
+    }
 }
