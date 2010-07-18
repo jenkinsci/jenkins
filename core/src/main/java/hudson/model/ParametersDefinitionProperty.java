@@ -1,7 +1,8 @@
 /*
  * The MIT License
  * 
- * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, Jean-Baptiste Quenot, Seiji Sogabe, Tom Huybrechts
+ * Copyright (c) 2004-2010, Sun Microsystems, Inc., Kohsuke Kawaguchi,
+ * Jean-Baptiste Quenot, Seiji Sogabe, Tom Huybrechts
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -145,7 +146,7 @@ public class ParametersDefinitionProperty extends JobProperty<AbstractProject<?,
         }
 
     	Hudson.getInstance().getQueue().schedule(
-                owner, owner.getDelay(req), new ParametersAction(values), new CauseAction(new Cause.UserCause()));
+                owner, owner.getDelay(req), new ParametersAction(values), owner.getBuildCause(req));
 
         // send the user back to the job top page.
         rsp.sendRedirect(".");

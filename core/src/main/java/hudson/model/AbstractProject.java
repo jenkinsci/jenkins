@@ -1393,6 +1393,17 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
             return;
         }
 
+        if (!isBuildable())
+            throw HttpResponses.error(SC_INTERNAL_SERVER_ERROR,new IOException(getFullName()+" is not buildable"));
+
+        Hudson.getInstance().getQueue().schedule(this, getDelay(req), getBuildCause(req));
+        rsp.forwardToPreviousPage(req);
+    }
+
+    /**
+     * Computes the build cause, using RemoteCause or UserCause as appropriate.
+     */
+    /*package*/ CauseAction getBuildCause(StaplerRequest req) {
         Cause cause;
         if (authToken != null && authToken.getToken() != null && req.getParameter("token") != null) {
             // Optional additional cause text when starting via token
@@ -1401,12 +1412,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
         } else {
             cause = new UserCause();
         }
-
-        if (!isBuildable())
-            throw HttpResponses.error(SC_INTERNAL_SERVER_ERROR,new IOException(getFullName()+" is not buildable"));
-
-        Hudson.getInstance().getQueue().schedule(this, getDelay(req), new CauseAction(cause));
-        rsp.forwardToPreviousPage(req);
+        return new CauseAction(cause);
     }
 
     /**
