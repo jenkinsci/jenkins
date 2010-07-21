@@ -1,7 +1,7 @@
 /*
  * The MIT License
  *
- * Copyright (c) 2009, Sun Microsystems, Inc.
+ * Copyright (c) 2009-2010, Sun Microsystems, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -162,8 +162,9 @@ public class JDKInstaller extends ToolInstaller {
         case LINUX:
         case SOLARIS:
             fs.chmod(jdkBundle,0755);
-            if(launcher.launch().cmds(jdkBundle,"-noregister")
-                .stdin(new ByteArrayInputStream("yes".getBytes())).stdout(out).pwd(expectedLocation).join()!=0)
+            if (launcher.launch().cmds(jdkBundle, "-noregister")
+                  .stdin(new ByteArrayInputStream("yes".getBytes())).stdout(out)
+                  .pwd(new FilePath(launcher.getChannel(), expectedLocation)).join() != 0)
                 throw new AbortException(Messages.JDKInstaller_FailedToInstallJDK());
 
             // JDK creates its own sub-directory, so pull them up
@@ -209,7 +210,8 @@ public class JDKInstaller extends ToolInstaller {
             // Oh Windows, oh windows, why do you have to be so difficult?
             args.add("/v/qn REBOOT=Suppress INSTALLDIR=\\\""+ expectedLocation +"\\\" /L \\\""+logFile+"\\\"");
 
-            if(launcher.launch().cmds(args).stdout(out).pwd(expectedLocation).join()!=0) {
+            if (launcher.launch().cmds(args).stdout(out)
+                  .pwd(new FilePath(launcher.getChannel(), expectedLocation)).join() != 0) {
                 out.println(Messages.JDKInstaller_FailedToInstallJDK());
                 // log file is in UTF-16
                 InputStreamReader in = new InputStreamReader(fs.read(logFile), "UTF-16");
