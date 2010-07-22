@@ -27,11 +27,11 @@
             queue.push(e);
         } else {
             var id = "ant-target-"+(iota++);
+            outline.appendChild(parseHtml("<li><a href='#"+id+"'>"+e.innerHTML+"</a></li>"))
+
             var a = document.createElement("a");
             a.setAttribute("name",id);
             e.appendChild(a);
-
-            outline.appendChild(parseHtml("<li><a href='#"+id+"'>"+e.innerHTML+"</a></li>"))
         }
     }
 
