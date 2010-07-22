@@ -11,6 +11,8 @@ import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import sun.misc.BASE64Encoder;
+
 /**
  * Creates a capacity-unlimited bi-directional {@link InputStream}/{@link OutputStream} pair over
  * HTTP, which is a request/response protocol.
@@ -34,6 +36,11 @@ public class FullDuplexHttpStream {
     public FullDuplexHttpStream(URL target) throws IOException {
         this.target = target;
 
+        String authorization = null;
+        if (target.getUserInfo() != null) {
+        	authorization = new BASE64Encoder().encode(target.getUserInfo().getBytes());
+        }
+
         CrumbData crumbData = new CrumbData();
 
         UUID uuid = UUID.randomUUID(); // so that the server can correlate those two connections
@@ -44,6 +51,9 @@ public class FullDuplexHttpStream {
         con.setRequestMethod("POST");
         con.addRequestProperty("Session", uuid.toString());
         con.addRequestProperty("Side","download");
+        if (authorization != null) {
+            con.addRequestProperty("Authorization", "Basic " + authorization);
+        }
         if(crumbData.isValid) {
             con.addRequestProperty(crumbData.crumbName, crumbData.crumb);
         }
@@ -61,6 +71,10 @@ public class FullDuplexHttpStream {
         con.setRequestProperty("Content-type","application/octet-stream");
         con.addRequestProperty("Session", uuid.toString());
         con.addRequestProperty("Side","upload");
+        if (authorization != null) {
+        	con.addRequestProperty ("Authorization", "Basic " + authorization);
+        }
+
         if(crumbData.isValid) {
             con.addRequestProperty(crumbData.crumbName, crumbData.crumb);
         }
