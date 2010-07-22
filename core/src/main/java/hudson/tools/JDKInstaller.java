@@ -210,9 +210,10 @@ public class JDKInstaller extends ToolInstaller {
             // Oh Windows, oh windows, why do you have to be so difficult?
             args.add("/v/qn REBOOT=Suppress INSTALLDIR=\\\""+ expectedLocation +"\\\" /L \\\""+logFile+"\\\"");
 
-            if (launcher.launch().cmds(args).stdout(out)
-                  .pwd(new FilePath(launcher.getChannel(), expectedLocation)).join() != 0) {
-                out.println(Messages.JDKInstaller_FailedToInstallJDK());
+            int r = launcher.launch().cmds(args).stdout(out)
+                    .pwd(new FilePath(launcher.getChannel(), expectedLocation)).join();
+            if (r != 0) {
+                out.println(Messages.JDKInstaller_FailedToInstallJDK(r));
                 // log file is in UTF-16
                 InputStreamReader in = new InputStreamReader(fs.read(logFile), "UTF-16");
                 try {
