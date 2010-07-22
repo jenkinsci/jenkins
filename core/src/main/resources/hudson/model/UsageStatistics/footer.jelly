@@ -33,7 +33,7 @@ THE SOFTWARE.
   <j:if test="${it.due}">
     <script>
       Behaviour.addLoadEvent(function() {
-        loadScript("https://hudson.dev.java.net/usage-stats.js?${it.statData}");
+        loadScript("http://usage.hudson-labs.org/usage-stats.js?${it.statData}");
       });
     </script>
   </j:if>
