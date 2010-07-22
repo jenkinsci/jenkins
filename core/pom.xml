@@ -185,7 +185,7 @@ THE SOFTWARE.
           <dependency>
             <groupId>org.jvnet.hudson.tools</groupId>
             <artifactId>extension-point-lister</artifactId>
-            <version>1.5</version>
+            <version>1.7</version>
             <exclusions>
                <exclusion>
                  <groupId>com.sun</groupId>

@@ -69,7 +69,7 @@ import org.kohsuke.stapler.HttpResponses;
  *
  * @author Kohsuke Kawaguchi
  */
-public final class PluginWrapper implements Comparable<PluginWrapper> {
+public class PluginWrapper implements Comparable<PluginWrapper> {
     /**
      * {@link PluginManager} to which this belongs to.
      */

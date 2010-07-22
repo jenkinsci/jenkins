@@ -41,7 +41,7 @@ THE SOFTWARE.
 
   <servlet-mapping>
     <servlet-name>Stapler</servlet-name>
-    <url-pattern>/</url-pattern>
+    <url-pattern>/*</url-pattern>
   </servlet-mapping>
 
   <filter>

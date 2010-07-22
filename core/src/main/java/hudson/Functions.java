@@ -43,7 +43,6 @@ import hudson.model.ParameterDefinition.ParameterDescriptor;
 import hudson.model.Project;
 import hudson.model.Run;
 import hudson.model.TopLevelItem;
-import hudson.model.User;
 import hudson.model.View;
 import hudson.model.JDK;
 import hudson.search.SearchableModelObject;
@@ -1178,23 +1177,17 @@ public class Functions {
     public static List<Descriptor<CrumbIssuer>> getCrumbIssuerDescriptors() {
         return CrumbIssuer.all();
     }
-    
+
     public static String getCrumb(StaplerRequest req) {
-        CrumbIssuer issuer = Hudson.getInstance().getCrumbIssuer();
-        if (issuer != null) {
-            return issuer.getCrumb(req);
-        }
-        
-        return "";
+        Hudson h = Hudson.getInstance();
+        CrumbIssuer issuer = h != null ? h.getCrumbIssuer() : null;
+        return issuer != null ? issuer.getCrumb(req) : "";
     }
-    
+
     public static String getCrumbRequestField() {
-        CrumbIssuer issuer = Hudson.getInstance().getCrumbIssuer();
-        if (issuer != null) {
-            return issuer.getDescriptor().getCrumbRequestField();
-        }
-        
-        return "";
+        Hudson h = Hudson.getInstance();
+        CrumbIssuer issuer = h != null ? h.getCrumbIssuer() : null;
+        return issuer != null ? issuer.getDescriptor().getCrumbRequestField() : "";
     }
 
     public static Date getCurrentTime() {
