@@ -162,10 +162,11 @@ public class JDKInstaller extends ToolInstaller {
         case LINUX:
         case SOLARIS:
             fs.chmod(jdkBundle,0755);
-            if (launcher.launch().cmds(jdkBundle, "-noregister")
-                  .stdin(new ByteArrayInputStream("yes".getBytes())).stdout(out)
-                  .pwd(new FilePath(launcher.getChannel(), expectedLocation)).join() != 0)
-                throw new AbortException(Messages.JDKInstaller_FailedToInstallJDK());
+            int exit = launcher.launch().cmds(jdkBundle, "-noregister")
+                    .stdin(new ByteArrayInputStream("yes".getBytes())).stdout(out)
+                    .pwd(new FilePath(launcher.getChannel(), expectedLocation)).join();
+            if (exit != 0)
+                throw new AbortException(Messages.JDKInstaller_FailedToInstallJDK(exit));
 
             // JDK creates its own sub-directory, so pull them up
             List<String> paths = fs.listSubDirectories(expectedLocation);
