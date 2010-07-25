@@ -38,11 +38,13 @@ import hudson.security.SecurityRealm;
 import hudson.tasks.Ant;
 import hudson.tasks.BuildStep;
 import hudson.tasks.Ant.AntInstallation;
+import org.jvnet.hudson.test.Bug;
 import org.jvnet.hudson.test.Email;
 import org.jvnet.hudson.test.HudsonTestCase;
 import org.jvnet.hudson.test.recipes.LocalData;
 
 import static javax.servlet.http.HttpServletResponse.SC_FORBIDDEN;
+import java.lang.reflect.Field;
 import java.net.URL;
 import java.util.List;
 
@@ -169,5 +171,20 @@ public class HudsonTest extends HudsonTestCase {
 
         BuildStep.PUBLISHERS.remove(dummy);
         assertNull(hudson.getDescriptor(HudsonTest.class.getName()));
+    }
+
+    /**
+     * Verify null/invalid primaryView setting doesn't result in infinite loop.
+     */
+    @Bug(6938)
+    public void testInvalidPrimaryView() throws Exception {
+        Field pv = Hudson.class.getDeclaredField("primaryView");
+        pv.setAccessible(true);
+        String value = null;
+        pv.set(hudson, value);
+        assertNull("null primaryView", hudson.getView(value));
+        value = "some bogus name";
+        pv.set(hudson, value);
+        assertNull("invalid primaryView", hudson.getView(value));
     }
 }

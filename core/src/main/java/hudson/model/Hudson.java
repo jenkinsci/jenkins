@@ -1,8 +1,9 @@
 /*
  * The MIT License
  * 
- * Copyright (c) 2004-2010, Sun Microsystems, Inc., Kohsuke Kawaguchi, Erik Ramfelt, Koichi Fujikawa, Red Hat, Inc.,
- * Seiji Sogabe, Stephen Connolly, Tom Huybrechts, Yahoo! Inc., Alan Harder
+ * Copyright (c) 2004-2010, Sun Microsystems, Inc., Kohsuke Kawaguchi,
+ * Erik Ramfelt, Koichi Fujikawa, Red Hat, Inc., Seiji Sogabe,
+ * Stephen Connolly, Tom Huybrechts, Yahoo! Inc., Alan Harder
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -1257,10 +1258,12 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
             if(v.getViewName().equals(name))
                 return v;
         }
-        // Fallback to subview of primary view if it is a ViewGroup
-        View pv = getPrimaryView();
-        if (pv instanceof ViewGroup)
-            return ((ViewGroup)pv).getView(name);
+        if (name != null && !name.equals(primaryView)) {
+            // Fallback to subview of primary view if it is a ViewGroup
+            View pv = getPrimaryView();
+            if (pv instanceof ViewGroup)
+                return ((ViewGroup)pv).getView(name);
+        }
         return null;
     }
 
