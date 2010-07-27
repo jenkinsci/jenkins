@@ -654,7 +654,8 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
      */
     public RunT getPreviousBuiltBuild() {
         RunT r=previousBuild;
-        while( r!=null && r.getResult()==Result.NOT_BUILT )
+        // in certain situations (aborted m2 builds) r.getResult() can still be null, although it should theoretically never happen
+        while( r!=null && (r.getResult() == null || r.getResult()==Result.NOT_BUILT) )
             r=r.previousBuild;
         return r;
     }
