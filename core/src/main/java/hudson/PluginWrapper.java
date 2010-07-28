@@ -174,7 +174,7 @@ public class PluginWrapper implements Comparable<PluginWrapper> {
      *  @param dependencies a list of mandatory dependencies
      *  @param optionalDependencies a list of optional dependencies
      */
-	public PluginWrapper(PluginManager parent, File archive, Manifest manifest, URL baseResourceURL, 
+    public PluginWrapper(PluginManager parent, File archive, Manifest manifest, URL baseResourceURL, 
 			ClassLoader classLoader, File disableFile, 
 			List<Dependency> dependencies, List<Dependency> optionalDependencies) {
         this.parent = parent;
@@ -187,7 +187,7 @@ public class PluginWrapper implements Comparable<PluginWrapper> {
 		this.active = !disableFile.exists();
 		this.dependencies = dependencies;
 		this.optionalDependencies = optionalDependencies;
-	}
+    }
 
     /**
      * Returns the URL of the index page jelly script.
@@ -201,7 +201,9 @@ public class PluginWrapper implements Comparable<PluginWrapper> {
             while (en.hasMoreElements())
                 idx = en.nextElement();
         } catch (IOException ignore) { }
-        return idx;
+        // In case plugin has dependencies but is missing its own index.jelly,
+        // check that result has this plugin's artifactId in it:
+        return idx != null && idx.toString().contains(shortName) ? idx : null;
     }
 
     private String computeShortName(Manifest manifest, File archive) {
