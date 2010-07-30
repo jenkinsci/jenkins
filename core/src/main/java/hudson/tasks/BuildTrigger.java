@@ -226,10 +226,9 @@ public class BuildTrigger extends Recorder implements DependecyDeclarer, MatrixA
     }
 
     /**
-     * Called from {@link Job#renameTo(String)} when a job is renamed.
+     * Called from {@link ItemListenerImpl} when a job is renamed.
      *
-     * @return true
-     *      if this {@link BuildTrigger} is changed and needs to be saved.
+     * @return true if this {@link BuildTrigger} is changed and needs to be saved.
      */
     public boolean onJobRenamed(String oldName, String newName) {
         // quick test
