@@ -27,11 +27,15 @@
             queue.push(e);
         } else {
             var id = "ant-target-"+(iota++);
-            var a = document.createElement("a");
-            a.setAttribute("name",id);
-            e.appendChild(a);
-
             outline.appendChild(parseHtml("<li><a href='#"+id+"'>"+e.innerHTML+"</a></li>"))
+
+            if (document.all)
+                e.innerHTML += '<a name="' + id + '"/>';  // IE8 loses "name" attr in appendChild
+            else {
+                var a = document.createElement("a");
+                a.setAttribute("name",id);
+                e.appendChild(a);
+            }
         }
     }
 

@@ -1,7 +1,7 @@
 /*
  * The MIT License
  * 
- * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi
+ * Copyright (c) 2004-2010, Sun Microsystems, Inc., Kohsuke Kawaguchi
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,6 +23,7 @@
  */
 package hudson.lifecycle;
 
+import hudson.model.Hudson;
 import java.io.IOException;
 
 /**
@@ -36,6 +37,9 @@ public class SolarisSMFLifecycle extends Lifecycle {
      */
     @Override
     public void restart() throws IOException, InterruptedException {
+        Hudson h = Hudson.getInstance();
+        if (h != null)
+            h.cleanUp();
         System.exit(0);
     }
 }

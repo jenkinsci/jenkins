@@ -593,14 +593,10 @@ public class Queue extends ResourceController implements Saveable {
     }
 
     private void _getBuildableItems(Computer c, ItemList<BuildableItem> col, List<BuildableItem> result) {
+        Node node = c.getNode();
         for (BuildableItem p : col.values()) {
-            Label l = p.task.getAssignedLabel();
-            if (l != null) {
-                // if a project has assigned label, it can be only built on it
-                if (!l.contains(c.getNode()))
-                    continue;
-            }
-            result.add(p);
+            if (node.canTake(p.task) == null)
+                result.add(p);
         }
     }
 

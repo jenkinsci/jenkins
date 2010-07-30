@@ -1,8 +1,9 @@
 /*
  * The MIT License
  * 
- * Copyright (c) 2004-2010, Sun Microsystems, Inc., Kohsuke Kawaguchi, Erik Ramfelt, Koichi Fujikawa, Red Hat, Inc.,
- * Seiji Sogabe, Stephen Connolly, Tom Huybrechts, Yahoo! Inc., Alan Harder
+ * Copyright (c) 2004-2010, Sun Microsystems, Inc., Kohsuke Kawaguchi,
+ * Erik Ramfelt, Koichi Fujikawa, Red Hat, Inc., Seiji Sogabe,
+ * Stephen Connolly, Tom Huybrechts, Yahoo! Inc., Alan Harder
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -1257,10 +1258,12 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
             if(v.getViewName().equals(name))
                 return v;
         }
-        // Fallback to subview of primary view if it is a ViewGroup
-        View pv = getPrimaryView();
-        if (pv instanceof ViewGroup)
-            return ((ViewGroup)pv).getView(name);
+        if (name != null && !name.equals(primaryView)) {
+            // Fallback to subview of primary view if it is a ViewGroup
+            View pv = getPrimaryView();
+            if (pv instanceof ViewGroup)
+                return ((ViewGroup)pv).getView(name);
+        }
         return null;
     }
 
@@ -2963,8 +2966,8 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
                     if (isQuietingDown) {
                         servletContext.setAttribute("app",new HudsonIsRestarting());
                         // give some time for the browser to load the "reloading" page
-                        LOGGER.info("Restart in 5 seconds");
-                        Thread.sleep(5000);
+                        LOGGER.info("Restart in 10 seconds");
+                        Thread.sleep(10000);
                         lifecycle.restart();
                     } else {
                         LOGGER.info("Safe-restart mode cancelled");
@@ -3024,6 +3027,7 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
                     }
                     // Make sure isQuietingDown is still true.
                     if (isQuietingDown) {
+                        cleanUp();
                         System.exit(0);
                     }
                 } catch (InterruptedException e) {

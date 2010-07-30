@@ -127,6 +127,7 @@ public class LogRotator implements Describable<LogRotator> {
                     LOGGER.log(FINER,r.getFullDisplayName()+" is not GC-ed because it's the last stable build");
                     continue;
                 }
+                LOGGER.log(FINER,r.getFullDisplayName()+" is to be removed");
                 r.delete();
             }
         }
@@ -152,6 +153,7 @@ public class LogRotator implements Describable<LogRotator> {
                     LOGGER.log(FINER,r.getFullDisplayName()+" is not GC-ed because it's still new");
                     continue;
                 }
+                LOGGER.log(FINER,r.getFullDisplayName()+" is to be removed");
                 r.delete();
             }
         }
