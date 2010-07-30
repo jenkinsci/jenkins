@@ -99,6 +99,26 @@ THE SOFTWARE.
           <version>2.6.1</version>
         </plugin>
         <plugin>
+          <artifactId>maven-jar-plugin</artifactId>
+          <version>2.3.1</version>
+        </plugin>
+        <plugin>
+          <artifactId>maven-surefire-plugin</artifactId>
+          <version>2.5</version>
+        </plugin>
+        <plugin>
+          <artifactId>maven-dependency-plugin</artifactId>
+          <version>2.1</version>
+        </plugin>
+        <plugin>
+          <artifactId>maven-assembly-plugin</artifactId>
+          <version>2.2-beta-5</version>
+        </plugin>
+      <plugin>
+        <artifactId>maven-resources-plugin</artifactId>
+        <version>2.4.3</version>
+      </plugin>
+        <plugin>
           <!--
             Both test harness and core uses stapler as an extension,
             and apparently without having extension preloaded at the parent, the main artifact of the 'test' module
@@ -138,16 +158,6 @@ THE SOFTWARE.
         </configuration>
       </plugin>
       <plugin>
-        <artifactId>maven-resources-plugin</artifactId>
-        <configuration>
-          <!--
-            *.html files are in UTF-8, and *.properties are in iso-8859-1, so this configuration is acturally incorrect,
-            but this suppresses a warning from Maven, and as long as we don't do filtering we should be OK.
-          -->
-          <encoding>UTF-8</encoding>
-        </configuration>
-      </plugin>
-      <plugin>
         <artifactId>maven-remote-resources-plugin</artifactId>
         <version>1.0</version>
         <executions>
@@ -177,9 +187,10 @@ THE SOFTWARE.
         </configuration>
       </plugin>
 
-      <plugin><!-- we specify this in the parent POM, so this is redundant, but otherwise IntelliJ is unhappy -->
+      <plugin>
         <artifactId>maven-compiler-plugin</artifactId>
-        <configuration>
+        <version>2.3.1</version>
+        <configuration><!-- we specify this in the parent POM, so this is redundant, but otherwise IntelliJ is unhappy -->
           <source>1.5</source>
           <target>1.5</target>
         </configuration>
@@ -241,6 +252,9 @@ THE SOFTWARE.
   <properties>
     <maven.version>2.0.9</maven.version>
     <maven.embedder.version>2.0.4</maven.embedder.version>
+    <!-- *.html files are in UTF-8, and *.properties are in iso-8859-1, so this configuration is acturally incorrect,
+    but this suppresses a warning from Maven, and as long as we don't do filtering we should be OK. -->
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
   </properties>
 
   <profiles>
@@ -323,7 +337,7 @@ THE SOFTWARE.
                 </goals>
                 <phase>package</phase>
                 <configuration>
-                  <finalName>hudson-${version}</finalName>
+                  <finalName>hudson-${project.version}</finalName>
                   <descriptors>
                     <descriptor>assembly-src.xml</descriptor>
                   </descriptors>

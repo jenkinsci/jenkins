@@ -57,7 +57,6 @@ THE SOFTWARE.
       <plugin>
         <groupId>org.kohsuke.stapler</groupId>
         <artifactId>maven-stapler-plugin</artifactId>
-        <version>1.15</version>
         <extensions>true</extensions>
         <dependencies>
           <dependency>
@@ -128,13 +127,13 @@ THE SOFTWARE.
                 </tstamp>
                 <property name="build.type" value="private" /> <!-- override for "rc" build -->
                 <pathconvert property="version.rc">
-                  <path path="${version}" />
+                  <path path="${project.version}" />
                   <chainedmapper><flattenmapper /><globmapper from="*-SNAPSHOT" to="*-RC" /></chainedmapper>
                 </pathconvert>
                 <condition property="build.version" value="${version.rc} (${now})">
                   <equals arg1="${build.type}" arg2="rc" />
                 </condition>
-                <property name="build.version" value="${version} (${build.type}-${now}-${user.name})" />
+                <property name="build.version" value="${project.version} (${build.type}-${now}-${user.name})" />
                 <!-- default to release version -->
                 <!-- put the version file -->
                 <echo message="The build id is: ${build.version}" />
@@ -213,7 +212,7 @@ THE SOFTWARE.
       <id>release</id>
       <properties>
         <!-- for releases, just use the POM version. See above ant-run plugin for how this gets used. -->
-        <build.version>${version}</build.version>
+        <build.version>${project.version}</build.version>
       </properties>
       <build>
         <plugins>
@@ -796,6 +795,7 @@ THE SOFTWARE.
       <plugin><!-- generate Jelly tag lib documentation -->
         <groupId>org.kohsuke.stapler</groupId>
         <artifactId>maven-stapler-plugin</artifactId>
+        <version>1.15</version>
         <configuration>
           <patterns>
             <pattern>/lib/.*</pattern>
@@ -804,6 +804,7 @@ THE SOFTWARE.
       </plugin>
       <plugin><!-- skip slow dependency analysis -->
         <artifactId>maven-project-info-reports-plugin</artifactId>
+        <version>2.2</version>
         <configuration>
           <dependencyLocationsEnabled>false</dependencyLocationsEnabled>
         </configuration>
