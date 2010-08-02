@@ -38,6 +38,8 @@ import java.util.HashMap;
 import java.util.logging.Logger;
 import java.util.logging.Level;
 
+import static hudson.Util.intern;
+
 /**
  * Persisted record of mojo execution.
  *
@@ -98,6 +100,29 @@ public final class ExecutedMojo implements Serializable {
             // perhaps the plugin has failed to load.
         }
         this.digest = digest;
+    }
+
+    /**
+     * Copy constructor used for interning.
+     */
+    private ExecutedMojo(String groupId, String artifactId, String version, String goal, String executionId, long duration, String digest) {
+        this.groupId = groupId;
+        this.artifactId = artifactId;
+        this.version = version;
+        this.goal = goal;
+        this.executionId = executionId;
+        this.duration = duration;
+        this.digest = digest;
+    }
+
+    /**
+     * Lots of {@link ExecutedMojo}s tend to have the same groupId, artifactId, etc., so interning them help
+     * with memory consumption.
+     *
+     * TODO: better if XStream has a declarative way of marking fields as "target for intern".
+     */
+    ExecutedMojo readResolve() {
+        return new ExecutedMojo(intern(groupId),intern(artifactId),intern(version),intern(goal),intern(executionId),duration,intern(digest));
     }
 
     /**
