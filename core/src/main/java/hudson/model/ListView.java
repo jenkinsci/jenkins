@@ -167,13 +167,14 @@ public class ListView extends View implements Saveable {
     }
 
     /**
-     * Returns the transient {@link Action}s associated with the top page.
-     *
-     * @see Hudson#getActions()
+     * Used to determine if we want to display the Add button.
      */
-    @Override
-    public List<Action> getActions() {
-        return Hudson.getInstance().getActions();
+    public boolean hasJobFilterExtensions() {
+    	return !ViewJobFilter.all().isEmpty();
+    }
+
+    public Iterable<ViewJobFilter> getJobFilters() {
+    	return jobFilters;
     }
     
     /**
