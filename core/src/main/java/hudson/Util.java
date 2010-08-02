@@ -1139,6 +1139,13 @@ public class Util {
         else        return new File(p.substring(0,pos)+ext);
     }
 
+    /**
+     * Null-safe String intern method.
+     */
+    public static String intern(String s) {
+        return s==null ? s : s.intern();
+    }
+
     public static final FastDateFormat XS_DATETIME_FORMATTER = FastDateFormat.getInstance("yyyy-MM-dd'T'HH:mm:ss'Z'",new SimpleTimeZone(0,"GMT"));
 
     // Note: RFC822 dates must not be localized!
