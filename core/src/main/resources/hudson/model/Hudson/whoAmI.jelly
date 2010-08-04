@@ -1,7 +1,7 @@
 <!--
 The MIT License
 
-Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi
+Copyright (c) 2004-2010, Sun Microsystems, Inc., Kohsuke Kawaguchi
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -25,7 +25,9 @@ THE SOFTWARE.
 <!-- show debug information about the current user -->
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:s="/lib/form">
   <l:layout>
-    <st:include page="sidepanel.jelly" />
+    <l:hasPermission permission="${app.READ}">
+      <st:include page="sidepanel.jelly" />
+    </l:hasPermission>
     <l:main-panel>
       <j:set var="auth" value="${app.authentication}" />
       <h1>Who Am I?</h1>
