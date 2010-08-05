@@ -2925,6 +2925,7 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
         servletContext.setAttribute("app",new HudsonIsRestarting());
 
         new Thread("restart thread") {
+            final String exitUser = getAuthentication().getName();
             @Override
             public void run() {
                 try {
@@ -2932,6 +2933,7 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
 
                     // give some time for the browser to load the "reloading" page
                     Thread.sleep(5000);
+                    LOGGER.severe(String.format("Restarting VM as requested by %s",exitUser));
                     lifecycle.restart();
                 } catch (InterruptedException e) {
                     LOGGER.log(Level.WARNING, "Failed to restart Hudson",e);
@@ -2954,6 +2956,7 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
         isQuietingDown = true;
         
         new Thread("safe-restart thread") {
+            final String exitUser = getAuthentication().getName();
             @Override
             public void run() {
                 try {
@@ -2968,6 +2971,7 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
                         // give some time for the browser to load the "reloading" page
                         LOGGER.info("Restart in 10 seconds");
                         Thread.sleep(10000);
+                        LOGGER.severe(String.format("Restarting VM as requested by %s",exitUser));
                         lifecycle.restart();
                     } else {
                         LOGGER.info("Safe-restart mode cancelled");
@@ -2988,7 +2992,7 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
     public void doExit( StaplerRequest req, StaplerResponse rsp ) throws IOException {
         checkPermission(ADMINISTER);
         LOGGER.severe(String.format("Shutting down VM as requested by %s from %s",
-                getAuthentication(), req.getRemoteAddr()));
+                getAuthentication().getName(), req.getRemoteAddr()));
         rsp.setStatus(HttpServletResponse.SC_OK);
         rsp.setContentType("text/plain");
         PrintWriter w = rsp.getWriter();
@@ -3011,7 +3015,7 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
         w.println("Shutting down as soon as all jobs are complete");
         w.close();
         isQuietingDown = true;
-        final String exitUser = getAuthentication().toString();
+        final String exitUser = getAuthentication().getName();
         final String exitAddr = req.getRemoteAddr().toString();
         new Thread("safe-exit thread") {
             @Override

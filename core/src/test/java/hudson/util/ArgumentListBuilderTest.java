@@ -1,7 +1,7 @@
 /*
  * The MIT License
  * 
- * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi
+ * Copyright (c) 2004-2010, Sun Microsystems, Inc., Kohsuke Kawaguchi
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -103,5 +103,23 @@ public class ArgumentListBuilderTest extends Assert {
         boolean[] array = builder.toMaskArray();
         assertNotNull("The mask array should not be null", array);
         assertArrayEquals("The mask array was incorrect", new boolean[]{false,false,true,false}, array);
+    }
+
+    @Test
+    public void testToWindowsCommand() {
+        ArgumentListBuilder builder = new ArgumentListBuilder(
+                "ant.bat", "-Dfoo1=abc",  // nothing special, no quotes
+                "-Dfoo2=foo bar", "-Dfoo3=/u*r", "-Dfoo4=/us?",  // add quotes, no other escaping
+                "-Dfoo5=foo;bar^baz", "-Dfoo6=<xml>&here;</xml>", // add quotes and ^ escaping
+                "-Dfoo7=foo|bar\"baz", // add quotes, ^| for | and "" for "
+                "-Dfoo8=% %QED% %comspec% %-%(%.%", // add quotes, and extra quotes for %Q and %c
+                "-Dfoo9=%'''%%@%"); // no quotes as none of the % are followed by a letter
+        assertArrayEquals(new String[] { "cmd.exe", "/C",
+                "\"ant.bat -Dfoo1=abc \"-Dfoo2=foo bar\""
+                + " \"-Dfoo3=/u*r\" \"-Dfoo4=/us?\" \"-Dfoo5=foo;bar^^baz\""
+                + " \"-Dfoo6=^<xml^>^&here;^</xml^>\" \"-Dfoo7=foo^|bar\"\"baz\""
+                + " \"-Dfoo8=% %\"Q\"ED% %\"c\"omspec% %-%(%.%\""
+                + " -Dfoo9=%'''%%@% && exit %%ERRORLEVEL%%\"" },
+                builder.toWindowsCommand().toCommandArray());
     }
 }

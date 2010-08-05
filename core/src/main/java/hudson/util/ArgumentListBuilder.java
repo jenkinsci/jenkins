@@ -181,6 +181,10 @@ public class ArgumentListBuilder implements Serializable {
         return args;
     }
 
+    /**
+     * Just adds quotes around args containing spaces, but no other special characters,
+     * so this method should generally be used only for informational/logging purposes.
+     */
     public String toStringWithQuote() {
         StringBuilder buf = new StringBuilder();
         for (String arg : args) {
@@ -192,6 +196,65 @@ public class ArgumentListBuilder implements Serializable {
                 buf.append(arg);
         }
         return buf.toString();
+    }
+
+    /**
+     * Wrap command in a CMD.EXE call so we can return the exit code (ERRORLEVEL).
+     * This method takes care of escaping special characters in the command, which
+     * is needed since the command is now passed as a string to the CMD.EXE shell.
+     * This is done as follows:
+     * Wrap arguments in double quotes if they contain any of:
+     *   space *?;^&<>|" or % followed by a letter.
+     * <br/> These characters are also prepended with a ^ character: ^&<>|
+     * <br/> A " is prepended with another " character.
+     * <br/> A % followed by a letter has that letter wrapped in double quotes,
+     * to avoid possible variable expansion.  ie, %foo% becomes "%"f"oo%".
+     * The second % does not need special handling because it is not followed
+     * by a letter. <br/>
+     * Example: "-Dfoo=*abc?def;ghi^^jkl^&mno^<pqr^>stu^|vwx""yz%"e"nd"
+     * @return
+     */
+    public ArgumentListBuilder toWindowsCommand() {
+        StringBuilder quotedArgs = new StringBuilder();
+        boolean quoted, percent;
+        for (String arg : args) {
+            quoted = percent = false;
+            for (int i = 0; i < arg.length(); i++) {
+                char c = arg.charAt(i);
+                if (!quoted && (c == ' ' || c == '*' || c == '?' || c == ';')) {
+                    quoted = startQuoting(quotedArgs, arg, i);
+                }
+                else if (c == '^' || c == '&' || c == '<' || c == '>' || c == '|') {
+                    if (!quoted) quoted = startQuoting(quotedArgs, arg, i);
+                    quotedArgs.append('^');
+                }
+                else if (c == '"') {
+                    if (!quoted) quoted = startQuoting(quotedArgs, arg, i);
+                    quotedArgs.append('"');
+                }
+                else if (percent && ((c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z'))) {
+                    if (!quoted) quoted = startQuoting(quotedArgs, arg, i);
+                    quotedArgs.append('"').append(c);
+                    c = '"';
+                }
+                percent = (c == '%');
+                if (quoted) quotedArgs.append(c);
+            }
+            if (quoted) quotedArgs.append('"'); else quotedArgs.append(arg);
+            quotedArgs.append(' ');
+        }
+        // (comment copied from old code in hudson.tasks.Ant)
+        // on Windows, executing batch file can't return the correct error code,
+        // so we need to wrap it into cmd.exe.
+        // double %% is needed because we want ERRORLEVEL to be expanded after
+        // batch file executed, not before. This alone shows how broken Windows is...
+        quotedArgs.append("&& exit %%ERRORLEVEL%%");
+        return new ArgumentListBuilder().add("cmd.exe", "/C").addQuoted(quotedArgs.toString());
+    }
+
+    private static boolean startQuoting(StringBuilder buf, String arg, int atIndex) {
+        buf.append('"').append(arg.substring(0, atIndex));
+        return true;
     }
 
     /**

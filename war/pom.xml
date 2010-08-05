@@ -126,13 +126,13 @@ THE SOFTWARE.
                 <resolveArtifact artifactId="remoting" tofile="${basedir}/target/generated-resources/WEB-INF/remoting.jar" />
                 <resolveArtifact artifactId="remoting" tofile="${basedir}/target/generated-resources/WEB-INF/slave.jar" />
                 <resolveArtifact groupId="${project.groupId}" artifactId="cli" classifier="jar-with-dependencies" version="${project.version}" type="jar" tofile="${basedir}/target/generated-resources/WEB-INF/hudson-cli.jar" />
-                <resolveArtifact groupId="org.jvnet.hudson.winstone" artifactId="winstone" version="0.9.10-hudson-21" type="jar" tofile="${basedir}/target/generated-resources/winstone.jar" />
+                <resolveArtifact groupId="org.jvnet.hudson.winstone" artifactId="winstone" version="0.9.10-hudson-22" type="jar" tofile="${basedir}/target/generated-resources/winstone.jar" />
 
                 <!-- bundled plugins -->
                 <resolveArtifact type="hpi" groupId="${project.groupId}" artifactId="maven-plugin" version="${project.version}" tofile="${basedir}/target/generated-resources/WEB-INF/plugins/maven-plugin.hpi" />
-                <resolveArtifact type="hpi" groupId="org.jvnet.hudson.plugins" artifactId="ssh-slaves" version="0.10" tofile="${basedir}/target/generated-resources/WEB-INF/plugins/ssh-slaves.hpi" />
+                <resolveArtifact type="hpi" groupId="org.jvnet.hudson.plugins" artifactId="ssh-slaves" version="0.12" tofile="${basedir}/target/generated-resources/WEB-INF/plugins/ssh-slaves.hpi" />
                 <resolveArtifact type="hpi" groupId="org.jvnet.hudson.plugins" artifactId="subversion" version="1.17" tofile="${basedir}/target/generated-resources/WEB-INF/plugins/subversion.hpi" />
-                <resolveArtifact type="hpi" groupId="org.jvnet.hudson.plugins" artifactId="cvs" version="1.1" tofile="${basedir}/target/generated-resources/WEB-INF/plugins/cvs.hpi" />
+                <resolveArtifact type="hpi" groupId="org.jvnet.hudson.plugins" artifactId="cvs" version="1.2" tofile="${basedir}/target/generated-resources/WEB-INF/plugins/cvs.hpi" />
               </tasks>
             </configuration>
           </execution>

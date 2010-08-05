@@ -149,7 +149,7 @@ public abstract class BuildWrapper extends AbstractDescribableImpl<BuildWrapper>
      * such as the use of sudo/pfexec/chroot, or manipulating environment variables.
      *
      * <p>
-     * The default implementation is no-op, which just returns the {@code listener} parameter as-is.
+     * The default implementation is no-op, which just returns the {@code launcher} parameter as-is.
      *
      * @param build
      *      The build in progress for which this {@link BuildWrapper} is called. Never null.

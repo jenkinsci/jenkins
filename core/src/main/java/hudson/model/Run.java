@@ -100,6 +100,8 @@ import org.kohsuke.stapler.export.ExportedBean;
 
 import com.thoughtworks.xstream.XStream;
 
+import static java.util.logging.Level.FINE;
+
 /**
  * A particular execution of {@link Job}.
  *
@@ -293,16 +295,13 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
         // state can change only when we are building
         assert state==State.BUILDING;
 
-        StackTraceElement caller = findCaller(Thread.currentThread().getStackTrace(),"setResult");
-
-
         // result can only get worse
         if(result==null) {
             result = r;
-            LOGGER.fine(toString()+" : result is set to "+r+" by "+caller);
+            LOGGER.log(FINE, toString()+" : result is set to "+r,new Exception());
         } else {
             if(r.isWorseThan(result)) {
-                LOGGER.fine(toString()+" : result is set to "+r+" by "+caller);
+                LOGGER.log(FINE, toString()+" : result is set to "+r,new Exception());
                 result = r;
             }
         }
@@ -327,15 +326,6 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
         }
         if(r==null)     return Collections.emptyList();
         else            return r;
-    }
-
-    private StackTraceElement findCaller(StackTraceElement[] stackTrace, String callee) {
-        for(int i=0; i<stackTrace.length-1; i++) {
-            StackTraceElement e = stackTrace[i];
-            if(e.getMethodName().equals(callee))
-                return stackTrace[i+1];
-        }
-        return null; // not found
     }
 
     /**
@@ -1263,10 +1253,10 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
                     throw t;
                 } catch( AbortException e ) {// orderly abortion.
                     result = Result.FAILURE;
-                    LOGGER.log(Level.FINE, "Build "+this+" aborted",e);
+                    LOGGER.log(FINE, "Build "+this+" aborted",e);
                 } catch( RunnerAbortedException e ) {// orderly abortion.
                     result = Result.FAILURE;
-                    LOGGER.log(Level.FINE, "Build "+this+" aborted",e);
+                    LOGGER.log(FINE, "Build "+this+" aborted",e);
                 } catch( InterruptedException e) {
                     // aborted
                     result = Result.ABORTED;

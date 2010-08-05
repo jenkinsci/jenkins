@@ -455,15 +455,15 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable {
             if(!Modifier.isAbstract(m.getDeclaringClass().getModifiers())) {
                 // this class overrides newInstance(StaplerRequest).
                 // maintain the backward compatible behavior
-                return newInstance(req);
+                return verifyNewInstance(newInstance(req));
             } else {
                 if (req==null) {
                     // yes, req is supposed to be always non-null, but see the note above
-                    return clazz.newInstance();
+                    return verifyNewInstance(clazz.newInstance());
                 }
 
                 // new behavior as of 1.206
-                return req.bindJSON(clazz,formData);
+                return verifyNewInstance(req.bindJSON(clazz,formData));
             }
         } catch (NoSuchMethodException e) {
             throw new AssertionError(e); // impossible
@@ -472,6 +472,18 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable {
         } catch (IllegalAccessException e) {
             throw new Error(e);
         }
+    }
+
+    /**
+     * Look out for a typical error a plugin developer makes.
+     * See http://hudson.361315.n4.nabble.com/Help-Hint-needed-Post-build-action-doesn-t-stay-activated-td2308833.html
+     */
+    private T verifyNewInstance(T t) {
+        if (t!=null && t.getDescriptor()!=this) {
+            // TODO: should this be a fatal error?
+            LOGGER.warning("Father of "+ t+" and its getDescriptor() points to two different instances. Probably malplaced @Extension. See http://hudson.361315.n4.nabble.com/Help-Hint-needed-Post-build-action-doesn-t-stay-activated-td2308833.html");
+        }
+        return t;
     }
 
     /**

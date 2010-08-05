@@ -52,7 +52,7 @@ THE SOFTWARE.
         </dependency>
 
         <dependency>
-          <groupId>${groupId}</groupId>
+          <groupId>${project.groupId}</groupId>
           <artifactId>maven-agent</artifactId>
           <version>${project.version}</version>
         </dependency>

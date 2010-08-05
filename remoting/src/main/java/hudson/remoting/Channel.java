@@ -110,15 +110,17 @@ public class Channel implements VirtualChannel, IChannel {
     /*package*/ final ExecutorService executor;
 
     /**
-     * If true, the incoming link is already shut down,
-     * and reader is already terminated.
+     * If non-null, the incoming link is already shut down,
+     * and reader is already terminated. The {@link Throwable} object indicates why the outgoing channel
+     * was closed.
      */
-    private volatile boolean inClosed = false;
+    private volatile Throwable inClosed = null;
     /**
-     * If true, the outgoing link is already shut down,
-     * and no command can be sent.
+     * If non-null, the outgoing link is already shut down,
+     * and no command can be sent. The {@link Throwable} object indicates why the outgoing channel
+     * was closed.
      */
-    private volatile boolean outClosed = false;
+    private volatile Throwable outClosed = null;
 
     /*package*/ final Map<Integer,Request<?,?>> pendingCalls = new Hashtable<Integer,Request<?,?>>();
 
@@ -397,7 +399,7 @@ public class Channel implements VirtualChannel, IChannel {
     }
 
     /*package*/ boolean isOutClosed() {
-        return outClosed;
+        return outClosed!=null;
     }
 
     /**
@@ -408,8 +410,8 @@ public class Channel implements VirtualChannel, IChannel {
      * {@link Command}s are executed on a remote system in the order they are sent.
      */
     /*package*/ synchronized void send(Command cmd) throws IOException {
-        if(outClosed)
-            throw new ChannelClosedException();
+        if(outClosed!=null)
+            throw new ChannelClosedException(outClosed);
         if(logger.isLoggable(Level.FINE))
             logger.fine("Send "+cmd);
         Channel old = Channel.setCurrent(this);
@@ -593,9 +595,13 @@ public class Channel implements VirtualChannel, IChannel {
 
     /**
      * Aborts the connection in response to an error.
+     *
+     * @param e
+     *      The error that caused the connection to be aborted. Never null.
      */
     protected synchronized void terminate(IOException e) {
-        outClosed=inClosed=true;
+        if (e==null)    throw new IllegalArgumentException();
+        outClosed=inClosed=e;
         try {
             synchronized(pendingCalls) {
                 for (Request<?,?> req : pendingCalls.values())
@@ -646,7 +652,7 @@ public class Channel implements VirtualChannel, IChannel {
      *      If the current thread is interrupted while waiting for the completion.
      */
     public synchronized void join() throws InterruptedException {
-        while(!inClosed || !outClosed)
+        while(inClosed==null || outClosed==null)
             wait();
     }
 
@@ -655,7 +661,7 @@ public class Channel implements VirtualChannel, IChannel {
      * this method returns true.
      */
     /*package*/ boolean isInClosed() {
-        return inClosed;
+        return inClosed!=null;
     }
 
     /**
@@ -667,7 +673,7 @@ public class Channel implements VirtualChannel, IChannel {
      */
     public synchronized void join(long timeout) throws InterruptedException {
         long start = System.currentTimeMillis();
-        while(System.currentTimeMillis()-start<timeout && (!inClosed || !outClosed))
+        while(System.currentTimeMillis()-start<timeout && (inClosed==null || outClosed==null))
             wait(timeout+start-System.currentTimeMillis());
     }
 
@@ -721,10 +727,10 @@ public class Channel implements VirtualChannel, IChannel {
      * {@inheritDoc}
      */
     public synchronized void close() throws IOException {
-        if(outClosed)  return;  // already closed
+        if(outClosed!=null)  return;  // already closed
 
         send(new CloseCommand());
-        outClosed = true;   // last command sent. no further command allowed. lock guarantees that no command will slip inbetween
+        outClosed = new IOException();   // last command sent. no further command allowed. lock guarantees that no command will slip inbetween
         try {
             oos.close();
         } catch (IOException e) {
@@ -862,7 +868,7 @@ public class Channel implements VirtualChannel, IChannel {
         public void run() {
             Command cmd = null;
             try {
-                while(!inClosed) {
+                while(inClosed==null) {
                     try {
                         Channel old = Channel.setCurrent(Channel.this);
                         try {

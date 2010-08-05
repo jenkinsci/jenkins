@@ -1,7 +1,7 @@
 <!--
 The MIT License
 
-Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi
+Copyright (c) 2004-2010, Sun Microsystems, Inc., Kohsuke Kawaguchi
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -30,6 +30,9 @@ THE SOFTWARE.
   <l:side-panel>
     <l:tasks>
       <l:task icon="images/24x24/up.gif" href="${rootURL}/" title="${%Back to Dashboard}" />
+      <j:if test="${!empty(app.updateCenter.jobs)}">
+        <l:task icon="images/32x32/plugin.gif" href="${rootURL}/updateCenter/" title="${%Update Center}" />
+      </j:if>
     </l:tasks>
   </l:side-panel>
 </j:jelly>

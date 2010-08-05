@@ -187,22 +187,8 @@ public class Ant extends Builder {
         if(antOpts!=null)
             env.put("ANT_OPTS",env.expand(antOpts));
 
-        if(!launcher.isUnix()) {
-            // on Windows, executing batch file can't return the correct error code,
-            // so we need to wrap it into cmd.exe.
-            // double %% is needed because we want ERRORLEVEL to be expanded after
-            // batch file executed, not before. This alone shows how broken Windows is...
-            args.add("&&","exit","%%ERRORLEVEL%%");
-
-            // on Windows, proper double quote handling requires extra surrounding quote.
-            // so we need to convert the entire argument list once into a string,
-            // then build the new list so that by the time JVM invokes CreateProcess win32 API,
-            // it puts additional double-quote. See issue #1007
-            // the 'addQuoted' is necessary because Process implementation for Windows (at least in Sun JVM)
-            // is too clever to avoid putting a quote around it if the argument begins with "
-            // see "cmd /?" for more about how cmd.exe handles quotation.
-            args = new ArgumentListBuilder().add("cmd.exe","/C").addQuoted(args.toStringWithQuote());
-        }
+        if(!launcher.isUnix())
+            args = args.toWindowsCommand();
 
         long startTime = System.currentTimeMillis();
         try {
