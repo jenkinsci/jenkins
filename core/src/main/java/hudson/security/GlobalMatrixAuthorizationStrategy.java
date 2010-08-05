@@ -58,6 +58,9 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.io.IOException;
+import java.util.Collections;
+import java.util.SortedMap;
+import java.util.TreeMap;
 
 /**
  * Role-based authorization via a matrix.
@@ -197,9 +200,14 @@ public class GlobalMatrixAuthorizationStrategy extends AuthorizationStrategy {
         public void marshal(Object source, HierarchicalStreamWriter writer, MarshallingContext context) {
             GlobalMatrixAuthorizationStrategy strategy = (GlobalMatrixAuthorizationStrategy)source;
 
-            for (Entry<Permission, Set<String>> e : strategy.grantedPermissions.entrySet()) {
+            // Output in alphabetical order for readability.
+            SortedMap<Permission, Set<String>> sortedPermissions = new TreeMap<Permission, Set<String>>(Permission.ID_COMPARATOR);
+            sortedPermissions.putAll(strategy.grantedPermissions);
+            for (Entry<Permission, Set<String>> e : sortedPermissions.entrySet()) {
                 String p = e.getKey().getId();
-                for (String sid : e.getValue()) {
+                List<String> sids = new ArrayList<String>(e.getValue());
+                Collections.sort(sids);
+                for (String sid : sids) {
                     writer.startNode("permission");
                     writer.setValue(p+':'+sid);
                     writer.endNode();
