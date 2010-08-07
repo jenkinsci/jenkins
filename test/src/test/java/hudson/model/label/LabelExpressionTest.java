@@ -23,6 +23,7 @@
  */
 package hudson.model.label;
 
+import antlr.ANTLRException;
 import hudson.Launcher;
 import hudson.model.AbstractBuild;
 import hudson.model.BuildListener;
@@ -44,9 +45,9 @@ public class LabelExpressionTest extends HudsonTestCase {
      * Verifies the queueing behavior in the presence of the expression.
      */
     public void testQueueBehavior() throws Exception {
-        DumbSlave w32 = createSlave(hudson.getLabel("win 32bit"));
-        DumbSlave w64 = createSlave(hudson.getLabel("win 64bit"));
-        DumbSlave l32 = createSlave(hudson.getLabel("linux 32bit"));
+        DumbSlave w32 = createSlave("win 32bit",null);
+        DumbSlave w64 = createSlave("win 64bit",null);
+        DumbSlave l32 = createSlave("linux 32bit",null);
 
         final SequenceLock seq = new SequenceLock();
 
@@ -59,10 +60,10 @@ public class LabelExpressionTest extends HudsonTestCase {
                 return true;
             }
         });
-        p1.setAssignedLabel(hudson.getLabel("win&&32bit"));
+        p1.setAssignedLabel(hudson.getLabel("win & 32bit"));
 
         FreeStyleProject p2 = createFreeStyleProject();
-        p2.setAssignedLabel(hudson.getLabel("win&&32bit"));
+        p2.setAssignedLabel(hudson.getLabel("win & 32bit"));
 
         FreeStyleProject p3 = createFreeStyleProject();
         p3.setAssignedLabel(hudson.getLabel("win"));
@@ -87,5 +88,53 @@ public class LabelExpressionTest extends HudsonTestCase {
         // and so is p2
         FreeStyleBuild b2 = assertBuildStatusSuccess(f2);
         assertSame(w32,b2.getBuiltOn());
+    }
+
+    /**
+     * Tests the expression parser.
+     */
+    public void testParser() throws Exception {
+        parseAndVerify("foo", "foo");
+        parseAndVerify("32bit.dot", "32bit.dot");
+        parseAndVerify("foo|bar", "foo | bar");
+
+        // user-given parenthesis is preserved
+        parseAndVerify("foo|bar&zot", "foo|bar&zot");
+        parseAndVerify("foo|(bar&zot)", "foo|(bar&zot)");
+
+        parseAndVerify("(foo|bar)&zot", "(foo|bar)&zot");
+        parseAndVerify("foo->bar", "foo ->\tbar");
+        parseAndVerify("!foo<->bar", "!foo <-> bar");
+    }
+
+    private void parseAndVerify(String expected, String expr) throws ANTLRException {
+        assertEquals(expected, LabelExpression.parseExpression(expr).getName());
+    }
+
+    public void testParserError() throws Exception {
+        parseShouldFail("foo bar");
+        parseShouldFail("foo*bar");
+    }
+
+    /**
+     * The name should have parenthesis at the right place to preserve the tree structure.
+     */
+    public void testComposite() {
+        LabelAtom x = hudson.getLabelAtom("x");
+        assertEquals("!!x",x.not().not().getName());
+        assertEquals("(x|x)&x",x.or(x).and(x).getName());
+        assertEquals("x&x|x",x.and(x).or(x).getName());
+    }
+
+    private void parseShouldFail(String expr) {
+        try {
+            LabelExpression.parseExpression(expr);
+            fail();
+        } catch (ANTLRException e) {
+            // expected
+        }
+    }
+
+    public void testFormValidation() throws Exception {
     }
 }

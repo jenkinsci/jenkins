@@ -23,47 +23,21 @@
  */
 package hudson.model.label;
 
-import hudson.model.Hudson;
-import hudson.model.Label;
-import hudson.util.VariableResolver;
-
 /**
- * Atomic single token label, like "foo" or "bar".
- * 
+ * Precedence of the top most operator.
+ *
  * @author Kohsuke Kawaguchi
  * @since 1.COMPOSITELABEL
  */
-public class LabelAtom extends Label {
-    public LabelAtom(String name) {
-        super(name);
-    }
-
-    @Override
-    public boolean matches(VariableResolver<Boolean> resolver) {
-        return resolver.resolve(name);
-    }
-
-    @Override
-    public LabelOperatorPrecedence precedence() {
-        return LabelOperatorPrecedence.ATOM;
-    }
+public enum LabelOperatorPrecedence {
+    ATOM(null), NOT("!"), AND("&"), OR("|"), IMPLIES("->"), IFF("<->");
 
     /**
-     * Obtains an atom by its {@linkplain #getName() name}.
+     * String representation of this operator.
      */
-    public static LabelAtom get(String l) {
-        return Hudson.getInstance().getLabelAtom(l);
-    }
+    public final String str;
 
-    public static boolean isValidName(String name) {
-        for (int i=name.length()-1; i>=0; i--) {
-            char ch = name.charAt(i);
-            if (Character.isJavaIdentifierPart(ch))
-                continue;
-            if (ch=='.')
-                continue;
-            return false;
-        }
-        return true;
+    LabelOperatorPrecedence(String str) {
+        this.str = str;
     }
 }

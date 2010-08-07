@@ -23,17 +23,22 @@
  */
 package hudson.model;
 
+import antlr.ANTLRException;
 import hudson.Util;
 import static hudson.Util.fixNull;
 
 import hudson.model.label.LabelAtom;
 import hudson.model.label.LabelExpression;
+import hudson.model.label.LabelExpressionLexer;
+import hudson.model.label.LabelExpressionParser;
+import hudson.model.label.LabelOperatorPrecedence;
 import hudson.slaves.NodeProvisioner;
 import hudson.slaves.Cloud;
 import hudson.util.VariableResolver;
 import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.export.ExportedBean;
 
+import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
@@ -326,6 +331,56 @@ public abstract class Label implements Comparable<Label>, ModelObject {
         return new Api(this);
     }
 
+    /**
+     * Returns the label that represents "this&amp;rhs"
+     */
+    public Label and(Label rhs) {
+        return new LabelExpression.And(this,rhs);
+    }
+
+    /**
+     * Returns the label that represents "this|rhs"
+     */
+    public Label or(Label rhs) {
+        return new LabelExpression.Or(this,rhs);
+    }
+
+    /**
+     * Returns the label that represents "this&lt;->rhs"
+     */
+    public Label iff(Label rhs) {
+        return new LabelExpression.Iff(this,rhs);
+    }
+
+    /**
+     * Returns the label that represents "this->rhs"
+     */
+    public Label implies(Label rhs) {
+        return new LabelExpression.Implies(this,rhs);
+    }
+
+    /**
+     * Returns the label that represents "!this"
+     */
+    public Label not() {
+        return new LabelExpression.Not(this);
+    }
+
+    /**
+     * Returns the label that represents "(this)"
+     * This is a pointless operation for machines, but useful
+     * for humans who find the additional parenthesis often useful
+     */
+    public Label paren() {
+        return new LabelExpression.Paren(this);
+    }
+
+    /**
+     * Precedence of the top most operator.
+     */
+    public abstract LabelOperatorPrecedence precedence();
+
+
     @Override
     public boolean equals(Object that) {
         if (this == that) return true;
@@ -398,14 +453,8 @@ public abstract class Label implements Comparable<Label>, ModelObject {
      *
      * TODO: replace this with a real parser later
      */
-    public static Label parseExpression(String labelExpression)  {
-        Label l = null;
-        for (String atom : labelExpression.split("&&")) {
-            atom = atom.trim();
-            Label r = new LabelAtom(atom);
-            if (l==null)    l = r;
-            else            l = new LabelExpression.And(l,r);
-        }
-        return l;
+    public static Label parseExpression(String labelExpression) throws ANTLRException {
+        LabelExpressionLexer lexer = new LabelExpressionLexer(new StringReader(labelExpression));
+        return new LabelExpressionParser(lexer).expr();
     }
 }

@@ -111,9 +111,9 @@ THE SOFTWARE.
         </executions>
       </plugin>
       <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-antlr-plugin</artifactId>
-        <version>2.0-beta-1</version>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>antlr-maven-plugin</artifactId>
+        <version>2.1</version>
         <executions>
           <execution>
             <id>cron</id>

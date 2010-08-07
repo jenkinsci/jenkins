@@ -507,7 +507,7 @@ public abstract class HudsonTestCase extends TestCase implements RootAction {
     }
 
     public DumbSlave createSlave() throws Exception {
-        return createSlave(null);
+        return createSlave("",null);
     }
 
     /**
@@ -549,17 +549,25 @@ public abstract class HudsonTestCase extends TestCase implements RootAction {
         return new URL("http://localhost:"+localPort+contextPath+"/");
     }
 
+    public DumbSlave createSlave(EnvVars env) throws Exception {
+        return createSlave("",env);
+    }
+
+    public DumbSlave createSlave(Label l, EnvVars env) throws Exception {
+        return createSlave(l.getName(), null);
+    }
+
     /**
      * Creates a slave with certain additional environment variables
      */
-    public DumbSlave createSlave(Label l, EnvVars env) throws Exception {
+    public DumbSlave createSlave(String labels, EnvVars env) throws Exception {
         synchronized (hudson) {
             // this synchronization block is so that we don't end up adding the same slave name more than once.
 
             int sz = hudson.getNodes().size();
 
             DumbSlave slave = new DumbSlave("slave" + sz, "dummy",
-    				createTmpDir().getPath(), "1", Mode.NORMAL, l==null?"":l.getName(), createComputerLauncher(env), RetentionStrategy.NOOP, Collections.EMPTY_LIST);
+    				createTmpDir().getPath(), "1", Mode.NORMAL, labels==null?"":labels, createComputerLauncher(env), RetentionStrategy.NOOP, Collections.EMPTY_LIST);
     		hudson.addNode(slave);
     		return slave;
     	}

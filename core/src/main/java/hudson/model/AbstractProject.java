@@ -23,6 +23,7 @@
  */
 package hudson.model;
 
+import antlr.ANTLRException;
 import hudson.AbortException;
 import hudson.CopyOnWrite;
 import hudson.FeedAdapter;
@@ -1678,7 +1679,12 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
         }
 
         public FormValidation doCheckAssignedLabelString(@QueryParameter String value) {
-            // TODO: we can do a lot better than this
+            try {
+                Label.parseExpression(value);
+            } catch (ANTLRException e) {
+                return FormValidation.error(e,"Invalid boolean expression");
+            }
+            // TODO: if there's an atom in the expression that is empty, report it
             if (Hudson.getInstance().getLabel(value).isEmpty())
                 return FormValidation.warning("There's no slave/cloud that matches this assignment");
             return FormValidation.ok();

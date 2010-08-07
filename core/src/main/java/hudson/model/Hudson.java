@@ -25,6 +25,7 @@
  */
 package hudson.model;
 
+import antlr.ANTLRException;
 import com.thoughtworks.xstream.XStream;
 import hudson.BulkChange;
 import hudson.DNSMultiCast;
@@ -1373,7 +1374,11 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
                 return l;
 
             // non-existent
-            labels.putIfAbsent(expr,Label.parseExpression(expr));
+            try {
+                labels.putIfAbsent(expr,Label.parseExpression(expr));
+            } catch (ANTLRException e) {
+                throw new IllegalArgumentException("Invalid label expression: "+expr,e);
+            }
         }
     }
 
@@ -1381,11 +1386,18 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
      * Returns the label atom of the given name.
      */
     public LabelAtom getLabelAtom(String name) {
-        if(name==null)  return null;
-        Label l = getLabel(name);
-        if (l instanceof LabelAtom)
-            return (LabelAtom)l;
-        return null;
+        if (name==null)  return null;
+        if (!LabelAtom.isValidName(name))
+            throw new IllegalArgumentException("Illegal character in a token: "+name);
+
+        while(true) {
+            Label l = labels.get(name);
+            if(l!=null)
+                return (LabelAtom)l;
+
+            // non-existent
+            labels.putIfAbsent(name,new LabelAtom(name));
+        }
     }
 
     /**
