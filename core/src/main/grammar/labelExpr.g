@@ -21,32 +21,50 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package hudson.model.label;
-
-import hudson.model.Hudson;
-import hudson.model.Label;
-import hudson.util.VariableResolver;
-
-/**
- * Atomic single token label, like "foo" or "bar".
- * 
- * @author Kohsuke Kawaguchi
- * @since 1.COMPOSITELABEL
- */
-public class LabelAtom extends Label {
-    public LabelAtom(String name) {
-        super(name);
-    }
-
-    @Override
-    public boolean matches(VariableResolver<Boolean> resolver) {
-        return resolver.resolve(name);
-    }
-
-    /**
-     * Obtains an atom by its {@linkplain #getName() name}.
-     */
-    public static LabelAtom get(String l) {
-        return Hudson.getInstance().getLabelAtom(l);
-    }
+header {
+  package hudson.model.label;
+  import hudson.model.Label;
 }
+
+class LabelExpressionParser extends Parser;
+options {
+  defaultErrorHandler=false;
+}
+
+expr
+returns [Label l]
+  : l=term1
+  | x=term1 IFF y=term1 EOF
+    { l=x.iff(y); }
+  ;
+
+term1
+returns [Label l]
+  : l=term2
+  | x=term2 AND y=term2 EOF
+    { l=x.and(y); }
+  ;
+
+term2
+returns [Label l]
+  : LPAREN l=expr RPAREN
+  | a:ATOM
+    { l=LabelAtom.get(a.getText()); }
+  ;
+
+class LabelExpressionLexer extends Lexer;
+
+AND:    "&&";
+OR:     "||";
+IFF:    "<->";
+LPAREN: "(";
+RPAREN: ")";
+
+ATOM
+    :   ('0'..'9'|'a'..'z'|'A'..'Z')+
+    ;
+
+
+WS
+  : (' '|'\t')+
+  ;
