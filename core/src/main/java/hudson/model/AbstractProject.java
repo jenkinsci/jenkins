@@ -32,35 +32,31 @@ import hudson.Util;
 import hudson.cli.declarative.CLIMethod;
 import hudson.cli.declarative.CLIResolver;
 import hudson.diagnosis.OldDataMonitor;
-import hudson.slaves.WorkspaceList;
 import hudson.model.Cause.LegacyCodeCause;
-import hudson.model.Cause.UserCause;
 import hudson.model.Cause.RemoteCause;
+import hudson.model.Cause.UserCause;
 import hudson.model.Descriptor.FormException;
 import hudson.model.Fingerprint.RangeSet;
-import hudson.model.RunMap.Constructor;
-import hudson.model.Queue.WaitingItem;
 import hudson.model.Queue.Executable;
+import hudson.model.Queue.WaitingItem;
+import hudson.model.RunMap.Constructor;
 import hudson.model.queue.CauseOfBlockage;
 import hudson.scm.ChangeLogSet;
 import hudson.scm.ChangeLogSet.Entry;
 import hudson.scm.NullSCM;
-import hudson.scm.SCM;
-import hudson.scm.SCMS;
 import hudson.scm.PollingResult;
+import hudson.scm.SCM;
 import hudson.scm.SCMRevisionState;
-import static hudson.scm.PollingResult.NO_CHANGES;
-import static hudson.scm.PollingResult.BUILD_NOW;
-import static javax.servlet.http.HttpServletResponse.SC_INTERNAL_SERVER_ERROR;
-
+import hudson.scm.SCMS;
 import hudson.search.SearchIndexBuilder;
 import hudson.security.Permission;
+import hudson.slaves.WorkspaceList;
 import hudson.tasks.BuildStep;
+import hudson.tasks.BuildStepDescriptor;
 import hudson.tasks.BuildTrigger;
+import hudson.tasks.BuildWrapperDescriptor;
 import hudson.tasks.Mailer;
 import hudson.tasks.Publisher;
-import hudson.tasks.BuildStepDescriptor;
-import hudson.tasks.BuildWrapperDescriptor;
 import hudson.triggers.SCMTrigger;
 import hudson.triggers.Trigger;
 import hudson.triggers.TriggerDescriptor;
@@ -72,14 +68,14 @@ import hudson.widgets.HistoryWidget;
 import net.sf.json.JSONObject;
 import org.kohsuke.args4j.Argument;
 import org.kohsuke.args4j.CmdLineException;
+import org.kohsuke.stapler.ForwardToView;
+import org.kohsuke.stapler.HttpRedirect;
+import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.HttpResponses;
+import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 import org.kohsuke.stapler.export.Exported;
-import org.kohsuke.stapler.QueryParameter;
-import org.kohsuke.stapler.HttpResponse;
-import org.kohsuke.stapler.HttpRedirect;
-import org.kohsuke.stapler.ForwardToView;
 
 import javax.servlet.ServletException;
 import java.io.File;
@@ -101,6 +97,9 @@ import java.util.Vector;
 import java.util.concurrent.Future;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import static hudson.scm.PollingResult.*;
+import static javax.servlet.http.HttpServletResponse.*;
 
 /**
  * Base implementation of {@link Job}s that build software.
@@ -284,6 +283,14 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
         if(assignedNode==null)
             return Hudson.getInstance().getSelfLabel();
         return Hudson.getInstance().getLabel(assignedNode);
+    }
+
+    /**
+     * Gets the textual representation of the assigned label as it was entered by the user.
+     */
+    public String getAssignedLabelString() {
+        if (canRoam)    return null;
+        return assignedNode;
     }
 
     /**
@@ -1488,11 +1495,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
 
         if(req.getParameter("hasSlaveAffinity")!=null) {
             canRoam = false;
-            assignedNode = req.getParameter("slave");
-            if(assignedNode !=null) {
-                if(Hudson.getInstance().getLabel(assignedNode).isEmpty())
-                    assignedNode = null;   // no such label
-            }
+            assignedNode = req.getParameter("_.assignedLabelString");
         } else {
             canRoam = true;
             assignedNode = null;
@@ -1672,6 +1675,13 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
         @Override
         public boolean isApplicable(Descriptor descriptor) {
             return true;
+        }
+
+        public FormValidation doCheckAssignedLabelString(@QueryParameter String value) {
+            // TODO: we can do a lot better than this
+            if (Hudson.getInstance().getLabel(value).isEmpty())
+                return FormValidation.warning("There's no slave/cloud that matches this assignment");
+            return FormValidation.ok();
         }
     }
 

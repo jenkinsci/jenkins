@@ -55,6 +55,18 @@ THE SOFTWARE.
         </executions>
       </plugin>
       <plugin>
+        <groupId>com.infradna.tool</groupId>
+        <artifactId>bridge-method-injector</artifactId>
+        <version>1.0</version>
+        <executions>
+          <execution>
+            <goals>
+              <goal>process</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
         <groupId>org.kohsuke.stapler</groupId>
         <artifactId>maven-stapler-plugin</artifactId>
         <extensions>true</extensions>
@@ -378,6 +390,13 @@ THE SOFTWARE.
       <version>1.0</version>
       <classifier>tests</classifier>
       <scope>test</scope>
+    </dependency>
+
+    <dependency><!-- compile-time only dependency to generate synthetic methods -->
+      <groupId>com.infradna.tool</groupId>
+      <artifactId>bridge-method-injector</artifactId>
+      <version>1.0</version>
+      <optional>true</optional>
     </dependency>
 
     <dependency><!-- until we get this version through Stapler -->

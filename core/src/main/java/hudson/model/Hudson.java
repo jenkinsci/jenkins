@@ -66,6 +66,7 @@ import hudson.lifecycle.Lifecycle;
 import hudson.logging.LogRecorderManager;
 import hudson.lifecycle.RestartNotSupportedException;
 import hudson.model.Descriptor.FormException;
+import hudson.model.label.LabelAtom;
 import hudson.model.listeners.ItemListener;
 import hudson.model.listeners.SCMListener;
 import hudson.model.listeners.SaveableListener;
@@ -1357,22 +1358,34 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
         return new ComputerSet();
     }
 
+
     /**
      * Gets the label that exists on this system by the name.
      *
-     * @return null if no name is null.
-     * @see Label#parse(String)
+     * @return null if name is null.
+     * @see Label#parseExpression(String) (String)
      */
-    public Label getLabel(String name) {
-        if(name==null)  return null;
+    public Label getLabel(String expr) {
+        if(expr==null)  return null;
         while(true) {
-            Label l = labels.get(name);
+            Label l = labels.get(expr);
             if(l!=null)
                 return l;
 
             // non-existent
-            labels.putIfAbsent(name,new Label(name));
+            labels.putIfAbsent(expr,Label.parseExpression(expr));
         }
+    }
+
+    /**
+     * Returns the label atom of the given name.
+     */
+    public LabelAtom getLabelAtom(String name) {
+        if(name==null)  return null;
+        Label l = getLabel(name);
+        if (l instanceof LabelAtom)
+            return (LabelAtom)l;
+        return null;
     }
 
     /**
@@ -1383,6 +1396,15 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
         for (Label l : labels.values()) {
             if(!l.isEmpty())
                 r.add(l);
+        }
+        return r;
+    }
+
+    public Set<LabelAtom> getLabelAtoms() {
+        Set<LabelAtom> r = new TreeSet<LabelAtom>();
+        for (Label l : labels.values()) {
+            if(!l.isEmpty() && l instanceof LabelAtom)
+                r.add((LabelAtom)l);
         }
         return r;
     }
@@ -2087,8 +2109,8 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
     }
 
     @Override
-    public Label getSelfLabel() {
-        return getLabel("master");
+    public LabelAtom getSelfLabel() {
+        return getLabelAtom("master");
     }
 
     public Computer createComputer() {

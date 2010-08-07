@@ -26,6 +26,7 @@ package hudson.model;
 import hudson.Extension;
 import hudson.ExtensionList;
 import hudson.ExtensionPoint;
+import hudson.model.label.LabelAtom;
 
 import java.util.Collection;
 
@@ -56,5 +57,5 @@ public abstract class LabelFinder implements ExtensionPoint {
      * @return
      *      A set of labels for the node. Can be empty but never null.
      */
-    public abstract Collection<Label> findLabels(Node node);
+    public abstract Collection<LabelAtom> findLabels(Node node);
 }

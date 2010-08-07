@@ -49,15 +49,8 @@ THE SOFTWARE.
   <j:if test="${app.labels.size() gt 1 || (it.assignedLabel!=null and it.assignedLabel!=app.selfLabel)}">
     <f:optionalBlock name="hasSlaveAffinity" title="${%Tie this project to a node}" checked="${it.assignedLabel!=null}"
         help="/help/project-config/slave.html">
-      <f:entry title="${%Node}">
-        <select class="setting-input" name="slave">
-          <j:forEach var="s" items="${app.labels}">
-            <j:if test="${s.isAssignable()}">
-              <f:option selected="${s==it.assignedLabel}" value="${s.name}"
-                >${s.name} <j:if test="${!empty(s.description)}">(${s.description})</j:if></f:option>
-            </j:if>
-          </j:forEach>
-        </select>
+      <f:entry title="${%Node}" field="assignedLabelString">
+        <f:textbox />
       </f:entry>
     </f:optionalBlock>
   </j:if>

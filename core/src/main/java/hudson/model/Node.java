@@ -23,11 +23,13 @@
  */
 package hudson.model;
 
+import com.infradna.tool.bridge_method_injector.WithBridgeMethods;
 import hudson.ExtensionPoint;
 import hudson.FilePath;
 import hudson.FileSystemProvisioner;
 import hudson.Launcher;
 import hudson.model.Queue.Task;
+import hudson.model.label.LabelAtom;
 import hudson.model.queue.CauseOfBlockage;
 import hudson.node_monitors.NodeMonitor;
 import hudson.remoting.VirtualChannel;
@@ -165,9 +167,9 @@ public abstract class Node extends AbstractModelObject implements Describable<No
     /**
      * Return the possibly empty tag cloud for the labels of this node.
      */
-    public TagCloud<Label> getLabelCloud() {
-        return new TagCloud<Label>(getAssignedLabels(),new WeightFunction<Label>() {
-            public float weight(Label item) {
+    public TagCloud<LabelAtom> getLabelCloud() {
+        return new TagCloud<LabelAtom>(getAssignedLabels(),new WeightFunction<LabelAtom>() {
+            public float weight(LabelAtom item) {
                 return item.getTiedJobs().size();
             }
         });
@@ -183,8 +185,8 @@ public abstract class Node extends AbstractModelObject implements Describable<No
      * connecting.
      */
     @Exported
-    public Set<Label> getAssignedLabels() {
-         Set<Label> r = Label.parse(getLabelString());
+    public Set<LabelAtom> getAssignedLabels() {
+        Set<LabelAtom> r = Label.parse(getLabelString());
         r.add(getSelfLabel());
         r.addAll(getDynamicLabels());
         return Collections.unmodifiableSet(r);
@@ -196,12 +198,14 @@ public abstract class Node extends AbstractModelObject implements Describable<No
      * the results into Labels.
      * @return HashSet<Label>.
      */
-    private final HashSet<Label> getDynamicLabels() {
-        HashSet<Label> result = new HashSet<Label>();
-        for (LabelFinder labeler : LabelFinder.all())
+    private HashSet<LabelAtom> getDynamicLabels() {
+        HashSet<LabelAtom> result = new HashSet<LabelAtom>();
+        for (LabelFinder labeler : LabelFinder.all()) {
             // Filter out any bad(null) results from plugins
+            // for compatibility reasons, findLabels may return LabelExpression and not atom.
             for (Label label : labeler.findLabels(this))
-                if (label != null) result.add(label);
+                if (label instanceof LabelAtom) result.add((LabelAtom)label);
+        }
         return result;
     }
 
@@ -219,8 +223,9 @@ public abstract class Node extends AbstractModelObject implements Describable<No
     /**
      * Gets the special label that represents this node itself.
      */
-    public Label getSelfLabel() {
-        return Label.get(getNodeName());
+    @WithBridgeMethods(Label.class)
+    public LabelAtom getSelfLabel() {
+        return LabelAtom.get(getNodeName());
     }
 
     /**
