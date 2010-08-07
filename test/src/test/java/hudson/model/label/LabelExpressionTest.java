@@ -47,7 +47,7 @@ public class LabelExpressionTest extends HudsonTestCase {
     public void testQueueBehavior() throws Exception {
         DumbSlave w32 = createSlave("win 32bit",null);
         DumbSlave w64 = createSlave("win 64bit",null);
-        DumbSlave l32 = createSlave("linux 32bit",null);
+        createSlave("linux 32bit",null);
 
         final SequenceLock seq = new SequenceLock();
 
@@ -88,6 +88,28 @@ public class LabelExpressionTest extends HudsonTestCase {
         // and so is p2
         FreeStyleBuild b2 = assertBuildStatusSuccess(f2);
         assertSame(w32,b2.getBuiltOn());
+    }
+
+    /**
+     * Push the build around to different nodes via the assignment
+     * to make sure it gets where we need it to.
+     */
+    public void testQueueBehavior2() throws Exception {
+        DumbSlave s = createSlave("win",null);
+
+        FreeStyleProject p = createFreeStyleProject();
+
+        p.setAssignedLabel(hudson.getLabel("!win"));
+        FreeStyleBuild b = assertBuildStatusSuccess(p.scheduleBuild2(0));
+        assertSame(hudson,b.getBuiltOn());
+
+        p.setAssignedLabel(hudson.getLabel("win"));
+        b = assertBuildStatusSuccess(p.scheduleBuild2(0));
+        assertSame(s,b.getBuiltOn());
+
+        p.setAssignedLabel(hudson.getLabel("!win"));
+        b = assertBuildStatusSuccess(p.scheduleBuild2(0));
+        assertSame(hudson,b.getBuiltOn());
     }
 
     /**
