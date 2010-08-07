@@ -1495,12 +1495,11 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
         blockBuildWhenUpstreamBuilding = req.getParameter("blockBuildWhenUpstreamBuilding")!=null;
 
         if(req.getParameter("hasSlaveAffinity")!=null) {
-            canRoam = false;
-            assignedNode = req.getParameter("_.assignedLabelString");
+            assignedNode = Util.fixEmptyAndTrim(req.getParameter("_.assignedLabelString"));
         } else {
-            canRoam = true;
             assignedNode = null;
         }
+        canRoam = assignedNode==null;
 
         concurrentBuild = req.getSubmittedForm().has("concurrentBuild");
 
@@ -1679,10 +1678,12 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
         }
 
         public FormValidation doCheckAssignedLabelString(@QueryParameter String value) {
+            if (Util.fixEmpty(value)==null)
+                return FormValidation.ok(); // nothing typed yet
             try {
                 Label.parseExpression(value);
             } catch (ANTLRException e) {
-                return FormValidation.error(e,"Invalid boolean expression");
+                return FormValidation.error(e,"Invalid boolean expression: "+e.getMessage());
             }
             // TODO: if there's an atom in the expression that is empty, report it
             if (Hudson.getInstance().getLabel(value).isEmpty())

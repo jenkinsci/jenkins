@@ -1,0 +1,46 @@
+<div>
+    If you want to always run this project on a specific node/slave, just specify its name.
+    This works well when you have a small number of nodes.
+
+    <p>
+    As the size of the cluster grows, it becomes useful not to tie projects to specific slaves,
+    as it hurts resource utilization when slaves may come and go. For such situation, assign labels
+    to slaves to classify their capabilities and characteristics, and specify a boolean expression
+    over those labels to decide where to run.
+
+    <h3>Valid Operators</h3>
+    <p>
+    The following operators are supported, in the order of precedence.
+    An expression can contain whitespace for better readability, and it'll be ignored.
+    <dl>
+        <dt>(expr)</dt>
+        <dd>parenthesis</dd>
+
+        <dt>!expr</dt>
+        <dd>negation</dd>
+    
+        <dt>expr&expr</dt>
+        <dd>
+            and
+        </dd>
+
+        <dt>expr|expr</dt>
+        <dd>
+            or
+        </dd>
+
+        <dt>a -> b</dt>
+        <dd>
+            "implies" operator. Equivalent to <tt>!a|b</tt>.
+            For example, <tt>windows->x64</tt> could be thought of as "if run on a Windows slave,
+            that slave must be 64bit." It still allows Hudson to run this build on linux.
+        </dd>
+
+        <dt>a &lt;-> b</dt>
+        <dd>
+            "if and only if" operator. Equivalent to <tt>a&b |!a&!b</tt>.
+            For example, <tt>windows->sfbay</tt> could be thought of as "if run on a Windows slave,
+            that slave must be in the SF bay area, but if not on Windows, it must not be in the bay area."
+        </dd>
+    </dl>
+</div>
