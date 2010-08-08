@@ -1,7 +1,9 @@
 /*
  * The MIT License
  * 
- * Copyright (c) 2004-2010, Sun Microsystems, Inc., Kohsuke Kawaguchi, Brian Westrich, Erik Ramfelt, Ertan Deniz, Jean-Baptiste Quenot, Luca Domenico Milanesio, R. Tyler Ballance, Stephen Connolly, Tom Huybrechts, id:cactusman
+ * Copyright (c) 2004-2010, Sun Microsystems, Inc., Kohsuke Kawaguchi,
+ * Brian Westrich, Erik Ramfelt, Ertan Deniz, Jean-Baptiste Quenot,
+ * Luca Domenico Milanesio, R. Tyler Ballance, Stephen Connolly, Tom Huybrechts, id:cactusman
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -503,12 +505,10 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
         save();
     }
 
-    @CLIMethod(name="disable-job")
     public void disable() throws IOException {
         makeDisabled(true);
     }
 
-    @CLIMethod(name="enable-job")
     public void enable() throws IOException {
         makeDisabled(false);
     }
@@ -1572,6 +1572,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
         }
     }
 
+    @CLIMethod(name="disable-job")
     public HttpResponse doDisable() throws IOException, ServletException {
         requirePOST();
         checkPermission(CONFIGURE);
@@ -1579,6 +1580,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
         return new HttpRedirect(".");
     }
 
+    @CLIMethod(name="enable-job")
     public HttpResponse doEnable() throws IOException, ServletException {
         requirePOST();
         checkPermission(CONFIGURE);

@@ -1,7 +1,7 @@
 /*
  * The MIT License
  *
- * Copyright (c) 2004-2009, Sun Microsystems, Inc.
+ * Copyright (c) 2004-2010, Sun Microsystems, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -28,7 +28,6 @@ import hudson.model.Hudson;
 import hudson.remoting.ChannelClosedException;
 import groovy.lang.Binding;
 import groovy.lang.Closure;
-import org.acegisecurity.Authentication;
 import org.codehaus.groovy.tools.shell.Groovysh;
 import org.codehaus.groovy.tools.shell.IO;
 import org.codehaus.groovy.tools.shell.Shell;
@@ -60,6 +59,8 @@ public class GroovyshCommand extends CLICommand {
     public int main(List<String> args, Locale locale, InputStream stdin, PrintStream stdout, PrintStream stderr) {
         // this allows the caller to manipulate the JVM state, so require the admin privilege.
         Hudson.getInstance().checkPermission(Hudson.ADMINISTER);
+        // TODO: ^as this class overrides main() (which has authentication stuff),
+        // how to get ADMIN permission for this command?
 
         // this being remote means no jline capability is available
         System.setProperty("jline.terminal", UnsupportedTerminal.class.getName());

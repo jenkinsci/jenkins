@@ -1,7 +1,8 @@
 /*
  * The MIT License
  * 
- * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, Daniel Dyer, Tom Huybrechts
+ * Copyright (c) 2004-2010, Sun Microsystems, Inc., Kohsuke Kawaguchi,
+ * Daniel Dyer, Tom Huybrechts
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -243,11 +244,13 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
     /**
      * Deletes this item.
      */
+    @CLIMethod(name="delete-job")
     public void doDoDelete( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException, InterruptedException {
         checkPermission(DELETE);
         requirePOST();
         delete();
-        rsp.sendRedirect2(req.getContextPath()+"/"+getParent().getUrl());
+        if (rsp != null) // null for CLI
+            rsp.sendRedirect2(req.getContextPath()+"/"+getParent().getUrl());
     }
 
     public void delete( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
@@ -262,7 +265,6 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
     /**
      * Deletes this item.
      */
-    @CLIMethod(name="delete-job")
     public synchronized void delete() throws IOException, InterruptedException {
         performDelete();
 

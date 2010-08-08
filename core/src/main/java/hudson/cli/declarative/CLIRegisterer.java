@@ -1,7 +1,7 @@
 /*
  * The MIT License
  *
- * Copyright (c) 2004-2009, Sun Microsystems, Inc.
+ * Copyright (c) 2004-2010, Sun Microsystems, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -149,6 +149,7 @@ public class CLIRegisterer extends ExtensionFinder {
                                     parser.parseArgument(args);
 
                                     sc.setAuthentication(authenticator.authenticate()); // run the CLI with the right credential
+                                    hudson.checkPermission(Hudson.READ);
 
                                     // resolve them
                                     Object instance = null;

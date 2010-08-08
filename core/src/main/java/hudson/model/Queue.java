@@ -335,6 +335,7 @@ public class Queue extends ResourceController implements Saveable {
      */
     @CLIMethod(name="clear-queue")
     public synchronized void clear() {
+        Hudson.getInstance().checkPermission(Hudson.ADMINISTER);
         for (WaitingItem i : waitingList)
             i.onCancelled();
         waitingList.clear();

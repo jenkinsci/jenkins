@@ -1553,8 +1553,6 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
     }
 
     public void doToggleLogKeep( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
-        checkPermission(UPDATE);
-
         keepLog(!keepLog);
         rsp.forwardToPreviousPage(req);
     }
@@ -1568,6 +1566,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
     }
 
     public void keepLog(boolean newValue) throws IOException {
+        checkPermission(UPDATE);
         keepLog = newValue;
         save();
     }

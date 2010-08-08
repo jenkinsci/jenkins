@@ -1,7 +1,8 @@
 /*
  * The MIT License
  * 
- * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, Red Hat, Inc., Seiji Sogabe, Stephen Connolly, Thomas J. Black, Tom Huybrechts
+ * Copyright (c) 2004-2010, Sun Microsystems, Inc., Kohsuke Kawaguchi,
+ * Red Hat, Inc., Seiji Sogabe, Stephen Connolly, Thomas J. Black, Tom Huybrechts
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -281,6 +282,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
      */
     @CLIMethod(name="connect-node")
     public void cliConnect(@Option(name="-f",usage="Cancel any currently pending connect operation and retry from scratch") boolean force) throws ExecutionException, InterruptedException {
+        checkPermission(Hudson.ADMINISTER);
         connect(force).get();
     }
 
@@ -336,6 +338,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
      */
     @CLIMethod(name="disconnect-node")
     public void cliDisconnect(@Option(name="-m",usage="Record the note about why you are disconnecting this node") String cause) throws ExecutionException, InterruptedException {
+        checkPermission(Hudson.ADMINISTER);
         disconnect(new ByCLI(cause)).get();
     }
 
@@ -344,11 +347,13 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
      */
     @CLIMethod(name="offline-node")
     public void cliOffline(@Option(name="-m",usage="Record the note about why you are disconnecting this node") String cause) throws ExecutionException, InterruptedException {
+        checkPermission(Hudson.ADMINISTER);
         setTemporarilyOffline(true,new ByCLI(cause));
     }
 
     @CLIMethod(name="online-node")
     public void cliOnline() throws ExecutionException, InterruptedException {
+        checkPermission(Hudson.ADMINISTER);
         setTemporarilyOffline(false,null);
     }
 
