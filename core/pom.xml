@@ -57,7 +57,7 @@ THE SOFTWARE.
       <plugin>
         <groupId>com.infradna.tool</groupId>
         <artifactId>bridge-method-injector</artifactId>
-        <version>1.0</version>
+        <version>1.2</version>
         <executions>
           <execution>
             <goals>
@@ -403,11 +403,10 @@ THE SOFTWARE.
       <scope>test</scope>
     </dependency>
 
-    <dependency><!-- compile-time only dependency to generate synthetic methods -->
+    <dependency>
       <groupId>com.infradna.tool</groupId>
-      <artifactId>bridge-method-injector</artifactId>
-      <version>1.0</version>
-      <optional>true</optional>
+      <artifactId>bridge-method-annotation</artifactId>
+      <version>1.2</version>
     </dependency>
 
     <dependency><!-- until we get this version through Stapler -->
