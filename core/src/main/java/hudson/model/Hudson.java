@@ -150,6 +150,7 @@ import org.jvnet.hudson.reactor.Milestone;
 import org.jvnet.hudson.reactor.Reactor;
 import org.jvnet.hudson.reactor.ReactorListener;
 import org.jvnet.hudson.reactor.TaskGraphBuilder.Handle;
+import org.kohsuke.args4j.Argument;
 import org.kohsuke.args4j.Option;
 import org.kohsuke.stapler.Ancestor;
 import org.kohsuke.stapler.HttpRedirect;
@@ -1338,7 +1339,7 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
     }
 
     @CLIResolver
-    public Computer getComputer(String name) {
+    public Computer getComputer(@Argument(required=true,metaVar="NAME",usage="Node name") String name) {
         if(name.equals("(master)"))
             name = "";
 
@@ -2828,6 +2829,7 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
      * For debugging. Expose URL to perform GC.
      */
     public void doGc(StaplerResponse rsp) throws IOException {
+        checkPermission(Hudson.ADMINISTER);
         System.gc();
         rsp.setStatus(HttpServletResponse.SC_OK);
         rsp.setContentType("text/plain");
@@ -2840,7 +2842,7 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
      * Handles HTTP requests for duplex channels for CLI.
      */
     public void doCli(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException, InterruptedException {
-        if(!"POST".equals(Stapler.getCurrentRequest().getMethod())) {
+        if (!"POST".equals(req.getMethod())) {
             // for GET request, serve _cli.jelly, assuming this is a browser
             checkPermission(READ);
             req.getView(this,"_cli.jelly").forward(req,rsp);
@@ -2884,16 +2886,18 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
      *
      * This first replaces "app" to {@link HudsonIsRestarting}
      */
+    @CLIMethod(name="restart")
     public void doRestart(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException, RestartNotSupportedException {
         checkPermission(ADMINISTER);
-        if(Stapler.getCurrentRequest().getMethod().equals("GET")) {
+        if (req != null && req.getMethod().equals("GET")) {
             req.getView(this,"_restart.jelly").forward(req,rsp);
             return;
         }
 
         restart();
 
-        rsp.sendRedirect2(".");
+        if (rsp != null) // null for CLI
+            rsp.sendRedirect2(".");
     }
 
     /**
@@ -2903,22 +2907,23 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
      * 
      * @since 1.332
      */
+    @CLIMethod(name="safe-restart")
     public void doSafeRestart(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException, RestartNotSupportedException {
         checkPermission(ADMINISTER);
-        if(Stapler.getCurrentRequest().getMethod().equals("GET")) {
+        if (req != null && req.getMethod().equals("GET")) {
             req.getView(this,"_safeRestart.jelly").forward(req,rsp);
             return;
         }
 
         safeRestart();
 
-        rsp.sendRedirect2(".");
+        if (rsp != null) // null for CLI
+            rsp.sendRedirect2(".");
     }
 
     /**
      * Performs a restart.
      */
-    @CLIMethod(name="restart")
     public void restart() throws RestartNotSupportedException {
         final Lifecycle lifecycle = Lifecycle.get();
         lifecycle.verifyRestartable(); // verify that Hudson is restartable
@@ -2948,7 +2953,6 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
      * Queues up a restart to be performed once there are no builds currently running.
      * @since 1.332
      */
-    @CLIMethod(name="safe-restart")
     public void safeRestart() throws RestartNotSupportedException {
         final Lifecycle lifecycle = Lifecycle.get();
         lifecycle.verifyRestartable(); // verify that Hudson is restartable

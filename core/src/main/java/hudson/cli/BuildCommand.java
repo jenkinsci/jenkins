@@ -1,7 +1,7 @@
 /*
  * The MIT License
  *
- * Copyright (c) 2004-2009, Sun Microsystems, Inc.
+ * Copyright (c) 2004-2010, Sun Microsystems, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -32,6 +32,7 @@ import hudson.model.ParametersDefinitionProperty;
 import hudson.model.ParameterDefinition;
 import hudson.Extension;
 import hudson.AbortException;
+import hudson.model.Item;
 import hudson.util.EditDistance;
 import org.kohsuke.args4j.Argument;
 import org.kohsuke.args4j.Option;
@@ -66,8 +67,9 @@ public class BuildCommand extends CLICommand {
     public Map<String,String> parameters = new HashMap<String, String>();
 
     protected int run() throws Exception {
-        ParametersAction a = null;
+        job.checkPermission(Item.BUILD);
 
+        ParametersAction a = null;
         if (!parameters.isEmpty()) {
             ParametersDefinitionProperty pdp = job.getProperty(ParametersDefinitionProperty.class);
             if (pdp==null)
@@ -106,6 +108,7 @@ public class BuildCommand extends CLICommand {
         );
     }
 
+    // TODO: CLI can authenticate as different users, so should record which user here..
     public static class CLICause extends Cause {
         public String getShortDescription() {
             return "Started by command line";

@@ -1,7 +1,7 @@
 /*
  * The MIT License
  *
- * Copyright (c) 2004-2009, Sun Microsystems, Inc.
+ * Copyright (c) 2004-2010, Sun Microsystems, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -25,6 +25,8 @@ package hudson.cli;
 
 import hudson.tasks.Mailer;
 import hudson.Extension;
+import hudson.model.Hudson;
+import hudson.model.Item;
 
 import javax.mail.internet.MimeMessage;
 import javax.mail.Transport;
@@ -44,6 +46,7 @@ public class MailCommand extends CLICommand {
     }
 
     protected int run() throws Exception {
+        Hudson.getInstance().checkPermission(Item.CONFIGURE);
         Transport.send(new MimeMessage(Mailer.descriptor().createSession(),stdin));
         return 0;
     }

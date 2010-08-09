@@ -1,7 +1,7 @@
 /*
  * The MIT License
  *
- * Copyright (c) 2004-2009, Sun Microsystems, Inc.
+ * Copyright (c) 2004-2010, Sun Microsystems, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -32,6 +32,7 @@ import hudson.model.Run;
 import hudson.model.Executor;
 import hudson.model.Node;
 import hudson.model.EnvironmentSpecific;
+import hudson.model.Item;
 import hudson.remoting.Callable;
 import hudson.slaves.NodeSpecific;
 import hudson.util.EditDistance;
@@ -63,6 +64,20 @@ public class InstallToolCommand extends CLICommand {
     }
 
     protected int run() throws Exception {
+        Hudson h = Hudson.getInstance();
+        h.checkPermission(Hudson.READ);
+
+        // where is this build running?
+        BuildIDs id = channel.call(new BuildIDs());
+
+        if (!id.isComplete())
+            throw new AbortException("This command can be only invoked from a build executing inside Hudson");
+
+        AbstractProject p = Hudson.getInstance().getItemByFullName(id.job, AbstractProject.class);
+        if (p==null)
+            throw new AbortException("No such job found: "+id.job);
+        p.checkPermission(Item.CONFIGURE);
+
         List<String> toolTypes = new ArrayList<String>();
         for (ToolDescriptor<?> d : ToolInstallation.all()) {
             toolTypes.add(d.getDisplayName());
@@ -71,7 +86,7 @@ public class InstallToolCommand extends CLICommand {
                 for (ToolInstallation t : d.getInstallations()) {
                     toolNames.add(t.getName());
                     if (t.getName().equals(toolName))
-                        return install(t);
+                        return install(t, id, p);
                 }
 
                 // didn't find the right tool name
@@ -96,16 +111,7 @@ public class InstallToolCommand extends CLICommand {
     /**
      * Performs an installation.
      */
-    private int install(ToolInstallation t) throws IOException, InterruptedException {
-        // where is this build running?
-        BuildIDs id = channel.call(new BuildIDs());
-
-        if (!id.isComplete())
-            throw new AbortException("This command can be only invoked from a build executing inside Hudson");
-
-        AbstractProject p = Hudson.getInstance().getItemByFullName(id.job, AbstractProject.class);
-        if (p==null)
-            throw new AbortException("No such job found: "+id.job);
+    private int install(ToolInstallation t, BuildIDs id, AbstractProject p) throws IOException, InterruptedException {
 
         Run b = p.getBuildByNumber(Integer.parseInt(id.number));
         if (b==null)

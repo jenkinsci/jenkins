@@ -40,6 +40,8 @@ public class ListChangesCommand extends AbstractBuildRangeCommand {
 
     @Override
     protected int act(List<AbstractBuild<?, ?>> builds) throws IOException {
+        // Loading job for this CLI command requires Item.READ permission.
+        // No other permission check needed.
         switch (format) {
         case XML:
             PrintWriter w = new PrintWriter(stdout);

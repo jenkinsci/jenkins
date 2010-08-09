@@ -1,7 +1,7 @@
 /*
  * The MIT License
  *
- * Copyright (c) 2004-2009, Sun Microsystems, Inc.
+ * Copyright (c) 2004-2010, Sun Microsystems, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -39,6 +39,7 @@ public class VersionCommand extends CLICommand {
     }
 
     protected int run() {
+        // CLICommand.main checks Hudson.READ permission.. no other check needed.
         stdout.println(Hudson.VERSION);
         return 0;
     }

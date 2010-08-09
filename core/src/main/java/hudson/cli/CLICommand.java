@@ -1,7 +1,7 @@
 /*
  * The MIT License
  *
- * Copyright (c) 2004-2009, Sun Microsystems, Inc.
+ * Copyright (c) 2004-2010, Sun Microsystems, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -40,7 +40,6 @@ import org.acegisecurity.Authentication;
 import org.acegisecurity.context.SecurityContext;
 import org.acegisecurity.context.SecurityContextHolder;
 import org.jvnet.hudson.annotation_indexer.Index;
-import org.jvnet.hudson.annotation_indexer.Indexed;
 import org.jvnet.tiger_types.Types;
 import org.kohsuke.args4j.ClassParser;
 import org.kohsuke.args4j.CmdLineException;
@@ -48,7 +47,6 @@ import org.kohsuke.args4j.CmdLineParser;
 import org.kohsuke.args4j.spi.OptionHandler;
 
 import java.io.BufferedInputStream;
-import java.io.IOError;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintStream;
@@ -181,6 +179,8 @@ public abstract class CLICommand implements ExtensionPoint, Cloneable {
             if (auth==Hudson.ANONYMOUS)
                 auth = loadStoredAuthentication();
             sc.setAuthentication(auth); // run the CLI with the right credential
+            if (!(this instanceof LoginCommand || this instanceof HelpCommand))
+                Hudson.getInstance().checkPermission(Hudson.READ);
             return run();
         } catch (CmdLineException e) {
             stderr.println(e.getMessage());
