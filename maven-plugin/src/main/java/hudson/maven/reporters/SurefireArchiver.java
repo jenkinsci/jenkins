@@ -30,6 +30,7 @@ import hudson.maven.MavenBuildProxy;
 import hudson.maven.MavenBuildProxy.BuildCallable;
 import hudson.maven.MavenBuilder;
 import hudson.maven.MavenModule;
+import hudson.maven.MavenProjectActionBuilder;
 import hudson.maven.MavenReporter;
 import hudson.maven.MavenReporterDescriptor;
 import hudson.maven.MojoInfo;
@@ -113,7 +114,7 @@ public class SurefireArchiver extends MavenReporter {
                         sr.setResult(result,listener);
                     if(result.getFailCount()>0)
                         build.setResult(Result.UNSTABLE);
-                    build.registerAsProjectAction(SurefireArchiver.this);
+                    build.registerAsProjectAction(new FactoryImpl());
                     return result.getFailCount();
                 }
             });
@@ -128,9 +129,13 @@ public class SurefireArchiver extends MavenReporter {
         return true;
     }
 
-
-    public Collection<? extends Action> getProjectActions(MavenModule module) {
-        return Collections.singleton(new TestResultProjectAction(module));
+    /**
+     * Part of the serialization data attached to {@link MavenBuild}.
+     */
+    static final class FactoryImpl implements MavenProjectActionBuilder {
+        public Collection<? extends Action> getProjectActions(MavenModule module) {
+            return Collections.singleton(new TestResultProjectAction(module));
+        }
     }
 
     private boolean isSurefireTest(MojoInfo mojo) {

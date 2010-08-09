@@ -412,10 +412,10 @@ public final class MavenModule extends AbstractMavenProject<MavenModule,MavenBui
     @Override
     protected void addTransientActionsFromBuild(MavenBuild build, Set<Class> added) {
         if(build==null)    return;
-        List<MavenReporter> list = build.projectActionReporters;
+        List<MavenProjectActionBuilder> list = build.projectActionReporters;
         if(list==null)   return;
 
-        for (MavenReporter step : list) {
+        for (MavenProjectActionBuilder step : list) {
             if(!added.add(step.getClass()))     continue;   // already added
             try {
                 transientActions.addAll(step.getProjectActions(this));
