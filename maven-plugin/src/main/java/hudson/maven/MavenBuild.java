@@ -25,6 +25,7 @@ package hudson.maven;
 
 import hudson.FilePath;
 import hudson.EnvVars;
+import hudson.maven.reporters.SurefireArchiver;
 import hudson.slaves.WorkspaceList;
 import hudson.slaves.WorkspaceList.Lease;
 import hudson.maven.agent.AbortException;
@@ -93,6 +94,7 @@ public class MavenBuild extends AbstractMavenBuild<MavenModule,MavenBuild> {
 
     public MavenBuild(MavenModule project, File buildDir) throws IOException {
         super(project, buildDir);
+        SurefireArchiver.fixUp(projectActionReporters);
     }
 
     @Override
