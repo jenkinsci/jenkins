@@ -27,10 +27,10 @@ package hudson.model.label;
  * Precedence of the top most operator.
  *
  * @author Kohsuke Kawaguchi
- * @since 1.COMPOSITELABEL
+ * @since 1.372
  */
 public enum LabelOperatorPrecedence {
-    ATOM(null), NOT("!"), AND("&"), OR("|"), IMPLIES("->"), IFF("<->");
+    ATOM(null), NOT("!"), AND("&&"), OR("||"), IMPLIES("->"), IFF("<->");
 
     /**
      * String representation of this operator.

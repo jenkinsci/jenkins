@@ -60,10 +60,10 @@ public class LabelExpressionTest extends HudsonTestCase {
                 return true;
             }
         });
-        p1.setAssignedLabel(hudson.getLabel("win & 32bit"));
+        p1.setAssignedLabel(hudson.getLabel("win && 32bit"));
 
         FreeStyleProject p2 = createFreeStyleProject();
-        p2.setAssignedLabel(hudson.getLabel("win & 32bit"));
+        p2.setAssignedLabel(hudson.getLabel("win && 32bit"));
 
         FreeStyleProject p3 = createFreeStyleProject();
         p3.setAssignedLabel(hudson.getLabel("win"));
@@ -118,13 +118,13 @@ public class LabelExpressionTest extends HudsonTestCase {
     public void testParser() throws Exception {
         parseAndVerify("foo", "foo");
         parseAndVerify("32bit.dot", "32bit.dot");
-        parseAndVerify("foo|bar", "foo | bar");
+        parseAndVerify("foo||bar", "foo || bar");
 
         // user-given parenthesis is preserved
-        parseAndVerify("foo|bar&zot", "foo|bar&zot");
-        parseAndVerify("foo|(bar&zot)", "foo|(bar&zot)");
+        parseAndVerify("foo||bar&&zot", "foo||bar&&zot");
+        parseAndVerify("foo||(bar&&zot)", "foo||(bar&&zot)");
 
-        parseAndVerify("(foo|bar)&zot", "(foo|bar)&zot");
+        parseAndVerify("(foo||bar)&&zot", "(foo||bar)&&zot");
         parseAndVerify("foo->bar", "foo ->\tbar");
         parseAndVerify("!foo<->bar", "!foo <-> bar");
     }
@@ -144,8 +144,8 @@ public class LabelExpressionTest extends HudsonTestCase {
     public void testComposite() {
         LabelAtom x = hudson.getLabelAtom("x");
         assertEquals("!!x",x.not().not().getName());
-        assertEquals("(x|x)&x",x.or(x).and(x).getName());
-        assertEquals("x&x|x",x.and(x).or(x).getName());
+        assertEquals("(x||x)&&x",x.or(x).and(x).getName());
+        assertEquals("x&&x||x",x.and(x).or(x).getName());
     }
 
     private void parseShouldFail(String expr) {

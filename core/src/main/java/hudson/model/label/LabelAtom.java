@@ -31,7 +31,7 @@ import hudson.util.VariableResolver;
  * Atomic single token label, like "foo" or "bar".
  * 
  * @author Kohsuke Kawaguchi
- * @since 1.COMPOSITELABEL
+ * @since  1.372
  */
 public class LabelAtom extends Label {
     public LabelAtom(String name) {

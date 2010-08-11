@@ -82,8 +82,8 @@ options { generateAmbigWarnings=false; }
 
 class LabelExpressionLexer extends Lexer;
 
-AND:    "&";
-OR:     "|";
+AND:    "&&";
+OR:     "||";
 NOT:    "!";
 IMPLIES:"->";
 IFF:    "<->";
