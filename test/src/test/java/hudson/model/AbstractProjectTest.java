@@ -51,6 +51,15 @@ import org.apache.commons.io.FileUtils;
  * @author Kohsuke Kawaguchi
  */
 public class AbstractProjectTest extends HudsonTestCase {
+    public void testConfigRoundtrip() throws Exception {
+        FreeStyleProject project = createFreeStyleProject();
+        Label l = hudson.getLabel("foo && bar");
+        project.setAssignedLabel(l);
+        configRoundtrip(project);
+
+        assertEquals(l,project.getAssignedLabel());
+    }
+
     /**
      * Tests the workspace deletion.
      */

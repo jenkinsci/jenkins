@@ -23,13 +23,22 @@
  */
 package hudson.model;
 
+import antlr.ANTLRException;
 import hudson.Util;
 import static hudson.Util.fixNull;
+
+import hudson.model.label.LabelAtom;
+import hudson.model.label.LabelExpression;
+import hudson.model.label.LabelExpressionLexer;
+import hudson.model.label.LabelExpressionParser;
+import hudson.model.label.LabelOperatorPrecedence;
 import hudson.slaves.NodeProvisioner;
 import hudson.slaves.Cloud;
+import hudson.util.VariableResolver;
 import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.export.ExportedBean;
 
+import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
@@ -52,8 +61,8 @@ import com.thoughtworks.xstream.io.HierarchicalStreamReader;
  * @see Hudson#getLabel(String) 
  */
 @ExportedBean
-public class Label implements Comparable<Label>, ModelObject {
-    private final String name;
+public abstract class Label implements Comparable<Label>, ModelObject {
+    protected final String name;
     private volatile Set<Node> nodes;
     private volatile Set<Cloud> clouds;
 
@@ -93,6 +102,31 @@ public class Label implements Comparable<Label>, ModelObject {
     }
 
     /**
+     * Evaluates whether the label expression is true given the specified value assignment.
+     * IOW, returns true if the assignment provided by the resolver matches this label expression.
+     */
+    public abstract boolean matches(VariableResolver<Boolean> resolver);
+
+    /**
+     * Evaluates whether the label expression is true when an entity owns the given set of
+     * {@link LabelAtom}s.
+     */
+    public final boolean matches(final Collection<LabelAtom> labels) {
+        return matches(new VariableResolver<Boolean>() {
+            public Boolean resolve(String name) {
+                for (LabelAtom a : labels)
+                    if (a.getName().equals(name))
+                        return true;
+                return false;
+            }
+        });
+    }
+
+    public final boolean matches(Node n) {
+        return matches(n.getAssignedLabels());
+    }
+
+    /**
      * Returns true if this label is a "self label",
      * which means the label is the name of a {@link Node}.
      */
@@ -111,10 +145,10 @@ public class Label implements Comparable<Label>, ModelObject {
 
         Set<Node> r = new HashSet<Node>();
         Hudson h = Hudson.getInstance();
-        if(h.getAssignedLabels().contains(this))
+        if(this.matches(h))
             r.add(h);
         for (Node n : h.getNodes()) {
-            if(n.getAssignedLabels().contains(this))
+            if(this.matches(n))
                 r.add(n);
         }
         return this.nodes = Collections.unmodifiableSet(r);
@@ -297,6 +331,56 @@ public class Label implements Comparable<Label>, ModelObject {
         return new Api(this);
     }
 
+    /**
+     * Returns the label that represents "this&amp;rhs"
+     */
+    public Label and(Label rhs) {
+        return new LabelExpression.And(this,rhs);
+    }
+
+    /**
+     * Returns the label that represents "this|rhs"
+     */
+    public Label or(Label rhs) {
+        return new LabelExpression.Or(this,rhs);
+    }
+
+    /**
+     * Returns the label that represents "this&lt;->rhs"
+     */
+    public Label iff(Label rhs) {
+        return new LabelExpression.Iff(this,rhs);
+    }
+
+    /**
+     * Returns the label that represents "this->rhs"
+     */
+    public Label implies(Label rhs) {
+        return new LabelExpression.Implies(this,rhs);
+    }
+
+    /**
+     * Returns the label that represents "!this"
+     */
+    public Label not() {
+        return new LabelExpression.Not(this);
+    }
+
+    /**
+     * Returns the label that represents "(this)"
+     * This is a pointless operation for machines, but useful
+     * for humans who find the additional parenthesis often useful
+     */
+    public Label paren() {
+        return new LabelExpression.Paren(this);
+    }
+
+    /**
+     * Precedence of the top most operator.
+     */
+    public abstract LabelOperatorPrecedence precedence();
+
+
     @Override
     public boolean equals(Object that) {
         if (this == that) return true;
@@ -325,7 +409,7 @@ public class Label implements Comparable<Label>, ModelObject {
         }
 
         public boolean canConvert(Class type) {
-            return type==Label.class;
+            return Label.class.isAssignableFrom(type);
         }
 
         public void marshal(Object source, HierarchicalStreamWriter writer, MarshallingContext context) {
@@ -348,12 +432,12 @@ public class Label implements Comparable<Label>, ModelObject {
      *      so that the caller can add more to the set.
      * @since 1.308
      */
-    public static Set<Label> parse(String labels) {
-        Set<Label> r = new TreeSet<Label>();
+    public static Set<LabelAtom> parse(String labels) {
+        Set<LabelAtom> r = new TreeSet<LabelAtom>();
         labels = fixNull(labels);
         if(labels.length()>0)
             for( String l : labels.split(" +"))
-                r.add(Hudson.getInstance().getLabel(l));
+                r.add(Hudson.getInstance().getLabelAtom(l));
         return r;
     }
 
@@ -362,5 +446,15 @@ public class Label implements Comparable<Label>, ModelObject {
      */
     public static Label get(String l) {
         return Hudson.getInstance().getLabel(l);
+    }
+
+    /**
+     * Parses the expression into a label expression tree.
+     *
+     * TODO: replace this with a real parser later
+     */
+    public static Label parseExpression(String labelExpression) throws ANTLRException {
+        LabelExpressionLexer lexer = new LabelExpressionLexer(new StringReader(labelExpression));
+        return new LabelExpressionParser(lexer).expr();
     }
 }

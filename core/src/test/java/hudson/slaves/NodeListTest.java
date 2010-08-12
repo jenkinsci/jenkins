@@ -23,6 +23,7 @@
  */
 package hudson.slaves;
 
+import hudson.model.label.LabelAtom;
 import junit.framework.TestCase;
 import hudson.model.Hudson;
 import hudson.model.Node;
@@ -78,15 +79,11 @@ public class NodeListTest extends TestCase {
             throw new UnsupportedOperationException();
         }
 
-        public Set<Label> getAssignedLabels() {
+        public Set<LabelAtom> getAssignedLabels() {
             throw new UnsupportedOperationException();
         }
 
         public String getLabelString() {
-            throw new UnsupportedOperationException();
-        }
-
-        public Set<Label> getDynamicLabels() {
             throw new UnsupportedOperationException();
         }
 

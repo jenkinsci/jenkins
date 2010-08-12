@@ -108,7 +108,7 @@ public class MavenProjectTest extends HudsonTestCase {
     public void testMultiModuleSiteBuildOnSlave() throws Exception {
         MavenModuleSet project = createProject("maven-multimodule-site.zip");
         project.setGoals("site");
-        project.setAssignedLabel(createSlave(null, null).getSelfLabel());
+        project.setAssignedLabel(createSlave().getSelfLabel());
 
         buildAndAssertSuccess(project);
 

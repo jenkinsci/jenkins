@@ -55,6 +55,18 @@ THE SOFTWARE.
         </executions>
       </plugin>
       <plugin>
+        <groupId>com.infradna.tool</groupId>
+        <artifactId>bridge-method-injector</artifactId>
+        <version>1.2</version>
+        <executions>
+          <execution>
+            <goals>
+              <goal>process</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
         <groupId>org.kohsuke.stapler</groupId>
         <artifactId>maven-stapler-plugin</artifactId>
         <extensions>true</extensions>
@@ -99,18 +111,29 @@ THE SOFTWARE.
         </executions>
       </plugin>
       <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-antlr-plugin</artifactId>
-        <version>2.0-beta-1</version>
-        <configuration>
-          <sourceDirectory>${basedir}/src/main/grammar</sourceDirectory>
-          <grammars>crontab.g</grammars>
-        </configuration>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>antlr-maven-plugin</artifactId>
+        <version>2.1</version>
         <executions>
           <execution>
+            <id>cron</id>
             <goals>
               <goal>generate</goal>
             </goals>
+            <configuration>
+              <sourceDirectory>${basedir}/src/main/grammar</sourceDirectory>
+              <grammars>crontab.g</grammars>
+            </configuration>
+          </execution>
+          <execution>
+            <id>labelExpr</id>
+            <goals>
+              <goal>generate</goal>
+            </goals>
+            <configuration>
+              <sourceDirectory>${basedir}/src/main/grammar</sourceDirectory>
+              <grammars>labelExpr.g</grammars>
+            </configuration>
           </execution>
         </executions>
       </plugin>
@@ -378,6 +401,12 @@ THE SOFTWARE.
       <version>1.0</version>
       <classifier>tests</classifier>
       <scope>test</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>com.infradna.tool</groupId>
+      <artifactId>bridge-method-annotation</artifactId>
+      <version>1.2</version>
     </dependency>
 
     <dependency><!-- until we get this version through Stapler -->

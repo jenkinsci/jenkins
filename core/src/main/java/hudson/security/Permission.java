@@ -27,6 +27,7 @@ import hudson.model.*;
 import net.sf.json.util.JSONUtils;
 
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 
@@ -42,6 +43,21 @@ import org.jvnet.localizer.Localizable;
  * @see http://hudson.gotdns.com/wiki/display/HUDSON/Making+your+plugin+behave+in+secured+Hudson
  */
 public final class Permission {
+
+    /**
+     * Comparator that orders {@link Permission} objects based on their ID.
+     */
+    public static final Comparator<Permission> ID_COMPARATOR = new Comparator<Permission>() {
+
+        /**
+         * {@inheritDoc}
+         */
+        @Override
+        public int compare(Permission one, Permission two) {
+            return one.getId().compareTo(two.getId());
+        }
+    };
+
     public final Class owner;
 
     public final PermissionGroup group;

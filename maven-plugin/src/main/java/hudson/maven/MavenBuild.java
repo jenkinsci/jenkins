@@ -25,6 +25,7 @@ package hudson.maven;
 
 import hudson.FilePath;
 import hudson.EnvVars;
+import hudson.maven.reporters.SurefireArchiver;
 import hudson.slaves.WorkspaceList;
 import hudson.slaves.WorkspaceList.Lease;
 import hudson.maven.agent.AbortException;
@@ -73,7 +74,7 @@ public class MavenBuild extends AbstractMavenBuild<MavenModule,MavenBuild> {
      * {@link MavenReporter}s that will contribute project actions.
      * Can be null if there's none.
      */
-    /*package*/ List<MavenReporter> projectActionReporters;
+    /*package*/ List<MavenProjectActionBuilder> projectActionReporters;
 
     /**
      * {@link ExecutedMojo}s that record what was run.
@@ -93,6 +94,7 @@ public class MavenBuild extends AbstractMavenBuild<MavenModule,MavenBuild> {
 
     public MavenBuild(MavenModule project, File buildDir) throws IOException {
         super(project, buildDir);
+        SurefireArchiver.fixUp(projectActionReporters);
     }
 
     @Override
@@ -184,8 +186,20 @@ public class MavenBuild extends AbstractMavenBuild<MavenModule,MavenBuild> {
 
     public void registerAsProjectAction(MavenReporter reporter) {
         if(projectActionReporters==null)
-            projectActionReporters = new ArrayList<MavenReporter>();
+            projectActionReporters = new ArrayList<MavenProjectActionBuilder>();
         projectActionReporters.add(reporter);
+    }
+
+    public void registerAsProjectAction(MavenProjectActionBuilder builder) {
+        if(projectActionReporters==null)
+            projectActionReporters = new ArrayList<MavenProjectActionBuilder>();
+        projectActionReporters.add(builder);
+    }
+
+    public List<MavenProjectActionBuilder> getProjectActionBuilders() {
+        if(projectActionReporters==null)
+            return Collections.emptyList();
+        return Collections.unmodifiableList(projectActionReporters);
     }
 
     public List<ExecutedMojo> getExecutedMojos() {
@@ -372,6 +386,10 @@ public class MavenBuild extends AbstractMavenBuild<MavenModule,MavenBuild> {
         
         public void registerAsProjectAction(MavenReporter reporter) {
             MavenBuild.this.registerAsProjectAction(reporter);
+        }
+
+        public void registerAsProjectAction(MavenProjectActionBuilder builder) {
+            MavenBuild.this.registerAsProjectAction(builder);
         }
 
         public void registerAsAggregatedProjectAction(MavenReporter reporter) {

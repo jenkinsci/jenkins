@@ -24,7 +24,7 @@ public class MavenOptsTest extends HudsonTestCase {
         MavenModuleSet m = createMavenProject();
         m.setScm(new ExtractResourceSCM(getClass().getResource("maven-opts-echo.zip")));
         m.setGoals("validate");
-        m.setAssignedLabel(createSlave(null, new EnvVars("MAVEN_OPTS", "-Dhudson.mavenOpt.test=foo")).getSelfLabel());
+        m.setAssignedLabel(createSlave(new EnvVars("MAVEN_OPTS", "-Dhudson.mavenOpt.test=foo")).getSelfLabel());
         
         buildAndAssertSuccess(m);
 
@@ -38,7 +38,7 @@ public class MavenOptsTest extends HudsonTestCase {
         m.setScm(new ExtractResourceSCM(getClass().getResource("maven-opts-echo.zip")));
         m.setGoals("validate");
         m.setMavenOpts("-Dhudson.mavenOpt.test=bar");
-        m.setAssignedLabel(createSlave(null, new EnvVars("MAVEN_OPTS", "-Dhudson.mavenOpt.test=foo")).getSelfLabel());
+        m.setAssignedLabel(createSlave(new EnvVars("MAVEN_OPTS", "-Dhudson.mavenOpt.test=foo")).getSelfLabel());
         
         buildAndAssertSuccess(m);
 
@@ -51,7 +51,7 @@ public class MavenOptsTest extends HudsonTestCase {
         m.setScm(new ExtractResourceSCM(getClass().getResource("maven-opts-echo.zip")));
         m.setGoals("validate");
         m.DESCRIPTOR.setGlobalMavenOpts("-Dhudson.mavenOpt.test=bar");
-        m.setAssignedLabel(createSlave(null, new EnvVars("MAVEN_OPTS", "-Dhudson.mavenOpt.test=foo")).getSelfLabel());
+        m.setAssignedLabel(createSlave(new EnvVars("MAVEN_OPTS", "-Dhudson.mavenOpt.test=foo")).getSelfLabel());
         m.setMavenOpts("-Dhudson.mavenOpt.test=baz");
         
         buildAndAssertSuccess(m);

@@ -1,6 +1,7 @@
 package hudson.tasks;
 
 import hudson.EnvVars;
+import hudson.model.label.LabelAtom;
 import hudson.tools.ToolProperty;
 import hudson.maven.MavenModuleSet;
 import hudson.maven.MavenModuleSetBuild;
@@ -48,8 +49,8 @@ public class EnvVarsInConfigTasksTest extends HudsonTestCase {
 
 		// create slaves
 		EnvVars additionalEnv = new EnvVars(DUMMY_LOCATION_VARNAME, "");
-		slaveEnv = createSlave(new Label("slaveEnv"), additionalEnv);
-		slaveRegular = createSlave(new Label("slaveRegular"));
+		slaveEnv = createSlave(new LabelAtom("slaveEnv"), additionalEnv);
+		slaveRegular = createSlave(new LabelAtom("slaveRegular"));
 	}
 
 	private String withVariable(String s) {
