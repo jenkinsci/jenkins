@@ -52,7 +52,8 @@ THE SOFTWARE.
     Hudson will enter into the "quiet down" mode by sending a request to <a href="../quietDown">this URL</a>.
     You can cancel this mode by sending a request to <a href="../cancelQuietDown">this URL</a>. On environments
     where Hudson can restart itself (such as when Hudson is installed as a Windows service), POSTing to
-    <a href="../restart">this URL</a> will start the restart sequence. All these URLs need the admin privilege
-    to the system.
+    <a href="../restart">this URL</a> will start the restart sequence, or
+    <a href="../safeRestart">this URL</a> to restart once no jobs are running.
+    All these URLs need the admin privilege to the system.
   </p>
 </j:jelly>
