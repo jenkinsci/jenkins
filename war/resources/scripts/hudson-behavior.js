@@ -1684,8 +1684,10 @@ function buildFormTree(form) {
                 p = findParent(e);
                 var checked = xor(e.checked,Element.hasClassName(e,"negative"));
                 if(!e.groupingNode) {
-                    v = e.getAttribute("value");
-                    if (v) {// if the value is present, we'll either set the value or not. useful for an array of checkboxes
+                    v = e.getAttribute("json");
+                    if (v) {
+                        // if the special attribute is present, we'll either set the value or not. useful for an array of checkboxes
+                        // we can't use @value because IE6 sets the value to be "on" if it's left unspecified.
                         if (checked)
                             addProperty(p, e.name, v);
                     } else {// otherwise it'll bind to boolean
