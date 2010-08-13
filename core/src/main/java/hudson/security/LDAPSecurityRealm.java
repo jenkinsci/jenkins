@@ -38,11 +38,13 @@ import hudson.util.spring.BeanBuilder;
 import org.acegisecurity.AuthenticationManager;
 import org.acegisecurity.GrantedAuthority;
 import org.acegisecurity.AcegiSecurityException;
+import org.acegisecurity.AuthenticationException;
 import org.acegisecurity.ldap.InitialDirContextFactory;
 import org.acegisecurity.ldap.LdapDataAccessException;
 import org.acegisecurity.ldap.LdapTemplate;
 import org.acegisecurity.ldap.LdapUserSearch;
 import org.acegisecurity.ldap.search.FilterBasedLdapUserSearch;
+import org.acegisecurity.providers.UsernamePasswordAuthenticationToken;
 import org.acegisecurity.providers.ldap.LdapAuthoritiesPopulator;
 import org.acegisecurity.providers.ldap.populator.DefaultLdapAuthoritiesPopulator;
 import org.acegisecurity.userdetails.UserDetails;
@@ -201,7 +203,7 @@ import java.util.regex.Pattern;
  * @author Kohsuke Kawaguchi
  * @since 1.166
  */
-public class LDAPSecurityRealm extends SecurityRealm {
+public class LDAPSecurityRealm extends AbstractPasswordBasedSecurityRealm {
     /**
      * LDAP server name, optionally with TCP port number, like "ldap.acme.org"
      * or "ldap.acme.org:389".
@@ -344,6 +346,23 @@ public class LDAPSecurityRealm extends SecurityRealm {
         return new SecurityComponents(
             findBean(AuthenticationManager.class, appContext),
             new LDAPUserDetailsService(appContext));
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    protected UserDetails authenticate(String username, String password) throws AuthenticationException {
+        return (UserDetails) getSecurityComponents().manager.authenticate(
+          new UsernamePasswordAuthenticationToken(username, password)).getPrincipal();
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException, DataAccessException {
+        return getSecurityComponents().userDetails.loadUserByUsername(username);
     }
 
     /**
