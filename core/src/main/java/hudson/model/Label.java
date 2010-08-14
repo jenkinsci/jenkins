@@ -101,8 +101,15 @@ public abstract class Label extends Actionable implements Comparable<Label>, Mod
         return name;
     }
 
-    public String getSearchUrl() {
+    /**
+     * Relative URL from the context path.
+     */
+    public String getUrl() {
         return "label/"+name;
+    }
+
+    public String getSearchUrl() {
+        return getUrl();
     }
 
     /**

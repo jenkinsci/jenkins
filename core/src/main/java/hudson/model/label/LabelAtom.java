@@ -91,22 +91,25 @@ public class LabelAtom extends Label implements Saveable {
         Vector<Action> ta = new Vector<Action>();
 
         // add the config link
-        ta.add(new Action() {
-            public String getIconFileName() {
-                if (Hudson.getInstance().hasPermission(Hudson.ADMINISTER))
-                    return "setting.gif";
-                else
-                    return null;
-            }
+        if (!getApplicablePropertyDescriptors().isEmpty()) {
+            // if there's no property descriptor, there's nothing interesting to configure.
+            ta.add(new Action() {
+                public String getIconFileName() {
+                    if (Hudson.getInstance().hasPermission(Hudson.ADMINISTER))
+                        return "setting.gif";
+                    else
+                        return null;
+                }
 
-            public String getDisplayName() {
-                return "Configure";
-            }
+                public String getDisplayName() {
+                    return "Configure";
+                }
 
-            public String getUrlName() {
-                return "configure";
-            }
-        });
+                public String getUrlName() {
+                    return "configure";
+                }
+            });
+        }
 
         for (LabelAtomProperty p : properties)
             ta.addAll(p.getActions(this));
@@ -156,6 +159,7 @@ public class LabelAtom extends Label implements Saveable {
             }
         }
         properties.setOwner(this);
+        updateTransientActions();
     }
 
     /**

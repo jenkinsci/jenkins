@@ -36,10 +36,12 @@ THE SOFTWARE.
           <f:textbox value="${it.name}" readonly="true" />
         </f:entry>
 
-        <f:hetero-list name="properties" hasHeader="true"
-                       descriptors="${it.getApplicablePropertyDescriptors()}"
-                       items="${it.properties}"
-                       addCaption="${%Add label property}"/>
+        <f:block>
+          <f:hetero-list name="properties" hasHeader="true"
+                         descriptors="${it.getApplicablePropertyDescriptors()}"
+                         items="${it.properties}"
+                         addCaption="${%Add label property}"/>
+        </f:block>
 
         <f:block>
           <f:submit value="${%Save}"/>
