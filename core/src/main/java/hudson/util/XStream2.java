@@ -40,6 +40,7 @@ import com.thoughtworks.xstream.io.HierarchicalStreamWriter;
 import com.thoughtworks.xstream.mapper.CannotResolveClassException;
 import hudson.diagnosis.OldDataMonitor;
 import hudson.model.Hudson;
+import hudson.model.Label;
 import hudson.model.Result;
 import hudson.model.Saveable;
 
@@ -96,6 +97,7 @@ public class XStream2 extends XStream {
         registerConverter(new ConcurrentHashMapConverter(getMapper(),getReflectionProvider()),10);
         registerConverter(new CopyOnWriteMap.Tree.ConverterImpl(getMapper()),10); // needs to override MapConverter
         registerConverter(new DescribableList.ConverterImpl(getMapper()),10); // explicitly added to handle subtypes
+        registerConverter(new Label.ConverterImpl(),10);
 
         // this should come after all the XStream's default simpler converters,
         // but before reflection-based one kicks in.
