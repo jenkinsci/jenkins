@@ -41,7 +41,7 @@ public class BatchFile extends CommandInterpreter {
         super(command);
     }
 
-    protected String[] buildCommandLine(FilePath script) {
+    public String[] buildCommandLine(FilePath script) {
         return new String[] {"cmd","/c","call",script.getRemote()};
     }
 
