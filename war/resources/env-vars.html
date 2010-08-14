@@ -28,6 +28,12 @@
         carrying out this build. This is the number you see in
         the "build executor status", except that the number starts from 0, not 1.</dd>
 
+    <dt>NODE_NAME</dt>
+    <dd>Name of the slave if the build is on a slave, or "" if run on master</dd>
+
+    <dt>NODE_LABELS</dt>
+    <dd>Whitespace-separated list of labels that the node is assigned.</dd>
+
     <dt>JAVA_HOME</dt>
     <dd>If your job is configured to use a specific JDK, this variable is set to
         the JAVA_HOME of the specified JDK. When this variable is set, <tt>PATH</tt>
