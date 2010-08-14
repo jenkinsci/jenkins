@@ -178,7 +178,7 @@ public class LabelAtom extends Label implements Saveable {
 
         app.checkPermission(Hudson.ADMINISTER);
 
-        properties.rebuildHetero(req, req.getSubmittedForm(), getApplicablePropertyDescriptors(), "properties");
+        properties.rebuild(req, req.getSubmittedForm(), getApplicablePropertyDescriptors());
         updateTransientActions();
         save();
 
