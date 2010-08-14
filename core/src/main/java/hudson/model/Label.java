@@ -62,13 +62,13 @@ import com.thoughtworks.xstream.io.HierarchicalStreamReader;
  */
 @ExportedBean
 public abstract class Label implements Comparable<Label>, ModelObject {
-    protected final String name;
-    private volatile Set<Node> nodes;
-    private volatile Set<Cloud> clouds;
+    protected transient final String name;
+    private transient volatile Set<Node> nodes;
+    private transient volatile Set<Cloud> clouds;
 
     @Exported
-    public final LoadStatistics loadStatistics;
-    public final NodeProvisioner nodeProvisioner;
+    public transient final LoadStatistics loadStatistics;
+    public transient final NodeProvisioner nodeProvisioner;
 
     public Label(String name) {
         this.name = name;
