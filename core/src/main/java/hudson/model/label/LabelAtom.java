@@ -23,6 +23,7 @@
  */
 package hudson.model.label;
 
+import hudson.model.Failure;
 import hudson.model.Hudson;
 import hudson.model.Label;
 import hudson.util.VariableResolver;
@@ -56,14 +57,11 @@ public class LabelAtom extends Label {
     }
 
     public static boolean isValidName(String name) {
-        for (int i=name.length()-1; i>=0; i--) {
-            char ch = name.charAt(i);
-            if (Character.isJavaIdentifierPart(ch))
-                continue;
-            if (ch=='.')
-                continue;
+        try {
+            Hudson.checkGoodName(name);
+            return true;
+        } catch (Failure failure) {
             return false;
         }
-        return true;
     }
 }
