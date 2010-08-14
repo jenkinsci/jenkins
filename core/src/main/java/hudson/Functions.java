@@ -28,6 +28,7 @@ import hudson.console.ConsoleAnnotationDescriptor;
 import hudson.console.ConsoleAnnotatorFactory;
 import hudson.model.AbstractProject;
 import hudson.model.Action;
+import hudson.model.Describable;
 import hudson.model.Descriptor;
 import hudson.model.Hudson;
 import hudson.model.Item;
@@ -678,6 +679,25 @@ public class Functions {
             }
         }
         return result;
+    }
+
+    /**
+     * Gets all the descriptors sorted by their inheritance tree of {@link Describable}
+     * so that descriptors of similar types come nearby.
+     */
+    public static Collection<Descriptor> getSortedDescriptorsForGlobalConfig() {
+        Map<String,Descriptor> r = new TreeMap<String, Descriptor>();
+        for (Descriptor<?> d : Hudson.getInstance().getExtensionList(Descriptor.class)) {
+            if (d.getGlobalConfigPage()==null)  continue;
+            r.put(buildSuperclassHierarchy(d.clazz, new StringBuilder()).toString(),d);
+        }
+        return r.values();
+    }
+
+    private static StringBuilder buildSuperclassHierarchy(Class c, StringBuilder buf) {
+        Class sc = c.getSuperclass();
+        if (sc!=null)   buildSuperclassHierarchy(sc,buf).append(':');
+        return buf.append(c.getName());
     }
 
     /**

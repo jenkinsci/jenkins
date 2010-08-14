@@ -2388,35 +2388,7 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
             jdks.addAll(req.bindJSONToList(JDK.class,json.get("jdks")));
 
             boolean result = true;
-
-            for( Descriptor<Builder> d : Builder.all() )
-                result &= configureDescriptor(req,json,d);
-
-            for( Descriptor<Publisher> d : Publisher.all() )
-                result &= configureDescriptor(req,json,d);
-
-            for( Descriptor<BuildWrapper> d : BuildWrapper.all() )
-                result &= configureDescriptor(req,json,d);
-
-            for( SCMDescriptor scmd : SCM.all() )
-                result &= configureDescriptor(req,json,scmd);
-
-            for( TriggerDescriptor d : Trigger.all() )
-                result &= configureDescriptor(req,json,d);
-
-            for( JobPropertyDescriptor d : JobPropertyDescriptor.all() )
-                result &= configureDescriptor(req,json,d);
-
-            for( PageDecorator d : PageDecorator.all() )
-                result &= configureDescriptor(req,json,d);
-
-            for( Descriptor<CrumbIssuer> d : CrumbIssuer.all() )
-                result &= configureDescriptor(req,json, d);
-            
-            for( ToolDescriptor d : ToolInstallation.all() )
-                result &= configureDescriptor(req,json,d);
-
-            for( TopLevelItemDescriptor d : TopLevelItemDescriptor.all() )
+            for( Descriptor<?> d : Functions.getSortedDescriptorsForGlobalConfig() )
                 result &= configureDescriptor(req,json,d);
 
             for( JSONObject o : StructuredForm.toList(json,"plugin"))

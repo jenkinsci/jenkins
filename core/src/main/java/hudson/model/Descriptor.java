@@ -582,22 +582,26 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable {
     }
 
     public String getGlobalConfigPage() {
-        return getViewPage(clazz, "global.jelly");
+        return getViewPage(clazz, "global.jelly",null);
     }
 
-    protected final String getViewPage(Class<?> clazz, String pageName) {
+    private String getViewPage(Class<?> clazz, String pageName, String defaultValue) {
         while(clazz!=Object.class) {
             String name = clazz.getName().replace('.', '/').replace('$', '/') + "/" + pageName;
             if(clazz.getClassLoader().getResource(name)!=null)
                 return '/'+name;
             clazz = clazz.getSuperclass();
         }
+        return defaultValue;
+    }
+
+    protected final String getViewPage(Class<?> clazz, String pageName) {
         // We didn't find the configuration page.
         // Either this is non-fatal, in which case it doesn't matter what string we return so long as
         // it doesn't exist.
         // Or this error is fatal, in which case we want the developer to see what page he's missing.
         // so we put the page name.
-        return pageName;
+        return getViewPage(clazz,pageName,pageName);
     }
 
 

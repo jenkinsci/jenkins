@@ -29,7 +29,7 @@ THE SOFTWARE.
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
 <l:layout norefresh="true" permission="${it.ADMINISTER}">
   <st:include page="sidepanel.jelly" />
-  <l:main-panel xmlns:local="local">
+  <l:main-panel>
     <div class="behavior-loading">${%LOADING}</div>
     <f:form method="post" name="config" action="configSubmit">
       <j:set var="instance" value="${it}" />
@@ -139,29 +139,13 @@ THE SOFTWARE.
         </j:if>
       </j:forEach>
 
-      <d:taglib uri="local">
-        <!-- display global config pages for the given descriptors -->
-        <d:tag name="globalConfig">
-          <j:invokeStatic var="descriptors" className="${className}" method="all" />
-          <j:forEach var="idx" begin="0" end="${size(descriptors)-1}">
-            <j:set var="descriptor" value="${descriptors[idx]}" />
-            <j:set var="instance" value="${descriptor}" /><!-- this makes the <f:textbox field=.../> work -->
-            <f:rowSet name="${descriptor.jsonSafeClassName}">
-              <st:include page="${descriptor.globalConfigPage}" from="${descriptor}" optional="true"/>
-            </f:rowSet>
-          </j:forEach>
-        </d:tag>
-      </d:taglib>
-
-      <local:globalConfig className="hudson.tools.ToolInstallation" />
-      <local:globalConfig className="hudson.triggers.Trigger" />
-      <local:globalConfig className="hudson.tasks.BuildWrapper" />
-      <local:globalConfig className="hudson.tasks.Builder"  />
-      <local:globalConfig className="hudson.scm.SCM" />
-      <local:globalConfig className="hudson.tasks.Publisher" />
-      <local:globalConfig className="hudson.model.JobPropertyDescriptor" />
-      <local:globalConfig className="hudson.model.PageDecorator" />
-      <local:globalConfig className="hudson.model.TopLevelItemDescriptor" />
+      <!-- global configuration from everyone -->
+      <j:forEach var="descriptor" items="${h.getSortedDescriptorsForGlobalConfig()}">
+        <j:set var="instance" value="${descriptor}" /><!-- this makes the <f:textbox field=.../> work -->
+        <f:rowSet name="${descriptor.jsonSafeClassName}">
+          <st:include page="${descriptor.globalConfigPage}" from="${descriptor}" />
+        </f:rowSet>
+      </j:forEach>
 
       <j:if test="${!empty(h.getCloudDescriptors())}">
         <f:section title="${%Cloud}">
