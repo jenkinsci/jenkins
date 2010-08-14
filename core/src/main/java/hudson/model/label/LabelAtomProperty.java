@@ -26,10 +26,14 @@ package hudson.model.label;
 import hudson.DescriptorExtensionList;
 import hudson.ExtensionPoint;
 import hudson.model.AbstractDescribableImpl;
+import hudson.model.Action;
 import hudson.model.Hudson;
 import hudson.slaves.NodeDescriptor;
 import hudson.slaves.NodePropertyDescriptor;
 import org.kohsuke.stapler.export.ExportedBean;
+
+import java.util.Collection;
+import java.util.Collections;
 
 /**
  * Extensible property of {@link LabelAtom}.
@@ -44,6 +48,16 @@ import org.kohsuke.stapler.export.ExportedBean;
  */
 @ExportedBean
 public class LabelAtomProperty extends AbstractDescribableImpl<LabelAtomProperty> implements ExtensionPoint {
+    /**
+     * Contributes {@link Action}s to the label.
+     *
+     * This allows properties to create additional links in the left navigation bar and
+     * hook into the URL space of the label atom.
+     */
+    public Collection<? extends Action> getActions(LabelAtom atom) {
+        return Collections.emptyList();
+    }
+
     /**
      * Lists up all the registered {@link LabelAtomPropertyDescriptor}s in the system.
      */

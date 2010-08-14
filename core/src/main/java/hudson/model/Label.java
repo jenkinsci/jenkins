@@ -61,7 +61,7 @@ import com.thoughtworks.xstream.io.HierarchicalStreamReader;
  * @see Hudson#getLabel(String) 
  */
 @ExportedBean
-public abstract class Label implements Comparable<Label>, ModelObject {
+public abstract class Label extends Actionable implements Comparable<Label>, ModelObject {
     protected transient final String name;
     private transient volatile Set<Node> nodes;
     private transient volatile Set<Cloud> clouds;
@@ -99,6 +99,10 @@ public abstract class Label implements Comparable<Label>, ModelObject {
 
     public String getDisplayName() {
         return name;
+    }
+
+    public String getSearchUrl() {
+        return "label/"+name;
     }
 
     /**

@@ -24,13 +24,19 @@
 package hudson.model.label;
 
 import hudson.BulkChange;
+import hudson.CopyOnWrite;
+import hudson.Util;
 import hudson.XmlFile;
+import hudson.model.Action;
 import hudson.model.Descriptor.FormException;
 import hudson.model.Failure;
 import hudson.model.Hudson;
+import hudson.model.JobProperty;
 import hudson.model.Label;
 import hudson.model.Saveable;
+import hudson.model.TransientProjectActionFactory;
 import hudson.model.listeners.SaveableListener;
+import hudson.tasks.BuildStep;
 import hudson.util.DescribableList;
 import hudson.util.VariableResolver;
 import org.kohsuke.stapler.StaplerRequest;
@@ -40,7 +46,9 @@ import org.kohsuke.stapler.export.Exported;
 import javax.servlet.ServletException;
 import java.io.File;
 import java.io.IOException;
+import java.util.Collections;
 import java.util.List;
+import java.util.Vector;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -54,9 +62,56 @@ public class LabelAtom extends Label implements Saveable {
     private DescribableList<LabelAtomProperty,LabelAtomPropertyDescriptor> properties =
             new DescribableList<LabelAtomProperty,LabelAtomPropertyDescriptor>(this);
 
+    @CopyOnWrite
+    protected transient volatile List<Action> transientActions = new Vector<Action>();
+
     public LabelAtom(String name) {
         super(name);
         load();
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * <p>
+     * Note that this method returns a read-only view of {@link Action}s.
+     * {@link LabelAtomProperty}s who want to add a project action
+     * should do so by implementing {@link LabelAtomProperty#getActions(LabelAtom)}.
+     */
+    @Override
+    public synchronized List<Action> getActions() {
+        // add all the transient actions, too
+        List<Action> actions = new Vector<Action>(super.getActions());
+        actions.addAll(transientActions);
+        // return the read only list to cause a failure on plugins who try to add an action here
+        return Collections.unmodifiableList(actions);
+    }
+
+    protected void updateTransientActions() {
+        Vector<Action> ta = new Vector<Action>();
+
+        // add the config link
+        ta.add(new Action() {
+            public String getIconFileName() {
+                if (Hudson.getInstance().hasPermission(Hudson.ADMINISTER))
+                    return "setting.gif";
+                else
+                    return null;
+            }
+
+            public String getDisplayName() {
+                return "Configure";
+            }
+
+            public String getUrlName() {
+                return "configure";
+            }
+        });
+
+        for (LabelAtomProperty p : properties)
+            ta.addAll(p.getActions(this));
+
+        transientActions = ta;
     }
 
     /**
@@ -120,6 +175,7 @@ public class LabelAtom extends Label implements Saveable {
         app.checkPermission(Hudson.ADMINISTER);
 
         properties.rebuildHetero(req, req.getSubmittedForm(), getApplicablePropertyDescriptors(), "properties");
+        updateTransientActions();
         save();
 
         // take the user back to the label top page.
