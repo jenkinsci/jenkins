@@ -249,6 +249,10 @@ public final class TcpSlaveAgentListener extends Thread {
                             }
                         }
                     });
+            } catch (AbortException e) {
+                logw.println(e.getMessage());
+                logw.println("Failed to establish the connection with the slave");
+                throw e;
             } catch (IOException e) {
                 logw.println("Failed to establish the connection with the slave"); 
                 e.printStackTrace(logw);
