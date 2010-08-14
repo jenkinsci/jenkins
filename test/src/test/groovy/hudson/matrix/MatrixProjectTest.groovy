@@ -23,11 +23,6 @@
  */
 package hudson.matrix
 
-import hudson.matrix.Axis
-import hudson.matrix.AxisList
-import hudson.matrix.MatrixBuild
-import hudson.matrix.MatrixProject
-import hudson.matrix.MatrixRun
 import hudson.model.Cause
 import hudson.model.Result
 import hudson.tasks.Ant
@@ -49,6 +44,8 @@ import hudson.util.OneShotEvent
 import java.util.concurrent.Future
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.TimeoutException
+import hudson.model.JDK
+import hudson.model.Slave
 
 /**
  *
@@ -131,8 +128,8 @@ public class MatrixProjectTest extends HudsonTestCase {
 
         // set up 2x2 matrix
         AxisList axes = new AxisList();
-        axes.add(new Axis("db","mysql","oracle"));
-        axes.add(new Axis("direction","north","south"));
+        axes.add(new TextAxis("db","mysql","oracle"));
+        axes.add(new TextAxis("direction","north","south"));
         p.setAxes(axes);
 
         return p;
@@ -178,7 +175,7 @@ public class MatrixProjectTest extends HudsonTestCase {
         // 5*5*5*5*5 matrix
         def p = createMatrixProject();
         p.axes = new AxisList(
-            ['a','b','c','d','e'].collect { name -> new Axis(name, (1..4)*.toString() ) }
+            ['a','b','c','d','e'].collect { name -> new TextAxis(name, (1..4)*.toString() ) }
         );
         assertRectangleTable(p)
     }
@@ -188,9 +185,54 @@ public class MatrixProjectTest extends HudsonTestCase {
         // 2*3*4*5*6 matrix
         def p = createMatrixProject();
         p.axes = new AxisList(
-            (2..6).collect { n -> new Axis("axis${n}", (1..n)*.toString() ) }
+            (2..6).collect { n -> new TextAxis("axis${n}", (1..n)*.toString() ) }
         );
         assertRectangleTable(p)
+    }
+
+    /**
+     * Makes sure that the configuration correctly roundtrips.
+     */
+    public void testConfigRoundtrip() {
+        hudson.getJDKs().addAll([
+                new JDK("jdk1.7","somewhere"),
+                new JDK("jdk1.6","here"),
+                new JDK("jdk1.5","there")]);
+
+        List<Slave> slaves = (0..2).collect { createSlave() }
+
+        def p = createMatrixProject();
+        p.axes.add(new JDKAxis(["jdk1.6","jdk1.5"]));
+        p.axes.add(new LabelAxis("label1",[slaves[0].nodeName, slaves[1].nodeName]));
+        p.axes.add(new LabelAxis("label2",[slaves[2].nodeName])); // make sure single value handling works OK
+        def o = new AxisList(p.axes);
+        configRoundtrip(p);
+        def n = p.axes;
+
+        assertEquals(o.size(),n.size());
+        (0 ..< (o.size())).each { i ->
+            def oi = o[i];
+            def ni = n[i];
+            assertSame(oi.class,ni.class);
+            assertEquals(oi.name,ni.name);
+            assertEquals(oi.values,ni.values);
+        }
+    }
+
+    public void testLabelAxes() {
+        def p = createMatrixProject();
+
+        List<Slave> slaves = (0..<4).collect { createSlave() }
+
+        p.axes.add(new LabelAxis("label1",[slaves[0].nodeName, slaves[1].nodeName]));
+        p.axes.add(new LabelAxis("label2",[slaves[2].nodeName, slaves[3].nodeName]));
+
+        System.out.println(p.labels);
+        assertEquals(4,p.labels.size());
+        assertTrue(p.labels.contains(hudson.getLabel("slave0&&slave2")));
+        assertTrue(p.labels.contains(hudson.getLabel("slave1&&slave2")));
+        assertTrue(p.labels.contains(hudson.getLabel("slave0&&slave3")));
+        assertTrue(p.labels.contains(hudson.getLabel("slave1&&slave3")));
     }
 
     /**
@@ -199,7 +241,7 @@ public class MatrixProjectTest extends HudsonTestCase {
     @Bug(4873)
     void testQuietDownDeadlock() {
         def p = createMatrixProject();
-        p.axes = new AxisList(new Axis("foo","1","2"));
+        p.axes = new AxisList(new TextAxis("foo","1","2"));
         p.runSequentially = true; // so that we can put the 2nd one in the queue
 
         OneShotEvent firstStarted = new OneShotEvent();

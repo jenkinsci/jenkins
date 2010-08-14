@@ -45,6 +45,7 @@ THE SOFTWARE.
 
   <f:slave-mode name="mode" node="${it}" />
 
+  <!-- TODO: should be packaged as a tag -->
   <f:dropdownList name="slave.launcher" title="${%Launch method}"
                   help="${descriptor.getHelpFile('launcher')}">
     <j:forEach var="d" items="${h.getComputerLauncherDescriptors()}">

@@ -32,8 +32,8 @@ THE SOFTWARE.
     <st:attribute name="name" use="required">
       form name that receives an array for all the items in the heterogeneous list.
     </st:attribute>
-    <st:attribute name="items" use="required">
-      existing items to be displayed
+    <st:attribute name="items" use="required" type="java.util.Collection">
+      existing items to be displayed. Something iterable, such as array or collection.
     </st:attribute>
     <st:attribute name="descriptors" use="required">
       all types that the user can add.

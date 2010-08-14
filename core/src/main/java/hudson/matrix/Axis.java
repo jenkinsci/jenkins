@@ -23,12 +23,18 @@
  */
 package hudson.matrix;
 
+import hudson.DescriptorExtensionList;
+import hudson.ExtensionPoint;
 import hudson.Util;
+import hudson.model.AbstractDescribableImpl;
+import hudson.model.Descriptor;
+import hudson.model.Hudson;
 import hudson.util.QuotedStringTokenizer;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.DataBoundConstructor;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.List;
@@ -45,15 +51,21 @@ import java.util.Arrays;
  *
  * @author Kohsuke Kawaguchi
  */
-public final class Axis implements Comparable<Axis>, Iterable<String> {
+public class Axis extends AbstractDescribableImpl<Axis> implements Comparable<Axis>, Iterable<String>, ExtensionPoint {
     /**
      * Name of this axis.
      * Used as a variable name.
+     *
+     * @deprecated as of 1.373
+     *      Use {@link #getName()}
      */
     public final String name;
 
     /**
      * Possible values for this axis.
+     *
+     * @deprecated as of 1.373
+     *      Use {@link #getValues()}
      */
     public final List<String> values;
 
@@ -74,29 +86,32 @@ public final class Axis implements Comparable<Axis>, Iterable<String> {
      * Axis with empty values need to be removed later.
      */
     @DataBoundConstructor
-    public Axis(String name, String value) {
+    public Axis(String name, String valueString) {
         this.name = name;
-        this.values = new ArrayList<String>(Arrays.asList(Util.tokenize(value)));
+        this.values = new ArrayList<String>(Arrays.asList(Util.tokenize(valueString)));
     }
 
     /**
-     * Returns ture if this axis is a system-reserved axis
-     * that has special treatment.
+     * Returns true if this axis is a system-reserved axis
+     * that <strike>has</strike> used to have af special treatment.
+     *
+     * @deprecated as of 1.373
+     *      System vs user difference are generalized into extension point.
      */
     public boolean isSystem() {
-        return name.equals("jdk") || name.equals("label");
+        return false;
     }
 
     public Iterator<String> iterator() {
-        return values.iterator();
+        return getValues().iterator();
     }
 
     public int size() {
-        return values.size();
+        return getValues().size();
     }
 
     public String value(int index) {
-        return values.get(index);
+        return getValues().get(index);
     }
 
     /**
@@ -112,6 +127,26 @@ public final class Axis implements Comparable<Axis>, Iterable<String> {
      */
     public int compareTo(Axis that) {
         return this.name.compareTo(that.name);
+    }
+
+    /**
+     * Name of this axis.
+     * Used as a variable name.
+     */
+    public String getName() {
+        return name;
+    }
+
+    /**
+     * Possible values for this axis.
+     */
+    public List<String> getValues() {
+        return Collections.unmodifiableList(values);
+    }
+
+    @Override
+    public AxisDescriptor getDescriptor() {
+        return (AxisDescriptor)super.getDescriptor();
     }
 
     @Override
@@ -153,5 +188,26 @@ public final class Axis implements Comparable<Axis>, Iterable<String> {
         if(values.isEmpty())
             return null;
         return new Axis(name,values);
+    }
+
+    /**
+     * Previously we used to persist {@link Axis}, but now those are divided into subtypes.
+     * So upon deserialization, resolve to the proper type.
+     */
+    public Object readResolve() {
+        if (getClass()!=Axis.class) return this;
+
+        if (getName().equals("jdk"))
+            return new JDKAxis(getValues());
+        if (getName().equals("label"))
+            return new LabelAxis(getName(),getValues());
+        return new TextAxis(getName(),getValues());
+    }
+
+    /**
+     * Returns all the registered {@link AxisDescriptor}s.
+     */
+    public static DescriptorExtensionList<Axis,AxisDescriptor> all() {
+        return Hudson.getInstance().getDescriptorList(Axis.class);
     }
 }
