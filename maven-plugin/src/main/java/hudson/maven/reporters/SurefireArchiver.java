@@ -103,7 +103,7 @@ public class SurefireArchiver extends MavenReporter {
 
             if(result==null) {
                 long t = System.currentTimeMillis() - build.getMilliSecsSinceBuildStart();
-                result = new TestResult(t - 1000/*error margin*/, ds);
+                result = new TestResult(t - 1000/*error margin*/, ds, true);
             } else
                 result.parse(build.getTimestamp().getTimeInMillis() - 1000/*error margin*/, ds);
 

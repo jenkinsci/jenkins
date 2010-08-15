@@ -24,6 +24,8 @@
 package hudson.tasks.junit;
 
 import hudson.tasks.test.TestObject;
+import hudson.util.IOException2;
+import org.apache.commons.io.FileUtils;
 import org.dom4j.Document;
 import org.dom4j.DocumentException;
 import org.dom4j.Element;
@@ -32,11 +34,14 @@ import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.export.ExportedBean;
 
 import java.io.File;
+import java.io.IOException;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * Result of one test suite.
@@ -82,7 +87,7 @@ public final class SuiteResult implements Serializable {
      * This method returns a collection, as a single XML may have multiple &lt;testsuite>
      * elements wrapped into the top-level &lt;testsuites>.
      */
-    static List<SuiteResult> parse(File xmlReport, boolean keepLongStdio) throws DocumentException {
+    static List<SuiteResult> parse(File xmlReport, boolean keepLongStdio) throws DocumentException, IOException {
         List<SuiteResult> r = new ArrayList<SuiteResult>();
 
         // parse into DOM
@@ -106,7 +111,13 @@ public final class SuiteResult implements Serializable {
         return r;
     }
 
-    private SuiteResult(File xmlReport, Element suite, boolean keepLongStdio) throws DocumentException {
+    /**
+     * @param xmlReport
+     *      A JUnit XML report file whose top level element is 'testsuite'.
+     * @param suite
+     *      The parsed result of {@code xmlReport}
+     */
+    private SuiteResult(File xmlReport, Element suite, boolean keepLongStdio) throws DocumentException, IOException {
     	this.file = xmlReport.getAbsolutePath();
         String name = suite.attributeValue("name");
         if(name==null)
@@ -149,8 +160,26 @@ public final class SuiteResult implements Serializable {
             addCase(new CaseResult(this, e, classname, keepLongStdio));
         }
 
-        stdout = CaseResult.possiblyTrimStdio(cases, keepLongStdio, suite.elementText("system-out"));
-        stderr = CaseResult.possiblyTrimStdio(cases, keepLongStdio, suite.elementText("system-err"));
+        String stdout = suite.elementText("system-out");
+        String stderr = suite.elementText("system-err");
+        if (stdout==null && stderr==null) {
+            // Surefire never puts stdout/stderr in the XML. Instead, it goes to a separate file
+            Matcher m = SUREFIRE_FILENAME.matcher(xmlReport.getName());
+            if (m.matches()) {
+                // look for ***-output.txt from TEST-***.xml
+                File mavenOutputFile = new File(xmlReport.getParentFile(),m.group(1)+"-output.txt");
+                if (mavenOutputFile.exists()) {
+                    try {
+                        stdout = FileUtils.readFileToString(mavenOutputFile);
+                    } catch (IOException e) {
+                        throw new IOException2("Failed to read "+mavenOutputFile,e);
+                    }
+                }
+            }
+        }
+
+        this.stdout = CaseResult.possiblyTrimStdio(cases, keepLongStdio, stdout);
+        this.stderr = CaseResult.possiblyTrimStdio(cases, keepLongStdio, stderr);
     }
 
     /*package*/ void addCase(CaseResult cr) {
@@ -263,4 +292,6 @@ public final class SuiteResult implements Serializable {
     }
 
     private static final long serialVersionUID = 1L;
+
+    private static final Pattern SUREFIRE_FILENAME = Pattern.compile("TEST-(.+)\\.xml");
 }
