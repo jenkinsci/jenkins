@@ -1,7 +1,7 @@
 /*
  * The MIT License
  * 
- * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, Tom Huybrechts
+ * Copyright (c) 2004-2010, Sun Microsystems, Inc., Kohsuke Kawaguchi, Tom Huybrechts
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -27,11 +27,11 @@ import antlr.ANTLRException;
 import hudson.Util;
 import static hudson.Util.fixNull;
 
-import hudson.model.label.LabelAtom;
-import hudson.model.label.LabelExpression;
-import hudson.model.label.LabelExpressionLexer;
-import hudson.model.label.LabelExpressionParser;
-import hudson.model.label.LabelOperatorPrecedence;
+import hudson.model.labels.LabelAtom;
+import hudson.model.labels.LabelExpression;
+import hudson.model.labels.LabelExpressionLexer;
+import hudson.model.labels.LabelExpressionParser;
+import hudson.model.labels.LabelOperatorPrecedence;
 import hudson.slaves.NodeProvisioner;
 import hudson.slaves.Cloud;
 import hudson.util.VariableResolver;

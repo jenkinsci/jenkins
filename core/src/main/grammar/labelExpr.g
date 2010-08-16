@@ -22,7 +22,7 @@
  * THE SOFTWARE.
  */
 header {
-  package hudson.model.label;
+  package hudson.model.labels;
   import hudson.model.Label;
 }
 

@@ -21,20 +21,23 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package hudson.model.label;
-
-import hudson.Extension;
-import hudson.model.Descriptor;
+package hudson.model.labels;
 
 /**
- * {@link Descriptor} for {@link LabelAtom}.
- *
- * <p>
- * Put {@link Extension} on your descriptor implementation to have it auto-registered.
+ * Precedence of the top most operator.
  *
  * @author Kohsuke Kawaguchi
- * @since 1.373
+ * @since 1.372
  */
-public abstract class LabelAtomPropertyDescriptor extends Descriptor<LabelAtomProperty> {
+public enum LabelOperatorPrecedence {
+    ATOM(null), NOT("!"), AND("&&"), OR("||"), IMPLIES("->"), IFF("<->");
 
+    /**
+     * String representation of this operator.
+     */
+    public final String str;
+
+    LabelOperatorPrecedence(String str) {
+        this.str = str;
+    }
 }

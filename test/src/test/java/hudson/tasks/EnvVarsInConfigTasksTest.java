@@ -1,7 +1,7 @@
 package hudson.tasks;
 
 import hudson.EnvVars;
-import hudson.model.label.LabelAtom;
+import hudson.model.labels.LabelAtom;
 import hudson.tools.ToolProperty;
 import hudson.maven.MavenModuleSet;
 import hudson.maven.MavenModuleSetBuild;
