@@ -79,7 +79,8 @@ public class MatrixProjectTest extends HudsonTestCase {
      */
     public void testBuildAxisInMaven() throws Exception {
         MatrixProject p = createMatrixProject();
-        p.getBuildersList().add(new Maven('-Dprop=${db} validate',null));
+        Maven.MavenInstallation maven = configureDefaultMaven();
+        p.getBuildersList().add(new Maven('-Dprop=${db} validate',maven.getName()));
 
         // we need a dummy build script that echos back our property
         p.setScm(new SingleFileSCM("pom.xml",getClass().getResource("echo-property.pom")));
