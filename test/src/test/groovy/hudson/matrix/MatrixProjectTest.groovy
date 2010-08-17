@@ -145,7 +145,7 @@ public class MatrixProjectTest extends HudsonTestCase {
     public void testFingerprinting() throws Exception {
         MatrixProject p = createMatrixProject();
         if (Functions.isWindows()) 
-           p.getBuildersList().add(new BatchFile("touch p"));
+           p.getBuildersList().add(new BatchFile("echo \"\" > p"));
         else 
            p.getBuildersList().add(new Shell("touch p"));
         
