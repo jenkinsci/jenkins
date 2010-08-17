@@ -30,6 +30,7 @@ import hudson.tasks.ArtifactArchiver
 import hudson.tasks.Fingerprinter
 import hudson.tasks.Maven
 import hudson.tasks.Shell
+import hudson.tasks.BatchFile
 import org.jvnet.hudson.test.Email
 import org.jvnet.hudson.test.HudsonTestCase
 import org.jvnet.hudson.test.SingleFileSCM
@@ -46,6 +47,7 @@ import java.util.concurrent.TimeUnit
 import java.util.concurrent.TimeoutException
 import hudson.model.JDK
 import hudson.model.Slave
+import hudson.Functions
 
 /**
  *
@@ -142,7 +144,11 @@ public class MatrixProjectTest extends HudsonTestCase {
     @Email("http://www.nabble.com/1.286-version-and-fingerprints-option-broken-.-td22236618.html")
     public void testFingerprinting() throws Exception {
         MatrixProject p = createMatrixProject();
-        p.getBuildersList().add(new Shell("touch p"));
+        if (Functions.isWindows()) 
+           p.getBuildersList().add(new BatchFile("touch p"));
+        else 
+           p.getBuildersList().add(new Shell("touch p"));
+        
         p.getPublishersList().add(new ArtifactArchiver("p",null,false));
         p.getPublishersList().add(new Fingerprinter("",true));
         buildAndAssertSuccess(p);
