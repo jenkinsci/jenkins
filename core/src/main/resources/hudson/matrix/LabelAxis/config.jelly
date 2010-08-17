@@ -43,7 +43,7 @@ THE SOFTWARE.
           return values.include(v) ? " checked " : "";
         }        
         <j:forEach var="l" items="${app.labelAtoms}">
-          new YAHOO.widget.TextNode('&lt;input type="checkbox" name="values" value="${l.name}" '+has("${l.name}")+'&gt;<label class="attach-previous">${h.jsStringEscape(l.name)} (${h.jsStringEscape(l.description)})</label>', ${l.isSelfLabel()?'machines':'labels'}, false);
+          new YAHOO.widget.TextNode('&lt;input type="checkbox" name="values" json="${l.name}" '+has("${l.name}")+'&gt;<label class="attach-previous">${h.jsStringEscape(l.name)} (${h.jsStringEscape(l.description)})</label>', ${l.isSelfLabel()?'machines':'labels'}, false);
         </j:forEach>
 
         tree.draw();
