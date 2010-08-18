@@ -58,7 +58,7 @@ public class JDKAxis extends Axis {
     public static class DescriptorImpl extends AxisDescriptor {
         @Override
         public String getDisplayName() {
-            return "JDK";
+            return Messages.JDKAxis_DisplayName();
         }
 
         /**

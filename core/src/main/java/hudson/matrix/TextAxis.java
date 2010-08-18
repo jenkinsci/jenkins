@@ -28,7 +28,7 @@ public class TextAxis extends Axis {
     public static class DescriptorImpl extends AxisDescriptor {
         @Override
         public String getDisplayName() {
-            return "User-defined Axis";
+            return Messages.TextArea_DisplayName();
         }
     }
 }

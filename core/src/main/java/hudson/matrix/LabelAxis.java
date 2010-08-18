@@ -49,7 +49,7 @@ public class LabelAxis extends Axis {
     public static class DescriptorImpl extends AxisDescriptor {
         @Override
         public String getDisplayName() {
-            return "Slaves";
+            return Messages.LabelAxis_DisplayName();
         }
 
         /**
