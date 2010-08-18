@@ -33,6 +33,7 @@ import hudson.tasks.Shell;
 import hudson.scm.NullSCM;
 import hudson.Launcher;
 import hudson.FilePath;
+import hudson.Functions;
 import hudson.Util;
 import hudson.tasks.ArtifactArchiver;
 import hudson.util.StreamTaskListener;
@@ -219,6 +220,10 @@ public class AbstractProjectTest extends HudsonTestCase {
 
     @Bug(1986)
     public void testBuildSymlinks() throws Exception {
+        // If we're on Windows, don't bother doing this.
+        if (Functions.isWindows())
+            return;
+
         FreeStyleProject job = createFreeStyleProject();
         job.getBuildersList().add(new Shell("echo \"Build #$BUILD_NUMBER\"\n"));
         FreeStyleBuild build = job.scheduleBuild2(0, new Cause.UserCause()).get();
@@ -253,6 +258,10 @@ public class AbstractProjectTest extends HudsonTestCase {
 
     @Bug(2543)
     public void testSymlinkForPostBuildFailure() throws Exception {
+        // If we're on Windows, don't bother doing this.
+        if (Functions.isWindows())
+            return;
+
         // Links should be updated after post-build actions when final build result is known
         FreeStyleProject job = createFreeStyleProject();
         job.getBuildersList().add(new Shell("echo \"Build #$BUILD_NUMBER\"\n"));
