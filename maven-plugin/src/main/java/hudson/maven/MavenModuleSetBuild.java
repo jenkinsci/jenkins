@@ -712,8 +712,23 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
             }
         }
 
+        @Override
         void preBuild(MavenSession session, ReactorManager rm, EventDispatcher dispatcher) throws BuildFailureException, LifecycleExecutionException, IOException, InterruptedException {
-            // TODO
+            // set all modules which are not actually being build (in incremental builds) to NOT_BUILD
+            
+            @SuppressWarnings("unchecked")
+            List<MavenProject> projects = rm.getSortedProjects();
+            Set<ModuleName> buildingProjects = new HashSet<ModuleName>();
+            for (MavenProject p : projects) {
+                buildingProjects.add(new ModuleName(p));
+            }
+            
+            for (Entry<ModuleName,MavenBuildProxy2> e : this.proxies.entrySet()) {
+                if (! buildingProjects.contains(e.getKey())) {
+                    e.getValue().setResult(Result.NOT_BUILT);
+                    e.getValue().end();
+                }
+            }
         }
 
         void postBuild(MavenSession session, ReactorManager rm, EventDispatcher dispatcher) throws BuildFailureException, LifecycleExecutionException, IOException, InterruptedException {
