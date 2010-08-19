@@ -1,7 +1,7 @@
 /*
  * The MIT License
  * 
- * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, Tom Huybrechts
+ * Copyright (c) 2004-2010, Sun Microsystems, Inc., Kohsuke Kawaguchi, Tom Huybrechts
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -27,11 +27,11 @@ import antlr.ANTLRException;
 import hudson.Util;
 import static hudson.Util.fixNull;
 
-import hudson.model.label.LabelAtom;
-import hudson.model.label.LabelExpression;
-import hudson.model.label.LabelExpressionLexer;
-import hudson.model.label.LabelExpressionParser;
-import hudson.model.label.LabelOperatorPrecedence;
+import hudson.model.labels.LabelAtom;
+import hudson.model.labels.LabelExpression;
+import hudson.model.labels.LabelExpressionLexer;
+import hudson.model.labels.LabelExpressionParser;
+import hudson.model.labels.LabelOperatorPrecedence;
 import hudson.slaves.NodeProvisioner;
 import hudson.slaves.Cloud;
 import hudson.util.VariableResolver;
@@ -61,14 +61,14 @@ import com.thoughtworks.xstream.io.HierarchicalStreamReader;
  * @see Hudson#getLabel(String) 
  */
 @ExportedBean
-public abstract class Label implements Comparable<Label>, ModelObject {
-    protected final String name;
-    private volatile Set<Node> nodes;
-    private volatile Set<Cloud> clouds;
+public abstract class Label extends Actionable implements Comparable<Label>, ModelObject {
+    protected transient final String name;
+    private transient volatile Set<Node> nodes;
+    private transient volatile Set<Cloud> clouds;
 
     @Exported
-    public final LoadStatistics loadStatistics;
-    public final NodeProvisioner nodeProvisioner;
+    public transient final LoadStatistics loadStatistics;
+    public transient final NodeProvisioner nodeProvisioner;
 
     public Label(String name) {
         this.name = name;
@@ -99,6 +99,17 @@ public abstract class Label implements Comparable<Label>, ModelObject {
 
     public String getDisplayName() {
         return name;
+    }
+
+    /**
+     * Relative URL from the context path, that ends with '/'.
+     */
+    public String getUrl() {
+        return "label/"+name+'/';
+    }
+
+    public String getSearchUrl() {
+        return getUrl();
     }
 
     /**

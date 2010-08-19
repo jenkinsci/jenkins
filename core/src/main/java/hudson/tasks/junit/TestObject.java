@@ -1,7 +1,7 @@
 /*
  * The MIT License
  * 
- * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, Tom Huybrechts, Yahoo! Inc.
+ * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, Tom Huybrechts, Yahoo! Inc., InfraDNA, Inc.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,35 +23,22 @@
  */
 package hudson.tasks.junit;
 
-import hudson.Util;
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractModelObject;
-import hudson.model.Action;
 import hudson.model.Api;
-import hudson.model.Item;
-
-import java.io.IOException;
-import java.io.Serializable;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-import java.util.WeakHashMap;
-
-import javax.servlet.ServletException;
-
 import hudson.tasks.test.AbstractTestResultAction;
-import org.kohsuke.stapler.HttpRedirect;
-import org.kohsuke.stapler.HttpResponse;
-import org.kohsuke.stapler.QueryParameter;
-import org.kohsuke.stapler.StaplerRequest;
-import org.kohsuke.stapler.StaplerResponse;
 import org.kohsuke.stapler.export.ExportedBean;
+
+import java.io.Serializable;
+import java.util.List;
 
 /**
  * Stub of base class for all test result objects. The real implementation of
  * the TestObject is in hudson.tasks.test.TestObject. This class simply
  * defines abstract methods so that legacy code will continue to compile.
+ *
  * @deprecated
+ *      Use {@link hudson.tasks.test.TestObject} instead.
  * 
  * @author Kohsuke Kawaguchi
  */

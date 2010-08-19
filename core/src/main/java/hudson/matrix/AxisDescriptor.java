@@ -21,23 +21,47 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package hudson.model.label;
+package hudson.matrix;
+
+import hudson.Util;
+import hudson.model.Descriptor;
+import hudson.model.Failure;
+import hudson.model.Hudson;
+import hudson.util.FormValidation;
+import org.kohsuke.stapler.QueryParameter;
 
 /**
- * Precedence of the top most operator.
+ * {@link Descriptor} for {@link Axis}
  *
  * @author Kohsuke Kawaguchi
- * @since 1.372
  */
-public enum LabelOperatorPrecedence {
-    ATOM(null), NOT("!"), AND("&&"), OR("||"), IMPLIES("->"), IFF("<->");
+public abstract class AxisDescriptor extends Descriptor<Axis> {
+    protected AxisDescriptor(Class<? extends Axis> clazz) {
+        super(clazz);
+    }
+
+    protected AxisDescriptor() {
+    }
 
     /**
-     * String representation of this operator.
+     * Return false if the user shouldn't be able to create thie axis from the UI.
      */
-    public final String str;
+    public boolean isInstantiable() {
+        return true;
+    }
 
-    LabelOperatorPrecedence(String str) {
-        this.str = str;
+    /**
+     * Makes sure that the given name is good as a axis name.
+     */
+    public FormValidation doCheckName(@QueryParameter String value) {
+        if(Util.fixEmpty(value)==null)
+            return FormValidation.ok();
+
+        try {
+            Hudson.checkGoodName(value);
+            return FormValidation.ok();
+        } catch (Failure e) {
+            return FormValidation.error(e.getMessage());
+        }
     }
 }

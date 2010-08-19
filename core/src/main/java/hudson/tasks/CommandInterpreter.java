@@ -63,14 +63,12 @@ public abstract class CommandInterpreter extends Builder {
         FilePath script=null;
         try {
             try {
-                script = ws.createTextTempFile("hudson", getFileExtension(), getContents(), false);
+                script = createScriptFile(ws);
             } catch (IOException e) {
                 Util.displayIOException(e,listener);
                 e.printStackTrace(listener.fatalError(Messages.CommandInterpreter_UnableToProduceScript()));
                 return false;
             }
-
-            String[] cmd = buildCommandLine(script);
 
             int r;
             try {
@@ -80,7 +78,8 @@ public abstract class CommandInterpreter extends Builder {
                 // convert variables to all upper cases.
                 for(Map.Entry<String,String> e : build.getBuildVariables().entrySet())
                     envVars.put(e.getKey(),e.getValue());
-                r = launcher.launch().cmds(cmd).envs(envVars).stdout(listener).pwd(ws).join();
+
+                r = launcher.launch().cmds(buildCommandLine(script)).envs(envVars).stdout(listener).pwd(ws).join();
             } catch (IOException e) {
                 Util.displayIOException(e,listener);
                 e.printStackTrace(listener.fatalError(Messages.CommandInterpreter_CommandFailed()));
@@ -98,7 +97,14 @@ public abstract class CommandInterpreter extends Builder {
         }
     }
 
-    protected abstract String[] buildCommandLine(FilePath script);
+    /**
+     * Creates a script file in a temporary name in the specified directory.
+     */
+    public FilePath createScriptFile(FilePath dir) throws IOException, InterruptedException {
+        return dir.createTextTempFile("hudson", getFileExtension(), getContents(), false);
+    }
+
+    public abstract String[] buildCommandLine(FilePath script);
 
     protected abstract String getContents();
 

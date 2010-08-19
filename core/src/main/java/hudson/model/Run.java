@@ -1658,6 +1658,9 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
             Executor e = (Executor) t;
             env.put("EXECUTOR_NUMBER",String.valueOf(e.getNumber()));
             env.put("NODE_NAME",e.getOwner().getName());
+            Node n = e.getOwner().getNode();
+            if (n!=null)
+                env.put("NODE_LABELS",Util.join(n.getAssignedLabels()," "));
         }
 
         return env;

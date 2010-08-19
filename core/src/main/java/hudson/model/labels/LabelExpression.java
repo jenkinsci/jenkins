@@ -21,7 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package hudson.model.label;
+package hudson.model.labels;
 
 import hudson.model.Label;
 import hudson.util.VariableResolver;

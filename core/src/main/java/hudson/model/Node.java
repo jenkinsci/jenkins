@@ -1,7 +1,8 @@
 /*
  * The MIT License
  * 
- * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, Seiji Sogabe, Stephen Connolly
+ * Copyright (c) 2004-2010, Sun Microsystems, Inc., Kohsuke Kawaguchi,
+ * Seiji Sogabe, Stephen Connolly
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -29,7 +30,7 @@ import hudson.FilePath;
 import hudson.FileSystemProvisioner;
 import hudson.Launcher;
 import hudson.model.Queue.Task;
-import hudson.model.label.LabelAtom;
+import hudson.model.labels.LabelAtom;
 import hudson.model.queue.CauseOfBlockage;
 import hudson.node_monitors.NodeMonitor;
 import hudson.remoting.VirtualChannel;

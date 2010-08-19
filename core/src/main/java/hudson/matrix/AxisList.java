@@ -25,12 +25,16 @@ package hudson.matrix;
 
 import com.thoughtworks.xstream.XStream;
 import com.thoughtworks.xstream.converters.Converter;
+import hudson.Util;
+import hudson.model.Label;
 import hudson.util.RobustCollectionConverter;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Arrays;
+import java.util.Set;
 
 /**
  * List of {@link Axis}.
@@ -41,7 +45,7 @@ public class AxisList extends ArrayList<Axis> {
     public AxisList() {
     }
 
-    public AxisList(Collection<Axis> c) {
+    public AxisList(Collection<? extends Axis> c) {
         super(c);
     }
 
@@ -55,6 +59,13 @@ public class AxisList extends ArrayList<Axis> {
                 return a;
         }
         return null;
+    }
+
+    /**
+     * Creates a subset of the list that only contains the type assignable to the specified type.
+     */
+    public AxisList subList(Class<? extends Axis> subType) {
+        return new AxisList(Util.filter(this,subType));
     }
 
     @Override

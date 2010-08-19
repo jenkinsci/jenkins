@@ -28,7 +28,6 @@ import java.util.List;
 import java.net.URISyntaxException;
 
 import junit.framework.TestCase;
-import org.dom4j.DocumentException;
 
 import hudson.XmlFile;
 import java.io.FileWriter;
@@ -48,7 +47,7 @@ public class SuiteResultTest extends TestCase {
         return new File(SuiteResultTest.class.getResource(name).toURI());
     }
 
-    private SuiteResult parseOne(File file) throws DocumentException {
+    private SuiteResult parseOne(File file) throws Exception {
         List<SuiteResult> results = SuiteResult.parse(file, false);
         assertEquals(1,results.size());
         return results.get(0);

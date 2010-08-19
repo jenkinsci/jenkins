@@ -10,6 +10,7 @@ import hudson.util.StreamTaskListener;
 import hudson.tools.JDKInstaller.Platform;
 import hudson.tools.JDKInstaller.CPU;
 import hudson.FilePath;
+import hudson.Functions;
 import hudson.Launcher.LocalLauncher;
 
 import java.io.File;
@@ -92,6 +93,10 @@ public class JDKInstallerTest extends HudsonTestCase {
      * Fake installation on Unix.
      */
     public void testFakeUnixInstall() throws Exception {
+        // If we're on Windows, don't bother doing this.
+        if (Functions.isWindows())
+            return;
+            
         File bundle = File.createTempFile("fake-jdk-by-hudson","sh");
         try {
             new FilePath(bundle).write(

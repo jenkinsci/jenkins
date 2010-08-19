@@ -21,47 +21,20 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package hudson.model.label;
+package hudson.model.labels;
 
-import hudson.model.Failure;
-import hudson.model.Hudson;
-import hudson.model.Label;
-import hudson.util.VariableResolver;
+import hudson.Extension;
+import hudson.model.Descriptor;
 
 /**
- * Atomic single token label, like "foo" or "bar".
- * 
+ * {@link Descriptor} for {@link LabelAtom}.
+ *
+ * <p>
+ * Put {@link Extension} on your descriptor implementation to have it auto-registered.
+ *
  * @author Kohsuke Kawaguchi
- * @since  1.372
+ * @since 1.373
  */
-public class LabelAtom extends Label {
-    public LabelAtom(String name) {
-        super(name);
-    }
+public abstract class LabelAtomPropertyDescriptor extends Descriptor<LabelAtomProperty> {
 
-    @Override
-    public boolean matches(VariableResolver<Boolean> resolver) {
-        return resolver.resolve(name);
-    }
-
-    @Override
-    public LabelOperatorPrecedence precedence() {
-        return LabelOperatorPrecedence.ATOM;
-    }
-
-    /**
-     * Obtains an atom by its {@linkplain #getName() name}.
-     */
-    public static LabelAtom get(String l) {
-        return Hudson.getInstance().getLabelAtom(l);
-    }
-
-    public static boolean isValidName(String name) {
-        try {
-            Hudson.checkGoodName(name);
-            return true;
-        } catch (Failure failure) {
-            return false;
-        }
-    }
 }

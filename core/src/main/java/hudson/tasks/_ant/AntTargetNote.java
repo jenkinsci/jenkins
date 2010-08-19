@@ -44,7 +44,7 @@ public final class AntTargetNote extends ConsoleNote {
         // still under development. too early to put into production
         if (!ENABLED)   return null;
 
-        MarkupText.SubText t = text.findToken(Pattern.compile("^[^:]+(?=:)"));
+        MarkupText.SubText t = text.findToken(Pattern.compile(".*(?=:)"));
         if (t!=null)
             t.addMarkup(0,t.length(),"<b class=ant-target>","</b>");
         return null;

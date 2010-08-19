@@ -86,7 +86,7 @@ public class Shell extends CommandInterpreter {
         return s;
     }
 
-    protected String[] buildCommandLine(FilePath script) {
+    public String[] buildCommandLine(FilePath script) {
         if(command.startsWith("#!")) {
             // interpreter override
             int end = command.indexOf('\n');

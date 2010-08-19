@@ -25,6 +25,7 @@ package hudson.os.windows;
 
 import hudson.Extension;
 import hudson.lifecycle.WindowsSlaveInstaller;
+import hudson.model.Computer;
 import hudson.model.Descriptor;
 import hudson.model.Hudson;
 import hudson.model.TaskListener;
@@ -108,7 +109,7 @@ public class ManagedWindowsServiceLauncher extends ComputerLauncher {
     public void launch(final SlaveComputer computer, final TaskListener listener) throws IOException, InterruptedException {
         try {
             final PrintStream logger = listener.getLogger();
-            final String name = computer.getName();
+            final String name = determineHost(computer);
 
             logger.println(Messages.ManagedWindowsServiceLauncher_ConnectingTo(name));
 
@@ -277,6 +278,13 @@ public class ManagedWindowsServiceLauncher extends ComputerLauncher {
         } catch (DocumentException e) {
             e.printStackTrace(listener.error(e.getMessage()));
         }
+    }
+
+    /**
+     * Determines the host name (or the IP address) to connect to.
+     */
+    protected String determineHost(Computer c) throws IOException, InterruptedException {
+        return c.getName();
     }
 
     private void copySlaveJar(PrintStream logger, SmbFile remoteRoot) throws IOException {

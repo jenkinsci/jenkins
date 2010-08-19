@@ -23,6 +23,7 @@
  */
 package hudson.matrix;
 
+import hudson.Util;
 import hudson.util.DescribableList;
 import hudson.model.AbstractBuild;
 import hudson.model.Cause;
@@ -192,7 +193,9 @@ public class MatrixConfiguration extends Project<MatrixConfiguration,MatrixRun> 
 
     @Override
     public Label getAssignedLabel() {
-        return Hudson.getInstance().getLabel(combination.get("label"));
+        // combine all the label axes by &&.
+        String expr = Util.join(combination.values(getParent().getAxes().subList(LabelAxis.class)), "&&");
+        return Hudson.getInstance().getLabel(Util.fixEmpty(expr));
     }
 
     @Override

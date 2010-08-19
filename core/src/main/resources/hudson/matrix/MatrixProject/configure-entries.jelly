@@ -41,17 +41,12 @@ THE SOFTWARE.
   </p:config-trigger>
 
   <f:section title="${%Configuration Matrix}">
-    <!-- JDK config -->
-    <j:set var="jdks" value="${app.JDKs}" />
-    <j:if test="${!empty(jdks)}">
-      <f:entry title="JDK" help="/help/matrix/jdk.html">
-        <j:forEach var="jdk" items="${jdks}">
-          <f:checkbox name="jdk.${jdk.name}" id="jdk.${jdk.name}" checked="${it.JDKs.contains(jdk)}" />
-          <label for="jdk.${jdk.name}">${jdk.name}</label>
-          <st:nbsp/>
-        </j:forEach>
-      </f:entry>
-    </j:if>
+    <f:block>
+      <f:hetero-list name="axis" hasHeader="true"
+                     descriptors="${descriptor.axisDescriptors}"
+                     items="${it.axes}"
+                     addCaption="${%Add axis}"/>
+    </f:block>
 
     <!-- master slave -->
     <j:if test="${!empty(app.slaves)}">
@@ -86,29 +81,6 @@ THE SOFTWARE.
       </f:optionalBlock>
     </j:if>
 
-    <j:set var="userAxes" value="${it.userAxes}" />
-    <f:optionalBlock name="hasAxes" title="${%Axes}" checked="${!empty(userAxes)}"
-        help="/help/matrix/axes.html">
-      <f:entry>
-        <f:repeatable var="axis" items="${userAxes}" noAddButton="true" minimum="1">
-          <table>
-            <f:entry title="${%Name}">
-              <f:textbox name="axis.name" value="${axis.name}" checkUrl="'checkAxisName?value='+encodeURIComponent(this.value)"/>
-            </f:entry>
-            <f:entry title="${%Values}" help="/help/matrix/axis-value.html">
-              <f:expandableTextbox name="axis.value" value="${axis.valueString}" />
-            </f:entry>
-            <f:entry>
-              <div align="right">
-                <input type="button" value="${%Add more axis}" class="repeatable-add show-if-last" />
-                <input type="button" value="${%Delete}" class="repeatable-delete show-if-not-only" style="margin-left: 1em;" />
-              </div>
-            </f:entry>
-          </table>
-        </f:repeatable>
-      </f:entry>
-    </f:optionalBlock>
-    
     <f:optionalBlock field="runSequentially" title="${%Run each configuration sequentially}"/>
 
     <f:optionalBlock name="hasCombinationFilter" title="${%Combination Filter}" checked="${!empty(it.combinationFilter)}"

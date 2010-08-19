@@ -24,13 +24,14 @@
 package hudson.matrix;
 
 import hudson.CopyOnWrite;
-import hudson.XmlFile;
-import hudson.Util;
 import hudson.Extension;
+import hudson.Util;
+import hudson.XmlFile;
 import hudson.model.AbstractProject;
+import hudson.model.BuildableItemWithBuildWrappers;
 import hudson.model.DependencyGraph;
 import hudson.model.Descriptor;
-import hudson.model.Failure;
+import hudson.model.Descriptor.FormException;
 import hudson.model.Hudson;
 import hudson.model.Item;
 import hudson.model.ItemGroup;
@@ -38,14 +39,12 @@ import hudson.model.Items;
 import hudson.model.JDK;
 import hudson.model.Job;
 import hudson.model.Label;
+import hudson.model.Queue.FlyweightTask;
+import hudson.model.ResourceController;
 import hudson.model.Result;
 import hudson.model.SCMedItem;
 import hudson.model.Saveable;
 import hudson.model.TopLevelItem;
-import hudson.model.ResourceController;
-import hudson.model.BuildableItemWithBuildWrappers;
-import hudson.model.Queue.FlyweightTask;
-import hudson.model.Descriptor.FormException;
 import hudson.tasks.BuildStep;
 import hudson.tasks.BuildStepDescriptor;
 import hudson.tasks.BuildWrapper;
@@ -55,8 +54,13 @@ import hudson.tasks.Publisher;
 import hudson.triggers.Trigger;
 import hudson.util.CopyOnWriteMap;
 import hudson.util.DescribableList;
-import hudson.util.FormValidation;
+import net.sf.json.JSONObject;
+import org.kohsuke.stapler.HttpResponse;
+import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.StaplerResponse;
+import org.kohsuke.stapler.TokenList;
 
+import javax.servlet.ServletException;
 import java.io.File;
 import java.io.FileFilter;
 import java.io.IOException;
@@ -65,24 +69,13 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.Map.Entry;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
-import javax.servlet.ServletException;
-
-import net.sf.json.JSONObject;
-
-import org.kohsuke.stapler.StaplerRequest;
-import org.kohsuke.stapler.StaplerResponse;
-import org.kohsuke.stapler.TokenList;
-import org.kohsuke.stapler.HttpResponse;
-import org.kohsuke.stapler.QueryParameter;
 
 /**
  * {@link Job} that allows you to run multiple different configurations
@@ -92,9 +85,7 @@ import org.kohsuke.stapler.QueryParameter;
  */
 public class MatrixProject extends AbstractProject<MatrixProject,MatrixBuild> implements TopLevelItem, SCMedItem, ItemGroup<MatrixConfiguration>, Saveable, FlyweightTask, BuildableItemWithBuildWrappers {
     /**
-     * Other configuration axes.
-     *
-     * This also includes special axis "label" and "jdk" if they are configured.
+     * Configuration axes.
      */
     private volatile AxisList axes = new AxisList();
     
@@ -243,6 +234,9 @@ public class MatrixProject extends AbstractProject<MatrixProject,MatrixBuild> im
 
     /**
      * Gets the subset of {@link AxisList} that are not system axes.
+     *
+     * @deprecated as of 1.373
+     *      System vs user difference are generalized into extension point.
      */
     public List<Axis> getUserAxes() {
         List<Axis> r = new ArrayList<Axis>();
@@ -474,12 +468,9 @@ public class MatrixProject extends AbstractProject<MatrixProject,MatrixBuild> im
      * @return never null
      */
     public Set<Label> getLabels() {
-        Axis a = axes.find("label");
-        if(a==null) return Collections.emptySet();
-
         Set<Label> r = new HashSet<Label>();
-        for (String l : a)
-            r.add(Hudson.getInstance().getLabel(l));
+        for (Combination c : axes.subList(LabelAxis.class).list())
+            r.add(Hudson.getInstance().getLabel(Util.join(c.values(),"&&")));
         return r;
     }
 
@@ -549,23 +540,8 @@ public class MatrixProject extends AbstractProject<MatrixProject,MatrixBuild> im
     protected void submit(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException, FormException {
         super.submit(req, rsp);
 
-        AxisList newAxes = new AxisList();
-        HashSet<String> axisNames = new HashSet<String>();
+        JSONObject json = req.getSubmittedForm();
 
-        // parse user axes
-        if(req.getParameter("hasAxes")!=null) {
-            newAxes.addAll(req.bindParametersToList(Axis.class,"axis."));
-            // get rid of empty values
-            for (Iterator<Axis> itr = newAxes.iterator(); itr.hasNext();) {
-                Axis a = itr.next();
-                if(a.values.isEmpty()) { itr.remove(); continue; }
-                checkAxisName(a.name);
-                if (axisNames.contains(a.name))
-                    throw new FormException(Messages.MatrixProject_DuplicateAxisName(),"axis.name");
-                axisNames.add(a.name);
-            }
-        }
-        
         if(req.getParameter("hasCombinationFilter")!=null) {
             this.combinationFilter = Util.nullify(req.getParameter("combinationFilter"));
         } else {
@@ -581,12 +557,10 @@ public class MatrixProject extends AbstractProject<MatrixProject,MatrixBuild> im
         }
 
         // parse system axes
-        newAxes.add(Axis.parsePrefixed(req,"jdk"));
-        if(req.getParameter("multipleNodes")!=null)
-            newAxes.add(Axis.parsePrefixed(req,"label"));
-        this.axes = newAxes;
-
-        JSONObject json = req.getSubmittedForm();
+        DescribableList<Axis,AxisDescriptor> newAxes = new DescribableList<Axis,AxisDescriptor>(this);
+        newAxes.rebuildHetero(req, json, Axis.all(),"axis");
+        checkAxisNames(newAxes);
+        this.axes = new AxisList(newAxes.toList());
 
         runSequentially = json.has("runSequentially");
 
@@ -595,6 +569,19 @@ public class MatrixProject extends AbstractProject<MatrixProject,MatrixBuild> im
         publishers.rebuild(req, json, BuildStepDescriptor.filter(Publisher.all(),this.getClass()));
 
         rebuildConfigurations();
+    }
+
+    /**
+     * Verifies that Axis names are valid and unique.
+     */
+    private void checkAxisNames(Iterable<Axis> newAxes) throws FormException {
+        HashSet<String> axisNames = new HashSet<String>();
+        for (Axis a : newAxes) {
+            a.getDescriptor().doCheckName(a.getName());
+            if (axisNames.contains(a.getName()))
+                throw new FormException(Messages.MatrixProject_DuplicateAxisName(),"axis.name");
+            axisNames.add(a.getName());
+        }
     }
 
     /**
@@ -608,30 +595,6 @@ public class MatrixProject extends AbstractProject<MatrixProject,MatrixBuild> im
         return rsp;
     }
 
-    /**
-     * Makes sure that the given name is good as a axis name.
-     */
-    public FormValidation doCheckAxisName(@QueryParameter String value) {
-        checkPermission(CONFIGURE);
-
-        if(Util.fixEmpty(value)==null)
-            return FormValidation.ok();
-
-        try {
-            checkAxisName(value);
-            return FormValidation.ok();
-        } catch (Failure e) {
-            return FormValidation.error(e.getMessage());
-        }
-    }
-
-    /**
-     * Makes sure that the given name is good as a axis name.
-     * TODO: maybe be even more restrictive since these are used as shell variables
-     */
-    private static void checkAxisName(String name) throws Failure {
-        Hudson.checkGoodName(name);
-    }
 
     public DescriptorImpl getDescriptor() {
         return DESCRIPTOR;
@@ -647,6 +610,18 @@ public class MatrixProject extends AbstractProject<MatrixProject,MatrixBuild> im
 
         public MatrixProject newInstance(String name) {
             return new MatrixProject(name);
+        }
+
+        /**
+         * All {@link AxisDescriptor}s that contribute to the UI.
+         */
+        public List<AxisDescriptor> getAxisDescriptors() {
+            List<AxisDescriptor> r = new ArrayList<AxisDescriptor>();
+            for (AxisDescriptor d : Axis.all()) {
+                if (d.isInstantiable())
+                    r.add(d);
+            }
+            return r;
         }
     }
 

@@ -25,6 +25,7 @@ package hudson.matrix;
 
 import hudson.Util;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -53,7 +54,7 @@ public final class Combination extends TreeMap<String,String> implements Compara
 
     public Combination(AxisList axisList, List<String> values) {
         for(int i=0; i<axisList.size(); i++)
-            super.put(axisList.get(i).name,values.get(i));
+            super.put(axisList.get(i).getName(),values.get(i));
     }
 
     public Combination(AxisList axisList,String... values) {
@@ -65,6 +66,10 @@ public final class Combination extends TreeMap<String,String> implements Compara
             super.put(e.getKey(),e.getValue());
     }
 
+    public String get(Axis a) {
+        return get(a.getName());
+    }
+
     /**
      * Obtains the continuous unique index number of this {@link Combination}
      * in the given {@link AxisList}.
@@ -73,7 +78,7 @@ public final class Combination extends TreeMap<String,String> implements Compara
         int r = 0;
         for (Axis a : axis) {
             r *= a.size();
-            r += a.indexOf(get(a.name));
+            r += a.indexOf(get(a));
         }
         return r;
     }
@@ -92,7 +97,7 @@ public final class Combination extends TreeMap<String,String> implements Compara
     private long toModuloIndex(AxisList axis) {
         long r = 0;
         for (Axis a : axis) {
-            r += a.indexOf(get(a.name));
+            r += a.indexOf(get(a));
             r *= 31;
         }
         return r;
@@ -150,12 +155,22 @@ public final class Combination extends TreeMap<String,String> implements Compara
         StringBuilder buf = new StringBuilder();
         for (Axis a : subset) {
             if(buf.length()>0) buf.append(',');
-            buf.append(a.name).append('=').append(get(a.name));
+            buf.append(a.getName()).append('=').append(get(a));
         }
         if(buf.length()==0) buf.append("default"); // special case to avoid 0-length name.
         return buf.toString();
     }
-    
+
+    /**
+     * Gets the values that correspond to the specified axes, in their order.
+     */
+    public List<String> values(Collection<? extends Axis> axes) {
+        List<String> r = new ArrayList<String>(axes.size());
+        for (Axis a : axes)
+            r.add(get(a));
+        return r;
+    }
+
     /**
      * Converts to the ID string representation:
      * <tt>axisName=value,axisName=value,...</tt>
@@ -218,12 +233,12 @@ public final class Combination extends TreeMap<String,String> implements Compara
         Map<String,Axis> axisByValue = new HashMap<String,Axis>();
 
         for (Axis a : axes) {
-            for (String v : a.values) {
+            for (String v : a.getValues()) {
                 Axis old = axisByValue.put(v,a);
                 if(old!=null) {
                     // these two axes have colliding values
-                    nonUniqueAxes.add(old.name);
-                    nonUniqueAxes.add(a.name);
+                    nonUniqueAxes.add(old.getName());
+                    nonUniqueAxes.add(a.getName());
                 }
             }
         }
