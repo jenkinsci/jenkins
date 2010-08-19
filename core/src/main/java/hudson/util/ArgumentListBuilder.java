@@ -1,7 +1,8 @@
 /*
  * The MIT License
  * 
- * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi
+ * Copyright (c) 2004-2010, Sun Microsystems, Inc., Kohsuke Kawaguchi,
+ * Alan Harder
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -206,7 +207,8 @@ public class ArgumentListBuilder implements Serializable {
      * Wrap arguments in double quotes if they contain any of:
      *   space *?;^&<>|" or % followed by a letter.
      * <br/> These characters are also prepended with a ^ character: ^&<>|
-     * <br/> A " is prepended with another " character.
+     * <br/> A " is prepended with another " character.  Note: Windows has issues
+     * escaping some combinations of quotes and spaces.  Quotes should be avoided.
      * <br/> A % followed by a letter has that letter wrapped in double quotes,
      * to avoid possible variable expansion.  ie, %foo% becomes "%"f"oo%".
      * The second % does not need special handling because it is not followed
