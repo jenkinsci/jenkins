@@ -37,6 +37,11 @@ public abstract class LabelExpression extends Label {
         super(name);
     }
 
+    @Override
+    public String getExpression() {
+        return getDisplayName();
+    }
+
     public static class Not extends LabelExpression {
         private final Label base;
 
@@ -63,7 +68,7 @@ public abstract class LabelExpression extends Label {
         private final Label base;
 
         public Paren(Label base) {
-            super('('+base.getName()+')');
+            super('('+base.getExpression()+')');
             this.base = base;
         }
 
@@ -83,8 +88,8 @@ public abstract class LabelExpression extends Label {
      */
     static String paren(LabelOperatorPrecedence op, Label l) {
         if (op.compareTo(l.precedence())<0)
-            return '('+l.getName()+')';
-        return l.getName();
+            return '('+l.getExpression()+')';
+        return l.getExpression();
     }
 
     public static abstract class Binary extends LabelExpression {

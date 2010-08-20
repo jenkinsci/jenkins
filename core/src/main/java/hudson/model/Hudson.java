@@ -76,7 +76,6 @@ import hudson.remoting.LocalChannel;
 import hudson.remoting.VirtualChannel;
 import hudson.scm.RepositoryBrowser;
 import hudson.scm.SCM;
-import hudson.scm.SCMDescriptor;
 import hudson.search.CollectionSearchIndex;
 import hudson.search.SearchIndexBuilder;
 import hudson.security.ACL;
@@ -105,8 +104,6 @@ import hudson.tasks.BuildWrapper;
 import hudson.tasks.Builder;
 import hudson.tasks.Mailer;
 import hudson.tasks.Publisher;
-import hudson.tools.ToolDescriptor;
-import hudson.tools.ToolInstallation;
 import hudson.triggers.Trigger;
 import hudson.triggers.TriggerDescriptor;
 import hudson.util.AdministrativeError;
@@ -1378,7 +1375,8 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
             try {
                 labels.putIfAbsent(expr,Label.parseExpression(expr));
             } catch (ANTLRException e) {
-                throw new IllegalArgumentException("Invalid label expression: "+expr,e);
+                // laxly accept it as a single label atom for backward compatibility
+                return getLabelAtom(expr);
             }
         }
     }
@@ -1388,8 +1386,6 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
      */
     public LabelAtom getLabelAtom(String name) {
         if (name==null)  return null;
-        if (!LabelAtom.isValidName(name))
-            throw new IllegalArgumentException("Illegal character in a token: "+name);
 
         while(true) {
             Label l = labels.get(name);

@@ -26,15 +26,21 @@ package hudson.model.labels;
 import antlr.ANTLRException;
 import hudson.Launcher;
 import hudson.model.AbstractBuild;
+import hudson.model.AbstractProject;
 import hudson.model.BuildListener;
 import hudson.model.FreeStyleBuild;
 import hudson.model.FreeStyleProject;
+import hudson.model.Label;
+import hudson.model.Node.Mode;
 import hudson.slaves.DumbSlave;
+import hudson.slaves.RetentionStrategy;
 import org.jvnet.hudson.test.HudsonTestCase;
 import org.jvnet.hudson.test.SequenceLock;
 import org.jvnet.hudson.test.TestBuilder;
 
 import java.io.IOException;
+import java.lang.reflect.Field;
+import java.util.Collections;
 import java.util.concurrent.Future;
 
 /**
@@ -136,6 +142,39 @@ public class LabelExpressionTest extends HudsonTestCase {
     public void testParserError() throws Exception {
         parseShouldFail("foo bar");
         parseShouldFail("foo*bar");
+    }
+
+    public void testLaxParsing() {
+        // this should parse as an atom
+        LabelAtom l = (LabelAtom)hudson.getLabel("lucene.zones.apache.org (Solaris 10)");
+        assertEquals(l.getName(),"lucene.zones.apache.org (Solaris 10)");
+        assertEquals(l.getExpression(),"\"lucene.zones.apache.org (Solaris 10)\"");
+    }
+
+    public void testDataCompatibilityWithHostNameWithWhitespace() throws Exception {
+        DumbSlave slave = new DumbSlave("abc def (xyz) : test", "dummy",
+                createTmpDir().getPath(), "1", Mode.NORMAL, "", createComputerLauncher(null), RetentionStrategy.NOOP, Collections.EMPTY_LIST);
+        hudson.addNode(slave);
+
+
+        FreeStyleProject p = createFreeStyleProject();
+        p.setAssignedLabel(hudson.getLabel("abc def"));
+        assertEquals("abc def",p.getAssignedLabel().getName());
+        assertEquals("\"abc def\"",p.getAssignedLabel().getExpression());
+
+        // expression should be persisted, not the name
+        Field f = AbstractProject.class.getDeclaredField("assignedNode");
+        f.setAccessible(true);
+        assertEquals("\"abc def\"",f.get(p));
+
+        // but if the name is set, we'd still like to parse it
+        f.set(p,"a:b c");
+        assertEquals("a:b c",p.getAssignedLabel().getName());
+    }
+
+    public void testQuote() {
+        Label l = hudson.getLabel("\"abc\\\\\\\"def\"");
+        assertEquals("abc\\\"def",l.getName());
     }
 
     /**

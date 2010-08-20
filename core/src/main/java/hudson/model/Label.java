@@ -34,6 +34,7 @@ import hudson.model.labels.LabelExpressionParser;
 import hudson.model.labels.LabelOperatorPrecedence;
 import hudson.slaves.NodeProvisioner;
 import hudson.slaves.Cloud;
+import hudson.util.QuotedStringTokenizer;
 import hudson.util.VariableResolver;
 import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.export.ExportedBean;
@@ -62,6 +63,9 @@ import com.thoughtworks.xstream.io.HierarchicalStreamReader;
  */
 @ExportedBean
 public abstract class Label extends Actionable implements Comparable<Label>, ModelObject {
+    /**
+     * Display name of this label.
+     */
     protected transient final String name;
     private transient volatile Set<Node> nodes;
     private transient volatile Set<Cloud> clouds;
@@ -92,14 +96,25 @@ public abstract class Label extends Actionable implements Comparable<Label>, Mod
         this.nodeProvisioner = new NodeProvisioner(this, loadStatistics);
     }
 
+    /**
+     * Alias for {@link #getDisplayName()}.
+     */
     @Exported
-    public String getName() {
-        return name;
+    public final String getName() {
+        return getDisplayName();
     }
 
+    /**
+     * Returns a human-readable text that represents this label.
+     */
     public String getDisplayName() {
         return name;
     }
+
+    /**
+     * Returns a label expression that represents this label.
+     */
+    public abstract String getExpression();
 
     /**
      * Relative URL from the context path, that ends with '/'.
@@ -425,7 +440,7 @@ public abstract class Label extends Actionable implements Comparable<Label>, Mod
 
         public void marshal(Object source, HierarchicalStreamWriter writer, MarshallingContext context) {
             Label src = (Label) source;
-            writer.setValue(src.getName());
+            writer.setValue(src.getExpression());
         }
 
         public Object unmarshal(HierarchicalStreamReader reader, final UnmarshallingContext context) {
@@ -447,7 +462,7 @@ public abstract class Label extends Actionable implements Comparable<Label>, Mod
         Set<LabelAtom> r = new TreeSet<LabelAtom>();
         labels = fixNull(labels);
         if(labels.length()>0)
-            for( String l : labels.split(" +"))
+            for( String l : new QuotedStringTokenizer(labels).toArray())
                 r.add(Hudson.getInstance().getLabelAtom(l));
         return r;
     }

@@ -76,8 +76,9 @@ options { generateAmbigWarnings=false; }
   : LPAREN l=term1 RPAREN
     { l=l.paren(); }
   | a:ATOM
-    { LabelAtom.isValidName(a.getText()) }?
     { l=LabelAtom.get(a.getText()); }
+  | s:STRINGLITERAL
+    { l=LabelAtom.get(hudson.util.QuotedStringTokenizer.unquote(s.getText())); }
   ;
 
 class LabelExpressionLexer extends Lexer;
@@ -92,7 +93,7 @@ RPAREN: ")";
 
 protected
 IDENTIFIER_PART
-    :   ~( '&' | '|' | '!' | '<' | '>' | '(' | ')' | ' ' | '\t')
+    :   ~( '&' | '|' | '!' | '<' | '>' | '(' | ')' | ' ' | '\t' | '\"' | '\'' )
     ;
 
 ATOM
@@ -104,3 +105,11 @@ WS
   : (' '|'\t')+
     { $setType(Token.SKIP); }
   ;
+
+STRINGLITERAL
+    :   '"'
+        ( '\\' ( 'b' | 't' | 'n' | 'f' | 'r' | '\"' | '\'' | '\\' )   /* escape */
+        |  ~( '\\' | '"' | '\r' | '\n' )
+        )*
+        '"'
+    ;
