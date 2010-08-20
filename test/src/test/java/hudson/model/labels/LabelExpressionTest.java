@@ -141,7 +141,7 @@ public class LabelExpressionTest extends HudsonTestCase {
 
     public void testParserError() throws Exception {
         parseShouldFail("foo bar");
-        parseShouldFail("foo*bar");
+        parseShouldFail("foo (bar)");
     }
 
     public void testLaxParsing() {
@@ -194,7 +194,7 @@ public class LabelExpressionTest extends HudsonTestCase {
     private void parseShouldFail(String expr) {
         try {
             LabelExpression.parseExpression(expr);
-            fail();
+            fail(expr + " should fail to parse");
         } catch (ANTLRException e) {
             // expected
         }
