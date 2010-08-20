@@ -358,6 +358,19 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable {
     }
 
     /**
+     * Computes the auto-completion setting
+     */
+    public void calcAutoCompleteSettings(String field, Map<String,Object> attributes) {
+        String capitalizedFieldName = StringUtils.capitalize(field);
+        String methodName = "doAutoComplete" + capitalizedFieldName;
+        Method method = ReflectionUtils.getPublicMethodNamed(getClass(), methodName);
+        if(method==null)
+            return;    // no auto-completion
+
+        attributes.put("autoCompleteUrl", String.format("%s/%s/autoComplete%s", getCurrentDescriptorByNameUrl(), getDescriptorUrl(), capitalizedFieldName));
+    }
+
+    /**
      * Used by Jelly to abstract away the handlign of global.jelly vs config.jelly databinding difference.
      */
     public PropertyType getPropertyType(Object instance, String field) {

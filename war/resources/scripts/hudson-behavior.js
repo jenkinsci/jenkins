@@ -586,6 +586,29 @@ var hudsonRules = {
         registerRegexpValidator(e,/^(\d*[1-9]\d*|)$/,"Not a positive number");
     },
 
+    "INPUT.auto-complete": function(e) {// form field with auto-completion support 
+        // insert the auto-completion container
+        var div = document.createElement("DIV");
+        e.parentNode.insertBefore(div,e.nextSibling);
+        e.style.position = "relative"; // or else by default it's absolutely positioned, making "width:100%" break
+
+        var ds = new YAHOO.widget.DS_XHR(e.getAttribute("autoCompleteUrl"),["suggestions","name"]);
+        ds.scriptQueryParam = "value";
+        
+        // Instantiate the AutoComplete
+        var ac = new YAHOO.widget.AutoComplete(e, div, ds);
+        ac.prehighlightClassName = "yui-ac-prehighlight";
+        ac.animSpeed = 0;
+        ac.useShadow = true;
+        ac.autoSnapContainer = true;
+        ac.doBeforeExpandContainer = function(textbox,container) {// adjust the width every time we show it
+            container.style.width=textbox.clientWidth+"px";
+            var Dom = YAHOO.util.Dom;
+            Dom.setXY(container, [Dom.getX(textbox), Dom.getY(textbox) + textbox.offsetHeight] );
+            return true;
+        }
+    },
+
     "A.help-button" : function(e) {
         e.onclick = function() {
             var tr = findFollowingTR(this, "help-area");
