@@ -24,55 +24,22 @@
  */
 package hudson.maven;
 
-import hudson.AbortException;
-import hudson.FilePath;
-import hudson.Launcher;
-import hudson.Util;
-import hudson.EnvVars;
-import hudson.scm.ChangeLogSet;
+import hudson.*;
 import hudson.FilePath.FileCallable;
 import hudson.maven.MavenBuild.ProxyImpl2;
 import hudson.maven.reporters.MavenFingerprinter;
 import hudson.maven.reporters.MavenMailer;
-import hudson.model.AbstractProject;
-import hudson.model.Action;
-import hudson.model.Build;
-import hudson.model.BuildListener;
-import hudson.model.Environment;
-import hudson.model.Fingerprint;
-import hudson.model.Hudson;
-import hudson.model.ParametersAction;
-import hudson.model.Result;
-import hudson.model.Computer;
-import hudson.model.Run;
-import hudson.model.TaskListener;
+import hudson.model.*;
 import hudson.model.Cause.UpstreamCause;
 import hudson.remoting.Channel;
 import hudson.remoting.VirtualChannel;
+import hudson.scm.ChangeLogSet;
 import hudson.tasks.BuildWrapper;
 import hudson.tasks.MailSender;
 import hudson.tasks.Maven.MavenInstallation;
 import hudson.util.ArgumentListBuilder;
+import hudson.util.IOUtils;
 import hudson.util.StreamTaskListener;
-
-import java.io.File;
-import java.io.IOException;
-import java.io.PrintStream;
-import java.io.Serializable;
-import java.io.InterruptedIOException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-import java.util.Set;
-import java.util.Map.Entry;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
 import org.apache.maven.BuildFailureException;
 import org.apache.maven.embedder.MavenEmbedderException;
 import org.apache.maven.execution.MavenSession;
@@ -83,6 +50,12 @@ import org.apache.maven.project.MavenProject;
 import org.apache.maven.project.ProjectBuildingException;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
+
+import java.io.*;
+import java.util.*;
+import java.util.Map.Entry;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import static hudson.model.Result.FAILURE;
 
@@ -865,16 +838,21 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
         }
 
         public List<PomInfo> invoke(File ws, VirtualChannel channel) throws IOException {
-            File pom = new File(ws,rootPOM);
+            File pom;
 
             PrintStream logger = listener.getLogger();
 
-            // choice of module root ('ws' in this method) is somewhat arbitrary
-            // when multiple CVS/SVN modules are checked out, so also check
-            // the path against the workspace root if that seems like what the user meant (see issue #1293)
-            File parentLoc = new File(ws.getParentFile(),rootPOM);
-            if(!pom.exists() && parentLoc.exists())
-                pom = parentLoc;
+            if (IOUtils.isAbsolute(rootPOM)) {
+                pom = new File(rootPOM);
+            } else {
+                // choice of module root ('ws' in this method) is somewhat arbitrary
+                // when multiple CVS/SVN modules are checked out, so also check
+                // the path against the workspace root if that seems like what the user meant (see issue #1293)
+                pom = new File(ws, rootPOM);
+                File parentLoc = new File(ws.getParentFile(),rootPOM);
+                if(!pom.exists() && parentLoc.exists())
+                    pom = parentLoc;
+            }
 
             if(!pom.exists())
                 throw new AbortException(Messages.MavenModuleSetBuild_NoSuchPOMFile(pom));
