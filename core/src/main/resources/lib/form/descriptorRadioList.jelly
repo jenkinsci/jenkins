@@ -52,6 +52,9 @@ THE SOFTWARE.
         title="${d.displayName}" checked="${instance.descriptor==d}">
         <j:set var="descriptor" value="${d}" />
 	      <j:set var="instance" value="${instance.descriptor==d?instance:null}" />
+        <f:entry>
+          <input type="hidden" name="stapler-class" value="${descriptor.clazz.name}"/>
+        </f:entry>
 	      <st:include from="${d}" page="${d.configPage}" optional="true" />
 	    </f:radioBlock>
 	  </j:forEach>
