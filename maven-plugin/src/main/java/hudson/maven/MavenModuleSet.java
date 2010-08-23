@@ -198,11 +198,10 @@ public final class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,Ma
     protected void updateTransientActions() {
         super.updateTransientActions();
         // Fix for ISSUE-1149
-        if (modules!=null) {
-            for (MavenModule module: modules.values()) {
-                module.updateTransientActions();
-            }
+        for (MavenModule module: modules.values()) {
+            module.updateTransientActions();
         }
+        
         if(publishers!=null)    // this method can be loaded from within the onLoad method, where this might be null
             for (BuildStep step : publishers)
                 transientActions.addAll(step.getProjectActions(this));

@@ -2034,7 +2034,7 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
         } catch (Exception e) {
             throw new IllegalArgumentException(e);
         }
-
+        item.onCreatedFromScratch();
         item.save();
         items.put(name,item);
 

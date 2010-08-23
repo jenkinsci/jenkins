@@ -76,6 +76,10 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
         doSetName(name);
     }
 
+    public void onCreatedFromScratch() {
+        // noop
+    }
+
     @Exported(visibility=999)
     public String getName() {
         return name;
