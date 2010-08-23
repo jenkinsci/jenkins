@@ -204,6 +204,10 @@ THE SOFTWARE.
               <name>hudson.model.UsageStatistics.disabled</name>
               <value>true</value>
             </systemProperty>
+            <systemProperty>
+              <name>hudson.Main.development</name>
+              <value>true</value>
+            </systemProperty>
           </systemProperties>
         </configuration>
       </plugin>
