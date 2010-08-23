@@ -614,6 +614,10 @@ public abstract class View extends AbstractModelObject implements AccessControll
     public RunList getBuilds() {
         return new RunList(this);
     }
+    
+    public BuildTimelineWidget getTimeline() {
+        return new BuildTimelineWidget(getBuilds());
+    }
 
     private void rss(StaplerRequest req, StaplerResponse rsp, String suffix, RunList runs) throws IOException, ServletException {
         RSS.forwardToRss(getDisplayName()+ suffix, getUrl(),

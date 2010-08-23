@@ -30,6 +30,10 @@ THE SOFTWARE.
         <img src="${imagesURL}/48x48/notepad.gif" alt=""/>
         ${%title(it.displayName)}
       </h1>
+
+      <st:include page="control.jelly" it="${it.timeline}" />
+      <div style="height:2em"/><!-- spacer -->
+
       <t:buildListTable builds="${it.builds}" jobBaseUrl="${rootURL}/" />
     </l:main-panel>
   </l:layout>

@@ -31,6 +31,10 @@ THE SOFTWARE.
         <img src="${imagesURL}/48x48/notepad.gif" alt=""/>
         ${%buildHistory(it.class.name=='hudson.model.AllView' ? app.displayName : it.displayName)}
       </h1>
+
+      <st:include page="control.jelly" it="${it.timeline}" />
+      <div style="height:2em"/><!-- spacer -->
+
       <div>
           <a href="cc.xml">${%Export as plain XML}</a>
       </div>

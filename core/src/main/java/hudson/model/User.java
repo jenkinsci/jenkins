@@ -23,6 +23,7 @@
  */
 package hudson.model;
 
+import com.infradna.tool.bridge_method_injector.WithBridgeMethods;
 import com.thoughtworks.xstream.XStream;
 import hudson.CopyOnWrite;
 import hudson.FeedAdapter;
@@ -362,14 +363,14 @@ public class User extends AbstractModelObject implements AccessControlled, Savea
      * 
      * TODO: do we need some index for this?
      */
-    public List<AbstractBuild> getBuilds() {
+    @WithBridgeMethods(List.class)
+    public RunList getBuilds() {
         List<AbstractBuild> r = new ArrayList<AbstractBuild>();
         for (AbstractProject<?,?> p : Hudson.getInstance().getAllItems(AbstractProject.class))
             for (AbstractBuild<?,?> b : p.getBuilds())
                 if(b.hasParticipant(this))
                     r.add(b);
-        Collections.sort(r,Run.ORDER_BY_DATE);
-        return r;
+        return RunList.fromRuns(r);
     }
 
     /**

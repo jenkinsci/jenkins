@@ -44,6 +44,8 @@ import java.util.List;
 /**
  * {@link List} of {@link Run}s, sorted in the date order.
  *
+ * TODO: this should be immutable
+ *
  * @author Kohsuke Kawaguchi
  */
 public class RunList<J extends Job<J,R>, R extends Run<J,R>> extends ArrayList<R> {
@@ -52,6 +54,14 @@ public class RunList<J extends Job<J,R>, R extends Run<J,R>> extends ArrayList<R
 
     public RunList(J j) {
         addAll(j.getBuilds());
+    }
+
+    public R getFirstBuild() {
+        return isEmpty() ? null : get(0);
+    }
+
+    public R getLastBuild() {
+        return isEmpty() ? null : get(size()-1);
     }
 
     public RunList(View view) {// this is a type unsafe operation
@@ -141,9 +151,7 @@ public class RunList<J extends Job<J,R>, R extends Run<J,R>> extends ArrayList<R
         int e = Collections.binarySearch(TIMESTAMP_ADAPTER, end,   DESCENDING_ORDER);
         if (e<0)    e=-(e+1);   else e++;   // max is exclusive, so the exact match should be excluded
 
-        removeRange(s,size());
-        removeRange(0,e);
-        return this;
+        return fromRuns(subList(e,s));
     }
 
     /**
