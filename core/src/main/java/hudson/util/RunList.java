@@ -42,7 +42,7 @@ import java.util.Iterator;
 import java.util.List;
 
 /**
- * {@link List} of {@link Run}s, sorted in the date order.
+ * {@link List} of {@link Run}s, sorted in the descending date order.
  *
  * TODO: this should be immutable
  *
@@ -57,11 +57,11 @@ public class RunList<R extends Run> extends ArrayList<R> {
     }
 
     public R getFirstBuild() {
-        return isEmpty() ? null : get(0);
+        return isEmpty() ? null : get(size()-1);
     }
 
     public R getLastBuild() {
-        return isEmpty() ? null : get(size()-1);
+        return isEmpty() ? null : get(0);
     }
 
     public RunList(View view) {// this is a type unsafe operation
