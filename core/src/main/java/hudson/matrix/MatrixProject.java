@@ -77,6 +77,8 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import static hudson.Util.*;
+
 /**
  * {@link Job} that allows you to run multiple different configurations
  * from a single setting.
@@ -221,13 +223,13 @@ public class MatrixProject extends AbstractProject<MatrixProject,MatrixBuild> im
         synchronized(transientActions) {
             super.updateTransientActions();
 
-            for (BuildStep step : builders)
+            for (BuildStep step : fixNull(builders))
                 transientActions.addAll(step.getProjectActions(this));
-            for (BuildStep step : publishers)
+            for (BuildStep step : fixNull(publishers))
                 transientActions.addAll(step.getProjectActions(this));
-            for (BuildWrapper step : buildWrappers)
+            for (BuildWrapper step : fixNull(buildWrappers))
                 transientActions.addAll(step.getProjectActions(this));
-            for (Trigger trigger : triggers)
+            for (Trigger trigger : fixNull(triggers))
                 transientActions.addAll(trigger.getProjectActions());
         }
     }
