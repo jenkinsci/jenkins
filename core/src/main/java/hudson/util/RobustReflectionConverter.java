@@ -149,7 +149,10 @@ public class RobustReflectionConverter implements Converter {
 
                     Class defaultType = mapper.defaultImplementationOf(fieldType);
                     if (!actualType.equals(defaultType)) {
-                        writer.addAttribute(mapper.aliasForAttribute("class"), mapper.serializedClass(actualType));
+                        String serializedClassName = mapper.serializedClass(actualType);
+                        if (!serializedClassName.equals(mapper.serializedClass(defaultType))) {
+                            writer.addAttribute(mapper.aliasForSystemAttribute("class"), serializedClassName);
+                        }
                     }
 
                     if (seenFields.contains(aliasName)) {

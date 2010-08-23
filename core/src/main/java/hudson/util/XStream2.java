@@ -23,6 +23,7 @@
  */
 package hudson.util;
 
+import com.google.common.collect.ImmutableMap;
 import com.thoughtworks.xstream.XStream;
 import com.thoughtworks.xstream.mapper.Mapper;
 import com.thoughtworks.xstream.mapper.MapperWrapper;
@@ -43,6 +44,7 @@ import hudson.model.Hudson;
 import hudson.model.Label;
 import hudson.model.Result;
 import hudson.model.Saveable;
+import hudson.util.xstream.ImmutableMapConverter;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
@@ -94,6 +96,7 @@ public class XStream2 extends XStream {
         addImmutableType(Result.class);
 
         registerConverter(new RobustCollectionConverter(getMapper(),getReflectionProvider()),10);
+        registerConverter(new ImmutableMapConverter(getMapper(),getReflectionProvider()),10);
         registerConverter(new ConcurrentHashMapConverter(getMapper(),getReflectionProvider()),10);
         registerConverter(new CopyOnWriteMap.Tree.ConverterImpl(getMapper()),10); // needs to override MapConverter
         registerConverter(new DescribableList.ConverterImpl(getMapper()),10); // explicitly added to handle subtypes
@@ -106,7 +109,15 @@ public class XStream2 extends XStream {
 
     @Override
     protected MapperWrapper wrapMapper(MapperWrapper next) {
-        return new CompatibilityMapper(next);
+        return new CompatibilityMapper(new MapperWrapper(next) {
+            @Override
+            public String serializedClass(Class type) {
+                if (ImmutableMap.class.isAssignableFrom(type))
+                    return super.serializedClass(ImmutableMap.class);
+                else
+                    return super.serializedClass(type);
+            }
+        });
     }
 
     /**
