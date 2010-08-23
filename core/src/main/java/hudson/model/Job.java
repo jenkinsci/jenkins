@@ -588,7 +588,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
      */
     @Exported
     @WithBridgeMethods(List.class)
-    public RunList<JobT,RunT> getBuilds() {
+    public RunList<RunT> getBuilds() {
         return RunList.fromRuns(_getRuns().values());
     }
 
@@ -645,7 +645,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
      *      as of 1.372. Should just do {@code getBuilds().byTimestamp(s,e)} to avoid code bloat in {@link Job}.
      */
     @WithBridgeMethods(List.class)
-    public RunList<JobT,RunT> getBuildsByTimestamp(long start, long end) {
+    public RunList<RunT> getBuildsByTimestamp(long start, long end) {
         return getBuilds().byTimestamp(start,end);
     }
 

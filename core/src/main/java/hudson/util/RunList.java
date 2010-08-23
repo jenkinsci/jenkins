@@ -48,11 +48,11 @@ import java.util.List;
  *
  * @author Kohsuke Kawaguchi
  */
-public class RunList<J extends Job<J,R>, R extends Run<J,R>> extends ArrayList<R> {
+public class RunList<R extends Run> extends ArrayList<R> {
     public RunList() {
     }
 
-    public RunList(J j) {
+    public RunList(Job j) {
         addAll(j.getBuilds());
     }
 
@@ -71,8 +71,8 @@ public class RunList<J extends Job<J,R>, R extends Run<J,R>> extends ArrayList<R
         Collections.sort(this,Run.ORDER_BY_DATE);
     }
 
-    public RunList(Collection<? extends J> jobs) {
-        for (J j : jobs)
+    public RunList(Collection<? extends Job> jobs) {
+        for (Job j : jobs)
             addAll(j.getBuilds());
         Collections.sort(this,Run.ORDER_BY_DATE);
     }
@@ -81,15 +81,15 @@ public class RunList<J extends Job<J,R>, R extends Run<J,R>> extends ArrayList<R
         super(c);
     }
 
-    public static <J extends Job<J,R>,R extends Run<J,R>>
-    RunList<J,R> fromRuns(Collection<? extends R> runs) {
-        return new RunList<J,R>(runs,false);
+    public static <R extends Run>
+    RunList<R> fromRuns(Collection<? extends R> runs) {
+        return new RunList<R>(runs,false);
     }
 
     /**
      * Filter the list to non-successful builds only.
      */
-    public RunList<J,R> failureOnly() {
+    public RunList<R> failureOnly() {
         for (Iterator<R> itr = iterator(); itr.hasNext();) {
             Run r = itr.next();
             if(r.getResult()==Result.SUCCESS)
@@ -101,7 +101,7 @@ public class RunList<J extends Job<J,R>, R extends Run<J,R>> extends ArrayList<R
     /**
      * Filter the list to builds on a single node only
      */
-    public RunList<J,R> node(Node node) {
+    public RunList<R> node(Node node) {
         for (Iterator<R> itr = iterator(); itr.hasNext();) {
             Run r = itr.next();
             if (!(r instanceof AbstractBuild) || ((AbstractBuild)r).getBuiltOn()!=node) {
@@ -114,7 +114,7 @@ public class RunList<J extends Job<J,R>, R extends Run<J,R>> extends ArrayList<R
     /**
      * Filter the list to regression builds only.
      */
-    public RunList<J,R> regressionOnly() {
+    public RunList<R> regressionOnly() {
         for (Iterator<R> itr = iterator(); itr.hasNext();) {
             Run r = itr.next();
             if(!r.getBuildStatusSummary().isWorse)
@@ -128,7 +128,7 @@ public class RunList<J extends Job<J,R>, R extends Run<J,R>> extends ArrayList<R
      *
      * {@code s&lt=;e}.
      */
-    public RunList<J,R> byTimestamp(long start, long end) {
+    public RunList<R> byTimestamp(long start, long end) {
         AbstractList<Long> TIMESTAMP_ADAPTER = new AbstractList<Long>() {
             public Long get(int index) {
                 return RunList.this.get(index).getTimeInMillis();
@@ -159,7 +159,7 @@ public class RunList<J extends Job<J,R>, R extends Run<J,R>> extends ArrayList<R
      * This also removes on-going builds, as RSS cannot be used to publish information
      * if it changes.
      */
-    public RunList<J,R> newBuilds() {
+    public RunList<R> newBuilds() {
         GregorianCalendar threshold = new GregorianCalendar();
         threshold.add(Calendar.DAY_OF_YEAR,-7);
 

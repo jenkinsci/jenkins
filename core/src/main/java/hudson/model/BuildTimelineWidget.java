@@ -45,9 +45,9 @@ import java.util.Date;
  * @since 1.372
  */
 public class BuildTimelineWidget {
-    protected final RunList<?,?> builds;
+    protected final RunList<?> builds;
 
-    public BuildTimelineWidget(RunList<?,?> builds) {
+    public BuildTimelineWidget(RunList<?> builds) {
         this.builds = builds;
     }
 
