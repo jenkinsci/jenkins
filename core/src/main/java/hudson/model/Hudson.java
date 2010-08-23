@@ -2842,6 +2842,19 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
         rsp.getWriter().println("GCed");
     }
 
+    /**
+     * Simulates OutOfMemoryError.
+     * Useful to make sure OutOfMemoryHeapDump setting.
+     */
+    public void doSimulateOutOfMemory() throws IOException {
+        checkPermission(ADMINISTER);
+
+        System.out.println("Creating artificial OutOfMemoryError situation");
+        List<Object> args = new ArrayList<Object>();
+        while (true)
+            args.add(new byte[1024*1024]);
+    }
+
     private transient final Map<UUID,FullDuplexHttpChannel> duplexChannels = new HashMap<UUID, FullDuplexHttpChannel>();
 
     /**
