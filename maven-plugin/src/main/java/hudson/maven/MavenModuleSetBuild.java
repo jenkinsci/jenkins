@@ -698,8 +698,10 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
             
             for (Entry<ModuleName,MavenBuildProxy2> e : this.proxies.entrySet()) {
                 if (! buildingProjects.contains(e.getKey())) {
-                    e.getValue().setResult(Result.NOT_BUILT);
-                    e.getValue().end();
+                    MavenBuildProxy2 proxy = e.getValue();
+                    proxy.start();
+                    proxy.setResult(Result.NOT_BUILT);
+                    proxy.end();
                 }
             }
         }
