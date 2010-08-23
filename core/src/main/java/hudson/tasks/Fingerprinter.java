@@ -23,6 +23,7 @@
  */
 package hudson.tasks;
 
+import com.google.common.collect.ImmutableMap;
 import hudson.Extension;
 import hudson.FilePath;
 import hudson.FilePath.FileCallable;
@@ -238,13 +239,13 @@ public class Fingerprinter extends Recorder implements Serializable {
         /**
          * From file name to the digest.
          */
-        private final Map<String,String> record;
+        private final ImmutableMap<String,String> record;
 
         private transient WeakReference<Map<String,Fingerprint>> ref;
 
         public FingerprintAction(AbstractBuild build, Map<String, String> record) {
             this.build = build;
-            this.record = record;
+            this.record = ImmutableMap.copyOf(record);
         }
 
         public String getIconFileName() {
@@ -267,7 +268,7 @@ public class Fingerprinter extends Recorder implements Serializable {
          * Obtains the raw data.
          */
         public Map<String,String> getRecords() {
-            return Collections.unmodifiableMap(record);
+            return record;
         }
 
         /**
@@ -293,7 +294,7 @@ public class Fingerprinter extends Recorder implements Serializable {
                 }
             }
 
-            m = Collections.unmodifiableMap(m);
+            m = ImmutableMap.copyOf(m);
             ref = new WeakReference<Map<String,Fingerprint>>(m);
             return m;
         }
