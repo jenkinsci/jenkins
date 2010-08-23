@@ -26,6 +26,7 @@ package hudson.model;
 import static javax.servlet.http.HttpServletResponse.SC_BAD_REQUEST;
 import static javax.servlet.http.HttpServletResponse.SC_NO_CONTENT;
 
+import com.infradna.tool.bridge_method_injector.WithBridgeMethods;
 import hudson.ExtensionPoint;
 import hudson.Util;
 import hudson.XmlFile;
@@ -67,10 +68,10 @@ import java.io.StringWriter;
 import java.io.PrintWriter;
 import java.net.URLEncoder;
 import java.util.AbstractList;
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -585,13 +586,14 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
     public abstract boolean isBuildable();
 
     /**
-     * Gets all the builds.
+     * Gets the read-only view of all the builds.
      * 
      * @return never null. The first entry is the latest build.
      */
     @Exported
-    public List<RunT> getBuilds() {
-        return new ArrayList<RunT>(_getRuns().values());
+    @WithBridgeMethods(List.class)
+    public RunList<JobT,RunT> getBuilds() {
+        return RunList.fromRuns(_getRuns().values());
     }
 
     /**
@@ -643,32 +645,12 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
      * Obtains a list of builds, in the descending order, that are within the specified time range [start,end).
      *
      * @return can be empty but never null.
+     * @deprecated
+     *      as of 1.372. Should just do {@code getBuilds().byTimestamp(s,e)} to avoid code bloat in {@link Job}.
      */
-    public List<RunT> getBuildsByTimestamp(long start, long end) {
-        final List<RunT> builds = getBuilds();
-        AbstractList<Long> TIMESTAMP_ADAPTER = new AbstractList<Long>() {
-            public Long get(int index) {
-                return builds.get(index).timestamp;
-            }
-
-            public int size() {
-                return builds.size();
-            }
-        };
-        Comparator<Long> DESCENDING_ORDER = new Comparator<Long>() {
-            public int compare(Long o1, Long o2) {
-                if (o1 > o2) return -1;
-                if (o1 < o2) return +1;
-                return 0;
-            }
-        };
-
-        int s = Collections.binarySearch(TIMESTAMP_ADAPTER, start, DESCENDING_ORDER);
-        if (s<0)    s=-(s+1);   // min is inclusive
-        int e = Collections.binarySearch(TIMESTAMP_ADAPTER, end,   DESCENDING_ORDER);
-        if (e<0)    e=-(e+1);   else e++;   // max is exclusive, so the exact match should be excluded
-
-        return builds.subList(e,s);
+    @WithBridgeMethods(List.class)
+    public RunList<JobT,RunT> getBuildsByTimestamp(long start, long end) {
+        return getBuilds().byTimestamp(start,end);
     }
 
     @CLIResolver
@@ -1364,12 +1346,12 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
 
     public void doRssAll(StaplerRequest req, StaplerResponse rsp)
             throws IOException, ServletException {
-        rss(req, rsp, " all builds", new RunList(this));
+        rss(req, rsp, " all builds", getBuilds());
     }
 
     public void doRssFailed(StaplerRequest req, StaplerResponse rsp)
             throws IOException, ServletException {
-        rss(req, rsp, " failed builds", new RunList(this).failureOnly());
+        rss(req, rsp, " failed builds", getBuilds().failureOnly());
     }
 
     private void rss(StaplerRequest req, StaplerResponse rsp, String suffix,
