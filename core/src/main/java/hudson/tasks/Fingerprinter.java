@@ -31,7 +31,6 @@ import hudson.Launcher;
 import hudson.Util;
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
-import hudson.model.Action;
 import hudson.model.Build;
 import hudson.model.BuildListener;
 import hudson.model.Fingerprint;
@@ -39,6 +38,8 @@ import hudson.model.Fingerprint.BuildPtr;
 import hudson.model.FingerprintMap;
 import hudson.model.Hudson;
 import hudson.model.Result;
+import hudson.model.Run;
+import hudson.model.RunAction;
 import hudson.remoting.VirtualChannel;
 import hudson.util.FormValidation;
 import hudson.util.IOException2;
@@ -55,7 +56,6 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -233,19 +233,20 @@ public class Fingerprinter extends Recorder implements Serializable {
     /**
      * Action for displaying fingerprints.
      */
-    public static final class FingerprintAction implements Action {
+    public static final class FingerprintAction implements RunAction {
         private final AbstractBuild build;
 
         /**
          * From file name to the digest.
          */
-        private final ImmutableMap<String,String> record;
+        private /*almost final*/ ImmutableMap<String,String> record;
 
         private transient WeakReference<Map<String,Fingerprint>> ref;
 
         public FingerprintAction(AbstractBuild build, Map<String, String> record) {
             this.build = build;
             this.record = ImmutableMap.copyOf(record);
+            onLoad();   // make compact
         }
 
         public String getIconFileName() {
@@ -269,6 +270,42 @@ public class Fingerprinter extends Recorder implements Serializable {
          */
         public Map<String,String> getRecords() {
             return record;
+        }
+
+        public void onLoad() {
+            Run pb = build.getPreviousBuild();
+            if (pb!=null) {
+                FingerprintAction a = pb.getAction(FingerprintAction.class);
+                if (a!=null)
+                    compact(a);
+            }
+        }
+
+        public void onBuildComplete() {
+        }
+
+        /**
+         * Reuse string instances from another {@link FingerprintAction} to reduce memory footprint.
+         */
+        protected void compact(FingerprintAction a) {
+            Map<String,String> intern = new HashMap<String, String>(); // string intern map
+            for (Entry<String, String> e : a.record.entrySet()) {
+                intern.put(e.getKey(),e.getKey());
+                intern.put(e.getValue(),e.getValue());
+            }
+
+            Map<String,String> b = new HashMap<String, String>();
+            for (Entry<String,String> e : record.entrySet()) {
+                String k = intern.get(e.getKey());
+                if (k==null)    k = e.getKey();
+
+                String v = intern.get(e.getValue());
+                if (v==null)    v = e.getValue();
+
+                b.put(k,v);
+            }
+
+            record = ImmutableMap.copyOf(b);
         }
 
         /**

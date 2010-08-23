@@ -256,6 +256,15 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
         getDataFile().unmarshal(this); // load the rest of the data
     }
 
+    /**
+     * Called after the build is loaded and the object is added to the build list.
+     */
+    protected void onLoad() {
+        for (Action a : getActions())
+            if (a instanceof RunAction)
+                ((RunAction) a).onLoad();
+    }
+
     /*package*/ static long parseTimestampFromBuildDir(File buildDir) throws IOException {
         try {
             return ID_FORMATTER.get().parse(buildDir.getName()).getTime();
