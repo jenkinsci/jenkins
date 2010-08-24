@@ -25,18 +25,14 @@ package hudson.model.labels;
 
 import hudson.BulkChange;
 import hudson.CopyOnWrite;
-import hudson.Util;
 import hudson.XmlFile;
 import hudson.model.Action;
 import hudson.model.Descriptor.FormException;
 import hudson.model.Failure;
 import hudson.model.Hudson;
-import hudson.model.JobProperty;
 import hudson.model.Label;
 import hudson.model.Saveable;
-import hudson.model.TransientProjectActionFactory;
 import hudson.model.listeners.SaveableListener;
-import hudson.tasks.BuildStep;
 import hudson.util.DescribableList;
 import hudson.util.VariableResolver;
 import org.kohsuke.stapler.StaplerRequest;

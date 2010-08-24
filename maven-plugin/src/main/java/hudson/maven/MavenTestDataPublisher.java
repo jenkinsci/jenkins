@@ -109,9 +109,13 @@ public class MavenTestDataPublisher extends Recorder {
 		public Publisher newInstance(StaplerRequest req, JSONObject formData) throws FormException {
 			DescribableList<TestDataPublisher, Descriptor<TestDataPublisher>> testDataPublishers
                     = new DescribableList<TestDataPublisher, Descriptor<TestDataPublisher>>(Saveable.NOOP);
-			testDataPublishers.rebuild(req, formData, TestDataPublisher.all());
+            try {
+                testDataPublishers.rebuild(req, formData, TestDataPublisher.all());
+            } catch (IOException e) {
+                throw new FormException(e,null);
+            }
 
-			return new MavenTestDataPublisher(testDataPublishers);
+            return new MavenTestDataPublisher(testDataPublishers);
 		}
 		
 	}
