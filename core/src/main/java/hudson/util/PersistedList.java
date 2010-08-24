@@ -47,7 +47,7 @@ import java.util.List;
  */
 public class PersistedList<T> implements Iterable<T> {
     protected final CopyOnWriteList<T> data = new CopyOnWriteList<T>();
-    protected Saveable owner;
+    protected Saveable owner = Saveable.NOOP;
 
     protected PersistedList() {
     }
