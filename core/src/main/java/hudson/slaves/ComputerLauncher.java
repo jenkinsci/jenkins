@@ -97,6 +97,11 @@ public abstract class ComputerLauncher extends AbstractDescribableImpl<ComputerL
      *
      * <p>
      * This method is invoked after the {@link Channel} to this computer is terminated.
+     *
+     * <p>
+     * Disconnect operation is performed asynchronously, so there's no guarantee
+     * that the corresponding {@link SlaveComputer} exists for the duration of the
+     * operation.
      */
     public void afterDisconnect(SlaveComputer computer, TaskListener listener) {
         // to remain compatible with the legacy implementation that overrides the old signature
@@ -118,6 +123,11 @@ public abstract class ComputerLauncher extends AbstractDescribableImpl<ComputerL
      * thus the channel is still accessible from {@link SlaveComputer#getChannel()}.
      * If the channel is terminated unexpectedly, this method will not be invoked,
      * as the channel is already gone.
+     *
+     * <p>
+     * Disconnect operation is performed asynchronously, so there's no guarantee
+     * that the corresponding {@link SlaveComputer} exists for the duration of the
+     * operation.
      */
     public void beforeDisconnect(SlaveComputer computer, TaskListener listener) {
         // to remain compatible with the legacy implementation that overrides the old signature
