@@ -40,9 +40,7 @@ THE SOFTWARE.
   </description>
   
   <build>
-    <directory>target</directory>
     <finalName>hudson</finalName>
-    
     <plugins>
       <plugin>
         <artifactId>maven-war-plugin</artifactId>
@@ -50,13 +48,7 @@ THE SOFTWARE.
         <configuration>
           <webResources>
             <resource>
-              <directory>${basedir}/resources</directory>
-              <!--excludes> not much size improvements
-                <exclude>**/*-debug.js</exclude>
-              </excludes-->
-            </resource>
-            <resource>
-              <directory>${basedir}/target/generated-resources</directory>
+              <directory>${project.build.directory}/generated-resources</directory>
             </resource>
           </webResources>
           <!-- for putting Main-Class into war -->
