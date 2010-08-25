@@ -46,6 +46,7 @@ THE SOFTWARE.
         <artifactId>maven-war-plugin</artifactId>
         <version>2.1-beta-1</version>
         <configuration>
+          <filteringDeploymentDescriptors>true</filteringDeploymentDescriptors>
           <webResources>
             <resource>
               <directory>${project.build.directory}/generated-resources</directory>
