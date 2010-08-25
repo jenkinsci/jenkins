@@ -109,6 +109,9 @@ public abstract class ComputerLauncher extends AbstractDescribableImpl<ComputerL
 
     /**
      * Allows the {@link ComputerLauncher} to prepare for a disconnect.
+     *
+     * <p>
+     * This method is invoked after the {@link Channel} to this computer is terminated.
      */
     public void beforeDisconnect(SlaveComputer computer, TaskListener listener) {
         // to remain compatible with the legacy implementation that overrides the old signature
