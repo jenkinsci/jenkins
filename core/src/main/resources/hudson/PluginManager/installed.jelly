@@ -42,6 +42,7 @@ THE SOFTWARE.
               <th width="32" tooltip="${%Uncheck to disable the plugin}">${%Enabled}</th>
               <th initialSortDir="down">${%Name}</th>
               <th width="32">${%Version}</th>
+              <th width="32">${%Pinned}</th>
             </tr>
             <j:forEach var="p" items="${app.pluginManager.plugins}">
               <tr>
@@ -66,6 +67,12 @@ THE SOFTWARE.
                 </td>
                 <td class="center pane" style="white-space:nowrap">
                   ${p.version}
+                </td>
+                <td class="center pane" id='unpin-${p.shortName}'>
+                  <j:if test="${p.isPinned()}">
+                    <input type="button" onclick="unpin(this,'${p.shortName}')" value="Unpin" class="yui-button" />
+                    <a href="http://wiki.hudson-ci.org/display/HUDSON/Pinned+Plugins"><img style="vertical-align:top" src="${imagesURL}/16x16/help.gif"/></a>
+                  </j:if>
                 </td>
               </tr>
             </j:forEach>
@@ -128,6 +135,17 @@ THE SOFTWARE.
         }
 
         updateMsg(); // set the initial state
+
+        function unpin(button,shortName) {
+          new Ajax.Request("./plugin/"+shortName+"/unpin", {
+            onFailure : function(t) {
+              alert('Failed to unpin:'+t.responseText);
+            },
+            onSuccess : function(t) {
+              $('unpin-'+shortName).innerHTML = "";
+            }
+          });
+        }
       </script>
     </l:main-panel>
   </l:layout>

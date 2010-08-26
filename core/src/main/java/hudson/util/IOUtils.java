@@ -1,11 +1,7 @@
 package hudson.util;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
+import java.io.*;
+import java.util.regex.Pattern;
 
 /**
  * Adds more to commons-io.
@@ -71,5 +67,31 @@ public class IOUtils extends org.apache.commons.io.IOUtils {
         while (size>0)
             size -= in.skip(size);
         return in;
+    }
+
+    /**
+     * Resolves the given path with respect to given base. If the path represents an absolute path, a file representing
+     * it is returned, otherwise a file representing a path relative to base is returned.
+     * <p>
+     * It would be nice if File#File(File, String) were doing this.
+     * @param base File that represents the parent, may be null if path is absolute
+     * @param path Path of the file, may not be null
+     * @return new File(name) if name represents an absolute path, new File(base, name) otherwise
+     * @see hudson.FilePath#absolutize() 
+     */
+    public static File absolutize(File base, String path) {
+        if (isAbsolute(path))
+            return new File(path);
+        return new File(base, path);
+    }
+
+    /**
+     * See {@link hudson.FilePath#isAbsolute(String)}.
+     * @param path String representing <code> Platform Specific </code> (unlike FilePath, which may get Platform agnostic paths), may not be null
+     * @return true if String represents absolute path on this platform, false otherwise
+     */
+    public static boolean isAbsolute(String path) {
+        Pattern DRIVE_PATTERN = Pattern.compile("[A-Za-z]:[\\\\/].*");
+        return path.startsWith("/") || DRIVE_PATTERN.matcher(path).matches();
     }
 }

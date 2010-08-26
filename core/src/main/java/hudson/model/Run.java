@@ -99,6 +99,8 @@ import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.export.ExportedBean;
 
 import com.thoughtworks.xstream.XStream;
+import java.io.FileOutputStream;
+import java.io.OutputStream;
 
 import static java.util.logging.Level.FINE;
 
@@ -252,6 +254,15 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
         this.state = State.COMPLETED;
         this.result = Result.FAILURE;  // defensive measure. value should be overwritten by unmarshal, but just in case the saved data is inconsistent
         getDataFile().unmarshal(this); // load the rest of the data
+    }
+
+    /**
+     * Called after the build is loaded and the object is added to the build list.
+     */
+    protected void onLoad() {
+        for (Action a : getActions())
+            if (a instanceof RunAction)
+                ((RunAction) a).onLoad();
     }
 
     /*package*/ static long parseTimestampFromBuildDir(File buildDir) throws IOException {
@@ -1236,7 +1247,20 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
                 try {
                     Charset charset = Computer.currentComputer().getDefaultCharset();
                     this.charset = charset.name();
-                    listener = new StreamBuildListener(getLogFile(),charset);
+
+                    // don't do buffering so that what's written to the listener
+                    // gets reflected to the file immediately, which can then be
+                    // served to the browser immediately
+                    OutputStream logger = new FileOutputStream(getLogFile());
+                    RunT build = job.getBuild();
+                    if (project instanceof BuildableItemWithBuildWrappers && build instanceof AbstractBuild) {
+                        BuildableItemWithBuildWrappers biwbw = (BuildableItemWithBuildWrappers) project;
+                        for (BuildWrapper bw : biwbw.getBuildWrappersList()) {
+                            logger = bw.decorateLogger((AbstractBuild) build, logger);
+                        }
+                    }
+
+                    listener = new StreamBuildListener(logger,charset);
 
                     listener.started(getCauses());
 

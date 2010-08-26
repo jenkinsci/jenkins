@@ -31,6 +31,7 @@ import hudson.model.*;
 import hudson.model.Run.RunnerAbortedException;
 
 import java.io.IOException;
+import java.io.OutputStream;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Map;
@@ -171,6 +172,32 @@ public abstract class BuildWrapper extends AbstractDescribableImpl<BuildWrapper>
      */
     public Launcher decorateLauncher(AbstractBuild build, Launcher launcher, BuildListener listener) throws IOException, InterruptedException, RunnerAbortedException {
         return launcher;
+    }
+
+    /**
+     * Provides an opportunity for a {@link BuildWrapper} to decorate the {@link BuildListener} logger to be used by the build.
+     * 
+     * <p>
+     * This hook is called very early on in the build (even before {@link #setUp(AbstractBuild, Launcher, BuildListener)} is invoked.)
+     * 
+     * <p>
+     * The default implementation is no-op, which just returns the {@code logger} parameter as-is.
+     *
+     * @param build
+     *      The build in progress for which this {@link BuildWrapper} is called. Never null.
+     * @param logger
+     *      The default logger. Never null. This method is expected to wrap this logger.
+     *      This makes sure that when multiple {@link BuildWrapper}s attempt to decorate the same logger
+     *      it will sort of work.
+     * @return
+     *      Must not be null. If a fatal error happens, throw an exception.
+     * @throws RunnerAbortedException
+     *      If a fatal error is detected but the implementation handled it gracefully, throw this exception
+     *      to suppress stack trace.
+     * @since 1.374
+     */
+    public OutputStream decorateLogger(AbstractBuild build, OutputStream logger) throws IOException, InterruptedException, RunnerAbortedException {
+        return logger;
     }
 
     /**

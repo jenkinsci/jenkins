@@ -61,10 +61,11 @@ THE SOFTWARE.
     </st:attribute>
   </st:documentation>
   <f:prepareDatabinding />
+  ${descriptor.calcAutoCompleteSettings(field,attrs)} <!-- this figures out the 'autoCompleteUrl' attribute -->
 
   <!-- mostly pass-through all the attributes -->
   <m:input xmlns:m="jelly:hudson.util.jelly.MorphTagLibrary"
-         class="setting-input ${attrs.checkUrl!=null?'validated':''} ${attrs.clazz}"
+         class="setting-input ${attrs.checkUrl!=null?'validated':''} ${attrs.autoCompleteUrl!=null?'auto-complete':null} ${attrs.clazz}"
          name="${attrs.name ?: '_.'+attrs.field}"
          value="${attrs.value ?: instance[attrs.field] ?: attrs.default}"
          type="text"

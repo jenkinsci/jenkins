@@ -452,6 +452,10 @@ public class PluginWrapper implements Comparable<PluginWrapper> {
     public boolean hasUpdate() {
         return getUpdateInfo()!=null;
     }
+    
+    public boolean isPinned() {
+        return pinFile.exists();
+    }
 
     /**
      * Sort by short name.

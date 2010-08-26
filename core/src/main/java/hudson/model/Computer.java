@@ -395,6 +395,10 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
         return getNode().getSelfLabel().loadStatistics;
     }
 
+    public BuildTimelineWidget getTimeline() {
+        return new BuildTimelineWidget(getBuilds());
+    }
+
     /**
      * {@inheritDoc}
      */

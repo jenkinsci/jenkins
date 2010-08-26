@@ -25,11 +25,11 @@ package hudson.maven;
 
 import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
 import hudson.tasks.Maven.MavenInstallation;
+import org.jvnet.hudson.test.Bug;
 import org.jvnet.hudson.test.ExtractResourceSCM;
 import org.jvnet.hudson.test.HudsonTestCase;
-import org.jvnet.hudson.test.Bug;
 
-import java.io.IOException;
+import java.io.File;
 
 /**
  * @author huybrechts
@@ -47,7 +47,7 @@ public class MavenProjectTest extends HudsonTestCase {
         return createProject("/simple-projects.zip");
     }
 
-    private MavenModuleSet createProject(final String scmResource) throws IOException, Exception {
+    private MavenModuleSet createProject(final String scmResource) throws Exception {
         MavenModuleSet project = createMavenProject();
         MavenInstallation mi = configureDefaultMaven();
         project.setScm(new ExtractResourceSCM(getClass().getResource(
@@ -131,5 +131,15 @@ public class MavenProjectTest extends HudsonTestCase {
         // A#1, B#1 and B#2 should all be deleted too
         assertEquals(1, project.getModule("org.jvnet.hudson.main.test.multimod:moduleA").getBuilds().size());
         assertEquals(1, project.getModule("org.jvnet.hudson.main.test.multimod:moduleB").getBuilds().size());
+    }
+    @Bug(7261)
+    public void testAbsolutePathPom() throws Exception {
+        File pom = new File(this.getClass().getResource("test-pom-7162.xml").toURI());
+        MavenModuleSet project = createMavenProject();
+        MavenInstallation mi = configureDefaultMaven();
+        project.setMaven(mi.getName());
+        project.setRootPOM(pom.getAbsolutePath());
+        project.setGoals("install");
+        buildAndAssertSuccess(project);
     }
 }

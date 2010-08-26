@@ -229,6 +229,9 @@ public final class RunMap<R extends Run<?,R>> extends AbstractMap<Integer,R> imp
         }
 
         reset(builds);
+
+        for (R r : builds.values())
+            r.onLoad();
     }
 
     private static final Logger LOGGER = Logger.getLogger(RunMap.class.getName());

@@ -63,6 +63,13 @@ public class MavenMultiModuleTest extends HudsonTestCase {
 		assertEquals("moduleC should have Result.SUCCESS", Result.SUCCESS, modBuild.getResult());
 	    }
 	}	
+	
+	    long summedModuleDuration = 0;
+	    for (MavenBuild modBuild : pBuild.getModuleLastBuilds().values()) {
+	        summedModuleDuration += modBuild.getDuration();
+	    }
+	    assertTrue("duration of moduleset build should be greater-equal than sum of the module builds",
+	            pBuild.getDuration() >= summedModuleDuration);
     }
 
     /**

@@ -276,7 +276,9 @@ public abstract class ConsoleNote<T> implements Serializable, Describable<Consol
     }
 
     /**
-     * Removes the embedded console notes in the given log lines
+     * Removes the embedded console notes in the given log lines.
+     *
+     * @since 1.350
      */
     public static List<String> removeNotes(Collection<String> logLines) {
         List<String> r = new ArrayList<String>(logLines.size());
@@ -287,6 +289,8 @@ public abstract class ConsoleNote<T> implements Serializable, Describable<Consol
 
     /**
      * Removes the embedded console notes in the given log line.
+     *
+     * @since 1.350
      */
     public static String removeNotes(String line) {
         while (true) {

@@ -50,6 +50,7 @@ import org.kohsuke.stapler.QueryParameter;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Properties;
 import java.util.List;
 import java.util.Collections;
@@ -187,8 +188,15 @@ public class Ant extends Builder {
         if(antOpts!=null)
             env.put("ANT_OPTS",env.expand(antOpts));
 
-        if(!launcher.isUnix())
+        if(!launcher.isUnix()) {
             args = args.toWindowsCommand();
+            // For some reason, ant on windows rejects empty parameters but unix does not.
+            // Add quotes for any empty parameter values:
+            List<String> newArgs = new ArrayList<String>(args.toList());
+            newArgs.set(newArgs.size() - 1, newArgs.get(newArgs.size() - 1).replaceAll(
+                    "( -D[^\" ]+)= ", "$1=\"\" "));
+            args = new ArgumentListBuilder(newArgs.toArray(new String[newArgs.size()]));
+        }
 
         long startTime = System.currentTimeMillis();
         try {

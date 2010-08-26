@@ -886,6 +886,10 @@ public class Util {
         return l!=null ? l : Collections.<T>emptySet();
     }
 
+    public static <T> Iterable<T> fixNull(Iterable<T> l) {
+        return l!=null ? l : Collections.<T>emptySet();
+    }
+
     /**
      * Cuts all the leading path portion and get just the file name.
      */
