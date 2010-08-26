@@ -72,6 +72,17 @@ public class SCMTrigger extends Trigger<SCMedItem> {
 
     @Override
     public void run() {
+        run(null);
+    }
+
+    /**
+     * Run the SCM trigger with additional build actions. Used by SubversionRepositoryStatus
+     * to trigger a build at a specific revisionn number.
+     * 
+     * @param additionalActions
+     * @since 1.XXX
+     */
+    public void run(Action[] additionalActions) {
         if(Hudson.getInstance().isQuietingDown())
             return; // noop
 
@@ -81,13 +92,13 @@ public class SCMTrigger extends Trigger<SCMedItem> {
         if (d.synchronousPolling) {
         	LOGGER.fine("Running the trigger directly without threading, " +
         			"as it's already taken care of by Trigger.Cron");
-            new Runner().run();
+            new Runner(additionalActions).run();
         } else {
             // schedule the polling.
             // even if we end up submitting this too many times, that's OK.
             // the real exclusion control happens inside Runner.
         	LOGGER.fine("scheduling the trigger to (asynchronously) run");
-            d.queue.execute(new Runner());
+            d.queue.execute(new Runner(additionalActions));
             d.clogCheck();
         }
     }
@@ -289,6 +300,20 @@ public class SCMTrigger extends Trigger<SCMedItem> {
          */
         private volatile long startTime;
 
+        private Action[] additionalActions;
+
+        public Runner() {
+            additionalActions = new Action[0];
+        }
+        
+        public Runner(Action[] actions) {
+            if (actions == null) {
+                additionalActions = new Action[0];
+            } else {
+                additionalActions = actions;
+            }
+        }
+        
         /**
          * Where the log file is written.
          */
@@ -357,8 +382,9 @@ public class SCMTrigger extends Trigger<SCMedItem> {
             try {
                 startTime = System.currentTimeMillis();
                 if(runPolling()) {
-                    String name = " #"+job.asProject().getNextBuildNumber();
-                    if(job.scheduleBuild(new SCMTriggerCause())) {
+                    AbstractProject p = job.asProject();
+                    String name = " #"+p.getNextBuildNumber();
+                    if(p.scheduleBuild(p.getQuietPeriod(), new SCMTriggerCause(), additionalActions)) {
                         LOGGER.info("SCM changes detected in "+ job.getName()+". Triggering "+name);
                     } else {
                         LOGGER.info("SCM changes detected in "+ job.getName()+". Job is already in the queue");
