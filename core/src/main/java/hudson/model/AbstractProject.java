@@ -43,6 +43,8 @@ import hudson.model.Fingerprint.RangeSet;
 import hudson.model.Queue.Executable;
 import hudson.model.Queue.WaitingItem;
 import hudson.model.RunMap.Constructor;
+import hudson.model.labels.LabelAtom;
+import hudson.model.labels.LabelExpression;
 import hudson.model.queue.CauseOfBlockage;
 import hudson.scm.ChangeLogSet;
 import hudson.scm.ChangeLogSet.Entry;
@@ -299,8 +301,14 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
      * Gets the textual representation of the assigned label as it was entered by the user.
      */
     public String getAssignedLabelString() {
-        if (canRoam)    return null;
-        return assignedNode;
+        if (canRoam || assignedNode==null)    return null;
+        try {
+            LabelExpression.parseExpression(assignedNode);
+            return assignedNode;
+        } catch (ANTLRException e) {
+            // must be old label or host name that includes whitespace or other unsafe chars
+            return LabelAtom.escape(assignedNode);
+        }
     }
 
     /**
@@ -313,7 +321,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
         } else {
             canRoam = false;
             if(l==Hudson.getInstance().getSelfLabel())  assignedNode = null;
-            else                                        assignedNode = l.getName();
+            else                                        assignedNode = l.getExpression();
         }
         save();
     }

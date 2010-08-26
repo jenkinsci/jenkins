@@ -31,9 +31,11 @@ import hudson.model.Descriptor.FormException;
 import hudson.model.Failure;
 import hudson.model.Hudson;
 import hudson.model.Label;
+import hudson.model.Messages;
 import hudson.model.Saveable;
 import hudson.model.listeners.SaveableListener;
 import hudson.util.DescribableList;
+import hudson.util.QuotedStringTokenizer;
 import hudson.util.VariableResolver;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
@@ -64,6 +66,14 @@ public class LabelAtom extends Label implements Saveable {
     public LabelAtom(String name) {
         super(name);
         load();
+    }
+
+    /**
+     * If the label contains 'unsafe' chars, escape them.
+     */
+    @Override
+    public String getExpression() {
+        return escape(name);
     }
 
     /**
@@ -189,13 +199,25 @@ public class LabelAtom extends Label implements Saveable {
         return Hudson.getInstance().getLabelAtom(l);
     }
 
-    public static boolean isValidName(String name) {
+    public static boolean needsEscape(String name) {
         try {
             Hudson.checkGoodName(name);
-            return true;
-        } catch (Failure failure) {
+            // additional restricted chars
+            for( int i=0; i<name.length(); i++ ) {
+                char ch = name.charAt(i);
+                if(" ()\t\n".indexOf(ch)!=-1)
+                    return true;
+            }
             return false;
+        } catch (Failure failure) {
+            return true;
         }
+    }
+
+    public static String escape(String name) {
+        if (needsEscape(name))
+            return QuotedStringTokenizer.quote(name);
+        return name;
     }
 
     private static final Logger LOGGER = Logger.getLogger(LabelAtom.class.getName());

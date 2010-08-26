@@ -554,7 +554,7 @@ public abstract class HudsonTestCase extends TestCase implements RootAction {
     }
 
     public DumbSlave createSlave(Label l, EnvVars env) throws Exception {
-        return createSlave(l==null ? null : l.getName(), env);
+        return createSlave(l==null ? null : l.getExpression(), env);
     }
 
     /**
