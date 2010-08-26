@@ -39,6 +39,7 @@ import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Arrays;
+import java.util.Map;
 
 /**
  * Configuration axis.
@@ -209,5 +210,13 @@ public class Axis extends AbstractDescribableImpl<Axis> implements Comparable<Ax
      */
     public static DescriptorExtensionList<Axis,AxisDescriptor> all() {
         return Hudson.getInstance().getDescriptorList(Axis.class);
+    }
+
+    /**
+     * Converts the selected value (which is among {@link #values}) and adds that to the given map,
+     * which serves as the build variables.
+     */
+    public void addBuildVariable(String value, Map<String,String> map) {
+        map.put(name,value);
     }
 }
