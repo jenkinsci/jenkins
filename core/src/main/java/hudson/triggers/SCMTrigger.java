@@ -80,7 +80,7 @@ public class SCMTrigger extends Trigger<SCMedItem> {
      * to trigger a build at a specific revisionn number.
      * 
      * @param additionalActions
-     * @since 1.XXX
+     * @since 1.375
      */
     public void run(Action[] additionalActions) {
         if(Hudson.getInstance().isQuietingDown())
