@@ -28,9 +28,7 @@ import net.sf.json.JSONObject;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.StaplerRequest;
 import hudson.Extension;
-import hudson.cli.CLICommand;
 
-import java.io.IOException;
 
 public class RunParameterDefinition extends SimpleParameterDefinition {
 

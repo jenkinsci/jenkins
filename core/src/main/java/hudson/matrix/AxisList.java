@@ -26,15 +26,12 @@ package hudson.matrix;
 import com.thoughtworks.xstream.XStream;
 import com.thoughtworks.xstream.converters.Converter;
 import hudson.Util;
-import hudson.model.Label;
 import hudson.util.RobustCollectionConverter;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Arrays;
-import java.util.Set;
 
 /**
  * List of {@link Axis}.

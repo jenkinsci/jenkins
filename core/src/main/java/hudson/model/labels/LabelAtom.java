@@ -31,7 +31,6 @@ import hudson.model.Descriptor.FormException;
 import hudson.model.Failure;
 import hudson.model.Hudson;
 import hudson.model.Label;
-import hudson.model.Messages;
 import hudson.model.Saveable;
 import hudson.model.listeners.SaveableListener;
 import hudson.util.DescribableList;

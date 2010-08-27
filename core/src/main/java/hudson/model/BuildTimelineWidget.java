@@ -24,14 +24,11 @@
 package hudson.model;
 
 import hudson.util.RunList;
-import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.StaplerRequest;
-import org.kohsuke.stapler.StaplerResponse;
 import org.koshuke.stapler.simile.timeline.Event;
 import org.koshuke.stapler.simile.timeline.TimelineEventList;
 
-import javax.servlet.ServletException;
 import java.io.IOException;
 import java.util.Date;
 

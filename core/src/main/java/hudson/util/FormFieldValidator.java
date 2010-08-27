@@ -28,7 +28,6 @@ import hudson.EnvVars;
 import hudson.FilePath;
 import hudson.ProxyConfiguration;
 import hudson.Util;
-import hudson.tasks.JavadocArchiver;
 import hudson.model.AbstractProject;
 import hudson.model.Hudson;
 import hudson.model.Item;

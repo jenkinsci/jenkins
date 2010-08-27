@@ -28,8 +28,6 @@ import hudson.ExtensionPoint;
 import hudson.model.AbstractDescribableImpl;
 import hudson.model.Action;
 import hudson.model.Hudson;
-import hudson.slaves.NodeDescriptor;
-import hudson.slaves.NodePropertyDescriptor;
 import org.kohsuke.stapler.export.ExportedBean;
 
 import java.util.Collection;
