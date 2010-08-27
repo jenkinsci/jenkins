@@ -1,7 +1,7 @@
 <!--
 The MIT License
 
-Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi
+Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, Romain Seguy
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -23,17 +23,19 @@ THE SOFTWARE.
 -->
 
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
-  <l:layout title="${it.parent.displayName} #${it.number} Artifacts">
-		<st:include page="sidepanel.jelly" />
-		<l:main-panel>
-		<t:buildCaption>
-		  ${%Build Artifacts}
-		</t:buildCaption>
-		<ul>
-		  <j:forEach var="f" items="${it.artifacts}">
-		    <li><a href="artifact/${f.href}">${h.xmlEscape(f.displayPath)}</a></li>
-		  </j:forEach>
-		</ul>
-		</l:main-panel>
-	</l:layout>
+  <j:if test="${!h.isArtifactsPermissionEnabled() or h.isArtifactsPermissionEnabled() and h.hasPermission(it.ARTIFACTS)}">
+    <l:layout title="${it.parent.displayName} #${it.number} Artifacts">
+      <st:include page="sidepanel.jelly" />
+      <l:main-panel>
+        <t:buildCaption>
+          ${%Build Artifacts}
+        </t:buildCaption>
+        <ul>
+          <j:forEach var="f" items="${it.artifacts}">
+            <li><a href="artifact/${f.href}">${h.xmlEscape(f.displayPath)}</a></li>
+          </j:forEach>
+        </ul>
+      </l:main-panel>
+    </l:layout>
+  </j:if>
 </j:jelly>

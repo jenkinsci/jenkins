@@ -1,7 +1,7 @@
 <!--
 The MIT License
 
-Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi
+Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, Romain Seguy
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -31,7 +31,7 @@ THE SOFTWARE.
     <l:tasks>
       <l:task icon="images/24x24/up.gif" href="${rootURL}/${it.parent.url}" title="${%Back to Job}" />
       <l:task icon="images/24x24/terminal.gif" href="." title="${%Console Output}" />
-      <j:if test="${it.hasArtifacts}">
+      <j:if test="${(!h.isArtifactsPermissionEnabled() or h.isArtifactsPermissionEnabled() and h.hasPermission(it,attrs.permission)) and it.hasArtifacts}">
         <l:task icon="images/24x24/package.gif" href="artifacts-index" title="${%Artifacts}" />
       </j:if>
       <st:include page="actions.jelly"/>

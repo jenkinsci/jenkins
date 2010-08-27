@@ -1,7 +1,8 @@
 <!--
 The MIT License
 
-Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, Eric Lefevre-Ardant, Erik Ramfelt, Stephen Connolly, Tom Huybrechts, id:cactusman
+Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, Eric Lefevre-Ardant,
+Erik Ramfelt, Stephen Connolly, Tom Huybrechts, id:cactusman, Romain Seguy
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -54,7 +55,8 @@ THE SOFTWARE.
         </t:summary>
 
         <t:artifactList caption="${%Last Successful Artifacts}"
-            build="${it.lastSuccessfulBuild}" baseURL="lastSuccessfulBuild/" />
+            build="${it.lastSuccessfulBuild}" baseURL="lastSuccessfulBuild/"
+            permission="${it.lastSuccessfulBuild.ARTIFACTS}" />
 
         <t:summary icon="notepad.gif" href="changes">
           ${%Recent Changes}

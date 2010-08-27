@@ -2,7 +2,7 @@
  * The MIT License
  * 
  * Copyright (c) 2004-2010, Sun Microsystems, Inc., Kohsuke Kawaguchi,
- * Yahoo! Inc., Stephen Connolly, Tom Huybrechts, Alan Harder
+ * Yahoo! Inc., Stephen Connolly, Tom Huybrechts, Alan Harder, Romain Seguy
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -1266,4 +1266,20 @@ public class Functions {
     public static boolean getIsUnitTest() {
         return Main.isUnitTest;
     }
+
+    /**
+     * Returns {@code true} if the {@link Run#ARTIFACTS} permission is enabled,
+     * {@code false} otherwise.
+     *
+     * <p>When the {@link Run#ARTIFACTS} permission is not turned on using the
+     * {@code hudson.security.ArtifactsPermission}, this permission must not be
+     * considered to be set to {@code false} for every user. It must rather be
+     * like if the permission doesn't exist at all (which means that every user
+     * has to have an access to the artifacts but the permission can't be
+     * configured in the security screen). Got it?</p>
+     */
+    public static boolean isArtifactsPermissionEnabled() {
+        return Boolean.getBoolean("hudson.security.ArtifactsPermission");
+    }
+
 }
