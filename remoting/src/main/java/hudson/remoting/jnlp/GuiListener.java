@@ -23,13 +23,13 @@
  */
 package hudson.remoting.jnlp;
 
+import javax.swing.JOptionPane;
+import javax.swing.SwingUtilities;
 import hudson.remoting.EngineListener;
 
-import javax.swing.*;
 import java.io.StringWriter;
 import java.io.PrintWriter;
 import java.util.logging.Logger;
-import java.util.logging.Level;
 import static java.util.logging.Level.INFO;
 import static java.util.logging.Level.SEVERE;
 

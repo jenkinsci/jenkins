@@ -28,7 +28,6 @@ import hudson.Extension;
 import hudson.maven.MavenBuild;
 import hudson.maven.MavenReporter;
 import hudson.maven.MavenReporterDescriptor;
-import hudson.maven.MavenModule;
 import hudson.model.BuildListener;
 import hudson.tasks.MailSender;
 import hudson.tasks.Mailer;

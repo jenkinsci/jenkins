@@ -25,9 +25,7 @@ package hudson.maven;
 
 import hudson.ExtensionPoint;
 import hudson.Launcher;
-import hudson.model.AbstractProject;
 import hudson.model.Action;
-import hudson.model.Build;
 import hudson.model.BuildListener;
 import hudson.model.Describable;
 import hudson.model.Hudson;
