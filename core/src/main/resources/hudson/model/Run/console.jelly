@@ -49,7 +49,7 @@ THE SOFTWARE.
         </j:otherwise>
       </j:choose>
 
-      <j:out value="${h.generateConsoleAnnotationScript()}"/>
+      <j:out value="${h.generateConsoleAnnotationScriptAndStylesheet()}"/>
 
       <j:choose>
         <!-- Do progressive console output -->

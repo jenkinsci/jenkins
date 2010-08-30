@@ -1218,16 +1218,22 @@ public class Functions {
      * Generate a series of &lt;script> tags to include <tt>script.js</tt>
      * from {@link ConsoleAnnotatorFactory}s and {@link ConsoleAnnotationDescriptor}s.
      */
-    public static String generateConsoleAnnotationScript() {
+    public static String generateConsoleAnnotationScriptAndStylesheet() {
         String cp = Stapler.getCurrentRequest().getContextPath();
         StringBuilder buf = new StringBuilder();
         for (ConsoleAnnotatorFactory f : ConsoleAnnotatorFactory.all()) {
+            String path = cp + "/extensionList/" + ConsoleAnnotatorFactory.class.getName() + "/" + f.getClass().getName();
             if (f.hasScript())
-                buf.append("<script src='"+cp+"/extensionList/"+ConsoleAnnotatorFactory.class.getName()+"/"+f.getClass().getName()+"/script.js'></script>");
+                buf.append("<script src='"+path+"/script.js'></script>");
+            if (f.hasStylesheet())
+                buf.append("<link rel='stylesheet' type='text/css' href='"+path+"/style.css' />");
         }
         for (ConsoleAnnotationDescriptor d : ConsoleAnnotationDescriptor.all()) {
+            String path = cp+"/descriptor/"+d.clazz.getName();
             if (d.hasScript())
-                buf.append("<script src='"+cp+"/descriptor/"+d.clazz.getName()+"/script.js'></script>");
+                buf.append("<script src='"+path+"/script.js'></script>");
+            if (d.hasStylesheet())
+                buf.append("<link rel='stylesheet' type='text/css' href='"+path+"/style.css' />");
         }
         return buf.toString();
     }
