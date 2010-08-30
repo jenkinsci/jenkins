@@ -52,6 +52,7 @@ import org.acegisecurity.userdetails.UserDetailsService;
 import org.acegisecurity.userdetails.UsernameNotFoundException;
 import org.acegisecurity.userdetails.ldap.LdapUserDetails;
 import org.acegisecurity.userdetails.ldap.LdapUserDetailsImpl;
+import org.apache.commons.collections.map.LRUMap;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.QueryParameter;
 import org.springframework.dao.DataAccessException;
@@ -61,6 +62,7 @@ import javax.naming.Context;
 import javax.naming.NamingException;
 import javax.naming.directory.Attribute;
 import javax.naming.directory.Attributes;
+import javax.naming.directory.BasicAttributes;
 import javax.naming.directory.DirContext;
 import javax.naming.directory.InitialDirContext;
 import java.io.IOException;
@@ -339,7 +341,7 @@ public class LDAPSecurityRealm extends AbstractPasswordBasedSecurityRealm {
 
         BeanBuilder builder = new BeanBuilder();
         builder.parse(Hudson.getInstance().servletContext.getResourceAsStream("/WEB-INF/security/LDAPBindSecurityRealm.groovy"),binding);
-        final WebApplicationContext appContext = builder.createApplicationContext();
+        WebApplicationContext appContext = builder.createApplicationContext();
 
         ldapTemplate = new LdapTemplate(findBean(InitialDirContextFactory.class, appContext));
 
@@ -406,20 +408,42 @@ public class LDAPSecurityRealm extends AbstractPasswordBasedSecurityRealm {
     public static class LDAPUserDetailsService implements UserDetailsService {
         public final LdapUserSearch ldapSearch;
         public final LdapAuthoritiesPopulator authoritiesPopulator;
+        /**
+         * {@link BasicAttributes} in LDAP tend to be bulky (about 20K at size), so interning them
+         * to keep the size under control. When a programmatic client is not smart enough to
+         * reuse a session, this helps keeping the memory consumption low.
+         */
+        private final LRUMap attributesCache = new LRUMap(32);
+
         LDAPUserDetailsService(WebApplicationContext appContext) {
             ldapSearch = findBean(LdapUserSearch.class, appContext);
             authoritiesPopulator = findBean(LdapAuthoritiesPopulator.class, appContext);
         }
-        public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException, DataAccessException {
+
+        LDAPUserDetailsService(LdapUserSearch ldapSearch, LdapAuthoritiesPopulator authoritiesPopulator) {
+            this.ldapSearch = ldapSearch;
+            this.authoritiesPopulator = authoritiesPopulator;
+        }
+
+        public LdapUserDetails loadUserByUsername(String username) throws UsernameNotFoundException, DataAccessException {
             try {
                 LdapUserDetails ldapUser = ldapSearch.searchForUser(username);
                 // LdapUserSearch does not populate granted authorities (group search).
                 // Add those, as done in LdapAuthenticationProvider.createUserDetails().
                 if (ldapUser != null) {
                     LdapUserDetailsImpl.Essence user = new LdapUserDetailsImpl.Essence(ldapUser);
+
+                    // intern attributes
+                    Attributes v = ldapUser.getAttributes();
+                    if (v instanceof BasicAttributes) {// BasicAttributes.equals is what makes the interning possible
+                        Attributes vv = (Attributes)attributesCache.get(v);
+                        if (vv==null)   attributesCache.put(v,vv=v);
+                        user.setAttributes(vv);
+                    }
+
                     GrantedAuthority[] extraAuthorities = authoritiesPopulator.getGrantedAuthorities(ldapUser);
-                    for (int i = 0; i < extraAuthorities.length; i++) {
-                        user.addAuthority(extraAuthorities[i]);
+                    for (GrantedAuthority extraAuthority : extraAuthorities) {
+                        user.addAuthority(extraAuthority);
                     }
                     ldapUser = user.createUserDetails();
                 }
