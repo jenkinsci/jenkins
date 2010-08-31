@@ -110,13 +110,14 @@ public class ArgumentListBuilderTest extends Assert {
         ArgumentListBuilder builder = new ArgumentListBuilder(
                 "ant.bat", "-Dfoo1=abc",  // nothing special, no quotes
                 "-Dfoo2=foo bar", "-Dfoo3=/u*r", "-Dfoo4=/us?",  // add quotes, no other escaping
+                                                 "-Dfoo10=bar,baz",
                 "-Dfoo5=foo;bar^baz", "-Dfoo6=<xml>&here;</xml>", // add quotes and ^ escaping
                 "-Dfoo7=foo|bar\"baz", // add quotes, ^| for | and "" for "
                 "-Dfoo8=% %QED% %comspec% %-%(%.%", // add quotes, and extra quotes for %Q and %c
                 "-Dfoo9=%'''%%@%"); // no quotes as none of the % are followed by a letter
         assertArrayEquals(new String[] { "cmd.exe", "/C",
                 "\"ant.bat -Dfoo1=abc \"-Dfoo2=foo bar\""
-                + " \"-Dfoo3=/u*r\" \"-Dfoo4=/us?\" \"-Dfoo5=foo;bar^^baz\""
+                + " \"-Dfoo3=/u*r\" \"-Dfoo4=/us?\" \"-Dfoo10=bar,baz\" \"-Dfoo5=foo;bar^^baz\""
                 + " \"-Dfoo6=^<xml^>^&here;^</xml^>\" \"-Dfoo7=foo^|bar\"\"baz\""
                 + " \"-Dfoo8=% %\"Q\"ED% %\"c\"omspec% %-%(%.%\""
                 + " -Dfoo9=%'''%%@% && exit %%ERRORLEVEL%%\"" },

@@ -205,7 +205,7 @@ public class ArgumentListBuilder implements Serializable {
      * is needed since the command is now passed as a string to the CMD.EXE shell.
      * This is done as follows:
      * Wrap arguments in double quotes if they contain any of:
-     *   space *?;^&<>|" or % followed by a letter.
+     *   space *?,;^&<>|" or % followed by a letter.
      * <br/> These characters are also prepended with a ^ character: ^&<>|
      * <br/> A " is prepended with another " character.  Note: Windows has issues
      * escaping some combinations of quotes and spaces.  Quotes should be avoided.
@@ -223,7 +223,7 @@ public class ArgumentListBuilder implements Serializable {
             quoted = percent = false;
             for (int i = 0; i < arg.length(); i++) {
                 char c = arg.charAt(i);
-                if (!quoted && (c == ' ' || c == '*' || c == '?' || c == ';')) {
+                if (!quoted && (c == ' ' || c == '*' || c == '?' || c == ',' || c == ';')) {
                     quoted = startQuoting(quotedArgs, arg, i);
                 }
                 else if (c == '^' || c == '&' || c == '<' || c == '>' || c == '|') {
