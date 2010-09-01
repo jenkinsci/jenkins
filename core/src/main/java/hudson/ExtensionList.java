@@ -209,7 +209,7 @@ public class ExtensionList<T> extends AbstractList<T> {
         if(Hudson.getInstance().getInitLevel().compareTo(InitMilestone.PLUGINS_PREPARED)<0)
             return legacyInstances; // can't perform the auto discovery until all plugins are loaded, so just make the legacy instances visible
 
-        synchronized (this) {
+        synchronized (hudson.lookup.setIfNull(Lock.class,new Lock())) {
             if(extensions==null) {
                 List<ExtensionComponent<T>> r = load();
                 r.addAll(legacyInstances);
@@ -218,6 +218,13 @@ public class ExtensionList<T> extends AbstractList<T> {
             return extensions;
         }
     }
+
+    /**
+     * Loading an {@link ExtensionList} can result in a nested loading of another {@link ExtensionList}.
+     * What that means is that we need a single lock that spans across all the {@link ExtensionList}s,
+     * or else we can end up in a dead lock.
+     */
+    private static final class Lock {}
 
     /**
      * Loads all the extensions.
