@@ -39,12 +39,7 @@ import javax.mail.internet.MimeMessage;
 import javax.mail.internet.AddressException;
 import java.io.File;
 import java.io.IOException;
-import java.util.Date;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.StringTokenizer;
-import java.util.HashSet;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -59,6 +54,8 @@ public class MailSender {
      * Whitespace-separated list of e-mail addresses that represent recipients.
      */
     private String recipients;
+    
+    private List<AbstractProject> includeUpstreamCommitters = new ArrayList<AbstractProject>();
 
     /**
      * If true, only the first unstable build will be reported.
@@ -79,12 +76,17 @@ public class MailSender {
     public MailSender(String recipients, boolean dontNotifyEveryUnstableBuild, boolean sendToIndividuals) {
     	this(recipients, dontNotifyEveryUnstableBuild, sendToIndividuals, "UTF-8");
     }
-    
+
     public MailSender(String recipients, boolean dontNotifyEveryUnstableBuild, boolean sendToIndividuals, String charset) {
+        this(recipients,dontNotifyEveryUnstableBuild,sendToIndividuals,charset, Collections.<AbstractProject>emptyList());
+    }
+  
+    public MailSender(String recipients, boolean dontNotifyEveryUnstableBuild, boolean sendToIndividuals, String charset, Collection<AbstractProject> includeUpstreamCommitters) {
         this.recipients = recipients;
         this.dontNotifyEveryUnstableBuild = dontNotifyEveryUnstableBuild;
         this.sendToIndividuals = sendToIndividuals;
         this.charset = charset;
+        this.includeUpstreamCommitters.addAll(includeUpstreamCommitters);
     }
 
     public boolean execute(AbstractBuild<?, ?> build, BuildListener listener) throws InterruptedException {
@@ -318,19 +320,7 @@ public class MailSender {
                     listener.getLogger().println("No such project exist: "+projectName);
                     continue;
                 }
-                AbstractBuild<?,?> pb = build.getPreviousBuild();
-                AbstractBuild<?,?> ub = build.getUpstreamRelationshipBuild(up);
-                AbstractBuild<?,?> upb = pb!=null ? pb.getUpstreamRelationshipBuild(up) : null;
-                if(pb==null && ub==null && upb==null) {
-                    listener.getLogger().println("Unable to compute the changesets in "+up+". Is the fingerprint configured?");
-                    continue;
-                }
-                if(pb==null || ub==null || upb==null) {
-                    listener.getLogger().println("Unable to compute the changesets in "+up);
-                    continue;
-                }
-                for( AbstractBuild<?,?> b=upb; b!=ub && b!=null; b=b.getNextBuild())
-                    rcp.addAll(buildCulpritList(listener,b.getCulprits()));
+                includeCulpritsOf(up, build, listener, rcp);
             } else {
                 // ordinary address
                 try {
@@ -340,6 +330,10 @@ public class MailSender {
                     e.printStackTrace(listener.error(e.getMessage()));
                 }
             }
+        }
+
+        for (AbstractProject project : includeUpstreamCommitters) {
+            includeCulpritsOf(project, build, listener, rcp);
         }
 
         if (sendToIndividuals) {
@@ -362,6 +356,22 @@ public class MailSender {
         }
 
         return msg;
+    }
+
+    private void includeCulpritsOf(AbstractProject upstreamBuild, AbstractBuild<?, ?> currentBuild, BuildListener listener, Set<InternetAddress> recipientList) throws AddressException {
+        AbstractBuild<?,?> pb = currentBuild.getPreviousBuild();
+        AbstractBuild<?,?> ub = currentBuild.getUpstreamRelationshipBuild(upstreamBuild);
+        AbstractBuild<?,?> upb = pb!=null ? pb.getUpstreamRelationshipBuild(upstreamBuild) : null;
+        if(pb==null && ub==null && upb==null) {
+            listener.getLogger().println("Unable to compute the changesets in "+ upstreamBuild +". Is the fingerprint configured?");
+            return;
+        }
+        if(pb==null || ub==null || upb==null) {
+            listener.getLogger().println("Unable to compute the changesets in "+ upstreamBuild);
+            return;
+        }
+        for( AbstractBuild<?,?> b=upb; b!=ub && b!=null; b=b.getNextBuild())
+            recipientList.addAll(buildCulpritList(listener,b.getCulprits()));
     }
 
     private Set<InternetAddress> buildCulpritList(BuildListener listener, Set<User> culprits) throws AddressException {
