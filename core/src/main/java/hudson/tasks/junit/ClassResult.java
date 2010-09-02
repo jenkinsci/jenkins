@@ -24,7 +24,7 @@
 package hudson.tasks.junit;
 
 import hudson.model.AbstractBuild;
-import hudson.tasks.test.*;
+import hudson.tasks.test.TabulatedResult;
 import hudson.tasks.test.TestResult;
 import hudson.tasks.test.TestObject;
 import org.kohsuke.stapler.StaplerRequest;

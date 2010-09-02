@@ -194,7 +194,7 @@ public class Ant extends Builder {
             // Add quotes for any empty parameter values:
             List<String> newArgs = new ArrayList<String>(args.toList());
             newArgs.set(newArgs.size() - 1, newArgs.get(newArgs.size() - 1).replaceAll(
-                    "( -D[^\" ]+)= ", "$1=\"\" "));
+                    "(?<= )(-D[^\" ]+)= ", "$1=\"\" "));
             args = new ArgumentListBuilder(newArgs.toArray(new String[newArgs.size()]));
         }
 

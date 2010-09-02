@@ -25,7 +25,6 @@ package hudson.model;
 
 import com.thoughtworks.xstream.converters.SingleValueConverter;
 import com.thoughtworks.xstream.converters.basic.AbstractSingleValueConverter;
-import hudson.Extension;
 import hudson.cli.declarative.OptionHandlerExtension;
 import hudson.util.EditDistance;
 import org.kohsuke.args4j.CmdLineException;
@@ -35,8 +34,6 @@ import org.kohsuke.args4j.spi.*;
 import org.kohsuke.stapler.export.CustomExportedBean;
 
 import java.io.Serializable;
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
 

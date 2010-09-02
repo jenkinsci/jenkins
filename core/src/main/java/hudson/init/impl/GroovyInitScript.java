@@ -31,11 +31,9 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.logging.Logger;
 
-import hudson.FilePath;
 import hudson.model.Hudson;
 import static hudson.init.InitMilestone.JOB_LOADED;
 import hudson.init.Initializer;
-import org.apache.commons.io.FileUtils;
 
 /**
  * Run the initialization script, if it exists.

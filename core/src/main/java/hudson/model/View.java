@@ -42,7 +42,6 @@ import hudson.util.RunList;
 import hudson.widgets.Widget;
 
 import java.io.IOException;
-import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;

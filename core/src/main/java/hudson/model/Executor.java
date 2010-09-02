@@ -97,7 +97,7 @@ public class Executor extends Thread implements ModelObject {
                 // clear the interrupt flag as a precaution.
                 // sometime an interrupt aborts a build but without clearing the flag.
                 // see issue #1583
-                Thread.interrupted();
+                if (Thread.interrupted())   continue;
 
                 Queue.Item queueItem;
                 Queue.Task task;

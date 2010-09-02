@@ -58,6 +58,9 @@ public class AntConsoleAnnotator extends LineTransformationOutputStream {
             // put the annotation
             new AntTargetNote().encodeTo(out);
 
+        if (line.equals("BUILD SUCCESSFUL") || line.equals("BUILD FAILED"))
+            new AntOutcomeNote().encodeTo(out);
+
         seenEmptyLine = line.length()==0;
         out.write(b,0,len);
     }

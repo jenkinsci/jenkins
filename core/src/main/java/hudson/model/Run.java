@@ -2,7 +2,7 @@
  * The MIT License
  * 
  * Copyright (c) 2004-2010, Sun Microsystems, Inc., Kohsuke Kawaguchi,
- * Daniel Dyer, Red Hat, Inc., Tom Huybrechts
+ * Daniel Dyer, Red Hat, Inc., Tom Huybrechts, Romain Seguy
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,6 +24,7 @@
  */
 package hudson.model;
 
+import hudson.Functions;
 import hudson.AbortException;
 import hudson.BulkChange;
 import hudson.EnvVars;
@@ -1530,6 +1531,9 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
      * Serves the artifacts.
      */
     public DirectoryBrowserSupport doArtifact() {
+        if(Functions.isArtifactsPermissionEnabled()) {
+          checkPermission(ARTIFACTS);
+        }
         return new DirectoryBrowserSupport(this,new FilePath(getArtifactsDir()), project.getDisplayName()+' '+getDisplayName(), "package.gif", true);
     }
 
@@ -1776,6 +1780,9 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
     public static final PermissionGroup PERMISSIONS = new PermissionGroup(Run.class,Messages._Run_Permissions_Title());
     public static final Permission DELETE = new Permission(PERMISSIONS,"Delete",Messages._Run_DeletePermission_Description(),Permission.DELETE);
     public static final Permission UPDATE = new Permission(PERMISSIONS,"Update",Messages._Run_UpdatePermission_Description(),Permission.UPDATE);
+    /** See {@link hudson.Functions#isArtifactsPermissionEnabled} */
+    public static final Permission ARTIFACTS = new Permission(PERMISSIONS,"Artifacts",Messages._Run_ArtifactsPermission_Description(), null,
+                                                              Functions.isArtifactsPermissionEnabled());
 
     private static class DefaultFeedAdapter implements FeedAdapter<Run> {
         public String getEntryTitle(Run entry) {

@@ -155,7 +155,6 @@ THE SOFTWARE.
             Reload webapp when you hit ENTER. (See JETTY-282 for more)
           -->
           <consoleForceReload>true</consoleForceReload>
-          <webAppSourceDirectory>${basedir}/resources</webAppSourceDirectory>
           <userRealms>
             <userRealm implementation="org.mortbay.jetty.security.HashUserRealm">
               <name>default</name>

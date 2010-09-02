@@ -2,7 +2,7 @@
  * The MIT License
  * 
  * Copyright (c) 2004-2010, Sun Microsystems, Inc., Kohsuke Kawaguchi,
- * Yahoo! Inc., Stephen Connolly, Tom Huybrechts, Alan Harder
+ * Yahoo! Inc., Stephen Connolly, Tom Huybrechts, Alan Harder, Romain Seguy
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -1218,16 +1218,22 @@ public class Functions {
      * Generate a series of &lt;script> tags to include <tt>script.js</tt>
      * from {@link ConsoleAnnotatorFactory}s and {@link ConsoleAnnotationDescriptor}s.
      */
-    public static String generateConsoleAnnotationScript() {
+    public static String generateConsoleAnnotationScriptAndStylesheet() {
         String cp = Stapler.getCurrentRequest().getContextPath();
         StringBuilder buf = new StringBuilder();
         for (ConsoleAnnotatorFactory f : ConsoleAnnotatorFactory.all()) {
+            String path = cp + "/extensionList/" + ConsoleAnnotatorFactory.class.getName() + "/" + f.getClass().getName();
             if (f.hasScript())
-                buf.append("<script src='"+cp+"/extensionList/"+ConsoleAnnotatorFactory.class.getName()+"/"+f.getClass().getName()+"/script.js'></script>");
+                buf.append("<script src='"+path+"/script.js'></script>");
+            if (f.hasStylesheet())
+                buf.append("<link rel='stylesheet' type='text/css' href='"+path+"/style.css' />");
         }
         for (ConsoleAnnotationDescriptor d : ConsoleAnnotationDescriptor.all()) {
+            String path = cp+"/descriptor/"+d.clazz.getName();
             if (d.hasScript())
-                buf.append("<script src='"+cp+"/descriptor/"+d.clazz.getName()+"/script.js'></script>");
+                buf.append("<script src='"+path+"/script.js'></script>");
+            if (d.hasStylesheet())
+                buf.append("<link rel='stylesheet' type='text/css' href='"+path+"/style.css' />");
         }
         return buf.toString();
     }
@@ -1266,4 +1272,20 @@ public class Functions {
     public static boolean getIsUnitTest() {
         return Main.isUnitTest;
     }
+
+    /**
+     * Returns {@code true} if the {@link Run#ARTIFACTS} permission is enabled,
+     * {@code false} otherwise.
+     *
+     * <p>When the {@link Run#ARTIFACTS} permission is not turned on using the
+     * {@code hudson.security.ArtifactsPermission}, this permission must not be
+     * considered to be set to {@code false} for every user. It must rather be
+     * like if the permission doesn't exist at all (which means that every user
+     * has to have an access to the artifacts but the permission can't be
+     * configured in the security screen). Got it?</p>
+     */
+    public static boolean isArtifactsPermissionEnabled() {
+        return Boolean.getBoolean("hudson.security.ArtifactsPermission");
+    }
+
 }

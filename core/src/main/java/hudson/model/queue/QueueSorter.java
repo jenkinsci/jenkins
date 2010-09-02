@@ -4,7 +4,6 @@ import hudson.ExtensionList;
 import hudson.ExtensionPoint;
 import hudson.init.Initializer;
 import hudson.model.Hudson;
-import hudson.model.LoadBalancer;
 import hudson.model.Queue;
 import hudson.model.Queue.BuildableItem;
 

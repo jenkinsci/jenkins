@@ -24,7 +24,6 @@
 
 package hudson;
 
-import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -33,7 +32,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * @author Kohsuke Kawaguchi
  */
 public class Lookup {
-    private final Map<Class,Object> data = new ConcurrentHashMap<Class,Object>();
+    private final ConcurrentHashMap<Class,Object> data = new ConcurrentHashMap<Class,Object>();
 
     public <T> T get(Class<T> type) {
         return type.cast(data.get(type));
@@ -41,5 +40,18 @@ public class Lookup {
 
     public <T> T set(Class<T> type, T instance) {
         return type.cast(data.put(type,instance));
+    }
+
+    /**
+     * Overwrites the value only if the current value is null.
+     *
+     * @return
+     *      If the value was null, return the {@code instance} value.
+     *      Otherwise return the current value, which is non-null.
+     */
+    public <T> T setIfNull(Class<T> type, T instance) {
+        Object o = data.putIfAbsent(type, instance);
+        if (o!=null)    return type.cast(o);
+        return instance;
     }
 }

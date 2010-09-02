@@ -148,7 +148,10 @@ public class CLIRegisterer extends ExtensionFinder {
                                     // fill up all the binders
                                     parser.parseArgument(args);
 
-                                    sc.setAuthentication(authenticator.authenticate()); // run the CLI with the right credential
+                                    Authentication auth = authenticator.authenticate();
+                                    if (auth==Hudson.ANONYMOUS)
+                                        auth = loadStoredAuthentication();
+                                    sc.setAuthentication(auth); // run the CLI with the right credential
                                     hudson.checkPermission(Hudson.READ);
 
                                     // resolve them

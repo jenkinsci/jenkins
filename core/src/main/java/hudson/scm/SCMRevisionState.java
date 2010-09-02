@@ -1,11 +1,7 @@
 package hudson.scm;
 
-import hudson.FilePath;
-import hudson.Launcher;
 import hudson.model.AbstractBuild;
-import hudson.model.AbstractProject;
 import hudson.model.Action;
-import hudson.model.TaskListener;
 
 /**
  * Immutable object that represents revisions of the files in the repository,

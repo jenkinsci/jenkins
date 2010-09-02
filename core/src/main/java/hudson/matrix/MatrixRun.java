@@ -105,7 +105,14 @@ public class MatrixRun extends Build<MatrixConfiguration,MatrixRun> {
     public Map<String,String> getBuildVariables() {
         Map<String,String> r = super.getBuildVariables();
         // pick up user axes
-        r.putAll(getParent().getCombination());
+        AxisList axes = getParent().getParent().getAxes();
+        for (Map.Entry<String,String> e : getParent().getCombination().entrySet()) {
+            Axis a = axes.find(e.getKey());
+            if (a!=null)
+                a.addBuildVariable(e.getValue(),r);
+            else
+                r.put(e.getKey(), e.getValue());
+        }
         return r;
     }
 

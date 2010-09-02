@@ -32,7 +32,6 @@ import org.kohsuke.stapler.export.Flavor;
 import javax.servlet.ServletException;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 
 import static java.util.Arrays.asList;

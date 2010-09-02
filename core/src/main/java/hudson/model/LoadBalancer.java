@@ -30,7 +30,6 @@ import hudson.model.Queue.Task;
 import hudson.model.Queue.NonBlockingTask;
 import hudson.util.ConsistentHash;
 import hudson.util.ConsistentHash.Hash;
-import hudson.matrix.MatrixConfiguration;
 
 import java.util.logging.Logger;
 

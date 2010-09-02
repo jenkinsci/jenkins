@@ -25,7 +25,6 @@ package hudson.model;
 
 import hudson.EnvVars;
 import hudson.Util;
-import hudson.slaves.OfflineCause;
 import hudson.tasks.BuildWrapper;
 import hudson.tasks.Builder;
 import hudson.util.VariableResolver;
@@ -33,9 +32,7 @@ import hudson.util.VariableResolver;
 import java.io.Serializable;
 import java.util.Map;
 
-import net.sf.json.JSONObject;
 
-import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.export.ExportedBean;
 

@@ -35,7 +35,6 @@ import hudson.FilePath;
 import hudson.Extension;
 import hudson.Util;
 import org.apache.maven.artifact.Artifact;
-import org.apache.maven.artifact.installer.ArtifactInstallationException;
 import org.apache.maven.project.MavenProject;
 
 import java.io.IOException;
@@ -45,7 +44,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.HashSet;
-import java.lang.reflect.Proxy;
 import java.lang.reflect.Method;
 import java.lang.reflect.InvocationHandler;
 
