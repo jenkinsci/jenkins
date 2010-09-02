@@ -125,9 +125,13 @@ public class LabelAtom extends Label implements Saveable {
     /**
      * Properties associated with this label.
      */
-    @Exported
     public DescribableList<LabelAtomProperty, LabelAtomPropertyDescriptor> getProperties() {
         return properties;
+    }
+
+    @Exported
+    public List<LabelAtomProperty> getPropertiesList() {
+        return properties.toList();
     }
 
     @Override
