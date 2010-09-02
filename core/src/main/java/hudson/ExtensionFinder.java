@@ -1,7 +1,7 @@
 /*
  * The MIT License
  *
- * Copyright (c) 2004-2010, Sun Microsystems, Inc.
+ * Copyright (c) 2004-2010, Sun Microsystems, Inc., InfraDNA, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -93,6 +93,7 @@ public abstract class ExtensionFinder implements ExtensionPoint {
     }
 
     /**
+     * Performs class initializations without creating instances. 
      *
      * If two threads try to initialize classes in the opposite order, a dead lock will ensue,
      * and we can get into a similar situation with {@link ExtensionFinder}s.
@@ -118,6 +119,8 @@ public abstract class ExtensionFinder implements ExtensionPoint {
      *
      * <p>
      * See http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=6459208 for how to force a class initialization.
+     * Also see http://kohsuke.org/2010/09/01/deadlock-that-you-cant-avoid/ for how class initialization
+     * can results in a dead lock.
      */
     public void scout(Class extensionType, Hudson hudson) {
     }
