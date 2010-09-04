@@ -812,7 +812,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
             } else {
                 // Don't store collapsed path in ArrayList (for correct data in external API)
                 r.add(collapsed ? new Artifact(child, a.relativePath, a.href, a.treeNodeId) : a);
-                if (++n>=upTo) break;;
+                if (++n>=upTo) break;
             }
         }
         return n;
