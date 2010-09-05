@@ -23,6 +23,7 @@
  */
 package hudson.model.labels;
 
+import com.thoughtworks.xstream.converters.UnmarshallingContext;
 import hudson.BulkChange;
 import hudson.CopyOnWrite;
 import hudson.XmlFile;
@@ -36,6 +37,7 @@ import hudson.model.listeners.SaveableListener;
 import hudson.util.DescribableList;
 import hudson.util.QuotedStringTokenizer;
 import hudson.util.VariableResolver;
+import hudson.util.XStream2;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 import org.kohsuke.stapler.export.Exported;
@@ -145,7 +147,7 @@ public class LabelAtom extends Label implements Saveable {
     }
 
     /*package*/ XmlFile getConfigFile() {
-        return new XmlFile(Hudson.XSTREAM,new File(Hudson.getInstance().root,"labels/"+name+".xml"));
+        return new XmlFile(XSTREAM, new File(Hudson.getInstance().root, "labels/"+name+".xml"));
     }
 
     public void save() throws IOException {
@@ -224,4 +226,23 @@ public class LabelAtom extends Label implements Saveable {
     }
 
     private static final Logger LOGGER = Logger.getLogger(LabelAtom.class.getName());
+
+    private static final XStream2 XSTREAM = new XStream2();
+
+    static {
+        // Don't want Label.ConverterImpl to be used:
+        XSTREAM.registerConverter(new LabelAtomConverter(), 100);
+    }
+
+    private static class LabelAtomConverter extends XStream2.PassthruConverter<LabelAtom> {
+        private LabelAtomConverter() {
+            super(XSTREAM);
+        }
+        @Override public boolean canConvert(Class type) {
+            return LabelAtom.class.isAssignableFrom(type);
+        }
+        @Override protected void callback(LabelAtom obj, UnmarshallingContext context) {
+            // Unused
+        }
+    }
 }
