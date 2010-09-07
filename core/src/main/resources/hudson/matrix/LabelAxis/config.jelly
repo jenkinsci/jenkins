@@ -21,7 +21,6 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 -->
-<!-- JDK config -->
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt" xmlns:p="/lib/hudson/project">
   <f:entry title="${%Name}" field="name">
@@ -33,6 +32,7 @@ THE SOFTWARE.
     <link rel="stylesheet" href="${rootURL}/scripts/yui/treeview/assets/skins/sam/treeview.css" type="text/css" />
     <script>
       hudsonRules["DIV.labelAxis-tree"] = function(e) {
+       setTimeout(function() { // Avoid JS errors (at least in Firefox/Mac)..is there a better way?
         var tree = new YAHOO.widget.TreeView(e);
 
         var labels = new YAHOO.widget.TextNode("${%Labels}", tree.getRoot(), false);
@@ -40,10 +40,10 @@ THE SOFTWARE.
 
         var values = (e.getAttribute("values") || "").split(" ");
         function has(v) {
-          return values.include(v) ? " checked " : "";
-        }        
+          return values.include(v) ? 'checked="checked" ' : "";
+        }
         <j:forEach var="l" items="${app.labelAtoms}">
-          new YAHOO.widget.TextNode('&lt;input type="checkbox" name="values" json="${l.name}" '+has("${l.name}")+'&gt;<label class="attach-previous">${h.jsStringEscape(l.name)} (${h.jsStringEscape(l.description)})</label>', ${l.isSelfLabel()?'machines':'labels'}, false);
+          new YAHOO.widget.TextNode('&lt;input type="checkbox" name="values" json="${l.name}" '+has("${l.name}")+'/&gt;&lt;label class="attach-previous"&gt;${h.jsStringEscape(l.name)} (${h.jsStringEscape(l.description)})&lt;/label&gt;', ${l.isSelfLabel()?'machines':'labels'}, false);
         </j:forEach>
 
         tree.draw();
@@ -53,6 +53,7 @@ THE SOFTWARE.
          -->
         tree.expandAll();
         tree.collapseAll();
+       }, 200); // End of setTimeout()
       };
     </script>
   </f:entry>
