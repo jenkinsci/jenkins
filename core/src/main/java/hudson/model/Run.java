@@ -1691,7 +1691,13 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
      * @since 1.305
      */
     public EnvVars getEnvironment(TaskListener log) throws IOException, InterruptedException {
-        EnvVars env = Computer.currentComputer().getEnvironment().overrideAll(getCharacteristicEnvVars());
+        Computer currentComputer = Computer.currentComputer();
+        EnvVars env = new EnvVars();
+        if (currentComputer != null) {
+        	// currentComputer == null when this is called outside a running build
+        	env.overrideAll(currentComputer.getEnvironment());;
+        }
+        env.overrideAll(getCharacteristicEnvVars());
         String rootUrl = Hudson.getInstance().getRootUrl();
         if(rootUrl!=null) {
             env.put("HUDSON_URL", rootUrl);
