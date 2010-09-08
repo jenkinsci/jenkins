@@ -70,9 +70,11 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.jar.JarFile;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.acegisecurity.context.SecurityContextHolder;
+
 
 /**
  * Controls update center capability.
@@ -280,6 +282,45 @@ public class UpdateCenter extends AbstractModelObject implements Saveable {
         LOGGER.info("Scheduling the core upgrade");
         addJob(job);
         rsp.sendRedirect2(".");
+    }
+
+    /**
+     * Returns true if backup of hudson.war exists on the hard drive
+     */
+    public boolean isDowngradable() {
+        return new File(Lifecycle.get().getHudsonWar() + ".bak").exists();
+    }
+
+    /**
+     * Performs hudson downgrade.
+     */
+    public void doDowngrade(StaplerResponse rsp) throws IOException, ServletException {
+        requirePOST();
+        Hudson.getInstance().checkPermission(Hudson.ADMINISTER);
+        if(!isDowngradable()) {
+            sendError("Hudson downgrade is not possible, probably backup does not exist");
+            return;
+        }
+
+        HudsonDowngradeJob job = new HudsonDowngradeJob(getCoreSource(), Hudson.getAuthentication());
+        LOGGER.info("Scheduling the core downgrade");
+        addJob(job);
+        rsp.sendRedirect2(".");
+    }
+
+    /**
+     * Returns String with version of backup .war file,
+     * if the file does not exists returns null
+     */
+    public String getBackupVersion()
+    {
+        try {
+            JarFile backupWar = new JarFile(new File(Lifecycle.get().getHudsonWar().getParentFile(), "hudson.war.bak"));
+            return backupWar.getManifest().getMainAttributes().getValue("Hudson-Version");
+        } catch (IOException e) {
+            LOGGER.log(Level.WARNING, "Failed to read backup version ", e);
+            return null;}
+
     }
 
     /*package*/ synchronized Future<UpdateCenterJob> addJob(UpdateCenterJob job) {
@@ -893,6 +934,87 @@ public class UpdateCenter extends AbstractModelObject implements Saveable {
     }
 
     /**
+     * Represents the state of the downgrading activity of plugin.
+     */
+    public final class PluginDowngradeJob extends DownloadJob {
+        /**
+         * What plugin are we trying to install?
+         */
+        public final Plugin plugin;
+
+        private final PluginManager pm = Hudson.getInstance().getPluginManager();
+
+        public PluginDowngradeJob(Plugin plugin, UpdateSite site, Authentication auth) {
+            super(site, auth);
+            this.plugin = plugin;
+        }
+
+        protected URL getURL() throws MalformedURLException {
+            return new URL(plugin.url);
+        }
+
+        protected File getDestination() {
+            File baseDir = pm.rootDir;
+            return new File(baseDir, plugin.name + ".hpi");
+        }
+
+        protected File getBackup()
+        {
+            File baseDir = pm.rootDir;
+            return new File(baseDir, plugin.name + ".bak");
+        }
+
+        public String getName() {
+            return plugin.getDisplayName();
+        }
+
+        @Override
+        public void run() {
+            try {
+                LOGGER.info("Starting the downgrade of "+getName()+" on behalf of "+getUser().getName());
+
+                _run();
+
+                LOGGER.info("Downgrade successful: "+getName());
+                status = new Success();
+                onSuccess();
+            } catch (Throwable e) {
+                LOGGER.log(Level.SEVERE, "Failed to downgrade "+getName(),e);
+                status = new Failure(e);
+            }
+        }
+
+        @Override
+        protected void _run() throws IOException {
+            File dst = getDestination();
+            File backup = getBackup();
+
+            config.install(this, backup, dst);
+        }
+
+        /**
+         * Called to overwrite
+         * current version with backup file
+         */
+        @Override
+        protected void replace(File dst, File backup) throws IOException {
+            dst.delete(); // any failure up to here is no big deal
+            if(!backup.renameTo(dst)) {
+                throw new IOException("Failed to rename "+backup+" to "+dst);
+            }
+        }
+
+        protected void onSuccess() {
+            pm.pluginUploaded = true;
+        }
+
+        @Override
+        public String toString() {
+            return super.toString()+"[plugin="+plugin.title+"]";
+        }
+    }
+
+    /**
      * Represents the state of the upgrade activity of Hudson core.
      */
     public final class HudsonUpgradeJob extends DownloadJob {
@@ -914,6 +1036,56 @@ public class UpdateCenter extends AbstractModelObject implements Saveable {
 
         protected void onSuccess() {
             status = new Success();
+        }
+
+        @Override
+        protected void replace(File dst, File src) throws IOException {
+            Lifecycle.get().rewriteHudsonWar(src);
+        }
+    }
+
+    public final class HudsonDowngradeJob extends DownloadJob {
+        public HudsonDowngradeJob(UpdateSite site, Authentication auth) {
+            super(site, auth);
+        }
+
+        protected URL getURL() throws MalformedURLException {
+            return new URL(site.getData().core.url);
+        }
+
+        protected File getDestination() {
+            return Lifecycle.get().getHudsonWar();
+        }
+
+        public String getName() {
+            return "hudson.war";
+        }
+        protected void onSuccess() {
+            status = new Success();
+        }
+        @Override
+        public void run() {
+            try {
+                LOGGER.info("Starting the downgrade of "+getName()+" on behalf of "+getUser().getName());
+
+                _run();
+
+                LOGGER.info("Downgrading successful: "+getName());
+                status = new Success();
+                onSuccess();
+            } catch (Throwable e) {
+                LOGGER.log(Level.SEVERE, "Failed to downgrade "+getName(),e);
+                status = new Failure(e);
+            }
+        }
+
+        @Override
+        protected void _run() throws IOException {
+
+            File backup = new File(Lifecycle.get().getHudsonWar() + ".bak");
+            File dst = getDestination();
+
+            config.install(this, backup, dst);
         }
 
         @Override

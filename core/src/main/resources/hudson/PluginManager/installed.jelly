@@ -42,6 +42,7 @@ THE SOFTWARE.
               <th width="32" tooltip="${%Uncheck to disable the plugin}">${%Enabled}</th>
               <th initialSortDir="down">${%Name}</th>
               <th width="32">${%Version}</th>
+              <th width="32">${%Previously installed version}</th>
               <th width="32">${%Pinned}</th>
             </tr>
             <j:forEach var="p" items="${app.pluginManager.plugins}">
@@ -67,6 +68,13 @@ THE SOFTWARE.
                 </td>
                 <td class="center pane" style="white-space:nowrap">
                   ${p.version}
+                </td>
+                <td>
+                  <j:if test="${p.downgradable}">
+                    <form method="post" action="${rootURL}/updateCenter/plugin/${p.shortName}/downgrade">
+                      <s:submit value="${%downgradeTo(p.backupVersion)}"/>
+                    </form>
+                  </j:if>
                 </td>
                 <td class="center pane" id='unpin-${p.shortName}'>
                   <j:if test="${p.isPinned()}">
