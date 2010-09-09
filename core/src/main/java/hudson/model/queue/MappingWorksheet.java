@@ -23,6 +23,7 @@
  */
 package hudson.model.queue;
 
+import com.google.common.collect.ImmutableList;
 import hudson.model.Computer;
 import hudson.model.Label;
 import hudson.model.Node;
@@ -32,7 +33,6 @@ import hudson.model.Queue.Task;
 
 import java.util.AbstractList;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -41,11 +41,9 @@ import java.util.Map;
 /**
  * @author Kohsuke Kawaguchi
  */
-public class MatchingWorksheet {
+public class MappingWorksheet {
     public final List<ExecutorChunk> executors;
     public final List<WorkChunk> works;
-
-//    private final BitSet applicability = new BitSet();
 
     private static class ReadOnlyList<E> extends AbstractList<E> {
         protected final List<E> base;
@@ -94,8 +92,12 @@ public class MatchingWorksheet {
 
         private void execute(WorkChunk wc, WorkUnitContext wuc) {
             assert capacity() > wc.size();
-            for (int i=0; i<wc.size(); i++)
-                get(i).set(wuc.createWorkUnit(wc.get(i)));
+            int e = 0;
+            for (SubTask s : wc) {
+                while (!get(e).isAvailable())
+                    e++;
+                get(e++).set(wuc.createWorkUnit(s));
+            }
         }
     }
 
@@ -153,20 +155,32 @@ public class MatchingWorksheet {
         // for each WorkChunk, identify ExecutorChunk where it is assigned to.
         private final ExecutorChunk[] mapping = new ExecutorChunk[works.size()];
 
-        public ExecutorChunk assigned(int index) {
-            return mapping[index];
+        /**
+         * {@link ExecutorChunk} assigned to the n-th work chunk.
+         */
+        public ExecutorChunk assigned(int n) {
+            return mapping[n];
         }
 
-        public WorkChunk get(int index) {
-            return works.get(index);
+        /**
+         * n-th {@link WorkChunk}.
+         */
+        public WorkChunk get(int n) {
+            return works.get(n);
         }
 
+        /**
+         * Update the mapping to execute n-th {@link WorkChunk} on the specified {@link ExecutorChunk}.
+         */
         public ExecutorChunk assign(int index, ExecutorChunk element) {
             ExecutorChunk o = mapping[index];
             mapping[index] = element;
             return o;
         }
 
+        /**
+         * Number of {@link WorkUnit}s that require assignments.
+         */
         public int size() {
             return mapping.length;
         }
@@ -203,7 +217,7 @@ public class MatchingWorksheet {
     }
 
 
-    public MatchingWorksheet(Task task, List<JobOffer> offers) {
+    public MappingWorksheet(Task task, List<JobOffer> offers) {
         // executors
         Map<Computer,List<JobOffer>> j = new HashMap<Computer, List<JobOffer>>();
         for (JobOffer o : offers) {
@@ -221,7 +235,7 @@ public class MatchingWorksheet {
             if (ec.node==null)  continue;   // evict out of sync node
             executors.add(ec);
         }
-        this.executors = Collections.unmodifiableList(executors);
+        this.executors = ImmutableList.copyOf(executors);
 
         // group execution units into chunks. use of LinkedHashMap ensures that the main work comes at the top
         Map<Object,List<SubTask>> m = new LinkedHashMap<Object,List<SubTask>>();
@@ -240,17 +254,7 @@ public class MatchingWorksheet {
         for (List<SubTask> group : m.values()) {
             works.add(new WorkChunk(group,works.size()));
         }
-        this.works = Collections.unmodifiableList(works);
-    }
-
-    private void build(SubTask eu, Map<Object, List<SubTask>> m) {
-        Object c = eu.getSameNodeConstraint();
-        if (c==null)    c = new Object();
-
-        List<SubTask> l = m.get(c);
-        if (l==null)
-            m.put(c,l= new ArrayList<SubTask>());
-        l.add(eu);
+        this.works = ImmutableList.copyOf(works);
     }
 
     public WorkChunk works(int index) {
@@ -260,23 +264,4 @@ public class MatchingWorksheet {
     public ExecutorChunk executors(int index) {
         return executors.get(index);
     }
-//
-//    public void setIncompatible(int x, int u) {
-//        assert 0<=x && x<=executors.size();
-//        assert 0<=u && u<= works.size();
-//        applicability.set(x* works.size()+u);
-//    }
-//
-//    public boolean isIncompatible(int x, int u) {
-//        assert 0<=x && x<=executors.size();
-//        assert 0<=u && u<= works.size();
-//        return applicability.get(x* works.size()+u);
-//    }
-//
-//    /**
-//     * Creates a clone.
-//     */
-//    public MatchingWorksheet copy() {
-//        throw new UnsupportedOperationException();
-//    }
 }

@@ -37,8 +37,8 @@ import hudson.cli.declarative.CLIResolver;
 import hudson.model.queue.AbstractQueueTask;
 import hudson.model.queue.SubTask;
 import hudson.model.queue.FutureImpl;
-import hudson.model.queue.MatchingWorksheet;
-import hudson.model.queue.MatchingWorksheet.Mapping;
+import hudson.model.queue.MappingWorksheet;
+import hudson.model.queue.MappingWorksheet.Mapping;
 import hudson.model.queue.QueueSorter;
 import hudson.model.queue.QueueTaskDispatcher;
 import hudson.model.queue.WorkUnit;
@@ -748,7 +748,7 @@ public class Queue extends ResourceController implements Saveable {
                         if(j.canTake(p.task))
                             candidates.add(j);
 
-                    Mapping m = loadBalancer.map(p.task, new MatchingWorksheet(p.task, candidates));
+                    Mapping m = loadBalancer.map(p.task, new MappingWorksheet(p.task, candidates));
                     if (m == null)
                         // if we couldn't find the executor that fits,
                         // just leave it in the buildables list and

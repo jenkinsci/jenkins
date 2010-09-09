@@ -27,9 +27,9 @@ import hudson.model.Node.Mode;
 import hudson.model.Queue.ApplicableJobOfferList;
 import hudson.model.Queue.JobOffer;
 import hudson.model.Queue.Task;
-import hudson.model.queue.MatchingWorksheet;
-import hudson.model.queue.MatchingWorksheet.ExecutorChunk;
-import hudson.model.queue.MatchingWorksheet.Mapping;
+import hudson.model.queue.MappingWorksheet;
+import hudson.model.queue.MappingWorksheet.ExecutorChunk;
+import hudson.model.queue.MappingWorksheet.Mapping;
 import hudson.util.ConsistentHash;
 import hudson.util.ConsistentHash.Hash;
 
@@ -67,7 +67,7 @@ public abstract class LoadBalancer /*implements ExtensionPoint*/ {
      */
     protected abstract JobOffer choose(Task task, ApplicableJobOfferList applicable);
 
-    protected abstract Mapping map(Task task, MatchingWorksheet worksheet);
+    protected abstract Mapping map(Task task, MappingWorksheet worksheet);
 
     /**
      * Traditional implementation of this.
@@ -126,7 +126,7 @@ public abstract class LoadBalancer /*implements ExtensionPoint*/ {
         }
 
         @Override
-        protected Mapping map(Task task, MatchingWorksheet worksheet) {
+        protected Mapping map(Task task, MappingWorksheet worksheet) {
             // TODO:
             return CONSISTENT_HASH.map(task,worksheet);
         }
@@ -160,7 +160,7 @@ public abstract class LoadBalancer /*implements ExtensionPoint*/ {
         }
 
         @Override
-        protected Mapping map(Task task, MatchingWorksheet ws) {
+        protected Mapping map(Task task, MappingWorksheet ws) {
             // build consistent hash for each work chunk
             List<ConsistentHash<ExecutorChunk>> hashes = new ArrayList<ConsistentHash<ExecutorChunk>>(ws.works.size());
             for (int i=0; i<ws.works.size(); i++) {
@@ -226,7 +226,7 @@ public abstract class LoadBalancer /*implements ExtensionPoint*/ {
             }
 
             @Override
-            protected Mapping map(Task task, MatchingWorksheet worksheet) {
+            protected Mapping map(Task task, MappingWorksheet worksheet) {
                 if (Queue.ifBlockedByHudsonShutdown(task)) {
                     // if we are quieting down, don't start anything new so that
                     // all executors will be eventually free.
