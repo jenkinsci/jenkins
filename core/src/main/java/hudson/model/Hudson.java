@@ -1393,7 +1393,9 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
                 return (LabelAtom)l;
 
             // non-existent
-            labels.putIfAbsent(name,new LabelAtom(name));
+            LabelAtom la = new LabelAtom(name);
+            if (labels.putIfAbsent(name, la)==null)
+                la.load();
         }
     }
 

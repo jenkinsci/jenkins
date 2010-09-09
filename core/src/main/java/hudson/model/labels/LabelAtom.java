@@ -66,7 +66,6 @@ public class LabelAtom extends Label implements Saveable {
 
     public LabelAtom(String name) {
         super(name);
-        load();
     }
 
     /**
