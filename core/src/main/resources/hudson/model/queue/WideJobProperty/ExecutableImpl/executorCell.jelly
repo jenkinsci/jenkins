@@ -24,6 +24,16 @@ THE SOFTWARE.
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt" xmlns:p="/lib/hudson/project">
   <td class="pane">
-    Occupied
+    <div style="white-space: normal">${%Occupied by}
+      <j:set var="build" value="${it.build}" />
+      <j:choose>
+        <j:when test="${h.hasPermission(build.parent,build.parent.READ)}">
+          <a href="${rootURL}/${build.parent.url}">${build.parent.fullDisplayName}</a>&#160;<a href="${rootURL}/${build.url}">#${build.number}</a>
+        </j:when>
+        <j:otherwise>
+          <span>${%Unknown Task}</span>
+        </j:otherwise>
+      </j:choose>
+    </div>
   </td>
 </j:jelly>

@@ -24,7 +24,9 @@
 package hudson.model.queue;
 
 import hudson.Extension;
+import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
+import hudson.model.Executor;
 import hudson.model.JobProperty;
 import hudson.model.JobPropertyDescriptor;
 import hudson.model.Queue.Executable;
@@ -91,8 +93,9 @@ public class WideJobProperty extends JobProperty<AbstractProject<?,?>> {
         }
     }
 
-    private static class ExecutableImpl implements Executable {
+    public static class ExecutableImpl implements Executable {
         private final SubTask parent;
+        private final Executor executor = Executor.currentExecutor();
 
         private ExecutableImpl(SubTask parent) {
             this.parent = parent;
@@ -100,6 +103,10 @@ public class WideJobProperty extends JobProperty<AbstractProject<?,?>> {
 
         public SubTask getParent() {
             return parent;
+        }
+
+        public AbstractBuild<?,?> getBuild() {
+            return (AbstractBuild<?,?>)executor.getCurrentWorkUnit().context.getPrimaryWorkUnit().getExecutable();
         }
 
         public void run() {
