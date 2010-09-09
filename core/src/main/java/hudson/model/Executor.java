@@ -26,7 +26,7 @@ package hudson.model;
 import hudson.Util;
 import hudson.model.Queue.*;
 import hudson.FilePath;
-import hudson.model.queue.ExecutionUnit;
+import hudson.model.queue.SubTask;
 import hudson.model.queue.WorkUnit;
 import hudson.util.TimeUnit2;
 import hudson.util.InterceptingProxy;
@@ -104,7 +104,7 @@ public class Executor extends Thread implements ModelObject {
                 // see issue #1583
                 if (Thread.interrupted())   continue;
 
-                ExecutionUnit task;
+                SubTask task;
                 try {
                     synchronized (queue) {// perform this state change as an atomic operation wrt other queue operations
                         workUnit = grabJob();

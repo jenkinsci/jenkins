@@ -35,7 +35,7 @@ import static hudson.util.Iterators.reverse;
 import hudson.cli.declarative.CLIMethod;
 import hudson.cli.declarative.CLIResolver;
 import hudson.model.queue.AbstractQueueTask;
-import hudson.model.queue.ExecutionUnit;
+import hudson.model.queue.SubTask;
 import hudson.model.queue.FutureImpl;
 import hudson.model.queue.MatchingWorksheet;
 import hudson.model.queue.MatchingWorksheet.Mapping;
@@ -1028,8 +1028,14 @@ public class Queue extends ResourceController implements Saveable {
      * Plugins are encouraged to extend from {@link AbstractQueueTask}
      * instead of implementing this interface directly, to maintain
      * compatibility with future changes to this interface.
+     *
+     * <p>
+     * For historical reasons, {@link Task} object by itself
+     * also represents the "primary" sub-task (and as implied by this
+     * design, a {@link Task} must have at least one sub-task.)
+     * Most of the time, the primary subtask is the only sub task.
      */
-    public interface Task extends ModelObject, ExecutionUnit {
+    public interface Task extends ModelObject, SubTask {
         /**
          * Returns true if the execution should be blocked
          * for temporary reasons.
@@ -1105,18 +1111,17 @@ public class Queue extends ResourceController implements Saveable {
         boolean isConcurrentBuild();
 
         /**
-         * Obtains the {@link ExecutionUnit}s that constitute this task.
+         * Obtains the {@link SubTask}s that constitute this task.
          *
-         * For historical reasons, {@link Task} itself implicitly forms one "main" {@link ExecutionUnit}
-         * (and in fact most of the time this is the only {@link Task}.)
+         * The collection returned by this method must also contain the primary {@link SubTask}
+         * represented by this {@link Task} object itself as the first element.
+         * The returned value is read-only.
          *
-         * The collection returned by this method doesn't contain this main {@link ExecutionUnit}.
-         * The returned value is read-only. Can be empty but never null.
-         *
+         * At least size 1.
          *
          * @since 1.FATTASK
          */
-        Collection<? extends ExecutionUnit> getMemberExecutionUnits();
+        Collection<? extends SubTask> getSubTasks();
     }
 
     /**
@@ -1127,7 +1132,7 @@ public class Queue extends ResourceController implements Saveable {
          * Task from which this executable was created.
          * Never null.
          */
-        Task getParent();
+        SubTask getParent();
 
         /**
          * Called by {@link Executor} to perform the task

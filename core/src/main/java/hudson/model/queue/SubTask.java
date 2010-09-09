@@ -35,11 +35,16 @@ import java.io.IOException;
 /**
  * A component of {@link Task} that represents a computation carried out by a single {@link Executor}.
  *
- * A {@link Task} consists of a number of {@link ExecutionUnit}.
+ * A {@link Task} consists of a number of {@link SubTask}.
+ *
+ * <p>
+ * Plugins are encouraged to extend from {@link AbstractSubTask}
+ * instead of implementing this interface directly, to maintain
+ * compatibility with future changes to this interface.
  *
  * @since 1.FATTASK
  */
-public interface ExecutionUnit extends ResourceActivity {
+public interface SubTask extends ResourceActivity {
     /**
      * If this task needs to be run on a node with a particular label,
      * return that {@link Label}. Otherwise null, indicating
@@ -68,8 +73,8 @@ public interface ExecutionUnit extends ResourceActivity {
     Executable createExecutable() throws IOException;
 
     /**
-     * If a subset of {@link ExecutionUnit}s of a {@link Task} needs to be collocated with other {@link ExecutionUnit}s,
-     * those {@link ExecutionUnit}s should return the equal object here. If null, the execution unit isn't under a
+     * If a subset of {@link SubTask}s of a {@link Task} needs to be collocated with other {@link SubTask}s,
+     * those {@link SubTask}s should return the equal object here. If null, the execution unit isn't under a
      * colocation constraint.
      *
      * @since 1.FATTASK

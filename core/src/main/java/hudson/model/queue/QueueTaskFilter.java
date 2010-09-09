@@ -107,7 +107,7 @@ public abstract class QueueTaskFilter implements Queue.Task {
         return base.getResourceList();
     }
 
-    public Collection<? extends ExecutionUnit> getMemberExecutionUnits() {
-        return base.getMemberExecutionUnits();
+    public Collection<? extends SubTask> getSubTasks() {
+        return base.getSubTasks();
     }
 }

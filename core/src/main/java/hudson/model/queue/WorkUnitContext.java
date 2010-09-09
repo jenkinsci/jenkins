@@ -62,7 +62,7 @@ public final class WorkUnitContext {
         this.actions = item.getActions();
         
         // +1 for the main task
-        workUnitSize = task.getMemberExecutionUnits().size() + 1;
+        workUnitSize = task.getSubTasks().size();
         startLatch = new Latch(workUnitSize) {
             @Override
             protected void onCriteriaMet() {
@@ -79,10 +79,10 @@ public final class WorkUnitContext {
     }
 
     /**
-     * Called by the executor that executes a member {@link ExecutionUnit} that belongs to this task
+     * Called by the executor that executes a member {@link SubTask} that belongs to this task
      * to create its {@link WorkUnit}.
      */
-    public WorkUnit createWorkUnit(ExecutionUnit execUnit) {
+    public WorkUnit createWorkUnit(SubTask execUnit) {
         future.addExecutor(Executor.currentExecutor());
         return new WorkUnit(this,execUnit);
     }

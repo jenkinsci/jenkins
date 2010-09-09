@@ -41,12 +41,13 @@ import hudson.model.Cause.UserCause;
 import hudson.model.Descriptor.FormException;
 import hudson.model.Fingerprint.RangeSet;
 import hudson.model.Queue.Executable;
-import hudson.model.queue.ExecutionUnit;
+import hudson.model.queue.SubTask;
 import hudson.model.Queue.WaitingItem;
 import hudson.model.RunMap.Constructor;
 import hudson.model.labels.LabelAtom;
 import hudson.model.labels.LabelExpression;
 import hudson.model.queue.CauseOfBlockage;
+import hudson.model.queue.SubTaskContributor;
 import hudson.scm.ChangeLogSet;
 import hudson.scm.ChangeLogSet.Entry;
 import hudson.scm.NullSCM;
@@ -1002,9 +1003,13 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
         return null;
     }
 
-    public Collection<? extends ExecutionUnit> getMemberExecutionUnits() {
-        // TODO
-        return Collections.emptyList();
+    public List<SubTask> getSubTasks() {
+        List<SubTask> r = new ArrayList<SubTask>();
+        for (SubTaskContributor euc : SubTaskContributor.all())
+            r.addAll(euc.forProject(this));
+        for (JobProperty<? super P> p : properties)
+            r.addAll(p.getMemberExecutionUnits());
+        return r;
     }
 
     public R createExecutable() throws IOException {

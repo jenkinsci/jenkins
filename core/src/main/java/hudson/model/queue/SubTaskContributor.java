@@ -23,37 +23,33 @@
  */
 package hudson.model.queue;
 
-import hudson.model.Executor;
-import hudson.model.Queue;
-import hudson.model.Queue.Task;
+import hudson.Extension;
+import hudson.ExtensionList;
+import hudson.ExtensionPoint;
+import hudson.model.AbstractProject;
+import hudson.model.Hudson;
+
+import java.util.Collection;
+import java.util.Collections;
 
 /**
- * Represents a unit of hand-over to {@link Executor} from {@link Queue}.
+ * Externally contributes {@link SubTask}s to {@link AbstractProject#getSubTasks()}.
+ *
+ * <p>
+ * Put @{@link Extension} on your implementation classes to register them.
  *
  * @author Kohsuke Kawaguchi
  * @since 1.FATTASK
  */
-public final class WorkUnit {
-    /**
-     * Task to be executed.
-     */
-    public final SubTask work;
-
-    /**
-     * Shared context among {@link WorkUnit}s.
-     */
-    public final WorkUnitContext context;
-
-    WorkUnit(WorkUnitContext context, SubTask work) {
-        this.context = context;
-        this.work = work;
+public abstract class SubTaskContributor implements ExtensionPoint {
+    public Collection<? extends SubTask> forProject(AbstractProject<?,?> p) {
+        return Collections.emptyList();
     }
 
     /**
-     * Is this work unit the "main work", which is the primary {@link SubTask}
-     * represented by {@link Task} itself.
+     * All registered {@link MemberExecutionUnitContributor} instances.
      */
-    public boolean isMainWork() {
-        return context.task==work;
+    public static ExtensionList<SubTaskContributor> all() {
+        return Hudson.getInstance().getExtensionList(SubTaskContributor.class);
     }
 }

@@ -37,7 +37,7 @@ import java.util.Collections;
  * @since 1.360
  */
 public abstract class AbstractQueueTask implements Queue.Task {
-    public Collection<? extends ExecutionUnit> getMemberExecutionUnits() {
+    public Collection<? extends SubTask> getSubTasks() {
         return Collections.emptyList();
     }
 }

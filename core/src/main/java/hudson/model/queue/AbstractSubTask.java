@@ -23,37 +23,34 @@
  */
 package hudson.model.queue;
 
-import hudson.model.Executor;
-import hudson.model.Queue;
-import hudson.model.Queue.Task;
+import hudson.model.Label;
+import hudson.model.Node;
+import hudson.model.ResourceList;
 
 /**
- * Represents a unit of hand-over to {@link Executor} from {@link Queue}.
+ * Partial default implementation of {@link SubTask} to avoid
+ * {@link AbstractMethodError} with future additions to {@link SubTask}.
  *
  * @author Kohsuke Kawaguchi
- * @since 1.FATTASK
  */
-public final class WorkUnit {
-    /**
-     * Task to be executed.
-     */
-    public final SubTask work;
-
-    /**
-     * Shared context among {@link WorkUnit}s.
-     */
-    public final WorkUnitContext context;
-
-    WorkUnit(WorkUnitContext context, SubTask work) {
-        this.context = context;
-        this.work = work;
+public abstract class AbstractSubTask implements SubTask {
+    public Label getAssignedLabel() {
+        return null;
     }
 
-    /**
-     * Is this work unit the "main work", which is the primary {@link SubTask}
-     * represented by {@link Task} itself.
-     */
-    public boolean isMainWork() {
-        return context.task==work;
+    public Node getLastBuiltOn() {
+        return null;
+    }
+
+    public long getEstimatedDuration() {
+        return -1;
+    }
+
+    public Object getSameNodeConstraint() {
+        return null;
+    }
+
+    public ResourceList getResourceList() {
+        return new ResourceList();
     }
 }

@@ -99,7 +99,7 @@ public class MatchingWorksheet {
         }
     }
 
-    public class WorkChunk extends ReadOnlyList<ExecutionUnit> {
+    public class WorkChunk extends ReadOnlyList<SubTask> {
         public final int index;
 
         // the main should be always at position 0
@@ -123,7 +123,7 @@ public class MatchingWorksheet {
         public final ExecutorChunk lastBuiltOn;
 
 
-        private WorkChunk(List<ExecutionUnit> base, int index) {
+        private WorkChunk(List<SubTask> base, int index) {
             super(base);
             assert base.size()>1;
             this.index = index;
@@ -224,26 +224,32 @@ public class MatchingWorksheet {
         this.executors = Collections.unmodifiableList(executors);
 
         // group execution units into chunks. use of LinkedHashMap ensures that the main work comes at the top
-        Map<Object,List<ExecutionUnit>> m = new LinkedHashMap<Object,List<ExecutionUnit>>();
-        build(task,m);
-        for (ExecutionUnit meu : task.getMemberExecutionUnits())
-            build(meu,m);
+        Map<Object,List<SubTask>> m = new LinkedHashMap<Object,List<SubTask>>();
+        for (SubTask meu : task.getSubTasks()) {
+            Object c = meu.getSameNodeConstraint();
+            if (c==null)    c = new Object();
+
+            List<SubTask> l = m.get(c);
+            if (l==null)
+                m.put(c,l= new ArrayList<SubTask>());
+            l.add(meu);
+        }
 
         // build into the final shape
         List<WorkChunk> works = new ArrayList<WorkChunk>();
-        for (List<ExecutionUnit> group : m.values()) {
+        for (List<SubTask> group : m.values()) {
             works.add(new WorkChunk(group,works.size()));
         }
         this.works = Collections.unmodifiableList(works);
     }
 
-    private void build(ExecutionUnit eu, Map<Object, List<ExecutionUnit>> m) {
+    private void build(SubTask eu, Map<Object, List<SubTask>> m) {
         Object c = eu.getSameNodeConstraint();
         if (c==null)    c = new Object();
 
-        List<ExecutionUnit> l = m.get(c);
+        List<SubTask> l = m.get(c);
         if (l==null)
-            m.put(c,l= new ArrayList<ExecutionUnit>());
+            m.put(c,l= new ArrayList<SubTask>());
         l.add(eu);
     }
 
