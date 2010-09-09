@@ -26,6 +26,7 @@ package hudson.model;
 import hudson.Util;
 import hudson.model.Queue.*;
 import hudson.FilePath;
+import hudson.model.queue.ExecutionUnit;
 import hudson.model.queue.WorkUnit;
 import hudson.util.TimeUnit2;
 import hudson.util.InterceptingProxy;

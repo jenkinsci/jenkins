@@ -25,7 +25,6 @@
 package hudson.model.queue;
 
 import hudson.model.Queue;
-import hudson.model.Queue.ExecutionUnit;
 
 import java.util.Collection;
 import java.util.Collections;

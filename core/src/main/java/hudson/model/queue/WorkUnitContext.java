@@ -26,8 +26,7 @@ package hudson.model.queue;
 import hudson.model.Action;
 import hudson.model.Executor;
 import hudson.model.Queue;
-import hudson.model.Queue.ExecutionUnit;
-import hudson.model.Queue.Item;
+import hudson.model.Queue.BuildableItem;
 import hudson.model.Queue.Task;
 
 import java.util.List;
@@ -39,6 +38,8 @@ import java.util.List;
  */
 public final class WorkUnitContext {
     private final int workUnitSize;
+
+    public final BuildableItem item;
 
     public final Task task;
 
@@ -54,7 +55,8 @@ public final class WorkUnitContext {
 
     private final Latch startLatch, endLatch;
 
-    public WorkUnitContext(Queue.Item item) {
+    public WorkUnitContext(BuildableItem item) {
+        this.item = item;
         this.task = item.task;
         this.future = (FutureImpl)item.getFuture();
         this.actions = item.getActions();
@@ -107,5 +109,10 @@ public final class WorkUnitContext {
                 e.getOwner().taskCompletedWithProblems(e, task, duration, problems);
             }
         }
+    }
+
+    public void abort() {
+        startLatch.abort();
+        endLatch.abort();
     }
 }

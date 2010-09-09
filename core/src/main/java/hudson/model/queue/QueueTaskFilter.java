@@ -28,7 +28,6 @@ import hudson.model.Label;
 import hudson.model.Node;
 import hudson.model.Queue;
 import hudson.model.Queue.Executable;
-import hudson.model.Queue.ExecutionUnit;
 import hudson.model.Queue.Task;
 import hudson.model.ResourceList;
 

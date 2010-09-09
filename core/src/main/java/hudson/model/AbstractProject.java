@@ -41,7 +41,7 @@ import hudson.model.Cause.UserCause;
 import hudson.model.Descriptor.FormException;
 import hudson.model.Fingerprint.RangeSet;
 import hudson.model.Queue.Executable;
-import hudson.model.Queue.ExecutionUnit;
+import hudson.model.queue.ExecutionUnit;
 import hudson.model.Queue.WaitingItem;
 import hudson.model.RunMap.Constructor;
 import hudson.model.labels.LabelAtom;
@@ -913,6 +913,10 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
             return null;
         else
             return b.getBuiltOn();
+    }
+
+    public Object getSameNodeConstraint() {
+        return this; // in this way, any member that wants to run with the main guy can nominate the project itself 
     }
 
     /**

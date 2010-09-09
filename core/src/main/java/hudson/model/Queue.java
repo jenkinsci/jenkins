@@ -35,7 +35,10 @@ import static hudson.util.Iterators.reverse;
 import hudson.cli.declarative.CLIMethod;
 import hudson.cli.declarative.CLIResolver;
 import hudson.model.queue.AbstractQueueTask;
+import hudson.model.queue.ExecutionUnit;
 import hudson.model.queue.FutureImpl;
+import hudson.model.queue.MatchingWorksheet;
+import hudson.model.queue.MatchingWorksheet.Mapping;
 import hudson.model.queue.QueueSorter;
 import hudson.model.queue.QueueTaskDispatcher;
 import hudson.model.queue.WorkUnit;
@@ -156,7 +159,7 @@ public class Queue extends ResourceController implements Saveable {
      * <p>
      * An idle executor (that calls {@link Queue#pop()} creates
      * a new {@link JobOffer} and gets itself {@linkplain Queue#parked parked},
-     * and we'll eventually hand out an {@link #item} to build.
+     * and we'll eventually hand out an {@link #workUnit} to build.
      */
     public class JobOffer {
         public final Executor executor;
@@ -168,18 +171,18 @@ public class Queue extends ResourceController implements Saveable {
         private final OneShotEvent event = new OneShotEvent(Queue.this);
 
         /**
-         * The project that this {@link Executor} is going to build.
+         * The work unit that this {@link Executor} is going to handle.
          * (Or null, in which case event is used to trigger a queue maintenance.)
          */
-        private BuildableItem item;
+        private WorkUnit workUnit;
 
         private JobOffer(Executor executor) {
             this.executor = executor;
         }
 
-        public void set(BuildableItem p) {
-            assert this.item == null;
-            this.item = p;
+        public void set(WorkUnit p) {
+            assert this.workUnit == null;
+            this.workUnit = p;
             event.signal();
         }
 
@@ -204,7 +207,7 @@ public class Queue extends ResourceController implements Saveable {
          * Is this executor ready to accept some tasks?
          */
         public boolean isAvailable() {
-            return item == null && !executor.getOwner().isOffline() && executor.getOwner().isAcceptingTasks();
+            return workUnit == null && !executor.getOwner().isOffline() && executor.getOwner().isAcceptingTasks();
         }
 
         public Node getNode() {
@@ -740,17 +743,21 @@ public class Queue extends ResourceController implements Saveable {
                         continue;
                     }
 
-                    JobOffer runner = loadBalancer.choose(p.task, new ApplicableJobOfferList(p.task));
-                    if (runner == null)
+                    List<JobOffer> candidates = new ArrayList<JobOffer>(parked.size());
+                    for (JobOffer j : parked.values())
+                        if(j.canTake(p.task))
+                            candidates.add(j);
+
+                    Mapping m = loadBalancer.map(p.task, new MatchingWorksheet(p.task, candidates));
+                    if (m == null)
                         // if we couldn't find the executor that fits,
                         // just leave it in the buildables list and
                         // check if we can execute other projects
                         continue;
 
-                    assert runner.canTake(p.task);
-
                     // found a matching executor. use it.
-                    runner.set(p);
+                    m.execute(new WorkUnitContext(p));
+
                     itr.remove();
                     pendings.add(p);
                 }
@@ -776,27 +783,24 @@ public class Queue extends ResourceController implements Saveable {
                 parked.remove(exec);
 
                 // am I woken up because I have a project to build?
-                if (offer.item != null) {
+                if (offer.workUnit != null) {
                     // if so, just build it
-                    LOGGER.fine("Pop returning " + offer.item + " for " + exec.getName());
-                    pendings.remove(offer.item);
+                    LOGGER.fine("Pop returning " + offer.workUnit + " for " + exec.getName());
 
-                    WorkUnitContext wuc = new WorkUnitContext(offer.item);
-                    return wuc.createWorkUnit(offer.item.task);
+                    // TODO: I think this has to be done by the last executor that leaves the pop(), not by main executor
+                    if (offer.workUnit.isMainWork())
+                        pendings.remove(offer.workUnit.context.item);
+
+                    return offer.workUnit;
                 }
                 // otherwise run a queue maintenance
             }
         } finally {
             // remove myself from the parked list
             JobOffer offer = parked.remove(exec);
-            if (offer != null && offer.item != null) {
-                // we are already assigned a project,
-                // ask for someone else to build it.
-                // note that while this thread is waiting for CPU
-                // someone else can schedule this build again,
-                // so check the contains method first.
-                if (!contains(offer.item.task))
-                    buildables.put(offer.item.task,offer.item);
+            if (offer != null && offer.workUnit != null) {
+                // we are already assigned a project, but now we can't handle it.
+                offer.workUnit.context.abort();
             }
 
             // since this executor might have been chosen for
@@ -877,7 +881,7 @@ public class Queue extends ResourceController implements Saveable {
         // no more executors will be offered job except by
         // the pop() code.
         for (Entry<Executor, JobOffer> av : parked.entrySet()) {
-            if (av.getValue().item == null) {
+            if (av.getValue().workUnit == null) {
                 av.getValue().event.signal();
                 return;
             }
@@ -1027,20 +1031,6 @@ public class Queue extends ResourceController implements Saveable {
      */
     public interface Task extends ModelObject, ExecutionUnit {
         /**
-         * If this task needs to be run on a node with a particular label,
-         * return that {@link Label}. Otherwise null, indicating
-         * it can run on anywhere.
-         */
-        Label getAssignedLabel();
-
-        /**
-         * If the previous execution of this task run on a certain node
-         * and this task prefers to run on the same node, return that.
-         * Otherwise null.
-         */
-        Node getLastBuiltOn();
-
-        /**
          * Returns true if the execution should be blocked
          * for temporary reasons.
          *
@@ -1080,19 +1070,6 @@ public class Queue extends ResourceController implements Saveable {
          * @see hudson.model.Item#getFullDisplayName()
          */
         String getFullDisplayName();
-
-        /**
-         * Estimate of how long will it take to execute this task.
-         * Measured in milliseconds.
-         *
-         * @return -1 if it's impossible to estimate.
-         */
-        long getEstimatedDuration();
-
-        /**
-         * Creates {@link Executable}, which performs the actual execution of the task.
-         */
-        Executable createExecutable() throws IOException;
 
         /**
          * Checks the permission to see if the current user can abort this executable.
@@ -1135,28 +1112,11 @@ public class Queue extends ResourceController implements Saveable {
          *
          * The collection returned by this method doesn't contain this main {@link ExecutionUnit}.
          * The returned value is read-only. Can be empty but never null.
+         *
+         *
+         * @since 1.FATTASK
          */
         Collection<? extends ExecutionUnit> getMemberExecutionUnits();
-    }
-
-    /**
-     * A component of {@link Task} that represents a computation carried out by a single {@link Executor}.
-     *
-     * A {@link Task} consists of a number of {@link ExecutionUnit}.
-     */
-    public interface ExecutionUnit extends ResourceActivity {
-        /**
-         * Estimate of how long will it take to execute this task.
-         * Measured in milliseconds.
-         *
-         * @return -1 if it's impossible to estimate.
-         */
-        long getEstimatedDuration();
-
-        /**
-         * Creates {@link Executable}, which performs the actual execution of the task.
-         */
-        Executable createExecutable() throws IOException;
     }
 
     /**

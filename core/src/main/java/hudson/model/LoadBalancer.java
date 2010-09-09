@@ -27,10 +27,14 @@ import hudson.model.Node.Mode;
 import hudson.model.Queue.ApplicableJobOfferList;
 import hudson.model.Queue.JobOffer;
 import hudson.model.Queue.Task;
-import hudson.model.Queue.NonBlockingTask;
+import hudson.model.queue.MatchingWorksheet;
+import hudson.model.queue.MatchingWorksheet.ExecutorChunk;
+import hudson.model.queue.MatchingWorksheet.Mapping;
 import hudson.util.ConsistentHash;
 import hudson.util.ConsistentHash.Hash;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.logging.Logger;
 
 /**
@@ -62,6 +66,8 @@ public abstract class LoadBalancer /*implements ExtensionPoint*/ {
      *      some time later with the same task.
      */
     protected abstract JobOffer choose(Task task, ApplicableJobOfferList applicable);
+
+    protected abstract Mapping map(Task task, MatchingWorksheet worksheet);
 
     /**
      * Traditional implementation of this.
@@ -118,6 +124,12 @@ public abstract class LoadBalancer /*implements ExtensionPoint*/ {
             // nothing available
             return null;
         }
+
+        @Override
+        protected Mapping map(Task task, MatchingWorksheet worksheet) {
+            // TODO:
+            return CONSISTENT_HASH.map(task,worksheet);
+        }
     };
 
     /**
@@ -146,6 +158,53 @@ public abstract class LoadBalancer /*implements ExtensionPoint*/ {
             // nothing available
             return null;
         }
+
+        @Override
+        protected Mapping map(Task task, MatchingWorksheet ws) {
+            // build consistent hash for each work chunk
+            List<ConsistentHash<ExecutorChunk>> hashes = new ArrayList<ConsistentHash<ExecutorChunk>>(ws.works.size());
+            for (int i=0; i<ws.works.size(); i++) {
+                ConsistentHash<ExecutorChunk> hash = new ConsistentHash<ExecutorChunk>(new Hash<ExecutorChunk>() {
+                    public String hash(ExecutorChunk node) {
+                        return node.getName();
+                    }
+                });
+                for (ExecutorChunk ec : ws.works(i).applicableExecutorChunks())
+                    hash.add(ec,ec.size()*100);
+
+                hashes.add(hash);
+            }
+
+            // do a greedy assignment
+            Mapping m = ws.new Mapping();
+            assert m.size()==ws.works.size();   // just so that you the reader of the source code don't get confused with the for loop index
+
+            if (assignGreedily(m,task,hashes,0)) {
+                assert m.isCompletelyValid();
+                return m;
+            } else
+                return null;
+        }
+
+        private boolean assignGreedily(Mapping m, Task task, List<ConsistentHash<ExecutorChunk>> hashes, int i) {
+            if (i==hashes.size())   return true;    // fully assigned
+
+            String key = task.getFullDisplayName() + (i>0 ? String.valueOf(i) : "");
+
+            for (ExecutorChunk ec : hashes.get(i).list(key)) {
+                // let's attempt this assignment
+                m.assign(i,ec);
+
+                if (m.isPartiallyValid() && assignGreedily(m,task,hashes,i+1))
+                    return true;    // successful greedily allocation
+
+                // otherwise 'ec' wasn't a good fit for us. try next.
+            }
+
+            // every attempt failed
+            m.assign(i,null);
+            return false;
+        }
     };
 
     /**
@@ -164,6 +223,16 @@ public abstract class LoadBalancer /*implements ExtensionPoint*/ {
                 }
 
                 return base.choose(task, applicable);
+            }
+
+            @Override
+            protected Mapping map(Task task, MatchingWorksheet worksheet) {
+                if (Queue.ifBlockedByHudsonShutdown(task)) {
+                    // if we are quieting down, don't start anything new so that
+                    // all executors will be eventually free.
+                    return null;
+                }
+                return base.map(task, worksheet);
             }
 
             /**

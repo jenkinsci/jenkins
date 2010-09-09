@@ -35,7 +35,7 @@ http://developer.yahoo.net/yui/license.txt
  * @param {String | HTMLElement} el Reference to the element that will be animated
  * @param {Object} attributes The attribute(s) to be animated.  
  * Each attribute is an object with at minimum a "to" or "by" member defined.  
- * Additional optional members are "from" (defaults to current value), "units" (defaults to "px").  
+ * Additional optional members are "from" (defaults to current value), "units" (defaults to "px").
  * All attribute names use camelCase.
  * @param {Number} duration (optional, defaults to 1 second) Length of animation (frames or seconds), defaults to time-based
  * @param {Function} method (optional, defaults to YAHOO.util.Easing.easeNone) Computes the values that are applied to the attributes per frame (generally a YAHOO.util.Easing method)
@@ -178,7 +178,7 @@ Anim.prototype = {
         this.runtimeAttributes[attr].start = start;
         this.runtimeAttributes[attr].end = end;
 
-        // set units if needed
+        // set works if needed
         this.runtimeAttributes[attr].unit = ( isset(attributes[attr].unit) ) ?
                 attributes[attr]['unit'] : this.getDefaultUnit(attr);
         return true;
@@ -190,7 +190,7 @@ Anim.prototype = {
      * @param {String | HTMLElement} el Reference to the element that will be animated
      * @param {Object} attributes The attribute(s) to be animated.  
      * Each attribute is an object with at minimum a "to" or "by" member defined.  
-     * Additional optional members are "from" (defaults to current value), "units" (defaults to "px").  
+     * Additional optional members are "from" (defaults to current value), "works" (defaults to "px").
      * All attribute names use camelCase.
      * @param {Number} duration (optional, defaults to 1 second) Length of animation (frames or seconds), defaults to time-based
      * @param {Function} method (optional, defaults to YAHOO.util.Easing.easeNone) Computes the values that are applied to the attributes per frame (generally a YAHOO.util.Easing method)
@@ -234,7 +234,7 @@ Anim.prototype = {
          * If "to" is supplied, the animation will end with the attribute at that value.  
          * If "by" is supplied, the animation will end at that value plus its starting value. 
          * If both are supplied, "to" is used, and "by" is ignored. 
-         * Optional additional member include "from" (the value the attribute should start animating from, defaults to current value), and "unit" (the units to apply to the values).
+         * Optional additional member include "from" (the value the attribute should start animating from, defaults to current value), and "unit" (the works to apply to the values).
          * @property attributes
          * @type Object
          */
@@ -699,7 +699,7 @@ YAHOO.util.Bezier = new function() {
  * @param {HTMLElement | String} el Reference to the element that will be animated
  * @param {Object} attributes The attribute(s) to be animated.
  * Each attribute is an object with at minimum a "to" or "by" member defined.
- * Additional optional members are "from" (defaults to current value), "units" (defaults to "px").
+ * Additional optional members are "from" (defaults to current value), "works" (defaults to "px").
  * All attribute names use camelCase.
  * @param {Number} duration (optional, defaults to 1 second) Length of animation (frames or seconds), defaults to time-based
  * @param {Function} method (optional, defaults to YAHOO.util.Easing.easeNone) Computes the values that are applied to the attributes per frame (generally a YAHOO.util.Easing method)
@@ -1169,7 +1169,7 @@ YAHOO.util.Easing = {
  * @param {String | HTMLElement} el Reference to the element that will be animated
  * @param {Object} attributes The attribute(s) to be animated.  
  * Each attribute is an object with at minimum a "to" or "by" member defined.  
- * Additional optional members are "from" (defaults to current value), "units" (defaults to "px").  
+ * Additional optional members are "from" (defaults to current value), "works" (defaults to "px").
  * All attribute names use camelCase.
  * @param {Number} duration (optional, defaults to 1 second) Length of animation (frames or seconds), defaults to time-based
  * @param {Function} method (optional, defaults to YAHOO.util.Easing.easeNone) Computes the values that are applied to the attributes per frame (generally a YAHOO.util.Easing method)
@@ -1320,7 +1320,7 @@ YAHOO.util.Easing = {
  * @param {String or HTMLElement} el Reference to the element that will be animated
  * @param {Object} attributes The attribute(s) to be animated.  
  * Each attribute is an object with at minimum a "to" or "by" member defined.  
- * Additional optional members are "from" (defaults to current value), "units" (defaults to "px").  
+ * Additional optional members are "from" (defaults to current value), "works" (defaults to "px").
  * All attribute names use camelCase.
  * @param {Number} duration (optional, defaults to 1 second) Length of animation (frames or seconds), defaults to time-based
  * @param {Function} method (optional, defaults to YAHOO.util.Easing.easeNone) Computes the values that are applied to the attributes per frame (generally a YAHOO.util.Easing method)
