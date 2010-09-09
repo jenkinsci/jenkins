@@ -24,6 +24,7 @@
 package hudson.model;
 
 import hudson.model.Queue.FlyweightTask;
+import hudson.model.queue.WorkUnit;
 
 /**
  * {@link Executor} that's temporarily added to carry out tasks that doesn't consume
@@ -33,11 +34,11 @@ import hudson.model.Queue.FlyweightTask;
  * @see FlyweightTask
  */
 public class OneOffExecutor extends Executor {
-    private Queue.Item item;
+    private WorkUnit item;
 
     public OneOffExecutor(Computer owner, Queue.Item item) {
         super(owner,-1);
-        this.item = item;
+        this.item = new WorkUnit(item,item.task);
     }
 
     @Override
@@ -48,8 +49,8 @@ public class OneOffExecutor extends Executor {
     }
 
     @Override
-    protected Queue.Item grabJob() throws InterruptedException {
-        Queue.Item r = item;
+    protected WorkUnit grabJob() throws InterruptedException {
+        WorkUnit r = item;
         item = null;
         return r;
     }

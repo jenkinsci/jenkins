@@ -41,6 +41,7 @@ import hudson.model.Cause.UserCause;
 import hudson.model.Descriptor.FormException;
 import hudson.model.Fingerprint.RangeSet;
 import hudson.model.Queue.Executable;
+import hudson.model.Queue.ExecutionUnit;
 import hudson.model.Queue.WaitingItem;
 import hudson.model.RunMap.Constructor;
 import hudson.model.labels.LabelAtom;
@@ -995,6 +996,11 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
                 return tup;
         }
         return null;
+    }
+
+    public Collection<? extends ExecutionUnit> getMemberExecutionUnits() {
+        // TODO
+        return Collections.emptyList();
     }
 
     public R createExecutable() throws IOException {

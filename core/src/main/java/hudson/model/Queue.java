@@ -37,6 +37,7 @@ import hudson.cli.declarative.CLIResolver;
 import hudson.model.queue.AbstractQueueTask;
 import hudson.model.queue.QueueSorter;
 import hudson.model.queue.QueueTaskDispatcher;
+import hudson.model.queue.WorkUnit;
 import hudson.remoting.AsyncFutureImpl;
 import hudson.model.Node.Mode;
 import hudson.model.listeners.SaveableListener;
@@ -63,6 +64,7 @@ import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.GregorianCalendar;
 import java.util.HashMap;
@@ -221,7 +223,7 @@ public class Queue extends ResourceController implements Saveable {
     private volatile transient LoadBalancer loadBalancer;
 
     private volatile transient QueueSorter sorter;
-    
+
     public Queue(LoadBalancer loadBalancer) {
         this.loadBalancer =  loadBalancer.sanitize();
         // if all the executors are busy doing something, then the queue won't be maintained in
@@ -708,7 +710,7 @@ public class Queue extends ResourceController implements Saveable {
      * <p>
      * This method blocks until a next project becomes buildable.
      */
-    public synchronized Queue.Item pop() throws InterruptedException {
+    public synchronized WorkUnit pop() throws InterruptedException {
         final Executor exec = Executor.currentExecutor();
 
         try {
@@ -778,7 +780,7 @@ public class Queue extends ResourceController implements Saveable {
                     LOGGER.fine("Pop returning " + offer.item + " for " + exec.getName());
                     offer.item.future.startExecuting(exec);
                     pendings.remove(offer.item);
-                    return offer.item;
+                    return new WorkUnit(offer.item, offer.item.task);
                 }
                 // otherwise run a queue maintenance
             }
@@ -1017,7 +1019,7 @@ public class Queue extends ResourceController implements Saveable {
      * instead of implementing this interface directly, to maintain
      * compatibility with future changes to this interface.
      */
-    public interface Task extends ModelObject, ResourceActivity {
+    public interface Task extends ModelObject, ExecutionUnit {
         /**
          * If this task needs to be run on a node with a particular label,
          * return that {@link Label}. Otherwise null, indicating
@@ -1118,6 +1120,23 @@ public class Queue extends ResourceController implements Saveable {
          * @since 1.338
          */
         boolean isConcurrentBuild();
+
+        Collection<? extends ExecutionUnit> getMemberExecutionUnits();
+    }
+
+    public interface ExecutionUnit extends ResourceActivity {
+        /**
+         * Estimate of how long will it take to execute this task.
+         * Measured in milliseconds.
+         *
+         * @return -1 if it's impossible to estimate.
+         */
+        long getEstimatedDuration();
+
+        /**
+         * Creates {@link Executable}, which performs the actual execution of the task.
+         */
+        Executable createExecutable() throws IOException;
     }
 
     public interface Executable extends Runnable {

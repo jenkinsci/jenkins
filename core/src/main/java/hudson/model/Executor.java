@@ -26,6 +26,7 @@ package hudson.model;
 import hudson.Util;
 import hudson.model.Queue.*;
 import hudson.FilePath;
+import hudson.model.queue.WorkUnit;
 import hudson.util.TimeUnit2;
 import hudson.util.InterceptingProxy;
 import hudson.security.ACL;
@@ -67,6 +68,8 @@ public class Executor extends Thread implements ModelObject {
      */
     private volatile Queue.Executable executable;
 
+    private volatile WorkUnit workUnit;
+
     private Throwable causeOfDeath;
 
     public Executor(Computer owner, int n) {
@@ -85,6 +88,7 @@ public class Executor extends Thread implements ModelObject {
             finishTime = System.currentTimeMillis();
             while(shouldRun()) {
                 executable = null;
+                workUnit = null;
 
                 synchronized(owner) {
                     if(owner.getNumExecutors()<owner.getExecutors().size()) {
@@ -99,12 +103,11 @@ public class Executor extends Thread implements ModelObject {
                 // see issue #1583
                 if (Thread.interrupted())   continue;
 
-                Queue.Item queueItem;
-                Queue.Task task;
+                ExecutionUnit task;
                 try {
                     synchronized (queue) {// perform this state change as an atomic operation wrt other queue operations
-                        queueItem = grabJob();
-                        task = queueItem.task;
+                        workUnit = grabJob();
+                        task = workUnit.work;
                         startTime = System.currentTimeMillis();
                         executable = task.createExecutable();
                     }
@@ -118,10 +121,10 @@ public class Executor extends Thread implements ModelObject {
                 Throwable problems = null;
                 final String threadName = getName();
                 try {
-                    owner.taskAccepted(this, task);
+                    workUnit.context.synchronizeStart();
 
                     if (executable instanceof Actionable) {
-                        for (Action action: queueItem.getActions()) {
+                        for (Action action: workUnit.actions) {
                             ((Actionable) executable).addAction(action);
                         }
                     }
@@ -136,13 +139,7 @@ public class Executor extends Thread implements ModelObject {
                 } finally {
                     setName(threadName);
                     finishTime = System.currentTimeMillis();
-                    if (problems == null) {
-                        queueItem.future.set(executable);
-                        owner.taskCompleted(this, task, finishTime - startTime);
-                    } else {
-                        queueItem.future.set(problems);
-                        owner.taskCompletedWithProblems(this, task, finishTime - startTime, problems);
-                    }
+                    workUnit.context.synchronizeEnd(executable,problems,finishTime - startTime);
                 }
             }
         } catch(RuntimeException e) {
@@ -161,7 +158,7 @@ public class Executor extends Thread implements ModelObject {
         return Hudson.getInstance() != null && !Hudson.getInstance().isTerminating();
     }
 
-    protected Queue.Item grabJob() throws InterruptedException {
+    protected WorkUnit grabJob() throws InterruptedException {
         return queue.pop();
     }
 
@@ -174,6 +171,18 @@ public class Executor extends Thread implements ModelObject {
     @Exported
     public Queue.Executable getCurrentExecutable() {
         return executable;
+    }
+
+    /**
+     * Returns the current {@link WorkUnit} (of {@link #getCurrentExecutable() the current executable})
+     * that this executor is running.
+     *
+     * @return
+     *      null if the executor is idle.
+     */
+    @Exported
+    public WorkUnit getCurrentWorkUnit() {
+        return workUnit;
     }
 
     /**

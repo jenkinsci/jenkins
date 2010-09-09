@@ -28,10 +28,12 @@ import hudson.model.Label;
 import hudson.model.Node;
 import hudson.model.Queue;
 import hudson.model.Queue.Executable;
+import hudson.model.Queue.ExecutionUnit;
 import hudson.model.Queue.Task;
 import hudson.model.ResourceList;
 
 import java.io.IOException;
+import java.util.Collection;
 
 /**
  * Base class for defining filter {@link Queue.Task}.
@@ -104,5 +106,9 @@ public abstract class QueueTaskFilter implements Queue.Task {
 
     public ResourceList getResourceList() {
         return base.getResourceList();
+    }
+
+    public Collection<? extends ExecutionUnit> getMemberExecutionUnits() {
+        return base.getMemberExecutionUnits();
     }
 }
