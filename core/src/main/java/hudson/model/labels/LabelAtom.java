@@ -23,7 +23,10 @@
  */
 package hudson.model.labels;
 
+import com.thoughtworks.xstream.converters.MarshallingContext;
 import com.thoughtworks.xstream.converters.UnmarshallingContext;
+import com.thoughtworks.xstream.io.HierarchicalStreamReader;
+import com.thoughtworks.xstream.io.HierarchicalStreamWriter;
 import hudson.BulkChange;
 import hudson.CopyOnWrite;
 import hudson.XmlFile;
@@ -66,7 +69,6 @@ public class LabelAtom extends Label implements Saveable {
 
     public LabelAtom(String name) {
         super(name);
-        load();
     }
 
     /**
@@ -234,15 +236,47 @@ public class LabelAtom extends Label implements Saveable {
         XSTREAM.registerConverter(new LabelAtomConverter(), 100);
     }
 
+    // class name is not ConverterImpl, to avoid getting picked up by AssociatedConverterImpl
     private static class LabelAtomConverter extends XStream2.PassthruConverter<LabelAtom> {
+        private Label.ConverterImpl leafLabelConverter = new Label.ConverterImpl();
+
         private LabelAtomConverter() {
             super(XSTREAM);
         }
-        @Override public boolean canConvert(Class type) {
+
+        public boolean canConvert(Class type) {
             return LabelAtom.class.isAssignableFrom(type);
         }
-        @Override protected void callback(LabelAtom obj, UnmarshallingContext context) {
-            // Unused
+
+        public void marshal(Object source, HierarchicalStreamWriter writer, MarshallingContext context) {
+            if (context.get(IN_NESTED)==null) {
+                context.put(IN_NESTED,true);
+                try {
+                    super.marshal(source,writer,context);
+                } finally {
+                    context.put(IN_NESTED,false);
+                }
+            } else
+                leafLabelConverter.marshal(source,writer,context);
         }
+
+        public Object unmarshal(HierarchicalStreamReader reader, UnmarshallingContext context) {
+            if (context.get(IN_NESTED)==null) {
+                context.put(IN_NESTED,true);
+                try {
+                    return super.unmarshal(reader,context);
+                } finally {
+                    context.put(IN_NESTED,false);
+                }
+            } else
+                return leafLabelConverter.unmarshal(reader,context);
+        }
+
+        @Override
+        protected void callback(LabelAtom obj, UnmarshallingContext context) {
+            // noop
+        }
+
+        private static final Object IN_NESTED = "VisitingInnerLabelAtom";
     }
 }
