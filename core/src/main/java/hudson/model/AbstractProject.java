@@ -1014,7 +1014,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
         for (SubTaskContributor euc : SubTaskContributor.all())
             r.addAll(euc.forProject(this));
         for (JobProperty<? super P> p : properties)
-            r.addAll(p.getMemberExecutionUnits());
+            r.addAll(p.getSubTasks());
         return r;
     }
 

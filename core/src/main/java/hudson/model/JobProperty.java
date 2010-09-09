@@ -170,7 +170,7 @@ public abstract class JobProperty<J extends Job<?,?>> implements Describable<Job
      *
      * @since 1.FATTASK
      */
-    public Collection<? extends SubTask> getMemberExecutionUnits() {
+    public Collection<? extends SubTask> getSubTasks() {
         return Collections.emptyList();
     }
 }
