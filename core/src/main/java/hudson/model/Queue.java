@@ -42,6 +42,7 @@ import hudson.model.queue.MappingWorksheet;
 import hudson.model.queue.MappingWorksheet.Mapping;
 import hudson.model.queue.QueueSorter;
 import hudson.model.queue.QueueTaskDispatcher;
+import hudson.model.queue.Tasks;
 import hudson.model.queue.WorkUnit;
 import hudson.model.Node.Mode;
 import hudson.model.listeners.SaveableListener;
@@ -1057,11 +1058,17 @@ public class Queue extends ResourceController implements Saveable {
         /**
          * Obtains the {@link SubTask}s that constitute this task.
          *
+         * <p>
          * The collection returned by this method must also contain the primary {@link SubTask}
          * represented by this {@link Task} object itself as the first element.
          * The returned value is read-only.
          *
+         * <p>
          * At least size 1.
+         *
+         * <p>
+         * Since this is a newly added method, the invocation may results in {@link AbstractMethodError}.
+         * Use {@link Tasks#getSubTasksOf(Task)} that avoids this.
          *
          * @since 1.FATTASK
          */

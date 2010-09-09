@@ -27,6 +27,7 @@ import hudson.Util;
 import hudson.model.Queue.*;
 import hudson.FilePath;
 import hudson.model.queue.SubTask;
+import hudson.model.queue.Tasks;
 import hudson.model.queue.WorkUnit;
 import hudson.util.TimeUnit2;
 import hudson.util.InterceptingProxy;
@@ -351,7 +352,7 @@ public class Executor extends Thread implements ModelObject {
     public void doStop( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
         Queue.Executable e = executable;
         if(e!=null) {
-            e.getParent().getOwnerTask().checkAbortPermission();
+            Tasks.getOwnerTaskOf(e.getParent()).checkAbortPermission();
             interrupt();
         }
         rsp.forwardToPreviousPage(req);
@@ -362,7 +363,7 @@ public class Executor extends Thread implements ModelObject {
      */
     public boolean hasStopPermission() {
         Queue.Executable e = executable;
-        return e!=null && e.getParent().getOwnerTask().hasAbortPermission();
+        return e!=null && Tasks.getOwnerTaskOf(e.getParent()).hasAbortPermission();
     }
 
     public Computer getOwner() {

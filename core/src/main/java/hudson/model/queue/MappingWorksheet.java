@@ -294,8 +294,8 @@ public class MappingWorksheet {
 
         // group execution units into chunks. use of LinkedHashMap ensures that the main work comes at the top
         Map<Object,List<SubTask>> m = new LinkedHashMap<Object,List<SubTask>>();
-        for (SubTask meu : task.getSubTasks()) {
-            Object c = meu.getSameNodeConstraint();
+        for (SubTask meu : Tasks.getSubTasksOf(task)) {
+            Object c = Tasks.getSameNodeConstraintOf(meu);
             if (c==null)    c = new Object();
 
             List<SubTask> l = m.get(c);

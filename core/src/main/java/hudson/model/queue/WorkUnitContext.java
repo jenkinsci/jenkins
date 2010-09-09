@@ -70,7 +70,7 @@ public final class WorkUnitContext {
         this.actions = item.getActions();
         
         // +1 for the main task
-        int workUnitSize = task.getSubTasks().size();
+        int workUnitSize = Tasks.getSubTasksOf(task).size();
         startLatch = new Latch(workUnitSize) {
             @Override
             protected void onCriteriaMet() {
