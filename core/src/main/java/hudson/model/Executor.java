@@ -109,7 +109,7 @@ public class Executor extends Thread implements ModelObject {
                         executable = task.createExecutable();
                     }
                 } catch (IOException e) {
-                    LOGGER.log(Level.SEVERE, "Executor throw an exception unexpectedly", e);
+                    LOGGER.log(Level.SEVERE, "Executor threw an exception", e);
                     continue;
                 } catch (InterruptedException e) {
                     continue;
@@ -131,7 +131,7 @@ public class Executor extends Thread implements ModelObject {
                     // for some reason the executor died. this is really
                     // a bug in the code, but we don't want the executor to die,
                     // so just leave some info and go on to build other things
-                    LOGGER.log(Level.SEVERE, "Executor throw an exception unexpectedly", e);
+                    LOGGER.log(Level.SEVERE, "Executor threw an exception", e);
                     problems = e;
                 } finally {
                     setName(threadName);
