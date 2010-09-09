@@ -107,6 +107,13 @@ public final class WorkUnitContext {
         startLatch.synchronize();
     }
 
+    /**
+     * All the {@link Executor}s that jointly execute a {@link Task} call this method to synchronize on the end of the task.
+     *
+     * @throws InterruptedException
+     *      If any of the member thread is interrupted while waiting for other threads to join, all
+     *      the member threads will report {@link InterruptedException}.
+     */
     public void synchronizeEnd(Queue.Executable executable, Throwable problems, long duration) throws InterruptedException {
         endLatch.synchronize();
 
