@@ -25,9 +25,12 @@ package hudson.model.queue;
 
 import com.google.common.collect.ImmutableList;
 import hudson.model.Computer;
+import hudson.model.Executor;
 import hudson.model.Label;
+import hudson.model.LoadBalancer;
 import hudson.model.Node;
 import hudson.model.Queue;
+import hudson.model.Queue.Executable;
 import hudson.model.Queue.JobOffer;
 import hudson.model.Queue.Task;
 
@@ -39,6 +42,39 @@ import java.util.List;
 import java.util.Map;
 
 /**
+ * Defines a mapping problem for answering "where do we execute this task?"
+ *
+ * <p>
+ * The heart of the placement problem is a mapping problem. We are given a {@link Task},
+ * (which in the general case consists of a set of {@link SubTask}s), and we are also given a number
+ * of idle {@link Executor}s, and our goal is to find a mapping from the former to the latter,
+ * which determines where each {@link SubTask} gets executed.
+ *
+ * <p>
+ * This mapping is done under two constraints:
+ *
+ * <ul>
+ * <li>
+ * "Same node" constraint. Some of the subtasks need to be co-located on the same node.
+ * See {@link SubTask#getSameNodeConstraint()}
+ * <li>
+ * Label constraint. {@link SubTask}s can specify that it can be only run on nodes that has the label.
+ * </ul>
+ *
+ * <p>
+ * We first fold the former constraint into the problem definition. That is, we now consider
+ * a set of {@link SubTask}s that need to be co-located as a single {@link WorkChunk}. Similarly,
+ * we consider a set of all {@link Executor}s from the same node as {@link ExecutorChunk}.
+ * Now, the problem becomes the weighted matching problem from {@link WorkChunk} to {@link ExecutorChunk}.
+ *
+ * <p>
+ * An instance of {@link MappingWorksheet} captures a problem definition, plus which
+ * {@link ExecutorChunk} and {@link WorkChunk} are compatible. The purpose of this class
+ * (and {@link ExecutorChunk} and {@link WorkChunk}) are to expose a lot of convenience methods
+ * to assist various algorithms that produce the solution of this mapping problem,
+ * which is represented as {@link Mapping}.
+ *
+ * @see LoadBalancer#map(Task, MappingWorksheet)
  * @author Kohsuke Kawaguchi
  */
 public class MappingWorksheet {
@@ -74,16 +110,23 @@ public class MappingWorksheet {
             node = computer.getNode();
         }
 
+        /**
+         * Is this executor chunk and the given work chunk compatible? Can the latter be run on the former?
+         */
         public boolean canAccept(WorkChunk c) {
             return this.size() >= c.size()
                 && (c.assignedLabel==null || c.assignedLabel.contains(node));
         }
 
+        /**
+         * Node name.
+         */
         public String getName() {
             return node.getNodeName();
         }
 
         /**
+         * Number of executors in this chunk.
          * Alias for size but more readable.
          */
         public int capacity() {
@@ -151,6 +194,11 @@ public class MappingWorksheet {
         }
     }
 
+    /**
+     * Represents the solution to the mapping problem.
+     * It's a mapping from every {@link WorkChunk} to {@link ExecutorChunk}
+     * that satisfies the constraints.
+     */
     public final class Mapping {
         // for each WorkChunk, identify ExecutorChunk where it is assigned to.
         private final ExecutorChunk[] mapping = new ExecutorChunk[works.size()];
@@ -185,6 +233,9 @@ public class MappingWorksheet {
             return mapping.length;
         }
 
+        /**
+         * Checks if the assignments made thus far are valid an within the constraints.
+         */
         public boolean isPartiallyValid() {
             int[] used = new int[executors.size()];
             for (int i=0; i<mapping.length; i++) {
@@ -198,6 +249,9 @@ public class MappingWorksheet {
             return true;
         }
 
+        /**
+         * Makes sure that all the assignments are made and it is within the constraints.
+         */
         public boolean isCompletelyValid() {
             for (ExecutorChunk ec : mapping)
                 if (ec==null)   return false;   // unassigned
@@ -205,7 +259,8 @@ public class MappingWorksheet {
         }
 
         /**
-         * Executes this mapping
+         * Executes this mapping by handing over {@link Executable}s to {@link JobOffer}
+         * as defined by the mapping.
          */
         public void execute(WorkUnitContext wuc) {
             if (!isCompletelyValid())
