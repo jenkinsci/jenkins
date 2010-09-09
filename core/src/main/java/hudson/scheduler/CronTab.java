@@ -107,16 +107,16 @@ public final class CronTab {
          * When we reset this field, we set the field to this value.
          * For example, resetting {@link Calendar#DAY_OF_MONTH} means setting it to 1.
          */
-        private final int zero;
+        private final int min;
         /**
          * If this calendar field has other aliases such that a change in this field
          * modifies other field values, then true.
          */
         private final boolean redoAdjustmentIfModified;
 
-        private CalendarField(int field, int zero, int offset, boolean redoAdjustmentIfModified, CalendarField lowerField) {
+        private CalendarField(int field, int min, int offset, boolean redoAdjustmentIfModified, CalendarField lowerField) {
             this.field = field;
-            this.zero = zero;
+            this.min = min;
             this.redoAdjustmentIfModified= redoAdjustmentIfModified;
             this.lowerField = lowerField;
             this.offset = offset;
@@ -138,7 +138,7 @@ public final class CronTab {
         }
 
         private void clear(Calendar c) {
-            setTo(c,zero);
+            setTo(c, min);
         }
 
         /**
@@ -151,7 +151,7 @@ public final class CronTab {
         private int ceil(CronTab c, int n) {
             long bits = bits(c);
             while ((bits|(1L<<n))!=bits) {
-                if (n>32)   return -1;
+                if (n>60)   return -1;
                 n++;
             }
             return n;
@@ -164,6 +164,18 @@ public final class CronTab {
             return ceil(c,0);
         }
 
+        private int floor(CronTab c, int n) {
+            long bits = bits(c);
+            while ((bits|(1L<<n))!=bits) {
+                if (n==0)   return -1;
+                n--;
+            }
+            return n;
+        }
+
+        private int last(CronTab c) {
+            return floor(c,63);
+        }
 
         /**
          * Extracts the bit masks from the given {@link CronTab} that matches this field.
@@ -173,28 +185,28 @@ public final class CronTab {
         /**
          * Increment the next field.
          */
-        abstract void rollUp(Calendar cal);
+        abstract void rollUp(Calendar cal, int i);
 
         private static final CalendarField MINUTE       = new CalendarField(Calendar.MINUTE,        0, 0, false, null) {
             long bits(CronTab c) { return c.bits[0]; }
-            void rollUp(Calendar cal) { cal.add(Calendar.HOUR_OF_DAY,1); }
+            void rollUp(Calendar cal, int i) { cal.add(Calendar.HOUR_OF_DAY,i); }
         };
         private static final CalendarField HOUR         = new CalendarField(Calendar.HOUR_OF_DAY,   0, 0, false, MINUTE) {
             long bits(CronTab c) { return c.bits[1]; }
-            void rollUp(Calendar cal) { cal.add(Calendar.DAY_OF_MONTH,1); }
+            void rollUp(Calendar cal, int i) { cal.add(Calendar.DAY_OF_MONTH,i); }
         };
         private static final CalendarField DAY_OF_MONTH = new CalendarField(Calendar.DAY_OF_MONTH,  1, 0, true,  HOUR) {
             long bits(CronTab c) { return c.bits[2]; }
-            void rollUp(Calendar cal) { cal.add(Calendar.MONTH,1); }
+            void rollUp(Calendar cal, int i) { cal.add(Calendar.MONTH,i); }
         };
         private static final CalendarField MONTH        = new CalendarField(Calendar.MONTH,         1, 1, false, DAY_OF_MONTH) {
             long bits(CronTab c) { return c.bits[3]; }
-            void rollUp(Calendar cal) { cal.add(Calendar.YEAR,1); }
+            void rollUp(Calendar cal, int i) { cal.add(Calendar.YEAR,i); }
         };
         private static final CalendarField DAY_OF_WEEK  = new CalendarField(Calendar.DAY_OF_WEEK,   1,-1, true,  HOUR) {
             long bits(CronTab c) { return c.dayOfWeek; }
-            void rollUp(Calendar cal) {
-                cal.add(Calendar.WEEK_OF_YEAR,1);
+            void rollUp(Calendar cal, int i) {
+                cal.add(Calendar.WEEK_OF_YEAR,i);
             }
         };
 
@@ -242,12 +254,73 @@ public final class CronTab {
 
                 if (next<0) {
                     // we need to roll over to the next field.
-                    f.rollUp(cal);
+                    f.rollUp(cal, 1);
                     f.setTo(cal,f.first(this));
                     // since higher order field is affected by this, we need to restart from all over
                     continue OUTER;
                 } else {
                     f.setTo(cal,next);
+                    if (f.redoAdjustmentIfModified)
+                        continue OUTER; // when we modify DAY_OF_MONTH and DAY_OF_WEEK, do it all over from the top
+                }
+            }
+            return cal; // all fields adjusted
+        }
+    }
+
+    /**
+     * Computes the nearest past timestamp that matched this cron tab.
+     * <p>
+     * More precisely, given the time 't', computes another smallest time x such that:
+     *
+     * <ul>
+     * <li>x &lt;= t (inclusive)
+     * <li>x matches this crontab
+     * </ul>
+     *
+     * <p>
+     * Note that if t already matches this cron, it's returned as is.
+     */
+    public Calendar floor(long t) {
+        Calendar cal = new GregorianCalendar();
+        cal.setTimeInMillis(t);
+        return floor(cal);
+    }
+
+    /**
+     * See {@link #floor(long)}
+     *
+     * This method modifies the given calendar and returns the same object.
+     */
+    public Calendar floor(Calendar cal) {
+        OUTER:
+        while (true) {
+            for (CalendarField f : CalendarField.ADJUST_ORDER) {
+                int cur = f.valueOf(cal);
+                int next = f.floor(this,cur);
+                if (cur==next)  continue;   // this field is already in a good shape. move on to next
+
+                // we are modifying this field, so clear all the lower level fields
+                for (CalendarField l=f.lowerField; l!=null; l=l.lowerField)
+                    l.clear(cal);
+
+                if (next<0) {
+                    // we need to borrow from the next field.
+                    f.rollUp(cal,-1);
+                    // the problem here, in contrast with the ceil method, is that
+                    // the maximum value of the field is not always a fixed value (that is, day of month)
+                    // so we zero-clear all the lower fields, set the desired value +1,
+                    f.setTo(cal,f.last(this));
+                    f.addTo(cal,1);
+                    // then subtract a minute to achieve maximum values on all the lower fields,
+                    // with the desired value in 'f'
+                    CalendarField.MINUTE.addTo(cal,-1);
+                    // since higher order field is affected by this, we need to restart from all over
+                    continue OUTER;
+                } else {
+                    f.setTo(cal,next);
+                    f.addTo(cal,1);
+                    CalendarField.MINUTE.addTo(cal,-1);
                     if (f.redoAdjustmentIfModified)
                         continue OUTER; // when we modify DAY_OF_MONTH and DAY_OF_WEEK, do it all over from the top
                 }
