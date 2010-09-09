@@ -48,39 +48,6 @@ THE SOFTWARE.
                      addCaption="${%Add axis}"/>
     </f:block>
 
-    <!-- master slave -->
-    <j:if test="${!empty(app.slaves)}">
-      <j:set var="labels" value="${it.labels}" />
-      <f:optionalBlock name="multipleNodes" title="${%Build on multiple nodes}" checked="${!empty(labels)}"
-          help="/help/matrix/label.html">
-        <f:entry title="${%Node}">
-          <div id="nodeTree" class="yahooTree" style="border: 1px solid gray; height: 10em; overflow:auto;"></div>
-          <script src="${rootURL}/scripts/yui/treeview/treeview-${yuiSuffix}.js"></script>
-          <link rel="stylesheet" href="${rootURL}/scripts/yui/treeview/assets/skins/sam/treeview.css" type="text/css" />
-          <script>
-            (function(){
-              var tree = new YAHOO.widget.TreeView("nodeTree");
-
-              var machines = new YAHOO.widget.TextNode("${%Individual nodes}", tree.getRoot(), false);
-              var labels = new YAHOO.widget.TextNode("${%Labels}", tree.getRoot(), false);
-
-              <j:forEach var="l" items="${app.labels}">
-                new YAHOO.widget.TextNode('&lt;input type="checkbox" name="label.${l.name}" id="label.${l.name}" <j:if test="${labels.contains(l)}">checked</j:if>&gt;<label for="label.${l.name}">${h.jsStringEscape(l.name)} (${h.jsStringEscape(l.description)})</label>', ${l.isSelfLabel()?'machines':'labels'}, false);
-              </j:forEach>
-
-              tree.draw();
-              <!--
-                force the rendering of HTML, so that input fields are there
-                even when the form is submitted without this tree expanded.
-               -->
-              tree.expandAll();
-              tree.collapseAll();
-            })();
-          </script>
-        </f:entry>
-      </f:optionalBlock>
-    </j:if>
-
     <f:optionalBlock field="runSequentially" title="${%Run each configuration sequentially}"/>
 
     <f:optionalBlock name="hasCombinationFilter" title="${%Combination Filter}" checked="${!empty(it.combinationFilter)}"
