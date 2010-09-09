@@ -35,7 +35,6 @@ import hudson.util.VersionNumber;
 import static hudson.util.TimeUnit2.DAYS;
 import net.sf.json.JSONObject;
 import org.kohsuke.stapler.DataBoundConstructor;
-import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 import org.jvnet.hudson.crypto.CertificateUtil;
@@ -68,7 +67,6 @@ import java.security.cert.TrustAnchor;
 import com.trilead.ssh2.crypto.Base64;
 
 import javax.servlet.ServletContext;
-import javax.servlet.ServletException;
 
 
 /**

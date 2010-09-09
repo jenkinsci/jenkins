@@ -24,7 +24,6 @@
 package hudson.model;
 
 import java.util.Locale;
-import java.util.Map;
 
 import hudson.EnvVars;
 import org.kohsuke.stapler.DataBoundConstructor;

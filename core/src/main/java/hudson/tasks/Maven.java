@@ -151,7 +151,7 @@ public class Maven extends Builder {
      */
     public MavenInstallation getMaven() {
         for( MavenInstallation i : getDescriptor().getInstallations() ) {
-            if(mavenName !=null && i.getName().equals(mavenName))
+            if(mavenName !=null && mavenName.equals(i.getName()))
                 return i;
         }
         return null;

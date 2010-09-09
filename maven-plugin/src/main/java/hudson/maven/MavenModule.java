@@ -171,7 +171,7 @@ public final class MavenModule extends AbstractMavenProject<MavenModule,MavenBui
      * This method is invoked on {@link MavenModule} that has the matching
      * {@link ModuleName}.
      */
-    /*package*/ final void reconfigure(PomInfo pom) {
+    /*package*/ void reconfigure(PomInfo pom) {
         this.displayName = pom.displayName;
         this.version = pom.version;
         this.relativePath = pom.relativePath;
@@ -458,7 +458,7 @@ public final class MavenModule extends AbstractMavenProject<MavenModule,MavenBui
     /**
      * Creates a list of {@link MavenReporter}s to be used for a build of this project.
      */
-    protected final List<MavenReporter> createReporters() {
+    protected List<MavenReporter> createReporters() {
         List<MavenReporter> reporterList = new ArrayList<MavenReporter>();
 
         getReporters().addAllTo(reporterList);
