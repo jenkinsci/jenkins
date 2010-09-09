@@ -34,24 +34,24 @@ import hudson.model.queue.WorkUnit;
  * @see FlyweightTask
  */
 public class OneOffExecutor extends Executor {
-    private WorkUnit item;
+    private WorkUnit work;
 
-    public OneOffExecutor(Computer owner, Queue.Item item) {
+    public OneOffExecutor(Computer owner, WorkUnit work) {
         super(owner,-1);
-        this.item = new WorkUnit(item,item.task);
+        this.work = work;
     }
 
     @Override
     protected boolean shouldRun() {
-        // TODO: consulting super.shouldRun() here means we'll lose the item if it gets scheduled
+        // TODO: consulting super.shouldRun() here means we'll lose the work if it gets scheduled
         // when super.shouldRun() returns false.
-        return super.shouldRun() && item!=null;
+        return super.shouldRun() && work !=null;
     }
 
     @Override
     protected WorkUnit grabJob() throws InterruptedException {
-        WorkUnit r = item;
-        item = null;
+        WorkUnit r = work;
+        work = null;
         return r;
     }
 

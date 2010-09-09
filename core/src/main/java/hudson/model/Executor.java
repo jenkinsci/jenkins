@@ -124,7 +124,7 @@ public class Executor extends Thread implements ModelObject {
                     workUnit.context.synchronizeStart();
 
                     if (executable instanceof Actionable) {
-                        for (Action action: workUnit.actions) {
+                        for (Action action: workUnit.context.actions) {
                             ((Actionable) executable).addAction(action);
                         }
                     }
@@ -139,7 +139,11 @@ public class Executor extends Thread implements ModelObject {
                 } finally {
                     setName(threadName);
                     finishTime = System.currentTimeMillis();
-                    workUnit.context.synchronizeEnd(executable,problems,finishTime - startTime);
+                    try {
+                        workUnit.context.synchronizeEnd(executable,problems,finishTime - startTime);
+                    } catch (InterruptedException e) {
+                        continue;
+                    }
                 }
             }
         } catch(RuntimeException e) {

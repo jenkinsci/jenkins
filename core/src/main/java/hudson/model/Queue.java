@@ -35,10 +35,10 @@ import static hudson.util.Iterators.reverse;
 import hudson.cli.declarative.CLIMethod;
 import hudson.cli.declarative.CLIResolver;
 import hudson.model.queue.AbstractQueueTask;
+import hudson.model.queue.FutureImpl;
 import hudson.model.queue.QueueSorter;
 import hudson.model.queue.QueueTaskDispatcher;
 import hudson.model.queue.WorkUnit;
-import hudson.remoting.AsyncFutureImpl;
 import hudson.model.Node.Mode;
 import hudson.model.listeners.SaveableListener;
 import hudson.model.queue.CauseOfBlockage;
@@ -47,6 +47,7 @@ import hudson.model.queue.CauseOfBlockage.BecauseLabelIsBusy;
 import hudson.model.queue.CauseOfBlockage.BecauseNodeIsOffline;
 import hudson.model.queue.CauseOfBlockage.BecauseLabelIsOffline;
 import hudson.model.queue.CauseOfBlockage.BecauseNodeIsBusy;
+import hudson.model.queue.WorkUnitContext;
 import hudson.triggers.SafeTimerTask;
 import hudson.triggers.Trigger;
 import hudson.util.OneShotEvent;
@@ -778,9 +779,10 @@ public class Queue extends ResourceController implements Saveable {
                 if (offer.item != null) {
                     // if so, just build it
                     LOGGER.fine("Pop returning " + offer.item + " for " + exec.getName());
-                    offer.item.future.startExecuting(exec);
                     pendings.remove(offer.item);
-                    return new WorkUnit(offer.item, offer.item.task);
+
+                    WorkUnitContext wuc = new WorkUnitContext(offer.item);
+                    return wuc.createWorkUnit(offer.item.task);
                 }
                 // otherwise run a queue maintenance
             }
@@ -966,7 +968,7 @@ public class Queue extends ResourceController implements Saveable {
                 Computer c = n.toComputer();
                 if (c==null || c.isOffline())    continue;
                 if (lbl!=null && !lbl.contains(n))  continue;
-                c.startFlyWeightTask(p);
+                c.startFlyWeightTask(new WorkUnitContext(p).createWorkUnit(p.task));
                 return;
             }
             // if the execution get here, it means we couldn't schedule it anywhere.
@@ -1157,34 +1159,7 @@ public class Queue extends ResourceController implements Saveable {
         @Override String toString();
     }
 
-    /*package*/ static final class FutureImpl extends AsyncFutureImpl<Executable> {
-        private final Task task;
-        /**
-         * If the computation has started, set to {@link Executor} that's running the build.
-         */
-        private volatile Executor executor;
-
-        private FutureImpl(Task task) {
-            this.task = task;
-        }
-
-        @Override
-        public boolean cancel(boolean mayInterruptIfRunning) {
-            Queue q = Hudson.getInstance().getQueue();
-            synchronized (q) {
-                if(executor!=null) {
-                    if(mayInterruptIfRunning)
-                        executor.interrupt();
-                    return mayInterruptIfRunning;
-                }
-                return q.cancel(task);
-            }
-        }
-
-        private void startExecuting(Executor executor) {
-            this.executor = executor;
-        }
-    }
+    /*package*/
 
     /**
      * Item in a queue.
@@ -1203,7 +1178,7 @@ public class Queue extends ResourceController implements Saveable {
         @Exported
         public final Task task;
 
-        /*package almost final*/ transient FutureImpl future;
+        private /*almost final*/ transient FutureImpl future;
 
         /**
          * Build is blocked because another build is in progress,

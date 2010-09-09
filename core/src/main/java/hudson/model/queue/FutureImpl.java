@@ -24,36 +24,49 @@
 package hudson.model.queue;
 
 import hudson.model.Executor;
+import hudson.model.Hudson;
 import hudson.model.Queue;
-import hudson.model.Queue.ExecutionUnit;
+import hudson.model.Queue.Executable;
 import hudson.model.Queue.Task;
+import hudson.remoting.AsyncFutureImpl;
+
+import java.util.HashSet;
+import java.util.Set;
 
 /**
- * Represents a unit of hand-over to {@link Executor} from {@link Queue}.
+ * Created when {@link Queue.Item} is created so that the caller can track the progress of the task.
  *
  * @author Kohsuke Kawaguchi
  */
-public final class WorkUnit {
-    /**
-     * Task to be executed.
-     */
-    public final ExecutionUnit work;
+public final class FutureImpl extends AsyncFutureImpl<Executable> {
+    private final Task task;
 
     /**
-     * Shared context among {@link WorkUnit}s.
+     * If the computation has started, set to {@link Executor}s that are running the build.
      */
-    public final WorkUnitContext context;
+    private final Set<Executor> executors = new HashSet<Executor>();
 
-    WorkUnit(WorkUnitContext context, ExecutionUnit work) {
-        this.context = context;
-        this.work = work;
+    public FutureImpl(Task task) {
+        this.task = task;
     }
 
-    /**
-     * Is this work unit the "main work", which is the primary {@link ExecutionUnit}
-     * represented by {@link Task} itself.
-     */
-    public boolean isMainWork() {
-        return context.task==work;
+    @Override
+    public boolean cancel(boolean mayInterruptIfRunning) {
+        Queue q = Hudson.getInstance().getQueue();
+        synchronized (q) {
+            synchronized (this) {
+                if(!executors.isEmpty()) {
+                    if(mayInterruptIfRunning)
+                        for (Executor e : executors)
+                            e.interrupt();
+                    return mayInterruptIfRunning;
+                }
+                return q.cancel(task);
+            }
+        }
+    }
+
+    synchronized void addExecutor(Executor executor) {
+        this.executors.add(executor);
     }
 }
