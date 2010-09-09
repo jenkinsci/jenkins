@@ -25,6 +25,7 @@ package hudson.model.queue;
 
 import hudson.model.Executor;
 import hudson.model.Queue;
+import hudson.model.Queue.Executable;
 import hudson.model.Queue.Task;
 
 /**
@@ -44,7 +45,7 @@ public final class WorkUnit {
      */
     public final WorkUnitContext context;
 
-    private Executor executor;
+    private volatile Executor executor;
 
     WorkUnit(WorkUnitContext context, SubTask work) {
         this.context = context;
@@ -63,6 +64,13 @@ public final class WorkUnit {
 
     public void setExecutor(Executor e) {
         executor = e;
+    }
+
+    /**
+     * If the execution has already started, return the current executable.
+     */
+    public Executable getExecutable() {
+        return executor!=null ? executor.getCurrentExecutable() : null;
     }
 
     /**

@@ -54,7 +54,7 @@ public class WideExecutionTest extends HudsonTestCase {
 
                         public void run() {
                             WorkUnitContext wuc = Executor.currentExecutor().getCurrentWorkUnit().context;
-                            AbstractBuild b = (AbstractBuild)wuc.getPrimaryWorkUnit().getExecutor().getCurrentExecutable();
+                            AbstractBuild b = (AbstractBuild)wuc.getPrimaryWorkUnit().getExecutable();
                             try {
                                 b.setDescription("I was here");
                             } catch (IOException e) {
