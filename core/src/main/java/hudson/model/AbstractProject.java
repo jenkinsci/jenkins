@@ -1010,6 +1010,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
 
     public List<SubTask> getSubTasks() {
         List<SubTask> r = new ArrayList<SubTask>();
+        r.add(this);
         for (SubTaskContributor euc : SubTaskContributor.all())
             r.addAll(euc.forProject(this));
         for (JobProperty<? super P> p : properties)

@@ -44,9 +44,25 @@ public final class WorkUnit {
      */
     public final WorkUnitContext context;
 
+    private Executor executor;
+
     WorkUnit(WorkUnitContext context, SubTask work) {
         this.context = context;
         this.work = work;
+    }
+
+    /**
+     * {@link Executor} running this work unit.
+     * <p>
+     * {@link Executor#getCurrentWorkUnit()} and {@link WorkUnit#getExecutor()}
+     * form a bi-directional reachability between them.
+     */
+    public Executor getExecutor() {
+        return executor;
+    }
+
+    public void setExecutor(Executor e) {
+        executor = e;
     }
 
     /**

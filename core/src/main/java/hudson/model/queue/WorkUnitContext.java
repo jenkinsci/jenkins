@@ -29,6 +29,8 @@ import hudson.model.Queue;
 import hudson.model.Queue.BuildableItem;
 import hudson.model.Queue.Task;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -37,7 +39,6 @@ import java.util.List;
  * @author Kohsuke Kawaguchi
  */
 public final class WorkUnitContext {
-    private final int workUnitSize;
 
     public final BuildableItem item;
 
@@ -55,6 +56,8 @@ public final class WorkUnitContext {
 
     private final Latch startLatch, endLatch;
 
+    private List<WorkUnit> workUnits = new ArrayList<WorkUnit>();
+
     public WorkUnitContext(BuildableItem item) {
         this.item = item;
         this.task = item.task;
@@ -62,7 +65,7 @@ public final class WorkUnitContext {
         this.actions = item.getActions();
         
         // +1 for the main task
-        workUnitSize = task.getSubTasks().size();
+        int workUnitSize = task.getSubTasks().size();
         startLatch = new Latch(workUnitSize) {
             @Override
             protected void onCriteriaMet() {
@@ -84,7 +87,17 @@ public final class WorkUnitContext {
      */
     public WorkUnit createWorkUnit(SubTask execUnit) {
         future.addExecutor(Executor.currentExecutor());
-        return new WorkUnit(this,execUnit);
+        WorkUnit wu = new WorkUnit(this, execUnit);
+        workUnits.add(wu);
+        return wu;
+    }
+
+    public List<WorkUnit> getWorkUnits() {
+        return Collections.unmodifiableList(workUnits);
+    }
+
+    public WorkUnit getPrimaryWorkUnit() {
+        return workUnits.get(0);
     }
 
     /**

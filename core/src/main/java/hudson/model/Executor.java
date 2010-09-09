@@ -108,6 +108,7 @@ public class Executor extends Thread implements ModelObject {
                 try {
                     synchronized (queue) {// perform this state change as an atomic operation wrt other queue operations
                         workUnit = grabJob();
+                        workUnit.setExecutor(this);
                         task = workUnit.work;
                         startTime = System.currentTimeMillis();
                         executable = task.createExecutable();

@@ -23,10 +23,13 @@
  */
 package hudson.model.queue;
 
+import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
+import hudson.model.Executor;
 import hudson.model.FreeStyleBuild;
 import hudson.model.FreeStyleProject;
 import hudson.model.Queue.Executable;
+import hudson.model.Queue.Task;
 import org.jvnet.hudson.test.HudsonTestCase;
 import org.jvnet.hudson.test.TestExtension;
 
@@ -38,10 +41,8 @@ import java.util.Collections;
  * @author Kohsuke Kawaguchi
  */
 public class WideExecutionTest extends HudsonTestCase {
-    boolean run = false;
-
     @TestExtension
-    public class Contributer extends SubTaskContributor {
+    public static class Contributer extends SubTaskContributor {
         public Collection<? extends SubTask> forProject(final AbstractProject<?, ?> p) {
             return Collections.singleton(new AbstractSubTask() {
                 private final AbstractSubTask outer = this;
@@ -52,10 +53,19 @@ public class WideExecutionTest extends HudsonTestCase {
                         }
 
                         public void run() {
-                            run = true;
-                            // no-op
+                            WorkUnitContext wuc = Executor.currentExecutor().getCurrentWorkUnit().context;
+                            AbstractBuild b = (AbstractBuild)wuc.getPrimaryWorkUnit().getExecutor().getCurrentExecutable();
+                            try {
+                                b.setDescription("I was here");
+                            } catch (IOException e) {
+                                e.printStackTrace();
+                            }
                         }
                     };
+                }
+
+                public Task getOwnerTask() {
+                    return p;
                 }
 
                 public String getDisplayName() {
@@ -68,6 +78,6 @@ public class WideExecutionTest extends HudsonTestCase {
     public void testRun() throws Exception {
         FreeStyleProject p = createFreeStyleProject();
         FreeStyleBuild b = assertBuildStatusSuccess(p.scheduleBuild2(0));
-        assertTrue(run);
+        assertTrue(b.getDescription().equals("I was here"));
     }
 }
