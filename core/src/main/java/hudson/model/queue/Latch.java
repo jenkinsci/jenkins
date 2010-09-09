@@ -23,6 +23,8 @@
  */
 package hudson.model.queue;
 
+import hudson.AbortException;
+
 /**
  * A concurrency primitive that waits for N number of threads to synchronize.
  * If any of the threads are interrupted while waiting for the completion of the condition,
@@ -33,14 +35,19 @@ package hudson.model.queue;
 class Latch {
     private final int n;
     private int i=0;
-    private boolean interrupted;
+    /**
+     * If the synchronization on the latch is aborted/interrupted,
+     * point to the stack trace where that happened. If null,
+     * no interruption happened.
+     */
+    private Exception interrupted;
 
     public Latch(int n) {
         this.n = n;
     }
 
     public synchronized void abort() {
-        interrupted = true;
+        interrupted = new AbortException();
         notifyAll();
     }
 
@@ -65,11 +72,11 @@ class Latch {
         if (i==threshold) {
             notifyAll();
         } else {
-            while (i<threshold && !interrupted) {
+            while (i<threshold && interrupted==null) {
                 try {
                     wait();
                 } catch (InterruptedException e) {
-                    interrupted = true;
+                    interrupted = e;
                     notifyAll();
                     throw e;
                 }
@@ -77,8 +84,8 @@ class Latch {
         }
 
         // all of us either leave normally or get interrupted
-        if (interrupted)
-            throw new InterruptedException();
+        if (interrupted!=null)
+            throw (InterruptedException)new InterruptedException().initCause(interrupted);
     }
 
     protected void onCriteriaMet() throws InterruptedException {}
