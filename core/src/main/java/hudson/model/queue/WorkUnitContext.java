@@ -103,11 +103,11 @@ public final class WorkUnitContext {
     /**
      * All the {@link Executor}s that jointly execute a {@link Task} call this method to synchronize on the start.
      */
-    public synchronized void synchronizeStart() throws InterruptedException {
+    public void synchronizeStart() throws InterruptedException {
         startLatch.synchronize();
     }
 
-    public synchronized void synchronizeEnd(Queue.Executable executable, Throwable problems, long duration) throws InterruptedException {
+    public void synchronizeEnd(Queue.Executable executable, Throwable problems, long duration) throws InterruptedException {
         endLatch.synchronize();
 
         // the main thread will send a notification
