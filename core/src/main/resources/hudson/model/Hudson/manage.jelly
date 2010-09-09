@@ -63,6 +63,8 @@ THE SOFTWARE.
       </j:if>
     </j:forEach>
 
+    <st:include page="downgrade.jelly" />
+
     <table style="padding-left: 2em;" id="management-links">
       <local:feature icon="setting.gif"          href="configure"    title="${%Configure System}">
         ${%Configure global settings and paths.}

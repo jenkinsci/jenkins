@@ -115,7 +115,7 @@ public class Ant extends Builder {
      */
     public AntInstallation getAnt() {
         for( AntInstallation i : getDescriptor().getInstallations() ) {
-            if(antName!=null && i.getName().equals(antName))
+            if(antName!=null && antName.equals(i.getName()))
                 return i;
         }
         return null;

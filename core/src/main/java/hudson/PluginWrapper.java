@@ -37,7 +37,6 @@ import java.io.OutputStream;
 import java.io.Closeable;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.Enumeration;
 import java.util.List;
 import java.util.jar.Manifest;
 import java.util.logging.Logger;
@@ -46,6 +45,9 @@ import static java.util.logging.Level.WARNING;
 import org.apache.commons.logging.LogFactory;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.HttpResponses;
+
+import java.util.Enumeration;
+import java.util.jar.JarFile;
 
 /**
  * Represents a Hudson plug-in and associated control information
@@ -464,6 +466,37 @@ public class PluginWrapper implements Comparable<PluginWrapper> {
         return shortName.compareToIgnoreCase(pw.shortName);
     }
 
+    /**
+     * returns true if backup of previous version of plugin exists
+     */
+    public boolean isDowngradable() {
+        return getBackupFile().exists();
+    }
+
+    /**
+     * Where is the backup file?
+     */
+    public File getBackupFile() {
+        return new File(Hudson.getInstance().getRootDir(),"plugins/"+getShortName() + ".bak");
+    }
+
+    /**
+     * returns the version of the backed up plugin,
+     * or null if there's no back up.
+     */
+    public String getBackupVersion() {
+        if (getBackupFile().exists()) {
+            try {
+                JarFile backupPlugin = new JarFile(getBackupFile());
+                return backupPlugin.getManifest().getMainAttributes().getValue("Plugin-Version");
+            } catch (IOException e) {
+                LOGGER.log(WARNING, "Failed to get backup version ", e);
+                return null;
+            }
+        } else {
+            return null;
+        }
+    }
 //
 //
 // Action methods

@@ -191,6 +191,8 @@ public abstract class ExtensionFinder implements ExtensionPoint {
                                "Failed to scout "+item.className(), e);
                 } catch (ClassNotFoundException e) {
                     LOGGER.log(Level.WARNING,"Failed to scout "+item.className(), e);
+                } catch (LinkageError e) {
+                    LOGGER.log(Level.WARNING,"Failed to scout "+item.className(), e);
                 }
             }
         }

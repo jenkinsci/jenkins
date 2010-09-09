@@ -802,7 +802,7 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
     /**
      * Does this {@link View} has any associated user information recorded?
      */
-    public final boolean hasPeople() {
+    public boolean hasPeople() {
         return View.People.isApplicable(items.values());
     }
 

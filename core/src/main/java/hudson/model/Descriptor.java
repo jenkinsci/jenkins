@@ -23,6 +23,7 @@
  */
 package hudson.model;
 
+import hudson.RelativePath;
 import hudson.XmlFile;
 import hudson.BulkChange;
 import hudson.Util;
@@ -300,6 +301,10 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable {
                 if (name==null || name.length()==0)
                     continue;   // unknown parameter name. we'll report the error when the form is submitted.
 
+                RelativePath rp = p.annotation(RelativePath.class);
+                if (rp!=null)
+                    name = rp.value()+'/'+name;
+
                 if (query.length()==0)  query.append("+qs(this)");
 
                 if (name.equals("value")) {
@@ -345,6 +350,10 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable {
                 if (name.length()==0) name = p.name();
                 if (name==null || name.length()==0)
                     continue;   // unknown parameter name. we'll report the error when the form is submitted.
+
+                RelativePath rp = p.annotation(RelativePath.class);
+                if (rp!=null)
+                    name = rp.value()+'/'+name;
 
                 depends.add(name);
                 continue;

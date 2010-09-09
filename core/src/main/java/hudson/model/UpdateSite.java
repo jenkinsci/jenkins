@@ -602,11 +602,27 @@ public class UpdateSite {
         }
 
         /**
+         * Schedules the downgrade of this plugin.
+         */
+        public Future<UpdateCenterJob> deployBackup() {
+            Hudson.getInstance().checkPermission(Hudson.ADMINISTER);
+            UpdateCenter uc = Hudson.getInstance().getUpdateCenter();
+            return uc.addJob(uc.new PluginDowngradeJob(this, UpdateSite.this, Hudson.getAuthentication()));
+        }
+        /**
          * Making the installation web bound.
          */
         public void doInstall(StaplerResponse rsp) throws IOException {
             deploy();
             rsp.sendRedirect2("../..");
+        }
+
+        /**
+         * Performs the downgrade of the plugin.
+         */
+        public void doDowngrade(StaplerResponse rsp) throws IOException {
+            deployBackup();
+            rsp.sendRedirect("../updateCenter/");
         }
     }
 
