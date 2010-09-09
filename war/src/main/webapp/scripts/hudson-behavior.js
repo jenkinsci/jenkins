@@ -138,8 +138,18 @@ var FormChecker = {
 /**
  * Find the sibling (in the sense of the structured form submission) form item of the given name,
  * and returns that DOM node.
+ *
+ * @param {HTMLElement} e
+ * @param {string} name
+ *      Name of the control to find. Can include "../../" etc in the prefix.
+ *      See @RelativePath.
  */
 function findNearBy(e,name) {
+    while (name.startsWith("../")) {
+        name = name.substring(3);
+        e = findFormParent(e,null,true);
+    }
+
     // does 'e' itself match the criteria?
     // as some plugins use the field name as a parameter value, instead of 'value'
     var p = findFormItem(e,name,function(e,filter) {
@@ -148,20 +158,14 @@ function findNearBy(e,name) {
     });
     if (p!=null)    return p;
 
-    var owner = findFormParent(e,null);
-
-    // handle "../foo" syntax
-    while (name.startsWith("../")) {
-        owner = findFormParent(owner,null);
-        name = name.substring(3);
-    }
+    var owner = findFormParent(e,null,true);
 
     p = findPreviousFormItem(e,name);
-    if (p!=null && findFormParent(p,null)==owner)
+    if (p!=null && findFormParent(p,null,true)==owner)
         return p;
 
     var n = findNextFormItem(e,name);
-    if (n!=null && findFormParent(n,null)==owner)
+    if (n!=null && findFormParent(n,null,true)==owner)
         return n;
 
     return null; // not found
@@ -199,7 +203,7 @@ function qs(owner) {
         nearBy : function(name) {
             var e = findNearBy(owner,name);
             if (e==null)    return this;    // skip
-            return this.append(name+'='+toValue(e));
+            return this.append(Path.tail(name)+'='+toValue(e));
         },
 
         addThis : function() {
@@ -993,6 +997,14 @@ function applyTooltip(e,text) {
         e = null; // avoid memory leak
 }
 
+var Path = {
+  tail : function(p) {
+      var idx = p.lastIndexOf("/");
+      if (idx<0)    return p;
+      return p.substring(idx+1);
+  }
+};
+
 /**
  * Install change handlers based on the 'fillDependsOn' attribute.
  */
@@ -1016,7 +1028,7 @@ function refillOnChange(e,onChange) {
                 return;
             }
             c.addEventListener("change",h,false);
-            deps.push({name:name,control:c});
+            deps.push({name:Path.tail(name),control:c});
         });
     }
     h();   // initial fill
@@ -1593,7 +1605,9 @@ function createSearchBox(searchURL) {
  * @return null
  *      if the given element shouldn't be a part of the final submission.
  */
-function findFormParent(e,form) {
+function findFormParent(e,form,static) {
+    static = static || false;
+
     if (form==null) // caller can pass in null to have this method compute the owning form
         form = findAncestor(e,"FORM");
 
@@ -1606,12 +1620,12 @@ function findFormParent(e,form) {
         else
             e = e.parentNode;
 
-        if(e.getAttribute("field-disabled")!=null)
+        if(!static && e.getAttribute("field-disabled")!=null)
             return null;  // this field shouldn't contribute to the final result
 
         var name = e.getAttribute("name");
         if(name!=null) {
-            if(e.tagName=="INPUT" && !xor(e.checked,Element.hasClassName(e,"negative")))
+            if(e.tagName=="INPUT" && !static && !xor(e.checked,Element.hasClassName(e,"negative")))
                 return null;  // field is not active
 
             return e;
