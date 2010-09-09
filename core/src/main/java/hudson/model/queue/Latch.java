@@ -46,8 +46,10 @@ class Latch {
         this.n = n;
     }
 
-    public synchronized void abort() {
+    public synchronized void abort(Throwable cause) {
         interrupted = new AbortException();
+        if (cause!=null)
+            interrupted.initCause(cause);
         notifyAll();
     }
 
@@ -55,13 +57,14 @@ class Latch {
     public synchronized void synchronize() throws InterruptedException {
         check(n);
 
-        boolean success=false;
         try {
             onCriteriaMet();
-            success=true;
-        } finally {
-            if (!success)
-                abort();
+        } catch (Error e) {
+            abort(e);
+            throw e;
+        } catch (RuntimeException e) {
+            abort(e);
+            throw e;
         }
 
         check(n*2);

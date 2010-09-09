@@ -131,8 +131,18 @@ public final class WorkUnitContext {
         }
     }
 
-    public void abort() {
-        startLatch.abort();
-        endLatch.abort();
+    /**
+     * When one of the work unit is aborted, call this method to abort all the other work units.
+     */
+    public void abort(Throwable cause) {
+        startLatch.abort(cause);
+        endLatch.abort(cause);
+
+        Thread c = Thread.currentThread();
+        for (WorkUnit wu : workUnits) {
+            Executor e = wu.getExecutor();
+            if (e!=null && e!=c)
+                e.interrupt();
+        }
     }
 }

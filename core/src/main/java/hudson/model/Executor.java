@@ -106,7 +106,9 @@ public class Executor extends Thread implements ModelObject {
 
                 SubTask task;
                 try {
-                    synchronized (queue) {// perform this state change as an atomic operation wrt other queue operations
+                    // transition from idle to building.
+                    // perform this state change as an atomic operation wrt other queue operations
+                    synchronized (queue) {
                         workUnit = grabJob();
                         workUnit.setExecutor(this);
                         task = workUnit.work;
@@ -137,6 +139,7 @@ public class Executor extends Thread implements ModelObject {
                     // a bug in the code, but we don't want the executor to die,
                     // so just leave some info and go on to build other things
                     LOGGER.log(Level.SEVERE, "Executor threw an exception", e);
+                    workUnit.context.abort(e);
                     problems = e;
                 } finally {
                     setName(threadName);
@@ -144,6 +147,7 @@ public class Executor extends Thread implements ModelObject {
                     try {
                         workUnit.context.synchronizeEnd(executable,problems,finishTime - startTime);
                     } catch (InterruptedException e) {
+                        workUnit.context.abort(e);
                         continue;
                     }
                 }
