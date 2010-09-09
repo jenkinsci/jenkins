@@ -23,6 +23,7 @@
  */
 package hudson.model;
 
+import hudson.AbortException;
 import hudson.BulkChange;
 import hudson.ExtensionList;
 import hudson.ExtensionPoint;
@@ -800,7 +801,7 @@ public class Queue extends ResourceController implements Saveable {
             JobOffer offer = parked.remove(exec);
             if (offer != null && offer.workUnit != null) {
                 // we are already assigned a project, but now we can't handle it.
-                offer.workUnit.context.abort();
+                offer.workUnit.context.abort(new AbortException());
             }
 
             // since this executor might have been chosen for
@@ -808,63 +809,6 @@ public class Queue extends ResourceController implements Saveable {
             // we'll just run a pointless maintenance, and that's
             // fine.
             scheduleMaintenance();
-        }
-    }
-
-    /**
-     * Represents a list of {@linkplain JobOffer#canTake(Task) applicable} {@link JobOffer}s
-     * and provides various typical 
-     */
-    public final class ApplicableJobOfferList implements Iterable<JobOffer> {
-        private final List<JobOffer> list;
-        // laziy filled
-        private Map<Node,List<JobOffer>> nodes;
-
-        private ApplicableJobOfferList(Task task) {
-            list = new ArrayList<JobOffer>(parked.size());
-            for (JobOffer j : parked.values())
-                if(j.canTake(task))
-                    list.add(j);
-        }
-
-        /**
-         * Returns all the {@linkplain JobOffer#isAvailable() available} {@link JobOffer}s.
-         */
-        public List<JobOffer> all() {
-            return list;
-        }
-
-        public Iterator<JobOffer> iterator() {
-            return list.iterator();
-        }
-
-        /**
-         * List up all the {@link Node}s that have some available offers.
-         */
-        public Set<Node> nodes() {
-            return byNodes().keySet();
-        }
-
-        /**
-         * Gets a {@link JobOffer} for an executor of the given node, if any.
-         * Otherwise null. 
-         */
-        public JobOffer _for(Node n) {
-            List<JobOffer> r = byNodes().get(n);
-            if(r==null) return null;
-            return r.get(0);
-        }
-
-        public Map<Node,List<JobOffer>> byNodes() {
-            if(nodes==null) {
-                nodes = new HashMap<Node,List<JobOffer>>();
-                for (JobOffer o : list) {
-                    List<JobOffer> l = nodes.get(o.getNode());
-                    if(l==null) nodes.put(o.getNode(),l=new ArrayList<JobOffer>());
-                    l.add(o);
-                }
-            }
-            return nodes;
         }
     }
 

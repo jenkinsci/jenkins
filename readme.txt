@@ -1,5 +1,5 @@
 TODO:
-  - If a subtask is interrupted, all the executors should be aborted.
+  x If a subtask is interrupted, all the executors should be aborted.
   - handle AbstractMethodError on methods newly added.
   - LoadBalancer backward compatibility story.
   - Document the new abstraction
