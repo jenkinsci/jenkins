@@ -25,6 +25,7 @@
 package hudson.model.queue;
 
 import hudson.model.Queue;
+import hudson.model.Queue.Task;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -39,5 +40,9 @@ import java.util.Collections;
 public abstract class AbstractQueueTask implements Queue.Task {
     public Collection<? extends SubTask> getSubTasks() {
         return Collections.emptyList();
+    }
+
+    public final Task getOwnerTask() {
+        return this;
     }
 }

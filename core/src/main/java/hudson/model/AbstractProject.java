@@ -41,6 +41,7 @@ import hudson.model.Cause.UserCause;
 import hudson.model.Descriptor.FormException;
 import hudson.model.Fingerprint.RangeSet;
 import hudson.model.Queue.Executable;
+import hudson.model.Queue.Task;
 import hudson.model.queue.SubTask;
 import hudson.model.Queue.WaitingItem;
 import hudson.model.RunMap.Constructor;
@@ -918,6 +919,10 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
 
     public Object getSameNodeConstraint() {
         return this; // in this way, any member that wants to run with the main guy can nominate the project itself 
+    }
+
+    public final Task getOwnerTask() {
+        return this;
     }
 
     /**

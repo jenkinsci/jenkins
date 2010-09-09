@@ -344,7 +344,7 @@ public class Executor extends Thread implements ModelObject {
     public void doStop( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
         Queue.Executable e = executable;
         if(e!=null) {
-            e.getParent().checkAbortPermission();
+            e.getParent().getOwnerTask().checkAbortPermission();
             interrupt();
         }
         rsp.forwardToPreviousPage(req);
@@ -355,7 +355,7 @@ public class Executor extends Thread implements ModelObject {
      */
     public boolean hasStopPermission() {
         Queue.Executable e = executable;
-        return e!=null && e.getParent().hasAbortPermission();
+        return e!=null && e.getParent().getOwnerTask().hasAbortPermission();
     }
 
     public Computer getOwner() {

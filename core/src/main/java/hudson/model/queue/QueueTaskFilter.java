@@ -110,4 +110,12 @@ public abstract class QueueTaskFilter implements Queue.Task {
     public Collection<? extends SubTask> getSubTasks() {
         return base.getSubTasks();
     }
+
+    public final Task getOwnerTask() {
+        return this;
+    }
+
+    public Object getSameNodeConstraint() {
+        return base.getSameNodeConstraint();
+    }
 }

@@ -73,6 +73,11 @@ public interface SubTask extends ResourceActivity {
     Executable createExecutable() throws IOException;
 
     /**
+     * Gets the {@link Task} that this subtask belongs to.
+     */
+    Task getOwnerTask();
+
+    /**
      * If a subset of {@link SubTask}s of a {@link Task} needs to be collocated with other {@link SubTask}s,
      * those {@link SubTask}s should return the equal object here. If null, the execution unit isn't under a
      * colocation constraint.
