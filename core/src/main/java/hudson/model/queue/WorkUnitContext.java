@@ -58,6 +58,11 @@ public final class WorkUnitContext {
 
     private List<WorkUnit> workUnits = new ArrayList<WorkUnit>();
 
+    /**
+     * If the execution is aborted, set to non-null that indicates where it was aborted.
+     */
+    private volatile Throwable aborted;
+
     public WorkUnitContext(BuildableItem item) {
         this.item = item;
         this.task = item.task;
@@ -134,7 +139,10 @@ public final class WorkUnitContext {
     /**
      * When one of the work unit is aborted, call this method to abort all the other work units.
      */
-    public void abort(Throwable cause) {
+    public synchronized void abort(Throwable cause) {
+        if (cause==null)        throw new IllegalArgumentException();
+        if (aborted!=null)      return; // already aborted    
+        aborted = cause;
         startLatch.abort(cause);
         endLatch.abort(cause);
 

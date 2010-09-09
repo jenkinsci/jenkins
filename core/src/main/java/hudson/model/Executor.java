@@ -149,6 +149,8 @@ public class Executor extends Thread implements ModelObject {
                     } catch (InterruptedException e) {
                         workUnit.context.abort(e);
                         continue;
+                    } finally {
+                        workUnit.setExecutor(null);
                     }
                 }
             }
