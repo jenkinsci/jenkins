@@ -81,8 +81,6 @@ public interface SubTask extends ResourceActivity {
      * If a subset of {@link SubTask}s of a {@link Task} needs to be collocated with other {@link SubTask}s,
      * those {@link SubTask}s should return the equal object here. If null, the execution unit isn't under a
      * colocation constraint.
-     *
-     * @since 1.FATTASK
      */
     Object getSameNodeConstraint();
 }
