@@ -53,17 +53,8 @@ public class WideJobProperty extends JobProperty<AbstractProject<?,?>> {
         List<SubTask> r = new ArrayList<SubTask>();
         for (int i=1; i< weight; i++)
             r.add(new AbstractSubTask() {
-                private final AbstractSubTask outerThis = this;
                 public Executable createExecutable() throws IOException {
-                    return new Executable() {
-                        public SubTask getParent() {
-                            return outerThis;
-                        }
-
-                        public void run() {
-                            // nothing. we just waste time
-                        }
-                    };
+                    return new ExecutableImpl(this);
                 }
 
                 @Override
@@ -97,6 +88,22 @@ public class WideJobProperty extends JobProperty<AbstractProject<?,?>> {
         @Override
         public String getDisplayName() {
             return "This project occupies multiple executors";
+        }
+    }
+
+    private static class ExecutableImpl implements Executable {
+        private final SubTask parent;
+
+        private ExecutableImpl(SubTask parent) {
+            this.parent = parent;
+        }
+
+        public SubTask getParent() {
+            return parent;
+        }
+
+        public void run() {
+            // nothing. we just waste time
         }
     }
 }

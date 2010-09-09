@@ -66,17 +66,9 @@ THE SOFTWARE.
           </j:when>
           <j:otherwise>
             <td class="pane">
-              <div style="white-space: normal">${%Building}
-                <j:choose>
-                  <j:when test="${h.hasPermission(e.currentExecutable.parent,e.currentExecutable.parent.READ)}">
-                    <a href="${rootURL}/${e.currentExecutable.parent.url}">${e.currentExecutable.parent.fullDisplayName}</a>&#160;<a href="${rootURL}/${e.currentExecutable.url}">#${e.currentExecutable.number}</a>
-                    <t:buildProgressBar build="${e.currentExecutable}" executor="${e}"/>
-                  </j:when>
-                  <j:otherwise>
-                    <span>${%Unknown Task}</span>
-                  </j:otherwise>
-                </j:choose>
-              </div>
+              <!-- not actually optional, but it helps with backward compatibility -->
+              <j:set var="executor" value="${e}" />
+              <st:include it="${e.currentExecutable}" page="executorCell.jelly" optional="true" />
             </td>
             <td class="pane" align="center" valign="middle">
               <j:if test="${e.hasStopPermission()}">

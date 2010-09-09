@@ -1126,6 +1126,11 @@ public class Queue extends ResourceController implements Saveable {
 
     /**
      * Represents the real meet of the computation run by {@link Executor}.
+     *
+     * <h2>Views</h2>
+     * <p>
+     * Implementation must have <tt>executorCell.jelly</tt>, which is
+     * used to render the HTML that indicates this executable is executing.
      */
     public interface Executable extends Runnable {
         /**
