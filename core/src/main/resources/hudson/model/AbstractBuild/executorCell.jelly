@@ -23,15 +23,17 @@ THE SOFTWARE.
 -->
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt" xmlns:p="/lib/hudson/project">
-  <div style="white-space: normal">${%Building}
-    <j:choose>
-      <j:when test="${h.hasPermission(it.parent,it.parent.READ)}">
-        <a href="${rootURL}/${it.parent.url}">${it.parent.fullDisplayName}</a>&#160;<a href="${rootURL}/${it.url}">#${it.number}</a>
-        <t:buildProgressBar build="${it}" executor="${executor}"/>
-      </j:when>
-      <j:otherwise>
-        <span>${%Unknown Task}</span>
-      </j:otherwise>
-    </j:choose>
-  </div>
+  <td class="pane">
+    <div style="white-space: normal">${%Building}
+      <j:choose>
+        <j:when test="${h.hasPermission(it.parent,it.parent.READ)}">
+          <a href="${rootURL}/${it.parent.url}">${it.parent.fullDisplayName}</a>&#160;<a href="${rootURL}/${it.url}">#${it.number}</a>
+          <t:buildProgressBar build="${it}" executor="${executor}"/>
+        </j:when>
+        <j:otherwise>
+          <span>${%Unknown Task}</span>
+        </j:otherwise>
+      </j:choose>
+    </div>
+  </td>
 </j:jelly>

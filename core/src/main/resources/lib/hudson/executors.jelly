@@ -65,11 +65,9 @@ THE SOFTWARE.
             <td class="pane"/>
           </j:when>
           <j:otherwise>
-            <td class="pane">
-              <!-- not actually optional, but it helps with backward compatibility -->
-              <j:set var="executor" value="${e}" />
-              <st:include it="${e.currentExecutable}" page="executorCell.jelly" optional="true" />
-            </td>
+            <!-- not actually optional, but it helps with backward compatibility -->
+            <j:set var="executor" value="${e}" />
+            <st:include it="${e.currentExecutable}" page="executorCell.jelly" optional="true" />
             <td class="pane" align="center" valign="middle">
               <j:if test="${e.hasStopPermission()}">
                 <a href="${rootURL}/${c.url}${url}/stop"><img src="${imagesURL}/16x16/stop.gif" alt="${%terminate this build}" /></a>
