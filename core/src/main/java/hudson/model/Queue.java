@@ -1,7 +1,7 @@
 /*
  * The MIT License
  * 
- * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, Stephen Connolly, Tom Huybrechts
+ * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, Stephen Connolly, Tom Huybrechts, InfraDNA, Inc.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -952,7 +952,7 @@ public class Queue extends ResourceController implements Saveable {
     }
 
     private void makeBuildable(BuildableItem p) {
-        if(Hudson.FLYWEIGHT_SUPPORT && p.task instanceof FlyweightTask && (!Hudson.getInstance().isQuietingDown() || p.task instanceof NonBlockingTask)) {
+        if(Hudson.FLYWEIGHT_SUPPORT && p.task instanceof FlyweightTask && !ifBlockedByHudsonShutdown(p.task)) {
             ConsistentHash<Node> hash = new ConsistentHash<Node>(new Hash<Node>() {
                 public String hash(Node node) {
                     return node.getNodeName();
@@ -976,6 +976,10 @@ public class Queue extends ResourceController implements Saveable {
         }
         
         buildables.put(p.task,p);
+    }
+
+    public static boolean ifBlockedByHudsonShutdown(Task task) {
+        return Hudson.getInstance().isQuietingDown() && !(task instanceof NonBlockingTask);
     }
 
     public Api getApi() {
@@ -1123,9 +1127,23 @@ public class Queue extends ResourceController implements Saveable {
          */
         boolean isConcurrentBuild();
 
+        /**
+         * Obtains the {@link ExecutionUnit}s that constitute this task.
+         *
+         * For historical reasons, {@link Task} itself implicitly forms one "main" {@link ExecutionUnit}
+         * (and in fact most of the time this is the only {@link Task}.)
+         *
+         * The collection returned by this method doesn't contain this main {@link ExecutionUnit}.
+         * The returned value is read-only. Can be empty but never null.
+         */
         Collection<? extends ExecutionUnit> getMemberExecutionUnits();
     }
 
+    /**
+     * A component of {@link Task} that represents a computation carried out by a single {@link Executor}.
+     *
+     * A {@link Task} consists of a number of {@link ExecutionUnit}.
+     */
     public interface ExecutionUnit extends ResourceActivity {
         /**
          * Estimate of how long will it take to execute this task.
@@ -1141,6 +1159,9 @@ public class Queue extends ResourceController implements Saveable {
         Executable createExecutable() throws IOException;
     }
 
+    /**
+     * Represents the real meet of the computation run by {@link Executor}.
+     */
     public interface Executable extends Runnable {
         /**
          * Task from which this executable was created.
@@ -1158,8 +1179,6 @@ public class Queue extends ResourceController implements Saveable {
          */
         @Override String toString();
     }
-
-    /*package*/
 
     /**
      * Item in a queue.
@@ -1439,7 +1458,7 @@ public class Queue extends ResourceController implements Saveable {
 
         public CauseOfBlockage getCauseOfBlockage() {
             Hudson hudson = Hudson.getInstance();
-            if(hudson.isQuietingDown() && !(task instanceof NonBlockingTask))
+            if(ifBlockedByHudsonShutdown(task))
                 return CauseOfBlockage.fromMessage(Messages._Queue_HudsonIsAboutToShutDown());
 
             Label label = task.getAssignedLabel();
