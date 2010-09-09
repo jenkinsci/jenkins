@@ -75,7 +75,7 @@ public class MappingWorksheet {
         }
 
         public boolean canAccept(WorkChunk c) {
-            return this.size() > c.size()
+            return this.size() >= c.size()
                 && (c.assignedLabel==null || c.assignedLabel.contains(node));
         }
 
