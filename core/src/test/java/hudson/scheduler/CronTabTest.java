@@ -1,7 +1,7 @@
 /*
  * The MIT License
  *
- * Copyright (c) 2004-2009, InfraDNA, Inc.
+ * Copyright (c) 2004-2010, InfraDNA, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,16 +23,24 @@
  */
 package hudson.scheduler;
 
-import junit.framework.TestCase;
-
+import antlr.ANTLRException;
 import java.text.DateFormat;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
+import junit.framework.TestCase;
 
 /**
  * @author Kohsuke Kawaguchi
  */
 public class CronTabTest extends TestCase {
+    public void test1() throws ANTLRException {
+        new CronTab("@yearly");
+        new CronTab("@weekly");
+        new CronTab("@midnight");
+        new CronTab("@monthly");
+        new CronTab("0 0 * 1-10/3 *");
+    }
+
     public void testCeil1() throws Exception {
         CronTab x = new CronTab("0,30 * * * *");
         Calendar c = new GregorianCalendar(2000,2,1,1,10);
