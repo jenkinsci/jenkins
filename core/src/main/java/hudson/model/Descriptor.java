@@ -490,9 +490,11 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable {
         } catch (NoSuchMethodException e) {
             throw new AssertionError(e); // impossible
         } catch (InstantiationException e) {
-            throw new Error(e);
+            throw new Error("Failed to instantiate "+clazz+" from "+formData,e);
         } catch (IllegalAccessException e) {
-            throw new Error(e);
+            throw new Error("Failed to instantiate "+clazz+" from "+formData,e);
+        } catch (RuntimeException e) {
+            throw new RuntimeException("Failed to instantiate "+clazz+" from "+formData,e);
         }
     }
 
