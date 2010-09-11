@@ -28,11 +28,8 @@ THE SOFTWARE.
   </f:entry>
   <f:entry title="${%Node/Label}" field="labels">
     <div class="yahooTree labelAxis-tree" style="border: 1px solid gray; height: 10em; overflow:auto;" values="${instance.valueString}" />
-    <l:yui module="treeview" />
-    <link rel="stylesheet" href="${rootURL}/scripts/yui/treeview/assets/skins/sam/treeview.css" type="text/css" />
     <script>
       hudsonRules["DIV.labelAxis-tree"] = function(e) {
-       setTimeout(function() { // Avoid JS errors (at least in Firefox/Mac)..is there a better way?
         var tree = new YAHOO.widget.TreeView(e);
 
         var labels = new YAHOO.widget.TextNode("${%Labels}", tree.getRoot(), false);
@@ -53,7 +50,6 @@ THE SOFTWARE.
          -->
         tree.expandAll();
         tree.collapseAll();
-       }, 200); // End of setTimeout()
       };
     </script>
   </f:entry>

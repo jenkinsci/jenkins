@@ -105,6 +105,10 @@ THE SOFTWARE.
     <l:yui module="button" />
     <!--l:yui module="editor" suffix="-beta" /-->
 
+    <!-- TODO: moved here as a temporary fix against HUDSON-7281. Use YUILoader to fix this problem -->
+    <l:yui module="treeview" />
+    <link rel="stylesheet" href="${rootURL}/scripts/yui/treeview/assets/skins/sam/treeview.css" type="text/css" />
+    
     <script src="${resURL}/scripts/hudson-behavior.js" type="text/javascript"></script>
 
     <script>
