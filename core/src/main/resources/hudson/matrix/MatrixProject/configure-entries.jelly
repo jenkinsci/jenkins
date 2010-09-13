@@ -27,15 +27,20 @@ THE SOFTWARE.
 -->
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt" xmlns:p="/lib/hudson/project">
+
   <p:config-disableBuild/>
+
   <f:section title="${%Advanced Project Options}">
     <f:advanced>
       <p:config-quietPeriod />
       <p:config-retryCount />
       <p:config-blockWhenUpstreamBuilding />
+      <p:config-customWorkspace />
     </f:advanced>
   </f:section>
+
   <p:config-scm/>
+
   <p:config-trigger>
     <p:config-upstream-pseudo-trigger />
   </p:config-trigger>

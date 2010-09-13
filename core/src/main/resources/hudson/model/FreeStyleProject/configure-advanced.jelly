@@ -26,10 +26,5 @@ THE SOFTWARE.
   Additional entries in the advanced section.
 -->
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:p="/lib/hudson/project">
-  <f:optionalBlock name="customWorkspace" title="${%Use custom workspace}" checked="${it.customWorkspace!=null}"
-      help="/help/project-config/custom-workspace.html">
-    <f:entry title="${%Directory}">
-      <f:textbox name="customWorkspace.directory" value="${it.customWorkspace}" />
-    </f:entry>
-  </f:optionalBlock>
+  <p:config-customWorkspace />
 </j:jelly>
