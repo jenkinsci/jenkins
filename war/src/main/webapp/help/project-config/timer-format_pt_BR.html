@@ -1,6 +1,6 @@
 <div>
-  Este campo segue a sintaxe do cron (com poucas diferenças).
-  Especificamente, cada linha consite de 5 campos separados por tabulação (TAB) ou espeaço em branco:
+  Este campo segue a sintaxe do cron (com poucas diferenÃ§as).
+  Especificamente, cada linha consite de 5 campos separados por tabulaÃ§Ã£o (TAB) ou espeaÃ§o em branco:
   <pre>MINUTO HORA DM MES DS</pre>
   <table>
     <tr>
@@ -13,33 +13,33 @@
     </tr>
     <tr>
       <td>DM</td>
-      <td>O dia do mês (1-31)</td>
+      <td>O dia do mÃªs (1-31)</td>
     </tr>
     <tr>
       <td>MES</td>
-      <td>O mês (1-12)</td>
+      <td>O mÃªs (1-12)</td>
     </tr>
     <tr>
       <td>DS</td>
-      <td>O dia da semana (0-7) onde 0 e 7 são Domingo.</td>
+      <td>O dia da semana (0-7) onde 0 e 7 sÃ£o Domingo.</td>
     </tr>
   </table>
   <p>
-    Para especificar múltiplos valores para um campo, os seguintes operadores estão
-    disponíveis. Em ordem de precedência,
+    Para especificar mÃºltiplos valores para um campo, os seguintes operadores estÃ£o
+    disponÃ­veis. Em ordem de precedÃªncia,
   </p>
   <ul>
-    <li>'*' pode ser usado para especificar todos os valores válidos.</li>
+    <li>'*' pode ser usado para especificar todos os valores vÃ¡lidos.</li>
     <li>'M-N' pode ser usado para especificar um intervalo, tal como "1-5"</li>
     <li>'M-N/X' ou '*/X' pode ser usado para especificar saltos do valor de X entre o intervalo,
         tal como "*/15" no campo MINUTO para "0,15,30,45" e "1-6/2" para "1,3,5"</li>
-    <li>'A,B,...,Z' pode ser usado para especificar múltiplos valores, tal como "0,30" ou "1,3,5"</li>
+    <li>'A,B,...,Z' pode ser usado para especificar mÃºltiplos valores, tal como "0,30" ou "1,3,5"</li>
   </ul>
   <p>
-    Linhas vazias e linha que começam com '#' serão ignoradas como comentários.
+    Linhas vazias e linha que comeÃ§am com '#' serÃ£o ignoradas como comentÃ¡rios.
   </p><p>
-    Em adição, as constantes '@yearly', '@annually', '@monthly', '@weekly', '@daily', '@midnight',
-    e '@hourly' são suportadas.
+    Em adiÃ§Ã£o, as constantes '@yearly', '@annually', '@monthly', '@weekly', '@daily', '@midnight',
+    e '@hourly' sÃ£o suportadas.
   </p>
   <table>
     <tr>
