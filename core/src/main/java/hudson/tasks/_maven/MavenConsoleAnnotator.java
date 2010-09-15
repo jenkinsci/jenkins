@@ -1,7 +1,7 @@
 /*
  * The MIT License
  *
- * Copyright (c) 2004-2010, Sun Microsystems, Inc.
+ * Copyright (c) 2010, InfraDNA, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -21,7 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package hudson.tasks._ant;
+package hudson.tasks._maven;
 
 import hudson.console.LineTransformationOutputStream;
 
@@ -29,20 +29,18 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
+import java.util.regex.Matcher;
 
 /**
- * Filter {@link OutputStream} that places an annotation that marks Ant target execution.
- * 
+ * Filter {@link OutputStream} that places annotations that marks various Maven outputs.
+ *
  * @author Kohsuke Kawaguchi
- * @sine 1.349
  */
-public class AntConsoleAnnotator extends LineTransformationOutputStream {
+public class MavenConsoleAnnotator extends LineTransformationOutputStream {
     private final OutputStream out;
     private final Charset charset;
 
-    private boolean seenEmptyLine;
-
-    public AntConsoleAnnotator(OutputStream out, Charset charset) {
+    public MavenConsoleAnnotator(OutputStream out, Charset charset) {
         this.out = out;
         this.charset = charset;
     }
@@ -54,20 +52,23 @@ public class AntConsoleAnnotator extends LineTransformationOutputStream {
         // trim off CR/LF from the end
         line = trimEOL(line);
 
-        if (seenEmptyLine && endsWith(line,':') && line.indexOf(' ')<0)
-            // put the annotation
-            new AntTargetNote().encodeTo(out);
+        // TODO:
+        // we need more support for conveniently putting annotations in the middle of the line, not just at the beginning
+        // we also need the ability for an extension point to have notes hook into the processing
 
-        if (line.equals("BUILD SUCCESSFUL") || line.equals("BUILD FAILED"))
-            new AntOutcomeNote().encodeTo(out);
+        Matcher m = MavenMojoNote.PATTERN.matcher(line);
+        if (m.matches())
+            new MavenMojoNote().encodeTo(out);
 
-        seenEmptyLine = line.length()==0;
+        m = MavenWarningNote.PATTERN.matcher(line);
+        if (m.matches())
+            new MavenWarningNote().encodeTo(out);
+
+        m = MavenErrorNote.PATTERN.matcher(line);
+        if (m.matches())
+            new MavenErrorNote().encodeTo(out);
+
         out.write(b,0,len);
-    }
-
-    private boolean endsWith(String line, char c) {
-        int len = line.length();
-        return len>0 && line.charAt(len-1)==c;
     }
 
     @Override
@@ -75,5 +76,4 @@ public class AntConsoleAnnotator extends LineTransformationOutputStream {
         super.close();
         out.close();
     }
-
 }

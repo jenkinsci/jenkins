@@ -452,6 +452,11 @@ div.behavior-loading {
     background-repeat: no-repeat;
 }
 
+.error-inline {
+    color: #CC0000;
+    font-weight: bold;
+}
+
 .warning {
     color: #C4A000;
     font-weight: bold;
@@ -460,6 +465,11 @@ div.behavior-loading {
     background-image: url( "../images/16x16/warning.gif" );
     background-position: left center;
     background-repeat: no-repeat;
+}
+
+.warning-inline {
+    color: #C4A000;
+    font-weight: bold;
 }
 
 .info {

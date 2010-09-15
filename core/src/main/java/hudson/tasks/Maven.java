@@ -42,6 +42,8 @@ import hudson.model.TaskListener;
 import hudson.remoting.Callable;
 import hudson.remoting.VirtualChannel;
 import hudson.slaves.NodeSpecific;
+import hudson.tasks._ant.AntConsoleAnnotator;
+import hudson.tasks._maven.MavenConsoleAnnotator;
 import hudson.tools.ToolDescriptor;
 import hudson.tools.ToolInstallation;
 import hudson.tools.DownloadFromUrlInstaller;
@@ -250,7 +252,8 @@ public class Maven extends Builder {
             buildEnvVars(env, mi);
 
             try {
-                int r = launcher.launch().cmds(args).envs(env).stdout(listener).pwd(build.getModuleRoot()).join();
+                MavenConsoleAnnotator mca = new MavenConsoleAnnotator(listener.getLogger(),build.getCharset());
+                int r = launcher.launch().cmds(args).envs(env).stdout(mca).pwd(build.getModuleRoot()).join();
                 if (0 != r) {
                     return false;
                 }
