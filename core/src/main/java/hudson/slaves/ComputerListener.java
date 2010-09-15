@@ -124,6 +124,12 @@ public abstract class ComputerListener implements ExtensionPoint {
     public void onOffline(Computer c) {}
 
     /**
+     * Called when configuration of the node was changed, a node is added/removed, etc.
+     * @since 1.377
+     */
+    public void onConfigurationChange() {}
+
+    /**
      * Registers this {@link ComputerListener} so that it will start receiving events.
      *
      * @deprecated as of 1.286
