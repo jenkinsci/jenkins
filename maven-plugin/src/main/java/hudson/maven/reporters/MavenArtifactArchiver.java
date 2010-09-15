@@ -128,6 +128,11 @@ public class MavenArtifactArchiver extends MavenReporter {
             // record the action
             build.executeAsync(new MavenBuildProxy.BuildCallable<Void,IOException>() {
                 public Void call(MavenBuild build) throws IOException, InterruptedException {
+                    // if a build forks lifecycles, this method can be called multiple times
+                    List<MavenArtifactRecord> old = Util.filter(build.getActions(), MavenArtifactRecord.class);
+                    if (!old.isEmpty())
+                        build.getActions().removeAll(old);
+
                     MavenArtifactRecord mar = new MavenArtifactRecord(build,pomArtifact,mainArtifact,attachedArtifacts);
                     build.addAction(mar);
 

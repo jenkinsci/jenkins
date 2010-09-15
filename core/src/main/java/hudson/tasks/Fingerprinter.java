@@ -249,6 +249,14 @@ public class Fingerprinter extends Recorder implements Serializable {
             onLoad();   // make compact
         }
 
+        public void add(Map<String,String> moreRecords) {
+            Map<String,String> r = new HashMap<String, String>(record);
+            r.putAll(moreRecords);
+            record = ImmutableMap.copyOf(r);
+            ref = null;
+            onLoad();
+        }
+
         public String getIconFileName() {
             return "fingerprint.gif";
         }
