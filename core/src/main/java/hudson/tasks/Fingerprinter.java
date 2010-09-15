@@ -289,6 +289,9 @@ public class Fingerprinter extends Recorder implements Serializable {
             }
         }
 
+        public void onAttached(Run r) {
+        }
+
         public void onBuildComplete() {
         }
 
