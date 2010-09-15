@@ -266,6 +266,13 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
                 ((RunAction) a).onLoad();
     }
 
+    @Override
+    public void addAction(Action a) {
+        super.addAction(a);
+        if (a instanceof RunAction)
+            ((RunAction) a).onAttached(this);
+    }
+
     /*package*/ static long parseTimestampFromBuildDir(File buildDir) throws IOException {
         try {
             return ID_FORMATTER.get().parse(buildDir.getName()).getTime();
