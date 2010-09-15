@@ -492,9 +492,6 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
             } catch (InterruptedIOException e) {
                 e.printStackTrace(listener.error("Aborted Maven execution for InterruptedIOException"));
                 return Result.ABORTED;
-            } catch (InterruptedException e) {
-                e.printStackTrace(listener.error("Aborted Maven execution for InterruptedException"));
-                return Result.ABORTED;
             } catch (IOException e) {
                 e.printStackTrace(listener.error(Messages.MavenModuleSetBuild_FailedToParsePom()));
                 return Result.FAILURE;
