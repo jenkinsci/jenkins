@@ -431,7 +431,11 @@ public class Channel implements VirtualChannel, IChannel {
      */
     private ExecutorService createPipeWriter() {
         if (remoteCapability.supportsPipeThrottling())
-            return Executors.newSingleThreadExecutor();
+            return Executors.newSingleThreadExecutor(new ThreadFactory() {
+                public Thread newThread(Runnable r) {
+                    return new Thread(r,"Pipe writer thread: "+name);
+                }
+            });
         return new SynchronousExecutorService();
     }
 
