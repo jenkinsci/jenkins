@@ -20,6 +20,7 @@
  */
 package hudson.remoting;
 
+import java.io.InterruptedIOException;
 import java.io.OutputStream;
 import java.io.IOException;
 import java.lang.ref.WeakReference;
@@ -151,7 +152,7 @@ public class FastPipedOutputStream extends OutputStream {
                     try {
                         buf.wait(TIMEOUT);
                     } catch (InterruptedException e) {
-                        throw new IOException(e.getMessage());
+                        throw (InterruptedIOException)new InterruptedIOException(e.getMessage()).initCause(e);
                     }
                     // Try again.
                     continue;
