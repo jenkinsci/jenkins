@@ -40,9 +40,7 @@ public class MavenErrorNote extends ConsoleNote {
 
     @Override
     public ConsoleAnnotator annotate(Object context, MarkupText text, int charPos) {
-        MarkupText.SubText t = text.findToken(Pattern.compile("^[^:]+(?=:)"));
-        if (t!=null)
-            t.addMarkup(0,t.length(),"<span class=error-inline>","</span>");
+        text.addMarkup(0,text.length(),"<span class=error-inline>","</span>");
         return null;
     }
 

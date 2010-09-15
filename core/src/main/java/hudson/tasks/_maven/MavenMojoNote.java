@@ -45,9 +45,7 @@ public class MavenMojoNote extends ConsoleNote {
 
     @Override
     public ConsoleAnnotator annotate(Object context, MarkupText text, int charPos) {
-        MarkupText.SubText t = text.findToken(Pattern.compile("^[^:]+(?=:)"));
-        if (t!=null)
-            t.addMarkup(7,t.length(),"<b class=maven-mojo>","</b>");
+        text.addMarkup(7,text.length(),"<b class=maven-mojo>","</b>");
         return null;
     }
 
@@ -58,5 +56,5 @@ public class MavenMojoNote extends ConsoleNote {
         }
     }
 
-    public static Pattern PATTERN = Pattern.compile("\\[INFO\\] \\[\\w+:\\w+ \\{execution: \\w+\\}\\]");
+    public static Pattern PATTERN = Pattern.compile("\\[INFO\\] \\[[A-Za-z0-9-_]+:[A-Za-z0-9-_]+ \\{execution: [A-Za-z0-9-_]+\\}\\]");
 }

@@ -50,6 +50,7 @@ import hudson.remoting.SocketInputStream;
 import hudson.remoting.SocketOutputStream;
 import hudson.remoting.Which;
 import hudson.tasks.Maven.MavenInstallation;
+import hudson.tasks._maven.MavenConsoleAnnotator;
 import hudson.util.ArgumentListBuilder;
 import hudson.util.IOException2;
 
@@ -64,6 +65,8 @@ import java.io.Serializable;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketTimeoutException;
+import java.nio.charset.Charset;
+import java.nio.charset.UnsupportedCharsetException;
 import java.util.Arrays;
 import java.util.logging.Logger;
 
@@ -139,6 +142,12 @@ final class MavenProcessFactory implements ProcessCache.Factory {
         int getPort();
     }
 
+    private static final class GetCharset implements Callable<String,IOException> {
+        public String call() throws IOException {
+            return System.getProperty("file.encoding");
+        }
+    }
+
     /**
      * Opens a server socket and returns {@link Acceptor} so that
      * we can accept a connection later on it.
@@ -192,10 +201,19 @@ final class MavenProcessFactory implements ProcessCache.Factory {
             listener.getLogger().println("Using env variables: "+ envVars);
         try {
             final Acceptor acceptor = launcher.getChannel().call(new SocketHandler());
+            Charset charset;
+            try {
+                charset = Charset.forName(launcher.getChannel().call(new GetCharset()));
+            } catch (UnsupportedCharsetException e) {
+                // choose the bit preserving charset. not entirely sure if iso-8859-1 does that though.
+                charset = Charset.forName("iso-8859-1");
+            }
+
+            MavenConsoleAnnotator mca = new MavenConsoleAnnotator(out,charset);
 
             final ArgumentListBuilder cmdLine = buildMavenCmdLine(listener,acceptor.getPort());
             String[] cmds = cmdLine.toCommandArray();
-            final Proc proc = launcher.launch().cmds(cmds).envs(envVars).stdout(out).pwd(workDir).start();
+            final Proc proc = launcher.launch().cmds(cmds).envs(envVars).stdout(mca).pwd(workDir).start();
 
             Connection con;
             try {

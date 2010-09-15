@@ -42,9 +42,7 @@ public class MavenWarningNote extends ConsoleNote {
 
     @Override
     public ConsoleAnnotator annotate(Object context, MarkupText text, int charPos) {
-        MarkupText.SubText t = text.findToken(Pattern.compile("^[^:]+(?=:)"));
-        if (t!=null)
-            t.addMarkup(0,t.length(),"<span class=warning-inline>","</span>");
+        text.addMarkup(0,text.length(),"<span class=warning-inline>","</span>");
         return null;
     }
 

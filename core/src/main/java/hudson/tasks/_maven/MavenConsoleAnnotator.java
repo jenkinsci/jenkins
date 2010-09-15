@@ -61,11 +61,11 @@ public class MavenConsoleAnnotator extends LineTransformationOutputStream {
             new MavenMojoNote().encodeTo(out);
 
         m = MavenWarningNote.PATTERN.matcher(line);
-        if (m.matches())
+        if (m.find())
             new MavenWarningNote().encodeTo(out);
 
         m = MavenErrorNote.PATTERN.matcher(line);
-        if (m.matches())
+        if (m.find())
             new MavenErrorNote().encodeTo(out);
 
         out.write(b,0,len);
