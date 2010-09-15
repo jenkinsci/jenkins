@@ -1,7 +1,7 @@
 <!--
 The MIT License
 
-Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi
+Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, InfraDNA, Inc.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -23,7 +23,7 @@ THE SOFTWARE.
 -->
 
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
-  <f:entry title="${%Schedule}" help="/help/project-config/timer-format.html">
-    <f:textarea name="timer_spec" checkUrl="'${rootURL}/trigger/TimerTrigger/check?value='+encodeURIComponent(this.value)" value="${instance.spec}"/>
+  <f:entry title="${%Schedule}" field="spec">
+    <f:textarea />
   </f:entry>
 </j:jelly>
