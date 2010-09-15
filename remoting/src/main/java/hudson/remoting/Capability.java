@@ -47,6 +47,15 @@ public final class Capability implements Serializable {
     }
 
     /**
+     * Does the implementation supports window size control over pipes?
+     *
+     * @see ProxyOutputStream
+     */
+    public boolean supportsPipeThrottling() {
+        return (mask& MASK_PIPE_THROTTLING)!=0;
+    }
+
+    /**
      * Writes out the capacity preamble.
      */
     void writePreamble(OutputStream os) throws IOException {
@@ -88,6 +97,11 @@ public final class Capability implements Serializable {
      * Bit that indicates the use of {@link MultiClassLoaderSerializer}.
      */
     private static final long MASK_MULTI_CLASSLOADER = 2L;
+
+    /**
+     * Bit that indicates the use of TCP-like window control for {@link ProxyOutputStream}.
+     */
+    private static final long MASK_PIPE_THROTTLING = 4L;
 
     static final byte[] PREAMBLE;
 

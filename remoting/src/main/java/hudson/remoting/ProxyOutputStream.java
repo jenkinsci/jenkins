@@ -25,6 +25,7 @@ package hudson.remoting;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.InterruptedIOException;
 import java.io.OutputStream;
 
 /**
@@ -34,6 +35,8 @@ import java.io.OutputStream;
 final class ProxyOutputStream extends OutputStream {
     private Channel channel;
     private int oid;
+
+    private PipeWindow window;
 
     /**
      * If bytes are written to this stream before it's connected
@@ -76,10 +79,13 @@ final class ProxyOutputStream extends OutputStream {
         this.channel = channel;
         this.oid = oid;
 
+        window =  channel.getPipeWindow(oid);
+
         // if we already have bytes to write, do so now.
         if(tmp!=null) {
-            channel.send(new Chunk(oid,tmp.toByteArray()));
+            byte[] b = tmp.toByteArray();
             tmp = null;
+            write(b);
         }
         if(closed)  // already marked closed?
             doClose();
@@ -109,7 +115,21 @@ final class ProxyOutputStream extends OutputStream {
                 tmp = new ByteArrayOutputStream();
             tmp.write(b);
         } else {
-            channel.send(new Chunk(oid,b));
+            int sendable;
+            try {
+                sendable = Math.min(window.get(),b.length);
+            } catch (InterruptedException e) {
+                throw (IOException)new InterruptedIOException().initCause(e);
+            }
+
+            if (sendable==b.length) {
+                window.decrease(sendable);
+                channel.send(new Chunk(oid,b));
+            } else {
+                // fill the sender window size now, and send the rest in a separate chunk
+                write(b,0,sendable);
+                write(b,sendable,b.length-sendable);
+            }
         }
     }
 
