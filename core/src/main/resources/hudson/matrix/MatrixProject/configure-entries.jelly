@@ -1,7 +1,7 @@
 <!--
 The MIT License
 
-Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, Stephen Connolly
+Copyright (c) 2004-2010, Sun Microsystems, Inc., Kohsuke Kawaguchi, Stephen Connolly
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -27,20 +27,30 @@ THE SOFTWARE.
 -->
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt" xmlns:p="/lib/hudson/project">
+
   <p:config-disableBuild/>
+
   <f:section title="${%Advanced Project Options}">
     <f:advanced>
       <p:config-quietPeriod />
       <p:config-retryCount />
       <p:config-blockWhenUpstreamBuilding />
+      <p:config-customWorkspace />
     </f:advanced>
   </f:section>
+
   <p:config-scm/>
+
   <p:config-trigger>
     <p:config-upstream-pseudo-trigger />
   </p:config-trigger>
 
   <f:section title="${%Configuration Matrix}">
+    <!-- Needed for LabelAxis, but including these from LabelAxis/config.jelly is too late -->
+    <l:yui module="treeview" />
+    <link rel="stylesheet" type="text/css"
+          href="${rootURL}/scripts/yui/treeview/assets/skins/sam/treeview.css" />
+
     <f:block>
       <f:hetero-list name="axis" hasHeader="true"
                      descriptors="${descriptor.axisDescriptors}"

@@ -146,7 +146,6 @@ public abstract class Build <P extends Project<P,B>,B extends Build<P,B>>
                         failed=true;
                     }                    
                 }
-                buildEnvironments = null;
                 // WARNING The return in the finally clause will trump any return before
                 if (failed) return FAILURE;
             }
@@ -167,6 +166,7 @@ public abstract class Build <P extends Project<P,B>,B extends Build<P,B>>
             performAllBuildSteps(listener, project.getPublishers(), false);
             performAllBuildSteps(listener, project.getProperties(), false);
             BuildTrigger.execute(Build.this, listener);
+            buildEnvironments = null;
         }
 
         private boolean build(BuildListener listener, Collection<Builder> steps) throws IOException, InterruptedException {

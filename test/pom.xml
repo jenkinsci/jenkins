@@ -94,7 +94,6 @@ THE SOFTWARE.
             <id>test-in-groovy</id>
             <!-- allow tests written in Groovy -->
             <goals>
-              <goal>generateTestStubs</goal>
               <goal>testCompile</goal>
             </goals>
           </execution>

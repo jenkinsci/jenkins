@@ -1,17 +1,17 @@
 <div>
-    Para autenticar usuário e determinar os papéis dados ao usuário, Hudson faz
-    múltiplas consultas ao LDAP.
+    Para autenticar usuÃ¡rio e determinar os papÃ©is dados ao usuÃ¡rio, Hudson faz
+    mÃºltiplas consultas ao LDAP.
 
-    Desde que uma base LDAP é conceitualmente uma grande árvore e a pesquisa é feita recursivamente,
-    em teoria se nós pudermos inicar uma pesquisa começando em um sub-né (como o oposto a ráiz), você consegue
+    Desde que uma base LDAP Ã© conceitualmente uma grande Ã¡rvore e a pesquisa Ã© feita recursivamente,
+    em teoria se nÃ³s pudermos inicar uma pesquisa comeÃ§ando em um sub-nÃ© (como o oposto a rÃ¡iz), vocÃª consegue
     um melhor desempenho porque isto reduz o escopo da pesquisa.
-    Este campo especifica o DN de tal sub-árvore.
+    Este campo especifica o DN de tal sub-Ã¡rvore.
 
     <p>
-    Mas na prática, os servidores LDAP mantêm uma extensivo índice sobre os dados, assim especificar
-    este campo é raramente necessário &mdash; você deveria apenas deixar que o Hudson resolva isto
+    Mas na prÃ¡tica, os servidores LDAP mantÃªm uma extensivo Ã­ndice sobre os dados, assim especificar
+    este campo Ã© raramente necessÃ¡rio &mdash; vocÃª deveria apenas deixar que o Hudson resolva isto
     conversando com o LDAP.
 
     <p>
-    Se você realmente especificar este valor, o campo normalmente parece algo como <tt>"dc=sun,dc=com"</tt>
+    Se vocÃª realmente especificar este valor, o campo normalmente parece algo como <tt>"dc=sun,dc=com"</tt>
 </div>

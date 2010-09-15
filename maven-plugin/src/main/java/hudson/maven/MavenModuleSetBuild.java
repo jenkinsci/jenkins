@@ -479,7 +479,6 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
                                 failed=true;
                             }                    
                         }
-                        buildEnvironments = null;
                         // WARNING The return in the finally clause will trump any return before
                         if (failed) return Result.FAILURE;
                     }
@@ -612,6 +611,7 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
             // too late to set the build result at this point. so ignore failures.
             performAllBuildSteps(listener, project.getPublishers(), false);
             performAllBuildSteps(listener, project.getProperties(), false);
+            buildEnvironments = null;
         }
 
     }

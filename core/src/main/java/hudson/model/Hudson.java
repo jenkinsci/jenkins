@@ -1096,6 +1096,8 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
             }
         }
         getQueue().scheduleMaintenance();
+        for (ComputerListener cl : ComputerListener.all())
+            cl.onConfigurationChange();
     }
 
     private void updateComputer(Node n, Map<String,Computer> byNameMap, Set<Computer> used) {

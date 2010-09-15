@@ -140,12 +140,27 @@ public class MatrixRun extends Build<MatrixConfiguration,MatrixRun> {
     protected class RunnerImpl extends Build<MatrixConfiguration,MatrixRun>.RunnerImpl {
         @Override
         protected Lease decideWorkspace(Node n, WorkspaceList wsl) throws InterruptedException, IOException {
-            Node node = getBuiltOn();
-            FilePath ws = node.getWorkspaceFor(getParent().getParent());
-            if(useShortWorkspaceName)
-                return wsl.allocate(ws.child(getParent().getDigestName()));
-            else
-                return wsl.allocate(ws.child(getParent().getCombination().toString('/','/')));
+            // Map current combination to a directory subtree, e.g. 'axis1=a,axis2=b' to 'axis1/a/axis2/b'.
+            String subtree;
+            if(useShortWorkspaceName) {
+                subtree = getParent().getDigestName(); 
+            } else {
+                subtree = getParent().getCombination().toString('/','/');
+            }
+            
+            String customWorkspace = getParent().getParent().getCustomWorkspace();
+            if (customWorkspace != null) {
+                // Use custom workspace as defined in the matrix project settings.
+                FilePath ws = n.getRootPath().child(getEnvironment(listener).expand(customWorkspace));
+                // We allow custom workspaces to be used concurrently between jobs.
+                return Lease.createDummyLease(ws.child(subtree));
+            } else {   
+                // Use default workspace as assigned by Hudson.
+                Node node = getBuiltOn();
+                FilePath ws = node.getWorkspaceFor(getParent().getParent());
+                // Allocate unique workspace (not to be shared between jobs and runs).
+                return wsl.allocate(ws.child(subtree));
+            }
         }
     }
 }

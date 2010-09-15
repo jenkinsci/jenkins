@@ -31,10 +31,13 @@ import hudson.model.Executor;
 import hudson.model.Fingerprint;
 import hudson.model.Hudson;
 import hudson.model.JobProperty;
+import hudson.model.Node;
 import hudson.model.ParametersAction;
 import hudson.model.Queue;
 import hudson.model.Result;
 import hudson.model.Cause.UpstreamCause;
+import hudson.slaves.WorkspaceList;
+import hudson.slaves.WorkspaceList.Lease;
 import hudson.tasks.Publisher;
 
 import java.io.File;
@@ -320,6 +323,17 @@ public class MatrixBuild extends AbstractBuild<MatrixProject,MatrixBuild> {
             for (MatrixAggregator a : aggregators)
                 a.endBuild();
         }
+        
+        @Override
+        protected Lease decideWorkspace(Node n, WorkspaceList wsl) throws IOException, InterruptedException {
+            String customWorkspace = getProject().getCustomWorkspace();
+            if (customWorkspace != null) {
+                // we allow custom workspaces to be concurrently used between jobs.
+                return Lease.createDummyLease(n.getRootPath().child(getEnvironment(listener).expand(customWorkspace)));
+            }
+            return super.decideWorkspace(n,wsl);
+        }
+      
     }
 
     /**

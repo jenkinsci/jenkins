@@ -32,6 +32,7 @@ import hudson.model.Queue.Task;
 import hudson.model.ResourceList;
 
 import java.io.IOException;
+import java.util.Collection;
 
 /**
  * Base class for defining filter {@link Queue.Task}.
@@ -104,5 +105,17 @@ public abstract class QueueTaskFilter implements Queue.Task {
 
     public ResourceList getResourceList() {
         return base.getResourceList();
+    }
+
+    public Collection<? extends SubTask> getSubTasks() {
+        return base.getSubTasks();
+    }
+
+    public final Task getOwnerTask() {
+        return this;
+    }
+
+    public Object getSameNodeConstraint() {
+        return base.getSameNodeConstraint();
     }
 }
