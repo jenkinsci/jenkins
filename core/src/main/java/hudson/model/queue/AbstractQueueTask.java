@@ -39,7 +39,7 @@ import java.util.Collections;
  */
 public abstract class AbstractQueueTask implements Queue.Task {
     public Collection<? extends SubTask> getSubTasks() {
-        return Collections.emptyList();
+        return Collections.singleton(this);
     }
 
     public final Task getOwnerTask() {
