@@ -1,7 +1,7 @@
 /*
  * The MIT License
  * 
- * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi
+ * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, InfraDNA, Inc.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,6 +23,7 @@
  */
 package hudson.remoting;
 
+import hudson.remoting.Channel.Mode;
 import junit.framework.Assert;
 
 import java.io.IOException;
@@ -49,12 +50,6 @@ interface ChannelRunner {
     void stop(Channel channel) throws Exception;
     String getName();
 
-    Class<? extends ChannelRunner>[] LIST = new Class[] {
-        InProcess.class,
-        Fork.class
-    };
-
-
     /**
      * Runs a channel in the same JVM.
      */
@@ -66,18 +61,18 @@ interface ChannelRunner {
         private Exception failure;
 
         public Channel start() throws Exception {
-            final PipedInputStream in1 = new PipedInputStream();
-            final PipedOutputStream out1 = new PipedOutputStream(in1);
+            final FastPipedInputStream in1 = new FastPipedInputStream();
+            final FastPipedOutputStream out1 = new FastPipedOutputStream(in1);
 
-            final PipedInputStream in2 = new PipedInputStream();
-            final PipedOutputStream out2 = new PipedOutputStream(in2);
+            final FastPipedInputStream in2 = new FastPipedInputStream();
+            final FastPipedOutputStream out2 = new FastPipedOutputStream(in2);
 
             executor = Executors.newCachedThreadPool();
 
             Thread t = new Thread("south bridge runner") {
                 public void run() {
                     try {
-                        Channel s = new Channel("south", executor, in2, out1);
+                        Channel s = new Channel("south", executor, Mode.BINARY, in2, out1, null, false, createCapability());
                         s.join();
                         System.out.println("south completed");
                     } catch (IOException e) {
@@ -91,7 +86,7 @@ interface ChannelRunner {
             };
             t.start();
 
-            return new Channel("north", executor, in1, out2);
+            return new Channel("north", executor, Mode.BINARY, in1, out2, null, false, createCapability());
         }
 
         public void stop(Channel channel) throws Exception {
@@ -107,6 +102,21 @@ interface ChannelRunner {
 
         public String getName() {
             return "local";
+        }
+
+        protected Capability createCapability() {
+            return new Capability();
+        }
+    }
+
+    static class InProcessCompatibilityMode extends InProcess {
+        public String getName() {
+            return "local-compatibility";
+        }
+
+        @Override
+        protected Capability createCapability() {
+            return Capability.NONE;
         }
     }
 

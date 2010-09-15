@@ -175,14 +175,18 @@ public final class Pipe implements Serializable {
             this.oidPos = oidPos;
         }
 
-        protected void execute(Channel channel) {
-            try {
-                ProxyOutputStream ros = (ProxyOutputStream) channel.getExportedObject(oidRos);
-                channel.unexport(oidRos);
-                ros.connect(channel, oidPos);
-            } catch (IOException e) {
-                logger.log(Level.SEVERE,"Failed to connect to pipe",e);
-            }
+        protected void execute(final Channel channel) {
+            channel.pipeWriter.submit(new Runnable() {
+                public void run() {
+                    try {
+                        final ProxyOutputStream ros = (ProxyOutputStream) channel.getExportedObject(oidRos);
+                        channel.unexport(oidRos);
+                        ros.connect(channel, oidPos);
+                    } catch (IOException e) {
+                        logger.log(Level.SEVERE,"Failed to connect to pipe",e);
+                    }
+                }
+            });
         }
     }
 }

@@ -33,7 +33,7 @@ public final class Capability implements Serializable {
     }
 
     Capability() {
-        this(MASK_MULTI_CLASSLOADER);
+        this(MASK_MULTI_CLASSLOADER|MASK_PIPE_THROTTLING);
     }
 
     /**
@@ -104,6 +104,8 @@ public final class Capability implements Serializable {
     private static final long MASK_PIPE_THROTTLING = 4L;
 
     static final byte[] PREAMBLE;
+
+    public static final Capability NONE = new Capability(0);
 
     static {
         try {
