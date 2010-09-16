@@ -1183,7 +1183,7 @@ Ajax.Request.prototype = Object.extend(new Ajax.Base(), {
 
   evalResponse: function() {
     try {
-      return eval((this.transport.responseText || '').unfilterJSON());
+      return eval('('+(this.transport.responseText || '').unfilterJSON()+')');
     } catch (e) {
       this.dispatchException(e);
     }
