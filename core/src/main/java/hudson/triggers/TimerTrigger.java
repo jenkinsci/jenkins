@@ -63,6 +63,11 @@ public class TimerTrigger extends Trigger<BuildableItem> {
             return Messages.TimerTrigger_DisplayName();
         }
 
+        // backward compatibility
+        public FormValidation doCheck(@QueryParameter String value) {
+            return doCheckSpec(value);
+        }
+        
         /**
          * Performs syntax check.
          */
