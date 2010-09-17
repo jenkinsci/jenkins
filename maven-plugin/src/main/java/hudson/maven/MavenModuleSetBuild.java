@@ -455,7 +455,16 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
                         }
 
                         if (project.getAlternateSettings() != null) {
-                            margs.add("-s").add(getWorkspace().child(project.getAlternateSettings()));
+                            if (IOUtils.isAbsolute(project.getAlternateSettings())) {
+                                margs.add("-s").add(project.getAlternateSettings());
+                            } else {
+                                FilePath mrSettings = getModuleRoot().child(project.getAlternateSettings());
+                                FilePath wsSettings = getWorkspace().child(project.getAlternateSettings());
+                                if (!wsSettings.exists() && mrSettings.exists())
+                                    wsSettings = mrSettings;
+                                
+                                margs.add("-s").add(wsSettings.getRemote());
+                            }
                         }
 
                         margs.addTokenized(envVars.expand(project.getGoals()));
@@ -861,8 +870,21 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
 			       + (nonRecursive ? "non-recursively " : "recursively ")
 			       + pom);
 	    
-            File settingsLoc = (alternateSettings == null) ? null 
-                : new File(workspaceProper, alternateSettings);
+            File settingsLoc;
+
+            if (alternateSettings == null) {
+                settingsLoc = null;
+            } else if (IOUtils.isAbsolute(alternateSettings)) {
+                settingsLoc = new File(alternateSettings);
+            } else {
+                // Check for settings.xml first in the workspace proper, and then in the current directory,
+                // which is getModuleRoot().
+                // This is backwards from the order the root POM logic uses, but it's to be consistent with the Maven execution logic.
+                settingsLoc = new File(workspaceProper, alternateSettings);
+                File mrSettingsLoc = new File(workspaceProper, alternateSettings);
+                if (!settingsLoc.exists() && mrSettingsLoc.exists())
+                    settingsLoc = mrSettingsLoc;
+            }
 
             if ((settingsLoc != null) && (!settingsLoc.exists())) {
                 throw new AbortException(Messages.MavenModuleSetBuild_NoSuchAlternateSettings(settingsLoc.getAbsolutePath()));
