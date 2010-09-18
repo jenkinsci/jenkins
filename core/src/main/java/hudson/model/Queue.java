@@ -758,10 +758,12 @@ public class Queue extends ResourceController implements Saveable {
                         continue;
 
                     // found a matching executor. use it.
-                    m.execute(new WorkUnitContext(p));
+                    WorkUnitContext wuc = new WorkUnitContext(p);
+                    m.execute(wuc);
 
                     itr.remove();
-                    pendings.add(p);
+                    if (!wuc.getWorkUnits().isEmpty())
+                        pendings.add(p);
                 }
 
                 // we went over all the buildable projects and awaken
@@ -864,6 +866,7 @@ public class Queue extends ResourceController implements Saveable {
         if (LOGGER.isLoggable(Level.FINE))
             LOGGER.fine("Queue maintenance started " + this);
 
+        // blocked -> buildable
         Iterator<BlockedItem> itr = blockedProjects.values().iterator();
         while (itr.hasNext()) {
             BlockedItem p = itr.next();
