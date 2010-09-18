@@ -367,6 +367,7 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
 
         protected Result doRun(final BuildListener listener) throws Exception {
             PrintStream logger = listener.getLogger();
+            Result r = null;
             try {
                 EnvVars envVars = getEnvironment(listener);
                 MavenInstallation mvn = project.getMaven();
@@ -394,7 +395,7 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
                         for( BuildWrapper w : wrappers) {
                             Environment e = w.setUp(MavenModuleSetBuild.this, launcher, listener);
                             if(e==null)
-                                return Result.FAILURE;
+                                return (r = Result.FAILURE);
                             buildEnvironments.add(e);
                             e.buildEnvVars(envVars); // #3502: too late for getEnvironment to do this
                         }
@@ -474,13 +475,17 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
                         try {
                             mpa = new MavenProbeAction(project,process.channel);
                             addAction(mpa);
-                            return process.call(builder);
+                            r = process.call(builder);
+                            return r;
                         } finally {
                             builder.end(launcher);
                             getActions().remove(mpa);
                             process.discard();
                         }
                     } finally {
+                        if (r != null) {
+                            setResult(r);
+                        }
                         // tear down in reverse order
                         boolean failed=false;
                         for( int i=buildEnvironments.size()-1; i>=0; i-- ) {
@@ -493,7 +498,7 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
                     }
                 }
                 
-                return null;
+                return r;
             } catch (AbortException e) {
                 if(e.getMessage()!=null)
                     listener.error(e.getMessage());
