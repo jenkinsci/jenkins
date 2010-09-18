@@ -50,6 +50,7 @@ import org.apache.maven.project.MavenProject;
 import org.apache.maven.project.ProjectBuildingException;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
+import org.apache.commons.io.FilenameUtils;
 
 import java.io.*;
 import java.util.*;
@@ -164,7 +165,7 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
 
             private boolean belongsToSubsidiary(List<MavenModule> subsidiaries, String path) {
                 for (MavenModule sub : subsidiaries)
-                    if(path.startsWith(sub.getRelativePath()))
+                    if(path.startsWith(FilenameUtils.normalize(sub.getRelativePath())))
                         return true;
                 return false;
             }
@@ -173,9 +174,10 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
              * Does this change happen somewhere in the given module or its descendants?
              */
             private boolean isDescendantOf(ChangeLogSet.Entry e, MavenModule mod) {
-                for (String path : e.getAffectedPaths())
-                    if(path.startsWith(mod.getRelativePath()))
+                for (String path : e.getAffectedPaths()) {
+                    if(path.startsWith(FilenameUtils.normalize(mod.getRelativePath())))
                         return true;
+                }
                 return false;
             }
         };
