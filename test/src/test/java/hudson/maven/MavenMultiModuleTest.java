@@ -4,18 +4,14 @@ import org.jvnet.hudson.test.HudsonTestCase;
 import org.jvnet.hudson.test.Bug;
 import org.jvnet.hudson.test.ExtractResourceSCM;
 import org.jvnet.hudson.test.ExtractResourceWithChangesSCM;
-import org.jvnet.hudson.test.ExtractChangeLogParser.ExtractChangeLogEntry;
 import org.jvnet.hudson.test.ExtractChangeLogSet;
 
 import hudson.Launcher;
 import hudson.model.BuildListener;
 import hudson.model.Result;
-import hudson.scm.ChangeLogSet;
 import hudson.tasks.Maven.MavenInstallation;
 
 import java.io.IOException;
-import java.util.List;
-import java.util.Map;
 
 /**
  * @author Andrew Bayer
@@ -73,7 +69,7 @@ public class MavenMultiModuleTest extends HudsonTestCase {
 	            pBuild.getDuration() >= summedModuleDuration);
     }
 
-    @Bug(5357
+    @Bug(5357)
     public void testIncrRelMultiModMaven() throws Exception {
         configureDefaultMaven("apache-maven-2.2.1", MavenInstallation.MAVEN_21);
         MavenModuleSet m = createMavenProject();
