@@ -37,7 +37,11 @@ import hudson.model.Item;
  */
 public class ItemListener implements ExtensionPoint {
     /**
-     * Called after a new job is created and added to {@link Hudson}.
+     * Called after a new job is created and added to {@link Hudson},
+     * before the initial configuration page is provided.
+     * <p>
+     * This is useful for changing the default initial configuration of newly created jobs.
+     * For example, you can enable/add builders, etc.
      */
     public void onCreated(Item item) {
     }
