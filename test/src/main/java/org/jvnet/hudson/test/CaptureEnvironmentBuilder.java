@@ -34,7 +34,6 @@ import net.sf.json.JSONObject;
 import org.kohsuke.stapler.StaplerRequest;
 
 import java.io.IOException;
-import java.util.Map;
 
 /**
  * {@link Builder} that captures the environment variables used during a build.
