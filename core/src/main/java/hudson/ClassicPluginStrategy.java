@@ -170,13 +170,28 @@ public class ClassicPluginStrategy implements PluginStrategy {
         ClassLoader dependencyLoader = new DependencyClassLoader(getBaseClassLoader(atts), archive, Util.join(dependencies,optionalDependencies));
 
         return new PluginWrapper(pluginManager, archive, manifest, baseResourceURL,
-                createClassLoader(paths, dependencyLoader), disableFile, dependencies, optionalDependencies);
+                createClassLoader(paths, dependencyLoader, atts), disableFile, dependencies, optionalDependencies);
+    }
+    
+    @Deprecated
+    protected ClassLoader createClassLoader(List<File> paths, ClassLoader parent) throws IOException {
+        return createClassLoader( paths, parent, null );
     }
 
     /**
      * Creates the classloader that can load all the specified jar files and delegate to the given parent.
      */
-    protected ClassLoader createClassLoader(List<File> paths, ClassLoader parent) throws IOException {
+    protected ClassLoader createClassLoader(List<File> paths, ClassLoader parent, Attributes atts) throws IOException {
+        if (atts != null) {
+            String usePluginFirstClassLoader = atts.getValue( "PluginFirstClassLoader" );
+            if (Boolean.valueOf( usePluginFirstClassLoader )) {
+                PluginFirstClassLoader classLoader = new PluginFirstClassLoader();
+                classLoader.setParentFirst( false );
+                classLoader.setParent( parent );
+                classLoader.addPathFiles( paths );
+                return classLoader;
+            }
+        }
         if(useAntClassLoader) {
             // using AntClassLoader with Closeable so that we can predictably release jar files opened by URLClassLoader
             AntClassLoader2 classLoader = new AntClassLoader2(parent);

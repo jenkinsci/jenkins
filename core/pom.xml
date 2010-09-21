@@ -38,6 +38,10 @@ THE SOFTWARE.
   <description>
     Contains the core Hudson code and view files to render HTML.
   </description>
+  
+  <properties>
+    <staplerFork>true</staplerFork>
+  </properties>
 
   <build>
     <plugins>
@@ -78,7 +82,7 @@ THE SOFTWARE.
           </dependency>
         </dependencies>
         <configuration>
-          <fork>true</fork><!-- the source code is big enough now that otherwise it fails with OutOfMemoryError -->
+          <fork>${staplerFork}</fork><!-- the source code is big enough now that otherwise it fails with OutOfMemoryError -->
           <maxmem>128m</maxmem>
         </configuration>
       </plugin>

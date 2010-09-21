@@ -52,7 +52,8 @@ public final class Permission {
         /**
          * {@inheritDoc}
          */
-        @Override
+        // break eclipse compilation 
+        //Override
         public int compare(Permission one, Permission two) {
             return one.getId().compareTo(two.getId());
         }
