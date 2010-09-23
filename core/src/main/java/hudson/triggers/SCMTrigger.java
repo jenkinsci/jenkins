@@ -286,7 +286,7 @@ public class SCMTrigger extends Trigger<SCMedItem> {
         }
 
         public String getDisplayName() {
-            return "Polling Log";
+            return Messages.SCMTrigger_BuildAction_DisplayName();
         }
 
         public String getUrlName() {
