@@ -1,7 +1,7 @@
 /*
  * The MIT License
  * 
- * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi
+ * Copyright (c) 2004-2010, Sun Microsystems, Inc., Kohsuke Kawaguchi, Yahoo! Inc.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -53,6 +53,9 @@ import com.gargoylesoftware.htmlunit.html.HtmlForm;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import com.gargoylesoftware.htmlunit.html.HtmlButton;
 import com.gargoylesoftware.htmlunit.html.HtmlInput;
+import hudson.model.FreeStyleBuild;
+import hudson.model.PasswordParameterDefinition;
+import org.jvnet.hudson.test.ExtractResourceSCM;
 
 /**
  * @author Kohsuke Kawaguchi
@@ -174,5 +177,23 @@ public class MavenTest extends HudsonTestCase {
         InstallSourceProperty isp = props.get(InstallSourceProperty.class);
         assertEquals(1,isp.installers.size());
         assertNotNull(isp.installers.get(MavenInstaller.class));
+    }
+
+    public void testSensitiveParameters() throws Exception {
+        FreeStyleProject project = createFreeStyleProject();
+        ParametersDefinitionProperty pdb = new ParametersDefinitionProperty(
+                new StringParameterDefinition("string", "defaultValue", "string description"),
+                new PasswordParameterDefinition("password", "12345", "password description"),
+                new StringParameterDefinition("string2", "Value2", "string description")
+        );
+        project.addProperty(pdb);
+        project.setScm(new ExtractResourceSCM(getClass().getResource("maven-empty.zip")));
+        project.getBuildersList().add(new Maven("clean package",null));
+
+        FreeStyleBuild build = project.scheduleBuild2(0).get();
+        String buildLog = build.getLog();
+        assertNotNull(buildLog);
+	System.out.println(buildLog);
+        assertFalse(buildLog.contains("-Dpassword=12345"));
     }
 }

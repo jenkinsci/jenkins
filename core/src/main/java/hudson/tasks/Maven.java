@@ -1,7 +1,7 @@
 /*
  * The MIT License
  * 
- * Copyright (c) 2004-2010, Sun Microsystems, Inc., Kohsuke Kawaguchi, Jene Jasper, Stephen Connolly, Tom Huybrechts
+ * Copyright (c) 2004-2010, Sun Microsystems, Inc., Kohsuke Kawaguchi, Jene Jasper, Stephen Connolly, Tom Huybrechts, Yahoo! Inc.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -66,6 +66,7 @@ import java.util.Properties;
 import java.util.StringTokenizer;
 import java.util.List;
 import java.util.Collections;
+import java.util.Set;
 
 /**
  * Build by using Maven.
@@ -242,8 +243,11 @@ public class Maven extends Builder {
             }
             if(pom!=null)
                 args.add("-f",pom);
-            args.addKeyValuePairs("-D",build.getBuildVariables());
-            args.addKeyValuePairsFromPropertyString("-D",properties,vr);
+
+            Set<String> sensitiveVars = build.getSensitiveBuildVariables();
+
+            args.addKeyValuePairs("-D",build.getBuildVariables(),sensitiveVars);
+            args.addKeyValuePairsFromPropertyString("-D",properties,vr,sensitiveVars);
             if (usesPrivateRepository())
                 args.add("-Dmaven.repo.local=" + build.getWorkspace().child(".repository"));
             args.addTokenized(normalizedTarget);
