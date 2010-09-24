@@ -118,8 +118,6 @@ public abstract class Trigger<J extends Item> implements Describable<Trigger<?>>
     /**
      * {@link Action}s to be displayed in the job page.
      *
-     * @param job
-     *      This object owns the {@link BuildWrapper}. The returned action will be added to this object.
      * @return
      *      can be empty but never null
      * @since 1.341

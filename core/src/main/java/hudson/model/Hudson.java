@@ -2474,7 +2474,7 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
         doQuietDown().generateResponse(null,rsp,this);
     }
 
-    public synchronized HttpRedirect doQuietDown() {
+    public synchronized HttpRedirect doQuietDown() throws IOException {
         try {
             return doQuietDown(false,0);
         } catch (InterruptedException e) {
@@ -2485,7 +2485,7 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
     @CLIMethod(name="quiet-down")
     public HttpRedirect doQuietDown(
             @Option(name="-block",usage="Block until the system really quiets down and no builds are running") @QueryParameter boolean block,
-            @Option(name="-timeout",usage="If non-zero, only block up to the specified number of milliseconds") @QueryParameter int timeout) throws InterruptedException {
+            @Option(name="-timeout",usage="If non-zero, only block up to the specified number of milliseconds") @QueryParameter int timeout) throws InterruptedException, IOException {
         synchronized (this) {
             checkPermission(ADMINISTER);
             isQuietingDown = true;
@@ -2493,8 +2493,8 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
         if (block) {
             if (timeout > 0) timeout += System.currentTimeMillis();
             while (isQuietingDown
-                   && (overallLoad.computeTotalExecutors() > overallLoad.computeIdleExecutors())
-                   && (timeout <= 0 || System.currentTimeMillis() < timeout)) {
+                   && (timeout <= 0 || System.currentTimeMillis() < timeout)
+                   && RestartListener.isAllReady()) {
                 Thread.sleep(1000);
             }
         }
@@ -2958,6 +2958,8 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
                     // give some time for the browser to load the "reloading" page
                     Thread.sleep(5000);
                     LOGGER.severe(String.format("Restarting VM as requested by %s",exitUser));
+                    for (RestartListener listener : RestartListener.all())
+                        listener.onRestart();
                     lifecycle.restart();
                 } catch (InterruptedException e) {
                     LOGGER.log(Level.WARNING, "Failed to restart Hudson",e);
@@ -2995,6 +2997,8 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
                         LOGGER.info("Restart in 10 seconds");
                         Thread.sleep(10000);
                         LOGGER.severe(String.format("Restarting VM as requested by %s",exitUser));
+                        for (RestartListener listener : RestartListener.all())
+                            listener.onRestart();
                         lifecycle.restart();
                     } else {
                         LOGGER.info("Safe-restart mode cancelled");

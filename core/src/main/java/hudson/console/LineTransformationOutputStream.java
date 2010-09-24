@@ -95,5 +95,19 @@ public abstract class LineTransformationOutputStream extends OutputStream {
         }
     }
 
+    protected String trimEOL(String line) {
+        int slen = line.length();
+        while (slen>0) {
+            char ch = line.charAt(slen-1);
+            if (ch=='\r' || ch=='\n') {
+                slen--;
+                continue;
+            }
+            break;
+        }
+        line = line.substring(0,slen);
+        return line;
+    }
+
     private static final int LF = 0x0A;
 }

@@ -187,8 +187,11 @@ public abstract class SCM implements Describable<SCM>, ExtensionPoint {
      *
      * <p>
      * Note that this method does not guarantee that such a clean up will happen. For example, slaves can be
-     * taken offline by being physically removed from the network, and in such a case there's no opporunity
-     * to perform this clean up. Similarly, when a project is deleted or renamed, SCMs do not get any notifications.
+     * taken offline by being physically removed from the network, and in such a case there's no opportunity
+     * to perform this clean up.
+     *
+     * <p>
+     * This method is also invoked when the project is deleted.
      *
      * @param project
      *      The project that owns this {@link SCM}. This is always the same object for a particular instance

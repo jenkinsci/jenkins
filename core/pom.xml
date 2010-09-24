@@ -38,6 +38,10 @@ THE SOFTWARE.
   <description>
     Contains the core Hudson code and view files to render HTML.
   </description>
+  
+  <properties>
+    <staplerFork>true</staplerFork>
+  </properties>
 
   <build>
     <plugins>
@@ -78,7 +82,7 @@ THE SOFTWARE.
           </dependency>
         </dependencies>
         <configuration>
-          <fork>true</fork><!-- the source code is big enough now that otherwise it fails with OutOfMemoryError -->
+          <fork>${staplerFork}</fork><!-- the source code is big enough now that otherwise it fails with OutOfMemoryError -->
           <maxmem>128m</maxmem>
         </configuration>
       </plugin>
@@ -378,7 +382,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.kohsuke.stapler</groupId>
       <artifactId>stapler-jelly</artifactId>
-      <version>1.150</version>
+      <version>1.151</version>
       <exclusions>
         <exclusion>
           <groupId>commons-jelly</groupId>
@@ -457,7 +461,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.apache.ant</groupId>
       <artifactId>ant</artifactId>
-      <version>1.8.1</version>
+      <version>1.8.0</version>
     </dependency>
     <dependency>
       <groupId>javax.servlet</groupId>

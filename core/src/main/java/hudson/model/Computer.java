@@ -792,7 +792,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
                     LOGGER.fine(address+" is not an IPv4 address");
                     continue;
                 }
-                if(!ia.isReachable(3000)) {
+                if(!ComputerPinger.checkIsReachable(ia, 3)) {
                     LOGGER.fine(address+" didn't respond to ping");
                     continue;
                 }

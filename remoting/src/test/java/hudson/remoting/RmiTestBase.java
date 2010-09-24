@@ -1,7 +1,7 @@
 /*
  * The MIT License
  * 
- * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi
+ * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, InfraDNA, Inc.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -33,10 +33,15 @@ import junit.framework.TestSuite;
  * 
  * @author Kohsuke Kawaguchi
  */
+@WithRunner({
+    ChannelRunner.InProcess.class,
+    ChannelRunner.InProcessCompatibilityMode.class,
+    ChannelRunner.Fork.class
+})
 public abstract class RmiTestBase extends TestCase {
 
     protected Channel channel;
-    private ChannelRunner channelRunner = new InProcess();
+    protected ChannelRunner channelRunner = new InProcess();
 
     protected void setUp() throws Exception {
         System.out.println("Starting "+getName());
@@ -68,7 +73,10 @@ public abstract class RmiTestBase extends TestCase {
      */
     protected static Test buildSuite(Class<? extends RmiTestBase> testClass) {
         TestSuite suite = new TestSuite();
-        for( Class<? extends ChannelRunner> r : ChannelRunner.LIST ) {
+
+        WithRunner wr = testClass.getAnnotation(WithRunner.class);
+
+        for( Class<? extends ChannelRunner> r : wr.value() ) {
             suite.addTest(new ChannelTestSuite(testClass,r));
         }
         return suite;

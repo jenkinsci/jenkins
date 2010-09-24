@@ -36,16 +36,18 @@ THE SOFTWARE.
             </td>
           </j:when>
           <j:when test="${m.value.size()==1 and m.value.get(0).number==it.number}">
+            <j:set var="mb" value="${m.value.get(0)}"/>
             <td class="no-wrap">
               <a href="${m.key.shortUrl}">
-                <img src="${imagesURL}/16x16/${m.value.get(0).buildStatusUrl}"
-                     alt="${m.value.get(0).iconColor.description}"/>
+                <img src="${imagesURL}/16x16/${mb.buildStatusUrl}"
+                     alt="${mb.iconColor.description}"/>
               </a>
               <st:nbsp/>
               <a href="${m.key.shortUrl}">
                 ${m.key.displayName}
               </a>
-            </td><td>
+            </td><td data="${mb.duration}">
+              ${mb.durationString}
             </td>
           </j:when>
           <j:otherwise>

@@ -2,7 +2,7 @@
  * The MIT License
  * 
  * Copyright (c) 2004-2010, Sun Microsystems, Inc., Kohsuke Kawaguchi,
- * Alan Harder
+ * Alan Harder, Yahoo! Inc.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -38,6 +38,7 @@ import java.io.File;
 import java.io.StringReader;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.util.Set;
 
 import org.jvnet.animal_sniffer.IgnoreJRERequirement;
 
@@ -61,19 +62,37 @@ public class ArgumentListBuilder implements Serializable {
     }
 
     public ArgumentListBuilder add(Object a) {
-        return add(a.toString());
+        return add(a.toString(), false);
+    }
+
+    /**
+     * @since 1.378
+     */
+    public ArgumentListBuilder add(Object a, boolean mask) {
+        return add(a.toString(), mask);
     }
 
     public ArgumentListBuilder add(File f) {
-        return add(f.getAbsolutePath());
+        return add(f.getAbsolutePath(), false);
     }
 
     public ArgumentListBuilder add(String a) {
-        if(a!=null)
-            args.add(a);
-        return this;
+        return add(a,false);
     }
 
+    /**
+     * @since 1.378
+     */
+    public ArgumentListBuilder add(String a, boolean mask) {
+        if(a!=null) {
+            if(mask) {
+                this.mask.set(args.size());
+            }
+            args.add(a);
+        }
+        return this;
+    }
+    
     public ArgumentListBuilder prepend(String... args) {
         // left-shift the mask
         BitSet nm = new BitSet(this.args.size()+args.length);
@@ -94,7 +113,14 @@ public class ArgumentListBuilder implements Serializable {
      * argument is treated as its own string and never merged into one. 
      */
     public ArgumentListBuilder addQuoted(String a) {
-        return add('"'+a+'"');
+        return add('"'+a+'"', false);
+    }
+
+    /**
+     * @since 1.378
+     */
+    public ArgumentListBuilder addQuoted(String a, boolean mask) {
+        return add('"'+a+'"', mask);
     }
 
     public ArgumentListBuilder add(String... args) {
@@ -114,6 +140,15 @@ public class ArgumentListBuilder implements Serializable {
     }
 
     /**
+     * @since 1.378
+     */
+    public ArgumentListBuilder addKeyValuePair(String prefix, String key, String value, boolean mask) {
+        if(key==null) return this;
+        add(((prefix==null)?"-D":prefix)+key+'='+value, mask);
+        return this;
+    }
+
+    /**
      * Adds key value pairs as "-Dkey=value -Dkey=value ..."
      *
      * <tt>-D</tt> portion is configurable as the 'prefix' parameter.
@@ -121,7 +156,26 @@ public class ArgumentListBuilder implements Serializable {
      */
     public ArgumentListBuilder addKeyValuePairs(String prefix, Map<String,String> props) {
         for (Entry<String,String> e : props.entrySet())
-            add(prefix+e.getKey()+'='+e.getValue());
+            addKeyValuePair(prefix, e.getKey(), e.getValue(), false);
+        return this;
+    }
+
+    /**
+     * Adds key value pairs as "-Dkey=value -Dkey=value ..." with masking.
+     *
+     * @param prefix
+     *      Configures the -D portion of the example. Defaults to -D if null.
+     * @param props
+     *      The map of key/value pairs to add
+     * @param propsToMask
+     *      Set containing key names to mark as masked in the argument list. Key
+     *      names that do not exist in the set will be added unmasked.
+     * @since 1.378
+     */
+    public ArgumentListBuilder addKeyValuePairs(String prefix, Map<String,String> props, Set<String> propsToMask) {
+        for (Entry<String,String> e : props.entrySet()) {
+            addKeyValuePair(prefix, e.getKey(), e.getValue(), (propsToMask == null) ? false : propsToMask.contains(e.getKey()));
+        }
         return this;
     }
 
@@ -129,7 +183,7 @@ public class ArgumentListBuilder implements Serializable {
      * Adds key value pairs as "-Dkey=value -Dkey=value ..." by parsing a given string using {@link Properties}.
      *
      * @param prefix
-     *      The '-D' portion of the example.
+     *      The '-D' portion of the example. Defaults to -D if null.
      * @param properties
      *      The persisted form of {@link Properties}. For example, "abc=def\nghi=jkl". Can be null, in which
      *      case this method becomes no-op.
@@ -141,7 +195,31 @@ public class ArgumentListBuilder implements Serializable {
         if(properties==null)    return this;
 
         for (Entry<Object,Object> entry : load(properties).entrySet()) {
-            args.add(prefix + entry.getKey() + "=" + Util.replaceMacro(entry.getValue().toString(),vr));
+            addKeyValuePair(prefix, (String)entry.getKey(), Util.replaceMacro(entry.getValue().toString(),vr), false);
+        }
+        return this;
+    }
+
+    /**
+     * Adds key value pairs as "-Dkey=value -Dkey=value ..." by parsing a given string using {@link Properties} with masking.
+     *
+     * @param prefix
+     *      The '-D' portion of the example. Defaults to -D if null.
+     * @param properties
+     *      The persisted form of {@link Properties}. For example, "abc=def\nghi=jkl". Can be null, in which
+     *      case this method becomes no-op.
+     * @param vr
+     *      {@link VariableResolver} to be performed on the values.
+     * @param propsToMask
+     *      Set containing key names to mark as masked in the argument list. Key
+     *      names that do not exist in the set will be added unmasked.
+     * @since 1.378
+     */
+    public ArgumentListBuilder addKeyValuePairsFromPropertyString(String prefix, String properties, VariableResolver vr, Set<String> propsToMask) throws IOException {
+        if(properties==null)    return this;
+
+        for (Entry<Object,Object> entry : load(properties).entrySet()) {
+            addKeyValuePair(prefix, (String)entry.getKey(), Util.replaceMacro(entry.getValue().toString(),vr), (propsToMask == null) ? false : propsToMask.contains((String)entry.getKey()));
         }
         return this;
     }
@@ -168,6 +246,7 @@ public class ArgumentListBuilder implements Serializable {
     public ArgumentListBuilder clone() {
         ArgumentListBuilder r = new ArgumentListBuilder();
         r.args.addAll(this.args);
+        r.mask = (BitSet) this.mask.clone();
         return r;
     }
 
@@ -176,6 +255,7 @@ public class ArgumentListBuilder implements Serializable {
      */
     public void clear() {
         args.clear();
+        mask.clear();
     }
 
     public List<String> toList() {
@@ -283,8 +363,7 @@ public class ArgumentListBuilder implements Serializable {
      * @param string the argument
      */
     public void addMasked(String string) {
-        mask.set(args.size());
-        add(string);
+        add(string, true);
     }
 
     private static final long serialVersionUID = 1L;

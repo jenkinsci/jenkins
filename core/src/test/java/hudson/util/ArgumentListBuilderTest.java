@@ -1,7 +1,7 @@
 /*
  * The MIT License
  * 
- * Copyright (c) 2004-2010, Sun Microsystems, Inc., Kohsuke Kawaguchi
+ * Copyright (c) 2004-2010, Sun Microsystems, Inc., Kohsuke Kawaguchi, Yahoo! Inc.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,6 +23,10 @@
  */
 package hudson.util;
 
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -122,5 +126,52 @@ public class ArgumentListBuilderTest extends Assert {
                 + " \"-Dfoo8=% %\"Q\"ED% %\"c\"omspec% %-%(%.%\""
                 + " -Dfoo9=%'''%%@% && exit %%ERRORLEVEL%%\"" },
                 builder.toWindowsCommand().toCommandArray());
+    }
+
+    @Test
+    public void assertMaskOnClone() {
+        ArgumentListBuilder builder = new ArgumentListBuilder();
+        builder.add("arg1");
+        builder.addMasked("masked1");
+        builder.add("arg2");
+
+        ArgumentListBuilder clone = builder.clone();
+        assertTrue("There should be masked arguments", clone.hasMaskedArguments());
+        boolean[] array = clone.toMaskArray();
+        assertNotNull("The mask array should not be null", array);
+        assertArrayEquals("The mask array was incorrect", builder.toMaskArray(), array);
+    }
+    
+    private static final Map<String, String> KEY_VALUES = new HashMap<String, String>() {{
+        put("key1", "value1");
+        put("key2", "value2");
+        put("key3", "value3");
+    }};
+
+    private static final Set<String> MASKS = new HashSet<String>() {{
+        add("key2");
+    }};
+    
+    @Test
+    public void assertKeyValuePairsWithMask() {
+        ArgumentListBuilder builder = new ArgumentListBuilder();
+        builder.addKeyValuePairs(null, KEY_VALUES, MASKS);
+
+        assertTrue("There should be masked arguments", builder.hasMaskedArguments());
+        boolean[] array = builder.toMaskArray();
+        assertNotNull("The mask array should not be null", array);
+        assertArrayEquals("The mask array was incorrect", new boolean[]{false,true,false}, array);
+
+    }
+
+    @Test
+    public void assertKeyValuePairs() {
+        ArgumentListBuilder builder = new ArgumentListBuilder();
+        builder.addKeyValuePairs(null, KEY_VALUES);
+
+        assertFalse("There shouldnt be any masked arguments", builder.hasMaskedArguments());
+        boolean[] array = builder.toMaskArray();
+        assertNotNull("The mask array should not be null", array);
+        assertArrayEquals("The mask array was incorrect", new boolean[]{false,false,false}, array);
     }
 }

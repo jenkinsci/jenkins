@@ -101,11 +101,8 @@ public class SurefireArchiver extends MavenReporter {
                 // no test in this module
                 return true;
 
-            if(result==null) {
-                long t = System.currentTimeMillis() - build.getMilliSecsSinceBuildStart();
-                result = new TestResult(t - 1000/*error margin*/, ds, true);
-            } else
-                result.parse(build.getTimestamp().getTimeInMillis() - 1000/*error margin*/, ds);
+            if(result==null)    result = new TestResult();
+            result.parse(System.currentTimeMillis() - build.getMilliSecsSinceBuildStart(), ds);
 
             int failCount = build.execute(new BuildCallable<Integer, IOException>() {
                 public Integer call(MavenBuild build) throws IOException, InterruptedException {

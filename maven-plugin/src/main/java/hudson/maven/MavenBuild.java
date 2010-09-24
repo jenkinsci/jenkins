@@ -433,7 +433,7 @@ public class MavenBuild extends AbstractMavenBuild<MavenModule,MavenBuild> {
             if(result==null)
                 setResult(Result.SUCCESS);
             onEndBuilding();
-            duration = System.currentTimeMillis()- startTime;
+            duration += System.currentTimeMillis()- startTime;
             parentBuild.notifyModuleBuild(MavenBuild.this);
             try {
                 listener.setSideOutputStream(null);

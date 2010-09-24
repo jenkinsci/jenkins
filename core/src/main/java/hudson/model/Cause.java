@@ -60,7 +60,16 @@ public abstract class Cause {
      * By default, this method is used to render HTML as well.
      */
     @Exported(visibility=3)
-    abstract public String getShortDescription();
+    public abstract String getShortDescription();
+
+    /**
+     * Called when the cause is registered to {@link AbstractBuild}.
+     *
+     * @param build
+     *      never null
+     * @since 1.376
+     */
+    public void onAddedTo(AbstractBuild build) {}
 
     /**
      * Report a line to the listener about this cause.

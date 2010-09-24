@@ -1,7 +1,7 @@
 /*
  * The MIT License
  * 
- * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi
+ * Copyright (c) 2004-2010, Sun Microsystems, Inc., Kohsuke Kawaguchi, Yahoo! Inc.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -35,6 +35,7 @@ import java.io.OutputStream;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * Pluggability point for performing pre/post actions for the build process.
@@ -247,6 +248,22 @@ public abstract class BuildWrapper extends AbstractDescribableImpl<BuildWrapper>
     	// noop
     }
 
+    /**
+     * Called to define sensitive build variables. This provides an opportunity
+     * for a BuildWrapper to denote the names of variables that are sensitive in
+     * nature and should not be exposed in output.
+     *
+     * @param build
+     *      The build in progress for which this {@link BuildWrapper} is called. Never null.
+     * @param sensitiveVariables
+     *      Contains names of sensitive build variables. Names of sensitive variables
+     *      that were added with {@link #makeBuildVariables(hudson.model.AbstractBuild, java.util.Map)}
+     * @since 1.378
+     */
+    public void makeSensitiveBuildVariables(AbstractBuild build, Set<String> sensitiveVariables) {
+        // noop
+    }
+    
     /**
      * Returns all the registered {@link BuildWrapper} descriptors.
      */

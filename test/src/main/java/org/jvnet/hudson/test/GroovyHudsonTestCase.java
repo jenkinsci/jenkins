@@ -2,15 +2,12 @@ package org.jvnet.hudson.test;
 
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
-import org.kohsuke.stapler.Stapler;
 import groovy.lang.Closure;
-import hudson.model.RootAction;
 import hudson.model.AbstractBuild;
 import hudson.model.BuildListener;
 import hudson.tasks.Builder;
 import hudson.Launcher;
 
-import java.util.UUID;
 import java.util.concurrent.Callable;
 import java.io.IOException;
 

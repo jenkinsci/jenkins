@@ -24,6 +24,7 @@
 package hudson.model.queue;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Iterables;
 import hudson.model.Computer;
 import hudson.model.Executor;
 import hudson.model.Label;
@@ -40,6 +41,9 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
+
+import static java.lang.Math.*;
 
 /**
  * Defines a mapping problem for answering "where do we execute this task?"
@@ -273,7 +277,7 @@ public class MappingWorksheet {
 
 
     public MappingWorksheet(Task task, List<JobOffer> offers) {
-        // executors
+        // group executors by their computers
         Map<Computer,List<JobOffer>> j = new HashMap<Computer, List<JobOffer>>();
         for (JobOffer o : offers) {
             Computer c = o.executor.getOwner();
@@ -283,9 +287,36 @@ public class MappingWorksheet {
             l.add(o);
         }
 
+        {// take load prediction into account and reduce the available executor pool size accordingly
+            long duration = task.getEstimatedDuration();
+            if (duration > 0) {
+                long now = System.currentTimeMillis();
+                for (Entry<Computer, List<JobOffer>> e : j.entrySet()) {
+                    final List<JobOffer> list = e.getValue();
+                    final int max = e.getKey().countExecutors();
+
+                    // build up the prediction model. cut the chase if we hit the max.
+                    Timeline timeline = new Timeline();
+                    int peak = 0;
+                    OUTER:
+                    for (LoadPredictor lp : LoadPredictor.all()) {
+                        for (FutureLoad fl : Iterables.limit(lp.predict(e.getKey(), now, now + duration),100)) {
+                            peak = max(peak,timeline.insert(fl.startTime, fl.startTime+fl.duration, fl.numExecutors));
+                            if (peak>=max)  break OUTER;
+                        }
+                    }
+
+                    int minIdle = max-peak; // minimum number of idle nodes during this time period
+                    if (minIdle<list.size())
+                        e.setValue(list.subList(0,minIdle));
+                }
+            }
+        }
+
         // build into the final shape
         List<ExecutorChunk> executors = new ArrayList<ExecutorChunk>();
         for (List<JobOffer> group : j.values()) {
+            if (group.isEmpty())    continue;   // evict empty group
             ExecutorChunk ec = new ExecutorChunk(group, executors.size());
             if (ec.node==null)  continue;   // evict out of sync node
             executors.add(ec);

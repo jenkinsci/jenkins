@@ -35,6 +35,12 @@ public interface RunAction extends Action {
     void onLoad();
 
     /**
+     * Called when the action is aded to the {@link Run} object.
+     * @since 1.376
+     */
+    void onAttached(Run r);
+
+    /**
      * Called after the build is finished.
      */
     void onBuildComplete();

@@ -20,6 +20,7 @@
  */
 package hudson.remoting;
 
+import java.io.InterruptedIOException;
 import java.io.OutputStream;
 import java.io.IOException;
 import java.lang.ref.WeakReference;
@@ -130,23 +131,33 @@ public class FastPipedOutputStream extends OutputStream {
         if(sink == null) {
             throw new IOException("Unconnected pipe");
         }
-        FastPipedInputStream s = sink();
-        if(s.closed!=null) {
-            throw (IOException)new IOException("Pipe is already closed").initCause(s.closed);
-        }
 
         while (len>0) {
+            FastPipedInputStream s = sink(); // make sure the sink is still trying to read, or else fail the write.
+
+            if(s.closed!=null) {
+                throw (IOException)new IOException("Pipe is already closed").initCause(s.closed);
+            }
+
             synchronized(s.buffer) {
                 if(s.writePosition == s.readPosition && s.writeLaps > s.readLaps) {
                     // The circular buffer is full, so wait for some reader to consume
                     // something.
 
-                    sink(); // make sure the sink is still trying to read, or else fail the write.
+                    // release a reference to 's' during the wait so that if the reader has abandoned the pipe
+                    // we can tell.
+                    byte[] buf = s.buffer;
+                    s = null;
 
+                    Thread t = Thread.currentThread();
+                    String oldName = t.getName();
+                    t.setName("Blocking to write '"+HexDump.toHex(b,off,Math.min(len,256))+"' : "+oldName);
                     try {
-                        s.buffer.wait(TIMEOUT);
+                        buf.wait(TIMEOUT);
                     } catch (InterruptedException e) {
-                        throw new IOException(e.getMessage());
+                        throw (InterruptedIOException)new InterruptedIOException(e.getMessage()).initCause(e);
+                    } finally {
+                        t.setName(oldName);
                     }
                     // Try again.
                     continue;

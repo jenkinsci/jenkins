@@ -1,7 +1,7 @@
 /*
  * The MIT License
  * 
- * Copyright (c) 2004-2010, Sun Microsystems, Inc., Kohsuke Kawaguchi, Tom Huybrechts
+ * Copyright (c) 2004-2010, Sun Microsystems, Inc., Kohsuke Kawaguchi, Tom Huybrechts, Yahoo! Inc.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -54,6 +54,7 @@ import java.util.ArrayList;
 import java.util.Properties;
 import java.util.List;
 import java.util.Collections;
+import java.util.Set;
 
 /**
  * Ant launcher.
@@ -177,9 +178,11 @@ public class Ant extends Builder {
             args.add("-file", buildFilePath.getName());
         }
 
-        args.addKeyValuePairs("-D",build.getBuildVariables());
+        Set<String> sensitiveVars = build.getSensitiveBuildVariables();
 
-        args.addKeyValuePairsFromPropertyString("-D",properties,vr);
+        args.addKeyValuePairs("-D",build.getBuildVariables(),sensitiveVars);
+
+        args.addKeyValuePairsFromPropertyString("-D",properties,vr,sensitiveVars);
 
         args.addTokenized(targets.replaceAll("[\t\r\n]+"," "));
 

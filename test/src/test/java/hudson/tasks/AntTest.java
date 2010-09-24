@@ -1,7 +1,7 @@
 /*
  * The MIT License
  * 
- * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi
+ * Copyright (c) 2004-2010, Sun Microsystems, Inc., Kohsuke Kawaguchi, Yahoo! Inc.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,7 +26,11 @@ package hudson.tasks;
 import com.gargoylesoftware.htmlunit.html.HtmlButton;
 import com.gargoylesoftware.htmlunit.html.HtmlForm;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
+import hudson.model.FreeStyleBuild;
 import hudson.model.FreeStyleProject;
+import hudson.model.ParametersDefinitionProperty;
+import hudson.model.PasswordParameterDefinition;
+import hudson.model.StringParameterDefinition;
 import hudson.tasks.Ant.AntInstallation;
 import hudson.tasks.Ant.AntInstallation.DescriptorImpl;
 import hudson.tasks.Ant.AntInstaller;
@@ -35,6 +39,7 @@ import hudson.tools.ToolProperty;
 import hudson.tools.ToolPropertyDescriptor;
 import hudson.util.DescribableList;
 import org.jvnet.hudson.test.HudsonTestCase;
+import org.jvnet.hudson.test.SingleFileSCM;
 
 /**
  * @author Kohsuke Kawaguchi
@@ -94,4 +99,23 @@ public class AntTest extends HudsonTestCase {
         assertEquals(1,isp.installers.size());
         assertNotNull(isp.installers.get(AntInstaller.class));
     }
+
+    public void testSensitiveParameters() throws Exception {
+        FreeStyleProject project = createFreeStyleProject();
+        ParametersDefinitionProperty pdb = new ParametersDefinitionProperty(
+                new StringParameterDefinition("string", "defaultValue", "string description"),
+                new PasswordParameterDefinition("password", "12345", "password description"),
+                new StringParameterDefinition("string2", "Value2", "string description")
+        );
+        project.addProperty(pdb);
+        project.setScm(new SingleFileSCM("build.xml", hudson.tasks._ant.AntTargetAnnotationTest.class.getResource("simple-build.xml")));
+
+        project.getBuildersList().add(new Ant("foo",null,null,null,null));
+
+        FreeStyleBuild build = project.scheduleBuild2(0).get();
+        String buildLog = build.getLog();
+        assertNotNull(buildLog);
+	System.out.println(buildLog);
+        assertFalse(buildLog.contains("-Dpassword=12345"));
+}
 }

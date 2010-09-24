@@ -8,6 +8,7 @@ import com.gargoylesoftware.htmlunit.html.HtmlElement;
 import com.gargoylesoftware.htmlunit.html.HtmlTextInput;
 import com.gargoylesoftware.htmlunit.html.HtmlCheckBoxInput;
 import com.gargoylesoftware.htmlunit.html.HtmlOption;
+import java.util.Set;
 
 /**
  * @author huybrechts
@@ -101,5 +102,58 @@ public class ParametersTest extends HudsonTestCase {
 
         assertNotNull(builder.getEnvVars());
         assertEquals("Choice <2>", builder.getEnvVars().get("CHOICE"));
+    }
+
+    public void testSensitiveParameters() throws Exception {
+        FreeStyleProject project = createFreeStyleProject();
+        ParametersDefinitionProperty pdb = new ParametersDefinitionProperty(
+                new PasswordParameterDefinition("password", "12345", "password description"));
+        project.addProperty(pdb);
+
+        CaptureEnvironmentBuilder builder = new CaptureEnvironmentBuilder();
+        project.getBuildersList().add(builder);
+
+        FreeStyleBuild build = project.scheduleBuild2(0).get();
+        Set<String> sensitiveVars = build.getSensitiveBuildVariables();
+
+        assertNotNull(sensitiveVars);
+        assertTrue(sensitiveVars.contains("password"));
+}
+
+    public void testNonSensitiveParameters() throws Exception {
+        FreeStyleProject project = createFreeStyleProject();
+        ParametersDefinitionProperty pdb = new ParametersDefinitionProperty(
+                new StringParameterDefinition("string", "defaultValue", "string description"));
+        project.addProperty(pdb);
+
+        CaptureEnvironmentBuilder builder = new CaptureEnvironmentBuilder();
+        project.getBuildersList().add(builder);
+
+        FreeStyleBuild build = project.scheduleBuild2(0).get();
+        Set<String> sensitiveVars = build.getSensitiveBuildVariables();
+
+        assertNotNull(sensitiveVars);
+        assertFalse(sensitiveVars.contains("string"));
+    }
+
+    public void testMixedSensitivity() throws Exception {
+        FreeStyleProject project = createFreeStyleProject();
+        ParametersDefinitionProperty pdb = new ParametersDefinitionProperty(
+                new StringParameterDefinition("string", "defaultValue", "string description"),
+                new PasswordParameterDefinition("password", "12345", "password description"),
+                new StringParameterDefinition("string2", "Value2", "string description")
+        );
+        project.addProperty(pdb);
+
+        CaptureEnvironmentBuilder builder = new CaptureEnvironmentBuilder();
+        project.getBuildersList().add(builder);
+
+        FreeStyleBuild build = project.scheduleBuild2(0).get();
+        Set<String> sensitiveVars = build.getSensitiveBuildVariables();
+
+        assertNotNull(sensitiveVars);
+        assertFalse(sensitiveVars.contains("string"));
+        assertTrue(sensitiveVars.contains("password"));
+        assertFalse(sensitiveVars.contains("string2"));
     }
 }
