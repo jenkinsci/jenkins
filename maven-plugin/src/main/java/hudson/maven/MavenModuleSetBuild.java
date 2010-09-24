@@ -24,55 +24,22 @@
  */
 package hudson.maven;
 
-import hudson.AbortException;
-import hudson.FilePath;
-import hudson.Launcher;
-import hudson.Util;
-import hudson.EnvVars;
-import hudson.scm.ChangeLogSet;
+import hudson.*;
 import hudson.FilePath.FileCallable;
 import hudson.maven.MavenBuild.ProxyImpl2;
 import hudson.maven.reporters.MavenFingerprinter;
 import hudson.maven.reporters.MavenMailer;
-import hudson.model.AbstractProject;
-import hudson.model.Action;
-import hudson.model.Build;
-import hudson.model.BuildListener;
-import hudson.model.Environment;
-import hudson.model.Fingerprint;
-import hudson.model.Hudson;
-import hudson.model.ParametersAction;
-import hudson.model.Result;
-import hudson.model.Computer;
-import hudson.model.Run;
-import hudson.model.TaskListener;
+import hudson.model.*;
 import hudson.model.Cause.UpstreamCause;
 import hudson.remoting.Channel;
 import hudson.remoting.VirtualChannel;
+import hudson.scm.ChangeLogSet;
 import hudson.tasks.BuildWrapper;
 import hudson.tasks.MailSender;
 import hudson.tasks.Maven.MavenInstallation;
 import hudson.util.ArgumentListBuilder;
+import hudson.util.IOUtils;
 import hudson.util.StreamTaskListener;
-
-import java.io.File;
-import java.io.IOException;
-import java.io.PrintStream;
-import java.io.Serializable;
-import java.io.InterruptedIOException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-import java.util.Set;
-import java.util.Map.Entry;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
 import org.apache.maven.BuildFailureException;
 import org.apache.maven.embedder.MavenEmbedderException;
 import org.apache.maven.execution.MavenSession;
@@ -83,6 +50,13 @@ import org.apache.maven.project.MavenProject;
 import org.apache.maven.project.ProjectBuildingException;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
+import org.apache.commons.io.FilenameUtils;
+
+import java.io.*;
+import java.util.*;
+import java.util.Map.Entry;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import static hudson.model.Result.FAILURE;
 
@@ -191,7 +165,7 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
 
             private boolean belongsToSubsidiary(List<MavenModule> subsidiaries, String path) {
                 for (MavenModule sub : subsidiaries)
-                    if(path.startsWith(sub.getRelativePath()))
+                    if(path.startsWith(FilenameUtils.normalize(sub.getRelativePath())))
                         return true;
                 return false;
             }
@@ -200,9 +174,10 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
              * Does this change happen somewhere in the given module or its descendants?
              */
             private boolean isDescendantOf(ChangeLogSet.Entry e, MavenModule mod) {
-                for (String path : e.getAffectedPaths())
-                    if(path.startsWith(mod.getRelativePath()))
+                for (String path : e.getAffectedPaths()) {
+                    if(path.startsWith(FilenameUtils.normalize(mod.getRelativePath())))
                         return true;
+                }
                 return false;
             }
         };
@@ -394,6 +369,7 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
 
         protected Result doRun(final BuildListener listener) throws Exception {
             PrintStream logger = listener.getLogger();
+            Result r = null;
             try {
                 EnvVars envVars = getEnvironment(listener);
                 MavenInstallation mvn = project.getMaven();
@@ -421,7 +397,7 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
                         for( BuildWrapper w : wrappers) {
                             Environment e = w.setUp(MavenModuleSetBuild.this, launcher, listener);
                             if(e==null)
-                                return Result.FAILURE;
+                                return (r = Result.FAILURE);
                             buildEnvironments.add(e);
                             e.buildEnvVars(envVars); // #3502: too late for getEnvironment to do this
                         }
@@ -482,7 +458,16 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
                         }
 
                         if (project.getAlternateSettings() != null) {
-                            margs.add("-s").add(getWorkspace().child(project.getAlternateSettings()));
+                            if (IOUtils.isAbsolute(project.getAlternateSettings())) {
+                                margs.add("-s").add(project.getAlternateSettings());
+                            } else {
+                                FilePath mrSettings = getModuleRoot().child(project.getAlternateSettings());
+                                FilePath wsSettings = getWorkspace().child(project.getAlternateSettings());
+                                if (!wsSettings.exists() && mrSettings.exists())
+                                    wsSettings = mrSettings;
+                                
+                                margs.add("-s").add(wsSettings.getRemote());
+                            }
                         }
 
                         margs.addTokenized(envVars.expand(project.getGoals()));
@@ -492,13 +477,17 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
                         try {
                             mpa = new MavenProbeAction(project,process.channel);
                             addAction(mpa);
-                            return process.call(builder);
+                            r = process.call(builder);
+                            return r;
                         } finally {
                             builder.end(launcher);
                             getActions().remove(mpa);
                             process.discard();
                         }
                     } finally {
+                        if (r != null) {
+                            setResult(r);
+                        }
                         // tear down in reverse order
                         boolean failed=false;
                         for( int i=buildEnvironments.size()-1; i>=0; i-- ) {
@@ -506,22 +495,18 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
                                 failed=true;
                             }                    
                         }
-                        buildEnvironments = null;
                         // WARNING The return in the finally clause will trump any return before
                         if (failed) return Result.FAILURE;
                     }
                 }
                 
-                return null;
+                return r;
             } catch (AbortException e) {
                 if(e.getMessage()!=null)
                     listener.error(e.getMessage());
                 return Result.FAILURE;
             } catch (InterruptedIOException e) {
                 e.printStackTrace(listener.error("Aborted Maven execution for InterruptedIOException"));
-                return Result.ABORTED;
-            } catch (InterruptedException e) {
-                e.printStackTrace(listener.error("Aborted Maven execution for InterruptedException"));
                 return Result.ABORTED;
             } catch (IOException e) {
                 e.printStackTrace(listener.error(Messages.MavenModuleSetBuild_FailedToParsePom()));
@@ -639,6 +624,7 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
             // too late to set the build result at this point. so ignore failures.
             performAllBuildSteps(listener, project.getPublishers(), false);
             performAllBuildSteps(listener, project.getProperties(), false);
+            buildEnvironments = null;
         }
 
     }
@@ -712,8 +698,25 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
             }
         }
 
+        @Override
         void preBuild(MavenSession session, ReactorManager rm, EventDispatcher dispatcher) throws BuildFailureException, LifecycleExecutionException, IOException, InterruptedException {
-            // TODO
+            // set all modules which are not actually being build (in incremental builds) to NOT_BUILD
+            
+            @SuppressWarnings("unchecked")
+            List<MavenProject> projects = rm.getSortedProjects();
+            Set<ModuleName> buildingProjects = new HashSet<ModuleName>();
+            for (MavenProject p : projects) {
+                buildingProjects.add(new ModuleName(p));
+            }
+            
+            for (Entry<ModuleName,MavenBuildProxy2> e : this.proxies.entrySet()) {
+                if (! buildingProjects.contains(e.getKey())) {
+                    MavenBuildProxy2 proxy = e.getValue();
+                    proxy.start();
+                    proxy.setResult(Result.NOT_BUILT);
+                    proxy.end();
+                }
+            }
         }
 
         void postBuild(MavenSession session, ReactorManager rm, EventDispatcher dispatcher) throws BuildFailureException, LifecycleExecutionException, IOException, InterruptedException {
@@ -850,16 +853,21 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
         }
 
         public List<PomInfo> invoke(File ws, VirtualChannel channel) throws IOException {
-            File pom = new File(ws,rootPOM);
+            File pom;
 
             PrintStream logger = listener.getLogger();
 
-            // choice of module root ('ws' in this method) is somewhat arbitrary
-            // when multiple CVS/SVN modules are checked out, so also check
-            // the path against the workspace root if that seems like what the user meant (see issue #1293)
-            File parentLoc = new File(ws.getParentFile(),rootPOM);
-            if(!pom.exists() && parentLoc.exists())
-                pom = parentLoc;
+            if (IOUtils.isAbsolute(rootPOM)) {
+                pom = new File(rootPOM);
+            } else {
+                // choice of module root ('ws' in this method) is somewhat arbitrary
+                // when multiple CVS/SVN modules are checked out, so also check
+                // the path against the workspace root if that seems like what the user meant (see issue #1293)
+                pom = new File(ws, rootPOM);
+                File parentLoc = new File(ws.getParentFile(),rootPOM);
+                if(!pom.exists() && parentLoc.exists())
+                    pom = parentLoc;
+            }
 
             if(!pom.exists())
                 throw new AbortException(Messages.MavenModuleSetBuild_NoSuchPOMFile(pom));
@@ -869,8 +877,21 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
 			       + (nonRecursive ? "non-recursively " : "recursively ")
 			       + pom);
 	    
-            File settingsLoc = (alternateSettings == null) ? null 
-                : new File(workspaceProper, alternateSettings);
+            File settingsLoc;
+
+            if (alternateSettings == null) {
+                settingsLoc = null;
+            } else if (IOUtils.isAbsolute(alternateSettings)) {
+                settingsLoc = new File(alternateSettings);
+            } else {
+                // Check for settings.xml first in the workspace proper, and then in the current directory,
+                // which is getModuleRoot().
+                // This is backwards from the order the root POM logic uses, but it's to be consistent with the Maven execution logic.
+                settingsLoc = new File(workspaceProper, alternateSettings);
+                File mrSettingsLoc = new File(workspaceProper, alternateSettings);
+                if (!settingsLoc.exists() && mrSettingsLoc.exists())
+                    settingsLoc = mrSettingsLoc;
+            }
 
             if ((settingsLoc != null) && (!settingsLoc.exists())) {
                 throw new AbortException(Messages.MavenModuleSetBuild_NoSuchAlternateSettings(settingsLoc.getAbsolutePath()));

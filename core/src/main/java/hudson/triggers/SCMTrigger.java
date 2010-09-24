@@ -27,6 +27,7 @@ import antlr.ANTLRException;
 import hudson.Util;
 import hudson.Extension;
 import hudson.console.AnnotatedLargeText;
+import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
 import hudson.model.Action;
 import hudson.model.Cause;
@@ -35,9 +36,11 @@ import hudson.model.Item;
 import hudson.model.Project;
 import hudson.model.SCMedItem;
 import hudson.model.AdministrativeMonitor;
+import hudson.util.FlushProofOutputStream;
 import hudson.util.StreamTaskListener;
 import hudson.util.TimeUnit2;
 import hudson.util.SequentialExecutionQueue;
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.jelly.XMLOutput;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.DataBoundConstructor;
@@ -58,6 +61,9 @@ import java.util.logging.Logger;
 import java.text.DateFormat;
 
 import net.sf.json.JSONObject;
+import org.kohsuke.stapler.StaplerResponse;
+
+import static java.util.logging.Level.*;
 
 /**
  * {@link Trigger} that checks for SCM updates periodically.
@@ -72,6 +78,17 @@ public class SCMTrigger extends Trigger<SCMedItem> {
 
     @Override
     public void run() {
+        run(null);
+    }
+
+    /**
+     * Run the SCM trigger with additional build actions. Used by SubversionRepositoryStatus
+     * to trigger a build at a specific revisionn number.
+     * 
+     * @param additionalActions
+     * @since 1.375
+     */
+    public void run(Action[] additionalActions) {
         if(Hudson.getInstance().isQuietingDown())
             return; // noop
 
@@ -81,13 +98,13 @@ public class SCMTrigger extends Trigger<SCMedItem> {
         if (d.synchronousPolling) {
         	LOGGER.fine("Running the trigger directly without threading, " +
         			"as it's already taken care of by Trigger.Cron");
-            new Runner().run();
+            new Runner(additionalActions).run();
         } else {
             // schedule the polling.
             // even if we end up submitting this too many times, that's OK.
             // the real exclusion control happens inside Runner.
         	LOGGER.fine("scheduling the trigger to (asynchronously) run");
-            d.queue.execute(new Runner());
+            d.queue.execute(new Runner(additionalActions));
             d.clogCheck();
         }
     }
@@ -245,7 +262,63 @@ public class SCMTrigger extends Trigger<SCMedItem> {
     }
 
     /**
-     * Action object for {@link Project}. Used to display the polling log.
+     * Associated with {@link AbstractBuild} to show the polling log
+     * that triggered that build.
+     *
+     * @since 1.376
+     */
+    public static class BuildAction implements Action {
+        public final AbstractBuild build;
+
+        public BuildAction(AbstractBuild build) {
+            this.build = build;
+        }
+
+        /**
+         * Polling log that triggered the build.
+         */
+        public File getPollingLogFile() {
+            return new File(build.getRootDir(),"polling.log");
+        }
+
+        public String getIconFileName() {
+            return "clipboard.gif";
+        }
+
+        public String getDisplayName() {
+            return Messages.SCMTrigger_BuildAction_DisplayName();
+        }
+
+        public String getUrlName() {
+            return "pollingLog";
+        }
+
+        /**
+         * Sends out the raw polling log output.
+         */
+        public void doPollingLog(StaplerRequest req, StaplerResponse rsp) throws IOException {
+            rsp.setContentType("text/plain;charset=UTF-8");
+            // Prevent jelly from flushing stream so Content-Length header can be added afterwards
+            FlushProofOutputStream out = new FlushProofOutputStream(rsp.getCompressedOutputStream(req));
+            getPollingLogText().writeLogTo(0, out);
+            out.close();
+        }
+
+        public AnnotatedLargeText getPollingLogText() {
+            return new AnnotatedLargeText<BuildAction>(getPollingLogFile(), Charset.defaultCharset(), true, this);
+        }
+        
+        /**
+         * Used from <tt>polling.jelly</tt> to write annotated polling log to the given output.
+         */
+        public void writePollingLogTo(long offset, XMLOutput out) throws IOException {
+            // TODO: resurrect compressed log file support
+            getPollingLogText().writeHtmlTo(offset, out.asWriter());
+        }
+    }
+
+    /**
+     * Action object for {@link Project}. Used to display the last polling log.
      */
     public final class SCMAction implements Action {
         public AbstractProject<?,?> getOwner() {
@@ -289,6 +362,20 @@ public class SCMTrigger extends Trigger<SCMedItem> {
          */
         private volatile long startTime;
 
+        private Action[] additionalActions;
+
+        public Runner() {
+            additionalActions = new Action[0];
+        }
+        
+        public Runner(Action[] actions) {
+            if (actions == null) {
+                additionalActions = new Action[0];
+            } else {
+                additionalActions = actions;
+            }
+        }
+        
         /**
          * Where the log file is written.
          */
@@ -357,8 +444,16 @@ public class SCMTrigger extends Trigger<SCMedItem> {
             try {
                 startTime = System.currentTimeMillis();
                 if(runPolling()) {
-                    String name = " #"+job.asProject().getNextBuildNumber();
-                    if(job.scheduleBuild(new SCMTriggerCause())) {
+                    AbstractProject p = job.asProject();
+                    String name = " #"+p.getNextBuildNumber();
+                    SCMTriggerCause cause;
+                    try {
+                        cause = new SCMTriggerCause(getLogFile());
+                    } catch (IOException e) {
+                        LOGGER.log(WARNING, "Failed to parse the polling log",e);
+                        cause = new SCMTriggerCause();
+                    }
+                    if(p.scheduleBuild(p.getQuietPeriod(), cause, additionalActions)) {
                         LOGGER.info("SCM changes detected in "+ job.getName()+". Triggering "+name);
                     } else {
                         LOGGER.info("SCM changes detected in "+ job.getName()+". Job is already in the queue");
@@ -386,6 +481,41 @@ public class SCMTrigger extends Trigger<SCMedItem> {
     }
 
     public static class SCMTriggerCause extends Cause {
+        /**
+         * Only used while ths cause is in the queue.
+         * Once attached to the build, we'll move this into a file to reduce the memory footprint.
+         */
+        private String pollingLog;
+
+        public SCMTriggerCause(File logFile) throws IOException {
+            // TODO: charset of this log file?
+            this(FileUtils.readFileToString(logFile));
+        }
+
+        public SCMTriggerCause(String pollingLog) {
+            this.pollingLog = pollingLog;
+        }
+
+        /**
+         * @deprecated
+         *      Use {@link #SCMTriggerCause(String)}.
+         */
+        public SCMTriggerCause() {
+            this("");
+        }
+
+        @Override
+        public void onAddedTo(AbstractBuild build) {
+            try {
+                BuildAction a = new BuildAction(build);
+                FileUtils.writeStringToFile(a.getPollingLogFile(),pollingLog);
+                build.addAction(a);
+            } catch (IOException e) {
+                LOGGER.log(WARNING,"Failed to persist the polling log",e);
+            }
+            pollingLog = null;
+        }
+
         @Override
         public String getShortDescription() {
             return Messages.SCMTrigger_SCMTriggerCause_ShortDescription();

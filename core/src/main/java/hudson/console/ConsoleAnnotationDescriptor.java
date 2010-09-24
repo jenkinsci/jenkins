@@ -61,16 +61,28 @@ public abstract class ConsoleAnnotationDescriptor extends Descriptor<ConsoleNote
      * Returns true if this descriptor has a JavaScript to be inserted on applicable console page.
      */
     public boolean hasScript() {
-        return getScriptJs()!=null;
+        return hasResource("/script.js") !=null;
     }
 
-    private URL getScriptJs() {
-        return clazz.getClassLoader().getResource(clazz.getName().replace('.','/').replace('$','/')+"/script.js");
+    /**
+     * Returns true if this descriptor has a stylesheet to be inserted on applicable console page.
+     */
+    public boolean hasStylesheet() {
+        return hasResource("/style.css") !=null;
+    }
+
+    private URL hasResource(String name) {
+        return clazz.getClassLoader().getResource(clazz.getName().replace('.','/').replace('$','/')+ name);
     }
 
     @WebMethod(name="script.js")
     public void doScriptJs(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
-        rsp.serveFile(req, getScriptJs(), TimeUnit2.DAYS.toMillis(1));
+        rsp.serveFile(req, hasResource("/script.js"), TimeUnit2.DAYS.toMillis(1));
+    }
+
+    @WebMethod(name="style.css")
+    public void doStyleCss(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
+        rsp.serveFile(req, hasResource("/style.css"), TimeUnit2.DAYS.toMillis(1));
     }
 
     /**

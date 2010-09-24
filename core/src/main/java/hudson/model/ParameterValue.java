@@ -1,7 +1,8 @@
 /*
  * The MIT License
  * 
- * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, Tom Huybrechts
+ * Copyright (c) 2004-2010, Sun Microsystems, Inc., Kohsuke Kawaguchi, Tom Huybrechts,
+ *      Yahoo! Inc.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -25,7 +26,6 @@ package hudson.model;
 
 import hudson.EnvVars;
 import hudson.Util;
-import hudson.slaves.OfflineCause;
 import hudson.tasks.BuildWrapper;
 import hudson.tasks.Builder;
 import hudson.util.VariableResolver;
@@ -33,9 +33,7 @@ import hudson.util.VariableResolver;
 import java.io.Serializable;
 import java.util.Map;
 
-import net.sf.json.JSONObject;
 
-import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.export.ExportedBean;
 
@@ -239,4 +237,18 @@ public abstract class ParameterValue implements Serializable {
     public String getShortDescription() {
         return toString();
     }
+
+    /**
+     * Returns whether the information contained in this ParameterValue is
+     * sensitive or security related. Used to determine whether the value
+     * provided by this object should be masked in output.
+     *
+     * <p>
+     * Subclasses can override this to control the returne value.
+     *
+     * @since 1.378
+     */
+    public boolean isSensitive() {
+        return false;
+}
 }

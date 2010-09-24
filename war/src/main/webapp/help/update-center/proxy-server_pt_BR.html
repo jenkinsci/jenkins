@@ -1,0 +1,14 @@
+<div>
+  Se seu servidor Hudson estiver atrás de um firewall e não tem acesso direto a internet,
+  e se a JVM do seu servidor não estiver configurada apropriadamente
+  (<a  href="http://java.sun.com/j2se/1.5.0/docs/guide/net/properties.html">Veja as propriedades de redes do JDK para mais detalhes</a>)
+  para habilitar a conexão de internet, você pode especificar o nome do servidor de proxy HTTP neste campos para permitir ao Hudson
+  instalar plugins para você. Note que o Hudson usa HTTPS para se comunicar com o centro de atualização para baixar os plugins.
+
+  <p>
+  O valor que você colocar aqui será atribuído a propriedade de sistema <tt>http.proxyHost</tt>. Deixar este campo vazio
+  deixa esta propriedade sem atribuição, o que significa que o Hudson tentará conectar ao host externo diretamente.
+
+  <p>
+  Se você não está certo sobre o valor, cheque a configuração de proxy de seu browser.
+</div>

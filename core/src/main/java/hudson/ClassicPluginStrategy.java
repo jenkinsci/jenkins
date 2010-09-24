@@ -39,9 +39,12 @@ import java.io.Closeable;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.ArrayList;
-import java.util.List;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.Enumeration;
+import java.util.HashSet;
+import java.util.List;
 import java.util.jar.Manifest;
 import java.util.jar.Attributes;
 import java.util.logging.Logger;
@@ -167,13 +170,28 @@ public class ClassicPluginStrategy implements PluginStrategy {
         ClassLoader dependencyLoader = new DependencyClassLoader(getBaseClassLoader(atts), archive, Util.join(dependencies,optionalDependencies));
 
         return new PluginWrapper(pluginManager, archive, manifest, baseResourceURL,
-                createClassLoader(paths, dependencyLoader), disableFile, dependencies, optionalDependencies);
+                createClassLoader(paths, dependencyLoader, atts), disableFile, dependencies, optionalDependencies);
+    }
+    
+    @Deprecated
+    protected ClassLoader createClassLoader(List<File> paths, ClassLoader parent) throws IOException {
+        return createClassLoader( paths, parent, null );
     }
 
     /**
      * Creates the classloader that can load all the specified jar files and delegate to the given parent.
      */
-    protected ClassLoader createClassLoader(List<File> paths, ClassLoader parent) throws IOException {
+    protected ClassLoader createClassLoader(List<File> paths, ClassLoader parent, Attributes atts) throws IOException {
+        if (atts != null) {
+            String usePluginFirstClassLoader = atts.getValue( "PluginFirstClassLoader" );
+            if (Boolean.valueOf( usePluginFirstClassLoader )) {
+                PluginFirstClassLoader classLoader = new PluginFirstClassLoader();
+                classLoader.setParentFirst( false );
+                classLoader.setParent( parent );
+                classLoader.addPathFiles( paths );
+                return classLoader;
+            }
+        }
         if(useAntClassLoader) {
             // using AntClassLoader with Closeable so that we can predictably release jar files opened by URLClassLoader
             AntClassLoader2 classLoader = new AntClassLoader2(parent);
@@ -380,7 +398,20 @@ public class ClassicPluginStrategy implements PluginStrategy {
             throw new ClassNotFoundException(name);
         }
 
-        // TODO: delegate resources? watch out for diamond dependencies
+        @Override
+        protected Enumeration<URL> findResources(String name) throws IOException {
+            HashSet<URL> result = new HashSet<URL>();
+            for (Dependency dep : dependencies) {
+                PluginWrapper p = pluginManager.getPlugin(dep.shortName);
+                if (p!=null) {
+                    Enumeration<URL> urls = p.classLoader.getResources(name);
+                    while (urls != null && urls.hasMoreElements())
+                        result.add(urls.nextElement());
+                }
+            }
+
+            return Collections.enumeration(result);
+        }
 
         @Override
         protected URL findResource(String name) {

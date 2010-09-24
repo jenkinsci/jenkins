@@ -49,7 +49,7 @@ public abstract class CauseOfBlockage {
     }
 
     /**
-     * Build is blocked because all the nodes in a given label is offline.
+     * Build is blocked because all the nodes that match a given label is offline.
      */
     public static final class BecauseLabelIsOffline extends CauseOfBlockage {
         public final Label label;
@@ -79,7 +79,7 @@ public abstract class CauseOfBlockage {
     }
 
     /**
-     * Build is blocked because a node is fully busy
+     * Build is blocked because everyone that matches the specified label is fully busy
      */
     public static final class BecauseLabelIsBusy extends CauseOfBlockage {
         public final Label label;

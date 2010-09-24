@@ -30,6 +30,7 @@ import hudson.maven.MavenBuildProxy;
 import hudson.maven.MavenBuildProxy.BuildCallable;
 import hudson.maven.MavenBuilder;
 import hudson.maven.MavenModule;
+import hudson.maven.MavenProjectActionBuilder;
 import hudson.maven.MavenReporter;
 import hudson.maven.MavenReporterDescriptor;
 import hudson.maven.MojoInfo;
@@ -49,6 +50,8 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
+import java.util.ListIterator;
 
 /**
  * Records the surefire test result.
@@ -98,11 +101,8 @@ public class SurefireArchiver extends MavenReporter {
                 // no test in this module
                 return true;
 
-            if(result==null) {
-                long t = System.currentTimeMillis() - build.getMilliSecsSinceBuildStart();
-                result = new TestResult(t - 1000/*error margin*/, ds);
-            } else
-                result.parse(build.getTimestamp().getTimeInMillis() - 1000/*error margin*/, ds);
+            if(result==null)    result = new TestResult();
+            result.parse(System.currentTimeMillis() - build.getMilliSecsSinceBuildStart(), ds);
 
             int failCount = build.execute(new BuildCallable<Integer, IOException>() {
                 public Integer call(MavenBuild build) throws IOException, InterruptedException {
@@ -113,7 +113,7 @@ public class SurefireArchiver extends MavenReporter {
                         sr.setResult(result,listener);
                     if(result.getFailCount()>0)
                         build.setResult(Result.UNSTABLE);
-                    build.registerAsProjectAction(SurefireArchiver.this);
+                    build.registerAsProjectAction(new FactoryImpl());
                     return result.getFailCount();
                 }
             });
@@ -128,13 +128,34 @@ public class SurefireArchiver extends MavenReporter {
         return true;
     }
 
+    /**
+     * Up to 1.372, there was a bug that causes Hudson to persist {@link SurefireArchiver} with the entire test result
+     * in it. If we are loading those, fix it up in memory to reduce the memory footprint.
+     *
+     * It'd be nice we can save the record to remove problematic portion, but that might have
+     * additional side effect.
+     */
+    public static void fixUp(List<MavenProjectActionBuilder> builders) {
+        if (builders==null) return;
+        for (ListIterator<MavenProjectActionBuilder> itr = builders.listIterator(); itr.hasNext();) {
+            MavenProjectActionBuilder b =  itr.next();
+            if (b instanceof SurefireArchiver)
+                itr.set(new FactoryImpl());
+        }
+    }
 
-    public Collection<? extends Action> getProjectActions(MavenModule module) {
-        return Collections.singleton(new TestResultProjectAction(module));
+    /**
+     * Part of the serialization data attached to {@link MavenBuild}.
+     */
+    static final class FactoryImpl implements MavenProjectActionBuilder {
+        public Collection<? extends Action> getProjectActions(MavenModule module) {
+            return Collections.singleton(new TestResultProjectAction(module));
+        }
     }
 
     private boolean isSurefireTest(MojoInfo mojo) {
         if ((!mojo.is("com.sun.maven", "maven-junit-plugin", "test"))
+            && (!mojo.is("org.sonatype.flexmojos", "flexmojos-maven-plugin", "test-run"))
             && (!mojo.is("org.apache.maven.plugins", "maven-surefire-plugin", "test")))
             return false;
 
@@ -168,6 +189,13 @@ public class SurefireArchiver extends MavenReporter {
                     return false;
                 }
             }
+            else if (mojo.is("org.sonatype.flexmojos", "flexmojos-maven-plugin", "test-run")) {
+		Boolean skipTests = mojo.getConfigurationValue("skipTest", Boolean.class);
+		
+		if (((skipTests != null) && (skipTests))) {
+		    return false;
+		}
+	    }
 
         } catch (ComponentConfigurationException e) {
             return false;

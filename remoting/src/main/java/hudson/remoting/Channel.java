@@ -24,6 +24,7 @@
 package hudson.remoting;
 
 import hudson.remoting.ExportTable.ExportList;
+import hudson.remoting.PipeWindow.Real;
 import hudson.remoting.forward.ListeningPort;
 import hudson.remoting.forward.ForwarderFactory;
 import hudson.remoting.forward.PortForwarder;
@@ -40,6 +41,7 @@ import java.util.Collections;
 import java.util.Hashtable;
 import java.util.Map;
 import java.util.Vector;
+import java.util.WeakHashMap;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -110,15 +112,17 @@ public class Channel implements VirtualChannel, IChannel {
     /*package*/ final ExecutorService executor;
 
     /**
-     * If true, the incoming link is already shut down,
-     * and reader is already terminated.
+     * If non-null, the incoming link is already shut down,
+     * and reader is already terminated. The {@link Throwable} object indicates why the outgoing channel
+     * was closed.
      */
-    private volatile boolean inClosed = false;
+    private volatile Throwable inClosed = null;
     /**
-     * If true, the outgoing link is already shut down,
-     * and no command can be sent.
+     * If non-null, the outgoing link is already shut down,
+     * and no command can be sent. The {@link Throwable} object indicates why the outgoing channel
+     * was closed.
      */
-    private volatile boolean outClosed = false;
+    private volatile Throwable outClosed = null;
 
     /*package*/ final Map<Integer,Request<?,?>> pendingCalls = new Hashtable<Integer,Request<?,?>>();
 
@@ -137,6 +141,16 @@ public class Channel implements VirtualChannel, IChannel {
      * Objects exported via {@link #export(Class, Object)}.
      */
     private final ExportTable<Object> exportedObjects = new ExportTable<Object>();
+
+    /**
+     * {@link PipeWindow}s keyed by their OIDs. Weak map, to simplify the GC of the instances.
+     * Strong references are kept from {@link ProxyOutputStream}.
+     *
+     * I haven't thought carefully, and it might be possible for us to lose the tracking of the window size
+     * in this way, but that will only result in a temporary spike in the effective window size,
+     * and therefore should be OK.
+     */
+    private final WeakHashMap<Integer,PipeWindow> pipeWindows = new WeakHashMap<Integer, PipeWindow>();
 
     /**
      * Registered listeners. 
@@ -205,6 +219,8 @@ public class Channel implements VirtualChannel, IChannel {
      * return right away, and the socket only really times out after 10s of minutes.
      */
     private volatile long lastHeard;
+
+    /*package*/ final ExecutorService pipeWriter;
 
     /**
      * Communication mode.
@@ -276,7 +292,7 @@ public class Channel implements VirtualChannel, IChannel {
 
     /**
      * Creates a new channel.
-     * 
+     *
      * @param name
      *      Human readable name of this channel. Used for debug/logging. Can be anything.
      * @param exec
@@ -304,6 +320,10 @@ public class Channel implements VirtualChannel, IChannel {
      *      safe the resulting behavior is is up to discussion.
      */
     public Channel(String name, ExecutorService exec, Mode mode, InputStream is, OutputStream os, OutputStream header, boolean restricted) throws IOException {
+        this(name,exec,mode,is,os,header,restricted,new Capability());
+    }
+
+    /*package*/ Channel(String name, ExecutorService exec, Mode mode, InputStream is, OutputStream os, OutputStream header, boolean restricted, Capability capability) throws IOException {
         this.name = name;
         this.executor = exec;
         this.isRestricted = restricted;
@@ -319,7 +339,7 @@ public class Channel implements VirtualChannel, IChannel {
         //
         // so use magic preamble and discard all the data up to that to improve robustness.
 
-        new Capability().writePreamble(os);
+        capability.writePreamble(os);
 
         ObjectOutputStream oos = null;
         if(mode!= Mode.NEGOTIATE) {
@@ -359,6 +379,7 @@ public class Channel implements VirtualChannel, IChannel {
                                 }
                                 this.oos = oos;
                                 this.remoteCapability = cap;
+                                this.pipeWriter = createPipeWriter();
                                 this.ois = new ObjectInputStream(mode.wrap(is));
                                 new ReaderThread(name).start();
 
@@ -397,7 +418,25 @@ public class Channel implements VirtualChannel, IChannel {
     }
 
     /*package*/ boolean isOutClosed() {
-        return outClosed;
+        return outClosed!=null;
+    }
+
+    /**
+     * Creates the {@link ExecutorService} for writing to pipes.
+     *
+     * <p>
+     * If the throttling is supported, use a separate thread to free up the main channel
+     * reader thread (thus prevent blockage.) Otherwise let the channel reader thread do it,
+     * which is the historical behaviour.
+     */
+    private ExecutorService createPipeWriter() {
+        if (remoteCapability.supportsPipeThrottling())
+            return Executors.newSingleThreadExecutor(new ThreadFactory() {
+                public Thread newThread(Runnable r) {
+                    return new Thread(r,"Pipe writer thread: "+name);
+                }
+            });
+        return new SynchronousExecutorService();
     }
 
     /**
@@ -408,8 +447,8 @@ public class Channel implements VirtualChannel, IChannel {
      * {@link Command}s are executed on a remote system in the order they are sent.
      */
     /*package*/ synchronized void send(Command cmd) throws IOException {
-        if(outClosed)
-            throw new ChannelClosedException();
+        if(outClosed!=null)
+            throw new ChannelClosedException(outClosed);
         if(logger.isLoggable(Level.FINE))
             logger.fine("Send "+cmd);
         Channel old = Channel.setCurrent(this);
@@ -544,6 +583,19 @@ public class Channel implements VirtualChannel, IChannel {
         return call(new PreloadJarTask(jars,local));
     }
 
+    /*package*/ PipeWindow getPipeWindow(int oid) {
+        if (!remoteCapability.supportsPipeThrottling())
+            return PipeWindow.FAKE;
+
+        synchronized (pipeWindows) {
+            PipeWindow v = pipeWindows.get(oid);
+            if (v==null)
+                pipeWindows.put(oid,v = new Real(PIPE_WINDOW_SIZE));
+            return v;
+        }
+    }
+
+
     /**
      * {@inheritDoc}
      */
@@ -593,9 +645,13 @@ public class Channel implements VirtualChannel, IChannel {
 
     /**
      * Aborts the connection in response to an error.
+     *
+     * @param e
+     *      The error that caused the connection to be aborted. Never null.
      */
     protected synchronized void terminate(IOException e) {
-        outClosed=inClosed=true;
+        if (e==null)    throw new IllegalArgumentException();
+        outClosed=inClosed=e;
         try {
             synchronized(pendingCalls) {
                 for (Request<?,?> req : pendingCalls.values())
@@ -646,7 +702,7 @@ public class Channel implements VirtualChannel, IChannel {
      *      If the current thread is interrupted while waiting for the completion.
      */
     public synchronized void join() throws InterruptedException {
-        while(!inClosed || !outClosed)
+        while(inClosed==null || outClosed==null)
             wait();
     }
 
@@ -655,7 +711,7 @@ public class Channel implements VirtualChannel, IChannel {
      * this method returns true.
      */
     /*package*/ boolean isInClosed() {
-        return inClosed;
+        return inClosed!=null;
     }
 
     /**
@@ -667,7 +723,7 @@ public class Channel implements VirtualChannel, IChannel {
      */
     public synchronized void join(long timeout) throws InterruptedException {
         long start = System.currentTimeMillis();
-        while(System.currentTimeMillis()-start<timeout && (!inClosed || !outClosed))
+        while(System.currentTimeMillis()-start<timeout && (inClosed==null || outClosed==null))
             wait(timeout+start-System.currentTimeMillis());
     }
 
@@ -721,10 +777,10 @@ public class Channel implements VirtualChannel, IChannel {
      * {@inheritDoc}
      */
     public synchronized void close() throws IOException {
-        if(outClosed)  return;  // already closed
+        if(outClosed!=null)  return;  // already closed
 
         send(new CloseCommand());
-        outClosed = true;   // last command sent. no further command allowed. lock guarantees that no command will slip inbetween
+        outClosed = new IOException();   // last command sent. no further command allowed. lock guarantees that no command will slip inbetween
         try {
             oos.close();
         } catch (IOException e) {
@@ -862,7 +918,7 @@ public class Channel implements VirtualChannel, IChannel {
         public void run() {
             Command cmd = null;
             try {
-                while(!inClosed) {
+                while(inClosed==null) {
                     try {
                         Channel old = Channel.setCurrent(Channel.this);
                         try {
@@ -888,6 +944,7 @@ public class Channel implements VirtualChannel, IChannel {
                     }
                 }
                 ois.close();
+                pipeWriter.shutdown();
             } catch (IOException e) {
                 logger.log(Level.SEVERE, "I/O error in channel "+name,e);
                 terminate(e);
@@ -919,6 +976,8 @@ public class Channel implements VirtualChannel, IChannel {
     private static final ThreadLocal<Channel> CURRENT = new ThreadLocal<Channel>();
 
     private static final Logger logger = Logger.getLogger(Channel.class.getName());
+
+    public static final int PIPE_WINDOW_SIZE = Integer.getInteger(Channel.class+".pipeWindowSize",128*1024);
 
 //    static {
 //        ConsoleHandler h = new ConsoleHandler();

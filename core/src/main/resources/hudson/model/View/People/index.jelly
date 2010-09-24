@@ -47,7 +47,7 @@ THE SOFTWARE.
                  alt=""/></a></td>
             <td><a href="${rootURL}/${p.user.url}/">${p.user}</a></td>
             <td data="${p.timeSortKey}">${p.lastChangeTimeString}</td>
-            <td><a href="${rootURL}/${p.project.url}">${p.project.name}</a></td>
+            <td><a href="${rootURL}/${p.project.url}">${p.project.fullDisplayName}</a></td>
           </tr>
         </j:forEach>
       </table>

@@ -15,7 +15,8 @@ import org.mozilla.javascript.tools.debugger.Dim;
 public class AntTargetAnnotationTest extends HudsonTestCase {
     public void test1() throws Exception {
         FreeStyleProject p = createFreeStyleProject();
-        p.getBuildersList().add(new Ant("foo",null,null,null,null));
+        Ant.AntInstallation ant = configureDefaultAnt();
+        p.getBuildersList().add(new Ant("foo",ant.getName(),null,null,null));
         p.setScm(new SingleFileSCM("build.xml",getClass().getResource("simple-build.xml")));
         FreeStyleBuild b = buildAndAssertSuccess(p);
 

@@ -1,7 +1,7 @@
 /*
  * The MIT License
  * 
- * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi
+ * Copyright (c) 2004-2010, Sun Microsystems, Inc., Kohsuke Kawaguchi
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,11 +24,12 @@
 package hudson.matrix;
 
 import com.thoughtworks.xstream.XStream;
-import com.thoughtworks.xstream.converters.Converter;
+import hudson.Util;
 import hudson.util.RobustCollectionConverter;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.Arrays;
 
@@ -41,7 +42,7 @@ public class AxisList extends ArrayList<Axis> {
     public AxisList() {
     }
 
-    public AxisList(Collection<Axis> c) {
+    public AxisList(Collection<? extends Axis> c) {
         super(c);
     }
 
@@ -57,6 +58,13 @@ public class AxisList extends ArrayList<Axis> {
         return null;
     }
 
+    /**
+     * Creates a subset of the list that only contains the type assignable to the specified type.
+     */
+    public AxisList subList(Class<? extends Axis> subType) {
+        return new AxisList(Util.filter(this,subType));
+    }
+
     @Override
     public boolean add(Axis axis) {
         return axis!=null && super.add(axis);
@@ -67,6 +75,7 @@ public class AxisList extends ArrayList<Axis> {
      */
     public Iterable<Combination> list() {
         final int[] base = new int[size()];
+        if (base.length==0) return Collections.<Combination>emptyList();
 
         int b = 1;
         for( int i=size()-1; i>=0; i-- ) {

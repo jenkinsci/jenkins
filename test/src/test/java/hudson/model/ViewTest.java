@@ -23,6 +23,7 @@
  */
 package hudson.model;
 
+import org.jvnet.hudson.test.Bug;
 import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
 import com.gargoylesoftware.htmlunit.html.HtmlAnchor;
 import com.gargoylesoftware.htmlunit.html.HtmlForm;
@@ -38,6 +39,11 @@ import static hudson.model.Messages.Hudson_ViewName;
  * @author Kohsuke Kawaguchi
  */
 public class ViewTest extends HudsonTestCase {
+
+    @Bug(7100)
+    public void testXHudsonHeader() throws Exception {
+        assertNotNull(new WebClient().goTo("/").getWebResponse().getResponseHeaderValue("X-Hudson"));
+    }
 
 	/**
      * Creating two views with the same name.

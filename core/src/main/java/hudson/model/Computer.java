@@ -1,7 +1,8 @@
 /*
  * The MIT License
  * 
- * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, Red Hat, Inc., Seiji Sogabe, Stephen Connolly, Thomas J. Black, Tom Huybrechts
+ * Copyright (c) 2004-2010, Sun Microsystems, Inc., Kohsuke Kawaguchi,
+ * Red Hat, Inc., Seiji Sogabe, Stephen Connolly, Thomas J. Black, Tom Huybrechts
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -28,6 +29,7 @@ import hudson.Util;
 import hudson.cli.declarative.CLIMethod;
 import hudson.console.AnnotatedLargeText;
 import hudson.model.Descriptor.FormException;
+import hudson.model.queue.WorkUnit;
 import hudson.node_monitors.NodeMonitor;
 import hudson.remoting.Channel;
 import hudson.remoting.VirtualChannel;
@@ -281,6 +283,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
      */
     @CLIMethod(name="connect-node")
     public void cliConnect(@Option(name="-f",usage="Cancel any currently pending connect operation and retry from scratch") boolean force) throws ExecutionException, InterruptedException {
+        checkPermission(Hudson.ADMINISTER);
         connect(force).get();
     }
 
@@ -336,6 +339,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
      */
     @CLIMethod(name="disconnect-node")
     public void cliDisconnect(@Option(name="-m",usage="Record the note about why you are disconnecting this node") String cause) throws ExecutionException, InterruptedException {
+        checkPermission(Hudson.ADMINISTER);
         disconnect(new ByCLI(cause)).get();
     }
 
@@ -344,11 +348,13 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
      */
     @CLIMethod(name="offline-node")
     public void cliOffline(@Option(name="-m",usage="Record the note about why you are disconnecting this node") String cause) throws ExecutionException, InterruptedException {
+        checkPermission(Hudson.ADMINISTER);
         setTemporarilyOffline(true,new ByCLI(cause));
     }
 
     @CLIMethod(name="online-node")
     public void cliOnline() throws ExecutionException, InterruptedException {
+        checkPermission(Hudson.ADMINISTER);
         setTemporarilyOffline(false,null);
     }
 
@@ -388,6 +394,10 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
     @Exported
     public LoadStatistics getLoadStatistics() {
         return getNode().getSelfLabel().loadStatistics;
+    }
+
+    public BuildTimelineWidget getTimeline() {
+        return new BuildTimelineWidget(getBuilds());
     }
 
     /**
@@ -782,7 +792,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
                     LOGGER.fine(address+" is not an IPv4 address");
                     continue;
                 }
-                if(!ia.isReachable(3000)) {
+                if(!ComputerPinger.checkIsReachable(ia, 3)) {
                     LOGGER.fine(address+" didn't respond to ping");
                     continue;
                 }
@@ -805,7 +815,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
     /**
      * Starts executing a fly-weight task.
      */
-    /*package*/ final void startFlyWeightTask(Queue.BuildableItem p) {
+    /*package*/ final void startFlyWeightTask(WorkUnit p) {
         OneOffExecutor e = new OneOffExecutor(this, p);
         e.start();
         oneOffExecutors.add(e);

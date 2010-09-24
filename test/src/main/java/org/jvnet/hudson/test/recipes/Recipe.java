@@ -36,7 +36,6 @@ import java.io.File;
 import junit.framework.TestCase;
 import hudson.model.Hudson;
 
-import javax.servlet.ServletContext;
 
 /**
  * Meta-annotation for recipe annotations, which controls

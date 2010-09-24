@@ -130,6 +130,18 @@ public interface MavenBuildProxy {
 
     /**
      * Nominates that the reporter will contribute a project action
+     * for this build by using {@link MavenReporter#getProjectActions(MavenModule)}.
+     *
+     * <p>
+     * The specified {@link MavenReporter} object will be transferred to the master
+     * and will become a persisted part of the {@link MavenBuild}.
+     *
+     * @since 1.372
+     */
+    void registerAsProjectAction(MavenProjectActionBuilder builder);
+
+    /**
+     * Nominates that the reporter will contribute a project action
      * for this build by using {@link MavenReporter#getAggregatedProjectAction(MavenModuleSet)}.
      *
      * <p>
@@ -212,6 +224,10 @@ public interface MavenBuildProxy {
         
         public void registerAsProjectAction(MavenReporter reporter) {
             core.registerAsProjectAction(reporter);
+        }
+
+        public void registerAsProjectAction(MavenProjectActionBuilder builder) {
+            core.registerAsProjectAction(builder);
         }
 
         public void registerAsAggregatedProjectAction(MavenReporter reporter) {

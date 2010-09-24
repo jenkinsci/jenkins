@@ -37,7 +37,7 @@ import java.util.List;
 import java.util.Map;
 
 @ExportedBean
-public class CauseAction implements FoldableAction {
+public class CauseAction implements FoldableAction, RunAction {
     /**
      * @deprecated since 2009-02-28
      */
@@ -93,6 +93,26 @@ public class CauseAction implements FoldableAction {
     public String getShortDescription() {
         if(causes.isEmpty())    return "N/A";
         return causes.get(0).getShortDescription();
+    }
+
+    public void onLoad() {
+        // noop
+    }
+
+    public void onBuildComplete() {
+        // noop
+    }
+
+    /**
+     * When hooked up to build, notify {@link Cause}s.
+     */
+    public void onAttached(Run owner) {
+        if (owner instanceof AbstractBuild) {// this should be always true but being defensive here
+            AbstractBuild b = (AbstractBuild) owner;
+            for (Cause c : causes) {
+                c.onAddedTo(b);
+            }
+        }
     }
 
     public void foldIntoExisting(hudson.model.Queue.Item item, Task owner, List<Action> otherActions) {

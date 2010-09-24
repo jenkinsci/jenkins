@@ -1,7 +1,8 @@
 /*
  * The MIT License
  * 
- * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi
+ * Copyright (c) 2004-2010, Sun Microsystems, Inc., Kohsuke Kawaguchi,
+ * Alan Harder, Yahoo! Inc.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -37,6 +38,7 @@ import java.io.File;
 import java.io.StringReader;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.util.Set;
 
 import org.jvnet.animal_sniffer.IgnoreJRERequirement;
 
@@ -60,19 +62,37 @@ public class ArgumentListBuilder implements Serializable {
     }
 
     public ArgumentListBuilder add(Object a) {
-        return add(a.toString());
+        return add(a.toString(), false);
+    }
+
+    /**
+     * @since 1.378
+     */
+    public ArgumentListBuilder add(Object a, boolean mask) {
+        return add(a.toString(), mask);
     }
 
     public ArgumentListBuilder add(File f) {
-        return add(f.getAbsolutePath());
+        return add(f.getAbsolutePath(), false);
     }
 
     public ArgumentListBuilder add(String a) {
-        if(a!=null)
-            args.add(a);
-        return this;
+        return add(a,false);
     }
 
+    /**
+     * @since 1.378
+     */
+    public ArgumentListBuilder add(String a, boolean mask) {
+        if(a!=null) {
+            if(mask) {
+                this.mask.set(args.size());
+            }
+            args.add(a);
+        }
+        return this;
+    }
+    
     public ArgumentListBuilder prepend(String... args) {
         // left-shift the mask
         BitSet nm = new BitSet(this.args.size()+args.length);
@@ -93,7 +113,14 @@ public class ArgumentListBuilder implements Serializable {
      * argument is treated as its own string and never merged into one. 
      */
     public ArgumentListBuilder addQuoted(String a) {
-        return add('"'+a+'"');
+        return add('"'+a+'"', false);
+    }
+
+    /**
+     * @since 1.378
+     */
+    public ArgumentListBuilder addQuoted(String a, boolean mask) {
+        return add('"'+a+'"', mask);
     }
 
     public ArgumentListBuilder add(String... args) {
@@ -113,6 +140,15 @@ public class ArgumentListBuilder implements Serializable {
     }
 
     /**
+     * @since 1.378
+     */
+    public ArgumentListBuilder addKeyValuePair(String prefix, String key, String value, boolean mask) {
+        if(key==null) return this;
+        add(((prefix==null)?"-D":prefix)+key+'='+value, mask);
+        return this;
+    }
+
+    /**
      * Adds key value pairs as "-Dkey=value -Dkey=value ..."
      *
      * <tt>-D</tt> portion is configurable as the 'prefix' parameter.
@@ -120,7 +156,26 @@ public class ArgumentListBuilder implements Serializable {
      */
     public ArgumentListBuilder addKeyValuePairs(String prefix, Map<String,String> props) {
         for (Entry<String,String> e : props.entrySet())
-            add(prefix+e.getKey()+'='+e.getValue());
+            addKeyValuePair(prefix, e.getKey(), e.getValue(), false);
+        return this;
+    }
+
+    /**
+     * Adds key value pairs as "-Dkey=value -Dkey=value ..." with masking.
+     *
+     * @param prefix
+     *      Configures the -D portion of the example. Defaults to -D if null.
+     * @param props
+     *      The map of key/value pairs to add
+     * @param propsToMask
+     *      Set containing key names to mark as masked in the argument list. Key
+     *      names that do not exist in the set will be added unmasked.
+     * @since 1.378
+     */
+    public ArgumentListBuilder addKeyValuePairs(String prefix, Map<String,String> props, Set<String> propsToMask) {
+        for (Entry<String,String> e : props.entrySet()) {
+            addKeyValuePair(prefix, e.getKey(), e.getValue(), (propsToMask == null) ? false : propsToMask.contains(e.getKey()));
+        }
         return this;
     }
 
@@ -128,7 +183,7 @@ public class ArgumentListBuilder implements Serializable {
      * Adds key value pairs as "-Dkey=value -Dkey=value ..." by parsing a given string using {@link Properties}.
      *
      * @param prefix
-     *      The '-D' portion of the example.
+     *      The '-D' portion of the example. Defaults to -D if null.
      * @param properties
      *      The persisted form of {@link Properties}. For example, "abc=def\nghi=jkl". Can be null, in which
      *      case this method becomes no-op.
@@ -140,7 +195,31 @@ public class ArgumentListBuilder implements Serializable {
         if(properties==null)    return this;
 
         for (Entry<Object,Object> entry : load(properties).entrySet()) {
-            args.add(prefix + entry.getKey() + "=" + Util.replaceMacro(entry.getValue().toString(),vr));
+            addKeyValuePair(prefix, (String)entry.getKey(), Util.replaceMacro(entry.getValue().toString(),vr), false);
+        }
+        return this;
+    }
+
+    /**
+     * Adds key value pairs as "-Dkey=value -Dkey=value ..." by parsing a given string using {@link Properties} with masking.
+     *
+     * @param prefix
+     *      The '-D' portion of the example. Defaults to -D if null.
+     * @param properties
+     *      The persisted form of {@link Properties}. For example, "abc=def\nghi=jkl". Can be null, in which
+     *      case this method becomes no-op.
+     * @param vr
+     *      {@link VariableResolver} to be performed on the values.
+     * @param propsToMask
+     *      Set containing key names to mark as masked in the argument list. Key
+     *      names that do not exist in the set will be added unmasked.
+     * @since 1.378
+     */
+    public ArgumentListBuilder addKeyValuePairsFromPropertyString(String prefix, String properties, VariableResolver vr, Set<String> propsToMask) throws IOException {
+        if(properties==null)    return this;
+
+        for (Entry<Object,Object> entry : load(properties).entrySet()) {
+            addKeyValuePair(prefix, (String)entry.getKey(), Util.replaceMacro(entry.getValue().toString(),vr), (propsToMask == null) ? false : propsToMask.contains((String)entry.getKey()));
         }
         return this;
     }
@@ -167,6 +246,7 @@ public class ArgumentListBuilder implements Serializable {
     public ArgumentListBuilder clone() {
         ArgumentListBuilder r = new ArgumentListBuilder();
         r.args.addAll(this.args);
+        r.mask = (BitSet) this.mask.clone();
         return r;
     }
 
@@ -175,12 +255,17 @@ public class ArgumentListBuilder implements Serializable {
      */
     public void clear() {
         args.clear();
+        mask.clear();
     }
 
     public List<String> toList() {
         return args;
     }
 
+    /**
+     * Just adds quotes around args containing spaces, but no other special characters,
+     * so this method should generally be used only for informational/logging purposes.
+     */
     public String toStringWithQuote() {
         StringBuilder buf = new StringBuilder();
         for (String arg : args) {
@@ -192,6 +277,66 @@ public class ArgumentListBuilder implements Serializable {
                 buf.append(arg);
         }
         return buf.toString();
+    }
+
+    /**
+     * Wrap command in a CMD.EXE call so we can return the exit code (ERRORLEVEL).
+     * This method takes care of escaping special characters in the command, which
+     * is needed since the command is now passed as a string to the CMD.EXE shell.
+     * This is done as follows:
+     * Wrap arguments in double quotes if they contain any of:
+     *   space *?,;^&<>|" or % followed by a letter.
+     * <br/> These characters are also prepended with a ^ character: ^&<>|
+     * <br/> A " is prepended with another " character.  Note: Windows has issues
+     * escaping some combinations of quotes and spaces.  Quotes should be avoided.
+     * <br/> A % followed by a letter has that letter wrapped in double quotes,
+     * to avoid possible variable expansion.  ie, %foo% becomes "%"f"oo%".
+     * The second % does not need special handling because it is not followed
+     * by a letter. <br/>
+     * Example: "-Dfoo=*abc?def;ghi^^jkl^&mno^<pqr^>stu^|vwx""yz%"e"nd"
+     * @return
+     */
+    public ArgumentListBuilder toWindowsCommand() {
+        StringBuilder quotedArgs = new StringBuilder();
+        boolean quoted, percent;
+        for (String arg : args) {
+            quoted = percent = false;
+            for (int i = 0; i < arg.length(); i++) {
+                char c = arg.charAt(i);
+                if (!quoted && (c == ' ' || c == '*' || c == '?' || c == ',' || c == ';')) {
+                    quoted = startQuoting(quotedArgs, arg, i);
+                }
+                else if (c == '^' || c == '&' || c == '<' || c == '>' || c == '|') {
+                    if (!quoted) quoted = startQuoting(quotedArgs, arg, i);
+                    quotedArgs.append('^');
+                }
+                else if (c == '"') {
+                    if (!quoted) quoted = startQuoting(quotedArgs, arg, i);
+                    quotedArgs.append('"');
+                }
+                else if (percent && ((c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z'))) {
+                    if (!quoted) quoted = startQuoting(quotedArgs, arg, i);
+                    quotedArgs.append('"').append(c);
+                    c = '"';
+                }
+                percent = (c == '%');
+                if (quoted) quotedArgs.append(c);
+            }
+            if (quoted) quotedArgs.append('"'); else quotedArgs.append(arg);
+            quotedArgs.append(' ');
+        }
+        // (comment copied from old code in hudson.tasks.Ant)
+        // on Windows, executing batch file can't return the correct error code,
+        // so we need to wrap it into cmd.exe.
+        // double %% is needed because we want ERRORLEVEL to be expanded after
+        // batch file executed, not before. This alone shows how broken Windows is...
+        quotedArgs.append("&& exit %%ERRORLEVEL%%");
+        return new ArgumentListBuilder().add("cmd.exe", "/C").addQuoted(quotedArgs.toString());
+    }
+
+    private static boolean startQuoting(StringBuilder buf, String arg, int atIndex) {
+        buf.append('"').append(arg.substring(0, atIndex));
+        return true;
     }
 
     /**
@@ -218,8 +363,7 @@ public class ArgumentListBuilder implements Serializable {
      * @param string the argument
      */
     public void addMasked(String string) {
-        mask.set(args.size());
-        add(string);
+        add(string, true);
     }
 
     private static final long serialVersionUID = 1L;

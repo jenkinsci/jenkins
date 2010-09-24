@@ -1,7 +1,7 @@
 /*
  * The MIT License
  *
- * Copyright (c) 2009, Sun Microsystems, Inc.
+ * Copyright (c) 2009-2010, Sun Microsystems, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -37,6 +37,7 @@ import org.kohsuke.stapler.DataBoundConstructor;
 
 /**
  * An object which can ensure that a generic {@link ToolInstallation} in fact exists on a node.
+ *
  * The subclass should have a {@link ToolInstallerDescriptor}.
  * A {@code config.jelly} should be provided to customize specific fields;
  * {@code <t:label xmlns:t="/hudson/tools"/>} to customize {@code label}.

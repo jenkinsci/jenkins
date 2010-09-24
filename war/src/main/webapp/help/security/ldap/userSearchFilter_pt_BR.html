@@ -1,0 +1,12 @@
+<div>
+    Uma das pesquisas que o Hudson faz no LDAP é localizar o registro do usuário passando o nome do usuário.
+
+    <p>
+    Este determina o consulta a ser executada para identificar o registro do usuário. A consulta é
+    quase sempre  <tt>"uid={0}"</tt> como definido na <a href="http://www.ietf.org/rfc/rfc2798.txt">RFC 2798</a>,
+    assim na maioria dos casos você deveria deixar este campo vazio.
+
+    <p>
+    Se você realmente especificar uma consulta diferente, especifique uma string de consulta LDAP como o marcador "{0}",
+    que será trocado pelas string do nome do usuário entrada pelo usuário.
+</div>

@@ -27,7 +27,6 @@ import com.thoughtworks.xstream.XStream;
 import hudson.XmlFile;
 import hudson.DescriptorExtensionList;
 import hudson.Extension;
-import hudson.scm.RepositoryBrowser;
 import hudson.matrix.MatrixProject;
 import hudson.matrix.MatrixConfiguration;
 import hudson.matrix.Axis;
@@ -67,7 +66,7 @@ public class Items {
     }
 
     /**
-     * Converts a list of items into a camma-separated full names.
+     * Converts a list of items into a comma-separated list of full names.
      */
     public static String toNameList(Collection<? extends Item> items) {
         StringBuilder buf = new StringBuilder();
@@ -82,7 +81,7 @@ public class Items {
     /**
      * Does the opposite of {@link #toNameList(Collection)}.
      */
-    public static <T extends Item> List<T> fromNameList(String list,Class<T> type) {
+    public static <T extends Item> List<T> fromNameList(String list, Class<T> type) {
         Hudson hudson = Hudson.getInstance();
 
         List<T> r = new ArrayList<T>();

@@ -35,7 +35,6 @@ import hudson.FilePath;
 import hudson.Extension;
 import hudson.Util;
 import org.apache.maven.artifact.Artifact;
-import org.apache.maven.artifact.installer.ArtifactInstallationException;
 import org.apache.maven.project.MavenProject;
 
 import java.io.IOException;
@@ -45,7 +44,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.HashSet;
-import java.lang.reflect.Proxy;
 import java.lang.reflect.Method;
 import java.lang.reflect.InvocationHandler;
 
@@ -130,6 +128,11 @@ public class MavenArtifactArchiver extends MavenReporter {
             // record the action
             build.executeAsync(new MavenBuildProxy.BuildCallable<Void,IOException>() {
                 public Void call(MavenBuild build) throws IOException, InterruptedException {
+                    // if a build forks lifecycles, this method can be called multiple times
+                    List<MavenArtifactRecord> old = Util.filter(build.getActions(), MavenArtifactRecord.class);
+                    if (!old.isEmpty())
+                        build.getActions().removeAll(old);
+
                     MavenArtifactRecord mar = new MavenArtifactRecord(build,pomArtifact,mainArtifact,attachedArtifacts);
                     build.addAction(mar);
 

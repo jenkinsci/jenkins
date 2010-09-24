@@ -139,7 +139,17 @@ public abstract class Lifecycle implements ExtensionPoint {
         // but let's be defensive
         if(dest==null)  throw new IOException("hudson.war location is not known.");
 
+        // backing up the old hudson.war before it gets lost due to upgrading
+        // (newly downloaded hudson.war and 'backup' (hudson.war.tmp) are the same files
+        // unless we are trying to rewrite hudson.war by a backup itself
+        File bak = new File(dest.getPath() + ".bak");
+        if (!by.equals(bak))
+            FileUtils.copyFile(dest, bak);
+       
         FileUtils.copyFile(by, dest);
+        // we don't want to keep backup if we are downgrading
+        if (by.equals(bak)&&bak.exists())
+            bak.delete();
     }
 
     /**

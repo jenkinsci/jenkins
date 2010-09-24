@@ -47,7 +47,6 @@ import hudson.model.AbstractProject.AbstractProjectDescriptor;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.lang.NoSuchMethodException;
 import java.util.Map;
 import java.util.List;
 import java.util.ArrayList;
@@ -188,8 +187,11 @@ public abstract class SCM implements Describable<SCM>, ExtensionPoint {
      *
      * <p>
      * Note that this method does not guarantee that such a clean up will happen. For example, slaves can be
-     * taken offline by being physically removed from the network, and in such a case there's no opporunity
-     * to perform this clean up. Similarly, when a project is deleted or renamed, SCMs do not get any notifications.
+     * taken offline by being physically removed from the network, and in such a case there's no opportunity
+     * to perform this clean up.
+     *
+     * <p>
+     * This method is also invoked when the project is deleted.
      *
      * @param project
      *      The project that owns this {@link SCM}. This is always the same object for a particular instance

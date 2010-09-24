@@ -391,7 +391,7 @@ public abstract class HudsonTestCase extends TestCase implements RootAction {
      * Returns the older default Maven, while still allowing specification of other bundled Mavens.
      */
     protected MavenInstallation configureDefaultMaven() throws Exception {
-	return configureDefaultMaven("maven-2.0.7", MavenInstallation.MAVEN_20);
+	return configureDefaultMaven("apache-maven-2.2.1", MavenInstallation.MAVEN_20);
     }
     
     /**
@@ -507,7 +507,7 @@ public abstract class HudsonTestCase extends TestCase implements RootAction {
     }
 
     public DumbSlave createSlave() throws Exception {
-        return createSlave(null);
+        return createSlave("",null);
     }
 
     /**
@@ -549,17 +549,25 @@ public abstract class HudsonTestCase extends TestCase implements RootAction {
         return new URL("http://localhost:"+localPort+contextPath+"/");
     }
 
+    public DumbSlave createSlave(EnvVars env) throws Exception {
+        return createSlave("",env);
+    }
+
+    public DumbSlave createSlave(Label l, EnvVars env) throws Exception {
+        return createSlave(l==null ? null : l.getExpression(), env);
+    }
+
     /**
      * Creates a slave with certain additional environment variables
      */
-    public DumbSlave createSlave(Label l, EnvVars env) throws Exception {
+    public DumbSlave createSlave(String labels, EnvVars env) throws Exception {
         synchronized (hudson) {
             // this synchronization block is so that we don't end up adding the same slave name more than once.
 
             int sz = hudson.getNodes().size();
 
             DumbSlave slave = new DumbSlave("slave" + sz, "dummy",
-    				createTmpDir().getPath(), "1", Mode.NORMAL, l==null?"":l.getName(), createComputerLauncher(env), RetentionStrategy.NOOP, Collections.EMPTY_LIST);
+    				createTmpDir().getPath(), "1", Mode.NORMAL, labels==null?"":labels, createComputerLauncher(env), RetentionStrategy.NOOP, Collections.EMPTY_LIST);
     		hudson.addNode(slave);
     		return slave;
     	}

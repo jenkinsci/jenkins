@@ -24,9 +24,7 @@
 package hudson.scm;
 
 import hudson.model.Descriptor;
-import hudson.model.Hudson;
 import hudson.model.Descriptor.FormException;
-import hudson.scm.browsers.*;
 import hudson.util.DescriptorList;
 import hudson.Extension;
 import org.kohsuke.stapler.StaplerRequest;
@@ -35,7 +33,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import net.sf.json.JSONObject;
-import net.sf.json.JSONArray;
 
 /**
  * List of all installed {@link RepositoryBrowsers}.

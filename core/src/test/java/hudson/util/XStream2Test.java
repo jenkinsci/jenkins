@@ -23,9 +23,12 @@
  */
 package hudson.util;
 
+import com.google.common.collect.ImmutableMap;
 import junit.framework.TestCase;
 import hudson.model.Result;
 import hudson.model.Run;
+
+import java.util.Map;
 
 /**
  * Tests for XML serialization of java objects.
@@ -111,5 +114,54 @@ public class XStream2Test extends TestCase {
                 + "</myFailure></hudson.util.XStream2Test_-Baz>");
         // Object should load, despite "missingField" in XML above
         assertEquals("hoho", baz.myFailure.getMessage());
+    }
+
+    private static class ImmutableMapHolder {
+        ImmutableMap m;
+    }
+
+    private static class MapHolder {
+        Map m;
+    }
+
+
+    public void testImmutableMap() {
+        XStream2 xs = new XStream2();
+
+        roundtripImmutableMap(xs, ImmutableMap.of());
+        roundtripImmutableMap(xs, ImmutableMap.of("abc", "xyz"));
+        roundtripImmutableMap(xs, ImmutableMap.of("abc", "xyz", "def","ghi"));
+
+        roundtripImmutableMapAsPlainMap(xs, ImmutableMap.of());
+        roundtripImmutableMapAsPlainMap(xs, ImmutableMap.of("abc", "xyz"));
+        roundtripImmutableMapAsPlainMap(xs, ImmutableMap.of("abc", "xyz", "def","ghi"));
+    }
+
+    /**
+     * Since the field type is {@link ImmutableMap}, XML shouldn't contain a reference to the type name.
+     */
+    private void roundtripImmutableMap(XStream2 xs, ImmutableMap<?,?> m) {
+        ImmutableMapHolder a = new ImmutableMapHolder();
+        a.m = m;
+        String xml = xs.toXML(a);
+        System.out.println(xml);
+        assertFalse("shouldn't contain the class name",xml.contains("google"));
+        assertFalse("shouldn't contain the class name",xml.contains("class"));
+        a = (ImmutableMapHolder)xs.fromXML(xml);
+
+        assertSame(m.getClass(),a.m.getClass());    // should get back the exact same type, not just a random map
+        assertEquals(m,a.m);
+    }
+
+    private void roundtripImmutableMapAsPlainMap(XStream2 xs, ImmutableMap<?,?> m) {
+        MapHolder a = new MapHolder();
+        a.m = m;
+        String xml = xs.toXML(a);
+        System.out.println(xml);
+        assertTrue("XML should mention the class name",xml.contains('\"'+ImmutableMap.class.getName()+'\"'));
+        a = (MapHolder)xs.fromXML(xml);
+
+        assertSame(m.getClass(),a.m.getClass());    // should get back the exact same type, not just a random map
+        assertEquals(m,a.m);
     }
 }

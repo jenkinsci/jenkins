@@ -1,7 +1,8 @@
 /*
  * The MIT License
  * 
- * Copyright (c) 2004-2010, Sun Microsystems, Inc., Kohsuke Kawaguchi, Bruce Chapman, Erik Ramfelt, Jean-Baptiste Quenot, Luca Domenico Milanesio
+ * Copyright (c) 2004-2010, Sun Microsystems, Inc., Kohsuke Kawaguchi,
+ * Bruce Chapman, Erik Ramfelt, Jean-Baptiste Quenot, Luca Domenico Milanesio
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,9 +24,10 @@
  */
 package hudson.tasks;
 
-import hudson.Launcher;
-import hudson.Functions;
+import hudson.EnvVars;
 import hudson.Extension;
+import hudson.Functions;
+import hudson.Launcher;
 import hudson.RestrictedSince;
 import hudson.Util;
 import hudson.diagnosis.OldDataMonitor;
@@ -33,7 +35,6 @@ import static hudson.Util.fixEmptyAndTrim;
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
 import hudson.model.BuildListener;
-import hudson.model.ParametersAction;
 import hudson.model.User;
 import hudson.model.UserPropertyDescriptor;
 import hudson.model.Hudson;
@@ -42,7 +43,6 @@ import hudson.util.Secret;
 import hudson.util.XStream2;
 import org.apache.tools.ant.types.selectors.SelectorUtils;
 import org.kohsuke.accmod.Restricted;
-import org.kohsuke.accmod.restrictions.DoNotUse;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.StaplerRequest;
@@ -101,15 +101,14 @@ public class Mailer extends Notifier {
     private transient String charset;
 
     @Override
-    public boolean perform(AbstractBuild<?,?> build, Launcher launcher, BuildListener listener) throws InterruptedException {
+    public boolean perform(AbstractBuild<?,?> build, Launcher launcher, BuildListener listener) throws IOException, InterruptedException {
         if(debug)
             listener.getLogger().println("Running mailer");
-        // substitute build parameters if available
-        ParametersAction parameters = build.getAction(ParametersAction.class);
-        if (parameters!=null)
-            recipients = parameters.substitute(build, recipients);
-            
-        return new MailSender(recipients,dontNotifyEveryUnstableBuild,sendToIndividuals, descriptor().getCharset()) {
+        // substitute build parameters
+        EnvVars env = build.getEnvironment(listener);
+        String recip = env.expand(recipients);
+
+        return new MailSender(recip, dontNotifyEveryUnstableBuild, sendToIndividuals, descriptor().getCharset()) {
             /** Check whether a path (/-separated) will be archived. */
             @Override
             public boolean artifactMatches(String path, AbstractBuild<?,?> build) {

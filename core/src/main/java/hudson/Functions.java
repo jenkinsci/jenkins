@@ -2,7 +2,7 @@
  * The MIT License
  * 
  * Copyright (c) 2004-2010, Sun Microsystems, Inc., Kohsuke Kawaguchi,
- * Yahoo! Inc., Stephen Connolly, Tom Huybrechts, Alan Harder
+ * Yahoo! Inc., Stephen Connolly, Tom Huybrechts, Alan Harder, Romain Seguy
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -28,6 +28,7 @@ import hudson.console.ConsoleAnnotationDescriptor;
 import hudson.console.ConsoleAnnotatorFactory;
 import hudson.model.AbstractProject;
 import hudson.model.Action;
+import hudson.model.Describable;
 import hudson.model.Descriptor;
 import hudson.model.Hudson;
 import hudson.model.Item;
@@ -43,7 +44,6 @@ import hudson.model.ParameterDefinition.ParameterDescriptor;
 import hudson.model.Project;
 import hudson.model.Run;
 import hudson.model.TopLevelItem;
-import hudson.model.User;
 import hudson.model.View;
 import hudson.model.JDK;
 import hudson.search.SearchableModelObject;
@@ -66,6 +66,7 @@ import hudson.util.Area;
 import hudson.util.Iterators;
 import hudson.scm.SCM;
 import hudson.scm.SCMDescriptor;
+import hudson.util.Secret;
 import org.acegisecurity.providers.anonymous.AnonymousAuthenticationToken;
 import org.apache.commons.jelly.JellyContext;
 import org.apache.commons.jelly.JellyTagException;
@@ -681,6 +682,25 @@ public class Functions {
     }
 
     /**
+     * Gets all the descriptors sorted by their inheritance tree of {@link Describable}
+     * so that descriptors of similar types come nearby.
+     */
+    public static Collection<Descriptor> getSortedDescriptorsForGlobalConfig() {
+        Map<String,Descriptor> r = new TreeMap<String, Descriptor>();
+        for (Descriptor<?> d : Hudson.getInstance().getExtensionList(Descriptor.class)) {
+            if (d.getGlobalConfigPage()==null)  continue;
+            r.put(buildSuperclassHierarchy(d.clazz, new StringBuilder()).toString(),d);
+        }
+        return r.values();
+    }
+
+    private static StringBuilder buildSuperclassHierarchy(Class c, StringBuilder buf) {
+        Class sc = c.getSuperclass();
+        if (sc!=null)   buildSuperclassHierarchy(sc,buf).append(':');
+        return buf.append(c.getName());
+    }
+
+    /**
      * Computes the path to the icon of the given action
      * from the context path.
      */
@@ -1177,23 +1197,17 @@ public class Functions {
     public static List<Descriptor<CrumbIssuer>> getCrumbIssuerDescriptors() {
         return CrumbIssuer.all();
     }
-    
+
     public static String getCrumb(StaplerRequest req) {
-        CrumbIssuer issuer = Hudson.getInstance().getCrumbIssuer();
-        if (issuer != null) {
-            return issuer.getCrumb(req);
-        }
-        
-        return "";
+        Hudson h = Hudson.getInstance();
+        CrumbIssuer issuer = h != null ? h.getCrumbIssuer() : null;
+        return issuer != null ? issuer.getCrumb(req) : "";
     }
-    
+
     public static String getCrumbRequestField() {
-        CrumbIssuer issuer = Hudson.getInstance().getCrumbIssuer();
-        if (issuer != null) {
-            return issuer.getDescriptor().getCrumbRequestField();
-        }
-        
-        return "";
+        Hudson h = Hudson.getInstance();
+        CrumbIssuer issuer = h != null ? h.getCrumbIssuer() : null;
+        return issuer != null ? issuer.getDescriptor().getCrumbRequestField() : "";
     }
 
     public static Date getCurrentTime() {
@@ -1204,16 +1218,22 @@ public class Functions {
      * Generate a series of &lt;script> tags to include <tt>script.js</tt>
      * from {@link ConsoleAnnotatorFactory}s and {@link ConsoleAnnotationDescriptor}s.
      */
-    public static String generateConsoleAnnotationScript() {
+    public static String generateConsoleAnnotationScriptAndStylesheet() {
         String cp = Stapler.getCurrentRequest().getContextPath();
         StringBuilder buf = new StringBuilder();
         for (ConsoleAnnotatorFactory f : ConsoleAnnotatorFactory.all()) {
+            String path = cp + "/extensionList/" + ConsoleAnnotatorFactory.class.getName() + "/" + f.getClass().getName();
             if (f.hasScript())
-                buf.append("<script src='"+cp+"/extensionList/"+ConsoleAnnotatorFactory.class.getName()+"/"+f.getClass().getName()+"/script.js'></script>");
+                buf.append("<script src='"+path+"/script.js'></script>");
+            if (f.hasStylesheet())
+                buf.append("<link rel='stylesheet' type='text/css' href='"+path+"/style.css' />");
         }
         for (ConsoleAnnotationDescriptor d : ConsoleAnnotationDescriptor.all()) {
+            String path = cp+"/descriptor/"+d.clazz.getName();
             if (d.hasScript())
-                buf.append("<script src='"+cp+"/descriptor/"+d.clazz.getName()+"/script.js'></script>");
+                buf.append("<script src='"+path+"/script.js'></script>");
+            if (d.hasStylesheet())
+                buf.append("<link rel='stylesheet' type='text/css' href='"+path+"/style.css' />");
         }
         return buf.toString();
     }
@@ -1234,6 +1254,15 @@ public class Functions {
             }
         }
     }
+
+    /**
+     * Used by &lt;f:password/> so that we send an encrypted value to the client.
+     */
+    public String getPasswordValue(Object o) {
+        if (o==null)    return null;
+        if (o instanceof Secret)    return ((Secret)o).getEncryptedValue();
+        return o.toString();
+    }
     
     private static final Pattern SCHEME = Pattern.compile("[a-z]+://.+");
 
@@ -1243,4 +1272,20 @@ public class Functions {
     public static boolean getIsUnitTest() {
         return Main.isUnitTest;
     }
+
+    /**
+     * Returns {@code true} if the {@link Run#ARTIFACTS} permission is enabled,
+     * {@code false} otherwise.
+     *
+     * <p>When the {@link Run#ARTIFACTS} permission is not turned on using the
+     * {@code hudson.security.ArtifactsPermission}, this permission must not be
+     * considered to be set to {@code false} for every user. It must rather be
+     * like if the permission doesn't exist at all (which means that every user
+     * has to have an access to the artifacts but the permission can't be
+     * configured in the security screen). Got it?</p>
+     */
+    public static boolean isArtifactsPermissionEnabled() {
+        return Boolean.getBoolean("hudson.security.ArtifactsPermission");
+    }
+
 }

@@ -134,7 +134,20 @@ public class DescriptorExtensionList<T extends Describable<T>, D extends Descrip
                 return d;
         return null;
     }
-    
+
+    /**
+     * {@link #load()} in the descriptor is not a real load activity, so locking against "this" is enough.
+     */
+    @Override
+    protected Object getLoadLock() {
+        return this;
+    }
+
+    @Override
+    protected void scoutLoad() {
+        // no-op, since our load() doesn't by itself do any classloading
+    }
+
     /**
      * Loading the descriptors in this case means filtering the descriptor from the master {@link ExtensionList}.
      */

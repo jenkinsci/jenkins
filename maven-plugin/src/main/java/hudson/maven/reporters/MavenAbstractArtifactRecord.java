@@ -51,7 +51,6 @@ import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.HttpRedirect;
-import org.kohsuke.stapler.framework.io.LargeText;
 
 import javax.servlet.ServletException;
 import java.io.File;
@@ -133,7 +132,7 @@ public abstract class MavenAbstractArtifactRecord<T extends AbstractBuild<?,?>> 
         }
 
         // TODO: Eventually provide a better UI
-        public final void doIndex(StaplerResponse rsp) throws IOException {
+        public void doIndex(StaplerResponse rsp) throws IOException {
             rsp.setContentType("text/plain;charset=UTF-8");
             getLog().writeLogTo(0,rsp.getWriter());
         }

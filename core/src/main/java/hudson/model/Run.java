@@ -2,7 +2,7 @@
  * The MIT License
  * 
  * Copyright (c) 2004-2010, Sun Microsystems, Inc., Kohsuke Kawaguchi,
- * Daniel Dyer, Red Hat, Inc., Tom Huybrechts
+ * Daniel Dyer, Red Hat, Inc., Tom Huybrechts, Romain Seguy
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,6 +24,7 @@
  */
 package hudson.model;
 
+import hudson.Functions;
 import hudson.AbortException;
 import hudson.BulkChange;
 import hudson.EnvVars;
@@ -99,6 +100,10 @@ import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.export.ExportedBean;
 
 import com.thoughtworks.xstream.XStream;
+import java.io.FileOutputStream;
+import java.io.OutputStream;
+
+import static java.util.logging.Level.FINE;
 
 /**
  * A particular execution of {@link Job}.
@@ -252,6 +257,22 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
         getDataFile().unmarshal(this); // load the rest of the data
     }
 
+    /**
+     * Called after the build is loaded and the object is added to the build list.
+     */
+    protected void onLoad() {
+        for (Action a : getActions())
+            if (a instanceof RunAction)
+                ((RunAction) a).onLoad();
+    }
+
+    @Override
+    public void addAction(Action a) {
+        super.addAction(a);
+        if (a instanceof RunAction)
+            ((RunAction) a).onAttached(this);
+    }
+
     /*package*/ static long parseTimestampFromBuildDir(File buildDir) throws IOException {
         try {
             return ID_FORMATTER.get().parse(buildDir.getName()).getTime();
@@ -293,16 +314,13 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
         // state can change only when we are building
         assert state==State.BUILDING;
 
-        StackTraceElement caller = findCaller(Thread.currentThread().getStackTrace(),"setResult");
-
-
         // result can only get worse
         if(result==null) {
             result = r;
-            LOGGER.fine(toString()+" : result is set to "+r+" by "+caller);
+            LOGGER.log(FINE, toString()+" : result is set to "+r,new Exception());
         } else {
             if(r.isWorseThan(result)) {
-                LOGGER.fine(toString()+" : result is set to "+r+" by "+caller);
+                LOGGER.log(FINE, toString()+" : result is set to "+r,new Exception());
                 result = r;
             }
         }
@@ -327,15 +345,6 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
         }
         if(r==null)     return Collections.emptyList();
         else            return r;
-    }
-
-    private StackTraceElement findCaller(StackTraceElement[] stackTrace, String callee) {
-        for(int i=0; i<stackTrace.length-1; i++) {
-            StackTraceElement e = stackTrace[i];
-            if(e.getMethodName().equals(callee))
-                return stackTrace[i+1];
-        }
-        return null; // not found
     }
 
     /**
@@ -654,7 +663,8 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
      */
     public RunT getPreviousBuiltBuild() {
         RunT r=previousBuild;
-        while( r!=null && r.getResult()==Result.NOT_BUILT )
+        // in certain situations (aborted m2 builds) r.getResult() can still be null, although it should theoretically never happen
+        while( r!=null && (r.getResult() == null || r.getResult()==Result.NOT_BUILT) )
             r=r.previousBuild;
         return r;
     }
@@ -809,7 +819,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
             } else {
                 // Don't store collapsed path in ArrayList (for correct data in external API)
                 r.add(collapsed ? new Artifact(child, a.relativePath, a.href, a.treeNodeId) : a);
-                if (++n>=upTo) break;;
+                if (++n>=upTo) break;
             }
         }
         return n;
@@ -1245,7 +1255,20 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
                 try {
                     Charset charset = Computer.currentComputer().getDefaultCharset();
                     this.charset = charset.name();
-                    listener = new StreamBuildListener(getLogFile(),charset);
+
+                    // don't do buffering so that what's written to the listener
+                    // gets reflected to the file immediately, which can then be
+                    // served to the browser immediately
+                    OutputStream logger = new FileOutputStream(getLogFile());
+                    RunT build = job.getBuild();
+                    if (project instanceof BuildableItemWithBuildWrappers && build instanceof AbstractBuild) {
+                        BuildableItemWithBuildWrappers biwbw = (BuildableItemWithBuildWrappers) project;
+                        for (BuildWrapper bw : biwbw.getBuildWrappersList()) {
+                            logger = bw.decorateLogger((AbstractBuild) build, logger);
+                        }
+                    }
+
+                    listener = new StreamBuildListener(logger,charset);
 
                     listener.started(getCauses());
 
@@ -1262,10 +1285,10 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
                     throw t;
                 } catch( AbortException e ) {// orderly abortion.
                     result = Result.FAILURE;
-                    LOGGER.log(Level.FINE, "Build "+this+" aborted",e);
+                    LOGGER.log(FINE, "Build "+this+" aborted",e);
                 } catch( RunnerAbortedException e ) {// orderly abortion.
                     result = Result.FAILURE;
-                    LOGGER.log(Level.FINE, "Build "+this+" aborted",e);
+                    LOGGER.log(FINE, "Build "+this+" aborted",e);
                 } catch( InterruptedException e) {
                     // aborted
                     result = Result.ABORTED;
@@ -1515,6 +1538,9 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
      * Serves the artifacts.
      */
     public DirectoryBrowserSupport doArtifact() {
+        if(Functions.isArtifactsPermissionEnabled()) {
+          checkPermission(ARTIFACTS);
+        }
         return new DirectoryBrowserSupport(this,new FilePath(getArtifactsDir()), project.getDisplayName()+' '+getDisplayName(), "package.gif", true);
     }
 
@@ -1562,8 +1588,6 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
     }
 
     public void doToggleLogKeep( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
-        checkPermission(UPDATE);
-
         keepLog(!keepLog);
         rsp.forwardToPreviousPage(req);
     }
@@ -1577,6 +1601,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
     }
 
     public void keepLog(boolean newValue) throws IOException {
+        checkPermission(UPDATE);
         keepLog = newValue;
         save();
     }
@@ -1668,6 +1693,9 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
             Executor e = (Executor) t;
             env.put("EXECUTOR_NUMBER",String.valueOf(e.getNumber()));
             env.put("NODE_NAME",e.getOwner().getName());
+            Node n = e.getOwner().getNode();
+            if (n!=null)
+                env.put("NODE_LABELS",Util.join(n.getAssignedLabels()," "));
         }
 
         return env;
@@ -1679,6 +1707,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
      */
     public final EnvVars getCharacteristicEnvVars() {
         EnvVars env = new EnvVars();
+        env.put("HUDSON_COOKIE",Util.getDigestOf("ServerID:"+Hudson.getInstance().getSecretKey()));
         env.put("BUILD_NUMBER",String.valueOf(number));
         env.put("BUILD_ID",getId());
         env.put("BUILD_TAG","hudson-"+getParent().getName()+"-"+number);
@@ -1759,10 +1788,13 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
     public static final PermissionGroup PERMISSIONS = new PermissionGroup(Run.class,Messages._Run_Permissions_Title());
     public static final Permission DELETE = new Permission(PERMISSIONS,"Delete",Messages._Run_DeletePermission_Description(),Permission.DELETE);
     public static final Permission UPDATE = new Permission(PERMISSIONS,"Update",Messages._Run_UpdatePermission_Description(),Permission.UPDATE);
+    /** See {@link hudson.Functions#isArtifactsPermissionEnabled} */
+    public static final Permission ARTIFACTS = new Permission(PERMISSIONS,"Artifacts",Messages._Run_ArtifactsPermission_Description(), null,
+                                                              Functions.isArtifactsPermissionEnabled());
 
     private static class DefaultFeedAdapter implements FeedAdapter<Run> {
         public String getEntryTitle(Run entry) {
-            return entry+" ("+entry.getResult()+")";
+            return entry+" ("+entry.getBuildStatusSummary().message+")";
         }
 
         public String getEntryUrl(Run entry) {

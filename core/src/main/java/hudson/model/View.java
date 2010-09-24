@@ -42,7 +42,6 @@ import hudson.util.RunList;
 import hudson.widgets.Widget;
 
 import java.io.IOException;
-import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
@@ -257,7 +256,7 @@ public abstract class View extends AbstractModelObject implements AccessControll
     	
     	for (Computer c: computers) {
     		Node n = c.getNode();
-    		if (c != null) {
+    		if (n != null) {
     			if (roam && n.getMode() == Mode.NORMAL || !Collections.disjoint(n.getAssignedLabels(), labels)) {
     				result.add(c);
     			}
@@ -613,6 +612,10 @@ public abstract class View extends AbstractModelObject implements AccessControll
     
     public RunList getBuilds() {
         return new RunList(this);
+    }
+    
+    public BuildTimelineWidget getTimeline() {
+        return new BuildTimelineWidget(getBuilds());
     }
 
     private void rss(StaplerRequest req, StaplerResponse rsp, String suffix, RunList runs) throws IOException, ServletException {

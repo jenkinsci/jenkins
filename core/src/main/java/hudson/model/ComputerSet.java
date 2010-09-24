@@ -301,7 +301,7 @@ public final class ComputerSet extends AbstractModelObject {
     /**
      * Accepts submission from the configuration page.
      */
-    public final synchronized void doConfigSubmit( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException, FormException {
+    public synchronized void doConfigSubmit( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException, FormException {
         BulkChange bc = new BulkChange(MONITORS_OWNER);
         try {
             Hudson.getInstance().checkPermission(Hudson.ADMINISTER);

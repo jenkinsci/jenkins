@@ -171,7 +171,7 @@ public final class MavenModule extends AbstractMavenProject<MavenModule,MavenBui
      * This method is invoked on {@link MavenModule} that has the matching
      * {@link ModuleName}.
      */
-    /*package*/ final void reconfigure(PomInfo pom) {
+    /*package*/ void reconfigure(PomInfo pom) {
         this.displayName = pom.displayName;
         this.version = pom.version;
         this.relativePath = pom.relativePath;
@@ -412,10 +412,10 @@ public final class MavenModule extends AbstractMavenProject<MavenModule,MavenBui
     @Override
     protected void addTransientActionsFromBuild(MavenBuild build, Set<Class> added) {
         if(build==null)    return;
-        List<MavenReporter> list = build.projectActionReporters;
+        List<MavenProjectActionBuilder> list = build.projectActionReporters;
         if(list==null)   return;
 
-        for (MavenReporter step : list) {
+        for (MavenProjectActionBuilder step : list) {
             if(!added.add(step.getClass()))     continue;   // already added
             try {
                 transientActions.addAll(step.getProjectActions(this));
@@ -458,7 +458,7 @@ public final class MavenModule extends AbstractMavenProject<MavenModule,MavenBui
     /**
      * Creates a list of {@link MavenReporter}s to be used for a build of this project.
      */
-    protected final List<MavenReporter> createReporters() {
+    protected List<MavenReporter> createReporters() {
         List<MavenReporter> reporterList = new ArrayList<MavenReporter>();
 
         getReporters().addAllTo(reporterList);

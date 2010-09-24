@@ -1,7 +1,7 @@
 /*
  * The MIT License
  * 
- * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, Tom Huybrechts
+ * Copyright (c) 2004-2010, Sun Microsystems, Inc., Kohsuke Kawaguchi, Tom Huybrechts
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,6 +23,7 @@
  */
 package hudson.matrix;
 
+import hudson.Util;
 import hudson.util.DescribableList;
 import hudson.model.AbstractBuild;
 import hudson.model.Cause;
@@ -192,7 +193,9 @@ public class MatrixConfiguration extends Project<MatrixConfiguration,MatrixRun> 
 
     @Override
     public Label getAssignedLabel() {
-        return Hudson.getInstance().getLabel(combination.get("label"));
+        // combine all the label axes by &&.
+        String expr = Util.join(combination.values(getParent().getAxes().subList(LabelAxis.class)), "&&");
+        return Hudson.getInstance().getLabel(Util.fixEmpty(expr));
     }
 
     @Override
@@ -240,7 +243,9 @@ public class MatrixConfiguration extends Project<MatrixConfiguration,MatrixRun> 
 
     @Override
     public LogRotator getLogRotator() {
-        return new LinkedLogRotator();
+        LogRotator lr = getParent().getLogRotator();
+        return new LinkedLogRotator(lr != null ? lr.getArtifactDaysToKeep() : -1,
+                                    lr != null ? lr.getArtifactNumToKeep() : -1);
     }
 
     @Override

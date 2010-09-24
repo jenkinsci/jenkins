@@ -1,7 +1,7 @@
 /*
  * The MIT License
  *
- * Copyright (c) 2004-2009, Sun Microsystems, Inc.
+ * Copyright (c) 2004-2010, Sun Microsystems, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,13 +23,12 @@
  */
 package hudson.cli;
 
-import hudson.model.AbstractProject;
 import hudson.model.Hudson;
 import hudson.model.TopLevelItem;
 import hudson.Extension;
+import hudson.model.Item;
 import org.kohsuke.args4j.Argument;
 
-import java.io.Serializable;
 
 /**
  * Copies a job from CLI.
@@ -51,6 +50,8 @@ public class CopyJobCommand extends CLICommand {
 
     protected int run() throws Exception {
         Hudson h = Hudson.getInstance();
+        h.checkPermission(Item.CREATE);
+
         if (h.getItem(dst)!=null) {
             stderr.println("Job '"+dst+"' already exists");
             return -1;

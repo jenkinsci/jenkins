@@ -264,7 +264,7 @@ public class ListView extends View implements Saveable {
      * Load view-specific properties here.
      */
     @Override
-    protected void submit(StaplerRequest req) throws ServletException, FormException {
+    protected void submit(StaplerRequest req) throws ServletException, FormException, IOException {
         jobNames.clear();
         for (TopLevelItem item : Hudson.getInstance().getItems()) {
             if(req.getParameter(item.getName())!=null)

@@ -87,8 +87,11 @@ public abstract class Layouter<T> {
             z.add(nonTrivialAxes.get(0));
             break;
         case 2:
-            x.add(nonTrivialAxes.get(0));
-            y.add(nonTrivialAxes.get(1));
+            // use the longer axis in Y
+            Axis a = nonTrivialAxes.get(0);
+            Axis b = nonTrivialAxes.get(1);
+            x.add(a.size() > b.size() ? b : a);
+            y.add(a.size() > b.size() ? a : b);
             break;
         default:
             // for size > 3, use x and y, and try to pack y more

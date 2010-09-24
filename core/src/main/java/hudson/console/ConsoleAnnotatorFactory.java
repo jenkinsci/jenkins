@@ -57,6 +57,13 @@ import java.net.URL;
  * <p>
  * To register, put @{@link Extension} on your {@link ConsoleAnnotatorFactory} subtype.
  *
+ * <h2>Behaviour, JavaScript, and CSS</h2>
+ * <p>
+ * {@link ConsoleNote} can have associated <tt>script.js</tt> and <tt>style.css</tt> (put them
+ * in the same resource directory that you normally put Jelly scripts), which will be loaded into
+ * the HTML page whenever the console notes are used. This allows you to use minimal markup in
+ * code generation, and do the styling in CSS and perform the rest of the interesting work as a CSS behaviour/JavaScript.
+ * 
  * @author Kohsuke Kawaguchi
  * @since 1.349
  */
@@ -91,12 +98,16 @@ public abstract class ConsoleAnnotatorFactory<T> implements ExtensionPoint {
      * Returns true if this descriptor has a JavaScript to be inserted on applicable console page.
      */
     public boolean hasScript() {
-        return getScriptJs() !=null;
+        return getResource("/script.js") !=null;
     }
 
-    private URL getScriptJs() {
+    public boolean hasStylesheet() {
+        return getResource("/style.css") !=null;
+    }
+
+    private URL getResource(String fileName) {
         Class c = getClass();
-        return c.getClassLoader().getResource(c.getName().replace('.','/').replace('$','/')+"/script.js");
+        return c.getClassLoader().getResource(c.getName().replace('.','/').replace('$','/')+ fileName);
     }
 
     /**
@@ -104,7 +115,12 @@ public abstract class ConsoleAnnotatorFactory<T> implements ExtensionPoint {
      */
     @WebMethod(name="script.js")
     public void doScriptJs(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
-        rsp.serveFile(req,getScriptJs(), TimeUnit2.DAYS.toMillis(1));
+        rsp.serveFile(req, getResource("/script.js"), TimeUnit2.DAYS.toMillis(1));
+    }
+
+    @WebMethod(name="style.css")
+    public void doStyleCss(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
+        rsp.serveFile(req, getResource("/style.css"), TimeUnit2.DAYS.toMillis(1));
     }
 
     /**

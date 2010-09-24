@@ -1,0 +1,16 @@
+<div>
+  Se configurado, o Hudson enviará um e-mail para os destinatários especificados
+  quanod um certo evento importante ocorrer.
+
+  <ol>
+    <li>Toda construção que falha dispara um novo e-mail.
+    <li>Uma construção feita com sucesso após uma construção falha (ou instável) dipara um novo e-mail,
+        indicando que uma crise terminou.
+    <li>Uma construção instável após uma construção bem sucedida dispara um novo e-mail,
+        indicando que há uma regressão.
+    <li>A menos que configurado, toda construção instável dipara um novo e-mail,
+        indicando que a regressão ainda está lá.
+  </ol>
+
+  Par projetos preguiçosos (lazy) onde construções instávei são a norma, Marque "Não enviar e-mail para toda construção instável".
+</div>

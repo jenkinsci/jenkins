@@ -34,7 +34,6 @@ import hudson.util.TextFile;
 import hudson.util.VersionNumber;
 import static hudson.util.TimeUnit2.DAYS;
 import net.sf.json.JSONObject;
-import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
@@ -603,11 +602,27 @@ public class UpdateSite {
         }
 
         /**
+         * Schedules the downgrade of this plugin.
+         */
+        public Future<UpdateCenterJob> deployBackup() {
+            Hudson.getInstance().checkPermission(Hudson.ADMINISTER);
+            UpdateCenter uc = Hudson.getInstance().getUpdateCenter();
+            return uc.addJob(uc.new PluginDowngradeJob(this, UpdateSite.this, Hudson.getAuthentication()));
+        }
+        /**
          * Making the installation web bound.
          */
         public void doInstall(StaplerResponse rsp) throws IOException {
             deploy();
             rsp.sendRedirect2("../..");
+        }
+
+        /**
+         * Performs the downgrade of the plugin.
+         */
+        public void doDowngrade(StaplerResponse rsp) throws IOException {
+            deployBackup();
+            rsp.sendRedirect("../updateCenter/");
         }
     }
 

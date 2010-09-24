@@ -44,8 +44,8 @@ import antlr.ANTLRException;
 public class TimerTrigger extends Trigger<BuildableItem> {
 
     @DataBoundConstructor
-    public TimerTrigger(String timer_spec) throws ANTLRException {
-        super(timer_spec);
+    public TimerTrigger(String spec) throws ANTLRException {
+        super(spec);
     }
 
     @Override
@@ -63,15 +63,15 @@ public class TimerTrigger extends Trigger<BuildableItem> {
             return Messages.TimerTrigger_DisplayName();
         }
 
-        @Override
-        public String getHelpFile() {
-            return "/help/project-config/timer.html";
+        // backward compatibility
+        public FormValidation doCheck(@QueryParameter String value) {
+            return doCheckSpec(value);
         }
-
+        
         /**
          * Performs syntax check.
          */
-        public FormValidation doCheck(@QueryParameter String value) {
+        public FormValidation doCheckSpec(@QueryParameter String value) {
             try {
                 String msg = CronTabList.create(fixNull(value)).checkSanity();
                 if(msg!=null)   return FormValidation.warning(msg);

@@ -23,6 +23,7 @@
  */
 package hudson.model;
 
+import com.infradna.tool.bridge_method_injector.WithBridgeMethods;
 import com.thoughtworks.xstream.XStream;
 import hudson.CopyOnWrite;
 import hudson.FeedAdapter;
@@ -30,7 +31,6 @@ import hudson.Functions;
 import hudson.Util;
 import hudson.XmlFile;
 import hudson.BulkChange;
-import hudson.tasks.Mailer;
 import hudson.model.Descriptor.FormException;
 import hudson.model.listeners.SaveableListener;
 import hudson.security.ACL;
@@ -54,7 +54,6 @@ import java.io.File;
 import java.io.IOException;
 import java.io.FileFilter;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
@@ -362,14 +361,14 @@ public class User extends AbstractModelObject implements AccessControlled, Savea
      * 
      * TODO: do we need some index for this?
      */
-    public List<AbstractBuild> getBuilds() {
+    @WithBridgeMethods(List.class)
+    public RunList getBuilds() {
         List<AbstractBuild> r = new ArrayList<AbstractBuild>();
         for (AbstractProject<?,?> p : Hudson.getInstance().getAllItems(AbstractProject.class))
             for (AbstractBuild<?,?> b : p.getBuilds())
                 if(b.hasParticipant(this))
                     r.add(b);
-        Collections.sort(r,Run.ORDER_BY_DATE);
-        return r;
+        return RunList.fromRuns(r);
     }
 
     /**
@@ -481,19 +480,34 @@ public class User extends AbstractModelObject implements AccessControlled, Savea
         rsp.sendRedirect2("../..");
     }
 
-    public void doRssAll( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
-        rss(req, rsp, " all builds", RunList.fromRuns(getBuilds()));
+    public void doRssAll(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
+        rss(req, rsp, " all builds", RunList.fromRuns(getBuilds()), Run.FEED_ADAPTER);
     }
 
-    public void doRssFailed( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
-        rss(req, rsp, " regression builds", RunList.fromRuns(getBuilds()).regressionOnly());
+    public void doRssFailed(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
+        rss(req, rsp, " regression builds", RunList.fromRuns(getBuilds()).regressionOnly(), Run.FEED_ADAPTER);
     }
 
-    private void rss(StaplerRequest req, StaplerResponse rsp, String suffix, RunList runs) throws IOException, ServletException {
-        RSS.forwardToRss(getDisplayName()+ suffix, getUrl(),
-            runs.newBuilds(), FEED_ADAPTER, req, rsp );
+    public void doRssLatest(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
+        final List<Run> lastBuilds = new ArrayList<Run>();
+        for (final TopLevelItem item : Hudson.getInstance().getItems()) {
+            if (!(item instanceof Job)) continue;
+            for (Run r = ((Job) item).getLastBuild(); r != null; r = r.getPreviousBuild()) {
+                if (!(r instanceof AbstractBuild)) continue;
+                final AbstractBuild b = (AbstractBuild) r;
+                if (b.hasParticipant(this)) {
+                    lastBuilds.add(b);
+                    break;
+                }
+            }
+        }
+        rss(req, rsp, " latest build", RunList.fromRuns(lastBuilds), Run.FEED_ADAPTER_LATEST);
     }
 
+    private void rss(StaplerRequest req, StaplerResponse rsp, String suffix, RunList runs, FeedAdapter adapter)
+            throws IOException, ServletException {
+        RSS.forwardToRss(getDisplayName()+ suffix, getUrl(), runs.newBuilds(), adapter, req, rsp);
+    }
 
     /**
      * Keyed by {@link User#id}. This map is used to ensure
@@ -511,37 +525,6 @@ public class User extends AbstractModelObject implements AccessControlled, Savea
     static {
         XSTREAM.alias("user",User.class);
     }
-
-    /**
-     * {@link FeedAdapter} to produce build status summary in the feed.
-     */
-    public static final FeedAdapter<Run> FEED_ADAPTER = new FeedAdapter<Run>() {
-        public String getEntryTitle(Run entry) {
-            return entry+" : "+entry.getBuildStatusSummary().message;
-        }
-
-        public String getEntryUrl(Run entry) {
-            return entry.getUrl();
-        }
-
-        public String getEntryID(Run entry) {
-            return "tag:"+entry.getParent().getName()+':'+entry.getId();
-        }
-
-        public String getEntryDescription(Run entry) {
-            // TODO: provide useful details
-            return null;
-        }
-
-        public Calendar getEntryTimestamp(Run entry) {
-            return entry.getTimestamp();
-        }
-
-        public String getEntryAuthor(Run entry) {
-            return Mailer.descriptor().getAdminAddress();
-        }
-    };
-
 
     public ACL getACL() {
         final ACL base = Hudson.getInstance().getAuthorizationStrategy().getACL(this);

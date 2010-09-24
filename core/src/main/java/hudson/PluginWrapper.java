@@ -46,6 +46,9 @@ import org.apache.commons.logging.LogFactory;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.HttpResponses;
 
+import java.util.Enumeration;
+import java.util.jar.JarFile;
+
 /**
  * Represents a Hudson plug-in and associated control information
  * for Hudson to control {@link Plugin}.
@@ -68,7 +71,7 @@ import org.kohsuke.stapler.HttpResponses;
  *
  * @author Kohsuke Kawaguchi
  */
-public final class PluginWrapper implements Comparable<PluginWrapper> {
+public class PluginWrapper implements Comparable<PluginWrapper> {
     /**
      * {@link PluginManager} to which this belongs to.
      */
@@ -173,7 +176,7 @@ public final class PluginWrapper implements Comparable<PluginWrapper> {
      *  @param dependencies a list of mandatory dependencies
      *  @param optionalDependencies a list of optional dependencies
      */
-	public PluginWrapper(PluginManager parent, File archive, Manifest manifest, URL baseResourceURL, 
+    public PluginWrapper(PluginManager parent, File archive, Manifest manifest, URL baseResourceURL, 
 			ClassLoader classLoader, File disableFile, 
 			List<Dependency> dependencies, List<Dependency> optionalDependencies) {
         this.parent = parent;
@@ -186,13 +189,23 @@ public final class PluginWrapper implements Comparable<PluginWrapper> {
 		this.active = !disableFile.exists();
 		this.dependencies = dependencies;
 		this.optionalDependencies = optionalDependencies;
-	}
+    }
 
     /**
      * Returns the URL of the index page jelly script.
      */
     public URL getIndexPage() {
-        return classLoader.getResource("index.jelly");
+        // In the current impl dependencies are checked first, so the plugin itself
+        // will add the last entry in the getResources result.
+        URL idx = null;
+        try {
+            Enumeration<URL> en = classLoader.getResources("index.jelly");
+            while (en.hasMoreElements())
+                idx = en.nextElement();
+        } catch (IOException ignore) { }
+        // In case plugin has dependencies but is missing its own index.jelly,
+        // check that result has this plugin's artifactId in it:
+        return idx != null && idx.toString().contains(shortName) ? idx : null;
     }
 
     private String computeShortName(Manifest manifest, File archive) {
@@ -441,6 +454,10 @@ public final class PluginWrapper implements Comparable<PluginWrapper> {
     public boolean hasUpdate() {
         return getUpdateInfo()!=null;
     }
+    
+    public boolean isPinned() {
+        return pinFile.exists();
+    }
 
     /**
      * Sort by short name.
@@ -449,6 +466,37 @@ public final class PluginWrapper implements Comparable<PluginWrapper> {
         return shortName.compareToIgnoreCase(pw.shortName);
     }
 
+    /**
+     * returns true if backup of previous version of plugin exists
+     */
+    public boolean isDowngradable() {
+        return getBackupFile().exists();
+    }
+
+    /**
+     * Where is the backup file?
+     */
+    public File getBackupFile() {
+        return new File(Hudson.getInstance().getRootDir(),"plugins/"+getShortName() + ".bak");
+    }
+
+    /**
+     * returns the version of the backed up plugin,
+     * or null if there's no back up.
+     */
+    public String getBackupVersion() {
+        if (getBackupFile().exists()) {
+            try {
+                JarFile backupPlugin = new JarFile(getBackupFile());
+                return backupPlugin.getManifest().getMainAttributes().getValue("Plugin-Version");
+            } catch (IOException e) {
+                LOGGER.log(WARNING, "Failed to get backup version ", e);
+                return null;
+            }
+        } else {
+            return null;
+        }
+    }
 //
 //
 // Action methods

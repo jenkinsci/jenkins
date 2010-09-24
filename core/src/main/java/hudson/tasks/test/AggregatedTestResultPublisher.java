@@ -23,12 +23,19 @@
  */
 package hudson.tasks.test;
 
+import hudson.model.AbstractBuild;
+import hudson.model.AbstractProject;
 import hudson.Extension;
 import hudson.Launcher;
 import hudson.Util;
 import static hudson.Util.fixNull;
-import hudson.model.*;
+import hudson.model.BuildListener;
 import hudson.model.Fingerprint.RangeSet;
+import hudson.model.Hudson;
+import hudson.model.Item;
+import hudson.model.Result;
+import hudson.model.Run;
+import hudson.model.TaskListener;
 import hudson.model.listeners.RunListener;
 import hudson.tasks.BuildStepDescriptor;
 import hudson.tasks.BuildStepMonitor;
@@ -161,7 +168,7 @@ public class AggregatedTestResultPublisher extends Recorder {
          *      so that IDE warns you if you accidentally try to call it.
          */
         @Override
-        protected final String getDescription(TestObject object) {
+        protected String getDescription(TestObject object) {
             throw new AssertionError();
         }
 
@@ -172,7 +179,7 @@ public class AggregatedTestResultPublisher extends Recorder {
          *      so that IDE warns you if you accidentally try to call it.
          */
         @Override
-        protected final void setDescription(TestObject object, String description) {
+        protected void setDescription(TestObject object, String description) {
             throw new AssertionError();
         }
 

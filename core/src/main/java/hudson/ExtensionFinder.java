@@ -1,7 +1,7 @@
 /*
  * The MIT License
  *
- * Copyright (c) 2004-2010, Sun Microsystems, Inc.
+ * Copyright (c) 2004-2010, Sun Microsystems, Inc., InfraDNA, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -93,6 +93,39 @@ public abstract class ExtensionFinder implements ExtensionPoint {
     }
 
     /**
+     * Performs class initializations without creating instances. 
+     *
+     * If two threads try to initialize classes in the opposite order, a dead lock will ensue,
+     * and we can get into a similar situation with {@link ExtensionFinder}s.
+     *
+     * <p>
+     * That is, one thread can try to list extensions, which results in {@link ExtensionFinder}
+     * loading and initializing classes. This happens inside a context of a lock, so that
+     * another thread that tries to list the same extensions don't end up creating different
+     * extension instances. So this activity locks extension list first, then class initialization next.
+     *
+     * <p>
+     * In the mean time, another thread can load and initialize a class, and that initialization
+     * can eventually results in listing up extensions, for example through static initializer.
+     * Such activitiy locks class initialization first, then locks extension list.
+     *
+     * <p>
+     * This inconsistent locking order results in a dead lock, you see.
+     *
+     * <p>
+     * So to reduce the likelihood, this method is called in prior to {@link #find(Class, Hudson)} invocation,
+     * but from outside the lock. The implementation is expected to perform all the class initialization activities
+     * from here.
+     *
+     * <p>
+     * See http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=6459208 for how to force a class initialization.
+     * Also see http://kohsuke.org/2010/09/01/deadlock-that-you-cant-avoid/ for how class initialization
+     * can results in a dead lock.
+     */
+    public void scout(Class extensionType, Hudson hudson) {
+    }
+
+    /**
      * The default implementation that looks for the {@link Extension} marker.
      *
      * <p>
@@ -131,6 +164,37 @@ public abstract class ExtensionFinder implements ExtensionPoint {
             }
 
             return result;
+        }
+
+        @Override
+        public void scout(Class extensionType, Hudson hudson) {
+            ClassLoader cl = hudson.getPluginManager().uberClassLoader;
+            for (IndexItem<Extension,Object> item : Index.load(Extension.class, Object.class, cl)) {
+                try {
+                    AnnotatedElement e = item.element();
+                    Class<?> extType;
+                    if (e instanceof Class) {
+                        extType = (Class) e;
+                    } else
+                    if (e instanceof Field) {
+                        extType = ((Field)e).getType();
+                    } else
+                    if (e instanceof Method) {
+                        extType = ((Method)e).getReturnType();
+                    } else
+                        throw new AssertionError();
+                    // accroding to http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=6459208
+                    // this appears to be the only way to force a class initialization
+                    Class.forName(extType.getName(),true,extType.getClassLoader());
+                } catch (InstantiationException e) {
+                    LOGGER.log(item.annotation().optional() ? Level.FINE : Level.WARNING,
+                               "Failed to scout "+item.className(), e);
+                } catch (ClassNotFoundException e) {
+                    LOGGER.log(Level.WARNING,"Failed to scout "+item.className(), e);
+                } catch (LinkageError e) {
+                    LOGGER.log(Level.WARNING,"Failed to scout "+item.className(), e);
+                }
+            }
         }
     }
     

@@ -886,6 +886,10 @@ public class Util {
         return l!=null ? l : Collections.<T>emptySet();
     }
 
+    public static <T> Iterable<T> fixNull(Iterable<T> l) {
+        return l!=null ? l : Collections.<T>emptySet();
+    }
+
     /**
      * Cuts all the leading path portion and get just the file name.
      */
@@ -1137,6 +1141,13 @@ public class Util {
         int pos = p.lastIndexOf('.');
         if (pos<0)  return new File(p+ext);
         else        return new File(p.substring(0,pos)+ext);
+    }
+
+    /**
+     * Null-safe String intern method.
+     */
+    public static String intern(String s) {
+        return s==null ? s : s.intern();
     }
 
     public static final FastDateFormat XS_DATETIME_FORMATTER = FastDateFormat.getInstance("yyyy-MM-dd'T'HH:mm:ss'Z'",new SimpleTimeZone(0,"GMT"));

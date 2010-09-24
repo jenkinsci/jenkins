@@ -27,7 +27,7 @@ THE SOFTWARE.
   <parent>
     <groupId>org.jvnet.hudson.main</groupId>
     <artifactId>pom</artifactId>
-    <version>1.365-SNAPSHOT</version>
+    <version>1.378-SNAPSHOT</version>
   </parent>
 
   <artifactId>maven-plugin</artifactId>
@@ -52,7 +52,7 @@ THE SOFTWARE.
         </dependency>
 
         <dependency>
-          <groupId>${groupId}</groupId>
+          <groupId>${project.groupId}</groupId>
           <artifactId>maven-agent</artifactId>
           <version>${project.version}</version>
         </dependency>
@@ -129,7 +129,7 @@ THE SOFTWARE.
             <plugin>
                 <groupId>org.jvnet.hudson.tools</groupId>
                 <artifactId>maven-hpi-plugin</artifactId>
-                <version>1.51</version>
+                <version>1.54</version>
                 <extensions>true</extensions>
                 <configuration>
                   <showDeprecation>true</showDeprecation>

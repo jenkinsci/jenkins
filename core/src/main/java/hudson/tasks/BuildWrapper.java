@@ -1,7 +1,7 @@
 /*
  * The MIT License
  * 
- * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi
+ * Copyright (c) 2004-2010, Sun Microsystems, Inc., Kohsuke Kawaguchi, Yahoo! Inc.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -31,9 +31,11 @@ import hudson.model.*;
 import hudson.model.Run.RunnerAbortedException;
 
 import java.io.IOException;
+import java.io.OutputStream;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * Pluggability point for performing pre/post actions for the build process.
@@ -149,7 +151,7 @@ public abstract class BuildWrapper extends AbstractDescribableImpl<BuildWrapper>
      * such as the use of sudo/pfexec/chroot, or manipulating environment variables.
      *
      * <p>
-     * The default implementation is no-op, which just returns the {@code listener} parameter as-is.
+     * The default implementation is no-op, which just returns the {@code launcher} parameter as-is.
      *
      * @param build
      *      The build in progress for which this {@link BuildWrapper} is called. Never null.
@@ -171,6 +173,32 @@ public abstract class BuildWrapper extends AbstractDescribableImpl<BuildWrapper>
      */
     public Launcher decorateLauncher(AbstractBuild build, Launcher launcher, BuildListener listener) throws IOException, InterruptedException, RunnerAbortedException {
         return launcher;
+    }
+
+    /**
+     * Provides an opportunity for a {@link BuildWrapper} to decorate the {@link BuildListener} logger to be used by the build.
+     * 
+     * <p>
+     * This hook is called very early on in the build (even before {@link #setUp(AbstractBuild, Launcher, BuildListener)} is invoked.)
+     * 
+     * <p>
+     * The default implementation is no-op, which just returns the {@code logger} parameter as-is.
+     *
+     * @param build
+     *      The build in progress for which this {@link BuildWrapper} is called. Never null.
+     * @param logger
+     *      The default logger. Never null. This method is expected to wrap this logger.
+     *      This makes sure that when multiple {@link BuildWrapper}s attempt to decorate the same logger
+     *      it will sort of work.
+     * @return
+     *      Must not be null. If a fatal error happens, throw an exception.
+     * @throws RunnerAbortedException
+     *      If a fatal error is detected but the implementation handled it gracefully, throw this exception
+     *      to suppress stack trace.
+     * @since 1.374
+     */
+    public OutputStream decorateLogger(AbstractBuild build, OutputStream logger) throws IOException, InterruptedException, RunnerAbortedException {
+        return logger;
     }
 
     /**
@@ -220,6 +248,22 @@ public abstract class BuildWrapper extends AbstractDescribableImpl<BuildWrapper>
     	// noop
     }
 
+    /**
+     * Called to define sensitive build variables. This provides an opportunity
+     * for a BuildWrapper to denote the names of variables that are sensitive in
+     * nature and should not be exposed in output.
+     *
+     * @param build
+     *      The build in progress for which this {@link BuildWrapper} is called. Never null.
+     * @param sensitiveVariables
+     *      Contains names of sensitive build variables. Names of sensitive variables
+     *      that were added with {@link #makeBuildVariables(hudson.model.AbstractBuild, java.util.Map)}
+     * @since 1.378
+     */
+    public void makeSensitiveBuildVariables(AbstractBuild build, Set<String> sensitiveVariables) {
+        // noop
+    }
+    
     /**
      * Returns all the registered {@link BuildWrapper} descriptors.
      */

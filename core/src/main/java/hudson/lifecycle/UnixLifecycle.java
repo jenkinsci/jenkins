@@ -61,6 +61,10 @@ public class UnixLifecycle extends Lifecycle {
 
     @Override
     public void restart() throws IOException, InterruptedException {
+        Hudson h = Hudson.getInstance();
+        if (h != null)
+            h.cleanUp();
+
         // close all files upon exec, except stdin, stdout, and stderr
         int sz = LIBC.getdtablesize();
         for(int i=3; i<sz; i++) {

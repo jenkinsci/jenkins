@@ -1,7 +1,7 @@
 /*
  * The MIT License
  *
- * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi
+ * Copyright (c) 2004-2010, Sun Microsystems, Inc., Kohsuke Kawaguchi, Yahoo! Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -712,6 +712,36 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
 
     public Calendar due() {
         return getTimestamp();
+    }
+
+    /**
+     * Builds up a set of variable names that contain sensitive values that
+     * should not be exposed. The expection is that this set is populated with
+     * keys returned by {@link #getBuildVariables()} that should have their
+     * values masked for display purposes.
+     *
+     * @since 1.378
+     */
+    public Set<String> getSensitiveBuildVariables() {
+        Set<String> s = new HashSet<String>();
+
+        ParametersAction parameters = getAction(ParametersAction.class);
+        if (parameters != null) {
+            for (ParameterValue p : parameters) {
+                if (p.isSensitive()) {
+                    s.add(p.getName());
+                }
+            }
+        }
+
+        // Allow BuildWrappers to determine if any of their data is sensitive
+        if (project instanceof BuildableItemWithBuildWrappers) {
+            for (BuildWrapper bw : ((BuildableItemWithBuildWrappers) project).getBuildWrappersList()) {
+                bw.makeSensitiveBuildVariables(this, s);
+            }
+        }
+        
+        return s;
     }
 
     /**

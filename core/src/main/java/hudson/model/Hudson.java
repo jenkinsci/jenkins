@@ -1,8 +1,9 @@
 /*
  * The MIT License
  * 
- * Copyright (c) 2004-2010, Sun Microsystems, Inc., Kohsuke Kawaguchi, Erik Ramfelt, Koichi Fujikawa, Red Hat, Inc.,
- * Seiji Sogabe, Stephen Connolly, Tom Huybrechts, Yahoo! Inc., Alan Harder
+ * Copyright (c) 2004-2010, Sun Microsystems, Inc., Kohsuke Kawaguchi,
+ * Erik Ramfelt, Koichi Fujikawa, Red Hat, Inc., Seiji Sogabe,
+ * Stephen Connolly, Tom Huybrechts, Yahoo! Inc., Alan Harder
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,6 +25,7 @@
  */
 package hudson.model;
 
+import antlr.ANTLRException;
 import com.thoughtworks.xstream.XStream;
 import hudson.BulkChange;
 import hudson.DNSMultiCast;
@@ -65,6 +67,7 @@ import hudson.lifecycle.Lifecycle;
 import hudson.logging.LogRecorderManager;
 import hudson.lifecycle.RestartNotSupportedException;
 import hudson.model.Descriptor.FormException;
+import hudson.model.labels.LabelAtom;
 import hudson.model.listeners.ItemListener;
 import hudson.model.listeners.SCMListener;
 import hudson.model.listeners.SaveableListener;
@@ -73,7 +76,6 @@ import hudson.remoting.LocalChannel;
 import hudson.remoting.VirtualChannel;
 import hudson.scm.RepositoryBrowser;
 import hudson.scm.SCM;
-import hudson.scm.SCMDescriptor;
 import hudson.search.CollectionSearchIndex;
 import hudson.search.SearchIndexBuilder;
 import hudson.security.ACL;
@@ -102,8 +104,6 @@ import hudson.tasks.BuildWrapper;
 import hudson.tasks.Builder;
 import hudson.tasks.Mailer;
 import hudson.tasks.Publisher;
-import hudson.tools.ToolDescriptor;
-import hudson.tools.ToolInstallation;
 import hudson.triggers.Trigger;
 import hudson.triggers.TriggerDescriptor;
 import hudson.util.AdministrativeError;
@@ -149,6 +149,7 @@ import org.jvnet.hudson.reactor.Milestone;
 import org.jvnet.hudson.reactor.Reactor;
 import org.jvnet.hudson.reactor.ReactorListener;
 import org.jvnet.hudson.reactor.TaskGraphBuilder.Handle;
+import org.kohsuke.args4j.Argument;
 import org.kohsuke.args4j.Option;
 import org.kohsuke.stapler.Ancestor;
 import org.kohsuke.stapler.HttpRedirect;
@@ -801,7 +802,7 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
     /**
      * Does this {@link View} has any associated user information recorded?
      */
-    public final boolean hasPeople() {
+    public boolean hasPeople() {
         return View.People.isApplicable(items.values());
     }
 
@@ -1095,6 +1096,8 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
             }
         }
         getQueue().scheduleMaintenance();
+        for (ComputerListener cl : ComputerListener.all())
+            cl.onConfigurationChange();
     }
 
     private void updateComputer(Node n, Map<String,Computer> byNameMap, Set<Computer> used) {
@@ -1257,10 +1260,12 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
             if(v.getViewName().equals(name))
                 return v;
         }
-        // Fallback to subview of primary view if it is a ViewGroup
-        View pv = getPrimaryView();
-        if (pv instanceof ViewGroup)
-            return ((ViewGroup)pv).getView(name);
+        if (name != null && !name.equals(primaryView)) {
+            // Fallback to subview of primary view if it is a ViewGroup
+            View pv = getPrimaryView();
+            if (pv instanceof ViewGroup)
+                return ((ViewGroup)pv).getView(name);
+        }
         return null;
     }
 
@@ -1335,7 +1340,7 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
     }
 
     @CLIResolver
-    public Computer getComputer(String name) {
+    public Computer getComputer(@Argument(required=true,metaVar="NAME",usage="Node name") String name) {
         if(name.equals("(master)"))
             name = "";
 
@@ -1354,21 +1359,45 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
         return new ComputerSet();
     }
 
+
     /**
      * Gets the label that exists on this system by the name.
      *
-     * @return null if no name is null.
-     * @see Label#parse(String)
+     * @return null if name is null.
+     * @see Label#parseExpression(String) (String)
      */
-    public Label getLabel(String name) {
-        if(name==null)  return null;
+    public Label getLabel(String expr) {
+        if(expr==null)  return null;
         while(true) {
-            Label l = labels.get(name);
+            Label l = labels.get(expr);
             if(l!=null)
                 return l;
 
             // non-existent
-            labels.putIfAbsent(name,new Label(name));
+            try {
+                labels.putIfAbsent(expr,Label.parseExpression(expr));
+            } catch (ANTLRException e) {
+                // laxly accept it as a single label atom for backward compatibility
+                return getLabelAtom(expr);
+            }
+        }
+    }
+
+    /**
+     * Returns the label atom of the given name.
+     */
+    public LabelAtom getLabelAtom(String name) {
+        if (name==null)  return null;
+
+        while(true) {
+            Label l = labels.get(name);
+            if(l!=null)
+                return (LabelAtom)l;
+
+            // non-existent
+            LabelAtom la = new LabelAtom(name);
+            if (labels.putIfAbsent(name, la)==null)
+                la.load();
         }
     }
 
@@ -1380,6 +1409,15 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
         for (Label l : labels.values()) {
             if(!l.isEmpty())
                 r.add(l);
+        }
+        return r;
+    }
+
+    public Set<LabelAtom> getLabelAtoms() {
+        Set<LabelAtom> r = new TreeSet<LabelAtom>();
+        for (Label l : labels.values()) {
+            if(!l.isEmpty() && l instanceof LabelAtom)
+                r.add((LabelAtom)l);
         }
         return r;
     }
@@ -1996,7 +2034,7 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
         } catch (Exception e) {
             throw new IllegalArgumentException(e);
         }
-
+        item.onCreatedFromScratch();
         item.save();
         items.put(name,item);
 
@@ -2084,8 +2122,8 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
     }
 
     @Override
-    public Label getSelfLabel() {
-        return getLabel("master");
+    public LabelAtom getSelfLabel() {
+        return getLabelAtom("master");
     }
 
     public Computer createComputer() {
@@ -2350,35 +2388,7 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
             jdks.addAll(req.bindJSONToList(JDK.class,json.get("jdks")));
 
             boolean result = true;
-
-            for( Descriptor<Builder> d : Builder.all() )
-                result &= configureDescriptor(req,json,d);
-
-            for( Descriptor<Publisher> d : Publisher.all() )
-                result &= configureDescriptor(req,json,d);
-
-            for( Descriptor<BuildWrapper> d : BuildWrapper.all() )
-                result &= configureDescriptor(req,json,d);
-
-            for( SCMDescriptor scmd : SCM.all() )
-                result &= configureDescriptor(req,json,scmd);
-
-            for( TriggerDescriptor d : Trigger.all() )
-                result &= configureDescriptor(req,json,d);
-
-            for( JobPropertyDescriptor d : JobPropertyDescriptor.all() )
-                result &= configureDescriptor(req,json,d);
-
-            for( PageDecorator d : PageDecorator.all() )
-                result &= configureDescriptor(req,json,d);
-
-            for( Descriptor<CrumbIssuer> d : CrumbIssuer.all() )
-                result &= configureDescriptor(req,json, d);
-            
-            for( ToolDescriptor d : ToolInstallation.all() )
-                result &= configureDescriptor(req,json,d);
-
-            for( TopLevelItemDescriptor d : TopLevelItemDescriptor.all() )
+            for( Descriptor<?> d : Functions.getSortedDescriptorsForGlobalConfig() )
                 result &= configureDescriptor(req,json,d);
 
             for( JSONObject o : StructuredForm.toList(json,"plugin"))
@@ -2464,7 +2474,7 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
         doQuietDown().generateResponse(null,rsp,this);
     }
 
-    public synchronized HttpRedirect doQuietDown() {
+    public synchronized HttpRedirect doQuietDown() throws IOException {
         try {
             return doQuietDown(false,0);
         } catch (InterruptedException e) {
@@ -2473,32 +2483,19 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
     }
 
     @CLIMethod(name="quiet-down")
-    public synchronized HttpRedirect doQuietDown(
+    public HttpRedirect doQuietDown(
             @Option(name="-block",usage="Block until the system really quiets down and no builds are running") @QueryParameter boolean block,
-            @Option(name="-timeout",usage="If non-zero, only block up to the specified number of milliseconds") @QueryParameter int timeout) throws InterruptedException {
-        checkPermission(ADMINISTER);
-        isQuietingDown = true;
+            @Option(name="-timeout",usage="If non-zero, only block up to the specified number of milliseconds") @QueryParameter int timeout) throws InterruptedException, IOException {
+        synchronized (this) {
+            checkPermission(ADMINISTER);
+            isQuietingDown = true;
+        }
         if (block) {
-            LOGGER.info("Entering the blocking quiet down mode");
-            long start = System.currentTimeMillis();
-            int cnt=0;
-            while (true) {
-                if (!isQuietingDown) {
-                    LOGGER.info("Quiet mode cancelled");
-                    break;
-                }
-                if (overallLoad.computeTotalExecutors() <= overallLoad.computeIdleExecutors()) {// should be really == but be defensive
-                    LOGGER.info("System became fully quiet");
-                    break;
-                }
-                if (timeout>0 && start+timeout<=System.currentTimeMillis()) {
-                    LOGGER.info("Quiet mode time out after "+timeout+"ms");
-                    break;
-                }
-
+            if (timeout > 0) timeout += System.currentTimeMillis();
+            while (isQuietingDown
+                   && (timeout <= 0 || System.currentTimeMillis() < timeout)
+                   && RestartListener.isAllReady()) {
                 Thread.sleep(1000);
-                if (((cnt++)%60)==0)
-                    LOGGER.info("Waiting for all the jobs to finish. Total="+overallLoad.computeTotalExecutors()+" idle="+overallLoad.computeIdleExecutors());
             }
         }
         return new HttpRedirect(".");
@@ -2838,10 +2835,24 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
      * For debugging. Expose URL to perform GC.
      */
     public void doGc(StaplerResponse rsp) throws IOException {
+        checkPermission(Hudson.ADMINISTER);
         System.gc();
         rsp.setStatus(HttpServletResponse.SC_OK);
         rsp.setContentType("text/plain");
         rsp.getWriter().println("GCed");
+    }
+
+    /**
+     * Simulates OutOfMemoryError.
+     * Useful to make sure OutOfMemoryHeapDump setting.
+     */
+    public void doSimulateOutOfMemory() throws IOException {
+        checkPermission(ADMINISTER);
+
+        System.out.println("Creating artificial OutOfMemoryError situation");
+        List<Object> args = new ArrayList<Object>();
+        while (true)
+            args.add(new byte[1024*1024]);
     }
 
     private transient final Map<UUID,FullDuplexHttpChannel> duplexChannels = new HashMap<UUID, FullDuplexHttpChannel>();
@@ -2850,7 +2861,7 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
      * Handles HTTP requests for duplex channels for CLI.
      */
     public void doCli(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException, InterruptedException {
-        if(!"POST".equals(Stapler.getCurrentRequest().getMethod())) {
+        if (!"POST".equals(req.getMethod())) {
             // for GET request, serve _cli.jelly, assuming this is a browser
             checkPermission(READ);
             req.getView(this,"_cli.jelly").forward(req,rsp);
@@ -2894,16 +2905,18 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
      *
      * This first replaces "app" to {@link HudsonIsRestarting}
      */
+    @CLIMethod(name="restart")
     public void doRestart(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException, RestartNotSupportedException {
         checkPermission(ADMINISTER);
-        if(Stapler.getCurrentRequest().getMethod().equals("GET")) {
+        if (req != null && req.getMethod().equals("GET")) {
             req.getView(this,"_restart.jelly").forward(req,rsp);
             return;
         }
 
         restart();
 
-        rsp.sendRedirect2(".");
+        if (rsp != null) // null for CLI
+            rsp.sendRedirect2(".");
     }
 
     /**
@@ -2913,28 +2926,30 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
      * 
      * @since 1.332
      */
+    @CLIMethod(name="safe-restart")
     public void doSafeRestart(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException, RestartNotSupportedException {
         checkPermission(ADMINISTER);
-        if(Stapler.getCurrentRequest().getMethod().equals("GET")) {
+        if (req != null && req.getMethod().equals("GET")) {
             req.getView(this,"_safeRestart.jelly").forward(req,rsp);
             return;
         }
 
         safeRestart();
 
-        rsp.sendRedirect2(".");
+        if (rsp != null) // null for CLI
+            rsp.sendRedirect2(".");
     }
 
     /**
      * Performs a restart.
      */
-    @CLIMethod(name="restart")
     public void restart() throws RestartNotSupportedException {
         final Lifecycle lifecycle = Lifecycle.get();
         lifecycle.verifyRestartable(); // verify that Hudson is restartable
         servletContext.setAttribute("app",new HudsonIsRestarting());
 
         new Thread("restart thread") {
+            final String exitUser = getAuthentication().getName();
             @Override
             public void run() {
                 try {
@@ -2942,6 +2957,9 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
 
                     // give some time for the browser to load the "reloading" page
                     Thread.sleep(5000);
+                    LOGGER.severe(String.format("Restarting VM as requested by %s",exitUser));
+                    for (RestartListener listener : RestartListener.all())
+                        listener.onRestart();
                     lifecycle.restart();
                 } catch (InterruptedException e) {
                     LOGGER.log(Level.WARNING, "Failed to restart Hudson",e);
@@ -2956,7 +2974,6 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
      * Queues up a restart to be performed once there are no builds currently running.
      * @since 1.332
      */
-    @CLIMethod(name="safe-restart")
     public void safeRestart() throws RestartNotSupportedException {
         final Lifecycle lifecycle = Lifecycle.get();
         lifecycle.verifyRestartable(); // verify that Hudson is restartable
@@ -2964,6 +2981,7 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
         isQuietingDown = true;
         
         new Thread("safe-restart thread") {
+            final String exitUser = getAuthentication().getName();
             @Override
             public void run() {
                 try {
@@ -2976,8 +2994,11 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
                     if (isQuietingDown) {
                         servletContext.setAttribute("app",new HudsonIsRestarting());
                         // give some time for the browser to load the "reloading" page
-                        LOGGER.info("Restart in 5 seconds");
-                        Thread.sleep(5000);
+                        LOGGER.info("Restart in 10 seconds");
+                        Thread.sleep(10000);
+                        LOGGER.severe(String.format("Restarting VM as requested by %s",exitUser));
+                        for (RestartListener listener : RestartListener.all())
+                            listener.onRestart();
                         lifecycle.restart();
                     } else {
                         LOGGER.info("Safe-restart mode cancelled");
@@ -2998,7 +3019,7 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
     public void doExit( StaplerRequest req, StaplerResponse rsp ) throws IOException {
         checkPermission(ADMINISTER);
         LOGGER.severe(String.format("Shutting down VM as requested by %s from %s",
-                getAuthentication(), req.getRemoteAddr()));
+                getAuthentication().getName(), req.getRemoteAddr()));
         rsp.setStatus(HttpServletResponse.SC_OK);
         rsp.setContentType("text/plain");
         PrintWriter w = rsp.getWriter();
@@ -3021,7 +3042,7 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
         w.println("Shutting down as soon as all jobs are complete");
         w.close();
         isQuietingDown = true;
-        final String exitUser = getAuthentication().toString();
+        final String exitUser = getAuthentication().getName();
         final String exitAddr = req.getRemoteAddr().toString();
         new Thread("safe-exit thread") {
             @Override
@@ -3037,6 +3058,7 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
                     }
                     // Make sure isQuietingDown is still true.
                     if (isQuietingDown) {
+                        cleanUp();
                         System.exit(0);
                     }
                 } catch (InterruptedException e) {

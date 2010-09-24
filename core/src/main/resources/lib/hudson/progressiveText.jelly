@@ -68,6 +68,7 @@ THE SOFTWARE.
                 // http://www.quirksmode.org/bugreports/archives/2004/11/innerhtml_and_t.html
                 if (p.outerHTML) p.outerHTML = '<pre>'+text+'</pre>';
                 else p.innerHTML = text;
+                Behaviour.applySubtree(p);
                 if(stickToBottom) scroller.scrollToBottom();
               }
 

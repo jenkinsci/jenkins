@@ -44,10 +44,10 @@ public final class ModuleDependency implements Serializable {
     public final String version;
 
     public ModuleDependency(String groupId, String artifactId, String version) {
-        this.groupId = groupId;
-        this.artifactId = artifactId;
+        this.groupId = groupId.intern();
+        this.artifactId = artifactId.intern();
         if(version==null)   version=UNKNOWN;
-        this.version = version;
+        this.version = version.intern();
     }
 
     public ModuleDependency(ModuleName name, String version) {
@@ -102,6 +102,13 @@ public final class ModuleDependency implements Serializable {
         result = 31 * result + artifactId.hashCode();
         result = 31 * result + version.hashCode();
         return result;
+    }
+
+    /**
+     * Upon reading from the disk, intern strings.
+     */
+    public ModuleDependency readResolve() {
+        return new ModuleDependency(groupId,artifactId,version);
     }
 
     /**

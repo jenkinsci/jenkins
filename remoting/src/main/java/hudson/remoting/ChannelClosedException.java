@@ -8,7 +8,16 @@ import java.io.IOException;
  * @author Kohsuke Kawaguchi
  */
 public class ChannelClosedException extends IOException {
+    /**
+     * @deprecated
+     *      Use {@link #ChannelClosedException(Throwable)}.
+     */
     public ChannelClosedException() {
         super("channel is already closed");
+    }
+
+    public ChannelClosedException(Throwable cause) {
+        super("channel is already closed");
+        initCause(cause);
     }
 }

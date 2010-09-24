@@ -106,6 +106,13 @@ import java.util.zip.GZIPOutputStream;
  * is also important, although {@link ConsoleNote}s that failed to deserialize will be simply ignored, so the
  * worst thing that can happen is that you just lose some notes.
  *
+ * <h2>Behaviour, JavaScript, and CSS</h2>
+ * <p>
+ * {@link ConsoleNote} can have associated <tt>script.js</tt> and <tt>style.css</tt> (put them
+ * in the same resource directory that you normally put Jelly scripts), which will be loaded into
+ * the HTML page whenever the console notes are used. This allows you to use minimal markup in
+ * code generation, and do the styling in CSS and perform the rest of the interesting work as a CSS behaviour/JavaScript.
+ *
  * @param <T>
  *      Contextual model object that this console is associated with, such as {@link Run}.
  *
@@ -276,7 +283,9 @@ public abstract class ConsoleNote<T> implements Serializable, Describable<Consol
     }
 
     /**
-     * Removes the embedded console notes in the given log lines
+     * Removes the embedded console notes in the given log lines.
+     *
+     * @since 1.350
      */
     public static List<String> removeNotes(Collection<String> logLines) {
         List<String> r = new ArrayList<String>(logLines.size());
@@ -287,6 +296,8 @@ public abstract class ConsoleNote<T> implements Serializable, Describable<Consol
 
     /**
      * Removes the embedded console notes in the given log line.
+     *
+     * @since 1.350
      */
     public static String removeNotes(String line) {
         while (true) {

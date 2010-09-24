@@ -24,7 +24,7 @@
 package hudson.tasks.junit;
 
 import hudson.model.AbstractBuild;
-import hudson.tasks.test.*;
+import hudson.tasks.test.MetaTabulatedResult;
 import hudson.tasks.test.TestResult;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
@@ -108,30 +108,36 @@ public final class PackageResult extends MetaTabulatedResult implements Comparab
         return null;
     }
 
+    @Override
     public String getTitle() {
         return Messages.PackageResult_getTitle(getName());
     }
 
+    @Override
     public String getChildTitle() {
         return Messages.PackageResult_getChildTitle();
     }
 
     // TODO: wait until stapler 1.60 to do this @Exported
+    @Override
     public float getDuration() {
         return duration; 
     }
     
     @Exported
+    @Override
     public int getPassCount() {
         return passCount;
     }
 
     @Exported
+    @Override
     public int getFailCount() {
         return failCount;
     }
 
     @Exported
+    @Override
     public int getSkipCount() {
         return skipCount;
     }

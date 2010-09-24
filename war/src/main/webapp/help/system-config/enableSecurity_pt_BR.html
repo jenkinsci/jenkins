@@ -1,0 +1,20 @@
+<div>
+  Se habilitado, você tem que se logar com um usuário e senha que tenha o papel "admin"
+  antes de mudar a configuração ou executar uma nova construção (procure pelo link "login"
+  no canto superior direito da página).
+  A configuração de contas de usuários é específica para o contêiner web que você está usando.
+  (Por exemplo, no Tomcat, por padrão, ele procura por <tt>$TOMCAT_HOME/conf/tomcat-users.xml</tt>)
+
+  <p>
+  Se você está usando o Hudson em uma intranet (ou outro ambiente "confiável"), é geralmente
+  desejável deixar este checkbox desligado, tal que o desenvolvedor do projeto possa configurar seus próprios
+  projetos sem incomodar você.
+
+  <p>
+  Se você está expondo Hudson para a internet, você deve ligar esta opção. O Hudson é quem lança
+  os processos, assim um Hudson inseguro é um caminho certo para ser hackeado.
+
+  <p>
+  Para mais informações sobre segurança e Hudson, veja
+  <a href="https://hudson.dev.java.net/security.html">este documento</a>.
+</div>

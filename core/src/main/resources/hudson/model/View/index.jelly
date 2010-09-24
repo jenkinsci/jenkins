@@ -23,7 +23,7 @@ THE SOFTWARE.
 -->
 
 <st:compress xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
-  <j:if test="${request.servletPath=='/'}">
+  <j:if test="${request.servletPath=='/' || request.servletPath==''}">
     <st:header name="X-Hudson" value="${servletContext.getAttribute('version')}" />
     <j:if test="${app.tcpSlaveAgentListener!=null}">
       <!-- advertize the CLI TCP port -->

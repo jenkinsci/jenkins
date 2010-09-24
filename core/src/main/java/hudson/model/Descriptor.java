@@ -23,6 +23,7 @@
  */
 package hudson.model;
 
+import hudson.RelativePath;
 import hudson.XmlFile;
 import hudson.BulkChange;
 import hudson.Util;
@@ -300,6 +301,10 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable {
                 if (name==null || name.length()==0)
                     continue;   // unknown parameter name. we'll report the error when the form is submitted.
 
+                RelativePath rp = p.annotation(RelativePath.class);
+                if (rp!=null)
+                    name = rp.value()+'/'+name;
+
                 if (query.length()==0)  query.append("+qs(this)");
 
                 if (name.equals("value")) {
@@ -346,6 +351,10 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable {
                 if (name==null || name.length()==0)
                     continue;   // unknown parameter name. we'll report the error when the form is submitted.
 
+                RelativePath rp = p.annotation(RelativePath.class);
+                if (rp!=null)
+                    name = rp.value()+'/'+name;
+
                 depends.add(name);
                 continue;
             }
@@ -355,6 +364,19 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable {
                 buildFillDependencies(m,depends);
         }
         return depends;
+    }
+
+    /**
+     * Computes the auto-completion setting
+     */
+    public void calcAutoCompleteSettings(String field, Map<String,Object> attributes) {
+        String capitalizedFieldName = StringUtils.capitalize(field);
+        String methodName = "doAutoComplete" + capitalizedFieldName;
+        Method method = ReflectionUtils.getPublicMethodNamed(getClass(), methodName);
+        if(method==null)
+            return;    // no auto-completion
+
+        attributes.put("autoCompleteUrl", String.format("%s/%s/autoComplete%s", getCurrentDescriptorByNameUrl(), getDescriptorUrl(), capitalizedFieldName));
     }
 
     /**
@@ -455,23 +477,37 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable {
             if(!Modifier.isAbstract(m.getDeclaringClass().getModifiers())) {
                 // this class overrides newInstance(StaplerRequest).
                 // maintain the backward compatible behavior
-                return newInstance(req);
+                return verifyNewInstance(newInstance(req));
             } else {
                 if (req==null) {
                     // yes, req is supposed to be always non-null, but see the note above
-                    return clazz.newInstance();
+                    return verifyNewInstance(clazz.newInstance());
                 }
 
                 // new behavior as of 1.206
-                return req.bindJSON(clazz,formData);
+                return verifyNewInstance(req.bindJSON(clazz,formData));
             }
         } catch (NoSuchMethodException e) {
             throw new AssertionError(e); // impossible
         } catch (InstantiationException e) {
-            throw new Error(e);
+            throw new Error("Failed to instantiate "+clazz+" from "+formData,e);
         } catch (IllegalAccessException e) {
-            throw new Error(e);
+            throw new Error("Failed to instantiate "+clazz+" from "+formData,e);
+        } catch (RuntimeException e) {
+            throw new RuntimeException("Failed to instantiate "+clazz+" from "+formData,e);
         }
+    }
+
+    /**
+     * Look out for a typical error a plugin developer makes.
+     * See http://hudson.361315.n4.nabble.com/Help-Hint-needed-Post-build-action-doesn-t-stay-activated-td2308833.html
+     */
+    private T verifyNewInstance(T t) {
+        if (t!=null && t.getDescriptor()!=this) {
+            // TODO: should this be a fatal error?
+            LOGGER.warning("Father of "+ t+" and its getDescriptor() points to two different instances. Probably malplaced @Extension. See http://hudson.361315.n4.nabble.com/Help-Hint-needed-Post-build-action-doesn-t-stay-activated-td2308833.html");
+        }
+        return t;
     }
 
     /**
@@ -570,22 +606,26 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable {
     }
 
     public String getGlobalConfigPage() {
-        return getViewPage(clazz, "global.jelly");
+        return getViewPage(clazz, "global.jelly",null);
     }
 
-    protected final String getViewPage(Class<?> clazz, String pageName) {
+    private String getViewPage(Class<?> clazz, String pageName, String defaultValue) {
         while(clazz!=Object.class) {
             String name = clazz.getName().replace('.', '/').replace('$', '/') + "/" + pageName;
             if(clazz.getClassLoader().getResource(name)!=null)
                 return '/'+name;
             clazz = clazz.getSuperclass();
         }
+        return defaultValue;
+    }
+
+    protected final String getViewPage(Class<?> clazz, String pageName) {
         // We didn't find the configuration page.
         // Either this is non-fatal, in which case it doesn't matter what string we return so long as
         // it doesn't exist.
         // Or this error is fatal, in which case we want the developer to see what page he's missing.
         // so we put the page name.
-        return pageName;
+        return getViewPage(clazz,pageName,pageName);
     }
 
 

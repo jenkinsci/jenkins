@@ -1,7 +1,7 @@
 /*
  * The MIT License
  *
- * Copyright (c) 2004-2009, Sun Microsystems, Inc.
+ * Copyright (c) 2004-2010, Sun Microsystems, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,6 +24,7 @@
 package hudson.cli;
 
 import hudson.Extension;
+import hudson.model.Hudson;
 
 import java.util.Map;
 import java.util.TreeMap;
@@ -41,6 +42,12 @@ public class HelpCommand extends CLICommand {
     }
 
     protected int run() {
+        if (!Hudson.getInstance().hasPermission(Hudson.READ)) {
+            stderr.println("You must authenticate to access this Hudson.\n"
+                    + "Use --username/--password/--password-file parameters or login command.");
+            return 0;
+        }
+
         Map<String,CLICommand> commands = new TreeMap<String,CLICommand>();
         for (CLICommand c : CLICommand.all())
             commands.put(c.getName(),c);

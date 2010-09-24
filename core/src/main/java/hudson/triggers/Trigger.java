@@ -30,7 +30,6 @@ import hudson.ExtensionPoint;
 import hudson.DescriptorExtensionList;
 import hudson.Extension;
 import hudson.init.Initializer;
-import hudson.init.InitMilestone;
 import static hudson.init.InitMilestone.JOB_LOADED;
 import hudson.model.AbstractProject;
 import hudson.model.Action;
@@ -45,6 +44,7 @@ import hudson.model.TopLevelItem;
 import hudson.model.TopLevelItemDescriptor;
 import hudson.scheduler.CronTab;
 import hudson.scheduler.CronTabList;
+import hudson.tasks.BuildWrapper;
 import hudson.util.DoubleLaunchChecker;
 
 import java.io.InvalidObjectException;
@@ -118,8 +118,6 @@ public abstract class Trigger<J extends Item> implements Describable<Trigger<?>>
     /**
      * {@link Action}s to be displayed in the job page.
      *
-     * @param job
-     *      This object owns the {@link BuildWrapper}. The returned action will be added to this object.
      * @return
      *      can be empty but never null
      * @since 1.341

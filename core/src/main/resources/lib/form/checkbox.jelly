@@ -29,6 +29,12 @@ THE SOFTWARE.
     <st:attribute name="name" />
     <st:attribute name="checked" />
     <st:attribute name="value" />
+    <st:attribute name="json">
+      Normally, the submitted JSON will be boolean indicating whether the checkbox was checked or not.
+      This is sometimes inconvenient if you have a UI that lets user select a subset of a set.
+      If this attribute is present, the submitted JSON will have this as a string value if the checkbox is checked,
+      and none otherwise, making the subset selection easier.
+    </st:attribute>
     <st:attribute name="default">
       The default value of the check box, in case both @checked and @instance are null.
       If this attribute is unspecified or null, it defaults to unchecked, otherwise checked.
@@ -46,6 +52,6 @@ THE SOFTWARE.
          name="${attrs.name?:'_.'+attrs.field}"
          value="${attrs.value}"
          onclick="${attrs.onclick}" id="${attrs.id}" class="${attrs.negative!=null ? 'negative' : null} ${attrs.checkUrl!=null?'validated':''}"
-         checkUrl="${attrs.checkUrl}"
+         checkUrl="${attrs.checkUrl}" json="${attrs.json}"
          checked="${(attrs.checked ?: instance[attrs.field] ?: attrs.default) ? 'true' : null}"/>
 </j:jelly>

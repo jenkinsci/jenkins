@@ -40,8 +40,6 @@ import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -163,10 +161,10 @@ public class TestResultAction extends AbstractTestResultAction<TestResultAction>
     	List<TestAction> result = new ArrayList<TestAction>();
 	// Added check for null testData to avoid NPE from issue 4257.
 	if (testData!=null) {
-	    for (Data data: testData) {
-		result.addAll(data.getTestAction(object));
-	    }
-	}
+        for (Data data : testData) {
+            result.addAll(data.getTestAction(object));
+        }
+    }
 	return Collections.unmodifiableList(result);
 	
     }
@@ -189,7 +187,7 @@ public class TestResultAction extends AbstractTestResultAction<TestResultAction>
          * @return
          *      Can be empty but never null. The caller must assume that the returned list is read-only.
     	 */
-    	public abstract List<TestAction> getTestAction(hudson.tasks.junit.TestObject testObject);
+    	public abstract List<? extends TestAction> getTestAction(hudson.tasks.junit.TestObject testObject);
     }
 
     public Object readResolve() {

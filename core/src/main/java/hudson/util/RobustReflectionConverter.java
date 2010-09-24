@@ -149,7 +149,10 @@ public class RobustReflectionConverter implements Converter {
 
                     Class defaultType = mapper.defaultImplementationOf(fieldType);
                     if (!actualType.equals(defaultType)) {
-                        writer.addAttribute(mapper.aliasForAttribute("class"), mapper.serializedClass(actualType));
+                        String serializedClassName = mapper.serializedClass(actualType);
+                        if (!serializedClassName.equals(mapper.serializedClass(defaultType))) {
+                            writer.addAttribute(mapper.aliasForSystemAttribute("class"), serializedClassName);
+                        }
                     }
 
                     if (seenFields.contains(aliasName)) {
@@ -192,8 +195,9 @@ public class RobustReflectionConverter implements Converter {
             Class classDefiningField = determineWhichClassDefinesField(reader);
             boolean fieldExistsInClass = fieldDefinedInClass(result, attrName);
             if (fieldExistsInClass) {
-                SingleValueConverter converter = mapper.getConverterFromAttribute(attrName);
-                Class type = reflectionProvider.getFieldType(result, attrName, classDefiningField);
+                Field field = reflectionProvider.getField(result.getClass(), attrName);
+                SingleValueConverter converter = mapper.getConverterFromAttribute(field.getDeclaringClass(),attrName,field.getType());
+                Class type = field.getType();
                 if (converter == null) {
                     converter = mapper.getConverterFromItemType(type);
                 }
@@ -226,7 +230,7 @@ public class RobustReflectionConverter implements Converter {
                 final Object value;
                 if (fieldExistsInClass) {
                     Field field = reflectionProvider.getField(result.getClass(),fieldName);
-                    value = unmarshallField(context, result, type, field);
+                    value = unmarshalField(context, result, type, field);
                     // TODO the reflection provider should have returned the proper field in first place ....
                     Class definedType = reflectionProvider.getFieldType(result, fieldName, classDefiningField);
                     if (!definedType.isPrimitive()) {
@@ -282,7 +286,7 @@ public class RobustReflectionConverter implements Converter {
         return reflectionProvider.getFieldOrNull(result.getClass(),attrName)!=null;
     }
 
-    protected Object unmarshallField(final UnmarshallingContext context, final Object result, Class type, Field field) {
+    protected Object unmarshalField(final UnmarshallingContext context, final Object result, Class type, Field field) {
         return context.convertAnother(result, type);
     }
 

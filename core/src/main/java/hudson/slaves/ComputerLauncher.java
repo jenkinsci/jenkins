@@ -25,14 +25,15 @@ package hudson.slaves;
 
 import hudson.ExtensionPoint;
 import hudson.Extension;
-import hudson.model.*;
+import hudson.model.AbstractDescribableImpl;
+import hudson.model.Computer;
+import hudson.model.Hudson;
+import hudson.model.TaskListener;
 import hudson.remoting.Channel;
 import hudson.util.DescriptorList;
 import hudson.util.StreamTaskListener;
 
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
 
 /**
  * Extension point to allow control over how {@link Computer}s are "launched",
@@ -94,6 +95,14 @@ public abstract class ComputerLauncher extends AbstractDescribableImpl<ComputerL
 
     /**
      * Allows the {@link ComputerLauncher} to tidy-up after a disconnect.
+     *
+     * <p>
+     * This method is invoked after the {@link Channel} to this computer is terminated.
+     *
+     * <p>
+     * Disconnect operation is performed asynchronously, so there's no guarantee
+     * that the corresponding {@link SlaveComputer} exists for the duration of the
+     * operation.
      */
     public void afterDisconnect(SlaveComputer computer, TaskListener listener) {
         // to remain compatible with the legacy implementation that overrides the old signature
@@ -109,6 +118,17 @@ public abstract class ComputerLauncher extends AbstractDescribableImpl<ComputerL
 
     /**
      * Allows the {@link ComputerLauncher} to prepare for a disconnect.
+     *
+     * <p>
+     * This method is invoked before the {@link Channel} to this computer is terminated,
+     * thus the channel is still accessible from {@link SlaveComputer#getChannel()}.
+     * If the channel is terminated unexpectedly, this method will not be invoked,
+     * as the channel is already gone.
+     *
+     * <p>
+     * Disconnect operation is performed asynchronously, so there's no guarantee
+     * that the corresponding {@link SlaveComputer} exists for the duration of the
+     * operation.
      */
     public void beforeDisconnect(SlaveComputer computer, TaskListener listener) {
         // to remain compatible with the legacy implementation that overrides the old signature

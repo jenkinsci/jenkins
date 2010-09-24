@@ -1,7 +1,7 @@
 /*
  * The MIT License
  * 
- * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, Tom Huybrechts
+ * Copyright (c) 2004-2010, Sun Microsystems, Inc., Kohsuke Kawaguchi, Tom Huybrechts
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,13 +23,23 @@
  */
 package hudson.model;
 
+import antlr.ANTLRException;
 import hudson.Util;
 import static hudson.Util.fixNull;
+
+import hudson.model.labels.LabelAtom;
+import hudson.model.labels.LabelExpression;
+import hudson.model.labels.LabelExpressionLexer;
+import hudson.model.labels.LabelExpressionParser;
+import hudson.model.labels.LabelOperatorPrecedence;
 import hudson.slaves.NodeProvisioner;
 import hudson.slaves.Cloud;
+import hudson.util.QuotedStringTokenizer;
+import hudson.util.VariableResolver;
 import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.export.ExportedBean;
 
+import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
@@ -52,14 +62,17 @@ import com.thoughtworks.xstream.io.HierarchicalStreamReader;
  * @see Hudson#getLabel(String) 
  */
 @ExportedBean
-public class Label implements Comparable<Label>, ModelObject {
-    private final String name;
-    private volatile Set<Node> nodes;
-    private volatile Set<Cloud> clouds;
+public abstract class Label extends Actionable implements Comparable<Label>, ModelObject {
+    /**
+     * Display name of this label.
+     */
+    protected transient final String name;
+    private transient volatile Set<Node> nodes;
+    private transient volatile Set<Cloud> clouds;
 
     @Exported
-    public final LoadStatistics loadStatistics;
-    public final NodeProvisioner nodeProvisioner;
+    public transient final LoadStatistics loadStatistics;
+    public transient final NodeProvisioner nodeProvisioner;
 
     public Label(String name) {
         this.name = name;
@@ -83,13 +96,60 @@ public class Label implements Comparable<Label>, ModelObject {
         this.nodeProvisioner = new NodeProvisioner(this, loadStatistics);
     }
 
+    /**
+     * Alias for {@link #getDisplayName()}.
+     */
     @Exported
-    public String getName() {
+    public final String getName() {
+        return getDisplayName();
+    }
+
+    /**
+     * Returns a human-readable text that represents this label.
+     */
+    public String getDisplayName() {
         return name;
     }
 
-    public String getDisplayName() {
-        return name;
+    /**
+     * Returns a label expression that represents this label.
+     */
+    public abstract String getExpression();
+
+    /**
+     * Relative URL from the context path, that ends with '/'.
+     */
+    public String getUrl() {
+        return "label/"+name+'/';
+    }
+
+    public String getSearchUrl() {
+        return getUrl();
+    }
+
+    /**
+     * Evaluates whether the label expression is true given the specified value assignment.
+     * IOW, returns true if the assignment provided by the resolver matches this label expression.
+     */
+    public abstract boolean matches(VariableResolver<Boolean> resolver);
+
+    /**
+     * Evaluates whether the label expression is true when an entity owns the given set of
+     * {@link LabelAtom}s.
+     */
+    public final boolean matches(final Collection<LabelAtom> labels) {
+        return matches(new VariableResolver<Boolean>() {
+            public Boolean resolve(String name) {
+                for (LabelAtom a : labels)
+                    if (a.getName().equals(name))
+                        return true;
+                return false;
+            }
+        });
+    }
+
+    public final boolean matches(Node n) {
+        return matches(n.getAssignedLabels());
     }
 
     /**
@@ -111,10 +171,10 @@ public class Label implements Comparable<Label>, ModelObject {
 
         Set<Node> r = new HashSet<Node>();
         Hudson h = Hudson.getInstance();
-        if(h.getAssignedLabels().contains(this))
+        if(this.matches(h))
             r.add(h);
         for (Node n : h.getNodes()) {
-            if(n.getAssignedLabels().contains(this))
+            if(this.matches(n))
                 r.add(n);
         }
         return this.nodes = Collections.unmodifiableSet(r);
@@ -297,6 +357,56 @@ public class Label implements Comparable<Label>, ModelObject {
         return new Api(this);
     }
 
+    /**
+     * Returns the label that represents "this&amp;rhs"
+     */
+    public Label and(Label rhs) {
+        return new LabelExpression.And(this,rhs);
+    }
+
+    /**
+     * Returns the label that represents "this|rhs"
+     */
+    public Label or(Label rhs) {
+        return new LabelExpression.Or(this,rhs);
+    }
+
+    /**
+     * Returns the label that represents "this&lt;->rhs"
+     */
+    public Label iff(Label rhs) {
+        return new LabelExpression.Iff(this,rhs);
+    }
+
+    /**
+     * Returns the label that represents "this->rhs"
+     */
+    public Label implies(Label rhs) {
+        return new LabelExpression.Implies(this,rhs);
+    }
+
+    /**
+     * Returns the label that represents "!this"
+     */
+    public Label not() {
+        return new LabelExpression.Not(this);
+    }
+
+    /**
+     * Returns the label that represents "(this)"
+     * This is a pointless operation for machines, but useful
+     * for humans who find the additional parenthesis often useful
+     */
+    public Label paren() {
+        return new LabelExpression.Paren(this);
+    }
+
+    /**
+     * Precedence of the top most operator.
+     */
+    public abstract LabelOperatorPrecedence precedence();
+
+
     @Override
     public boolean equals(Object that) {
         if (this == that) return true;
@@ -325,12 +435,12 @@ public class Label implements Comparable<Label>, ModelObject {
         }
 
         public boolean canConvert(Class type) {
-            return type==Label.class;
+            return Label.class.isAssignableFrom(type);
         }
 
         public void marshal(Object source, HierarchicalStreamWriter writer, MarshallingContext context) {
             Label src = (Label) source;
-            writer.setValue(src.getName());
+            writer.setValue(src.getExpression());
         }
 
         public Object unmarshal(HierarchicalStreamReader reader, final UnmarshallingContext context) {
@@ -348,12 +458,12 @@ public class Label implements Comparable<Label>, ModelObject {
      *      so that the caller can add more to the set.
      * @since 1.308
      */
-    public static Set<Label> parse(String labels) {
-        Set<Label> r = new TreeSet<Label>();
+    public static Set<LabelAtom> parse(String labels) {
+        Set<LabelAtom> r = new TreeSet<LabelAtom>();
         labels = fixNull(labels);
         if(labels.length()>0)
-            for( String l : labels.split(" +"))
-                r.add(Hudson.getInstance().getLabel(l));
+            for( String l : new QuotedStringTokenizer(labels).toArray())
+                r.add(Hudson.getInstance().getLabelAtom(l));
         return r;
     }
 
@@ -362,5 +472,15 @@ public class Label implements Comparable<Label>, ModelObject {
      */
     public static Label get(String l) {
         return Hudson.getInstance().getLabel(l);
+    }
+
+    /**
+     * Parses the expression into a label expression tree.
+     *
+     * TODO: replace this with a real parser later
+     */
+    public static Label parseExpression(String labelExpression) throws ANTLRException {
+        LabelExpressionLexer lexer = new LabelExpressionLexer(new StringReader(labelExpression));
+        return new LabelExpressionParser(lexer).expr();
     }
 }

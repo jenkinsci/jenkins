@@ -1,7 +1,8 @@
 <!--
 The MIT License
 
-Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, Matthew R. Harrah, Tom Huybrechts, id:cactusman
+Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, Matthew R. Harrah,
+Tom Huybrechts, id:cactusman, Romain Seguy
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -55,7 +56,8 @@ THE SOFTWARE.
       </div>
 
       <table style="margin-top: 1em; margin-left:1em;">
-        <t:artifactList build="${it}" caption="${%Build Artifacts}" />
+        <t:artifactList build="${it}" caption="${%Build Artifacts}"
+          permission="${it.ARTIFACTS}" />
 
         <j:set var="set" value="${it.changeSet}" />
         <t:summary icon="notepad.gif">

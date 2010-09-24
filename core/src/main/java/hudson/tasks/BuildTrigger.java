@@ -40,13 +40,13 @@ import hudson.model.DependencyGraph.Dependency;
 import hudson.model.Hudson;
 import hudson.model.Item;
 import hudson.model.Items;
-import hudson.model.Job;
 import hudson.model.Project;
 import hudson.model.Result;
 import hudson.model.Run;
 import hudson.model.Cause.UpstreamCause;
 import hudson.model.TaskListener;
 import hudson.model.listeners.ItemListener;
+import hudson.tasks.BuildTrigger.DescriptorImpl.ItemListenerImpl;
 import hudson.util.FormValidation;
 import net.sf.json.JSONObject;
 import org.kohsuke.stapler.DataBoundConstructor;
@@ -226,10 +226,9 @@ public class BuildTrigger extends Recorder implements DependecyDeclarer, MatrixA
     }
 
     /**
-     * Called from {@link Job#renameTo(String)} when a job is renamed.
+     * Called from {@link ItemListenerImpl} when a job is renamed.
      *
-     * @return true
-     *      if this {@link BuildTrigger} is changed and needs to be saved.
+     * @return true if this {@link BuildTrigger} is changed and needs to be saved.
      */
     public boolean onJobRenamed(String oldName, String newName) {
         // quick test

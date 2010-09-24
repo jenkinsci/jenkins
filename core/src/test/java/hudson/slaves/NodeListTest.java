@@ -23,24 +23,22 @@
  */
 package hudson.slaves;
 
+
 import junit.framework.TestCase;
 import hudson.model.Hudson;
 import hudson.model.Node;
 import hudson.model.TaskListener;
 import hudson.model.Computer;
-import hudson.model.Label;
 import hudson.model.TopLevelItem;
 import hudson.XmlFile;
 import hudson.Launcher;
 import hudson.FilePath;
-import hudson.security.ACL;
-import hudson.security.Permission;
+import hudson.model.labels.LabelAtom;
 import hudson.util.ClockDifference;
 import hudson.util.DescribableList;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Collection;
 import java.util.Set;
 
 import org.apache.commons.io.FileUtils;
@@ -78,15 +76,11 @@ public class NodeListTest extends TestCase {
             throw new UnsupportedOperationException();
         }
 
-        public Set<Label> getAssignedLabels() {
+        public Set<LabelAtom> getAssignedLabels() {
             throw new UnsupportedOperationException();
         }
 
         public String getLabelString() {
-            throw new UnsupportedOperationException();
-        }
-
-        public Set<Label> getDynamicLabels() {
             throw new UnsupportedOperationException();
         }
 

@@ -40,7 +40,7 @@ THE SOFTWARE.
           <a href="schema">Schema</a> is also available.
 
           <p>
-            You can also specify optional XPath to control the fragment you'd like to obtain.
+            You can also specify optional XPath to control the fragment you'd like to obtain (but see <a href="#tree">below</a>).
             For example, <tt>../api/xml?xpath=/*/*[0]</tt>. If the XPath only matches a text node,
             the result will be sent with <tt>text/plain</tt> MIME type to simplify
             further processing.
@@ -51,7 +51,7 @@ THE SOFTWARE.
           <p>
             Similarly <tt>exclude</tt> query parameter can be used to exclude nodes
             that match the given XPath from the result. This is useful for
-            trimming down the amount of data fetch. This query parameter can be specified
+            trimming down the amount of data you fetch (but again see <a href="#tree">below</a>). This query parameter can be specified
             multiple times.
           </p>
         </dd>
@@ -81,12 +81,26 @@ THE SOFTWARE.
 
       <h2>Controlling the amount of data you fetch</h2>
       <p>
-        In both formats, the <tt>depth</tt> query parameter can be used to control the amount of data
+        In all formats, the <tt>depth</tt> query parameter can be used to control the amount of data
         you'll receive. The default is <tt>depth=0</tt>, but by increasing this value you can get
         a lot of data by single remote API invocation (the downside is bigger bandwidth requirement.)
         Compare <a href="xml">depth=0</a> and <a href="xml?depth=1">depth=1</a> and see what the difference
         is for yourself. Also note that data created by a smaller depth value is always a subset of
         the data created by a bigger depth value.
+      </p>
+      <p>
+        <a name="tree">A newer alternative is the <tt>tree</tt> query parameter.</a> This works with any format, e.g. JSON;
+        is more efficient than using <tt>depth</tt> with <tt>exclude</tt> (since information
+        does not need to be generated on the server and then discarded); and may be easier to use,
+        since you need only know what elements you are looking for, rather than what you are <em>not</em> looking
+        for (which is anyway an open-ended list when plugins can contribute API elements).
+        The value should be a list of property names to include, with subproperties inside square braces.
+        Try <a href="xml?tree=jobs[name],views[name,jobs[name]]">tree=jobs[name],views[name,jobs[name]]</a>
+        to see just a list of jobs (only giving the name) and views (giving the name and jobs they contain).
+        <strong>Note</strong>: for array-type properties (such as <tt>jobs</tt> in this example),
+        the name must be given in the original plural, not in the singular as the element would appear in XML (<tt>&amp;lt;job&amp;gt;</tt>).
+        This will be more natural for e.g. <a href="json?tree=jobs[name]">json?tree=jobs[name]</a> anyway:
+        the JSON writer does not do plural-to-singular mangling because arrays are represented explicitly.
       </p>
 
       <st:include it="${it.bean}" page="_api.jelly" optional="true" />

@@ -178,6 +178,12 @@ public interface Item extends PersistenceRoot, SearchableModelObject, AccessCont
     void onCopiedFrom(Item src);
 
     /**
+     * When an item is created from scratch (instead of copied),
+     * this method will be invoked. Used as the post-construction initialization.
+      */
+    void onCreatedFromScratch();
+
+    /**
      * Save the settings to a file.
      *
      * Use {@link Items#getConfigFile(Item)}

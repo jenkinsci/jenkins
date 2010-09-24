@@ -33,7 +33,7 @@ public final class Capability implements Serializable {
     }
 
     Capability() {
-        this(MASK_MULTI_CLASSLOADER);
+        this(MASK_MULTI_CLASSLOADER|MASK_PIPE_THROTTLING);
     }
 
     /**
@@ -44,6 +44,15 @@ public final class Capability implements Serializable {
      */
     public boolean supportsMultiClassLoaderRPC() {
         return (mask&MASK_MULTI_CLASSLOADER)!=0;
+    }
+
+    /**
+     * Does the implementation supports window size control over pipes?
+     *
+     * @see ProxyOutputStream
+     */
+    public boolean supportsPipeThrottling() {
+        return (mask& MASK_PIPE_THROTTLING)!=0;
     }
 
     /**
@@ -89,7 +98,14 @@ public final class Capability implements Serializable {
      */
     private static final long MASK_MULTI_CLASSLOADER = 2L;
 
+    /**
+     * Bit that indicates the use of TCP-like window control for {@link ProxyOutputStream}.
+     */
+    private static final long MASK_PIPE_THROTTLING = 4L;
+
     static final byte[] PREAMBLE;
+
+    public static final Capability NONE = new Capability(0);
 
     static {
         try {

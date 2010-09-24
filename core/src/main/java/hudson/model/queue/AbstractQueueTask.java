@@ -25,6 +25,10 @@
 package hudson.model.queue;
 
 import hudson.model.Queue;
+import hudson.model.Queue.Task;
+
+import java.util.Collection;
+import java.util.Collections;
 
 /**
  * Abstract base class for {@link Queue.Task} to protect plugins
@@ -34,4 +38,11 @@ import hudson.model.Queue;
  * @since 1.360
  */
 public abstract class AbstractQueueTask implements Queue.Task {
+    public Collection<? extends SubTask> getSubTasks() {
+        return Collections.singleton(this);
+    }
+
+    public final Task getOwnerTask() {
+        return this;
+    }
 }

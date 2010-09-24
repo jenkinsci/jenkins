@@ -1,7 +1,7 @@
 /*
  * The MIT License
  *
- * Copyright (c) 2004-2009, Sun Microsystems, Inc.
+ * Copyright (c) 2004-2010, Sun Microsystems, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -61,6 +61,9 @@ public class InstallPluginCommand extends CLICommand {
     public boolean restart;
 
     protected int run() throws Exception {
+        Hudson h = Hudson.getInstance();
+        h.checkPermission(Hudson.ADMINISTER);
+
         for (String source : sources) {
             // is this a file?
             FilePath f = new FilePath(channel, source);
@@ -90,7 +93,7 @@ public class InstallPluginCommand extends CLICommand {
             }
 
             // is this a plugin the update center?
-            UpdateSite.Plugin p = Hudson.getInstance().getUpdateCenter().getPlugin(source);
+            UpdateSite.Plugin p = h.getUpdateCenter().getPlugin(source);
             if (p!=null) {
                 stdout.println("Installing "+source+" from update center");
                 p.deploy().get();
@@ -102,7 +105,7 @@ public class InstallPluginCommand extends CLICommand {
         }
 
         if (restart)
-            Hudson.getInstance().restart();
+            h.restart();
         return 0; // all success
     }
 

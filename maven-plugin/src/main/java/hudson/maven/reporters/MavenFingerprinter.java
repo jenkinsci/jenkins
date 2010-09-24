@@ -110,7 +110,9 @@ public class MavenFingerprinter extends MavenReporter {
                 all.putAll(p);
 
                 // add action
-                build.getActions().add(new FingerprintAction(build,all));
+                FingerprintAction fa = build.getAction(FingerprintAction.class);
+                if (fa!=null)   fa.add(all);
+                else            build.getActions().add(new FingerprintAction(build,all));
                 return null;
             }
         });

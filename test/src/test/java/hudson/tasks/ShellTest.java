@@ -1,5 +1,6 @@
 package hudson.tasks;
 
+import hudson.Functions;
 import hudson.Launcher.ProcStarter;
 import hudson.Proc;
 import hudson.model.FreeStyleBuild;
@@ -19,6 +20,10 @@ import java.util.List;
  */
 public class ShellTest extends HudsonTestCase {
     public void testBasic() throws Exception {
+        // If we're on Windows, don't bother doing this.
+        if (Functions.isWindows())
+            return;
+
         // TODO: define a FakeLauncher implementation with easymock so that this kind of assertions can be simplified.
         PretendSlave s = createPretendSlave(new FakeLauncher() {
             public Proc onLaunch(ProcStarter p) throws IOException {

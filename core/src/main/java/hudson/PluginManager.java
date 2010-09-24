@@ -494,6 +494,7 @@ public abstract class PluginManager extends AbstractModelObject {
         }
         rsp.sendRedirect("../updateCenter/");
     }
+    
 
     /**
      * Bare-minimum configuration mechanism to change the update center.

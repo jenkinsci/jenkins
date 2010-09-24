@@ -1,7 +1,7 @@
 <!--
 The MIT License
 
-Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, Stephen Connolly
+Copyright (c) 2004-2010, Sun Microsystems, Inc., Kohsuke Kawaguchi, Stephen Connolly
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -27,88 +27,37 @@ THE SOFTWARE.
 -->
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt" xmlns:p="/lib/hudson/project">
+
   <p:config-disableBuild/>
+
   <f:section title="${%Advanced Project Options}">
     <f:advanced>
       <p:config-quietPeriod />
       <p:config-retryCount />
       <p:config-blockWhenUpstreamBuilding />
+      <p:config-customWorkspace />
     </f:advanced>
   </f:section>
+
   <p:config-scm/>
+
   <p:config-trigger>
     <p:config-upstream-pseudo-trigger />
   </p:config-trigger>
 
   <f:section title="${%Configuration Matrix}">
-    <!-- JDK config -->
-    <j:set var="jdks" value="${app.JDKs}" />
-    <j:if test="${!empty(jdks)}">
-      <f:entry title="JDK" help="/help/matrix/jdk.html">
-        <j:forEach var="jdk" items="${jdks}">
-          <f:checkbox name="jdk.${jdk.name}" id="jdk.${jdk.name}" checked="${it.JDKs.contains(jdk)}" />
-          <label for="jdk.${jdk.name}">${jdk.name}</label>
-          <st:nbsp/>
-        </j:forEach>
-      </f:entry>
-    </j:if>
+    <!-- Needed for LabelAxis, but including these from LabelAxis/config.jelly is too late -->
+    <l:yui module="treeview" />
+    <link rel="stylesheet" type="text/css"
+          href="${rootURL}/scripts/yui/treeview/assets/skins/sam/treeview.css" />
 
-    <!-- master slave -->
-    <j:if test="${!empty(app.slaves)}">
-      <j:set var="labels" value="${it.labels}" />
-      <f:optionalBlock name="multipleNodes" title="${%Build on multiple nodes}" checked="${!empty(labels)}"
-          help="/help/matrix/label.html">
-        <f:entry title="${%Node}">
-          <div id="nodeTree" class="yahooTree" style="border: 1px solid gray; height: 10em; overflow:auto;"></div>
-          <script src="${rootURL}/scripts/yui/treeview/treeview-${yuiSuffix}.js"></script>
-          <link rel="stylesheet" href="${rootURL}/scripts/yui/treeview/assets/skins/sam/treeview.css" type="text/css" />
-          <script>
-            (function(){
-              var tree = new YAHOO.widget.TreeView("nodeTree");
+    <f:block>
+      <f:hetero-list name="axis" hasHeader="true"
+                     descriptors="${descriptor.axisDescriptors}"
+                     items="${it.axes}"
+                     addCaption="${%Add axis}"/>
+    </f:block>
 
-              var machines = new YAHOO.widget.TextNode("${%Individual nodes}", tree.getRoot(), false);
-              var labels = new YAHOO.widget.TextNode("${%Labels}", tree.getRoot(), false);
-
-              <j:forEach var="l" items="${app.labels}">
-                new YAHOO.widget.TextNode('&lt;input type="checkbox" name="label.${l.name}" id="label.${l.name}" <j:if test="${labels.contains(l)}">checked</j:if>&gt;<label for="label.${l.name}">${h.jsStringEscape(l.name)} (${h.jsStringEscape(l.description)})</label>', ${l.isSelfLabel()?'machines':'labels'}, false);
-              </j:forEach>
-
-              tree.draw();
-              <!--
-                force the rendering of HTML, so that input fields are there
-                even when the form is submitted without this tree expanded.
-               -->
-              tree.expandAll();
-              tree.collapseAll();
-            })();
-          </script>
-        </f:entry>
-      </f:optionalBlock>
-    </j:if>
-
-    <j:set var="userAxes" value="${it.userAxes}" />
-    <f:optionalBlock name="hasAxes" title="${%Axes}" checked="${!empty(userAxes)}"
-        help="/help/matrix/axes.html">
-      <f:entry>
-        <f:repeatable var="axis" items="${userAxes}" noAddButton="true" minimum="1">
-          <table>
-            <f:entry title="${%Name}">
-              <f:textbox name="axis.name" value="${axis.name}" checkUrl="'checkAxisName?value='+encodeURIComponent(this.value)"/>
-            </f:entry>
-            <f:entry title="${%Values}" help="/help/matrix/axis-value.html">
-              <f:expandableTextbox name="axis.value" value="${axis.valueString}" />
-            </f:entry>
-            <f:entry>
-              <div align="right">
-                <input type="button" value="${%Add more axis}" class="repeatable-add show-if-last" />
-                <input type="button" value="${%Delete}" class="repeatable-delete show-if-not-only" style="margin-left: 1em;" />
-              </div>
-            </f:entry>
-          </table>
-        </f:repeatable>
-      </f:entry>
-    </f:optionalBlock>
-    
     <f:optionalBlock field="runSequentially" title="${%Run each configuration sequentially}"/>
 
     <f:optionalBlock name="hasCombinationFilter" title="${%Combination Filter}" checked="${!empty(it.combinationFilter)}"

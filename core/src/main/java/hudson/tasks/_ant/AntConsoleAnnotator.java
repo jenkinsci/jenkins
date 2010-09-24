@@ -58,6 +58,9 @@ public class AntConsoleAnnotator extends LineTransformationOutputStream {
             // put the annotation
             new AntTargetNote().encodeTo(out);
 
+        if (line.equals("BUILD SUCCESSFUL") || line.equals("BUILD FAILED"))
+            new AntOutcomeNote().encodeTo(out);
+
         seenEmptyLine = line.length()==0;
         out.write(b,0,len);
     }
@@ -65,20 +68,6 @@ public class AntConsoleAnnotator extends LineTransformationOutputStream {
     private boolean endsWith(String line, char c) {
         int len = line.length();
         return len>0 && line.charAt(len-1)==c;
-    }
-
-    private String trimEOL(String line) {
-        int slen = line.length();
-        while (slen>0) {
-            char ch = line.charAt(slen-1);
-            if (ch=='\r' || ch=='\n') {
-                slen--;
-                continue;
-            }
-            break;
-        }
-        line = line.substring(0,slen);
-        return line;
     }
 
     @Override

@@ -54,7 +54,7 @@ public interface GNUCLibrary extends Library {
     int getdtablesize();
 
     int execv(String file, StringArray args);
-    int setenv(String name, String value);
+    int setenv(String name, String value,int replace);
     int unsetenv(String name);
     void perror(String msg);
     String strerror(int errno);

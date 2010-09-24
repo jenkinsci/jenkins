@@ -184,6 +184,11 @@ public class Main {
     public static boolean isUnitTest = false;
 
     /**
+     * Set to true if we are running inside "mvn hpi:run" or "mvn hudson-dev:run"
+     */
+    public static boolean isDevelopmentMode = Boolean.getBoolean(Main.class.getName()+".development");
+
+    /**
      * Time out for socket connection to Hudson.
      */
     public static final int TIMEOUT = Integer.getInteger(Main.class.getName()+".timeout",15000);

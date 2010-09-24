@@ -1,7 +1,7 @@
 /*
  * The MIT License
  * 
- * Copyright (c) 2004-2010, Sun Microsystems, Inc., Kohsuke Kawaguchi, Jene Jasper, Stephen Connolly, Tom Huybrechts
+ * Copyright (c) 2004-2010, Sun Microsystems, Inc., Kohsuke Kawaguchi, Jene Jasper, Stephen Connolly, Tom Huybrechts, Yahoo! Inc.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -42,6 +42,8 @@ import hudson.model.TaskListener;
 import hudson.remoting.Callable;
 import hudson.remoting.VirtualChannel;
 import hudson.slaves.NodeSpecific;
+import hudson.tasks._ant.AntConsoleAnnotator;
+import hudson.tasks._maven.MavenConsoleAnnotator;
 import hudson.tools.ToolDescriptor;
 import hudson.tools.ToolInstallation;
 import hudson.tools.DownloadFromUrlInstaller;
@@ -64,6 +66,7 @@ import java.util.Properties;
 import java.util.StringTokenizer;
 import java.util.List;
 import java.util.Collections;
+import java.util.Set;
 
 /**
  * Build by using Maven.
@@ -151,7 +154,7 @@ public class Maven extends Builder {
      */
     public MavenInstallation getMaven() {
         for( MavenInstallation i : getDescriptor().getInstallations() ) {
-            if(mavenName !=null && i.getName().equals(mavenName))
+            if(mavenName !=null && mavenName.equals(i.getName()))
                 return i;
         }
         return null;
@@ -240,8 +243,11 @@ public class Maven extends Builder {
             }
             if(pom!=null)
                 args.add("-f",pom);
-            args.addKeyValuePairs("-D",build.getBuildVariables());
-            args.addKeyValuePairsFromPropertyString("-D",properties,vr);
+
+            Set<String> sensitiveVars = build.getSensitiveBuildVariables();
+
+            args.addKeyValuePairs("-D",build.getBuildVariables(),sensitiveVars);
+            args.addKeyValuePairsFromPropertyString("-D",properties,vr,sensitiveVars);
             if (usesPrivateRepository())
                 args.add("-Dmaven.repo.local=" + build.getWorkspace().child(".repository"));
             args.addTokenized(normalizedTarget);
@@ -250,7 +256,8 @@ public class Maven extends Builder {
             buildEnvVars(env, mi);
 
             try {
-                int r = launcher.launch().cmds(args).envs(env).stdout(listener).pwd(build.getModuleRoot()).join();
+                MavenConsoleAnnotator mca = new MavenConsoleAnnotator(listener.getLogger(),build.getCharset());
+                int r = launcher.launch().cmds(args).envs(env).stdout(mca).pwd(build.getModuleRoot()).join();
                 if (0 != r) {
                     return false;
                 }

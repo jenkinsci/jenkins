@@ -240,15 +240,14 @@ public class JUnitResultArchiver extends Recorder implements Serializable,
 				throws hudson.model.Descriptor.FormException {
 			String testResults = formData.getString("testResults");
             boolean keepLongStdio = formData.getBoolean("keepLongStdio");
-			DescribableList<TestDataPublisher, Descriptor<TestDataPublisher>> testDataPublishers = new DescribableList<TestDataPublisher, Descriptor<TestDataPublisher>>(
-					new Saveable() {
-						public void save() throws IOException {
-							// no-op
-						}
-					});
-			testDataPublishers.rebuild(req, formData, TestDataPublisher.all());
+			DescribableList<TestDataPublisher, Descriptor<TestDataPublisher>> testDataPublishers = new DescribableList<TestDataPublisher, Descriptor<TestDataPublisher>>(Saveable.NOOP);
+            try {
+                testDataPublishers.rebuild(req, formData, TestDataPublisher.all());
+            } catch (IOException e) {
+                throw new FormException(e,null);
+            }
 
-			return new JUnitResultArchiver(testResults, keepLongStdio, testDataPublishers);
+            return new JUnitResultArchiver(testResults, keepLongStdio, testDataPublishers);
 		}
 
 		/**

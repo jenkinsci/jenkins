@@ -27,7 +27,7 @@ THE SOFTWARE.
   <parent>
     <groupId>org.jvnet.hudson.main</groupId>
     <artifactId>pom</artifactId>
-    <version>1.365-SNAPSHOT</version>
+    <version>1.378-SNAPSHOT</version>
     <relativePath>../pom.xml</relativePath>
   </parent>
   
@@ -40,23 +40,16 @@ THE SOFTWARE.
   </description>
   
   <build>
-    <directory>target</directory>
     <finalName>hudson</finalName>
-    
     <plugins>
       <plugin>
         <artifactId>maven-war-plugin</artifactId>
         <version>2.1-beta-1</version>
         <configuration>
+          <filteringDeploymentDescriptors>true</filteringDeploymentDescriptors>
           <webResources>
             <resource>
-              <directory>${basedir}/resources</directory>
-              <!--excludes> not much size improvements
-                <exclude>**/*-debug.js</exclude>
-              </excludes-->
-            </resource>
-            <resource>
-              <directory>${basedir}/target/generated-resources</directory>
+              <directory>${project.build.directory}/generated-resources</directory>
             </resource>
           </webResources>
           <!-- for putting Main-Class into war -->
@@ -126,13 +119,13 @@ THE SOFTWARE.
                 <resolveArtifact artifactId="remoting" tofile="${basedir}/target/generated-resources/WEB-INF/remoting.jar" />
                 <resolveArtifact artifactId="remoting" tofile="${basedir}/target/generated-resources/WEB-INF/slave.jar" />
                 <resolveArtifact groupId="${project.groupId}" artifactId="cli" classifier="jar-with-dependencies" version="${project.version}" type="jar" tofile="${basedir}/target/generated-resources/WEB-INF/hudson-cli.jar" />
-                <resolveArtifact groupId="org.jvnet.hudson.winstone" artifactId="winstone" version="0.9.10-hudson-20" type="jar" tofile="${basedir}/target/generated-resources/winstone.jar" />
+                <resolveArtifact groupId="org.jvnet.hudson.winstone" artifactId="winstone" version="0.9.10-hudson-22" type="jar" tofile="${basedir}/target/generated-resources/winstone.jar" />
 
                 <!-- bundled plugins -->
                 <resolveArtifact type="hpi" groupId="${project.groupId}" artifactId="maven-plugin" version="${project.version}" tofile="${basedir}/target/generated-resources/WEB-INF/plugins/maven-plugin.hpi" />
-                <resolveArtifact type="hpi" groupId="org.jvnet.hudson.plugins" artifactId="ssh-slaves" version="0.10" tofile="${basedir}/target/generated-resources/WEB-INF/plugins/ssh-slaves.hpi" />
+                <resolveArtifact type="hpi" groupId="org.jvnet.hudson.plugins" artifactId="ssh-slaves" version="0.13" tofile="${basedir}/target/generated-resources/WEB-INF/plugins/ssh-slaves.hpi" />
                 <resolveArtifact type="hpi" groupId="org.jvnet.hudson.plugins" artifactId="subversion" version="1.17" tofile="${basedir}/target/generated-resources/WEB-INF/plugins/subversion.hpi" />
-                <resolveArtifact type="hpi" groupId="org.jvnet.hudson.plugins" artifactId="cvs" version="1.1" tofile="${basedir}/target/generated-resources/WEB-INF/plugins/cvs.hpi" />
+                <resolveArtifact type="hpi" groupId="org.jvnet.hudson.plugins" artifactId="cvs" version="1.2" tofile="${basedir}/target/generated-resources/WEB-INF/plugins/cvs.hpi" />
               </tasks>
             </configuration>
           </execution>
@@ -162,7 +155,6 @@ THE SOFTWARE.
             Reload webapp when you hit ENTER. (See JETTY-282 for more)
           -->
           <consoleForceReload>true</consoleForceReload>
-          <webAppSourceDirectory>${basedir}/resources</webAppSourceDirectory>
           <userRealms>
             <userRealm implementation="org.mortbay.jetty.security.HashUserRealm">
               <name>default</name>
@@ -202,6 +194,10 @@ THE SOFTWARE.
             <systemProperty>
               <!-- stat collection pointless -->
               <name>hudson.model.UsageStatistics.disabled</name>
+              <value>true</value>
+            </systemProperty>
+            <systemProperty>
+              <name>hudson.Main.development</name>
               <value>true</value>
             </systemProperty>
           </systemProperties>

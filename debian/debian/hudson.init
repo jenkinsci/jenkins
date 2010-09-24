@@ -97,9 +97,9 @@ do_start()
     
     # If the var MAXOPENFILES is enabled in /etc/default/hudson then set the max open files to the 
     # proper value
-    if [ ! -z "$MAXOPENFILES" ]; then
-	[ "$VERBOSE" != no ] && echo Setting up max open files limit to $MAXOPENFILES
-	ulimit -n $MAXOPENFILES
+    if [ -n "$MAXOPENFILES" ]; then
+        [ "$VERBOSE" != no ] && echo Setting up max open files limit to $MAXOPENFILES
+        ulimit -n $MAXOPENFILES
     fi
     
     # --user in daemon doesn't prepare environment variables like HOME, USER, LOGNAME or USERNAME,
@@ -159,19 +159,19 @@ do_stop()
 
 case "$1" in
   start)
-    [ "$VERBOSE" != no ] && log_daemon_msg "Starting $DESC" "$NAME"
+    log_daemon_msg "Starting $DESC" "$NAME"
     do_start
     case "$?" in
-        0|1) [ "$VERBOSE" != no ] && log_end_msg 0 ;;
-        2) [ "$VERBOSE" != no ] && log_end_msg 1 ;;
+        0|1) log_end_msg 0 ;;
+        2) log_end_msg 1 ;;
     esac
     ;;
   stop)
-    [ "$VERBOSE" != no ] && log_daemon_msg "Stopping $DESC" "$NAME"
+    log_daemon_msg "Stopping $DESC" "$NAME"
     do_stop
     case "$?" in
-        0|1) [ "$VERBOSE" != no ] && log_end_msg 0 ;;
-        2) [ "$VERBOSE" != no ] && log_end_msg 1 ;;
+        0|1) log_end_msg 0 ;;
+        2) log_end_msg 1 ;;
     esac
     ;;
   restart|force-reload)

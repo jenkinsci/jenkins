@@ -26,12 +26,9 @@ package hudson.model.listeners;
 import hudson.ExtensionPoint;
 import hudson.ExtensionListView;
 import hudson.Extension;
-import hudson.DescriptorExtensionList;
 import hudson.ExtensionList;
-import hudson.scm.RepositoryBrowser;
 import hudson.model.Run;
 import hudson.model.TaskListener;
-import hudson.model.Descriptor;
 import hudson.model.Hudson;
 import hudson.util.CopyOnWriteList;
 

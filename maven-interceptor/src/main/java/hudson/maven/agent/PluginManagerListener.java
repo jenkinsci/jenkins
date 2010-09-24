@@ -31,10 +31,8 @@ import org.apache.maven.project.MavenProject;
 import org.apache.maven.reporting.MavenReport;
 import org.codehaus.plexus.configuration.PlexusConfiguration;
 import org.codehaus.plexus.component.configurator.expression.ExpressionEvaluator;
-import org.codehaus.doxia.sink.Sink;
 
 import java.io.IOException;
-import java.util.Locale;
 
 /**
  * Receives notification from {@link PluginManagerInterceptor},

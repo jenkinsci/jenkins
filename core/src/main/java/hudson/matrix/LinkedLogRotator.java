@@ -1,7 +1,7 @@
 /*
  * The MIT License
  * 
- * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi
+ * Copyright (c) 2004-2010, Sun Microsystems, Inc., Kohsuke Kawaguchi
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -40,15 +40,25 @@ import java.io.IOException;
  * @author Kohsuke Kawaguchi
  */
 final class LinkedLogRotator extends LogRotator {
+    LinkedLogRotator(int artifactDaysToKeep, int artifactNumToKeep) {
+        super(-1, -1, artifactDaysToKeep, artifactNumToKeep);
+    }
+
+    /**
+     * @deprecated since 1.369
+     *     Use {@link #LinkedLogRotator(int, int)}
+     */
     LinkedLogRotator() {
-        super(-1,-1);
+        super(-1, -1, -1, -1);
     }
 
     @Override
     public void perform(Job _job) throws IOException, InterruptedException {
-        // copy it to the array because we'll be deleting builds as we go.
+        // Let superclass handle clearing artifacts, if configured:
+        super.perform(_job);
         MatrixConfiguration job = (MatrixConfiguration) _job;
 
+        // copy it to the array because we'll be deleting builds as we go.
         for( MatrixRun r : job.getBuilds().toArray(new MatrixRun[0]) ) {
             if(job.getParent().getBuildByNumber(r.getNumber())==null)
                 r.delete();

@@ -1,7 +1,7 @@
 <!--
 The MIT License
 
-Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, Matthew R. Harrah
+Copyright (c) 2004-2010, Sun Microsystems, Inc., Kohsuke Kawaguchi, Matthew R. Harrah
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -33,7 +33,9 @@ THE SOFTWARE.
       -->
       <st:statusCode value="401" />
       <l:layout title="${%Login Error}">
-        <st:include page="sidepanel.jelly" />
+        <l:hasPermission permission="${app.READ}">
+          <st:include page="sidepanel.jelly" />
+        </l:hasPermission>
         <l:main-panel>
           <div style="margin: 2em; text-align:center; color:red; font-weight:bold">
             ${%Invalid login information. Please try again.}

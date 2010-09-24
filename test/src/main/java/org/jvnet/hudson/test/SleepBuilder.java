@@ -29,8 +29,6 @@ import hudson.model.AbstractBuild;
 import hudson.model.BuildListener;
 import hudson.model.Descriptor;
 import hudson.tasks.Builder;
-import net.sf.json.JSONObject;
-import org.kohsuke.stapler.StaplerRequest;
 
 import java.io.IOException;
 

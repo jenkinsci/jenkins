@@ -26,30 +26,30 @@ package hudson.maven;
 import hudson.*;
 import hudson.model.*;
 import hudson.model.Descriptor.FormException;
-import static hudson.model.ItemGroupMixIn.loadChildren;
 import hudson.model.Queue;
 import hudson.model.Queue.Task;
 import hudson.search.CollectionSearchIndex;
 import hudson.search.SearchIndexBuilder;
-import hudson.tasks.Maven.MavenInstallation;
 import hudson.tasks.*;
+import hudson.tasks.Maven.MavenInstallation;
 import hudson.tasks.junit.JUnitResultArchiver;
-import static hudson.Util.fixEmpty;
 import hudson.util.CopyOnWriteMap;
 import hudson.util.DescribableList;
-import hudson.util.Function1;
 import hudson.util.FormValidation;
+import hudson.util.Function1;
+import net.sf.json.JSONObject;
+import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
-import org.kohsuke.stapler.QueryParameter;
+import org.kohsuke.stapler.export.Exported;
 
 import javax.servlet.ServletException;
 import java.io.File;
 import java.io.IOException;
 import java.util.*;
 
-import net.sf.json.JSONObject;
-import org.kohsuke.stapler.export.Exported;
+import static hudson.Util.fixEmpty;
+import static hudson.model.ItemGroupMixIn.loadChildren;
 
 /**
  * Group of {@link MavenModule}s.
@@ -201,6 +201,7 @@ public final class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,Ma
         for (MavenModule module: modules.values()) {
             module.updateTransientActions();
         }
+        
         if(publishers!=null)    // this method can be loaded from within the onLoad method, where this might be null
             for (BuildStep step : publishers)
                 transientActions.addAll(step.getProjectActions(this));

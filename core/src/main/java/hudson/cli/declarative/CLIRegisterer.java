@@ -1,7 +1,7 @@
 /*
  * The MIT License
  *
- * Copyright (c) 2004-2009, Sun Microsystems, Inc.
+ * Copyright (c) 2004-2010, Sun Microsystems, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -112,7 +112,8 @@ public class CLIRegisterer extends ExtensionFinder {
                             this.stderr = stderr;
                             this.locale = locale;
                             this.channel = Channel.current();
-                            
+
+                            registerOptionHandlers();
                             CmdLineParser parser = new CmdLineParser(null);
                             try {
                                 SecurityContext sc = SecurityContextHolder.getContext();
@@ -147,7 +148,11 @@ public class CLIRegisterer extends ExtensionFinder {
                                     // fill up all the binders
                                     parser.parseArgument(args);
 
-                                    sc.setAuthentication(authenticator.authenticate()); // run the CLI with the right credential
+                                    Authentication auth = authenticator.authenticate();
+                                    if (auth==Hudson.ANONYMOUS)
+                                        auth = loadStoredAuthentication();
+                                    sc.setAuthentication(auth); // run the CLI with the right credential
+                                    hudson.checkPermission(Hudson.READ);
 
                                     // resolve them
                                     Object instance = null;

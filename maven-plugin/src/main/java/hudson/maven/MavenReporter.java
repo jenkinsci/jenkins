@@ -25,9 +25,7 @@ package hudson.maven;
 
 import hudson.ExtensionPoint;
 import hudson.Launcher;
-import hudson.model.AbstractProject;
 import hudson.model.Action;
-import hudson.model.Build;
 import hudson.model.BuildListener;
 import hudson.model.Describable;
 import hudson.model.Hudson;
@@ -97,7 +95,7 @@ import java.util.Collections;
  * @author Kohsuke Kawaguchi
  * @see MavenReporters
  */
-public abstract class MavenReporter implements Describable<MavenReporter>, ExtensionPoint, Serializable {
+public abstract class MavenReporter implements Describable<MavenReporter>, ExtensionPoint, Serializable, MavenProjectActionBuilder {
     /**
      * Called before the actual maven2 execution begins.
      *
