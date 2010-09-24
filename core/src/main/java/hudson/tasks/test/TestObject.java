@@ -33,6 +33,8 @@ import hudson.tasks.junit.TestResultAction;
 import org.kohsuke.stapler.*;
 import org.kohsuke.stapler.export.ExportedBean;
 
+import com.google.common.collect.MapMaker;
+
 import javax.servlet.ServletException;
 import java.io.IOException;
 import java.util.*;
@@ -339,7 +341,7 @@ public abstract class TestObject extends hudson.tasks.junit.TestObject {
         UNIQUIFIED_NAMES.put(this, uniquified);
         return uniquified;
     }
-    private static final Map<TestObject, String> UNIQUIFIED_NAMES = new WeakHashMap<TestObject, String>();
+    private static final Map<TestObject, String> UNIQUIFIED_NAMES = new MapMaker().weakKeys().makeMap();
 
     /**
      * Replaces URL-unsafe characters.
