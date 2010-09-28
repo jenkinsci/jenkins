@@ -62,7 +62,7 @@ public final class ProcessTreeKiller {
      * The implementation is expected to find processes
      * in the system that inherit these environment variables, and kill
      * them all. This is suitable for locating daemon processes
-     * that cannot be tracked by the regular
+     * that cannot be tracked by the regular ancestor/descendant relationship.
      *
      * <p>
      * The implementation is obviously OS-dependent.
