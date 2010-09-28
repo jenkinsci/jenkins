@@ -1126,10 +1126,10 @@ Ajax.Request.prototype = Object.extend(new Ajax.Base(), {
         this.dispatchException(e);
       }
 
-      var contentType = this.getHeader('Content-type');
-      if (contentType && contentType.strip().
-        match(/^(text|application)\/(x-)?(java|ecma)script(;.*)?$/i))
-          this.evalResponse();
+//      var contentType = this.getHeader('Content-type');
+//      if (contentType && contentType.strip().
+//        match(/^(text|application)\/(x-)?(java|ecma)script(;.*)?$/i))
+//          this.evalResponse();
     }
 
     try {
