@@ -165,7 +165,7 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
 
             private boolean belongsToSubsidiary(List<MavenModule> subsidiaries, String path) {
                 for (MavenModule sub : subsidiaries)
-                    if(path.startsWith(FilenameUtils.normalize(sub.getRelativePath())))
+                    if (FilenameUtils.separatorsToUnix(path).startsWith(FilenameUtils.normalize(sub.getRelativePath())))
                         return true;
                 return false;
             }
@@ -175,7 +175,7 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
              */
             private boolean isDescendantOf(ChangeLogSet.Entry e, MavenModule mod) {
                 for (String path : e.getAffectedPaths()) {
-                    if(path.startsWith(FilenameUtils.normalize(mod.getRelativePath())))
+                    if (FilenameUtils.separatorsToUnix(path).startsWith(FilenameUtils.normalize(mod.getRelativePath())))
                         return true;
                 }
                 return false;
