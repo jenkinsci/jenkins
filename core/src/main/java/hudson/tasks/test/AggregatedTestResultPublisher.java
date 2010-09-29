@@ -272,10 +272,6 @@ public class AggregatedTestResultPublisher extends Recorder {
 
         @Extension
         public static class RunListenerImpl extends RunListener<Run> {
-            public RunListenerImpl() {
-                super(Run.class);
-            }
-
             @Override
             public void onCompleted(Run run, TaskListener listener) {
                 lastChanged = System.currentTimeMillis();
