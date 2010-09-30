@@ -109,7 +109,7 @@ public class MappingWorksheet {
         private ExecutorChunk(List<JobOffer> base, int index) {
             super(base);
             this.index = index;
-            assert base.size()>1;
+            assert !base.isEmpty();
             computer = base.get(0).executor.getOwner();
             node = computer.getNode();
         }
@@ -174,7 +174,7 @@ public class MappingWorksheet {
 
         private WorkChunk(List<SubTask> base, int index) {
             super(base);
-            assert base.size()>1;
+            assert !base.isEmpty();
             this.index = index;
             this.assignedLabel = base.get(0).getAssignedLabel();
 
