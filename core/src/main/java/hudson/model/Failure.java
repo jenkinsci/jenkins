@@ -1,7 +1,7 @@
 /*
  * The MIT License
  *
- * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi
+ * Copyright (c) 2004-2010, Sun Microsystems, Inc., Kohsuke Kawaguchi
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -57,6 +57,9 @@ public class Failure extends RuntimeException implements HttpResponse {
         req.setAttribute("message",getMessage());
         if(pre)
             req.setAttribute("pre",true);
-        rsp.forward( node instanceof AbstractModelObject ? node : Hudson.getInstance() ,"error",req);
+        if (node instanceof AbstractItem) // Maintain ancestors
+            rsp.forward(Hudson.getInstance(), ((AbstractItem)node).getUrl() + "error", req);
+        else
+            rsp.forward(node instanceof AbstractModelObject ? node : Hudson.getInstance() ,"error", req);
     }
 }

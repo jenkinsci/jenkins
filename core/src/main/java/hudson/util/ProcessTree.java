@@ -130,7 +130,7 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
      * The implementation is expected to find processes
      * in the system that inherit these environment variables, and kill
      * them all. This is suitable for locating daemon processes
-     * that cannot be tracked by the regular
+     * that cannot be tracked by the regular ancestor/descendant relationship.
      */
     public abstract void killAll(Map<String, String> modelEnvVars) throws InterruptedException;
 
