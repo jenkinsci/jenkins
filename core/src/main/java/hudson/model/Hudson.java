@@ -2494,7 +2494,7 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
             if (timeout > 0) timeout += System.currentTimeMillis();
             while (isQuietingDown
                    && (timeout <= 0 || System.currentTimeMillis() < timeout)
-                   && RestartListener.isAllReady()) {
+                   && !RestartListener.isAllReady()) {
                 Thread.sleep(1000);
             }
         }
