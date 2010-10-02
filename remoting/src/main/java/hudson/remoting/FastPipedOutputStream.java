@@ -41,6 +41,12 @@ public class FastPipedOutputStream extends OutputStream {
     WeakReference<FastPipedInputStream> sink;
 
     /**
+     * Keeps track of the total # of bytes written via this output stream.
+     * Helps with debugging, and serves no other purpose.
+     */
+    private long written=0;
+
+    /**
      * Creates an unconnected PipedOutputStream.
      */
     public FastPipedOutputStream() {
@@ -178,6 +184,7 @@ public class FastPipedOutputStream extends OutputStream {
 
                 off += amount;
                 len -= amount;
+                written += amount;
 
                 s.buffer.notifyAll();
             }
