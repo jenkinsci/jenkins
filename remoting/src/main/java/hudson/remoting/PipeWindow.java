@@ -24,6 +24,10 @@
 package hudson.remoting;
 
 import java.io.OutputStream;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+import static java.util.logging.Level.*;
 
 /**
  * Keeps track of the number of bytes that the sender can send without overwhelming the receiver of the pipe.
@@ -74,16 +78,48 @@ abstract class PipeWindow {
         }
     };
 
+    static final class Key {
+        public final int oid;
+
+        Key(int oid) {
+            this.oid = oid;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (o == null || getClass() != o.getClass()) return false;
+
+            return oid == ((Key) o).oid;
+        }
+
+        @Override
+        public int hashCode() {
+            return oid;
+        }
+    }
 
     static class Real extends PipeWindow {
         private int available;
+        private long written;
+        private long acked;
+        private final int oid;
+        /**
+         * The only strong reference to the key, which in turn
+         * keeps this object accessible in {@link Channel#pipeWindows}.
+         */
+        private final Key key;
 
-        Real(int initialSize) {
+        Real(Key key, int initialSize) {
+            this.key = key;
+            this.oid = key.oid;
             this.available = initialSize;
         }
 
         public synchronized void increase(int delta) {
+            if (LOGGER.isLoggable(INFO))
+                LOGGER.info(String.format("increase(%d,%d)->%d",oid,delta,delta+available));
             available += delta;
+            acked += delta;
             notifyAll();
         }
 
@@ -93,17 +129,38 @@ abstract class PipeWindow {
 
         /**
          * Blocks until some space becomes available.
+         *
+         * <p>
+         * If the window size is empty, induce some delay outside the synchronized block,
+         * to avoid fragmenting the window size. That is, if a bunch of small ACKs come in a sequence,
+         * bundle them up into a bigger size before making a call.
          */
-        public synchronized int get() throws InterruptedException {
-            while (available==0)
-                wait();
-            return available;
+        public int get() throws InterruptedException {
+            synchronized (this) {
+                if (available>0)
+                    return available;
+
+                while (available==0) {
+                    wait();
+                }
+            }
+
+            Thread.sleep(10);
+
+            synchronized (this) {
+                return available;
+            }
         }
 
         public synchronized void decrease(int delta) {
+            if (LOGGER.isLoggable(INFO))
+                LOGGER.info(String.format("decrease(%d,%d)->%d",oid,delta,available-delta));
             available -= delta;
+            written+= delta;
             if (available<0)
                 throw new AssertionError();
         }
     }
+
+    private static final Logger LOGGER = Logger.getLogger(PipeWindow.class.getName());
 }

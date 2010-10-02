@@ -189,11 +189,6 @@ final class ProxyOutputStream extends OutputStream {
                     } finally {
                         if (channel.remoteCapability.supportsPipeThrottling()) {
                             try {
-                                Long l = channel.ackSent.get(oid);
-                                if (l==null)    l = (long)buf.length;
-                                else            l += buf.length;
-                                channel.ackSent.put(oid,l);
-
                                 channel.send(new Ack(oid,buf.length));
                             } catch (IOException e) {
                                 // ignore errors
