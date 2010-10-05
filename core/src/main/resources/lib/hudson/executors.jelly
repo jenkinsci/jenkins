@@ -67,7 +67,22 @@ THE SOFTWARE.
           <j:otherwise>
             <!-- not actually optional, but it helps with backward compatibility -->
             <j:set var="executor" value="${e}" />
-            <st:include it="${e.currentExecutable}" page="executorCell.jelly" optional="true" />
+            <st:include it="${e.currentExecutable}" page="executorCell.jelly" optional="true">
+              <td class="pane">
+                <div style="white-space: normal">${%Building}
+                  <j:set var="exe" value="${e.currentExecutable}" />
+                  <j:choose>
+                    <j:when test="${h.hasPermission(exe.parent,exe.parent.READ)}">
+                      <a href="${rootURL}/${exe.parent.url}">${exe.parent.fullDisplayName}</a>&#160;<a href="${rootURL}/${exe.url}">#${exe.number}</a>
+                      <t:buildProgressBar build="${exe}" executor="${executor}"/>
+                    </j:when>
+                    <j:otherwise>
+                      <span>${%Unknown Task}</span>
+                    </j:otherwise>
+                  </j:choose>
+                </div>
+              </td>
+            </st:include>
             <td class="pane" align="center" valign="middle">
               <j:if test="${e.hasStopPermission()}">
                 <a href="${rootURL}/${c.url}${url}/stop"><img src="${imagesURL}/16x16/stop.gif" alt="${%terminate this build}" /></a>

@@ -36,6 +36,7 @@ import static hudson.util.Iterators.reverse;
 import hudson.cli.declarative.CLIMethod;
 import hudson.cli.declarative.CLIResolver;
 import hudson.model.queue.AbstractQueueTask;
+import hudson.model.queue.Executables;
 import hudson.model.queue.SubTask;
 import hudson.model.queue.FutureImpl;
 import hudson.model.queue.MappingWorksheet;
@@ -1090,6 +1091,11 @@ public class Queue extends ResourceController implements Saveable {
         /**
          * Task from which this executable was created.
          * Never null.
+         *
+         * <p>
+         * Since this method went through a signature change in 1.FATTASK, the invocation may results in
+         * {@link AbstractMethodError}.
+         * Use {@link Executables#getParentOf(Executable)} that avoids this.
          */
         SubTask getParent();
 
