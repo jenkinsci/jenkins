@@ -87,7 +87,7 @@ final class ProxyOutputStream extends OutputStream {
         if(tmp!=null) {
             byte[] b = tmp.toByteArray();
             tmp = null;
-            _write(b);
+            _write(b,0,b.length);
         }
         if(closed)  // already marked closed?
             doClose();
@@ -103,49 +103,30 @@ final class ProxyOutputStream extends OutputStream {
         _write(b, off, len);
     }
 
-    private void _write(byte[] b, int off, int len) throws IOException {
-        if(off==0 && len==b.length)
-            _write(b);
-        else {
-            byte[] buf = new byte[len];
-            System.arraycopy(b,off,buf,0,len);
-            _write(buf);
-        }
-    }
-
-    public synchronized void write(byte b[]) throws IOException {
-        if(closed)
-            throw new IOException("stream is already closed");
-        _write(b);
-    }
-
     /**
      * {@link #write(byte[])} without the close check.
      */
-    private void _write(byte[] b) throws IOException {
+    private void _write(byte[] b, int off, int len) throws IOException {
         if(channel==null) {
             if(tmp==null)
                 tmp = new ByteArrayOutputStream();
-            tmp.write(b);
+            tmp.write(b,off,len);
         } else {
-            int sendable;
-            try {
-                sendable = Math.min(window.get(),b.length);
-            } catch (InterruptedException e) {
-                throw (IOException)new InterruptedIOException().initCause(e);
-            }
+            while (len>0) {
+                int sendable;
+                try {
+                    sendable = Math.min(window.get(),len);
+                } catch (InterruptedException e) {
+                    throw (IOException)new InterruptedIOException().initCause(e);
+                }
 
-            if (sendable==b.length) {
+                channel.send(new Chunk(oid,b,off,sendable));
                 window.decrease(sendable);
-                channel.send(new Chunk(oid,b));
-            } else {
-                // fill the sender window size now, and send the rest in a separate chunk
-                _write(b,0,sendable);
-                _write(b,sendable,b.length-sendable);
+                off+=sendable;
+                len-=sendable;
             }
         }
     }
-
 
     public void flush() throws IOException {
         if(channel!=null)
@@ -182,13 +163,18 @@ final class ProxyOutputStream extends OutputStream {
         private final int oid;
         private final byte[] buf;
 
-        public Chunk(int oid, byte[] buf) {
+        public Chunk(int oid, byte[] buf, int start, int len) {
             // to improve the performance when a channel is used purely as a pipe,
             // don't record the stack trace. On FilePath.writeToTar case, the stack trace and the OOS header
             // takes up about 1.5K.
             super(false);
             this.oid = oid;
-            this.buf = buf;
+            if (start==0 && len==buf.length)
+                this.buf = buf;
+            else {
+                this.buf = new byte[len];
+                System.arraycopy(buf,start,this.buf,0,len);
+            }
         }
 
         protected void execute(final Channel channel) {
@@ -326,12 +312,14 @@ final class ProxyOutputStream extends OutputStream {
         private final int size;
 
         private Ack(int oid, int size) {
+            super(false); // performance optimization
             this.oid = oid;
             this.size = size;
         }
 
         protected void execute(Channel channel) {
-            channel.getPipeWindow(oid).increase(size);
+            PipeWindow w = channel.getPipeWindow(oid);
+            w.increase(size);
         }
 
         public String toString() {

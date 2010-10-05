@@ -25,6 +25,7 @@ package hudson.remoting;
 
 import hudson.remoting.ChannelRunner.InProcessCompatibilityMode;
 import junit.framework.Test;
+import org.apache.commons.io.output.NullOutputStream;
 
 import java.io.DataInputStream;
 import java.io.OutputStream;
@@ -193,6 +194,22 @@ public class PipeTest extends RmiTestBase {
             assertEquals(cnt/256,in.read());
         assertEquals(-1,in.read());
         in.close();
+    }
+
+
+    public void _testSendBigStuff() throws Exception {
+        OutputStream f = channel.call(new DevNullSink());
+
+        for (int i=0; i<1024*1024; i++)
+            f.write(new byte[8000]);
+        f.close();
+    }
+
+    private static class DevNullSink implements Callable<OutputStream, IOException> {
+        public OutputStream call() throws IOException {
+            return new RemoteOutputStream(new NullOutputStream());
+        }
+
     }
 
     public static Test suite() throws Exception {
