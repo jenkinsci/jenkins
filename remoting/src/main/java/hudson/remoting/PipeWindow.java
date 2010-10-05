@@ -24,7 +24,6 @@
 package hudson.remoting;
 
 import java.io.OutputStream;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import static java.util.logging.Level.*;
@@ -116,8 +115,8 @@ abstract class PipeWindow {
         }
 
         public synchronized void increase(int delta) {
-            if (LOGGER.isLoggable(INFO))
-                LOGGER.info(String.format("increase(%d,%d)->%d",oid,delta,delta+available));
+            if (LOGGER.isLoggable(FINER))
+                LOGGER.finer(String.format("increase(%d,%d)->%d",oid,delta,delta+available));
             available += delta;
             acked += delta;
             notifyAll();
@@ -153,8 +152,8 @@ abstract class PipeWindow {
         }
 
         public synchronized void decrease(int delta) {
-            if (LOGGER.isLoggable(INFO))
-                LOGGER.info(String.format("decrease(%d,%d)->%d",oid,delta,available-delta));
+            if (LOGGER.isLoggable(FINER))
+                LOGGER.finer(String.format("decrease(%d,%d)->%d",oid,delta,available-delta));
             available -= delta;
             written+= delta;
             if (available<0)
