@@ -31,6 +31,7 @@ import hudson.model.Label;
 import hudson.model.LoadBalancer;
 import hudson.model.Node;
 import hudson.model.Queue;
+import hudson.model.Queue.BuildableItem;
 import hudson.model.Queue.Executable;
 import hudson.model.Queue.JobOffer;
 import hudson.model.Queue.Task;
@@ -84,6 +85,10 @@ import static java.lang.Math.*;
 public class MappingWorksheet {
     public final List<ExecutorChunk> executors;
     public final List<WorkChunk> works;
+    /**
+     * {@link BuildableItem} for which we are trying to figure out the execution plan. Never null.
+     */
+    public final BuildableItem item;
 
     private static class ReadOnlyList<E> extends AbstractList<E> {
         protected final List<E> base;
@@ -276,7 +281,9 @@ public class MappingWorksheet {
     }
 
 
-    public MappingWorksheet(Task task, List<JobOffer> offers) {
+    public MappingWorksheet(BuildableItem item, List<JobOffer> offers) {
+        this.item = item;
+        
         // group executors by their computers
         Map<Computer,List<JobOffer>> j = new HashMap<Computer, List<JobOffer>>();
         for (JobOffer o : offers) {
@@ -288,7 +295,7 @@ public class MappingWorksheet {
         }
 
         {// take load prediction into account and reduce the available executor pool size accordingly
-            long duration = task.getEstimatedDuration();
+            long duration = item.task.getEstimatedDuration();
             if (duration > 0) {
                 long now = System.currentTimeMillis();
                 for (Entry<Computer, List<JobOffer>> e : j.entrySet()) {
@@ -325,7 +332,7 @@ public class MappingWorksheet {
 
         // group execution units into chunks. use of LinkedHashMap ensures that the main work comes at the top
         Map<Object,List<SubTask>> m = new LinkedHashMap<Object,List<SubTask>>();
-        for (SubTask meu : Tasks.getSubTasksOf(task)) {
+        for (SubTask meu : Tasks.getSubTasksOf(item.task)) {
             Object c = Tasks.getSameNodeConstraintOf(meu);
             if (c==null)    c = new Object();
 

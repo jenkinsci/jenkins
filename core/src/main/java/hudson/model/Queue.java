@@ -751,7 +751,7 @@ public class Queue extends ResourceController implements Saveable {
                         if(j.canTake(p.task))
                             candidates.add(j);
 
-                    Mapping m = loadBalancer.map(p.task, new MappingWorksheet(p.task, candidates));
+                    Mapping m = loadBalancer.map(p.task, new MappingWorksheet(p, candidates));
                     if (m == null)
                         // if we couldn't find the executor that fits,
                         // just leave it in the buildables list and
@@ -1309,7 +1309,7 @@ public class Queue extends ResourceController implements Saveable {
         @Exported
         public Calendar timestamp;
 
-        WaitingItem(Calendar timestamp, Task project, List<Action> actions) {
+        public WaitingItem(Calendar timestamp, Task project, List<Action> actions) {
             super(project, actions, COUNTER.incrementAndGet(), new FutureImpl(project));
             this.timestamp = timestamp;
         }
