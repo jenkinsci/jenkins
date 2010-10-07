@@ -195,6 +195,11 @@ public final class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,Ma
         return getItem(name);
     }
 
+    @Override   // to make this accessible from MavenModuleSetBuild
+    protected void updateTransientActions() {
+        super.updateTransientActions();
+    }
+
     protected List<Action> createTransientActions() {
         List<Action> r = super.createTransientActions();
 
