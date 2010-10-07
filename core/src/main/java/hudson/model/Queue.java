@@ -36,6 +36,7 @@ import static hudson.util.Iterators.reverse;
 import hudson.cli.declarative.CLIMethod;
 import hudson.cli.declarative.CLIResolver;
 import hudson.model.queue.AbstractQueueTask;
+import hudson.model.queue.Executables;
 import hudson.model.queue.SubTask;
 import hudson.model.queue.FutureImpl;
 import hudson.model.queue.MappingWorksheet;
@@ -750,7 +751,7 @@ public class Queue extends ResourceController implements Saveable {
                         if(j.canTake(p.task))
                             candidates.add(j);
 
-                    Mapping m = loadBalancer.map(p.task, new MappingWorksheet(p.task, candidates));
+                    Mapping m = loadBalancer.map(p.task, new MappingWorksheet(p, candidates));
                     if (m == null)
                         // if we couldn't find the executor that fits,
                         // just leave it in the buildables list and
@@ -1090,6 +1091,11 @@ public class Queue extends ResourceController implements Saveable {
         /**
          * Task from which this executable was created.
          * Never null.
+         *
+         * <p>
+         * Since this method went through a signature change in 1.FATTASK, the invocation may results in
+         * {@link AbstractMethodError}.
+         * Use {@link Executables#getParentOf(Executable)} that avoids this.
          */
         SubTask getParent();
 
@@ -1303,7 +1309,7 @@ public class Queue extends ResourceController implements Saveable {
         @Exported
         public Calendar timestamp;
 
-        WaitingItem(Calendar timestamp, Task project, List<Action> actions) {
+        public WaitingItem(Calendar timestamp, Task project, List<Action> actions) {
             super(project, actions, COUNTER.incrementAndGet(), new FutureImpl(project));
             this.timestamp = timestamp;
         }

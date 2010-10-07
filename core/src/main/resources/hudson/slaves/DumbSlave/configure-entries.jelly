@@ -55,9 +55,9 @@ THE SOFTWARE.
         <j:set var="descriptor" value="${d}"/>
         <j:set var="instance"
                value="${it.launcher.descriptor==d ? it.launcher : null}"/>
-        <tr><td>
+        <f:invisibleEntry>
           <input type="hidden" name="stapler-class" value="${d.clazz.name}" />
-        </td></tr>
+        </f:invisibleEntry>
         <st:include from="${d}" page="${d.configPage}" optional="true"/>
       </f:dropdownListBlock>
     </j:forEach>

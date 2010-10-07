@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2008-2009 Yahoo! Inc. 
+ * Copyright (c) 2008-2010 Yahoo! Inc.
  * All rights reserved. 
  * The copyrights to the contents of this file are licensed under the MIT License (http://www.opensource.org/licenses/mit-license.php)
  */
@@ -20,6 +20,7 @@ import javax.servlet.http.HttpServletRequest;
 import net.sf.json.JSONObject;
 
 import org.acegisecurity.Authentication;
+import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.StaplerRequest;
 
 /**
@@ -29,17 +30,36 @@ import org.kohsuke.stapler.StaplerRequest;
  */
 public class DefaultCrumbIssuer extends CrumbIssuer {
     
-    private MessageDigest md;
+    private transient MessageDigest md;
+    private boolean excludeClientIPFromCrumb;
 
-    DefaultCrumbIssuer() {
+    @DataBoundConstructor
+    public DefaultCrumbIssuer(boolean excludeClientIPFromCrumb) {
+        try {
+            this.md = MessageDigest.getInstance("MD5");
+            this.excludeClientIPFromCrumb = excludeClientIPFromCrumb;
+        } catch (NoSuchAlgorithmException e) {
+            this.md = null;
+            this.excludeClientIPFromCrumb = false;
+            LOGGER.log(Level.SEVERE, "Can't find MD5", e);
+        }
+    }
+
+    public boolean isExcludeClientIPFromCrumb() {
+        return this.excludeClientIPFromCrumb;
+    }
+    
+    private Object readResolve() {
         try {
             this.md = MessageDigest.getInstance("MD5");
         } catch (NoSuchAlgorithmException e) {
             this.md = null;
             LOGGER.log(Level.SEVERE, "Can't find MD5", e);
         }
+        
+        return this;
     }
-
+    
     /**
      * {@inheritDoc}
      */
@@ -54,7 +74,9 @@ public class DefaultCrumbIssuer extends CrumbIssuer {
                     buffer.append(a.getName());
                 }
                 buffer.append(';');
-                buffer.append(getClientIP(req));
+                if (!isExcludeClientIPFromCrumb()) {
+                    buffer.append(getClientIP(req));
+                }
 
                 md.update(buffer.toString().getBytes());
                 byte[] crumbBytes = md.digest(salt.getBytes());
@@ -116,7 +138,7 @@ public class DefaultCrumbIssuer extends CrumbIssuer {
 
         @Override
         public DefaultCrumbIssuer newInstance(StaplerRequest req, JSONObject formData) throws FormException {
-            return new DefaultCrumbIssuer();
+            return req.bindJSON(DefaultCrumbIssuer.class, formData);
         }
     }
     

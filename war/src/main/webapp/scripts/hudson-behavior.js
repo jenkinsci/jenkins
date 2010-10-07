@@ -2,7 +2,7 @@
  * The MIT License
  * 
  * Copyright (c) 2004-2010, Sun Microsystems, Inc., Kohsuke Kawaguchi,
- * Daniel Dyer, Yahoo! Inc., Alan Harder
+ * Daniel Dyer, Yahoo! Inc., Alan Harder, InfraDNA, Inc.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -635,7 +635,8 @@ var hudsonRules = {
             }
 
             return false;
-        }
+        };
+        e.tabIndex = 9999; // make help link unnavigable from keyboard
         e = null; // avoid memory leak
     },
 

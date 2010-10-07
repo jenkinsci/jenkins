@@ -23,17 +23,20 @@
  */
 package hudson.model.queue;
 
+import hudson.model.Action;
 import hudson.model.Computer;
 import hudson.model.Executor;
 import hudson.model.Node;
+import hudson.model.Queue;
+import hudson.model.Queue.BuildableItem;
 import hudson.model.Queue.JobOffer;
 import hudson.model.Queue.Task;
+import hudson.model.Queue.WaitingItem;
 import org.jvnet.hudson.test.HudsonTestCase;
 import org.jvnet.hudson.test.TestExtension;
 
 import java.lang.reflect.Field;
-import java.util.Collection;
-import java.util.List;
+import java.util.*;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 import static java.util.Arrays.*;
@@ -69,11 +72,15 @@ public class LoadPredictorTest extends HudsonTestCase {
 
         JobOffer o = createMockOffer(c.getExecutors().get(0));
 
-        MappingWorksheet mw = new MappingWorksheet(t, asList(o));
+        MappingWorksheet mw = new MappingWorksheet(wrap(t), asList(o));
 
         // the test load predictor should have pushed down the executor count to 0
         assertTrue(mw.executors.isEmpty());
         assertEquals(1,mw.works.size());
+    }
+
+    private BuildableItem wrap(Queue.Task t) {
+        return new BuildableItem(new WaitingItem(new GregorianCalendar(),t,new ArrayList<Action>()));
     }
 
     /**
@@ -97,7 +104,7 @@ public class LoadPredictorTest extends HudsonTestCase {
 
         JobOffer o = createMockOffer(c.getExecutors().get(1));
 
-        MappingWorksheet mw = new MappingWorksheet(t, asList(o));
+        MappingWorksheet mw = new MappingWorksheet(wrap(t), asList(o));
 
         // since the currently busy executor will free up before a future predicted load starts,
         // we should have a valid executor remain in the queue

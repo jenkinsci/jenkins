@@ -131,9 +131,9 @@ THE SOFTWARE.
       <j:forEach var="p" items="${it.pluginManager.plugins}">
         <j:if test="${h.hasView(p.plugin,'config.jelly')}">
           <f:rowSet name="plugin">
-            <tr><td>
+            <f:invisibleEntry>
               <input type="hidden" name="name" value="${p.shortName}"/>
-            </td></tr>
+            </f:invisibleEntry>
             <st:include page="config.jelly" it="${p.plugin}" optional="true"/>
           </f:rowSet>
         </j:if>

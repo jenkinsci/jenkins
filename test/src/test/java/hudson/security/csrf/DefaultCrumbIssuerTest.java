@@ -1,6 +1,7 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
+/**
+ * Copyright (c) 2008-2010 Yahoo! Inc.
+ * All rights reserved.
+ * The copyrights to the contents of this file are licensed under the MIT License (http://www.opensource.org/licenses/mit-license.php)
  */
 
 package hudson.security.csrf;
@@ -18,9 +19,7 @@ public class DefaultCrumbIssuerTest extends HudsonTestCase {
     protected void setUp() throws Exception {
         super.setUp();
         assertNotNull(hudson);
-        CrumbIssuerDescriptor<CrumbIssuer> descriptor = (CrumbIssuerDescriptor<CrumbIssuer>)hudson.getDescriptor(DefaultCrumbIssuer.class);
-        assertNotNull(descriptor);
-        CrumbIssuer issuer = descriptor.newInstance(null,null);
+        CrumbIssuer issuer = new DefaultCrumbIssuer(false);
         assertNotNull(issuer);
         hudson.setCrumbIssuer(issuer);
     }
@@ -81,4 +80,19 @@ public class DefaultCrumbIssuerTest extends HudsonTestCase {
         HtmlPage p = wc.goTo("configure");
         submit(p.getFormByName("config"));
     }
+
+    @Bug(7518)
+    public void testProxyCompatibilityMode() throws Exception {
+        CrumbIssuer issuer = new DefaultCrumbIssuer(true);
+        assertNotNull(issuer);
+        hudson.setCrumbIssuer(issuer);
+
+        WebClient wc = new WebClient();
+        wc.addRequestHeader(HEADER_NAME, testData[0]);
+        HtmlPage p = wc.goTo("configure");
+
+        wc.removeRequestHeader(HEADER_NAME);
+        // The crumb should still match if we remove the proxy info
+        submit(p.getFormByName("config"));
+   }
 }
