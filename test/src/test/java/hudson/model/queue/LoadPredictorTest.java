@@ -49,7 +49,7 @@ public class LoadPredictorTest extends HudsonTestCase {
     @TestExtension
     public static class LoadPredictorImpl extends LoadPredictor {
         @Override
-        public Iterable<FutureLoad> predict(Computer computer, long start, long end) {
+        public Iterable<FutureLoad> predict(MappingWorksheet plan, Computer computer, long start, long end) {
             return asList(new FutureLoad(start+5000, end-(start+5000), 1));
         }
     }
@@ -114,14 +114,8 @@ public class LoadPredictorTest extends HudsonTestCase {
 
     private JobOffer createMockOffer(Executor e) throws NoSuchFieldException, IllegalAccessException {
         JobOffer o = mock(JobOffer.class);
-        setExecutor(o, e);
+        when(o.getExecutor()).thenReturn(e);
         return o;
-    }
-
-    private void setExecutor(JobOffer o, Executor e) throws NoSuchFieldException, IllegalAccessException {
-        Field f = o.getClass().getField("executor");
-        f.setAccessible(true);
-        f.set(o, e);
     }
 
     private Computer createMockComputer(int nExecutors) throws Exception {

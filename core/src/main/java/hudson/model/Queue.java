@@ -164,7 +164,7 @@ public class Queue extends ResourceController implements Saveable {
      * a new {@link JobOffer} and gets itself {@linkplain Queue#parked parked},
      * and we'll eventually hand out an {@link #workUnit} to build.
      */
-    public class JobOffer {
+    public class JobOffer extends MappingWorksheet.ExecutorSlot {
         public final Executor executor;
 
         /**
@@ -183,10 +183,16 @@ public class Queue extends ResourceController implements Saveable {
             this.executor = executor;
         }
 
-        public void set(WorkUnit p) {
+        @Override
+        protected void set(WorkUnit p) {
             assert this.workUnit == null;
             this.workUnit = p;
             event.signal();
+        }
+
+        @Override
+        public Executor getExecutor() {
+            return executor;
         }
 
         /**

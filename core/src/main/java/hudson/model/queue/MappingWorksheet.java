@@ -30,7 +30,6 @@ import hudson.model.Executor;
 import hudson.model.Label;
 import hudson.model.LoadBalancer;
 import hudson.model.Node;
-import hudson.model.Queue;
 import hudson.model.Queue.BuildableItem;
 import hudson.model.Queue.Executable;
 import hudson.model.Queue.JobOffer;
@@ -38,6 +37,7 @@ import hudson.model.Queue.Task;
 
 import java.util.AbstractList;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -106,16 +106,16 @@ public class MappingWorksheet {
         }
     }
 
-    public final class ExecutorChunk extends ReadOnlyList<JobOffer> {
+    public final class ExecutorChunk extends ReadOnlyList<ExecutorSlot> {
         public final int index;
         public final Computer computer;
         public final Node node;
 
-        private ExecutorChunk(List<JobOffer> base, int index) {
+        private ExecutorChunk(List<ExecutorSlot> base, int index) {
             super(base);
             this.index = index;
             assert !base.isEmpty();
-            computer = base.get(0).executor.getOwner();
+            computer = base.get(0).getExecutor().getOwner();
             node = computer.getNode();
         }
 
@@ -243,6 +243,16 @@ public class MappingWorksheet {
         }
 
         /**
+         * Returns the assignment as a map.
+         */
+        public Map<WorkChunk,ExecutorChunk> toMap() {
+            Map<WorkChunk,ExecutorChunk> r = new HashMap<WorkChunk,ExecutorChunk>();
+            for (int i=0; i<size(); i++)
+                r.put(get(i),assigned(i));
+            return r;
+        }
+
+        /**
          * Checks if the assignments made thus far are valid an within the constraints.
          */
         public boolean isPartiallyValid() {
@@ -280,17 +290,20 @@ public class MappingWorksheet {
         }
     }
 
+    public MappingWorksheet(BuildableItem item, List<? extends ExecutorSlot> offers) {
+        this(item,offers,LoadPredictor.all());
+    }
 
-    public MappingWorksheet(BuildableItem item, List<JobOffer> offers) {
+    public MappingWorksheet(BuildableItem item, List<? extends ExecutorSlot> offers, Collection<? extends LoadPredictor> loadPredictors) {
         this.item = item;
         
         // group executors by their computers
-        Map<Computer,List<JobOffer>> j = new HashMap<Computer, List<JobOffer>>();
-        for (JobOffer o : offers) {
-            Computer c = o.executor.getOwner();
-            List<Queue.JobOffer> l = j.get(c);
+        Map<Computer,List<ExecutorSlot>> j = new HashMap<Computer, List<ExecutorSlot>>();
+        for (ExecutorSlot o : offers) {
+            Computer c = o.getExecutor().getOwner();
+            List<ExecutorSlot> l = j.get(c);
             if (l==null)
-                j.put(c,l=new ArrayList<JobOffer>());
+                j.put(c,l=new ArrayList<ExecutorSlot>());
             l.add(o);
         }
 
@@ -298,16 +311,16 @@ public class MappingWorksheet {
             long duration = item.task.getEstimatedDuration();
             if (duration > 0) {
                 long now = System.currentTimeMillis();
-                for (Entry<Computer, List<JobOffer>> e : j.entrySet()) {
-                    final List<JobOffer> list = e.getValue();
+                for (Entry<Computer, List<ExecutorSlot>> e : j.entrySet()) {
+                    final List<ExecutorSlot> list = e.getValue();
                     final int max = e.getKey().countExecutors();
 
                     // build up the prediction model. cut the chase if we hit the max.
                     Timeline timeline = new Timeline();
                     int peak = 0;
                     OUTER:
-                    for (LoadPredictor lp : LoadPredictor.all()) {
-                        for (FutureLoad fl : Iterables.limit(lp.predict(e.getKey(), now, now + duration),100)) {
+                    for (LoadPredictor lp : loadPredictors) {
+                        for (FutureLoad fl : Iterables.limit(lp.predict(this,e.getKey(), now, now + duration),100)) {
                             peak = max(peak,timeline.insert(fl.startTime, fl.startTime+fl.duration, fl.numExecutors));
                             if (peak>=max)  break OUTER;
                         }
@@ -322,7 +335,7 @@ public class MappingWorksheet {
 
         // build into the final shape
         List<ExecutorChunk> executors = new ArrayList<ExecutorChunk>();
-        for (List<JobOffer> group : j.values()) {
+        for (List<ExecutorSlot> group : j.values()) {
             if (group.isEmpty())    continue;   // evict empty group
             ExecutorChunk ec = new ExecutorChunk(group, executors.size());
             if (ec.node==null)  continue;   // evict out of sync node
@@ -356,5 +369,13 @@ public class MappingWorksheet {
 
     public ExecutorChunk executors(int index) {
         return executors.get(index);
+    }
+
+    public static abstract class ExecutorSlot {
+        public abstract Executor getExecutor();
+
+        public abstract boolean isAvailable();
+
+        protected abstract void set(WorkUnit p) throws UnsupportedOperationException;
     }
 }
