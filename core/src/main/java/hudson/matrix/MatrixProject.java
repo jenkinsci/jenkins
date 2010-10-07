@@ -28,6 +28,7 @@ import hudson.Extension;
 import hudson.Util;
 import hudson.XmlFile;
 import hudson.model.AbstractProject;
+import hudson.model.Action;
 import hudson.model.BuildableItemWithBuildWrappers;
 import hudson.model.DependencyGraph;
 import hudson.model.Descriptor;
@@ -246,19 +247,19 @@ public class MatrixProject extends AbstractProject<MatrixProject,MatrixBuild> im
     }
     
     @Override
-    protected void updateTransientActions() {
-        synchronized(transientActions) {
-            super.updateTransientActions();
+    protected List<Action> createTransientActions() {
+        List<Action> r = super.createTransientActions();
 
-            for (BuildStep step : builders)
-                transientActions.addAll(step.getProjectActions(this));
-            for (BuildStep step : publishers)
-                transientActions.addAll(step.getProjectActions(this));
-            for (BuildWrapper step : buildWrappers)
-                transientActions.addAll(step.getProjectActions(this));
-            for (Trigger trigger : triggers)
-                transientActions.addAll(trigger.getProjectActions());
-        }
+        for (BuildStep step : builders)
+            r.addAll(step.getProjectActions(this));
+        for (BuildStep step : publishers)
+            r.addAll(step.getProjectActions(this));
+        for (BuildWrapper step : buildWrappers)
+            r.addAll(step.getProjectActions(this));
+        for (Trigger trigger : triggers)
+            r.addAll(trigger.getProjectActions());
+
+        return r;
     }
 
     /**

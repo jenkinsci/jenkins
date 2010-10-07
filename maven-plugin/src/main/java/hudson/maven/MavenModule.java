@@ -28,6 +28,7 @@ import hudson.Util;
 import hudson.Functions;
 import hudson.maven.reporters.MavenMailer;
 import hudson.model.AbstractProject;
+import hudson.model.Action;
 import hudson.model.DependencyGraph;
 import hudson.model.Descriptor;
 import hudson.model.Descriptor.FormException;
@@ -370,6 +371,11 @@ public final class MavenModule extends AbstractMavenProject<MavenModule,MavenBui
         return true;
     }
 
+    @Override // to make this accessible to MavenModuleSet
+    protected void updateTransientActions() {
+        super.updateTransientActions();
+    }
+
     protected void buildDependencyGraph(DependencyGraph graph) {
         if(isDisabled() || getParent().ignoreUpstremChanges())        return;
 
@@ -410,7 +416,7 @@ public final class MavenModule extends AbstractMavenProject<MavenModule,MavenBui
     }
 
     @Override
-    protected void addTransientActionsFromBuild(MavenBuild build, Set<Class> added) {
+    protected void addTransientActionsFromBuild(MavenBuild build, List<Action> collection, Set<Class> added) {
         if(build==null)    return;
         List<MavenProjectActionBuilder> list = build.projectActionReporters;
         if(list==null)   return;
@@ -418,7 +424,7 @@ public final class MavenModule extends AbstractMavenProject<MavenModule,MavenBui
         for (MavenProjectActionBuilder step : list) {
             if(!added.add(step.getClass()))     continue;   // already added
             try {
-                transientActions.addAll(step.getProjectActions(this));
+                collection.addAll(step.getProjectActions(this));
             } catch (Exception e) {
                 LOGGER.log(Level.WARNING, "Failed to getProjectAction from " + step
                            + ". Report issue to plugin developers.", e);
