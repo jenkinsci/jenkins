@@ -189,6 +189,6 @@ public final class Pipe implements Serializable {
             });
         }
 
-        static final long serialVersionUID = -6288356765470642528L;
+        static final long serialVersionUID = -9128735897846418140L;
     }
 }
