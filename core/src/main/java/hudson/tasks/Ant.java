@@ -246,7 +246,7 @@ public class Ant extends Builder {
         return (DescriptorImpl)super.getDescriptor();
     }
 
-    @Extension
+            @Extension
     public static class DescriptorImpl extends BuildStepDescriptor<Builder> {
         @CopyOnWrite
         private volatile AntInstallation[] installations = new AntInstallation[0];

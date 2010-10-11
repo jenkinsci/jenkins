@@ -25,7 +25,6 @@ package hudson.model;
 
 import hudson.ExtensionPoint;
 import hudson.Plugin;
-import hudson.ExtensionListView;
 import hudson.Extension;
 import hudson.ExtensionList;
 import hudson.util.DescriptorList;

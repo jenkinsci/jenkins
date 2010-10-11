@@ -23,10 +23,9 @@
  */
 package hudson.model;
 
+import hudson.model.Queue.Executable;
 import hudson.Util;
-import hudson.model.Queue.*;
 import hudson.FilePath;
-import hudson.model.queue.Executables;
 import hudson.model.queue.SubTask;
 import hudson.model.queue.Tasks;
 import hudson.model.queue.WorkUnit;
