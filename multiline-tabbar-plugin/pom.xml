@@ -27,7 +27,7 @@ THE SOFTWARE.
     <parent>
         <groupId>org.jvnet.hudson.main</groupId>
         <artifactId>pom</artifactId>
-        <version>1.378-SNAPSHOT</version>
+        <version>1.380-SNAPSHOT</version>
     </parent>
 
     <artifactId>multiline-tabbar-plugin</artifactId>
