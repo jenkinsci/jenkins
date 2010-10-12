@@ -1,0 +1,96 @@
+<!--
+The MIT License
+
+Copyright (c) 2010, Winston.Prakash@Oracle.com
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+THE SOFTWARE.
+-->
+
+<j:jelly xmlns:j="jelly:core" xmlns:d="jelly:define" xmlns:st="jelly:stapler">
+
+    <style type="text/css">
+
+            /* CSS Tabs */
+            #tabBarContainer {
+                background: #E6E6E6;
+                margin: 10px auto 0;
+                padding: 3px;
+                border: 1px solid #BBBBBB;
+            }
+
+            /* to stretch the container div to contain floated list */
+            #tabBarContainer:after {
+                content: ".";
+                display: block;
+                line-height: 1px;
+                font-size: 1px;
+                clear: both;
+            }
+
+            ul#tabList {
+                list-style: none;
+                padding: 0;
+                margin: 0 auto;
+                width: 100%;
+            }
+
+            ul#tabList li {
+                display: block;
+                float: left;
+                /*width: 10%;*/
+                margin: 0;
+                padding: 0;
+                text-align: center
+            }
+
+            ul#tabList li a {
+                display: block;
+                width: 100%;
+                padding: 6px;
+                border-width: 1px;
+                border-color: #ffe #aaab9c #ccc #fff;
+                border-style: solid;
+                color: #777;
+                text-decoration: none;
+                background: #FEFEEE;
+            }
+
+            #tabBarContainer>ul#tabList li a { width: auto; }
+
+            ul#tabList li#active a {
+                background: #E0E0F0;
+                color: #800000;
+            }
+
+            ul#tabList li a:hover, ul#tabList li#active a:hover {
+                color: #800000;
+                background: transparent;
+                border-color: #aaab9c #fff #fff #ccc;
+            }
+
+    </style>
+    
+    <div id="tabBarContainer">
+        <ul id="tabList">
+            <j:set var="tab" value="${tabs}" />
+            <d:invokeBody />
+        </ul>
+    </div>
+  
+</j:jelly>

@@ -67,6 +67,8 @@ import hudson.util.Iterators;
 import hudson.scm.SCM;
 import hudson.scm.SCMDescriptor;
 import hudson.util.Secret;
+import hudson.views.MyViewsTabBar;
+import hudson.views.ViewsTabBar;
 import org.acegisecurity.providers.anonymous.AnonymousAuthenticationToken;
 import org.apache.commons.jelly.JellyContext;
 import org.apache.commons.jelly.JellyTagException;
@@ -668,6 +670,14 @@ public class Functions {
 
     public static List<ParameterDescriptor> getParameterDescriptors() {
         return ParameterDefinition.all();
+    }
+
+    public static List<Descriptor<ViewsTabBar>> getViewsTabBarDescriptors() {
+        return ViewsTabBar.all();
+    }
+
+    public static List<Descriptor<MyViewsTabBar>> getMyViewsTabBarDescriptors() {
+        return MyViewsTabBar.all();
     }
 
     public static List<NodePropertyDescriptor> getNodePropertyDescriptors(Class<? extends Node> clazz) {

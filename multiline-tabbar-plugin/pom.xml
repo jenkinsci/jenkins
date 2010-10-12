@@ -1,0 +1,100 @@
+<!--
+The MIT License
+
+Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, Daniel Dyer, Erik Ramfelt, Stephen Connolly, Tom Huybrechts
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+THE SOFTWARE.
+-->
+
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>org.jvnet.hudson.main</groupId>
+        <artifactId>pom</artifactId>
+        <version>1.378-SNAPSHOT</version>
+    </parent>
+
+    <artifactId>multiline-tabbar-plugin</artifactId>
+    <packaging>hpi</packaging>
+    <name>Multiline Views TabBar Plugin</name>
+    <description>This plug-in provides a multi-line TabBar extension Extension to Views Tababar</description>
+
+    <dependencies>
+        <dependency>
+            <groupId>org.jvnet.hudson.main</groupId>
+            <artifactId>hudson-core</artifactId>
+            <version>${project.version}</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.jvnet.hudson.main</groupId>
+            <artifactId>hudson-war</artifactId>
+            <type>war</type>
+            <version>1.378-SNAPSHOT<!-- replace this with the version you want-->
+            </version>
+            <scope>test</scope>
+        </dependency>
+         
+    </dependencies>
+    
+    <build>
+        <!--
+          Since new versions need to overwrite old versions, it's better
+          not to have version number in the .hpi file name.
+        -->
+        <finalName>${project.artifactId}</finalName>
+        <defaultGoal>package</defaultGoal>
+        <plugins>
+            <plugin>
+                <groupId>org.jvnet.hudson.tools</groupId>
+                <artifactId>maven-hpi-plugin</artifactId>
+                <version>1.54</version>
+                <extensions>true</extensions>
+                <configuration>
+                    <showDeprecation>true</showDeprecation>
+                    <disabledTestInjection>true</disabledTestInjection>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.kohsuke.stapler</groupId>
+                <artifactId>maven-stapler-plugin</artifactId>
+                <version>1.12</version>
+                <extensions>true</extensions>
+            </plugin>
+            <plugin>
+                <groupId>org.jvnet.localizer</groupId>
+                <artifactId>maven-localizer-plugin</artifactId>
+                <version>1.8</version>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>generate</goal>
+                        </goals>
+                        <configuration>
+                            <fileMask>Messages.properties</fileMask>
+                            <outputDirectory>target/generated-sources/localizer</outputDirectory>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+
+</project>
+

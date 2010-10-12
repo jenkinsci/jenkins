@@ -184,12 +184,21 @@ THE SOFTWARE.
             <systemProperty>
               <!-- load view resources from the source directly, again for real time change -->
               <name>stapler.resourcePath</name>
-              <value>../core/src/main/resources;../ui-samples-plugin/src/main/resources;../maven-plugin/src/main/resources</value>
+              <value>
+                  ../core/src/main/resources;
+                  ../ui-samples-plugin/src/main/resources;
+                  ../multiline-tabbar-plugin/src/main/resources;
+                  ../maven-plugin/src/main/resources
+              </value>
             </systemProperty>
             <systemProperty>
               <!-- enable the plugins in main by default -->
               <name>hudson.bundled.plugins</name>
-              <value>${basedir}/../maven-plugin/target/test-classes/the.hpl,${basedir}/../ui-samples-plugin/target/test-classes/the.hpl</value>
+              <value>
+                  ${basedir}/../maven-plugin/target/test-classes/the.hpl,
+                  ${basedir}/../ui-samples-plugin/target/test-classes/the.hpl,
+                  ${basedir}/../multiline-tabbar-plugin/target/test-classes/the.hpl
+              </value>
             </systemProperty>
             <systemProperty>
               <!-- stat collection pointless -->

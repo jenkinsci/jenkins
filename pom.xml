@@ -43,6 +43,7 @@ THE SOFTWARE.
     <module>remoting</module>
     <module>core</module>
     <module>maven-plugin</module>
+    <module>multiline-tabbar-plugin</module>
     <module>ui-samples-plugin</module>
     <module>maven-agent</module>
     <module>maven-interceptor</module>

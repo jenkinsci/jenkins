@@ -1,7 +1,7 @@
 <!--
 The MIT License
 
-Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, Seiji Sogabe
+Copyright (c) 2004-2010, Sun Microsystems, Inc., Kohsuke Kawaguchi
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -22,20 +22,15 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 -->
 
-<j:jelly xmlns:j="jelly:core">
-    <style type="text/css">
-        #noJobDiv {
-            padding: 10px;
-            text-align: center;
-            border-width: 0px 1px 1px;
-            border-style: none solid solid;
-            border-color: #BBBBBB;
-        }
-    </style>
-<div id="noJobDiv">
-  ${%description_1}
-  <j:if test="${it.hasPermission(it.CONFIGURE)}">
-      ${%description_2}
-  </j:if>
-</div>
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
+  <!-- view tab bar -->
+  <l:tabBar>
+    <j:forEach var="v" items="${views}">
+      <l:tab name="${v.viewName}" active="${v==currentView}" href="${rootURL}/${v.url}" />
+    </j:forEach>
+    <j:if test="${currentView.hasPermission(currentView.CREATE)}">
+      <l:tab name="+" href="${rootURL}/${currentView.owner.url}newView" active="false"
+             title="${%New View}" />
+    </j:if>
+  </l:tabBar>
 </j:jelly>
