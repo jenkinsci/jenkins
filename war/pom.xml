@@ -187,7 +187,6 @@ THE SOFTWARE.
               <value>
                   ../core/src/main/resources;
                   ../ui-samples-plugin/src/main/resources;
-                  ../multiline-tabbar-plugin/src/main/resources;
                   ../maven-plugin/src/main/resources
               </value>
             </systemProperty>
@@ -196,8 +195,7 @@ THE SOFTWARE.
               <name>hudson.bundled.plugins</name>
               <value>
                   ${basedir}/../maven-plugin/target/test-classes/the.hpl,
-                  ${basedir}/../ui-samples-plugin/target/test-classes/the.hpl,
-                  ${basedir}/../multiline-tabbar-plugin/target/test-classes/the.hpl
+                  ${basedir}/../ui-samples-plugin/target/test-classes/the.hpl
               </value>
             </systemProperty>
             <systemProperty>
