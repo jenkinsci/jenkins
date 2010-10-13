@@ -967,10 +967,11 @@ public class Channel implements VirtualChannel, IChannel {
                     }
                 }
                 ois.close();
-                pipeWriter.shutdown();
             } catch (IOException e) {
                 logger.log(Level.SEVERE, "I/O error in channel "+name,e);
                 terminate(e);
+            } finally {
+                pipeWriter.shutdown();
             }
         }
     }

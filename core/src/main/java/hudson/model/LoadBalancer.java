@@ -62,14 +62,14 @@ public abstract class LoadBalancer /*implements ExtensionPoint*/ {
      *      Return null if you don't want the task to be executed right now,
      *      in which case this method will be called some time later with the same task.
      */
-    protected abstract Mapping map(Task task, MappingWorksheet worksheet);
+    public abstract Mapping map(Task task, MappingWorksheet worksheet);
 
     /**
      * Uses a consistent hash for scheduling.
      */
     public static final LoadBalancer CONSISTENT_HASH = new LoadBalancer() {
         @Override
-        protected Mapping map(Task task, MappingWorksheet ws) {
+        public Mapping map(Task task, MappingWorksheet ws) {
             // build consistent hash for each work chunk
             List<ConsistentHash<ExecutorChunk>> hashes = new ArrayList<ConsistentHash<ExecutorChunk>>(ws.works.size());
             for (int i=0; i<ws.works.size(); i++) {
@@ -133,7 +133,7 @@ public abstract class LoadBalancer /*implements ExtensionPoint*/ {
         final LoadBalancer base = this;
         return new LoadBalancer() {
             @Override
-            protected Mapping map(Task task, MappingWorksheet worksheet) {
+            public Mapping map(Task task, MappingWorksheet worksheet) {
                 if (Queue.ifBlockedByHudsonShutdown(task)) {
                     // if we are quieting down, don't start anything new so that
                     // all executors will be eventually free.

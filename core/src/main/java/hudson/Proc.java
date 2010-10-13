@@ -228,7 +228,7 @@ public abstract class Proc {
                 if(copier.isAlive() || (copier2!=null && copier2.isAlive())) {
                     // looks like handles are leaking.
                     // closing these handles should terminate the threads.
-                    String msg = "Process leaked file descriptors. See http://hudson.gotdns.com/wiki/display/HUDSON/Spawning+processes+from+build for more information";
+                    String msg = "Process leaked file descriptors. See http://wiki.hudson-ci.org/display/HUDSON/Spawning+processes+from+build for more information";
                     Throwable e = new Exception().fillInStackTrace();
                     LOGGER.log(Level.WARNING,msg,e);
 

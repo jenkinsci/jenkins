@@ -25,11 +25,13 @@ package hudson.maven;
 
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
+import hudson.model.Action;
 import hudson.model.ItemGroup;
 import hudson.tasks.Maven.ProjectWithMaven;
 import hudson.triggers.Trigger;
 
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -43,23 +45,27 @@ public abstract class AbstractMavenProject<P extends AbstractProject<P,R>,R exte
         super(parent, name);
     }
 
-    protected void updateTransientActions() {
-        synchronized(transientActions) {
-            super.updateTransientActions();
+    protected List<Action> createTransientActions() {
+        List<Action> r = super.createTransientActions();
 
-            // if we just pick up the project actions from the last build,
-            // and if the last build failed very early, then the reports that
-            // kick in later (like test results) won't be displayed.
-            // so pick up last successful build, too.
-            Set<Class> added = new HashSet<Class>();
-            addTransientActionsFromBuild(getLastBuild(),added);
-            addTransientActionsFromBuild(getLastSuccessfulBuild(),added);
+        // if we just pick up the project actions from the last build,
+        // and if the last build failed very early, then the reports that
+        // kick in later (like test results) won't be displayed.
+        // so pick up last successful build, too.
+        Set<Class> added = new HashSet<Class>();
+        addTransientActionsFromBuild(getLastBuild(),r,added);
+        addTransientActionsFromBuild(getLastSuccessfulBuild(),r,added);
 
-            for (Trigger trigger : triggers)
-                transientActions.addAll(trigger.getProjectActions());
-        }
+        for (Trigger<?> trigger : triggers)
+            r.addAll(trigger.getProjectActions());
+
+        return r;
     }
-    
-    protected abstract void addTransientActionsFromBuild(R lastBuild, Set<Class> added);
+
+    /**
+     * @param collection
+     *      Add the transient actions to this collection.
+     */
+    protected abstract void addTransientActionsFromBuild(R lastBuild, List<Action> collection, Set<Class> added);
     
 }

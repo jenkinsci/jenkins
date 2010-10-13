@@ -25,6 +25,7 @@
 package hudson.model;
 
 import hudson.security.AccessControlled;
+import hudson.views.ViewsTabBar;
 
 import java.io.IOException;
 import java.util.Collection;
@@ -78,4 +79,13 @@ public interface ViewGroup extends Saveable, ModelObject, AccessControlled {
      * {@linkplain Hudson#checkGoodName(String) legal view name}.
      */
     void onViewRenamed(View view, String oldName, String newName);
+
+    /**
+     * Gets the TabBar for the views
+     *
+     * TabBar for views can be provided by extension. Only one TabBar can be active
+     * at a given time (Selectable by user in the global Configuration page)
+     * Default TabBar is provided by Hudson Platform
+     */
+    ViewsTabBar getViewsTabBar();
 }

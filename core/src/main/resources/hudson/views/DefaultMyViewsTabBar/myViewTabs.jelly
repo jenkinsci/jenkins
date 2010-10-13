@@ -25,11 +25,11 @@ THE SOFTWARE.
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
   <!-- view tab bar -->
   <l:tabBar>
-    <j:forEach var="v" items="${it.owner.views}">
-      <l:tab name="${v.viewName}" active="${v==it}" href="${rootURL}/${v.url}" />
+    <j:forEach var="v" items="${views}">
+      <l:tab name="${v.viewName}" active="${v==currentView}" href="${rootURL}/${v.url}" />
     </j:forEach>
-    <j:if test="${it.hasPermission(it.CREATE)}">
-      <l:tab name="+" href="${rootURL}/${it.owner.url}newView" active="false"
+    <j:if test="${currentView.hasPermission(currentView.CREATE)}">
+      <l:tab name="+" href="${rootURL}/${currentView.owner.url}newView" active="false"
              title="${%New View}" />
     </j:if>
   </l:tabBar>

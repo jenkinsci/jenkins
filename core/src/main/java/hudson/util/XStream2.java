@@ -25,6 +25,7 @@ package hudson.util;
 
 import com.google.common.collect.ImmutableMap;
 import com.thoughtworks.xstream.XStream;
+import com.thoughtworks.xstream.mapper.AnnotationMapper;
 import com.thoughtworks.xstream.mapper.Mapper;
 import com.thoughtworks.xstream.mapper.MapperWrapper;
 import com.thoughtworks.xstream.converters.Converter;
@@ -109,7 +110,7 @@ public class XStream2 extends XStream {
 
     @Override
     protected MapperWrapper wrapMapper(MapperWrapper next) {
-        return new CompatibilityMapper(new MapperWrapper(next) {
+        Mapper m = new CompatibilityMapper(new MapperWrapper(next) {
             @Override
             public String serializedClass(Class type) {
                 if (ImmutableMap.class.isAssignableFrom(type))
@@ -118,6 +119,9 @@ public class XStream2 extends XStream {
                     return super.serializedClass(type);
             }
         });
+        AnnotationMapper a = new AnnotationMapper(m, getConverterRegistry(), getClassLoader(), getReflectionProvider(), getJvm());
+        a.autodetectAnnotations(true);
+        return a;
     }
 
     /**

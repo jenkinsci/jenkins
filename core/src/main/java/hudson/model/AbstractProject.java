@@ -539,7 +539,18 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
             return super.getIconColor();
     }
 
+    /**
+     * effectively deprecated. Since using updateTransientActions correctly
+     * under concurrent environment requires a lock that can too easily cause deadlocks.
+     *
+     * <p>
+     * Override {@link #createTransientActions()} instead.
+     */
     protected void updateTransientActions() {
+        transientActions = createTransientActions();
+    }
+
+    protected List<Action> createTransientActions() {
         Vector<Action> ta = new Vector<Action>();
 
         for (JobProperty<? super P> p : properties)
@@ -547,8 +558,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
 
         for (TransientProjectActionFactory tpaf : TransientProjectActionFactory.all())
             ta.addAll(Util.fixNull(tpaf.createFor(this))); // be defensive against null
-
-        transientActions = ta;
+        return ta;
     }
 
     /**
