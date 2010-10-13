@@ -757,7 +757,8 @@ public class Queue extends ResourceController implements Saveable {
                         if(j.canTake(p.task))
                             candidates.add(j);
 
-                    Mapping m = loadBalancer.map(p.task, new MappingWorksheet(p, candidates));
+                    MappingWorksheet ws = new MappingWorksheet(p, candidates);
+                    Mapping m = loadBalancer.map(p.task, ws);
                     if (m == null)
                         // if we couldn't find the executor that fits,
                         // just leave it in the buildables list and
