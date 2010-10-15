@@ -29,6 +29,7 @@ import static hudson.init.InitMilestone.PLUGINS_LISTED;
 
 import hudson.PluginWrapper.Dependency;
 import hudson.init.InitStrategy;
+import hudson.init.InitializerFinder;
 import hudson.model.AbstractModelObject;
 import hudson.model.Failure;
 import hudson.model.Hudson;
@@ -249,8 +250,11 @@ public abstract class PluginManager extends AbstractModelObject {
             builder = TaskBuilder.EMPTY_BUILDER;
         }
 
+        final InitializerFinder initializerFinder = new InitializerFinder(uberClassLoader);        // misc. stuff
+
         // lists up initialization tasks about loading plugins.
-        return TaskBuilder.union(builder,new TaskGraphBuilder() {{
+        return TaskBuilder.union(initializerFinder, // this scans @Initializer in the core once
+            builder,new TaskGraphBuilder() {{
             requires(PLUGINS_LISTED).attains(PLUGINS_PREPARED).add("Loading plugins",new Executable() {
                 /**
                  * Once the plugins are listed, schedule their initialization.
@@ -291,6 +295,13 @@ public abstract class PluginManager extends AbstractModelObject {
                             }
                         });
                     }
+
+                    g.followedBy().attains(PLUGINS_STARTED).add("Discovering plugin initialization tasks", new Executable() {
+                        public void run(Reactor reactor) throws Exception {
+                            // rescan to find plugin-contributed @Initializer
+                            reactor.addAll(initializerFinder.discoverTasks(reactor));
+                        }
+                    });
 
                     // register them all
                     session.addAll(g.discoverTasks(session));

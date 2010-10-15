@@ -626,7 +626,6 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
 
             // initialization consists of ...
             executeReactor( is,
-                    new InitializerFinder(),        // misc. stuff
                     pluginManager.initTasks(is),    // loading and preparing plugins
                     loadTasks(),                    // load jobs
                     InitMilestone.ordering()        // forced ordering among key milestones
