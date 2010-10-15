@@ -89,7 +89,7 @@ public abstract class TopLevelItemDescriptor extends Descriptor<TopLevelItem> {
      * Returns all the registered {@link TopLevelItem} descriptors.
      */
     public static ExtensionList<TopLevelItemDescriptor> all() {
-        return Hudson.getInstance().getExtensionList(TopLevelItemDescriptor.class);
+        return Items.all();
     }
 
 }
