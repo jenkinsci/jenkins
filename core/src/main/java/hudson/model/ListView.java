@@ -177,15 +177,6 @@ public class ListView extends View implements Saveable {
     	return jobFilters;
     }
     
-    /**
-     * Used to determine if we want to display the Add button.
-     */
-    public boolean hasJobFilterExtensions() {
-    	return !ViewJobFilter.all().isEmpty();
-    }
-    public Iterable<ViewJobFilter> getJobFilters() {
-    	return jobFilters;
-    }
     public Iterable<ListViewColumn> getColumns() {
         return columns;
     }
