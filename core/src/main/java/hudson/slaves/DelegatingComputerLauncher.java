@@ -25,7 +25,9 @@ package hudson.slaves;
 
 import hudson.Functions;
 import hudson.model.Descriptor;
+import hudson.model.TaskListener;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -47,6 +49,21 @@ public abstract class DelegatingComputerLauncher extends ComputerLauncher {
 
     public ComputerLauncher getLauncher() {
         return launcher;
+    }
+
+    @Override
+    public void launch(SlaveComputer computer, TaskListener listener) throws IOException, InterruptedException {
+        getLauncher().launch(computer, listener);
+    }
+
+    @Override
+    public void afterDisconnect(SlaveComputer computer, TaskListener listener) {
+        getLauncher().afterDisconnect(computer, listener);
+    }
+
+    @Override
+    public void beforeDisconnect(SlaveComputer computer, TaskListener listener) {
+        getLauncher().beforeDisconnect(computer, listener);
     }
 
     public static abstract class DescriptorImpl extends Descriptor<ComputerLauncher> {
