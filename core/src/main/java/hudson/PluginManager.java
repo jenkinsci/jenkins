@@ -59,6 +59,7 @@ import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import java.io.File;
 import java.io.IOException;
+import java.lang.ref.WeakReference;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -70,6 +71,8 @@ import java.util.List;
 import java.util.Set;
 import java.util.Map;
 import java.util.HashMap;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -580,13 +583,30 @@ public abstract class PluginManager extends AbstractModelObject {
     /**
      * {@link ClassLoader} that can see all plugins.
      */
-    private final class UberClassLoader extends ClassLoader {
+    public final class UberClassLoader extends ClassLoader {
+        /**
+         * Make generated types visible.
+         * Keyed by the generated class name.
+         */
+        private ConcurrentMap<String, WeakReference<Class>> generatedClasses = new ConcurrentHashMap<String, WeakReference<Class>>();
+
         public UberClassLoader() {
             super(PluginManager.class.getClassLoader());
         }
 
+        public void addNamedClass(String className, Class c) {
+            generatedClasses.put(className,new WeakReference<Class>(c));
+        }
+
         @Override
         protected Class<?> findClass(String name) throws ClassNotFoundException {
+            WeakReference<Class> wc = generatedClasses.get(name);
+            if (wc!=null) {
+                Class c = wc.get();
+                if (c!=null)    return c;
+                else            generatedClasses.remove(name,wc);
+            }
+
             // first, use the context classloader so that plugins that are loading
             // can use its own classloader first.
             ClassLoader cl = Thread.currentThread().getContextClassLoader();

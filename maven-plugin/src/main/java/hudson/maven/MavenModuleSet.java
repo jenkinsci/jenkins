@@ -365,6 +365,10 @@ public final class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,Ma
         return new File(getModulesDir(),child.getModuleName().toFileSystemName());
     }
 
+    public void onRenamed(MavenModule item, String oldName, String newName) throws IOException {
+        throw new UnsupportedOperationException();
+    }
+
     public Collection<Job> getAllJobs() {
         Set<Job> jobs = new HashSet<Job>(getItems());
         jobs.add(this);
