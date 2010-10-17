@@ -374,17 +374,29 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
      *      use {@link #getSomeWorkspace()}
      */
     public final FilePath getWorkspace() {
+        AbstractBuild b = getBuildForDeprecatedMethods();
+        return b != null ? b.getWorkspace() : null;
+
+    }
+    
+    /**
+     * Various deprecated methods in this class all need the 'current' build.  This method returns
+     * the build suitable for that purpose.
+     * 
+     * @return An AbstractBuild for deprecated methods to use.
+     */
+    private AbstractBuild getBuildForDeprecatedMethods() {
         Executor e = Executor.currentExecutor();
         if(e!=null) {
             Executable exe = e.getCurrentExecutable();
             if (exe instanceof AbstractBuild) {
                 AbstractBuild b = (AbstractBuild) exe;
                 if(b.getProject()==this)
-                    return b.getWorkspace();
+                    return b;
             }
         }
         R lb = getLastBuild();
-        if(lb!=null)    return lb.getWorkspace();
+        if(lb!=null)    return lb;
         return null;
     }
 
@@ -429,9 +441,8 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
      *      See {@link #getWorkspace()} for a migration strategy.
      */
     public FilePath getModuleRoot() {
-        FilePath ws = getWorkspace();
-        if(ws==null)    return null;
-        return getScm().getModuleRoot(ws);
+        AbstractBuild b = getBuildForDeprecatedMethods();
+        return b != null ? b.getModuleRoot() : null;
     }
 
     /**
@@ -445,7 +456,8 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
      *      See {@link #getWorkspace()} for a migration strategy.
      */
     public FilePath[] getModuleRoots() {
-        return getScm().getModuleRoots(getWorkspace());
+        AbstractBuild b = getBuildForDeprecatedMethods();
+        return b != null ? b.getModuleRoots() : null;
     }
 
     public int getQuietPeriod() {
