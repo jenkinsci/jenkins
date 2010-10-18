@@ -2164,7 +2164,7 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
         });
 
         TaskGraphBuilder g = new TaskGraphBuilder();
-        Handle loadHudson = g.requires(JOB_LOAD_PREPARED).attains(JOB_LOADED).add("Loading global config", new Executable() {
+        Handle loadHudson = g.requires(EXTENSIONS_AUGMENTED).attains(JOB_LOADED).add("Loading global config", new Executable() {
             public void run(Reactor session) throws Exception {
                 XmlFile cfg = getConfigFile();
                 if (cfg.exists()) {
