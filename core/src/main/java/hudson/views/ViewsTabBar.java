@@ -43,17 +43,18 @@ import hudson.model.ListView;
  * the default configuration.
  *
  * @author Winston Prakash
- * @since 1.378
+ * @since 1.381
  * @see ViewsTabBarDescriptor
  */
 public abstract class ViewsTabBar extends AbstractDescribableImpl<ViewsTabBar> implements ExtensionPoint {
     /**
-     * Returns all the registered {@link ListViewColumn} descriptors.
+     * Returns all the registered {@link ViewsTabBar} descriptors.
      */
     public static DescriptorExtensionList<ViewsTabBar, Descriptor<ViewsTabBar>> all() {
         return Hudson.getInstance().<ViewsTabBar, Descriptor<ViewsTabBar>>getDescriptorList(ViewsTabBar.class);
     }
 
+    @Override
     public ViewsTabBarDescriptor getDescriptor() {
         return (ViewsTabBarDescriptor)super.getDescriptor();
     }

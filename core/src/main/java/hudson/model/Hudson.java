@@ -342,7 +342,7 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
     private transient volatile DependencyGraph dependencyGraph;
 
     /**
-     * Currently active Vies tab bar.
+     * Currently active Views tab bar.
      */
     private volatile ViewsTabBar viewsTabBar = new DefaultViewsTabBar();
 

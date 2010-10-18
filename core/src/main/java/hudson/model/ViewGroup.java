@@ -81,11 +81,12 @@ public interface ViewGroup extends Saveable, ModelObject, AccessControlled {
     void onViewRenamed(View view, String oldName, String newName);
 
     /**
-     * Gets the TabBar for the views
+     * Gets the TabBar for the views.
      *
      * TabBar for views can be provided by extension. Only one TabBar can be active
-     * at a given time (Selectable by user in the global Configuration page)
-     * Default TabBar is provided by Hudson Platform
+     * at a given time (Selectable by user in the global Configuration page).
+     * Default TabBar is provided by Hudson Platform.
+     * @since 1.381
      */
     ViewsTabBar getViewsTabBar();
 }
