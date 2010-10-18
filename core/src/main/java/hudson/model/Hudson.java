@@ -57,8 +57,6 @@ import hudson.cli.CliEntryPoint;
 import hudson.cli.CliManagerImpl;
 import hudson.cli.declarative.CLIMethod;
 import hudson.cli.declarative.CLIResolver;
-import static hudson.init.InitMilestone.JOB_LOADED;
-import static hudson.init.InitMilestone.PLUGINS_STARTED;
 import hudson.init.InitMilestone;
 import hudson.init.InitReactorListener;
 import hudson.init.InitStrategy;
@@ -179,6 +177,8 @@ import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletResponse;
+
+import static hudson.init.InitMilestone.*;
 import static javax.servlet.http.HttpServletResponse.SC_BAD_REQUEST;
 import static javax.servlet.http.HttpServletResponse.SC_NOT_FOUND;
 import java.io.File;
@@ -2164,7 +2164,7 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
         });
 
         TaskGraphBuilder g = new TaskGraphBuilder();
-        Handle loadHudson = g.requires(PLUGINS_STARTED).attains(JOB_LOADED).add("Loading global config", new Executable() {
+        Handle loadHudson = g.requires(JOB_LOAD_PREPARED).attains(JOB_LOADED).add("Loading global config", new Executable() {
             public void run(Reactor session) throws Exception {
                 XmlFile cfg = getConfigFile();
                 if (cfg.exists()) {
