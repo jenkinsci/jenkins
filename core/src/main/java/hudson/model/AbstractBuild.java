@@ -488,7 +488,7 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
                             return;
                         }
                     } catch (AbortException e) {
-                        // checkout error already reported
+                        listener.error(e.getMessage());
                     } catch (IOException e) {
                         // checkout error not yet reported
                         e.printStackTrace(listener.getLogger());

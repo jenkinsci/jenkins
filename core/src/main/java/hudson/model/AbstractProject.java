@@ -1232,6 +1232,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
                 return r;
             }
         } catch (AbortException e) {
+            listener.getLogger().println(e.getMessage());
             listener.fatalError(Messages.AbstractProject_Aborted());
             LOGGER.log(Level.FINE, "Polling "+this+" aborted",e);
             return NO_CHANGES;
