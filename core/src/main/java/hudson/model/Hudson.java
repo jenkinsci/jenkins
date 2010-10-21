@@ -57,9 +57,6 @@ import hudson.cli.CliEntryPoint;
 import hudson.cli.CliManagerImpl;
 import hudson.cli.declarative.CLIMethod;
 import hudson.cli.declarative.CLIResolver;
-import static hudson.init.InitMilestone.JOB_LOADED;
-import static hudson.init.InitMilestone.PLUGINS_STARTED;
-import hudson.init.InitializerFinder;
 import hudson.init.InitMilestone;
 import hudson.init.InitReactorListener;
 import hudson.init.InitStrategy;
@@ -180,6 +177,8 @@ import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletResponse;
+
+import static hudson.init.InitMilestone.*;
 import static javax.servlet.http.HttpServletResponse.SC_BAD_REQUEST;
 import static javax.servlet.http.HttpServletResponse.SC_NOT_FOUND;
 import java.io.File;
@@ -343,7 +342,7 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
     private transient volatile DependencyGraph dependencyGraph;
 
     /**
-     * Currently active Vies tab bar.
+     * Currently active Views tab bar.
      */
     private volatile ViewsTabBar viewsTabBar = new DefaultViewsTabBar();
 
@@ -626,7 +625,6 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
 
             // initialization consists of ...
             executeReactor( is,
-                    new InitializerFinder(),        // misc. stuff
                     pluginManager.initTasks(is),    // loading and preparing plugins
                     loadTasks(),                    // load jobs
                     InitMilestone.ordering()        // forced ordering among key milestones
@@ -2096,7 +2094,7 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
      * Called by {@link Job#renameTo(String)} to update relevant data structure.
      * assumed to be synchronized on Hudson by the caller.
      */
-    /*package*/ void onRenamed(TopLevelItem job, String oldName, String newName) throws IOException {
+    public void onRenamed(TopLevelItem job, String oldName, String newName) throws IOException {
         items.remove(oldName);
         items.put(newName,job);
 
@@ -2166,7 +2164,7 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
         });
 
         TaskGraphBuilder g = new TaskGraphBuilder();
-        Handle loadHudson = g.requires(PLUGINS_STARTED).attains(JOB_LOADED).add("Loading global config", new Executable() {
+        Handle loadHudson = g.requires(EXTENSIONS_AUGMENTED).attains(JOB_LOADED).add("Loading global config", new Executable() {
             public void run(Reactor session) throws Exception {
                 XmlFile cfg = getConfigFile();
                 if (cfg.exists()) {

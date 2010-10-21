@@ -116,10 +116,10 @@ function isAncestor(p,c) {
 
 function findElementsBySelector(startNode,selector) {
   // Split selector in to tokens
-  var tokens = selector.split(' ');
+  var tokens = selector.replace(/^\s+/,'').replace(/\s+$/,'').split(' ');
   var currentContext = new Array(startNode);
   for (var i = 0; i < tokens.length; i++) {
-    var token = tokens[i].replace(/^\s+/,'').replace(/\s+$/,'');;
+    var token = tokens[i].replace(/^\s+/,'').replace(/\s+$/,'');
     if (token.indexOf('#') > -1) {
       // Token is an ID selector
       var bits = token.split('#');

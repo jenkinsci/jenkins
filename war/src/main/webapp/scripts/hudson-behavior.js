@@ -779,8 +779,8 @@ var hudsonRules = {
         applyNameRef(start,end,ref);
     },
 
-    "BODY TR.optional-block-start": function(e) { // see optionalBlock.jelly
-        // this is prefixed by a pointless BODY so that two processing for optional-block-start
+    "TR.optional-block-start ": function(e) { // see optionalBlock.jelly
+        // this is suffixed by a pointless string so that two processing for optional-block-start
         // can sandwitch row-set-end
         // this requires "TR.row-set-end" to mark rows
         var checkbox = e.firstChild.firstChild;

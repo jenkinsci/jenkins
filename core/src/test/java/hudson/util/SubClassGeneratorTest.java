@@ -1,7 +1,7 @@
 /*
  * The MIT License
  *
- * Copyright (c) 2010, Winston.Prakash@oracle.com
+ * Copyright (c) 2010, InfraDNA, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -21,17 +21,34 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package hudson.views;
+package hudson.util;
 
-import hudson.model.Descriptor;
+import junit.framework.TestCase;
 
 /**
- * {@link Descriptor} for {@link ViewsTabBar}.
- *
- * @author Winston Prakash
- * @since 1.381
+ * 
+ * @author Kohsuke Kawaguchi
  */
-public abstract class ViewsTabBarDescriptor extends Descriptor<ViewsTabBar> {
-    // so far nothing different from plain Descriptor
-    // but it may prove useful for future expansion
+public class SubClassGeneratorTest extends TestCase {
+    public static class Foo {
+        String s;
+        double x;
+        int y;
+        public Foo() {}
+        public Foo(String s) {this.s=s;}
+        public Foo(double x, int y) {this.x=x;this.y=y;}
+    }
+    public void testFoo() throws Exception {
+        Class<? extends Foo> c = new SubClassGenerator(getClass().getClassLoader()).generate(Foo.class, "12345");
+        assertEquals("12345",c.getName());
+
+        c.newInstance();
+
+        Foo f = c.getConstructor(String.class).newInstance("aaa");
+        assertEquals("aaa",f.s);
+
+        f = c.getConstructor(double.class,int.class).newInstance(1.0,3);
+        assertEquals(1.0,f.x);
+        assertEquals(3,f.y);
+    }
 }

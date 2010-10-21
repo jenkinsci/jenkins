@@ -1,7 +1,7 @@
 /*
  * The MIT License
  *
- * Copyright (c) 2010, Winston.Prakash@oracle.com
+ * Copyright (c) 2010, InfraDNA, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -21,17 +21,43 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package hudson.views;
+package hudson.slaves;
 
-import hudson.model.Descriptor;
+import hudson.model.Computer;
+import org.kohsuke.stapler.HttpRedirect;
+import org.kohsuke.stapler.HttpResponse;
+import org.kohsuke.stapler.HttpResponses;
+
+import java.io.IOException;
 
 /**
- * {@link Descriptor} for {@link ViewsTabBar}.
+ * Partial implementation of {@link Computer} to be used in conjunction with
+ * {@link AbstractCloudSlave}.
  *
- * @author Winston Prakash
- * @since 1.381
+ * @author Kohsuke Kawaguchi
+ * @since 1.382
  */
-public abstract class ViewsTabBarDescriptor extends Descriptor<ViewsTabBar> {
-    // so far nothing different from plain Descriptor
-    // but it may prove useful for future expansion
+public class AbstractCloudComputer<T extends AbstractCloudSlave> extends SlaveComputer {
+    public AbstractCloudComputer(T slave) {
+        super(slave);
+    }
+
+    @Override
+    public T getNode() {
+        return (T) super.getNode();
+    }
+
+    /**
+     * When the slave is deleted, free the node.
+     */
+    @Override
+    public HttpResponse doDoDelete() throws IOException {
+        checkPermission(DELETE);
+        try {
+            getNode().terminate();
+            return new HttpRedirect("..");
+        } catch (InterruptedException e) {
+            return HttpResponses.error(500,e);
+        }
+    }
 }

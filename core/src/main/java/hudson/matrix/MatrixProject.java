@@ -456,6 +456,10 @@ public class MatrixProject extends AbstractProject<MatrixProject,MatrixBuild> im
         return getRootDirFor(child.getCombination());
     }
 
+    public void onRenamed(MatrixConfiguration item, String oldName, String newName) throws IOException {
+        throw new UnsupportedOperationException();
+    }
+
     public File getRootDirFor(Combination combination) {
         File f = getConfigurationsDir();
         for (Entry<String, String> e : combination.entrySet())

@@ -230,7 +230,7 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
     public final FilePath getModuleRoot() {
         FilePath ws = getWorkspace();
         if (ws==null)    return null;
-        return getParent().getScm().getModuleRoot(ws);
+        return getParent().getScm().getModuleRoot(ws,this);
     }
 
     /**
@@ -243,7 +243,7 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
     public FilePath[] getModuleRoots() {
         FilePath ws = getWorkspace();
         if (ws==null)    return null;
-        return getParent().getScm().getModuleRoots(ws);
+        return getParent().getScm().getModuleRoots(ws,this);
     }
 
     /**
@@ -488,7 +488,7 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
                             return;
                         }
                     } catch (AbortException e) {
-                        // checkout error already reported
+                        listener.error(e.getMessage());
                     } catch (IOException e) {
                         // checkout error not yet reported
                         e.printStackTrace(listener.getLogger());

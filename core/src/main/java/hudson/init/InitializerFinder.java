@@ -37,7 +37,9 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.logging.Logger;
 
 import hudson.model.Hudson;
@@ -52,6 +54,8 @@ import static java.util.logging.Level.WARNING;
 public class InitializerFinder extends TaskBuilder {
     private final ClassLoader cl;
 
+    private final Set<Method> discovered = new HashSet<Method>();
+
     public InitializerFinder(ClassLoader cl) {
         this.cl = cl;
     }
@@ -63,6 +67,9 @@ public class InitializerFinder extends TaskBuilder {
     public Collection<Task> discoverTasks(Reactor session) throws IOException {
         List<Task> result = new ArrayList<Task>();
         for (Method e : Index.list(Initializer.class,cl,Method.class)) {
+            if (!discovered.add(e))
+                continue;   // already reported once
+
             if (!Modifier.isStatic(e.getModifiers()))
                 throw new IOException(e+" is not a static method");
 

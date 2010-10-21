@@ -23,6 +23,7 @@
  */
 package hudson.model;
 
+import java.io.IOException;
 import java.util.Collection;
 import java.io.File;
 
@@ -71,4 +72,9 @@ public interface ItemGroup<T extends Item> extends PersistenceRoot, ModelObject 
      * Assigns the {@link Item#getRootDir() root directory} for children.
      */
     File getRootDirFor(T child);
+
+    /**
+     * Internal method. Called by {@link Item}s when they are renamed by users.
+     */
+    void onRenamed(T item, String oldName, String newName) throws IOException;
 }
