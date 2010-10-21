@@ -2,7 +2,7 @@
  * The MIT License
  * 
  * Copyright (c) 2004-2010, Sun Microsystems, Inc., Kohsuke Kawaguchi,
- * Daniel Dyer, Red Hat, Inc., Tom Huybrechts, Romain Seguy
+ * Daniel Dyer, Red Hat, Inc., Tom Huybrechts, Romain Seguy, Yahoo! Inc.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,6 +24,7 @@
  */
 package hudson.model;
 
+import hudson.console.ConsoleLogFilter;
 import hudson.Functions;
 import hudson.AbortException;
 import hudson.BulkChange;
@@ -1261,6 +1262,13 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
                     // served to the browser immediately
                     OutputStream logger = new FileOutputStream(getLogFile());
                     RunT build = job.getBuild();
+
+                    // Global log filters
+                    for (ConsoleLogFilter filter : ConsoleLogFilter.all()) {
+                        logger = filter.decorateLogger((AbstractBuild) build, logger);
+                    }
+
+                    // Project specific log filterss
                     if (project instanceof BuildableItemWithBuildWrappers && build instanceof AbstractBuild) {
                         BuildableItemWithBuildWrappers biwbw = (BuildableItemWithBuildWrappers) project;
                         for (BuildWrapper bw : biwbw.getBuildWrappersList()) {
