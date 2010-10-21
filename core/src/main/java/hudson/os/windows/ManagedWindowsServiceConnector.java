@@ -3,6 +3,7 @@ package hudson.os.windows;
 import hudson.Extension;
 import hudson.model.Computer;
 import hudson.model.Descriptor;
+import hudson.model.Hudson;
 import hudson.model.TaskListener;
 import hudson.slaves.ComputerConnector;
 import hudson.slaves.ComputerLauncher;
@@ -35,6 +36,11 @@ public class ManagedWindowsServiceConnector extends ComputerConnector {
             @Override
             protected String determineHost(Computer c) throws IOException, InterruptedException {
                 return host;
+            }
+
+            @Override
+            public Descriptor<ComputerLauncher> getDescriptor() {
+                return Hudson.getInstance().getDescriptor(ManagedWindowsServiceLauncher.class);
             }
         };
     }
