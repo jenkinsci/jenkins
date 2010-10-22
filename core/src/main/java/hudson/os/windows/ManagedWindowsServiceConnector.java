@@ -6,6 +6,7 @@ import hudson.model.Descriptor;
 import hudson.model.Hudson;
 import hudson.model.TaskListener;
 import hudson.slaves.ComputerConnector;
+import hudson.slaves.ComputerConnectorDescriptor;
 import hudson.slaves.ComputerLauncher;
 import hudson.util.Secret;
 import org.kohsuke.stapler.DataBoundConstructor;
@@ -46,7 +47,9 @@ public class ManagedWindowsServiceConnector extends ComputerConnector {
     }
 
     @Extension
-    public static class DescriptorImpl extends Descriptor<ComputerLauncher> {
+//  Fix broken trunk (temporary)
+//  public static class DescriptorImpl extends Descriptor<ComputerLauncher> {
+    public static class DescriptorImpl extends ComputerConnectorDescriptor {
         public String getDisplayName() {
             return Messages.ManagedWindowsServiceLauncher_DisplayName();
         }
