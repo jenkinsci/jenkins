@@ -211,6 +211,64 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
 
         return r;
     }
+    
+    /**
+     * Returns the estimated duration for this builds.
+     * Takes only the modules into account which are actually being build in
+     * case of incremental builds.
+     */
+    @Override
+    public long getEstimatedDuration() {
+        
+        if (!project.isIncrementalBuild()) {
+            return super.getEstimatedDuration();
+        }
+
+        long result = 0;
+        
+        Map<MavenModule, List<MavenBuild>> moduleBuilds = getModuleBuilds();
+        for (List<MavenBuild> builds : moduleBuilds.values()) {
+            if (!builds.isEmpty()) {
+                MavenBuild build = builds.get(0);
+                if (build.getResult() != Result.NOT_BUILT) {
+                    if (build.getEstimatedDuration() != -1) {
+                        result += build.getEstimatedDuration();
+                    }
+                }
+            }
+        }
+        
+        result += estimateModuleSetBuildDurationOverhead(3);
+        
+        return result != 0 ? result : -1;
+    }
+    
+    /**
+     * Estimates the duration overhead the {@link MavenModuleSetBuild} itself adds
+     * to the sum of duration of the module builds.
+     */
+    private long estimateModuleSetBuildDurationOverhead(int numberOfBuilds) {
+        List<MavenModuleSetBuild> moduleSetBuilds = getPreviousBuildsOverThreshold(numberOfBuilds, Result.UNSTABLE);
+        
+        if (moduleSetBuilds.isEmpty()) {
+            return 0;
+        }
+        
+        long overhead = 0;
+        for(MavenModuleSetBuild moduleSetBuild : moduleSetBuilds) {
+            long sumOfModuleBuilds = 0;
+            for (List<MavenBuild> builds : moduleSetBuild.getModuleBuilds().values()) {
+                if (!builds.isEmpty()) {
+                    MavenBuild moduleBuild = builds.get(0);
+                    sumOfModuleBuilds += moduleBuild.getDuration();
+                }
+            }
+            
+            overhead += Math.max(0, moduleSetBuild.getDuration() - sumOfModuleBuilds);
+        }
+        
+        return Math.round((double)overhead / moduleSetBuilds.size());
+    }
 
     @Override
     public synchronized void delete() throws IOException {

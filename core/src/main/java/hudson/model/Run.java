@@ -689,6 +689,29 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
             r=r.previousBuild;
         return r;
     }
+    
+    /**
+     * Returns the last 'numberOfBuilds' builds with a build result >= 'threshold'
+     * 
+     * @return a list with the builds (youngest build first).
+     *   May be smaller than 'numberOfBuilds' or even empty
+     *   if not enough builds satisfying the threshold have been found. Never null.
+     * @since 1.383
+     */
+    public List<RunT> getPreviousBuildsOverThreshold(int numberOfBuilds, Result threshold) {
+        List<RunT> result = new ArrayList<RunT>(numberOfBuilds);
+        
+        RunT r = getPreviousBuild();
+        while (r != null && result.size() < numberOfBuilds) {
+            if (!r.isBuilding() && 
+                 (r.getResult() != null && r.getResult().isBetterOrEqualTo(threshold))) {
+                result.add(r);
+            }
+            r = r.getPreviousBuild();
+        }
+        
+        return result;
+    }
 
     public RunT getNextBuild() {
         return nextBuild;
@@ -1740,6 +1763,17 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
         return job.getBuildByNumber(number);
     }
 
+    /**
+     * Returns the estimated duration for this run if it is currently running.
+     * Default to {@link Job#getEstimatedDuration()}, may be overridden in subclasses
+     * if duration may depend on run specific parameters (like incremental Maven builds).
+     * 
+     * @return the estimated duration in milliseconds
+     * @since 1.383
+     */
+    public long getEstimatedDuration() {
+        return project.getEstimatedDuration();
+    }
 
     public static final XStream XSTREAM = new XStream2();
     static {
