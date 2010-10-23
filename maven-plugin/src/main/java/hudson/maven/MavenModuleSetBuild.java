@@ -230,10 +230,8 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
         for (List<MavenBuild> builds : moduleBuilds.values()) {
             if (!builds.isEmpty()) {
                 MavenBuild build = builds.get(0);
-                if (build.getResult() != Result.NOT_BUILT) {
-                    if (build.getEstimatedDuration() != -1) {
-                        result += build.getEstimatedDuration();
-                    }
+                if (build.getResult() != Result.NOT_BUILT && build.getEstimatedDuration() != -1) {
+                    result += build.getEstimatedDuration();
                 }
             }
         }
