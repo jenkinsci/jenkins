@@ -729,10 +729,22 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
      *      For the convenience of the caller, this array can contain null, and those will be silently ignored.
      */
     public Future<R> scheduleBuild2(int quietPeriod, Cause c, Action... actions) {
+        return scheduleBuild2(quietPeriod,c,Arrays.asList(actions));
+    }
+
+    /**
+     * Schedules a build of this project, and returns a {@link Future} object
+     * to wait for the completion of the build.
+     *
+     * @param actions
+     *      For the convenience of the caller, this collection can contain null, and those will be silently ignored.
+     * @since 1.383
+     */
+    public Future<R> scheduleBuild2(int quietPeriod, Cause c, Collection<? extends Action> actions) {
         if (!isBuildable())
             return null;
 
-        List<Action> queueActions = new ArrayList<Action>(Arrays.asList(actions));
+        List<Action> queueActions = new ArrayList<Action>(actions);
         if (isParameterized() && Util.filter(queueActions, ParametersAction.class).isEmpty()) {
             queueActions.add(new ParametersAction(getDefaultParametersValues()));
         }
