@@ -689,7 +689,18 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
             r=r.previousBuild;
         return r;
     }
-    
+
+    /**
+     * Returns the last successful build before this build.
+     * @since 1.383
+     */
+    public RunT getPreviousSuccessfulBuild() {
+        RunT r=previousBuild;
+        while( r!=null && r.getResult()!=Result.SUCCESS )
+            r=r.previousBuild;
+        return r;
+    }
+
     /**
      * Returns the last 'numberOfBuilds' builds with a build result >= 'threshold'.
      * 
