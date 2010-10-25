@@ -60,6 +60,6 @@ public class LabelAtomProperty extends AbstractDescribableImpl<LabelAtomProperty
      * Lists up all the registered {@link LabelAtomPropertyDescriptor}s in the system.
      */
     public static DescriptorExtensionList<LabelAtomProperty,LabelAtomPropertyDescriptor> all() {
-        return Hudson.getInstance().getDescriptorList(LabelAtomProperty.class);
+        return Hudson.getInstance().<LabelAtomProperty,LabelAtomPropertyDescriptor>getDescriptorList(LabelAtomProperty.class);
     }
 }
