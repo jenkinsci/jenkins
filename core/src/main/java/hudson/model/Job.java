@@ -28,13 +28,11 @@ import static javax.servlet.http.HttpServletResponse.SC_NO_CONTENT;
 
 import com.infradna.tool.bridge_method_injector.WithBridgeMethods;
 import hudson.ExtensionPoint;
-import hudson.Util;
 import hudson.XmlFile;
 import hudson.PermalinkList;
 import hudson.Extension;
 import hudson.cli.declarative.CLIResolver;
 import hudson.model.Descriptor.FormException;
-import hudson.model.listeners.ItemListener;
 import hudson.model.PermalinkProjectAction.Permalink;
 import hudson.model.Fingerprint.RangeSet;
 import hudson.model.Fingerprint.Range;
@@ -85,8 +83,6 @@ import javax.xml.transform.stream.StreamSource;
 import net.sf.json.JSONObject;
 import net.sf.json.JSONException;
 
-import org.apache.tools.ant.taskdefs.Copy;
-import org.apache.tools.ant.types.FileSet;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.JFreeChart;
 import org.jfree.chart.axis.CategoryAxis;
@@ -98,6 +94,7 @@ import org.jfree.chart.renderer.category.StackedAreaRenderer;
 import org.jfree.data.category.CategoryDataset;
 import org.jfree.ui.RectangleInsets;
 import org.jvnet.localizer.Localizable;
+import org.kohsuke.stapler.StaplerOverridable;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 import org.kohsuke.stapler.WebMethod;
@@ -117,7 +114,7 @@ import org.kohsuke.args4j.CmdLineException;
  * @author Kohsuke Kawaguchi
  */
 public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, RunT>>
-        extends AbstractItem implements ExtensionPoint {
+        extends AbstractItem implements ExtensionPoint, StaplerOverridable {
 
     /**
      * Next build number. Kept in a separate file because this is the only
@@ -428,6 +425,16 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
                 return clazz.cast(p);
         }
         return null;
+    }
+
+    /**
+     * Overrides from job properties.
+     */
+    public Collection<?> getOverrides() {
+        List<Object> r = new ArrayList<Object>();
+        for (JobProperty<? super JobT> p : properties)
+            r.addAll(p.getJobOverrides());
+        return r;
     }
 
     public List<Widget> getWidgets() {

@@ -165,6 +165,10 @@ public abstract class JobProperty<J extends Job<?,?>> implements Describable<Job
         return getJobActions((J)project);
     }
 
+    public Collection<?> getJobOverrides() {
+        return Collections.emptyList();
+    }
+
     /**
      * Contributes {@link SubTask}s to {@link AbstractProject#getSubTasks()}
      *
