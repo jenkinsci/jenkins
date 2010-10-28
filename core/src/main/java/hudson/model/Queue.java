@@ -1110,6 +1110,15 @@ public class Queue extends ResourceController implements Saveable {
          * Called by {@link Executor} to perform the task
          */
         void run();
+        
+        /**
+         * Estimate of how long will it take to execute this executable.
+         * Measured in milliseconds.
+         *
+         * @return -1 if it's impossible to estimate.
+         * @since 1.383
+         */
+        long getEstimatedDuration();
 
         /**
          * Used to render the HTML. Should be a human readable text of what this executable is.

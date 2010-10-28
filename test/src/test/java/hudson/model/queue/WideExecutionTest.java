@@ -61,6 +61,10 @@ public class WideExecutionTest extends HudsonTestCase {
                                 e.printStackTrace();
                             }
                         }
+
+                        public long getEstimatedDuration() {
+                            return 0;
+                        }
                     };
                 }
 

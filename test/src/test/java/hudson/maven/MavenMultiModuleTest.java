@@ -110,6 +110,33 @@ public class MavenMultiModuleTest extends HudsonTestCase {
                    pBuild.getDuration() >= summedModuleDuration);
     }
     
+    @Bug(6544)
+    public void testEstimatedDurationForIncrementalMultiModMaven()
+            throws Exception {
+        configureDefaultMaven("apache-maven-2.2.1", MavenInstallation.MAVEN_21);
+        MavenModuleSet m = createMavenProject();
+        m.getReporters().add(new TestReporter());
+        m.setScm(new ExtractResourceWithChangesSCM(getClass().getResource(
+                "maven-multimod.zip"), getClass().getResource(
+                "maven-multimod-changes.zip")));
+
+        buildAndAssertSuccess(m);
+
+        // Now run a second, incremental build with the changes.
+        m.setIncrementalBuild(true);
+        buildAndAssertSuccess(m);
+
+        MavenModuleSetBuild lastBuild = m.getLastBuild();
+        MavenModuleSetBuild previousBuild = lastBuild.getPreviousBuild();
+        assertNull("There should be only one previous build", previousBuild.getPreviousBuild());
+        
+        // since the estimated duration is calculated based on the previous builds
+        // and there was only one previous build (which built all modules) and this build
+        // did only build one module, the estimated duration of this build must be
+        // smaller than the duration of the previous build.
+        assertTrue(lastBuild.getEstimatedDuration() < previousBuild.getDuration());
+    }
+    
     /**
      * NPE in {@code getChangeSetFor(m)} in {@link MavenModuleSetBuild} when incremental build is
      * enabled and a new module is added.

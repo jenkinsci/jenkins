@@ -80,6 +80,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.MissingResourceException;
 import java.util.ResourceBundle;
 import java.util.SimpleTimeZone;
 import java.util.StringTokenizer;
@@ -396,8 +397,13 @@ public class Util {
      *      null if no such message is available.
      */
     public static String getWin32ErrorMessage(int n) {
-        ResourceBundle rb = ResourceBundle.getBundle("/hudson/win32errors");
-        return rb.getString("error"+n);
+        try {
+            ResourceBundle rb = ResourceBundle.getBundle("/hudson/win32errors");
+            return rb.getString("error"+n);
+        } catch (MissingResourceException e) {
+            LOGGER.log(Level.WARNING,"Failed to find resource bundle",e);
+            return null;
+        }
     }
 
     /**
