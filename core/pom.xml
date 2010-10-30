@@ -791,7 +791,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.jvnet.robust-http-client</groupId>
       <artifactId>robust-http-client</artifactId>
-      <version>1.0</version>
+      <version>1.1</version>
     </dependency>
 
     <dependency><!-- Hudson doesn't depend on it but some plugin wants the latest version. Bundling 1.4 until we figure out a mechanism to let plugins load its own -->
