@@ -3,7 +3,8 @@
  * 
  * Copyright (c) 2004-2010, Sun Microsystems, Inc., Kohsuke Kawaguchi,
  * Brian Westrich, Erik Ramfelt, Ertan Deniz, Jean-Baptiste Quenot,
- * Luca Domenico Milanesio, R. Tyler Ballance, Stephen Connolly, Tom Huybrechts, id:cactusman
+ * Luca Domenico Milanesio, R. Tyler Ballance, Stephen Connolly, Tom Huybrechts,
+ * id:cactusman, Yahoo! Inc.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -25,6 +26,8 @@
  */
 package hudson.model;
 
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import antlr.ANTLRException;
 import hudson.AbortException;
 import hudson.CopyOnWrite;
@@ -1762,6 +1765,63 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
             if (Hudson.getInstance().getLabel(value).isEmpty())
                 return FormValidation.warning("There's no slave/cloud that matches this assignment");
             return FormValidation.ok();
+        }
+
+       public AutoCompletionCandidates doAutoCompleteAssignedLabelString(@QueryParameter String value) {
+            AutoCompletionCandidates c = new AutoCompletionCandidates();
+            Set<Label> labels = Hudson.getInstance().getLabels();
+            List<String> queries = new AutoCompleteSeeder(value).getSeeds();
+
+            for (String term : queries) {
+                for (Label l : labels) {
+                    if (l.getName().startsWith(term)) {
+                        c.add(l.getName());
+                    }
+                }
+            }
+            return c;
+        }
+
+        /**
+        * Utility class for taking the current input value and computing a list
+        * of potential terms to match against the list of defined labels.
+         */
+        static class AutoCompleteSeeder {
+            private String source;
+            private Pattern quoteMatcher = Pattern.compile("(\\\"?)(.+?)(\\\"?+)(\\s*)");
+
+            AutoCompleteSeeder(String source) {
+                this.source = source;
+            }
+
+            List<String> getSeeds() {
+                ArrayList<String> terms = new ArrayList();
+                boolean trailingQuote = source.endsWith("\"");
+                boolean leadingQuote = source.startsWith("\"");
+                boolean trailingSpace = source.endsWith(" ");
+
+                if (trailingQuote || (trailingSpace && !leadingQuote)) {
+                    terms.add("");
+                } else {
+                    if (leadingQuote) {
+                        int quote = source.lastIndexOf('"');
+                        if (quote == 0) {
+                            terms.add(source.substring(1));
+                        } else {
+                            terms.add("");
+                        }
+                    } else {
+                        int space = source.lastIndexOf(' ');
+                        if (space > -1) {
+                            terms.add(source.substring(space+1));
+                        } else {
+                            terms.add(source);
+                        }
+                    }
+                }
+
+                return terms;
+            }
         }
     }
 
