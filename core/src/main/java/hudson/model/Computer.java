@@ -970,7 +970,8 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
      */
     public void doConfigSubmit( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException, FormException {
         checkPermission(CONFIGURE);
-
+        req.setCharacterEncoding("UTF-8");
+        
         final Hudson app = Hudson.getInstance();
 
         Node result = getNode().getDescriptor().newInstance(req, req.getSubmittedForm());

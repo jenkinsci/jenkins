@@ -622,7 +622,7 @@ public class UpdateSite {
          */
         public void doDowngrade(StaplerResponse rsp) throws IOException {
             deployBackup();
-            rsp.sendRedirect("../updateCenter/");
+            rsp.sendRedirect2("../..");
         }
     }
 
