@@ -46,6 +46,8 @@ THE SOFTWARE.
     <module>ui-samples-plugin</module>
     <module>maven-agent</module>
     <module>maven-interceptor</module>
+    <module>maven3-agent</module>
+    <module>maven3-listener</module>
     <module>war</module>
     <module>test</module>
     <module>cli</module>
@@ -197,7 +199,9 @@ THE SOFTWARE.
       </plugin>
 
       <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-enforcer-plugin</artifactId>
+        <version>1.0-beta-1</version>
         <executions>
           <execution>
             <goals>
@@ -248,10 +252,55 @@ THE SOFTWARE.
       <optional>true</optional><!-- no need to have this at runtime -->
     </dependency>
   </dependencies>
+  
+  <dependencyManagement>
+    <dependencies>
+      <dependency>
+        <groupId>org.apache.maven</groupId>
+        <artifactId>maven-core</artifactId>
+        <version>3.0</version>
+      </dependency>    
+      <dependency>
+        <groupId>org.apache.maven</groupId>
+        <artifactId>maven-compat</artifactId>
+        <version>3.0</version>
+      </dependency>      
+      <dependency>
+        <groupId>org.apache.maven</groupId>
+        <artifactId>maven-aether-provider</artifactId>
+        <version>3.0</version>
+      </dependency>      
+      <dependency>
+        <groupId>org.apache.maven</groupId>
+        <artifactId>maven-embedder</artifactId>
+        <version>3.0</version>
+      </dependency>   
+      <dependency>
+        <groupId>org.sonatype.sisu</groupId>
+        <artifactId>sisu-inject-plexus</artifactId>
+        <version>1.4.2</version>
+      </dependency>  
+      <dependency>
+        <groupId>org.codehaus.plexus</groupId>
+        <artifactId>plexus-classworlds</artifactId>
+        <version>2.2.3</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.ant</groupId>
+        <artifactId>ant</artifactId>
+        <version>1.8.0</version>
+      </dependency>    
+      <dependency>
+        <groupId>junit</groupId>
+        <artifactId>junit</artifactId>
+        <version>4.8.1</version>
+      </dependency>  
+    </dependencies>
+  </dependencyManagement>
 
   <properties>
-    <maven.version>2.0.9</maven.version>
-    <maven.embedder.version>2.0.4</maven.embedder.version>
+    <maven.version>3.0</maven.version>
+    
     <!-- *.html files are in UTF-8, and *.properties are in iso-8859-1, so this configuration is acturally incorrect,
     but this suppresses a warning from Maven, and as long as we don't do filtering we should be OK. -->
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -344,6 +393,37 @@ THE SOFTWARE.
                 </configuration>
               </execution>
             </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+    <profile>
+      <id>m2e</id>
+      <properties>
+        <m2BuildDirectory>target</m2BuildDirectory>
+      </properties>
+      <activation>
+        <property>
+          <name>m2e.version</name>
+        </property>
+      </activation>
+      <build>
+        <directory>${m2BuildDirectory}</directory>
+        <plugins>
+          <plugin>
+            <groupId>org.maven.ide.eclipse</groupId>
+            <artifactId>lifecycle-mapping</artifactId>
+            <version>0.10.0</version>
+            <configuration>
+              <mappingId>customizable</mappingId>
+              <configurators>
+                <configurator id="org.maven.ide.eclipse.jdt.javaConfigurator" />
+                <configurator id="org.maven.ide.eclipse.plexus.annotations.plexusConfigurator" />
+              </configurators>
+              <mojoExecutions>
+                <mojoExecution>org.apache.maven.plugins:maven-resources-plugin::</mojoExecution>
+              </mojoExecutions>
+            </configuration>
           </plugin>
         </plugins>
       </build>

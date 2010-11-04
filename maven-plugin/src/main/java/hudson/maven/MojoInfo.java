@@ -126,13 +126,13 @@ public class MojoInfo {
     public <T> T getConfigurationValue(String configName, Class<T> type) throws ComponentConfigurationException {
         PlexusConfiguration child = configuration.getChild(configName);
         if(child==null) return null;    // no such config
-
+       
         ConfigurationConverter converter = converterLookup.lookupConverterForType(type);
         return type.cast(converter.fromConfiguration(converterLookup,child,type,
             // the implementation seems to expect the type of the bean for which the configuration is done
             // in this parameter, but we have no such type. So passing in a dummy
             Object.class,
-            mojoExecution.getMojoDescriptor().getPluginDescriptor().getClassRealm().getClassLoader(),
+            mojoExecution.getMojoDescriptor().getPluginDescriptor().getClassRealm(),
             expressionEvaluator));
     }
 

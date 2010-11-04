@@ -1199,9 +1199,7 @@ public abstract class HudsonTestCase extends TestCase implements RootAction {
 
                     String dependencies = m.getMainAttributes().getValue("Plugin-Dependencies");
                     if(dependencies!=null) {
-                        MavenEmbedder embedder = new MavenEmbedder(null);
-                        embedder.setClassLoader(getClass().getClassLoader());
-                        embedder.start();
+                        MavenEmbedder embedder = new MavenEmbedder(getClass().getClassLoader(), null);
                         for( String dep : dependencies.split(",")) {
                             String[] tokens = dep.split(":");
                             String artifactId = tokens[0];
@@ -1239,7 +1237,6 @@ public abstract class HudsonTestCase extends TestCase implements RootAction {
                                 FileUtils.copyFile(dependencyJar, dst);
                             }
                         }
-                        embedder.stop();
                     }
                 }
             }

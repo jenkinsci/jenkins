@@ -24,13 +24,29 @@
  */
 package hudson.maven;
 
-import hudson.*;
+import static hudson.model.Result.FAILURE;
+import hudson.AbortException;
+import hudson.EnvVars;
+import hudson.FilePath;
 import hudson.FilePath.FileCallable;
+import hudson.Launcher;
+import hudson.Util;
 import hudson.maven.MavenBuild.ProxyImpl2;
 import hudson.maven.reporters.MavenFingerprinter;
 import hudson.maven.reporters.MavenMailer;
-import hudson.model.*;
+import hudson.model.AbstractProject;
+import hudson.model.Action;
+import hudson.model.Build;
+import hudson.model.BuildListener;
 import hudson.model.Cause.UpstreamCause;
+import hudson.model.Computer;
+import hudson.model.Environment;
+import hudson.model.Fingerprint;
+import hudson.model.Hudson;
+import hudson.model.ParametersAction;
+import hudson.model.Result;
+import hudson.model.Run;
+import hudson.model.TaskListener;
 import hudson.remoting.Channel;
 import hudson.remoting.VirtualChannel;
 import hudson.scm.ChangeLogSet;
@@ -40,8 +56,30 @@ import hudson.tasks.Maven.MavenInstallation;
 import hudson.util.ArgumentListBuilder;
 import hudson.util.IOUtils;
 import hudson.util.StreamTaskListener;
+
+import java.io.File;
+import java.io.IOException;
+import java.io.InterruptedIOException;
+import java.io.PrintStream;
+import java.io.PrintWriter;
+import java.io.Serializable;
+import java.io.StringWriter;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Properties;
+import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+import org.apache.commons.io.FilenameUtils;
 import org.apache.maven.BuildFailureException;
-import org.apache.maven.embedder.MavenEmbedderException;
+import org.apache.maven.artifact.versioning.ComparableVersion;
 import org.apache.maven.execution.MavenSession;
 import org.apache.maven.execution.ReactorManager;
 import org.apache.maven.lifecycle.LifecycleExecutionException;
@@ -50,15 +88,6 @@ import org.apache.maven.project.MavenProject;
 import org.apache.maven.project.ProjectBuildingException;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
-import org.apache.commons.io.FilenameUtils;
-
-import java.io.*;
-import java.util.*;
-import java.util.Map.Entry;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
-import static hudson.model.Result.FAILURE;
 
 /**
  * {@link Build} for {@link MavenModuleSet}.
@@ -371,6 +400,7 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
             PrintStream logger = listener.getLogger();
             Result r = null;
             try {
+                
                 EnvVars envVars = getEnvironment(listener);
                 MavenInstallation mvn = project.getMaven();
                 if(mvn==null)
@@ -379,6 +409,8 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
                 
                 mvn = mvn.forEnvironment(envVars).forNode(Computer.currentComputer().getNode(), listener);
 
+                String mavenVersion = getModuleRoot().act( new MavenVersionCallable( mvn.getHome() ));
+                
                 if(!project.isAggregatorStyleBuild()) {
                     parsePoms(listener, logger, envVars, mvn);
                     // start module builds
@@ -417,9 +449,9 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
                             // we act as if incrementalBuild is not set if there are no changes.
                             if (!MavenModuleSetBuild.this.getChangeSet().isEmptySet()
                                 && project.isIncrementalBuild()) {
-				// If there are changes for this module, add it.
-				// Also add it if we've never seen this module before,
-				// or if the previous build of this module failed or was unstable.
+                                //If there are changes for this module, add it.
+                                // Also add it if we've never seen this module before,
+                                // or if the previous build of this module failed or was unstable.
                                 if ((mb.getPreviousBuiltBuild() == null) ||
                                     (!getChangeSetFor(m).isEmpty()) 
                                     || (mb.getPreviousBuiltBuild().getResult().isWorseThan(Result.SUCCESS))) {
@@ -443,9 +475,21 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
                         if(!pom.exists() && parentLoc.exists())
                             pom = parentLoc;
 
-                        ProcessCache.MavenProcess process = MavenBuild.mavenProcessCache.get(launcher.getChannel(), slistener,
+                        
+                        ProcessCache.MavenProcess process = null;
+                        
+                        boolean maven3orLater = new ComparableVersion (mavenVersion).compareTo( new ComparableVersion ("3.0") ) >= 0;
+                       
+                        if (maven3orLater)
+                        {
+                            LOGGER.info( "using maven 3 " + mavenVersion );
+                            process = MavenBuild.mavenProcessCache.get(launcher.getChannel(), slistener,
+                                                                                                 new Maven3ProcessFactory(project,launcher,envVars,pom.getParent()));
+                        } else 
+                        {
+                            process = MavenBuild.mavenProcessCache.get(launcher.getChannel(), slistener,
                             new MavenProcessFactory(project,launcher,envVars,pom.getParent()));
-
+                        }
                         ArgumentListBuilder margs = new ArgumentListBuilder().add("-B").add("-f", pom.getRemote());
                         if(project.usesPrivateRepository())
                             margs.add("-Dmaven.repo.local="+getWorkspace().child(".repository"));
@@ -471,18 +515,34 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
                         }
 
                         margs.addTokenized(envVars.expand(project.getGoals()));
-
-                        Builder builder = new Builder(slistener, proxies, project.sortedActiveModules, margs.toList(), envVars);
-                        MavenProbeAction mpa=null;
-                        try {
-                            mpa = new MavenProbeAction(project,process.channel);
-                            addAction(mpa);
-                            r = process.call(builder);
-                            return r;
-                        } finally {
-                            builder.end(launcher);
-                            getActions().remove(mpa);
-                            process.discard();
+                        if (maven3orLater)
+                        {   
+                            Maven3Builder maven3Builder = new Maven3Builder( slistener, margs.toList(), envVars );
+                            MavenProbeAction mpa=null;
+                            try {
+                                mpa = new MavenProbeAction(project,process.channel);
+                                addAction(mpa);
+                                r = process.call(maven3Builder);
+                                return r;
+                            } finally {
+                                //builder.end(launcher);
+                                getActions().remove(mpa);
+                                process.discard();
+                            }                            
+                            
+                        } else {
+                            Builder builder = new Builder(slistener, proxies, project.sortedActiveModules, margs.toList(), envVars);
+                            MavenProbeAction mpa=null;
+                            try {
+                                mpa = new MavenProbeAction(project,process.channel);
+                                addAction(mpa);
+                                r = process.call(builder);
+                                return r;
+                            } finally {
+                                builder.end(launcher);
+                                getActions().remove(mpa);
+                                process.discard();
+                            }
                         }
                     } finally {
                         if (r != null) {
@@ -691,6 +751,7 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
         @Override
         public Result call() throws IOException {
             try {
+                System.out.println("Builder extends MavenBuilder in call " + Thread.currentThread().getContextClassLoader());
                 return super.call();
             } finally {
                 if(lastProxy!=null)
@@ -916,7 +977,6 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
                 for (PomInfo pi : infos)
                     pi.cutCycle();
 
-                embedder.stop();
                 return infos;
             } catch (MavenEmbedderException e) {
                 throw new MavenExecutionException(e);

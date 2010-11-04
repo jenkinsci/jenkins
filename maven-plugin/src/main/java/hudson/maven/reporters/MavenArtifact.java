@@ -36,11 +36,14 @@ import org.apache.maven.artifact.handler.ArtifactHandler;
 import org.apache.maven.artifact.handler.DefaultArtifactHandler;
 import org.apache.maven.artifact.handler.manager.ArtifactHandlerManager;
 
+import com.google.common.collect.Maps;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.Collections;
+import java.util.Map;
 import java.util.logging.Logger;
 
 /**
@@ -145,14 +148,14 @@ public final class MavenArtifact implements Serializable {
         // in the repository during deployment. So simulate that behavior if that's necessary.
         final String canonicalExtension = canonicalName.substring(canonicalName.lastIndexOf('.')+1);
         ArtifactHandler ah = handlerManager.getArtifactHandler(type);
-        // Fix for HUDSON-3814 - changed from comparing against canonical extension to canonicalName.endsWith.
-        if(!canonicalName.endsWith(ah.getExtension())) {
-            handlerManager.addHandlers(Collections.singletonMap(type,
-                    new DefaultArtifactHandler(type) {
+        Map<String,ArtifactHandler> handlers = Maps.newHashMap();
+        handlers.put( type, new DefaultArtifactHandler(type) {
                         public String getExtension() {
                             return canonicalExtension;
-                        }
-                    }));
+                        } } );
+        // Fix for HUDSON-3814 - changed from comparing against canonical extension to canonicalName.endsWith.
+        if(!canonicalName.endsWith(ah.getExtension())) {
+            handlerManager.addHandlers(handlers);
         }
 
         Artifact a = factory.createArtifactWithClassifier(groupId, artifactId, version, type, classifier);

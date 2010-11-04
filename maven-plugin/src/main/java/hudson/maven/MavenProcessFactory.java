@@ -70,6 +70,9 @@ import java.nio.charset.UnsupportedCharsetException;
 import java.util.Arrays;
 import java.util.logging.Logger;
 
+import org.apache.tools.ant.AntClassLoader;
+import org.codehaus.plexus.classworlds.ClassWorld;
+
 
 /**
  * Launches the maven process.
@@ -169,7 +172,7 @@ final class MavenProcessFactory implements ProcessCache.Factory {
                 this.serverSocket = new ServerSocket();
                 serverSocket.bind(null); // new InetSocketAddress(InetAddress.getLocalHost(),0));
                 // prevent a hang at the accept method in case the forked process didn't start successfully
-                serverSocket.setSoTimeout(30*1000);
+                serverSocket.setSoTimeout(socketTimeOut);
             }
 
             public Connection accept() throws IOException {
@@ -200,6 +203,7 @@ final class MavenProcessFactory implements ProcessCache.Factory {
         if(debug)
             listener.getLogger().println("Using env variables: "+ envVars);
         try {
+            //launcher.getChannel().export( type, instance )
             final Acceptor acceptor = launcher.getChannel().call(new SocketHandler());
             Charset charset;
             try {
@@ -283,9 +287,17 @@ final class MavenProcessFactory implements ProcessCache.Factory {
         args.addTokenized(getMavenOpts());
         
         args.add("-cp");
-        args.add(
-            (isMaster? Which.jarFile(Main.class).getAbsolutePath():slaveRoot.child("maven-agent.jar").getRemote())+
-            (launcher.isUnix()?":":";")+classWorldsJar);
+        String classPath =
+            ( isMaster ? Which.jarFile( Main.class ).getAbsolutePath()
+                            : slaveRoot.child( "maven-agent.jar" ).getRemote() )
+                + ( launcher.isUnix() ? ":" : ";" )
+                + ( isMaster ? Which.jarFile( ClassWorld.class ).getAbsolutePath()
+                                : slaveRoot.child( "plexus-classworld.jar" ).getRemote() )
+                + ( launcher.isUnix() ? ":" : ";" )
+                + ( isMaster ? Which.jarFile( AntClassLoader.class ).getAbsolutePath()
+                                : slaveRoot.child( "maven-plugin-ant.jar" ).getRemote() );
+        args.add(classPath);
+            //+classWorldsJar);
         args.add(Main.class.getName());
 
         // M2_HOME
@@ -313,7 +325,7 @@ final class MavenProcessFactory implements ProcessCache.Factory {
                 Which.jarFile(Maven21Interceptor.class).getAbsolutePath():
                 slaveRoot.child("maven2.1-interceptor.jar").getRemote());
         }
-
+       
         return args;
     }
 
@@ -440,6 +452,9 @@ final class MavenProcessFactory implements ProcessCache.Factory {
         if(port!=null)
             debugPort = Integer.parseInt(port);
     }
+    
+    public static int socketTimeOut = Integer.parseInt( System.getProperty( "hudson.maven.socketTimeOut", Integer.toString( 30*1000 ) ) );
+       
 
     private static final Logger LOGGER = Logger.getLogger(MavenProcessFactory.class.getName());
 }

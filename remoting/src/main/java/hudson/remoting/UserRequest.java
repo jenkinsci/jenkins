@@ -108,7 +108,9 @@ final class UserRequest<RSP,EXC extends Throwable> extends Request<UserResponse<
                     throw new SecurityException("Execution of "+callable.toString()+" is prohibited because the channel is restricted");
 
                 ClassLoader old = Thread.currentThread().getContextClassLoader();
+                System.out.println("UserRequest current classLoader " + old.toString());
                 Thread.currentThread().setContextClassLoader(cl);
+                System.out.println("UserRequest new classLoader " + cl.toString());
                 // execute the service
                 try {
                     r = callable.call();

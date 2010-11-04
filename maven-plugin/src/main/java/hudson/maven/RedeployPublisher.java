@@ -23,8 +23,8 @@
  */
 package hudson.maven;
 
-import hudson.Launcher;
 import hudson.Extension;
+import hudson.Launcher;
 import hudson.Util;
 import hudson.maven.reporters.MavenAbstractArtifactRecord;
 import hudson.model.AbstractBuild;
@@ -32,22 +32,23 @@ import hudson.model.AbstractProject;
 import hudson.model.BuildListener;
 import hudson.model.Result;
 import hudson.tasks.BuildStepDescriptor;
+import hudson.tasks.BuildStepMonitor;
 import hudson.tasks.Publisher;
 import hudson.tasks.Recorder;
-import hudson.tasks.BuildStepMonitor;
 import hudson.util.FormValidation;
+
+import java.io.IOException;
+
 import net.sf.json.JSONObject;
+
 import org.apache.maven.artifact.deployer.ArtifactDeploymentException;
 import org.apache.maven.artifact.repository.ArtifactRepository;
 import org.apache.maven.artifact.repository.ArtifactRepositoryFactory;
 import org.apache.maven.artifact.repository.layout.ArtifactRepositoryLayout;
-import org.apache.maven.embedder.MavenEmbedderException;
 import org.codehaus.plexus.component.repository.exception.ComponentLookupException;
 import org.kohsuke.stapler.DataBoundConstructor;
-import org.kohsuke.stapler.StaplerRequest;
-
-import java.io.IOException;
 import org.kohsuke.stapler.QueryParameter;
+import org.kohsuke.stapler.StaplerRequest;
 
 /**
  * {@link Publisher} for {@link MavenModuleSetBuild} to deploy artifacts
@@ -108,7 +109,7 @@ public class RedeployPublisher extends Recorder {
             
             MavenEmbedder embedder = MavenUtil.createEmbedder(listener,build);
             ArtifactRepositoryLayout layout =
-                (ArtifactRepositoryLayout) embedder.getContainer().lookup( ArtifactRepositoryLayout.ROLE,"default");
+                (ArtifactRepositoryLayout) embedder.lookup( ArtifactRepositoryLayout.ROLE,"default");
             ArtifactRepositoryFactory factory =
                 (ArtifactRepositoryFactory) embedder.lookup(ArtifactRepositoryFactory.ROLE);
 
@@ -117,7 +118,6 @@ public class RedeployPublisher extends Recorder {
 
             mar.deploy(embedder,repository,listener);
 
-            embedder.stop();
             return true;
         } catch (MavenEmbedderException e) {
             e.printStackTrace(listener.error(e.getMessage()));

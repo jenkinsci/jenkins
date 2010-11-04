@@ -25,31 +25,31 @@ package hudson.maven;
 
 import hudson.AbortException;
 import hudson.Util;
-import hudson.model.BuildListener;
-import hudson.model.TaskListener;
-import hudson.model.AbstractProject;
 import hudson.model.AbstractBuild;
+import hudson.model.AbstractProject;
+import hudson.model.BuildListener;
 import hudson.model.Hudson;
+import hudson.model.TaskListener;
 import hudson.tasks.Maven.MavenInstallation;
 import hudson.tasks.Maven.ProjectWithMaven;
 
-import org.apache.maven.embedder.MavenEmbedderException;
-import org.apache.maven.embedder.MavenEmbedderLogger;
-import org.apache.maven.project.MavenProject;
-import org.apache.maven.project.ProjectBuildingException;
-import org.apache.commons.io.IOUtils;
-
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
-import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.logging.Logger;
+
+import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang.StringUtils;
+import org.apache.maven.project.MavenProject;
+import org.apache.maven.project.ProjectBuildingException;
 
 /**
  * @author Kohsuke Kawaguchi
@@ -147,21 +147,10 @@ public class MavenUtil {
      */
     public static MavenEmbedder createEmbedder(TaskListener listener, File mavenHome, String profiles, Properties systemProperties,
                                                String privateRepository, File alternateSettings) throws MavenEmbedderException, IOException {
-        MavenEmbedder maven = new MavenEmbedder(mavenHome);
-
-        ClassLoader cl = MavenUtil.class.getClassLoader();
-        maven.setClassLoader(new MaskingClassLoader(cl));
-        EmbedderLoggerImpl logger = new EmbedderLoggerImpl(listener);
-        if(debugMavenEmbedder)  logger.setThreshold(MavenEmbedderLogger.LEVEL_DEBUG);
-        maven.setLogger(logger);
-
-        {
-            Enumeration<URL> e = cl.getResources("META-INF/plexus/components.xml");
-            while (e.hasMoreElements()) {
-                URL url = e.nextElement();
-                LOGGER.fine("components.xml from "+url);
-            }
-        }
+        
+        
+        MavenRequest mavenRequest = new MavenRequest();
+        
         // make sure ~/.m2 exists to avoid http://www.nabble.com/BUG-Report-tf3401736.html
         File m2Home = new File(MavenEmbedder.userHome, ".m2");
         m2Home.mkdirs();
@@ -170,15 +159,41 @@ public class MavenUtil {
                 "\nSee https://hudson.dev.java.net/cannot-create-.m2.html");
 
         if (privateRepository!=null)
-            maven.setLocalRepositoryDirectory(new File(privateRepository));
+            mavenRequest.setLocalRepositoryPath( privateRepository);
 
-        maven.setProfiles(profiles);
+        if (profiles != null)
+        {
+            mavenRequest.setProfiles(Arrays.asList( StringUtils.split( profiles, "," ) ));    
+        }
+        
 
         if (alternateSettings!=null) 
-            maven.setAlternateSettings(alternateSettings);
+            mavenRequest.setUserSettingsFile( alternateSettings.getAbsolutePath() );
 
-        maven.setSystemProperties(systemProperties);
-        maven.start();
+        // TODO olamy check this sould be userProperties 
+        mavenRequest.setSystemProperties(systemProperties);
+
+        
+        EmbedderLoggerImpl logger =
+            new EmbedderLoggerImpl( listener, debugMavenEmbedder ? org.codehaus.plexus.logging.Logger.LEVEL_DEBUG
+                            : org.codehaus.plexus.logging.Logger.LEVEL_INFO );
+        mavenRequest.setMavenLoggerManager( logger );
+        
+        ClassLoader cl = MavenUtil.class.getClassLoader();
+        
+        // TODO check this MaskingClassLoader with maven 3 artifacts
+        MavenEmbedder maven = new MavenEmbedder( new MaskingClassLoader(cl), mavenRequest );
+        
+
+        {
+            Enumeration<URL> e = cl.getResources("META-INF/plexus/components.xml");
+            while (e.hasMoreElements()) {
+                URL url = e.nextElement();
+                LOGGER.fine("components.xml from "+url);
+            }
+        }
+
+        
 
         return maven;
     }
@@ -198,11 +213,12 @@ public class MavenUtil {
      *
      * @throws AbortException
      *      errors will be reported to the listener and the exception thrown.
+     * @throws MavenEmbedderException 
      */
     public static void resolveModules(MavenEmbedder embedder, MavenProject project,
 				      String rel, Map<MavenProject,String> relativePathInfo,
 				      BuildListener listener, boolean nonRecursive) throws ProjectBuildingException,
-											   AbortException {
+											   AbortException, MavenEmbedderException {
 	
         File basedir = project.getFile().getParentFile();
         relativePathInfo.put(project,rel);

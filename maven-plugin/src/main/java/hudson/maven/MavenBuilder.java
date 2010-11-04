@@ -25,7 +25,6 @@ package hudson.maven;
 
 import hudson.maven.agent.AbortException;
 import hudson.maven.agent.Main;
-import hudson.maven.agent.PluginManagerInterceptor;
 import hudson.maven.agent.PluginManagerListener;
 import hudson.maven.reporters.SurefireArchiver;
 import hudson.model.BuildListener;
@@ -40,6 +39,7 @@ import hudson.util.IOException2;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.List;
@@ -50,14 +50,12 @@ import org.apache.maven.BuildFailureException;
 import org.apache.maven.execution.MavenSession;
 import org.apache.maven.execution.ReactorManager;
 import org.apache.maven.lifecycle.LifecycleExecutionException;
-import org.apache.maven.lifecycle.LifecycleExecutorInterceptor;
 import org.apache.maven.lifecycle.LifecycleExecutorListener;
 import org.apache.maven.monitor.event.EventDispatcher;
 import org.apache.maven.plugin.Mojo;
 import org.apache.maven.plugin.MojoExecution;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.reporting.MavenReport;
-import org.codehaus.classworlds.NoSuchRealmException;
 import org.codehaus.plexus.component.configurator.expression.ExpressionEvaluator;
 import org.codehaus.plexus.configuration.PlexusConfiguration;
 
@@ -74,20 +72,8 @@ import org.codehaus.plexus.configuration.PlexusConfiguration;
  * @author Kohsuke Kawaguchi
  * @since 1.133
  */
-public abstract class MavenBuilder implements DelegatingCallable<Result,IOException> {
-    /**
-     * Goals to be executed in this Maven execution.
-     */
-    private final List<String> goals;
-    /**
-     * Hudson-defined system properties. These will be made available to Maven,
-     * and accessible as if they are specified as -Dkey=value
-     */
-    private final Map<String,String> systemProps;
-    /**
-     * Where error messages and so on are sent.
-     */
-    protected final BuildListener listener;
+public abstract class MavenBuilder extends AbstractMavenBuilder implements DelegatingCallable<Result,IOException> {
+
 
     /**
      * Flag needs to be set at the constructor, so that this reflects
@@ -102,9 +88,7 @@ public abstract class MavenBuilder implements DelegatingCallable<Result,IOExcept
     protected transient /*final*/ List<Future<?>> futures;
 
     protected MavenBuilder(BuildListener listener, List<String> goals, Map<String, String> systemProps) {
-        this.listener = listener;
-        this.goals = goals;
-        this.systemProps = systemProps;
+        super( listener, goals, systemProps );
     }
 
     /**
@@ -147,11 +131,17 @@ public abstract class MavenBuilder implements DelegatingCallable<Result,IOExcept
      */
     public Result call() throws IOException {
         try {
+            System.out.println("MavenBuilder in call " + Thread.currentThread().getContextClassLoader());
             futures = new ArrayList<Future<?>>();
             Adapter a = new Adapter(this);
+            // FIXME are we using maven 2 or 3
+            callSetListenerWithReflectOnInterceptors( a );
+            
+            /*
             PluginManagerInterceptor.setListener(a);
             LifecycleExecutorInterceptor.setListener(a);
-
+            */
+            
             markAsSuccess = false;
 
             // working around NPE when someone puts a null value into systemProps.
@@ -202,46 +192,78 @@ public abstract class MavenBuilder implements DelegatingCallable<Result,IOExcept
                 listener.getLogger().println(Messages.MavenBuilder_Failed());
                 return Result.SUCCESS;
             }
-
             return Result.FAILURE;
         } catch (NoSuchMethodException e) {
             throw new IOException2(e);
         } catch (IllegalAccessException e) {
             throw new IOException2(e);
-        } catch (NoSuchRealmException e) {
+        } catch (RuntimeException e) {
             throw new IOException2(e);
         } catch (InvocationTargetException e) {
             throw new IOException2(e);
         } catch (ClassNotFoundException e) {
             throw new IOException2(e);
         } finally {
-            PluginManagerInterceptor.setListener(null);
-            LifecycleExecutorInterceptor.setListener(null);
+            //PluginManagerInterceptor.setListener(null);
+            //LifecycleExecutorInterceptor.setListener(null);
+            callSetListenerWithReflectOnInterceptorsQuietly( null );
         }
     }
 
-    private String formatArgs(List<String> args) {
-        StringBuilder buf = new StringBuilder("Executing Maven: ");
-        for (String arg : args) {
-            final String argPassword = "-Dpassword=" ;
-            String filteredArg = arg ;
-            // check if current arg is password arg. Then replace password by ***** 
-            if (arg.startsWith(argPassword)) {
-                filteredArg=argPassword+"*********";
-            }
-            buf.append(' ').append(filteredArg);
+    private void callSetListenerWithReflectOnInterceptors( PluginManagerListener pluginManagerListener )
+        throws ClassNotFoundException, SecurityException, NoSuchMethodException, IllegalArgumentException,
+        IllegalAccessException, InvocationTargetException
+    {
+        Class<?> pluginManagerInterceptorClazz =
+            Thread.currentThread().getContextClassLoader().loadClass( "hudson.maven.agent.PluginManagerInterceptor" );
+        Method setListenerMethod =
+            pluginManagerInterceptorClazz.getMethod( "setListener",
+                                                     new Class[] { Thread.currentThread().getContextClassLoader().loadClass( "hudson.maven.agent.PluginManagerListener" ) } );
+        setListenerMethod.invoke( null, new Object[] { pluginManagerListener } );
+
+        Class<?> lifecycleInterceptorClazz =
+            Thread.currentThread().getContextClassLoader().loadClass( "org.apache.maven.lifecycle.LifecycleExecutorInterceptor" );
+
+        setListenerMethod =
+            lifecycleInterceptorClazz.getMethod( "setListener",
+                                                 new Class[] { Thread.currentThread().getContextClassLoader().loadClass( "org.apache.maven.lifecycle.LifecycleExecutorListener" ) } );
+
+        setListenerMethod.invoke( null, new Object[] { pluginManagerListener } );
+    }
+    
+    private void callSetListenerWithReflectOnInterceptorsQuietly( PluginManagerListener pluginManagerListener )
+    {
+        try
+        {
+            callSetListenerWithReflectOnInterceptors(pluginManagerListener);
         }
-        return buf.toString();
-    }
+        catch ( SecurityException e )
+        {
+            throw new RuntimeException( e.getMessage(), e );
+        }
+        catch ( IllegalArgumentException e )
+        {
+            throw new RuntimeException( e.getMessage(), e );
+        }
+        catch ( ClassNotFoundException e )
+        {
+            throw new RuntimeException( e.getMessage(), e );
+        }
+        catch ( NoSuchMethodException e )
+        {
+            throw new RuntimeException( e.getMessage(), e );
+        }
+        catch ( IllegalAccessException e )
+        {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+        catch ( InvocationTargetException e )
+        {
+            throw new RuntimeException( e.getMessage(), e );
+        }
+    }  
 
-    private String format(NumberFormat n, long nanoTime) {
-        return n.format(nanoTime/1000000);
-    }
-
-    // since reporters might be from plugins, use the uberjar to resolve them.
-    public ClassLoader getClassLoader() {
-        return Hudson.getInstance().getPluginManager().uberClassLoader;
-    }
 
     /**
      * Receives {@link PluginManagerListener} and {@link LifecycleExecutorListener} events

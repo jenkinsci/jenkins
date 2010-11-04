@@ -26,8 +26,8 @@ package hudson.maven;
 import hudson.Extension;
 import hudson.FilePath;
 import hudson.maven.agent.Main;
-import hudson.maven.agent.PluginManagerInterceptor;
 import hudson.maven.agent.Maven21Interceptor;
+import hudson.maven.agent.PluginManagerInterceptor;
 import hudson.model.Computer;
 import hudson.model.TaskListener;
 import hudson.remoting.Channel;
@@ -38,8 +38,12 @@ import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;
 
-import org.apache.tools.ant.taskdefs.Zip;
+import org.apache.tools.ant.AntClassLoader;
 import org.apache.tools.ant.Project;
+import org.apache.tools.ant.taskdefs.Zip;
+import org.codehaus.plexus.classworlds.ClassWorld;
+import org.jvnet.hudson.maven3.agent.Maven3Main;
+import org.jvnet.hudson.maven3.launcher.Maven3Launcher;
 
 /**
  * When a slave is connected, copy <tt>maven-agent.jar</tt> and <tt>maven-intercepter.jar</tt>
@@ -52,8 +56,13 @@ public class MavenComputerListener extends ComputerListener {
     public void preOnline(Computer c, Channel channel,FilePath root,  TaskListener listener) throws IOException, InterruptedException {
         PrintStream logger = listener.getLogger();
         copyJar(logger, root, Main.class, "maven-agent");
+        copyJar(logger, root, Maven3Main.class, "maven3-agent");
+        copyJar(logger, root, Maven3Launcher.class, "maven3-listener");
         copyJar(logger, root, PluginManagerInterceptor.class, "maven-interceptor");
         copyJar(logger, root, Maven21Interceptor.class, "maven2.1-interceptor");
+        // FIXME not needed 
+        copyJar(logger, root, ClassWorld.class, "plexus-classworld");
+        copyJar(logger, root, AntClassLoader.class, "maven-plugin-ant");
     }
 
     /**
