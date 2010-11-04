@@ -53,8 +53,8 @@ public class ManagedWindowsServiceConnector extends ComputerConnector {
         public String getDisplayName() {
             return Messages.ManagedWindowsServiceLauncher_DisplayName();
         }
-    }
 
-    // used by Jelly
-    public static final Class CONFIG_DELEGATE_TO = ManagedWindowsServiceLauncher.class;
+        // used by Jelly
+        public static final Class CONFIG_DELEGATE_TO = ManagedWindowsServiceLauncher.class;
+    }
 }

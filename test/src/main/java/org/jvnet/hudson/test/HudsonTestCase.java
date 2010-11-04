@@ -33,6 +33,7 @@ import hudson.model.Queue.Executable;
 import hudson.security.AbstractPasswordBasedSecurityRealm;
 import hudson.security.GroupDetails;
 import hudson.security.SecurityRealm;
+import hudson.slaves.ComputerConnector;
 import hudson.tasks.Builder;
 import hudson.tasks.Publisher;
 import hudson.tools.ToolProperty;
@@ -202,6 +203,8 @@ public abstract class HudsonTestCase extends TestCase implements RootAction {
      * which runs faster.
      */
     public boolean useLocalPluginManager;
+
+    public ComputerConnectorTester computerConnectorTester = new ComputerConnectorTester(this);
 
 
     protected HudsonTestCase(String name) {
@@ -697,6 +700,12 @@ public abstract class HudsonTestCase extends TestCase implements RootAction {
         p.getPublishersList().add(before);
         configRoundtrip(p);
         return (P)p.getPublishersList().get(before.getClass());
+    }
+
+    protected <C extends ComputerConnector> C configRoundtrip(C before) throws Exception {
+        computerConnectorTester.connector = before;
+        submit(createWebClient().goTo("self/computerConnectorTester/configure").getFormByName("config"));
+        return (C)computerConnectorTester.connector;
     }
 
 
