@@ -30,6 +30,7 @@ import hudson.slaves.WorkspaceList;
 import hudson.slaves.WorkspaceList.Lease;
 import hudson.maven.agent.AbortException;
 import hudson.model.BuildListener;
+import hudson.model.Computer;
 import hudson.model.Result;
 import hudson.model.Run;
 import hudson.model.Environment;
@@ -40,8 +41,10 @@ import hudson.remoting.Channel;
 import hudson.scm.ChangeLogSet;
 import hudson.scm.ChangeLogSet.Entry;
 import hudson.tasks.BuildWrapper;
+import hudson.tasks.Maven.MavenInstallation;
 import hudson.util.ArgumentListBuilder;
 import org.apache.maven.BuildFailureException;
+import org.apache.maven.artifact.versioning.ComparableVersion;
 import org.apache.maven.execution.MavenSession;
 import org.apache.maven.execution.ReactorManager;
 import org.apache.maven.lifecycle.LifecycleExecutionException;
@@ -522,8 +525,31 @@ public class MavenBuild extends AbstractMavenBuild<MavenModule,MavenBuild> {
 
             EnvVars envVars = getEnvironment(listener); // buildEnvironments should be set up first
             
-            ProcessCache.MavenProcess process = mavenProcessCache.get(launcher.getChannel(), listener,
-                new MavenProcessFactory(getParent().getParent(),launcher,envVars,null));
+            MavenInstallation mvn = getProject().getParent().getMaven();
+            
+            mvn = mvn.forEnvironment(envVars).forNode(Computer.currentComputer().getNode(), listener);
+            
+            String mavenVersion = getModuleRoot().act( new MavenVersionCallable( mvn.getHome() ));
+            
+            ProcessCache.MavenProcess process = null;
+            
+            boolean maven3orLater = new ComparableVersion (mavenVersion).compareTo( new ComparableVersion ("3.0") ) >= 0;
+           
+            if ( maven3orLater )
+            {
+                process =
+                    MavenBuild.mavenProcessCache.get( launcher.getChannel(), listener,
+                                                      new Maven3ProcessFactory( getParent().getParent(), launcher,
+                                                                                envVars, null ) );
+            }
+            else
+            {
+                process =
+                    MavenBuild.mavenProcessCache.get( launcher.getChannel(), listener,
+                                                      new MavenProcessFactory( getParent().getParent(), launcher,
+                                                                               envVars, null ) );
+            }
+
 
             ArgumentListBuilder margs = new ArgumentListBuilder("-N","-B");
             if(mms.usesPrivateRepository())
@@ -538,25 +564,33 @@ public class MavenBuild extends AbstractMavenBuild<MavenModule,MavenBuild> {
             systemProps.put("hudson.build.number",String.valueOf(getNumber()));
 
             boolean normalExit = false;
-            try {
-                Result r = process.call(new Builder(
-                    listener,new ProxyImpl(),
-                    reporters.toArray(new MavenReporter[reporters.size()]), margs.toList(), systemProps));
-                normalExit = true;
-                return r;
-            } finally {
-                if(normalExit)  process.recycle();
-                else            process.discard();
-
-                // tear down in reverse order
-                boolean failed=false;
-                for( int i=buildEnvironments.size()-1; i>=0; i-- ) {
-                    if (!buildEnvironments.get(i).tearDown(MavenBuild.this,listener)) {
-                        failed=true;
-                    }                    
+            if (maven3orLater)
+            { 
+                // FIXME here for maven 3 builds
+                return Result.ABORTED;
+            }
+            else
+            {
+                try {
+                    Result r = process.call(new Builder(
+                        listener,new ProxyImpl(),
+                        reporters.toArray(new MavenReporter[reporters.size()]), margs.toList(), systemProps));
+                    normalExit = true;
+                    return r;
+                } finally {
+                    if(normalExit)  process.recycle();
+                    else            process.discard();
+    
+                    // tear down in reverse order
+                    boolean failed=false;
+                    for( int i=buildEnvironments.size()-1; i>=0; i-- ) {
+                        if (!buildEnvironments.get(i).tearDown(MavenBuild.this,listener)) {
+                            failed=true;
+                        }                    
+                    }
+                    // WARNING The return in the finally clause will trump any return before
+                    if (failed) return Result.FAILURE;
                 }
-                // WARNING The return in the finally clause will trump any return before
-                if (failed) return Result.FAILURE;
             }
         }
 
