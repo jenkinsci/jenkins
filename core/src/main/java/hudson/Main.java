@@ -63,8 +63,12 @@ public class Main {
 
     public static int run(String[] args) throws Exception {
         String home = getHudsonHome();
-        if(home==null) {
+        if (home==null) {
             System.err.println("HUDSON_HOME is not set.");
+            return -1;
+        }
+        if (args.length < 2) {
+            System.err.println("Usage: <job-name> <command> <args..>");
             return -1;
         }
 
