@@ -38,7 +38,6 @@ import java.io.Serializable;
 import java.lang.reflect.InvocationTargetException;
 import java.text.NumberFormat;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -54,6 +53,7 @@ import org.apache.maven.plugin.Mojo;
 import org.apache.maven.plugin.MojoExecution;
 import org.apache.maven.plugin.PluginConfigurationException;
 import org.apache.maven.plugin.PluginContainerException;
+import org.apache.maven.plugin.PluginParameterExpressionEvaluator;
 import org.apache.maven.project.MavenProject;
 import org.codehaus.plexus.component.configurator.expression.ExpressionEvaluator;
 import org.codehaus.plexus.configuration.xml.XmlPlexusConfiguration;
@@ -86,20 +86,15 @@ public class Maven3Builder extends AbstractMavenBuilder implements DelegatingCal
     private final Map<ModuleName,List<MavenReporter>> reporters = new HashMap<ModuleName,List<MavenReporter>>();
     private final Map<ModuleName,List<ExecutedMojo>> executedMojos = new HashMap<ModuleName,List<ExecutedMojo>>();
     private long mojoStartTime;
-    private Collection<MavenModule> modules;
     private MavenBuildProxy2 lastProxy;    
     
-    protected Maven3Builder(BuildListener listener,Map<ModuleName,ProxyImpl2> proxies, Collection<MavenModule> modules, List<String> goals, Map<String, String> systemProps) {
+    protected Maven3Builder(BuildListener listener,Map<ModuleName,ProxyImpl2> proxies, Map<ModuleName,List<MavenReporter>> reporters, List<String> goals, Map<String, String> systemProps) {
         super( listener, goals, systemProps );
         this.proxies = new HashMap<ModuleName, MavenBuildProxy2>(proxies);
         for (Entry<ModuleName,MavenBuildProxy2> e : this.proxies.entrySet())
             e.setValue(new FilterImpl(e.getValue()));
 
-        for (MavenModule m : modules)
-        {
-            reporters.put(m.getModuleName(),m.createReporters());
-        }
-        this.modules = modules;
+        this.reporters.putAll( reporters );
     }    
     
     public Result call()
@@ -215,13 +210,7 @@ public class Maven3Builder extends AbstractMavenBuilder implements DelegatingCal
     private static final class MavenExecutionListener extends AbstractExecutionListener implements Serializable, ExecutionListener {
 
         private final Maven3Builder maven3Builder;
-        
-        private ExpressionEvaluator expressionEvaluator;
-        
-        private MavenSession mavenSession;
-        
-        private MavenPluginManager mavenPluginManager;
-
+       
         /**
          * Number of total nanoseconds {@link Maven3Builder} spent.
          */
@@ -234,17 +223,12 @@ public class Maven3Builder extends AbstractMavenBuilder implements DelegatingCal
 
         public MavenExecutionListener(Maven3Builder maven3Builder) {
             this.maven3Builder = maven3Builder;
-            expressionEvaluator = HudsonMavenBuildHelper.getEvaluator();
-            mavenPluginManager = HudsonMavenBuildHelper.getMavenPluginManager();
             this.proxies = new HashMap<ModuleName, MavenBuildProxy2>(maven3Builder.proxies);
             for (Entry<ModuleName,MavenBuildProxy2> e : this.proxies.entrySet())
             {
                 e.setValue(maven3Builder.new FilterImpl(e.getValue()));
             }
-            for (MavenModule m : maven3Builder.modules)
-            {
-                reporters.put(m.getModuleName(),m.createReporters());
-            }
+            this.reporters.putAll( new HashMap<ModuleName, List<MavenReporter>>(maven3Builder.reporters) );
         }
         
         private MavenBuildProxy2 getMavenBuildProxy2(MavenProject mavenProject)
@@ -259,11 +243,12 @@ public class Maven3Builder extends AbstractMavenBuilder implements DelegatingCal
             return null;
         }
         
-        private Mojo getMojo(MojoExecution mojoExecution)
+        private Mojo getMojo(MojoExecution mojoExecution, MavenSession mavenSession)
         {
             try
             {
-                return mavenPluginManager.getConfiguredMojo( Mojo.class, mavenSession, mojoExecution );
+                return HudsonMavenBuildHelper.getMavenPluginManager().getConfiguredMojo( Mojo.class, mavenSession,
+                                                                                         mojoExecution );
             }
             catch ( PluginContainerException e )
             {
@@ -285,7 +270,6 @@ public class Maven3Builder extends AbstractMavenBuilder implements DelegatingCal
          */
         public void sessionStarted( ExecutionEvent event )
         {
-            this.mavenSession = event.getSession();
         }
 
         /**
@@ -335,6 +319,11 @@ public class Maven3Builder extends AbstractMavenBuilder implements DelegatingCal
         {
 
         }
+        
+        private ExpressionEvaluator getExpressionEvaluator(MavenSession session, MojoExecution mojoExecution)
+        {
+            return new PluginParameterExpressionEvaluator( session, mojoExecution );
+        }
 
         /**
          * @see org.apache.maven.execution.ExecutionListener#mojoStarted(org.apache.maven.execution.ExecutionEvent)
@@ -345,10 +334,12 @@ public class Maven3Builder extends AbstractMavenBuilder implements DelegatingCal
             MavenProject mavenProject = event.getProject();
             XmlPlexusConfiguration xmlPlexusConfiguration = new XmlPlexusConfiguration( event.getMojoExecution().getConfiguration() );
 
-            Mojo mojo = getMojo( event.getMojoExecution() );
-            
-            MojoInfo mojoInfo = new MojoInfo( event.getMojoExecution(), null, xmlPlexusConfiguration, expressionEvaluator );
-            
+            Mojo mojo = getMojo( event.getMojoExecution(), event.getSession() );
+
+            MojoInfo mojoInfo =
+                new MojoInfo( event.getMojoExecution(), mojo, xmlPlexusConfiguration,
+                              getExpressionEvaluator( event.getSession(), event.getMojoExecution() ) );
+
             List<MavenReporter> mavenReporters = reporters.get( mavenProject.getArtifactId() );
             if (mavenReporters != null)
             {
@@ -445,17 +436,7 @@ public class Maven3Builder extends AbstractMavenBuilder implements DelegatingCal
         public void forkedProjectFailed( ExecutionEvent event )
         {
 
-        }
-        
-        public ExpressionEvaluator getExpressionEvaluator()
-        {
-            return expressionEvaluator;
-        }
-        public void setExpressionEvaluator( ExpressionEvaluator expressionEvaluator )
-        {
-            this.expressionEvaluator = expressionEvaluator;
-        }
-        
+        }        
         
     }    
     

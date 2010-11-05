@@ -32,6 +32,7 @@ import org.codehaus.plexus.DefaultPlexusContainer;
 import org.codehaus.plexus.classworlds.realm.ClassRealm;
 import org.codehaus.plexus.component.configurator.expression.ExpressionEvaluator;
 import org.codehaus.plexus.component.repository.exception.ComponentLookupException;
+import org.jvnet.hudson.maven3.listeners.HudsonMavenBuildHelper;
 import org.jvnet.hudson.maven3.listeners.HudsonMavenExecutionResult;
 
 /**
@@ -80,8 +81,6 @@ public class Maven3Launcher
             DefaultPlexusContainer container = new DefaultPlexusContainer( cc );
             MavenLoggerManager mavenLoggerManager = new MavenLoggerManager( new PrintStreamLogger( System.out ) );
             container.setLoggerManager( mavenLoggerManager );
-
-            ExpressionEvaluator expressionEvaluator = container.lookup( ExpressionEvaluator.class );
             
             Maven maven = (Maven) container.lookup( "org.apache.maven.Maven", "default" );
             MavenExecutionRequest request = getMavenExecutionRequest( args, container );
@@ -107,6 +106,7 @@ public class Maven3Launcher
     private static MavenExecutionRequest getMavenExecutionRequest( String[] args, DefaultPlexusContainer container )
         throws Exception
     {
+        HudsonMavenBuildHelper hudsonMavenBuildHelper = container.lookup( HudsonMavenBuildHelper.class );
         MavenExecutionRequestBuilder mavenExecutionRequestBuilder = container
             .lookup( MavenExecutionRequestBuilder.class );
         MavenExecutionRequest request = mavenExecutionRequestBuilder.getMavenExecutionRequest( args, System.out );

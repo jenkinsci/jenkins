@@ -25,8 +25,6 @@ import javax.inject.Inject;
 import org.apache.maven.plugin.MavenPluginManager;
 import org.codehaus.plexus.PlexusContainer;
 import org.codehaus.plexus.component.annotations.Component;
-import org.codehaus.plexus.component.annotations.Requirement;
-import org.codehaus.plexus.component.configurator.expression.ExpressionEvaluator;
 import org.codehaus.plexus.component.repository.exception.ComponentLookupException;
 import org.codehaus.plexus.personality.plexus.lifecycle.phase.Initializable;
 import org.codehaus.plexus.personality.plexus.lifecycle.phase.InitializationException;
@@ -39,9 +37,8 @@ import org.codehaus.plexus.personality.plexus.lifecycle.phase.InitializationExce
 public class HudsonMavenBuildHelper implements Initializable
 {
 
-    // must be available in a static way
-    private static ExpressionEvaluator evaluator;
-    
+    // must be available in a static way weird 
+    // and not really good design !
     private static MavenPluginManager mavenPluginManager;
     
     @Inject 
@@ -52,7 +49,6 @@ public class HudsonMavenBuildHelper implements Initializable
     {
         try
         {
-            evaluator = plexusContainer.lookup( ExpressionEvaluator.class );
             mavenPluginManager = plexusContainer.lookup( MavenPluginManager.class );
         }
         catch ( ComponentLookupException e )
@@ -60,11 +56,6 @@ public class HudsonMavenBuildHelper implements Initializable
             throw new InitializationException(e.getMessage(), e);
         }
         
-    }
-
-    public static ExpressionEvaluator getEvaluator()
-    {
-        return evaluator;
     }
     
     public static MavenPluginManager getMavenPluginManager()
