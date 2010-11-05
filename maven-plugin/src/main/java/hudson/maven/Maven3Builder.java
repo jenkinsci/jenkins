@@ -23,6 +23,7 @@
  */
 package hudson.maven;
 
+import hudson.maven.MavenBuild.ProxyImpl2;
 import hudson.model.BuildListener;
 import hudson.model.Hudson;
 import hudson.model.Result;
@@ -37,15 +38,28 @@ import java.io.Serializable;
 import java.lang.reflect.InvocationTargetException;
 import java.text.NumberFormat;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.concurrent.ExecutionException;
 
 import org.apache.maven.execution.AbstractExecutionListener;
 import org.apache.maven.execution.ExecutionEvent;
 import org.apache.maven.execution.ExecutionListener;
+import org.apache.maven.execution.MavenSession;
+import org.apache.maven.plugin.MavenPluginManager;
+import org.apache.maven.plugin.Mojo;
+import org.apache.maven.plugin.MojoExecution;
+import org.apache.maven.plugin.PluginConfigurationException;
+import org.apache.maven.plugin.PluginContainerException;
+import org.apache.maven.project.MavenProject;
+import org.codehaus.plexus.component.configurator.expression.ExpressionEvaluator;
+import org.codehaus.plexus.configuration.xml.XmlPlexusConfiguration;
 import org.jvnet.hudson.maven3.agent.Maven3Main;
 import org.jvnet.hudson.maven3.launcher.Maven3Launcher;
+import org.jvnet.hudson.maven3.listeners.HudsonMavenBuildHelper;
 import org.jvnet.hudson.maven3.listeners.HudsonMavenExecutionResult;
 
 /**
@@ -68,8 +82,24 @@ public class Maven3Builder extends AbstractMavenBuilder implements DelegatingCal
     
     HudsonMavenExecutionResult mavenExecutionResult;    
     
-    protected Maven3Builder(BuildListener listener, List<String> goals, Map<String, String> systemProps) {
+    private final Map<ModuleName,MavenBuildProxy2> proxies;
+    private final Map<ModuleName,List<MavenReporter>> reporters = new HashMap<ModuleName,List<MavenReporter>>();
+    private final Map<ModuleName,List<ExecutedMojo>> executedMojos = new HashMap<ModuleName,List<ExecutedMojo>>();
+    private long mojoStartTime;
+    private Collection<MavenModule> modules;
+    private MavenBuildProxy2 lastProxy;    
+    
+    protected Maven3Builder(BuildListener listener,Map<ModuleName,ProxyImpl2> proxies, Collection<MavenModule> modules, List<String> goals, Map<String, String> systemProps) {
         super( listener, goals, systemProps );
+        this.proxies = new HashMap<ModuleName, MavenBuildProxy2>(proxies);
+        for (Entry<ModuleName,MavenBuildProxy2> e : this.proxies.entrySet())
+            e.setValue(new FilterImpl(e.getValue()));
+
+        for (MavenModule m : modules)
+        {
+            reporters.put(m.getModuleName(),m.createReporters());
+        }
+        this.modules = modules;
     }    
     
     public Result call()
@@ -91,6 +121,7 @@ public class Maven3Builder extends AbstractMavenBuilder implements DelegatingCal
             }
 
             listener.getLogger().println(formatArgs(goals));
+            
             
             int r = Maven3Main.launch( goals.toArray(new String[goals.size()]));
 
@@ -167,43 +198,100 @@ public class Maven3Builder extends AbstractMavenBuilder implements DelegatingCal
         return Hudson.getInstance().getPluginManager().uberClassLoader;
     }
 
+    private class FilterImpl extends MavenBuildProxy2.Filter<MavenBuildProxy2> implements Serializable {
+        public FilterImpl(MavenBuildProxy2 core) {
+            super(core);
+        }
+
+        @Override
+        public void executeAsync(final BuildCallable<?,?> program) throws IOException {
+            futures.add(Channel.current().callAsync(new AsyncInvoker(core,program)));
+        }
+
+        private static final long serialVersionUID = 1L;
+    }    
     
     
     private static final class MavenExecutionListener extends AbstractExecutionListener implements Serializable, ExecutionListener {
 
         private final Maven3Builder maven3Builder;
+        
+        private ExpressionEvaluator expressionEvaluator;
+        
+        private MavenSession mavenSession;
+        
+        private MavenPluginManager mavenPluginManager;
 
         /**
          * Number of total nanoseconds {@link Maven3Builder} spent.
          */
         long overheadTime;
+        
+       
+        private final Map<ModuleName,MavenBuildProxy2> proxies;
+        
+        private final Map<ModuleName,List<MavenReporter>> reporters = new HashMap<ModuleName,List<MavenReporter>>();
 
-        public MavenExecutionListener(Maven3Builder listener) {
-            this.maven3Builder = listener;
+        public MavenExecutionListener(Maven3Builder maven3Builder) {
+            this.maven3Builder = maven3Builder;
+            expressionEvaluator = HudsonMavenBuildHelper.getEvaluator();
+            mavenPluginManager = HudsonMavenBuildHelper.getMavenPluginManager();
+            this.proxies = new HashMap<ModuleName, MavenBuildProxy2>(maven3Builder.proxies);
+            for (Entry<ModuleName,MavenBuildProxy2> e : this.proxies.entrySet())
+            {
+                e.setValue(maven3Builder.new FilterImpl(e.getValue()));
+            }
+            for (MavenModule m : maven3Builder.modules)
+            {
+                reporters.put(m.getModuleName(),m.createReporters());
+            }
         }
+        
+        private MavenBuildProxy2 getMavenBuildProxy2(MavenProject mavenProject)
+        {
+            for (Entry<ModuleName,MavenBuildProxy2> entry : proxies.entrySet())
+            {   
+               if (entry.getKey().compareTo( new ModuleName( mavenProject ) ) == 0)
+               {
+                   return entry.getValue();
+               }
+            }
+            return null;
+        }
+        
+        private Mojo getMojo(MojoExecution mojoExecution)
+        {
+            try
+            {
+                return mavenPluginManager.getConfiguredMojo( Mojo.class, mavenSession, mojoExecution );
+            }
+            catch ( PluginContainerException e )
+            {
+                throw new RuntimeException( e.getMessage(), e );
+            }
+            catch ( PluginConfigurationException e )
+            {
+                throw new RuntimeException( e.getMessage(), e );
+            }
+        }
+        
         /**
          * @see org.apache.maven.execution.ExecutionListener#projectDiscoveryStarted(org.apache.maven.execution.ExecutionEvent)
          */
-        public void projectDiscoveryStarted( ExecutionEvent event )
-        {
-            
-        }
+        public void projectDiscoveryStarted( ExecutionEvent event ) { }
 
         /**
          * @see org.apache.maven.execution.ExecutionListener#sessionStarted(org.apache.maven.execution.ExecutionEvent)
          */
         public void sessionStarted( ExecutionEvent event )
         {
-
+            this.mavenSession = event.getSession();
         }
 
         /**
          * @see org.apache.maven.execution.ExecutionListener#sessionEnded(org.apache.maven.execution.ExecutionEvent)
          */
-        public void sessionEnded( ExecutionEvent event )
-        {
-
-        }
+        public void sessionEnded( ExecutionEvent event ) { }
 
         /**
          * @see org.apache.maven.execution.ExecutionListener#projectSkipped(org.apache.maven.execution.ExecutionEvent)
@@ -221,6 +309,7 @@ public class Maven3Builder extends AbstractMavenBuilder implements DelegatingCal
             maven3Builder.listener.getLogger().println( "projectStarted in MavenExecutionListener "
                                                             + event.getProject().getGroupId() + ":"
                                                             + event.getProject().getArtifactId() );
+            
         }
 
         /**
@@ -253,6 +342,32 @@ public class Maven3Builder extends AbstractMavenBuilder implements DelegatingCal
         public void mojoStarted( ExecutionEvent event )
         {
             maven3Builder.listener.getLogger().println("mojoStarted " + event.getMojoExecution().getArtifactId());
+            MavenProject mavenProject = event.getProject();
+            XmlPlexusConfiguration xmlPlexusConfiguration = new XmlPlexusConfiguration( event.getMojoExecution().getConfiguration() );
+
+            Mojo mojo = getMojo( event.getMojoExecution() );
+            
+            MojoInfo mojoInfo = new MojoInfo( event.getMojoExecution(), null, xmlPlexusConfiguration, expressionEvaluator );
+            
+            List<MavenReporter> mavenReporters = reporters.get( mavenProject.getArtifactId() );
+            if (mavenReporters != null)
+            {
+                for (MavenReporter mavenReporter : mavenReporters)
+                {
+                    try
+                    {
+                        mavenReporter.preExecute( getMavenBuildProxy2( mavenProject ), mavenProject, mojoInfo, maven3Builder.listener);
+                    }
+                    catch ( InterruptedException e )
+                    {
+                        e.printStackTrace();
+                    }
+                    catch ( IOException e )
+                    {
+                        e.printStackTrace();
+                    }
+                }
+            }            
         }
 
         /**
@@ -261,6 +376,19 @@ public class Maven3Builder extends AbstractMavenBuilder implements DelegatingCal
         public void mojoSucceeded( ExecutionEvent event )
         {
             maven3Builder.listener.getLogger().println("mojoSucceeded " + event.getMojoExecution().getArtifactId());
+            
+            //maven3Builder.proxies
+            
+            MavenProject mavenProject = event.getProject();
+            
+            List<MavenReporter> mavenReporters = maven3Builder.reporters.get( mavenProject.getArtifactId() );
+            if (mavenReporters != null)
+            {
+                for (MavenReporter mavenReporter : mavenReporters)
+                {
+                    //mavenReporter.end( build, launcher, listener )
+                }
+            }
         }
 
         /**
@@ -318,6 +446,16 @@ public class Maven3Builder extends AbstractMavenBuilder implements DelegatingCal
         {
 
         }
+        
+        public ExpressionEvaluator getExpressionEvaluator()
+        {
+            return expressionEvaluator;
+        }
+        public void setExpressionEvaluator( ExpressionEvaluator expressionEvaluator )
+        {
+            this.expressionEvaluator = expressionEvaluator;
+        }
+        
         
     }    
     

@@ -1,7 +1,7 @@
 /*
  * The MIT License
  * 
- * Copyright (c) 2004-2009, Sun Microsystems, Inc.,
+ * Copyright (c) 2004-2009, Sun Microsystems, Inc., Olivier Lamy
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
  * associated documentation files (the "Software"), to deal in the Software without restriction,
@@ -26,11 +26,11 @@ import org.apache.maven.cli.MavenLoggerManager;
 import org.apache.maven.cli.PrintStreamLogger;
 import org.apache.maven.execution.ExecutionListener;
 import org.apache.maven.execution.MavenExecutionRequest;
-import org.apache.maven.execution.MavenExecutionResult;
 import org.codehaus.plexus.ContainerConfiguration;
 import org.codehaus.plexus.DefaultContainerConfiguration;
 import org.codehaus.plexus.DefaultPlexusContainer;
 import org.codehaus.plexus.classworlds.realm.ClassRealm;
+import org.codehaus.plexus.component.configurator.expression.ExpressionEvaluator;
 import org.codehaus.plexus.component.repository.exception.ComponentLookupException;
 import org.jvnet.hudson.maven3.listeners.HudsonMavenExecutionResult;
 
@@ -81,6 +81,8 @@ public class Maven3Launcher
             MavenLoggerManager mavenLoggerManager = new MavenLoggerManager( new PrintStreamLogger( System.out ) );
             container.setLoggerManager( mavenLoggerManager );
 
+            ExpressionEvaluator expressionEvaluator = container.lookup( ExpressionEvaluator.class );
+            
             Maven maven = (Maven) container.lookup( "org.apache.maven.Maven", "default" );
             MavenExecutionRequest request = getMavenExecutionRequest( args, container );
 

@@ -1,7 +1,8 @@
 /*
  * The MIT License
  * 
- * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi
+ * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi,
+ * Olivier Lamy
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -214,19 +215,17 @@ public abstract class MavenBuilder extends AbstractMavenBuilder implements Deleg
         throws ClassNotFoundException, SecurityException, NoSuchMethodException, IllegalArgumentException,
         IllegalAccessException, InvocationTargetException
     {
-        Class<?> pluginManagerInterceptorClazz =
-            Thread.currentThread().getContextClassLoader().loadClass( "hudson.maven.agent.PluginManagerInterceptor" );
-        Method setListenerMethod =
-            pluginManagerInterceptorClazz.getMethod( "setListener",
-                                                     new Class[] { Thread.currentThread().getContextClassLoader().loadClass( "hudson.maven.agent.PluginManagerListener" ) } );
+        Class<?> pluginManagerInterceptorClazz = Thread.currentThread().getContextClassLoader()
+            .loadClass( "hudson.maven.agent.PluginManagerInterceptor" );
+        Method setListenerMethod = pluginManagerInterceptorClazz.getMethod( "setListener", new Class[] { Thread
+            .currentThread().getContextClassLoader().loadClass( "hudson.maven.agent.PluginManagerListener" ) } );
         setListenerMethod.invoke( null, new Object[] { pluginManagerListener } );
 
-        Class<?> lifecycleInterceptorClazz =
-            Thread.currentThread().getContextClassLoader().loadClass( "org.apache.maven.lifecycle.LifecycleExecutorInterceptor" );
+        Class<?> lifecycleInterceptorClazz = Thread.currentThread().getContextClassLoader()
+            .loadClass( "org.apache.maven.lifecycle.LifecycleExecutorInterceptor" );
 
-        setListenerMethod =
-            lifecycleInterceptorClazz.getMethod( "setListener",
-                                                 new Class[] { Thread.currentThread().getContextClassLoader().loadClass( "org.apache.maven.lifecycle.LifecycleExecutorListener" ) } );
+        setListenerMethod = lifecycleInterceptorClazz.getMethod( "setListener", new Class[] { Thread.currentThread()
+            .getContextClassLoader().loadClass( "org.apache.maven.lifecycle.LifecycleExecutorListener" ) } );
 
         setListenerMethod.invoke( null, new Object[] { pluginManagerListener } );
     }
@@ -255,8 +254,7 @@ public abstract class MavenBuilder extends AbstractMavenBuilder implements Deleg
         }
         catch ( IllegalAccessException e )
         {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
+            throw new RuntimeException( e.getMessage(), e );
         }
         catch ( InvocationTargetException e )
         {

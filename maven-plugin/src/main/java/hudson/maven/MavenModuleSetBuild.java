@@ -2,7 +2,7 @@
  * The MIT License
  * 
  * Copyright (c) 2004-2010, Sun Microsystems, Inc., Kohsuke Kawaguchi,
- * Red Hat, Inc., Victor Glushenkov, Alan Harder
+ * Red Hat, Inc., Victor Glushenkov, Alan Harder, Olivier Lamy
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -517,7 +517,7 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
                         margs.addTokenized(envVars.expand(project.getGoals()));
                         if (maven3orLater)
                         {   
-                            Maven3Builder maven3Builder = new Maven3Builder( slistener, margs.toList(), envVars );
+                            Maven3Builder maven3Builder = new Maven3Builder( slistener, proxies, project.sortedActiveModules, margs.toList(), envVars );
                             MavenProbeAction mpa=null;
                             try {
                                 mpa = new MavenProbeAction(project,process.channel);
