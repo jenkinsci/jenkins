@@ -11,6 +11,9 @@ import hudson.model.Result;
 import hudson.tasks.BuildTrigger;
 import hudson.util.RunList;
 
+/**
+ * @author Stefan Wolf
+ */
 public class MatrixProjectDependencyTest extends HudsonTestCase {
 	
 	/**
