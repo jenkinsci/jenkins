@@ -27,9 +27,11 @@ import hudson.CopyOnWrite;
 import hudson.Util;
 import hudson.Functions;
 import hudson.maven.reporters.MavenMailer;
+import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
 import hudson.model.Action;
 import hudson.model.DependencyGraph;
+import hudson.model.DependencyGraph.Dependency;
 import hudson.model.Descriptor;
 import hudson.model.Descriptor.FormException;
 import hudson.model.Hudson;
@@ -40,7 +42,10 @@ import hudson.model.Job;
 import hudson.model.Label;
 import hudson.model.Node;
 import hudson.model.Resource;
+import hudson.model.Result;
+import hudson.model.Run;
 import hudson.model.Saveable;
+import hudson.model.TaskListener;
 import hudson.tasks.LogRotator;
 import hudson.tasks.Publisher;
 import hudson.tasks.Maven.MavenInstallation;
@@ -70,6 +75,7 @@ import java.util.logging.Logger;
 public final class MavenModule extends AbstractMavenProject<MavenModule,MavenBuild> implements Saveable {
     private DescribableList<MavenReporter,Descriptor<MavenReporter>> reporters =
         new DescribableList<MavenReporter,Descriptor<MavenReporter>>(this);
+
 
     /**
      * Name taken from {@link MavenProject#getName()}.
@@ -407,7 +413,7 @@ public final class MavenModule extends AbstractMavenProject<MavenModule,MavenBui
         for (ModuleDependency d : dependencies) {
             MavenModule src = modules.get(d);
             if(src!=null) {
-                DependencyGraph.Dependency dep = new DependencyGraph.Dependency(
+                DependencyGraph.Dependency dep = new MavenModuleDependency(
                         src.getParent().isAggregatorStyleBuild() ? src.getParent() : src,dest);
                 if (!dep.pointsItself())
                     graph.addDependency(dep);

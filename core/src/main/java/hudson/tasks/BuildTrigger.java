@@ -80,7 +80,7 @@ import java.util.logging.Logger;
  *
  * @author Kohsuke Kawaguchi
  */
-public class BuildTrigger extends Recorder implements DependecyDeclarer, MatrixAggregatable {
+public class BuildTrigger extends Recorder implements DependecyDeclarer {
 
     /**
      * Comma-separated list of other projects to be scheduled.
@@ -214,15 +214,6 @@ public class BuildTrigger extends Recorder implements DependecyDeclarer, MatrixA
     @Override
     public boolean needsToRunAfterFinalized() {
         return true;
-    }
-
-    public MatrixAggregator createAggregator(MatrixBuild build, Launcher launcher, BuildListener listener) {
-        return new MatrixAggregator(build, launcher, listener) {
-            @Override
-            public boolean endBuild() throws InterruptedException, IOException {
-                return execute(build,listener);
-            }
-        };
     }
 
     /**

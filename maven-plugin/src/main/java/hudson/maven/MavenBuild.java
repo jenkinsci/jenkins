@@ -565,11 +565,6 @@ public class MavenBuild extends AbstractMavenBuild<MavenModule,MavenBuild> {
                 reporter.end(MavenBuild.this,launcher,listener);
         }
 
-        @Override
-        public void cleanUp(BuildListener listener) throws Exception {
-            scheduleDownstreamBuilds(listener);
-            buildEnvironments = null;
-        }
     }
 
     private static final int MAX_PROCESS_CACHE = 5;

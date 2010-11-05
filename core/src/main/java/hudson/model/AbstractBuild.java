@@ -47,6 +47,7 @@ import hudson.tasks.Builder;
 import hudson.tasks.Fingerprinter.FingerprintAction;
 import hudson.tasks.Publisher;
 import hudson.tasks.BuildStepMonitor;
+import hudson.tasks.BuildTrigger;
 import hudson.tasks.test.AbstractTestResultAction;
 import hudson.util.AdaptedIterator;
 import hudson.util.Iterators;
@@ -543,7 +544,8 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
         }
 
         public void cleanUp(BuildListener listener) throws Exception {
-            // default is no-op
+            BuildTrigger.execute(AbstractBuild.this, listener);
+            buildEnvironments = null;
         }
 
         /**

@@ -664,12 +664,6 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
 
         @Override
         public void cleanUp(BuildListener listener) throws Exception {
-            if(project.isAggregatorStyleBuild()) {
-                // schedule downstream builds. for non aggregator style builds,
-                // this is done by each module
-                scheduleDownstreamBuilds(listener);
-            }
-
             MavenMailer mailer = project.getReporters().get(MavenMailer.class);
             if (mailer != null) {
                 new MailSender(mailer.recipients,
@@ -680,7 +674,7 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
             // too late to set the build result at this point. so ignore failures.
             performAllBuildSteps(listener, project.getPublishers(), false);
             performAllBuildSteps(listener, project.getProperties(), false);
-            buildEnvironments = null;
+            super.cleanUp(listener);
         }
 
     }
