@@ -243,7 +243,8 @@ public class Maven3Builder extends AbstractMavenBuilder implements DelegatingCal
             return null;
         }
         
-        // FIXME some reporters need the real mojo ?? so tricky to do !
+        // FIXME MojoInfo need the real mojo ?? 
+        // so tricky to do need to use MavenPluginManager on the current Maven Build
         private Mojo getMojo(MojoExecution mojoExecution, MavenSession mavenSession)
         {
             try
