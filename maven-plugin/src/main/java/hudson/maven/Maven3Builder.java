@@ -455,8 +455,6 @@ public class Maven3Builder extends AbstractMavenBuilder implements DelegatingCal
                     }
                 }
             }
-            
-            mavenBuildProxy2.setExecutedMojos( this.executedMojosPerModule.get( new ModuleName( event.getProject() ) ) );
            
         }
 
@@ -540,6 +538,7 @@ public class Maven3Builder extends AbstractMavenBuilder implements DelegatingCal
                     new ExecutedMojo( mojoInfo, startTime == null ? 0 : endTime.getTime() - startTime.longValue() );
                 this.executedMojosPerModule.get( new ModuleName( mavenProject.getGroupId(),
                                                                  mavenProject.getArtifactId() ) ).add( executedMojo );
+                
             }
             catch ( Exception e )
             {
@@ -551,6 +550,8 @@ public class Maven3Builder extends AbstractMavenBuilder implements DelegatingCal
             List<MavenReporter> mavenReporters = getMavenReporters( mavenProject );                
             
             MavenBuildProxy2 mavenBuildProxy2 = getMavenBuildProxy2( mavenProject );
+            
+            mavenBuildProxy2.setExecutedMojos( this.executedMojosPerModule.get( new ModuleName( event.getProject() ) ) );
             
             if (mavenReporters != null)
             {
