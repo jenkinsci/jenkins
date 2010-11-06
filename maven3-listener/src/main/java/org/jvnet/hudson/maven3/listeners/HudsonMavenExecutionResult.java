@@ -28,14 +28,17 @@ public class HudsonMavenExecutionResult implements Serializable
             return;
         }
         throwables = mavenExecutionResult.getExceptions();
+        
         List<MavenProject> mavenProjects = mavenExecutionResult.getTopologicallySortedProjects();
-        for (MavenProject mavenProject : mavenProjects)
+        if (mavenProjects != null)
         {
-            MavenProjectInfo mavenProjectInfo = new MavenProjectInfo( mavenProject );
-            mavenProjectInfos.add( mavenProjectInfo );
-            BuildSummary buildSummary = mavenExecutionResult.getBuildSummary( mavenProject );
-            mavenProjectInfo.setBuildTime( buildSummary.getTime() );
-            
+            for (MavenProject mavenProject : mavenProjects)
+            {
+                MavenProjectInfo mavenProjectInfo = new MavenProjectInfo( mavenProject );
+                mavenProjectInfos.add( mavenProjectInfo );
+                BuildSummary buildSummary = mavenExecutionResult.getBuildSummary( mavenProject );
+                mavenProjectInfo.setBuildTime( buildSummary.getTime() );
+            }
         }
     }
 

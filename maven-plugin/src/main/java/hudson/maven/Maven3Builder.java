@@ -23,6 +23,7 @@
  */
 package hudson.maven;
 
+import hudson.Launcher;
 import hudson.maven.MavenBuild.ProxyImpl2;
 import hudson.model.BuildListener;
 import hudson.model.Hudson;
@@ -83,6 +84,7 @@ public class Maven3Builder extends AbstractMavenBuilder implements DelegatingCal
     HudsonMavenExecutionResult mavenExecutionResult;    
     
     private final Map<ModuleName,MavenBuildProxy2> proxies;
+    private final Map<ModuleName,ProxyImpl2> sourceProxies;
     private final Map<ModuleName,List<MavenReporter>> reporters = new HashMap<ModuleName,List<MavenReporter>>();
     private final Map<ModuleName,List<ExecutedMojo>> executedMojos = new HashMap<ModuleName,List<ExecutedMojo>>();
     private long mojoStartTime;
@@ -90,6 +92,7 @@ public class Maven3Builder extends AbstractMavenBuilder implements DelegatingCal
     
     protected Maven3Builder(BuildListener listener,Map<ModuleName,ProxyImpl2> proxies, Map<ModuleName,List<MavenReporter>> reporters, List<String> goals, Map<String, String> systemProps) {
         super( listener, goals, systemProps );
+        sourceProxies = new HashMap<ModuleName, ProxyImpl2>(proxies);
         this.proxies = new HashMap<ModuleName, MavenBuildProxy2>(proxies);
         for (Entry<ModuleName,MavenBuildProxy2> e : this.proxies.entrySet())
             e.setValue(new FilterImpl(e.getValue()));
@@ -157,14 +160,24 @@ public class Maven3Builder extends AbstractMavenBuilder implements DelegatingCal
 
             mavenExecutionResult = Maven3Launcher.getMavenExecutionResult();
             
+            
+            //FIXME handle
+            //mavenExecutionResult.getThrowables()
             PrintStream logger = listener.getLogger();
             logger.println("Maven3Builder classLoaderDebug");
             logger.println("getClass().getClassLoader(): " + getClass().getClassLoader());
             
             
-            if(r==0) {
+            if(r==0 && mavenExecutionResult.getThrowables().isEmpty()) {
                 logger.print( "r==0" );
                 markAsSuccess = true;
+            }
+            if (!mavenExecutionResult.getThrowables().isEmpty()) {
+                logger.println( "mavenExecutionResult.throwables not empty");
+                for(Throwable throwable : mavenExecutionResult.getThrowables()) {
+                    throwable.printStackTrace( logger );
+                }
+                markAsSuccess = false;
             }
 
             if(markAsSuccess) {
@@ -192,6 +205,23 @@ public class Maven3Builder extends AbstractMavenBuilder implements DelegatingCal
     public ClassLoader getClassLoader() {
         return Hudson.getInstance().getPluginManager().uberClassLoader;
     }
+    
+    
+    /**
+     * Invoked after the maven has finished running, and in the master, not in the maven process.
+     */
+    void end(Launcher launcher) throws IOException, InterruptedException {
+        for (Map.Entry<ModuleName,ProxyImpl2> e : sourceProxies.entrySet()) {
+            ProxyImpl2 p = e.getValue();
+            for (MavenReporter r : reporters.get(e.getKey())) {
+                // we'd love to do this when the module build ends, but doing so requires
+                // we know how many task segments are in the current build.
+                r.end(p.owner(),launcher,listener);
+                p.appendLastLog();
+            }
+            p.close();
+        }
+    }      
 
     private class FilterImpl extends MavenBuildProxy2.Filter<MavenBuildProxy2> implements Serializable {
         public FilterImpl(MavenBuildProxy2 core) {
@@ -262,7 +292,6 @@ public class Maven3Builder extends AbstractMavenBuilder implements DelegatingCal
             }
         }
         
-        
         private ExpressionEvaluator getExpressionEvaluator(MavenSession session, MojoExecution mojoExecution)
         {
             return new PluginParameterExpressionEvaluator( session, mojoExecution );
@@ -276,7 +305,9 @@ public class Maven3Builder extends AbstractMavenBuilder implements DelegatingCal
         /**
          * @see org.apache.maven.execution.ExecutionListener#projectDiscoveryStarted(org.apache.maven.execution.ExecutionEvent)
          */
-        public void projectDiscoveryStarted( ExecutionEvent event ) { }
+        public void projectDiscoveryStarted( ExecutionEvent event )
+        {
+        }
 
         /**
          * @see org.apache.maven.execution.ExecutionListener#sessionStarted(org.apache.maven.execution.ExecutionEvent)
@@ -288,7 +319,10 @@ public class Maven3Builder extends AbstractMavenBuilder implements DelegatingCal
         /**
          * @see org.apache.maven.execution.ExecutionListener#sessionEnded(org.apache.maven.execution.ExecutionEvent)
          */
-        public void sessionEnded( ExecutionEvent event ) { }
+        public void sessionEnded( ExecutionEvent event ) 
+        {
+            maven3Builder.listener.getLogger().println( "sessionEnded in MavenExecutionListener " );
+        }
 
         /**
          * @see org.apache.maven.execution.ExecutionListener#projectSkipped(org.apache.maven.execution.ExecutionEvent)
@@ -431,7 +465,7 @@ public class Maven3Builder extends AbstractMavenBuilder implements DelegatingCal
             XmlPlexusConfiguration xmlPlexusConfiguration = new XmlPlexusConfiguration( event.getMojoExecution().getConfiguration() );
 
             Mojo mojo = null;//getMojo( event.getMojoExecution(), event.getSession() );
-
+            
             MojoInfo mojoInfo =
                 new MojoInfo( event.getMojoExecution(), mojo, xmlPlexusConfiguration,
                               getExpressionEvaluator( event.getSession(), event.getMojoExecution() ) );

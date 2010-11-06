@@ -531,7 +531,7 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
                                 r = process.call(maven3Builder);
                                 return r;
                             } finally {
-                                //builder.end(launcher);
+                                maven3Builder.end(launcher);
                                 getActions().remove(mpa);
                                 process.discard();
                             }                            
