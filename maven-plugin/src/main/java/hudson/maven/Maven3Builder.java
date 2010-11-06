@@ -39,17 +39,19 @@ import java.io.Serializable;
 import java.lang.reflect.InvocationTargetException;
 import java.text.NumberFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ExecutionException;
 
 import org.apache.maven.execution.AbstractExecutionListener;
 import org.apache.maven.execution.ExecutionEvent;
 import org.apache.maven.execution.ExecutionListener;
 import org.apache.maven.execution.MavenSession;
-import org.apache.maven.plugin.MavenPluginManager;
 import org.apache.maven.plugin.Mojo;
 import org.apache.maven.plugin.MojoExecution;
 import org.apache.maven.plugin.PluginConfigurationException;
@@ -86,9 +88,6 @@ public class Maven3Builder extends AbstractMavenBuilder implements DelegatingCal
     private final Map<ModuleName,MavenBuildProxy2> proxies;
     private final Map<ModuleName,ProxyImpl2> sourceProxies;
     private final Map<ModuleName,List<MavenReporter>> reporters = new HashMap<ModuleName,List<MavenReporter>>();
-    private final Map<ModuleName,List<ExecutedMojo>> executedMojos = new HashMap<ModuleName,List<ExecutedMojo>>();
-    private long mojoStartTime;
-    private MavenBuildProxy2 lastProxy;    
     
     protected Maven3Builder(BuildListener listener,Map<ModuleName,ProxyImpl2> proxies, Map<ModuleName,List<MavenReporter>> reporters, List<String> goals, Map<String, String> systemProps) {
         super( listener, goals, systemProps );
@@ -104,9 +103,10 @@ public class Maven3Builder extends AbstractMavenBuilder implements DelegatingCal
         throws IOException
     {
 
+        MavenExecutionListener mavenExecutionListener = new MavenExecutionListener( this );
         try {
             futures = new ArrayList<Future<?>>();
-            MavenExecutionListener mavenExecutionListener = new MavenExecutionListener( this );
+            
             Maven3Launcher.setMavenExecutionListener( mavenExecutionListener );
             
             markAsSuccess = false;
@@ -166,7 +166,6 @@ public class Maven3Builder extends AbstractMavenBuilder implements DelegatingCal
             PrintStream logger = listener.getLogger();
             logger.println("Maven3Builder classLoaderDebug");
             logger.println("getClass().getClassLoader(): " + getClass().getClassLoader());
-            
             
             if(r==0 && mavenExecutionResult.getThrowables().isEmpty()) {
                 logger.print( "r==0" );
@@ -249,7 +248,11 @@ public class Maven3Builder extends AbstractMavenBuilder implements DelegatingCal
        
         private final Map<ModuleName,MavenBuildProxy2> proxies;
         
+        private final Map<ModuleName,List<ExecutedMojo>> executedMojosPerModule = new ConcurrentHashMap<ModuleName, List<ExecutedMojo>>();
+        
         private final Map<ModuleName,List<MavenReporter>> reporters = new HashMap<ModuleName,List<MavenReporter>>();
+        
+        private final Map<ModuleName, Long> currentMojoStartPerModuleName = new ConcurrentHashMap<ModuleName, Long>();
 
         public MavenExecutionListener(Maven3Builder maven3Builder) {
             this.maven3Builder = maven3Builder;
@@ -257,8 +260,11 @@ public class Maven3Builder extends AbstractMavenBuilder implements DelegatingCal
             for (Entry<ModuleName,MavenBuildProxy2> e : this.proxies.entrySet())
             {
                 e.setValue(maven3Builder.new FilterImpl(e.getValue()));
+                executedMojosPerModule.put( e.getKey(), new CopyOnWriteArrayList<ExecutedMojo>() );
             }
             this.reporters.putAll( new HashMap<ModuleName, List<MavenReporter>>(maven3Builder.reporters) );
+            
+            
         }
         
         private MavenBuildProxy2 getMavenBuildProxy2(MavenProject mavenProject)
@@ -301,6 +307,19 @@ public class Maven3Builder extends AbstractMavenBuilder implements DelegatingCal
         {
             return reporters.get( new ModuleName( mavenProject.getGroupId(), mavenProject.getArtifactId() ) );
         }        
+        
+        private void initMojoStartTime( MavenProject mavenProject)
+        {
+            this.currentMojoStartPerModuleName.put( new ModuleName( mavenProject.getGroupId(),
+                                                                    mavenProject.getArtifactId() ),
+                                                    Long.valueOf( new Date().getTime() ) );
+        }
+        
+        private Long getMojoStartTime(MavenProject mavenProject)
+        {
+            return currentMojoStartPerModuleName.get( new ModuleName( mavenProject.getGroupId(),
+                                                                      mavenProject.getArtifactId() ) );
+        }
         
         /**
          * @see org.apache.maven.execution.ExecutionListener#projectDiscoveryStarted(org.apache.maven.execution.ExecutionEvent)
@@ -436,6 +455,8 @@ public class Maven3Builder extends AbstractMavenBuilder implements DelegatingCal
                     }
                 }
             }
+            
+            mavenBuildProxy2.setExecutedMojos( this.executedMojosPerModule.get( new ModuleName( event.getProject() ) ) );
            
         }
 
@@ -460,7 +481,9 @@ public class Maven3Builder extends AbstractMavenBuilder implements DelegatingCal
          */
         public void mojoStarted( ExecutionEvent event )
         {
+            initMojoStartTime( event.getProject() );
             maven3Builder.listener.getLogger().println("mojoStarted " + event.getMojoExecution().getArtifactId());
+            
             MavenProject mavenProject = event.getProject();
             XmlPlexusConfiguration xmlPlexusConfiguration = new XmlPlexusConfiguration( event.getMojoExecution().getConfiguration() );
 
@@ -499,6 +522,8 @@ public class Maven3Builder extends AbstractMavenBuilder implements DelegatingCal
          */
         public void mojoSucceeded( ExecutionEvent event )
         {
+            Long startTime = getMojoStartTime( event.getProject() );
+            Date endTime = new Date();
             maven3Builder.listener.getLogger().println("mojoSucceeded " + event.getMojoExecution().getArtifactId());
             MavenProject mavenProject = event.getProject();
             XmlPlexusConfiguration xmlPlexusConfiguration = new XmlPlexusConfiguration( event.getMojoExecution().getConfiguration() );
@@ -509,6 +534,20 @@ public class Maven3Builder extends AbstractMavenBuilder implements DelegatingCal
                 new MojoInfo( event.getMojoExecution(), mojo, xmlPlexusConfiguration,
                               getExpressionEvaluator( event.getSession(), event.getMojoExecution() ) );
 
+            try
+            {
+                ExecutedMojo executedMojo =
+                    new ExecutedMojo( mojoInfo, startTime == null ? 0 : endTime.getTime() - startTime.longValue() );
+                this.executedMojosPerModule.get( new ModuleName( mavenProject.getGroupId(),
+                                                                 mavenProject.getArtifactId() ) ).add( executedMojo );
+            }
+            catch ( Exception e )
+            {
+                // ignoring this
+                maven3Builder.listener.getLogger().println( "ignoring exception during new ExecutedMojo "
+                                                                + e.getMessage() );
+            }
+            
             List<MavenReporter> mavenReporters = getMavenReporters( mavenProject );                
             
             MavenBuildProxy2 mavenBuildProxy2 = getMavenBuildProxy2( mavenProject );
