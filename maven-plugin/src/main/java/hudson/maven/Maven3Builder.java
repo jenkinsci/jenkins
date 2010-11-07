@@ -305,7 +305,7 @@ public class Maven3Builder extends AbstractMavenBuilder implements DelegatingCal
 
         private List<MavenReporter> getMavenReporters(MavenProject mavenProject)
         {
-            return reporters.get( new ModuleName( mavenProject.getGroupId(), mavenProject.getArtifactId() ) );
+            return reporters.get( new ModuleName( mavenProject ) );
         }        
         
         private void initMojoStartTime( MavenProject mavenProject)
@@ -364,6 +364,8 @@ public class Maven3Builder extends AbstractMavenBuilder implements DelegatingCal
             List<MavenReporter> mavenReporters = getMavenReporters( mavenProject );                
             
             MavenBuildProxy2 mavenBuildProxy2 = getMavenBuildProxy2( mavenProject );
+            mavenBuildProxy2.start();
+            
             
             if (mavenReporters != null)
             {
@@ -417,7 +419,9 @@ public class Maven3Builder extends AbstractMavenBuilder implements DelegatingCal
             List<MavenReporter> mavenReporters = getMavenReporters( mavenProject );
 
             MavenBuildProxy2 mavenBuildProxy2 = getMavenBuildProxy2( mavenProject );
-
+            mavenBuildProxy2.end();
+            mavenBuildProxy2.setResult( Result.SUCCESS );
+            
             if ( mavenReporters != null )
             {
                 for ( MavenReporter mavenReporter : mavenReporters )
@@ -464,6 +468,9 @@ public class Maven3Builder extends AbstractMavenBuilder implements DelegatingCal
         public void projectFailed( ExecutionEvent event )
         {
             maven3Builder.listener.getLogger().println("projectFailed" );
+            MavenBuildProxy2 mavenBuildProxy2 = getMavenBuildProxy2( event.getProject() );
+            mavenBuildProxy2.end();
+            mavenBuildProxy2.setResult( Result.SUCCESS );
         }
 
         /**
@@ -471,7 +478,7 @@ public class Maven3Builder extends AbstractMavenBuilder implements DelegatingCal
          */
         public void mojoSkipped( ExecutionEvent event )
         {
-
+            // TODO ?
         }
         
         /**
@@ -559,7 +566,6 @@ public class Maven3Builder extends AbstractMavenBuilder implements DelegatingCal
                 {
                     try
                     {
-                        // FIXME exception during mojo execution ?
                         mavenReporter.postExecute( mavenBuildProxy2, mavenProject, mojoInfo, maven3Builder.listener, null);
                     }
                     catch ( InterruptedException e )
@@ -580,6 +586,57 @@ public class Maven3Builder extends AbstractMavenBuilder implements DelegatingCal
         public void mojoFailed( ExecutionEvent event )
         {
             maven3Builder.listener.getLogger().println("mojoFailed " + event.getMojoExecution().getArtifactId());
+            Long startTime = getMojoStartTime( event.getProject() );
+            Date endTime = new Date();
+            MavenProject mavenProject = event.getProject();
+            XmlPlexusConfiguration xmlPlexusConfiguration = new XmlPlexusConfiguration( event.getMojoExecution().getConfiguration() );
+
+            Mojo mojo = null;//getMojo( event.getMojoExecution(), event.getSession() );
+
+            MojoInfo mojoInfo =
+                new MojoInfo( event.getMojoExecution(), mojo, xmlPlexusConfiguration,
+                              getExpressionEvaluator( event.getSession(), event.getMojoExecution() ) );
+
+            try
+            {
+                ExecutedMojo executedMojo =
+                    new ExecutedMojo( mojoInfo, startTime == null ? 0 : endTime.getTime() - startTime.longValue() );
+                this.executedMojosPerModule.get( new ModuleName( mavenProject.getGroupId(),
+                                                                 mavenProject.getArtifactId() ) ).add( executedMojo );
+                
+            }
+            catch ( Exception e )
+            {
+                // ignoring this
+                maven3Builder.listener.getLogger().println( "ignoring exception during new ExecutedMojo "
+                                                                + e.getMessage() );
+            }
+            
+            List<MavenReporter> mavenReporters = getMavenReporters( mavenProject );                
+            
+            MavenBuildProxy2 mavenBuildProxy2 = getMavenBuildProxy2( mavenProject );
+            
+            mavenBuildProxy2.setExecutedMojos( this.executedMojosPerModule.get( new ModuleName( event.getProject() ) ) );
+            
+            if (mavenReporters != null)
+            {
+                for (MavenReporter mavenReporter : mavenReporters)
+                {
+                    try
+                    {
+                        // FIXME get exception during mojo execution ?
+                        mavenReporter.postExecute( mavenBuildProxy2, mavenProject, mojoInfo, maven3Builder.listener, null );
+                    }
+                    catch ( InterruptedException e )
+                    {
+                        e.printStackTrace();
+                    }
+                    catch ( IOException e )
+                    {
+                        e.printStackTrace();
+                    }
+                }
+            }            
         }
 
         /**
@@ -587,7 +644,7 @@ public class Maven3Builder extends AbstractMavenBuilder implements DelegatingCal
          */
         public void forkStarted( ExecutionEvent event )
         {
-
+            // TODO !
         }
 
         /**
@@ -595,7 +652,7 @@ public class Maven3Builder extends AbstractMavenBuilder implements DelegatingCal
          */
         public void forkSucceeded( ExecutionEvent event )
         {
-
+            // TODO !
         }
 
         /**
@@ -603,6 +660,7 @@ public class Maven3Builder extends AbstractMavenBuilder implements DelegatingCal
          */
         public void forkFailed( ExecutionEvent event )
         {
+            // TODO !            
 
         }
 
@@ -611,7 +669,7 @@ public class Maven3Builder extends AbstractMavenBuilder implements DelegatingCal
          */
         public void forkedProjectStarted( ExecutionEvent event )
         {
-
+            // TODO !
         }
 
         /**
@@ -619,7 +677,7 @@ public class Maven3Builder extends AbstractMavenBuilder implements DelegatingCal
          */
         public void forkedProjectSucceeded( ExecutionEvent event )
         {
-
+            // TODO !
         }
 
         /**
@@ -627,7 +685,7 @@ public class Maven3Builder extends AbstractMavenBuilder implements DelegatingCal
          */
         public void forkedProjectFailed( ExecutionEvent event )
         {
-
+            // TODO !
         }        
         
     }    
