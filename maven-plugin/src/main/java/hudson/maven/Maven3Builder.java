@@ -349,7 +349,9 @@ public class Maven3Builder extends AbstractMavenBuilder implements DelegatingCal
         public void projectSkipped( ExecutionEvent event )
         {
             MavenBuildProxy2 mavenBuildProxy2 = getMavenBuildProxy2( event.getProject() );
-            
+            maven3Builder.listener.getLogger().println("projectSkipped" );
+            mavenBuildProxy2.end();
+            mavenBuildProxy2.setResult( Result.ABORTED );            
         }
 
         /**
@@ -470,7 +472,7 @@ public class Maven3Builder extends AbstractMavenBuilder implements DelegatingCal
             maven3Builder.listener.getLogger().println("projectFailed" );
             MavenBuildProxy2 mavenBuildProxy2 = getMavenBuildProxy2( event.getProject() );
             mavenBuildProxy2.end();
-            mavenBuildProxy2.setResult( Result.SUCCESS );
+            mavenBuildProxy2.setResult( Result.FAILURE );
         }
 
         /**
