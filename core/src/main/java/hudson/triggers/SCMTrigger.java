@@ -253,10 +253,10 @@ public class SCMTrigger extends Trigger<SCMedItem> {
             return true;
         }
 
-        public FormValidation doCheckPoll_scm_threads(@QueryParameter String poll_scm_threads) {
-            if (poll_scm_threads != null && "".equals(poll_scm_threads.trim()))
+        public FormValidation doCheckPoll_scm_threads(@QueryParameter String value) {
+            if (value != null && "".equals(value.trim()))
                 return FormValidation.ok();
-            return FormValidation.validateNonNegativeInteger(poll_scm_threads);
+            return FormValidation.validateNonNegativeInteger(value);
         }
     }
 
