@@ -37,6 +37,7 @@ import hudson.model.Project;
 import hudson.model.SCMedItem;
 import hudson.model.AdministrativeMonitor;
 import hudson.util.FlushProofOutputStream;
+import hudson.util.FormValidation;
 import hudson.util.StreamTaskListener;
 import hudson.util.TimeUnit2;
 import hudson.util.SequentialExecutionQueue;
@@ -61,6 +62,7 @@ import java.util.logging.Logger;
 import java.text.DateFormat;
 
 import net.sf.json.JSONObject;
+import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.StaplerResponse;
 
 import static java.util.logging.Level.*;
@@ -249,6 +251,12 @@ public class SCMTrigger extends Trigger<SCMedItem> {
             save();
 
             return true;
+        }
+
+        public FormValidation doCheckPoll_scm_threads(@QueryParameter String poll_scm_threads) {
+            if (poll_scm_threads != null && "".equals(poll_scm_threads.trim()))
+                return FormValidation.ok();
+            return FormValidation.validateNonNegativeInteger(poll_scm_threads);
         }
     }
 
