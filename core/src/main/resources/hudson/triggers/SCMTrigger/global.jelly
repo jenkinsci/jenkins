@@ -32,6 +32,7 @@ THE SOFTWARE.
       <f:entry title="${%Max # of concurrent polling}"
                help="/help/triggers/SCMTrigger/concurrency.html">
         <f:textbox name="poll_scm_threads"
+          checkUrl="'descriptorByName/SCMTrigger/checkPoll_scm_threads?value='+encodeURIComponent(this.value)"
           value="${descriptor.pollingThreadCount==0 ? '' : descriptor.pollingThreadCount}"/>
       </f:entry>
     </f:section>
