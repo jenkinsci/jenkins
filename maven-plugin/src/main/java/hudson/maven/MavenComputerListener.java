@@ -38,10 +38,8 @@ import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;
 
-import org.apache.tools.ant.AntClassLoader;
 import org.apache.tools.ant.Project;
 import org.apache.tools.ant.taskdefs.Zip;
-import org.codehaus.plexus.classworlds.ClassWorld;
 import org.jvnet.hudson.maven3.agent.Maven3Main;
 import org.jvnet.hudson.maven3.launcher.Maven3Launcher;
 
@@ -60,9 +58,6 @@ public class MavenComputerListener extends ComputerListener {
         copyJar(logger, root, Maven3Launcher.class, "maven3-listener");
         copyJar(logger, root, PluginManagerInterceptor.class, "maven-interceptor");
         copyJar(logger, root, Maven21Interceptor.class, "maven2.1-interceptor");
-        // FIXME not needed 
-        copyJar(logger, root, ClassWorld.class, "plexus-classworld");
-        copyJar(logger, root, AntClassLoader.class, "maven-plugin-ant");
     }
 
     /**
