@@ -2,7 +2,8 @@
  * The MIT License
  * 
  * Copyright (c) 2004-2010, Sun Microsystems, Inc., Kohsuke Kawaguchi,
- * Daniel Dyer, Red Hat, Inc., Tom Huybrechts, Romain Seguy, Yahoo! Inc.
+ * Daniel Dyer, Red Hat, Inc., Tom Huybrechts, Romain Seguy, Yahoo! Inc.,
+ * Darek Ostolski
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -1549,7 +1550,8 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
                 return new Summary(false, Messages.Run_Summary_BrokenForALongTime());
             if(since==prev)
                 return new Summary(true, Messages.Run_Summary_BrokenSinceThisBuild());
-            return new Summary(false, Messages.Run_Summary_BrokenSince(since.getDisplayName()));
+            RunT failedBuild = since.getNextBuild();
+            return new Summary(false, Messages.Run_Summary_BrokenSince(failedBuild.getDisplayName()));
         }
 
         if(getResult()==Result.ABORTED)
