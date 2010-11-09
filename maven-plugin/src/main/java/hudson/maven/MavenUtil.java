@@ -159,7 +159,7 @@ public class MavenUtil {
                 "\nSee https://hudson.dev.java.net/cannot-create-.m2.html");
 
         if (privateRepository!=null)
-            mavenRequest.setLocalRepositoryPath( privateRepository);
+            mavenRequest.setLocalRepositoryPath( privateRepository );
 
         if (profiles != null)
         {
@@ -183,8 +183,6 @@ public class MavenUtil {
         
         // TODO check this MaskingClassLoader with maven 3 artifacts
         MavenEmbedder maven = new MavenEmbedder( new MaskingClassLoader(cl), mavenRequest );
-        
-
         {
             Enumeration<URL> e = cl.getResources("META-INF/plexus/components.xml");
             while (e.hasMoreElements()) {
@@ -192,9 +190,6 @@ public class MavenUtil {
                 LOGGER.fine("components.xml from "+url);
             }
         }
-
-        
-
         return maven;
     }
 
@@ -325,7 +320,7 @@ public class MavenUtil {
     /**
      * If set to true, maximize the logging level of Maven embedder.
      */
-    public static boolean debugMavenEmbedder = false;
+    public static boolean debugMavenEmbedder = Boolean.getBoolean( "debugMavenEmbedder" );
 
     private static final Logger LOGGER = Logger.getLogger(MavenUtil.class.getName());
 }
