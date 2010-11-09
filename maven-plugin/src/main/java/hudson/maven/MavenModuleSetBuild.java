@@ -888,6 +888,7 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
                 this.privateRepository = null;
             }
             this.alternateSettings = project.getAlternateSettings();
+
         }
 
         /**
@@ -896,15 +897,16 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
          * Returns "abc" if rootPOM="abc/pom.xml"
          * If rootPOM="pom.xml", this method returns "".
          */
-        private String getRootPath() {
+        private String getRootPath(String prefix) {
             int idx = Math.max(rootPOM.lastIndexOf('/'), rootPOM.lastIndexOf('\\'));
             if(idx==-1) return "";
-            return rootPOM.substring(0,idx);
+            return prefix + rootPOM.substring(0,idx);
         }
 
         public List<PomInfo> invoke(File ws, VirtualChannel channel) throws IOException {
             File pom;
-
+            String rootPOMRelPrefix;
+            
             PrintStream logger = listener.getLogger();
 
             if (IOUtils.isAbsolute(rootPOM)) {
@@ -921,6 +923,18 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
 
             if(!pom.exists())
                 throw new AbortException(Messages.MavenModuleSetBuild_NoSuchPOMFile(pom));
+
+            if (rootPOM.startsWith("../") || rootPOM.startsWith("..\\")) {
+                File wsp = new File(workspaceProper);
+                               
+                if (!ws.equals(wsp)) {
+                    rootPOMRelPrefix = ws.getCanonicalPath().substring(wsp.getCanonicalPath().length()+1)+"/";
+                } else {
+                    rootPOMRelPrefix = wsp.getName() + "/";
+                }
+            } else {
+                rootPOMRelPrefix = "";
+            }
 
             if(verbose)
                 logger.println("Parsing "
@@ -953,7 +967,7 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
                                        properties, privateRepository, settingsLoc);
                 MavenProject mp = embedder.readProject(pom);
                 Map<MavenProject,String> relPath = new HashMap<MavenProject,String>();
-                MavenUtil.resolveModules(embedder,mp,getRootPath(),relPath,listener,nonRecursive);
+                MavenUtil.resolveModules(embedder,mp,getRootPath(rootPOMRelPrefix),relPath,listener,nonRecursive);
 
                 if(verbose) {
                     for (Entry<MavenProject, String> e : relPath.entrySet())
@@ -984,7 +998,7 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
 
         private static final long serialVersionUID = 1L;
     }
-
+        
     private static final Logger LOGGER = Logger.getLogger(MavenModuleSetBuild.class.getName());
 
     /**
