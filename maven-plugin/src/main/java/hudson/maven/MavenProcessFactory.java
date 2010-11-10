@@ -70,6 +70,8 @@ import java.nio.charset.UnsupportedCharsetException;
 import java.util.Arrays;
 import java.util.logging.Logger;
 
+import javax.inject.Inject;
+
 import org.apache.tools.ant.AntClassLoader;
 import org.codehaus.plexus.classworlds.ClassWorld;
 

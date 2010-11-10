@@ -46,6 +46,7 @@ import java.util.Set;
 import org.apache.tools.ant.AntClassLoader;
 import org.codehaus.classworlds.ClassWorldAdapter;
 import org.codehaus.plexus.classworlds.ClassWorld;
+import org.codehaus.plexus.classworlds.ClassWorldListener;
 import org.codehaus.plexus.classworlds.launcher.ConfigurationException;
 import org.codehaus.plexus.classworlds.launcher.Launcher;
 import org.codehaus.plexus.classworlds.realm.ClassRealm;
@@ -118,7 +119,7 @@ public class Main {
         
         // load the default realms
         launcher = new Launcher();
-        launcher.setSystemClassLoader(Main.class.getClassLoader());
+        //launcher.setSystemClassLoader(Main.class.getClassLoader());
         
         configureLauncher( m2Home, remotingJar, interceptorJar, interceptorOverrideJar, is206OrLater );
         
@@ -133,8 +134,7 @@ public class Main {
         // create a realm for loading remoting subsystem.
         // this needs to be able to see maven.
         
-        System.out.print( "Main classLoader " + Main.class.getClassLoader() );
-        //test en changeant le parent en plexus.core.maven ?
+        System.out.println( "Main classLoader " + Main.class.getClassLoader() );
         ClassRealm remoting = launcher.getWorld().newRealm( "hudson-remoting", launcher.getWorld().getClassRealm( "plexus.core" ) );
         remoting.importFrom( "plexus.core.maven", "org.apache.maven" );
         //remoting.setParentClassLoader( launcher.getWorld().getClassRealm( "plexus.core.maven" ) );
@@ -278,23 +278,12 @@ public class Main {
         Set builtinRealms = new HashSet(world.getRealms());
         URLClassLoader orig = (URLClassLoader) Thread.currentThread().getContextClassLoader();
         System.out.println("orig " + orig.toString());
-        Enumeration urls = orig.findResources( "META-INF/plexus/components.xml" );
-        while(urls.hasMoreElements())
-        {
-            System.out.println(" url " + urls.nextElement());
-        }        
+      
         
         try {
             launcher.setAppMain( "org.apache.maven.cli.MavenCli", "plexus.core.maven" );
             ClassRealm newCl = launcher.getMainRealm();
-            System.out.println("urls " + Arrays.asList( newCl.getURLs() ) );
-            urls = newCl.findResources( "META-INF/plexus/components.xml" );
-            while(urls.hasMoreElements())
-            {
-                System.out.println(" url " + urls.nextElement());
-            }
-            System.out.println("launcher cl " + newCl.toString());
-            //Thread.currentThread().setContextClassLoader( newCl );
+            Thread.currentThread().setContextClassLoader( newCl );
             Method mainMethod = launcher.getMainClass().getMethod( "main", new Class[]{String[].class, org.codehaus.classworlds.ClassWorld.class} );
             //launcher.launch(args);
             

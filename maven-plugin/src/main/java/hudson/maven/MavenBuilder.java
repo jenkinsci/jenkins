@@ -135,7 +135,6 @@ public abstract class MavenBuilder extends AbstractMavenBuilder implements Deleg
             System.out.println("MavenBuilder in call " + Thread.currentThread().getContextClassLoader());
             futures = new ArrayList<Future<?>>();
             Adapter a = new Adapter(this);
-            // FIXME are we using maven 2 or 3
             callSetListenerWithReflectOnInterceptors( a );
             
             /*
