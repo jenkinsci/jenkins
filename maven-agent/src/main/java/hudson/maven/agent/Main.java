@@ -46,7 +46,6 @@ import java.util.Set;
 import org.apache.tools.ant.AntClassLoader;
 import org.codehaus.classworlds.ClassWorldAdapter;
 import org.codehaus.plexus.classworlds.ClassWorld;
-import org.codehaus.plexus.classworlds.ClassWorldListener;
 import org.codehaus.plexus.classworlds.launcher.ConfigurationException;
 import org.codehaus.plexus.classworlds.launcher.Launcher;
 import org.codehaus.plexus.classworlds.realm.ClassRealm;
