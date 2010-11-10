@@ -24,7 +24,6 @@
 package hudson.model;
 
 import hudson.tasks.BuildStep;
-import hudson.tasks.BuildTrigger;
 import hudson.tasks.BuildWrapper;
 import hudson.tasks.Builder;
 import hudson.tasks.Recorder;

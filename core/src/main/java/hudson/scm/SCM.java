@@ -31,7 +31,6 @@ import hudson.Extension;
 import hudson.Util;
 import hudson.security.PermissionGroup;
 import hudson.security.Permission;
-import hudson.slaves.OfflineCause;
 import hudson.tasks.Builder;
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
