@@ -26,6 +26,7 @@ package hudson.model.queue;
 import hudson.model.Queue.Executable;
 
 import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 
 /**
  * Convenience methods around {@link Executable}.
@@ -41,7 +42,9 @@ public class Executables {
             return _getParentOf(e);
         } catch (AbstractMethodError _) {
             try {
-                return (SubTask)e.getClass().getMethod("getParent").invoke(e);
+                Method m = e.getClass().getMethod("getParent");
+                m.setAccessible(true);
+                return (SubTask) m.invoke(e);
             } catch (IllegalAccessException x) {
                 throw (Error)new IllegalAccessError().initCause(x);
             } catch (NoSuchMethodException x) {
