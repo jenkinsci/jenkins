@@ -1166,11 +1166,11 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
      */
     public PollingResult poll( TaskListener listener ) {
         SCM scm = getScm();
-        if(scm==null) {
+        if (scm==null) {
             listener.getLogger().println(Messages.AbstractProject_NoSCM());
             return NO_CHANGES;
         }
-        if(isDisabled()) {
+        if (isDisabled()) {
             listener.getLogger().println(Messages.AbstractProject_Disabled());
             return NO_CHANGES;
         }
@@ -1178,7 +1178,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
         R lb = getLastBuild();
         if (lb==null) {
             listener.getLogger().println(Messages.AbstractProject_NoBuilds());
-            return BUILD_NOW;
+            return isInQueue() ? NO_CHANGES : BUILD_NOW;
         }
 
         if (pollingBaseline==null) {
@@ -1197,7 +1197,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
         }
 
         try {
-            if(scm.requiresWorkspaceForPolling()) {
+            if (scm.requiresWorkspaceForPolling()) {
                 // lock the workspace of the last build
                 FilePath ws=lb.getWorkspace();
 
@@ -1213,8 +1213,13 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
                     listener.getLogger().println( ws==null
                         ? Messages.AbstractProject_WorkspaceOffline()
                         : Messages.AbstractProject_NoWorkspace());
-                    listener.getLogger().println(Messages.AbstractProject_NewBuildForWorkspace());
-                    return BUILD_NOW;
+                    if (isInQueue()) {
+                        listener.getLogger().println(Messages.AbstractProject_AwaitingBuildForWorkspace());
+                        return NO_CHANGES;
+                    } else {
+                        listener.getLogger().println(Messages.AbstractProject_NewBuildForWorkspace());
+                        return BUILD_NOW;
+                    }
                 } else {
                     WorkspaceList l = lb.getBuiltOn().toComputer().getWorkspaceList();
                     // if doing non-concurrent build, acquire a workspace in a way that causes builds to block for this workspace.
