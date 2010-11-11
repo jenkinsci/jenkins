@@ -1537,7 +1537,7 @@ public final class FilePath implements Serializable {
      * @return
      *      number of files/directories that are written.
      */
-    private Integer writeToTar(File baseDir, String fileMask, String excludes, OutputStream out) throws IOException {
+    private static Integer writeToTar(File baseDir, String fileMask, String excludes, OutputStream out) throws IOException {
         Archiver tw = ArchiverFactory.TAR.create(out);
         try {
             new DirScanner.Glob(fileMask,excludes).scan(baseDir,tw);
