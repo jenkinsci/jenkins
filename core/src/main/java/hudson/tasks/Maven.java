@@ -547,6 +547,10 @@ public class Maven extends Builder {
 
                 return FormValidation.ok();
             }
+
+            public FormValidation doCheckName(@QueryParameter String value) {
+                return FormValidation.validateRequired(value);
+            }
         }
 
         public static class ConverterImpl extends ToolConverter {

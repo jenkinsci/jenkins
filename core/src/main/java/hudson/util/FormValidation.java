@@ -355,6 +355,15 @@ public abstract class FormValidation extends IOException implements HttpResponse
     }
 
     /**
+     * Makes sure that the given string is not null or empty.
+     */
+    public static FormValidation validateRequired(String value) {
+        if (Util.fixEmptyAndTrim(value) == null)
+            return error(Messages.FormValidation_ValidateRequired());
+        return ok();
+    }
+
+    /**
      * Makes sure that the given string is a base64 encoded text.
      *
      * @param allowWhitespace

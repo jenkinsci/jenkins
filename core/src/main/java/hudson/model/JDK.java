@@ -29,6 +29,7 @@ import hudson.util.FormValidation;
 import hudson.Launcher;
 import hudson.Extension;
 import hudson.EnvVars;
+import hudson.Util;
 import hudson.slaves.NodeSpecific;
 import hudson.tools.ToolInstallation;
 import hudson.tools.ToolDescriptor;
@@ -176,6 +177,10 @@ public final class JDK extends ToolInstallation implements NodeSpecific<JDK>, En
                 return FormValidation.error(Messages.Hudson_NotJDKDir(value));
 
             return FormValidation.ok();
+        }
+
+        public FormValidation doCheckName(@QueryParameter String value) {
+            return FormValidation.validateRequired(value);
         }
     }
 
