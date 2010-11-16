@@ -151,20 +151,24 @@ public abstract class ConsoleNote<T> implements Serializable, Describable<Consol
      * of {@link ConsoleAnnotator}.
      */
     public void encodeTo(OutputStream out) throws IOException {
-        out.write(PREAMBLE);
         ByteArrayOutputStream buf = new ByteArrayOutputStream();
         ObjectOutputStream oos = new ObjectOutputStream(new GZIPOutputStream(buf));
         oos.writeObject(this);
         oos.close();
 
-        DataOutputStream dos = new DataOutputStream(new Base64OutputStream(new FlushProofOutputStream(new CloseProofOutputStream(out)),true,-1,null));
-        // we don't need the size by ourselves, but it's useful to gracefully recover from an error
-        // if the deserialization fail in the middle.
+        ByteArrayOutputStream buf2 = new ByteArrayOutputStream();
+
+        DataOutputStream dos = new DataOutputStream(new Base64OutputStream(buf2,true,-1,null));
+        dos.write(PREAMBLE);
         dos.writeInt(buf.size());
         buf.writeTo(dos);
+        dos.write(POSTAMBLE);
         dos.close();
 
-        out.write(POSTAMBLE);
+        // atomically write to the final output, to minimize the chance of something else getting in between the output.
+        // even with this, it is still technically possible to get such a mix-up to occur (for example,
+        // if Java program is reading stdout/stderr separately and copying them into the same final stream.)
+        out.write(buf2.toByteArray());
     }
 
     /**
