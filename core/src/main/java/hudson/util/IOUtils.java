@@ -60,13 +60,26 @@ public class IOUtils extends org.apache.commons.io.IOUtils {
     }
 
     /**
-     * Fully skips the specified size from the given input stream
+     * Fully skips the specified size from the given input stream.
+     *
+     * <p>
+     * {@link InputStream#skip(long)} has two problems. One is that
+     * it doesn't let us reliably differentiate "hit EOF" case vs "inpustream just returning 0 since there's no data
+     * currently available at hand", and some subtypes (such as {@link FileInputStream#skip(long)} returning -1.
+     *
+     * <p>
+     * So to reliably skip just the N bytes, we'll actually read all those bytes.
+     *
      * @since 1.349
      */
     public static InputStream skip(InputStream in, long size) throws IOException {
-        while (size>0)
-            size -= in.skip(size);
-        return in;
+        DataInputStream di = new DataInputStream(in);
+
+        while (size>0) {
+            int chunk = (int)Math.min(SKIP_BUFFER.length,size);
+            di.readFully(SKIP_BUFFER,0,chunk);
+            size -= chunk;
+        }
     }
 
     /**
@@ -94,4 +107,6 @@ public class IOUtils extends org.apache.commons.io.IOUtils {
         Pattern DRIVE_PATTERN = Pattern.compile("[A-Za-z]:[\\\\/].*");
         return path.startsWith("/") || DRIVE_PATTERN.matcher(path).matches();
     }
+
+    private static final byte[] SKIP_BUFFER = new byte[8192];
 }
