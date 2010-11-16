@@ -80,6 +80,8 @@ public class IOUtils extends org.apache.commons.io.IOUtils {
             di.readFully(SKIP_BUFFER,0,chunk);
             size -= chunk;
         }
+
+        return in;
     }
 
     /**
