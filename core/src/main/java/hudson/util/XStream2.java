@@ -113,7 +113,7 @@ public class XStream2 extends XStream {
         Mapper m = new CompatibilityMapper(new MapperWrapper(next) {
             @Override
             public String serializedClass(Class type) {
-                if (ImmutableMap.class.isAssignableFrom(type))
+                if (type != null && ImmutableMap.class.isAssignableFrom(type))
                     return super.serializedClass(ImmutableMap.class);
                 else
                     return super.serializedClass(type);
