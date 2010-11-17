@@ -1029,7 +1029,7 @@ function refillOnChange(e,onChange) {
                 if (window.YUI!=null)      YUI.log("Unable to find a nearby control of the name "+name,"warn")
                 return;
             }
-            c.addEventListener("change",h,false);
+            try { c.addEventListener("change",h,false); } catch (ex) { c.attachEvent("change",h); }
             deps.push({name:Path.tail(name),control:c});
         });
     }
