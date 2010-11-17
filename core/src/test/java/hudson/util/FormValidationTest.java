@@ -46,4 +46,9 @@ public class FormValidationTest extends TestCase {
         assertNotNull(actual);
         assertEquals(FormValidation.Kind.ERROR, actual.kind);
     }
+
+    // @Bug(7438)
+    public void testMessage() {
+        assertEquals("test msg", FormValidation.errorWithMarkup("test msg").getMessage());
+    }
 }

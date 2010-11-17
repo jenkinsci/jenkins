@@ -221,7 +221,7 @@ public abstract class FormValidation extends IOException implements HttpResponse
     private static FormValidation _errorWithMarkup(final String message, final Kind kind) {
         if(message==null)
             return ok();
-        return new FormValidation(kind) {
+        return new FormValidation(kind, message) {
             public String renderHtml() {
                 // 1x16 spacer needed for IE since it doesn't support min-height
                 return "<div class="+ kind.name().toLowerCase(Locale.ENGLISH) +"><img src='"+
@@ -474,6 +474,11 @@ public abstract class FormValidation extends IOException implements HttpResponse
      * @param kind
      */
     private FormValidation(Kind kind) {
+        this.kind = kind;
+    }
+
+    private FormValidation(Kind kind, String message) {
+        super(message);
         this.kind = kind;
     }
 
