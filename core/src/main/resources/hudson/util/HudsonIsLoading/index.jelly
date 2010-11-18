@@ -24,8 +24,8 @@ THE SOFTWARE.
 
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
   <st:statusCode value="503" /><!-- SERVICE NOT AVAILABLE -->
-  <l:layout>
-    <l:header title="Hudson">
+  <l:layout title="Hudson">
+    <l:header>
       <!--meta http-equiv="refresh" content="5" /-->
     </l:header>
     <l:side-panel />
@@ -33,11 +33,11 @@ THE SOFTWARE.
       <h1 style="margin-top:4em">
         ${%Please wait while Hudson is getting ready to work}<span id="progress">...</span>
       </h1>
-      <p style="color:grey">
+      <p style="color:gray">
         ${%Your browser will reload automatically when Hudson is ready.}
       </p>
 
-      <script>applySafeRedirector('.')</script>
+      <script>applySafeRedirector(window.location.href)</script>
     </l:main-panel>
   </l:layout>
 </j:jelly>

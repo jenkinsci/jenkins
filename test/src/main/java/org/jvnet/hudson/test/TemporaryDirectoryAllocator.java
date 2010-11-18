@@ -24,6 +24,7 @@
 package org.jvnet.hudson.test;
 
 import hudson.FilePath;
+import hudson.util.IOException2;
 
 import java.io.File;
 import java.io.IOException;
@@ -60,20 +61,30 @@ public class TemporaryDirectoryAllocator {
      * When this method returns, the directory already exists. 
      */
     public synchronized File allocate() throws IOException {
-        File f = File.createTempFile("hudson", "test", base);
-        f.delete();
-        f.mkdirs();
-        tmpDirectories.add(f);
-        return f;
+        try {
+            File f = File.createTempFile("hudson", "test", base);
+            f.delete();
+            f.mkdirs();
+            tmpDirectories.add(f);
+            return f;
+        } catch (IOException e) {
+            throw new IOException2("Failed to create a temporary directory in "+base,e);
+        }
     }
 
     /**
      * Deletes all allocated temporary directories.
      */
     public synchronized void dispose() throws IOException, InterruptedException {
+        IOException x = null;
         for (File dir : tmpDirectories)
-            new FilePath(dir).deleteRecursive();
+            try {
+                new FilePath(dir).deleteRecursive();
+            } catch (IOException e) {
+                x = e;
+            }
         tmpDirectories.clear();
+        if (x!=null)    throw new IOException2("Failed to clean up temp dirs",x);
     }
 
     /**
@@ -85,14 +96,14 @@ public class TemporaryDirectoryAllocator {
 
         new Thread("Disposing "+base) {
             public void run() {
-                try {
-                    for (File dir : tbr)
+                for (File dir : tbr)
+                    try {
                         new FilePath(dir).deleteRecursive();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
             }
         }.start();
     }

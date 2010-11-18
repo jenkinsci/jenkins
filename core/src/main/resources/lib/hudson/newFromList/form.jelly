@@ -1,7 +1,7 @@
 <!--
 The MIT License
 
-Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi
+Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, Yahoo! Inc.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -35,19 +35,20 @@ THE SOFTWARE.
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:s="/lib/form">
   <s:form method="post" action="createItem">
     <s:entry title="${nameTitle}">
-      <s:textbox id="name" name="name" checkUrl="'${rootURL}/${checkUrl}?value='+escape(this.value)"
+      <s:textbox id="name" name="name" checkUrl="'${rootURL}/${checkUrl}?value='+encodeURIComponent(this.value)"
                  onchange="updateOk(this.form)" onkeyup="updateOk(this.form)" />
       <script>$('name').focus();</script>
     </s:entry>
 
-    <j:forEach var="d" items="${descriptors}">
+    <j:forEach var="descriptor" items="${descriptors}">
       <s:block>
-        <input type="radio" name="mode" value="${d.class.name}" onchange="updateOk(this.form)" onclick="updateOk(this.form)" />
+        <input type="radio" name="mode" value="${descriptor.class.name}" onchange="updateOk(this.form)" onclick="updateOk(this.form)" />
         <st:nbsp/>
-        <label class="attach-previous"><b>${d.displayName}</b></label>
+        <label class="attach-previous"><b>${descriptor.displayName}</b></label>
       </s:block>
       <s:entry>
-        <st:include page="${d.newInstanceDetailPage()}" from="${d}" optional="true"/>
+        <st:set var="instance" value="${descriptor}" />
+        <st:include page="newJobDetail.jelly" class="${descriptor.clazz}" optional="true"/>
       </s:entry>
     </j:forEach>
     <j:if test="${!empty(copyNames)}">
@@ -79,6 +80,7 @@ THE SOFTWARE.
       function state() {
         if($('name').value.length==0)   return true;
         var radio = form.elements['mode'];
+        if (radio.length==2)  return false; // this means we only have dummy checkboxes
         for(i=0;i<radio.length;i++)
           if(radio[i].checked)
             return false;

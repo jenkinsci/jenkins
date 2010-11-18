@@ -1,7 +1,8 @@
 /*
  * The MIT License
  * 
- * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, Seiji Sogabe, Stephen Connolly
+ * Copyright (c) 2004-2010, Sun Microsystems, Inc., Kohsuke Kawaguchi,
+ * Seiji Sogabe, Stephen Connolly
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,10 +24,14 @@
  */
 package hudson.model;
 
+import com.infradna.tool.bridge_method_injector.WithBridgeMethods;
 import hudson.ExtensionPoint;
 import hudson.FilePath;
 import hudson.FileSystemProvisioner;
 import hudson.Launcher;
+import hudson.model.Queue.Task;
+import hudson.model.labels.LabelAtom;
+import hudson.model.queue.CauseOfBlockage;
 import hudson.node_monitors.NodeMonitor;
 import hudson.remoting.VirtualChannel;
 import hudson.security.ACL;
@@ -38,12 +43,18 @@ import hudson.slaves.NodePropertyDescriptor;
 import hudson.util.ClockDifference;
 import hudson.util.DescribableList;
 import hudson.util.EnumConverter;
+import hudson.util.TagCloud;
+import hudson.util.TagCloud.WeightFunction;
 
 import java.io.IOException;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.Set;
 import java.util.List;
 
 import org.kohsuke.stapler.Stapler;
+import org.kohsuke.stapler.export.ExportedBean;
+import org.kohsuke.stapler.export.Exported;
 
 /**
  * Base type of Hudson slaves (although in practice, you probably extend {@link Slave} to define a new slave type.)
@@ -55,7 +66,13 @@ import org.kohsuke.stapler.Stapler;
  * @see NodeMonitor
  * @see NodeDescriptor
  */
+@ExportedBean
 public abstract class Node extends AbstractModelObject implements Describable<Node>, ExtensionPoint, AccessControlled {
+    /**
+     * Newly copied slaves get this flag set, so that Hudson doesn't try to start this node until its configuration
+     * is saved once.
+     */
+    protected volatile transient boolean holdOffLaunchUntilSave;
 
     public String getDisplayName() {
         return getNodeName(); // default implementation
@@ -65,12 +82,17 @@ public abstract class Node extends AbstractModelObject implements Describable<No
         return "computer/"+getNodeName();
     }
 
+    public boolean isHoldOffLaunchUntilSave() {
+        return holdOffLaunchUntilSave;
+    }
+
     /**
      * Name of this node.
      *
      * @return
      *      "" if this is master
      */
+    @Exported(visibility=999)
     public abstract String getNodeName();
 
     /**
@@ -88,6 +110,7 @@ public abstract class Node extends AbstractModelObject implements Describable<No
     /**
      * Human-readable description of this node.
      */
+    @Exported
     public abstract String getNodeDescription();
 
     /**
@@ -104,6 +127,7 @@ public abstract class Node extends AbstractModelObject implements Describable<No
      * This may be different from <code>getExecutors().size()</code>
      * because it takes time to adjust the number of executors.
      */
+    @Exported
     public abstract int getNumExecutors();
 
     /**
@@ -111,6 +135,7 @@ public abstract class Node extends AbstractModelObject implements Describable<No
      * for those jobs that exclusively specifies this node
      * as the assigned node.
      */
+    @Exported
     public abstract Mode getMode();
 
     /**
@@ -125,34 +150,112 @@ public abstract class Node extends AbstractModelObject implements Describable<No
     }
 
     /**
+     * Gets the current channel, if the node is connected and online, or null.
+     *
+     * This is just a convenience method for {@link Computer#getChannel()} with null check. 
+     */
+    public final VirtualChannel getChannel() {
+        Computer c = toComputer();
+        return c==null ? null : c.getChannel();
+    }
+
+    /**
      * Creates a new {@link Computer} object that acts as the UI peer of this {@link Node}.
      * Nobody but {@link Hudson#updateComputerList()} should call this method.
      */
     protected abstract Computer createComputer();
 
     /**
-     * Returns the possibly empty set of labels that are assigned to this node,
-     * including the automatic {@link #getSelfLabel() self label}.
+     * Return the possibly empty tag cloud for the labels of this node.
      */
-    public abstract Set<Label> getAssignedLabels();
+    public TagCloud<LabelAtom> getLabelCloud() {
+        return new TagCloud<LabelAtom>(getAssignedLabels(),new WeightFunction<LabelAtom>() {
+            public float weight(LabelAtom item) {
+                return item.getTiedJobs().size();
+            }
+        });
+    }
+    /**
+     * Returns the possibly empty set of labels that are assigned to this node,
+     * including the automatic {@link #getSelfLabel() self label}, manually
+     * assigned labels and dynamically assigned labels via the
+     * {@link LabelFinder} extension point.
+     *
+     * This method has a side effect of updating the hudson-wide set of labels
+     * and should be called after events that will change that - e.g. a slave
+     * connecting.
+     */
+    @Exported
+    public Set<LabelAtom> getAssignedLabels() {
+        Set<LabelAtom> r = Label.parse(getLabelString());
+        r.add(getSelfLabel());
+        r.addAll(getDynamicLabels());
+        return Collections.unmodifiableSet(r);
+    }
 
     /**
-     * The same as {@link #getAssignedLabels()} but returns labels as a single text.
+     * Return all the labels assigned dynamically to this node.
+     * This calls all the LabelFinder implementations with the node converts
+     * the results into Labels.
+     * @return HashSet<Label>.
+     */
+    private HashSet<LabelAtom> getDynamicLabels() {
+        HashSet<LabelAtom> result = new HashSet<LabelAtom>();
+        for (LabelFinder labeler : LabelFinder.all()) {
+            // Filter out any bad(null) results from plugins
+            // for compatibility reasons, findLabels may return LabelExpression and not atom.
+            for (Label label : labeler.findLabels(this))
+                if (label instanceof LabelAtom) result.add((LabelAtom)label);
+        }
+        return result;
+    }
+
+
+    /**
+     * Returns the manually configured label for a node. The list of assigned
+     * and dynamically determined labels is available via 
+     * {@link #getAssignedLabels()} and includes all labels that have been
+     * manually configured.
+     * 
      * Mainly for form binding.
      */
     public abstract String getLabelString();
 
-    /*
-     * Returns the possibly empty set of labels that it has been determined as supported by this node.
-     * @see hudson.tasks.LabelFinder
-     */
-    public abstract Set<Label> getDynamicLabels();
-
     /**
      * Gets the special label that represents this node itself.
      */
-    public Label getSelfLabel() {
-        return Hudson.getInstance().getLabel(getNodeName());
+    @WithBridgeMethods(Label.class)
+    public LabelAtom getSelfLabel() {
+        return LabelAtom.get(getNodeName());
+    }
+
+    /**
+     * Called by the {@link Queue} to determine whether or not this node can
+     * take the given task. The default checks include whether or not this node
+     * is part of the task's assigned label, whether this node is in
+     * {@link Mode#EXCLUSIVE} mode if it is not in the task's assigned label,
+     * and whether or not any of this node's {@link NodeProperty}s say that the
+     * task cannot be run.
+     *
+     * @since 1.360
+     */
+    public CauseOfBlockage canTake(Task task) {
+        Label l = task.getAssignedLabel();
+        if(l!=null && !l.contains(this))
+            return CauseOfBlockage.fromMessage(Messages._Node_LabelMissing(getNodeName(),l));   // the task needs to be executed on label that this node doesn't have.
+
+        if(l==null && getMode()== Mode.EXCLUSIVE)
+            return CauseOfBlockage.fromMessage(Messages._Node_BecauseNodeIsReserved(getNodeName()));   // this node is reserved for tasks that are tied to it
+
+        // Check each NodeProperty to see whether they object to this node
+        // taking the task
+        for (NodeProperty prop: getNodeProperties()) {
+            CauseOfBlockage c = prop.canTake(task);
+            if (c!=null)    return c;
+        }
+
+        // Looks like we can take the task
+        return null;
     }
 
     /**
@@ -165,6 +268,7 @@ public abstract class Node extends AbstractModelObject implements Describable<No
      * @return
      *      null if this node is not connected hence the path is not available
      */
+    // TODO: should this be modified now that getWorkspace is moved from AbstractProject to AbstractBuild?
     public abstract FilePath getWorkspaceFor(TopLevelItem item);
 
     /**
@@ -184,9 +288,7 @@ public abstract class Node extends AbstractModelObject implements Describable<No
      * Gets the {@link FilePath} on this node.
      */
     public FilePath createPath(String absolutePath) {
-        Computer computer = toComputer();
-        if (computer==null) return null; // offline
-        VirtualChannel ch = computer.getChannel();
+        VirtualChannel ch = getChannel();
         if(ch==null)    return null;    // offline
         return new FilePath(ch,absolutePath);
     }

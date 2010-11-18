@@ -26,6 +26,7 @@ package hudson.remoting;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+import java.util.concurrent.CancellationException;
 
 /**
  * {@link Future} implementation whose computation is carried out elsewhere.
@@ -35,19 +36,24 @@ import java.util.concurrent.TimeoutException;
  * @author Kohsuke Kawaguchi
  */
 public class AsyncFutureImpl<V> implements Future<V> {
-    private V value;
-    private Throwable problem;
+    /**
+     * Setting this field to true will indicate that the computation is completed.
+     *
+     * <p>
+     * One of the following three fields also needs to be set at the same time.
+     */
     private boolean completed;
 
-    /**
-     * Not cancellable.
-     */
+    private V value;
+    private Throwable problem;
+    private boolean cancelled;
+
     public boolean cancel(boolean mayInterruptIfRunning) {
         return false;
     }
 
     public boolean isCancelled() {
-        return false;
+        return cancelled;
     }
 
     public synchronized boolean isDone() {
@@ -59,6 +65,8 @@ public class AsyncFutureImpl<V> implements Future<V> {
             wait();
         if(problem!=null)
             throw new ExecutionException(problem);
+        if(cancelled)
+            throw new CancellationException();
         return value;
     }
 
@@ -67,6 +75,8 @@ public class AsyncFutureImpl<V> implements Future<V> {
             wait(unit.toMillis(timeout));
         if(!completed)
             throw new TimeoutException();
+        if(cancelled)
+            throw new CancellationException();
         return get();
     }
 
@@ -79,6 +89,15 @@ public class AsyncFutureImpl<V> implements Future<V> {
     public synchronized void set(Throwable problem) {
         completed = true;
         this.problem = problem;
+        notifyAll();
+    }
+
+    /**
+     * Marks this task as cancelled.
+     */
+    public synchronized void setAsCancelled() {
+        completed = true;
+        cancelled = true;
         notifyAll();
     }
 }

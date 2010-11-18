@@ -1,7 +1,7 @@
 /*
  * The MIT License
  * 
- * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi
+ * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, Yahoo! Inc.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -27,6 +27,7 @@ import hudson.model.*;
 import net.sf.json.util.JSONUtils;
 
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 
@@ -42,6 +43,22 @@ import org.jvnet.localizer.Localizable;
  * @see http://hudson.gotdns.com/wiki/display/HUDSON/Making+your+plugin+behave+in+secured+Hudson
  */
 public final class Permission {
+
+    /**
+     * Comparator that orders {@link Permission} objects based on their ID.
+     */
+    public static final Comparator<Permission> ID_COMPARATOR = new Comparator<Permission>() {
+
+        /**
+         * {@inheritDoc}
+         */
+        // break eclipse compilation 
+        //Override
+        public int compare(Permission one, Permission two) {
+            return one.getId().compareTo(two.getId());
+        }
+    };
+
     public final Class owner;
 
     public final PermissionGroup group;
@@ -82,7 +99,43 @@ public final class Permission {
      */
     public final Permission impliedBy;
 
-    public Permission(PermissionGroup group, String name, Localizable description, Permission impliedBy) {
+    /**
+     * Whether this permission is available for use.
+     *
+     * <p>
+     * This allows us to dynamically enable or disable the visibility of
+     * permissions, so administrators can control the complexity of their
+     * permission matrix.
+     *
+     * @since 1.325
+     */
+    public boolean enabled;
+    
+    /**
+     * Defines a new permission.
+     *
+     * @param group
+     *      Permissions are grouped per classes that own them. Specify the permission group
+     *      created for that class. The idiom is:
+     *
+     * <pre>
+     * class Foo {
+     *     private static final PermissionGroup PERMISSIONS = new PermissionGroup(Foo.class,...);
+     *     public static final Permission ABC = new Permisison(PERMISSION,...) ;
+     * }
+     * </pre>
+     *
+     *      Because of the classloading problems and the difficulty for Hudson to enumerate them,
+     *      the permission constants really need to be static field of the owner class.
+     *
+     * @param name
+     *      See {@link #name}.
+     * @param description
+     *      See {@link #description}.
+     * @param impliedBy
+     *      See {@link #impliedBy}.
+     */
+    public Permission(PermissionGroup group, String name, Localizable description, Permission impliedBy, boolean enable) {
         if(!JSONUtils.isJavaIdentifier(name))
             throw new IllegalArgumentException(name+" is not a Java identifier");
         this.owner = group.owner;
@@ -90,11 +143,16 @@ public final class Permission {
         this.name = name;
         this.description = description;
         this.impliedBy = impliedBy;
+        this.enabled = enable;
 
         group.add(this);
         ALL.add(this);
     }
 
+    public Permission(PermissionGroup group, String name, Localizable description, Permission impliedBy) {
+        this(group, name, description, impliedBy, true);
+    }
+    
     /**
      * @deprecated since 1.257.
      *      Use {@link #Permission(PermissionGroup, String, Localizable, Permission)} 
@@ -104,7 +162,7 @@ public final class Permission {
     }
 
     private Permission(PermissionGroup group, String name) {
-        this(group,name,null);
+        this(group,name,null,null);
     }
 
     /**
@@ -143,10 +201,19 @@ public final class Permission {
         }
     }
 
+    @Override
     public String toString() {
         return "Permission["+owner+','+name+']';
     }
 
+    public void setEnabled(boolean enable) {
+        enabled = enable;
+    }
+
+    public boolean getEnabled() {
+        return enabled;
+    }
+    
     /**
      * Returns all the {@link Permission}s available in the system.
      * @return
@@ -172,7 +239,7 @@ public final class Permission {
     /**
      * {@link PermissionGroup} for {@link Hudson}.
      *
-     * @deprecated
+     * @deprecated since 2009-01-23.
      *      Access {@link Hudson#PERMISSIONS} instead.
      */
     public static final PermissionGroup HUDSON_PERMISSIONS = new PermissionGroup(Hudson.class, hudson.model.Messages._Hudson_Permissions_Title());
@@ -182,7 +249,7 @@ public final class Permission {
      * <p>
      * All permissions are eventually {@linkplain Permission#impliedBy implied by} this permission.
      *
-     * @deprecated
+     * @deprecated since 2009-01-23.
      *      Access {@link Hudson#ADMINISTER} instead.
      */
     public static final Permission HUDSON_ADMINISTER = new Permission(HUDSON_PERMISSIONS,"Administer", hudson.model.Messages._Hudson_AdministerPermission_Description(),null);
@@ -201,7 +268,7 @@ public final class Permission {
      * Historically this was separate from {@link #HUDSON_ADMINISTER} but such a distinction doesn't make sense
      * any more, so deprecated.
      *
-     * @deprecated
+     * @deprecated since 2009-01-23.
      *      Use {@link Hudson#ADMINISTER}.
      */
     public static final Permission FULL_CONTROL = new Permission(GROUP,"FullControl",HUDSON_ADMINISTER);
@@ -209,30 +276,30 @@ public final class Permission {
     /**
      * Generic read access.
      */
-    public static final Permission READ = new Permission(GROUP,"GenericRead",HUDSON_ADMINISTER);
+    public static final Permission READ = new Permission(GROUP,"GenericRead",null,HUDSON_ADMINISTER);
 
     /**
      * Generic write access.
      */
-    public static final Permission WRITE = new Permission(GROUP,"GenericWrite",HUDSON_ADMINISTER);
+    public static final Permission WRITE = new Permission(GROUP,"GenericWrite",null,HUDSON_ADMINISTER);
 
     /**
      * Generic create access.
      */
-    public static final Permission CREATE = new Permission(GROUP,"GenericCreate",WRITE);
+    public static final Permission CREATE = new Permission(GROUP,"GenericCreate",null,WRITE);
 
     /**
      * Generic update access.
      */
-    public static final Permission UPDATE = new Permission(GROUP,"GenericUpdate",WRITE);
+    public static final Permission UPDATE = new Permission(GROUP,"GenericUpdate",null,WRITE);
 
     /**
      * Generic delete access.
      */
-    public static final Permission DELETE = new Permission(GROUP,"GenericDelete",WRITE);
+    public static final Permission DELETE = new Permission(GROUP,"GenericDelete",null,WRITE);
 
     /**
      * Generic configuration access.
      */
-    public static final Permission CONFIGURE = new Permission(GROUP,"GenericConfigure",UPDATE);
+    public static final Permission CONFIGURE = new Permission(GROUP,"GenericConfigure",null,UPDATE);
 }

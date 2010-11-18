@@ -103,7 +103,9 @@ public abstract class SU {
                     ProcessBuilder pb = new ProcessBuilder(args.prepend(sudoExe()).toCommandArray());
                     return EmbeddedSu.startWithSu(rootUsername, rootPassword, pb);
                 }
-            }.start(listener,rootPassword);
+            // in solaris, pfexec never asks for a password, so username==null means
+            // we won't be using password. this helps disambiguate empty password
+            }.start(listener,rootUsername==null?null:rootPassword);
 
         // TODO: Mac?
 

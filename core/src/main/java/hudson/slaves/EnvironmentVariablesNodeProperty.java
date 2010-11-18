@@ -45,12 +45,12 @@ import java.util.List;
  */
 public class EnvironmentVariablesNodeProperty extends NodeProperty<Node> {
 
-	/**
+    /**
      * Slave-specific environment variables
      */
     private final EnvVars envVars;
     
-	@DataBoundConstructor
+    @DataBoundConstructor
     public EnvironmentVariablesNodeProperty(List<Entry> env) {
         this.envVars = toMap(env);
     }
@@ -64,13 +64,13 @@ public class EnvironmentVariablesNodeProperty extends NodeProperty<Node> {
     }
 
     @Override
-	public Environment setUp(AbstractBuild build, Launcher launcher,
+    public Environment setUp(AbstractBuild build, Launcher launcher,
 			BuildListener listener) throws IOException, InterruptedException {
     	return Environment.create(envVars);
-	}
+    }
 
     @Extension
-	public static class DescriptorImpl extends NodePropertyDescriptor {
+    public static class DescriptorImpl extends NodePropertyDescriptor {
 
         @Override
 		public String getDisplayName() {
@@ -88,7 +88,7 @@ public class EnvironmentVariablesNodeProperty extends NodeProperty<Node> {
                 return "/help/system-config/globalEnvironmentVariables.html";
             }
         }
-	}
+    }
 	
 	public static class Entry {
 		public String key, value;
@@ -102,9 +102,9 @@ public class EnvironmentVariablesNodeProperty extends NodeProperty<Node> {
 	
 	private static EnvVars toMap(List<Entry> entries) {
 		EnvVars map = new EnvVars();
-		for (Entry entry: entries) {
-			map.put(entry.key,entry.value);
-		}
+        if (entries!=null)
+            for (Entry entry: entries)
+                map.put(entry.key,entry.value);
 		return map;
 	}
 

@@ -1,7 +1,7 @@
 /*
  * The MIT License
  * 
- * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, id:cactusman
+ * Copyright (c) 2004-2010, Sun Microsystems, Inc., Kohsuke Kawaguchi, id:cactusman, Seiji Sogabe
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -25,6 +25,7 @@ package hudson.maven;
 
 import hudson.Launcher;
 import hudson.Extension;
+import hudson.Util;
 import hudson.maven.reporters.MavenAbstractArtifactRecord;
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
@@ -33,6 +34,8 @@ import hudson.model.Result;
 import hudson.tasks.BuildStepDescriptor;
 import hudson.tasks.Publisher;
 import hudson.tasks.Recorder;
+import hudson.tasks.BuildStepMonitor;
+import hudson.util.FormValidation;
 import net.sf.json.JSONObject;
 import org.apache.maven.artifact.deployer.ArtifactDeploymentException;
 import org.apache.maven.artifact.repository.ArtifactRepository;
@@ -44,6 +47,7 @@ import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.StaplerRequest;
 
 import java.io.IOException;
+import org.kohsuke.stapler.QueryParameter;
 
 /**
  * {@link Publisher} for {@link MavenModuleSetBuild} to deploy artifacts
@@ -62,17 +66,35 @@ public class RedeployPublisher extends Recorder {
      */
     public final String url;
     public final boolean uniqueVersion;
+    public final boolean evenIfUnstable;
 
-    @DataBoundConstructor
+    /**
+     * For backward compatibility
+     */
     public RedeployPublisher(String id, String url, boolean uniqueVersion) {
+    	this(id, url, uniqueVersion, false);
+    }
+    
+    /**
+     * @since 1.347
+     */
+    @DataBoundConstructor
+    public RedeployPublisher(String id, String url, boolean uniqueVersion, boolean evenIfUnstable) {
         this.id = id;
-        this.url = url;
+        this.url = Util.fixEmptyAndTrim(url);
         this.uniqueVersion = uniqueVersion;
+        this.evenIfUnstable = evenIfUnstable;
     }
 
     public boolean perform(AbstractBuild<?,?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
-        if(build.getResult().isWorseThan(Result.SUCCESS))
+        if(build.getResult().isWorseThan(getTreshold()))
             return true;    // build failed. Don't publish
+
+        if (url==null) {
+            listener.getLogger().println("No Repository URL is specified.");
+            build.setResult(Result.FAILURE);
+            return true;
+        }
 
         MavenAbstractArtifactRecord mar = getAction(build);
         if(mar==null) {
@@ -83,7 +105,8 @@ public class RedeployPublisher extends Recorder {
 
         listener.getLogger().println("Deploying artifacts to "+url);
         try {
-            MavenEmbedder embedder = MavenUtil.createEmbedder(listener,build.getProject(),null);
+            
+            MavenEmbedder embedder = MavenUtil.createEmbedder(listener,build);
             ArtifactRepositoryLayout layout =
                 (ArtifactRepositoryLayout) embedder.getContainer().lookup( ArtifactRepositoryLayout.ROLE,"default");
             ArtifactRepositoryFactory factory =
@@ -117,6 +140,18 @@ public class RedeployPublisher extends Recorder {
         return build.getAction(MavenAbstractArtifactRecord.class);
     }
 
+    public BuildStepMonitor getRequiredMonitorService() {
+        return BuildStepMonitor.NONE;
+    }
+
+    protected Result getTreshold() {
+        if (evenIfUnstable) {
+            return Result.UNSTABLE;
+        } else {
+            return Result.SUCCESS;
+        }
+    }
+    
     @Extension
     public static class DescriptorImpl extends BuildStepDescriptor<Publisher> {
         public DescriptorImpl() {
@@ -134,16 +169,25 @@ public class RedeployPublisher extends Recorder {
             return jobType==MavenModuleSet.class;
         }
 
-        public String getHelpFile() {
-            return "/help/maven/redeploy.html";
-        }
-
         public RedeployPublisher newInstance(StaplerRequest req, JSONObject formData) throws FormException {
             return req.bindJSON(RedeployPublisher.class,formData);
         }
 
         public String getDisplayName() {
             return Messages.RedeployPublisher_getDisplayName();
+        }
+
+        public boolean showEvenIfUnstableOption() {
+            // little hack to avoid showing this option on the redeploy action's screen
+            return true;
+        }
+
+        public FormValidation doCheckUrl(@QueryParameter String url) {
+            String fixedUrl = hudson.Util.fixEmptyAndTrim(url);
+            if (fixedUrl==null)
+                return FormValidation.error(Messages.RedeployPublisher_RepositoryURL_Mandatory());
+
+            return FormValidation.ok();
         }
     }
 }

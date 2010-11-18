@@ -27,6 +27,7 @@ import hudson.FilePath;
 import hudson.Launcher;
 import hudson.Util;
 import hudson.Extension;
+import hudson.EnvVars;
 import hudson.model.*;
 import hudson.util.FormValidation;
 
@@ -39,6 +40,8 @@ import org.kohsuke.stapler.AncestorInPath;
 import javax.servlet.ServletException;
 import java.io.File;
 import java.io.IOException;
+import java.util.Collection;
+import java.util.Collections;
 
 /**
  * Saves Javadoc for the project and publish them. 
@@ -83,10 +86,12 @@ public class JavadocArchiver extends Recorder {
         return new File(run.getRootDir(),"javadoc");
     }
 
-    public boolean perform(AbstractBuild<?,?> build, Launcher launcher, BuildListener listener) throws InterruptedException {
+    public boolean perform(AbstractBuild<?,?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
         listener.getLogger().println(Messages.JavadocArchiver_Publishing());
 
-        FilePath javadoc = build.getParent().getWorkspace().child(javadocDir);
+        EnvVars env = build.getEnvironment(listener);
+        
+        FilePath javadoc = build.getWorkspace().child(env.expand(javadocDir));
         FilePath target = new FilePath(keepAll ? getJavadocDir(build) : getJavadocDir(build.getProject()));
 
         try {
@@ -113,10 +118,15 @@ public class JavadocArchiver extends Recorder {
         return true;
     }
 
-    public Action getProjectAction(AbstractProject project) {
-        return new JavadocAction(project);
+    @Override
+    public Collection<Action> getProjectActions(AbstractProject project) {
+        return Collections.<Action>singleton(new JavadocAction(project));
     }
 
+    public BuildStepMonitor getRequiredMonitorService() {
+        return BuildStepMonitor.NONE;
+    }
+    
     protected static abstract class BaseJavadocAction implements Action {
         public String getUrlName() {
             return "javadoc";
@@ -205,7 +215,8 @@ public class JavadocArchiver extends Recorder {
          * Performs on-the-fly validation on the file mask wildcard.
          */
         public FormValidation doCheck(@AncestorInPath AbstractProject project, @QueryParameter String value) throws IOException, ServletException {
-            return project.getWorkspace().validateRelativeDirectory(value);
+            FilePath ws = project.getSomeWorkspace();
+            return ws != null ? ws.validateRelativeDirectory(value) : FormValidation.ok();
         }
 
         public boolean isApplicable(Class<? extends AbstractProject> jobType) {

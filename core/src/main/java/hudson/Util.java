@@ -1,20 +1,51 @@
+/*
+ * The MIT License
+ *
+ * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ */
 package hudson;
 
 import hudson.model.TaskListener;
 import hudson.model.Hudson;
-import static hudson.model.Hudson.isWindows;
+import static hudson.util.jna.GNUCLibrary.LIBC;
+
 import hudson.util.IOException2;
 import hudson.util.QuotedStringTokenizer;
 import hudson.util.VariableResolver;
 import hudson.Proc.LocalProc;
+import hudson.os.PosixAPI;
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.Project;
 import org.apache.tools.ant.types.FileSet;
 import org.apache.tools.ant.taskdefs.Chmod;
 import org.apache.tools.ant.taskdefs.Copy;
 import org.apache.commons.lang.time.FastDateFormat;
+import org.apache.commons.io.IOUtils;
+import org.jruby.ext.posix.FileStat;
+import org.jruby.ext.posix.POSIX;
 import org.kohsuke.stapler.Stapler;
 import org.jvnet.animal_sniffer.IgnoreJRERequirement;
+
+import javax.crypto.SecretKey;
+import javax.crypto.spec.SecretKeySpec;
 
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
@@ -30,10 +61,12 @@ import java.io.Writer;
 import java.io.PrintStream;
 import java.io.InputStreamReader;
 import java.io.FileInputStream;
+import java.io.UnsupportedEncodingException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.nio.ByteBuffer;
 import java.nio.CharBuffer;
 import java.nio.charset.CharacterCodingException;
 import java.nio.charset.CharsetEncoder;
@@ -47,15 +80,22 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.MissingResourceException;
 import java.util.ResourceBundle;
 import java.util.SimpleTimeZone;
 import java.util.StringTokenizer;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.nio.charset.Charset;
+
+import com.sun.jna.Native;
+import com.sun.jna.Memory;
+import com.sun.jna.NativeLong;
 
 /**
  * Various utility methods that don't have more proper home.
@@ -182,7 +222,12 @@ public class Util {
             deleteRecursive(child);
     }
 
-    private static void deleteFile(File f) throws IOException {
+    /**
+     * Deletes this file (and does not take no for an answer).
+     * @param f a file to delete
+     * @throws IOException if it exists but could not be successfully deleted
+     */
+    public static void deleteFile(File f) throws IOException {
         if (!f.delete()) {
             if(!f.exists())
                 // we are trying to delete a file that no longer exists, so this is not an error
@@ -219,7 +264,7 @@ public class Util {
     }
 
     /**
-     * Makes the given file writable.
+     * Makes the given file writable by any means possible.
      */
     @IgnoreJRERequirement
     private static void makeWritable(File f) {
@@ -240,6 +285,16 @@ public class Util {
         } catch (NoSuchMethodError e) {
             // not JDK6
         }
+
+        try {// try libc chmod
+            POSIX posix = PosixAPI.get();
+            String path = f.getAbsolutePath();
+            FileStat stat = posix.stat(path);
+            posix.chmod(path, stat.mode()|0200); // u+w
+        } catch (Throwable t) {
+            LOGGER.log(Level.FINE,"Failed to chmod(2) "+f,t);
+        }
+
     }
 
     public static void deleteRecursive(File dir) throws IOException {
@@ -272,7 +327,7 @@ public class Util {
         if (name.equals(".") || name.equals(".."))
             return false;
 
-        File fileInCanonicalParent = null;
+        File fileInCanonicalParent;
         File parentDir = file.getParentFile();
         if ( parentDir == null ) {
             fileInCanonicalParent = file;
@@ -280,7 +335,7 @@ public class Util {
             fileInCanonicalParent = new File( parentDir.getCanonicalPath(), name );
         }
         return !fileInCanonicalParent.getCanonicalFile().equals( fileInCanonicalParent.getAbsoluteFile() );
-    }    
+    }
 
     /**
      * Creates a new temporary directory.
@@ -336,14 +391,19 @@ public class Util {
     }
 
     /**
-     * Gets a human readable mesasge for the given Win32 error code.
+     * Gets a human readable message for the given Win32 error code.
      *
      * @return
      *      null if no such message is available.
      */
     public static String getWin32ErrorMessage(int n) {
-        ResourceBundle rb = ResourceBundle.getBundle("/hudson/win32errors");
-        return rb.getString("error"+n);
+        try {
+            ResourceBundle rb = ResourceBundle.getBundle("/hudson/win32errors");
+            return rb.getString("error"+n);
+        } catch (MissingResourceException e) {
+            LOGGER.log(Level.WARNING,"Failed to find resource bundle",e);
+            return null;
+        }
     }
 
     /**
@@ -369,6 +429,24 @@ public class Util {
         int len;
         while((len=in.read(buf))>0)
             out.write(buf,0,len);
+    }
+
+    public static void copyStreamAndClose(InputStream in,OutputStream out) throws IOException {
+        try {
+            copyStream(in,out);
+        } finally {
+            IOUtils.closeQuietly(in);
+            IOUtils.closeQuietly(out);
+        }
+    }
+
+    public static void copyStreamAndClose(Reader in,Writer out) throws IOException {
+        try {
+            copyStream(in,out);
+        } finally {
+            IOUtils.closeQuietly(in);
+            IOUtils.closeQuietly(out);
+        }
     }
 
     /**
@@ -458,6 +536,26 @@ public class Util {
         }
     }
 
+    /**
+     * Converts a string into 128-bit AES key.
+     * @since 1.308
+     */
+    public static SecretKey toAes128Key(String s) {
+        try {
+            // turn secretKey into 256 bit hash
+            MessageDigest digest = MessageDigest.getInstance("SHA-256");
+            digest.reset();
+            digest.update(s.getBytes("UTF-8"));
+
+            // Due to the stupid US export restriction JDK only ships 128bit version.
+            return new SecretKeySpec(digest.digest(),0,128/8, "AES");
+        } catch (NoSuchAlgorithmException e) {
+            throw new Error(e);
+        } catch (UnsupportedEncodingException e) {
+            throw new Error(e);
+        }
+    }
+
     public static String toHexString(byte[] data, int start, int len) {
         StringBuilder buf = new StringBuilder();
         for( int i=0; i<len; i++ ) {
@@ -480,7 +578,7 @@ public class Util {
     }
 
     /**
-     * Returns a human readable text of the time duration.
+     * Returns a human readable text of the time duration, for example "3 minutes 40 seconds".
      * This version should be used for representing a duration of some activity (like build)
      *
      * @param duration
@@ -524,9 +622,9 @@ public class Util {
 
 
     /**
-     * Create a string representation of a time duration.  If the quanity of
+     * Create a string representation of a time duration.  If the quantity of
      * the most significant unit is big (>=10), then we use only that most
-     * significant unit in the string represenation. If the quantity of the
+     * significant unit in the string representation. If the quantity of the
      * most significant unit is small (a single-digit value), then we also
      * use a secondary, smaller unit for increased precision.
      * So 13 minutes and 43 seconds returns just "13 minutes", but 3 minutes
@@ -545,7 +643,7 @@ public class Util {
 
     /**
      * Get a human readable string representing strings like "xxx days ago",
-     * which should be used to point to the occurence of an event in the past.
+     * which should be used to point to the occurrence of an event in the past.
      */
     public static String getPastTimeString(long duration) {
         return Messages.Util_pastTime(getTimeSpanString(duration));
@@ -554,11 +652,17 @@ public class Util {
 
     /**
      * Combines number and unit, with a plural suffix if needed.
+     * 
+     * @deprecated 
+     *   Use individual localization methods instead. 
+     *   See {@link Messages#Util_year(Object)} for an example.
+     *   Deprecated since 2009-06-24, remove method after 2009-12-24.
      */
     public static String combine(long n, String suffix) {
         String s = Long.toString(n)+' '+suffix;
         if(n!=1)
-            s += Messages.Util_countSuffix();
+        	// Just adding an 's' won't work in most natural languages, even English has exception to the rule (e.g. copy/copies).
+            s += "s";
         return s;
     }
 
@@ -576,11 +680,13 @@ public class Util {
 
     /**
      * Escapes non-ASCII characters in URL.
-     * @deprecated Only escapes non-ASCII but leaves other URL-unsafe characters.
-     * Util.rawEncode should generally be used instead, though be careful to pass only
+     *
+     * <p>
+     * Note that this methods only escapes non-ASCII but leaves other URL-unsafe characters,
+     * such as '#'.
+     * {@link #rawEncode(String)} should generally be used instead, though be careful to pass only
      * a single path component to that method (it will encode /, but this method does not).
      */
-    @Deprecated
     public static String encode(String s) {
         try {
             boolean escaped = false;
@@ -614,14 +720,29 @@ public class Util {
         }
     }
 
+    private static final boolean[] uriMap = new boolean[123];
+    static {
+        String raw =
+    "!  $ &'()*+,-. 0123456789   =  @ABCDEFGHIJKLMNOPQRSTUVWXYZ    _ abcdefghijklmnopqrstuvwxyz";
+  //  "# %         /          :;< >?                           [\]^ `                          {|}~
+  //  ^--so these are encoded
+        int i;
+        // Encode control chars and space
+        for (i = 0; i < 33; i++) uriMap[i] = true;
+        for (int j = 0; j < raw.length(); i++, j++)
+            uriMap[i] = (raw.charAt(j) == ' ');
+        // If we add encodeQuery() just add a 2nd map to encode &+=
+        // queryMap[38] = queryMap[43] = queryMap[61] = true;
+    }
+
     /**
      * Encode a single path component for use in an HTTP URL.
      * Escapes all non-ASCII, general unsafe (space and "#%<>[\]^`{|}~)
-     * and HTTP special characters (/;:?) as specified in RFC1738,
-     * plus backslash (Windows path separator).
+     * and HTTP special characters (/;:?) as specified in RFC1738.
+     * (so alphanumeric and !@$&*()-_=+',. are not encoded)
      * Note that slash(/) is encoded, so the given string should be a
      * single path component used in constructing a URL.
-     * Method name inspired by PHP's rawencode.
+     * Method name inspired by PHP's rawurlencode.
      */
     public static String rawEncode(String s) {
         boolean escaped = false;
@@ -631,8 +752,7 @@ public class Util {
         char c;
         for (int i = 0, m = s.length(); i < m; i++) {
             c = s.charAt(i);
-            if ((c<64 || c>90) && (c<97 || c>122) && (c<38 || c>57 || c==47)
-                    && c!=61 && c!=36 && c!=33 && c!=95) {
+            if (c > 122 || uriMap[c]) {
                 if (!escaped) {
                     out = new StringBuilder(i + (m - i) * 3);
                     out.append(s.substring(0, i));
@@ -644,7 +764,9 @@ public class Util {
                 buf.put(0,c);
                 buf.rewind();
                 try {
-                    for (byte b : enc.encode(buf).array()) {
+                    ByteBuffer bytes = enc.encode(buf);
+                    while (bytes.hasRemaining()) {
+                        byte b = bytes.get();
                         out.append('%');
                         out.append(toDigit((b >> 4) & 0xF));
                         out.append(toDigit(b & 0xF));
@@ -672,6 +794,7 @@ public class Util {
      * Escapes HTML unsafe characters like &lt;, &amp; to the respective character entities.
      */
     public static String escape(String text) {
+        if (text==null)     return null;
         StringBuilder buf = new StringBuilder(text.length()+64);
         for( int i=0; i<text.length(); i++ ) {
             char ch = text.charAt(i);
@@ -757,6 +880,22 @@ public class Util {
         return fixEmpty(s.trim());
     }
 
+    public static <T> List<T> fixNull(List<T> l) {
+        return l!=null ? l : Collections.<T>emptyList();
+    }
+
+    public static <T> Set<T> fixNull(Set<T> l) {
+        return l!=null ? l : Collections.<T>emptySet();
+    }
+
+    public static <T> Collection<T> fixNull(Collection<T> l) {
+        return l!=null ? l : Collections.<T>emptySet();
+    }
+
+    public static <T> Iterable<T> fixNull(Iterable<T> l) {
+        return l!=null ? l : Collections.<T>emptySet();
+    }
+
     /**
      * Cuts all the leading path portion and get just the file name.
      */
@@ -773,12 +912,12 @@ public class Util {
     /**
      * Concatenate multiple strings by inserting a separator.
      */
-    public static String join(Collection<String> strings, String seprator) {
+    public static String join(Collection<?> strings, String separator) {
         StringBuilder buf = new StringBuilder();
         boolean first=true;
-        for (String s : strings) {
+        for (Object s : strings) {
             if(first)   first=false;
-            else        buf.append(seprator);
+            else        buf.append(separator);
             buf.append(s);
         }
         return buf.toString();
@@ -844,24 +983,90 @@ public class Util {
      * Creates a symlink to baseDir+targetPath at baseDir+symlinkPath.
      * <p>
      * If there's a prior symlink at baseDir+symlinkPath, it will be overwritten.
+     *
+     * @param baseDir
+     *      Base directory to resolve the 'symlinkPath' parameter.
+     * @param targetPath
+     *      The file that the symlink should point to.
+     * @param symlinkPath
+     *      Where to create a symlink in.
      */
     public static void createSymlink(File baseDir, String targetPath, String symlinkPath, TaskListener listener) throws InterruptedException {
-        if(!isWindows() && !NO_SYMLINK) {
-            try {
+        if(Functions.isWindows() || NO_SYMLINK)   return;
+
+        try {
+            String errmsg = "";
+            // if a file or a directory exists here, delete it first.
+            // try simple delete first (whether exists() or not, as it may be symlink pointing
+            // to non-existent target), but fallback to "rm -rf" to delete non-empty dir.
+            File symlinkFile = new File(baseDir, symlinkPath);
+            if (!symlinkFile.delete() && symlinkFile.exists())
                 // ignore a failure.
                 new LocalProc(new String[]{"rm","-rf", symlinkPath},new String[0],listener.getLogger(), baseDir).join();
 
-                int r = new LocalProc(new String[]{
+            int r;
+            if (!SYMLINK_ESCAPEHATCH) {
+                try {
+                    r = LIBC.symlink(targetPath,symlinkFile.getAbsolutePath());
+                    if (r!=0) {
+                        r = Native.getLastError();
+                        errmsg = LIBC.strerror(r);
+                    }
+                } catch (LinkageError e) {
+                    // if JNA is unavailable, fall back.
+                    // we still prefer to try JNA first as PosixAPI supports even smaller platforms.
+                    r = PosixAPI.get().symlink(targetPath,symlinkFile.getAbsolutePath());
+                }
+            } else // escape hatch, until we know that the above works well.
+                r = new LocalProc(new String[]{
                     "ln","-s", targetPath, symlinkPath},
                     new String[0],listener.getLogger(), baseDir).join();
-                if(r!=0)
-                    listener.getLogger().println("ln failed: "+r);
-            } catch (IOException e) {
-                PrintStream log = listener.getLogger();
-                log.println("ln failed");
-                Util.displayIOException(e,listener);
-                e.printStackTrace( log );
+            if(r!=0)
+                listener.getLogger().println(String.format("ln -s %s %s failed: %d %s",targetPath, symlinkFile, r, errmsg));
+        } catch (IOException e) {
+            PrintStream log = listener.getLogger();
+            log.printf("ln %s %s failed\n",targetPath, new File(baseDir, symlinkPath));
+            Util.displayIOException(e,listener);
+            e.printStackTrace( log );
+        }
+    }
+
+    /**
+     * Resolves symlink, if the given file is a symlink. Otherwise return null.
+     * <p>
+     * If the resolution fails, report an error.
+     *
+     * @param listener
+     *      If we rely on an external command to resolve symlink, this is it.
+     *      (TODO: try readlink(1) available on some platforms)
+     */
+    public static String resolveSymlink(File link, TaskListener listener) throws InterruptedException, IOException {
+        if(Functions.isWindows())     return null;
+
+        String filename = link.getAbsolutePath();
+        try {
+            for (int sz=512; sz < 65536; sz*=2) {
+                Memory m = new Memory(sz);
+                int r = LIBC.readlink(filename,m,new NativeLong(sz));
+                if (r<0) {
+                    int err = Native.getLastError();
+                    if (err==22/*EINVAL --- but is this really portable?*/)
+                        return null; // this means it's not a symlink
+                    throw new IOException("Failed to readlink "+link+" error="+ err+" "+ LIBC.strerror(err));
+                }
+                if (r==sz)
+                    continue;   // buffer too small
+
+                byte[] buf = new byte[r];
+                m.read(0,buf,0,r);
+                return new String(buf);
             }
+            // something is wrong. It can't be this long!
+            throw new IOException("Symlink too long: "+link);
+        } catch (LinkageError e) {
+            // if JNA is unavailable, fall back.
+            // we still prefer to try JNA first as PosixAPI supports even smaller platforms.
+            return PosixAPI.get().readlink(filename);
         }
     }
 
@@ -872,7 +1077,7 @@ public class Util {
      * but don't remember it right now.
      *
      * @since 1.204
-     * @deprecated This method is broken (see ISSUE#1666). It should probably
+     * @deprecated since 2008-05-13. This method is broken (see ISSUE#1666). It should probably
      * be removed but I'm not sure if it is considered part of the public API
      * that needs to be maintained for backwards compatibility.
      * Use {@link #encode(String)} instead. 
@@ -917,6 +1122,40 @@ public class Util {
         }
     }
 
+    /**
+     * Checks if the public method defined on the base type with the given arguments
+     * are overridden in the given derived type.
+     */
+    public static boolean isOverridden(Class base, Class derived, String methodName, Class... types) {
+        // the rewriteHudsonWar method isn't overridden.
+        try {
+            return !base.getMethod(methodName, types).equals(
+                    derived.getMethod(methodName,types));
+        } catch (NoSuchMethodException e) {
+            throw new AssertionError(e);
+        }
+    }
+
+    /**
+     * Returns a file name by changing its extension.
+     *
+     * @param ext
+     *      For example, ".zip"
+     */
+    public static File changeExtension(File dst, String ext) {
+        String p = dst.getPath();
+        int pos = p.lastIndexOf('.');
+        if (pos<0)  return new File(p+ext);
+        else        return new File(p.substring(0,pos)+ext);
+    }
+
+    /**
+     * Null-safe String intern method.
+     */
+    public static String intern(String s) {
+        return s==null ? s : s.intern();
+    }
+
     public static final FastDateFormat XS_DATETIME_FORMATTER = FastDateFormat.getInstance("yyyy-MM-dd'T'HH:mm:ss'Z'",new SimpleTimeZone(0,"GMT"));
 
     // Note: RFC822 dates must not be localized!
@@ -929,4 +1168,6 @@ public class Util {
      * On Unix environment that cannot run "ln", set this to true.
      */
     public static boolean NO_SYMLINK = Boolean.getBoolean(Util.class.getName()+".noSymLink");
+
+    public static boolean SYMLINK_ESCAPEHATCH = Boolean.getBoolean(Util.class.getName()+".symlinkEscapeHatch");
 }

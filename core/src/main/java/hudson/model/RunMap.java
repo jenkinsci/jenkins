@@ -66,6 +66,7 @@ public final class RunMap<R extends Run<?,R>> extends AbstractMap<Integer,R> imp
         return put(value.getNumber(),value);
     }
 
+    @Override
     public synchronized R put(Integer key, R value) {
         // copy-on-write update
         TreeMap<Integer,R> m = new TreeMap<Integer,R>(builds);
@@ -76,6 +77,7 @@ public final class RunMap<R extends Run<?,R>> extends AbstractMap<Integer,R> imp
         return r;
     }
 
+    @Override
     public synchronized void putAll(Map<? extends Integer,? extends R> rhs) {
         // copy-on-write update
         TreeMap<Integer,R> m = new TreeMap<Integer,R>(builds);
@@ -227,6 +229,9 @@ public final class RunMap<R extends Run<?,R>> extends AbstractMap<Integer,R> imp
         }
 
         reset(builds);
+
+        for (R r : builds.values())
+            r.onLoad();
     }
 
     private static final Logger LOGGER = Logger.getLogger(RunMap.class.getName());

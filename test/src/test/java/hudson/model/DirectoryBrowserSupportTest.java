@@ -23,10 +23,15 @@
  */
 package hudson.model;
 
+import hudson.Functions;
 import hudson.tasks.Shell;
 import hudson.tasks.BatchFile;
+import hudson.Launcher;
 import org.jvnet.hudson.test.Email;
 import org.jvnet.hudson.test.HudsonTestCase;
+import org.jvnet.hudson.test.TestBuilder;
+
+import java.io.IOException;
 
 /**
  * @author Kohsuke Kawaguchi
@@ -39,7 +44,7 @@ public class DirectoryBrowserSupportTest extends HudsonTestCase {
     public void testDoubleDots() throws Exception {
         // create a problematic file name in the workspace
         FreeStyleProject p = createFreeStyleProject();
-        if(Hudson.isWindows())
+        if(Functions.isWindows())
             p.getBuildersList().add(new BatchFile("echo > abc..def"));
         else
             p.getBuildersList().add(new Shell("touch abc..def"));
@@ -63,14 +68,29 @@ public class DirectoryBrowserSupportTest extends HudsonTestCase {
      */
     @Email("http://www.nabble.com/Status-Code-400-viewing-or-downloading-artifact-whose-filename-contains-two-consecutive-periods-tt21407604.html")
     public void testDoubleDots2() throws Exception {
-        if(Hudson.isWindows())  return; // can't test this on Windows
+        if(Functions.isWindows())  return; // can't test this on Windows
 
         // create a problematic file name in the workspace
         FreeStyleProject p = createFreeStyleProject();
-        p.getBuildersList().add(new Shell("touch abc\\\\def"));
+        p.getBuildersList().add(new Shell("touch abc\\\\def.bin"));
         p.scheduleBuild2(0).get();
 
         // can we see it?
-        new WebClient().goTo("job/"+p.getName()+"/ws/abc%5Cdef","application/octet-stream");
+        new WebClient().goTo("job/"+p.getName()+"/ws/abc%5Cdef.bin","application/octet-stream");
+    }
+
+    public void testNonAsciiChar() throws Exception {
+        // create a problematic file name in the workspace
+        FreeStyleProject p = createFreeStyleProject();
+        p.getBuildersList().add(new TestBuilder() {
+            public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
+                build.getWorkspace().child("\u6F22\u5B57.bin").touch(0); // Kanji
+                return true;
+            }
+        }); // Kanji
+        p.scheduleBuild2(0).get();
+
+        // can we see it?
+        new WebClient().goTo("job/"+p.getName()+"/ws/%e6%bc%a2%e5%ad%97.bin","application/octet-stream");
     }
 }

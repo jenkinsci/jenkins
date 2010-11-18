@@ -267,6 +267,7 @@ public class RegistryKey {
     }
 
 
+    @Override
     protected void finalize() throws Throwable {
         super.finalize();
         dispose();

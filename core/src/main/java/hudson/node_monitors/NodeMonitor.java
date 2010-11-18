@@ -24,11 +24,9 @@
 package hudson.node_monitors;
 
 import hudson.ExtensionPoint;
-import hudson.Functions;
 import hudson.DescriptorExtensionList;
 import hudson.Extension;
 import hudson.tasks.Publisher;
-import hudson.scm.RepositoryBrowser;
 import hudson.model.Computer;
 import hudson.model.ComputerSet;
 import hudson.model.Describable;
@@ -37,10 +35,7 @@ import hudson.model.Hudson;
 import hudson.model.Descriptor;
 import hudson.util.DescriptorList;
 
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import java.util.List;
-import java.io.Serializable;
 
 import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.export.ExportedBean;
@@ -85,7 +80,7 @@ public abstract class NodeMonitor implements ExtensionPoint, Describable<NodeMon
     }
 
     public AbstractNodeMonitorDescriptor<?> getDescriptor() {
-        return (AbstractNodeMonitorDescriptor<?>)Hudson.getInstance().getDescriptor(getClass());
+        return (AbstractNodeMonitorDescriptor<?>)Hudson.getInstance().getDescriptorOrDie(getClass());
     }
 
     public Object data(Computer c) {
@@ -111,7 +106,7 @@ public abstract class NodeMonitor implements ExtensionPoint, Describable<NodeMon
      * @since 1.187
      */
     public static List<NodeMonitor> getAll() {
-        return ComputerSet.get_monitors();
+        return ComputerSet.getMonitors().toList();
     }
 
     /**
@@ -146,6 +141,6 @@ public abstract class NodeMonitor implements ExtensionPoint, Describable<NodeMon
      * Returns all the registered {@link NodeMonitor} descriptors.
      */
     public static DescriptorExtensionList<NodeMonitor,Descriptor<NodeMonitor>> all() {
-        return Hudson.getInstance().getDescriptorList(NodeMonitor.class);
+        return Hudson.getInstance().<NodeMonitor,Descriptor<NodeMonitor>>getDescriptorList(NodeMonitor.class);
     }
 }

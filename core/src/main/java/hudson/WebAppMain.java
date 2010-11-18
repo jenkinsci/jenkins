@@ -128,6 +128,37 @@ public final class WebAppMain implements ServletContextListener {
                 return;
             }
 
+//  JNA is no longer a hard requirement. It's just nice to have. See HUDSON-4820 for more context.
+//            // make sure JNA works. this can fail if
+//            //    - platform is unsupported
+//            //    - JNA is already loaded in another classloader
+//            // see http://wiki.hudson-ci.org/display/HUDSON/JNA+is+already+loaded
+//            // TODO: or shall we instead modify Hudson to work gracefully without JNA?
+//            try {
+//                /*
+//                    java.lang.UnsatisfiedLinkError: Native Library /builds/apps/glassfish/domains/hudson-domain/generated/jsp/j2ee-modules/hudson-1.309/loader/com/sun/jna/sunos-sparc/libjnidispatch.so already loaded in another classloader
+//                        at java.lang.ClassLoader.loadLibrary0(ClassLoader.java:1743)
+//                        at java.lang.ClassLoader.loadLibrary(ClassLoader.java:1674)
+//                        at java.lang.Runtime.load0(Runtime.java:770)
+//                        at java.lang.System.load(System.java:1005)
+//                        at com.sun.jna.Native.loadNativeLibraryFromJar(Native.java:746)
+//                        at com.sun.jna.Native.loadNativeLibrary(Native.java:680)
+//                        at com.sun.jna.Native.<clinit>(Native.java:108)
+//                        at hudson.util.jna.GNUCLibrary.<clinit>(GNUCLibrary.java:86)
+//                        at hudson.Util.createSymlink(Util.java:970)
+//                        at hudson.model.Run.run(Run.java:1174)
+//                        at hudson.matrix.MatrixBuild.run(MatrixBuild.java:149)
+//                        at hudson.model.ResourceController.execute(ResourceController.java:88)
+//                        at hudson.model.Executor.run(Executor.java:123)
+//                 */
+//                String.valueOf(Native.POINTER_SIZE); // this meaningless operation forces the classloading and initialization
+//            } catch (LinkageError e) {
+//                if (e.getMessage().contains("another classloader"))
+//                    context.setAttribute(APP,new JNADoublyLoaded(e));
+//                else
+//                    context.setAttribute(APP,new HudsonFailedToLoad(e));
+//            }
+
             // make sure this is servlet 2.4 container or above
             try {
                 ServletResponse.class.getMethod("setCharacterEncoding",String.class);
@@ -168,15 +199,13 @@ public final class WebAppMain implements ServletContextListener {
                 // if this works we are all happy
             } catch (TransformerFactoryConfigurationError x) {
                 // no it didn't.
-                Logger logger = Logger.getLogger(WebAppMain.class.getName());
-
-                logger.log(Level.WARNING, "XSLT not configured correctly. Hudson will try to fix this. See http://issues.apache.org/bugzilla/show_bug.cgi?id=40895 for more details",x);
+                LOGGER.log(Level.WARNING, "XSLT not configured correctly. Hudson will try to fix this. See http://issues.apache.org/bugzilla/show_bug.cgi?id=40895 for more details",x);
                 System.setProperty(TransformerFactory.class.getName(),"com.sun.org.apache.xalan.internal.xsltc.trax.TransformerFactoryImpl");
                 try {
                     TransformerFactory.newInstance();
-                    logger.info("XSLT is set to the JAXP RI in JRE");
+                    LOGGER.info("XSLT is set to the JAXP RI in JRE");
                 } catch(TransformerFactoryConfigurationError y) {
-                    logger.log(Level.SEVERE, "Failed to correct the problem.");
+                    LOGGER.log(Level.SEVERE, "Failed to correct the problem.");
                 }
             }
 
@@ -185,13 +214,10 @@ public final class WebAppMain implements ServletContextListener {
             context.setAttribute(APP,new HudsonIsLoading());
 
             new Thread("hudson initialization thread") {
+                @Override
                 public void run() {
                     try {
-                        try {
-                            context.setAttribute(APP,new Hudson(home,context));
-                        } catch( IOException e ) {
-                            throw new Error(e);
-                        }
+                        context.setAttribute(APP,new Hudson(home,context));
 
                         // trigger the loading of changelogs in the background,
                         // but give the system 10 seconds so that the first page
@@ -205,10 +231,9 @@ public final class WebAppMain implements ServletContextListener {
                         LOGGER.log(Level.SEVERE, "Failed to initialize Hudson",e);
                         context.setAttribute(APP,new HudsonFailedToLoad(e));
                         throw e;
-                    } catch (RuntimeException e) {
+                    } catch (Exception e) {
                         LOGGER.log(Level.SEVERE, "Failed to initialize Hudson",e);
                         context.setAttribute(APP,new HudsonFailedToLoad(e));
-                        throw e;
                     }
                 }
             }.start();

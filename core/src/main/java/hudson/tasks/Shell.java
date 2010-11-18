@@ -1,7 +1,7 @@
 /*
  * The MIT License
  * 
- * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, Jene Jasper
+ * Copyright (c) 2004-2010, Sun Microsystems, Inc., Kohsuke Kawaguchi, Jene Jasper, Yahoo! Inc.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,21 +24,16 @@
 package hudson.tasks;
 
 import hudson.FilePath;
+import hudson.Functions;
 import hudson.Util;
 import hudson.Extension;
-import hudson.model.Descriptor;
 import hudson.model.AbstractProject;
-import static hudson.model.Hudson.isWindows;
-import hudson.util.FormFieldValidator;
 import hudson.util.FormValidation;
 import net.sf.json.JSONObject;
+import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.StaplerRequest;
-import org.kohsuke.stapler.StaplerResponse;
 import org.kohsuke.stapler.QueryParameter;
 
-import javax.servlet.ServletException;
-import java.io.IOException;
-import java.util.Map;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -49,6 +44,7 @@ import java.util.Arrays;
  * @author Kohsuke Kawaguchi
  */
 public class Shell extends CommandInterpreter {
+    @DataBoundConstructor
     public Shell(String command) {
         super(fixCrLf(command));
     }
@@ -75,7 +71,22 @@ public class Shell extends CommandInterpreter {
         return s;
     }
 
-    protected String[] buildCommandLine(FilePath script) {
+    /**
+     * Older versions of bash have a bug where non-ASCII on the first line
+     * makes the shell think the file is a binary file and not a script. Adding
+     * a leading line feed works around this problem.
+     */
+    private static String addCrForNonASCII(String s) {
+        if(!s.startsWith("#!")) {
+            if (s.indexOf('\n')!=0) {
+                return "\n" + s;
+            }
+        }
+
+        return s;
+    }
+
+    public String[] buildCommandLine(FilePath script) {
         if(command.startsWith("#!")) {
             // interpreter override
             int end = command.indexOf('\n');
@@ -90,13 +101,14 @@ public class Shell extends CommandInterpreter {
     }
 
     protected String getContents() {
-        return fixCrLf(command);
+        return addCrForNonASCII(fixCrLf(command));
     }
 
     protected String getFileExtension() {
         return ".sh";
     }
 
+    @Override
     public DescriptorImpl getDescriptor() {
         return (DescriptorImpl)super.getDescriptor();
     }
@@ -116,17 +128,13 @@ public class Shell extends CommandInterpreter {
             return true;
         }
 
-        protected void convert(Map<String, Object> oldPropertyBag) {
-            shell = (String)oldPropertyBag.get("shell");
-        }
-
         public String getShell() {
             return shell;
         }
 
         public String getShellOrDefault() {
             if(shell==null)
-                return isWindows()?"sh":"/bin/sh";
+                return Functions.isWindows() ?"sh":"/bin/sh";
             return shell;
         }
 
@@ -135,19 +143,17 @@ public class Shell extends CommandInterpreter {
             save();
         }
 
-        public String getHelpFile() {
-            return "/help/project-config/shell.html";
-        }
-
         public String getDisplayName() {
             return Messages.Shell_DisplayName();
         }
 
+        @Override
         public Builder newInstance(StaplerRequest req, JSONObject data) {
-            return new Shell(data.getString("shell"));
+            return new Shell(data.getString("command"));
         }
 
-        public boolean configure( StaplerRequest req ) {
+        @Override
+        public boolean configure(StaplerRequest req, JSONObject data) {
             setShell(req.getParameter("shell"));
             return true;
         }

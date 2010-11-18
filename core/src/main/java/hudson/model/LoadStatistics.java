@@ -39,6 +39,8 @@ import org.jfree.chart.renderer.category.LineAndShapeRenderer;
 import org.jfree.data.category.CategoryDataset;
 import org.jfree.ui.RectangleInsets;
 import org.kohsuke.stapler.QueryParameter;
+import org.kohsuke.stapler.export.ExportedBean;
+import org.kohsuke.stapler.export.Exported;
 
 import java.awt.*;
 import java.io.IOException;
@@ -58,20 +60,24 @@ import java.util.List;
  * @see Label#loadStatistics
  * @see Hudson#overallLoad
  */
+@ExportedBean
 public abstract class LoadStatistics {
     /**
      * Number of busy executors and how it changes over time.
      */
+    @Exported
     public final MultiStageTimeSeries busyExecutors;
 
     /**
      * Number of total executors and how it changes over time.
      */
+    @Exported
     public final MultiStageTimeSeries totalExecutors;
 
     /**
      * Number of {@link Queue.BuildableItem}s that can run on any node in this node set but blocked.
      */
+    @Exported
     public final MultiStageTimeSeries queueLength;
 
     protected LoadStatistics(int initialTotalExecutors, int initialBusyExecutors) {
@@ -165,6 +171,10 @@ public abstract class LoadStatistics {
         return createTrendChart(TimeScale.parse(type));
     }
 
+    public Api getApi() {
+        return new Api(this);
+    }
+
     /**
      * With 0.90 decay ratio for every 10sec, half reduction is about 1 min.
      */
@@ -201,7 +211,7 @@ public abstract class LoadStatistics {
             }
 
             // update statistics of the entire system
-            ComputerSet cs = h.getComputer();
+            ComputerSet cs = new ComputerSet();
             h.overallLoad.totalExecutors.update(cs.getTotalExecutors());
             h.overallLoad.busyExecutors .update(cs.getBusyExecutors());
             int q=0;

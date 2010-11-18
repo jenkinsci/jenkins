@@ -31,12 +31,12 @@ import hudson.model.TaskListener;
 import hudson.tasks.CommandInterpreter;
 import hudson.util.FormValidation;
 import java.io.IOException;
-import java.util.Collections;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.QueryParameter;
 
 /**
  * Installs a tool by running an arbitrary shell command.
+ * @since 1.305
  */
 public class CommandInstaller extends ToolInstaller {
 
@@ -45,31 +45,40 @@ public class CommandInstaller extends ToolInstaller {
      */
     private final String command;
 
+    /**
+     * Resulting tool home directory.
+     */
+    private final String toolHome;
+
     @DataBoundConstructor
-    public CommandInstaller(String label, String command) {
+    public CommandInstaller(String label, String command, String toolHome) {
         super(label);
         this.command = command;
+        this.toolHome = toolHome;
     }
 
     public String getCommand() {
         return command;
     }
 
+    public String getToolHome() {
+        return toolHome;
+    }
+
     public FilePath performInstallation(ToolInstallation tool, Node node, TaskListener log) throws IOException, InterruptedException {
-        FilePath tools = node.getRootPath().child("tools");
+        FilePath dir = preferredLocation(tool, node);
         // XXX support Windows batch scripts, Unix scripts with interpreter line, etc. (see CommandInterpreter subclasses)
-        FilePath script = tools.createTextTempFile("hudson", ".sh", command);
+        FilePath script = dir.createTextTempFile("hudson", ".sh", command);
         try {
             String[] cmd = {"sh", "-e", script.getRemote()};
-            // XXX it always logs at least: "INFO: [tools] $ sh -e /hudson/tools/hudson8889216416382058262.sh"
-            int r = node.createLauncher(log).launch(cmd, Collections.<String,String>emptyMap(), log.getLogger(), tools).join();
+            int r = node.createLauncher(log).launch().cmds(cmd).stdout(log).pwd(dir).join();
             if (r != 0) {
                 throw new IOException("Command returned status " + r);
             }
         } finally {
             script.delete();
         }
-        return node.createPath(tool.getHome());
+        return dir.child(toolHome);
     }
 
     @Extension
@@ -86,6 +95,15 @@ public class CommandInstaller extends ToolInstaller {
                 return FormValidation.error(Messages.CommandInstaller_no_command());
             }
         }
+
+        public FormValidation doCheckToolHome(@QueryParameter String value) {
+            if (value.length() > 0) {
+                return FormValidation.ok();
+            } else {
+                return FormValidation.error(Messages.CommandInstaller_no_toolHome());
+            }
+        }
+
     }
 
 }

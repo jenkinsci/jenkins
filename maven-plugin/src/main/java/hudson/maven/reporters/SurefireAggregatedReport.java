@@ -1,7 +1,7 @@
 /*
  * The MIT License
  * 
- * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, id:cactusman
+ * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, id:cactusman, Yahoo!, Inc.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -82,7 +82,6 @@ public class SurefireAggregatedReport extends AggregatedTestResultAction impleme
     /**
      * 
      */
-    @Override
     public String getTestResultPath(CaseResult it) {
         StringBuilder path = new StringBuilder("../");
         path.append(it.getOwner().getProject().getShortUrl());

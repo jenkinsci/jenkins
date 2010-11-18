@@ -23,13 +23,11 @@
  */
 package hudson.model;
 
-import hudson.Launcher;
-import hudson.slaves.NodeProperty;
 import hudson.tasks.BuildStep;
-import hudson.tasks.BuildTrigger;
 import hudson.tasks.BuildWrapper;
 import hudson.tasks.Builder;
-import hudson.triggers.SCMTrigger;
+import hudson.tasks.Recorder;
+import hudson.tasks.Notifier;
 
 import java.io.File;
 import java.io.IOException;
@@ -37,21 +35,50 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.List;
-import java.util.concurrent.locks.ReentrantLock;
 import java.util.logging.Logger;
+
+import static hudson.model.Result.FAILURE;
 
 /**
  * A build of a {@link Project}.
+ *
+ * <h2>Steps of a build</h2>
+ * <p>
+ * Roughly speaking, a {@link Build} goes through the following stages:
+ *
+ * <dl>
+ * <dt>SCM checkout
+ * <dd>Hudson decides which directory to use for a build, then the source code is checked out
+ *
+ * <dt>Pre-build steps
+ * <dd>Everyone gets their {@link BuildStep#prebuild(AbstractBuild, BuildListener)} invoked
+ * to indicate that the build is starting
+ *
+ * <dt>Build wrapper set up
+ * <dd>{@link BuildWrapper#setUp(AbstractBuild, Launcher, BuildListener)} is invoked. This is normally
+ * to prepare an environment for the build.
+ *
+ * <dt>Builder runs
+ * <dd>{@link Builder#perform(AbstractBuild, Launcher, BuildListener)} is invoked. This is where
+ * things that are useful to users happen, like calling Ant, Make, etc.
+ *
+ * <dt>Recorder runs
+ * <dd>{@link Recorder#perform(AbstractBuild, Launcher, BuildListener)} is invoked. This is normally
+ * to record the output from the build, such as test results.
+ *
+ * <dt>Notifier runs
+ * <dd>{@link Notifier#perform(AbstractBuild, Launcher, BuildListener)} is invoked. This is normally
+ * to send out notifications, based on the results determined so far.
+ * </dl>
+ *
+ * <p>
+ * And beyond that, the build is considered complete, and from then on {@link Build} object is there to
+ * keep the record of what happened in this build. 
  *
  * @author Kohsuke Kawaguchi
  */
 public abstract class Build <P extends Project<P,B>,B extends Build<P,B>>
     extends AbstractBuild<P,B> {
-
-    /**
-     * If the build required a lock, remember it so that we can release it.
-     */
-    private transient ReentrantLock buildLock;
 
     /**
      * Creates a new build.
@@ -71,37 +98,6 @@ public abstract class Build <P extends Project<P,B>,B extends Build<P,B>>
         super(project,buildDir);
     }
 
-    @Override
-    protected void onStartBuilding() {
-        super.onStartBuilding();
-        SCMTrigger t = (SCMTrigger)project.getTriggers().get(Hudson.getInstance().getDescriptorByType(SCMTrigger.DescriptorImpl.class));
-        if(t!=null) {
-            // acquire the lock
-            buildLock = t.getLock();
-            synchronized(buildLock) {
-                try {
-                    if(buildLock.isLocked()) {
-                        long time = System.currentTimeMillis();
-                        LOGGER.info("Waiting for the polling of "+getParent()+" to complete");
-                        buildLock.lockInterruptibly();
-                        LOGGER.info("Polling completed. Waited "+(System.currentTimeMillis()-time)+"ms");
-                    } else
-                        buildLock.lockInterruptibly();
-                } catch (InterruptedException e) {
-                    // handle the interrupt later
-                    Thread.currentThread().interrupt();
-                }
-            }
-        }
-    }
-
-    @Override
-    protected void onEndBuilding() {
-        super.onEndBuilding();
-        if(buildLock!=null)
-            buildLock.unlock();
-    }
-
 //
 //
 // actions
@@ -109,48 +105,39 @@ public abstract class Build <P extends Project<P,B>,B extends Build<P,B>>
 //
     @Override
     public void run() {
-        run(new RunnerImpl());
+        run(createRunner());
+    }
+
+    protected Runner createRunner() {
+        return new RunnerImpl();
     }
     
     protected class RunnerImpl extends AbstractRunner {
         protected Result doRun(BuildListener listener) throws Exception {
             if(!preBuild(listener,project.getBuilders()))
-                return Result.FAILURE;
+                return FAILURE;
             if(!preBuild(listener,project.getPublishers()))
-                return Result.FAILURE;
+                return FAILURE;
 
-            buildEnvironments = new ArrayList<Environment>();
+            Result r = null;
             try {
                 List<BuildWrapper> wrappers = new ArrayList<BuildWrapper>(project.getBuildWrappers().values());
                 
-                for (NodeProperty nodeProperty: Hudson.getInstance().getGlobalNodeProperties()) {
-                    Environment environment = nodeProperty.setUp(Build.this, launcher, listener);
-                    if (environment != null) {
-                        buildEnvironments.add(environment);
-                    }
-                }
-
-                for (NodeProperty nodeProperty: Computer.currentComputer().getNode().getNodeProperties()) {
-                    Environment environment = nodeProperty.setUp(Build.this, launcher, listener);
-                    if (environment != null) {
-                        buildEnvironments.add(environment);
-                    }
-                }
-
                 ParametersAction parameters = getAction(ParametersAction.class);
                 if (parameters != null)
                     parameters.createBuildWrappers(Build.this,wrappers);
 
                 for( BuildWrapper w : wrappers ) {
-                    Environment e = w.setUp((AbstractBuild)Build.this, launcher, listener);
+                    Environment e = w.setUp((AbstractBuild<?,?>)Build.this, launcher, listener);
                     if(e==null)
-                        return Result.FAILURE;
+                        return (r = FAILURE);
                     buildEnvironments.add(e);
                 }
 
                 if(!build(listener,project.getBuilders()))
-                    return Result.FAILURE;
+                    r = FAILURE;
             } finally {
+                if (r != null) setResult(r);
                 // tear down in reverse order
                 boolean failed=false;
                 for( int i=buildEnvironments.size()-1; i>=0; i-- ) {
@@ -158,41 +145,31 @@ public abstract class Build <P extends Project<P,B>,B extends Build<P,B>>
                         failed=true;
                     }                    
                 }
-                buildEnvironments = null;
                 // WARNING The return in the finally clause will trump any return before
-                if (failed) return Result.FAILURE;
+                if (failed) return FAILURE;
             }
 
-            return null;
-        }
-
-        /**
-         * Decorates the {@link Launcher}
-         */
-        @Override
-        protected Launcher createLauncher(BuildListener listener) throws IOException, InterruptedException {
-            Launcher l = super.createLauncher(listener);
-
-            for(BuildWrapper bw : project.getBuildWrappers().values())
-                l = bw.decorateLauncher(Build.this,l,listener);
-
-            return l;
+            return r;
         }
 
         public void post2(BuildListener listener) throws IOException, InterruptedException {
-            performAllBuildStep(listener, project.getPublishers(),true);
-            performAllBuildStep(listener, project.getProperties(),true);
+            if (!performAllBuildSteps(listener, project.getPublishers(), true))
+                setResult(FAILURE);
+            if (!performAllBuildSteps(listener, project.getProperties(), true))
+                setResult(FAILURE);
         }
 
+        @Override
         public void cleanUp(BuildListener listener) throws Exception {
-            performAllBuildStep(listener, project.getPublishers(),false);
-            performAllBuildStep(listener, project.getProperties(),false);
-            BuildTrigger.execute(Build.this,listener, project.getPublishersList().get(BuildTrigger.class));
+            // at this point it's too late to mark the build as a failure, so ignore return value.
+            performAllBuildSteps(listener, project.getPublishers(), false);
+            performAllBuildSteps(listener, project.getProperties(), false);
+            super.cleanUp(listener);
         }
 
         private boolean build(BuildListener listener, Collection<Builder> steps) throws IOException, InterruptedException {
             for( BuildStep bs : steps )
-                if(!bs.perform(Build.this, launcher, listener))
+                if(!perform(bs,listener))
                     return false;
             return true;
         }

@@ -1,7 +1,7 @@
 /*
  * The MIT License
  * 
- * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi
+ * Copyright (c) 2004-2010, Sun Microsystems, Inc., Kohsuke Kawaguchi
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,7 +23,7 @@
  */
 package hudson.util;
 
-import com.thoughtworks.xstream.alias.CannotResolveClassException;
+import com.thoughtworks.xstream.mapper.CannotResolveClassException;
 import com.thoughtworks.xstream.converters.UnmarshallingContext;
 import com.thoughtworks.xstream.converters.collections.CollectionConverter;
 import com.thoughtworks.xstream.converters.reflection.ReflectionProvider;
@@ -35,6 +35,9 @@ import com.thoughtworks.xstream.XStream;
 import java.util.Collection;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.CopyOnWriteArraySet;
+import java.util.logging.Logger;
+
+import static java.util.logging.Level.WARNING;
 
 /**
  * {@link CollectionConverter} that ignores {@link CannotResolveClassException}.
@@ -57,10 +60,12 @@ public class RobustCollectionConverter extends CollectionConverter {
         sc = new SerializableConverter(mapper,reflectionProvider);
     }
 
+    @Override
     public boolean canConvert(Class type) {
         return super.canConvert(type) || type==CopyOnWriteArrayList.class || type==CopyOnWriteArraySet.class;
     }
 
+    @Override
     public Object unmarshal(HierarchicalStreamReader reader, UnmarshallingContext context) {
         // CopyOnWriteArrayList used to serialize as custom serialization,
         // so read it in a compatible fashion.
@@ -72,6 +77,7 @@ public class RobustCollectionConverter extends CollectionConverter {
         }
     }
 
+    @Override
     protected void populateCollection(HierarchicalStreamReader reader, UnmarshallingContext context, Collection collection) {
         while (reader.hasMoreChildren()) {
             reader.moveDown();
@@ -79,10 +85,15 @@ public class RobustCollectionConverter extends CollectionConverter {
                 Object item = readItem(reader, context, collection);
                 collection.add(item);
             } catch (CannotResolveClassException e) {
-                System.err.println("failed to locate class: "+e);
+                LOGGER.log(WARNING,"Failed to resolve class",e);
+                RobustReflectionConverter.addErrorInContext(context, e);
+            } catch (LinkageError e) {
+                LOGGER.log(WARNING,"Failed to resolve class",e);
+                RobustReflectionConverter.addErrorInContext(context, e);
             }
             reader.moveUp();
         }
     }
 
+    private static final Logger LOGGER = Logger.getLogger(RobustCollectionConverter.class.getName());
 }

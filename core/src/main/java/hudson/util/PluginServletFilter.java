@@ -33,10 +33,7 @@ import javax.servlet.ServletException;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 import java.io.IOException;
-import java.util.Arrays;
-import java.util.Collection;
 import java.util.List;
-import java.util.ArrayList;
 import java.util.Vector;
 
 /**
@@ -76,6 +73,12 @@ public class PluginServletFilter implements Filter, ExtensionPoint {
     			filter.init(filterConfig);
     		}
     		LIST.add(filter);
+    	}
+    }
+
+    public static void removeFilter(Filter filter) throws ServletException {
+    	synchronized (LIST) {
+            LIST.remove(filter);
     	}
     }
 

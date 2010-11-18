@@ -24,13 +24,14 @@
 
 package hudson.util;
 
+import hudson.console.ConsoleNote;
 import hudson.model.TaskListener;
-import hudson.util.StreamTaskListener;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintStream;
 import java.io.PrintWriter;
+import java.io.Serializable;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
@@ -38,7 +39,7 @@ import java.util.logging.Logger;
 /**
  * {@link TaskListener} which sends messages to a {@link Logger}.
  */
-public class LogTaskListener implements TaskListener {
+public class LogTaskListener extends AbstractTaskListener implements Serializable {
     
     private final TaskListener delegate;
 
@@ -66,6 +67,10 @@ public class LogTaskListener implements TaskListener {
         return delegate.fatalError(format, args);
     }
 
+    public void annotate(ConsoleNote ann) {
+        // no annotation support
+    }
+
     public void close() {
         delegate.getLogger().close();
     }
@@ -91,9 +96,11 @@ public class LogTaskListener implements TaskListener {
             }
         }
 
-        public @Override void flush() throws IOException {
+        @Override
+        public void flush() throws IOException {
             if (baos.size() > 0) {
                 LogRecord lr = new LogRecord(level, baos.toString());
+                lr.setLoggerName(logger.getName());
                 lr.setSourceClassName(caller.getClassName());
                 lr.setSourceMethodName(caller.getMethodName());
                 logger.log(lr);
@@ -101,10 +108,12 @@ public class LogTaskListener implements TaskListener {
             baos.reset();
         }
 
-        public @Override void close() throws IOException {
+        @Override
+        public void close() throws IOException {
             flush();
         }
 
     }
 
+    private static final long serialVersionUID = 1L;
 }

@@ -32,10 +32,8 @@ THE SOFTWARE.
     <st:attribute name="descriptors" use="required">
       hudson.model.Descriptor collection whose configuration page is rendered.
     </st:attribute>
-    <st:attribute name="instances" use="required">
-      Map&lt;Descriptor,Describable> that defines current instances of those descriptors.
-      These are used to fill initial values. Other classes that define the get(Descriptor)
-      method works fine, too.
+    <st:attribute name="instance" use="required">
+      The currently configured instance used to fill the initial values of the form.
     </st:attribute>
     <st:attribute name="targetType">
       the type for which descriptors will be configured.
@@ -54,6 +52,9 @@ THE SOFTWARE.
         title="${d.displayName}" checked="${instance.descriptor==d}">
         <j:set var="descriptor" value="${d}" />
 	      <j:set var="instance" value="${instance.descriptor==d?instance:null}" />
+        <f:invisibleEntry>
+          <input type="hidden" name="stapler-class" value="${descriptor.clazz.name}"/>
+        </f:invisibleEntry>
 	      <st:include from="${d}" page="${d.configPage}" optional="true" />
 	    </f:radioBlock>
 	  </j:forEach>

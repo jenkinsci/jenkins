@@ -23,18 +23,19 @@
  */
 package hudson.model;
 
+import hudson.EnvVars;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.export.Exported;
 
-import java.util.Map;
+import java.util.Locale;
 
 import hudson.util.VariableResolver;
 
 /**
- * {@link hudson.model.ParameterValue} created from {@link hudson.model.StringParameterDefinition}.
+ * {@link ParameterValue} created from {@link BooleanParameterDefinition}.
  */
 public class BooleanParameterValue extends ParameterValue {
-    @Exported(visibility=3)
+    @Exported(visibility=4)
     public final boolean value;
 
     @DataBoundConstructor
@@ -51,8 +52,9 @@ public class BooleanParameterValue extends ParameterValue {
      * Exposes the name/value as an environment variable.
      */
     @Override
-    public void buildEnvVars(AbstractBuild<?,?> build, Map<String,String> env) {
-        env.put(name.toUpperCase(),Boolean.toString(value));
+    public void buildEnvVars(AbstractBuild<?,?> build, EnvVars env) {
+        env.put(name,Boolean.toString(value));
+        env.put(name.toUpperCase(Locale.ENGLISH),Boolean.toString(value)); // backward compatibility pre 1.345
     }
 
     @Override

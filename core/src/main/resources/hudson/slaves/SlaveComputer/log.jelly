@@ -27,11 +27,11 @@ THE SOFTWARE.
     <st:include page="sidepanel.jelly" />
     <l:main-panel>
       <l:isAdmin>
-        <pre id="out"></pre>
+        <pre id="out" />
         <div id="spinner">
           <img src="${imagesURL}/spinner.gif" alt=""/>
         </div>
-        <t:progressiveText href="progressiveLog" idref="out" spinner="spinner" />
+        <t:progressiveText href="logText/progressiveHtml" idref="out" spinner="spinner" />
       </l:isAdmin>
     </l:main-panel>
   </l:layout>

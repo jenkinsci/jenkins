@@ -1,7 +1,7 @@
 /*
  * The MIT License
  * 
- * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi
+ * Copyright (c) 2004-2010, Sun Microsystems, Inc., Kohsuke Kawaguchi
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -29,11 +29,13 @@ import hudson.util.FormValidation;
 import hudson.Launcher;
 import hudson.Extension;
 import hudson.EnvVars;
+import hudson.Util;
 import hudson.slaves.NodeSpecific;
 import hudson.tools.ToolInstallation;
 import hudson.tools.ToolDescriptor;
 import hudson.tools.ToolProperty;
 import hudson.tools.JDKInstaller;
+import hudson.util.XStream2;
 
 import java.io.File;
 import java.io.IOException;
@@ -51,8 +53,11 @@ import org.kohsuke.stapler.QueryParameter;
  * @author Kohsuke Kawaguchi
  */
 public final class JDK extends ToolInstallation implements NodeSpecific<JDK>, EnvironmentSpecific<JDK> {
+    /**
+     * @deprecated since 2009-02-25
+     */
     @Deprecated // kept for backward compatibility - use getHome() instead
-    private String javaHome;
+    private transient String javaHome;
 
     public JDK(String name, String javaHome) {
         super(name, javaHome, Collections.<ToolProperty<?>>emptyList());
@@ -73,12 +78,6 @@ public final class JDK extends ToolInstallation implements NodeSpecific<JDK>, En
         return getHome();
     }
 
-    @SuppressWarnings({"deprecation"})
-    public @Override String getHome() {
-        if (javaHome != null) return javaHome;
-        return super.getHome();
-    }
-
     /**
      * Gets the path to the bin directory.
      */
@@ -89,12 +88,7 @@ public final class JDK extends ToolInstallation implements NodeSpecific<JDK>, En
      * Gets the path to 'java'.
      */
     private File getExecutable() {
-        String execName;
-        if(File.separatorChar=='\\')
-            execName = "java.exe";
-        else
-            execName = "java";
-
+        String execName = (File.separatorChar == '\\') ? "java.exe" : "java";
         return new File(getHome(),"bin/"+execName);
     }
 
@@ -110,7 +104,7 @@ public final class JDK extends ToolInstallation implements NodeSpecific<JDK>, En
      */
     public void buildEnvVars(Map<String,String> env) {
         // see EnvVars javadoc for why this adss PATH.
-        env.put("PATH+JDK",getBinDir().getPath());
+        env.put("PATH+JDK",getHome()+"/bin");
         env.put("JAVA_HOME",getHome());
     }
 
@@ -133,7 +127,7 @@ public final class JDK extends ToolInstallation implements NodeSpecific<JDK>, En
         try {
             TaskListener listener = new StreamTaskListener(new NullStream());
             Launcher launcher = n.createLauncher(listener);
-            return launcher.launch("java -fullversion",new String[0],listener.getLogger(),null).join()==0;
+            return launcher.launch().cmds("java","-fullversion").stdout(listener).join()==0;
         } catch (IOException e) {
             return false;
         } catch (InterruptedException e) {
@@ -145,7 +139,7 @@ public final class JDK extends ToolInstallation implements NodeSpecific<JDK>, En
     public static class DescriptorImpl extends ToolDescriptor<JDK> {
 
         public String getDisplayName() {
-            return "Java Development Kit";
+            return "JDK"; // XXX I18N
         }
 
         public @Override JDK[] getInstallations() {
@@ -171,7 +165,10 @@ public final class JDK extends ToolInstallation implements NodeSpecific<JDK>, En
             // this can be used to check the existence of a file on the server, so needs to be protected
             Hudson.getInstance().checkPermission(Hudson.ADMINISTER);
 
-            if(value.exists() && !value.isDirectory())
+            if(value.getPath().equals(""))
+                return FormValidation.ok();
+
+            if(!value.isDirectory())
                 return FormValidation.error(Messages.Hudson_NotADirectory(value));
 
             File toolsJar = new File(value,"lib/tools.jar");
@@ -180,6 +177,17 @@ public final class JDK extends ToolInstallation implements NodeSpecific<JDK>, En
                 return FormValidation.error(Messages.Hudson_NotJDKDir(value));
 
             return FormValidation.ok();
+        }
+
+        public FormValidation doCheckName(@QueryParameter String value) {
+            return FormValidation.validateRequired(value);
+        }
+    }
+
+    public static class ConverterImpl extends ToolConverter {
+        public ConverterImpl(XStream2 xstream) { super(xstream); }
+        @Override protected String oldHomeField(ToolInstallation obj) {
+            return ((JDK)obj).javaHome;
         }
     }
 }

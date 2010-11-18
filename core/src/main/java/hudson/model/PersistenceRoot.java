@@ -34,7 +34,7 @@ import java.io.File;
 public interface PersistenceRoot extends Saveable {
     /**
      * Gets the root directory on the file system that this
-     * {@link Item} can use freely fore storing the configuration data.
+     * {@link Item} can use freely for storing the configuration data.
      *
      * <p>
      * This parameter is given by the {@link ItemGroup} when

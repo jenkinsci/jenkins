@@ -1,7 +1,8 @@
 <!--
 The MIT License
 
-Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, Eric Lefevre-Ardant, id:cactusman
+Copyright (c) 2004-2010, Sun Microsystems, Inc., Kohsuke Kawaguchi,
+Eric Lefevre-Ardant, id:cactusman, Yahoo! Inc.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -25,46 +26,44 @@ THE SOFTWARE.
 <!--
   Parts of the configuration that applies to Project and MavenModuleSet.
 -->
-<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:p="/lib/hudson/project">
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:p="/lib/hudson/project" xmlns:this="this">
   <p:config-disableBuild/>
+  <j:if test="${app.CONCURRENT_BUILD}">
+    <f:optionalBlock field="concurrentBuild" title="${%title.concurrentbuilds}" />
+  </j:if>
 
   <j:set var="jdks" value="${app.JDKs}" />
-  <j:if test="${jdks.size() &gt; 1}">
+  <j:if test="${jdks.size() gt 1}">
     <!-- if there's only one JDK configured, always use that. -->
     <f:entry title="JDK"
              description="${%JDK to be used for this project}">
       <select class="setting-input validated" name="jdk" checkUrl="'${rootURL}/defaultJDKCheck?value='+this.value">
         <option>${%default.value}</option>
         <j:forEach var="inst" items="${jdks}">
-          <f:option selected="${inst.name==it.JDK.name}">${inst.name}</f:option>
+          <f:option selected="${inst.name==it.JDK.name}" value="${inst.name}">${inst.name}</f:option>
         </j:forEach>
       </select>
     </f:entry>
   </j:if>
 
   <!-- master/slave -->
-  <j:if test="${!empty(app.slaves) || (it.assignedLabel!=null and it.assignedLabel!=app.selfLabel)}">
-    <f:optionalBlock name="hasSlaveAffinity" title="${%Tie this project to a node}" checked="${it.assignedLabel!=null}"
+  <j:if test="${app.labels.size() gt 1 || app.clouds.size() gt 0 || (it.assignedLabel!=null and it.assignedLabel!=app.selfLabel)}">
+    <f:optionalBlock name="hasSlaveAffinity" title="${%Restrict where this project can be run}" checked="${it.assignedLabel!=null}"
         help="/help/project-config/slave.html">
-      <f:entry title="${%Node}">
-        <select class="setting-input" name="slave">
-          <j:forEach var="s" items="${app.labels}">
-            <j:if test="${s.totalConfiguredExecutors &gt; 0}">
-              <f:option selected="${s==it.assignedLabel}" value="${s.name}"
-                >${s.name} <j:if test="${!empty(s.description)}">(${s.description})</j:if></f:option>
-            </j:if>
-          </j:forEach>
-        </select>
+      <f:entry title="${%Label Expression}" field="assignedLabelString">
+        <f:textbox autoCompleteDelimiChar=" "/>
       </f:entry>
     </f:optionalBlock>
   </j:if>
 
-  <f:section title="${%Advanced Project Options}">
+  <f:section title="${%Advanced Project Options configure-common}">
     <f:advanced>
       <p:config-quietPeriod />
+      <p:config-retryCount />
+      <p:config-blockWhenUpstreamBuilding />
       <st:include page="configure-advanced.jelly" optional="true" />
     </f:advanced>
   </f:section>
 
-  <p:config-scm/>
+  <this:configure-scm/>
 </j:jelly>

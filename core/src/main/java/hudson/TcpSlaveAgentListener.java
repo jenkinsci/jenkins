@@ -24,9 +24,16 @@
 package hudson;
 
 import hudson.model.Hudson;
+import hudson.model.Computer;
 import hudson.slaves.SlaveComputer;
 import hudson.remoting.Channel;
+import hudson.remoting.SocketOutputStream;
+import hudson.remoting.SocketInputStream;
+import hudson.remoting.Engine;
 import hudson.remoting.Channel.Listener;
+import hudson.remoting.Channel.Mode;
+import hudson.cli.CliManagerImpl;
+import hudson.cli.CliEntryPoint;
 
 import java.io.DataInputStream;
 import java.io.IOException;
@@ -36,11 +43,12 @@ import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.net.BindException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- * Listens to incoming TCP connections from JNLP slave agents.
+ * Listens to incoming TCP connections from JNLP slave agents and CLI.
  *
  * <h2>Security</h2>
  * <p>
@@ -79,7 +87,11 @@ public final class TcpSlaveAgentListener extends Thread {
      */
     public TcpSlaveAgentListener(int port) throws IOException {
         super("TCP slave agent listener port="+port);
-        serverSocket = new ServerSocket(port);
+        try {
+            serverSocket = new ServerSocket(port);
+        } catch (BindException e) {
+            throw (BindException)new BindException("Failed to listen on port "+port+" because it's already in use.").initCause(e);
+        }
         this.configuredPort = port;
 
         LOGGER.info("JNLP slave agent listener started on TCP port "+getPort());
@@ -98,6 +110,7 @@ public final class TcpSlaveAgentListener extends Thread {
         return Hudson.getInstance().getSecretKey();
     }
 
+    @Override
     public void run() {
         try {
             // the loop eventually terminates when the socket is closed.
@@ -138,6 +151,7 @@ public final class TcpSlaveAgentListener extends Thread {
             }
         }
 
+        @Override
         public void run() {
             try {
                 LOGGER.info("Accepted connection #"+id+" from "+s.getRemoteSocketAddress());
@@ -151,6 +165,8 @@ public final class TcpSlaveAgentListener extends Thread {
                     String protocol = s.substring(9);
                     if(protocol.equals("JNLP-connect")) {
                         runJnlpConnect(in, out);
+                    } else if(protocol.equals("CLI-connect")) {
+                            runCliConnect(in, out);
                     } else {
                         error(out, "Unknown protocol:" + s);
                     }
@@ -175,6 +191,19 @@ public final class TcpSlaveAgentListener extends Thread {
         }
 
         /**
+         * Handles CLI connection request.
+         */
+        private void runCliConnect(DataInputStream in, PrintWriter out) throws IOException, InterruptedException {
+            out.println("Welcome");
+            Channel channel = new Channel("CLI channel from " + s.getInetAddress(),
+                    Computer.threadPoolForRemoting, Mode.BINARY,
+                    new BufferedInputStream(new SocketInputStream(this.s)),
+                    new BufferedOutputStream(new SocketOutputStream(this.s)), null, true);
+            channel.setProperty(CliEntryPoint.class.getName(),new CliManagerImpl());
+            channel.join();
+        }
+
+        /**
          * Handles JNLP slave agent connection request.
          */
         private void runJnlpConnect(DataInputStream in, PrintWriter out) throws IOException, InterruptedException {
@@ -195,28 +224,40 @@ public final class TcpSlaveAgentListener extends Thread {
                 return;
             }
 
-            out.println("Welcome");
+            out.println(Engine.GREETING_SUCCESS);
 
             final OutputStream log = computer.openLogFile();
-            new PrintWriter(log).println("JNLP agent connected from "+ this.s.getInetAddress());
+            PrintWriter logw = new PrintWriter(log,true);
+            logw.println("JNLP agent connected from "+ this.s.getInetAddress());
 
-            computer.setChannel(new BufferedInputStream(this.s.getInputStream()), new BufferedOutputStream(this.s.getOutputStream()), log,
-                new Listener() {
-                    public void onClosed(Channel channel, IOException cause) {
-                        try {
-                            log.close();
-                        } catch (IOException e) {
-                            e.printStackTrace(); 
+            try {
+                computer.setChannel(new BufferedInputStream(this.s.getInputStream()), new BufferedOutputStream(this.s.getOutputStream()), log,
+                    new Listener() {
+                        @Override
+                        public void onClosed(Channel channel, IOException cause) {
+                            try {
+                                log.close();
+                            } catch (IOException e) {
+                                e.printStackTrace();
+                            }
+                            if(cause!=null)
+                                LOGGER.log(Level.WARNING, "Connection #"+id+" terminated",cause);
+                            try {
+                                ConnectionHandler.this.s.close();
+                            } catch (IOException e) {
+                                // ignore
+                            }
                         }
-                        if(cause!=null)
-                            LOGGER.log(Level.WARNING, "Connection #"+id+" terminated",cause);
-                        try {
-                            ConnectionHandler.this.s.close();
-                        } catch (IOException e) {
-                            // ignore
-                        }
-                    }
-                });
+                    });
+            } catch (AbortException e) {
+                logw.println(e.getMessage());
+                logw.println("Failed to establish the connection with the slave");
+                throw e;
+            } catch (IOException e) {
+                logw.println("Failed to establish the connection with the slave"); 
+                e.printStackTrace(logw);
+                throw e;
+            }
         }
 
         private void error(PrintWriter out, String msg) throws IOException {

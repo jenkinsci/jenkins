@@ -1,7 +1,7 @@
 /*
  * The MIT License
  * 
- * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi
+ * Copyright (c) 2004-2010, Sun Microsystems, Inc., Kohsuke Kawaguchi, Yahoo! Inc.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -28,12 +28,14 @@ import com.thoughtworks.xstream.converters.MarshallingContext;
 import com.thoughtworks.xstream.converters.UnmarshallingContext;
 import com.thoughtworks.xstream.io.HierarchicalStreamReader;
 import com.thoughtworks.xstream.io.HierarchicalStreamWriter;
+import hudson.diagnosis.OldDataMonitor;
 import hudson.model.Descriptor;
 import hudson.model.Hudson;
 import hudson.model.Item;
 import hudson.util.FormValidation;
-import hudson.util.VersionNumber;
 import hudson.util.FormValidation.Kind;
+import hudson.util.VersionNumber;
+import hudson.util.RobustReflectionConverter;
 import hudson.Functions;
 import hudson.Extension;
 import net.sf.json.JSONObject;
@@ -53,8 +55,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.io.IOException;
-import java.io.Serializable;
+import java.util.Collections;
+import java.util.SortedMap;
+import java.util.TreeMap;
 
 /**
  * Role-based authorization via a matrix.
@@ -81,6 +87,8 @@ public class GlobalMatrixAuthorizationStrategy extends AuthorizationStrategy {
      * as this object itself is considered immutable once populated.
      */
     public void add(Permission p, String sid) {
+        if (p==null)
+            throw new IllegalArgumentException();
         Set<String> set = grantedPermissions.get(p);
         if(set==null)
             grantedPermissions.put(p,set = new HashSet<String>());
@@ -94,7 +102,10 @@ public class GlobalMatrixAuthorizationStrategy extends AuthorizationStrategy {
      */
     private void add(String shortForm) {
         int idx = shortForm.indexOf(':');
-        add(Permission.fromId(shortForm.substring(0,idx)),shortForm.substring(idx+1));
+        Permission p = Permission.fromId(shortForm.substring(0, idx));
+        if (p==null)
+            throw new IllegalArgumentException("Failed to parse '"+shortForm+"' --- no such permission");
+        add(p,shortForm.substring(idx+1));
     }
 
     @Override
@@ -107,30 +118,26 @@ public class GlobalMatrixAuthorizationStrategy extends AuthorizationStrategy {
     }
 
     /**
-     * In earlier version of Hudson we used to use reflection converter, which calls this method.
-     * This is now unmarshaller via {@link ConverterImpl}
-     */
-    private Object readResolve() {
-        migrateHudson2324(grantedPermissions);
-        acl = new AclImpl();
-        return this;
-    }
-
-    /**
      * Due to HUDSON-2324, we want to inject Item.READ permission to everyone who has Hudson.READ,
-     * to remain backward compatible
+     * to remain backward compatible.
      * @param grantedPermissions
      */
-    /*package*/ static void migrateHudson2324(Map<Permission,Set<String>> grantedPermissions) {
+    /*package*/ static boolean migrateHudson2324(Map<Permission,Set<String>> grantedPermissions) {
+        boolean result = false;
         if(Hudson.getInstance().isUpgradedFromBefore(new VersionNumber("1.300.*"))) {
             Set<String> f = grantedPermissions.get(Hudson.READ);
-            if(f!=null) {
+            if (f!=null) {
                 Set<String> t = grantedPermissions.get(Item.READ);
-                if(t!=null) t.addAll(f);
-                else        t=new HashSet<String>(f);
+                if (t!=null)
+                    result = t.addAll(f);
+                else {
+                    t = new HashSet<String>(f);
+                    result = true;
+                }
                 grantedPermissions.put(Item.READ,t);
             }
         }
+        return result;
     }
 
     /**
@@ -139,7 +146,7 @@ public class GlobalMatrixAuthorizationStrategy extends AuthorizationStrategy {
     public boolean hasPermission(String sid, Permission p) {
         for(; p!=null; p=p.impliedBy) {
             Set<String> set = grantedPermissions.get(p);
-            if(set!=null && set.contains(sid))
+            if(set!=null && set.contains(sid) && p.getEnabled())
                 return true;
         }
         return false;
@@ -150,7 +157,7 @@ public class GlobalMatrixAuthorizationStrategy extends AuthorizationStrategy {
      */
     public boolean hasExplicitPermission(String sid, Permission p) {
         Set<String> set = grantedPermissions.get(p);
-        return set != null && set.contains(sid);
+        return set != null && set.contains(sid) && p.getEnabled();
     }
 
     /**
@@ -193,11 +200,16 @@ public class GlobalMatrixAuthorizationStrategy extends AuthorizationStrategy {
         public void marshal(Object source, HierarchicalStreamWriter writer, MarshallingContext context) {
             GlobalMatrixAuthorizationStrategy strategy = (GlobalMatrixAuthorizationStrategy)source;
 
-            for (Entry<Permission, Set<String>> e : strategy.grantedPermissions.entrySet()) {
+            // Output in alphabetical order for readability.
+            SortedMap<Permission, Set<String>> sortedPermissions = new TreeMap<Permission, Set<String>>(Permission.ID_COMPARATOR);
+            sortedPermissions.putAll(strategy.grantedPermissions);
+            for (Entry<Permission, Set<String>> e : sortedPermissions.entrySet()) {
                 String p = e.getKey().getId();
-                for (String sid : e.getValue()) {
+                List<String> sids = new ArrayList<String>(e.getValue());
+                Collections.sort(sids);
+                for (String sid : sids) {
                     writer.startNode("permission");
-                    context.convertAnother(p+':'+sid);
+                    writer.setValue(p+':'+sid);
                     writer.endNode();
                 }
             }
@@ -209,12 +221,18 @@ public class GlobalMatrixAuthorizationStrategy extends AuthorizationStrategy {
 
             while (reader.hasMoreChildren()) {
                 reader.moveDown();
-                String id = (String)context.convertAnother(as,String.class);
-                as.add(id);
+                try {
+                    as.add(reader.getValue());
+                } catch (IllegalArgumentException ex) {
+                    Logger.getLogger(GlobalMatrixAuthorizationStrategy.class.getName())
+                          .log(Level.WARNING,"Skipping a non-existent permission",ex);
+                    RobustReflectionConverter.addErrorInContext(context, ex);
+                }
                 reader.moveUp();
             }
 
-            migrateHudson2324(as.grantedPermissions);
+            if (migrateHudson2324(as.grantedPermissions))
+                OldDataMonitor.report(context, "1.301");
 
             return as;
         }
@@ -236,6 +254,7 @@ public class GlobalMatrixAuthorizationStrategy extends AuthorizationStrategy {
             return Messages.GlobalMatrixAuthorizationStrategy_DisplayName();
         }
 
+        @Override
         public AuthorizationStrategy newInstance(StaplerRequest req, JSONObject formData) throws FormException {
             GlobalMatrixAuthorizationStrategy gmas = create();
             for(Map.Entry<String,JSONObject> r : (Set<Map.Entry<String,JSONObject>>)formData.getJSONObject("data").entrySet()) {
@@ -254,10 +273,6 @@ public class GlobalMatrixAuthorizationStrategy extends AuthorizationStrategy {
             return new GlobalMatrixAuthorizationStrategy();
         }
 
-        public String getHelpFile() {
-            return "/help/security/global-matrix.html";
-        }
-
         public List<PermissionGroup> getAllGroups() {
             List<PermissionGroup> groups = new ArrayList<PermissionGroup>(PermissionGroup.getAll());
             groups.remove(PermissionGroup.get(Permission.class));
@@ -265,7 +280,7 @@ public class GlobalMatrixAuthorizationStrategy extends AuthorizationStrategy {
         }
 
         public boolean showPermission(Permission p) {
-            return true;
+            return p.getEnabled();
         }
 
         public FormValidation doCheckName(@QueryParameter String value ) throws IOException, ServletException {
@@ -280,7 +295,7 @@ public class GlobalMatrixAuthorizationStrategy extends AuthorizationStrategy {
             String ev = Functions.escape(v);
 
             if(v.equals("authenticated"))
-                // systerm reserved group
+                // system reserved group
                 return FormValidation.respond(Kind.OK, makeImg("user.gif") +ev);
 
             try {
@@ -307,7 +322,7 @@ public class GlobalMatrixAuthorizationStrategy extends AuthorizationStrategy {
                 // fall through next
             }
 
-            // couldn't find it. it doesn't exit
+            // couldn't find it. it doesn't exist
             return FormValidation.respond(Kind.ERROR, makeImg("error.gif") +ev);
         }
 

@@ -26,13 +26,18 @@ package hudson.model;
 import hudson.DescriptorExtensionList;
 import hudson.Extension;
 import hudson.ExtensionPoint;
+import hudson.AbortException;
+import hudson.cli.CLICommand;
 import hudson.util.DescriptorList;
 
 import java.io.Serializable;
+import java.io.IOException;
 
 import net.sf.json.JSONObject;
 
 import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.export.Exported;
+import org.kohsuke.stapler.export.ExportedBean;
 
 /**
  * Defines a parameter for a build.
@@ -88,10 +93,12 @@ import org.kohsuke.stapler.StaplerRequest;
  * TODO: {@link ParameterValue} needs to have some mechanism to expose values to the build
  * @see StringParameterDefinition
  */
+@ExportedBean(defaultVisibility=3)
 public abstract class ParameterDefinition implements
         Describable<ParameterDefinition>, ExtensionPoint, Serializable {
 
     private final String name;
+
     private final String description;
 
     public ParameterDefinition(String name) {
@@ -103,10 +110,12 @@ public abstract class ParameterDefinition implements
         this.description = description;
     }
 
+    @Exported
     public String getName() {
         return name;
     }
 
+    @Exported
     public String getDescription() {
         return description;
     }
@@ -115,31 +124,59 @@ public abstract class ParameterDefinition implements
      * {@inheritDoc}
      */
     public ParameterDescriptor getDescriptor() {
-        return (ParameterDescriptor)Hudson.getInstance().getDescriptor(getClass());
+        return (ParameterDescriptor)Hudson.getInstance().getDescriptorOrDie(getClass());
     }
 
     /**
-     * Create a parameter value from a form submission
-     * @param req
-     * @param jo
-     * @return
+     * Create a parameter value from a form submission.
+     *
+     * <p>
+     * This method is invoked when the user fills in the parameter values in the HTML form
+     * and submits it to the server.
      */
     public abstract ParameterValue createValue(StaplerRequest req, JSONObject jo);
     
     /**
-     * Create a parameter value from a GET (with query string) or POST.
+     * Create a parameter value from a GET with query string.
      * If no value is available in the request, it returns a default value if possible, or null.
-     * @param req
-     * @return
+     *
+     * <p>
+     * Unlike {@link #createValue(StaplerRequest, JSONObject)}, this method is intended to support
+     * the programmatic POST-ing of the build URL. This form is less expressive (as it doesn't support
+     * the tree form), but it's more scriptable.
+     *
+     * <p>
+     * If a {@link ParameterDefinition} can't really support this mode of creating a value,
+     * you may just always return null.
      */
     public abstract ParameterValue createValue(StaplerRequest req);
 
+
+    /**
+     * Create a parameter value from the string given in the CLI.
+     *
+     * @param command
+     *      This is the command that got the parameter. You can use its {@link CLICommand#channel}
+     *      for interacting with the CLI JVM.
+     * @throws AbortException
+     *      If the CLI processing should be aborted. Hudson will report the error message
+     *      without stack trace, and then exits this command. Useful for graceful termination.
+     * @throws Exception
+     *      All the other exceptions cause the stack trace to be dumped, and then
+     *      the command exits with an error code.
+     * @since 1.334
+     */
+    public ParameterValue createValue(CLICommand command, String value) throws IOException, InterruptedException {
+        throw new AbortException("CLI parameter submission is not supported for the "+getClass()+" type. Please file a bug report for this");
+    }
+    
     /**
      * Returns default parameter value for this definition.
      * 
      * @return default parameter value or null if no defaults are available
      * @since 1.253
      */
+    @Exported
     public ParameterValue getDefaultParameterValue() {
         return null;
     }
@@ -148,7 +185,7 @@ public abstract class ParameterDefinition implements
      * Returns all the registered {@link ParameterDefinition} descriptors.
      */
     public static DescriptorExtensionList<ParameterDefinition,ParameterDescriptor> all() {
-        return Hudson.getInstance().getDescriptorList(ParameterDefinition.class);
+        return Hudson.getInstance().<ParameterDefinition,ParameterDescriptor>getDescriptorList(ParameterDefinition.class);
     }
 
     /**
@@ -183,7 +220,5 @@ public abstract class ParameterDefinition implements
         public String getDisplayName() {
             return "Parameter";
         }
-
     }
-
 }

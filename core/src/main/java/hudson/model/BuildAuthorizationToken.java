@@ -23,7 +23,7 @@
  */
 package hudson.model;
 
-import com.thoughtworks.xstream.converters.basic.AbstractBasicConverter;
+import com.thoughtworks.xstream.converters.basic.AbstractSingleValueConverter;
 import hudson.Util;
 import hudson.security.ACL;
 import org.kohsuke.stapler.StaplerRequest;
@@ -36,7 +36,7 @@ import java.io.IOException;
  *
  * @author Kohsuke Kawaguchi
  * @see BuildableItem
- * @deprecated
+ * @deprecated 2008-07-20
  *      Use {@link ACL} and {@link AbstractProject#BUILD}. This code is only here
  *      for the backward compatibility.
  */
@@ -75,16 +75,17 @@ public final class BuildAuthorizationToken {
         return token;
     }
 
-    public static final class ConverterImpl extends AbstractBasicConverter {
+    public static final class ConverterImpl extends AbstractSingleValueConverter {
         public boolean canConvert(Class type) {
             return type== BuildAuthorizationToken.class;
         }
 
-        protected Object fromString(String str) {
+        public Object fromString(String str) {
             return new BuildAuthorizationToken(str);
         }
 
-        protected String toString(Object obj) {
+        @Override
+        public String toString(Object obj) {
             return ((BuildAuthorizationToken)obj).token;
         }
     }

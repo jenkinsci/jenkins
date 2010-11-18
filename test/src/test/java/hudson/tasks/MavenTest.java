@@ -1,7 +1,7 @@
 /*
  * The MIT License
  * 
- * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi
+ * Copyright (c) 2004-2010, Sun Microsystems, Inc., Kohsuke Kawaguchi, Yahoo! Inc.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -30,25 +30,20 @@ import hudson.model.JDK;
 import hudson.model.ParametersDefinitionProperty;
 import hudson.model.Result;
 import hudson.model.StringParameterDefinition;
-import hudson.model.AbstractProject;
-import hudson.model.Job;
-import hudson.model.AbstractBuild;
-import hudson.model.Run;
-import hudson.model.Cause;
-import hudson.model.Action;
 import hudson.model.ParametersAction;
 import hudson.model.StringParameterValue;
 import hudson.model.Cause.LegacyCodeCause;
-import hudson.model.listeners.RunListener;
 import hudson.slaves.EnvironmentVariablesNodeProperty;
 import hudson.slaves.EnvironmentVariablesNodeProperty.Entry;
 import hudson.tasks.Maven.MavenInstallation;
-import hudson.remoting.AsyncFutureImpl;
+import hudson.tasks.Maven.MavenInstaller;
+import hudson.tasks.Maven.MavenInstallation.DescriptorImpl;
+import hudson.tools.ToolProperty;
+import hudson.tools.ToolPropertyDescriptor;
+import hudson.tools.InstallSourceProperty;
+import hudson.util.DescribableList;
 
 import java.util.Collections;
-import java.util.concurrent.Future;
-import java.util.concurrent.Semaphore;
-import java.util.concurrent.TimeUnit;
 
 import junit.framework.Assert;
 
@@ -56,6 +51,11 @@ import org.jvnet.hudson.test.HudsonTestCase;
 
 import com.gargoylesoftware.htmlunit.html.HtmlForm;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
+import com.gargoylesoftware.htmlunit.html.HtmlButton;
+import com.gargoylesoftware.htmlunit.html.HtmlInput;
+import hudson.model.FreeStyleBuild;
+import hudson.model.PasswordParameterDefinition;
+import org.jvnet.hudson.test.ExtractResourceSCM;
 
 /**
  * @author Kohsuke Kawaguchi
@@ -68,7 +68,7 @@ public class MavenTest extends HudsonTestCase {
         hudson.getDescriptorByType(Maven.DescriptorImpl.class).setInstallations(); // reset
 
         FreeStyleProject p = createFreeStyleProject();
-        p.getBuildersList().add(new Maven("a", null, "b.pom", "c=d", "-e"));
+        p.getBuildersList().add(new Maven("a", null, "b.pom", "c=d", "-e", true));
 
         WebClient webClient = new WebClient();
         HtmlPage page = webClient.getPage(p, "configure");
@@ -83,15 +83,15 @@ public class MavenTest extends HudsonTestCase {
         assertEquals("b.pom", m.pom);
         assertEquals("c=d", m.properties);
         assertEquals("-e", m.jvmOptions);
+	assertTrue(m.usesPrivateRepository());
     }
 
     public void testWithNodeProperty() throws Exception {
         MavenInstallation maven = configureDefaultMaven();
-        String mavenHome = maven.getMavenHome();
+        String mavenHome = maven.getHome();
         String mavenHomeVar = "${VAR_MAVEN}" + mavenHome.substring(3);
         String mavenVar = mavenHome.substring(0, 3);
-        MavenInstallation varMaven = new MavenInstallation("varMaven",
-                mavenHomeVar);
+        MavenInstallation varMaven = new MavenInstallation("varMaven", mavenHomeVar, NO_PROPERTIES);
         hudson.getDescriptorByType(Maven.DescriptorImpl.class).setInstallations(maven, varMaven);
 
         JDK jdk = hudson.getJDK("default");
@@ -117,15 +117,14 @@ public class MavenTest extends HudsonTestCase {
 
     public void testWithParameter() throws Exception {
         MavenInstallation maven = configureDefaultMaven();
-        String mavenHome = maven.getMavenHome();
+        String mavenHome = maven.getHome();
         String mavenHomeVar = "${VAR_MAVEN}" + mavenHome.substring(3);
         String mavenVar = mavenHome.substring(0, 3);
-        MavenInstallation varMaven = new MavenInstallation("varMaven",
-                mavenHomeVar);
+        MavenInstallation varMaven = new MavenInstallation("varMaven",mavenHomeVar,NO_PROPERTIES);
         hudson.getDescriptorByType(Maven.DescriptorImpl.class).setInstallations(maven, varMaven);
 
         JDK jdk = hudson.getJDK("default");
-        String javaHome = jdk.getJavaHome();
+        String javaHome = jdk.getHome();
         String javaHomeVar = "${VAR_JAVA}" + javaHome.substring(3);
         String javaVar = javaHome.substring(0, 3);
         JDK varJDK = new JDK("varJDK", javaHomeVar);
@@ -147,4 +146,54 @@ public class MavenTest extends HudsonTestCase {
 
     }
 
+    /**
+     * Simulates the addition of the new Maven via UI and makes sure it works.
+     */
+    public void testGlobalConfigAjax() throws Exception {
+        HtmlPage p = new WebClient().goTo("configure");
+        HtmlForm f = p.getFormByName("config");
+        HtmlButton b = getButtonByCaption(f, "Add Maven");
+        b.click();
+        findPreviousInputElement(b,"name").setValueAttribute("myMaven");
+        findPreviousInputElement(b,"home").setValueAttribute("/tmp/foo");
+        submit(f);
+        verify();
+
+        // another submission and verfify it survives a roundtrip
+        p = new WebClient().goTo("configure");
+        f = p.getFormByName("config");
+        submit(f);
+        verify();
+    }
+
+    private void verify() throws Exception {
+        MavenInstallation[] l = get(DescriptorImpl.class).getInstallations();
+        assertEquals(1,l.length);
+        assertEqualBeans(l[0],new MavenInstallation("myMaven","/tmp/foo",NO_PROPERTIES),"name,home");
+
+        // by default we should get the auto installer
+        DescribableList<ToolProperty<?>,ToolPropertyDescriptor> props = l[0].getProperties();
+        assertEquals(1,props.size());
+        InstallSourceProperty isp = props.get(InstallSourceProperty.class);
+        assertEquals(1,isp.installers.size());
+        assertNotNull(isp.installers.get(MavenInstaller.class));
+    }
+
+    public void testSensitiveParameters() throws Exception {
+        FreeStyleProject project = createFreeStyleProject();
+        ParametersDefinitionProperty pdb = new ParametersDefinitionProperty(
+                new StringParameterDefinition("string", "defaultValue", "string description"),
+                new PasswordParameterDefinition("password", "12345", "password description"),
+                new StringParameterDefinition("string2", "Value2", "string description")
+        );
+        project.addProperty(pdb);
+        project.setScm(new ExtractResourceSCM(getClass().getResource("maven-empty.zip")));
+        project.getBuildersList().add(new Maven("clean package",null));
+
+        FreeStyleBuild build = project.scheduleBuild2(0).get();
+        String buildLog = build.getLog();
+        assertNotNull(buildLog);
+	System.out.println(buildLog);
+        assertFalse(buildLog.contains("-Dpassword=12345"));
+    }
 }

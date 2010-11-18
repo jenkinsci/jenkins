@@ -82,6 +82,13 @@ public class Which {
             resURL = resURL.substring("code-source:/".length(), resURL.lastIndexOf('!')); // cut off jar: and the file name portion
             return new File(decode(new URL("file:/"+resURL).getPath()));
         }
+        
+        if(resURL.startsWith("zip:")){
+            // weblogic uses this. See http://www.nabble.com/patch-to-get-Hudson-working-on-weblogic-td23997258.html
+            // also see http://www.nabble.com/Re%3A-Hudson-on-Weblogic-10.3-td25038378.html#a25043415
+            resURL = resURL.substring("zip:".length(), resURL.lastIndexOf('!')); // cut off zip: and the file name portion
+            return new File(decode(new URL("file:"+resURL).getPath()));
+        }
 
         if(resURL.startsWith("file:")) {
             // unpackaged classes
@@ -104,17 +111,22 @@ public class Which {
             // JBoss5
             InputStream is = res.openStream();
             try {
-                Field f = is.getClass().getDeclaredField("delegate");
-                f.setAccessible(true);
-                Object delegate = f.get(is);
-                f = delegate.getClass().getDeclaredField("this$0");
+                Object delegate = is;
+                while (delegate.getClass().getEnclosingClass()!=ZipFile.class) {
+                    Field f = is.getClass().getDeclaredField("delegate");
+                    f.setAccessible(true);
+                    delegate = f.get(is);
+                }
+                Field f = delegate.getClass().getDeclaredField("this$0");
                 f.setAccessible(true);
                 ZipFile zipFile = (ZipFile)f.get(delegate);
                 return new File(zipFile.getName());
             } catch (NoSuchFieldException e) {
                 // something must have changed in JBoss5. fall through
+                LOGGER.log(Level.FINE, "Failed to resolve vfszip into a jar location",e);
             } catch (IllegalAccessException e) {
                 // something must have changed in JBoss5. fall through
+                LOGGER.log(Level.FINE, "Failed to resolve vfszip into a jar location",e);
             } finally {
                 is.close();
             }
@@ -125,20 +137,22 @@ public class Which {
         if (con instanceof JarURLConnection) {
             JarURLConnection jcon = (JarURLConnection) con;
             JarFile jarFile = jcon.getJarFile();
-            String n = jarFile.getName();
-            if(n.length()>0) {// JDK6u10 needs this
-                return new File(n);
-            } else {
-                // JDK6u10 apparently starts hiding the real jar file name,
-                // so this just keeps getting tricker and trickier...
-                try {
-                    Field f = ZipFile.class.getDeclaredField("name");
-                    f.setAccessible(true);
-                    return new File((String) f.get(jarFile));
-                } catch (NoSuchFieldException e) {
-                    LOGGER.log(Level.INFO, "Failed to obtain the local cache file name of "+clazz, e);
-                } catch (IllegalAccessException e) {
-                    LOGGER.log(Level.INFO, "Failed to obtain the local cache file name of "+clazz, e);
+            if (jarFile!=null) {
+                String n = jarFile.getName();
+                if(n.length()>0) {// JDK6u10 needs this
+                    return new File(n);
+                } else {
+                    // JDK6u10 apparently starts hiding the real jar file name,
+                    // so this just keeps getting tricker and trickier...
+                    try {
+                        Field f = ZipFile.class.getDeclaredField("name");
+                        f.setAccessible(true);
+                        return new File((String) f.get(jarFile));
+                    } catch (NoSuchFieldException e) {
+                        LOGGER.log(Level.INFO, "Failed to obtain the local cache file name of "+clazz, e);
+                    } catch (IllegalAccessException e) {
+                        LOGGER.log(Level.INFO, "Failed to obtain the local cache file name of "+clazz, e);
+                    }
                 }
             }
         }

@@ -27,11 +27,12 @@ package hudson.tools;
 import hudson.Extension;
 import hudson.FilePath;
 import hudson.FilePath.FileCallable;
+import hudson.ProxyConfiguration;
 import hudson.Util;
 import hudson.Functions;
+import hudson.os.PosixAPI;
 import hudson.model.Node;
 import hudson.model.TaskListener;
-import hudson.model.Hudson;
 import hudson.remoting.VirtualChannel;
 import hudson.util.FormValidation;
 import hudson.util.jna.GNUCLibrary;
@@ -48,6 +49,7 @@ import org.jvnet.animal_sniffer.IgnoreJRERequirement;
 
 /**
  * Installs a tool into the Hudson working area by downloading and unpacking a ZIP file.
+ * @since 1.305
  */
 public class ZipExtractionInstaller extends ToolInstaller {
 
@@ -76,8 +78,7 @@ public class ZipExtractionInstaller extends ToolInstaller {
     }
 
     public FilePath performInstallation(ToolInstallation tool, Node node, TaskListener log) throws IOException, InterruptedException {
-        String dirname = tool.getName().replaceAll("[^A-Za-z0-9_.-]+", "_");
-        FilePath dir = node.getRootPath().child("tools").child(dirname);
+        FilePath dir = preferredLocation(tool, node);
         if (dir.installIfNecessaryFrom(new URL(url), log, "Unpacking " + url + " to " + dir + " on " + node.getDisplayName())) {
             dir.act(new ChmodRecAPlusX());
         }
@@ -97,7 +98,7 @@ public class ZipExtractionInstaller extends ToolInstaller {
 
         public FormValidation doCheckUrl(@QueryParameter String value) {
             try {
-                URLConnection conn = new URL(value).openConnection();
+                URLConnection conn = ProxyConfiguration.open(new URL(value));
                 conn.connect();
                 if (conn instanceof HttpURLConnection) {
                     if (((HttpURLConnection) conn).getResponseCode() != HttpURLConnection.HTTP_OK) {
@@ -108,7 +109,7 @@ public class ZipExtractionInstaller extends ToolInstaller {
             } catch (MalformedURLException x) {
                 return FormValidation.error(Messages.ZipExtractionInstaller_malformed_url());
             } catch (IOException x) {
-                return FormValidation.error(Messages.ZipExtractionInstaller_could_not_connect());
+                return FormValidation.error(x,Messages.ZipExtractionInstaller_could_not_connect());
             }
         }
 
@@ -118,10 +119,10 @@ public class ZipExtractionInstaller extends ToolInstaller {
      * Sets execute permission on all files, since unzip etc. might not do this.
      * Hackish, is there a better way?
      */
-    private static class ChmodRecAPlusX implements FileCallable<Void> {
+    static class ChmodRecAPlusX implements FileCallable<Void> {
         private static final long serialVersionUID = 1L;
         public Void invoke(File d, VirtualChannel channel) throws IOException {
-            if(!Hudson.isWindows())
+            if(!Functions.isWindows())
                 process(d);
             return null;
         }
@@ -130,8 +131,15 @@ public class ZipExtractionInstaller extends ToolInstaller {
             if (f.isFile()) {
                 if(Functions.isMustangOrAbove())
                     f.setExecutable(true, false);
-                else
-                    GNUCLibrary.LIBC.chmod(f.getAbsolutePath(),0755);
+                else {
+                    try {
+                        GNUCLibrary.LIBC.chmod(f.getAbsolutePath(),0755);
+                    } catch (LinkageError e) {
+                        // if JNA is unavailable, fall back.
+                        // we still prefer to try JNA first as PosixAPI supports even smaller platforms.
+                        PosixAPI.get().chmod(f.getAbsolutePath(),0755);
+                    }
+                }
             } else {
                 File[] kids = f.listFiles();
                 if (kids != null) {

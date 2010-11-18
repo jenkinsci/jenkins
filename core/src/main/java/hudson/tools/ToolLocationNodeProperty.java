@@ -83,8 +83,8 @@ public class ToolLocationNodeProperty extends NodeProperty<Node> {
      *
      * @return
      *      never null.
-     * @deprecated
-     *      Use {@link ToolInstallation#translateFor(Node)} 
+     * @deprecated since 2009-04-09.
+     *      Use {@link ToolInstallation#translateFor(Node,TaskListener)} 
      */
     public static String getToolHome(Node node, ToolInstallation installation, TaskListener log) throws IOException, InterruptedException {
         String result = null;
@@ -108,7 +108,7 @@ public class ToolLocationNodeProperty extends NodeProperty<Node> {
     public static class DescriptorImpl extends NodePropertyDescriptor {
 
         public String getDisplayName() {
-            return Messages.ToolLocationNodeProperty_DisplayName();
+            return Messages.ToolLocationNodeProperty_displayName();
         }
 
         public DescriptorExtensionList<ToolInstallation,ToolDescriptor<?>> getToolDescriptors() {

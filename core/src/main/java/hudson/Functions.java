@@ -1,7 +1,8 @@
 /*
  * The MIT License
  * 
- * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, Yahoo! Inc., Stephen Connolly, Tom Huybrechts
+ * Copyright (c) 2004-2010, Sun Microsystems, Inc., Kohsuke Kawaguchi,
+ * Yahoo! Inc., Stephen Connolly, Tom Huybrechts, Alan Harder, Romain Seguy
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,8 +24,11 @@
  */
 package hudson;
 
+import hudson.console.ConsoleAnnotationDescriptor;
+import hudson.console.ConsoleAnnotatorFactory;
 import hudson.model.AbstractProject;
 import hudson.model.Action;
+import hudson.model.Describable;
 import hudson.model.Descriptor;
 import hudson.model.Hudson;
 import hudson.model.Item;
@@ -47,6 +51,7 @@ import hudson.security.AccessControlled;
 import hudson.security.AuthorizationStrategy;
 import hudson.security.Permission;
 import hudson.security.SecurityRealm;
+import hudson.security.csrf.CrumbIssuer;
 import hudson.slaves.Cloud;
 import hudson.slaves.ComputerLauncher;
 import hudson.slaves.NodeProperty;
@@ -61,12 +66,13 @@ import hudson.util.Area;
 import hudson.util.Iterators;
 import hudson.scm.SCM;
 import hudson.scm.SCMDescriptor;
+import hudson.util.Secret;
+import hudson.views.MyViewsTabBar;
+import hudson.views.ViewsTabBar;
 import org.acegisecurity.providers.anonymous.AnonymousAuthenticationToken;
 import org.apache.commons.jelly.JellyContext;
 import org.apache.commons.jelly.JellyTagException;
 import org.apache.commons.jelly.Script;
-import org.apache.commons.jelly.Tag;
-import org.apache.commons.jelly.TagSupport;
 import org.apache.commons.jelly.XMLOutput;
 import org.apache.commons.jexl.parser.ASTSizeFunction;
 import org.apache.commons.jexl.util.Introspector;
@@ -76,7 +82,6 @@ import org.kohsuke.stapler.Ancestor;
 import org.kohsuke.stapler.Stapler;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
-import org.kohsuke.stapler.jelly.CustomTagLibrary.StaplerDynamicTag;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.Cookie;
@@ -98,14 +103,20 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLDecoder;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
+import java.util.ConcurrentModificationException;
+import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.SortedMap;
 import java.util.TreeMap;
+import java.util.Date;
+import java.util.logging.LogManager;
 import java.util.logging.LogRecord;
 import java.util.logging.SimpleFormatter;
 import java.util.regex.Pattern;
@@ -436,7 +447,7 @@ public class Functions {
             response.addCookie(c);
         }
         if (refresh) {
-            response.addHeader("Refresh", "10");
+            response.addHeader("Refresh", System.getProperty("hudson.Functions.autoRefreshSeconds", "10"));
         }
     }
 
@@ -650,7 +661,7 @@ public class Functions {
     }
 
     public static List<Descriptor<ComputerLauncher>> getComputerLauncherDescriptors() {
-        return Hudson.getInstance().getDescriptorList(ComputerLauncher.class);
+        return Hudson.getInstance().<ComputerLauncher,Descriptor<ComputerLauncher>>getDescriptorList(ComputerLauncher.class);
     }
 
     public static List<Descriptor<RetentionStrategy<?>>> getRetentionStrategyDescriptors() {
@@ -659,6 +670,14 @@ public class Functions {
 
     public static List<ParameterDescriptor> getParameterDescriptors() {
         return ParameterDefinition.all();
+    }
+
+    public static List<Descriptor<ViewsTabBar>> getViewsTabBarDescriptors() {
+        return ViewsTabBar.all();
+    }
+
+    public static List<Descriptor<MyViewsTabBar>> getMyViewsTabBarDescriptors() {
+        return MyViewsTabBar.all();
     }
 
     public static List<NodePropertyDescriptor> getNodePropertyDescriptors(Class<? extends Node> clazz) {
@@ -670,6 +689,25 @@ public class Functions {
             }
         }
         return result;
+    }
+
+    /**
+     * Gets all the descriptors sorted by their inheritance tree of {@link Describable}
+     * so that descriptors of similar types come nearby.
+     */
+    public static Collection<Descriptor> getSortedDescriptorsForGlobalConfig() {
+        Map<String,Descriptor> r = new TreeMap<String, Descriptor>();
+        for (Descriptor<?> d : Hudson.getInstance().getExtensionList(Descriptor.class)) {
+            if (d.getGlobalConfigPage()==null)  continue;
+            r.put(buildSuperclassHierarchy(d.clazz, new StringBuilder()).toString(),d);
+        }
+        return r.values();
+    }
+
+    private static StringBuilder buildSuperclassHierarchy(Class c, StringBuilder buf) {
+        Class sc = c.getSuperclass();
+        if (sc!=null)   buildSuperclassHierarchy(sc,buf).append(':');
+        return buf.append(c.getName());
     }
 
     /**
@@ -736,13 +774,70 @@ public class Functions {
     }
 
     public static Map<Thread,StackTraceElement[]> dumpAllThreads() {
-        return Thread.getAllStackTraces();
+        Map<Thread,StackTraceElement[]> sorted = new TreeMap<Thread,StackTraceElement[]>(new ThreadSorter());
+        sorted.putAll(Thread.getAllStackTraces());
+        return sorted;
     }
 
     @IgnoreJRERequirement
     public static ThreadInfo[] getThreadInfos() {
         ThreadMXBean mbean = ManagementFactory.getThreadMXBean();
-        return mbean.getThreadInfo(mbean.getAllThreadIds(),mbean.isObjectMonitorUsageSupported(),mbean.isSynchronizerUsageSupported());
+        return mbean.dumpAllThreads(mbean.isObjectMonitorUsageSupported(),mbean.isSynchronizerUsageSupported());
+    }
+
+    public static ThreadGroupMap sortThreadsAndGetGroupMap(ThreadInfo[] list) {
+        ThreadGroupMap sorter = new ThreadGroupMap();
+        Arrays.sort(list, sorter);
+        return sorter;
+    }
+
+    // Common code for sorting Threads/ThreadInfos by ThreadGroup
+    private static class ThreadSorterBase {
+        protected Map<Long,String> map = new HashMap<Long,String>();
+
+        private ThreadSorterBase() {
+            ThreadGroup tg = Thread.currentThread().getThreadGroup();
+            while (tg.getParent() != null) tg = tg.getParent();
+            Thread[] threads = new Thread[tg.activeCount()*2];
+            int threadsLen = tg.enumerate(threads, true);
+            for (int i = 0; i < threadsLen; i++)
+                map.put(threads[i].getId(), threads[i].getThreadGroup().getName());
+        }
+
+        protected int compare(long idA, long idB) {
+            String tga = map.get(idA), tgb = map.get(idB);
+            int result = (tga!=null?-1:0) + (tgb!=null?1:0);  // Will be non-zero if only one is null
+            if (result==0 && tga!=null)
+                result = tga.compareToIgnoreCase(tgb);
+            return result;
+        }
+    }
+
+    public static class ThreadGroupMap extends ThreadSorterBase implements Comparator<ThreadInfo> {
+
+        /**
+         * @return ThreadGroup name or null if unknown
+         */
+        public String getThreadGroup(ThreadInfo ti) {
+            return map.get(ti.getThreadId());
+        }
+
+        public int compare(ThreadInfo a, ThreadInfo b) {
+            int result = compare(a.getThreadId(), b.getThreadId());
+            if (result == 0)
+                result = a.getThreadName().compareToIgnoreCase(b.getThreadName());
+            return result;
+        }
+    }
+
+    private static class ThreadSorter extends ThreadSorterBase implements Comparator<Thread> {
+
+        public int compare(Thread a, Thread b) {
+            int result = compare(a.getId(), b.getId());
+            if (result == 0)
+                result = a.getName().compareToIgnoreCase(b.getName());
+            return result;
+        }
     }
 
     /**
@@ -760,9 +855,11 @@ public class Functions {
 
     // ThreadInfo.toString() truncates the stack trace by first 8, so needed my own version
     @IgnoreJRERequirement
-    public static String dumpThreadInfo(ThreadInfo ti) {
+    public static String dumpThreadInfo(ThreadInfo ti, ThreadGroupMap map) {
+        String grp = map.getThreadGroup(ti);
         StringBuilder sb = new StringBuilder("\"" + ti.getThreadName() + "\"" +
-                                             " Id=" + ti.getThreadId() + " " +
+                                             " Id=" + ti.getThreadId() + " Group=" +
+                                             (grp != null ? grp : "?") + " " +
                                              ti.getThreadState());
         if (ti.getLockName() != null) {
             sb.append(" on " + ti.getLockName());
@@ -1000,10 +1097,10 @@ public class Functions {
         if(SCHEME.matcher(urlName).matches())
             return urlName; // absolute URL
         if(urlName.startsWith("/"))
-            return Stapler.getCurrentRequest().getContextPath()+urlName+'/';
+            return Stapler.getCurrentRequest().getContextPath()+urlName;
         else
             // relative URL name
-            return Stapler.getCurrentRequest().getContextPath()+'/'+itUrl+urlName+'/';
+            return Stapler.getCurrentRequest().getContextPath()+'/'+itUrl+urlName;
     }
 
     /**
@@ -1066,24 +1163,19 @@ public class Functions {
     }
 
     /**
-     * Gets the URL for the update center server
-     */
-    public String getUpdateCenterUrl() {
-        return Hudson.getInstance().getUpdateCenter().getUrl();
-    }
-
-    /**
      * If the given href link is matching the current page, return true.
      *
      * Used in <tt>task.jelly</tt> to decide if the page should be highlighted.
      */
     public boolean hyperlinkMatchesCurrentPage(String href) throws UnsupportedEncodingException {
         String url = Stapler.getCurrentRequest().getRequestURL().toString();
+        if (href == null || href.length() <= 1) return ".".equals(href) && url.endsWith("/");
         url = URLDecoder.decode(url,"UTF-8");
         href = URLDecoder.decode(href,"UTF-8");
+        if (url.endsWith("/")) url = url.substring(0, url.length() - 1);
+        if (href.endsWith("/")) href = href.substring(0, href.length() - 1);
 
-        return (href.length()>1 && url.endsWith(href))
-            || (href.equals(".") && url.endsWith("."));
+        return url.endsWith(href);
     }
 
     public <T> List<T> singletonList(T t) {
@@ -1104,24 +1196,6 @@ public class Functions {
     }
 
     /**
-     * Used to assist form databinding. Given the "attrs" object,
-     * find the ancestor tag file of the given name.
-     */
-    public Tag findAncestorTag(Map attributes, String nsUri, String local) {
-        Tag tag = (Tag) attributes.get("ownerTag");
-        if(tag==null)   return null;
-
-        while(true) {
-            tag = TagSupport.findAncestorWithClass(tag.getParent(), StaplerDynamicTag.class);
-            if(tag==null)
-                return null;
-            StaplerDynamicTag stag = (StaplerDynamicTag)tag;
-            if(stag.getLocalName().equals(local) && stag.getNsUri().equals(nsUri))
-                return tag;
-        }
-    }
-
-    /**
      * Prepend a prefix only when there's the specified body.
      */
     public String prepend(String prefix, String body) {
@@ -1130,10 +1204,98 @@ public class Functions {
         return body;
     }
 
+    public static List<Descriptor<CrumbIssuer>> getCrumbIssuerDescriptors() {
+        return CrumbIssuer.all();
+    }
+
+    public static String getCrumb(StaplerRequest req) {
+        Hudson h = Hudson.getInstance();
+        CrumbIssuer issuer = h != null ? h.getCrumbIssuer() : null;
+        return issuer != null ? issuer.getCrumb(req) : "";
+    }
+
+    public static String getCrumbRequestField() {
+        Hudson h = Hudson.getInstance();
+        CrumbIssuer issuer = h != null ? h.getCrumbIssuer() : null;
+        return issuer != null ? issuer.getDescriptor().getCrumbRequestField() : "";
+    }
+
+    public static Date getCurrentTime() {
+        return new Date();
+    }
+
+    /**
+     * Generate a series of &lt;script> tags to include <tt>script.js</tt>
+     * from {@link ConsoleAnnotatorFactory}s and {@link ConsoleAnnotationDescriptor}s.
+     */
+    public static String generateConsoleAnnotationScriptAndStylesheet() {
+        String cp = Stapler.getCurrentRequest().getContextPath();
+        StringBuilder buf = new StringBuilder();
+        for (ConsoleAnnotatorFactory f : ConsoleAnnotatorFactory.all()) {
+            String path = cp + "/extensionList/" + ConsoleAnnotatorFactory.class.getName() + "/" + f.getClass().getName();
+            if (f.hasScript())
+                buf.append("<script src='"+path+"/script.js'></script>");
+            if (f.hasStylesheet())
+                buf.append("<link rel='stylesheet' type='text/css' href='"+path+"/style.css' />");
+        }
+        for (ConsoleAnnotationDescriptor d : ConsoleAnnotationDescriptor.all()) {
+            String path = cp+"/descriptor/"+d.clazz.getName();
+            if (d.hasScript())
+                buf.append("<script src='"+path+"/script.js'></script>");
+            if (d.hasStylesheet())
+                buf.append("<link rel='stylesheet' type='text/css' href='"+path+"/style.css' />");
+        }
+        return buf.toString();
+    }
+
+    /**
+     * Work around for bug 6935026.
+     */
+    public List<String> getLoggerNames() {
+        while (true) {
+            try {
+                List<String> r = new ArrayList<String>();
+                Enumeration<String> e = LogManager.getLogManager().getLoggerNames();
+                while (e.hasMoreElements())
+                    r.add(e.nextElement());
+                return r;
+            } catch (ConcurrentModificationException e) {
+                // retry
+            }
+        }
+    }
+
+    /**
+     * Used by &lt;f:password/> so that we send an encrypted value to the client.
+     */
+    public String getPasswordValue(Object o) {
+        if (o==null)    return null;
+        if (o instanceof Secret)    return ((Secret)o).getEncryptedValue();
+        return o.toString();
+    }
+    
     private static final Pattern SCHEME = Pattern.compile("[a-z]+://.+");
 
     /**
-     * Set to true if we are running unit tests.
+     * Returns true if we are running unit tests.
      */
-    public static boolean isUnitTest = false;
+    public static boolean getIsUnitTest() {
+        return Main.isUnitTest;
+    }
+
+    /**
+     * Returns {@code true} if the {@link Run#ARTIFACTS} permission is enabled,
+     * {@code false} otherwise.
+     *
+     * <p>When the {@link Run#ARTIFACTS} permission is not turned on using the
+     * {@code hudson.security.ArtifactsPermission}, this permission must not be
+     * considered to be set to {@code false} for every user. It must rather be
+     * like if the permission doesn't exist at all (which means that every user
+     * has to have an access to the artifacts but the permission can't be
+     * configured in the security screen). Got it?</p>
+     */
+    public static boolean isArtifactsPermissionEnabled() {
+        return Boolean.getBoolean("hudson.security.ArtifactsPermission");
+    }
+
 }

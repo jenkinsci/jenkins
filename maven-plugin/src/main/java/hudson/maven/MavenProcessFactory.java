@@ -33,6 +33,7 @@ import static hudson.Util.fixNull;
 import hudson.maven.agent.Main;
 import hudson.maven.agent.Maven21Interceptor;
 import hudson.maven.agent.PluginManagerInterceptor;
+import hudson.maven.ProcessCache.NewProcess;
 import hudson.model.BuildListener;
 import hudson.model.Computer;
 import hudson.model.Executor;
@@ -49,6 +50,7 @@ import hudson.remoting.SocketInputStream;
 import hudson.remoting.SocketOutputStream;
 import hudson.remoting.Which;
 import hudson.tasks.Maven.MavenInstallation;
+import hudson.tasks._maven.MavenConsoleAnnotator;
 import hudson.util.ArgumentListBuilder;
 import hudson.util.IOException2;
 
@@ -63,6 +65,8 @@ import java.io.Serializable;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketTimeoutException;
+import java.nio.charset.Charset;
+import java.nio.charset.UnsupportedCharsetException;
 import java.util.Arrays;
 import java.util.logging.Logger;
 
@@ -138,6 +142,12 @@ final class MavenProcessFactory implements ProcessCache.Factory {
         int getPort();
     }
 
+    private static final class GetCharset implements Callable<String,IOException> {
+        public String call() throws IOException {
+            return System.getProperty("file.encoding");
+        }
+    }
+
     /**
      * Opens a server socket and returns {@link Acceptor} so that
      * we can accept a connection later on it.
@@ -159,7 +169,7 @@ final class MavenProcessFactory implements ProcessCache.Factory {
                 this.serverSocket = new ServerSocket();
                 serverSocket.bind(null); // new InetSocketAddress(InetAddress.getLocalHost(),0));
                 // prevent a hang at the accept method in case the forked process didn't start successfully
-                serverSocket.setSoTimeout(10*1000);
+                serverSocket.setSoTimeout(30*1000);
             }
 
             public Connection accept() throws IOException {
@@ -186,15 +196,24 @@ final class MavenProcessFactory implements ProcessCache.Factory {
     /**
      * Starts maven process.
      */
-    public Channel newProcess(BuildListener listener, OutputStream out) throws IOException, InterruptedException {
+    public NewProcess newProcess(BuildListener listener, OutputStream out) throws IOException, InterruptedException {
         if(debug)
             listener.getLogger().println("Using env variables: "+ envVars);
         try {
             final Acceptor acceptor = launcher.getChannel().call(new SocketHandler());
+            Charset charset;
+            try {
+                charset = Charset.forName(launcher.getChannel().call(new GetCharset()));
+            } catch (UnsupportedCharsetException e) {
+                // choose the bit preserving charset. not entirely sure if iso-8859-1 does that though.
+                charset = Charset.forName("iso-8859-1");
+            }
+
+            MavenConsoleAnnotator mca = new MavenConsoleAnnotator(out,charset);
 
             final ArgumentListBuilder cmdLine = buildMavenCmdLine(listener,acceptor.getPort());
             String[] cmds = cmdLine.toCommandArray();
-            final Proc proc = launcher.launch(cmds, envVars, out, workDir);
+            final Proc proc = launcher.launch().cmds(cmds).envs(envVars).stdout(mca).pwd(workDir).start();
 
             Connection con;
             try {
@@ -208,11 +227,11 @@ final class MavenProcessFactory implements ProcessCache.Factory {
                 throw e;
             }
 
-            return Channels.forProcess("Channel to Maven "+ Arrays.toString(cmds),
-                Computer.threadPoolForRemoting, new BufferedInputStream(con.in), new BufferedOutputStream(con.out),proc);
-
-//            return launcher.launchChannel(buildMavenCmdLine(listener).toCommandArray(),
-//                out, workDir, envVars);
+            return new NewProcess(
+                Channels.forProcess("Channel to Maven "+ Arrays.toString(cmds),
+                    Computer.threadPoolForRemoting, new BufferedInputStream(con.in), new BufferedOutputStream(con.out),
+                    listener.getLogger(), proc),
+                proc);
         } catch (IOException e) {
             if(fixNull(e.getMessage()).contains("java: not found")) {
                 // diagnose issue #659
@@ -235,13 +254,13 @@ final class MavenProcessFactory implements ProcessCache.Factory {
             listener.error("Maven version is not configured for this project. Can't determine which Maven to run");
             throw new RunnerAbortedException();
         }
-        if(mvn.getMavenHome()==null) {
+        if(mvn.getHome()==null) {
             listener.error("Maven '%s' doesn't have its home set",mvn.getName());
             throw new RunnerAbortedException();
         }
 
         // find classworlds.jar
-        String classWorldsJar = launcher.getChannel().call(new GetClassWorldsJar(mvn.getMavenHome(),listener));
+        String classWorldsJar = launcher.getChannel().call(new GetClassWorldsJar(mvn.getHome(),listener));
 
         boolean isMaster = getCurrentNode()== Hudson.getInstance();
         FilePath slaveRoot=null;
@@ -253,7 +272,7 @@ final class MavenProcessFactory implements ProcessCache.Factory {
         if(jdk==null) {
             args.add("java");
         } else {
-            args.add(jdk.getJavaHome()+"/bin/java"); // use JDK.getExecutable() here ?
+            args.add(jdk.getHome()+"/bin/java"); // use JDK.getExecutable() here ?
         }
 
         if(debugPort!=0)
@@ -262,7 +281,7 @@ final class MavenProcessFactory implements ProcessCache.Factory {
             args.add("-agentlib:yjpagent=tracing");
 
         args.addTokenized(getMavenOpts());
-
+        
         args.add("-cp");
         args.add(
             (isMaster? Which.jarFile(Main.class).getAbsolutePath():slaveRoot.child("maven-agent.jar").getRemote())+
@@ -270,7 +289,7 @@ final class MavenProcessFactory implements ProcessCache.Factory {
         args.add(Main.class.getName());
 
         // M2_HOME
-        args.add(mvn.getMavenHome());
+        args.add(mvn.getHome());
 
         // remoting.jar
         String remotingJar = launcher.getChannel().call(new GetRemotingJar());
@@ -299,7 +318,27 @@ final class MavenProcessFactory implements ProcessCache.Factory {
     }
 
     public String getMavenOpts() {
-        return envVars.expand(mms.getMavenOpts());
+        String mavenOpts = mms.getMavenOpts();
+
+        if ((mavenOpts==null) || (mavenOpts.trim().length()==0)) {
+            Node n = getCurrentNode();
+            if (n!=null) {
+                try {
+                    String localMavenOpts = n.toComputer().getEnvironment().get("MAVEN_OPTS");
+                    
+                    if ((localMavenOpts!=null) && (localMavenOpts.trim().length()>0)) {
+                        mavenOpts = localMavenOpts;
+                    }
+                } catch (IOException e) {
+                } catch (InterruptedException e) {
+                    // Don't do anything - this just means the slave isn't running, so we
+                    // don't want to use its MAVEN_OPTS anyway.
+                }
+
+            }
+        }
+        
+        return envVars.expand(mavenOpts);
     }
 
     public MavenInstallation getMavenInstallation(TaskListener log) throws IOException, InterruptedException {
@@ -357,9 +396,25 @@ final class MavenProcessFactory implements ProcessCache.Factory {
         return Executor.currentExecutor().getOwner().getNode();
     }
 
+    /**
+     * Locates classworlds jar file.
+     *
+     * Note that Maven 3.0 changed the name to plexus-classworlds 
+     *
+     * <pre>
+     * $ find tools/ -name "*classworlds*.jar"
+     * tools/maven/boot/classworlds-1.1.jar
+     * tools/maven-2.2.1/boot/classworlds-1.1.jar
+     * tools/maven-3.0-alpha-2/boot/plexus-classworlds-1.3.jar
+     * tools/maven-3.0-alpha-3/boot/plexus-classworlds-2.2.2.jar
+     * tools/maven-3.0-alpha-4/boot/plexus-classworlds-2.2.2.jar
+     * tools/maven-3.0-alpha-5/boot/plexus-classworlds-2.2.2.jar
+     * tools/maven-3.0-alpha-6/boot/plexus-classworlds-2.2.2.jar
+     * </pre>
+     */
     private static final FilenameFilter CLASSWORLDS_FILTER = new FilenameFilter() {
         public boolean accept(File dir, String name) {
-            return name.startsWith("classworlds") && name.endsWith(".jar");
+            return name.contains("classworlds") && name.endsWith(".jar");
         }
     };
 

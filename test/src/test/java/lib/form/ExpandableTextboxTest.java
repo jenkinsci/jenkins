@@ -1,7 +1,7 @@
 /*
  * The MIT License
  * 
- * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi
+ * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, Yahoo! Inc.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -54,8 +54,8 @@ public class ExpandableTextboxTest extends HudsonTestCase {
      */
     protected HtmlPage evaluateAsHtml(String jellyScript) throws Exception {
         HudsonTestCase.WebClient wc = new WebClient();
-
-        WebRequestSettings req = new WebRequestSettings(new URL(wc.getContextPath()+"eval"), POST);
+        
+        WebRequestSettings req = new WebRequestSettings(wc.createCrumbedUrl("eval"), POST);
         req.setRequestBody("<j:jelly xmlns:j='jelly:core' xmlns:st='jelly:stapler' xmlns:l='/lib/layout' xmlns:f='/lib/form'>"+jellyScript+"</j:jelly>");
         Page page = wc.getPage(req);
         return (HtmlPage) page;

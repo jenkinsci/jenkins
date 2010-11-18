@@ -28,7 +28,7 @@ import net.sf.json.JSONObject;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.StaplerRequest;
 
-public class JobParameterDefinition extends ParameterDefinition {
+public class JobParameterDefinition extends SimpleParameterDefinition {
 
     @DataBoundConstructor
     public JobParameterDefinition(String name) {
@@ -54,9 +54,7 @@ public class JobParameterDefinition extends ParameterDefinition {
         return req.bindJSON(JobParameterValue.class, jo);
     }
 
-	@Override
-	public ParameterValue createValue(StaplerRequest req) {
-		throw new UnsupportedOperationException();
-	}
-
+    public ParameterValue createValue(String value) {
+        return new JobParameterValue(getName(),Hudson.getInstance().getItemByFullName(value,Job.class));
+    }
 }

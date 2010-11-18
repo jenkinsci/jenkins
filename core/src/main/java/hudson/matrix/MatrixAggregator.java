@@ -25,8 +25,6 @@ package hudson.matrix;
 
 import hudson.ExtensionPoint;
 import hudson.Launcher;
-import hudson.model.Action;
-import hudson.model.Build;
 import hudson.model.BuildListener;
 import hudson.tasks.BuildStep;
 import hudson.tasks.Publisher;

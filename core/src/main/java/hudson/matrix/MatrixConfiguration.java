@@ -1,7 +1,7 @@
 /*
  * The MIT License
  * 
- * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, Tom Huybrechts
+ * Copyright (c) 2004-2010, Sun Microsystems, Inc., Kohsuke Kawaguchi, Tom Huybrechts
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,7 +23,7 @@
  */
 package hudson.matrix;
 
-import hudson.FilePath;
+import hudson.Util;
 import hudson.util.DescribableList;
 import hudson.model.AbstractBuild;
 import hudson.model.Cause;
@@ -35,10 +35,10 @@ import hudson.model.Item;
 import hudson.model.ItemGroup;
 import hudson.model.JDK;
 import hudson.model.Label;
-import hudson.model.Node;
 import hudson.model.ParametersAction;
 import hudson.model.Project;
 import hudson.model.SCMedItem;
+import hudson.model.Queue.NonBlockingTask;
 import hudson.model.Cause.LegacyCodeCause;
 import hudson.scm.SCM;
 import hudson.tasks.BuildWrapper;
@@ -55,7 +55,7 @@ import java.util.Map;
  *
  * @author Kohsuke Kawaguchi
  */
-public class MatrixConfiguration extends Project<MatrixConfiguration,MatrixRun> implements SCMedItem {
+public class MatrixConfiguration extends Project<MatrixConfiguration,MatrixRun> implements SCMedItem, NonBlockingTask {
     /**
      * The actual value combination.
      */
@@ -71,6 +71,7 @@ public class MatrixConfiguration extends Project<MatrixConfiguration,MatrixRun> 
         setCombination(c);
     }
 
+    @Override
     public void onLoad(ItemGroup<? extends Item> parent, String name) throws IOException {
         // directory name is not a name for us --- it's taken from the combination name
         super.onLoad(parent, combination.toString());
@@ -117,6 +118,7 @@ public class MatrixConfiguration extends Project<MatrixConfiguration,MatrixRun> 
         return n;
     }
 
+    @Override
     public int assignBuildNumber() throws IOException {
         int nb = getNextBuildNumber();
         MatrixRun r = getLastBuild();
@@ -130,6 +132,7 @@ public class MatrixConfiguration extends Project<MatrixConfiguration,MatrixRun> 
         return combination.toCompactString(getParent().getAxes());
     }
 
+    @Override
     public MatrixProject getParent() {
         return (MatrixProject)super.getParent();
     }
@@ -141,18 +144,6 @@ public class MatrixConfiguration extends Project<MatrixConfiguration,MatrixRun> 
         return combination;
     }
 
-    @Override
-    public FilePath getWorkspace() {
-        Node node = getLastBuiltOn();
-        if(node==null)  node = Hudson.getInstance();
-        FilePath ws = node.getWorkspaceFor(getParent());
-        if(ws==null)    return null;
-        if(useShortWorkspaceName)
-            return ws.child(digestName);
-        else
-            return ws.child(getCombination().toString('/','/'));
-    }
-
     /**
      * Since {@link MatrixConfiguration} is always invoked from {@link MatrixRun}
      * once and just once, there's no point in having a quiet period.
@@ -160,6 +151,14 @@ public class MatrixConfiguration extends Project<MatrixConfiguration,MatrixRun> 
     @Override
     public int getQuietPeriod() {
         return 0;
+    }
+
+    /**
+     * Inherit the value from the parent.
+     */
+    @Override
+    public int getScmCheckoutRetryCount() {
+        return getParent().getScmCheckoutRetryCount();
     }
 
     @Override
@@ -184,22 +183,19 @@ public class MatrixConfiguration extends Project<MatrixConfiguration,MatrixRun> 
     }
 
     @Override
-    public boolean isFingerprintConfigured() {
-        // TODO
-        return false;
-    }
-
-    @Override
     protected void buildDependencyGraph(DependencyGraph graph) {
     }
 
+    @Override
     public MatrixConfiguration asProject() {
         return this;
     }
 
     @Override
     public Label getAssignedLabel() {
-        return Hudson.getInstance().getLabel(combination.get("label"));
+        // combine all the label axes by &&.
+        String expr = Util.join(combination.values(getParent().getAxes().subList(LabelAxis.class)), "&&");
+        return Hudson.getInstance().getLabel(Util.fixEmpty(expr));
     }
 
     @Override
@@ -241,26 +237,38 @@ public class MatrixConfiguration extends Project<MatrixConfiguration,MatrixRun> 
     }
 
     @Override
+    public DescribableList<BuildWrapper, Descriptor<BuildWrapper>> getBuildWrappersList() {
+        return getParent().getBuildWrappersList();
+    }
+
+    @Override
     public Publisher getPublisher(Descriptor<Publisher> descriptor) {
         return getParent().getPublisher(descriptor);
     }
 
     @Override
     public LogRotator getLogRotator() {
-        return new LinkedLogRotator();
+        LogRotator lr = getParent().getLogRotator();
+        return new LinkedLogRotator(lr != null ? lr.getArtifactDaysToKeep() : -1,
+                                    lr != null ? lr.getArtifactNumToKeep() : -1);
     }
 
     @Override
     public SCM getScm() {
         return getParent().getScm();
     }
-    
+
+    /*package*/ String getDigestName() {
+        return digestName;
+    }
+
     /**
      * JDK cannot be set on {@link MatrixConfiguration} because
      * it's controlled by {@link MatrixProject}.
      * @deprecated
      *      Not supported.
      */
+    @Override
     public void setJDK(JDK jdk) throws IOException {
         throw new UnsupportedOperationException();
     }
@@ -269,6 +277,7 @@ public class MatrixConfiguration extends Project<MatrixConfiguration,MatrixRun> 
      * @deprecated
      *      Value is controlled by {@link MatrixProject}.
      */
+    @Override
     public void setLogRotator(LogRotator logRotator) {
         throw new UnsupportedOperationException();
     }
@@ -301,9 +310,13 @@ public class MatrixConfiguration extends Project<MatrixConfiguration,MatrixRun> 
     public boolean scheduleBuild(ParametersAction parameters) {
     	return scheduleBuild(parameters, new LegacyCodeCause());
     }
-    
-	public boolean scheduleBuild(ParametersAction parameters, Cause c) {
-        return Hudson.getInstance().getQueue().add(this, getQuietPeriod(), parameters, new CauseAction(c));
-	}
-	
+
+    /**
+     *
+     * @param parameters
+     *      Can be null.
+     */
+    public boolean scheduleBuild(ParametersAction parameters, Cause c) {
+        return Hudson.getInstance().getQueue().schedule(this, getQuietPeriod(), parameters, new CauseAction(c))!=null;
+    }
 }

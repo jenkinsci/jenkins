@@ -87,8 +87,11 @@ public abstract class Layouter<T> {
             z.add(nonTrivialAxes.get(0));
             break;
         case 2:
-            x.add(nonTrivialAxes.get(0));
-            y.add(nonTrivialAxes.get(1));
+            // use the longer axis in Y
+            Axis a = nonTrivialAxes.get(0);
+            Axis b = nonTrivialAxes.get(1);
+            x.add(a.size() > b.size() ? b : a);
+            y.add(a.size() > b.size() ? a : b);
             break;
         default:
             // for size > 3, use x and y, and try to pack y more
@@ -109,6 +112,16 @@ public abstract class Layouter<T> {
      */
     public int width(int n) {
         return calc(x,n);
+    }
+
+    /**
+     * Computes the repeat count of n-th X-axis.
+     */
+    public int repeatX(int n) {
+        int w = 1;
+        for( n--; n>=0; n-- )
+            w *= x.get(n).size();
+        return w;
     }
 
     /**

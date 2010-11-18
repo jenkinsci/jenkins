@@ -27,12 +27,12 @@ import hudson.model.AbstractProject;
 import hudson.model.Hudson;
 
 /**
- * Maintains the automatically infered {@link RepositoryBrowser} instance.
+ * Maintains the automatically inferred {@link RepositoryBrowser} instance.
  *
  * <p>
  * To reduce the user's work, Hudson tries to infer applicable {@link RepositoryBrowser}
  * from configurations of other jobs. But this needs caution &mdash; for example,
- * such infered {@link RepositoryBrowser} must be recalculated whenever
+ * such inferred {@link RepositoryBrowser} must be recalculated whenever
  * a job configuration changes somewhere.
  *
  * <p>
@@ -57,8 +57,8 @@ final class AutoBrowserHolder {
     }
 
     /**
-     * Picks up a {@link CVSRepositoryBrowser} that matches the
-     * given {@link CVSSCM} from existing other jobs.
+     * Picks up a {@link RepositoryBrowser} that matches the
+     * given {@link SCM} from existing other jobs.
      *
      * @return
      *      null if no applicable configuration was found.

@@ -1,7 +1,7 @@
 /*
  * The MIT License
  * 
- * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi
+ * Copyright (c) 2004-2010, Sun Microsystems, Inc., Kohsuke Kawaguchi
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -56,7 +56,7 @@ public abstract class CopyOnWriteMap<K,V> implements Map<K,V> {
      */
     private volatile Map<K,V> view;
 
-    protected CopyOnWriteMap(Map<K, V> core) {
+    protected CopyOnWriteMap(Map<K,V> core) {
         update(core);
     }
 
@@ -64,7 +64,7 @@ public abstract class CopyOnWriteMap<K,V> implements Map<K,V> {
         update(Collections.<K,V>emptyMap());
     }
 
-    private void update(Map<K, V> m) {
+    protected void update(Map<K,V> m) {
         core = m;
         view = Collections.unmodifiableMap(core);
     }
@@ -142,7 +142,7 @@ public abstract class CopyOnWriteMap<K,V> implements Map<K,V> {
      * {@link CopyOnWriteMap} backed by {@link HashMap}.
      */
     public static final class Hash<K,V> extends CopyOnWriteMap<K,V> {
-        public Hash(Map<K, V> core) {
+        public Hash(Map<K,V> core) {
             super(new LinkedHashMap<K,V>(core));
         }
 
@@ -187,6 +187,7 @@ public abstract class CopyOnWriteMap<K,V> implements Map<K,V> {
         }
 
         public Tree(Comparator<K> comparator) {
+            super(new TreeMap<K,V>(comparator));
             this.comparator = comparator;
         }
 
@@ -195,9 +196,14 @@ public abstract class CopyOnWriteMap<K,V> implements Map<K,V> {
         }
 
         protected Map<K,V> copy() {
-            TreeMap<K, V> m = new TreeMap<K, V>(comparator);
+            TreeMap<K,V> m = new TreeMap<K,V>(comparator);
             m.putAll(core);
             return m;
+        }
+
+        @Override
+        public synchronized void clear() {
+            update(new TreeMap<K,V>(comparator));
         }
 
         public static class ConverterImpl extends TreeMapConverter {

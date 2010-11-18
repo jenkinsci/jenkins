@@ -24,13 +24,12 @@
 package hudson.security;
 
 import org.acegisecurity.Authentication;
-import org.acegisecurity.GrantedAuthority;
-import org.acegisecurity.acls.sid.GrantedAuthoritySid;
-import org.acegisecurity.acls.sid.PrincipalSid;
 import org.acegisecurity.acls.sid.Sid;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Logger;
+import static java.util.logging.Level.FINE;
 
 /**
  * Accses control list.
@@ -66,13 +65,17 @@ public class SparseACL extends SidACL {
         add(new Entry(sid,permission,allowed));
     }
 
+    @Override
     public boolean hasPermission(Authentication a, Permission permission) {
         if(a==SYSTEM)   return true;
         Boolean b = _hasPermission(a,permission);
         if(b!=null) return b;
 
-        if(parent!=null)
+        if(parent!=null) {
+            if(LOGGER.isLoggable(FINE))
+                LOGGER.fine("hasPermission("+a+","+permission+") is delegating to parent ACL: "+parent);
             return parent.hasPermission(a,permission);
+        }
 
         // the ultimate default is to reject everything
         return false;
@@ -88,4 +91,6 @@ public class SparseACL extends SidACL {
         }
         return null;
     }
+
+    private static final Logger LOGGER = Logger.getLogger(SparseACL.class.getName());
 }

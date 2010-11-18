@@ -23,25 +23,35 @@
  */
 package hudson;
 
-import com.thoughtworks.xstream.XStream;
 import hudson.model.Hudson;
 import hudson.model.Saveable;
-import hudson.util.XStream2;
+import hudson.model.listeners.SaveableListener;
 import hudson.util.Scrambler;
+import hudson.util.XStream2;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.Authenticator;
 import java.net.InetSocketAddress;
+import java.net.PasswordAuthentication;
 import java.net.Proxy;
-import java.net.URLConnection;
 import java.net.URL;
+import java.net.URLConnection;
+
+import com.thoughtworks.xstream.XStream;
 
 /**
  * HTTP proxy configuration.
  *
  * <p>
  * Use {@link #open(URL)} to open a connection with the proxy setting.
- *
+ * <p>
+ * Proxy authentication (including NTLM) is implemented by setting a default
+ * {@link Authenticator} which provides a {@link PasswordAuthentication}
+ * (as described in the Java 6 tech note 
+ * <a href="http://java.sun.com/javase/6/docs/technotes/guides/net/http-auth.html">
+ * Http Authentication</a>).
+ * 
  * @see Hudson#proxy
  */
 public final class ProxyConfiguration implements Saveable {
@@ -80,6 +90,7 @@ public final class ProxyConfiguration implements Saveable {
     public void save() throws IOException {
         if(BulkChange.contains(this))   return;
         getXmlFile().write(this);
+        SaveableListener.fireOnChange(this, getXmlFile());
     }
 
     public static XmlFile getXmlFile() {
@@ -94,15 +105,27 @@ public final class ProxyConfiguration implements Saveable {
             return null;
     }
 
+    /**
+     * This method should be used wherever {@link URL#openConnection()} to internet URLs is invoked directly.
+     */
     public static URLConnection open(URL url) throws IOException {
-        ProxyConfiguration p = Hudson.getInstance().proxy;
+        Hudson h = Hudson.getInstance(); // this code might run on slaves
+        ProxyConfiguration p = h!=null ? h.proxy : null;
         if(p==null)
             return url.openConnection();
 
         URLConnection con = url.openConnection(p.createProxy());
         if(p.getUserName()!=null) {
-            con.setRequestProperty("Proxy-Authorization","Basic "+
-                    Scrambler.scramble(p.getUserName()+':'+p.getPassword()));
+        	// Add an authenticator which provides the credentials for proxy authentication
+            Authenticator.setDefault(new Authenticator() {
+                @Override
+                public PasswordAuthentication getPasswordAuthentication() {
+                    if (getRequestorType()!=RequestorType.PROXY)    return null;
+                    ProxyConfiguration p = Hudson.getInstance().proxy;
+                    return new PasswordAuthentication(p.getUserName(),
+                            p.getPassword().toCharArray());
+                }
+            });
         }
         return con;
     }

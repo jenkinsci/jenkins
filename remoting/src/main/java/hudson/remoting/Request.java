@@ -25,6 +25,7 @@ package hudson.remoting;
 
 import java.io.IOException;
 import java.io.Serializable;
+import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
@@ -69,7 +70,7 @@ abstract class Request<RSP extends Serializable,EXC extends Throwable> extends C
     /**
      * While executing the call this is set to the handle of the execution.
      */
-    private volatile transient Future<?> future;
+    protected volatile transient Future<?> future;
 
 
     protected Request() {
@@ -105,35 +106,49 @@ abstract class Request<RSP extends Serializable,EXC extends Throwable> extends C
             }
         }
 
-        synchronized(this) {
-            // set the thread name to represent the channel we are blocked on,
-            // so that thread dump would give us more useful information.
-            Thread t = Thread.currentThread();
-            final String name = t.getName();
-            try {
-                t.setName(name+" / waiting for "+channel);
-                while(response==null)
-                    wait(); // wait until the response arrives
-            } catch (InterruptedException e) {
-                // if we are cancelled, abort the remote computation, too
-                channel.send(new Cancel(id));
-                throw e;
-            } finally {
-                t.setName(name);
-            }
+        try {
+            synchronized(this) {
+                // set the thread name to represent the channel we are blocked on,
+                // so that thread dump would give us more useful information.
+                Thread t = Thread.currentThread();
+                final String name = t.getName();
+                try {
+                    // wait until the response arrives
+                    t.setName(name+" / waiting for "+channel);
+                    while(response==null && !channel.isInClosed())
+                        // I don't know exactly when this can happen, as pendingCalls are cleaned up by Channel,
+                        // but in production I've observed that in rare occasion it can block forever, even after a channel
+                        // is gone. So be defensive against that.
+                        wait(30*1000);
 
-            Object exc = response.exception;
-
-            if(exc !=null) {
-                if(exc instanceof RequestAbortedException) {
-                    // add one more exception, so that stack trace shows both who's waiting for the completion
-                    // and where the connection outage was detected.
-                    exc = new RequestAbortedException((RequestAbortedException)exc);
+                    if (response==null)
+                        // channel is closed and we still don't have a response
+                        throw new RequestAbortedException(null);
+                } finally {
+                    t.setName(name);
                 }
-                throw (EXC)exc; // some versions of JDK fails to compile this line. If so, upgrade your JDK.
-            }
 
-            return response.returnValue;
+                Object exc = response.exception;
+
+                if (exc!=null) {
+                    if(exc instanceof RequestAbortedException) {
+                        // add one more exception, so that stack trace shows both who's waiting for the completion
+                        // and where the connection outage was detected.
+                        exc = new RequestAbortedException((RequestAbortedException)exc);
+                    }
+                    throw (EXC)exc; // some versions of JDK fails to compile this line. If so, upgrade your JDK.
+                }
+
+                return response.returnValue;
+            }
+        } catch (InterruptedException e) {
+            // if we are cancelled, abort the remote computation, too.
+            // do this outside the "synchronized(this)" block to prevent locking Request and Channel in a wrong order.
+            synchronized (channel) { // ... so that the close check and send won't be interrupted in the middle by a close
+                if (!channel.isOutClosed())
+                    channel.send(new Cancel(id));   // only send a cancel if we can, or else ChannelClosedException will mask the original cause
+            }
+            throw e;
         }
     }
 
@@ -155,26 +170,41 @@ abstract class Request<RSP extends Serializable,EXC extends Throwable> extends C
         channel.send(this);
 
         return new hudson.remoting.Future<RSP>() {
-            /**
-             * The task cannot be cancelled.
-             */
+
+            private volatile boolean cancelled;
+
             public boolean cancel(boolean mayInterruptIfRunning) {
-                return false;
+                if (cancelled || isDone()) {
+                    return false;
+                }
+                cancelled = true;
+                if (mayInterruptIfRunning) {
+                    try {
+                        channel.send(new Cancel(id));
+                    } catch (IOException x) {
+                        return false;
+                    }
+                }
+                return true;
             }
 
             public boolean isCancelled() {
-                return false;
+                return cancelled;
             }
 
             public boolean isDone() {
-                return response!=null;
+                return isCancelled() || response!=null;
             }
 
             public RSP get() throws InterruptedException, ExecutionException {
                 synchronized(Request.this) {
                     try {
-                        while(response==null)
+                        while(response==null) {
+                            if (isCancelled()) {
+                                throw new CancellationException();
+                            }
                             Request.this.wait(); // wait until the response arrives
+                        }
                     } catch (InterruptedException e) {
                         try {
                             channel.send(new Cancel(id));
@@ -193,8 +223,12 @@ abstract class Request<RSP extends Serializable,EXC extends Throwable> extends C
 
             public RSP get(long timeout, TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException {
                 synchronized(Request.this) {
-                    if(response==null)
+                    if(response==null) {
+                        if (isCancelled()) {
+                            throw new CancellationException();
+                        }
                         Request.this.wait(unit.toMillis(timeout)); // wait until the response arrives
+                    }
                     if(response==null)
                         throw new TimeoutException();
 
@@ -231,16 +265,22 @@ abstract class Request<RSP extends Serializable,EXC extends Throwable> extends C
         future = channel.executor.submit(new Runnable() {
             public void run() {
                 try {
-                    RSP rsp;
+                    Command rsp;
                     try {
-                        rsp = Request.this.perform(channel);
+                        RSP r = Request.this.perform(channel);
+                        // normal completion
+                        rsp = new Response<RSP,EXC>(id,r);
                     } catch (Throwable t) {
                         // error return
-                        channel.send(new Response<RSP,Throwable>(id,t));
-                        return;
+                        rsp = new Response<RSP,Throwable>(id,t);
                     }
-                    // normal completion
-                    channel.send(new Response<RSP,EXC>(id,rsp));
+                    if(chainCause)
+                        rsp.createdAt.initCause(createdAt);
+
+                    synchronized (channel) {// expand the synchronization block of the send() method to a check
+                        if(!channel.isOutClosed())
+                            channel.send(rsp);
+                    }
                 } catch (IOException e) {
                     // communication error.
                     // this means the caller will block forever
@@ -260,6 +300,12 @@ abstract class Request<RSP extends Serializable,EXC extends Throwable> extends C
     private static final long serialVersionUID = 1L;
 
     private static final Logger logger = Logger.getLogger(Request.class.getName());
+
+    /**
+     * Set to true to chain {@link Command#createdAt} to track request/response relationship.
+     * This will substantially increase the network traffic, but useful for debugging.
+     */
+    public static boolean chainCause = Boolean.getBoolean(Request.class.getName()+".chainCause");
 
     //private static final Unsafe unsafe = getUnsafe();
 

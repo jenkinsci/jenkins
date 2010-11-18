@@ -23,6 +23,8 @@
  */
 package hudson.util;
 
+import hudson.model.ModelObject;
+import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 import org.kohsuke.stapler.export.Exported;
@@ -69,27 +71,27 @@ import java.util.Collection;
  *
  * <p>
  * The first argument is the SELECT element or the ID of it (see Prototype.js <tt>$(...)</tt> function.)
- * The second arugment is the URL that returns the options list.
+ * The second argument is the URL that returns the options list.
  *
  * <p>
  * The URL usually maps to the <tt>doXXX</tt> method on the server, which uses {@link ListBoxModel}
  * for producing option values. See the following example:
  *
  * <pre>
- * public void doOptionValues(StaplerRequest req, StaplerResponse rsp, @QueryParameter("value") String value) throws IOException, ServletException {
+ * public ListBoxModel doOptionValues(@QueryParameter("value") String value) throws IOException, ServletException {
  *   ListBoxModel m = new ListBoxModel();
  *   for(int i=0; i<5; i++)
  *     m.add(value+i,value+i);
  *   // make the third option selected initially
  *   m.get(3).selected = true;
- *   m.writeTo(req,rsp);
+ *   return m;
  * }
  * </pre>
  * @since 1.123
  * @author Kohsuke Kawaguchi
  */
 @ExportedBean
-public class ListBoxModel extends ArrayList<ListBoxModel.Option> {
+public class ListBoxModel extends ArrayList<ListBoxModel.Option> implements HttpResponse {
 
     @ExportedBean(defaultVisibility=999)
     public static final class Option {
@@ -140,12 +142,28 @@ public class ListBoxModel extends ArrayList<ListBoxModel.Option> {
         super(Arrays.asList(data));
     }
 
-    public void add(String name, String value) {
-        add(new Option(name,value));
+    public void add(String displayName, String value) {
+        add(new Option(displayName,value));
+    }
+
+    public void add(ModelObject usedForDisplayName, String value) {
+        add(usedForDisplayName.getDisplayName(), value);
+    }
+
+    /**
+     * A version of the {@link #add(String, String)} method where the display name and the value are the same. 
+     */
+    public ListBoxModel add(String nameAndValue) {
+        add(nameAndValue,nameAndValue);
+        return this;
     }
 
     public void writeTo(StaplerRequest req,StaplerResponse rsp) throws IOException, ServletException {
         rsp.serveExposedBean(req,this,Flavor.JSON);
+    }
+
+    public void generateResponse(StaplerRequest req, StaplerResponse rsp, Object node) throws IOException, ServletException {
+        writeTo(req,rsp);
     }
 
     /**

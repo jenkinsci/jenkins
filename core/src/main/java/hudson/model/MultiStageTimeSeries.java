@@ -35,6 +35,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.io.IOException;
 import java.awt.*;
+import java.util.Locale;
 
 import org.jfree.data.category.DefaultCategoryDataset;
 import org.jfree.chart.JFreeChart;
@@ -50,6 +51,8 @@ import org.jvnet.localizer.Localizable;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
+import org.kohsuke.stapler.export.Exported;
+import org.kohsuke.stapler.export.ExportedBean;
 
 import javax.servlet.ServletException;
 
@@ -61,6 +64,7 @@ import javax.servlet.ServletException;
  *
  * @author Kohsuke Kawaguchi
  */
+@ExportedBean
 public class MultiStageTimeSeries {
     /**
      * Name of this data series.
@@ -75,14 +79,17 @@ public class MultiStageTimeSeries {
     /**
      * Updated every 10 seconds. Keep data up to 1 hour.
      */
+    @Exported
     public final TimeSeries sec10;
     /**
      * Updated every 1 min. Keep data up to 1 day.
      */
+    @Exported
     public final TimeSeries min;
     /**
      * Updated every 1 hour. Keep data up to 4 weeks.
      */
+    @Exported
     public final TimeSeries hour;
 
     private int counter;
@@ -96,7 +103,7 @@ public class MultiStageTimeSeries {
     }
 
     /**
-     * @deprecated
+     * @deprecated since 2009-04-05.
      *      Use {@link #MultiStageTimeSeries(Localizable, Color, float, float)}
      */
     public MultiStageTimeSeries(float initialValue, float decay) {
@@ -130,6 +137,10 @@ public class MultiStageTimeSeries {
      */
     public float getLatest(TimeScale timeScale) {
         return pick(timeScale).getLatest();
+    }
+
+    public Api getApi() {
+        return new Api(this);
     }
 
     /**
@@ -168,7 +179,7 @@ public class MultiStageTimeSeries {
          */
         public static TimeScale parse(String type) {
             if(type==null)   return TimeScale.MIN;
-            return Enum.valueOf(TimeScale.class, type.toUpperCase());
+            return Enum.valueOf(TimeScale.class, type.toUpperCase(Locale.ENGLISH));
         }
     }
 

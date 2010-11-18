@@ -33,7 +33,10 @@ THE SOFTWARE.
           ${%Polling has not run yet.}
         </j:when>
         <j:otherwise>
-          <pre>${it.log}</pre>
+          <pre>
+            <st:getOutput var="output" />
+            <j:whitespace>${it.writeLogTo(output)}</j:whitespace>
+          </pre>
         </j:otherwise>
       </j:choose>
     </l:main-panel>

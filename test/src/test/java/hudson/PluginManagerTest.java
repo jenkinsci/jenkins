@@ -35,6 +35,12 @@ import java.io.File;
  * @author Kohsuke Kawaguchi
  */
 public class PluginManagerTest extends HudsonTestCase {
+    @Override
+    protected void setUp() throws Exception {
+        useLocalPluginManager = true;
+        super.setUp();
+    }
+
     /**
      * Manual submission form.
      */

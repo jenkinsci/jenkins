@@ -26,13 +26,12 @@ package hudson.tasks;
 import hudson.ExtensionPoint;
 import hudson.Extension;
 import hudson.DescriptorExtensionList;
-import hudson.model.Action;
 import hudson.model.Build;
 import hudson.model.BuildListener;
 import hudson.model.Describable;
-import hudson.model.Project;
 import hudson.model.Descriptor;
 import hudson.model.Hudson;
+
 
 /**
  * {@link BuildStep}s that perform the actual build.
@@ -57,14 +56,15 @@ public abstract class Builder extends BuildStepCompatibilityLayer implements Bui
     }
 
     /**
-     * Default implementation that does nothing.
+     * Returns {@link BuildStepMonitor#NONE} by default, as {@link Builder}s normally don't depend
+     * on its previous result.
      */
-    public Action getProjectAction(Project project) {
-        return null;
+    public BuildStepMonitor getRequiredMonitorService() {
+        return BuildStepMonitor.NONE;
     }
 
     public Descriptor<Builder> getDescriptor() {
-        return Hudson.getInstance().getDescriptor(getClass());
+        return Hudson.getInstance().getDescriptorOrDie(getClass());
     }
 
     /**
@@ -72,6 +72,6 @@ public abstract class Builder extends BuildStepCompatibilityLayer implements Bui
      */
     // for backward compatibility, the signature is not BuildStepDescriptor
     public static DescriptorExtensionList<Builder,Descriptor<Builder>> all() {
-        return Hudson.getInstance().getDescriptorList(Builder.class);
+        return Hudson.getInstance().<Builder,Descriptor<Builder>>getDescriptorList(Builder.class);
     }
 }

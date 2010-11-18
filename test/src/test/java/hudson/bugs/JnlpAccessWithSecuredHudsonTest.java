@@ -42,6 +42,7 @@ import org.jvnet.hudson.test.recipes.PresetData.DataSet;
 import java.net.URL;
 import java.util.Collections;
 import java.util.List;
+import java.util.Locale;
 
 /**
  * Makes sure that the jars that web start needs are readable, even when the anonymous user doesn't have any read access. 
@@ -54,13 +55,13 @@ public class JnlpAccessWithSecuredHudsonTest extends HudsonTestCase {
      * Creates a new slave that needs to be launched via JNLP.
      */
     protected Slave createNewJnlpSlave(String name) throws Exception {
-        return new DumbSlave(name,"",System.getProperty("java.io.tmpdir")+'/'+name,"2", Mode.NORMAL, "", new JNLPLauncher(), RetentionStrategy.INSTANCE);
+        return new DumbSlave(name,"",System.getProperty("java.io.tmpdir")+'/'+name,"2", Mode.NORMAL, "", new JNLPLauncher(), RetentionStrategy.INSTANCE, Collections.EMPTY_LIST);
     }
 
     @PresetData(DataSet.NO_ANONYMOUS_READACCESS)
     @Email("http://www.nabble.com/Launching-slave-by-JNLP-with-Active-Directory-plugin-and-matrix-security-problem-td18980323.html")
     public void test() throws Exception {
-        hudson.setSlaves(Collections.singletonList(createNewJnlpSlave("test")));
+        hudson.setNodes(Collections.singletonList(createNewJnlpSlave("test")));
         HudsonTestCase.WebClient wc = new WebClient();
         HtmlPage p = wc.login("alice").goTo("computer/test/");
 
@@ -77,7 +78,7 @@ public class JnlpAccessWithSecuredHudsonTest extends HudsonTestCase {
             
             // now make sure that these URLs are unprotected
             Page jarResource = jnlpAgent.getPage(url);
-            assertTrue(jarResource.getWebResponse().getContentType().toLowerCase().startsWith("application/"));
+            assertTrue(jarResource.getWebResponse().getContentType().toLowerCase(Locale.ENGLISH).startsWith("application/"));
         }
     }
 }

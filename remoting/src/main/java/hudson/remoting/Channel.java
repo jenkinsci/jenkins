@@ -24,6 +24,11 @@
 package hudson.remoting;
 
 import hudson.remoting.ExportTable.ExportList;
+import hudson.remoting.PipeWindow.Key;
+import hudson.remoting.PipeWindow.Real;
+import hudson.remoting.forward.ListeningPort;
+import hudson.remoting.forward.ForwarderFactory;
+import hudson.remoting.forward.PortForwarder;
 
 import java.io.EOFException;
 import java.io.IOException;
@@ -33,18 +38,22 @@ import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
+import java.lang.ref.WeakReference;
 import java.util.Collections;
 import java.util.Hashtable;
 import java.util.Map;
 import java.util.Vector;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Executor;
-import java.util.concurrent.ExecutorService;
+import java.util.WeakHashMap;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.net.URL;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Executor;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadFactory;
 
 /**
  * Represents a communication channel to the remote peer.
@@ -100,20 +109,26 @@ import java.net.URL;
 public class Channel implements VirtualChannel, IChannel {
     private final ObjectInputStream ois;
     private final ObjectOutputStream oos;
+    /**
+     * Human readable description of where this channel is connected to. Used during diagnostic output
+     * and error reports.
+     */
     private final String name;
     /*package*/ final boolean isRestricted;
     /*package*/ final ExecutorService executor;
 
     /**
-     * If true, the incoming link is already shut down,
-     * and reader is already terminated.
+     * If non-null, the incoming link is already shut down,
+     * and reader is already terminated. The {@link Throwable} object indicates why the outgoing channel
+     * was closed.
      */
-    private volatile boolean inClosed = false;
+    private volatile Throwable inClosed = null;
     /**
-     * If true, the outgoing link is already shut down,
-     * and no command can be sent.
+     * If non-null, the outgoing link is already shut down,
+     * and no command can be sent. The {@link Throwable} object indicates why the outgoing channel
+     * was closed.
      */
-    private volatile boolean outClosed = false;
+    private volatile Throwable outClosed = null;
 
     /*package*/ final Map<Integer,Request<?,?>> pendingCalls = new Hashtable<Integer,Request<?,?>>();
 
@@ -132,6 +147,25 @@ public class Channel implements VirtualChannel, IChannel {
      * Objects exported via {@link #export(Class, Object)}.
      */
     private final ExportTable<Object> exportedObjects = new ExportTable<Object>();
+
+    /**
+     * {@link PipeWindow}s keyed by their OIDs (of the OutputStream exported by the other side.)
+     *
+     * <p>
+     * To make the GC of {@link PipeWindow} automatic, the use of weak references here are tricky.
+     * A strong reference to {@link PipeWindow} is kept from {@link ProxyOutputStream}, and
+     * this is the only strong reference. Thus while {@link ProxyOutputStream} is alive,
+     * it keeps {@link PipeWindow} referenced, which in turn keeps its {@link PipeWindow.Real#key}
+     * referenced, hence this map can be looked up by the OID. When the {@link ProxyOutputStream}
+     * will be gone, the key is no longer strongly referenced, so it'll get cleaned up.
+     *
+     * <p>
+     * In some race condition situation, it might be possible for us to lose the tracking of the collect
+     * window size. But as long as we can be sure that there's only one {@link PipeWindow} instance
+     * per OID, it will only result in a temporary spike in the effective window size,
+     * and therefore should be OK.
+     */
+    private final WeakHashMap<PipeWindow.Key, WeakReference<PipeWindow>> pipeWindows = new WeakHashMap<PipeWindow.Key, WeakReference<PipeWindow>>();
 
     /**
      * Registered listeners. 
@@ -184,6 +218,26 @@ public class Channel implements VirtualChannel, IChannel {
     private IChannel remoteChannel;
 
     /**
+     * Capability of the remote {@link Channel}.
+     */
+    public final Capability remoteCapability;
+
+    /**
+     * When did we receive any data from this slave the last time?
+     * This can be used as a basis for detecting dead connections.
+     * <p>
+     * Note that this doesn't include our sender side of the operation,
+     * as successfully returning from {@link #send(Command)} doesn't mean
+     * anything in terms of whether the underlying network was able to send
+     * the data (for example, if the other end of a socket connection goes down
+     * without telling us anything, the {@link SocketOutputStream#write(int)} will
+     * return right away, and the socket only really times out after 10s of minutes.
+     */
+    private volatile long lastHeard;
+
+    /*package*/ final ExecutorService pipeWriter;
+
+    /**
      * Communication mode.
      * @since 1.161
      */
@@ -197,10 +251,10 @@ public class Channel implements VirtualChannel, IChannel {
          * but this is useful where stream is binary-unsafe, such as telnet.
          */
         TEXT("<===[HUDSON TRANSMISSION BEGINS]===>") {
-            protected OutputStream wrap(OutputStream os) {
+            @Override protected OutputStream wrap(OutputStream os) {
                 return BinarySafeStream.wrap(os);
             }
-            protected InputStream wrap(InputStream is) {
+            @Override protected InputStream wrap(InputStream is) {
                 return BinarySafeStream.wrap(is);
             }
         },
@@ -253,7 +307,7 @@ public class Channel implements VirtualChannel, IChannel {
 
     /**
      * Creates a new channel.
-     * 
+     *
      * @param name
      *      Human readable name of this channel. Used for debug/logging. Can be anything.
      * @param exec
@@ -281,14 +335,17 @@ public class Channel implements VirtualChannel, IChannel {
      *      safe the resulting behavior is is up to discussion.
      */
     public Channel(String name, ExecutorService exec, Mode mode, InputStream is, OutputStream os, OutputStream header, boolean restricted) throws IOException {
+        this(name,exec,mode,is,os,header,restricted,new Capability());
+    }
+
+    /*package*/ Channel(String name, ExecutorService exec, Mode mode, InputStream is, OutputStream os, OutputStream header, boolean restricted, Capability capability) throws IOException {
         this.name = name;
         this.executor = exec;
         this.isRestricted = restricted;
-        ObjectOutputStream oos = null;
 
         if(export(this,false)!=1)
             throw new AssertionError(); // export number 1 is reserved for the channel itself
-        remoteChannel = RemoteInvocationHandler.wrap(this,1,IChannel.class,false);
+        remoteChannel = RemoteInvocationHandler.wrap(this,1,IChannel.class,false,false);
 
         // write the magic preamble.
         // certain communication channel, such as forking JVM via ssh,
@@ -296,6 +353,10 @@ public class Channel implements VirtualChannel, IChannel {
         // might print some warning before the program starts outputting its own data.)
         //
         // so use magic preamble and discard all the data up to that to improve robustness.
+
+        capability.writePreamble(os);
+
+        ObjectOutputStream oos = null;
         if(mode!= Mode.NEGOTIATE) {
             os.write(mode.preamble);
             oos = new ObjectOutputStream(mode.wrap(os));
@@ -303,34 +364,46 @@ public class Channel implements VirtualChannel, IChannel {
         }
 
         {// read the input until we hit preamble
-            int[] ptr=new int[2];
             Mode[] modes={Mode.BINARY,Mode.TEXT};
+            byte[][] preambles = new byte[][]{Mode.BINARY.preamble, Mode.TEXT.preamble, Capability.PREAMBLE};
+            int[] ptr=new int[3];
+            Capability cap = new Capability(0); // remote capacity that we obtained. If we don't hear from remote, assume no capability
 
             while(true) {
                 int ch = is.read();
                 if(ch==-1)
                     throw new EOFException("unexpected stream termination");
 
-                for(int i=0;i<2;i++) {
-                    byte[] preamble = modes[i].preamble;
+                for(int i=0;i<preambles.length;i++) {
+                    byte[] preamble = preambles[i];
                     if(preamble[ptr[i]]==ch) {
                         if(++ptr[i]==preamble.length) {
-                            // found preamble
-                            if(mode==Mode.NEGOTIATE) {
-                                // now we know what the other side wants, so send the consistent preamble
-                                mode = modes[i];
-                                os.write(mode.preamble);
-                                oos = new ObjectOutputStream(mode.wrap(os));
-                                oos.flush();
-                            } else {
-                                if(modes[i]!=mode)
-                                    throw new IOException("Protocol negotiation failure");
-                            }
-                            this.oos = oos;
+                            switch (i) {
+                            case 0:
+                            case 1:
+                                // transmission mode negotiation
+                                if(mode==Mode.NEGOTIATE) {
+                                    // now we know what the other side wants, so send the consistent preamble
+                                    mode = modes[i];
+                                    os.write(mode.preamble);
+                                    oos = new ObjectOutputStream(mode.wrap(os));
+                                    oos.flush();
+                                } else {
+                                    if(modes[i]!=mode)
+                                        throw new IOException("Protocol negotiation failure");
+                                }
+                                this.oos = oos;
+                                this.remoteCapability = cap;
+                                this.pipeWriter = createPipeWriter();
+                                this.ois = new ObjectInputStream(mode.wrap(is));
+                                new ReaderThread(name).start();
 
-                            this.ois = new ObjectInputStream(mode.wrap(is));
-                            new ReaderThread(name).start();
-                            return;
+                                return;
+                            case 2:
+                                cap = Capability.read(is);
+                                break;
+                            }
+                            ptr[i]=0; // reset
                         }
                     } else {
                         // didn't match.
@@ -354,8 +427,31 @@ public class Channel implements VirtualChannel, IChannel {
          * @param cause
          *      if the channel is closed abnormally, this parameter
          *      represents an exception that has triggered it.
+         *      Otherwise null.
          */
         public void onClosed(Channel channel, IOException cause) {}
+    }
+
+    /*package*/ boolean isOutClosed() {
+        return outClosed!=null;
+    }
+
+    /**
+     * Creates the {@link ExecutorService} for writing to pipes.
+     *
+     * <p>
+     * If the throttling is supported, use a separate thread to free up the main channel
+     * reader thread (thus prevent blockage.) Otherwise let the channel reader thread do it,
+     * which is the historical behaviour.
+     */
+    private ExecutorService createPipeWriter() {
+        if (remoteCapability.supportsPipeThrottling())
+            return Executors.newSingleThreadExecutor(new ThreadFactory() {
+                public Thread newThread(Runnable r) {
+                    return new Thread(r,"Pipe writer thread: "+name);
+                }
+            });
+        return new SynchronousExecutorService();
     }
 
     /**
@@ -366,8 +462,8 @@ public class Channel implements VirtualChannel, IChannel {
      * {@link Command}s are executed on a remote system in the order they are sent.
      */
     /*package*/ synchronized void send(Command cmd) throws IOException {
-        if(outClosed)
-            throw new IOException("already closed");
+        if(outClosed!=null)
+            throw new ChannelClosedException(outClosed);
         if(logger.isLoggable(Level.FINE))
             logger.fine("Send "+cmd);
         Channel old = Channel.setCurrent(this);
@@ -419,7 +515,7 @@ public class Channel implements VirtualChannel, IChannel {
 
         // proxy will unexport this instance when it's GC-ed on the remote machine.
         final int id = export(instance);
-        return RemoteInvocationHandler.wrap(null,id,type,userProxy);
+        return RemoteInvocationHandler.wrap(null,id,type,userProxy,exportedObjects.isRecording());
     }
 
     /*package*/ int export(Object instance) {
@@ -435,7 +531,7 @@ public class Channel implements VirtualChannel, IChannel {
     }
 
     /*package*/ void unexport(int id) {
-        exportedObjects.unexport(id);
+        exportedObjects.unexportByOid(id);
     }
 
     /**
@@ -498,6 +594,30 @@ public class Channel implements VirtualChannel, IChannel {
         return call(new PreloadJarTask(jars,local));
     }
 
+    public boolean preloadJar(ClassLoader local, URL... jars) throws IOException, InterruptedException {
+        return call(new PreloadJarTask(jars,local));
+    }
+
+    /*package*/ PipeWindow getPipeWindow(int oid) {
+        if (!remoteCapability.supportsPipeThrottling())
+            return PipeWindow.FAKE;
+
+        synchronized (pipeWindows) {
+            Key k = new Key(oid);
+            WeakReference<PipeWindow> v = pipeWindows.get(k);
+            if (v!=null) {
+                PipeWindow w = v.get();
+                if (w!=null)
+                    return w;
+            }
+
+            Real w = new Real(k, PIPE_WINDOW_SIZE);
+            pipeWindows.put(k,new WeakReference<PipeWindow>(w));
+            return w;
+        }
+    }
+
+
     /**
      * {@inheritDoc}
      */
@@ -511,11 +631,11 @@ public class Channel implements VirtualChannel, IChannel {
 
         // re-wrap the exception so that we can capture the stack trace of the caller.
         } catch (ClassNotFoundException e) {
-            IOException x = new IOException("Remote call failed");
+            IOException x = new IOException("Remote call on "+name+" failed");
             x.initCause(e);
             throw x;
         } catch (Error e) {
-            IOException x = new IOException("Remote call failed");
+            IOException x = new IOException("Remote call on "+name+" failed");
             x.initCause(e);
             throw x;
         } finally {
@@ -547,18 +667,30 @@ public class Channel implements VirtualChannel, IChannel {
 
     /**
      * Aborts the connection in response to an error.
+     *
+     * @param e
+     *      The error that caused the connection to be aborted. Never null.
      */
     protected synchronized void terminate(IOException e) {
-        outClosed=inClosed=true;
+        if (e==null)    throw new IllegalArgumentException();
+        outClosed=inClosed=e;
         try {
             synchronized(pendingCalls) {
                 for (Request<?,?> req : pendingCalls.values())
                     req.abort(e);
                 pendingCalls.clear();
             }
+            synchronized (executingCalls) {
+                for (Request<?, ?> r : executingCalls.values()) {
+                    java.util.concurrent.Future<?> f = r.future;
+                    if(f!=null) f.cancel(true);
+                }
+                executingCalls.clear();
+            }
         } finally {
             notifyAll();
 
+            if (e instanceof OrderlyShutdown)   e = null;
             for (Listener l : listeners.toArray(new Listener[listeners.size()]))
                 l.onClosed(this,e);
         }
@@ -592,8 +724,16 @@ public class Channel implements VirtualChannel, IChannel {
      *      If the current thread is interrupted while waiting for the completion.
      */
     public synchronized void join() throws InterruptedException {
-        while(!inClosed || !outClosed)
+        while(inClosed==null || outClosed==null)
             wait();
+    }
+
+    /**
+     * If the receiving end of the channel is closed (that is, if we are guaranteed to receive nothing further),
+     * this method returns true.
+     */
+    /*package*/ boolean isInClosed() {
+        return inClosed!=null;
     }
 
     /**
@@ -605,7 +745,7 @@ public class Channel implements VirtualChannel, IChannel {
      */
     public synchronized void join(long timeout) throws InterruptedException {
         long start = System.currentTimeMillis();
-        while(System.currentTimeMillis()-start<timeout && (!inClosed || !outClosed))
+        while(System.currentTimeMillis()-start<timeout && (inClosed==null || outClosed==null))
             wait(timeout+start-System.currentTimeMillis());
     }
 
@@ -627,6 +767,7 @@ public class Channel implements VirtualChannel, IChannel {
             }
         }
 
+        @Override
         public String toString() {
             return "close";
         }
@@ -658,10 +799,10 @@ public class Channel implements VirtualChannel, IChannel {
      * {@inheritDoc}
      */
     public synchronized void close() throws IOException {
-        if(outClosed)  return;  // already closed
+        if(outClosed!=null)  return;  // already closed
 
         send(new CloseCommand());
-        outClosed = true;   // last command sent. no further command allowed. lock guarantees that no command will slip inbetween
+        outClosed = new IOException();   // last command sent. no further command allowed. lock guarantees that no command will slip inbetween
         try {
             oos.close();
         } catch (IOException e) {
@@ -689,6 +830,10 @@ public class Channel implements VirtualChannel, IChannel {
         return properties.get(key);
     }
 
+    public <T> T getProperty(ChannelProperty<T> key) {
+        return key.type.cast(properties.get(key));
+    }
+
     /**
      * Works like {@link #getProperty(Object)} but wait until some value is set by someone.
      */
@@ -702,9 +847,14 @@ public class Channel implements VirtualChannel, IChannel {
         }
     }
 
+    /**
+     * Sets the property value on this side of the channel.
+     * 
+     * @see #getProperty(Object)
+     */
     public Object setProperty(Object key, Object value) {
         synchronized (properties) {
-            Object old = properties.put(key, value);
+            Object old = value!=null ? properties.put(key, value) : properties.remove(key);
             properties.notifyAll();
             return old;
         }
@@ -718,6 +868,47 @@ public class Channel implements VirtualChannel, IChannel {
         return remoteChannel.waitForProperty(key);
     }
 
+    /**
+     * Starts a local to remote port forwarding (the equivalent of "ssh -L").
+     *
+     * @param recvPort
+     *      The port on this local machine that we'll listen to. 0 to let
+     *      OS pick a random available port. If you specify 0, use
+     *      {@link ListeningPort#getPort()} to figure out the actual assigned port. 
+     * @param forwardHost
+     *      The remote host that the connection will be forwarded to.
+     *      Connection to this host will be made from the other JVM that
+     *      this {@link Channel} represents.
+     * @param forwardPort
+     *      The remote port that the connection will be forwarded to.
+     * @return
+     */
+    public ListeningPort createLocalToRemotePortForwarding(int recvPort, String forwardHost, int forwardPort) throws IOException, InterruptedException {
+        return new PortForwarder( recvPort,
+            ForwarderFactory.create(this,forwardHost,forwardPort));
+    }
+
+    /**
+     * Starts a remote to local port forwarding (the equivalent of "ssh -R").
+     *
+     * @param recvPort
+     *      The port on the remote JVM (represented by this {@link Channel})
+     *      that we'll listen to. 0 to let
+     *      OS pick a random available port. If you specify 0, use
+     *      {@link ListeningPort#getPort()} to figure out the actual assigned port.
+     * @param forwardHost
+     *      The remote host that the connection will be forwarded to.
+     *      Connection to this host will be made from this JVM.
+     * @param forwardPort
+     *      The remote port that the connection will be forwarded to.
+     * @return
+     */
+    public ListeningPort createRemoteToLocalPortForwarding(int recvPort, String forwardHost, int forwardPort) throws IOException, InterruptedException {
+        return PortForwarder.create(this,recvPort,
+                ForwarderFactory.create(forwardHost, forwardPort));
+    }
+
+    @Override
     public String toString() {
         return super.toString()+":"+name;
     }
@@ -733,22 +924,35 @@ public class Channel implements VirtualChannel, IChannel {
         return exportedObjects.startRecording();
     }
 
+    /**
+     * @see #lastHeard
+     */
+    public long getLastHeard() {
+        return lastHeard;
+    }
+
     private final class ReaderThread extends Thread {
         public ReaderThread(String name) {
             super("Channel reader thread: "+name);
         }
 
+        @Override
         public void run() {
             Command cmd = null;
             try {
-                while(!inClosed) {
+                while(inClosed==null) {
                     try {
                         Channel old = Channel.setCurrent(Channel.this);
                         try {
                             cmd = (Command)ois.readObject();
+                            lastHeard = System.currentTimeMillis();
                         } finally {
                             Channel.setCurrent(old);
                         }
+                    } catch (EOFException e) {
+                        IOException ioe = new IOException("Unexpected termination of the channel");
+                        ioe.initCause(e);
+                        throw ioe;
                     } catch (ClassNotFoundException e) {
                         logger.log(Level.SEVERE, "Unable to read a command",e);
                     }
@@ -765,6 +969,8 @@ public class Channel implements VirtualChannel, IChannel {
             } catch (IOException e) {
                 logger.log(Level.SEVERE, "I/O error in channel "+name,e);
                 terminate(e);
+            } finally {
+                pipeWriter.shutdown();
             }
         }
     }
@@ -793,4 +999,46 @@ public class Channel implements VirtualChannel, IChannel {
     private static final ThreadLocal<Channel> CURRENT = new ThreadLocal<Channel>();
 
     private static final Logger logger = Logger.getLogger(Channel.class.getName());
+
+    public static final int PIPE_WINDOW_SIZE = Integer.getInteger(Channel.class+".pipeWindowSize",128*1024);
+
+//    static {
+//        ConsoleHandler h = new ConsoleHandler();
+//        h.setFormatter(new Formatter(){
+//            public synchronized String format(LogRecord record) {
+//                StringBuilder sb = new StringBuilder();
+//                sb.append((record.getMillis()%100000)+100000);
+//                sb.append(" ");
+//                if (record.getSourceClassName() != null) {
+//                    sb.append(record.getSourceClassName());
+//                } else {
+//                    sb.append(record.getLoggerName());
+//                }
+//                if (record.getSourceMethodName() != null) {
+//                    sb.append(" ");
+//                    sb.append(record.getSourceMethodName());
+//                }
+//                sb.append('\n');
+//                String message = formatMessage(record);
+//                sb.append(record.getLevel().getLocalizedName());
+//                sb.append(": ");
+//                sb.append(message);
+//                sb.append('\n');
+//                if (record.getThrown() != null) {
+//                    try {
+//                        StringWriter sw = new StringWriter();
+//                        PrintWriter pw = new PrintWriter(sw);
+//                        record.getThrown().printStackTrace(pw);
+//                        pw.close();
+//                        sb.append(sw.toString());
+//                    } catch (Exception ex) {
+//                    }
+//                }
+//                return sb.toString();
+//            }
+//        });
+//        h.setLevel(Level.FINE);
+//        logger.addHandler(h);
+//        logger.setLevel(Level.FINE);
+//    }
 }

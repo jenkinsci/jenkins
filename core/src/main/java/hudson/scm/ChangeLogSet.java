@@ -32,7 +32,6 @@ import org.kohsuke.stapler.export.ExportedBean;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
@@ -67,7 +66,7 @@ public abstract class ChangeLogSet<T extends ChangeLogSet.Entry> implements Iter
     public abstract boolean isEmptySet();
 
     /**
-     * All changes in the change set.
+     * All changes in this change set. 
      */
     // method for the remote API.
     @Exported
@@ -92,7 +91,7 @@ public abstract class ChangeLogSet<T extends ChangeLogSet.Entry> implements Iter
      * Constant instance that represents no changes.
      */
     public static ChangeLogSet<? extends ChangeLogSet.Entry> createEmpty(AbstractBuild build) {
-        return new CVSChangeLogSet(build,Collections.<CVSChangeLogSet.CVSChangeLog>emptyList());
+        return new EmptyChangeLogSet(build);
     }
 
     @ExportedBean(defaultVisibility=999)
@@ -140,16 +139,40 @@ public abstract class ChangeLogSet<T extends ChangeLogSet.Entry> implements Iter
          * @return never null.
          */
         public abstract Collection<String> getAffectedPaths();
+        
+        /**
+         * Returns a set of paths in the workspace that was
+         * affected by this change.
+         * <p>
+         * Noted: since this is a new interface, some of the SCMs may not have 
+         * implemented this interface. The default implementation for this 
+         * interface is throw UnsupportedOperationException
+         * <p>
+         * It doesn't throw NoSuchMethodException because I rather to throw a 
+         * runtime exception
+         *
+         * @return AffectedFile never null.
+         * @since 1.309
+         */
+        public Collection<? extends AffectedFile> getAffectedFiles() {
+	        String scm = "this SCM";
+	        ChangeLogSet parent = getParent();
+	        if ( null != parent ) {
+		        String kind = parent.getKind();
+		        if ( null != kind && kind.trim().length() > 0 ) scm = kind;
+	        }
+	        throw new UnsupportedOperationException("getAffectedFiles() is not implemented by " + scm);
+        }
 
         /**
          * Gets the text fully marked up by {@link ChangeLogAnnotator}.
          */
         public String getMsgAnnotated() {
-            MarkupText markup = new MarkupText(getMsgEscaped());
+            MarkupText markup = new MarkupText(getMsg());
             for (ChangeLogAnnotator a : ChangeLogAnnotator.all())
                 a.annotate(parent.build,this,markup);
 
-            return markup.toString();
+            return markup.toString(false);
         }
 
         /**
@@ -158,5 +181,31 @@ public abstract class ChangeLogSet<T extends ChangeLogSet.Entry> implements Iter
         public String getMsgEscaped() {
             return Util.escape(getMsg());
         }
+    }
+    
+    /**
+     * Represents a file change. Contains filename, edit type, etc.
+     * 
+     * I checked the API names against some some major SCMs and most SCMs
+     * can adapt to this interface with very little changes
+     *
+     * @see ChangeLogSet.Entry#getAffectedFiles()
+     */
+    public interface AffectedFile {
+        /**
+         * The path in the workspace that was affected
+         * <p>
+         * Contains string like 'foo/bar/zot'. No leading/trailing '/',
+         * and separator must be normalized to '/'.
+         *
+         * @return never null.
+         */
+        String getPath();
+	    
+	    
+        /**
+         * Return whether the file is new/modified/deleted
+         */
+        EditType getEditType();
     }
 }

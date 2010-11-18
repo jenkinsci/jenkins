@@ -27,30 +27,28 @@ THE SOFTWARE.
     <l:header title="Hudson" />
     <l:side-panel />
     <l:main-panel>
-      <h1><img src="${imagesURL}/48x48/error.gif" alt="[!]"/><st:nbsp/>Error</h1>
+      <h1><img src="${imagesURL}/48x48/error.gif" alt="[!]"/><st:nbsp/>${%Error}</h1>
       <p>
-        We detected that your JVM is not supported by Hudson. This is
-        due to the limitation is one of the libraries that Hudson uses, namely XStream.
-        See <a href="http://xstream.codehaus.org/faq.html">this FAQ</a> for more details.
+        ${%errorMessage}
       </p>
 
-      <h2>Detected JVM</h2>
+      <h2>${%Detected JVM}</h2>
       <table>
         <j:set var="prop" value="${it.systemProperties}"/>
         <tr>
-          <td>Vendor</td>
+          <td>${%Vendor}</td>
           <td>: ${prop['java.vm.vendor']}</td>
         </tr>
         <tr>
-          <td>Version</td>
+          <td>${%Version}</td>
           <td>: ${prop['java.vm.version']}</td>
         </tr>
         <tr>
-          <td>VM Name</td>
+          <td>${%VM Name}</td>
           <td>: ${prop['java.vm.name']}</td>
         </tr>
         <tr>
-          <td>OS Name</td>
+          <td>${%OS Name}</td>
           <td>: ${prop['os.name']}</td>
         </tr>
       </table>

@@ -1,7 +1,7 @@
 /*
  * The MIT License
  * 
- * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi
+ * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, InfraDNA, Inc.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,13 +23,22 @@
  */
 package hudson.remoting;
 
+import hudson.remoting.Channel.Mode;
 import junit.framework.Assert;
 
 import java.io.IOException;
 import java.io.PipedInputStream;
 import java.io.PipedOutputStream;
+import java.io.File;
+import java.io.OutputStream;
+import java.io.FileOutputStream;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.net.URLClassLoader;
+import java.net.URL;
+
+import org.apache.commons.io.output.TeeOutputStream;
+import org.apache.commons.io.FileUtils;
 
 /**
  * Hides the logic of starting/stopping a channel for test.
@@ -40,12 +49,6 @@ interface ChannelRunner {
     Channel start() throws Exception;
     void stop(Channel channel) throws Exception;
     String getName();
-
-    Class<? extends ChannelRunner>[] LIST = new Class[] {
-        InProcess.class,
-        Fork.class
-    };
-
 
     /**
      * Runs a channel in the same JVM.
@@ -58,18 +61,18 @@ interface ChannelRunner {
         private Exception failure;
 
         public Channel start() throws Exception {
-            final PipedInputStream in1 = new PipedInputStream();
-            final PipedOutputStream out1 = new PipedOutputStream(in1);
+            final FastPipedInputStream in1 = new FastPipedInputStream();
+            final FastPipedOutputStream out1 = new FastPipedOutputStream(in1);
 
-            final PipedInputStream in2 = new PipedInputStream();
-            final PipedOutputStream out2 = new PipedOutputStream(in2);
+            final FastPipedInputStream in2 = new FastPipedInputStream();
+            final FastPipedOutputStream out2 = new FastPipedOutputStream(in2);
 
             executor = Executors.newCachedThreadPool();
 
             Thread t = new Thread("south bridge runner") {
                 public void run() {
                     try {
-                        Channel s = new Channel("south", executor, in2, out1);
+                        Channel s = new Channel("south", executor, Mode.BINARY, in2, out1, null, false, createCapability());
                         s.join();
                         System.out.println("south completed");
                     } catch (IOException e) {
@@ -83,7 +86,7 @@ interface ChannelRunner {
             };
             t.start();
 
-            return new Channel("north", executor, in1, out2);
+            return new Channel("north", executor, Mode.BINARY, in1, out2, null, false, createCapability());
         }
 
         public void stop(Channel channel) throws Exception {
@@ -100,6 +103,21 @@ interface ChannelRunner {
         public String getName() {
             return "local";
         }
+
+        protected Capability createCapability() {
+            return new Capability();
+        }
+    }
+
+    static class InProcessCompatibilityMode extends InProcess {
+        public String getName() {
+            return "local-compatibility";
+        }
+
+        @Override
+        protected Capability createCapability() {
+            return Capability.NONE;
+        }
     }
 
     /**
@@ -113,25 +131,34 @@ interface ChannelRunner {
         public Channel start() throws Exception {
             System.out.println("forking a new process");
             // proc = Runtime.getRuntime().exec("java -Xdebug -Xrunjdwp:transport=dt_socket,server=y,address=8000 hudson.remoting.Launcher");
-            proc = Runtime.getRuntime().exec("java hudson.remoting.Launcher");
 
-            copier = new Copier("copier",proc.getErrorStream(),System.err);
+            System.out.println(getClasspath());
+            proc = Runtime.getRuntime().exec(new String[]{"java","-cp",getClasspath(),"hudson.remoting.Launcher"});
+
+            copier = new Copier("copier",proc.getErrorStream(),System.out);
             copier.start();
 
             executor = Executors.newCachedThreadPool();
-            return new Channel("north", executor, proc.getInputStream(), proc.getOutputStream());
+            OutputStream out = proc.getOutputStream();
+            if (RECORD_OUTPUT) {
+                File f = File.createTempFile("remoting",".log");
+                System.out.println("Recording to "+f);
+                out = new TeeOutputStream(out,new FileOutputStream(f));
+            }
+            return new Channel("north", executor, proc.getInputStream(), out);
         }
 
         public void stop(Channel channel) throws Exception {
             channel.close();
+            channel.join(10*1000);
 
-            System.out.println("north completed");
+//            System.out.println("north completed");
 
             executor.shutdown();
 
             copier.join();
             int r = proc.waitFor();
-            System.out.println("south completed");
+//            System.out.println("south completed");
 
             Assert.assertEquals("exit code should have been 0",0,r);
         }
@@ -139,5 +166,21 @@ interface ChannelRunner {
         public String getName() {
             return "fork";
         }
+
+        public String getClasspath() {
+            // this assumes we run in Maven
+            StringBuilder buf = new StringBuilder();
+            URLClassLoader ucl = (URLClassLoader)getClass().getClassLoader();
+            for (URL url : ucl.getURLs()) {
+                if (buf.length()>0) buf.append(File.pathSeparatorChar);
+                buf.append(FileUtils.toFile(url)); // assume all of them are file URLs
+            }
+            return buf.toString();
+        }
+
+        /**
+         * Record the communication to the remote node. Used during debugging.
+         */
+        private static boolean RECORD_OUTPUT = false;
     }
 }

@@ -1,7 +1,7 @@
 /*
  * The MIT License
  *
- * Copyright (c) 2009, Sun Microsystems, Inc.
+ * Copyright (c) 2009-2010, Sun Microsystems, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -37,10 +37,12 @@ import org.kohsuke.stapler.DataBoundConstructor;
 
 /**
  * An object which can ensure that a generic {@link ToolInstallation} in fact exists on a node.
+ *
  * The subclass should have a {@link ToolInstallerDescriptor}.
  * A {@code config.jelly} should be provided to customize specific fields;
- * {@code <st:include page="config-base.jelly"/>} to customize {@code toolName} and {@code label}.
+ * {@code <t:label xmlns:t="/hudson/tools"/>} to customize {@code label}.
  * @see <a href="http://wiki.hudson-ci.org/display/HUDSON/Tool+Auto-Installation">Tool Auto-Installation</a>
+ * @since 1.305
  */
 public abstract class ToolInstaller implements Describable<ToolInstaller>, ExtensionPoint {
 
@@ -87,16 +89,38 @@ public abstract class ToolInstaller implements Describable<ToolInstaller>, Exten
      * @param tool the tool being installed
      * @param node the computer on which to install the tool
      * @param log any status messages produced by the installation go here
-     * @return
-     *      The (directory) path at which the tool can be found (like {@link ToolInstallation#getHome})
-     *      As a tip, you can return {@code node.createPath(tool.getHome())}
-     *      if your implementation wants to skip the installation and behaves as if it was a no-op.
+     * @return the (directory) path at which the tool can be found,
+     *         typically coming from {@link #preferredLocation}
      * @throws IOException if installation fails
      * @throws InterruptedException if communication with a slave is interrupted
      */
     public abstract FilePath performInstallation(ToolInstallation tool, Node node, TaskListener log) throws IOException, InterruptedException;
 
+    /**
+     * Convenience method to find a location to install a tool.
+     * @param tool the tool being installed
+     * @param node the computer on which to install the tool
+     * @return {@link ToolInstallation#getHome} if specified, else a path within the local
+     *         Hudson work area named according to {@link ToolInstallation#getName}
+     * @since 1.310
+     */
+    protected final FilePath preferredLocation(ToolInstallation tool, Node node) {
+        if (node == null) {
+            throw new IllegalArgumentException("must pass non-null node");
+        }
+        String home = Util.fixEmptyAndTrim(tool.getHome());
+        if (home == null) {
+            // XXX should this somehow uniquify paths among ToolInstallation.all()?
+            home = tool.getName().replaceAll("[^A-Za-z0-9_.-]+", "_");
+        }
+        FilePath root = node.getRootPath();
+        if (root == null) {
+            throw new IllegalArgumentException("Node " + node.getDisplayName() + " seems to be offline");
+        }
+        return root.child("tools").child(home);
+    }
+
     public ToolInstallerDescriptor<?> getDescriptor() {
-        return (ToolInstallerDescriptor) Hudson.getInstance().getDescriptor(getClass());
+        return (ToolInstallerDescriptor) Hudson.getInstance().getDescriptorOrDie(getClass());
     }
 }

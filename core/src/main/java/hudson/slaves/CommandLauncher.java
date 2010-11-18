@@ -27,11 +27,12 @@ import hudson.EnvVars;
 import hudson.Util;
 import hudson.Extension;
 import hudson.model.Descriptor;
+import hudson.model.Hudson;
 import hudson.model.TaskListener;
 import hudson.remoting.Channel;
-import hudson.util.ProcessTreeKiller;
 import hudson.util.StreamCopyThread;
 import hudson.util.FormValidation;
+import hudson.util.ProcessTree;
 
 import java.io.IOException;
 import java.util.Date;
@@ -94,9 +95,17 @@ public class CommandLauncher extends ComputerLauncher {
             listener.getLogger().println("$ " + getCommand());
 
             ProcessBuilder pb = new ProcessBuilder(Util.tokenize(getCommand()));
-            final EnvVars cookie = _cookie = ProcessTreeKiller.createCookie();
+            final EnvVars cookie = _cookie = EnvVars.createCookie();
             pb.environment().putAll(cookie);
-            
+
+            {// system defined variables
+                String rootUrl = Hudson.getInstance().getRootUrl();
+                if (rootUrl!=null) {
+                    pb.environment().put("HUDSON_URL", rootUrl);
+                    pb.environment().put("SLAVEJAR_URL", rootUrl+"/jnlpJars/slave.jar");
+                }
+            }
+
             if (env != null) {
             	pb.environment().putAll(env);
             }
@@ -109,12 +118,17 @@ public class CommandLauncher extends ComputerLauncher {
                     proc.getErrorStream(), listener.getLogger()).start();
 
             computer.setChannel(proc.getInputStream(), proc.getOutputStream(), listener.getLogger(), new Channel.Listener() {
+                @Override
                 public void onClosed(Channel channel, IOException cause) {
                     if (cause != null) {
                         cause.printStackTrace(
                             listener.error(hudson.model.Messages.Slave_Terminated(getTimestamp())));
                     }
-                    ProcessTreeKiller.get().kill(proc, cookie);
+                    try {
+                        ProcessTree.get().killAll(proc, cookie);
+                    } catch (InterruptedException e) {
+                        LOGGER.log(Level.INFO, "interrupted", e);
+                    }
                 }
             });
 
@@ -139,7 +153,11 @@ public class CommandLauncher extends ComputerLauncher {
             e.printStackTrace(listener.error(msg));
 
             if(_proc!=null)
-                ProcessTreeKiller.get().kill(_proc, _cookie);
+                try {
+                    ProcessTree.get().killAll(_proc, _cookie);
+                } catch (InterruptedException x) {
+                    x.printStackTrace(listener.error(Messages.ComputerLauncher_abortedLaunch()));
+                }
         }
     }
 

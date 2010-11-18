@@ -36,6 +36,7 @@ public class CloseProofOutputStream extends DelegatingOutputStream {
         super(out);
     }
 
+    @Override
     public void close() {
     }
 }

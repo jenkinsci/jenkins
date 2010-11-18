@@ -25,7 +25,9 @@ package hudson;
 
 import hudson.PluginWrapper.Dependency;
 import hudson.util.IOException2;
-import hudson.model.Hudson;
+import hudson.util.MaskingClassLoader;
+import hudson.util.VersionNumber;
+import hudson.Plugin.DummyImpl;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -33,21 +35,29 @@ import java.io.FileInputStream;
 import java.io.FileReader;
 import java.io.FilenameFilter;
 import java.io.IOException;
+import java.io.Closeable;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Enumeration;
+import java.util.HashSet;
 import java.util.List;
 import java.util.jar.Manifest;
+import java.util.jar.Attributes;
 import java.util.logging.Logger;
 
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.Project;
+import org.apache.tools.ant.AntClassLoader;
 import org.apache.tools.ant.taskdefs.Expand;
 import org.apache.tools.ant.types.FileSet;
 
 public class ClassicPluginStrategy implements PluginStrategy {
-	
-	private static final Logger LOGGER = Logger.getLogger(ClassicPluginStrategy.class.getName());
+
+    private static final Logger LOGGER = Logger.getLogger(ClassicPluginStrategy.class.getName());
 
     /**
      * Filter for jar files.
@@ -59,133 +69,194 @@ public class ClassicPluginStrategy implements PluginStrategy {
     };
 
     private PluginManager pluginManager;
-	
-	public ClassicPluginStrategy(PluginManager pluginManager) {
-		this.pluginManager = pluginManager;
-	}
 
-	public PluginWrapper createPluginWrapper(File archive) throws IOException {
-		LOGGER.info("Loading plugin: " + archive);
+    public ClassicPluginStrategy(PluginManager pluginManager) {
+        this.pluginManager = pluginManager;
+    }
 
-		Manifest manifest;
-		URL baseResourceURL;
+    public PluginWrapper createPluginWrapper(File archive) throws IOException {
+        final Manifest manifest;
+        URL baseResourceURL;
 
-		boolean isLinked = archive.getName().endsWith(".hpl");
+        File expandDir = null;
+        // if .hpi, this is the directory where war is expanded
 
-		File expandDir = null; 
-		// if .hpi, this is the directory where war is expanded
+        boolean isLinked = archive.getName().endsWith(".hpl");
+        if (isLinked) {
+            // resolve the .hpl file to the location of the manifest file
+            String firstLine = new BufferedReader(new FileReader(archive))
+                    .readLine();
+            if (firstLine.startsWith("Manifest-Version:")) {
+                // this is the manifest already
+            } else {
+                // indirection
+                archive = resolve(archive, firstLine);
+            }
+            // then parse manifest
+            FileInputStream in = new FileInputStream(archive);
+            try {
+                manifest = new Manifest(in);
+            } catch (IOException e) {
+                throw new IOException2("Failed to load " + archive, e);
+            } finally {
+                in.close();
+            }
+        } else {
+            if (archive.isDirectory()) {// already expanded
+                expandDir = archive;
+            } else {
+                expandDir = new File(archive.getParentFile(), PluginWrapper.getBaseName(archive));
+                explode(archive, expandDir);
+            }
 
-		if (isLinked) {
-			// resolve the .hpl file to the location of the manifest file
-			String firstLine = new BufferedReader(new FileReader(archive))
-					.readLine();
-			if (firstLine.startsWith("Manifest-Version:")) {
-				// this is the manifest already
-			} else {
-				// indirection
-				archive = resolve(archive, firstLine);
-			}
-			// then parse manifest
-			FileInputStream in = new FileInputStream(archive);
-			try {
-				manifest = new Manifest(in);
-			} catch (IOException e) {
-				throw new IOException2("Failed to load " + archive, e);
-			} finally {
-				in.close();
-			}
-		} else {
-			expandDir = new File(archive.getParentFile(), PluginWrapper.getBaseName(archive));
-			explode(archive, expandDir);
-
-			File manifestFile = new File(expandDir, "META-INF/MANIFEST.MF");
-			if (!manifestFile.exists()) {
-				throw new IOException(
-						"Plugin installation failed. No manifest at "
-								+ manifestFile);
-			}
-			FileInputStream fin = new FileInputStream(manifestFile);
-			try {
-				manifest = new Manifest(fin);
-			} finally {
-				fin.close();
-			}
-		}
-
-		// TODO: define a mechanism to hide classes
-		// String export = manifest.getMainAttributes().getValue("Export");
-
-		List<URL> paths = new ArrayList<URL>();
-		if (isLinked) {
-			parseClassPath(manifest, archive, paths, "Libraries", ",");
-			parseClassPath(manifest, archive, paths, "Class-Path", " +"); // backward 
-			// compatibility
-
-			baseResourceURL = resolve(archive,
-					manifest.getMainAttributes().getValue("Resource-Path"))
-					.toURL();
-		} else {
-			File classes = new File(expandDir, "WEB-INF/classes");
-			if (classes.exists())
-				paths.add(classes.toURL());
-			File lib = new File(expandDir, "WEB-INF/lib");
-			File[] libs = lib.listFiles(JAR_FILTER);
-			if (libs != null) {
-				for (File jar : libs)
-					paths.add(jar.toURL());
-			}
-
-			baseResourceURL = expandDir.toURL();
-		}
-		File disableFile = new File(archive.getPath() + ".disabled");
-		if (disableFile.exists()) {
-			LOGGER.info("Plugin is disabled");
-		}
-
-		// compute dependencies
-		List<PluginWrapper.Dependency> dependencies = new ArrayList<PluginWrapper.Dependency>();
-		List<PluginWrapper.Dependency> optionalDependencies = new ArrayList<PluginWrapper.Dependency>();
-		String v = manifest.getMainAttributes().getValue("Plugin-Dependencies");
-		if (v != null) {
-			for (String s : v.split(",")) {
-				PluginWrapper.Dependency d = new PluginWrapper.Dependency(s);
-				if (d.optional) {
-					optionalDependencies.add(d);
-				} else {
-					dependencies.add(d);
-				}
-			}
-		}
-
-        // native m2 support moved to a plugin starting 1.296, so plugins built before that
-        // needs to have an implicit dependency to the maven-plugin, or NoClassDefError will ensue.
-        String hudsonVersion = manifest.getMainAttributes().getValue("Hudson-Version");
-        String shortName = manifest.getMainAttributes().getValue("Short-Name");
-        if (!"maven-plugin".equals(shortName) &&
-                // some earlier versions of maven-hpi-plugin apparently puts "null" as a literal here. Watch out for those.
-                (hudsonVersion == null || hudsonVersion.equals("null") || hudsonVersion.compareTo("1.296") <= 0)) {
-            optionalDependencies.add(new PluginWrapper.Dependency("maven-plugin:" + Hudson.VERSION));
+            File manifestFile = new File(expandDir, "META-INF/MANIFEST.MF");
+            if (!manifestFile.exists()) {
+                throw new IOException(
+                        "Plugin installation failed. No manifest at "
+                                + manifestFile);
+            }
+            FileInputStream fin = new FileInputStream(manifestFile);
+            try {
+                manifest = new Manifest(fin);
+            } finally {
+                fin.close();
+            }
         }
 
-		ClassLoader dependencyLoader = new DependencyClassLoader(getClass()
-				.getClassLoader(), Util.join(dependencies,optionalDependencies));
-		ClassLoader classLoader = new URLClassLoader(paths.toArray(new URL[paths.size()]),
-				dependencyLoader);
+        final Attributes atts = manifest.getMainAttributes();
 
-		return new PluginWrapper(archive, manifest, baseResourceURL,
-				classLoader, disableFile, dependencies, optionalDependencies);
-	}
+        // TODO: define a mechanism to hide classes
+        // String export = manifest.getMainAttributes().getValue("Export");
 
-	public void initializeComponents(PluginWrapper plugin) {
-	}
+        List<File> paths = new ArrayList<File>();
+        if (isLinked) {
+            parseClassPath(manifest, archive, paths, "Libraries", ",");
+            parseClassPath(manifest, archive, paths, "Class-Path", " +"); // backward compatibility
 
-	public void load(PluginWrapper wrapper) throws IOException {
-		loadPluginDependencies(wrapper.getDependencies(),
-				wrapper.getOptionalDependencies());
+            baseResourceURL = resolve(archive,atts.getValue("Resource-Path")).toURI().toURL();
+        } else {
+            File classes = new File(expandDir, "WEB-INF/classes");
+            if (classes.exists())
+                paths.add(classes);
+            File lib = new File(expandDir, "WEB-INF/lib");
+            File[] libs = lib.listFiles(JAR_FILTER);
+            if (libs != null)
+                paths.addAll(Arrays.asList(libs));
 
-		if (!wrapper.isActive())
-			return;
+            baseResourceURL = expandDir.toURI().toURL();
+        }
+        File disableFile = new File(archive.getPath() + ".disabled");
+        if (disableFile.exists()) {
+            LOGGER.info("Plugin " + archive.getName() + " is disabled");
+        }
 
+        // compute dependencies
+        List<PluginWrapper.Dependency> dependencies = new ArrayList<PluginWrapper.Dependency>();
+        List<PluginWrapper.Dependency> optionalDependencies = new ArrayList<PluginWrapper.Dependency>();
+        String v = atts.getValue("Plugin-Dependencies");
+        if (v != null) {
+            for (String s : v.split(",")) {
+                PluginWrapper.Dependency d = new PluginWrapper.Dependency(s);
+                if (d.optional) {
+                    optionalDependencies.add(d);
+                } else {
+                    dependencies.add(d);
+                }
+            }
+        }
+        for (DetachedPlugin detached : DETACHED_LIST)
+            detached.fix(atts,optionalDependencies);
+
+        ClassLoader dependencyLoader = new DependencyClassLoader(getBaseClassLoader(atts), archive, Util.join(dependencies,optionalDependencies));
+
+        return new PluginWrapper(pluginManager, archive, manifest, baseResourceURL,
+                createClassLoader(paths, dependencyLoader, atts), disableFile, dependencies, optionalDependencies);
+    }
+    
+    @Deprecated
+    protected ClassLoader createClassLoader(List<File> paths, ClassLoader parent) throws IOException {
+        return createClassLoader( paths, parent, null );
+    }
+
+    /**
+     * Creates the classloader that can load all the specified jar files and delegate to the given parent.
+     */
+    protected ClassLoader createClassLoader(List<File> paths, ClassLoader parent, Attributes atts) throws IOException {
+        if (atts != null) {
+            String usePluginFirstClassLoader = atts.getValue( "PluginFirstClassLoader" );
+            if (Boolean.valueOf( usePluginFirstClassLoader )) {
+                PluginFirstClassLoader classLoader = new PluginFirstClassLoader();
+                classLoader.setParentFirst( false );
+                classLoader.setParent( parent );
+                classLoader.addPathFiles( paths );
+                return classLoader;
+            }
+        }
+        if(useAntClassLoader) {
+            // using AntClassLoader with Closeable so that we can predictably release jar files opened by URLClassLoader
+            AntClassLoader2 classLoader = new AntClassLoader2(parent);
+            classLoader.addPathFiles(paths);
+            return classLoader;
+        } else {
+            // Tom reported that AntClassLoader has a performance issue when Hudson keeps trying to load a class that doesn't exist,
+            // so providing a legacy URLClassLoader support, too
+            List<URL> urls = new ArrayList<URL>();
+            for (File path : paths)
+                urls.add(path.toURI().toURL());
+            return new URLClassLoader(urls.toArray(new URL[urls.size()]),parent);
+        }
+    }
+
+    /**
+     * Information about plugins that were originally in the core.
+     */
+    private static final class DetachedPlugin {
+        private final String shortName;
+        private final VersionNumber splitWhen;
+        private final String requireVersion;
+
+        private DetachedPlugin(String shortName, String splitWhen, String requireVersion) {
+            this.shortName = shortName;
+            this.splitWhen = new VersionNumber(splitWhen);
+            this.requireVersion = requireVersion;
+        }
+
+        private void fix(Attributes atts, List<PluginWrapper.Dependency> optionalDependencies) {
+            // don't fix the dependency for yourself, or else we'll have a cycle
+            String yourName = atts.getValue("Short-Name");
+            if (shortName.equals(yourName))   return;
+
+            // some earlier versions of maven-hpi-plugin apparently puts "null" as a literal in Hudson-Version. watch out for them.
+            String hudsonVersion = atts.getValue("Hudson-Version");
+            if (hudsonVersion == null || hudsonVersion.equals("null") || new VersionNumber(hudsonVersion).compareTo(splitWhen) <= 0)
+                optionalDependencies.add(new PluginWrapper.Dependency(shortName+':'+requireVersion));
+        }
+    }
+
+    private static final List<DetachedPlugin> DETACHED_LIST = Arrays.asList(
+        new DetachedPlugin("maven-plugin","1.296","1.296"),
+        new DetachedPlugin("subversion","1.310","1.0"),
+        new DetachedPlugin("cvs","1.340","0.1")
+    );
+
+    /**
+     * Computes the classloader that takes the class masking into account.
+     *
+     * <p>
+     * This mechanism allows plugins to have their own verions for libraries that core bundles.
+     */
+    private ClassLoader getBaseClassLoader(Attributes atts) {
+        ClassLoader base = getClass().getClassLoader();
+        String masked = atts.getValue("Mask-Classes");
+        if(masked!=null)
+            base = new MaskingClassLoader(base, masked.trim().split("[ \t\r\n]+"));
+        return base;
+    }
+
+    public void initializeComponents(PluginWrapper plugin) {
+    }
+
+    public void load(PluginWrapper wrapper) throws IOException {
         // override the context classloader so that XStream activity in plugin.start()
         // will be able to resolve classes in this plugin
         ClassLoader old = Thread.currentThread().getContextClassLoader();
@@ -194,7 +265,7 @@ public class ClassicPluginStrategy implements PluginStrategy {
             String className = wrapper.getPluginClass();
             if(className==null) {
                 // use the default dummy instance
-                wrapper.setPlugin(Plugin.NONE);
+                wrapper.setPlugin(new DummyImpl());
             } else {
                 try {
                     Class clazz = wrapper.classLoader.loadClass(className);
@@ -216,7 +287,7 @@ public class ClassicPluginStrategy implements PluginStrategy {
 
             // initialize plugin
             try {
-            	Plugin plugin = wrapper.getPlugin();
+                Plugin plugin = wrapper.getPlugin();
                 plugin.setServletContext(pluginManager.context);
                 startPlugin(wrapper);
             } catch(Throwable t) {
@@ -226,11 +297,11 @@ public class ClassicPluginStrategy implements PluginStrategy {
         } finally {
             Thread.currentThread().setContextClassLoader(old);
         }
-	}
-	
-	public void startPlugin(PluginWrapper plugin) throws Exception {
-		plugin.getPlugin().start();
-	}
+    }
+
+    public void startPlugin(PluginWrapper plugin) throws Exception {
+        plugin.getPlugin().start();
+    }
 
     private static File resolve(File base, String relative) {
         File rel = new File(relative);
@@ -240,7 +311,7 @@ public class ClassicPluginStrategy implements PluginStrategy {
             return new File(base.getParentFile(),relative);
     }
 
-    private static void parseClassPath(Manifest manifest, File archive, List<URL> paths, String attributeName, String separator) throws IOException {
+    private static void parseClassPath(Manifest manifest, File archive, List<File> paths, String attributeName, String separator) throws IOException {
         String classPath = manifest.getMainAttributes().getValue(attributeName);
         if(classPath==null) return; // attribute not found
         for (String s : classPath.split(separator)) {
@@ -252,12 +323,12 @@ public class ClassicPluginStrategy implements PluginStrategy {
                 fs.setDir(dir);
                 fs.setIncludes(file.getName());
                 for( String included : fs.getDirectoryScanner(new Project()).getIncludedFiles() ) {
-                    paths.add(new File(dir,included).toURL());
+                    paths.add(new File(dir,included));
                 }
             } else {
                 if(!file.exists())
                     throw new IOException("No such file: "+file);
-                paths.add(file.toURL());
+                paths.add(file);
             }
         }
     }
@@ -271,10 +342,8 @@ public class ClassicPluginStrategy implements PluginStrategy {
 
         // timestamp check
         File explodeTime = new File(destDir,".timestamp");
-        if(explodeTime.exists() && explodeTime.lastModified()>archive.lastModified())
+        if(explodeTime.exists() && explodeTime.lastModified()==archive.lastModified())
             return; // no need to expand
-
-        LOGGER.info("Extracting "+archive);
 
         // delete the contents so that old files won't interfere with new files
         Util.deleteContentsRecursive(destDir);
@@ -287,55 +356,34 @@ public class ClassicPluginStrategy implements PluginStrategy {
             e.setDest(destDir);
             e.execute();
         } catch (BuildException x) {
-            IOException ioe = new IOException("Failed to expand " + archive);
-            ioe.initCause(x);
-            throw ioe;
+            throw new IOException2("Failed to expand " + archive,x);
         }
 
-        Util.touch(explodeTime);
+        try {
+            new FilePath(explodeTime).touch(archive.lastModified());
+        } catch (InterruptedException e) {
+            throw new AssertionError(e); // impossible
+        }
     }
 
-	/**
-	 * Loads the dependencies to other plugins.
-	 * 
-	 * @throws IOException
-	 *             thrown if one or several mandatory dependencies doesnt
-	 *             exists.
-	 */
-	private void loadPluginDependencies(List<Dependency> dependencies,
-			List<Dependency> optionalDependencies) throws IOException {
-		List<String> missingDependencies = new ArrayList<String>();
-		// make sure dependencies exist
-		for (Dependency d : dependencies) {
-			if (pluginManager.getPlugin(d.shortName) == null)
-				missingDependencies.add(d.toString());
-		}
-		if (!missingDependencies.isEmpty()) {
-			StringBuilder builder = new StringBuilder();
-			builder.append("Dependency ");
-			builder.append(Util.join(missingDependencies, ", "));
-			builder.append(" doesn't exist");
-			throw new IOException(builder.toString());
-		}
-
-		// add the optional dependencies that exists
-		for (Dependency d : optionalDependencies) {
-			if (pluginManager.getPlugin(d.shortName) != null)
-				dependencies.add(d);
-		}
-	}
-    
     /**
      * Used to load classes from dependency plugins.
      */
     final class DependencyClassLoader extends ClassLoader {
-		private List<Dependency> dependencies;
+        /**
+         * This classloader is created for this plugin. Useful during debugging.
+         */
+        private final File _for;
 
-        public DependencyClassLoader(ClassLoader parent, List<Dependency> dependencies) {
+        private List<Dependency> dependencies;
+
+        public DependencyClassLoader(ClassLoader parent, File archive, List<Dependency> dependencies) {
             super(parent);
+            this._for = archive;
             this.dependencies = dependencies;
         }
 
+        @Override
         protected Class<?> findClass(String name) throws ClassNotFoundException {
             for (Dependency dep : dependencies) {
                 PluginWrapper p = pluginManager.getPlugin(dep.shortName);
@@ -350,6 +398,53 @@ public class ClassicPluginStrategy implements PluginStrategy {
             throw new ClassNotFoundException(name);
         }
 
-        // TODO: delegate resources? watch out for diamond dependencies
+        @Override
+        protected Enumeration<URL> findResources(String name) throws IOException {
+            HashSet<URL> result = new HashSet<URL>();
+            for (Dependency dep : dependencies) {
+                PluginWrapper p = pluginManager.getPlugin(dep.shortName);
+                if (p!=null) {
+                    Enumeration<URL> urls = p.classLoader.getResources(name);
+                    while (urls != null && urls.hasMoreElements())
+                        result.add(urls.nextElement());
+                }
+            }
+
+            return Collections.enumeration(result);
+        }
+
+        @Override
+        protected URL findResource(String name) {
+            for (Dependency dep : dependencies) {
+                PluginWrapper p = pluginManager.getPlugin(dep.shortName);
+                if(p!=null) {
+                    URL url = p.classLoader.getResource(name);
+                    if (url!=null)
+                        return url;
+                }
+            }
+
+            return null;
+        }
     }
+
+    /**
+     * {@link AntClassLoader} with a few methods exposed and {@link Closeable} support.
+     */
+    private static final class AntClassLoader2 extends AntClassLoader implements Closeable {
+        private AntClassLoader2(ClassLoader parent) {
+            super(parent,true);
+        }
+
+        public void addPathFiles(Collection<File> paths) throws IOException {
+            for (File f : paths)
+                addPathFile(f);
+        }
+
+        public void close() throws IOException {
+            cleanup();
+        }
+    }
+
+    public static boolean useAntClassLoader = Boolean.getBoolean(ClassicPluginStrategy.class.getName()+".useAntClassLoader");
 }

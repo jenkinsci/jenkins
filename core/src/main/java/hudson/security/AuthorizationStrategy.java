@@ -23,21 +23,11 @@
  */
 package hudson.security;
 
-import hudson.ExtensionPoint;
-import hudson.Extension;
 import hudson.DescriptorExtensionList;
+import hudson.Extension;
+import hudson.ExtensionPoint;
+import hudson.model.*;
 import hudson.slaves.Cloud;
-import hudson.slaves.RetentionStrategy;
-import hudson.model.AbstractItem;
-import hudson.model.Computer;
-import hudson.model.Describable;
-import hudson.model.Descriptor;
-import hudson.model.Hudson;
-import hudson.model.Job;
-import hudson.model.User;
-import hudson.model.View;
-import hudson.model.Node;
-import hudson.model.AbstractProject;
 import hudson.util.DescriptorList;
 
 import java.io.Serializable;
@@ -69,7 +59,7 @@ import org.kohsuke.stapler.StaplerRequest;
  * @author Kohsuke Kawaguchi
  * @see SecurityRealm
  */
-public abstract class AuthorizationStrategy implements Describable<AuthorizationStrategy>, ExtensionPoint {
+public abstract class AuthorizationStrategy extends AbstractDescribableImpl<AuthorizationStrategy> implements ExtensionPoint {
     /**
      * Returns the instance of {@link ACL} where all the other {@link ACL} instances
      * for all the other model objects eventually delegate.
@@ -79,9 +69,10 @@ public abstract class AuthorizationStrategy implements Describable<Authorization
     public abstract ACL getRootACL();
 
     /**
-     * @deprecated
+     * @deprecated since 1.277
      *      Override {@link #getACL(Job)} instead.
      */
+    @Deprecated
     public ACL getACL(AbstractProject<?,?> project) {
     	return getACL((Job)project);
     }
@@ -95,14 +86,14 @@ public abstract class AuthorizationStrategy implements Describable<Authorization
      * This can be used as a basis for more fine-grained access control.
      *
      * <p>
-     * The default implementation returns {@link #getRootACL()}.
+     * The default implementation returns the ACL of the ViewGroup.
      *
      * @since 1.220
      */
     public ACL getACL(View item) {
-    	return getRootACL();
+    	return item.getOwner().getACL();
     }
-
+    
     /**
      * Implementation can choose to provide different ACL for different items.
      * This can be used as a basis for more fine-grained access control.
@@ -175,21 +166,17 @@ public abstract class AuthorizationStrategy implements Describable<Authorization
      */
     public abstract Collection<String> getGroups();
 
-    public Descriptor<AuthorizationStrategy> getDescriptor() {
-        return Hudson.getInstance().getDescriptor(getClass());
-    }
-
     /**
      * Returns all the registered {@link AuthorizationStrategy} descriptors.
      */
     public static DescriptorExtensionList<AuthorizationStrategy,Descriptor<AuthorizationStrategy>> all() {
-        return Hudson.getInstance().getDescriptorList(AuthorizationStrategy.class);
+        return Hudson.getInstance().<AuthorizationStrategy,Descriptor<AuthorizationStrategy>>getDescriptorList(AuthorizationStrategy.class);
     }
 
     /**
      * All registered {@link SecurityRealm} implementations.
      *
-     * @deprecated
+     * @deprecated since 1.286
      *      Use {@link #all()} for read access, and {@link Extension} for registration.
      */
     public static final DescriptorList<AuthorizationStrategy> LIST = new DescriptorList<AuthorizationStrategy>(AuthorizationStrategy.class);
@@ -232,10 +219,12 @@ public abstract class AuthorizationStrategy implements Describable<Authorization
                 return Messages.AuthorizationStrategy_DisplayName();
             }
 
+            @Override
             public AuthorizationStrategy newInstance(StaplerRequest req, JSONObject formData) throws FormException {
                 return UNSECURED;
             }
 
+            @Override
             public String getHelpFile() {
                 return "/help/security/no-authorization.html";
             }

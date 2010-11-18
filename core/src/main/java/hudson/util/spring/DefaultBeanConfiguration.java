@@ -53,6 +53,7 @@ class DefaultBeanConfiguration extends GroovyObjectSupport implements BeanConfig
     private static final Set<String> DYNAMIC_PROPS = new HashSet<String>(Arrays.asList(AUTOWIRE, CONSTRUCTOR_ARGS, DESTROY_METHOD, FACTORY_BEAN, FACTORY_METHOD, INIT_METHOD, BY_NAME, BY_TYPE, BY_CONSTRUCTOR));
     private String parentName;
 
+    @Override
     public Object getProperty(String property) {
 		getBeanDefinition();
 		if(wrapper.isReadableProperty(property)) {
@@ -64,7 +65,8 @@ class DefaultBeanConfiguration extends GroovyObjectSupport implements BeanConfig
 		return super.getProperty(property);
 	}
 
-	public void setProperty(String property, Object newValue) {
+    @Override
+    public void setProperty(String property, Object newValue) {
         if(PARENT.equals(property)) {
             setParent(newValue);
         }

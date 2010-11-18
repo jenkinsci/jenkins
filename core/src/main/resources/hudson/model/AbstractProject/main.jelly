@@ -1,7 +1,8 @@
 <!--
 The MIT License
 
-Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, Erik Ramfelt, id:cactusman
+Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, Erik Ramfelt,
+id:cactusman, Romain Seguy
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -37,16 +38,18 @@ THE SOFTWARE.
     </t:summary>
 
     <t:artifactList caption="${%Last Successful Artifacts}"
-        build="${it.lastSuccessfulBuild}" baseURL="lastSuccessfulBuild/" />
+        build="${it.lastSuccessfulBuild}" baseURL="lastSuccessfulBuild/"
+        permission="${it.lastSuccessfulBuild.ARTIFACTS}"/>
 
     <t:summary icon="notepad.gif" href="changes">
       ${%Recent Changes}
     </t:summary>
 
-    <j:set var="tr" value="${it.lastBuild.testResultAction}"/>
+    <j:set var="tr" value="${it.lastCompletedBuild.testResultAction}"/>
     <j:if test="${tr!=null}">
       <t:summary icon="clipboard.gif">
-        <a href="lastBuild/testReport/">${%Latest Test Result}</a>
+        <a href="lastCompletedBuild/testReport/">${%Latest Test Result}</a>
+        <st:nbsp/>
         <t:test-result it="${tr}" />
       </t:summary>
     </j:if>

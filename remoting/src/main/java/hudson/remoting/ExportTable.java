@@ -28,7 +28,6 @@ import java.io.PrintWriter;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.ArrayList;
-import java.util.List;
 
 /**
  * Manages unique ID for exported objects, and allows look-up from IDs.
@@ -42,11 +41,7 @@ final class ExportTable<T> {
      * {@link ExportList}s which are actively recording the current
      * export operation.
      */
-    private final ThreadLocal<List<ExportList>> lists = new ThreadLocal<List<ExportList>>() {
-        protected List<ExportList> initialValue() {
-            return new ArrayList<ExportList>();
-        }
-    };
+    private final ThreadLocal<ExportList> lists = new ThreadLocal<ExportList>();
 
     /**
      * Information about one exporetd object.
@@ -97,6 +92,11 @@ final class ExportTable<T> {
      * on the current thread.
      */
     public final class ExportList extends ArrayList<Entry> {
+        private final ExportList old;
+        private ExportList() {
+            old=lists.get();
+            lists.set(this);
+        }
         void release() {
             synchronized(ExportTable.this) {
                 for (Entry e : this)
@@ -104,9 +104,7 @@ final class ExportTable<T> {
             }
         }
         void stopRecording() {
-            synchronized(ExportTable.this) {
-                lists.get().remove(this);
-            }
+            lists.set(old);
         }
     }
 
@@ -121,10 +119,14 @@ final class ExportTable<T> {
      *
      * @see ExportList#stopRecording()
      */
-    public synchronized ExportList startRecording() {
+    public ExportList startRecording() {
         ExportList el = new ExportList();
-        lists.get().add(el);
+        lists.set(el);
         return el;
+    }
+
+    public boolean isRecording() {
+        return lists.get()!=null;
     }
 
     /**
@@ -156,9 +158,10 @@ final class ExportTable<T> {
         else
             e.addRef();
 
-        if(notifyListener)
-            for (ExportList list : lists.get())
-                list.add(e);
+        if(notifyListener) {
+            ExportList l = lists.get();
+            if(l!=null) l.add(e);
+        }
 
         return e.id;
     }
@@ -175,6 +178,16 @@ final class ExportTable<T> {
     public synchronized void unexport(T t) {
         if(t==null)     return;
         Entry e = reverse.get(t);
+        if(e==null)    return; // presumably already unexported
+        e.release();
+    }
+
+    /**
+     * Removes the exported object for the specified oid from the table.
+     */
+    public synchronized void unexportByOid(Integer oid) {
+        if(oid==null)     return;
+        Entry e = table.get(oid);
         if(e==null)    return; // presumably already unexported
         e.release();
     }

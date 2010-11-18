@@ -36,7 +36,10 @@ import com.thoughtworks.xstream.converters.basic.StringConverter;
  * now be allocated to the heap space.)
  *
  * @author Kohsuke Kawaguchi
+ * @deprecated since 2009-11-06
+ *     Use {@link HeapSpaceStringConverter} instead.
  */
+@Deprecated
 public class StringConverter2 extends AbstractBasicConverter {
 
     public boolean canConvert(Class type) {
@@ -46,5 +49,4 @@ public class StringConverter2 extends AbstractBasicConverter {
     protected Object fromString(String str) {
         return str;
     }
-
 }

@@ -49,6 +49,7 @@ import java.util.Collection;
  *
  * @author Kohsuke Kawaguchi
  * @see NodeProvisioner
+ * @see AbstractCloudImpl
  */
 public abstract class Cloud extends AbstractModelObject implements ExtensionPoint, Describable<Cloud>, AccessControlled {
 
@@ -108,7 +109,10 @@ public abstract class Cloud extends AbstractModelObject implements ExtensionPoin
      *
      * @return
      *      {@link PlannedNode}s that represent asynchronous {@link Node}
-     *      launch operations. Can be empty but must not be null.
+     *      provisioning operations. Can be empty but must not be null.
+     *      {@link NodeProvisioner} will be responsible for adding the resulting {@link Node}
+     *      into Hudson via {@link Hudson#addNode(Node)}, so a {@link Cloud} implementation
+     *      just needs to create a new node object.
      */
     public abstract Collection<PlannedNode> provision(Label label, int excessWorkload);
 
@@ -118,7 +122,7 @@ public abstract class Cloud extends AbstractModelObject implements ExtensionPoin
     public abstract boolean canProvision(Label label);
 
     public Descriptor<Cloud> getDescriptor() {
-        return Hudson.getInstance().getDescriptor(getClass());
+        return Hudson.getInstance().getDescriptorOrDie(getClass());
     }
 
     /**
@@ -133,7 +137,7 @@ public abstract class Cloud extends AbstractModelObject implements ExtensionPoin
      * Returns all the registered {@link Cloud} descriptors.
      */
     public static DescriptorExtensionList<Cloud,Descriptor<Cloud>> all() {
-        return Hudson.getInstance().getDescriptorList(Cloud.class);
+        return Hudson.getInstance().<Cloud,Descriptor<Cloud>>getDescriptorList(Cloud.class);
     }
 
     /**

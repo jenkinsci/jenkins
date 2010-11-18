@@ -1,0 +1,22 @@
+<div>
+  Se informado, uma nova construção agendada aguarda estes quantos segundos informado 
+  antes de ser realmente construída.
+  Isto é útil para:
+  <ul>
+    <li>
+      Juntar múltiplos e-mails de notificação de mudanças no CVS em um (alguns scripts
+      de geração de e-mail de mudança no log de CVS geram múltiplos e-mails
+      em uma rápida sequência quam uma submissão atravessa pelos diretórios).
+    </li>
+    <li>
+      Se seu estilo de codificação é tal que você submete uma mudança lógica em poucas
+      operação de cvs/svn, então informar um longo período de silêncio previniria o Hudson de
+      construí-lo prematuramente e relatar uma falha.
+    </li>
+    <li>
+      Suprimir construções. Se sua intalação do Hudson está muito ocupada com muitas construçõesi,
+      informar um longo período de silêncio pode reduzir o número de construções.
+    </li>
+  </ul>
+  Se não explícitamente informado no nível de projeto, o valor padrão do sistema todo é usado.
+</div>

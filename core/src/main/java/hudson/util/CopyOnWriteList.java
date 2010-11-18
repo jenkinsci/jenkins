@@ -23,7 +23,7 @@
  */
 package hudson.util;
 
-import com.thoughtworks.xstream.alias.CannotResolveClassException;
+import com.thoughtworks.xstream.mapper.CannotResolveClassException;
 import com.thoughtworks.xstream.converters.Converter;
 import com.thoughtworks.xstream.converters.MarshallingContext;
 import com.thoughtworks.xstream.converters.UnmarshallingContext;
@@ -38,8 +38,9 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Arrays;
-import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import static java.util.logging.Level.WARNING;
 
 /**
  * {@link List}-like implementation that has copy-on-write semantics.
@@ -68,6 +69,12 @@ public class CopyOnWriteList<E> implements Iterable<E> {
     public synchronized void add(E e) {
         List<E> n = new ArrayList<E>(core);
         n.add(e);
+        core = n;
+    }
+
+    public synchronized void addAll(Collection<? extends E> items) {
+        List<E> n = new ArrayList<E>(core);
+        n.addAll(items);
         core = n;
     }
 
@@ -143,6 +150,10 @@ public class CopyOnWriteList<E> implements Iterable<E> {
         dst.addAll(core);
     }
 
+    public E get(int index) {
+        return core.get(index);
+    }
+
     public boolean isEmpty() {
         return core.isEmpty();
     }
@@ -178,7 +189,11 @@ public class CopyOnWriteList<E> implements Iterable<E> {
                     Object item = readItem(reader, context, items);
                     items.add(item);
                 } catch (CannotResolveClassException e) {
-                    LOGGER.log(Level.WARNING,"Failed to resolve class",e);
+                    LOGGER.log(WARNING,"Failed to resolve class",e);
+                    RobustReflectionConverter.addErrorInContext(context, e);
+                } catch (LinkageError e) {
+                    LOGGER.log(WARNING,"Failed to resolve class",e);
+                    RobustReflectionConverter.addErrorInContext(context, e);
                 }
                 reader.moveUp();
             }

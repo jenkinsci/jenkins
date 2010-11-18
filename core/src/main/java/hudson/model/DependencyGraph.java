@@ -1,7 +1,8 @@
 /*
  * The MIT License
  * 
- * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, Martin Eigenbrodt
+ * Copyright (c) 2004-2010, Sun Microsystems, Inc., Kohsuke Kawaguchi,
+ * Martin Eigenbrodt. Seiji Sogabe, Alan Harder
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,6 +24,10 @@
  */
 package hudson.model;
 
+import hudson.security.ACL;
+import hudson.security.NotSerilizableSecurityContext;
+import org.acegisecurity.context.SecurityContext;
+import org.acegisecurity.context.SecurityContextHolder;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 import org.kohsuke.graph_layouter.Layout;
@@ -36,12 +41,14 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
 import java.util.HashSet;
-import java.util.Stack;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.ListIterator;
+import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
+import java.util.Stack;
 import java.io.IOException;
 import java.awt.Dimension;
 import java.awt.Font;
@@ -75,10 +82,10 @@ import java.awt.image.BufferedImage;
  * @see Hudson#getDependencyGraph() 
  * @author Kohsuke Kawaguchi
  */
-public final class DependencyGraph implements Comparator <AbstractProject> {
+public final class DependencyGraph implements Comparator<AbstractProject> {
 
-    private Map<AbstractProject, List<AbstractProject>> forward = new HashMap<AbstractProject, List<AbstractProject>>();
-    private Map<AbstractProject, List<AbstractProject>> backward = new HashMap<AbstractProject, List<AbstractProject>>();
+    private Map<AbstractProject, List<DependencyGroup>> forward = new HashMap<AbstractProject, List<DependencyGroup>>();
+    private Map<AbstractProject, List<DependencyGroup>> backward = new HashMap<AbstractProject, List<DependencyGroup>>();
 
     private boolean built;
 
@@ -86,13 +93,23 @@ public final class DependencyGraph implements Comparator <AbstractProject> {
      * Builds the dependency graph.
      */
     public DependencyGraph() {
-        for( AbstractProject p : Hudson.getInstance().getAllItems(AbstractProject.class) )
-            p.buildDependencyGraph(this);
+        // Set full privileges while computing to avoid missing any projects the current user cannot see.
+        // Use setContext (NOT getContext().setAuthentication()) so we don't affect concurrent threads for same HttpSession.
+        SecurityContext saveCtx = SecurityContextHolder.getContext();
+        try {
+            NotSerilizableSecurityContext system = new NotSerilizableSecurityContext();
+            system.setAuthentication(ACL.SYSTEM);
+            SecurityContextHolder.setContext(system);
+            for( AbstractProject p : Hudson.getInstance().getAllItems(AbstractProject.class) )
+                p.buildDependencyGraph(this);
 
-        forward = finalize(forward);
-        backward = finalize(backward);
+            forward = finalize(forward);
+            backward = finalize(backward);
 
-        built = true;
+            built = true;
+        } finally {
+            SecurityContextHolder.setContext(saveCtx);
+        }
     }
 
     /**
@@ -110,7 +127,7 @@ public final class DependencyGraph implements Comparator <AbstractProject> {
      *      can be empty but never null.
      */
     public List<AbstractProject> getDownstream(AbstractProject p) {
-        return get(forward,p);
+        return get(forward,p,false);
     }
 
     /**
@@ -120,32 +137,68 @@ public final class DependencyGraph implements Comparator <AbstractProject> {
      *      can be empty but never null.
      */
     public List<AbstractProject> getUpstream(AbstractProject p) {
+        return get(backward,p,true);
+    }
+
+    private List<AbstractProject> get(Map<AbstractProject, List<DependencyGroup>> map, AbstractProject src, boolean up) {
+        List<DependencyGroup> v = map.get(src);
+        if(v==null) return Collections.emptyList();
+        List<AbstractProject> result = new ArrayList<AbstractProject>(v.size());
+        for (Dependency d : v) result.add(up ? d.getUpstreamProject() : d.getDownstreamProject());
+        return result;
+    }
+
+    /**
+     * @since 1.341
+     */
+    public List<Dependency> getDownstreamDependencies(AbstractProject p) {
+        return get(forward,p);
+    }
+
+    /**
+     * @since 1.341
+     */
+    public List<Dependency> getUpstreamDependencies(AbstractProject p) {
         return get(backward,p);
     }
 
-    private List<AbstractProject> get(Map<AbstractProject, List<AbstractProject>> map, AbstractProject src) {
-        List<AbstractProject> v = map.get(src);
-        if(v!=null) return v;
+    private List<Dependency> get(Map<AbstractProject, List<DependencyGroup>> map, AbstractProject src) {
+        List<DependencyGroup> v = map.get(src);
+        if(v!=null) return Collections.<Dependency>unmodifiableList(v);
         else        return Collections.emptyList();
+    }
+
+    /**
+     * @deprecated since 1.341; use {@link #addDependency(Dependency)}
+     */
+    @Deprecated
+    public void addDependency(AbstractProject upstream, AbstractProject downstream) {
+        addDependency(new Dependency(upstream,downstream));
     }
 
     /**
      * Called during the dependency graph build phase to add a dependency edge.
      */
-    public void addDependency(AbstractProject upstream, AbstractProject downstream) {
+    public void addDependency(Dependency dep) {
         if(built)
             throw new IllegalStateException();
-        if(upstream==downstream)
-            return;
-        add(forward,upstream,downstream);
-        add(backward,downstream,upstream);
+        add(forward,dep.getUpstreamProject(),dep);
+        add(backward,dep.getDownstreamProject(),dep);
     }
 
+    /**
+     * @deprecated since 1.341
+     */
+    @Deprecated
     public void addDependency(AbstractProject upstream, Collection<? extends AbstractProject> downstream) {
         for (AbstractProject p : downstream)
             addDependency(upstream,p);
     }
 
+    /**
+     * @deprecated since 1.341
+     */
+    @Deprecated
     public void addDependency(Collection<? extends AbstractProject> upstream, AbstractProject downstream) {
         for (AbstractProject p : upstream)
             addDependency(p,downstream);
@@ -191,17 +244,17 @@ public final class DependencyGraph implements Comparator <AbstractProject> {
      * Gets all the direct and indirect upstream dependencies of the given project.
      */
     public Set<AbstractProject> getTransitiveUpstream(AbstractProject src) {
-        return getTransitive(backward,src);
+        return getTransitive(backward,src,true);
     }
 
     /**
      * Gets all the direct and indirect downstream dependencies of the given project.
      */
     public Set<AbstractProject> getTransitiveDownstream(AbstractProject src) {
-        return getTransitive(forward,src);
+        return getTransitive(forward,src,false);
     }
 
-    private Set<AbstractProject> getTransitive(Map<AbstractProject, List<AbstractProject>> direction, AbstractProject src) {
+    private Set<AbstractProject> getTransitive(Map<AbstractProject, List<DependencyGroup>> direction, AbstractProject src, boolean up) {
         Set<AbstractProject> visited = new HashSet<AbstractProject>();
         Stack<AbstractProject> queue = new Stack<AbstractProject>();
 
@@ -210,7 +263,7 @@ public final class DependencyGraph implements Comparator <AbstractProject> {
         while(!queue.isEmpty()) {
             AbstractProject p = queue.pop();
 
-            for (AbstractProject child : get(direction,p)) {
+            for (AbstractProject child : get(direction,p,up)) {
                 if(visited.add(child))
                     queue.add(child);
             }
@@ -219,18 +272,26 @@ public final class DependencyGraph implements Comparator <AbstractProject> {
         return visited;
     }
 
-    private void add(Map<AbstractProject, List<AbstractProject>> map, AbstractProject src, AbstractProject dst) {
-        List<AbstractProject> set = map.get(src);
+    private void add(Map<AbstractProject, List<DependencyGroup>> map, AbstractProject key, Dependency dep) {
+        List<DependencyGroup> set = map.get(key);
         if(set==null) {
-            set = new ArrayList<AbstractProject>();
-            map.put(src,set);
+            set = new ArrayList<DependencyGroup>();
+            map.put(key,set);
         }
-        if(!set.contains(dst))
-            set.add(dst);
+        for (ListIterator<DependencyGroup> it = set.listIterator(); it.hasNext();) {
+            DependencyGroup d = it.next();
+            // Check for existing edge that connects the same two projects:
+            if (d.getUpstreamProject()==dep.getUpstreamProject() && d.getDownstreamProject()==dep.getDownstreamProject()) {
+                d.add(dep);
+                return;
+            }
+        }
+        // Otherwise add to list:
+        set.add(new DependencyGroup(dep));
     }
 
-    private Map<AbstractProject, List<AbstractProject>> finalize(Map<AbstractProject, List<AbstractProject>> m) {
-        for (Entry<AbstractProject, List<AbstractProject>> e : m.entrySet()) {
+    private Map<AbstractProject, List<DependencyGroup>> finalize(Map<AbstractProject, List<DependencyGroup>> m) {
+        for (Entry<AbstractProject, List<DependencyGroup>> e : m.entrySet()) {
             Collections.sort( e.getValue(), NAME_COMPARATOR );
             e.setValue( Collections.unmodifiableList(e.getValue()) );
         }
@@ -241,6 +302,8 @@ public final class DependencyGraph implements Comparator <AbstractProject> {
      * Experimental visualization of project dependencies.
      */
     public void doGraph( StaplerRequest req, StaplerResponse rsp ) throws IOException {
+        // Require admin permission for now (avoid exposing project names with restricted permissions)
+        Hudson.getInstance().checkPermission(Hudson.ADMINISTER);
         try {
 
             // creates a dummy graphics just so that we can measure font metrics
@@ -328,9 +391,10 @@ public final class DependencyGraph implements Comparator <AbstractProject> {
     private static final int MARGIN = 4;
 
 
-    private static final Comparator<AbstractProject> NAME_COMPARATOR = new Comparator<AbstractProject>() {
-        public int compare(AbstractProject lhs, AbstractProject rhs) {
-            return lhs.getName().compareTo(rhs.getName());
+    private static final Comparator<Dependency> NAME_COMPARATOR = new Comparator<Dependency>() {
+        public int compare(Dependency lhs, Dependency rhs) {
+            int cmp = lhs.getUpstreamProject().getName().compareTo(rhs.getUpstreamProject().getName());
+            return cmp != 0 ? cmp : lhs.getDownstreamProject().getName().compareTo(rhs.getDownstreamProject().getName());
         }
     };
 
@@ -347,5 +411,94 @@ public final class DependencyGraph implements Comparator <AbstractProject> {
         } else {
             if (o2sdownstreams.contains(o1)) return -1; else return 0; 
         }               
+    }
+
+    /**
+     * Represents an edge in the dependency graph.
+     * @since 1.341
+     */
+    public static class Dependency {
+        private AbstractProject upstream, downstream;
+
+        public Dependency(AbstractProject upstream, AbstractProject downstream) {
+            this.upstream = upstream;
+            this.downstream = downstream;
+        }
+
+        public AbstractProject getUpstreamProject() {
+            return upstream;
+        }
+
+        public AbstractProject getDownstreamProject() {
+            return downstream;
+        }
+
+        /**
+         * Decide whether build should be triggered and provide any Actions for the build.
+         * Default implementation always returns true (for backward compatibility), and
+         * adds no Actions. Subclasses may override to control how/if the build is triggered.
+         * @param build Build of upstream project that just completed
+         * @param listener For any error/log output
+         * @param actions Add Actions for the triggered build to this list; never null
+         * @return True to trigger a build of the downstream project
+         */
+        public boolean shouldTriggerBuild(AbstractBuild build, TaskListener listener,
+                                          List<Action> actions) {
+            return true;
+        }
+
+        /**
+         * Does this method point to itself?
+         */
+        public boolean pointsItself() {
+            return upstream==downstream;
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (obj == null) return false;
+            if (getClass() != obj.getClass()) return false;
+
+            final Dependency that = (Dependency) obj;
+            return this.upstream == that.upstream || this.downstream == that.downstream;
+        }
+
+        @Override
+        public int hashCode() {
+            int hash = 7;
+            hash = 23 * hash + this.upstream.hashCode();
+            hash = 23 * hash + this.downstream.hashCode();
+            return hash;
+        }
+    }
+
+    /**
+     * Collect multiple dependencies between the same two projects.
+     */
+    private static class DependencyGroup extends Dependency {
+        private Set<Dependency> group = new LinkedHashSet<Dependency>();
+
+        DependencyGroup(Dependency first) {
+            super(first.getUpstreamProject(), first.getDownstreamProject());
+            group.add(first);
+        }
+
+        void add(Dependency next) {
+            group.add(next);
+        }
+
+        @Override
+        public boolean shouldTriggerBuild(AbstractBuild build, TaskListener listener,
+                                          List<Action> actions) {
+            List<Action> check = new ArrayList<Action>();
+            for (Dependency d : group) {
+                if (d.shouldTriggerBuild(build, listener, check)) {
+                    actions.addAll(check);
+                    return true;
+                } else
+                    check.clear();
+            }
+            return false;
+        }
     }
 }

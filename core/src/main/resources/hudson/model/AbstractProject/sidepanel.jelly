@@ -1,7 +1,7 @@
 <!--
 The MIT License
 
-Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, Erik Ramfelt, Tom Huybrechts, id:cactusman
+Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, Erik Ramfelt, Tom Huybrechts, id:cactusman, Yahoo! Inc.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -41,19 +41,27 @@ THE SOFTWARE.
         <l:task icon="images/24x24/folder-delete.gif"  href="${url}/wipeOutWorkspace" title="${%Wipe Out Workspace}" permission="${it.BUILD}" />
       </l:task>
       <j:if test="${it.configurable}">
-        <j:if test="${!it.disabled}">
+        <j:if test="${it.buildable}">
           <l:task icon="images/24x24/clock.gif" href="${url}/build?delay=0sec" title="${%Build Now}"
                   onclick="${it.parameterized?null:'return build(this)'}" permission="${it.BUILD}" />
           <script>
             function build(a) {
-              new Ajax.Request(a.href,{method:"post"});
+              new Ajax.Request(a.href);
+              
               hoverNotification('${%Build scheduled}',a.parentNode);
               return false;
             }
           </script>
         </j:if>
         <l:task icon="images/24x24/edit-delete.gif" href="${url}/delete" title="${%delete(it.pronoun)}" permission="${it.DELETE}" />
-        <l:task icon="images/24x24/setting.gif" href="${url}/configure" title="${%Configure}" permission="${it.CONFIGURE}" />
+        <j:choose>
+            <j:when test="${h.hasPermission(it,it.CONFIGURE)}">
+                <l:task icon="images/24x24/setting.gif" href="${url}/configure" title="${%Configure}" />
+            </j:when>
+            <j:when test="${h.hasPermission(it,it.EXTENDED_READ)}">
+                <l:task icon="images/24x24/setting.gif" href="${url}/configure" title="${%View Configuration}" />
+            </j:when>
+        </j:choose>
       </j:if>
       <st:include page="actions.jelly" />
     </l:tasks>

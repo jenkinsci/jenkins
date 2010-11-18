@@ -23,16 +23,11 @@
  */
 package hudson.model;
 
+import java.util.Locale;
+
+import hudson.EnvVars;
 import org.kohsuke.stapler.DataBoundConstructor;
-
-import java.util.Map;
-
-import com.thoughtworks.xstream.converters.Converter;
-import com.thoughtworks.xstream.converters.MarshallingContext;
-import com.thoughtworks.xstream.converters.UnmarshallingContext;
-import com.thoughtworks.xstream.io.HierarchicalStreamWriter;
-import com.thoughtworks.xstream.io.HierarchicalStreamReader;
-import hudson.util.Secret;
+import org.kohsuke.stapler.export.Exported;
 
 public class RunParameterValue extends ParameterValue {
 
@@ -56,13 +51,32 @@ public class RunParameterValue extends ParameterValue {
     public String getRunId() {
         return runId;
     }
+    
+    @Exported
+    public String getJobName() {
+    	return runId.split("#")[0];
+    }
+    
+    @Exported
+    public String getNumber() {
+    	return runId.split("#")[1];
+    }
+    
 
     /**
      * Exposes the name/value as an environment variable.
      */
     @Override
-    public void buildEnvVars(AbstractBuild<?,?> build, Map<String,String> env) {
-        env.put(name.toUpperCase(), Hudson.getInstance().getRootUrl() + getRun().getUrl());
+    public void buildEnvVars(AbstractBuild<?,?> build, EnvVars env) {
+        String value = Hudson.getInstance().getRootUrl() + getRun().getUrl();
+        env.put(name, value);
+        env.put(name.toUpperCase(Locale.ENGLISH),value); // backward compatibility pre 1.345
+
+    }
+    
+    @Override
+    public String getShortDescription() {
+    	return "(RunParameterValue) " + getName() + "='" + getRunId() + "'";
     }
 
 }

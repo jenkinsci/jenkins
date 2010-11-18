@@ -1,7 +1,7 @@
 /*
  * The MIT License
  *
- * Copyright (c) 2004-2009, Sun Microsystems, Inc., Tom Huybrechts
+ * Copyright (c) 2004-2010, Sun Microsystems, Inc., Tom Huybrechts
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,7 +24,9 @@
 
 package hudson.tools;
 
+import hudson.Functions;
 import hudson.model.*;
+import hudson.model.labels.LabelAtom;
 import hudson.slaves.DumbSlave;
 import hudson.tasks.Maven;
 import hudson.tasks.BatchFile;
@@ -34,7 +36,6 @@ import hudson.tasks.Ant.AntInstallation;
 import hudson.tasks.Maven.MavenInstallation;
 import hudson.EnvVars;
 import hudson.maven.MavenModuleSet;
-import hudson.maven.MavenModuleSetBuild;
 
 import java.io.IOException;
 
@@ -60,9 +61,9 @@ public class ToolLocationNodePropertyTest extends HudsonTestCase {
     public void testFormRoundTrip() throws Exception {
 
         MavenInstallation.DescriptorImpl mavenDescriptor = hudson.getDescriptorByType(MavenInstallation.DescriptorImpl.class);
-        mavenDescriptor.setInstallations(new MavenInstallation("maven", "XXX"));
+        mavenDescriptor.setInstallations(new MavenInstallation("maven", "XXX", NO_PROPERTIES));
         AntInstallation.DescriptorImpl antDescriptor = hudson.getDescriptorByType(AntInstallation.DescriptorImpl.class);
-        antDescriptor.setInstallations(new AntInstallation("ant", "XXX"));
+        antDescriptor.setInstallations(new AntInstallation("ant", "XXX", NO_PROPERTIES));
         JDK.DescriptorImpl jdkDescriptor = hudson.getDescriptorByType(JDK.DescriptorImpl.class);
         jdkDescriptor.setInstallations(new JDK("jdk", "XXX"));
 
@@ -101,7 +102,7 @@ public class ToolLocationNodePropertyTest extends HudsonTestCase {
     public void testMaven() throws Exception {
         MavenInstallation maven = configureDefaultMaven();
         String mavenPath = maven.getHome();
-        Hudson.getInstance().getDescriptorByType(Maven.DescriptorImpl.class).setInstallations(new MavenInstallation("maven", "THIS IS WRONG"));
+        Hudson.getInstance().getDescriptorByType(Maven.DescriptorImpl.class).setInstallations(new MavenInstallation("maven", "THIS IS WRONG", NO_PROPERTIES));
 
         project.getBuildersList().add(new Maven("--version", "maven"));
         configureDumpEnvBuilder();
@@ -118,7 +119,7 @@ public class ToolLocationNodePropertyTest extends HudsonTestCase {
     }
 
     private void configureDumpEnvBuilder() throws IOException {
-        if(Hudson.isWindows())
+        if(Functions.isWindows())
             project.getBuildersList().add(new BatchFile("set"));
         else
             project.getBuildersList().add(new Shell("export"));
@@ -148,7 +149,7 @@ public class ToolLocationNodePropertyTest extends HudsonTestCase {
     public void testNativeMaven() throws Exception {
         MavenInstallation maven = configureDefaultMaven();
         String mavenPath = maven.getHome();
-        Hudson.getInstance().getDescriptorByType(Maven.DescriptorImpl.class).setInstallations(new MavenInstallation("maven", "THIS IS WRONG"));
+        Hudson.getInstance().getDescriptorByType(Maven.DescriptorImpl.class).setInstallations(new MavenInstallation("maven", "THIS IS WRONG", NO_PROPERTIES));
 
         MavenModuleSet project = createMavenProject();
         project.setScm(new ExtractResourceSCM(getClass().getResource(
@@ -182,10 +183,8 @@ public class ToolLocationNodePropertyTest extends HudsonTestCase {
         // so empty path breaks the test.
         env.put("PATH", "/bin:/usr/bin");
         env.put("M2_HOME", "empty");
-        slave = createSlave(new Label("slave"), env);
+        slave = createSlave(new LabelAtom("slave"), env);
         project = createFreeStyleProject();
         project.setAssignedLabel(slave.getSelfLabel());
     }
-
-
 }

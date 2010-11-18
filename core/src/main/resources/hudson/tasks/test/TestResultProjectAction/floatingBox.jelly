@@ -23,7 +23,7 @@ THE SOFTWARE.
 -->
 
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt" xmlns:local="local">
-  <j:set var="tr" value="${it.lastSuccessfulBuild.testResultAction}" />
+  <j:set var="tr" value="${action.lastTestResultAction}" />
   <j:if test="${tr.previousResult!=null}">
     <!-- at least two data points are required for a trend report -->
     <div align="right">
@@ -41,12 +41,9 @@ THE SOFTWARE.
       <div style="text-align:right">
         <a href="test/flipTrend">
           <j:choose>
-            <j:when test="${mode}">
-              (${%show test # and failure #})
-            </j:when>
-            <j:otherwise>
-              (${%just show failures})
-            </j:otherwise>
+            <!-- needs to strip whitespace here -->
+            <j:when test="${mode}">(${%show test # and failure #})</j:when>
+            <j:otherwise>(${%just show failures})</j:otherwise>
           </j:choose>
         </a> <st:nbsp/>
         <a href="test/?width=800&amp;height=600${trendQueryString2}">${%enlarge}</a>

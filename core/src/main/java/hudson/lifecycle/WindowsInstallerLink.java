@@ -23,10 +23,10 @@
  */
 package hudson.lifecycle;
 
+import hudson.Functions;
 import hudson.model.ManagementLink;
 import hudson.model.Hudson;
 import hudson.AbortException;
-import hudson.FilePath;
 import hudson.Extension;
 import hudson.util.StreamTaskListener;
 import hudson.util.jna.DotNet;
@@ -121,13 +121,15 @@ public class WindowsInstallerLink extends ManagementLink {
             copy(req, rsp, dir, getClass().getResource("/windows-service/hudson.exe"), "hudson.exe");
             copy(req, rsp, dir, getClass().getResource("/windows-service/hudson.xml"), "hudson.xml");
             if(!hudsonWar.getCanonicalFile().equals(new File(dir,"hudson.war").getCanonicalFile()))
-                copy(req, rsp, dir, hudsonWar.toURL(), "hudson.war");
+                copy(req, rsp, dir, hudsonWar.toURI().toURL(), "hudson.war");
 
             // install as a service
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
             StreamTaskListener task = new StreamTaskListener(baos);
             task.getLogger().println("Installing a service");
-            int r = new LocalLauncher(task).launch(new String[]{new File(dir, "hudson.exe").getPath(), "install"}, new String[0], task.getLogger(), new FilePath(dir)).join();
+            int r = new LocalLauncher(task).launch()
+                .cmds(new File(dir, "hudson.exe").getPath(), "install")
+                .stdout(task.getLogger()).pwd(dir).join();
             if(r!=0) {
                 sendError(baos.toString(),req,rsp);
                 return;
@@ -183,7 +185,7 @@ public class WindowsInstallerLink extends ManagementLink {
                                     LOGGER.info("Moving data");
                                     Move mv = new Move();
                                     Project p = new Project();
-                                    p.addBuildListener(new DefaultLogger());
+                                    p.addBuildListener(createLogger());
                                     mv.setProject(p);
                                     FileSet fs = new FileSet();
                                     fs.setDir(oldRoot);
@@ -194,14 +196,22 @@ public class WindowsInstallerLink extends ManagementLink {
                                     mv.execute();
                                 }
                                 LOGGER.info("Starting a Windows service");
-                                StreamTaskListener task = new StreamTaskListener(System.out);
-                                int r = new LocalLauncher(task).launch(new String[]{new File(installationDir, "hudson.exe").getPath(), "start"}, new String[0], task.getLogger(), new FilePath(installationDir)).join();
+                                StreamTaskListener task = StreamTaskListener.fromStdout();
+                                int r = new LocalLauncher(task).launch().cmds(new File(installationDir, "hudson.exe"), "start")
+                                        .stdout(task).pwd(installationDir).join();
                                 task.getLogger().println(r==0?"Successfully started":"start service failed. Exit code="+r);
                             } catch (IOException e) {
                                 e.printStackTrace();
                             } catch (InterruptedException e) {
                                 e.printStackTrace();
                             }
+                        }
+
+                        private DefaultLogger createLogger() {
+                            DefaultLogger logger = new DefaultLogger();
+                            logger.setOutputPrintStream(System.out);
+                            logger.setErrorPrintStream(System.err);
+                            return logger;
                         }
                     });
 
@@ -231,7 +241,7 @@ public class WindowsInstallerLink extends ManagementLink {
      */
     @Extension
     public static WindowsInstallerLink registerIfApplicable() {
-        if(!Hudson.isWindows())
+        if(!Functions.isWindows())
             return null; // this is a Windows only feature
 
         if(Lifecycle.get() instanceof WindowsServiceLifecycle)

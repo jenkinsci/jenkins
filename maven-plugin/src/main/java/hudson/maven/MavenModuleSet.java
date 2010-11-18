@@ -26,29 +26,30 @@ package hudson.maven;
 import hudson.*;
 import hudson.model.*;
 import hudson.model.Descriptor.FormException;
-import static hudson.model.ItemGroupMixIn.loadChildren;
 import hudson.model.Queue;
 import hudson.model.Queue.Task;
 import hudson.search.CollectionSearchIndex;
 import hudson.search.SearchIndexBuilder;
-import hudson.tasks.Maven.MavenInstallation;
 import hudson.tasks.*;
+import hudson.tasks.Maven.MavenInstallation;
 import hudson.tasks.junit.JUnitResultArchiver;
 import hudson.util.CopyOnWriteMap;
 import hudson.util.DescribableList;
-import hudson.util.Function1;
 import hudson.util.FormValidation;
+import hudson.util.Function1;
+import net.sf.json.JSONObject;
+import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
-import org.kohsuke.stapler.QueryParameter;
+import org.kohsuke.stapler.export.Exported;
 
 import javax.servlet.ServletException;
 import java.io.File;
 import java.io.IOException;
 import java.util.*;
 
-import net.sf.json.JSONObject;
-import org.kohsuke.stapler.export.Exported;
+import static hudson.Util.fixEmpty;
+import static hudson.model.ItemGroupMixIn.loadChildren;
 
 /**
  * Group of {@link MavenModule}s.
@@ -60,7 +61,7 @@ import org.kohsuke.stapler.export.Exported;
  *
  * @author Kohsuke Kawaguchi
  */
-public final class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,MavenModuleSetBuild> implements TopLevelItem, ItemGroup<MavenModule>, SCMedItem, Saveable {
+public final class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,MavenModuleSetBuild> implements TopLevelItem, ItemGroup<MavenModule>, SCMedItem, Saveable, BuildableItemWithBuildWrappers {
     /**
      * All {@link MavenModule}s, keyed by their {@link MavenModule#getModuleName()} module name}s.
      */
@@ -81,6 +82,8 @@ public final class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,Ma
     private String rootPOM;
 
     private String goals;
+
+    private String alternateSettings;
 
     /**
      * Default goals specified in POM. Can be null.
@@ -108,6 +111,17 @@ public final class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,Ma
     private boolean aggregatorStyleBuild = true;
 
     /**
+     * If true, and if aggregatorStyleBuild is false and we are using Maven 2.1 or later, the build will
+     * check the changeset before building, and if there are changes, only those modules which have changes
+     * or those modules which failed or were unstable in the previous build will be built directly, using
+     * Maven's make-like reactor mode. Any modules depending on the directly built modules will also be built,
+     * but that's controlled by Maven.
+     *
+     * @since 1.318
+     */
+    private boolean incrementalBuild = false;
+
+    /**
      * If true, the build will use its own local Maven repository
      * via "-Dmaven.repo.local=...".
      * <p>
@@ -127,6 +141,11 @@ public final class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,Ma
     private boolean ignoreUpstremChanges = false;
 
     /**
+     * If true, do not archive artifacts to the master.
+     */
+    private boolean archivingDisabled = false;
+
+    /**
      * Reporters configured at {@link MavenModuleSet} level. Applies to all {@link MavenModule} builds.
      */
     private DescribableList<MavenReporter,Descriptor<MavenReporter>> reporters =
@@ -140,7 +159,7 @@ public final class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,Ma
         new DescribableList<Publisher,Descriptor<Publisher>>(this);
 
     /**
-     * List of active ${link BuildWrapper}s configured for this project.
+     * List of active {@link BuildWrapper}s configured for this project.
      * @since 1.212
      */
     private DescribableList<BuildWrapper,Descriptor<BuildWrapper>> buildWrappers =
@@ -176,34 +195,37 @@ public final class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,Ma
         return getItem(name);
     }
 
+    @Override   // to make this accessible from MavenModuleSetBuild
     protected void updateTransientActions() {
         super.updateTransientActions();
+    }
+
+    protected List<Action> createTransientActions() {
+        List<Action> r = super.createTransientActions();
+
         // Fix for ISSUE-1149
         for (MavenModule module: modules.values()) {
             module.updateTransientActions();
         }
+        
         if(publishers!=null)    // this method can be loaded from within the onLoad method, where this might be null
-            for (BuildStep step : publishers) {
-                Action a = step.getProjectAction(this);
-                if(a!=null)
-                    transientActions.add(a);
-            }
+            for (BuildStep step : publishers)
+                r.addAll(step.getProjectActions(this));
 
         if (buildWrappers!=null)
-	        for (BuildWrapper step : buildWrappers) {
-	            Action a = step.getProjectAction(this);
-	            if(a!=null)
-	                transientActions.add(a);
-	        }
+	        for (BuildWrapper step : buildWrappers)
+                r.addAll(step.getProjectActions(this));
+
+        return r;
     }
 
-    protected void addTransientActionsFromBuild(MavenModuleSetBuild build, Set<Class> added) {
+    protected void addTransientActionsFromBuild(MavenModuleSetBuild build, List<Action> collection, Set<Class> added) {
         if(build==null)    return;
 
         for (Action a : build.getActions())
             if(a instanceof MavenAggregatedReport)
                 if(added.add(a.getClass()))
-                    transientActions.add(((MavenAggregatedReport)a).getProjectAction(this));
+                    collection.add(((MavenAggregatedReport)a).getProjectAction(this));
 
         List<MavenReporter> list = build.projectActionReporters;
         if(list==null)   return;
@@ -212,7 +234,7 @@ public final class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,Ma
             if(!added.add(step.getClass()))     continue;   // already added
             Action a = step.getAggregatedProjectAction(this);
             if(a!=null)
-                transientActions.add(a);
+                collection.add(a);
         }
     }
 
@@ -260,6 +282,10 @@ public final class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,Ma
         };
     }
 
+    public boolean isIncrementalBuild() {
+        return incrementalBuild;
+    }
+
     public boolean isAggregatorStyleBuild() {
         return aggregatorStyleBuild;
     }
@@ -270,6 +296,30 @@ public final class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,Ma
 
     public boolean ignoreUpstremChanges() {
         return ignoreUpstremChanges;
+    }
+
+    public boolean isArchivingDisabled() {
+        return archivingDisabled;
+    }
+
+    public void setIncrementalBuild(boolean incrementalBuild) {
+        this.incrementalBuild = incrementalBuild;
+    }
+
+    public void setAggregatorStyleBuild(boolean aggregatorStyleBuild) {
+        this.aggregatorStyleBuild = aggregatorStyleBuild;
+    }
+
+    public void setUsePrivateRepository(boolean usePrivateRepository) {
+        this.usePrivateRepository = usePrivateRepository;
+    }
+
+    public void setIgnoreUpstremChanges(boolean ignoreUpstremChanges) {
+        this.ignoreUpstremChanges = ignoreUpstremChanges;
+    }
+
+    public void setIsArchivingDisabled(boolean archivingDisabled) {
+        this.archivingDisabled = archivingDisabled;
     }
 
     /**
@@ -291,8 +341,15 @@ public final class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,Ma
         return publishers;
     }
 
+    public DescribableList<BuildWrapper, Descriptor<BuildWrapper>> getBuildWrappersList() {
+        return buildWrappers;
+    }
+
     /**
      * List of active {@link BuildWrapper}s. Can be empty but never null.
+     *
+     * @deprecated as of 1.335
+     *      Use {@link #getBuildWrappersList()} to be consistent with other subtypes of {@link AbstractProject}.
      */
     public DescribableList<BuildWrapper, Descriptor<BuildWrapper>> getBuildWrappers() {
         return buildWrappers;
@@ -308,19 +365,14 @@ public final class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,Ma
         return new File(getModulesDir(),child.getModuleName().toFileSystemName());
     }
 
+    public void onRenamed(MavenModule item, String oldName, String newName) throws IOException {
+        throw new UnsupportedOperationException();
+    }
+
     public Collection<Job> getAllJobs() {
         Set<Job> jobs = new HashSet<Job>(getItems());
         jobs.add(this);
         return jobs;
-    }
-
-    /**
-     * Gets the workspace of this job.
-     */
-    public FilePath getWorkspace() {
-        Node node = getLastBuiltOn();
-        if(node==null)  node = Hudson.getInstance();
-        return node.getWorkspaceFor(this);
     }
 
     @Override
@@ -442,6 +494,10 @@ public final class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,Ma
     }
 
     protected void buildDependencyGraph(DependencyGraph graph) {
+    	Collection<MavenModule> modules = getModules();
+    	for (MavenModule m : modules) {
+    		m.buildDependencyGraph(graph);
+    	}
         publishers.buildDependencyGraph(this,graph);
         buildWrappers.buildDependencyGraph(this,graph);
     }
@@ -497,6 +553,14 @@ public final class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,Ma
         this.goals = goals;
     }
 
+    private boolean checkMavenOption(String shortForm, String longForm) {
+        for (String t : Util.tokenize(getGoals())) {
+            if(t.equals(shortForm) || t.equals(longForm))
+                return true;
+	}
+	return false;
+    }
+	
     private List<String> getMavenArgument(String shortForm, String longForm) {
         List<String> args = new ArrayList<String>();
         boolean switchFound=false;
@@ -521,6 +585,21 @@ public final class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,Ma
     }
 
     /**
+     * Gets the workspace-relative path to an alternative Maven settings.xml file.
+     */
+    public String getAlternateSettings() {
+        return alternateSettings;
+    }
+
+    /**
+     * Sets the workspace-relative path to an alternative Maven settings.xml file.
+     */
+    public void setAlternateSettings(String alternateSettings) throws IOException {
+        this.alternateSettings = alternateSettings;
+        save();
+    }
+
+    /**
      * If the list of configured goals contain the "-P" option,
      * return the configured profiles. Otherwise null.
      */
@@ -542,11 +621,38 @@ public final class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,Ma
     }
 
     /**
+     * Check for "-N" or "--non-recursive" in the Maven goals/options.
+     */
+    public boolean isNonRecursive() {
+	return checkMavenOption("-N", "--non-recursive");
+    }
+
+    /**
      * Possibly null, whitespace-separated (including TAB, NL, etc) VM options
      * to be used to launch Maven process.
+     *
+     * If mavenOpts is null or empty, we'll return the globally-defined MAVEN_OPTS.
      */
     public String getMavenOpts() {
-        return mavenOpts;
+        if ((mavenOpts!=null) && (mavenOpts.trim().length()>0)) { 
+            return mavenOpts.replaceAll("[\t\r\n]+"," ");
+        }
+        else {
+            String globalOpts = DESCRIPTOR.getGlobalMavenOpts();
+            if (globalOpts!=null) {
+                return globalOpts.replaceAll("[\t\r\n]+"," ");
+            }
+            else {
+                return globalOpts;
+            }
+        }
+    }
+
+    /**
+     * Set mavenOpts.
+     */
+    public void setMavenOpts(String mavenOpts) {
+        this.mavenOpts = mavenOpts;
     }
 
     /**
@@ -613,17 +719,18 @@ public final class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,Ma
         if(rootPOM!=null && rootPOM.equals("pom.xml"))   rootPOM=null;   // normalization
 
         goals = Util.fixEmpty(req.getParameter("goals").trim());
+        alternateSettings = Util.fixEmpty(req.getParameter("alternateSettings").trim());
         mavenOpts = Util.fixEmpty(req.getParameter("mavenOpts").trim());
         mavenName = req.getParameter("maven_version");
         aggregatorStyleBuild = !req.hasParameter("maven.perModuleBuild");
         usePrivateRepository = req.hasParameter("maven.usePrivateRepository");
         ignoreUpstremChanges = !json.has("triggerByDependency");
-
+        incrementalBuild = req.hasParameter("maven.incrementalBuild");
+        archivingDisabled = req.hasParameter("maven.archivingDisabled");
+        
         reporters.rebuild(req,json,MavenReporters.getConfigurableList());
         publishers.rebuild(req,json,BuildStepDescriptor.filter(Publisher.all(),this.getClass()));
         buildWrappers.rebuild(req,json,BuildWrappers.getFor(this));
-
-        updateTransientActions(); // to pick up transient actions from builder, publisher, etc.
     }
 
     /**
@@ -635,24 +742,69 @@ public final class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,Ma
             m.delete();
         rsp.sendRedirect2(".");
     }
-
+    
     /**
-     * Check the location of POM.
+     * Check the location of the POM, alternate settings file, etc - any file.
      */
-    public FormValidation doCheckRootPOM(@QueryParameter String value) throws IOException, ServletException {
-        FilePath ws = getModuleRoot();
-        if(ws==null) return FormValidation.ok();
-        return ws.validateRelativePath(value,true,true);
+    public FormValidation doCheckFileInWorkspace(@QueryParameter String value) throws IOException, ServletException {
+        MavenModuleSetBuild lb = getLastBuild();
+        if (lb!=null) {
+            FilePath ws = lb.getModuleRoot();
+            if(ws!=null)
+                return ws.validateRelativePath(value,true,true);
+        }
+        return FormValidation.ok();
     }
 
-    public TopLevelItemDescriptor getDescriptor() {
+    /**
+     * Check that the provided file is a relative path. And check that it exists, just in case.
+     */
+    public FormValidation doCheckFileRelative(@QueryParameter String value) throws IOException, ServletException {
+        String v = fixEmpty(value);
+        if ((v == null) || (v.length() == 0)) {
+            // Null values are allowed.
+            return FormValidation.ok();
+        }
+        if ((v.startsWith("/")) || (v.startsWith("\\")) || (v.matches("^\\w\\:\\\\.*"))) {
+            return FormValidation.error("Alternate settings file must be a relative path.");
+        }
+        
+        MavenModuleSetBuild lb = getLastBuild();
+        if (lb!=null) {
+            FilePath ws = lb.getWorkspace();
+            if(ws!=null)
+                return ws.validateRelativePath(value,true,true);
+        }
+        return FormValidation.ok();
+    }
+
+    public DescriptorImpl getDescriptor() {
         return DESCRIPTOR;
     }
 
-    @Extension
+    @Extension(ordinal=900)
     public static final DescriptorImpl DESCRIPTOR = new DescriptorImpl();
 
     public static final class DescriptorImpl extends AbstractProjectDescriptor {
+        /**
+         * Globally-defined MAVEN_OPTS.
+         */
+        private String globalMavenOpts;
+
+        public DescriptorImpl() {
+            super();
+            load();
+        }
+        
+        public String getGlobalMavenOpts() {
+            return globalMavenOpts;
+        }
+
+        public void setGlobalMavenOpts(String globalMavenOpts) {
+            this.globalMavenOpts = globalMavenOpts;
+            save();
+        }
+
         public String getDisplayName() {
             return Messages.MavenModuleSet_DiplayName();
         }
@@ -666,12 +818,19 @@ public final class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,Ma
         }
 
         @Override
+        public boolean configure( StaplerRequest req, JSONObject o ) {
+            globalMavenOpts = Util.fixEmptyAndTrim(o.getString("globalMavenOpts"));
+            save();
+
+            return true;
+        }
+
+        @Override
         public boolean isApplicable(Descriptor descriptor) {
             return !NOT_APPLICABLE_TYPES.contains(descriptor.clazz);
         }
 
         private static final Set<Class> NOT_APPLICABLE_TYPES = new HashSet<Class>(Arrays.asList(
-            ArtifactArchiver.class, // this happens automatically
             Fingerprinter.class,    // this kicks in automatically
             JavadocArchiver.class,  // this kicks in automatically
             Mailer.class,           // for historical reasons, Maven uses MavenMailer

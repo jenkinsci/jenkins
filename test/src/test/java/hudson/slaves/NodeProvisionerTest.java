@@ -26,6 +26,7 @@ package hudson.slaves;
 import hudson.BulkChange;
 import hudson.Launcher;
 import hudson.model.*;
+import hudson.slaves.NodeProvisioner.NodeProvisionerInvoker;
 import hudson.tasks.Builder;
 import org.jvnet.hudson.test.HudsonTestCase;
 import org.jvnet.hudson.test.SleepBuilder;
@@ -48,6 +49,8 @@ public class NodeProvisionerTest extends HudsonTestCase {
     protected void setUp() throws Exception {
         original = LoadStatistics.CLOCK;
         LoadStatistics.CLOCK = 10; // run x1000 the regular speed to speed up the test
+        NodeProvisionerInvoker.INITIALDELAY = 100;
+        NodeProvisionerInvoker.RECURRENCEPERIOD = 10;
         super.setUp();
     }
 
@@ -55,6 +58,8 @@ public class NodeProvisionerTest extends HudsonTestCase {
     protected void tearDown() throws Exception {
         super.tearDown();
         LoadStatistics.CLOCK = original;
+        NodeProvisionerInvoker.INITIALDELAY = original*10;
+        NodeProvisionerInvoker.RECURRENCEPERIOD = original;
     }
 
     /**
@@ -227,7 +232,7 @@ public class NodeProvisionerTest extends HudsonTestCase {
         System.out.println("Waiting for a completion");
         for (Future<FreeStyleBuild> f : builds) {
             try {
-                assertBuildStatus(Result.SUCCESS, f.get(1, TimeUnit.MINUTES));
+                assertBuildStatus(Result.SUCCESS, f.get(60, TimeUnit.SECONDS));
             } catch (TimeoutException e) {
                 // time out so that the automated test won't hang forever, even when we have bugs
                 System.out.println("Build didn't complete in time");

@@ -1,7 +1,9 @@
-/*
+    /*
  * The MIT License
  * 
- * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, Erik Ramfelt, Koichi Fujikawa, Red Hat, Inc., Seiji Sogabe, Stephen Connolly, Tom Huybrechts
+ * Copyright (c) 2004-2010, Sun Microsystems, Inc., Kohsuke Kawaguchi,
+ * Erik Ramfelt, Koichi Fujikawa, Red Hat, Inc., Seiji Sogabe,
+ * Stephen Connolly, Tom Huybrechts, Yahoo! Inc., Alan Harder
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,46 +25,54 @@
  */
 package hudson.model;
 
+import antlr.ANTLRException;
 import com.thoughtworks.xstream.XStream;
 import hudson.BulkChange;
+import hudson.DNSMultiCast;
+import hudson.DescriptorExtensionList;
+import hudson.Extension;
+import hudson.ExtensionList;
+import hudson.ExtensionListView;
+import hudson.ExtensionPoint;
 import hudson.FilePath;
 import hudson.Functions;
 import hudson.Launcher;
 import hudson.Launcher.LocalLauncher;
+import hudson.LocalPluginManager;
+import hudson.Lookup;
 import hudson.Plugin;
 import hudson.PluginManager;
 import hudson.PluginWrapper;
 import hudson.ProxyConfiguration;
 import hudson.StructuredForm;
 import hudson.TcpSlaveAgentListener;
+import hudson.UDPBroadcastThread;
 import hudson.Util;
 import static hudson.Util.fixEmpty;
+import static hudson.Util.fixNull;
 import hudson.WebAppMain;
 import hudson.XmlFile;
-import hudson.UDPBroadcastThread;
-import hudson.ExtensionList;
-import hudson.ExtensionPoint;
-import hudson.DescriptorExtensionList;
-import hudson.ExtensionListView;
-import hudson.Extension;
-import hudson.cli.CliEntryPoint;
 import hudson.cli.CLICommand;
-import hudson.cli.HelpCommand;
-import hudson.logging.LogRecorderManager;
+import hudson.cli.CliEntryPoint;
+import hudson.cli.CliManagerImpl;
+import hudson.cli.declarative.CLIMethod;
+import hudson.cli.declarative.CLIResolver;
+import hudson.init.InitMilestone;
+import hudson.init.InitReactorListener;
+import hudson.init.InitStrategy;
 import hudson.lifecycle.Lifecycle;
+import hudson.logging.LogRecorderManager;
+import hudson.lifecycle.RestartNotSupportedException;
 import hudson.model.Descriptor.FormException;
+import hudson.model.labels.LabelAtom;
 import hudson.model.listeners.ItemListener;
-import hudson.model.listeners.JobListener;
-import hudson.model.listeners.JobListener.JobListenerAdapter;
 import hudson.model.listeners.SCMListener;
+import hudson.model.listeners.SaveableListener;
+import hudson.remoting.Channel;
 import hudson.remoting.LocalChannel;
 import hudson.remoting.VirtualChannel;
-import hudson.remoting.Channel;
-import hudson.scm.CVSSCM;
 import hudson.scm.RepositoryBrowser;
 import hudson.scm.SCM;
-import hudson.scm.SCMDescriptor;
-import hudson.scm.SubversionSCM;
 import hudson.search.CollectionSearchIndex;
 import hudson.search.SearchIndexBuilder;
 import hudson.security.ACL;
@@ -76,89 +86,113 @@ import hudson.security.Permission;
 import hudson.security.PermissionGroup;
 import hudson.security.SecurityMode;
 import hudson.security.SecurityRealm;
-import hudson.slaves.ComputerListener;
-import hudson.slaves.NodeProperty;
-import hudson.slaves.NodePropertyDescriptor;
-import hudson.slaves.RetentionStrategy;
-import hudson.slaves.NodeList;
+import hudson.security.csrf.CrumbIssuer;
 import hudson.slaves.Cloud;
+import hudson.slaves.ComputerListener;
 import hudson.slaves.DumbSlave;
 import hudson.slaves.NodeDescriptor;
+import hudson.slaves.NodeList;
+import hudson.slaves.NodeProperty;
+import hudson.slaves.NodePropertyDescriptor;
 import hudson.slaves.NodeProvisioner;
+import hudson.slaves.OfflineCause;
+import hudson.slaves.RetentionStrategy;
 import hudson.tasks.BuildWrapper;
 import hudson.tasks.Builder;
-import hudson.tasks.DynamicLabeler;
-import hudson.tasks.LabelFinder;
 import hudson.tasks.Mailer;
 import hudson.tasks.Publisher;
 import hudson.triggers.Trigger;
 import hudson.triggers.TriggerDescriptor;
+import hudson.util.AdministrativeError;
 import hudson.util.CaseInsensitiveComparator;
 import hudson.util.ClockDifference;
 import hudson.util.CopyOnWriteList;
 import hudson.util.CopyOnWriteMap;
 import hudson.util.DaemonThreadFactory;
+import hudson.util.DescribableList;
+import hudson.util.FormValidation;
+import hudson.util.Futures;
 import hudson.util.HudsonIsLoading;
+import hudson.util.HudsonIsRestarting;
+import hudson.util.Iterators;
+import hudson.util.Memoizer;
 import hudson.util.MultipartFormDataParser;
 import hudson.util.RemotingDiagnostics;
+import hudson.util.StreamTaskListener;
 import hudson.util.TextFile;
-import hudson.util.XStream2;
-import hudson.util.HudsonIsRestarting;
-import hudson.util.DescribableList;
-import hudson.util.Futures;
-import hudson.util.Memoizer;
-import hudson.util.Iterators;
-import hudson.util.FormValidation;
 import hudson.util.VersionNumber;
+import hudson.util.XStream2;
+import hudson.util.Service;
+import hudson.util.IOUtils;
+import hudson.views.DefaultMyViewsTabBar;
+import hudson.views.DefaultViewsTabBar;
+import hudson.views.MyViewsTabBar;
+import hudson.views.ViewsTabBar;
 import hudson.widgets.Widget;
 import net.sf.json.JSONObject;
-import org.acegisecurity.*;
+import org.acegisecurity.AccessDeniedException;
+import org.acegisecurity.AcegiSecurityException;
+import org.acegisecurity.Authentication;
+import org.acegisecurity.GrantedAuthority;
+import org.acegisecurity.GrantedAuthorityImpl;
 import org.acegisecurity.context.SecurityContextHolder;
 import org.acegisecurity.providers.anonymous.AnonymousAuthenticationToken;
 import org.acegisecurity.ui.AbstractProcessingFilter;
-import static org.acegisecurity.ui.rememberme.TokenBasedRememberMeServices.ACEGI_SECURITY_HASHED_REMEMBER_ME_COOKIE_KEY;
-import org.apache.commons.logging.LogFactory;
-import org.apache.commons.jelly.Script;
 import org.apache.commons.jelly.JellyException;
-import org.apache.commons.io.FileUtils;
+import org.apache.commons.jelly.Script;
+import org.apache.commons.logging.LogFactory;
+import org.jvnet.hudson.reactor.Executable;
+import org.jvnet.hudson.reactor.ReactorException;
+import org.jvnet.hudson.reactor.Task;
+import org.jvnet.hudson.reactor.TaskBuilder;
+import org.jvnet.hudson.reactor.TaskGraphBuilder;
+import org.jvnet.hudson.reactor.Milestone;
+import org.jvnet.hudson.reactor.Reactor;
+import org.jvnet.hudson.reactor.ReactorListener;
+import org.jvnet.hudson.reactor.TaskGraphBuilder.Handle;
+import org.kohsuke.args4j.Argument;
+import org.kohsuke.args4j.Option;
+import org.kohsuke.stapler.Ancestor;
+import org.kohsuke.stapler.HttpRedirect;
+import org.kohsuke.stapler.HttpResponse;
+import org.kohsuke.stapler.HttpResponses;
 import org.kohsuke.stapler.MetaClass;
+import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.Stapler;
+import org.kohsuke.stapler.StaplerFallback;
 import org.kohsuke.stapler.StaplerProxy;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
-import org.kohsuke.stapler.StaplerFallback;
 import org.kohsuke.stapler.WebApp;
-import org.kohsuke.stapler.QueryParameter;
-import org.kohsuke.stapler.jelly.JellyClassLoaderTearOff;
-import org.kohsuke.stapler.jelly.JellyRequestDispatcher;
-import org.kohsuke.stapler.framework.adjunct.AdjunctManager;
 import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.export.ExportedBean;
+import org.kohsuke.stapler.framework.adjunct.AdjunctManager;
+import org.kohsuke.stapler.jelly.JellyClassLoaderTearOff;
+import org.kohsuke.stapler.jelly.JellyRequestDispatcher;
 import org.xml.sax.InputSource;
 
+import javax.crypto.SecretKey;
+import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.http.Cookie;
-import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+
+import static hudson.init.InitMilestone.*;
 import static javax.servlet.http.HttpServletResponse.SC_BAD_REQUEST;
 import static javax.servlet.http.HttpServletResponse.SC_NOT_FOUND;
-import javax.servlet.http.HttpSession;
 import java.io.File;
 import java.io.FileFilter;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.PrintWriter;
 import java.io.InputStream;
-import java.io.Serializable;
-import java.io.PrintStream;
-import java.io.OutputStream;
+import java.io.PrintWriter;
+import java.net.BindException;
 import java.net.URL;
+import java.nio.charset.Charset;
 import java.security.SecureRandom;
+import java.text.Collator;
 import java.text.NumberFormat;
 import java.text.ParseException;
-import java.text.Collator;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -168,35 +202,32 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Properties;
 import java.util.Set;
 import java.util.Stack;
 import java.util.StringTokenizer;
 import java.util.Timer;
 import java.util.TreeSet;
-import java.util.Properties;
 import java.util.UUID;
-import java.util.Locale;
-import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeoutException;
-import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.logging.Level;
+import static java.util.logging.Level.SEVERE;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
-import java.nio.charset.Charset;
-import javax.servlet.RequestDispatcher;
-
-import groovy.lang.GroovyShell;
 
 /**
  * Root object of the system.
@@ -206,6 +237,11 @@ import groovy.lang.GroovyShell;
 @ExportedBean
 public final class Hudson extends Node implements ItemGroup<TopLevelItem>, StaplerProxy, StaplerFallback, ViewGroup, AccessControlled, DescriptorByNameOwner {
     private transient final Queue queue;
+
+    /**
+     * Stores various objects scoped to {@link Hudson}.
+     */
+    public transient final Lookup lookup = new Lookup();
 
     /**
      * {@link Computer}s in this Hudson system. Read-only.
@@ -284,6 +320,11 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
     public transient final File root;
 
     /**
+     * Where are we in the initialization?
+     */
+    private transient volatile InitMilestone initLevel = InitMilestone.STARTED;
+
+    /**
      * All {@link Item}s keyed by their {@link Item#getName() name}s.
      */
     /*package*/ transient final Map<String,TopLevelItem> items = new CopyOnWriteMap.Tree<String,TopLevelItem>(CaseInsensitiveComparator.INSTANCE);
@@ -301,6 +342,16 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
     private transient volatile DependencyGraph dependencyGraph;
 
     /**
+     * Currently active Views tab bar.
+     */
+    private volatile ViewsTabBar viewsTabBar = new DefaultViewsTabBar();
+
+    /**
+     * Currently active My Views tab bar.
+     */
+    private volatile MyViewsTabBar myViewsTabBar = new DefaultMyViewsTabBar();
+
+    /**
      * All {@link ExtensionList} keyed by their {@link ExtensionList#extensionType}.
      */
     private transient final Memoizer<Class,ExtensionList> extensionLists = new Memoizer<Class,ExtensionList>() {
@@ -314,7 +365,7 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
      */
     private transient final Memoizer<Class,DescriptorExtensionList> descriptorLists = new Memoizer<Class,DescriptorExtensionList>() {
         public DescriptorExtensionList compute(Class key) {
-            return DescriptorExtensionList.create(Hudson.this,key);
+            return DescriptorExtensionList.createDescriptorList(Hudson.this,key);
         }
     };
 
@@ -331,6 +382,14 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
         public CloudList() {// needed for XStream deserialization
         }
 
+        public Cloud getByName(String name) {
+            for (Cloud c : this)
+                if (c.name.equals(name))
+                    return c;
+            return null;
+        }
+
+        @Override
         protected void onModified() throws IOException {
             super.onModified();
             Hudson.getInstance().trimLabels();
@@ -356,6 +415,11 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
      * This is {@link Integer} so that we can initialize it to '5' for upgrading users.
      */
     /*package*/ Integer quietPeriod;
+    
+    /**
+     * Global default for {@link AbstractProject#getScmCheckoutRetryCount()}  
+     */
+    /*package*/ int scmCheckoutRetryCount;
 
     /**
      * {@link View}s.
@@ -380,6 +444,8 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
     public transient volatile TcpSlaveAgentListener tcpSlaveAgentListener;
 
     private transient UDPBroadcastThread udpBroadcastThread;
+
+    private transient DNSMultiCast dnsMultiCast;
 
     /**
      * List of registered {@link ItemListener}s.
@@ -410,16 +476,20 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
     private String label="";
 
     /**
+     * {@link hudson.security.csrf.CrumbIssuer}
+     */
+    private volatile CrumbIssuer crumbIssuer;
+    
+    /**
      * All labels known to Hudson. This allows us to reuse the same label instances
      * as much as possible, even though that's not a strict requirement.
      */
     private transient final ConcurrentHashMap<String,Label> labels = new ConcurrentHashMap<String,Label>();
-    private transient volatile Set<Label> labelSet;
-    private transient volatile Set<Label> dynamicLabels = null;
 
     /**
      * Load statistics of the entire system.
      */
+    @Exported
     public transient final OverallLoadStatistics overallLoad = new OverallLoadStatistics();
 
     /**
@@ -464,6 +534,7 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
      */
     private transient final AdjunctManager adjuncts;
 
+    @CLIResolver
     public static Hudson getInstance() {
         return theInstance;
     }
@@ -475,7 +546,7 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
      */
     private transient final String secretKey;
 
-    private transient final UpdateCenter updateCenter = new UpdateCenter(this);
+    private transient final UpdateCenter updateCenter = new UpdateCenter();
 
     /**
      * True if the user opted out from the statistics tracking. We'll never send anything if this is true.
@@ -492,8 +563,16 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
      */
     private transient final LogRecorderManager log = new LogRecorderManager();
 
-    public Hudson(File root, ServletContext context) throws IOException {
-    	// As hudson is starting, grant this process full controll
+    public Hudson(File root, ServletContext context) throws IOException, InterruptedException, ReactorException {
+        this(root,context,null);
+    }
+
+    /**
+     * @param pluginManager
+     *      If non-null, use existing plugin manager.  create a new one.
+     */
+    public Hudson(File root, ServletContext context, PluginManager pluginManager) throws IOException, InterruptedException, ReactorException {
+    	// As hudson is starting, grant this process full control
     	SecurityContextHolder.getContext().setAuthentication(ACL.SYSTEM);
         try {
             this.root = root;
@@ -503,11 +582,12 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
                 throw new IllegalStateException("second instance");
             theInstance = this;
 
-            log.load();
-
+            // doing this early allows InitStrategy to set environment upfront 
+            final InitStrategy is = InitStrategy.get(Thread.currentThread().getContextClassLoader());
+            
             Trigger.timer = new Timer("Hudson cron thread");
             queue = new Queue(CONSISTENT_HASH?LoadBalancer.CONSISTENT_HASH:LoadBalancer.DEFAULT);
-
+            
             try {
                 dependencyGraph = DependencyGraph.EMPTY;
             } catch (InternalError e) {
@@ -532,73 +612,141 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
             try {
                 proxy = ProxyConfiguration.load();
             } catch (IOException e) {
-                LOGGER.log(Level.SEVERE, "Failed to load proxy configuration", e);
+                LOGGER.log(SEVERE, "Failed to load proxy configuration", e);
             }
 
-            // run the init code of SubversionSCM before we load plugins so that plugins can change SubversionWorkspaceSelector.
-            SubversionSCM.init();
-
-            // load plugins.
-            pluginManager = new PluginManager(context);
-            pluginManager.initialize();
-
-            // if we are loading old data that doesn't have this field
-            if(slaves==null)    slaves = new NodeList();
+            if (pluginManager==null)
+                pluginManager = new LocalPluginManager(this);
+            this.pluginManager = pluginManager;
+            // JSON binding needs to be able to see all the classes from all the plugins
+            WebApp.get(servletContext).setClassLoader(pluginManager.uberClassLoader);
 
             adjuncts = new AdjunctManager(servletContext, pluginManager.uberClassLoader,"adjuncts/"+VERSION_HASH);
 
-            load();
+            // initialization consists of ...
+            executeReactor( is,
+                    pluginManager.initTasks(is),    // loading and preparing plugins
+                    loadTasks(),                    // load jobs
+                    InitMilestone.ordering()        // forced ordering among key milestones
+            );
 
-    //        try {
-    //            // fill up the cache
-    //            load();
-    //
-    //            Controller c = new Controller();
-    //            c.startCPUProfiling(ProfilingModes.CPU_TRACING,""); // "java.*");
-    //            load();
-    //            c.stopCPUProfiling();
-    //            c.captureSnapshot(ProfilingModes.SNAPSHOT_WITHOUT_HEAP);
-    //        } catch (Exception e) {
-    //            throw new Error(e);
-    //        }
+            if(KILL_AFTER_LOAD)
+                System.exit(0);
 
-            if(slaveAgentPort!=-1)
-                tcpSlaveAgentListener = new TcpSlaveAgentListener(slaveAgentPort);
-            else
+            if(slaveAgentPort!=-1) {
+                try {
+                    tcpSlaveAgentListener = new TcpSlaveAgentListener(slaveAgentPort);
+                } catch (BindException e) {
+                    new AdministrativeError(getClass().getName()+".tcpBind",
+                            "Failed to listen to incoming slave connection",
+                            "Failed to listen to incoming slave connection. <a href='configure'>Change the port number</a> to solve the problem.",e);
+                }
+            } else
                 tcpSlaveAgentListener = null;
 
             udpBroadcastThread = new UDPBroadcastThread(this);
             udpBroadcastThread.start();
+            dnsMultiCast = new DNSMultiCast(this);
 
             updateComputerList();
 
-            getQueue().load();
+            {// master is online now
+                Computer c = toComputer();
+                if(c!=null)
+                    for (ComputerListener cl : ComputerListener.all())
+                        cl.onOnline(c,StreamTaskListener.fromStdout());
+            }
 
             for (ItemListener l : ItemListener.all())
                 l.onLoaded();
-
-            // run the initialization script, if it exists.
-            File initScript = new File(getRootDir(),"init.groovy");
-            if(initScript.exists()) {
-                LOGGER.info("Executing "+initScript);
-                GroovyShell shell = new GroovyShell();
-                try {
-                    shell.evaluate(initScript);
-                } catch (Throwable t) {
-                    t.printStackTrace();
-                }
-            }
-
-            File userContentDir = new File(getRootDir(), "userContent");
-            if(!userContentDir.exists()) {
-                userContentDir.mkdirs();
-                FileUtils.writeStringToFile(new File(userContentDir,"readme.txt"),Messages.Hudson_USER_CONTENT_README());
-            }
-
-            Trigger.init(); // start running trigger
         } finally {
             SecurityContextHolder.clearContext();
         }
+    }
+
+    /**
+     * Executes a reactor.
+     *
+     * @param is
+     *      If non-null, this can be consulted for ignoring some tasks. Only used during the initialization of Hudson.
+     */
+    private void executeReactor(final InitStrategy is, TaskBuilder... builders) throws IOException, InterruptedException, ReactorException {
+        Reactor reactor = new Reactor(builders) {
+            /**
+             * Sets the thread name to the task for better diagnostics.
+             */
+            @Override
+            protected void runTask(Task task) throws Exception {
+                if (is!=null && is.skipInitTask(task))  return;
+
+                SecurityContextHolder.getContext().setAuthentication(ACL.SYSTEM);   // full access in the initialization thread
+                String taskName = task.getDisplayName();
+
+                Thread t = Thread.currentThread();
+                String name = t.getName();
+                if (taskName !=null)
+                    t.setName(taskName);
+                try {
+                    long start = System.currentTimeMillis();
+                    super.runTask(task);
+                    if(LOG_STARTUP_PERFORMANCE)
+                        LOGGER.info(String.format("Took %dms for %s by %s",
+                                System.currentTimeMillis()-start, taskName, name));
+                } finally {
+                    t.setName(name);
+                    SecurityContextHolder.clearContext();
+                }
+            }
+        };
+
+        ExecutorService es;
+        if (PARALLEL_LOAD)
+            es = new ThreadPoolExecutor(
+                TWICE_CPU_NUM, TWICE_CPU_NUM, 5L, TimeUnit.SECONDS, new LinkedBlockingQueue<Runnable>(), new DaemonThreadFactory());
+        else
+            es = Executors.newSingleThreadExecutor(new DaemonThreadFactory());
+        try {
+            reactor.execute(es,buildReactorListener());
+        } finally {
+            es.shutdownNow();   // upon a successful return the executor queue should be empty. Upon an exception, we want to cancel all pending tasks
+        }
+    }
+
+    /**
+     * Aggregates all the listeners into one and returns it.
+     *
+     * <p>
+     * At this point plugins are not loaded yet, so we fall back to the META-INF/services look up to discover implementations.
+     * As such there's no way for plugins to participate into this process. 
+     */
+    private ReactorListener buildReactorListener() throws IOException {
+        List<ReactorListener> r = (List) Service.loadInstances(Thread.currentThread().getContextClassLoader(), InitReactorListener.class);
+        r.add(new ReactorListener() {
+            final Level level = Level.parse(System.getProperty(Hudson.class.getName()+".initLogLevel","FINE"));
+            public void onTaskStarted(Task t) {
+                LOGGER.log(level,"Started "+t.getDisplayName());
+            }
+
+            public void onTaskCompleted(Task t) {
+                LOGGER.log(level,"Completed "+t.getDisplayName());
+            }
+
+            public void onTaskFailed(Task t, Throwable err, boolean fatal) {
+                LOGGER.log(SEVERE, "Failed "+t.getDisplayName(),err);
+            }
+
+            public void onAttained(Milestone milestone) {
+                Level lv = level;
+                String s = "Attained "+milestone.toString();
+                if (milestone instanceof InitMilestone) {
+                    lv = Level.INFO; // noteworthy milestones --- at least while we debug problems further
+                    initLevel = (InitMilestone)milestone;
+                    s = initLevel.toString();
+                }
+                LOGGER.log(lv,s);
+            }
+        });
+        return new ReactorListener.Aggregator(r);
     }
 
     public TcpSlaveAgentListener getTcpSlaveAgentListener() {
@@ -624,7 +772,7 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
      *
      * @deprecated
      */
-    @Deprecated
+    @Deprecated @Override
     public String getNodeName() {
         return "";
     }
@@ -634,7 +782,7 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
     }
 
     public String getNodeDescription() {
-        return "the master Hudson node";
+        return Messages.Hudson_NodeDescription();
     }
 
     @Exported
@@ -666,7 +814,7 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
     /**
      * Does this {@link View} has any associated user information recorded?
      */
-    public final boolean hasPeople() {
+    public boolean hasPeople() {
         return View.People.isApplicable(items.values());
     }
 
@@ -681,6 +829,14 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
      */
     public String getSecretKey() {
         return secretKey;
+    }
+
+    /**
+     * Gets {@linkplain #getSecretKey() the secret key} as a key for AES-128.
+     * @since 1.308
+     */
+    public SecretKey getSecretKeyAsAES128() {
+        return Util.toAes128Key(secretKey);
     }
 
     /**
@@ -748,7 +904,7 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
      * this just doesn't scale.
      *
      * @param className
-     *      Either fully qualified class name (recommended) or the short name.
+     *      Either fully qualified class name (recommended) or the short name of a {@link Describable} subtype.
      */
     public Descriptor getDescriptor(String className) {
         // legacy descriptors that are reigstered manually doesn't show up in getExtensionList, so check them explicitly.
@@ -783,6 +939,19 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
     }
 
     /**
+     * Works just like {@link #getDescriptor(Class)} but don't take no for an answer.
+     *
+     * @throws AssertionError
+     *      If the descriptor is missing.
+     * @since 1.326
+     */
+    public Descriptor getDescriptorOrDie(Class<? extends Describable> type) {
+        Descriptor d = getDescriptor(type);
+        if (d==null)    throw new AssertionError(type+" is missing its descriptor");
+        return d;
+    }
+    
+    /**
      * Gets the {@link Descriptor} instance in the current Hudson by its type.
      */
     public <T extends Descriptor> T getDescriptorByType(Class<T> type) {
@@ -810,26 +979,6 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
                 return d;
         }
         return null;
-    }
-
-    /**
-     * Adds a new {@link JobListener}.
-     *
-     * @deprecated
-     *      Use {@code getJobListeners().add(l)} instead.
-     */
-    public void addListener(JobListener l) {
-        itemListeners.add(new JobListenerAdapter(l));
-    }
-
-    /**
-     * Deletes an existing {@link JobListener}.
-     *
-     * @deprecated
-     *      Use {@code getJobListeners().remove(l)} instead.
-     */
-    public boolean removeListener(JobListener l ) {
-        return itemListeners.remove(new JobListenerAdapter(l));
     }
 
     /**
@@ -959,6 +1108,8 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
             }
         }
         getQueue().scheduleMaintenance();
+        for (ComputerListener cl : ComputerListener.all())
+            cl.onConfigurationChange();
     }
 
     private void updateComputer(Node n, Map<String,Computer> byNameMap, Set<Computer> used) {
@@ -969,13 +1120,15 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
         } else {
             if(n.getNumExecutors()>0) {
                 computers.put(n,c=n.createComputer());
-                RetentionStrategy retentionStrategy = c.getRetentionStrategy();
-                if (retentionStrategy != null) {
-                    // if there is a retention strategy, it is responsible for deciding to start the computer
-                    retentionStrategy.start(c);
-                } else {
-                    // we should never get here, but just in case, we'll fall back to the legacy behaviour
-                    c.connect(true);
+                if (!n.holdOffLaunchUntilSave && AUTOMATIC_SLAVE_LAUNCH) {
+                    RetentionStrategy retentionStrategy = c.getRetentionStrategy();
+                    if (retentionStrategy != null) {
+                        // if there is a retention strategy, it is responsible for deciding to start the computer
+                        retentionStrategy.start(c);
+                    } else {
+                        // we should never get here, but just in case, we'll fall back to the legacy behaviour
+                        c.connect(true);
+                    }
                 }
             }
         }
@@ -1009,8 +1162,8 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
      * implementation for it affects the GUI.
      *
      * <p>
-     * To register an {@link Action}, write code like
-     * {@code Hudson.getInstance().getActions().add(...)}
+     * To register an {@link Action}, implement {@link RootAction} extension point, or write code like
+     * {@code Hudson.getInstance().getActions().add(...)}.
      *
      * @return
      *      Live list where the changes can be made. Can be empty but never null.
@@ -1072,13 +1225,8 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
             ItemGroup<?> parent = q.pop();
             for (Item i : parent.getItems()) {
                 if(type.isInstance(i)) {
-                    if (i instanceof AccessControlled) {
-                    	if (((AccessControlled)i).hasPermission(Item.READ))
-                    		r.add(type.cast(i));
-                    }
-                    else {
-                    	r.add(type.cast(i));
-                    }
+                    if (i.hasPermission(Item.READ))
+                        r.add(type.cast(i));
                 }
                 if(i instanceof ItemGroup)
                     q.push((ItemGroup)i);
@@ -1124,6 +1272,12 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
             if(v.getViewName().equals(name))
                 return v;
         }
+        if (name != null && !name.equals(primaryView)) {
+            // Fallback to subview of primary view if it is a ViewGroup
+            View pv = getPrimaryView();
+            if (pv instanceof ViewGroup)
+                return ((ViewGroup)pv).getView(name);
+        }
         return null;
     }
 
@@ -1138,15 +1292,28 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
     }
 
     public void addView(View v) throws IOException {
+        v.owner = this;
         views.add(v);
         save();
     }
 
+    public boolean canDelete(View view) {
+        return !view.isDefault();  // Cannot delete primary view
+    }
+
     public synchronized void deleteView(View view) throws IOException {
-        if(views.size()<=1)
-            throw new IllegalStateException();
+        if (views.size() <= 1)
+            throw new IllegalStateException("Cannot delete last view");
         views.remove(view);
         save();
+    }
+    
+    public ViewsTabBar getViewsTabBar() {
+        return viewsTabBar;
+    }
+
+    public MyViewsTabBar getMyViewsTabBar() {
+        return myViewsTabBar;
     }
 
     /**
@@ -1192,12 +1359,13 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
         return computers.get(n);
     }
 
-    public Computer getComputer(String name) {
+    @CLIResolver
+    public Computer getComputer(@Argument(required=true,metaVar="NAME",usage="Node name") String name) {
         if(name.equals("(master)"))
             name = "";
 
         for (Computer c : computers.values()) {
-            if(c.getNode().getNodeName().equals(name))
+            if(c.getName().equals(name))
                 return c;
         }
         return null;
@@ -1211,20 +1379,45 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
         return new ComputerSet();
     }
 
+
     /**
      * Gets the label that exists on this system by the name.
      *
-     * @return null if no such label exists.
+     * @return null if name is null.
+     * @see Label#parseExpression(String) (String)
      */
-    public Label getLabel(String name) {
-        if(name==null)  return null;
+    public Label getLabel(String expr) {
+        if(expr==null)  return null;
         while(true) {
-            Label l = labels.get(name);
+            Label l = labels.get(expr);
             if(l!=null)
                 return l;
 
             // non-existent
-            labels.putIfAbsent(name,new Label(name));
+            try {
+                labels.putIfAbsent(expr,Label.parseExpression(expr));
+            } catch (ANTLRException e) {
+                // laxly accept it as a single label atom for backward compatibility
+                return getLabelAtom(expr);
+            }
+        }
+    }
+
+    /**
+     * Returns the label atom of the given name.
+     */
+    public LabelAtom getLabelAtom(String name) {
+        if (name==null)  return null;
+
+        while(true) {
+            Label l = labels.get(name);
+            if(l!=null)
+                return (LabelAtom)l;
+
+            // non-existent
+            LabelAtom la = new LabelAtom(name);
+            if (labels.putIfAbsent(name, la)==null)
+                la.load();
         }
     }
 
@@ -1240,10 +1433,20 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
         return r;
     }
 
+    public Set<LabelAtom> getLabelAtoms() {
+        Set<LabelAtom> r = new TreeSet<LabelAtom>();
+        for (Label l : labels.values()) {
+            if(!l.isEmpty() && l instanceof LabelAtom)
+                r.add((LabelAtom)l);
+        }
+        return r;
+    }
+
     public Queue getQueue() {
         return queue;
     }
 
+    @Override
     public String getDisplayName() {
         return Messages.Hudson_DisplayName();
     }
@@ -1288,7 +1491,7 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
      * Gets the slave node of the give name, hooked under this Hudson.
      */
     public Node getNode(String name) {
-        for (Node s : getSlaves()) {
+        for (Node s : getNodes()) {
             if(s.getNodeName().equals(name))
                 return s;
         }
@@ -1299,10 +1502,7 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
      * Gets a {@link Cloud} by {@link Cloud#name its name}, or null.
      */
     public Cloud getCloud(String name) {
-        for (Cloud nf : clouds)
-            if(nf.name.equals(name))
-                return nf;
-        return null;
+        return clouds.getByName(name);
     }
 
     /**
@@ -1335,8 +1535,10 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
      * Adds one more {@link Node} to Hudson.
      */
     public synchronized void addNode(Node n) throws IOException {
+        if(n==null)     throw new IllegalArgumentException();
         ArrayList<Node> nl = new ArrayList<Node>(this.slaves);
-        nl.add(n);
+        if(!nl.contains(n)) // defensive check
+            nl.add(n);
         setNodes(nl);
     }
 
@@ -1344,7 +1546,9 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
      * Removes a {@link Node} from Hudson.
      */
     public synchronized void removeNode(Node n) throws IOException {
-        n.toComputer().disconnect();
+        Computer c = n.toComputer();
+        if (c!=null)
+            c.disconnect(OfflineCause.create(Messages._Hudson_NodeBeingRemoved()));
 
         ArrayList<Node> nl = new ArrayList<Node>(this.slaves);
         nl.remove(n);
@@ -1405,8 +1609,17 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
             throw new UnsupportedOperationException();
         }
 
+        @Override
+        public boolean isInstantiable() {
+            return false;
+        }
+
+        public FormValidation doCheckNumExecutors(@QueryParameter String value) {
+            return FormValidation.validateNonNegativeInteger(value);
+        }
+
         // to route /descriptor/FQCN/xxx to getDescriptor(FQCN).xxx
-        public Object getDynamic(String token, StaplerRequest req, StaplerResponse rsp) {
+        public Object getDynamic(String token) {
             return Hudson.getInstance().getDescriptor(token);
         }
     }
@@ -1417,6 +1630,15 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
     public int getQuietPeriod() {
         return quietPeriod!=null ? quietPeriod : 5;
     }
+    
+    /**
+     * Gets the global SCM check out retry count.
+     */
+    public int getScmCheckoutRetryCount() {
+        return scmCheckoutRetryCount;
+    }
+    
+    
 
     /**
      * @deprecated
@@ -1427,6 +1649,7 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
         return "";
     }
 
+    @Override
     public String getSearchUrl() {
         return "";
     }
@@ -1476,14 +1699,10 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
      * such as "http://localhost/hudson/".
      *
      * <p>
-     * Also note that when serving user requests from HTTP, you should always use
-     * {@link HttpServletRequest} to determine the full URL, instead of using this
-     * (this is because one host may have multiple names, and {@link HttpServletRequest}
-     * accurately represents what the current user used.)
-     *
-     * <p>
-     * This information is rather only meant to be useful for sending out messages
-     * via non-HTTP channels, like SMTP or IRC, with a link back to Hudson website.
+     * This method first tries to use the manually configured value, then
+     * fall back to {@link StaplerRequest#getRootPath()}.
+     * It is done in this order so that it can work correctly even in the face
+     * of a reverse proxy.
      *
      * @return
      *      This method returns null if this parameter is not configured by the user.
@@ -1519,7 +1738,7 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
     public String getRootUrlFromRequest() {
         StaplerRequest req = Stapler.getCurrentRequest();
         StringBuilder buf = new StringBuilder();
-        buf.append("http://");
+        buf.append(req.getScheme()+"://");
         buf.append(req.getServerName());
         if(req.getServerPort()!=80)
             buf.append(':').append(req.getServerPort());
@@ -1532,13 +1751,14 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
     }
 
     public FilePath getWorkspaceFor(TopLevelItem item) {
-        return new FilePath(new File(item.getRootDir(),"workspace"));
+        return new FilePath(new File(item.getRootDir(), WORKSPACE_DIRNAME));
     }
 
     public FilePath getRootPath() {
         return new FilePath(getRootDir());
     }
 
+    @Override
     public FilePath createPath(String absolutePath) {
         return new FilePath((VirtualChannel)null,absolutePath);
     }
@@ -1560,10 +1780,20 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
      * A convenience method to check if there's some security
      * restrictions in place.
      */
+    @Exported
     public boolean isUseSecurity() {
         return securityRealm!=SecurityRealm.NO_AUTHENTICATION || authorizationStrategy!=AuthorizationStrategy.UNSECURED;
     }
 
+    /**
+     * If true, all the POST requests to Hudson would have to have crumb in it to protect
+     * Hudson from CSRF vulnerabilities.
+     */
+    @Exported
+    public boolean isUseCrumbs() {
+        return crumbIssuer!=null;
+    }
+    
     /**
      * Returns the constant that captures the three basic security modes
      * in Hudson.
@@ -1634,6 +1864,15 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
     }
 
     /**
+     * Used to bind {@link ExtensionList}s to URLs.
+     *
+     * @since 1.349
+     */
+    public ExtensionList getExtensionList(String extensionType) throws ClassNotFoundException {
+        return getExtensionList(pluginManager.uberClassLoader.loadClass(extensionType));
+    }
+
+    /**
      * Returns {@link ExtensionList} that retains the discovered {@link Descriptor} instances for the given
      * kind of {@link Describable}.
      *
@@ -1650,6 +1889,7 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
      *
      * @see AuthorizationStrategy#getRootACL()
      */
+    @Override
     public ACL getACL() {
         return authorizationStrategy.getRootACL();
     }
@@ -1680,6 +1920,17 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
         return terminating;
     }
 
+    /**
+     * Gets the initialization milestone that we've already reached.
+     *
+     * @return
+     *      {@link InitMilestone#STARTED} even if the initialization hasn't been started, so that this method
+     *      never returns null. 
+     */
+    public InitMilestone getInitLevel() {
+        return initLevel;
+    }
+
     public void setNumExecutors(int n) throws IOException {
         this.numExecutors = n;
         save();
@@ -1699,9 +1950,12 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
      *      Used only for mapping jobs to URL in a case-insensitive fashion.
      */
     public TopLevelItem getJobCaseInsensitive(String name) {
+        String match = Functions.toEmailSafeString(name);
         for (Entry<String, TopLevelItem> e : items.entrySet()) {
-            if(Functions.toEmailSafeString(e.getKey()).equalsIgnoreCase(Functions.toEmailSafeString(name)))
-                return e.getValue();
+            if(Functions.toEmailSafeString(e.getKey()).equalsIgnoreCase(match)) {
+                TopLevelItem item = e.getValue();
+                return item.hasPermission(Item.READ) ? item : null;
+            }
         }
         return null;
     }
@@ -1713,11 +1967,8 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
      */
     public TopLevelItem getItem(String name) {
     	TopLevelItem item = items.get(name);
-        if (item instanceof AccessControlled) {
-        	if (!((AccessControlled) item).hasPermission(Item.READ)) {
-        		return null;
-        	}
-        }
+        if (item==null || !item.hasPermission(Item.READ))
+            return null;
         return item;
     }
 
@@ -1741,6 +1992,8 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
     public <T extends Item> T getItemByFullName(String fullName, Class<T> type) {
         StringTokenizer tokens = new StringTokenizer(fullName,"/");
         ItemGroup parent = this;
+
+        if(!tokens.hasMoreTokens()) return null;    // for example, empty full name.
 
         while(true) {
             Item item = parent.getItem(tokens.nextToken());
@@ -1779,8 +2032,21 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
      *      if the project of the given name already exists.
      */
     public synchronized TopLevelItem createProject( TopLevelItemDescriptor type, String name ) throws IOException {
+        return createProject(type, name, true);
+    }
+
+    /**
+     * Creates a new job.
+     * @param type Descriptor for job type
+     * @param name Name for job
+     * @param notify Whether to fire onCreated method for all ItemListeners
+     * @throws IllegalArgumentException
+     *      if a project of the give name already exists.
+     */
+    public synchronized TopLevelItem createProject( TopLevelItemDescriptor type, String name, boolean notify )
+            throws IOException {
         if(items.containsKey(name))
-            throw new IllegalArgumentException();
+            throw new IllegalArgumentException("Project of the name "+name+" already exists");
 
         TopLevelItem item;
         try {
@@ -1788,9 +2054,13 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
         } catch (Exception e) {
             throw new IllegalArgumentException(e);
         }
-
+        item.onCreatedFromScratch();
         item.save();
         items.put(name,item);
+
+        if (notify)
+            ItemListener.fireOnCreated(item);
+
         return item;
     }
 
@@ -1824,7 +2094,7 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
      * Called by {@link Job#renameTo(String)} to update relevant data structure.
      * assumed to be synchronized on Hudson by the caller.
      */
-    /*package*/ void onRenamed(TopLevelItem job, String oldName, String newName) throws IOException {
+    public void onRenamed(TopLevelItem job, String oldName, String newName) throws IOException {
         items.remove(oldName);
         items.put(newName,job);
 
@@ -1868,71 +2138,19 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
     }
 
     public String getLabelString() {
-        return Util.fixNull(label).trim();
+        return fixNull(label).trim();
     }
 
-    public Set<Label> getAssignedLabels() {
-        Set<Label> lset = labelSet; // labelSet may be set by another thread while we are in this method, so capture it.
-        if (lset == null) {
-            Set<Label> r = new HashSet<Label>();
-            String ls = getLabelString();
-            if(ls.length()>0)
-                for( String l : ls.split(" +"))
-                    r.add(Hudson.getInstance().getLabel(l));
-            r.addAll(getDynamicLabels());
-            r.add(getSelfLabel());
-            this.labelSet = lset = Collections.unmodifiableSet(r);
-        }
-        return lset;
-    }
-
-    /**
-     * Returns the possibly empty set of labels that it has been determined as supported by this node.
-     *
-     * @see hudson.tasks.LabelFinder
-     */
-    public Set<Label> getDynamicLabels() {
-        if (dynamicLabels == null) {
-            // in the worst cast, two threads end up doing the same computation twice,
-            // but that won't break the semantics.
-            // OTOH, not locking prevents dead-lock. See #1390
-            Set<Label> r = new HashSet<Label>();
-            Computer comp = getComputer("");
-            if (comp != null) {
-                VirtualChannel channel = comp.getChannel();
-                if (channel != null) {
-                    for (DynamicLabeler labeler : LabelFinder.LABELERS) {
-                        for (String label : labeler.findLabels(channel)) {
-                            r.add(getLabel(label));
-                        }
-                    }
-                }
-            }
-            dynamicLabels = r;
-        }
-        return dynamicLabels;
-    }
-
-    public Label getSelfLabel() {
-        return getLabel("master");
+    @Override
+    public LabelAtom getSelfLabel() {
+        return getLabelAtom("master");
     }
 
     public Computer createComputer() {
         return new MasterComputer();
     }
 
-    private synchronized void load() throws IOException {
-        long startTime = System.currentTimeMillis();
-        XmlFile cfg = getConfigFile();
-        if(cfg.exists()) {
-            // reset some data that may not exit in the disk file
-            // so that we can take a proper compensation action later.
-            primaryView = null;
-            views.clear();
-            cfg.unmarshal(this);
-        }
-        clouds.setOwner(this);
-
+    private synchronized TaskBuilder loadTasks() throws IOException {
         File projectsDir = new File(root,"jobs");
         if(!projectsDir.isDirectory() && !projectsDir.mkdirs()) {
             if(projectsDir.exists())
@@ -1944,101 +2162,92 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
                 return child.isDirectory() && Items.getConfigFile(child).exists();
             }
         });
-        items.clear();
-        if(PARALLEL_LOAD) {
-            // load jobs in parallel for better performance
-            LOGGER.info("Loading in "+TWICE_CPU_NUM+" parallel threads");
-            List<Future<TopLevelItem>> loaders = new ArrayList<Future<TopLevelItem>>();
-            for (final File subdir : subdirs) {
-                loaders.add(threadPoolForLoad.submit(new Callable<TopLevelItem>() {
-                    public TopLevelItem call() throws Exception {
-                        Thread t = Thread.currentThread();
-                        String name = t.getName();
-                        t.setName("Loading "+subdir);
-                        try {
-                            long start = System.currentTimeMillis();
-                            TopLevelItem item = (TopLevelItem) Items.load(Hudson.this, subdir);
-                            if(LOG_STARTUP_PERFORMANCE)
-                                LOGGER.info("Loaded "+item.getName()+" in "+(System.currentTimeMillis()-start)+"ms by "+name);
-                            return item;
-                        } finally {
-                            t.setName(name);
-                        }
-                    }
-                }));
-            }
 
-            for (Future<TopLevelItem> loader : loaders) {
-                try {
-                    TopLevelItem item = loader.get();
-                    items.put(item.getName(), item);
-                } catch (ExecutionException e) {
-                    LOGGER.log(Level.WARNING, "Failed to load a project",e.getCause());
-                } catch (InterruptedException e) {
-                    e.printStackTrace(); // this is probably not the right thing to do
+        TaskGraphBuilder g = new TaskGraphBuilder();
+        Handle loadHudson = g.requires(EXTENSIONS_AUGMENTED).attains(JOB_LOADED).add("Loading global config", new Executable() {
+            public void run(Reactor session) throws Exception {
+                XmlFile cfg = getConfigFile();
+                if (cfg.exists()) {
+                    // reset some data that may not exist in the disk file
+                    // so that we can take a proper compensation action later.
+                    primaryView = null;
+                    views.clear();
+
+                    // load from disk
+                    cfg.unmarshal(Hudson.this);
                 }
+
+                // if we are loading old data that doesn't have this field
+                if (slaves == null) slaves = new NodeList();
+
+                clouds.setOwner(Hudson.this);
+                items.clear();
             }
-        } else {
-            for (File subdir : subdirs) {
-                try {
-                    long start = System.currentTimeMillis();
-                    TopLevelItem item = (TopLevelItem)Items.load(this,subdir);
-                    if(LOG_STARTUP_PERFORMANCE)
-                        LOGGER.info("Loaded "+item.getName()+" in "+(System.currentTimeMillis()-start)+"ms");
+        });
+
+        for (final File subdir : subdirs) {
+            g.requires(loadHudson).attains(JOB_LOADED).notFatal().add("Loading job "+subdir.getName(),new Executable() {
+                public void run(Reactor session) throws Exception {
+                    TopLevelItem item = (TopLevelItem) Items.load(Hudson.this, subdir);
                     items.put(item.getName(), item);
-                } catch (Error e) {
-                    LOGGER.log(Level.WARNING, "Failed to load "+subdir,e);
-                } catch (RuntimeException e) {
-                    LOGGER.log(Level.WARNING, "Failed to load "+subdir,e);
-                } catch (IOException e) {
-                    LOGGER.log(Level.WARNING, "Failed to load "+subdir,e);
                 }
+            });
+        }
+
+        g.requires(JOB_LOADED).add("Finalizing set up",new Executable() {
+            public void run(Reactor session) throws Exception {
+                rebuildDependencyGraph();
+
+                {// recompute label objects - populates the labels mapping.
+                    for (Node slave : slaves)
+                        // Note that not all labels are visible until the slaves have connected.
+                        slave.getAssignedLabels();
+                    getAssignedLabels();
+                }
+
+                // initialize views by inserting the default view if necessary
+                // this is both for clean Hudson and for backward compatibility.
+                if(views.size()==0 || primaryView==null) {
+                    View v = new AllView(Messages.Hudson_ViewName());
+                    v.owner = Hudson.this;
+                    views.add(0,v);
+                    primaryView = v.getViewName();
+                }
+
+                // read in old data that doesn't have the security field set
+                if(authorizationStrategy==null) {
+                    if(useSecurity==null || !useSecurity)
+                        authorizationStrategy = AuthorizationStrategy.UNSECURED;
+                    else
+                        authorizationStrategy = new LegacyAuthorizationStrategy();
+                }
+                if(securityRealm==null) {
+                    if(useSecurity==null || !useSecurity)
+                        setSecurityRealm(SecurityRealm.NO_AUTHENTICATION);
+                    else
+                        setSecurityRealm(new LegacySecurityRealm());
+                } else {
+                    // force the set to proxy
+                    setSecurityRealm(securityRealm);
+                }
+
+                if(useSecurity!=null && !useSecurity) {
+                    // forced reset to the unsecure mode.
+                    // this works as an escape hatch for people who locked themselves out.
+                    authorizationStrategy = AuthorizationStrategy.UNSECURED;
+                    setSecurityRealm(SecurityRealm.NO_AUTHENTICATION);
+                }
+
+                // Initialize the filter with the crumb issuer
+                setCrumbIssuer(crumbIssuer);
+
+                // auto register root actions
+                for (Action a : getExtensionList(RootAction.class))
+                    if (!actions.contains(a)) actions.add(a);
             }
-        }
-        rebuildDependencyGraph();
+        });
 
-        // recompute label objects
-        if (null != slaves) { // only if we have slaves
-            for (Node slave : slaves)
-                slave.getAssignedLabels();
-        }
-
-        // initialize views by inserting the default view if necessary
-        // this is both for clean Hudson and for backward compatibility.
-        if(views.size()==0 || primaryView==null) {
-            View v = new AllView(Messages.Hudson_ViewName());
-            v.owner = this;
-            views.add(0,v);
-            primaryView = v.getViewName();
-        }
-
-        // read in old data that doesn't have the security field set
-        if(authorizationStrategy==null) {
-            if(useSecurity==null || !useSecurity)
-                authorizationStrategy = AuthorizationStrategy.UNSECURED;
-            else
-                authorizationStrategy = new LegacyAuthorizationStrategy();
-        }
-        if(securityRealm==null) {
-            if(useSecurity==null || !useSecurity)
-                setSecurityRealm(SecurityRealm.NO_AUTHENTICATION);
-            else
-                setSecurityRealm(new LegacySecurityRealm());
-        } else {
-            // force the set to proxy
-            setSecurityRealm(securityRealm);
-        }
-
-        if(useSecurity!=null && !useSecurity) {
-            // forced reset to the unsecure mode.
-            // this works as an escape hatch for people who locked themselves out.
-            authorizationStrategy = AuthorizationStrategy.UNSECURED;
-            setSecurityRealm(SecurityRealm.NO_AUTHENTICATION);
-        }
-
-        LOGGER.info(String.format("Took %s ms to load",System.currentTimeMillis()-startTime));
-        if(KILL_AFTER_LOAD)
-            System.exit(0);
+        return g;
     }
 
     /**
@@ -2047,6 +2256,7 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
     public synchronized void save() throws IOException {
         if(BulkChange.contains(this))   return;
         getConfigFile().write(this);
+        SaveableListener.fireOnChange(this, getConfigFile());
     }
 
 
@@ -2059,10 +2269,12 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
         for( Computer c : computers.values() ) {
             c.interrupt();
             c.kill();
-            pending.add(c.disconnect());
+            pending.add(c.disconnect(null));
         }
         if(udpBroadcastThread!=null)
             udpBroadcastThread.shutdown();
+        if(dnsMultiCast!=null)
+            dnsMultiCast.close();
         ExternalJob.reloadThread.interrupt();
         Trigger.timer.cancel();
         // TODO: how to wait for the completion of the last job?
@@ -2096,7 +2308,7 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
         theInstance = null;
     }
 
-    public Object getDynamic(String token, StaplerRequest req, StaplerResponse rsp) {
+    public Object getDynamic(String token) {
         for (Action a : getActions())
             if(a.getUrlName().equals(token) || a.getUrlName().equals('/'+token))
                 return a;
@@ -2115,7 +2327,7 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
     /**
      * Accepts submission from the configuration page.
      */
-    public synchronized void doConfigSubmit( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
+    public synchronized void doConfigSubmit( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException, FormException {
         BulkChange bc = new BulkChange(this);
         try {
             checkPermission(ADMINISTER);
@@ -2138,6 +2350,27 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
                 authorizationStrategy = AuthorizationStrategy.UNSECURED;
             }
 
+            if (json.has("csrf")) {
+            	JSONObject csrf = json.getJSONObject("csrf");
+                setCrumbIssuer(CrumbIssuer.all().newInstanceFromRadioList(csrf, "issuer"));
+            } else {
+            	setCrumbIssuer(null);
+            }
+
+            if (json.has("viewsTabBar")) {
+                viewsTabBar = req.bindJSON(ViewsTabBar.class,json.getJSONObject("viewsTabBar"));
+            } else {
+                viewsTabBar = new DefaultViewsTabBar();
+            }
+
+            if (json.has("myViewsTabBar")) {
+                myViewsTabBar = req.bindJSON(MyViewsTabBar.class,json.getJSONObject("myViewsTabBar"));
+            } else {
+                myViewsTabBar = new DefaultMyViewsTabBar();
+            }
+
+            primaryView = json.has("primaryView") ? json.getString("primaryView") : getViews().iterator().next().getViewName();
+            
             noUsageStatistics = json.has("usageStatisticsCollected") ? null : true;
 
             {
@@ -2169,16 +2402,17 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
                 }
             }
 
-            numExecutors = Integer.parseInt(req.getParameter("_.numExecutors"));
+            numExecutors = json.getInt("numExecutors");
             if(req.hasParameter("master.mode"))
                 mode = Mode.valueOf(req.getParameter("master.mode"));
             else
                 mode = Mode.NORMAL;
 
-            label = Util.fixNull(req.getParameter("_.labelString"));
-            labelSet=null;
+            label = json.optString("labelString","");
 
-            quietPeriod = Integer.parseInt(req.getParameter("quiet_period"));
+            quietPeriod = json.getInt("quiet_period");
+            
+            scmCheckoutRetryCount = json.getInt("retry_count");
 
             systemMessage = Util.nullify(req.getParameter("system_message"));
 
@@ -2186,26 +2420,7 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
             jdks.addAll(req.bindJSONToList(JDK.class,json.get("jdks")));
 
             boolean result = true;
-
-            for( Descriptor<Builder> d : Builder.all() )
-                result &= configureDescriptor(req,json,d);
-
-            for( Descriptor<Publisher> d : Publisher.all() )
-                result &= configureDescriptor(req,json,d);
-
-            for( Descriptor<BuildWrapper> d : BuildWrapper.all() )
-                result &= configureDescriptor(req,json,d);
-
-            for( SCMDescriptor scmd : SCM.all() )
-                result &= configureDescriptor(req,json,scmd);
-
-            for( TriggerDescriptor d : Trigger.all() )
-                result &= configureDescriptor(req,json,d);
-
-            for( JobPropertyDescriptor d : JobPropertyDescriptor.all() )
-                result &= configureDescriptor(req,json,d);
-
-            for( PageDecorator d : PageDecorator.all() )
+            for( Descriptor<?> d : Functions.getSortedDescriptorsForGlobalConfig() )
                 result &= configureDescriptor(req,json,d);
 
             for( JSONObject o : StructuredForm.toList(json,"plugin"))
@@ -2221,15 +2436,22 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
             version = VERSION;
 
             save();
+            updateComputerList();
             if(result)
                 rsp.sendRedirect(req.getContextPath()+'/');  // go to the top page
             else
                 rsp.sendRedirect("configure"); // back to config
-        } catch (FormException e) {
-            sendError(e,req,rsp);
         } finally {
             bc.commit();
         }
+    }
+
+    public CrumbIssuer getCrumbIssuer() {
+        return crumbIssuer;
+    }
+    
+    public void setCrumbIssuer(CrumbIssuer issuer) {
+        crumbIssuer = issuer;
     }
 
     public synchronized void doTestPost( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
@@ -2261,7 +2483,7 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
             else
                 mode = Mode.NORMAL;
 
-            setSlaves(req.bindJSONToList(Slave.class,json.get("slaves")));
+            setNodes(req.bindJSONToList(Slave.class,json.get("slaves")));
         } finally {
             bc.commit();
         }
@@ -2273,25 +2495,50 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
      * Accepts the new description.
      */
     public synchronized void doSubmitDescription( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
-        checkPermission(ADMINISTER);
-
-        req.setCharacterEncoding("UTF-8");
-        systemMessage = req.getParameter("description");
-        save();
-        rsp.sendRedirect(".");
+        getPrimaryView().doSubmitDescription(req,rsp);
     }
 
+    /**
+     * @deprecated as of 1.317
+     *      Use {@link #doQuietDown()} instead.
+     */
     public synchronized void doQuietDown(StaplerResponse rsp) throws IOException, ServletException {
-        checkPermission(ADMINISTER);
-        isQuietingDown = true;
-        rsp.sendRedirect2(".");
+        doQuietDown().generateResponse(null,rsp,this);
     }
 
-    public synchronized void doCancelQuietDown(StaplerResponse rsp) throws IOException, ServletException {
+    public synchronized HttpRedirect doQuietDown() throws IOException {
+        try {
+            return doQuietDown(false,0);
+        } catch (InterruptedException e) {
+            throw new AssertionError(); // impossible
+        }
+    }
+
+    @CLIMethod(name="quiet-down")
+    public HttpRedirect doQuietDown(
+            @Option(name="-block",usage="Block until the system really quiets down and no builds are running") @QueryParameter boolean block,
+            @Option(name="-timeout",usage="If non-zero, only block up to the specified number of milliseconds") @QueryParameter int timeout) throws InterruptedException, IOException {
+        synchronized (this) {
+            checkPermission(ADMINISTER);
+            isQuietingDown = true;
+        }
+        if (block) {
+            if (timeout > 0) timeout += System.currentTimeMillis();
+            while (isQuietingDown
+                   && (timeout <= 0 || System.currentTimeMillis() < timeout)
+                   && !RestartListener.isAllReady()) {
+                Thread.sleep(1000);
+            }
+        }
+        return new HttpRedirect(".");
+    }
+
+    @CLIMethod(name="cancel-quiet-down")
+    public synchronized HttpRedirect doCancelQuietDown() {
         checkPermission(ADMINISTER);
         isQuietingDown = false;
         getQueue().scheduleMaintenance();
-        rsp.sendRedirect2(".");
+        return new HttpRedirect(".");
     }
 
     /**
@@ -2325,23 +2572,10 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
             rsp.sendError(HttpServletResponse.SC_BAD_REQUEST,"Query parameter 'name' is required");
             return null;
         }
-        name = name.trim();
+
+        name = checkJobName(name);
+
         String mode = req.getParameter("mode");
-
-        try {
-            checkGoodName(name);
-        } catch (ParseException e) {
-            rsp.setStatus(SC_BAD_REQUEST);
-            sendError(e,req,rsp);
-            return null;
-        }
-
-        if(getItem(name)!=null) {
-            rsp.setStatus(SC_BAD_REQUEST);
-            sendError(Messages.Hudson_JobAlreadyExists(name),req,rsp);
-            return null;
-        }
-
         if(mode!=null && mode.equals("copy")) {
             String from = req.getParameter("from");
             TopLevelItem src = getItem(from);
@@ -2357,49 +2591,59 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
             result = copy(src,name);
         } else {
             if(isXmlSubmission) {
-                // config.xml submission
-
-                // first copy it as config.xml
-                File configXml = Items.getConfigFile(getRootDirFor(name)).getFile();
-                configXml.getParentFile().mkdirs();
-                try {
-                    FileOutputStream fos = new FileOutputStream(configXml);
-                    try {
-                        Util.copyStream(req.getInputStream(),fos);
-                    } finally {
-                        fos.close();
-                    }
-
-                    // load it
-                    result = (TopLevelItem)Items.load(this,configXml.getParentFile());
-                    items.put(name,result);
-                } catch (IOException e) {
-                    // if anything fails, delete the config file to avoid further confusion
-                    Util.deleteRecursive(configXml.getParentFile());
-                    throw e;
-                }
+                result = createProjectFromXML(name, req.getInputStream());
+                rsp.setStatus(HttpServletResponse.SC_OK);
+                return result;
             } else {
-                // create empty job and redirect to the project config screen
                 if(mode==null) {
                     rsp.sendError(SC_BAD_REQUEST);
                     return null;
                 }
+                // create empty job and redirect to the project config screen
                 result = createProject(Items.getDescriptor(mode), name);
             }
-
-            for (ItemListener l : ItemListener.all())
-                l.onCreated(result);
         }
 
-        if(isXmlSubmission) {
-            // it worked
-            rsp.setStatus(HttpServletResponse.SC_OK);
-        } else {
-            // send the browser to the config page
-            rsp.sendRedirect2(result.getUrl()+"configure");
+        // send the browser to the config page
+        // use View to trim view/{default-view} from URL if possible
+        String redirect = result.getUrl()+"configure";
+        List<Ancestor> ancestors = req.getAncestors();
+        for (int i = ancestors.size() - 1; i >= 0; i--) {
+            Object o = ancestors.get(i).getObject();
+            if (o instanceof View) {
+                redirect = req.getContextPath() + '/' + ((View)o).getUrl() + redirect;
+                break;
+            }
         }
-
+        rsp.sendRedirect2(redirect);
         return result;
+    }
+
+    /**
+     * Creates a new job from its configuration XML. The type of the job created will be determined by
+     * what's in this XML.
+     * @since 1.319
+     */
+    public TopLevelItem createProjectFromXML(String name, InputStream xml) throws IOException {
+        // place it as config.xml
+        File configXml = Items.getConfigFile(getRootDirFor(name)).getFile();
+        configXml.getParentFile().mkdirs();
+        try {
+            IOUtils.copy(xml,configXml);
+
+            // load it
+            TopLevelItem result = (TopLevelItem)Items.load(this,configXml.getParentFile());
+            items.put(name,result);
+
+            ItemListener.fireOnCreated(result);
+            rebuildDependencyGraph();
+
+            return result;
+        } catch (IOException e) {
+            // if anything fails, delete the config file to avoid further confusion
+            Util.deleteRecursive(configXml.getParentFile());
+            throw e;
+        }
     }
 
     /**
@@ -2414,7 +2658,7 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
      */
     @SuppressWarnings({"unchecked"})
     public <T extends TopLevelItem> T copy(T src, String name) throws IOException {
-        T result = (T)createProject(src.getDescriptor(),name);
+        T result = (T)createProject(src.getDescriptor(),name,false);
 
         // copy config
         Util.copyFile(Items.getConfigFile(src).getFile(),Items.getConfigFile(result).getFile());
@@ -2424,8 +2668,7 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
         result.onCopiedFrom(src);
         items.put(name,result);
 
-        for (ItemListener l : ItemListener.all())
-            l.onCreated(result);
+        ItemListener.fireOnCopied(src,result);
 
         return result;
     }
@@ -2436,15 +2679,9 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
         return (T)copy((TopLevelItem)src,name);
     }
 
-    public synchronized void doCreateView( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
-        try {
-            checkPermission(View.CREATE);
-            addView(View.create(req,rsp, this));
-        } catch (ParseException e) {
-            sendError(e,req,rsp);
-        } catch (FormException e) {
-            sendError(e,req,rsp);
-        }
+    public synchronized void doCreateView( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException, FormException {
+        checkPermission(View.CREATE);
+        addView(View.create(req,rsp, this));
     }
 
     /**
@@ -2454,24 +2691,37 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
      * @throws ParseException
      *      if the given name is not good
      */
-    public static void checkGoodName(String name) throws ParseException {
+    public static void checkGoodName(String name) throws Failure {
         if(name==null || name.length()==0)
-            throw new ParseException(Messages.Hudson_NoName(),0);
+            throw new Failure(Messages.Hudson_NoName());
 
         for( int i=0; i<name.length(); i++ ) {
             char ch = name.charAt(i);
             if(Character.isISOControl(ch)) {
-                throw new ParseException(Messages.Hudson_ControlCodeNotAllowed(toPrintableName(name)),i);
+                throw new Failure(Messages.Hudson_ControlCodeNotAllowed(toPrintableName(name)));
             }
             if("?*/\\%!@#$^&|<>[]:;".indexOf(ch)!=-1)
-                throw new ParseException(Messages.Hudson_UnsafeChar(ch),i);
+                throw new Failure(Messages.Hudson_UnsafeChar(ch));
         }
 
         // looks good
     }
 
+    /**
+     * Makes sure that the given name is good as a job name.
+     * @return trimmed name if valid; throws ParseException if not
+     */
+    private String checkJobName(String name) throws Failure {
+        checkGoodName(name);
+        name = name.trim();
+        if(getItem(name)!=null)
+            throw new Failure(Messages.Hudson_JobAlreadyExists(name));
+        // looks good
+        return name;
+    }
+
     private static String toPrintableName(String name) {
-        StringBuffer printableName = new StringBuffer();
+        StringBuilder printableName = new StringBuilder();
         for( int i=0; i<name.length(); i++ ) {
             char ch = name.charAt(i);
             if(Character.isISOControl(ch))
@@ -2495,7 +2745,7 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
         }
 
         // the user is now authenticated, so send him back to the target
-        String path = req.getContextPath()+req.getRestOfPath();
+        String path = req.getContextPath()+req.getOriginalRestOfPath();
         String q = req.getQueryString();
         if(q!=null)
             path += '?'+q;
@@ -2507,8 +2757,10 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
      * Called once the user logs in. Just forward to the top page.
      */
     public void doLoginEntry( StaplerRequest req, StaplerResponse rsp ) throws IOException {
-        if(req.getUserPrincipal()==null)
+        if(req.getUserPrincipal()==null) {
             rsp.sendRedirect2("noPrincipal");
+            return;
+        }
 
         String from = req.getParameter("from");
         if(from!=null && from.startsWith("/") && !from.equals("/loginError")) {
@@ -2528,20 +2780,10 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
     }
 
     /**
-     * Called once the user logs in. Just forward to the top page.
+     * Logs out the user.
      */
-    public void doLogout( StaplerRequest req, StaplerResponse rsp ) throws IOException {
-        HttpSession session = req.getSession(false);
-        if(session!=null)
-            session.invalidate();
-        SecurityContextHolder.clearContext();
-
-        // reset remember-me cookie
-        Cookie cookie = new Cookie(ACEGI_SECURITY_HASHED_REMEMBER_ME_COOKIE_KEY,"");
-        cookie.setPath(req.getContextPath().length()>0 ? req.getContextPath() : "/");
-        rsp.addCookie(cookie);
-
-        rsp.sendRedirect2(req.getContextPath()+"/");
+    public void doLogout( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
+        securityRealm.doLogout(req,rsp);
     }
 
     /**
@@ -2549,6 +2791,10 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
      */
     public Slave.JnlpJar getJnlpJars(String fileName) {
         return new Slave.JnlpJar(fileName);
+    }
+
+    public Slave.JnlpJar doJnlpJars(StaplerRequest req) {
+        return new Slave.JnlpJar(req.getRestOfPath());
     }
 
     /**
@@ -2565,26 +2811,39 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
     /**
      * Reloads the configuration.
      */
-    public synchronized void doReload( StaplerRequest req, StaplerResponse rsp ) throws IOException {
+    @CLIMethod(name="reload-configuration")
+    public synchronized HttpResponse doReload() throws IOException {
         checkPermission(ADMINISTER);
 
         // engage "loading ..." UI and then run the actual task in a separate thread
-        final ServletContext context = req.getServletContext();
-        context.setAttribute("app",new HudsonIsLoading());
-
-        rsp.sendRedirect2(req.getContextPath()+"/");
+        servletContext.setAttribute("app",new HudsonIsLoading());
 
         new Thread("Hudson config reload thread") {
+            @Override
             public void run() {
                 try {
-                    load();
-                    User.reload();
-                    context.setAttribute("app",Hudson.this);
+                    SecurityContextHolder.getContext().setAuthentication(ACL.SYSTEM);
+                    reload();
                 } catch (IOException e) {
-                    LOGGER.log(Level.SEVERE,"Failed to reload Hudson config",e);
+                    LOGGER.log(SEVERE,"Failed to reload Hudson config",e);
+                } catch (ReactorException e) {
+                    LOGGER.log(SEVERE,"Failed to reload Hudson config",e);
+                } catch (InterruptedException e) {
+                    LOGGER.log(SEVERE,"Failed to reload Hudson config",e);
                 }
             }
         }.start();
+
+        return HttpResponses.redirectViaContextPath("/");
+    }
+
+    /**
+     * Reloads the configuration synchronously.
+     */
+    public void reload() throws IOException, InterruptedException, ReactorException {
+        executeReactor(null,loadTasks());
+        User.reload();
+        servletContext.setAttribute("app", this);
     }
 
     /**
@@ -2593,6 +2852,9 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
     public void doDoFingerprintCheck( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
         // Parse the request
         MultipartFormDataParser p = new MultipartFormDataParser(req);
+        if(Hudson.getInstance().isUseCrumbs() && !Hudson.getInstance().getCrumbIssuer().validateCrumb(req, p)) {
+            rsp.sendError(HttpServletResponse.SC_FORBIDDEN,"No crumb found");                
+        }
         try {
             rsp.sendRedirect2(req.getContextPath()+"/fingerprint/"+
                 Util.getDigestOf(p.getFileItem("name").getInputStream())+'/');
@@ -2602,49 +2864,10 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
     }
 
     /**
-     * Serves static resources without the "Last-Modified" header to work around
-     * a bug in Firefox.
-     *
-     * <p>
-     * See https://bugzilla.mozilla.org/show_bug.cgi?id=89419
-     */
-    public void doNocacheImages( StaplerRequest req, StaplerResponse rsp ) throws IOException {
-        String path = req.getRestOfPath();
-
-        if(path.length()==0)
-            path = "/";
-
-        if(path.indexOf("..")!=-1 || path.length()<1) {
-            // don't serve anything other than files in the artifacts dir
-            rsp.sendError(SC_BAD_REQUEST);
-            return;
-        }
-
-        File f = new File(req.getServletContext().getRealPath("/images"),path.substring(1));
-        if(!f.exists()) {
-            rsp.sendError(SC_NOT_FOUND);
-            return;
-        }
-
-        if(f.isDirectory()) {
-            // listing not allowed
-            rsp.sendError(HttpServletResponse.SC_FORBIDDEN);
-            return;
-        }
-
-        FileInputStream in = new FileInputStream(f);
-        // serve the file
-        String contentType = req.getServletContext().getMimeType(f.getPath());
-        rsp.setContentType(contentType);
-        rsp.setContentLength((int)f.length());
-        Util.copyStream(in,rsp.getOutputStream());
-        in.close();
-    }
-
-    /**
      * For debugging. Expose URL to perform GC.
      */
     public void doGc(StaplerResponse rsp) throws IOException {
+        checkPermission(Hudson.ADMINISTER);
         System.gc();
         rsp.setStatus(HttpServletResponse.SC_OK);
         rsp.setContentType("text/plain");
@@ -2652,52 +2875,16 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
     }
 
     /**
-     * {@link CliEntryPoint} implementation exposed to the remote CLI.
+     * Simulates OutOfMemoryError.
+     * Useful to make sure OutOfMemoryHeapDump setting.
      */
-    private final class CliManager implements CliEntryPoint, Serializable {
-        /**
-         * CLI should be executed under this credential.
-         */
-        private final Authentication auth;
+    public void doSimulateOutOfMemory() throws IOException {
+        checkPermission(ADMINISTER);
 
-        private CliManager(Authentication auth) {
-            this.auth = auth;
-        }
-
-        public int main(List<String> args, Locale locale, InputStream stdin, OutputStream stdout, OutputStream stderr) {
-            // remoting sets the context classloader to the RemoteClassLoader,
-            // which slows down the classloading. we don't load anything from CLI,
-            // so couner that effect.
-            Thread.currentThread().setContextClassLoader(getClass().getClassLoader());
-
-            PrintStream out = new PrintStream(stdout);
-            PrintStream err = new PrintStream(stderr);
-
-            String subCmd = args.get(0);
-            CLICommand cmd = CLICommand.clone(subCmd);
-            if(cmd!=null) {
-                Authentication old = SecurityContextHolder.getContext().getAuthentication();
-                SecurityContextHolder.getContext().setAuthentication(auth);
-                try {
-                    // execute the command, do so with the originator of the request as the principal
-                    return cmd.main(args.subList(1,args.size()),stdin, out, err);
-                } finally {
-                    SecurityContextHolder.getContext().setAuthentication(old);
-                }
-            }
-
-            err.println("No such command: "+subCmd);
-            new HelpCommand().main(Collections.<String>emptyList(), stdin, out, err);
-            return -1;
-        }
-
-        public int protocolVersion() {
-            return VERSION;
-        }
-
-        private Object writeReplace() {
-            return Channel.current().export(CliEntryPoint.class,this);
-        }
+        System.out.println("Creating artificial OutOfMemoryError situation");
+        List<Object> args = new ArrayList<Object>();
+        while (true)
+            args.add(new byte[1024*1024]);
     }
 
     private transient final Map<UUID,FullDuplexHttpChannel> duplexChannels = new HashMap<UUID, FullDuplexHttpChannel>();
@@ -2706,22 +2893,26 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
      * Handles HTTP requests for duplex channels for CLI.
      */
     public void doCli(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException, InterruptedException {
-        checkPermission(READ);
-        if(!"POST".equals(Stapler.getCurrentRequest().getMethod())) {
+        if (!"POST".equals(req.getMethod())) {
             // for GET request, serve _cli.jelly, assuming this is a browser
+            checkPermission(READ);
             req.getView(this,"_cli.jelly").forward(req,rsp);
             return;
         }
 
+        // do not require any permission to establish a CLI connection
+        // the actual authentication for the connecting Channel is done by CLICommand
+
         UUID uuid = UUID.fromString(req.getHeader("Session"));
         rsp.setHeader("Hudson-Duplex",""); // set the header so that the client would know
-        final Authentication auth = getAuthentication();
 
         FullDuplexHttpChannel server;
         if(req.getHeader("Side").equals("download")) {
             duplexChannels.put(uuid,server=new FullDuplexHttpChannel(uuid, !hasPermission(ADMINISTER)) {
                 protected void main(Channel channel) throws IOException, InterruptedException {
-                    channel.setProperty(CliEntryPoint.class.getName(),new CliManager(auth));
+                    // capture the identity given by the transport, since this can be useful for SecurityRealm.createCliAuthenticator()
+                    channel.setProperty(CLICommand.TRANSPORT_AUTHENTICATION,getAuthentication());
+                    channel.setProperty(CliEntryPoint.class.getName(),new CliManagerImpl());
                 }
             });
             try {
@@ -2746,26 +2937,104 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
      *
      * This first replaces "app" to {@link HudsonIsRestarting}
      */
-    public void doRestart(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
+    @CLIMethod(name="restart")
+    public void doRestart(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException, RestartNotSupportedException {
         checkPermission(ADMINISTER);
-        if(Stapler.getCurrentRequest().getMethod().equals("GET")) {
+        if (req != null && req.getMethod().equals("GET")) {
             req.getView(this,"_restart.jelly").forward(req,rsp);
             return;
         }
 
+        restart();
+
+        if (rsp != null) // null for CLI
+            rsp.sendRedirect2(".");
+    }
+
+    /**
+     * Queues up a restart of Hudson for when there are no builds running, if we can.
+     *
+     * This first replaces "app" to {@link HudsonIsRestarting}
+     * 
+     * @since 1.332
+     */
+    @CLIMethod(name="safe-restart")
+    public void doSafeRestart(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException, RestartNotSupportedException {
+        checkPermission(ADMINISTER);
+        if (req != null && req.getMethod().equals("GET")) {
+            req.getView(this,"_safeRestart.jelly").forward(req,rsp);
+            return;
+        }
+
+        safeRestart();
+
+        if (rsp != null) // null for CLI
+            rsp.sendRedirect2(".");
+    }
+
+    /**
+     * Performs a restart.
+     */
+    public void restart() throws RestartNotSupportedException {
         final Lifecycle lifecycle = Lifecycle.get();
-        if(!lifecycle.canRestart())
-            sendError("Restart is not supported in this running mode.",req,rsp);
+        lifecycle.verifyRestartable(); // verify that Hudson is restartable
         servletContext.setAttribute("app",new HudsonIsRestarting());
-        rsp.sendRedirect2(".");
 
         new Thread("restart thread") {
+            final String exitUser = getAuthentication().getName();
             @Override
             public void run() {
                 try {
+                    SecurityContextHolder.getContext().setAuthentication(ACL.SYSTEM);
+
                     // give some time for the browser to load the "reloading" page
                     Thread.sleep(5000);
+                    LOGGER.severe(String.format("Restarting VM as requested by %s",exitUser));
+                    for (RestartListener listener : RestartListener.all())
+                        listener.onRestart();
                     lifecycle.restart();
+                } catch (InterruptedException e) {
+                    LOGGER.log(Level.WARNING, "Failed to restart Hudson",e);
+                } catch (IOException e) {
+                    LOGGER.log(Level.WARNING, "Failed to restart Hudson",e);
+                }
+            }
+        }.start();
+    }
+
+    /**
+     * Queues up a restart to be performed once there are no builds currently running.
+     * @since 1.332
+     */
+    public void safeRestart() throws RestartNotSupportedException {
+        final Lifecycle lifecycle = Lifecycle.get();
+        lifecycle.verifyRestartable(); // verify that Hudson is restartable
+        // Quiet down so that we won't launch new builds.
+        isQuietingDown = true;
+        
+        new Thread("safe-restart thread") {
+            final String exitUser = getAuthentication().getName();
+            @Override
+            public void run() {
+                try {
+                    SecurityContextHolder.getContext().setAuthentication(ACL.SYSTEM);
+
+                    // Wait 'til we have no active executors.
+                    doQuietDown(true, 0);
+
+                    // Make sure isQuietingDown is still true.
+                    if (isQuietingDown) {
+                        servletContext.setAttribute("app",new HudsonIsRestarting());
+                        // give some time for the browser to load the "reloading" page
+                        LOGGER.info("Restart in 10 seconds");
+                        Thread.sleep(10000);
+                        LOGGER.severe(String.format("Restarting VM as requested by %s",exitUser));
+                        for (RestartListener listener : RestartListener.all())
+                            listener.onRestart();
+                        lifecycle.restart();
+                    } else {
+                        LOGGER.info("Safe-restart mode cancelled");
+                    }
                 } catch (InterruptedException e) {
                     LOGGER.log(Level.WARNING, "Failed to restart Hudson",e);
                 } catch (IOException e) {
@@ -2782,7 +3051,7 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
     public void doExit( StaplerRequest req, StaplerResponse rsp ) throws IOException {
         checkPermission(ADMINISTER);
         LOGGER.severe(String.format("Shutting down VM as requested by %s from %s",
-                getAuthentication(), req.getRemoteAddr()));
+                getAuthentication().getName(), req.getRemoteAddr()));
         rsp.setStatus(HttpServletResponse.SC_OK);
         rsp.setContentType("text/plain");
         PrintWriter w = rsp.getWriter();
@@ -2790,6 +3059,45 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
         w.close();
 
         System.exit(0);
+    }
+
+    
+    /**
+     * Shutdown the system safely.
+     * @since 1.332
+     */
+    public void doSafeExit( StaplerRequest req, StaplerResponse rsp ) throws IOException {
+        checkPermission(ADMINISTER);
+        rsp.setStatus(HttpServletResponse.SC_OK);
+        rsp.setContentType("text/plain");
+        PrintWriter w = rsp.getWriter();
+        w.println("Shutting down as soon as all jobs are complete");
+        w.close();
+        isQuietingDown = true;
+        final String exitUser = getAuthentication().getName();
+        final String exitAddr = req.getRemoteAddr().toString();
+        new Thread("safe-exit thread") {
+            @Override
+            public void run() {
+                try {
+                    SecurityContextHolder.getContext().setAuthentication(ACL.SYSTEM);
+                    LOGGER.severe(String.format("Shutting down VM as requested by %s from %s",
+                                                exitUser, exitAddr));
+                    // Wait 'til we have no active executors.
+                    while (isQuietingDown
+                           && (overallLoad.computeTotalExecutors() > overallLoad.computeIdleExecutors())) {
+                        Thread.sleep(5000);
+                    }
+                    // Make sure isQuietingDown is still true.
+                    if (isQuietingDown) {
+                        cleanUp();
+                        System.exit(0);
+                    }
+                } catch (InterruptedException e) {
+                    LOGGER.log(Level.WARNING, "Failed to shutdown Hudson",e);
+                }
+            }
+        }.start();
     }
 
     /**
@@ -2803,7 +3111,7 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
         // run the request through filters when this is the login request.
         // see http://www.nabble.com/Matrix-authorization-problem-tp14602081p14886312.html
         if(a==null)
-            a = new AnonymousAuthenticationToken("anonymous","anonymous",new GrantedAuthority[]{new GrantedAuthorityImpl("anonymous")});
+            a = ANONYMOUS;
         return a;
     }
 
@@ -2910,21 +3218,22 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
     }
 
     /**
-     * Checks if the top-level item with the given name exists.
+     * Makes sure that the given name is good as a job name.
      */
-    public FormValidation doItemExistsCheck(@QueryParameter String value) {
+    public FormValidation doCheckJobName(@QueryParameter String value) {
         // this method can be used to check if a file exists anywhere in the file system,
         // so it should be protected.
         checkPermission(Item.CREATE);
         
-        String job = fixEmpty(value);
-        if(job==null)
+        if(fixEmpty(value)==null)
             return FormValidation.ok();
 
-        if(getItem(job)==null)
+        try {
+            checkJobName(value);
             return FormValidation.ok();
-        else
-            return FormValidation.error(Messages.Hudson_JobAlreadyExists(job));
+        } catch (Failure e) {
+            return FormValidation.error(e.getMessage());
+        }
     }
 
     /**
@@ -2957,11 +3266,15 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
     /**
      * Checks if the value for a field is set; if not an error or warning text is displayed.
      * If the parameter "value" is not set then the parameter "errorText" is displayed
-     * as an error text. If the parameter "errorText" is not set, then the parameter "warningText" is
-     * displayed as a warning text.
+     * as an error text. If the parameter "errorText" is not set, then the parameter "warningText"
+     * is displayed as a warning text.
      * <p>
      * If the text is set and the parameter "type" is set, it will validate that the value is of the
      * correct type. Supported types are "number, "number-positive" and "number-negative".
+     *
+     * @deprecated as of 1.324
+     *      Either use client-side validation (e.g. class="required number")
+     *      or define your own check method, instead of relying on this generic one.
      */
     public FormValidation doFieldCheck(@QueryParameter(fixEmpty=true) String value,
                                        @QueryParameter(fixEmpty=true) String type,
@@ -3007,8 +3320,7 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
         // cut off the "..." portion of /resources/.../path/to/file
         // as this is only used to make path unique (which in turn
         // allows us to set a long expiration date
-        path = path.substring(1);
-        path = path.substring(path.indexOf('/')+1);
+        path = path.substring(path.indexOf('/',1)+1);
 
         int idx = path.lastIndexOf('.');
         String extension = path.substring(idx+1);
@@ -3035,11 +3347,11 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
      * Checks if container uses UTF-8 to decode URLs. See
      * http://hudson.gotdns.com/wiki/display/HUDSON/Tomcat#Tomcat-i18n
      */
-    public FormValidation doCheckURIEncoding(StaplerRequest request, @QueryParameter String value) throws IOException {
+    public FormValidation doCheckURIEncoding(StaplerRequest request) throws IOException {
         request.setCharacterEncoding("UTF-8");
         // expected is non-ASCII String
         final String expected = "\u57f7\u4e8b";
-        value = fixEmpty(value);
+        final String value = fixEmpty(request.getParameter("value"));
         if (!expected.equals(value))
             return FormValidation.warningWithMarkup(Messages.Hudson_NotUsesUTF8ToDecodeURL());
         return FormValidation.ok();
@@ -3052,29 +3364,17 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
         return !"ISO-8859-1".equalsIgnoreCase(System.getProperty("file.encoding"));
     }
 
+    /**
+     * @deprecated
+     *      Use {@link Functions#isWindows()}.
+     */
     public static boolean isWindows() {
         return File.pathSeparatorChar==';';
     }
 
-    /**
-     * Returns all {@code CVSROOT} strings used in the current Hudson installation.
-     *
-     * <p>
-     * Ideally this shouldn't be defined in here
-     * but EL doesn't provide a convenient way of invoking a static function,
-     * so I'm putting it here for now.
-     */
-    public Set<String> getAllCvsRoots() {
-        Set<String> r = new TreeSet<String>();
-        for( AbstractProject p : getAllItems(AbstractProject.class) ) {
-            SCM scm = p.getScm();
-            if (scm instanceof CVSSCM) {
-                CVSSCM cvsscm = (CVSSCM) scm;
-                r.add(cvsscm.getCvsRoot());
-            }
-        }
-
-        return r;
+    public static boolean isDarwin() {
+        // according to http://developer.apple.com/technotes/tn2002/tn2110.html
+        return System.getProperty("os.name").toLowerCase(Locale.ENGLISH).startsWith("mac");
     }
 
     /**
@@ -3091,6 +3391,16 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
     // for Jelly
     public List<ManagementLink> getManagementLinks() {
         return ManagementLink.all();
+    }
+
+    /**
+     * Exposes the current user to <tt>/me</tt> URL.
+     */
+    public User getMe() {
+        User u = User.current();
+        if (u == null)
+            throw new AccessDeniedException("/me is not available when not logged in");
+        return u;
     }
 
     /**
@@ -3115,6 +3425,8 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
             || rest.startsWith("/signup")
             || rest.startsWith("/jnlpJars/")
             || rest.startsWith("/tcpSlaveAgentListener")
+            || rest.startsWith("/cli")
+            || rest.startsWith("/whoAmI")
             || rest.startsWith("/securityRealm"))
                 return this;    // URLs that are always visible without READ permission
             throw e;
@@ -3137,6 +3449,7 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
         /**
          * Returns "" to match with {@link Hudson#getNodeName()}.
          */
+        @Override
         public String getName() {
             return "";
         }
@@ -3156,6 +3469,7 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
             return Messages.Hudson_Computer_Caption();
         }
 
+        @Override
         public String getUrl() {
             return "computer/(master)/";
         }
@@ -3168,10 +3482,11 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
          * Report an error.
          */
         @Override
-        public void doDoDelete(StaplerResponse rsp) throws IOException {
-            rsp.sendError(SC_BAD_REQUEST);
+        public HttpResponse doDoDelete() throws IOException {
+            throw HttpResponses.status(SC_BAD_REQUEST);
         }
 
+        @Override
         public void doConfigSubmit(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
             // the master node isn't in the Hudson.getNodes(), so this method makes no sense.
             throw new UnsupportedOperationException();
@@ -3183,7 +3498,8 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
             // this hides the "delete" link from the /computer/(master) page.
             if(permission==Computer.DELETE)
                 return false;
-            return super.hasPermission(permission);
+            // Configuration of master node requires ADMINISTER permission
+            return super.hasPermission(permission==Computer.CONFIGURE ? Hudson.ADMINISTER : permission);
         }
 
         @Override
@@ -3213,7 +3529,7 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
             rsp.sendRedirect2(req.getContextPath()+"/configure");
         }
 
-        public Future<?> connect(boolean forceReconnect) {
+        protected Future<?> _connect(boolean forceReconnect) {
             return Futures.precomputed(null);
         }
 
@@ -3224,7 +3540,14 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
     }
 
     /**
-     * @deprecated
+     * Shortcut for {@code Hudson.getInstance().lookup.get(type)}
+     */
+    public static <T> T lookup(Class<T> type) {
+        return Hudson.getInstance().lookup.get(type);
+    }
+    
+    /**
+     * @deprecated since 2007-12-18.
      *      Use {@link #checkPermission(Permission)}
      */
     public static boolean adminCheck() throws IOException {
@@ -3232,7 +3555,7 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
     }
 
     /**
-     * @deprecated
+     * @deprecated since 2007-12-18.
      *      Use {@link #checkPermission(Permission)}
      */
     public static boolean adminCheck(StaplerRequest req,StaplerResponse rsp) throws IOException {
@@ -3246,7 +3569,7 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
      * Checks if the current user (for which we are processing the current request)
      * has the admin access.
      *
-     * @deprecated
+     * @deprecated since 2007-12-18.
      *      This method is deprecated when Hudson moved from simple Unix root-like model
      *      of "admin gets to do everything, and others don't have any privilege" to more
      *      complex {@link ACL} and {@link Permission} based scheme.
@@ -3265,7 +3588,7 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
     }
 
     /**
-     * @deprecated
+     * @deprecated since 2007-12-18.
      *      Define a custom {@link Permission} and check against ACL.
      *      See {@link #isAdmin()} for more instructions.
      */
@@ -3290,7 +3613,7 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
      * <p>
      * The idea here is to overlap the CPU and I/O, so we want more threads than CPU numbers.
      */
-    /*package*/ static final ExecutorService threadPoolForLoad = new ThreadPoolExecutor(
+    /*package*/ transient final ExecutorService threadPoolForLoad = new ThreadPoolExecutor(
         TWICE_CPU_NUM, TWICE_CPU_NUM,
         5L, TimeUnit.SECONDS, new LinkedBlockingQueue<Runnable>(), new DaemonThreadFactory());
 
@@ -3325,6 +3648,28 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
     public static String VERSION="?";
 
     /**
+     * Parses {@link #VERSION} into {@link VersionNumber}, or null if it's not parseable as a version number
+     * (such as when Hudson is run with "mvn hudson-dev:run")
+     */
+    public static VersionNumber getVersion() {
+        try {
+            return new VersionNumber(VERSION);
+        } catch (NumberFormatException e) {
+            try {
+                // for non-released version of Hudson, this looks like "1.345 (private-foobar), so try to approximate.
+                int idx = VERSION.indexOf(' ');
+                if (idx>0)
+                    return new VersionNumber(VERSION.substring(0,idx));
+            } catch (NumberFormatException _) {
+                // fall through
+            }
+
+            // totally unparseable
+            return null;
+        }
+    }
+
+    /**
      * Hash of {@link #VERSION}.
      */
     public static String VERSION_HASH;
@@ -3351,7 +3696,29 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
     public static boolean KILL_AFTER_LOAD = Boolean.getBoolean(Hudson.class.getName()+".killAfterLoad");
     public static boolean LOG_STARTUP_PERFORMANCE = Boolean.getBoolean(Hudson.class.getName()+".logStartupPerformance");
     private static final boolean CONSISTENT_HASH = true; // Boolean.getBoolean(Hudson.class.getName()+".consistentHash");
+    /**
+     * Enabled by default as of 1.337. Will keep it for a while just in case we have some serious problems.
+     */
+    public static boolean FLYWEIGHT_SUPPORT = !"false".equals(System.getProperty(Hudson.class.getName()+".flyweightSupport"));
 
+    /**
+     * Tentative switch to activate the concurrent build behavior.
+     * When we merge this back to the trunk, this allows us to keep
+     * this feature hidden for a while until we iron out the kinks.
+     * @see AbstractProject#isConcurrentBuild()
+     */
+    public static boolean CONCURRENT_BUILD = true;
+
+    /**
+     * Switch to enable people to use a shorter workspace name.
+     */
+    private static final String WORKSPACE_DIRNAME = System.getProperty(Hudson.class.getName()+".workspaceDirName","workspace");
+
+    /**
+     * Automatically try to launch a slave when Hudson is initialized or a new slave is created.
+     */
+    public static boolean AUTOMATIC_SLAVE_LAUNCH = true;
+    
     private static final Logger LOGGER = Logger.getLogger(Hudson.class.getName());
 
     private static final Pattern ICON_SIZE = Pattern.compile("\\d+x\\d+");
@@ -3359,6 +3726,16 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
     public static final PermissionGroup PERMISSIONS = Permission.HUDSON_PERMISSIONS;
     public static final Permission ADMINISTER = Permission.HUDSON_ADMINISTER;
     public static final Permission READ = new Permission(PERMISSIONS,"Read",Messages._Hudson_ReadPermission_Description(),Permission.READ);
+
+    /**
+     * {@link Authentication} object that represents the anonymous user.
+     * Because Acegi creates its own {@link AnonymousAuthenticationToken} instances, the code must not
+     * expect the singleton semantics. This is just a convenient instance.
+     *
+     * @since 1.343
+     */
+    public static final Authentication ANONYMOUS = new AnonymousAuthenticationToken(
+            "anonymous","anonymous",new GrantedAuthority[]{new GrantedAuthorityImpl("anonymous")});
 
     static {
         XSTREAM.alias("hudson",Hudson.class);
@@ -3370,7 +3747,7 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
         // this seems to be necessary to force registration of converter early enough
         Mode.class.getEnumConstants();
 
-        // doule check that initialization order didn't do any harm
+        // double check that initialization order didn't do any harm
         assert PERMISSIONS!=null;
         assert ADMINISTER!=null;
     }

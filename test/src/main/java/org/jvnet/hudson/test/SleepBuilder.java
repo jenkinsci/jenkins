@@ -29,8 +29,6 @@ import hudson.model.AbstractBuild;
 import hudson.model.BuildListener;
 import hudson.model.Descriptor;
 import hudson.tasks.Builder;
-import net.sf.json.JSONObject;
-import org.kohsuke.stapler.StaplerRequest;
 
 import java.io.IOException;
 
@@ -54,10 +52,6 @@ public class SleepBuilder extends Builder {
 
     @Extension
     public static final class DescriptorImpl extends Descriptor<Builder> {
-        public Builder newInstance(StaplerRequest req, JSONObject data) {
-            throw new UnsupportedOperationException();
-        }
-
         public String getDisplayName() {
             return "Sleep";
         }

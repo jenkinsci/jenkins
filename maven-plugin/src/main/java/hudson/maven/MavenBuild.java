@@ -24,18 +24,18 @@
 package hudson.maven;
 
 import hudson.FilePath;
-import hudson.Util;
 import hudson.EnvVars;
+import hudson.maven.reporters.SurefireArchiver;
+import hudson.slaves.WorkspaceList;
+import hudson.slaves.WorkspaceList.Lease;
 import hudson.maven.agent.AbortException;
-import hudson.model.AbstractBuild;
-import hudson.model.AbstractProject;
 import hudson.model.BuildListener;
-import hudson.model.DependencyGraph;
-import hudson.model.Hudson;
 import hudson.model.Result;
 import hudson.model.Run;
-import hudson.model.Cause.UpstreamCause;
 import hudson.model.Environment;
+import hudson.model.TaskListener;
+import hudson.model.Node;
+import hudson.model.Executor;
 import hudson.remoting.Channel;
 import hudson.scm.ChangeLogSet;
 import hudson.scm.ChangeLogSet.Entry;
@@ -61,22 +61,20 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 /**
  * {@link Run} for {@link MavenModule}.
  * 
  * @author Kohsuke Kawaguchi
  */
-public class MavenBuild extends AbstractBuild<MavenModule,MavenBuild> {
+public class MavenBuild extends AbstractMavenBuild<MavenModule,MavenBuild> {
     /**
      * {@link MavenReporter}s that will contribute project actions.
      * Can be null if there's none.
      */
-    /*package*/ List<MavenReporter> projectActionReporters;
+    /*package*/ List<MavenProjectActionBuilder> projectActionReporters;
 
     /**
      * {@link ExecutedMojo}s that record what was run.
@@ -96,6 +94,7 @@ public class MavenBuild extends AbstractBuild<MavenModule,MavenBuild> {
 
     public MavenBuild(MavenModule project, File buildDir) throws IOException {
         super(project, buildDir);
+        SurefireArchiver.fixUp(projectActionReporters);
     }
 
     @Override
@@ -170,10 +169,37 @@ public class MavenBuild extends AbstractBuild<MavenModule,MavenBuild> {
         return true;
     }
 
+    /**
+     * Exposes {@code MAVEN_OPTS} to forked processes.
+     *
+     * <p>
+     * See {@link MavenModuleSetBuild#getEnvironment(TaskListener)}  for discussion.
+     */
+    @Override
+    public EnvVars getEnvironment(TaskListener log) throws IOException, InterruptedException {
+        EnvVars envs = super.getEnvironment(log);
+        String opts = project.getParent().getMavenOpts();
+        if(opts!=null)
+            envs.put("MAVEN_OPTS", opts);
+        return envs;
+    }
+
     public void registerAsProjectAction(MavenReporter reporter) {
         if(projectActionReporters==null)
-            projectActionReporters = new ArrayList<MavenReporter>();
+            projectActionReporters = new ArrayList<MavenProjectActionBuilder>();
         projectActionReporters.add(reporter);
+    }
+
+    public void registerAsProjectAction(MavenProjectActionBuilder builder) {
+        if(projectActionReporters==null)
+            projectActionReporters = new ArrayList<MavenProjectActionBuilder>();
+        projectActionReporters.add(builder);
+    }
+
+    public List<MavenProjectActionBuilder> getProjectActionBuilders() {
+        if(projectActionReporters==null)
+            return Collections.emptyList();
+        return Collections.unmodifiableList(projectActionReporters);
     }
 
     public List<ExecutedMojo> getExecutedMojos() {
@@ -212,6 +238,14 @@ public class MavenBuild extends AbstractBuild<MavenModule,MavenBuild> {
     }
 
     /**
+     * Backdoor for {@link MavenModuleSetBuild} to assign workspaces for modules.
+     */
+    @Override
+    protected void setWorkspace(FilePath path) {
+        super.setWorkspace(path);
+    }
+
+    /**
      * Runs Maven and builds the project.
      */
     private static final class Builder extends MavenBuilder {
@@ -236,6 +270,7 @@ public class MavenBuild extends AbstractBuild<MavenModule,MavenBuild> {
                 super(buildProxy);
             }
 
+            @Override
             public void executeAsync(final BuildCallable<?,?> program) throws IOException {
                 futures.add(Channel.current().callAsync(new AsyncInvoker(core,program)));
             }
@@ -345,8 +380,16 @@ public class MavenBuild extends AbstractBuild<MavenModule,MavenBuild> {
             return System.currentTimeMillis()-getTimestamp().getTimeInMillis();
         }
 
+        public boolean isArchivingDisabled() {
+            return MavenBuild.this.getParent().getParent().isArchivingDisabled();
+        }
+        
         public void registerAsProjectAction(MavenReporter reporter) {
             MavenBuild.this.registerAsProjectAction(reporter);
+        }
+
+        public void registerAsProjectAction(MavenProjectActionBuilder builder) {
+            MavenBuild.this.registerAsProjectAction(builder);
         }
 
         public void registerAsAggregatedProjectAction(MavenReporter reporter) {
@@ -390,7 +433,7 @@ public class MavenBuild extends AbstractBuild<MavenModule,MavenBuild> {
             if(result==null)
                 setResult(Result.SUCCESS);
             onEndBuilding();
-            duration = System.currentTimeMillis()- startTime;
+            duration += System.currentTimeMillis()- startTime;
             parentBuild.notifyModuleBuild(MavenBuild.this);
             try {
                 listener.setSideOutputStream(null);
@@ -448,14 +491,19 @@ public class MavenBuild extends AbstractBuild<MavenModule,MavenBuild> {
         }
 
         private Object writeReplace() {
-            return Channel.current().export(MavenBuildProxy2.class,this);
+            // when called from remote, methods need to be executed in the proper Executor's context.
+            return Channel.current().export(MavenBuildProxy2.class,
+                Executor.currentExecutor().newImpersonatingProxy(MavenBuildProxy2.class,this));
         }
-
-
     }
 
     private class RunnerImpl extends AbstractRunner {
         private List<MavenReporter> reporters;
+
+        @Override
+        protected Lease decideWorkspace(Node n, WorkspaceList wsl) throws InterruptedException, IOException {
+            return wsl.allocate(getModuleSetBuild().getModuleRoot().child(getProject().getRelativePath()));
+        }
 
         protected Result doRun(BuildListener listener) throws Exception {
             // pick up a list of reporters to run
@@ -464,9 +512,8 @@ public class MavenBuild extends AbstractBuild<MavenModule,MavenBuild> {
             if(debug)
                 listener.getLogger().println("Reporters="+reporters);
 
-            buildEnvironments = new ArrayList<Environment>();
-            for (BuildWrapper w : mms.getBuildWrappers()) {
-                BuildWrapper.Environment e = w.setUp(MavenBuild.this, launcher, listener);
+            for (BuildWrapper w : mms.getBuildWrappersList()) {
+                Environment e = w.setUp(MavenBuild.this, launcher, listener);
                 if (e == null) {
                     return Result.FAILURE;
                 }
@@ -478,13 +525,12 @@ public class MavenBuild extends AbstractBuild<MavenModule,MavenBuild> {
             ProcessCache.MavenProcess process = mavenProcessCache.get(launcher.getChannel(), listener,
                 new MavenProcessFactory(getParent().getParent(),launcher,envVars,null));
 
-            ArgumentListBuilder margs = new ArgumentListBuilder();
-            margs.add("-N").add("-B");
+            ArgumentListBuilder margs = new ArgumentListBuilder("-N","-B");
             if(mms.usesPrivateRepository())
                 // use the per-project repository. should it be per-module? But that would cost too much in terms of disk
                 // the workspace must be on this node, so getRemote() is safe.
-                margs.add("-Dmaven.repo.local="+mms.getWorkspace().child(".repository").getRemote());
-            margs.add("-f",getProject().getModuleRoot().child("pom.xml").getRemote());
+                margs.add("-Dmaven.repo.local="+getWorkspace().child(".repository").getRemote());
+            margs.add("-f",getModuleRoot().child("pom.xml").getRemote());
             margs.addTokenized(getProject().getGoals());
 
             Map<String,String> systemProps = new HashMap<String, String>(envVars);
@@ -493,18 +539,24 @@ public class MavenBuild extends AbstractBuild<MavenModule,MavenBuild> {
 
             boolean normalExit = false;
             try {
-                Result r = process.channel.call(new Builder(
+                Result r = process.call(new Builder(
                     listener,new ProxyImpl(),
-                    reporters.toArray(new MavenReporter[0]), margs.toList(), systemProps));
+                    reporters.toArray(new MavenReporter[reporters.size()]), margs.toList(), systemProps));
                 normalExit = true;
                 return r;
             } finally {
                 if(normalExit)  process.recycle();
                 else            process.discard();
-                for (int i = buildEnvironments.size() - 1; i >= 0; i--) {
-                    buildEnvironments.get(i).tearDown(MavenBuild.this, listener);
-                    buildEnvironments = null;
+
+                // tear down in reverse order
+                boolean failed=false;
+                for( int i=buildEnvironments.size()-1; i>=0; i-- ) {
+                    if (!buildEnvironments.get(i).tearDown(MavenBuild.this,listener)) {
+                        failed=true;
+                    }                    
                 }
+                // WARNING The return in the finally clause will trump any return before
+                if (failed) return Result.FAILURE;
             }
         }
 
@@ -513,113 +565,6 @@ public class MavenBuild extends AbstractBuild<MavenModule,MavenBuild> {
                 reporter.end(MavenBuild.this,launcher,listener);
         }
 
-        public void cleanUp(BuildListener listener) throws Exception {
-            if(getResult().isBetterOrEqualTo(Result.SUCCESS))
-                scheduleDownstreamBuilds(listener,new HashSet<AbstractProject>());
-        }
-    }
-
-    /**
-     * Schedules all the downstream builds.
-     *
-     * @param downstreams
-     *      List of downstream jobs that are already scheduled.
-     *      The method will add jobs that it triggered here,
-     *      and won't try to trigger jobs that are already in this list.
-     * @param listener
-     *      Where the progress reports go.
-     */
-    /*package*/ final void scheduleDownstreamBuilds(BuildListener listener, Set<AbstractProject> downstreams) {
-        // trigger dependency builds
-        DependencyGraph graph = Hudson.getInstance().getDependencyGraph();
-        for( AbstractProject<?,?> down : getParent().getDownstreamProjects()) {
-            if(downstreams.contains(down))
-                continue; // already triggered
-
-            if(debug)
-                listener.getLogger().println("Considering whether to trigger "+down+" or not");
-
-            if(graph.hasIndirectDependencies(getProject(),down)) {
-                // if there's a longer dependency path to this project,
-                // then scheduling the build now is going to be a waste,
-                // so don't do that.
-                // let the longer path eventually trigger this build
-                if(debug)
-                    listener.getLogger().println(" -> No, because there's a longer dependency path");
-                continue;
-            }
-
-            // if the downstream module depends on multiple modules,
-            // only trigger them when all the upstream dependencies are updated.
-            boolean trigger = true;
-
-            AbstractBuild<?,?> dlb = down.getLastBuild(); // can be null.
-            for (MavenModule up : Util.filter(down.getUpstreamProjects(),MavenModule.class)) {
-                MavenBuild ulb;
-                if(up==getProject()) {
-                    // the current build itself is not registered as lastSuccessfulBuild
-                    // at this point, so we have to take that into account. ugly.
-                    if(getResult()==null || !getResult().isWorseThan(Result.UNSTABLE))
-                        ulb = MavenBuild.this;
-                    else
-                        ulb = up.getLastSuccessfulBuild();
-                } else
-                    ulb = up.getLastSuccessfulBuild();
-                if(ulb==null) {
-                    // if no usable build is available from the upstream,
-                    // then we have to wait at least until this build is ready
-                    if(debug)
-                        listener.getLogger().println(" -> No, because another upstream "+up+" for "+down+" has no successful build");
-                    trigger = false;
-                    break;
-                }
-
-                // if no record of the relationship in the last build
-                // is available, we'll just have to assume that the condition
-                // for the new build is met, or else no build will be fired forever.
-                if(dlb==null)   continue;
-                int n = dlb.getUpstreamRelationship(up);
-                if(n==-1)   continue;
-
-                assert ulb.getNumber()>=n;
-
-                if(ulb.getNumber()==n) {
-                    // there's no new build of this upstream since the last build
-                    // of the downstream, and the upstream build is in progress.
-                    // The new downstream build should wait until this build is started
-                    AbstractProject bup = getBuildingUpstream(graph, up);
-                    if(bup!=null) {
-                        if(debug)
-                            listener.getLogger().println(" -> No, because another upstream "+bup+" for "+down+" is building");
-                        trigger = false;
-                        break;
-                    }
-                }
-            }
-
-            if(trigger) {
-                listener.getLogger().println(Messages.MavenBuild_Triggering(down.getName()));
-                downstreams.add(down);
-                down.scheduleBuild(new UpstreamCause(this));
-            }
-        }
-    }
-
-    /**
-     * Returns the project if any of the upstream project (or itself) is either
-     * building or is in the queue.
-     * <p>
-     * This means eventually there will be an automatic triggering of
-     * the given project (provided that all builds went smoothly.)
-     */
-    private AbstractProject getBuildingUpstream(DependencyGraph graph, AbstractProject project) {
-        Set<AbstractProject> tups = graph.getTransitiveUpstream(project);
-        tups.add(project);
-        for (AbstractProject tup : tups) {
-            if(tup!=getProject() && (tup.isBuilding() || tup.isInQueue()))
-                return tup;
-        }
-        return null;
     }
 
     private static final int MAX_PROCESS_CACHE = 5;
@@ -630,4 +575,9 @@ public class MavenBuild extends AbstractBuild<MavenModule,MavenBuild> {
      * Set true to produce debug output.
      */
     public static boolean debug = false;
+    
+    @Override
+    public MavenModule getParent() {// don't know why, but javac wants this
+        return super.getParent();
+    }
 }

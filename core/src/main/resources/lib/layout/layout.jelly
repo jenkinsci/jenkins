@@ -1,7 +1,8 @@
 <!--
 The MIT License
 
-Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, Daniel Dyer, Seiji Sogabe, Tom Huybrechts
+Copyright (c) 2004-2010, Sun Microsystems, Inc., Kohsuke Kawaguchi,
+Daniel Dyer, Seiji Sogabe, Tom Huybrechts
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -21,11 +22,11 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 -->
-
-<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout">
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:i="jelly:fmt">
   <st:documentation>
     Outer-most tag for a normal (non-AJAX) HTML rendering.
-    This is used with nested &lt;side-panel> and &lt;main-panel>
+    This is used with nested &lt;header>, &lt;side-panel>, and &lt;main-panel>
     to form Hudson's basic HTML layout.
 
     <st:attribute name="title" use="required">
@@ -52,8 +53,8 @@ THE SOFTWARE.
     </st:attribute>
   </st:documentation>
 <st:header name="Expires" value="0" />
-<!-- Use st:header here rather than st:contentType because Jetty 5.x appears to ignore the latter. -->
-<st:header name="Content-Type" value="text/html;charset=UTF-8" />
+<st:header name="X-Hudson-Theme" value="default" />
+<st:contentType value="text/html;charset=UTF-8" />
 <!-- The path starts with a "/" character but does not end with a "/" character. -->
 <j:set var="rootURL" value="${request.contextPath}" />
 <j:new var="h" className="hudson.Functions" /><!-- instead of JSP functions -->
@@ -80,7 +81,7 @@ THE SOFTWARE.
     <link rel="shortcut icon" href="${resURL}/favicon.ico" type="image/vnd.microsoft.icon" />
 
     <!-- are we running as an unit test? -->
-    <script>var isRunAsTest=${h.isUnitTest};</script>
+    <script>var isRunAsTest=${h.isUnitTest}; var rootURL="${rootURL}";</script>
 
     <script src="${resURL}/scripts/prototype.js" type="text/javascript"></script>
     <script src="${resURL}/scripts/behavior.js" type="text/javascript"></script>
@@ -95,19 +96,24 @@ THE SOFTWARE.
       <l:yui module="logger" />
     </j:if>
     <l:yui module="animation" />
+    <l:yui module="dragdrop" />
     <l:yui module="container" />
     <l:yui module="connection" />
     <l:yui module="autocomplete" />
     <l:yui module="menu" />
     <l:yui module="element" suffix="-beta" />
     <l:yui module="button" />
-    <l:yui module="dragdrop" />
     <!--l:yui module="editor" suffix="-beta" /-->
 
     <script src="${resURL}/scripts/hudson-behavior.js" type="text/javascript"></script>
+
+    <script>
+        crumb.init("${h.getCrumbRequestField()}", "${h.getCrumb(request)}");
+    </script>
     
     <link rel="stylesheet" href="${resURL}/scripts/yui/container/assets/container.css" type="text/css"/>
     <link rel="stylesheet" href="${resURL}/scripts/yui/assets/skins/sam/skin.css" type="text/css" />
+    <link rel="stylesheet" href="${resURL}/scripts/yui/container/assets/skins/sam/container.css" type="text/css"/>
     <link rel="stylesheet" href="${resURL}/scripts/yui/button/assets/skins/sam/button.css" type="text/css" />
     <link rel="stylesheet" href="${resURL}/scripts/yui/menu/assets/skins/sam/menu.css" type="text/css" />
     <!--link rel="stylesheet" href="${resURL}/scripts/yui/editor/assets/skins/sam/editor.css" type="text/css" /-->
@@ -155,8 +161,10 @@ THE SOFTWARE.
                   <j:when test="${!h.isAnonymous()}">
                     <span style="white-space:nowrap">
                       <a href="${rootURL}/user/${app.authentication.name}"><b>${app.authentication.name}</b></a>
-                      |
-                      <a href="${rootURL}/logout"><b>${%logout}</b></a>
+                      <j:if test="${app.securityRealm.canLogOut()}">
+                        |
+                        <a href="${rootURL}/logout"><b>${%logout}</b></a>
+                      </j:if>
                     </span>
                   </j:when>
                   <j:otherwise>
@@ -230,9 +238,11 @@ THE SOFTWARE.
     </table>
     <table width="100%">
       <tr><td id="footer">
-        <a href="http://hudson.dev.java.net/">
-          Hudson ver. ${h.version}
-        </a>
+        <span style="padding-right:2em; color:gray">
+          ${%Page generated}:
+          <i:formatDate value="${h.getCurrentTime()}" type="both" dateStyle="medium" timeStyle="medium"/>
+        </span>
+        <a href="http://hudson-ci.org/">Hudson ver. ${h.version}</a>
       </td></tr>
     </table>
     <!-- during the loading 'app' object is not Hudson, so it may not have update center -->

@@ -76,14 +76,12 @@ final class WarExploder {
         }
 
         for( ; d!=null; d=d.getParentFile()) {
-            if(new File(d,".hudson").exists())
-                break;
-        }
-        if(d!=null) {
-            File dir = new File(d,"war/target/hudson");
-            if(dir.exists()) {
-                System.out.println("Using hudson.war resources from "+dir);
-                return dir;
+            if(new File(d,".hudson").exists()) {
+                File dir = new File(d,"war/target/hudson");
+                if(dir.exists()) {
+                    System.out.println("Using hudson.war resources from "+dir);
+                    return dir;
+                }
             }
         }
 

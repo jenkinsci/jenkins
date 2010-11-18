@@ -44,10 +44,11 @@ import antlr.ANTLRException;
 public class TimerTrigger extends Trigger<BuildableItem> {
 
     @DataBoundConstructor
-    public TimerTrigger(String timer_spec) throws ANTLRException {
-        super(timer_spec);
+    public TimerTrigger(String spec) throws ANTLRException {
+        super(spec);
     }
 
+    @Override
     public void run() {
         job.scheduleBuild(0, new TimerTriggerCause());
     }
@@ -62,14 +63,15 @@ public class TimerTrigger extends Trigger<BuildableItem> {
             return Messages.TimerTrigger_DisplayName();
         }
 
-        public String getHelpFile() {
-            return "/help/project-config/timer.html";
+        // backward compatibility
+        public FormValidation doCheck(@QueryParameter String value) {
+            return doCheckSpec(value);
         }
-
+        
         /**
          * Performs syntax check.
          */
-        public FormValidation doCheck(@QueryParameter String value) {
+        public FormValidation doCheckSpec(@QueryParameter String value) {
             try {
                 String msg = CronTabList.create(fixNull(value)).checkSanity();
                 if(msg!=null)   return FormValidation.warning(msg);
@@ -84,6 +86,16 @@ public class TimerTrigger extends Trigger<BuildableItem> {
         @Override
         public String getShortDescription() {
             return Messages.TimerTrigger_TimerTriggerCause_ShortDescription();
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            return o instanceof TimerTriggerCause;
+        }
+
+        @Override
+        public int hashCode() {
+            return 5;
         }
     }
 }

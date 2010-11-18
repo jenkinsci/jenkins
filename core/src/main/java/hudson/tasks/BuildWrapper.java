@@ -1,7 +1,7 @@
 /*
  * The MIT License
  * 
- * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi
+ * Copyright (c) 2004-2010, Sun Microsystems, Inc., Kohsuke Kawaguchi, Yahoo! Inc.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,20 +26,16 @@ package hudson.tasks;
 import hudson.ExtensionPoint;
 import hudson.Launcher;
 import hudson.DescriptorExtensionList;
-import hudson.FileSystemProvisionerDescriptor;
 import hudson.LauncherDecorator;
-import hudson.model.AbstractBuild;
-import hudson.model.Build;
-import hudson.model.BuildListener;
-import hudson.model.Describable;
-import hudson.model.Project;
-import hudson.model.Action;
-import hudson.model.AbstractProject;
-import hudson.model.Hudson;
-import hudson.model.Descriptor;
+import hudson.model.*;
 import hudson.model.Run.RunnerAbortedException;
 
 import java.io.IOException;
+import java.io.OutputStream;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * Pluggability point for performing pre/post actions for the build process.
@@ -59,7 +55,7 @@ import java.io.IOException;
  *
  * @author Kohsuke Kawaguchi
  */
-public abstract class BuildWrapper implements ExtensionPoint, Describable<BuildWrapper> {
+public abstract class BuildWrapper extends AbstractDescribableImpl<BuildWrapper> implements ExtensionPoint {
     /**
      * Represents the environment set up by {@link BuildWrapper#setUp(Build,Launcher,BuildListener)}.
      *
@@ -75,7 +71,9 @@ public abstract class BuildWrapper implements ExtensionPoint, Describable<BuildW
          * This method is invoked even when the build failed, so that the
          * clean up operation can be performed regardless of the build result
          * (for example, you'll want to stop application server even if a build
-         * fails.)
+         * fails.)  {@link Build#getResult} in this case will return Result.FAILURE
+         * (since 1.339), and a null result indicates SUCCESS-so-far (post-build
+         * actions may still affect the final result).
          *
          * @param build
          *      The same {@link Build} object given to the set up method.
@@ -97,9 +95,10 @@ public abstract class BuildWrapper implements ExtensionPoint, Describable<BuildW
         }
 
         /**
-         * @deprecated
+         * @deprecated since 2007-10-28.
          *      Use {@link #tearDown(AbstractBuild, BuildListener)} instead.
          */
+        @Deprecated
         public boolean tearDown( Build build, BuildListener listener ) throws IOException, InterruptedException {
             return true;
         }
@@ -135,9 +134,10 @@ public abstract class BuildWrapper implements ExtensionPoint, Describable<BuildW
     }
 
     /**
-     * @deprecated
+     * @deprecated since 2007-10-28.
      *      Use {@link #setUp(AbstractBuild, Launcher, BuildListener)} instead.
      */
+    @Deprecated
     public Environment setUp( Build build, Launcher launcher, BuildListener listener ) throws IOException, InterruptedException {
         throw new UnsupportedOperationException(getClass()+" needs to implement the setUp method");
     }
@@ -151,7 +151,7 @@ public abstract class BuildWrapper implements ExtensionPoint, Describable<BuildW
      * such as the use of sudo/pfexec/chroot, or manipulating environment variables.
      *
      * <p>
-     * The default implementation is no-op, which just returns the {@code listener} parameter as-is.
+     * The default implementation is no-op, which just returns the {@code launcher} parameter as-is.
      *
      * @param build
      *      The build in progress for which this {@link BuildWrapper} is called. Never null.
@@ -176,6 +176,32 @@ public abstract class BuildWrapper implements ExtensionPoint, Describable<BuildW
     }
 
     /**
+     * Provides an opportunity for a {@link BuildWrapper} to decorate the {@link BuildListener} logger to be used by the build.
+     * 
+     * <p>
+     * This hook is called very early on in the build (even before {@link #setUp(AbstractBuild, Launcher, BuildListener)} is invoked.)
+     * 
+     * <p>
+     * The default implementation is no-op, which just returns the {@code logger} parameter as-is.
+     *
+     * @param build
+     *      The build in progress for which this {@link BuildWrapper} is called. Never null.
+     * @param logger
+     *      The default logger. Never null. This method is expected to wrap this logger.
+     *      This makes sure that when multiple {@link BuildWrapper}s attempt to decorate the same logger
+     *      it will sort of work.
+     * @return
+     *      Must not be null. If a fatal error happens, throw an exception.
+     * @throws RunnerAbortedException
+     *      If a fatal error is detected but the implementation handled it gracefully, throw this exception
+     *      to suppress stack trace.
+     * @since 1.374
+     */
+    public OutputStream decorateLogger(AbstractBuild build, OutputStream logger) throws IOException, InterruptedException, RunnerAbortedException {
+        return logger;
+    }
+
+    /**
      * {@link Action} to be displayed in the job page.
      *
      * @param job
@@ -183,22 +209,67 @@ public abstract class BuildWrapper implements ExtensionPoint, Describable<BuildW
      * @return
      *      null if there's no such action.
      * @since 1.226
+     * @deprecated
+     *      Use {@link #getProjectActions(AbstractProject)} instead.
      */
     public Action getProjectAction(AbstractProject job) {
         return null;
     }
 
-    public Descriptor<BuildWrapper> getDescriptor() {
-        return (Descriptor<BuildWrapper>) Hudson.getInstance().getDescriptor(getClass());
-
+    /**
+     * {@link Action}s to be displayed in the job page.
+     *
+     * @param job
+     *      This object owns the {@link BuildWrapper}. The returned action will be added to this object.
+     * @return
+     *      can be empty but never null
+     * @since 1.341
+     */
+    public Collection<? extends Action> getProjectActions(AbstractProject job) {
+        // delegate to getJobAction (singular) for backward compatible behavior
+        Action a = getProjectAction(job);
+        if (a==null)    return Collections.emptyList();
+        return Collections.singletonList(a);
     }
 
+    /**
+     * Called to define {@linkplain AbstractBuild#getBuildVariables()}.
+     *
+     * This provides an opportunity for a BuildWrapper to append any additional
+     * build variables defined for the current build.
+     * 
+     * @param build
+     *      The build in progress for which this {@link BuildWrapper} is called. Never null.
+     * @param variables
+     *      Contains existing build variables. Add additional build variables that you contribute
+     *      to this map.
+     */
+    public void makeBuildVariables(AbstractBuild build, Map<String,String> variables) {
+    	// noop
+    }
+
+    /**
+     * Called to define sensitive build variables. This provides an opportunity
+     * for a BuildWrapper to denote the names of variables that are sensitive in
+     * nature and should not be exposed in output.
+     *
+     * @param build
+     *      The build in progress for which this {@link BuildWrapper} is called. Never null.
+     * @param sensitiveVariables
+     *      Contains names of sensitive build variables. Names of sensitive variables
+     *      that were added with {@link #makeBuildVariables(hudson.model.AbstractBuild, java.util.Map)}
+     * @since 1.378
+     */
+    public void makeSensitiveBuildVariables(AbstractBuild build, Set<String> sensitiveVariables) {
+        // noop
+    }
+    
     /**
      * Returns all the registered {@link BuildWrapper} descriptors.
      */
     // for compatibility we can't use BuildWrapperDescriptor
     public static DescriptorExtensionList<BuildWrapper,Descriptor<BuildWrapper>> all() {
         // use getDescriptorList and not getExtensionList to pick up legacy instances
-        return Hudson.getInstance().getDescriptorList(BuildWrapper.class);
+        return Hudson.getInstance().<BuildWrapper,Descriptor<BuildWrapper>>getDescriptorList(BuildWrapper.class);
     }
 }

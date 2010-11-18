@@ -36,9 +36,8 @@ THE SOFTWARE.
                    checked="${!empty(up)}">
     <f:entry title="${%Projects names}"
              description="${%Multiple projects can be specified like 'abc, def'}">
-      <input class="setting-input validated" name="upstreamProjects"
-        checkUrl="'descriptorByName/BuildTrigger/check?value='+escape(this.value)"
-        type="text" value="${h.getProjectListString(up)}"/>
+      <f:textbox name="upstreamProjects" value="${h.getProjectListString(up)}"
+        checkUrl="'descriptorByName/BuildTrigger/check?value='+encodeURIComponent(this.value)"/>
     </f:entry>
   </f:optionalBlock>
 </j:jelly>

@@ -1,3 +1,26 @@
+/*
+ * The MIT License
+ *
+ * Copyright (c) 2004-2009, Sun Microsystems, Inc.
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ */
 package hudson.cli;
 
 import groovy.lang.GroovyShell;
@@ -33,7 +56,7 @@ public class GroovyCommand extends CLICommand implements Serializable {
         return "Executes the specified Groovy script";
     }
 
-    @Argument(metaVar="SCRIPT",usage="Script to be executed. File, URL or '-' to represent stdin.")
+    @Argument(metaVar="SCRIPT",usage="Script to be executed. File, URL or '=' to represent stdin.")
     public String script;
 
     /**
@@ -49,7 +72,7 @@ public class GroovyCommand extends CLICommand implements Serializable {
         Binding binding = new Binding();
         binding.setProperty("out",new PrintWriter(stdout,true));
         GroovyShell groovy = new GroovyShell(binding);
-        groovy.run(loadScript(),script,remaining.toArray(new String[remaining.size()]));
+        groovy.run(loadScript(),"RemoteClass",remaining.toArray(new String[remaining.size()]));
         return 0;
     }
 
@@ -58,10 +81,10 @@ public class GroovyCommand extends CLICommand implements Serializable {
      */
     private String loadScript() throws CmdLineException, IOException, InterruptedException {
         if(script==null)
-            throw new CmdLineException("No script is specified");
+            throw new CmdLineException(null, "No script is specified");
         return channel.call(new Callable<String,IOException>() {
             public String call() throws IOException {
-                if(script.equals("-"))
+                if(script.equals("="))
                     return IOUtils.toString(System.in);
 
                 File f = new File(script);

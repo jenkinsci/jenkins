@@ -1,7 +1,7 @@
 <!--
 The MIT License
 
-Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi
+Copyright (c) 2004-2010, Sun Microsystems, Inc., Kohsuke Kawaguchi, Alan Harder
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -22,14 +22,11 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 -->
 
-<!--
-  <%@attribute name="value" required="true" %>
--->
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler">
   <st:documentation>
     Used inside &lt;f:editableComboBox/> to specify one value of a combobox.
     Normally one would use multiple values.
     <st:attribute name="value" use="required" />
   </st:documentation>
-	values.push("${value.toString().replace('"','\"')}");
+  <div value="${value}"/>
 </j:jelly>

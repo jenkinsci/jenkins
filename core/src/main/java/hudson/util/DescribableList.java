@@ -43,7 +43,6 @@ import org.kohsuke.stapler.StaplerRequest;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -61,15 +60,12 @@ import java.util.Map;
  *
  * @author Kohsuke Kawaguchi
  */
-public class DescribableList<T extends Describable<T>, D extends Descriptor<T>> implements Iterable<T> {
-    private final CopyOnWriteList<T> data = new CopyOnWriteList<T>();
-    private Saveable owner;
-
+public class DescribableList<T extends Describable<T>, D extends Descriptor<T>> extends PersistedList<T> {
     protected DescribableList() {
     }
 
     /**
-     * @deprecated
+     * @deprecated since 2008-08-15.
      *      Use {@link #DescribableList(Saveable)} 
      */
     public DescribableList(Owner owner) {
@@ -80,21 +76,17 @@ public class DescribableList<T extends Describable<T>, D extends Descriptor<T>> 
         setOwner(owner);
     }
 
+    public DescribableList(Saveable owner, Collection<? extends T> initialList) {
+        super(initialList);
+        setOwner(owner);
+    }
+
     /**
-     * @deprecated
+     * @deprecated since 2008-08-15.
      *      Use {@link #setOwner(Saveable)}
      */
     public void setOwner(Owner owner) {
         this.owner = owner;
-    }
-
-    public void setOwner(Saveable owner) {
-        this.owner = owner;
-    }
-
-    public void add(T item) throws IOException {
-        data.add(item);
-        onModified();
     }
 
     /**
@@ -106,11 +98,6 @@ public class DescribableList<T extends Describable<T>, D extends Descriptor<T>> 
         onModified();
     }
 
-    public void replaceBy(Collection<? extends T> col) throws IOException {
-        data.replaceBy(col);
-        onModified();
-    }
-
     public T get(D descriptor) {
         for (T t : data)
             if(t.getDescriptor()==descriptor)
@@ -118,55 +105,8 @@ public class DescribableList<T extends Describable<T>, D extends Descriptor<T>> 
         return null;
     }
 
-    public <U extends T> U get(Class<U> type) {
-        for (T t : data)
-            if(type.isInstance(t))
-                return type.cast(t);
-        return null;
-    }
-
-    /**
-     * Gets all instances that matches the given type.
-     */
-    public <U extends T> List<U> getAll(Class<U> type) {
-        List<U> r = new ArrayList<U>();
-        for (T t : data)
-            if(type.isInstance(t))
-                r.add(type.cast(t));
-        return r;
-    }
-
     public boolean contains(D d) {
         return get(d)!=null;
-    }
-
-    public int size() {
-        return data.size();
-    }
-
-    /**
-     * Removes an instance by its type.
-     */
-    public void remove(Class<? extends T> type) throws IOException {
-        for (T t : data) {
-            if(t.getClass()==type) {
-                data.remove(t);
-                onModified();
-                return;
-            }
-        }
-    }
-
-    public void removeAll(Class<? extends T> type) throws IOException {
-        boolean modified=false;
-        for (T t : data) {
-            if(t.getClass()==type) {
-                data.remove(t);
-                modified=true;
-            }
-        }
-        if(modified)
-            onModified();
     }
 
     public void remove(D descriptor) throws IOException {
@@ -179,42 +119,12 @@ public class DescribableList<T extends Describable<T>, D extends Descriptor<T>> 
         }
     }
 
-    public void clear() {
-        data.clear();
-    }
-
-    public Iterator<T> iterator() {
-        return data.iterator();
-    }
-
     /**
-     * Called when a list is mutated.
+     * Creates a detached map from the current snapshot of the data, keyed from a descriptor to an instance.
      */
-    protected void onModified() throws IOException {
-        owner.save();
-    }
-
     @SuppressWarnings("unchecked")
     public Map<D,T> toMap() {
         return (Map)Descriptor.toMap(data);
-    }
-
-    /**
-     * Returns the snapshot view of instances as list.
-     */
-    public List<T> toList() {
-        return data.getView();
-    }
-
-    /**
-     * Gets all the {@link Describable}s in an array.
-     */
-    public T[] toArray(T[] array) {
-        return data.toArray(array);
-    }
-
-    public void addAllTo(Collection<? super T> dst) {
-        data.addAllTo(dst);
     }
 
     /**
@@ -227,7 +137,7 @@ public class DescribableList<T extends Describable<T>, D extends Descriptor<T>> 
      * @param json
      *      Structured form data that includes the data for nested descriptor list.
      */
-    public void rebuild(StaplerRequest req, JSONObject json, List<? extends Descriptor<T>> descriptors) throws FormException {
+    public void rebuild(StaplerRequest req, JSONObject json, List<? extends Descriptor<T>> descriptors) throws FormException, IOException {
         List<T> newList = new ArrayList<T>();
 
         for (Descriptor<T> d : descriptors) {
@@ -238,14 +148,14 @@ public class DescribableList<T extends Describable<T>, D extends Descriptor<T>> 
             }
         }
 
-        data.replaceBy(newList);
+        replaceBy(newList);
     }
 
     /**
      * @deprecated as of 1.271
      *      Use {@link #rebuild(StaplerRequest, JSONObject, List)} instead.
      */
-    public void rebuild(StaplerRequest req, JSONObject json, List<? extends Descriptor<T>> descriptors, String prefix) throws FormException {
+    public void rebuild(StaplerRequest req, JSONObject json, List<? extends Descriptor<T>> descriptors, String prefix) throws FormException, IOException {
         rebuild(req,json,descriptors);
     }
 
@@ -257,8 +167,8 @@ public class DescribableList<T extends Describable<T>, D extends Descriptor<T>> 
      * is allowed to create multiple instances of the same descriptor. Order is also
      * significant.
      */
-    public void rebuildHetero(StaplerRequest req, JSONObject formData, Collection<? extends Descriptor<T>> descriptors, String key) throws FormException {
-        data.replaceBy(Descriptor.newInstancesFromHeteroList(req,formData,key,descriptors));
+    public void rebuildHetero(StaplerRequest req, JSONObject formData, Collection<? extends Descriptor<T>> descriptors, String key) throws FormException, IOException {
+        replaceBy(Descriptor.newInstancesFromHeteroList(req,formData,key,descriptors));
     }
 
     /**
@@ -273,8 +183,22 @@ public class DescribableList<T extends Describable<T>, D extends Descriptor<T>> 
         }
     }
 
+/*
+    The following two seemingly pointless method definitions are necessary to produce
+    backward compatible binary signatures. Without this we only get
+    get(Ljava/lang/Class;)Ljava/lang/Object; from PersistedList where we need
+    get(Ljava/lang/Class;)Lhudson/model/Describable;
+ */
+    public <U extends T> U get(Class<U> type) {
+        return super.get(type);
+    }
+
+    public T[] toArray(T[] array) {
+        return super.toArray(array);
+    }
+
     /**
-     * @deprecated 
+     * @deprecated since 2008-08-15.
      *      Just implement {@link Saveable}.
      */
     public interface Owner extends Saveable {

@@ -32,33 +32,34 @@ import hudson.model.BuildListener;
 import hudson.model.Hudson;
 import hudson.model.Result;
 import hudson.remoting.Callable;
-import hudson.remoting.DelegatingCallable;
 import hudson.remoting.Channel;
+import hudson.remoting.DelegatingCallable;
 import hudson.remoting.Future;
 import hudson.util.IOException2;
+
+import java.io.IOException;
+import java.io.PrintStream;
+import java.lang.reflect.InvocationTargetException;
+import java.text.NumberFormat;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ExecutionException;
+
 import org.apache.maven.BuildFailureException;
-import org.apache.maven.reporting.MavenReport;
 import org.apache.maven.execution.MavenSession;
 import org.apache.maven.execution.ReactorManager;
 import org.apache.maven.lifecycle.LifecycleExecutionException;
 import org.apache.maven.lifecycle.LifecycleExecutorInterceptor;
 import org.apache.maven.lifecycle.LifecycleExecutorListener;
 import org.apache.maven.monitor.event.EventDispatcher;
-import org.apache.maven.plugin.MojoExecution;
 import org.apache.maven.plugin.Mojo;
+import org.apache.maven.plugin.MojoExecution;
 import org.apache.maven.project.MavenProject;
+import org.apache.maven.reporting.MavenReport;
 import org.codehaus.classworlds.NoSuchRealmException;
 import org.codehaus.plexus.component.configurator.expression.ExpressionEvaluator;
 import org.codehaus.plexus.configuration.PlexusConfiguration;
-
-import java.io.IOException;
-import java.io.PrintStream;
-import java.lang.reflect.InvocationTargetException;
-import java.util.List;
-import java.util.Map;
-import java.util.ArrayList;
-import java.util.concurrent.ExecutionException;
-import java.text.NumberFormat;
 
 /**
  * {@link Callable} that invokes Maven CLI (in process) and drives a build.
@@ -153,7 +154,12 @@ public abstract class MavenBuilder implements DelegatingCallable<Result,IOExcept
 
             markAsSuccess = false;
 
-            System.getProperties().putAll(systemProps);
+            // working around NPE when someone puts a null value into systemProps.
+            for (Map.Entry<String,String> e : systemProps.entrySet()) {
+                if (e.getValue()==null)
+                    throw new IllegalArgumentException("System property "+e.getKey()+" has a null value");
+                System.getProperties().put(e.getKey(), e.getValue());
+            }
 
             listener.getLogger().println(formatArgs(goals));
             int r = Main.launch(goals.toArray(new String[goals.size()]));
@@ -216,8 +222,15 @@ public abstract class MavenBuilder implements DelegatingCallable<Result,IOExcept
 
     private String formatArgs(List<String> args) {
         StringBuilder buf = new StringBuilder("Executing Maven: ");
-        for (String arg : args)
-            buf.append(' ').append(arg);
+        for (String arg : args) {
+            final String argPassword = "-Dpassword=" ;
+            String filteredArg = arg ;
+            // check if current arg is password arg. Then replace password by ***** 
+            if (arg.startsWith(argPassword)) {
+                filteredArg=argPassword+"*********";
+            }
+            buf.append(' ').append(filteredArg);
+        }
         return buf.toString();
     }
 

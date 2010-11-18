@@ -1,7 +1,8 @@
 /*
  * The MIT License
  * 
- * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, Yahoo! Inc., Erik Ramfelt, Tom Huybrechts
+ * Copyright (c) 2004-2010, Sun Microsystems, Inc., Kohsuke Kawaguchi,
+ * Yahoo! Inc., Erik Ramfelt, Tom Huybrechts
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,21 +24,30 @@
  */
 package hudson;
 
+import hudson.PluginManager.PluginInstanceStore;
 import hudson.model.Hudson;
 import hudson.model.UpdateCenter;
+import hudson.model.UpdateSite;
+import hudson.util.VersionNumber;
 
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.io.Closeable;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.jar.Manifest;
 import java.util.logging.Logger;
+import static java.util.logging.Level.WARNING;
 
 import org.apache.commons.logging.LogFactory;
-import org.kohsuke.stapler.StaplerRequest;
-import org.kohsuke.stapler.StaplerResponse;
+import org.kohsuke.stapler.HttpResponse;
+import org.kohsuke.stapler.HttpResponses;
+
+import java.util.Enumeration;
+import java.util.jar.JarFile;
 
 /**
  * Represents a Hudson plug-in and associated control information
@@ -61,18 +71,17 @@ import org.kohsuke.stapler.StaplerResponse;
  *
  * @author Kohsuke Kawaguchi
  */
-public final class PluginWrapper {
+public class PluginWrapper implements Comparable<PluginWrapper> {
+    /**
+     * {@link PluginManager} to which this belongs to.
+     */
+    public final PluginManager parent;
+
     /**
      * Plugin manifest.
      * Contains description of the plugin.
      */
     private final Manifest manifest;
-
-    /**
-     * Loaded plugin instance.
-     * Null if disabled.
-     */
-    private Plugin plugin;
 
     /**
      * {@link ClassLoader} for loading classes from this plugin.
@@ -94,6 +103,15 @@ public final class PluginWrapper {
     private final File disableFile;
 
     /**
+     * Used to control the unpacking of the bundled plugin.
+     * If a pin file exists, Hudson assumes that the user wants to pin down a particular version
+     * of a plugin, and will not try to overwrite it. Otherwise, it'll be overwritten
+     * by a bundled copy, to ensure consistency across upgrade/downgrade.
+     * @since 1.325
+     */
+    private final File pinFile;
+
+    /**
      * Short name of the plugin. The artifact Id of the plugin.
      * This is also used in the URL within Hudson, so it needs
      * to remain stable even when the *.hpi file name is changed
@@ -101,14 +119,19 @@ public final class PluginWrapper {
      */
     private final String shortName;
 
-	/**
+    /**
      * True if this plugin is activated for this session.
      * The snapshot of <tt>disableFile.exists()</tt> as of the start up.
      */
     private final boolean active;
 
     private final List<Dependency> dependencies;
-	private final List<Dependency> optionalDependencies;
+    private final List<Dependency> optionalDependencies;
+
+    /**
+     * Is this plugin bundled in hudson.war?
+     */
+    /*package*/ boolean isBundled;
 
     static final class Dependency {
         public final String shortName;
@@ -153,24 +176,36 @@ public final class PluginWrapper {
      *  @param dependencies a list of mandatory dependencies
      *  @param optionalDependencies a list of optional dependencies
      */
-	public PluginWrapper(File archive, Manifest manifest, URL baseResourceURL, 
+    public PluginWrapper(PluginManager parent, File archive, Manifest manifest, URL baseResourceURL, 
 			ClassLoader classLoader, File disableFile, 
 			List<Dependency> dependencies, List<Dependency> optionalDependencies) {
+        this.parent = parent;
 		this.manifest = manifest;
 		this.shortName = computeShortName(manifest, archive);
 		this.baseResourceURL = baseResourceURL;
 		this.classLoader = classLoader;
 		this.disableFile = disableFile;
+        this.pinFile = new File(archive.getPath() + ".pinned");
 		this.active = !disableFile.exists();
 		this.dependencies = dependencies;
 		this.optionalDependencies = optionalDependencies;
-	}
+    }
 
     /**
      * Returns the URL of the index page jelly script.
      */
     public URL getIndexPage() {
-        return classLoader.getResource("index.jelly");
+        // In the current impl dependencies are checked first, so the plugin itself
+        // will add the last entry in the getResources result.
+        URL idx = null;
+        try {
+            Enumeration<URL> en = classLoader.getResources("index.jelly");
+            while (en.hasMoreElements())
+                idx = en.nextElement();
+        } catch (IOException ignore) { }
+        // In case plugin has dependencies but is missing its own index.jelly,
+        // check that result has this plugin's artifactId in it:
+        return idx != null && idx.toString().contains(shortName) ? idx : null;
     }
 
     private String computeShortName(Manifest manifest, File archive) {
@@ -201,12 +236,12 @@ public final class PluginWrapper {
     }
 
     public List<Dependency> getDependencies() {
-		return dependencies;
-	}
+        return dependencies;
+    }
 
-	public List<Dependency> getOptionalDependencies() {
-		return optionalDependencies;
-	}
+    public List<Dependency> getOptionalDependencies() {
+        return optionalDependencies;
+    }
 
 
     /**
@@ -220,7 +255,7 @@ public final class PluginWrapper {
      * Gets the instance of {@link Plugin} contributed by this plugin.
      */
     public Plugin getPlugin() {
-        return plugin;
+        return Hudson.lookup(PluginInstanceStore.class).store.get(this);
     }
 
     /**
@@ -235,7 +270,7 @@ public final class PluginWrapper {
         if(url!=null)      return url;
 
         // fallback to update center metadata
-        UpdateCenter.Plugin ui = getInfo();
+        UpdateSite.Plugin ui = getInfo();
         if(ui!=null)    return ui.wiki;
 
         return null;
@@ -270,19 +305,47 @@ public final class PluginWrapper {
     }
 
     /**
+     * Returns the version number of this plugin
+     */
+    public VersionNumber getVersionNumber() {
+        return new VersionNumber(getVersion());
+    }
+
+    /**
+     * Returns true if the version of this plugin is older than the given version.
+     */
+    public boolean isOlderThan(VersionNumber v) {
+        try {
+            return getVersionNumber().compareTo(v) < 0;
+        } catch (IllegalArgumentException e) {
+            // if we can't figure out our current version, it probably means it's very old,
+            // since the version information is missing only from the very old plugins 
+            return true;
+        }
+    }
+
+    /**
      * Terminates the plugin.
      */
-    void stop() {
+    public void stop() {
         LOGGER.info("Stopping "+shortName);
         try {
-            plugin.stop();
+            getPlugin().stop();
         } catch(Throwable t) {
-            System.err.println("Failed to shut down "+shortName);
-            System.err.println(t);
+            LOGGER.log(WARNING, "Failed to shut down "+shortName, t);
         }
         // Work around a bug in commons-logging.
         // See http://www.szegedi.org/articles/memleak.html
         LogFactory.release(classLoader);
+    }
+
+    public void releaseClassLoader() {
+        if (classLoader instanceof Closeable)
+            try {
+                ((Closeable) classLoader).close();
+            } catch (IOException e) {
+                LOGGER.log(WARNING, "Failed to shut down classloader",e);
+            }
     }
 
     /**
@@ -309,6 +372,10 @@ public final class PluginWrapper {
         return active;
     }
 
+    public boolean isBundled() {
+        return isBundled;
+    }
+
     /**
      * If true, the plugin is going to be activated next time
      * Hudson runs.
@@ -318,37 +385,61 @@ public final class PluginWrapper {
     }
 
     public Manifest getManifest() {
-		return manifest;
-	}
+        return manifest;
+    }
 
-	public void setPlugin(Plugin plugin) {
-		this.plugin = plugin;
-		plugin.wrapper = this;
-	}
-	
-	public String getPluginClass() {
-		return manifest.getMainAttributes().getValue("Plugin-Class");		
-	}
+    public void setPlugin(Plugin plugin) {
+        Hudson.lookup(PluginInstanceStore.class).store.put(this,plugin);
+        plugin.wrapper = this;
+    }
+
+    public String getPluginClass() {
+        return manifest.getMainAttributes().getValue("Plugin-Class");
+    }
+
+    /**
+     * Makes sure that all the dependencies exist, and then accept optional dependencies
+     * as real dependencies.
+     *
+     * @throws IOException
+     *             thrown if one or several mandatory dependencies doesn't exists.
+     */
+    /*package*/ void resolvePluginDependencies() throws IOException {
+        List<String> missingDependencies = new ArrayList<String>();
+        // make sure dependencies exist
+        for (Dependency d : dependencies) {
+            if (parent.getPlugin(d.shortName) == null)
+                missingDependencies.add(d.toString());
+        }
+        if (!missingDependencies.isEmpty())
+            throw new IOException("Dependency "+Util.join(missingDependencies, ", ")+" doesn't exist");
+
+        // add the optional dependencies that exists
+        for (Dependency d : optionalDependencies) {
+            if (parent.getPlugin(d.shortName) != null)
+                dependencies.add(d);
+        }
+    }
 
     /**
      * If the plugin has {@link #getUpdateInfo() an update},
-     * returns the {@link UpdateCenter.Plugin} object.
+     * returns the {@link UpdateSite.Plugin} object.
      *
      * @return
      *      This method may return null &mdash; for example,
      *      the user may have installed a plugin locally developed.
      */
-    public UpdateCenter.Plugin getUpdateInfo() {
+    public UpdateSite.Plugin getUpdateInfo() {
         UpdateCenter uc = Hudson.getInstance().getUpdateCenter();
-        UpdateCenter.Plugin p = uc.getPlugin(getShortName());
+        UpdateSite.Plugin p = uc.getPlugin(getShortName());
         if(p!=null && p.isNewerThan(getVersion())) return p;
         return null;
     }
     
     /**
-     * returns the {@link UpdateCenter.Plugin} object, or null.
+     * returns the {@link UpdateSite.Plugin} object, or null.
      */
-    public UpdateCenter.Plugin getInfo() {
+    public UpdateSite.Plugin getInfo() {
         UpdateCenter uc = Hudson.getInstance().getUpdateCenter();
         return uc.getPlugin(getShortName());
     }
@@ -363,21 +454,76 @@ public final class PluginWrapper {
     public boolean hasUpdate() {
         return getUpdateInfo()!=null;
     }
+    
+    public boolean isPinned() {
+        return pinFile.exists();
+    }
 
+    /**
+     * Sort by short name.
+     */
+    public int compareTo(PluginWrapper pw) {
+        return shortName.compareToIgnoreCase(pw.shortName);
+    }
+
+    /**
+     * returns true if backup of previous version of plugin exists
+     */
+    public boolean isDowngradable() {
+        return getBackupFile().exists();
+    }
+
+    /**
+     * Where is the backup file?
+     */
+    public File getBackupFile() {
+        return new File(Hudson.getInstance().getRootDir(),"plugins/"+getShortName() + ".bak");
+    }
+
+    /**
+     * returns the version of the backed up plugin,
+     * or null if there's no back up.
+     */
+    public String getBackupVersion() {
+        if (getBackupFile().exists()) {
+            try {
+                JarFile backupPlugin = new JarFile(getBackupFile());
+                return backupPlugin.getManifest().getMainAttributes().getValue("Plugin-Version");
+            } catch (IOException e) {
+                LOGGER.log(WARNING, "Failed to get backup version ", e);
+                return null;
+            }
+        } else {
+            return null;
+        }
+    }
 //
 //
 // Action methods
 //
 //
-    public void doMakeEnabled(StaplerRequest req, StaplerResponse rsp) throws IOException {
-    Hudson.getInstance().checkPermission(Hudson.ADMINISTER);
+    public HttpResponse doMakeEnabled() throws IOException {
+        Hudson.getInstance().checkPermission(Hudson.ADMINISTER);
         enable();
-        rsp.setStatus(200);
+        return HttpResponses.ok();
     }
-    public void doMakeDisabled(StaplerRequest req, StaplerResponse rsp) throws IOException {
+
+    public HttpResponse doMakeDisabled() throws IOException {
         Hudson.getInstance().checkPermission(Hudson.ADMINISTER);
         disable();
-        rsp.setStatus(200);
+        return HttpResponses.ok();
+    }
+
+    public HttpResponse doPin() throws IOException {
+        Hudson.getInstance().checkPermission(Hudson.ADMINISTER);
+        new FileOutputStream(pinFile).close();
+        return HttpResponses.ok();
+    }
+
+    public HttpResponse doUnpin() throws IOException {
+        Hudson.getInstance().checkPermission(Hudson.ADMINISTER);
+        pinFile.delete();
+        return HttpResponses.ok();
     }
 
 

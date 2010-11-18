@@ -30,6 +30,9 @@ import hudson.util.DescribableList;
 import java.util.Collections;
 import java.util.List;
 import java.io.IOException;
+import java.lang.reflect.Array;
+import net.sf.json.JSONObject;
+import org.kohsuke.stapler.StaplerRequest;
 
 /**
  * {@link Descriptor} for {@link ToolInstallation}.
@@ -72,7 +75,7 @@ public abstract class ToolDescriptor<T extends ToolInstallation> extends Descrip
      * Optional list of installers to be configured by default for new tools of this type.
      * If there are popular versions of the tool available using generic installation techniques,
      * they can be returned here for the user's convenience.
-     * @since XXX
+     * @since 1.305
      */
     public List<? extends ToolInstaller> getDefaultInstallers() {
         return Collections.emptyList();
@@ -80,7 +83,7 @@ public abstract class ToolDescriptor<T extends ToolInstallation> extends Descrip
 
     /**
      * Default value for {@link ToolInstallation#getProperties()} used in the form binding.
-     * @since XXX
+     * @since 1.305
      */
     public DescribableList<ToolProperty<?>,ToolPropertyDescriptor> getDefaultProperties() throws IOException {
         DescribableList<ToolProperty<?>,ToolPropertyDescriptor> r
@@ -91,6 +94,13 @@ public abstract class ToolDescriptor<T extends ToolInstallation> extends Descrip
             r.add(new InstallSourceProperty(installers));
 
         return r;
+    }
+
+    @Override
+    @SuppressWarnings("unchecked") // cast to T[]
+    public boolean configure(StaplerRequest req, JSONObject json) throws FormException {
+        setInstallations(req.bindJSONToList(clazz, json.get("tool")).toArray((T[]) Array.newInstance(clazz, 0)));
+        return true;
     }
 
 }

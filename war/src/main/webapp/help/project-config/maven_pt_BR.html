@@ -1,0 +1,14 @@
+<div>
+  Para projetos que usam Maven como sistema de construção. Isto faz o Hudson 
+  invocar o Maven com os objetivos e opções informadas. Um código de saída 
+  diferente de zero vindo do Maven faz com que o Hudson marque a construção como uma falha.
+  Algumas versões do Maven têm um bug onde ele não retorna o código de saída corretamente.
+
+  <p>
+  O Hudson passa <a href="../../env-vars.html">
+  várias variáveis de ambiente</a> para o Maven, que você pode acessar do Maven como "${env.VARIABLENAME}".
+
+  <p>
+  As mesmas variáveis podem ser usadas como argumentos na linha de comando (como se você fosse invocar do shell).
+  Por exemplo, você pode especificar <tt>-DresultsFile=${WORKSPACE}/${BUILD_TAG}.resultados.txt</tt>
+</div>

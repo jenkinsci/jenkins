@@ -35,7 +35,7 @@ THE SOFTWARE.
         <p>
           ${%Connect slave to Hudson one of these ways:}
         </p>
-        <ol>
+        <ul>
           <li>
             <p>
               <a href="slave-agent.jnlp" id="jnlp-link">
@@ -56,7 +56,7 @@ THE SOFTWARE.
             </p>
             <pre>java -jar <a href="${rootURL}/jnlpJars/slave.jar">slave.jar</a> -jnlpUrl ${h.inferHudsonURL(request)}${it.url}slave-agent.jnlp</pre>
           </li>
-        </ol>
+        </ul>
         <!--
         <p>
           <a href="custom-jnlp" style="margin-left:3em">

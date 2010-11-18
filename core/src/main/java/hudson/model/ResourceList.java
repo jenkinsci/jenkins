@@ -135,6 +135,7 @@ public final class ResourceList {
         return null;
     }
 
+    @Override
     public String toString() {
         Map<Resource,String> m = new HashMap<Resource,String>();
         for (Resource r : all)

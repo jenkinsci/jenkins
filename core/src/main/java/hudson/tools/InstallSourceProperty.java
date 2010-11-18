@@ -36,6 +36,7 @@ import java.io.IOException;
  * {@link ToolProperty} that shows auto installation options.
  *
  * @author Kohsuke Kawaguchi
+ * @since 1.305
  */
 public class InstallSourceProperty extends ToolProperty<ToolInstallation> {
     // TODO: get the proper Saveable
@@ -44,7 +45,9 @@ public class InstallSourceProperty extends ToolProperty<ToolInstallation> {
 
     @DataBoundConstructor
     public InstallSourceProperty(List<? extends ToolInstaller> installers) throws IOException {
-        this.installers.replaceBy(installers);
+        if (installers != null) {
+            this.installers.replaceBy(installers);
+        }
     }
 
     @Override
@@ -59,9 +62,9 @@ public class InstallSourceProperty extends ToolProperty<ToolInstallation> {
     }
 
     @Extension
-   public static class DescriptorImpl extends ToolPropertyDescriptor {
+    public static class DescriptorImpl extends ToolPropertyDescriptor {
         public String getDisplayName() {
-            return "Install automatically";
+            return Messages.InstallSourceProperty_DescriptorImpl_displayName();
         }
     }
 }

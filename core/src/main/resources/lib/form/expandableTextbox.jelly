@@ -54,6 +54,7 @@ THE SOFTWARE.
       which is the recommended approach.
     </st:attribute>
   </st:documentation>
+  <f:prepareDatabinding />
   <j:set var="value" value="${attrs.value?:instance[attrs.field]}" />
   <j:choose>
     <j:when test="${h.isMultiline(value)}">
@@ -67,7 +68,7 @@ THE SOFTWARE.
           <td width="*">
             <j:set var="name" value="${attrs.name ?: '_.'+attrs.field}" />
             <input class="setting-input" type="text"
-                   name ="${name}" value="${value}"
+                   name="${name}" value="${value}"
                    id="textarea.${name}" />
           </td><td width="1">
             <input type="button" value="&#x25BC;" onclick="expandTextArea(this,'textarea.${name}')"

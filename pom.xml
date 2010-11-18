@@ -33,7 +33,7 @@ THE SOFTWARE.
   
   <groupId>org.jvnet.hudson.main</groupId>
   <artifactId>pom</artifactId>
-  <version>1.306-SNAPSHOT</version>
+  <version>1.386-SNAPSHOT</version>
   <packaging>pom</packaging>
   
   <name>Hudson main module</name>
@@ -43,6 +43,7 @@ THE SOFTWARE.
     <module>remoting</module>
     <module>core</module>
     <module>maven-plugin</module>
+    <module>ui-samples-plugin</module>
     <module>maven-agent</module>
     <module>maven-interceptor</module>
     <module>war</module>
@@ -50,6 +51,10 @@ THE SOFTWARE.
     <module>cli</module>
   </modules>
   
+  <ciManagement>
+      <system>Hudson</system>
+      <url>http://hudson.glassfish.org/job/hudson-trunk</url>
+  </ciManagement>
   <scm>
     <!-- release comes from the RC branch now -->
     <connection>scm:svn:https://guest@svn.dev.java.net/svn/hudson/branches/rc/</connection>
@@ -89,6 +94,55 @@ THE SOFTWARE.
           <artifactId>maven-antrun-extended-plugin</artifactId>
           <version>1.39</version>
         </plugin>
+        <plugin>
+          <artifactId>maven-javadoc-plugin</artifactId>
+          <version>2.6.1</version>
+        </plugin>
+        <plugin>
+          <artifactId>maven-jar-plugin</artifactId>
+          <version>2.3.1</version>
+        </plugin>
+        <plugin>
+          <artifactId>maven-surefire-plugin</artifactId>
+          <version>2.5</version>
+        </plugin>
+        <plugin>
+          <artifactId>maven-dependency-plugin</artifactId>
+          <version>2.1</version>
+        </plugin>
+        <plugin>
+          <artifactId>maven-assembly-plugin</artifactId>
+          <version>2.2-beta-5</version>
+        </plugin>
+      <plugin>
+        <artifactId>maven-resources-plugin</artifactId>
+        <version>2.4.3</version>
+      </plugin>
+        <plugin>
+          <!--
+            Both test harness and core uses stapler as an extension,
+            and apparently without having extension preloaded at the parent, the main artifact of the 'test' module
+            ends up installed with 'stapler-jar' extension (which normally is an indication that the ArtifactTypeHandler
+            defined in this extension is not getting picked up.)
+
+            To avoid this problem, I'm defining an extension here. Not sure if the nested <dependencies> is necessary.
+            It's also possible that I misdiagnosed the problem and the root cause is something entirely different.
+
+            To test if you can remove this work around, do a rebuild from main and see if the test harness
+            is installed with the right extension into the local repository.
+          -->
+          <groupId>org.kohsuke.stapler</groupId>
+          <artifactId>maven-stapler-plugin</artifactId>
+          <version>1.15</version>
+          <extensions>true</extensions>
+          <dependencies>
+            <dependency>
+              <groupId>org.jvnet.maven-jellydoc-plugin</groupId>
+              <artifactId>maven-jellydoc-plugin</artifactId>
+              <version>1.4</version>
+            </dependency>
+          </dependencies>
+        </plugin>
       </plugins>
     </pluginManagement>
     
@@ -98,27 +152,14 @@ THE SOFTWARE.
         <version>2.0-beta-9</version>
         <configuration>
           <!-- enable release profile during the release, create IPS package, and sign bits. -->
-          <prepareVerifyArgs>-P release,ips,sign</prepareVerifyArgs>
-          <!--
-            also run assembly during the release.
-            http://www.nabble.com/Release-Plugin%3A-Include-assemblies-for-deploying-tf2642295s177.html#a7377938
-           -->
-          <goals>-DskipTests install javadoc:javadoc animal-sniffer:check assembly:attached deploy</goals>
+          <prepareVerifyArgs>-P release,sign</prepareVerifyArgs>
+          <goals>-DskipTests javadoc:javadoc animal-sniffer:check deploy javadoc:aggregate</goals>
           <remoteTagging>true</remoteTagging><!-- work around http://jira.codehaus.org/browse/SCM-406 -->
         </configuration>
       </plugin>
       <plugin>
-        <artifactId>maven-assembly-plugin</artifactId>
-        <inherited>false</inherited>
-        <configuration>
-          <finalName>hudson-${version}</finalName>
-          <descriptors>
-            <descriptor>assembly-src.xml</descriptor>
-          </descriptors>
-        </configuration>
-      </plugin>
-      <plugin>
         <artifactId>maven-remote-resources-plugin</artifactId>
+        <version>1.0</version>
         <executions>
           <execution>
             <goals>
@@ -146,9 +187,10 @@ THE SOFTWARE.
         </configuration>
       </plugin>
 
-      <plugin><!-- we specify this in the parent POM, so this is redundant, but otherwise IntelliJ is unhappy -->
+      <plugin>
         <artifactId>maven-compiler-plugin</artifactId>
-        <configuration>
+        <version>2.3.1</version>
+        <configuration><!-- we specify this in the parent POM, so this is redundant, but otherwise IntelliJ is unhappy -->
           <source>1.5</source>
           <target>1.5</target>
         </configuration>
@@ -171,6 +213,16 @@ THE SOFTWARE.
             </configuration>
           </execution>
         </executions>
+      </plugin>
+
+      <plugin>
+        <!--
+          Since some developers try to run hudson-dev:run from main, define it here so that at least the plugin resolves.
+          This enables us to report a better error message.
+        -->
+        <groupId>org.jvnet.hudson.tools</groupId>
+        <artifactId>maven-hudson-dev-plugin</artifactId>
+        <version>6.1.7</version>
       </plugin>
 
       <!--<plugin>
@@ -200,9 +252,45 @@ THE SOFTWARE.
   <properties>
     <maven.version>2.0.9</maven.version>
     <maven.embedder.version>2.0.4</maven.embedder.version>
+    <!-- *.html files are in UTF-8, and *.properties are in iso-8859-1, so this configuration is acturally incorrect,
+    but this suppresses a warning from Maven, and as long as we don't do filtering we should be OK. -->
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
   </properties>
 
   <profiles>
+    <profile>
+      <id>metrics</id>
+      <reporting>
+        <plugins>
+          <plugin>
+            <groupId>org.codehaus.mojo</groupId>
+            <artifactId>findbugs-maven-plugin</artifactId>
+            <version>2.4</version>
+            <configuration>
+              <threshold>High</threshold>
+            </configuration>
+          </plugin>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-pmd-plugin</artifactId>
+            <version>2.5</version>
+            <configuration>
+              <!--rulesets>
+                  <ruleset>ruleset.xml</ruleset>
+                  </rulesets-->
+              <targetJdk>1.5</targetJdk>
+            </configuration>
+          </plugin>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-checkstyle-plugin</artifactId>
+            <version>2.5</version>
+            <configuration>
+            </configuration>
+          </plugin>
+        </plugins>
+      </reporting>
+    </profile>
     <profile>
       <id>debug</id>
       <activation>
@@ -213,6 +301,52 @@ THE SOFTWARE.
         <hudson.sign.keystore>../dummy.keystore</hudson.sign.keystore>
         <hudson.sign.storepass>hudson</hudson.sign.storepass>
       </properties>
+    </profile>
+    <profile>
+      <id>sorcerer</id>
+      <reporting>
+        <plugins>
+          <plugin>
+            <groupId>org.jvnet.sorcerer</groupId>
+            <artifactId>maven-sorcerer-plugin</artifactId>
+            <version>0.8</version>
+          </plugin>
+        </plugins>
+      </reporting>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.jvnet.sorcerer</groupId>
+            <artifactId>maven-sorcerer-plugin</artifactId>
+            <version>0.8</version>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+    <profile>
+      <id>release</id>
+      <build>
+        <plugins>
+          <plugin>
+            <artifactId>maven-assembly-plugin</artifactId>
+            <inherited>false</inherited>
+            <executions>
+              <execution>
+                <goals>
+                  <goal>attached</goal>
+                </goals>
+                <phase>package</phase>
+                <configuration>
+                  <finalName>hudson-${project.version}</finalName>
+                  <descriptors>
+                    <descriptor>assembly-src.xml</descriptor>
+                  </descriptors>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
     </profile>
   </profiles>
   
@@ -253,7 +387,7 @@ THE SOFTWARE.
   <distributionManagement>
     <site>
       <id>hudson-www</id>
-      <url>java-net:/hudson/trunk/www/maven-site/</url>
+      <url>scp://hudson-labs.org/home/kohsuke/www/hudson-labs.org/maven-site/</url>
     </site>
   </distributionManagement>
 </project>

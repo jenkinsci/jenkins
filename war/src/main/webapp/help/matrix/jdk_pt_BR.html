@@ -1,0 +1,12 @@
+<div>
+  Especifica a(s) JDK(s) com as quais as construções são executadas. Se nenhuma for selecionada,
+  a JDK padrão é usada (sem <tt>JAVA_HOME</tt> explícito, e o comando <tt>java</tt>
+  é assumido que está no <tt>PATH</tt>.) Se múltiploas JDKs forem selecionadas,
+  a matriz de configuração incluirá todos as JDKs especificadas.
+  <br>
+  Selecionar valores múltiplos é tipicamente útil quando a tarefa for executar teste,
+  e você precisar executar testes em múltiplas versões diferentes de JDKs.
+  <br>
+  Durante uma construção, o valor de JDK selecionado para a execução está disponível como o eixo "jdK".
+  Veja a ajuda de "eixos" abaixo para mais informações sobre como acessar o valor do eixo.
+</div>

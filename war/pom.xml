@@ -1,7 +1,7 @@
 <!--
 The MIT License
 
-Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, Stephen Connolly, Tom Huybrechts
+Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, Stephen Connolly, Tom Huybrechts, Yahoo! Inc.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -27,7 +27,7 @@ THE SOFTWARE.
   <parent>
     <groupId>org.jvnet.hudson.main</groupId>
     <artifactId>pom</artifactId>
-    <version>1.306-SNAPSHOT</version>
+    <version>1.386-SNAPSHOT</version>
     <relativePath>../pom.xml</relativePath>
   </parent>
   
@@ -40,23 +40,16 @@ THE SOFTWARE.
   </description>
   
   <build>
-    <directory>target</directory>
     <finalName>hudson</finalName>
-    
     <plugins>
       <plugin>
         <artifactId>maven-war-plugin</artifactId>
-        <version>2.0</version>
+        <version>2.1-beta-1</version>
         <configuration>
+          <filteringDeploymentDescriptors>true</filteringDeploymentDescriptors>
           <webResources>
             <resource>
-              <directory>${basedir}/resources</directory>
-              <!--excludes> not much size improvements
-                <exclude>**/*-debug.js</exclude>
-              </excludes-->
-            </resource>
-            <resource>
-              <directory>${basedir}/target/generated-resources</directory>
+              <directory>${project.build.directory}/generated-resources</directory>
             </resource>
           </webResources>
           <!-- for putting Main-Class into war -->
@@ -64,8 +57,27 @@ THE SOFTWARE.
             <manifest>
               <mainClass>Main</mainClass>
             </manifest>
+            <manifestEntries>
+              <Implementation-Version>${project.version}</Implementation-Version>
+              <Hudson-Version>${project.version}</Hudson-Version>
+            </manifestEntries>
           </archive>
+          <!--outputFileNameMapping>@{artifactId}@.@{extension}@</outputFileNameMapping-->
         </configuration>
+      </plugin>
+      <plugin>
+        <artifactId>maven-dependency-plugin</artifactId>
+        <executions>
+          <execution>
+            <phase>generate-resources</phase>
+            <goals>
+              <goal>list</goal>
+            </goals>
+            <configuration>
+              <outputFile>${basedir}/target/classes/dependencies.txt</outputFile>
+            </configuration>
+          </execution>
+        </executions>
       </plugin>
       <plugin>
         <groupId>org.jvnet.maven-antrun-extended-plugin</groupId>
@@ -96,7 +108,7 @@ THE SOFTWARE.
                 <mkdir dir="target/generated-resources" />
 
                 <!-- put executable war header -->
-                <resolveArtifact groupId="org.jvnet.hudson" artifactId="executable-war" version="1.10" type="jar" property="executable-war.jar" />
+                <resolveArtifact groupId="org.jvnet.hudson" artifactId="executable-war" version="1.17" type="jar" property="executable-war.jar" />
                 <unjar src="${executable-war.jar}" dest="target/generated-resources">
                   <patternset>
                     <include name="**/*.class" />
@@ -107,11 +119,13 @@ THE SOFTWARE.
                 <resolveArtifact artifactId="remoting" tofile="${basedir}/target/generated-resources/WEB-INF/remoting.jar" />
                 <resolveArtifact artifactId="remoting" tofile="${basedir}/target/generated-resources/WEB-INF/slave.jar" />
                 <resolveArtifact groupId="${project.groupId}" artifactId="cli" classifier="jar-with-dependencies" version="${project.version}" type="jar" tofile="${basedir}/target/generated-resources/WEB-INF/hudson-cli.jar" />
-                <resolveArtifact groupId="org.jvnet.hudson.winstone" artifactId="winstone" version="0.9.10-hudson-9" type="jar" tofile="${basedir}/target/generated-resources/winstone.jar" />
+                <resolveArtifact groupId="org.jvnet.hudson.winstone" artifactId="winstone" version="0.9.10-hudson-24" type="jar" tofile="${basedir}/target/generated-resources/winstone.jar" />
 
                 <!-- bundled plugins -->
-                <resolveArtifact groupId="${project.groupId}" artifactId="maven-plugin" version="${project.version}" type="hpi" tofile="${basedir}/target/generated-resources/WEB-INF/plugins/maven-plugin.hpi" />
-                <resolveArtifact groupId="org.jvnet.hudson.plugins" artifactId="ssh-slaves" version="0.5.2" type="hpi" tofile="${basedir}/target/generated-resources/WEB-INF/plugins/ssh-slaves.hpi" />
+                <resolveArtifact type="hpi" groupId="${project.groupId}" artifactId="maven-plugin" version="${project.version}" tofile="${basedir}/target/generated-resources/WEB-INF/plugins/maven-plugin.hpi" />
+                <resolveArtifact type="hpi" groupId="org.jvnet.hudson.plugins" artifactId="ssh-slaves" version="0.14" tofile="${basedir}/target/generated-resources/WEB-INF/plugins/ssh-slaves.hpi" />
+                <resolveArtifact type="hpi" groupId="org.jvnet.hudson.plugins" artifactId="subversion" version="1.20" tofile="${basedir}/target/generated-resources/WEB-INF/plugins/subversion.hpi" />
+                <resolveArtifact type="hpi" groupId="org.jvnet.hudson.plugins" artifactId="cvs" version="1.2" tofile="${basedir}/target/generated-resources/WEB-INF/plugins/cvs.hpi" />
               </tasks>
             </configuration>
           </execution>
@@ -124,6 +138,11 @@ THE SOFTWARE.
         <version>6.1.7</version>
         <configuration>
           <contextPath>${contextPath}</contextPath>
+          <connectors>
+            <connector implementation="org.mortbay.jetty.nio.SelectChannelConnector">
+                <port>${port}</port>
+            </connector>
+          </connectors>
           <!--
             read directly from core module's output directory,
             so that changes are picked up right away without running mvn.
@@ -136,7 +155,6 @@ THE SOFTWARE.
             Reload webapp when you hit ENTER. (See JETTY-282 for more)
           -->
           <consoleForceReload>true</consoleForceReload>
-          <webAppSourceDirectory>${basedir}/resources</webAppSourceDirectory>
           <userRealms>
             <userRealm implementation="org.mortbay.jetty.security.HashUserRealm">
               <name>default</name>
@@ -166,12 +184,28 @@ THE SOFTWARE.
             <systemProperty>
               <!-- load view resources from the source directly, again for real time change -->
               <name>stapler.resourcePath</name>
-              <value>../core/src/main/resources</value>
+              <value>
+                  ../core/src/main/resources;
+                  ../ui-samples-plugin/src/main/resources;
+                  ../maven-plugin/src/main/resources
+              </value>
             </systemProperty>
             <systemProperty>
-              <!-- enable the maven plugin by default -->
+              <!-- enable the plugins in main by default -->
               <name>hudson.bundled.plugins</name>
-              <value>${basedir}/../maven-plugin/target/test-classes/the.hpl</value>
+              <value>
+                  ${basedir}/../maven-plugin/target/test-classes/the.hpl,
+                  ${basedir}/../ui-samples-plugin/target/test-classes/the.hpl
+              </value>
+            </systemProperty>
+            <systemProperty>
+              <!-- stat collection pointless -->
+              <name>hudson.model.UsageStatistics.disabled</name>
+              <value>true</value>
+            </systemProperty>
+            <systemProperty>
+              <name>hudson.Main.development</name>
+              <value>true</value>
             </systemProperty>
           </systemProperties>
         </configuration>
@@ -211,18 +245,8 @@ THE SOFTWARE.
   <properties>
     <HUDSON_HOME>${basedir}/work</HUDSON_HOME>
     <contextPath>/</contextPath><!-- context path during test -->
+    <port>8080</port><!-- HTTP listener port -->
   </properties>
-
-  <pluginRepositories>
-    <pluginRepository>
-      <id>java.net2</id>
-      <url>http://download.java.net/maven/2</url>
-      <releases>
-        <enabled>true</enabled>
-        <updatePolicy>never</updatePolicy>
-      </releases>
-    </pluginRepository>
-  </pluginRepositories>
 
   <profiles>
     <profile>
@@ -242,7 +266,9 @@ THE SOFTWARE.
               </execution>
             </executions>
             <configuration>
+              <python>python2.5</python>
               <proto>../ips/proto.py</proto>
+              <attach>false</attach>
             </configuration>
           </plugin>
         </plugins>

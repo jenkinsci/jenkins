@@ -29,7 +29,8 @@ import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.StaplerRequest;
 import hudson.Extension;
 
-public class RunParameterDefinition extends ParameterDefinition {
+
+public class RunParameterDefinition extends SimpleParameterDefinition {
 
     private final String projectName;
 
@@ -67,7 +68,12 @@ public class RunParameterDefinition extends ParameterDefinition {
 
     @Override
     public ParameterValue getDefaultParameterValue() {
-        return new RunParameterValue(getName(), getProject().getLastBuild().getExternalizableId(), getDescription());
+        Run<?,?> lastBuild = getProject().getLastBuild();
+        if (lastBuild != null) {
+        	return createValue(lastBuild.getExternalizableId());
+        } else {
+        	return null;
+        }
     }
 
     @Override
@@ -77,17 +83,8 @@ public class RunParameterDefinition extends ParameterDefinition {
         return value;
     }
 
-	@Override
-	public ParameterValue createValue(StaplerRequest req) {
-        String[] value = req.getParameterValues(getName());
-        if (value == null) {
-        	return getDefaultParameterValue();
-        } else if (value.length != 1) {
-        	throw new IllegalArgumentException("Illegal number of parameter values for " + getName() + ": " + value.length);
-        } else {
-            return new RunParameterValue(getName(), value[0], getDescription());
-        }
-
-	}
+    public RunParameterValue createValue(String value) {
+        return new RunParameterValue(getName(), value, getDescription());
+    }
 
 }

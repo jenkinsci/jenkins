@@ -1,8 +1,9 @@
 /*
  * The MIT License
  * 
- * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, Erik Ramfelt, Seiji Sogabe, Martin Eigenbrodt
- * 
+ * Copyright (c) 2004-2010, Sun Microsystems, Inc., Kohsuke Kawaguchi,
+ * Erik Ramfelt, Seiji Sogabe, Martin Eigenbrodt, Alan Harder
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
@@ -32,7 +33,9 @@ import hudson.views.LastDurationColumn;
 import hudson.views.LastFailureColumn;
 import hudson.views.LastSuccessColumn;
 import hudson.views.ListViewColumn;
+import hudson.views.ListViewColumnDescriptor;
 import hudson.views.StatusColumn;
+import hudson.views.ViewJobFilter;
 import hudson.views.WeatherColumn;
 import hudson.model.Descriptor.FormException;
 import hudson.util.CaseInsensitiveComparator;
@@ -46,11 +49,11 @@ import org.kohsuke.stapler.QueryParameter;
 
 import javax.servlet.ServletException;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.List;
 import java.util.TreeSet;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.SortedSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -62,25 +65,16 @@ import java.util.regex.PatternSyntaxException;
  *
  * @author Kohsuke Kawaguchi
  */
-public class ListView extends View {
+public class ListView extends View implements Saveable {
 
     /**
      * List of job names. This is what gets serialized.
      */
     /*package*/ final SortedSet<String> jobNames = new TreeSet<String>(CaseInsensitiveComparator.INSTANCE);
+    
+    private DescribableList<ViewJobFilter, Descriptor<ViewJobFilter>> jobFilters;
 
     private DescribableList<ListViewColumn, Descriptor<ListViewColumn>> columns;
-
-    // First add all the known instances in the correct order:
-    private static final Descriptor [] defaultColumnDescriptors  =  {
-        StatusColumn.DESCRIPTOR,
-        WeatherColumn.DESCRIPTOR,
-        JobColumn.DESCRIPTOR,
-        LastSuccessColumn.DESCRIPTOR,
-        LastFailureColumn.DESCRIPTOR,
-        LastDurationColumn.DESCRIPTOR,
-        BuildButtonColumn.DESCRIPTOR
-    };
 
     /**
      * Include regex string.
@@ -92,16 +86,36 @@ public class ListView extends View {
      */
     private transient Pattern includePattern;
 
+    /**
+     * Filter by enabled/disabled status of jobs.
+     * Null for no filter, true for enabled-only, false for disabled-only.
+     */
+    private Boolean statusFilter;
+
     @DataBoundConstructor
     public ListView(String name) {
         super(name);
         initColumns();
+        initJobFilters();
+    }
+
+    public ListView(String name, ViewGroup owner) {
+        this(name);
+        this.owner = owner;
+    }
+
+    public void save() throws IOException {
+        // persistence is a part of the owner.
+        // due to the initialization timing issue, it can be null when this method is called.
+        if (owner!=null)
+            owner.save();
     }
 
     private Object readResolve() {
         if(includeRegex!=null)
             includePattern = Pattern.compile(includeRegex);
         initColumns();
+        initJobFilters();
         return this;
     }
 
@@ -110,42 +124,46 @@ public class ListView extends View {
             // already persisted
             return;
         }
+
         // OK, set up default list of columns:
         // create all instances
         ArrayList<ListViewColumn> r = new ArrayList<ListViewColumn>();
         DescriptorExtensionList<ListViewColumn, Descriptor<ListViewColumn>> all = ListViewColumn.all();
-        ArrayList<Descriptor<ListViewColumn>> left = new ArrayList<Descriptor<ListViewColumn>>();
-        left.addAll(all);
-        for (Descriptor d: defaultColumnDescriptors) {
-            Descriptor<ListViewColumn> des = all.find(d.getClass().getName());
+        ArrayList<Descriptor<ListViewColumn>> left = new ArrayList<Descriptor<ListViewColumn>>(all);
+
+        for (Class<? extends ListViewColumn> d: DEFAULT_COLUMNS) {
+            Descriptor<ListViewColumn> des = all.find(d);
             if (des  != null) {
                 try {
-                    r.add (des.newInstance(null, null));
-                   left.remove(des);
+                    r.add(des.newInstance(null, null));
+                    left.remove(des);
                 } catch (FormException e) {
-                    // so far impossible. TODO: report
+                    LOGGER.log(Level.WARNING, "Failed to instantiate "+des.clazz,e);
                 }
-                
             }
         }
         for (Descriptor<ListViewColumn> d : left)
             try {
-                r.add(d.newInstance(null,null));
+                if (d instanceof ListViewColumnDescriptor) {
+                    ListViewColumnDescriptor ld = (ListViewColumnDescriptor) d;
+                    if (!ld.shownByDefault())       continue;   // skip this
+                }
+                ListViewColumn lvc = d.newInstance(null, null);
+                if (!lvc.shownByDefault())      continue; // skip this
+
+                r.add(lvc);
             } catch (FormException e) {
-                // so far impossible. TODO: report
+                LOGGER.log(Level.WARNING, "Failed to instantiate "+d.clazz,e);
             }
-        Iterator<ListViewColumn> filter = r.iterator();
-        while (filter.hasNext()) {
-            if (!filter.next().shownByDefault()) {
-                filter.remove();
-            }
+
+        columns = new DescribableList<ListViewColumn, Descriptor<ListViewColumn>>(this,r);
+    }
+    protected void initJobFilters() {
+        if (jobFilters != null) {
+            return;
         }
-        columns = new DescribableList<ListViewColumn, Descriptor<ListViewColumn>>(Saveable.NOOP);
-        try {
-            columns.replaceBy(r);
-        } catch (IOException ex) {
-            Logger.getLogger(ListView.class.getName()).log(Level.SEVERE, null, ex);
-        }
+        ArrayList<ViewJobFilter> r = new ArrayList<ViewJobFilter>();
+        jobFilters = new DescribableList<ViewJobFilter, Descriptor<ViewJobFilter>>(this,r);
     }
 
     /**
@@ -157,28 +175,20 @@ public class ListView extends View {
     public List<Action> getActions() {
         return Hudson.getInstance().getActions();
     }
-
+    
+    /**
+     * Used to determine if we want to display the Add button.
+     */
+    public boolean hasJobFilterExtensions() {
+    	return !ViewJobFilter.all().isEmpty();
+    }
+    public Iterable<ViewJobFilter> getJobFilters() {
+    	return jobFilters;
+    }
     public Iterable<ListViewColumn> getColumns() {
         return columns;
     }
     
-    public static List<ListViewColumn> getDefaultColumns() {
-        ArrayList<ListViewColumn> r = new ArrayList<ListViewColumn>();
-        DescriptorExtensionList<ListViewColumn, Descriptor<ListViewColumn>> all = ListViewColumn.all();
-        for (Descriptor d: defaultColumnDescriptors) {
-            Descriptor<ListViewColumn> des = all.find(d.getClass().getName());
-            if (des  != null) {
-                try {
-                    r.add (des.newInstance(null, null));
-                } catch (FormException e) {
-                    // so far impossible. TODO: report
-                }
-                
-            }
-        }
-        return Collections.unmodifiableList(r);
-    }
-
     /**
      * Returns a read-only view of all {@link Job}s in this view.
      *
@@ -201,9 +211,19 @@ public class ListView extends View {
         List<TopLevelItem> items = new ArrayList<TopLevelItem>(names.size());
         for (String n : names) {
             TopLevelItem item = Hudson.getInstance().getItem(n);
-            if(item!=null)
+            // Add if no status filter or filter matches enabled/disabled status:
+            if(item!=null && (statusFilter == null || !(item instanceof AbstractProject)
+                              || ((AbstractProject)item).isDisabled() ^ statusFilter))
                 items.add(item);
         }
+
+        // check the filters
+        Iterable<ViewJobFilter> jobFilters = getJobFilters();
+        List<TopLevelItem> allItems = Hudson.getInstance().getItems();
+    	for (ViewJobFilter jobFilter: jobFilters) {
+    		items = jobFilter.filter(items, allItems, this);
+    	}
+        
         return items;
     }
 
@@ -213,6 +233,14 @@ public class ListView extends View {
 
     public String getIncludeRegex() {
         return includeRegex;
+    }
+
+    /**
+     * Filter by enabled/disabled status of jobs.
+     * Null for no filter, true for enabled-only, false for disabled-only.
+     */
+    public Boolean getStatusFilter() {
+        return statusFilter;
     }
 
     public Item doCreateItem(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
@@ -236,7 +264,7 @@ public class ListView extends View {
      * Load view-specific properties here.
      */
     @Override
-    protected void submit(StaplerRequest req) throws ServletException, FormException {
+    protected void submit(StaplerRequest req) throws ServletException, FormException, IOException {
         jobNames.clear();
         for (TopLevelItem item : Hudson.getInstance().getItems()) {
             if(req.getParameter(item.getName())!=null)
@@ -245,7 +273,10 @@ public class ListView extends View {
 
         if (req.getParameter("useincluderegex") != null) {
             includeRegex = Util.nullify(req.getParameter("includeRegex"));
-            includePattern = Pattern.compile(includeRegex);
+            if (includeRegex == null)
+                includePattern = null;
+            else
+                includePattern = Pattern.compile(includeRegex);
         } else {
             includeRegex = null;
             includePattern = null;
@@ -254,7 +285,15 @@ public class ListView extends View {
         if (columns == null) {
             columns = new DescribableList<ListViewColumn,Descriptor<ListViewColumn>>(Saveable.NOOP);
         }
-        columns.rebuildHetero(req, req.getSubmittedForm(), Hudson.getInstance().getDescriptorList(ListViewColumn.class), "columns");
+        columns.rebuildHetero(req, req.getSubmittedForm(), ListViewColumn.all(), "columns");
+        
+        if (jobFilters == null) {
+        	jobFilters = new DescribableList<ViewJobFilter,Descriptor<ViewJobFilter>>(Saveable.NOOP);
+        }
+        jobFilters.rebuildHetero(req, req.getSubmittedForm(), ViewJobFilter.all(), "jobFilters");
+
+        String filter = Util.fixEmpty(req.getParameter("statusFilter"));
+        statusFilter = filter != null ? "1".equals(filter) : null;
     }
 
     @Extension
@@ -278,4 +317,36 @@ public class ListView extends View {
             return FormValidation.ok();
         }
     }
+
+    public static List<ListViewColumn> getDefaultColumns() {
+        ArrayList<ListViewColumn> r = new ArrayList<ListViewColumn>();
+        DescriptorExtensionList<ListViewColumn, Descriptor<ListViewColumn>> all = ListViewColumn.all();
+        for (Class<? extends ListViewColumn> t : DEFAULT_COLUMNS) {
+            Descriptor<ListViewColumn> d = all.find(t);
+            if (d  != null) {
+                try {
+                    r.add (d.newInstance(null, null));
+                } catch (FormException e) {
+                    LOGGER.log(Level.WARNING, "Failed to instantiate "+d.clazz,e);
+                }
+            }
+        }
+        return Collections.unmodifiableList(r);
+    }
+
+
+    private static final Logger LOGGER = Logger.getLogger(ListView.class.getName());
+
+    /**
+     * Traditional column layout before the {@link ListViewColumn} becomes extensible.
+     */
+    private static final List<Class<? extends ListViewColumn>> DEFAULT_COLUMNS =  Arrays.asList(
+        StatusColumn.class,
+        WeatherColumn.class,
+        JobColumn.class,
+        LastSuccessColumn.class,
+        LastFailureColumn.class,
+        LastDurationColumn.class,
+        BuildButtonColumn.class
+    );
 }

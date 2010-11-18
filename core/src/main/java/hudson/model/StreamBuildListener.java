@@ -23,18 +23,12 @@
  */
 package hudson.model;
 
-import hudson.CloseProofOutputStream;
-import hudson.remoting.RemoteOutputStream;
+import hudson.util.StreamTaskListener;
 
+import java.io.File;
 import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 import java.io.PrintStream;
-import java.io.PrintWriter;
-import java.io.Serializable;
-import java.io.BufferedWriter;
-import java.io.OutputStreamWriter;
 import java.nio.charset.Charset;
 import java.util.List;
 
@@ -45,69 +39,43 @@ import java.util.List;
  * 
  * @author Kohsuke Kawaguchi
  */
-public class StreamBuildListener implements BuildListener, Serializable {
-    private PrintWriter w;
-
-    private PrintStream ps;
-
-    public StreamBuildListener(OutputStream w) {
-        this(new PrintStream(w));
+public class StreamBuildListener extends StreamTaskListener implements BuildListener {
+    public StreamBuildListener(OutputStream out, Charset charset) {
+        super(out, charset);
     }
 
+    public StreamBuildListener(File out, Charset charset) throws IOException {
+        super(out, charset);
+    }
+
+    public StreamBuildListener(OutputStream w) {
+        super(w);
+    }
+
+    /**
+     * @deprecated as of 1.349
+     *      The caller should use {@link #StreamBuildListener(OutputStream, Charset)} to pass in
+     *      the charset and output stream separately, so that this class can handle encoding correctly.
+     */
     public StreamBuildListener(PrintStream w) {
-        this(w,null);
+        super(w);
     }
 
     public StreamBuildListener(PrintStream w, Charset charset) {
-        this.ps = w;
-        // unless we auto-flash, PrintStream will use BufferedOutputStream internally,
-        // and break ordering
-        this.w = new PrintWriter(new BufferedWriter(
-                charset==null ? new OutputStreamWriter(w) : new OutputStreamWriter(w,charset)), true);
+        super(w,charset);
     }
 
     public void started(List<Cause> causes) {
+        PrintStream l = getLogger();
         if (causes==null || causes.isEmpty())
-            w.println("Started");
+            l.println("Started");
         else for (Cause cause : causes) {
-            w.println(cause.getShortDescription());
+            cause.print(this);
         }
     }
 
-    public PrintStream getLogger() {
-        return ps;
-    }
-
-    public PrintWriter error(String msg) {
-        w.println("ERROR: "+msg);
-        return w;
-    }
-
-    public PrintWriter error(String format, Object... args) {
-        return error(String.format(format,args));
-    }
-
-    public PrintWriter fatalError(String msg) {
-        w.println("FATAL: "+msg);
-        return w;
-    }
-
-    public PrintWriter fatalError(String format, Object... args) {
-        return fatalError(String.format(format,args));
-    }
-
     public void finished(Result result) {
-        w.println("Finished: "+result);
-    }
-
-
-    private void writeObject(ObjectOutputStream out) throws IOException {
-        out.writeObject(new RemoteOutputStream(new CloseProofOutputStream(ps)));
-    }
-
-    private void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException {
-        ps = new PrintStream((OutputStream)in.readObject(),true);
-        w = new PrintWriter(ps,true);
+        getLogger().println("Finished: "+result);
     }
 
     private static final long serialVersionUID = 1L;

@@ -1,0 +1,36 @@
+<div>
+  <p>
+  Especifica o caminho para a aplicação web de visualização do repositório CVS.
+  Definir este valor permite que o Hudson gere links das mudanças para estas páginas.
+  Existem duas entradas diferentes para cada CVSROOT.
+
+  <dl>
+    <dt>URL</dt>
+    <dd>
+      A URL da página que mostra os detalhes sobre um arquivo particular 
+      no repositório.
+    </dd>
+
+    <dt>URL de comparação</dt>
+    <dd>
+      A URL da página que mostra detalhes sobre a comparação entre duas revisões.
+    </dd>
+  </dl>
+
+  <p>
+  Os seguintes caracteres de macro estão disponíveis.
+  <table>
+    <tr>
+      <td>%%P</td>
+      <td>Nome do caminho do arquivo sob o CVS, como "foo/bar/Zot.java"</td>
+    </tr>
+    <tr>
+      <td>%%r</td>
+      <td>Revisão da versão antiga (para URLs de comparação)</td>
+    </tr>
+    <tr>
+      <td>%%r</td>
+      <td>Revisão da nova versão (para URLs de comparação)</td>
+    </tr>
+  </table>
+</div>

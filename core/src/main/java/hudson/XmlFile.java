@@ -128,6 +128,8 @@ public final class XmlFile {
             throw new IOException2("Unable to read "+file,e);
         } catch(ConversionException e) {
             throw new IOException2("Unable to read "+file,e);
+        } catch(Error e) {// mostly reflection errors
+            throw new IOException2("Unable to read "+file,e);
         } finally {
             r.close();
         }
@@ -138,15 +140,17 @@ public final class XmlFile {
      *
      * @return
      *      The unmarshalled object. Usually the same as <tt>o</tt>, but would be different
-     *      if the XML representation if completely new.
+     *      if the XML representation is completely new.
      */
     public Object unmarshal( Object o ) throws IOException {
         Reader r = new BufferedReader(new InputStreamReader(new FileInputStream(file),"UTF-8"));
         try {
             return xs.unmarshal(new XppReader(r),o);
         } catch (StreamException e) {
-            throw new IOException2(e);
+            throw new IOException2("Unable to read "+file,e);
         } catch(ConversionException e) {
+            throw new IOException2("Unable to read "+file,e);
+        } catch(Error e) {// mostly reflection errors
             throw new IOException2("Unable to read "+file,e);
         } finally {
             r.close();
@@ -179,6 +183,7 @@ public final class XmlFile {
         file.getParentFile().mkdirs();
     }
 
+    @Override
     public String toString() {
         return file.toString();
     }
@@ -232,14 +237,17 @@ public final class XmlFile {
         try {
             JAXP.newSAXParser().parse(file,new DefaultHandler() {
                 private Locator loc;
+                @Override
                 public void setDocumentLocator(Locator locator) {
                     this.loc = locator;
                 }
 
+                @Override
                 public void startDocument() throws SAXException {
                     attempt();
                 }
 
+                @Override
                 public void startElement(String uri, String localName, String qName, Attributes attributes) throws SAXException {
                     attempt();
                     // if we still haven't found it at the first start element,

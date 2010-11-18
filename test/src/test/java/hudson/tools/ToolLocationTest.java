@@ -24,14 +24,12 @@ public class ToolLocationTest extends HudsonTestCase {
         Maven.MavenInstallation[] maven = Hudson.getInstance().getDescriptorByType(Maven.DescriptorImpl.class).getInstallations();
         assertEquals(maven.length, 1);
         assertEquals(maven[0].getHome(), "bar");
-        assertEquals(maven[0].getMavenHome(), "bar");
         assertEquals(maven[0].getName(), "Maven 1");
 
 
         Ant.AntInstallation[] ant = Hudson.getInstance().getDescriptorByType(Ant.DescriptorImpl.class).getInstallations();
         assertEquals(ant.length, 1);
         assertEquals(ant[0].getHome(), "foo");
-        assertEquals(ant[0].getAntHome(), "foo");
         assertEquals(ant[0].getName(), "Ant 1");
 
         JDK[] jdk = Hudson.getInstance().getDescriptorByType(JDK.DescriptorImpl.class).getInstallations();

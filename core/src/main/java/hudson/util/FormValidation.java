@@ -24,15 +24,13 @@
 package hudson.util;
 
 import hudson.EnvVars;
+import hudson.Functions;
+import hudson.ProxyConfiguration;
 import hudson.Util;
 import hudson.FilePath;
-import hudson.Launcher;
 import hudson.tasks.Builder;
-import hudson.scm.CVSSCM;
 import static hudson.Util.fixEmpty;
 import hudson.model.Hudson;
-import hudson.model.AbstractBuild;
-import hudson.model.BuildListener;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
@@ -45,6 +43,7 @@ import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.net.URL;
 import java.net.URLConnection;
+import java.util.Locale;
 
 /**
  * Represents the result of the form field validation.
@@ -161,6 +160,42 @@ public abstract class FormValidation extends IOException implements HttpResponse
     }
 
     /**
+     * Sends out a string error message, with optional "show details" link that expands to the full stack trace.
+     *
+     * <p>
+     * Use this with caution, so that anonymous users do not gain too much insights into the state of the system,
+     * as error stack trace often reveals a lot of information. Consider if a check operation needs to be exposed
+     * to everyone or just those who have higher access to job/hudson/etc.
+     */
+    public static FormValidation error(Throwable e, String message) {
+        return _error(Kind.ERROR, e, message);
+    }
+
+    public static FormValidation warning(Throwable e, String message) {
+        return _error(Kind.WARNING, e, message);
+    }
+
+    private static FormValidation _error(Kind kind, Throwable e, String message) {
+        if (e==null)    return _errorWithMarkup(Util.escape(message),kind);
+
+        return _errorWithMarkup(Util.escape(message)+
+            " <a href='#' class='showDetails'>(show details)</a><pre style='display:none'>"
+                  + Functions.printThrowable(e) +
+            "</pre>",kind
+        );
+    }
+
+    public static FormValidation error(Throwable e, String format, Object... args) {
+        return error(e,String.format(format,args));
+    }
+
+    public static FormValidation warning(Throwable e, String format, Object... args) {
+        return warning(e,String.format(format,args));
+    }
+
+
+
+    /**
      * Sends out an HTML fragment that indicates an error.
      *
      * <p>
@@ -186,10 +221,10 @@ public abstract class FormValidation extends IOException implements HttpResponse
     private static FormValidation _errorWithMarkup(final String message, final Kind kind) {
         if(message==null)
             return ok();
-        return new FormValidation(kind) {
+        return new FormValidation(kind, message) {
             public String renderHtml() {
                 // 1x16 spacer needed for IE since it doesn't support min-height
-                return "<div class="+ kind.name().toLowerCase() +"><img src='"+
+                return "<div class="+ kind.name().toLowerCase(Locale.ENGLISH) +"><img src='"+
                         Stapler.getCurrentRequest().getContextPath()+ Hudson.RESOURCE_PATH+"/images/none.gif' height=16 width=1>"+
                         message+"</div>";
             }
@@ -299,11 +334,33 @@ public abstract class FormValidation extends IOException implements HttpResponse
     public static FormValidation validateNonNegativeInteger(String value) {
         try {
             if(Integer.parseInt(value)<0)
+                return error(hudson.model.Messages.Hudson_NotANonNegativeNumber());
+            return ok();
+        } catch (NumberFormatException e) {
+            return error(hudson.model.Messages.Hudson_NotANumber());
+        }
+    }
+
+    /**
+     * Makes sure that the given string is a positive integer.
+     */
+    public static FormValidation validatePositiveInteger(String value) {
+        try {
+            if(Integer.parseInt(value)<=0)
                 return error(hudson.model.Messages.Hudson_NotAPositiveNumber());
             return ok();
         } catch (NumberFormatException e) {
             return error(hudson.model.Messages.Hudson_NotANumber());
         }
+    }
+
+    /**
+     * Makes sure that the given string is not null or empty.
+     */
+    public static FormValidation validateRequired(String value) {
+        if (Util.fixEmptyAndTrim(value) == null)
+            return error(Messages.FormValidation_ValidateRequired());
+        return ok();
     }
 
     /**
@@ -348,7 +405,7 @@ public abstract class FormValidation extends IOException implements HttpResponse
          */
         protected BufferedReader open(URL url) throws IOException {
             // use HTTP content type to find out the charset.
-            URLConnection con = url.openConnection();
+            URLConnection con = ProxyConfiguration.open(url);
             if (con == null) { // XXX is this even permitted by URL.openConnection?
                 throw new IOException(url.toExternalForm());
             }
@@ -390,7 +447,7 @@ public abstract class FormValidation extends IOException implements HttpResponse
          */
         private String getCharset(URLConnection con) {
             for( String t : con.getContentType().split(";") ) {
-                t = t.trim().toLowerCase();
+                t = t.trim().toLowerCase(Locale.ENGLISH);
                 if(t.startsWith("charset="))
                     return t.substring(8);
             }
@@ -401,15 +458,12 @@ public abstract class FormValidation extends IOException implements HttpResponse
             return "UTF-8";
         }
 
+        /**
+         * Implement the actual form validation logic, by using other convenience methosd defined in this class.
+         * If you are not using any of those, you don't need to extend from this class.
+         */
         protected abstract FormValidation check() throws IOException, ServletException;
     }
-
-
-
-
-
-
-
 
 
 
@@ -420,6 +474,11 @@ public abstract class FormValidation extends IOException implements HttpResponse
      * @param kind
      */
     private FormValidation(Kind kind) {
+        this.kind = kind;
+    }
+
+    private FormValidation(Kind kind, String message) {
+        super(message);
         this.kind = kind;
     }
 

@@ -25,7 +25,6 @@ package hudson.os.solaris;
 
 import com.sun.akuma.Daemon;
 import com.sun.akuma.JavaVMArguments;
-import hudson.FilePath;
 import hudson.Launcher.LocalLauncher;
 import hudson.Util;
 import hudson.Extension;
@@ -49,6 +48,9 @@ import org.jvnet.solaris.mount.MountFlags;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 import org.kohsuke.stapler.QueryParameter;
+import org.kohsuke.stapler.HttpResponse;
+import org.kohsuke.stapler.HttpResponses;
+import org.kohsuke.stapler.HttpRedirect;
 
 import javax.servlet.ServletException;
 import java.io.File;
@@ -89,7 +91,7 @@ public class ZFSInstaller extends AdministrativeMonitor implements Serializable 
     }
 
     private boolean shouldBeActive() {
-        if(!System.getProperty("os.name").equals("SunOS"))
+        if(!System.getProperty("os.name").equals("SunOS") || disabled)
             // on systems that don't have ZFS, we don't need this monitor
             return false;
 
@@ -122,18 +124,17 @@ public class ZFSInstaller extends AdministrativeMonitor implements Serializable 
     /**
      * Called from the management screen.
      */
-    public void doAct(StaplerRequest req, StaplerResponse rsp) throws ServletException, IOException {
+    public HttpResponse doAct(StaplerRequest req) throws ServletException, IOException {
         requirePOST();
         Hudson.getInstance().checkPermission(Hudson.ADMINISTER);
 
         if(req.hasParameter("n")) {
             // we'll shut up
             disable(true);
-            rsp.sendRedirect2(req.getContextPath()+"/manage");
-            return;
+            return HttpResponses.redirectViaContextPath("/manage");
         }
 
-        rsp.sendRedirect2("confirm");
+        return new HttpRedirect("confirm");
     }
 
     /**
@@ -383,7 +384,7 @@ public class ZFSInstaller extends AdministrativeMonitor implements Serializable 
     }
 
     private static int system(File pwd, TaskListener listener, String... args) throws IOException, InterruptedException {
-        return new LocalLauncher(listener).launch(args, new String[0], System.out, new FilePath(pwd)).join();
+        return new LocalLauncher(listener).launch().cmds(args).stdout(System.out).pwd(pwd).join();
     }
 
     private static String computeHudsonFileSystemName(LibZFS zfs, ZFSFileSystem top) {
@@ -425,4 +426,9 @@ public class ZFSInstaller extends AdministrativeMonitor implements Serializable 
     }
 
     private static final Logger LOGGER = Logger.getLogger(ZFSInstaller.class.getName());
+
+    /**
+     * Escape hatch in case JNI calls fatally crash, like in HUDSON-3733.
+     */
+    public static boolean disabled = Boolean.getBoolean(ZFSInstaller.class.getName()+".disabled");
 }

@@ -1,7 +1,7 @@
 /*
  * The MIT License
  * 
- * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, David Calavera, Seiji Sogabe
+ * Copyright (c) 2004-2010, Sun Microsystems, Inc., Kohsuke Kawaguchi, David Calavera, Seiji Sogabe
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,8 +23,10 @@
  */
 package hudson.security;
 
-import hudson.Util;
+import com.thoughtworks.xstream.converters.UnmarshallingContext;
 import hudson.Extension;
+import hudson.Util;
+import hudson.diagnosis.OldDataMonitor;
 import hudson.model.Descriptor;
 import hudson.model.Hudson;
 import hudson.model.ManagementLink;
@@ -33,37 +35,41 @@ import hudson.model.User;
 import hudson.model.UserProperty;
 import hudson.model.UserPropertyDescriptor;
 import hudson.tasks.Mailer;
+import hudson.util.PluginServletFilter;
 import hudson.util.Protector;
 import hudson.util.Scrambler;
-import hudson.util.spring.BeanBuilder;
+import hudson.util.XStream2;
 import net.sf.json.JSONObject;
 import org.acegisecurity.Authentication;
-import org.acegisecurity.AuthenticationManager;
+import org.acegisecurity.AuthenticationException;
+import org.acegisecurity.BadCredentialsException;
 import org.acegisecurity.GrantedAuthority;
-import org.acegisecurity.GrantedAuthorityImpl;
 import org.acegisecurity.context.SecurityContextHolder;
 import org.acegisecurity.providers.UsernamePasswordAuthenticationToken;
 import org.acegisecurity.providers.encoding.PasswordEncoder;
 import org.acegisecurity.providers.encoding.ShaPasswordEncoder;
 import org.acegisecurity.userdetails.UserDetails;
-import org.acegisecurity.userdetails.UserDetailsService;
 import org.acegisecurity.userdetails.UsernameNotFoundException;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.Stapler;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 import org.springframework.dao.DataAccessException;
-import org.springframework.web.context.WebApplicationContext;
 
+import javax.servlet.Filter;
+import javax.servlet.FilterChain;
+import javax.servlet.FilterConfig;
 import javax.servlet.ServletException;
+import javax.servlet.ServletRequest;
+import javax.servlet.ServletResponse;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import static javax.servlet.http.HttpServletResponse.SC_UNAUTHORIZED;
 import java.io.IOException;
 import java.security.SecureRandom;
 import java.util.ArrayList;
-import java.util.List;
 import java.util.Collections;
-
-import groovy.lang.Binding;
+import java.util.List;
 
 /**
  * {@link SecurityRealm} that performs authentication by looking up {@link User}.
@@ -74,7 +80,7 @@ import groovy.lang.Binding;
  *
  * @author Kohsuke Kawaguchi
  */
-public class HudsonPrivateSecurityRealm extends SecurityRealm implements ModelObject, AccessControlled {
+public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRealm implements ModelObject, AccessControlled {
     /**
      * If true, sign up is not allowed.
      * <p>
@@ -85,11 +91,33 @@ public class HudsonPrivateSecurityRealm extends SecurityRealm implements ModelOb
     @DataBoundConstructor
     public HudsonPrivateSecurityRealm(boolean allowsSignup) {
         this.disableSignup = !allowsSignup;
+        if(!allowsSignup && !hasSomeUser()) {
+            // if Hudson is newly set up with the security realm and there's no user account created yet,
+            // insert a filter that asks the user to create one
+            try {
+                PluginServletFilter.addFilter(CREATE_FIRST_USER_FILTER);
+            } catch (ServletException e) {
+                throw new AssertionError(e); // never happen because our Filter.init is no-op
+            }
+        }
     }
 
     @Override
     public boolean allowsSignup() {
         return !disableSignup;
+    }
+
+    /**
+     * Computes if this Hudson has some user accounts configured.
+     *
+     * <p>
+     * This is used to check for the initial
+     */
+    private static boolean hasSomeUser() {
+        for (User u : User.getAll())
+            if(u.getProperty(Details.class)!=null)
+                return true;
+        return false;
     }
 
     /**
@@ -101,16 +129,22 @@ public class HudsonPrivateSecurityRealm extends SecurityRealm implements ModelOb
     }
 
     @Override
-    public SecurityComponents createSecurityComponents() {
-        Binding binding = new Binding();
-        binding.setVariable("passwordEncoder", PASSWORD_ENCODER);
+    public Details loadUserByUsername(String username) throws UsernameNotFoundException, DataAccessException {
+        User u = User.get(username,false);
+        Details p = u!=null ? u.getProperty(Details.class) : null;
+        if(p==null)
+            throw new UsernameNotFoundException("Password is not set: "+username);
+        if(p.getUser()==null)
+            throw new AssertionError();
+        return p;
+    }
 
-        BeanBuilder builder = new BeanBuilder();
-        builder.parse(Hudson.getInstance().servletContext.getResourceAsStream("/WEB-INF/security/HudsonPrivateSecurityRealm.groovy"),binding);
-        WebApplicationContext context = builder.createApplicationContext();
-        return new SecurityComponents(
-                findBean(AuthenticationManager.class, context),
-                findBean(UserDetailsService.class, context));
+    @Override
+    protected Details authenticate(String username, String password) throws AuthenticationException {
+        Details u = loadUserByUsername(username);
+        if (!PASSWORD_ENCODER.isPasswordValid(u.getPassword(),password,null))
+            throw new BadCredentialsException("Failed to login as "+username);
+        return u;
     }
 
     /**
@@ -121,16 +155,26 @@ public class HudsonPrivateSecurityRealm extends SecurityRealm implements ModelOb
             rsp.sendError(SC_UNAUTHORIZED,"User sign up is prohibited");
             return;
         }
+        boolean firstUser = !hasSomeUser();
         User u = createAccount(req, rsp, true, "signup.jelly");
         if(u!=null) {
-            // ... and let him login
-            Authentication a = new UsernamePasswordAuthenticationToken(u.getId(),req.getParameter("password1"));
-            a = this.getSecurityComponents().manager.authenticate(a);
-            SecurityContextHolder.getContext().setAuthentication(a);
-
-            // then back to top
-            req.getView(this,"success.jelly").forward(req,rsp);
+            if(firstUser)
+                tryToMakeAdmin(u);  // the first user should be admin, or else there's a risk of lock out
+            loginAndTakeBack(req, rsp, u);
         }
+    }
+
+    /**
+     * Lets the current user silently login as the given user and report back accordingly.
+     */
+    private void loginAndTakeBack(StaplerRequest req, StaplerResponse rsp, User u) throws ServletException, IOException {
+        // ... and let him login
+        Authentication a = new UsernamePasswordAuthenticationToken(u.getId(),req.getParameter("password1"));
+        a = this.getSecurityComponents().manager.authenticate(a);
+        SecurityContextHolder.getContext().setAuthentication(a);
+
+        // then back to top
+        req.getView(this,"success.jelly").forward(req,rsp);
     }
 
     /**
@@ -147,11 +191,42 @@ public class HudsonPrivateSecurityRealm extends SecurityRealm implements ModelOb
     }
 
     /**
+     * Creates a first admin user account.
+     *
+     * <p>
+     * This can be run by anyone, but only to create the very first user account.
+     */
+    public void doCreateFirstAccount(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
+        if(hasSomeUser()) {
+            rsp.sendError(SC_UNAUTHORIZED,"First user was already created");
+            return;
+        }
+        User u = createAccount(req, rsp, false, "firstUser.jelly");
+        if (u!=null) {
+            tryToMakeAdmin(u);
+            loginAndTakeBack(req, rsp, u);
+        }
+    }
+
+    /**
+     * Try to make this user a super-user
+     */
+    private void tryToMakeAdmin(User u) {
+        AuthorizationStrategy as = Hudson.getInstance().getAuthorizationStrategy();
+        if (as instanceof GlobalMatrixAuthorizationStrategy) {
+            GlobalMatrixAuthorizationStrategy ma = (GlobalMatrixAuthorizationStrategy) as;
+            ma.add(Hudson.ADMINISTER,u.getId());
+        }
+    }
+
+    /**
      * @return
      *      null if failed. The browser is already redirected to retry by the time this method returns.
      *      a valid {@link User} object if the user creation was successful.
      */
     private User createAccount(StaplerRequest req, StaplerResponse rsp, boolean selfRegistration, String formView) throws ServletException, IOException {
+        req.setCharacterEncoding("UTF-8");
+
         // form field validation
         // this pattern needs to be generalized and moved to stapler
         SignupInfo si = new SignupInfo();
@@ -336,11 +411,15 @@ public class HudsonPrivateSecurityRealm extends SecurityRealm implements ModelOb
             return user==null;
         }
 
-        private Object readResolve() {
-            // If we are being read back in from an older version
-            if (password!=null && passwordHash==null)
-                passwordHash = PASSWORD_ENCODER.encodePassword(Scrambler.descramble(password),null);
-            return this;
+        public static class ConverterImpl extends XStream2.PassthruConverter<Details> {
+            public ConverterImpl(XStream2 xstream) { super(xstream); }
+            @Override protected void callback(Details d, UnmarshallingContext context) {
+                // Convert to hashed password and report to monitor if we load old data
+                if (d.password!=null && d.passwordHash==null) {
+                    d.passwordHash = PASSWORD_ENCODER.encodePassword(Scrambler.descramble(d.password),null);
+                    OldDataMonitor.report(context, "1.283");
+                }
+            }
         }
 
         @Extension
@@ -353,6 +432,7 @@ public class HudsonPrivateSecurityRealm extends SecurityRealm implements ModelOb
                     return null;
             }
 
+            @Override
             public Details newInstance(StaplerRequest req, JSONObject formData) throws FormException {
                 String pwd = Util.fixEmpty(req.getParameter("user.password"));
                 String pwd2= Util.fixEmpty(req.getParameter("user.password2"));
@@ -369,6 +449,7 @@ public class HudsonPrivateSecurityRealm extends SecurityRealm implements ModelOb
                 return Details.fromPlainPassword(Util.fixNull(pwd));
             }
 
+            @Override
             public boolean isEnabled() {
                 return Hudson.getInstance().getSecurityRealm() instanceof HudsonPrivateSecurityRealm;
             }
@@ -376,20 +457,6 @@ public class HudsonPrivateSecurityRealm extends SecurityRealm implements ModelOb
             public UserProperty newInstance(User user) {
                 return null;
             }
-        }
-    }
-
-    /**
-     * {@link UserDetailsService} that loads user information from {@link User} object. 
-     */
-    public static final class HudsonUserDetailsService implements UserDetailsService {
-        public UserDetails loadUserByUsername(String username) {
-            Details p = User.get(username).getProperty(Details.class);
-            if(p==null)
-                throw new UsernameNotFoundException("Password is not set: "+username);
-            if(p.getUser()==null)
-                throw new AssertionError();
-            return p;
         }
     }
 
@@ -476,8 +543,31 @@ public class HudsonPrivateSecurityRealm extends SecurityRealm implements ModelOb
             return Messages.HudsonPrivateSecurityRealm_DisplayName();
         }
 
+        @Override
         public String getHelpFile() {
             return "/help/security/private-realm.html"; 
         }
     }
+
+    private static final Filter CREATE_FIRST_USER_FILTER = new Filter() {
+        public void init(FilterConfig config) throws ServletException {
+        }
+
+        public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException, ServletException {
+            HttpServletRequest req = (HttpServletRequest) request;
+
+            if(req.getRequestURI().equals(req.getContextPath()+"/")) {
+                if(hasSomeUser()) {// the first user already created. the role of this filter is over.
+                    PluginServletFilter.removeFilter(this);
+                    chain.doFilter(request,response);
+                } else {
+                    ((HttpServletResponse)response).sendRedirect("securityRealm/firstUser");
+                }
+            } else
+                chain.doFilter(request,response);
+        }
+
+        public void destroy() {
+        }
+    };
 }

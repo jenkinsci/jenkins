@@ -27,7 +27,7 @@ THE SOFTWARE.
     <l:header />
     <l:side-panel>
       <l:tasks>
-        <l:task icon="images/24x24/up.gif" href="../.." title="Back" />
+        <l:task icon="images/24x24/up.gif" href="../.." title="${%Back}" />
       </l:tasks>
     </l:side-panel>
     <l:main-panel>
@@ -35,17 +35,17 @@ THE SOFTWARE.
         <j:when test="${it.alive}">
           <h1>
             <img src="${imagesURL}/48x48/blue.gif" width="48" height="48" alt=""/>
-            Thread is still alive
+            ${%Thread is still alive}
           </h1>
         </j:when>
         <j:otherwise>
           <h1>
             <img src="${imagesURL}/48x48/red.gif" width="48" height="48" alt=""/>            
-            Thread has died
+            ${%Thread has died}
           </h1>
           <pre>${h.printThrowable(it.causeOfDeath)}</pre>
           <pre>
-            <a href="http://hudson.gotdns.com/wiki/display/HUDSON/Dead+Executor">more info</a>
+            <a href="http://wiki.hudson-ci.org/display/HUDSON/Dead+Executor">${%more info}</a>
           </pre>
         </j:otherwise>
       </j:choose>

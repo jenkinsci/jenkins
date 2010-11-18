@@ -38,7 +38,7 @@ THE SOFTWARE.
       </h1>
 
       <p>
-        ${%description(it.displayName)}
+        ${%description(h.escape(it.displayName))}
       </p>
       <ol>
         <li>

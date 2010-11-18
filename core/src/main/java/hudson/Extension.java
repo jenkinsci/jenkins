@@ -1,7 +1,7 @@
 /*
  * The MIT License
  *
- * Copyright (c) 2004-2009, Sun Microsystems, Inc.
+ * Copyright (c) 2004-2010, Sun Microsystems, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,12 +26,11 @@ package hudson;
 import net.java.sezpoz.Indexable;
 
 import java.lang.annotation.Documented;
-import static java.lang.annotation.ElementType.*;
 import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-import hudson.ExtensionFinder.Sezpoz;
+import static java.lang.annotation.ElementType.*;
+import static java.lang.annotation.RetentionPolicy.RUNTIME;
 
 /**
  * Marks a field, a method, or a class for automatic discovery, so that Hudson can locate
@@ -66,8 +65,23 @@ import hudson.ExtensionFinder.Sezpoz;
  * @see ExtensionList
  */
 @Indexable
-@Retention(RetentionPolicy.SOURCE)
+@Retention(RUNTIME)
 @Target({TYPE, FIELD, METHOD})
 @Documented
 public @interface Extension {
+    /**
+     * Used for sorting extensions.
+     *
+     * Extensions will be sorted in the descending order of the ordinal.
+     * This is a rather poor approach to the problem, so its use is generally discouraged.
+     *
+     * @since 1.306
+     */
+    double ordinal() default 0;
+
+    /**
+     * If an extension is optional, don't log any class loading errors when reading it.
+     * @since 1.358
+     */
+    boolean optional() default false;
 }

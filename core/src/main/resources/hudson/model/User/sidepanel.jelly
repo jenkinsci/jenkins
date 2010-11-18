@@ -25,14 +25,20 @@ THE SOFTWARE.
 <!--
   Side panel for the user view
 -->
+<?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
   <l:header />
   <l:side-panel>
     <l:tasks>
-      <l:task icon="images/24x24/up.gif" href="${rootURL}/" title="${%Back to Dashboard}" />
+      <l:task icon="images/24x24/up.gif" href="${rootURL}/people/" title="${%People}" />
       <l:task icon="images/24x24/search.gif" href="${rootURL}/${it.url}/" title="${%Status}" />
       <l:task icon="images/24x24/notepad.gif" href="${rootURL}/${it.url}/builds" title="${%Builds}" />
-      <l:task icon="images/24x24/setting.gif" href="${rootURL}/${it.url}/configure" title="${%Configure}" permission="${app.ADMINISTER}"/>
+      <l:task icon="images/24x24/notepad.gif" href="${rootURL}/${it.url}/my-views/" title="${%My Views}" />
+      <l:task icon="images/24x24/setting.gif" href="${rootURL}/${it.url}/configure" title="${%Configure}" permission="${app.ADMINISTER}" />
+      <j:if test="${it.canDelete()}">
+        <l:task icon="images/24x24/edit-delete.gif" href="${rootURL}/${it.url}/delete" title="${%Delete}" />
+      </j:if>
+      <!--  TODO add all UserProperties that are also actions -->
     </l:tasks>
   </l:side-panel>
 </j:jelly>

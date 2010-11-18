@@ -1,7 +1,7 @@
 /*
  * The MIT License
  * 
- * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, Jorg Heymans, Stephen Connolly, Tom Huybrechts
+ * Copyright (c) 2004-2010, Sun Microsystems, Inc., Kohsuke Kawaguchi, Jorg Heymans, Stephen Connolly, Tom Huybrechts
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,6 +24,7 @@
 package hudson.model;
 
 import hudson.Util;
+import hudson.diagnosis.OldDataMonitor;
 import hudson.model.Descriptor.FormException;
 import hudson.tasks.BuildStep;
 import hudson.tasks.BuildStepDescriptor;
@@ -54,7 +55,7 @@ import java.util.Set;
  * @author Kohsuke Kawaguchi
  */
 public abstract class Project<P extends Project<P,B>,B extends Build<P,B>>
-    extends AbstractProject<P,B> implements SCMedItem, Saveable, ProjectWithMaven {
+    extends AbstractProject<P,B> implements SCMedItem, Saveable, ProjectWithMaven, BuildableItemWithBuildWrappers {
 
     /**
      * List of active {@link Builder}s configured for this project.
@@ -81,12 +82,15 @@ public abstract class Project<P extends Project<P,B>,B extends Build<P,B>>
         super(parent,name);
     }
 
+    @Override
     public void onLoad(ItemGroup<? extends Item> parent, String name) throws IOException {
         super.onLoad(parent, name);
 
-        if(buildWrappers==null)
+        if (buildWrappers==null) {
             // it didn't exist in < 1.64
             buildWrappers = new DescribableList<BuildWrapper, Descriptor<BuildWrapper>>(this);
+            OldDataMonitor.report(this, "1.64");
+        }
         builders.setOwner(this);
         publishers.setOwner(this);
         buildWrappers.setOwner(this);
@@ -114,6 +118,10 @@ public abstract class Project<P extends Project<P,B>,B extends Build<P,B>>
 
     public Map<Descriptor<BuildWrapper>,BuildWrapper> getBuildWrappers() {
         return buildWrappers.toMap();
+    }
+
+    public DescribableList<BuildWrapper, Descriptor<BuildWrapper>> getBuildWrappersList() {
+        return buildWrappers;
     }
 
     @Override
@@ -164,18 +172,12 @@ public abstract class Project<P extends Project<P,B>,B extends Build<P,B>>
 
     @Override
     public boolean isFingerprintConfigured() {
-        for (Publisher p : publishers) {
-            if(p instanceof Fingerprinter)
-                return true;
-        }
-        return false;
+        return getPublishersList().get(Fingerprinter.class)!=null;
     }
 
     public MavenInstallation inferMavenInstallation() {
-        for (Builder builder : builders) {
-            if (builder instanceof Maven)
-                return ((Maven) builder).getMaven();
-        }
+        Maven m = getBuildersList().get(Maven.class);
+        if (m!=null)    return m.getMaven();
         return null;
     }
 
@@ -194,40 +196,33 @@ public abstract class Project<P extends Project<P,B>,B extends Build<P,B>>
         buildWrappers.rebuild(req,json, BuildWrappers.getFor(this));
         builders.rebuildHetero(req,json, Builder.all(), "builder");
         publishers.rebuild(req, json, BuildStepDescriptor.filter(Publisher.all(), this.getClass()));
-        updateTransientActions(); // to pick up transient actions from builder, publisher, etc.
     }
 
-    protected void updateTransientActions() {
-        synchronized(transientActions) {
-            super.updateTransientActions();
+    @Override
+    protected List<Action> createTransientActions() {
+        List<Action> r = super.createTransientActions();
 
-            for (BuildStep step : builders) {
-                Action a = step.getProjectAction(this);
-                if(a!=null)
-                    transientActions.add(a);
-            }
-            for (BuildStep step : publishers) {
-                Action a = step.getProjectAction(this);
-                if(a!=null)
-                    transientActions.add(a);
-            }
-            for (BuildWrapper step : buildWrappers) {
-                Action a = step.getProjectAction(this);
-                if(a!=null)
-                    transientActions.add(a);
-            }
-            for (Trigger trigger : triggers) {
-                Action a = trigger.getProjectAction();
-                if(a!=null)
-                    transientActions.add(a);
-            }
-        }
+        for (BuildStep step : getBuildersList())
+            r.addAll(step.getProjectActions(this));
+        for (BuildStep step : getPublishersList())
+            r.addAll(step.getProjectActions(this));
+        for (BuildWrapper step : getBuildWrappers().values())
+            r.addAll(step.getProjectActions(this));
+        for (Trigger trigger : getTriggers().values())
+            r.addAll(trigger.getProjectActions());
+
+        return r;
     }
 
     /**
-     * @deprecated
-     *      left for legacy config file compatibility
+     * @deprecated since 2006-11-05.
+     *      Left for legacy config file compatibility
      */
     @Deprecated
     private transient String slave;
+
+    private Object readResolve() {
+        if (slave != null) OldDataMonitor.report(this, "1.60");
+        return this;
+    }
 }

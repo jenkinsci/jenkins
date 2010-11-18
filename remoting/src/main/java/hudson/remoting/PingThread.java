@@ -1,7 +1,7 @@
 /*
  * The MIT License
  * 
- * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi
+ * Copyright (c) 2004-2010, Sun Microsystems, Inc., Kohsuke Kawaguchi
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -47,18 +47,30 @@ public abstract class PingThread extends Thread {
     private final Channel channel;
 
     /**
+     * Time out in milliseconds.
+     * If the response doesn't come back by then, the channel is considered dead.
+     */
+    private final long timeout;
+
+    /**
      * Performs a check every this milliseconds.
      */
     private final long interval;
 
-    public PingThread(Channel channel, long interval) {
+    public PingThread(Channel channel, long timeout, long interval) {
         super("Ping thread for channel "+channel);
         this.channel = channel;
+        this.timeout = timeout;
         this.interval = interval;
+        setDaemon(true);
+    }
+
+    public PingThread(Channel channel, long interval) {
+        this(channel, 4*60*1000/*4 mins*/, interval);
     }
 
     public PingThread(Channel channel) {
-        this(channel,5*60*1000/*5 mins*/);
+        this(channel,10*60*1000/*10 mins*/);
     }
 
     public void run() {
@@ -73,6 +85,8 @@ public abstract class PingThread extends Thread {
                 while((diff=nextCheck-System.currentTimeMillis())>0)
                     Thread.sleep(diff);
             }
+        } catch (ChannelClosedException e) {
+            LOGGER.fine(getName()+" is closed. Terminating");
         } catch (IOException e) {
             onDead();
         } catch (InterruptedException e) {
@@ -84,8 +98,10 @@ public abstract class PingThread extends Thread {
     private void ping() throws IOException, InterruptedException {
         Future<?> f = channel.callAsync(new Ping());
         try {
-            f.get(TIME_OUT,MILLISECONDS);
+            f.get(timeout,MILLISECONDS);
         } catch (ExecutionException e) {
+            if (e.getCause() instanceof RequestAbortedException)
+                return; // connection has shut down orderly.
             onDead();
         } catch (TimeoutException e) {
             onDead();
@@ -104,12 +120,6 @@ public abstract class PingThread extends Thread {
             return null;
         }
     }
-
-    /**
-     * Time out in milliseconds.
-     * If the response doesn't come back by then, the channel is considered dead.
-     */
-    private static final long TIME_OUT = 60*1000; // 1 min
 
     private static final Logger LOGGER = Logger.getLogger(PingThread.class.getName());
 }

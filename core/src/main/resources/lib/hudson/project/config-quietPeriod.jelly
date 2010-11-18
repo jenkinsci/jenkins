@@ -28,8 +28,7 @@ THE SOFTWARE.
       help="/help/project-config/quietPeriod.html">
     <f:entry title="${%Quiet period}"
       description="${%Number of seconds}">
-      <input class="setting-input" name="quiet_period"
-        type="text" value="${it.quietPeriod}"/>
+      <f:textbox clazz="number" name="quiet_period" value="${it.quietPeriod}"/>
     </f:entry>
   </f:optionalBlock>
 </j:jelly>

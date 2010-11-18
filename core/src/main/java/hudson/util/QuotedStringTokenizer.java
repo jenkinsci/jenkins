@@ -137,6 +137,7 @@ public class QuotedStringTokenizer
 
 
     /* ------------------------------------------------------------ */
+    @Override
     public boolean hasMoreTokens()
     {
         // Already found a token
@@ -275,6 +276,7 @@ public class QuotedStringTokenizer
     }
 
     /* ------------------------------------------------------------ */
+    @Override
     public String nextToken()
         throws NoSuchElementException
     {
@@ -287,6 +289,7 @@ public class QuotedStringTokenizer
     }
 
     /* ------------------------------------------------------------ */
+    @Override
     public String nextToken(String delim)
         throws NoSuchElementException
     {
@@ -298,12 +301,14 @@ public class QuotedStringTokenizer
     }
 
     /* ------------------------------------------------------------ */
+    @Override
     public boolean hasMoreElements()
     {
         return hasMoreTokens();
     }
 
     /* ------------------------------------------------------------ */
+    @Override
     public Object nextElement()
         throws NoSuchElementException
     {
@@ -313,6 +318,7 @@ public class QuotedStringTokenizer
     /* ------------------------------------------------------------ */
     /** Not implemented.
      */
+    @Override
     public int countTokens()
     {
         return -1;

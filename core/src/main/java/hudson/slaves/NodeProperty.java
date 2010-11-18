@@ -26,13 +26,15 @@ package hudson.slaves;
 import hudson.ExtensionPoint;
 import hudson.Launcher;
 import hudson.DescriptorExtensionList;
+import hudson.model.queue.CauseOfBlockage;
+import hudson.scm.SCM;
 import hudson.model.AbstractBuild;
 import hudson.model.BuildListener;
 import hudson.model.Describable;
 import hudson.model.Environment;
 import hudson.model.Hudson;
 import hudson.model.Node;
-import hudson.tasks.Builder;
+import hudson.model.Queue.Task;
 
 import java.io.IOException;
 import java.util.List;
@@ -51,7 +53,9 @@ import java.util.List;
  * <dd>Added to the configuration page of the node.
  * <dt>global.jelly</dt>
  * <dd>Added to the system configuration page.
- * <dl>
+ * <dt>summary.jelly (optional)</dt>
+ * <dd>Added to the index page of the {@link hudson.model.Computer} associated with the node
+ * </dl>
  *
  * @param <N>
  *      {@link NodeProperty} can choose to only work with a certain subtype of {@link Node}, and this 'N'
@@ -62,17 +66,29 @@ import java.util.List;
 public abstract class NodeProperty<N extends Node> implements Describable<NodeProperty<?>>, ExtensionPoint {
 
     protected transient N node;
-	
-	protected void setNode(N node) { this.node = node; }
-	
+
+    protected void setNode(N node) { this.node = node; }
+
     public NodePropertyDescriptor getDescriptor() {
-        return (NodePropertyDescriptor)Hudson.getInstance().getDescriptor(getClass());
+        return (NodePropertyDescriptor)Hudson.getInstance().getDescriptorOrDie(getClass());
     }
 
     /**
-     * Runs before the {@link Builder} runs, and performs a set up. Can contribute additional properties
-     * to the environment.
+     * Called by the {@link Node} to help determine whether or not it should
+     * take the given task. Individual properties can return a non-null value
+     * here if there is some reason the given task should not be run on its
+     * associated node. By default, this method returns <code>null</code>.
      *
+     * @since 1.360
+     */
+    public CauseOfBlockage canTake(Task task) {
+        return null;
+    }
+
+    /**
+     * Runs before the {@link SCM#checkout(AbstractBuild, Launcher, FilePath, BuildListener, File)} runs, and performs a set up.
+     * Can contribute additional properties to the environment.
+     * 
      * @param build
      *      The build in progress for which an {@link Environment} object is created.
      *      Never null.

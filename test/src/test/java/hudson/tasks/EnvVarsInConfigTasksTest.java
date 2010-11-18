@@ -1,6 +1,8 @@
 package hudson.tasks;
 
 import hudson.EnvVars;
+import hudson.model.labels.LabelAtom;
+import hudson.tools.ToolProperty;
 import hudson.maven.MavenModuleSet;
 import hudson.maven.MavenModuleSetBuild;
 import hudson.model.FreeStyleBuild;
@@ -13,6 +15,7 @@ import hudson.tasks.Ant.AntInstallation;
 import hudson.tasks.Maven.MavenInstallation;
 
 import java.io.File;
+import java.util.Collections;
 
 import org.apache.tools.ant.taskdefs.condition.Os;
 import org.jvnet.hudson.test.ExtractResourceSCM;
@@ -35,19 +38,19 @@ public class EnvVarsInConfigTasksTest extends HudsonTestCase {
 		configureDefaultMaven();
 		MavenInstallation defaultMaven = hudson.getDescriptorByType(Maven.DescriptorImpl.class).getInstallations()[0];
 		MavenInstallation varMaven = new MavenInstallation("varMaven",
-				withVariable(defaultMaven.getMavenHome()));
+				withVariable(defaultMaven.getHome()), NO_PROPERTIES);
 		hudson.getDescriptorByType(Maven.DescriptorImpl.class).setInstallations(varMaven);
 
 		// Ant with a variable in its path
         AntInstallation ant = configureDefaultAnt();
         AntInstallation antInstallation = new AntInstallation("varAnt",
-                withVariable(ant.getHome()));
+                withVariable(ant.getHome()),NO_PROPERTIES);
         hudson.getDescriptorByType(Ant.DescriptorImpl.class).setInstallations(antInstallation);
 
 		// create slaves
 		EnvVars additionalEnv = new EnvVars(DUMMY_LOCATION_VARNAME, "");
-		slaveEnv = createSlave(new Label("slaveEnv"), additionalEnv);
-		slaveRegular = createSlave(new Label("slaveRegular"));
+		slaveEnv = createSlave(new LabelAtom("slaveEnv"), additionalEnv);
+		slaveRegular = createSlave(new LabelAtom("slaveRegular"));
 	}
 
 	private String withVariable(String s) {
@@ -143,8 +146,9 @@ public class EnvVarsInConfigTasksTest extends HudsonTestCase {
 				"/simple-projects.zip")));
 
 		project.getBuildersList().add(
-				new Maven("test", "varMaven", "pom.xml${"
-						+ DUMMY_LOCATION_VARNAME + "}", "", ""));
+					      new Maven("test", "varMaven", "pom.xml${"
+							+ DUMMY_LOCATION_VARNAME + "}", "", "",
+							false));
 
 		// test the regular slave - variable not expanded
 		project.setAssignedLabel(slaveRegular.getSelfLabel());

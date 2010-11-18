@@ -1,7 +1,7 @@
 <!--
 The MIT License
 
-Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, Seiji Sogabe
+Copyright (c) 2004-2010, Sun Microsystems, Inc., Kohsuke Kawaguchi, Seiji Sogabe, Yahoo! Inc.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -29,7 +29,8 @@ THE SOFTWARE.
   <l:layout title="Update Center" permission="${app.ADMINISTER}" norefresh="true">
     <st:include page="sidepanel.jelly"/>
     <l:main-panel>
-      <local:tabBar page="installed" xmlns:local="/hudson/PluginManager">
+      <local:tabBar page="installed" xmlns:local="/hudson/PluginManager" />
+      <table id="plugins" class="sortable pane bigtable">
         <j:choose>
           <j:when test="${empty(app.pluginManager.plugins) and empty(app.pluginManager.failedPlugins)}">
             <tr><td>
@@ -41,11 +42,13 @@ THE SOFTWARE.
               <th width="32" tooltip="${%Uncheck to disable the plugin}">${%Enabled}</th>
               <th initialSortDir="down">${%Name}</th>
               <th width="32">${%Version}</th>
+              <th width="32">${%Previously installed version}</th>
+              <th width="32">${%Pinned}</th>
             </tr>
             <j:forEach var="p" items="${app.pluginManager.plugins}">
               <tr>
-                <td class="center pane">
-                  <j:set var="state" value="${p.enabled?'true':null}"/>
+                <j:set var="state" value="${p.enabled?'true':null}"/>
+                <td class="center pane" data="${state}">
                   <input type="checkbox" checked="${state}" onclick="flip(event)"
                          url="plugin/${p.shortName}"
                          original="${p.active?'true':'false'}"/>
@@ -63,8 +66,21 @@ THE SOFTWARE.
                     </j:if>
                   </div>
                 </td>
-                <td class="center pane" style="white-space:no-wrap">
+                <td class="center pane" style="white-space:nowrap">
                   ${p.version}
+                </td>
+                <td>
+                  <j:if test="${p.downgradable}">
+                    <form method="post" action="${rootURL}/updateCenter/plugin/${p.shortName}/downgrade">
+                      <s:submit value="${%downgradeTo(p.backupVersion)}"/>
+                    </form>
+                  </j:if>
+                </td>
+                <td class="center pane" id='unpin-${p.shortName}'>
+                  <j:if test="${p.isPinned()}">
+                    <input type="button" onclick="unpin(this,'${p.shortName}')" value="${%Unpin}" class="yui-button" />
+                    <a href="${%wiki.url}"><img style="vertical-align:top" src="${imagesURL}/16x16/help.gif"/></a>
+                  </j:if>
                 </td>
               </tr>
             </j:forEach>
@@ -83,7 +99,7 @@ THE SOFTWARE.
             </j:forEach>
           </j:otherwise>
         </j:choose>
-      </local:tabBar>
+      </table>
 
       <j:if test="${it.isPluginUploaded()}">
         <div style="margin: 1em; height: 1em">
@@ -92,10 +108,14 @@ THE SOFTWARE.
           </div>
         </div>
       </j:if>
-      <div class="error" id="needRestart" style="display:none; margin: 1em; height: 1em">
-        ${%Changes will take effect when you restart Hudson}
+      <div class="warning" id="needRestart" style="display:none; margin: 1em; height: 1em">
+        <form method="post" action="${rootURL}/safeRestart">
+          ${%Changes will take effect when you restart Hudson}
+          <j:if test="${app.lifecycle.canRestart()}">
+            <s:submit value="${%Restart Once No Jobs Are Running}" />
+          </j:if>
+        </form>
       </div>
-
 
 
       <script>
@@ -123,6 +143,17 @@ THE SOFTWARE.
         }
 
         updateMsg(); // set the initial state
+
+        function unpin(button,shortName) {
+          new Ajax.Request("./plugin/"+shortName+"/unpin", {
+            onFailure : function(t) {
+              alert('Failed to unpin:'+t.responseText);
+            },
+            onSuccess : function(t) {
+              $('unpin-'+shortName).innerHTML = "";
+            }
+          });
+        }
       </script>
     </l:main-panel>
   </l:layout>

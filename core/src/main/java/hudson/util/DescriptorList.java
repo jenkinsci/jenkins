@@ -142,7 +142,7 @@ public final class DescriptorList<T extends Describable<T>> extends AbstractList
         if(type==null)
             return legacy;
         else
-            return Hudson.getInstance().getDescriptorList(type);
+            return Hudson.getInstance().<T,Descriptor<T>>getDescriptorList(type);
     }
 
     /**

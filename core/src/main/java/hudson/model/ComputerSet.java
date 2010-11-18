@@ -28,6 +28,7 @@ import hudson.DescriptorExtensionList;
 import hudson.Util;
 import hudson.XmlFile;
 import hudson.model.Descriptor.FormException;
+import hudson.model.listeners.SaveableListener;
 import hudson.node_monitors.NodeMonitor;
 import hudson.slaves.NodeDescriptor;
 import hudson.util.DescribableList;
@@ -42,13 +43,10 @@ import javax.servlet.ServletException;
 import static javax.servlet.http.HttpServletResponse.SC_BAD_REQUEST;
 import java.io.File;
 import java.io.IOException;
-import java.text.ParseException;
 import java.util.AbstractList;
 import java.util.List;
 import java.util.Map;
 import java.util.HashMap;
-import java.util.TreeMap;
-import java.util.Comparator;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -67,6 +65,7 @@ public final class ComputerSet extends AbstractModelObject {
     private static final Saveable MONITORS_OWNER = new Saveable() {
         public void save() throws IOException {
             getConfigFile().write(monitors);
+            SaveableListener.fireOnChange(this, getConfigFile());
         }
     };
 
@@ -75,7 +74,7 @@ public final class ComputerSet extends AbstractModelObject {
 
     @Exported
     public String getDisplayName() {
-        return "nodes";
+        return Messages.ComputerSet_DisplayName();
     }
 
     /**
@@ -207,20 +206,14 @@ public final class ComputerSet extends AbstractModelObject {
      * First check point in creating a new slave.
      */
     public synchronized void doCreateItem( StaplerRequest req, StaplerResponse rsp,
-                                           @QueryParameter("name") String name, @QueryParameter("mode") String mode,
-                                           @QueryParameter("from") String from ) throws IOException, ServletException {
+                                           @QueryParameter String name, @QueryParameter String mode,
+                                           @QueryParameter String from ) throws IOException, ServletException {
         final Hudson app = Hudson.getInstance();
         app.checkPermission(Hudson.ADMINISTER);  // TODO: new permission?
 
-        try {
-            checkName(name);
-        } catch (ParseException e) {
-            rsp.setStatus(SC_BAD_REQUEST);
-            sendError(e,req,rsp);
-            return;
-        }
-
         if(mode!=null && mode.equals("copy")) {
+            name = checkName(name);
+
             Node src = app.getNode(from);
             if(src==null) {
                 rsp.setStatus(SC_BAD_REQUEST);
@@ -235,6 +228,7 @@ public final class ComputerSet extends AbstractModelObject {
             String xml = Hudson.XSTREAM.toXML(src);
             Node result = (Node)Hudson.XSTREAM.fromXML(xml);
             result.setNodeName(name);
+            result.holdOffLaunchUntilSave = true;
 
             app.addNode(result);
 
@@ -247,8 +241,8 @@ public final class ComputerSet extends AbstractModelObject {
                 return;
             }
 
-            req.setAttribute("descriptor", NodeDescriptor.all().find(mode));
-            req.getView(this,"_new.jelly").forward(req,rsp);
+            NodeDescriptor d = NodeDescriptor.all().find(mode);
+            d.handleNewNodePage(this,name,req,rsp);
         }
     }
 
@@ -256,40 +250,35 @@ public final class ComputerSet extends AbstractModelObject {
      * Really creates a new slave.
      */
     public synchronized void doDoCreateItem( StaplerRequest req, StaplerResponse rsp,
-                                           @QueryParameter("name") String name,
-                                           @QueryParameter("type") String type ) throws IOException, ServletException {
-        try {
-            final Hudson app = Hudson.getInstance();
-            app.checkPermission(Hudson.ADMINISTER);  // TODO: new permission?
-            checkName(name);
+                                           @QueryParameter String name,
+                                           @QueryParameter String type ) throws IOException, ServletException, FormException {
+        final Hudson app = Hudson.getInstance();
+        app.checkPermission(Hudson.ADMINISTER);  // TODO: new permission?
+        checkName(name);
 
-            Node result = NodeDescriptor.all().find(type).newInstance(req, req.getSubmittedForm());
-            app.addNode(result);
+        Node result = NodeDescriptor.all().find(type).newInstance(req, req.getSubmittedForm());
+        app.addNode(result);
 
-            // take the user back to the slave list top page
-            rsp.sendRedirect2(".");
-        } catch (ParseException e) {
-            rsp.setStatus(SC_BAD_REQUEST);
-            sendError(e,req,rsp);
-        } catch (FormException e) {
-            sendError(e,req,rsp);
-        }
+        // take the user back to the slave list top page
+        rsp.sendRedirect2(".");
     }
 
     /**
      * Makes sure that the given name is good as a slave name.
+     * @return trimmed name if valid; throws ParseException if not
      */
-    private void checkName(String name) throws ParseException {
+    public String checkName(String name) throws Failure {
         if(name==null)
-            throw new ParseException("Query parameter 'name' is required",0);
+            throw new Failure("Query parameter 'name' is required");
 
         name = name.trim();
         Hudson.checkGoodName(name);
 
         if(Hudson.getInstance().getNode(name)!=null)
-            throw new ParseException(Messages.ComputerSet_SlaveAlreadyExists(name),0);
+            throw new Failure(Messages.ComputerSet_SlaveAlreadyExists(name));
 
         // looks good
+        return name;
     }
 
     /**
@@ -304,7 +293,7 @@ public final class ComputerSet extends AbstractModelObject {
         try {
             checkName(value);
             return FormValidation.ok();
-        } catch (ParseException e) {
+        } catch (Failure e) {
             return FormValidation.error(e.getMessage());
         }
     }
@@ -312,7 +301,7 @@ public final class ComputerSet extends AbstractModelObject {
     /**
      * Accepts submission from the configuration page.
      */
-    public final synchronized void doConfigSubmit( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
+    public synchronized void doConfigSubmit( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException, FormException {
         BulkChange bc = new BulkChange(MONITORS_OWNER);
         try {
             Hudson.getInstance().checkPermission(Hudson.ADMINISTER);
@@ -326,8 +315,6 @@ public final class ComputerSet extends AbstractModelObject {
                         monitors.add(i);
                 }
             rsp.sendRedirect2(".");
-        } catch (FormException e) {
-            sendError(e,req,rsp);
         } finally {
             bc.commit();
         }

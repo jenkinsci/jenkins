@@ -25,7 +25,10 @@ package hudson.remoting;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.InterruptedIOException;
 import java.io.OutputStream;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * {@link OutputStream} that sends bits to an exported
@@ -34,6 +37,8 @@ import java.io.OutputStream;
 final class ProxyOutputStream extends OutputStream {
     private Channel channel;
     private int oid;
+
+    private PipeWindow window;
 
     /**
      * If bytes are written to this stream before it's connected
@@ -76,10 +81,13 @@ final class ProxyOutputStream extends OutputStream {
         this.channel = channel;
         this.oid = oid;
 
+        window =  channel.getPipeWindow(oid);
+
         // if we already have bytes to write, do so now.
         if(tmp!=null) {
-            channel.send(new Chunk(oid,tmp.toByteArray()));
+            byte[] b = tmp.toByteArray();
             tmp = null;
+            _write(b,0,b.length);
         }
         if(closed)  // already marked closed?
             doClose();
@@ -92,27 +100,33 @@ final class ProxyOutputStream extends OutputStream {
     public void write(byte b[], int off, int len) throws IOException {
         if(closed)
             throw new IOException("stream is already closed");
-        if(off==0 && len==b.length)
-            write(b);
-        else {
-            byte[] buf = new byte[len];
-            System.arraycopy(b,off,buf,0,len);
-            write(buf);
-        }
+        _write(b, off, len);
     }
 
-    public synchronized void write(byte b[]) throws IOException {
-        if(closed)
-            throw new IOException("stream is already closed");
+    /**
+     * {@link #write(byte[])} without the close check.
+     */
+    private void _write(byte[] b, int off, int len) throws IOException {
         if(channel==null) {
             if(tmp==null)
                 tmp = new ByteArrayOutputStream();
-            tmp.write(b);
+            tmp.write(b,off,len);
         } else {
-            channel.send(new Chunk(oid,b));
+            while (len>0) {
+                int sendable;
+                try {
+                    sendable = Math.min(window.get(),len);
+                } catch (InterruptedException e) {
+                    throw (IOException)new InterruptedIOException().initCause(e);
+                }
+
+                channel.send(new Chunk(oid,b,off,sendable));
+                window.decrease(sendable);
+                off+=sendable;
+                len-=sendable;
+            }
         }
     }
-
 
     public void flush() throws IOException {
         if(channel!=null)
@@ -149,18 +163,41 @@ final class ProxyOutputStream extends OutputStream {
         private final int oid;
         private final byte[] buf;
 
-        public Chunk(int oid, byte[] buf) {
+        public Chunk(int oid, byte[] buf, int start, int len) {
+            // to improve the performance when a channel is used purely as a pipe,
+            // don't record the stack trace. On FilePath.writeToTar case, the stack trace and the OOS header
+            // takes up about 1.5K.
+            super(false);
             this.oid = oid;
-            this.buf = buf;
+            if (start==0 && len==buf.length)
+                this.buf = buf;
+            else {
+                this.buf = new byte[len];
+                System.arraycopy(buf,start,this.buf,0,len);
+            }
         }
 
-        protected void execute(Channel channel) {
-            OutputStream os = (OutputStream) channel.getExportedObject(oid);
-            try {
-                os.write(buf);
-            } catch (IOException e) {
-                // ignore errors
-            }
+        protected void execute(final Channel channel) {
+            final OutputStream os = (OutputStream) channel.getExportedObject(oid);
+            channel.pipeWriter.submit(new Runnable() {
+                public void run() {
+                    try {
+                        os.write(buf);
+                    } catch (IOException e) {
+                        // ignore errors
+                        LOGGER.log(Level.WARNING, "Failed to write to stream",e);
+                    } finally {
+                        if (channel.remoteCapability.supportsPipeThrottling()) {
+                            try {
+                                channel.send(new Ack(oid,buf.length));
+                            } catch (IOException e) {
+                                // ignore errors
+                                LOGGER.log(Level.WARNING, "Failed to ack the stream",e);
+                            }
+                        }
+                    }
+                }
+            });
         }
 
         public String toString() {
@@ -177,16 +214,21 @@ final class ProxyOutputStream extends OutputStream {
         private final int oid;
 
         public Flush(int oid) {
+            super(false);
             this.oid = oid;
         }
 
         protected void execute(Channel channel) {
-            OutputStream os = (OutputStream) channel.getExportedObject(oid);
-            try {
-                os.flush();
-            } catch (IOException e) {
-                // ignore errors
-            }
+            final OutputStream os = (OutputStream) channel.getExportedObject(oid);
+            channel.pipeWriter.submit(new Runnable() {
+                public void run() {
+                    try {
+                        os.flush();
+                    } catch (IOException e) {
+                        // ignore errors
+                    }
+                }
+            });
         }
 
         public String toString() {
@@ -209,8 +251,12 @@ final class ProxyOutputStream extends OutputStream {
             this.oid = oid;
         }
 
-        protected void execute(Channel channel) {
-            channel.unexport(oid);
+        protected void execute(final Channel channel) {
+            channel.pipeWriter.submit(new Runnable() {
+                public void run() {
+                    channel.unexport(oid);
+                }
+            });
         }
 
         public String toString() {
@@ -231,14 +277,18 @@ final class ProxyOutputStream extends OutputStream {
         }
 
 
-        protected void execute(Channel channel) {
-            OutputStream os = (OutputStream) channel.getExportedObject(oid);
-            channel.unexport(oid);
-            try {
-                os.close();
-            } catch (IOException e) {
-                // ignore errors
-            }
+        protected void execute(final Channel channel) {
+            final OutputStream os = (OutputStream) channel.getExportedObject(oid);
+            channel.pipeWriter.submit(new Runnable() {
+                public void run() {
+                    channel.unexport(oid);
+                    try {
+                        os.close();
+                    } catch (IOException e) {
+                        // ignore errors
+                    }
+                }
+            });
         }
 
         public String toString() {
@@ -247,4 +297,37 @@ final class ProxyOutputStream extends OutputStream {
 
         private static final long serialVersionUID = 1L;
     }
+
+    /**
+     * {@link Command} to notify the sender that it can send some more data.
+     */
+    private static class Ack extends Command {
+        /**
+         * The oid of the {@link OutputStream} on the receiver side of the data.
+         */
+        private final int oid;
+        /**
+         * The number of bytes that were freed up.
+         */
+        private final int size;
+
+        private Ack(int oid, int size) {
+            super(false); // performance optimization
+            this.oid = oid;
+            this.size = size;
+        }
+
+        protected void execute(Channel channel) {
+            PipeWindow w = channel.getPipeWindow(oid);
+            w.increase(size);
+        }
+
+        public String toString() {
+            return "Pipe.Ack("+oid+','+size+")";
+        }
+
+        private static final long serialVersionUID = 1L;
+    }
+
+    private static final Logger LOGGER = Logger.getLogger(ProxyOutputStream.class.getName());
 }

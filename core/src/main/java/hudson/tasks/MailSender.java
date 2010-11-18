@@ -1,7 +1,8 @@
 /*
  * The MIT License
  * 
- * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, Bruce Chapman, Daniel Dyer, Jean-Baptiste Quenot
+ * Copyright (c) 2004-2010, Sun Microsystems, Inc., Kohsuke Kawaguchi,
+ * Bruce Chapman, Daniel Dyer, Jean-Baptiste Quenot
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -38,13 +39,7 @@ import javax.mail.internet.MimeMessage;
 import javax.mail.internet.AddressException;
 import java.io.File;
 import java.io.IOException;
-import java.util.Date;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.StringTokenizer;
-import java.util.HashSet;
-import java.util.logging.Logger;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -59,6 +54,8 @@ public class MailSender {
      * Whitespace-separated list of e-mail addresses that represent recipients.
      */
     private String recipients;
+    
+    private List<AbstractProject> includeUpstreamCommitters = new ArrayList<AbstractProject>();
 
     /**
      * If true, only the first unstable build will be reported.
@@ -69,12 +66,27 @@ public class MailSender {
      * If true, individuals will receive e-mails regarding who broke the build.
      */
     private boolean sendToIndividuals;
+    
+    /**
+     * The charset to use for the text and subject.
+     */
+    private String charset;
 
 
     public MailSender(String recipients, boolean dontNotifyEveryUnstableBuild, boolean sendToIndividuals) {
+    	this(recipients, dontNotifyEveryUnstableBuild, sendToIndividuals, "UTF-8");
+    }
+
+    public MailSender(String recipients, boolean dontNotifyEveryUnstableBuild, boolean sendToIndividuals, String charset) {
+        this(recipients,dontNotifyEveryUnstableBuild,sendToIndividuals,charset, Collections.<AbstractProject>emptyList());
+    }
+  
+    public MailSender(String recipients, boolean dontNotifyEveryUnstableBuild, boolean sendToIndividuals, String charset, Collection<AbstractProject> includeUpstreamCommitters) {
         this.recipients = recipients;
         this.dontNotifyEveryUnstableBuild = dontNotifyEveryUnstableBuild;
         this.sendToIndividuals = sendToIndividuals;
+        this.charset = charset;
+        this.includeUpstreamCommitters.addAll(includeUpstreamCommitters);
     }
 
     public boolean execute(AbstractBuild<?, ?> build, BuildListener listener) throws InterruptedException {
@@ -91,7 +103,7 @@ public class MailSender {
 
                 Address[] allRecipients = mail.getAllRecipients();
                 if (allRecipients != null) {
-                    StringBuffer buf = new StringBuffer("Sending e-mails to:");
+                    StringBuilder buf = new StringBuilder("Sending e-mails to:");
                     for (Address a : allRecipients)
                         buf.append(' ').append(a);
                     listener.getLogger().println(buf);
@@ -104,9 +116,29 @@ public class MailSender {
             }
         } catch (MessagingException e) {
             e.printStackTrace(listener.error(e.getMessage()));
+        } finally {
+            CHECKPOINT.report();
         }
 
         return true;
+    }
+
+    /**
+     * To correctly compute the state change from the previous build to this build,
+     * we need to ignore aborted builds.
+     * See http://www.nabble.com/Losing-build-state-after-aborts--td24335949.html
+     *
+     * <p>
+     * And since we are consulting the earlier result, we need to wait for the previous build
+     * to pass the check point.
+     */
+    private Result findPreviousBuildResult(AbstractBuild<?,?> b) throws InterruptedException {
+        CHECKPOINT.block();
+        do {
+            b=b.getPreviousBuild();
+            if(b==null) return null;
+        } while(b.getResult()==Result.ABORTED);
+        return b.getResult();
     }
 
     protected MimeMessage getMail(AbstractBuild<?, ?> build, BuildListener listener) throws MessagingException, InterruptedException {
@@ -115,23 +147,19 @@ public class MailSender {
         }
 
         if (build.getResult() == Result.UNSTABLE) {
-            AbstractBuild<?, ?> prev = build.getPreviousBuild();
             if (!dontNotifyEveryUnstableBuild)
                 return createUnstableMail(build, listener);
-            if (prev != null) {
-                if (prev.getResult() == Result.SUCCESS)
-                    return createUnstableMail(build, listener);
-            }
+            Result prev = findPreviousBuildResult(build);
+            if (prev == Result.SUCCESS)
+                return createUnstableMail(build, listener);
         }
 
         if (build.getResult() == Result.SUCCESS) {
-            AbstractBuild<?, ?> prev = build.getPreviousBuild();
-            if (prev != null) {
-                if (prev.getResult() == Result.FAILURE)
-                    return createBackToNormalMail(build, "normal", listener);
-                if (prev.getResult() == Result.UNSTABLE)
-                    return createBackToNormalMail(build, "stable", listener);
-            }
+            Result prev = findPreviousBuildResult(build);
+            if (prev == Result.FAILURE)
+                return createBackToNormalMail(build, Messages.MailSender_BackToNormal_Normal(), listener);
+            if (prev == Result.UNSTABLE)
+                return createBackToNormalMail(build, Messages.MailSender_BackToNormal_Stable(), listener);
         }
 
         return null;
@@ -140,10 +168,10 @@ public class MailSender {
     private MimeMessage createBackToNormalMail(AbstractBuild<?, ?> build, String subject, BuildListener listener) throws MessagingException {
         MimeMessage msg = createEmptyMail(build, listener);
 
-        msg.setSubject(getSubject(build, "Hudson build is back to " + subject + ": "),"UTF-8");
-        StringBuffer buf = new StringBuffer();
+        msg.setSubject(getSubject(build, Messages.MailSender_BackToNormalMail_Subject(subject)),charset);
+        StringBuilder buf = new StringBuilder();
         appendBuildUrl(build, buf);
-        msg.setText(buf.toString());
+        msg.setText(buf.toString(),charset);
 
         return msg;
     }
@@ -151,55 +179,65 @@ public class MailSender {
     private MimeMessage createUnstableMail(AbstractBuild<?, ?> build, BuildListener listener) throws MessagingException {
         MimeMessage msg = createEmptyMail(build, listener);
 
-        String subject = "Hudson build is unstable: ";
+        String subject = Messages.MailSender_UnstableMail_Subject();
 
         AbstractBuild<?, ?> prev = build.getPreviousBuild();
+        boolean still = false;
         if(prev!=null) {
             if(prev.getResult()==Result.SUCCESS)
-                subject = "Hudson build became unstable: ";
-            if(prev.getResult()==Result.UNSTABLE)
-                subject = "Hudson build is still unstable: ";
+                subject =Messages.MailSender_UnstableMail_ToUnStable_Subject();
+            else if(prev.getResult()==Result.UNSTABLE) {
+                subject = Messages.MailSender_UnstableMail_StillUnstable_Subject();
+                still = true;
+            }
         }
 
-        msg.setSubject(getSubject(build, subject),"UTF-8");
-        StringBuffer buf = new StringBuffer();
-        appendBuildUrl(build, buf);
-        msg.setText(buf.toString());
+        msg.setSubject(getSubject(build, subject),charset);
+        StringBuilder buf = new StringBuilder();
+        // Link to project changes summary for "still unstable" if this or last build has changes
+        if (still && !(build.getChangeSet().isEmptySet() && prev.getChangeSet().isEmptySet()))
+            appendUrl(Util.encode(build.getProject().getUrl()) + "changes", buf);
+        else
+            appendBuildUrl(build, buf);
+        msg.setText(buf.toString(), charset);
 
         return msg;
     }
 
-    private void appendBuildUrl(AbstractBuild<?, ?> build, StringBuffer buf) {
+    private void appendBuildUrl(AbstractBuild<?, ?> build, StringBuilder buf) {
+        appendUrl(Util.encode(build.getUrl())
+                  + (build.getChangeSet().isEmptySet() ? "" : "changes"), buf);
+    }
+
+    private void appendUrl(String url, StringBuilder buf) {
         String baseUrl = Mailer.descriptor().getUrl();
-        if (baseUrl != null) {
-            buf.append("See ").append(baseUrl).append(Util.encode(build.getUrl()));
-            if(!build.getChangeSet().isEmptySet())
-                buf.append("changes");
-            buf.append("\n\n");
-        }
+        if (baseUrl != null)
+            buf.append(Messages.MailSender_Link(baseUrl, url)).append("\n\n");
     }
 
     private MimeMessage createFailureMail(AbstractBuild<?, ?> build, BuildListener listener) throws MessagingException, InterruptedException {
         MimeMessage msg = createEmptyMail(build, listener);
 
-        msg.setSubject(getSubject(build, "Build failed in Hudson: "),"UTF-8");
+        msg.setSubject(getSubject(build, Messages.MailSender_FailureMail_Subject()),charset);
 
-        StringBuffer buf = new StringBuffer();
+        StringBuilder buf = new StringBuilder();
         appendBuildUrl(build, buf);
 
         boolean firstChange = true;
         for (ChangeLogSet.Entry entry : build.getChangeSet()) {
             if (firstChange) {
                 firstChange = false;
-                buf.append("Changes:\n\n");
+                buf.append(Messages.MailSender_FailureMail_Changes()).append("\n\n");
             }
             buf.append('[');
             buf.append(entry.getAuthor().getFullName());
             buf.append("] ");
             String m = entry.getMsg();
-            buf.append(m);
-            if (!m.endsWith("\n")) {
-                buf.append('\n');
+            if (m!=null) {
+                buf.append(m);
+                if (!m.endsWith("\n")) {
+                    buf.append('\n');
+                }
             }
             buf.append('\n');
         }
@@ -220,7 +258,7 @@ public class MailSender {
                 // URL which has already been corrected in a subsequent build. To fix, archive.
                 workspaceUrl = baseUrl + Util.encode(build.getProject().getUrl()) + "ws/";
                 artifactUrl = baseUrl + Util.encode(build.getUrl()) + "artifact/";
-                FilePath ws = build.getProject().getWorkspace();
+                FilePath ws = build.getWorkspace();
                 // Match either file or URL patterns, i.e. either
                 // c:\hudson\workdir\jobs\foo\workspace\src\Foo.java
                 // file:/c:/hudson/workdir/jobs/foo/workspace/src/Foo.java
@@ -234,6 +272,7 @@ public class MailSender {
                     Pattern.quote(ws.getRemote()) + "|" + Pattern.quote(ws.toURI().toString()) + ")[/\\\\]?([^:#\\s]*)");
             }
             for (String line : lines) {
+                line = line.replace('\0',' '); // shall we replace other control code? This one is motivated by http://www.nabble.com/Problems-with-NULL-characters-in-generated-output-td25005177.html
                 if (wsPattern != null) {
                     // Perl: $line =~ s{$rx}{$path = $2; $path =~ s!\\\\!/!g; $workspaceUrl . $path}eg;
                     Matcher m = wsPattern.matcher(line);
@@ -241,8 +280,7 @@ public class MailSender {
                     while (m.find(pos)) {
                         String path = m.group(2).replace(File.separatorChar, '/');
                         String linkUrl = artifactMatches(path, build) ? artifactUrl : workspaceUrl;
-                        // Append ' ' to make sure mail readers do not interpret following ':' as part of URL:
-                        String prefix = line.substring(0, m.start()) + linkUrl + Util.encode(path) + ' ';
+                        String prefix = line.substring(0, m.start()) + '<' + linkUrl + Util.encode(path) + '>';
                         pos = prefix.length();
                         line = prefix + line.substring(m.end());
                         // XXX better style to reuse Matcher and fix offsets, but more work
@@ -254,10 +292,10 @@ public class MailSender {
             }
         } catch (IOException e) {
             // somehow failed to read the contents of the log
-            buf.append("Failed to access build log\n\n").append(Functions.printThrowable(e));
+            buf.append(Messages.MailSender_FailureMail_FailedToAccessBuildLog()).append("\n\n").append(Functions.printThrowable(e));
         }
 
-        msg.setText(buf.toString());
+        msg.setText(buf.toString(),charset);
 
         return msg;
     }
@@ -282,23 +320,20 @@ public class MailSender {
                     listener.getLogger().println("No such project exist: "+projectName);
                     continue;
                 }
-                AbstractBuild<?,?> pb = build.getPreviousBuild();
-                AbstractBuild<?,?> ub = build.getUpstreamRelationshipBuild(up);
-                AbstractBuild<?,?> upb = pb!=null ? pb.getUpstreamRelationshipBuild(up) : null;
-                if(pb==null && ub==null && upb==null) {
-                    listener.getLogger().println("Unable to compute the changesets in "+up+". Is the fingerprint configured?");
-                    continue;
-                }
-                if(pb==null || ub==null || upb==null) {
-                    listener.getLogger().println("Unable to compute the changesets in "+up);
-                    continue;
-                }
-                for( AbstractBuild<?,?> b=upb; b!=ub && b!=null; b=b.getNextBuild())
-                    rcp.addAll(buildCulpritList(listener,b.getCulprits()));
+                includeCulpritsOf(up, build, listener, rcp);
             } else {
                 // ordinary address
-                rcp.add(new InternetAddress(address));
+                try {
+                    rcp.add(new InternetAddress(address));
+                } catch (AddressException e) {
+                    // report bad address, but try to send to other addresses
+                    e.printStackTrace(listener.error(e.getMessage()));
+                }
             }
+        }
+
+        for (AbstractProject project : includeUpstreamCommitters) {
+            includeCulpritsOf(project, build, listener, rcp);
         }
 
         if (sendToIndividuals) {
@@ -323,6 +358,22 @@ public class MailSender {
         return msg;
     }
 
+    private void includeCulpritsOf(AbstractProject upstreamBuild, AbstractBuild<?, ?> currentBuild, BuildListener listener, Set<InternetAddress> recipientList) throws AddressException {
+        AbstractBuild<?,?> pb = currentBuild.getPreviousBuild();
+        AbstractBuild<?,?> ub = currentBuild.getUpstreamRelationshipBuild(upstreamBuild);
+        AbstractBuild<?,?> upb = pb!=null ? pb.getUpstreamRelationshipBuild(upstreamBuild) : null;
+        if(pb==null && ub==null && upb==null) {
+            listener.getLogger().println("Unable to compute the changesets in "+ upstreamBuild +". Is the fingerprint configured?");
+            return;
+        }
+        if(pb==null || ub==null || upb==null) {
+            listener.getLogger().println("Unable to compute the changesets in "+ upstreamBuild);
+            return;
+        }
+        for( AbstractBuild<?,?> b=upb; b!=ub && b!=null; b=b.getNextBuild())
+            recipientList.addAll(buildCulpritList(listener,b.getCulprits()));
+    }
+
     private Set<InternetAddress> buildCulpritList(BuildListener listener, Set<User> culprits) throws AddressException {
         Set<InternetAddress> r = new HashSet<InternetAddress>();
         for (User a : culprits) {
@@ -339,7 +390,7 @@ public class MailSender {
     }
 
     private String getSubject(AbstractBuild<?, ?> build, String caption) {
-        return caption + build.getProject().getFullDisplayName() + " #" + build.getNumber();
+        return caption + ' ' + build.getProject().getFullDisplayName() + " #" + build.getNumber();
     }
 
     /**
@@ -349,9 +400,13 @@ public class MailSender {
         return false;
     }
 
-    private static final Logger LOGGER = Logger.getLogger(MailSender.class.getName());
-
     public static boolean debug = false;
 
-    private static final int MAX_LOG_LINES = 250;
+    private static final int MAX_LOG_LINES = Integer.getInteger(MailSender.class.getName()+".maxLogLines",250);
+
+
+    /**
+     * Sometimes the outcome of the previous build affects the e-mail we send, hence this checkpoint.
+     */
+    private static final CheckPoint CHECKPOINT = new CheckPoint("mail sent");
 }

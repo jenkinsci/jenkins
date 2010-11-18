@@ -24,12 +24,14 @@
 package hudson.maven;
 
 import hudson.Util;
+import hudson.Proc;
 import hudson.model.BuildListener;
 import hudson.model.JDK;
 import hudson.model.TaskListener;
 import hudson.remoting.Callable;
 import hudson.remoting.Channel;
 import hudson.remoting.VirtualChannel;
+import hudson.remoting.RequestAbortedException;
 import hudson.tasks.Maven.MavenInstallation;
 import hudson.util.DelegatingOutputStream;
 import hudson.util.NullStream;
@@ -60,10 +62,20 @@ public final class ProcessCache {
          * @param out
          *      The output from the process should be sent to this output stream.
          */
-        Channel newProcess(BuildListener listener,OutputStream out) throws IOException, InterruptedException;
+        NewProcess newProcess(BuildListener listener,OutputStream out) throws IOException, InterruptedException;
         String getMavenOpts();
         MavenInstallation getMavenInstallation(TaskListener listener) throws IOException, InterruptedException;
         JDK getJava(TaskListener listener) throws IOException, InterruptedException;
+    }
+
+    public static class NewProcess {
+        public final Channel channel;
+        public final Proc proc;
+
+        public NewProcess(Channel channel, Proc proc) {
+            this.channel = channel;
+            this.proc = proc;
+        }
     }
 
     class MavenProcess {
@@ -76,6 +88,7 @@ public final class ProcessCache {
          */
         private final String mavenOpts;
         private final PerChannel parent;
+        final Proc proc;
         private final MavenInstallation installation;
         private final JDK jdk;
         private final RedirectableOutputStream output;
@@ -88,16 +101,21 @@ public final class ProcessCache {
 
         private int age = 0;
 
-        MavenProcess(PerChannel parent, String mavenOpts, MavenInstallation installation, JDK jdk, Channel channel, RedirectableOutputStream output) throws IOException, InterruptedException {
+        MavenProcess(PerChannel parent, String mavenOpts, MavenInstallation installation, JDK jdk, NewProcess np, RedirectableOutputStream output) throws IOException, InterruptedException {
             this.parent = parent;
             this.mavenOpts = mavenOpts;
-            this.channel = channel;
+            this.channel = np.channel;
+            this.proc = np.proc;
             this.installation = installation;
             this.jdk = jdk;
             this.output = output;
             this.systemProperties = channel.call(new GetSystemProperties());
         }
 
+        public String getMavenOpts() {
+            return mavenOpts;
+        }
+        
         boolean matches(String mavenOpts,MavenInstallation installation, JDK jdk) {
             return Util.fixNull(this.mavenOpts).equals(Util.fixNull(mavenOpts))
                 && this.installation==installation
@@ -127,6 +145,26 @@ public final class ProcessCache {
                 channel.close();
             } catch (IOException e) {
                 LOGGER.log(Level.WARNING,"Failed to discard the maven process orderly",e);
+            }
+        }
+
+        /**
+         * Calls a {@link Callable} on the channel, with additional error diagnostics.
+         */
+        public <V,T extends Throwable> V call(Callable<V,T> callable) throws T, IOException, InterruptedException {
+            try {
+                return channel.call(callable);
+            } catch (RequestAbortedException e) {
+                // this is normally triggered by the unexpected Maven JVM termination.
+                // check if the process is still alive, after giving it a bit of time to die
+                Thread.sleep(1000);
+                if(proc.isAlive())
+                    throw e; // it's still alive. treat this as a bug in the code
+                else {
+                    String msg = "Maven JVM terminated unexpectedly with exit code " + proc.join();
+                    LOGGER.log(Level.FINE,msg,e);
+                    throw new hudson.AbortException(msg);
+                }
             }
         }
     }
@@ -173,7 +211,7 @@ public final class ProcessCache {
                     // reset the system property.
                     // this also serves as the sanity check.
                     try {
-                        p.channel.call(new SetSystemProperties(p.systemProperties));
+                        p.call(new SetSystemProperties(p.systemProperties));
                     } catch (IOException e) {
                         p.discard();
                         itr.remove();

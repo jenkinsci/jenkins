@@ -1,7 +1,7 @@
 /*
  * The MIT License
  * 
- * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, Erik Ramfelt, Martin Eigenbrodt, Stephen Connolly, Tom Huybrechts
+ * Copyright (c) 2004-2010, Sun Microsystems, Inc., Kohsuke Kawaguchi, Erik Ramfelt, Martin Eigenbrodt, Stephen Connolly, Tom Huybrechts
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -27,6 +27,7 @@ import hudson.FilePath;
 import hudson.Launcher;
 import hudson.Util;
 import hudson.Launcher.RemoteLauncher;
+import hudson.diagnosis.OldDataMonitor;
 import hudson.model.Descriptor.FormException;
 import hudson.remoting.Callable;
 import hudson.remoting.VirtualChannel;
@@ -39,8 +40,6 @@ import hudson.slaves.NodeProperty;
 import hudson.slaves.NodePropertyDescriptor;
 import hudson.slaves.RetentionStrategy;
 import hudson.slaves.SlaveComputer;
-import hudson.tasks.DynamicLabeler;
-import hudson.tasks.LabelFinder;
 import hudson.util.ClockDifference;
 import hudson.util.DescribableList;
 import hudson.util.FormValidation;
@@ -53,8 +52,6 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -62,6 +59,7 @@ import javax.servlet.ServletException;
 
 import org.apache.commons.io.IOUtils;
 import org.kohsuke.stapler.DataBoundConstructor;
+import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
@@ -120,15 +118,12 @@ public abstract class Slave extends Node implements Serializable {
      */
     private String label="";
     
-	private /*almost final*/ DescribableList<NodeProperty<?>,NodePropertyDescriptor> nodeProperties = new DescribableList<NodeProperty<?>,NodePropertyDescriptor>(Hudson.getInstance());
+    private /*almost final*/ DescribableList<NodeProperty<?>,NodePropertyDescriptor> nodeProperties = new DescribableList<NodeProperty<?>,NodePropertyDescriptor>(Hudson.getInstance());
 
     /**
      * Lazily computed set of labels from {@link #label}.
      */
     private transient volatile Set<Label> labels;
-
-    private transient volatile Set<Label> dynamicLabels;
-    private transient volatile int dynamicLabelsInstanceHash;
 
     @DataBoundConstructor
     public Slave(String name, String nodeDescription, String remoteFS, String numExecutors,
@@ -136,6 +131,9 @@ public abstract class Slave extends Node implements Serializable {
         this(name,nodeDescription,remoteFS,Util.tryParseNumber(numExecutors, 1).intValue(),mode,labelString,launcher,retentionStrategy, nodeProperties);
     }
 
+    /**
+     * @deprecated since 2009-02-20.
+     */
     @Deprecated
     public Slave(String name, String nodeDescription, String remoteFS, int numExecutors,
             Mode mode, String labelString, ComputerLauncher launcher, RetentionStrategy retentionStrategy) throws FormException, IOException {
@@ -148,7 +146,7 @@ public abstract class Slave extends Node implements Serializable {
         this.description = nodeDescription;
         this.numExecutors = numExecutors;
         this.mode = mode;
-        this.remoteFS = remoteFS;
+        this.remoteFS = Util.fixNull(remoteFS).trim();
         this.label = Util.fixNull(labelString).trim();
         this.launcher = launcher;
         this.retentionStrategy = retentionStrategy;
@@ -158,12 +156,6 @@ public abstract class Slave extends Node implements Serializable {
 
         if (name.equals(""))
             throw new FormException(Messages.Slave_InvalidConfig_NoName(), null);
-
-        // this prevents the config from being saved when slaves are offline.
-        // on a large deployment with a lot of slaves, some slaves are bound to be offline,
-        // so this check is harmful.
-        //if (!localFS.exists())
-        //    throw new FormException("Invalid slave configuration for " + name + ". No such directory exists: " + localFS, null);
 
 //        if (remoteFS.equals(""))
 //            throw new FormException(Messages.Slave_InvalidConfig_NoRemoteDir(name), null);
@@ -224,80 +216,8 @@ public abstract class Slave extends Node implements Serializable {
         return Util.fixNull(label).trim();
     }
 
-    public Set<Label> getAssignedLabels() {
-        // todo refactor to make dynamic labels a bit less hacky
-        if(labels==null || isChangedDynamicLabels()) {
-            Set<Label> r = new HashSet<Label>();
-            String ls = getLabelString();
-            if(ls.length()>0) {
-                for( String l : ls.split(" +")) {
-                    r.add(Hudson.getInstance().getLabel(l));
-                }
-            }
-            r.add(getSelfLabel());
-            r.addAll(getDynamicLabels());
-            this.labels = Collections.unmodifiableSet(r);
-        }
-        return labels;
-    }
-
-    /**
-     * Check if we should rebuild the list of dynamic labels.
-     * @todo make less hacky
-     * @return
-     */
-    private boolean isChangedDynamicLabels() {
-        Computer comp = getComputer();
-        if (comp == null) {
-            return dynamicLabelsInstanceHash != 0;
-        } else {
-            if (dynamicLabelsInstanceHash == comp.hashCode()) {
-                return false;
-            }
-            dynamicLabels = null; // force a re-calc
-            return true;
-        }
-    }
-
-    /**
-     * Returns the possibly empty set of labels that it has been determined as supported by this node.
-     *
-     * @todo make less hacky
-     * @see hudson.tasks.LabelFinder
-     *
-     * @return
-     *      never null.
-     */
-    public Set<Label> getDynamicLabels() {
-        // another thread may preempt and set dynamicLabels field to null,
-        // so a care needs to be taken to avoid race conditions under all circumstances.
-        Set<Label> labels = dynamicLabels;
-        if (labels != null)     return labels;
-
-        synchronized (this) {
-            labels = dynamicLabels;
-            if (labels != null)     return labels;
-
-            dynamicLabels = labels = new HashSet<Label>();
-            Computer computer = getComputer();
-            VirtualChannel channel;
-            if (computer != null && (channel = computer.getChannel()) != null) {
-                dynamicLabelsInstanceHash = computer.hashCode();
-                for (DynamicLabeler labeler : LabelFinder.LABELERS) {
-                    for (String label : labeler.findLabels(channel)) {
-                        labels.add(Hudson.getInstance().getLabel(label));
-                    }
-                }
-            } else {
-                dynamicLabelsInstanceHash = 0;
-            }
-
-            return labels;
-        }
-    }
-
     public ClockDifference getClockDifference() throws IOException, InterruptedException {
-        VirtualChannel channel = getComputer().getChannel();
+        VirtualChannel channel = getChannel();
         if(channel==null)
             throw new IOException(getNodeName()+" is offline");
 
@@ -330,13 +250,13 @@ public abstract class Slave extends Node implements Serializable {
     public FilePath getWorkspaceRoot() {
         FilePath r = getRootPath();
         if(r==null) return null;
-        return r.child("workspace");
+        return r.child(WORKSPACE_ROOT);
     }
 
     /**
      * Web-bound object used to serve jar files for JNLP.
      */
-    public static final class JnlpJar {
+    public static final class JnlpJar implements HttpResponse {
         private final String fileName;
 
         public JnlpJar(String fileName) {
@@ -347,10 +267,15 @@ public abstract class Slave extends Node implements Serializable {
             URLConnection con = connect();
             // since we end up redirecting users to jnlpJars/foo.jar/, set the content disposition
             // so that browsers can download them in the right file name.
-            rsp.setHeader("Content-Disposition", "inline; filename=" + fileName);
+            // see http://support.microsoft.com/kb/260519 and http://www.boutell.com/newfaq/creating/forcedownload.html
+            rsp.setHeader("Content-Disposition", "attachment; filename=" + fileName);
             InputStream in = con.getInputStream();
             rsp.serveFile(req, in, con.getLastModified(), con.getContentLength(), "*.jar" );
             in.close();
+        }
+
+        public void generateResponse(StaplerRequest req, StaplerResponse rsp, Object node) throws IOException, ServletException {
+            doIndex(req,rsp);
         }
 
         private URLConnection connect() throws IOException {
@@ -362,7 +287,7 @@ public abstract class Slave extends Node implements Serializable {
             URL res = Hudson.getInstance().servletContext.getResource("/WEB-INF/" + fileName);
             if(res==null) {
                 // during the development this path doesn't have the files.
-                res = new URL(new File(".").getAbsoluteFile().toURL(),"target/generated-resources/WEB-INF/"+fileName);
+                res = new URL(new File(".").getAbsoluteFile().toURI().toURL(),"target/generated-resources/WEB-INF/"+fileName);
             }
             return res;
         }
@@ -387,9 +312,10 @@ public abstract class Slave extends Node implements Serializable {
      * Gets the corresponding computer object.
      */
     public SlaveComputer getComputer() {
-        return (SlaveComputer)Hudson.getInstance().getComputer(this);
+        return (SlaveComputer)toComputer();
     }
 
+    @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
@@ -399,6 +325,7 @@ public abstract class Slave extends Node implements Serializable {
         return name.equals(that.name);
     }
 
+    @Override
     public int hashCode() {
         return name.hashCode();
     }
@@ -412,6 +339,8 @@ public abstract class Slave extends Node implements Serializable {
             if(command.length()>0)  command += ' ';
             agentCommand = command+"java -jar ~/bin/slave.jar";
         }
+        if (command!=null || localFS!=null)
+            OldDataMonitor.report(Hudson.getInstance(), "1.69");
         if (launcher == null) {
             launcher = (agentCommand == null || agentCommand.trim().length() == 0)
                     ? new JNLPLauncher()
@@ -423,7 +352,7 @@ public abstract class Slave extends Node implements Serializable {
     }
 
     public SlaveDescriptor getDescriptor() {
-        Descriptor d = Hudson.getInstance().getDescriptor(getClass());
+        Descriptor d = Hudson.getInstance().getDescriptorOrDie(getClass());
         if (d instanceof SlaveDescriptor)
             return (SlaveDescriptor) d;
         throw new IllegalStateException(d.getClass()+" needs to extend from SlaveDescriptor");
@@ -431,19 +360,18 @@ public abstract class Slave extends Node implements Serializable {
 
     public static abstract class SlaveDescriptor extends NodeDescriptor {
         public FormValidation doCheckNumExecutors(@QueryParameter String value) {
-            return FormValidation.validateNonNegativeInteger(value);
+            return FormValidation.validatePositiveInteger(value);
         }
 
         /**
          * Performs syntactical check on the remote FS for slaves.
          */
-        public FormValidation doCheckRemoteFs(@QueryParameter String value) throws IOException, ServletException {
+        public FormValidation doCheckRemoteFS(@QueryParameter String value) throws IOException, ServletException {
             if(Util.fixEmptyAndTrim(value)==null)
-                return FormValidation.error("Remote directory is mandatory");
+                return FormValidation.error(Messages.Slave_Remote_Director_Mandatory());
 
             if(value.startsWith("\\\\") || value.startsWith("/net/"))
-                return FormValidation.warning("Are you sure you want to use network mounted file system for FS root? " +
-                        "Note that this directory needs not be visible to the master.");
+                return FormValidation.warning(Messages.Slave_Network_Mounted_File_System_Warning());
 
             return FormValidation.ok();
         }
@@ -451,7 +379,7 @@ public abstract class Slave extends Node implements Serializable {
 
 
 //
-// backwrad compatibility
+// backward compatibility
 //
     /**
      * In Hudson < 1.69 this was used to store the local file path
@@ -469,6 +397,7 @@ public abstract class Slave extends Node implements Serializable {
      * @deprecated
      */
     private transient String command;
+
     /**
      * Command line to launch the agent, like
      * "ssh myslave java -jar /path/to/hudson-remoting.jar"
@@ -485,4 +414,9 @@ public abstract class Slave extends Node implements Serializable {
 
         private static final long serialVersionUID = 1L;
     }
+
+    /**
+     * Determines the workspace root file name for those who really really need the shortest possible path name.
+     */
+    private static final String WORKSPACE_ROOT = System.getProperty(Slave.class.getName()+".workspaceRoot","workspace");
 }

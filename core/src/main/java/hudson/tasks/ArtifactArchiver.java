@@ -64,6 +64,9 @@ public class ArtifactArchiver extends Recorder {
      * Just keep the last successful artifact set, no more.
      */
     private final boolean latestOnly;
+    
+    private static final Boolean allowEmptyArchive = 
+    	Boolean.getBoolean(ArtifactArchiver.class.getName()+".warnOnEmpty");
 
     @DataBoundConstructor
     public ArtifactArchiver(String artifacts, String excludes, boolean latestOnly) {
@@ -83,35 +86,51 @@ public class ArtifactArchiver extends Recorder {
     public boolean isLatestOnly() {
         return latestOnly;
     }
+    
+    private void listenerWarnOrError(BuildListener listener, String message) {
+    	if (allowEmptyArchive) {
+    		listener.getLogger().println(String.format("WARN: %s", message));
+    	} else {
+    		listener.error(message);
+    	}
+    }
 
+    @Override
     public boolean perform(AbstractBuild<?,?> build, Launcher launcher, BuildListener listener) throws InterruptedException {
-        AbstractProject<?,?> p = build.getProject();
-
         if(artifacts.length()==0) {
             listener.error(Messages.ArtifactArchiver_NoIncludes());
             build.setResult(Result.FAILURE);
             return true;
         }
-
+        
         File dir = build.getArtifactsDir();
         dir.mkdirs();
 
         listener.getLogger().println(Messages.ArtifactArchiver_ARCHIVING_ARTIFACTS());
         try {
-            FilePath ws = p.getWorkspace();
+            FilePath ws = build.getWorkspace();
             if (ws==null) { // #3330: slave down?
                 return true;
             }
+
+            String artifacts = build.getEnvironment(listener).expand(this.artifacts);
             if(ws.copyRecursiveTo(artifacts,excludes,new FilePath(dir))==0) {
                 if(build.getResult().isBetterOrEqualTo(Result.UNSTABLE)) {
                     // If the build failed, don't complain that there was no matching artifact.
                     // The build probably didn't even get to the point where it produces artifacts. 
-                    listener.error(Messages.ArtifactArchiver_NoMatchFound(artifacts));
-                    String msg = ws.validateAntFileMask(artifacts);
+                    listenerWarnOrError(listener, Messages.ArtifactArchiver_NoMatchFound(artifacts));
+                    String msg = null;
+                    try {
+                    	msg = ws.validateAntFileMask(artifacts);
+                    } catch (Exception e) {
+                    	listenerWarnOrError(listener, e.getMessage());
+                    }
                     if(msg!=null)
-                        listener.error(msg);
+                        listenerWarnOrError(listener, msg);
                 }
-                build.setResult(Result.FAILURE);
+                if (!allowEmptyArchive) {
+                	build.setResult(Result.FAILURE);
+                }
                 return true;
             }
         } catch (IOException e) {
@@ -124,8 +143,8 @@ public class ArtifactArchiver extends Recorder {
         return true;
     }
 
-
-    public @Override boolean prebuild(AbstractBuild<?, ?> build, BuildListener listener) {
+    @Override
+    public boolean prebuild(AbstractBuild<?, ?> build, BuildListener listener) {
         if(latestOnly) {
             AbstractBuild<?,?> b = build.getProject().getLastCompletedBuild();
             Result bestResultSoFar = Result.NOT_BUILT;
@@ -150,6 +169,10 @@ public class ArtifactArchiver extends Recorder {
         return true;
     }
 
+    public BuildStepMonitor getRequiredMonitorService() {
+        return BuildStepMonitor.NONE;
+    }
+    
     /**
      * @deprecated as of 1.286
      *      Some plugin depends on this, so this field is left here and points to the last created instance.
@@ -171,9 +194,10 @@ public class ArtifactArchiver extends Recorder {
          * Performs on-the-fly validation on the file mask wildcard.
          */
         public FormValidation doCheckArtifacts(@AncestorInPath AbstractProject project, @QueryParameter String value) throws IOException {
-            return FilePath.validateFileMask(project.getWorkspace(),value);
+            return FilePath.validateFileMask(project.getSomeWorkspace(),value);
         }
 
+        @Override
         public ArtifactArchiver newInstance(StaplerRequest req, JSONObject formData) throws FormException {
             return req.bindJSON(ArtifactArchiver.class,formData);
         }

@@ -1,7 +1,7 @@
 /*
  * The MIT License
  * 
- * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, Jean-Baptiste Quenot, Seiji Sogabe, Tom Huybrechts
+ * Copyright (c) 2004-2010, Sun Microsystems, Inc., Kohsuke Kawaguchi, Jean-Baptiste Quenot, Seiji Sogabe, Tom Huybrechts
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,6 +24,8 @@
 package hudson.model;
 
 import hudson.Util;
+import hudson.EnvVars;
+import hudson.diagnosis.OldDataMonitor;
 import hudson.model.Queue.QueueAction;
 import hudson.tasks.BuildStep;
 import hudson.tasks.BuildWrapper;
@@ -37,7 +39,6 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 /**
@@ -49,7 +50,7 @@ import java.util.Set;
  * that were specified when scheduling.
  */
 @ExportedBean
-public class ParametersAction implements Action, Iterable<ParameterValue>, QueueAction {
+public class ParametersAction implements Action, Iterable<ParameterValue>, QueueAction, EnvironmentContributingAction {
 
     private final List<ParameterValue> parameters;
 
@@ -63,7 +64,7 @@ public class ParametersAction implements Action, Iterable<ParameterValue>, Queue
     }
     
     public ParametersAction(ParameterValue... parameters) {
-    	this(Arrays.asList(parameters));
+        this(Arrays.asList(parameters));
     }
 
     public void createBuildWrappers(AbstractBuild<?,?> build, Collection<? super BuildWrapper> result) {
@@ -73,7 +74,7 @@ public class ParametersAction implements Action, Iterable<ParameterValue>, Queue
         }
     }
 
-    public void buildEnvVars(AbstractBuild<?,?> build, Map<String,String> env) {
+    public void buildEnvVars(AbstractBuild<?,?> build, EnvVars env) {
         for (ParameterValue p : parameters)
             p.buildEnvVars(build,env);
     }
@@ -111,6 +112,13 @@ public class ParametersAction implements Action, Iterable<ParameterValue>, Queue
         return Collections.unmodifiableList(parameters);
     }
 
+    public ParameterValue getParameter(String name) {
+        for (ParameterValue p : parameters)
+            if (p.getName().equals(name))
+                return p;
+        return null;
+    }
+
     public String getDisplayName() {
         return Messages.ParameterAction_DisplayName();
     }
@@ -126,18 +134,23 @@ public class ParametersAction implements Action, Iterable<ParameterValue>, Queue
     /**
      * Allow an other build of the same project to be scheduled, if it has other parameters.
      */
-	public boolean shouldSchedule(List<Action> actions) {
-		List<ParametersAction> others = Util.filter(actions, ParametersAction.class);
-		if (others.isEmpty()) {
-			return !parameters.isEmpty();
-		} else {
-			// I don't think we need multiple ParametersActions, but let's be defensive 
-			Set<ParameterValue> parameters = new HashSet<ParameterValue>();
-			for (ParametersAction other: others) {
-				parameters.addAll(other.parameters);
-			}
-		return !parameters.equals(new HashSet<ParameterValue>(this.parameters));
-		}
-	}
+    public boolean shouldSchedule(List<Action> actions) {
+        List<ParametersAction> others = Util.filter(actions, ParametersAction.class);
+        if (others.isEmpty()) {
+            return !parameters.isEmpty();
+        } else {
+            // I don't think we need multiple ParametersActions, but let's be defensive
+            Set<ParameterValue> params = new HashSet<ParameterValue>();
+            for (ParametersAction other: others) {
+                params.addAll(other.parameters);
+            }
+            return !params.equals(new HashSet<ParameterValue>(this.parameters));
+        }
+    }
 
+    private Object readResolve() {
+        if (build != null)
+            OldDataMonitor.report(build, "1.283");
+        return this;
+    }
 }

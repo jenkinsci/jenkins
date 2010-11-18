@@ -1,7 +1,8 @@
 /*
  * The MIT License
  * 
- * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, Red Hat, Inc., Seiji Sogabe, Stephen Connolly, Thomas J. Black, Tom Huybrechts
+ * Copyright (c) 2004-2010, Sun Microsystems, Inc., Kohsuke Kawaguchi,
+ * Red Hat, Inc., Seiji Sogabe, Stephen Connolly, Thomas J. Black, Tom Huybrechts
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -25,7 +26,10 @@ package hudson.model;
 
 import hudson.EnvVars;
 import hudson.Util;
+import hudson.cli.declarative.CLIMethod;
+import hudson.console.AnnotatedLargeText;
 import hudson.model.Descriptor.FormException;
+import hudson.model.queue.WorkUnit;
 import hudson.node_monitors.NodeMonitor;
 import hudson.remoting.Channel;
 import hudson.remoting.VirtualChannel;
@@ -36,6 +40,9 @@ import hudson.security.Permission;
 import hudson.security.PermissionGroup;
 import hudson.slaves.ComputerLauncher;
 import hudson.slaves.RetentionStrategy;
+import hudson.slaves.WorkspaceList;
+import hudson.slaves.OfflineCause;
+import hudson.slaves.OfflineCause.ByCLI;
 import hudson.tasks.BuildWrapper;
 import hudson.tasks.Publisher;
 import hudson.util.DaemonThreadFactory;
@@ -45,8 +52,13 @@ import hudson.util.RunList;
 import hudson.util.Futures;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
+import org.kohsuke.stapler.QueryParameter;
+import org.kohsuke.stapler.HttpResponses;
+import org.kohsuke.stapler.HttpResponse;
+import org.kohsuke.stapler.HttpRedirect;
 import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.export.ExportedBean;
+import org.kohsuke.args4j.Option;
 
 import javax.servlet.ServletException;
 import java.io.File;
@@ -62,6 +74,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.util.concurrent.ExecutionException;
 import java.util.logging.LogRecord;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -98,8 +111,17 @@ import java.net.Inet4Address;
 public /*transient*/ abstract class Computer extends Actionable implements AccessControlled, ExecutorListener {
 
     private final CopyOnWriteArrayList<Executor> executors = new CopyOnWriteArrayList<Executor>();
+    // TODO: 
+    private final CopyOnWriteArrayList<OneOffExecutor> oneOffExecutors = new CopyOnWriteArrayList<OneOffExecutor>();
 
     private int numExecutors;
+
+    /**
+     * Contains info about reason behind computer being offline.
+     */
+    protected volatile OfflineCause offlineCause;
+    
+    private long connectTime = 0;
 
     /**
      * True if Hudson shouldn't start new builds on this node.
@@ -111,6 +133,14 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
      * from this object.
      */
     protected String nodeName;
+
+    /**
+     * @see #getHostName()
+     */
+    private volatile String cachedHostName;
+    private volatile boolean hostNameCached;
+
+    private final WorkspaceList workspaceList = new WorkspaceList();
 
     public Computer(Node node) {
         assert node.getNumExecutors()!=0 : "Computer created with 0 executors";
@@ -125,10 +155,24 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
     }
 
     /**
+     * Gets the object that coordinates the workspace allocation on this computer.
+     */
+    public WorkspaceList getWorkspaceList() {
+        return workspaceList;
+    }
+
+    /**
      * Gets the string representation of the slave log.
      */
     public String getLog() throws IOException {
         return Util.loadFile(getLogFile());
+    }
+
+    /**
+     * Used to URL-bind {@link AnnotatedLargeText}.
+     */
+    public AnnotatedLargeText<Computer> getLogText() {
+        return new AnnotatedLargeText<Computer>(getLogFile(), Charset.defaultCharset(), false, this);
     }
 
     public ACL getACL() {
@@ -141,6 +185,18 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
 
     public boolean hasPermission(Permission permission) {
         return getACL().hasPermission(permission);
+    }
+
+    /**
+     * If the computer was offline (either temporarily or not),
+     * this method will return the cause.
+     *
+     * @return
+     *      null if the system was put offline without given a cause.
+     */
+    @Exported
+    public OfflineCause getOfflineCause() {
+        return offlineCause;
     }
 
     /**
@@ -170,7 +226,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
     public abstract void doLaunchSlaveAgent( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException;
 
     /**
-     * @deprecated  Use {@link #connect(boolean)}
+     * @deprecated since 2009-01-06.  Use {@link #connect(boolean)}
      */
     public final void launch() {
         connect(true);
@@ -196,19 +252,111 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
      *      both a successful completion and a non-successful completion (such distinction typically doesn't
      *      make much sense because as soon as {@link Computer} is connected it can be disconnected by some other threads.)
      */
-    public abstract Future<?> connect(boolean forceReconnect);
+    public final Future<?> connect(boolean forceReconnect) {
+    	connectTime = System.currentTimeMillis();
+    	return _connect(forceReconnect);
+    }
+    
+    /**
+     * Allows implementing-classes to provide an implementation for the connect method.
+     *
+     * <p>
+     * If already connected or if this computer doesn't support proactive launching, no-op.
+     * This method may return immediately
+     * while the launch operation happens asynchronously.
+     *
+     * @see #disconnect()
+     *
+     * @param forceReconnect
+     *      If true and a connect activity is already in progress, it will be cancelled and
+     *      the new one will be started. If false, and a connect activity is already in progress, this method
+     *      will do nothing and just return the pending connection operation.
+     * @return
+     *      A {@link Future} representing pending completion of the task. The 'completion' includes
+     *      both a successful completion and a non-successful completion (such distinction typically doesn't
+     *      make much sense because as soon as {@link Computer} is connected it can be disconnected by some other threads.)
+     */
+    protected abstract Future<?> _connect(boolean forceReconnect);
 
+    /**
+     * CLI command to reconnect this node.
+     */
+    @CLIMethod(name="connect-node")
+    public void cliConnect(@Option(name="-f",usage="Cancel any currently pending connect operation and retry from scratch") boolean force) throws ExecutionException, InterruptedException {
+        checkPermission(Hudson.ADMINISTER);
+        connect(force).get();
+    }
+
+    /**
+     * Gets the time (since epoch) when this computer connected.
+     *  
+     * @return The time in ms since epoch when this computer last connected.
+     */
+    public final long getConnectTime() {
+    	return connectTime;
+    }
+    
     /**
      * Disconnect this computer.
      *
      * If this is the master, no-op. This method may return immediately
      * while the launch operation happens asynchronously.
      *
+     * @param cause
+     *      Object that identifies the reason the node was disconnected.
+     *
      * @return
      *      {@link Future} to track the asynchronous disconnect operation.
      * @see #connect(boolean)
+     * @since 1.320
      */
-    public Future<?> disconnect() { return Futures.precomputed(null); }
+    public Future<?> disconnect(OfflineCause cause) {
+        offlineCause = cause;
+        if (Util.isOverridden(Computer.class,getClass(),"disconnect"))
+            return disconnect();    // legacy subtypes that extend disconnect().
+
+        connectTime=0;
+        return Futures.precomputed(null);
+    }
+
+    /**
+     * Equivalent to {@code disconnect(null)}
+     *
+     * @deprecated as of 1.320.
+     *      Use {@link #disconnect(OfflineCause)} and specify the cause.
+     */
+    public Future<?> disconnect() {
+        if (Util.isOverridden(Computer.class,getClass(),"disconnect",OfflineCause.class))
+            // if the subtype already derives disconnect(OfflineCause), delegate to it
+            return disconnect(null);
+
+        connectTime=0;
+        return Futures.precomputed(null);
+    }
+
+    /**
+     * CLI command to disconnects this node.
+     */
+    @CLIMethod(name="disconnect-node")
+    public void cliDisconnect(@Option(name="-m",usage="Record the note about why you are disconnecting this node") String cause) throws ExecutionException, InterruptedException {
+        checkPermission(Hudson.ADMINISTER);
+        disconnect(new ByCLI(cause)).get();
+    }
+
+    /**
+     * CLI command to mark the node offline.
+     */
+    @CLIMethod(name="offline-node")
+    public void cliOffline(@Option(name="-m",usage="Record the note about why you are disconnecting this node") String cause) throws ExecutionException, InterruptedException {
+        checkPermission(Hudson.ADMINISTER);
+        setTemporarilyOffline(true,new ByCLI(cause));
+    }
+
+    @CLIMethod(name="online-node")
+    public void cliOnline() throws ExecutionException, InterruptedException {
+        checkPermission(Hudson.ADMINISTER);
+        setTemporarilyOffline(false,null);
+    }
 
     /**
      * Number of {@link Executor}s that are configured for this computer.
@@ -232,6 +380,10 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
 
     /**
      * Returns the {@link Node} that this computer represents.
+     *
+     * @return
+     *      null if the configuration has changed and the node is removed, yet the corresponding {@link Computer}
+     *      is not yet gone.
      */
     public Node getNode() {
         if(nodeName==null)
@@ -239,8 +391,13 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
         return Hudson.getInstance().getNode(nodeName);
     }
 
+    @Exported
     public LoadStatistics getLoadStatistics() {
         return getNode().getSelfLabel().loadStatistics;
+    }
+
+    public BuildTimelineWidget getTimeline() {
+        return new BuildTimelineWidget(getBuilds());
     }
 
     /**
@@ -290,7 +447,8 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
 
     /**
      * Returns true if this computer is supposed to be launched via JNLP.
-     * @deprecated see {@linkplain #isLaunchSupported()} and {@linkplain ComputerLauncher}
+     * @deprecated since 2008-05-18.
+     *     See {@linkplain #isLaunchSupported()} and {@linkplain ComputerLauncher}
      */
     @Exported
     @Deprecated
@@ -328,7 +486,24 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
         return temporarilyOffline;
     }
 
+    /**
+     * @deprecated as of 1.320.
+     *      Use {@link #setTemporarilyOffline(boolean, OfflineCause)}
+     */
     public void setTemporarilyOffline(boolean temporarilyOffline) {
+        setTemporarilyOffline(temporarilyOffline,null);
+    }
+
+    /**
+     * Marks the computer as temporarily offline. This retains the underlying
+     * {@link Channel} connection, but prevent builds from executing.
+     *
+     * @param cause
+     *      If the first argument is true, specify the reason why the node is being put
+     *      offline. 
+     */
+    public void setTemporarilyOffline(boolean temporarilyOffline, OfflineCause cause) {
+        offlineCause = temporarilyOffline ? cause : null;
         this.temporarilyOffline = temporarilyOffline;
         Hudson.getInstance().getQueue().scheduleMaintenance();
     }
@@ -406,8 +581,11 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
                     e.interrupt();
         } else {
             // if the number is increased, add new ones
-            while(executors.size()<numExecutors)
-                executors.add(new Executor(this));
+            while(executors.size()<numExecutors) {
+                Executor e = new Executor(this, executors.size());
+                e.start();
+                executors.add(e);
+            }
         }
     }
 
@@ -430,6 +608,12 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
         return countExecutors()-countIdle();
     }
 
+    /**
+     * Returns the current size of the executor pool for this computer.
+     * This number may temporarily differ from {@link #getNumExecutors()} if there
+     * are busy tasks when the configured size is decreased.  OneOffExecutors are
+     * not included in this count.
+     */
     public final int countExecutors() {
         return executors.size();
     }
@@ -443,10 +627,20 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
     }
 
     /**
-     * Returns true if all the executors of this computer is idle.
+     * Gets the read-only snapshot view of all {@link OneOffExecutor}s.
+     */
+    @Exported
+    public List<OneOffExecutor> getOneOffExecutors() {
+        return new ArrayList<OneOffExecutor>(oneOffExecutors);
+    }
+
+    /**
+     * Returns true if all the executors of this computer are idle.
      */
     @Exported
     public final boolean isIdle() {
+        if (!oneOffExecutors.isEmpty())
+            return false;
         for (Executor e : executors)
             if(!e.isIdle())
                 return false;
@@ -466,6 +660,9 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
      */
     public final long getIdleStartMilliseconds() {
         long firstIdle = Long.MIN_VALUE;
+        for (Executor e : oneOffExecutors) {
+            firstIdle = Math.max(firstIdle, e.getIdleStartMilliseconds());
+        }
         for (Executor e : executors) {
             firstIdle = Math.max(firstIdle, e.getIdleStartMilliseconds());
         }
@@ -563,7 +760,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
      *
      * <p>
      * Since it's possible that the slave is not reachable from the master (it may be behind a firewall,
-     * connecting to master via JNLP), in which case this method returns null.
+     * connecting to master via JNLP), this method may return null.
      *
      * It's surprisingly tricky for a machine to know a name that other systems can get to,
      * especially between things like DNS search suffix, the hosts file, and YP.
@@ -572,20 +769,60 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
      * So the technique here is to compute possible interfaces and names on the slave,
      * then try to ping them from the master, and pick the one that worked.
      *
+     * <p>
+     * The computation may take some time, so it employs caching to make the successive lookups faster.
+     *
      * @since 1.300
+     * @return
+     *      null if the host name cannot be computed (for example because this computer is offline,
+     *      because the slave is behind the firewall, etc.) 
      */
     public String getHostName() throws IOException, InterruptedException {
-        for( String address : getChannel().call(new ListPossibleNames())) {
+        if(hostNameCached)
+            // in the worst case we end up having multiple threads computing the host name simultaneously, but that's not harmful, just wasteful.
+            return cachedHostName;
+
+        VirtualChannel channel = getChannel();
+        if(channel==null)   return null; // can't compute right now
+
+        for( String address : channel.call(new ListPossibleNames())) {
             try {
                 InetAddress ia = InetAddress.getByName(address);
-                if(ia.isReachable(500) && ia instanceof Inet4Address)
-                    return ia.getCanonicalHostName();
+                if(!(ia instanceof Inet4Address)) {
+                    LOGGER.fine(address+" is not an IPv4 address");
+                    continue;
+                }
+                if(!ComputerPinger.checkIsReachable(ia, 3)) {
+                    LOGGER.fine(address+" didn't respond to ping");
+                    continue;
+                }
+                cachedHostName = ia.getCanonicalHostName();
+                hostNameCached = true;
+                return cachedHostName;
             } catch (IOException e) {
                 // if a given name fails to parse on this host, we get this error
                 LOGGER.log(Level.FINE, "Failed to parse "+address,e);
             }
         }
+
+        // allow the administrator to manually specify the host name as a fallback. HUDSON-5373
+        cachedHostName = channel.call(new GetFallbackName());
+
+        hostNameCached = true;
         return null;
+    }
+
+    /**
+     * Starts executing a fly-weight task.
+     */
+    /*package*/ final void startFlyWeightTask(WorkUnit p) {
+        OneOffExecutor e = new OneOffExecutor(this, p);
+        e.start();
+        oneOffExecutors.add(e);
+    }
+
+    /*package*/ final void remove(OneOffExecutor e) {
+        oneOffExecutors.remove(e);
     }
 
     private static class ListPossibleNames implements Callable<List<String>,IOException> {
@@ -595,15 +832,32 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
             Enumeration<NetworkInterface> nis = NetworkInterface.getNetworkInterfaces();
             while (nis.hasMoreElements()) {
                 NetworkInterface ni =  nis.nextElement();
+                LOGGER.fine("Listing up IP addresses for "+ni.getDisplayName());
                 Enumeration<InetAddress> e = ni.getInetAddresses();
                 while (e.hasMoreElements()) {
                     InetAddress ia =  e.nextElement();
-                    if(ia.isLoopbackAddress())  continue;
-                    if(!(ia instanceof Inet4Address))   continue;
+                    if(ia.isLoopbackAddress()) {
+                        LOGGER.fine(ia+" is a loopback address");
+                        continue;
+                    }
+
+                    if(!(ia instanceof Inet4Address)) {
+                        LOGGER.fine(ia+" is not an IPv4 address");
+                        continue;
+                    }
+
+                    LOGGER.fine(ia+" is a viable candidate");
                     names.add(ia.getHostAddress());
                 }
             }
             return names;
+        }
+        private static final long serialVersionUID = 1L;
+    }
+
+    private static class GetFallbackName implements Callable<String,IOException> {
+        public String call() throws IOException {
+            return System.getProperty("host.name");
         }
         private static final long serialVersionUID = 1L;
     }
@@ -626,11 +880,18 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
             runs.newBuilds(), Run.FEED_ADAPTER, req, rsp );
     }
 
-    public void doToggleOffline( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
+    public HttpResponse doToggleOffline(@QueryParameter String offlineMessage) throws IOException, ServletException {
         checkPermission(Hudson.ADMINISTER);
-
-        setTemporarilyOffline(!temporarilyOffline);
-        rsp.forwardToPreviousPage(req);
+        if(!temporarilyOffline) {
+            offlineMessage = Util.fixEmptyAndTrim(offlineMessage);
+            setTemporarilyOffline(!temporarilyOffline,
+                    OfflineCause.create(hudson.slaves.Messages._SlaveComputer_DisconnectedBy(
+                        Hudson.getAuthentication().getName(),
+                        offlineMessage!=null ? " : " + offlineMessage : "")));
+        } else {
+            setTemporarilyOffline(!temporarilyOffline,null);
+        }
+        return HttpResponses.redirectToDot();
     }
 
     public Api getApi() {
@@ -647,12 +908,17 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
         rsp.setContentType("text/plain");
         rsp.setCharacterEncoding("UTF-8");
         PrintWriter w = new PrintWriter(rsp.getCompressedWriter(req));
-        w.println("Master to slave");
-        ((Channel)getChannel()).dumpExportTable(w);
-        w.flush(); // flush here once so that even if the dump from the slave fails, the client gets some useful info
+        VirtualChannel vc = getChannel();
+        if (vc instanceof Channel) {
+            w.println("Master to slave");
+            ((Channel)vc).dumpExportTable(w);
+            w.flush(); // flush here once so that even if the dump from the slave fails, the client gets some useful info
 
-        w.println("\n\n\nSlave to master");
-        w.print(getChannel().call(new DumpExportTableTask()));
+            w.println("\n\n\nSlave to master");
+            w.print(vc.call(new DumpExportTableTask()));
+        } else {
+            w.println(Messages.Computer_BadChannel());
+        }
         w.close();
     }
 
@@ -702,48 +968,46 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
     /**
      * Accepts the update to the node configuration.
      */
-    public void doConfigSubmit( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
-        try {
-            checkPermission(Hudson.ADMINISTER);  // TODO: new permission?
+    public void doConfigSubmit( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException, FormException {
+        checkPermission(CONFIGURE);
+        req.setCharacterEncoding("UTF-8");
+        
+        final Hudson app = Hudson.getInstance();
 
-            final Hudson app = Hudson.getInstance();
+        Node result = getNode().getDescriptor().newInstance(req, req.getSubmittedForm());
 
-            Node result = getNode().getDescriptor().newInstance(req, req.getSubmittedForm());
-
-            // replace the old Node object by the new one
-            synchronized (app) {
-                List<Node> nodes = new ArrayList<Node>(app.getNodes());
-                int i = nodes.indexOf(getNode());
-                if(i<0) {
-                    sendError("This slave appears to be removed while you were editing the configuration",req,rsp);
-                    return;
-                }
-
-                nodes.set(i,result);
-                app.setNodes(nodes);
+        // replace the old Node object by the new one
+        synchronized (app) {
+            List<Node> nodes = new ArrayList<Node>(app.getNodes());
+            int i = nodes.indexOf(getNode());
+            if(i<0) {
+                sendError("This slave appears to be removed while you were editing the configuration",req,rsp);
+                return;
             }
 
-            // take the user back to the slave top page.
-            rsp.sendRedirect2("../"+result.getNodeName()+'/');
-        } catch (FormException e) {
-            sendError(e,req,rsp);
+            nodes.set(i,result);
+            app.setNodes(nodes);
         }
+
+        // take the user back to the slave top page.
+        rsp.sendRedirect2("../"+result.getNodeName()+'/');
     }
 
     /**
      * Really deletes the slave.
      */
-    public void doDoDelete(StaplerResponse rsp) throws IOException {
+    @CLIMethod(name="delete-node")
+    public HttpResponse doDoDelete() throws IOException {
         checkPermission(DELETE);
         Hudson.getInstance().removeNode(getNode());
-        rsp.sendRedirect("..");
+        return new HttpRedirect("..");
     }
 
     /**
      * Handles incremental log.
      */
     public void doProgressiveLog( StaplerRequest req, StaplerResponse rsp) throws IOException {
-        new org.kohsuke.stapler.framework.io.LargeText(getLogFile(),false).doProgressText(req,rsp);
+        getLogText().doProgressText(req,rsp);
     }
 
     /**

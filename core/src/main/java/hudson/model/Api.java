@@ -1,7 +1,7 @@
 /*
  * The MIT License
  * 
- * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi
+ * Copyright (c) 2004-2010, Sun Microsystems, Inc., Kohsuke Kawaguchi, Seiji Sogabe
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -40,6 +40,7 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletResponse;
 import javax.xml.transform.stream.StreamResult;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.io.StringReader;
 import java.io.StringWriter;
 import java.util.List;
@@ -109,48 +110,58 @@ public class Api extends AbstractModelObject {
                     }
                 }
             }
-
-            List list = dom.selectNodes(xpath);
-            if (wrapper!=null) {
-                Element root = DocumentFactory.getInstance().createElement(wrapper);
-                for (Object o : list) {
-                    if (o instanceof String) {
-                        root.addText(o.toString());
-                    } else {
-                        root.add(((org.dom4j.Node)o).detach());
-                    }
-                }
-                result = root;
-            } else if (list.isEmpty()) {
-                rsp.setStatus(HttpServletResponse.SC_NOT_FOUND);
-                rsp.getWriter().print(Messages.Api_NoXPathMatch(xpath));
-                return;
-            } else if (list.size() > 1) {
-                rsp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-                rsp.getWriter().print(Messages.Api_MultipleMatch(xpath,list.size()));
-                return;
+            
+            if(xpath==null) {
+            	result = dom;
             } else {
-                result = list.get(0);
+                List list = dom.selectNodes(xpath);
+                if (wrapper!=null) {
+                    Element root = DocumentFactory.getInstance().createElement(wrapper);
+                    for (Object o : list) {
+                        if (o instanceof String) {
+                            root.addText(o.toString());
+                        } else {
+                            root.add(((org.dom4j.Node)o).detach());
+                        }
+                    }
+                    result = root;
+                } else if (list.isEmpty()) {
+                    rsp.setStatus(HttpServletResponse.SC_NOT_FOUND);
+                    rsp.getWriter().print(Messages.Api_NoXPathMatch(xpath));
+                    return;
+                } else if (list.size() > 1) {
+                    rsp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+                    rsp.getWriter().print(Messages.Api_MultipleMatch(xpath,list.size()));
+                    return;
+                } else {
+                    result = list.get(0);
+                }
             }
+
         } catch (DocumentException e) {
             throw new IOException2(e);
         }
 
-        if(result instanceof CharacterData) {
-            rsp.setContentType("text/plain");
-            rsp.getWriter().print(((CharacterData)result).getText());
-            return;
-        }
+        OutputStream o = rsp.getCompressedOutputStream(req);
+        try {
+            if(result instanceof CharacterData) {
+                rsp.setContentType("text/plain;charset=UTF-8");
+                o.write(((CharacterData)result).getText().getBytes("UTF-8"));
+                return;
+            }
 
-        if(result instanceof String || result instanceof Number || result instanceof Boolean) {
-            rsp.setContentType("text/plain");
-            rsp.getWriter().print(result.toString());
-            return;
-        }
+            if(result instanceof String || result instanceof Number || result instanceof Boolean) {
+                rsp.setContentType("text/plain;charset=UTF-8");
+                o.write(result.toString().getBytes("UTF-8"));
+                return;
+            }
 
-        // otherwise XML
-        rsp.setContentType("application/xml;charset=UTF-8");
-        new XMLWriter(rsp.getWriter()).write(result);
+            // otherwise XML
+            rsp.setContentType("application/xml;charset=UTF-8");
+            new XMLWriter(o).write(result);
+        } finally {
+            o.close();
+        }
     }
 
     /**

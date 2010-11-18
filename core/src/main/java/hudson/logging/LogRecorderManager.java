@@ -1,7 +1,7 @@
 /*
  * The MIT License
  * 
- * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi
+ * Copyright (c) 2004-2010, Sun Microsystems, Inc., Kohsuke Kawaguchi
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -25,6 +25,8 @@ package hudson.logging;
 
 import hudson.FeedAdapter;
 import hudson.Functions;
+import hudson.init.Initializer;
+import static hudson.init.InitMilestone.PLUGINS_PREPARED;
 import hudson.model.AbstractModelObject;
 import hudson.model.Hudson;
 import hudson.model.RSS;
@@ -34,16 +36,18 @@ import org.apache.commons.io.filefilter.WildcardFileFilter;
 import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
+import org.kohsuke.stapler.HttpResponse;
+import org.kohsuke.stapler.HttpRedirect;
 
 import javax.servlet.ServletException;
 import java.io.File;
 import java.io.FileFilter;
 import java.io.IOException;
-import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
@@ -61,14 +65,14 @@ public class LogRecorderManager extends AbstractModelObject {
     public transient final Map<String,LogRecorder> logRecorders = new CopyOnWriteMap.Tree<String,LogRecorder>();
 
     public String getDisplayName() {
-        return "log";
+        return Messages.LogRecorderManager_DisplayName();
     }
 
     public String getSearchUrl() {
         return "/log";
     }
 
-    public LogRecorder getDynamic(String token, StaplerRequest req, StaplerResponse rsp) {
+    public LogRecorder getDynamic(String token) {
         return getLogRecorder(token);
     }
 
@@ -96,32 +100,27 @@ public class LogRecorderManager extends AbstractModelObject {
     /**
      * Creates a new log recorder.
      */
-    public void doNewLogRecorder( StaplerRequest req, StaplerResponse rsp, @QueryParameter String name) throws IOException, ServletException {
-        try {
-            Hudson.checkGoodName(name);
-        } catch (ParseException e) {
-            sendError(e, req, rsp);
-            return;
-        }
+    public HttpResponse doNewLogRecorder(@QueryParameter String name) {
+        Hudson.checkGoodName(name);
         
         logRecorders.put(name,new LogRecorder(name));
 
         // redirect to the config screen
-        rsp.sendRedirect2(name+"/configure");
+        return new HttpRedirect(name+"/configure");
     }
 
     /**
      * Configure the logging level.
      */
-    public void doConfigLogger(StaplerResponse rsp, @QueryParameter String name, @QueryParameter String level) throws IOException {
+    public HttpResponse doConfigLogger(@QueryParameter String name, @QueryParameter String level) {
         Hudson.getInstance().checkPermission(Hudson.ADMINISTER);
         Level lv;
         if(level.equals("inherit"))
             lv = null;
         else
-            lv = Level.parse(level.toUpperCase());
+            lv = Level.parse(level.toUpperCase(Locale.ENGLISH));
         Logger.getLogger(name).setLevel(lv);
-        rsp.sendRedirect2("all");
+        return new HttpRedirect("levels");
     }
 
     /**
@@ -174,5 +173,10 @@ public class LogRecorderManager extends AbstractModelObject {
                 return Mailer.descriptor().getAdminAddress();
             }
         },req,rsp);
+    }
+
+    @Initializer(before=PLUGINS_PREPARED)
+    public static void init(Hudson h) throws IOException {
+        h.getLog().load();
     }
 }

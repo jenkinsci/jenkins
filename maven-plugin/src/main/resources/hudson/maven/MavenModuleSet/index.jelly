@@ -1,7 +1,8 @@
 <!--
 The MIT License
 
-Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, Eric Lefevre-Ardant, Erik Ramfelt, Stephen Connolly, Tom Huybrechts, id:cactusman
+Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, Eric Lefevre-Ardant,
+Erik Ramfelt, Stephen Connolly, Tom Huybrechts, id:cactusman, Romain Seguy
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -27,7 +28,18 @@ THE SOFTWARE.
     <st:include page="sidepanel.jelly" />
     <l:main-panel>
       <h1>${it.pronoun} ${it.displayName}</h1>
-      <t:editableDescription permission="${app.ADMINISTER}"/>
+      <t:editableDescription permission="${it.CONFIGURE}"/>
+
+      <j:if test="${it.disabled}">
+        <div class="warning">
+          <form method="post" action="enable">
+            ${%This project is currently disabled}
+            <l:hasPermission permission="${it.CONFIGURE}">
+              <f:submit value="${%Enable}" />
+            </l:hasPermission>
+          </form>
+        </div>
+      </j:if>
 
       <p:projectActionFloatingBox />
 
@@ -43,7 +55,8 @@ THE SOFTWARE.
         </t:summary>
 
         <t:artifactList caption="${%Last Successful Artifacts}"
-            build="${it.lastSuccessfulBuild}" baseURL="lastSuccessfulBuild/" />
+            build="${it.lastSuccessfulBuild}" baseURL="lastSuccessfulBuild/"
+            permission="${it.lastSuccessfulBuild.ARTIFACTS}" />
 
         <t:summary icon="notepad.gif" href="changes">
           ${%Recent Changes}
@@ -59,8 +72,14 @@ THE SOFTWARE.
       </table>
 
       <st:include page="jobpropertysummaries.jelly" />  
+
+      <!-- merge fragments from the actions -->
+      <j:forEach var="a" items="${it.actions}">
+        <st:include page="jobMain.jelly" it="${a}" optional="true" />
+      </j:forEach>
+
       <p:upstream-downstream />
-      
+
       <st:include page="permalinks.jelly" />
     </l:main-panel>
   </l:layout>

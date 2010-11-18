@@ -23,18 +23,21 @@
  */
 package hudson.matrix;
 
+import hudson.FilePath;
+import hudson.slaves.WorkspaceList;
+import hudson.slaves.WorkspaceList.Lease;
+import static hudson.matrix.MatrixConfiguration.useShortWorkspaceName;
 import hudson.model.Build;
+import hudson.model.Node;
+import org.kohsuke.stapler.Ancestor;
+import org.kohsuke.stapler.Stapler;
+import org.kohsuke.stapler.StaplerRequest;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Map;
-import java.util.HashMap;
-import java.util.List;
 import java.util.Calendar;
-
-import org.kohsuke.stapler.StaplerRequest;
-import org.kohsuke.stapler.Stapler;
-import org.kohsuke.stapler.Ancestor;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Execution of {@link MatrixConfiguration}.
@@ -54,13 +57,15 @@ public class MatrixRun extends Build<MatrixConfiguration,MatrixRun> {
         super(project, buildDir);
     }
 
+    @Override
     public String getUpUrl() {
         StaplerRequest req = Stapler.getCurrentRequest();
         if(req!=null) {
             List<Ancestor> ancs = req.getAncestors();
             for( int i=1; i<ancs.size(); i++) {
                 if(ancs.get(i).getObject()==this) {
-                    if(ancs.get(i-1).getObject() instanceof MatrixBuild) {
+                    Object parentObj = ancs.get(i-1).getObject();
+                    if(parentObj instanceof MatrixBuild || parentObj instanceof MatrixConfiguration) {
                         return ancs.get(i-1).getUrl()+'/';
                     }
                 }
@@ -80,6 +85,7 @@ public class MatrixRun extends Build<MatrixConfiguration,MatrixRun> {
         return getParent().getParent().getBuildByNumber(getNumber());
     }
 
+    @Override
     public String getDisplayName() {
         StaplerRequest req = Stapler.getCurrentRequest();
         if(req!=null) {
@@ -99,12 +105,19 @@ public class MatrixRun extends Build<MatrixConfiguration,MatrixRun> {
     public Map<String,String> getBuildVariables() {
         Map<String,String> r = super.getBuildVariables();
         // pick up user axes
-        r.putAll(getParent().getCombination());
+        AxisList axes = getParent().getParent().getAxes();
+        for (Map.Entry<String,String> e : getParent().getCombination().entrySet()) {
+            Axis a = axes.find(e.getKey());
+            if (a!=null)
+                a.addBuildVariable(e.getValue(),r);
+            else
+                r.put(e.getKey(), e.getValue());
+        }
         return r;
     }
 
     /**
-     * If the parent {@link MatrixRun} is kept, keep this record, too.
+     * If the parent {@link MatrixBuild} is kept, keep this record too.
      */
     @Override
     public String getWhyKeepLog() {
@@ -117,5 +130,37 @@ public class MatrixRun extends Build<MatrixConfiguration,MatrixRun> {
     @Override
     public MatrixConfiguration getParent() {// don't know why, but javac wants this
         return super.getParent();
+    }
+
+    @Override
+    public void run() {
+        run(new RunnerImpl());
+    }
+
+    protected class RunnerImpl extends Build<MatrixConfiguration,MatrixRun>.RunnerImpl {
+        @Override
+        protected Lease decideWorkspace(Node n, WorkspaceList wsl) throws InterruptedException, IOException {
+            // Map current combination to a directory subtree, e.g. 'axis1=a,axis2=b' to 'axis1/a/axis2/b'.
+            String subtree;
+            if(useShortWorkspaceName) {
+                subtree = getParent().getDigestName(); 
+            } else {
+                subtree = getParent().getCombination().toString('/','/');
+            }
+            
+            String customWorkspace = getParent().getParent().getCustomWorkspace();
+            if (customWorkspace != null) {
+                // Use custom workspace as defined in the matrix project settings.
+                FilePath ws = n.getRootPath().child(getEnvironment(listener).expand(customWorkspace));
+                // We allow custom workspaces to be used concurrently between jobs.
+                return Lease.createDummyLease(ws.child(subtree));
+            } else {
+                // Use default workspace as assigned by Hudson.
+                Node node = getBuiltOn();
+                FilePath ws = node.getWorkspaceFor(getParent().getParent());
+                // Allocate unique workspace (not to be shared between jobs and runs).
+                return wsl.allocate(ws.child(subtree));
+            }
+        }
     }
 }

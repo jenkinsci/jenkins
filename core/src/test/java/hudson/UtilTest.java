@@ -1,7 +1,8 @@
 /*
  * The MIT License
  * 
- * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, Daniel Dyer, Erik Ramfelt, Richard Bair, id:cactusman
+ * Copyright (c) 2004-2010, Sun Microsystems, Inc., Kohsuke Kawaguchi,
+ * Daniel Dyer, Erik Ramfelt, Richard Bair, id:cactusman
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -28,6 +29,10 @@ import junit.framework.TestCase;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.Locale;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+
+import hudson.util.StreamTaskListener;
 
 /**
  * @author Kohsuke Kawaguchi
@@ -52,6 +57,8 @@ public class UtilTest extends TestCase {
 
         // $ escaping
         assertEquals("asd$${AA}dd", Util.replaceMacro("asd$$$${AA}dd",m));
+        assertEquals("$", Util.replaceMacro("$$",m));
+        assertEquals("$$", Util.replaceMacro("$$$$",m));
 
     	// test that more complex scenarios work
         assertEquals("/a/B/aa", Util.replaceMacro("/$A/$B/$AA",m));
@@ -120,7 +127,7 @@ public class UtilTest extends TestCase {
             "01234567890!@$&*()-_=+',.", "01234567890!@$&*()-_=+',.",
             " \"#%/:;<>?", "%20%22%23%25%2F%3A%3B%3C%3E%3F",
             "[\\]^`{|}~", "%5B%5C%5D%5E%60%7B%7C%7D%7E",
-            "d\u00E9velopp\u00E9s", "d%C3%A9%00velopp%C3%A9%00s",
+            "d\u00E9velopp\u00E9s", "d%C3%A9velopp%C3%A9s",
         };
         for (int i = 0; i < data.length; i += 2) {
             assertEquals("test " + i, data[i + 1], Util.rawEncode(data[i]));
@@ -135,5 +142,32 @@ public class UtilTest extends TestCase {
         assertEquals("Failed parse did not return the default value", 10, Util.tryParseNumber("ss", 10).intValue());
         assertEquals("Parsing empty string did not return the default value", 10, Util.tryParseNumber("", 10).intValue());
         assertEquals("Parsing null string did not return the default value", 10, Util.tryParseNumber(null, 10).intValue());
+    }
+
+    public void testSymlink() throws Exception {
+        if (Functions.isWindows())     return;
+
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        StreamTaskListener l = new StreamTaskListener(baos);
+        File d = Util.createTempDir();
+        try {
+            new FilePath(new File(d, "a")).touch(0);
+            Util.createSymlink(d,"a","x", l);
+            assertEquals("a",Util.resolveSymlink(new File(d,"x"),l));
+
+            // test a long name
+            StringBuilder buf = new StringBuilder(768);
+            for( int i=0; i<768; i++)
+                buf.append((char)('0'+(i%10)));
+            Util.createSymlink(d,buf.toString(),"x", l);
+
+            String log = baos.toString();
+            if (log.length() > 0)
+                System.err.println("log output: " + log);
+
+            assertEquals(buf.toString(),Util.resolveSymlink(new File(d,"x"),l));
+        } finally {
+            Util.deleteRecursive(d);
+        }
     }
 }

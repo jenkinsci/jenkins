@@ -27,6 +27,7 @@ import hudson.model.Hudson;
 import hudson.model.Descriptor;
 import hudson.model.Saveable;
 import hudson.model.listeners.ItemListener;
+import hudson.model.listeners.SaveableListener;
 import hudson.model.Descriptor.FormException;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
@@ -147,7 +148,7 @@ public abstract class Plugin implements Saveable {
 
     /**
      * @since 1.233
-     * @deprecated override {@link #configure(StaplerRequest,JSONObject)} instead
+     * @deprecated as of 1.305 override {@link #configure(StaplerRequest,JSONObject)} instead
      */
     public void configure(JSONObject formData) throws IOException, ServletException, FormException {
     }
@@ -177,7 +178,7 @@ public abstract class Plugin implements Saveable {
      * <p>
      * If you are using this method, you'll likely be interested in
      * using {@link #save()} and {@link #load()}.
-     * @since XXX
+     * @since 1.305
      */
     public void configure(StaplerRequest req, JSONObject formData) throws IOException, ServletException, FormException {
         configure(formData);
@@ -227,6 +228,7 @@ public abstract class Plugin implements Saveable {
     public void save() throws IOException {
         if(BulkChange.contains(this))   return;
         getConfigXml().write(this);
+        SaveableListener.fireOnChange(this, getConfigXml());
     }
 
     /**
@@ -243,11 +245,12 @@ public abstract class Plugin implements Saveable {
                 new File(Hudson.getInstance().getRootDir(),wrapper.getShortName()+".xml"));
     }
 
+
     /**
      * Dummy instance of {@link Plugin} to be used when a plugin didn't
      * supply one on its own.
      *
-     * @since 1.288
+     * @since 1.321
      */
-    public static final Plugin NONE = new Plugin() {};
+    public static final class DummyImpl extends Plugin {}
 }

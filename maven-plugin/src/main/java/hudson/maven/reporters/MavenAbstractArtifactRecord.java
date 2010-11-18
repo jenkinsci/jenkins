@@ -23,6 +23,7 @@
  */
 package hudson.maven.reporters;
 
+import hudson.console.AnnotatedLargeText;
 import hudson.maven.MavenEmbedder;
 import hudson.maven.MavenUtil;
 import hudson.model.AbstractBuild;
@@ -48,11 +49,13 @@ import org.codehaus.plexus.component.repository.exception.ComponentLookupExcepti
 import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
-import org.kohsuke.stapler.framework.io.LargeText;
+import org.kohsuke.stapler.HttpResponse;
+import org.kohsuke.stapler.HttpRedirect;
 
 import javax.servlet.ServletException;
 import java.io.File;
 import java.io.IOException;
+import java.nio.charset.Charset;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -94,8 +97,8 @@ public abstract class MavenAbstractArtifactRecord<T extends AbstractBuild<?,?>> 
         /**
          * Returns the log of this deployment record.
          */
-        public LargeText getLog() {
-            return new LargeText(new File(getBuild().getRootDir(),fileName),true);
+        public AnnotatedLargeText getLog() {
+            return new AnnotatedLargeText<Record>(new File(getBuild().getRootDir(),fileName), Charset.defaultCharset(), true, this);
         }
 
         /**
@@ -129,7 +132,7 @@ public abstract class MavenAbstractArtifactRecord<T extends AbstractBuild<?,?>> 
         }
 
         // TODO: Eventually provide a better UI
-        public final void doIndex(StaplerRequest req, StaplerResponse rsp) throws IOException {
+        public void doIndex(StaplerResponse rsp) throws IOException {
             rsp.setContentType("text/plain;charset=UTF-8");
             getLog().writeLogTo(0,rsp.getWriter());
         }
@@ -186,10 +189,10 @@ public abstract class MavenAbstractArtifactRecord<T extends AbstractBuild<?,?>> 
     /**
      * Performs a redeployment.
      */
-    public final void doRedeploy(StaplerRequest req, StaplerResponse rsp,
-                           @QueryParameter("redeploy.id") final String id,
-                           @QueryParameter("redeploy.url") final String repositoryUrl,
-                           @QueryParameter("redeploy.uniqueVersion") final boolean uniqueVersion) throws ServletException, IOException {
+    public final HttpResponse doRedeploy(
+            @QueryParameter("_.id") final String id,
+            @QueryParameter("_.url") final String repositoryUrl,
+            @QueryParameter("_.uniqueVersion") final boolean uniqueVersion) throws ServletException, IOException {
         getACL().checkPermission(REDEPLOY);
 
         File logFile = new File(getBuild().getRootDir(),"maven-deployment."+records.size()+".log");
@@ -199,7 +202,7 @@ public abstract class MavenAbstractArtifactRecord<T extends AbstractBuild<?,?>> 
         new TaskThread(this,ListenerAndText.forFile(logFile)) {
             protected void perform(TaskListener listener) throws Exception {
                 try {
-                    MavenEmbedder embedder = MavenUtil.createEmbedder(listener,getBuild().getProject(),null);
+                    MavenEmbedder embedder = MavenUtil.createEmbedder(listener,getBuild());
                     ArtifactRepositoryLayout layout =
                         (ArtifactRepositoryLayout) embedder.getContainer().lookup( ArtifactRepositoryLayout.ROLE,"default");
                     ArtifactRepositoryFactory factory =
@@ -221,7 +224,7 @@ public abstract class MavenAbstractArtifactRecord<T extends AbstractBuild<?,?>> 
             }
         }.start();
 
-        rsp.sendRedirect(".");
+        return HttpRedirect.DOT;
     }
 
     /**

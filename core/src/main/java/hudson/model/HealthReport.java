@@ -1,7 +1,7 @@
 /*
  * The MIT License
  * 
- * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, Stephen Connolly
+ * Copyright (c) 2004-2010, Sun Microsystems, Inc., Kohsuke Kawaguchi, Stephen Connolly
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,13 +23,14 @@
  */
 package hudson.model;
 
+import com.thoughtworks.xstream.converters.UnmarshallingContext;
+import hudson.diagnosis.OldDataMonitor;
+import hudson.util.XStream2;
 import org.jvnet.localizer.Localizable;
-import org.jvnet.localizer.ResourceBundleHolder;
 import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.export.ExportedBean;
 
 import java.io.*;
-import java.lang.reflect.Field;
 import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
@@ -44,11 +45,12 @@ import java.util.Locale;
 @ExportedBean(defaultVisibility = 2)
 // this is always exported as a part of Job and never on its own, so start with 2.
 public class HealthReport implements Serializable, Comparable<HealthReport> {
+    // These are now 0-20, 21-40, 41-60, 61-80, 81+ but filenames unchanged for compatibility
     private static final String HEALTH_OVER_80 = "health-80plus.gif";
-    private static final String HEALTH_60_TO_79 = "health-60to79.gif";
-    private static final String HEALTH_40_TO_59 = "health-40to59.gif";
-    private static final String HEALTH_20_TO_39 = "health-20to39.gif";
-    private static final String HEALTH_0_TO_19 = "health-00to19.gif";
+    private static final String HEALTH_61_TO_80 = "health-60to79.gif";
+    private static final String HEALTH_41_TO_60 = "health-40to59.gif";
+    private static final String HEALTH_21_TO_40 = "health-20to39.gif";
+    private static final String HEALTH_0_TO_20 = "health-00to19.gif";
     private static final String HEALTH_UNKNOWN = "empty.gif";
 
     /**
@@ -69,7 +71,7 @@ public class HealthReport implements Serializable, Comparable<HealthReport> {
     /**
      * Recover the health icon's tool-tip when deserializing.
      *
-     * @deprecated use {@link #localizibleDescription}
+     * @deprecated since 2008-10-18. Use {@link #localizibleDescription}
      */
     @Deprecated
     private transient String description;
@@ -92,7 +94,8 @@ public class HealthReport implements Serializable, Comparable<HealthReport> {
      *                    When calculating the url to display for absolute paths, the getIconUrl(String) method
      *                    will replace /32x32/ in the path with the appropriate size.
      * @param description The health icon's tool-tip.
-     * @deprecated use {@link #HealthReport(int, String, org.jvnet.localizer.Localizable)}
+     * @deprecated since 2008-10-18.
+     *     Use {@link #HealthReport(int, String, org.jvnet.localizer.Localizable)}
      */
     @Deprecated
     public HealthReport(int score, String iconUrl, String description) {
@@ -116,14 +119,14 @@ public class HealthReport implements Serializable, Comparable<HealthReport> {
     public HealthReport(int score, String iconUrl, Localizable description) {
         this.score = score;
         if (iconUrl == null) {
-            if (score < 20) {
-                this.iconUrl = HEALTH_0_TO_19;
-            } else if (score < 40) {
-                this.iconUrl = HEALTH_20_TO_39;
-            } else if (score < 60) {
-                this.iconUrl = HEALTH_40_TO_59;
-            } else if (score < 80) {
-                this.iconUrl = HEALTH_60_TO_79;
+            if (score <= 20) {
+                this.iconUrl = HEALTH_0_TO_20;
+            } else if (score <= 40) {
+                this.iconUrl = HEALTH_21_TO_40;
+            } else if (score <= 60) {
+                this.iconUrl = HEALTH_41_TO_60;
+            } else if (score <= 80) {
+                this.iconUrl = HEALTH_61_TO_80;
             } else {
                 this.iconUrl = HEALTH_OVER_80;
             }
@@ -139,7 +142,8 @@ public class HealthReport implements Serializable, Comparable<HealthReport> {
      *
      * @param score       The percentage health score (from 0 to 100 inclusive).
      * @param description The health icon's tool-tip.
-     * @deprecated use {@link #HealthReport(int, org.jvnet.localizer.Localizable)}
+     * @deprecated since 2008-10-18.
+     *     Use {@link #HealthReport(int, org.jvnet.localizer.Localizable)}
      */
     @Deprecated
     public HealthReport(int score, String description) {
@@ -160,7 +164,7 @@ public class HealthReport implements Serializable, Comparable<HealthReport> {
      * Create a new HealthReport.
      */
     public HealthReport() {
-        this(100, HEALTH_UNKNOWN, "");
+        this(100, HEALTH_UNKNOWN, Messages._HealthReport_EmptyString());
     }
 
     /**
@@ -303,15 +307,16 @@ public class HealthReport implements Serializable, Comparable<HealthReport> {
 
     /**
      * Fix deserialization of older data.
-     *
-     * @return this.
      */
-    private Object readResolve() {
-        // If we are being read back in from an older version
-        if (localizibleDescription == null) {
-            localizibleDescription = new NonLocalizable(description == null ? "" : description);
+    public static class ConverterImpl extends XStream2.PassthruConverter<HealthReport> {
+        public ConverterImpl(XStream2 xstream) { super(xstream); }
+        @Override protected void callback(HealthReport hr, UnmarshallingContext context) {
+            // If we are being read back in from an older version
+            if (hr.localizibleDescription == null) {
+                hr.localizibleDescription = new NonLocalizable(hr.description == null ? "" : hr.description);
+                OldDataMonitor.report(context, "1.256");
+            }
         }
-        return this;
     }
 
     /**
@@ -338,7 +343,7 @@ public class HealthReport implements Serializable, Comparable<HealthReport> {
          */
         @Override
         public String toString(Locale locale) {
-            return nonLocalizable;    //To change body of overridden methods use File | Settings | File Templates.
+            return nonLocalizable;
         }
 
         /**
@@ -346,8 +351,7 @@ public class HealthReport implements Serializable, Comparable<HealthReport> {
          */
         @Override
         public String toString() {
-            return nonLocalizable;    //To change body of overridden methods use File | Settings | File Templates.
+            return nonLocalizable;
         }
     }
-
 }

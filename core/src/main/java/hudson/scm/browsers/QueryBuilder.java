@@ -24,12 +24,14 @@
 package hudson.scm.browsers;
 
 /**
+ * Builds up a query string.
+ *
  * @author Kohsuke Kawaguchi
 */
-final class QueryBuilder {
+public final class QueryBuilder {
     private final StringBuilder buf = new StringBuilder();
 
-    QueryBuilder(String s) {
+    public QueryBuilder(String s) {
         add(s);
     }
 
@@ -41,6 +43,7 @@ final class QueryBuilder {
         return this;
     }
 
+    @Override
     public String toString() {
         return buf.toString();
     }

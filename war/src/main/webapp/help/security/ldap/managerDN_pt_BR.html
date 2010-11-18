@@ -1,0 +1,17 @@
+<div>
+  Se seu servidor LDAP não suportar <a href="http://www.google.com/?q=LDAP+anonymous+bind">binding anônimo</a>
+  (Em outras palavras, se seu servidor LDAP não permite uma consulta sem autenticação),
+  então o Hudson teria que primeiro se autenticar no servidor LDAP,
+  e o Hudson faz isto enviando o DN e senha do "administrador".
+
+  <p>
+  Um DN tipicamente se parece com <tt>CN=MeuUsuario,CN=Usuarios,DC=meudominio,DC=com</tt>
+  embora a sequência exata dos valores dependem da configuração do servidor LDAP.
+  Pode ser qualquer DN válido desde que o LDAP permita que este usuário consulte os dados.
+
+  <p>
+  Esta configuração também é útil quando você estiver conectando ao Active Directory
+  de uma máquina Unix, já o AD não permite binding anônimo por padrão. Mas
+  se você não pode resolver isto, você também pode mudar as configurações do AD para
+  permitir binding anônimo. Veja <a href="http://www.novell.com/coolsolutions/appnote/15120.html">este documento</a> para saber como.
+</div>

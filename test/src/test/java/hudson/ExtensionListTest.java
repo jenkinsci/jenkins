@@ -100,7 +100,7 @@ public class ExtensionListTest extends HudsonTestCase {
     public void testDescriptorLookup() throws Exception {
         Descriptor<Fish> d = new Sishamo().getDescriptor();
 
-        DescriptorExtensionList<Fish,Descriptor<Fish>> list = hudson.getDescriptorList(Fish.class);
+        DescriptorExtensionList<Fish,Descriptor<Fish>> list = hudson.<Fish,Descriptor<Fish>>getDescriptorList(Fish.class);
         assertSame(d,list.get(Sishamo.DescriptorImpl.class));
 
         assertSame(d,hudson.getDescriptor(Sishamo.class));
@@ -110,7 +110,7 @@ public class ExtensionListTest extends HudsonTestCase {
         // imagine that this is a static instance, like it is in many LIST static field in Hudson.
         DescriptorList<Fish> LIST = new DescriptorList<Fish>(Fish.class);
 
-        DescriptorExtensionList<Fish,Descriptor<Fish>> list = hudson.getDescriptorList(Fish.class);
+        DescriptorExtensionList<Fish,Descriptor<Fish>> list = hudson.<Fish,Descriptor<Fish>>getDescriptorList(Fish.class);
         assertEquals(2,list.size());
         assertNotNull(list.get(Tai.DescriptorImpl.class));
         assertNotNull(list.get(Saba.DescriptorImpl.class));
@@ -149,5 +149,37 @@ public class ExtensionListTest extends HudsonTestCase {
         // create a new list and it forgets everything.
         LIST = new DescriptorList<Fish>();
         assertEquals(0,LIST.size());
+    }
+
+    public static class Car implements ExtensionPoint {
+        final String name;
+
+        public Car(String name) {
+            this.name = name;
+        }
+    }
+
+    @Extension(ordinal=1)
+    public static class Toyota extends Car {
+        public Toyota() {
+            super("toyota");
+        }
+    }
+
+    @Extension(ordinal=3)
+    public static Car honda() { return new Car("honda"); }
+
+
+    @Extension(ordinal=2)
+    public static final Car mazda = new Car("mazda");
+
+    /**
+     * Makes sure sorting of the components work as expected.
+     */
+    public void testOrdinals() {
+        ExtensionList<Car> list = hudson.getExtensionList(Car.class);
+        assertEquals("honda",list.get(0).name);
+        assertEquals("mazda",list.get(1).name);
+        assertEquals("toyota",list.get(2).name);
     }
 }

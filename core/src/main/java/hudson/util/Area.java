@@ -55,6 +55,7 @@ public final class Area {
         return width*height;
     }
 
+    @Override
     public String toString() {
         return width+"x"+height;
     }

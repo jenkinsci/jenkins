@@ -26,11 +26,15 @@ package hudson.model;
 import hudson.ExtensionPoint;
 import hudson.Launcher;
 import hudson.Plugin;
+import hudson.model.queue.SubTask;
 import hudson.tasks.BuildStep;
 import hudson.tasks.Builder;
 import hudson.tasks.Publisher;
+import hudson.tasks.BuildStepMonitor;
 
 import java.io.IOException;
+import java.util.Collection;
+import java.util.Collections;
 
 import org.kohsuke.stapler.export.ExportedBean;
 
@@ -89,14 +93,22 @@ public abstract class JobProperty<J extends Job<?,?>> implements Describable<Job
      * {@inheritDoc}
      */
     public JobPropertyDescriptor getDescriptor() {
-        return (JobPropertyDescriptor)Hudson.getInstance().getDescriptor(getClass());
+        return (JobPropertyDescriptor)Hudson.getInstance().getDescriptorOrDie(getClass());
     }
 
     /**
-     * {@link Action} to be displayed in the job page.
+     * @deprecated
+     *      as of 1.341. Override {@link #getJobActions(Job)} instead.
+     */
+    public Action getJobAction(J job) {
+        return null;
+    }
+
+    /**
+     * {@link Action}s to be displayed in the job page.
      *
      * <p>
-     * Returning non-null from this method allows a job property to add an item
+     * Returning actions from this method allows a job property to add them
      * to the left navigation bar in the job page.
      *
      * <p>
@@ -107,13 +119,16 @@ public abstract class JobProperty<J extends Job<?,?>> implements Describable<Job
      *      Always the same as {@link #owner} but passed in anyway for backward compatibility (I guess.)
      *      You really need not use this value at all.
      * @return
-     *      null if there's no such action.
-     * @since 1.102
+     *      can be empty but never null.
+     * @since 1.341
      * @see ProminentProjectAction
      * @see PermalinkProjectAction
      */
-    public Action getJobAction(J job) {
-        return null;
+    public Collection<? extends Action> getJobActions(J job) {
+        // delegate to getJobAction (singular) for backward compatible behavior
+        Action a = getJobAction(job);
+        if (a==null)    return Collections.emptyList();
+        return Collections.singletonList(a);
     }
 
 //
@@ -134,7 +149,32 @@ public abstract class JobProperty<J extends Job<?,?>> implements Describable<Job
         return true;
     }
 
+    /**
+     * Returns {@link BuildStepMonitor#NONE} by default, as {@link JobProperty}s normally don't depend
+     * on its previous result.
+     */
+    public BuildStepMonitor getRequiredMonitorService() {
+        return BuildStepMonitor.NONE;
+    }
+
     public final Action getProjectAction(AbstractProject<?,?> project) {
         return getJobAction((J)project);
+    }
+
+    public final Collection<? extends Action> getProjectActions(AbstractProject<?,?> project) {
+        return getJobActions((J)project);
+    }
+
+    public Collection<?> getJobOverrides() {
+        return Collections.emptyList();
+    }
+
+    /**
+     * Contributes {@link SubTask}s to {@link AbstractProject#getSubTasks()}
+     *
+     * @since 1.FATTASK
+     */
+    public Collection<? extends SubTask> getSubTasks() {
+        return Collections.emptyList();
     }
 }

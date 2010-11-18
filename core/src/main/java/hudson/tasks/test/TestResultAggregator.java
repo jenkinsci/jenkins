@@ -1,7 +1,7 @@
 /*
  * The MIT License
  * 
- * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi
+ * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, Yahoo!, Inc.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,11 +23,11 @@
  */
 package hudson.tasks.test;
 
+import hudson.Launcher;
 import hudson.matrix.MatrixAggregator;
 import hudson.matrix.MatrixBuild;
 import hudson.matrix.MatrixRun;
 import hudson.model.BuildListener;
-import hudson.Launcher;
 
 import java.io.IOException;
 
@@ -44,6 +44,7 @@ public class TestResultAggregator extends MatrixAggregator {
         super(build, launcher, listener);
     }
 
+    @Override
     public boolean startBuild() throws InterruptedException, IOException {
         result = new MatrixTestResult(build);
         build.addAction(result);

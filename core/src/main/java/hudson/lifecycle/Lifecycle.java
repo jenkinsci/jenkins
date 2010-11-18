@@ -24,6 +24,8 @@
 package hudson.lifecycle;
 
 import hudson.ExtensionPoint;
+import hudson.Functions;
+import hudson.Util;
 import hudson.model.Hudson;
 
 import java.io.File;
@@ -54,11 +56,12 @@ public abstract class Lifecycle implements ExtensionPoint {
      */
     public synchronized static Lifecycle get() {
         if(INSTANCE==null) {
+            Lifecycle instance;
             String p = System.getProperty("hudson.lifecycle");
             if(p!=null) {
                 try {
                     ClassLoader cl = Hudson.getInstance().getPluginManager().uberClassLoader;
-                    INSTANCE = (Lifecycle)cl.loadClass(p).newInstance();
+                    instance = (Lifecycle)cl.loadClass(p).newInstance();
                 } catch (InstantiationException e) {
                     InstantiationError x = new InstantiationError(e.getMessage());
                     x.initCause(e);
@@ -73,20 +76,35 @@ public abstract class Lifecycle implements ExtensionPoint {
                     throw x;
                 }
             } else {
-                // if run on embedded container, attempt to use UnixEmbeddedContainerLifecycle 
-                if(System.getProperty("executable-war")!=null && !Hudson.isWindows()) {
+                if(Functions.isWindows()) {
+                    instance = new Lifecycle() {
+                        @Override
+                        public void verifyRestartable() throws RestartNotSupportedException {
+                            throw new RestartNotSupportedException(
+                                    "Default Windows lifecycle does not support restart.");
+                        }
+                    };
+                } else if (System.getenv("SMF_FMRI")!=null && System.getenv("SMF_RESTARTER")!=null) {
+                    // when we are run by Solaris SMF, these environment variables are set.
+                    instance = new SolarisSMFLifecycle();
+                } else {
+                    // if run on Unix, we can do restart
                     try {
-                        INSTANCE = new UnixEmbeddedContainerLifecycle();
-                    } catch (IOException e) {
+                        instance = new UnixLifecycle();
+                    } catch (final IOException e) {
                         LOGGER.log(Level.WARNING, "Failed to install embedded lifecycle implementation",e);
+                        instance = new Lifecycle() {
+                            @Override
+                            public void verifyRestartable() throws RestartNotSupportedException {
+                                throw new RestartNotSupportedException(
+                                        "Failed to install embedded lifecycle implementation, so cannot restart: " + e, e);
+                            }
+                        };
                     }
                 }
-
-                // use the default one. final fallback.
-                if(INSTANCE==null)
-                    INSTANCE = new Lifecycle() {
-                    };
             }
+            assert instance != null;
+            INSTANCE = instance;
         }
 
         return INSTANCE;
@@ -121,7 +139,17 @@ public abstract class Lifecycle implements ExtensionPoint {
         // but let's be defensive
         if(dest==null)  throw new IOException("hudson.war location is not known.");
 
+        // backing up the old hudson.war before it gets lost due to upgrading
+        // (newly downloaded hudson.war and 'backup' (hudson.war.tmp) are the same files
+        // unless we are trying to rewrite hudson.war by a backup itself
+        File bak = new File(dest.getPath() + ".bak");
+        if (!by.equals(bak))
+            FileUtils.copyFile(dest, bak);
+       
         FileUtils.copyFile(by, dest);
+        // we don't want to keep backup if we are downgrading
+        if (by.equals(bak)&&bak.exists())
+            bak.delete();
     }
 
     /**
@@ -129,17 +157,8 @@ public abstract class Lifecycle implements ExtensionPoint {
      */
     public boolean canRewriteHudsonWar() {
         // if we don't know where hudson.war is, it's impossible to replace.
-        return getHudsonWar()!=null;
-    }
-
-    private boolean isOverridden(String methodName, Class... types) {
-        // the rewriteHudsonWar method isn't overridden.
-        try {
-            return !getClass().getMethod(methodName, types).equals(
-                    Lifecycle.class.getMethod(methodName,types));
-        } catch (NoSuchMethodException e) {
-            throw new AssertionError(e);
-        }
+        File f = getHudsonWar();
+        return f!=null && f.canWrite();
     }
 
     /**
@@ -161,9 +180,28 @@ public abstract class Lifecycle implements ExtensionPoint {
 
     /**
      * Can the {@link #restart()} method restart Hudson?
+     *
+     * @throws RestartNotSupportedException
+     *      If the restart is not supported, throw this exception and explain the cause.
+     */
+    public void verifyRestartable() throws RestartNotSupportedException {
+        // the rewriteHudsonWar method isn't overridden.
+        if (!Util.isOverridden(Lifecycle.class,getClass(), "restart"))
+            throw new RestartNotSupportedException("Restart is not supported in this running mode (" +
+                    getClass().getName() + ").");
+    }
+
+    /**
+     * The same as {@link #verifyRestartable()} except the status is indicated by the return value,
+     * not by an exception.
      */
     public boolean canRestart() {
-        return isOverridden("restart");
+        try {
+            verifyRestartable();
+            return true;
+        } catch (RestartNotSupportedException e) {
+            return false;
+        }
     }
 
     private static final Logger LOGGER = Logger.getLogger(Lifecycle.class.getName());

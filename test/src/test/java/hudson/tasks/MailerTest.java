@@ -24,9 +24,11 @@
 package hudson.tasks;
 
 import hudson.model.FreeStyleProject;
+import hudson.tasks.Mailer.DescriptorImpl;
 import org.jvnet.hudson.test.Bug;
 import org.jvnet.hudson.test.FailureBuilder;
 import org.jvnet.hudson.test.HudsonTestCase;
+import org.jvnet.hudson.test.Email;
 import org.jvnet.mock_javamail.Mailbox;
 
 import javax.mail.Address;
@@ -71,5 +73,56 @@ public class MailerTest extends HudsonTestCase {
         HtmlInput url = p.getFormByName("config").getInputByName("_.url");
         url.setValueAttribute("http://localhost:1234/");
         assertTrue(p.getDocumentElement().getTextContent().contains("instead of localhost"));
+    }
+
+    @Email("http://www.nabble.com/email-recipients-disappear-from-freestyle-job-config-on-save-to25479293.html")
+    public void testConfigRoundtrip() throws Exception {
+        Mailer m = new Mailer();
+        m.recipients = "kk@kohsuke.org";
+        m.dontNotifyEveryUnstableBuild = true;
+        m.sendToIndividuals = true;
+        verifyRoundtrip(m);
+
+        m = new Mailer();
+        m.recipients = "";
+        m.dontNotifyEveryUnstableBuild = false;
+        m.sendToIndividuals = false;
+        verifyRoundtrip(m);
+    }
+
+    private void verifyRoundtrip(Mailer m) throws Exception {
+        FreeStyleProject p = createFreeStyleProject();
+        p.getPublishersList().add(m);
+        submit(new WebClient().getPage(p,"configure").getFormByName("config"));
+        assertEqualBeans(m,p.getPublishersList().get(Mailer.class),"recipients,dontNotifyEveryUnstableBuild,sendToIndividuals");
+    }
+
+    public void testGlobalConfigRoundtrip() throws Exception {
+        DescriptorImpl d = Mailer.descriptor();
+        d.setAdminAddress("admin@me");
+        d.setDefaultSuffix("default-suffix");
+        d.setHudsonUrl("http://nowhere/");
+        d.setSmtpHost("smtp.host");
+        d.setSmtpPort("1025");
+        d.setUseSsl(true);
+        d.setSmtpAuth("user","pass");
+
+        submit(new WebClient().goTo("configure").getFormByName("config"));
+
+        assertEquals("admin@me",d.getAdminAddress());
+        assertEquals("default-suffix",d.getDefaultSuffix());
+        assertEquals("http://nowhere/",d.getUrl());
+        assertEquals("smtp.host",d.getSmtpServer());
+        assertEquals("1025",d.getSmtpPort());
+        assertEquals(true,d.getUseSsl());
+        assertEquals("user",d.getSmtpAuthUserName());
+        assertEquals("pass",d.getSmtpAuthPassword());
+
+        d.setUseSsl(false);
+        d.setSmtpAuth(null,null);
+        submit(new WebClient().goTo("configure").getFormByName("config"));
+        assertEquals(false,d.getUseSsl());
+        assertNull("expected null, got: " + d.getSmtpAuthUserName(), d.getSmtpAuthUserName());
+        assertNull("expected null, got: " + d.getSmtpAuthPassword(), d.getSmtpAuthPassword());
     }
 }

@@ -26,7 +26,10 @@ package hudson.model;
 import hudson.ExtensionPoint;
 import hudson.Plugin;
 import hudson.DescriptorExtensionList;
-import hudson.tasks.Mailer;
+import hudson.model.Descriptor.FormException;
+import net.sf.json.JSONObject;
+
+import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.export.ExportedBean;
 
 /**
@@ -61,13 +64,17 @@ public abstract class UserProperty implements Describable<UserProperty>, Extensi
 
     // descriptor must be of the UserPropertyDescriptor type
     public UserPropertyDescriptor getDescriptor() {
-        return (UserPropertyDescriptor)Hudson.getInstance().getDescriptor(getClass());
+        return (UserPropertyDescriptor)Hudson.getInstance().getDescriptorOrDie(getClass());
     }
 
     /**
      * Returns all the registered {@link UserPropertyDescriptor}s.
      */
     public static DescriptorExtensionList<UserProperty,UserPropertyDescriptor> all() {
-        return Hudson.getInstance().getDescriptorList(UserProperty.class);
+        return Hudson.getInstance().<UserProperty,UserPropertyDescriptor>getDescriptorList(UserProperty.class);
+    }
+
+    public UserProperty reconfigure(StaplerRequest req, JSONObject form) throws FormException {
+    	return getDescriptor().newInstance(req, form);
     }
 }

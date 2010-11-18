@@ -23,18 +23,24 @@
  */
 package hudson;
 
-import hudson.remoting.Channel;
+import hudson.model.TaskListener;
 import hudson.util.IOException2;
-import hudson.util.ProcessTreeKiller;
 import hudson.util.StreamCopyThread;
+import hudson.util.ProcessTree;
 
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.Locale;
 import java.util.Map;
+import java.util.concurrent.CancellationException;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -47,7 +53,7 @@ import java.util.logging.Logger;
  * @author Kohsuke Kawaguchi
  */
 public abstract class Proc {
-    private Proc() {}
+    protected Proc() {}
 
     /**
      * Checks if the process is still alive.
@@ -64,7 +70,8 @@ public abstract class Proc {
     public abstract void kill() throws IOException, InterruptedException;
 
     /**
-     * Waits for the completion of the process.
+     * Waits for the completion of the process and until we finish reading everything that the process has produced
+     * to stdout/stderr.
      *
      * <p>
      * If the thread is interrupted while waiting for the completion
@@ -77,14 +84,53 @@ public abstract class Proc {
      */
     public abstract int join() throws IOException, InterruptedException;
 
+    private static final ExecutorService executor = Executors.newCachedThreadPool();
+    /**
+     * Like {@link #join} but can be given a maximum time to wait.
+     * @param timeout number of time units
+     * @param unit unit of time
+     * @param listener place to send messages if there are problems, incl. timeout
+     * @return exit code from the process
+     * @throws IOException for the same reasons as {@link #join}
+     * @throws InterruptedException for the same reasons as {@link #join}
+     * @since 1.363
+     */
+    public final int joinWithTimeout(final long timeout, final TimeUnit unit,
+            final TaskListener listener) throws IOException, InterruptedException {
+        final CountDownLatch latch = new CountDownLatch(1);
+        try {
+            executor.submit(new Runnable() {
+                public void run() {
+                    try {
+                        if (!latch.await(timeout, unit)) {
+                            listener.error("Timeout after " + timeout + " " +
+                                    unit.toString().toLowerCase(Locale.ENGLISH));
+                            kill();
+                        }
+                    } catch (InterruptedException x) {
+                        listener.error(x.toString());
+                    } catch (IOException x) {
+                        listener.error(x.toString());
+                    } catch (RuntimeException x) {
+                        listener.error(x.toString());
+                    }
+                }
+            });
+            return join();
+        } finally {
+            latch.countDown();
+        }
+    }
+    
     /**
      * Locally launched process.
      */
     public static final class LocalProc extends Proc {
         private final Process proc;
-        private final Thread copier;
+        private final Thread copier,copier2;
         private final OutputStream out;
         private final EnvVars cookie;
+        private final String name;
 
         public LocalProc(String cmd, Map<String,String> env, OutputStream out, File workDir) throws IOException {
             this(cmd,Util.mapToEnv(env),out,workDir);
@@ -107,9 +153,22 @@ public abstract class Proc {
         }
 
         public LocalProc(String[] cmd,String[] env,InputStream in,OutputStream out, File workDir) throws IOException {
+            this(cmd,env,in,out,null,workDir);
+        }
+
+        /**
+         * @param err
+         *      null to redirect stderr to stdout.
+         */
+        public LocalProc(String[] cmd,String[] env,InputStream in,OutputStream out,OutputStream err,File workDir) throws IOException {
             this( calcName(cmd),
-                  environment(new ProcessBuilder(cmd),env).directory(workDir).redirectErrorStream(true),
-                  in, out );
+                  stderr(environment(new ProcessBuilder(cmd),env).directory(workDir),err),
+                  in, out, err );
+        }
+
+        private static ProcessBuilder stderr(ProcessBuilder pb, OutputStream stderr) {
+            if(stderr==null)    pb.redirectErrorStream(true);
+            return pb;
         }
 
         private static ProcessBuilder environment(ProcessBuilder pb, String[] env) {
@@ -124,18 +183,25 @@ public abstract class Proc {
             return pb;
         }
 
-        private LocalProc( String name, ProcessBuilder procBuilder, InputStream in, OutputStream out ) throws IOException {
+        private LocalProc( String name, ProcessBuilder procBuilder, InputStream in, OutputStream out, OutputStream err ) throws IOException {
             Logger.getLogger(Proc.class.getName()).log(Level.FINE, "Running: {0}", name);
+            this.name = name;
             this.out = out;
-            this.cookie = ProcessTreeKiller.createCookie();
+            this.cookie = EnvVars.createCookie();
             procBuilder.environment().putAll(cookie);
             this.proc = procBuilder.start();
             copier = new StreamCopyThread(name+": stdout copier", proc.getInputStream(), out);
             copier.start();
             if(in!=null)
-                new ByteCopier(name+": stdin copier",in,proc.getOutputStream()).start();
+                new StdinCopyThread(name+": stdin copier",in,proc.getOutputStream()).start();
             else
                 proc.getOutputStream().close();
+            if(err!=null) {
+                copier2 = new StreamCopyThread(name+": stderr copier", proc.getErrorStream(), err);
+                copier2.start();
+            } else {
+                copier2 = null;
+            }
         }
 
         /**
@@ -143,16 +209,26 @@ public abstract class Proc {
          */
         @Override
         public int join() throws InterruptedException, IOException {
+            // show what we are waiting for in the thread title
+            // since this involves some native work, let's have some soak period before enabling this by default 
+            Thread t = Thread.currentThread();
+            String oldName = t.getName();
+            if (SHOW_PID) {
+                ProcessTree.OSProcess p = ProcessTree.get().get(proc);
+                t.setName(oldName+" "+(p!=null?"waiting for pid="+p.getPid():"waiting for "+name));
+            }
+
             try {
                 int r = proc.waitFor();
                 // see http://hudson.gotdns.com/wiki/display/HUDSON/Spawning+processes+from+build
-                // problems like that shows up as inifinite wait in join(), which confuses great many users.
+                // problems like that shows up as infinite wait in join(), which confuses great many users.
                 // So let's do a timed wait here and try to diagnose the problem
                 copier.join(10*1000);
-                if(copier.isAlive()) {
+                if(copier2!=null)   copier2.join(10*1000);
+                if(copier.isAlive() || (copier2!=null && copier2.isAlive())) {
                     // looks like handles are leaking.
                     // closing these handles should terminate the threads.
-                    String msg = "Process leaked file descriptors. See http://hudson.gotdns.com/wiki/display/HUDSON/Spawning+processes+from+build for more information";
+                    String msg = "Process leaked file descriptors. See http://wiki.hudson-ci.org/display/HUDSON/Spawning+processes+from+build for more information";
                     Throwable e = new Exception().fillInStackTrace();
                     LOGGER.log(Level.WARNING,msg,e);
 
@@ -178,6 +254,8 @@ public abstract class Proc {
                 // aborting. kill the process
                 destroy();
                 throw e;
+            } finally {
+                t.setName(oldName);
             }
         }
 
@@ -200,29 +278,38 @@ public abstract class Proc {
         /**
          * Destroys the child process without join.
          */
-        private void destroy() {
-            ProcessTreeKiller.get().kill(proc,cookie);
+        private void destroy() throws InterruptedException {
+            ProcessTree.get().killAll(proc,cookie);
         }
 
-        private static class ByteCopier extends Thread {
+        /**
+         * {@link Process#getOutputStream()} is buffered, so we need to eagerly flash
+         * the stream to push bytes to the process.
+         */
+        private static class StdinCopyThread extends Thread {
             private final InputStream in;
             private final OutputStream out;
 
-            public ByteCopier(String threadName, InputStream in, OutputStream out) {
+            public StdinCopyThread(String threadName, InputStream in, OutputStream out) {
                 super(threadName);
                 this.in = in;
                 this.out = out;
             }
 
+            @Override
             public void run() {
                 try {
-                    while(true) {
-                        int ch = in.read();
-                        if(ch==-1)  break;
-                        out.write(ch);
+                    try {
+                        byte[] buf = new byte[8192];
+                        int len;
+                        while ((len = in.read(buf)) > 0) {
+                            out.write(buf, 0, len);
+                            out.flush();
+                        }
+                    } finally {
+                        in.close();
+                        out.close();
                     }
-                    in.close();
-                    out.close();
                 } catch (IOException e) {
                     // TODO: what to do?
                 }
@@ -230,7 +317,7 @@ public abstract class Proc {
         }
 
         private static String calcName(String[] cmd) {
-            StringBuffer buf = new StringBuffer();
+            StringBuilder buf = new StringBuilder();
             for (String token : cmd) {
                 if(buf.length()>0)  buf.append(' ');
                 buf.append(token);
@@ -252,7 +339,6 @@ public abstract class Proc {
         @Override
         public void kill() throws IOException, InterruptedException {
             process.cancel(true);
-            join();
         }
 
         @Override
@@ -267,6 +353,8 @@ public abstract class Proc {
                 if(e.getCause() instanceof IOException)
                     throw (IOException)e.getCause();
                 throw new IOException2("Failed to join the process",e);
+            } catch (CancellationException x) {
+                return -1;
             }
         }
 
@@ -277,4 +365,8 @@ public abstract class Proc {
     }
 
     private static final Logger LOGGER = Logger.getLogger(Proc.class.getName());
+    /**
+     * Debug switch to have the thread display the process it's waiting for.
+     */
+    public static boolean SHOW_PID = false;
 }

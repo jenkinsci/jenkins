@@ -25,9 +25,7 @@ package hudson.maven;
 
 import hudson.ExtensionPoint;
 import hudson.Launcher;
-import hudson.model.AbstractProject;
 import hudson.model.Action;
-import hudson.model.Build;
 import hudson.model.BuildListener;
 import hudson.model.Describable;
 import hudson.model.Hudson;
@@ -40,6 +38,8 @@ import org.apache.maven.reporting.MavenReport;
 
 import java.io.IOException;
 import java.io.Serializable;
+import java.util.Collection;
+import java.util.Collections;
 
 /**
  * Listens to the build execution of {@link MavenBuild},
@@ -95,7 +95,7 @@ import java.io.Serializable;
  * @author Kohsuke Kawaguchi
  * @see MavenReporters
  */
-public abstract class MavenReporter implements Describable<MavenReporter>, ExtensionPoint, Serializable {
+public abstract class MavenReporter implements Describable<MavenReporter>, ExtensionPoint, Serializable, MavenProjectActionBuilder {
     /**
      * Called before the actual maven2 execution begins.
      *
@@ -261,9 +261,38 @@ public abstract class MavenReporter implements Describable<MavenReporter>, Exten
      *
      * @return
      *      null not to contribute an action, which is the default.
+     * @deprecated as of 1.341
+     *      Use {@link #getProjectActions(MavenModule)} instead.
      */
     public Action getProjectAction(MavenModule module) {
         return null;
+    }
+
+    /**
+     * Equivalent of {@link BuildStep#getProjectActions(AbstractProject)}
+     * for {@link MavenReporter}.
+     *
+     * <p>
+     * Registers a transient action to {@link MavenModule} when it's rendered.
+     * This is useful if you'd like to display an action at the module level.
+     *
+     * <p>
+     * Since this contributes a transient action, the returned {@link Action}
+     * will not be serialized.
+     *
+     * <p>
+     * For this method to be invoked, your {@link MavenReporter} has to invoke
+     * {@link MavenBuildProxy#registerAsProjectAction(MavenReporter)} during the build.
+     *
+     * @return
+     *      can be empty but never null.
+     * @since 1.341
+     */
+    public Collection<? extends Action> getProjectActions(MavenModule module) {
+        // delegate to getProjectAction (singular) for backward compatible behavior
+        Action a = getProjectAction(module);
+        if (a==null)    return Collections.emptyList();
+        return Collections.singletonList(a);
     }
 
     /**
@@ -282,6 +311,6 @@ public abstract class MavenReporter implements Describable<MavenReporter>, Exten
     }
 
     public MavenReporterDescriptor getDescriptor() {
-        return (MavenReporterDescriptor)Hudson.getInstance().getDescriptor(getClass());
+        return (MavenReporterDescriptor)Hudson.getInstance().getDescriptorOrDie(getClass());
     }
 }

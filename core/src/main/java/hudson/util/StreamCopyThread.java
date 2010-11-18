@@ -35,13 +35,23 @@ import java.io.OutputStream;
 public class StreamCopyThread extends Thread {
     private final InputStream in;
     private final OutputStream out;
+    private final boolean closeOut;
 
-    public StreamCopyThread(String threadName, InputStream in, OutputStream out) {
+    public StreamCopyThread(String threadName, InputStream in, OutputStream out, boolean closeOut) {
         super(threadName);
         this.in = in;
+        if (out == null) {
+            throw new NullPointerException("out is null");
+        }
         this.out = out;
+        this.closeOut = closeOut;
     }
 
+    public StreamCopyThread(String threadName, InputStream in, OutputStream out) {
+        this(threadName,in,out,false);
+    }
+
+    @Override
     public void run() {
         try {
             try {
@@ -50,7 +60,11 @@ public class StreamCopyThread extends Thread {
                 while ((len = in.read(buf)) > 0)
                     out.write(buf, 0, len);
             } finally {
+                // it doesn't make sense not to close InputStream that's already EOF-ed,
+                // so there's no 'closeIn' flag.
                 in.close();
+                if(closeOut)
+                    out.close();
             }
         } catch (IOException e) {
             // TODO: what to do?

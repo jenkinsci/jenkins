@@ -1,7 +1,8 @@
 <!--
 The MIT License
 
-Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, Erik Ramfelt
+Copyright (c) 2004-2010, Sun Microsystems, Inc., Kohsuke Kawaguchi,
+Erik Ramfelt, Seiji Sogabe, Alan Harder
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -27,10 +28,15 @@ THE SOFTWARE.
   <l:layout title="${%title(it.displayName)}">
 		<st:include page="sidepanel.jelly" />
 		<l:main-panel>
+      <h1>${%Timeline}</h1>
+      <st:include page="control.jelly" it="${it.timeline}" />
+      <div style="height:2em"/><!-- spacer -->
+
+      <h1>${%Build Time Trend}</h1>
       <j:choose>
         <j:when test="${it.builds.size()&gt;1}">
           <div align="center">
-            <img src="buildTimeGraph" width="500" height="400" lazymap="buildTimeGraphMap" alt="[Build time graph]"/>
+            <img src="buildTimeGraph/png" width="500" height="400" lazymap="buildTimeGraph/map" alt="[Build time graph]" style="float:right"/>
           </div>
 
           <j:set var="isMasterSlaveEnabled" value="${!empty(app.slaves)}"/>
@@ -50,7 +56,9 @@ THE SOFTWARE.
                   	<img width="16" height="16" src="${imagesURL}/16x16/${r.buildStatusUrl}" alt="${r.iconColor.description}" />
                   </td>
                   <td data="${r.number}">
+                    <a href="${r.number}">
                     ${r.displayName}
+                    </a>
                   </td>
                   <td data="${r.duration}">
                     ${r.durationString}

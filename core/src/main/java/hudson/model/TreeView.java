@@ -1,7 +1,7 @@
 /*
  * The MIT License
  * 
- * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi
+ * Copyright (c) 2004-2010, Sun Microsystems, Inc., Kohsuke Kawaguchi
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -27,6 +27,7 @@ import hudson.model.Descriptor.FormException;
 import hudson.util.CaseInsensitiveComparator;
 import hudson.Indenter;
 import hudson.Extension;
+import hudson.views.ViewsTabBar;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
@@ -39,7 +40,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.concurrent.CopyOnWriteArrayList;
-import java.text.ParseException;
 
 /**
  *
@@ -125,6 +125,10 @@ public class TreeView extends View implements ViewGroup {
     protected void submit(StaplerRequest req) throws IOException, ServletException, FormException {
     }
 
+    public boolean canDelete(View view) {
+        return true;
+    }
+
     public void deleteView(View view) throws IOException {
         views.remove(view);
     }
@@ -148,16 +152,10 @@ public class TreeView extends View implements ViewGroup {
         owner.save();
     }
 
-    public void doCreateView( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
-        try {
-            checkPermission(View.CREATE);
-            views.add(View.create(req,rsp,this));
-            save();
-        } catch (ParseException e) {
-            sendError(e,req,rsp);
-        } catch (FormException e) {
-            sendError(e,req,rsp);
-        }
+    public void doCreateView( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException, FormException {
+        checkPermission(View.CREATE);
+        views.add(View.create(req,rsp,this));
+        save();
     }
 
     // this feature is not public yet
@@ -173,5 +171,9 @@ public class TreeView extends View implements ViewGroup {
         public String getDisplayName() {
             return "Tree View";
         }
+    }
+
+    public ViewsTabBar getViewsTabBar() {
+        return Hudson.getInstance().getViewsTabBar();
     }
 }

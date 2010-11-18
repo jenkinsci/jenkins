@@ -1,7 +1,7 @@
 /*
  * The MIT License
  * 
- * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi
+ * Copyright (c) 2004-2010, Sun Microsystems, Inc., Kohsuke Kawaguchi
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -25,8 +25,10 @@ package hudson.util;
 
 import groovy.lang.GroovyShell;
 import hudson.Functions;
+import hudson.model.Hudson;
 import hudson.remoting.Callable;
 import hudson.remoting.VirtualChannel;
+import hudson.remoting.DelegatingCallable;
 
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -70,13 +72,15 @@ public final class RemotingDiagnostics {
         public Map<String,String> call() {
             Map<String,String> r = new LinkedHashMap<String,String>();
             try {
-                for (ThreadInfo ti : Functions.getThreadInfos())
-                    r.put(ti.getThreadName(),Functions.dumpThreadInfo(ti));
+                ThreadInfo[] data = Functions.getThreadInfos();
+                Functions.ThreadGroupMap map = Functions.sortThreadsAndGetGroupMap(data);
+                for (ThreadInfo ti : data)
+                    r.put(ti.getThreadName(),Functions.dumpThreadInfo(ti,map));
             } catch (LinkageError _) {
                 // not in JDK6. fall back to JDK5
                 r.clear();
-                for (Map.Entry<Thread,StackTraceElement[]> t : Thread.getAllStackTraces().entrySet()) {
-                    StringBuffer buf = new StringBuffer();
+                for (Map.Entry<Thread,StackTraceElement[]> t : Functions.dumpAllThreads().entrySet()) {
+                    StringBuilder buf = new StringBuilder();
                     for (StackTraceElement e : t.getValue())
                         buf.append(e).append('\n');
                     r.put(t.getKey().getName(),buf.toString());
@@ -94,15 +98,23 @@ public final class RemotingDiagnostics {
         return channel.call(new Script(script));
     }
 
-    private static final class Script implements Callable<String,RuntimeException> {
+    private static final class Script implements DelegatingCallable<String,RuntimeException> {
         private final String script;
+        private transient ClassLoader cl;
 
         private Script(String script) {
             this.script = script;
+            cl = getClassLoader();
+        }
+
+        public ClassLoader getClassLoader() {
+            return Hudson.getInstance().getPluginManager().uberClassLoader;
         }
 
         public String call() throws RuntimeException {
-            GroovyShell shell = new GroovyShell();
+            // if we run locally, cl!=null. Otherwise the delegating classloader will be available as context classloader.
+            if (cl==null)       cl = Thread.currentThread().getContextClassLoader();
+            GroovyShell shell = new GroovyShell(cl);
 
             StringWriter out = new StringWriter();
             PrintWriter pw = new PrintWriter(out);

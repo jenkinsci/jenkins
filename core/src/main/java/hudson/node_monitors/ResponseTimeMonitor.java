@@ -25,6 +25,7 @@ package hudson.node_monitors;
 
 import hudson.Util;
 import hudson.Extension;
+import hudson.slaves.OfflineCause;
 import hudson.model.Computer;
 import hudson.remoting.Callable;
 import hudson.remoting.Future;
@@ -66,7 +67,7 @@ public class ResponseTimeMonitor extends NodeMonitor {
                 d = new Data(old,-1L);
             }
 
-            if(d.hasTooManyTimeouts() && markOffline(c))
+            if(d.hasTooManyTimeouts() && markOffline(c,d))
                 LOGGER.warning(Messages.ResponseTimeMonitor_MarkedOffline(c.getName()));
             return d;
         }
@@ -75,6 +76,7 @@ public class ResponseTimeMonitor extends NodeMonitor {
             return Messages.ResponseTimeMonitor_DisplayName();
         }
 
+        @Override
         public NodeMonitor newInstance(StaplerRequest req, JSONObject formData) throws FormException {
             return new ResponseTimeMonitor();
         }
@@ -84,7 +86,7 @@ public class ResponseTimeMonitor extends NodeMonitor {
      * Immutable representation of the monitoring data.
      */
     @ExportedBean
-    public static final class Data {
+    public static final class Data extends OfflineCause {
         /**
          * Record of the past 5 times. -1 if time out. Otherwise in milliseconds.
          * Old ones first.
@@ -132,6 +134,7 @@ public class ResponseTimeMonitor extends NodeMonitor {
         /**
          * HTML rendering of the data
          */
+        @Override
         public String toString() {
 //            StringBuilder buf = new StringBuilder();
 //            for (long l : past5) {

@@ -32,9 +32,24 @@ import java.io.IOException;
 import java.util.Map;
 import java.util.TreeMap;
 import java.util.Arrays;
+import java.util.UUID;
 
 /**
  * Environment variables.
+ *
+ * <p>
+ * While all the platforms I tested (Linux 2.6, Solaris, and Windows XP) have the case sensitive
+ * environment variable table, Windows batch script handles environment variable in the case preserving
+ * but case <b>insensitive</b> way (that is, cmd.exe can get both FOO and foo as environment variables
+ * when it's launched, and the "set" command will display it accordingly, but "echo %foo%" results in
+ * echoing the value of "FOO", not "foo" &mdash; this is presumably caused by the behavior of the underlying
+ * Win32 API <tt>GetEnvironmentVariable</tt> acting in case insensitive way.) Windows users are also
+ * used to write environment variable case-insensitively (like %Path% vs %PATH%), and you can see many
+ * documents on the web that claims Windows environment variables are case insensitive.
+ *
+ * <p>
+ * So for a consistent cross platform behavior, it creates the least confusion to make the table
+ * case insensitive but case preserving.
  *
  * <p>
  * In Hudson, often we need to build up "environment variable overrides"
@@ -43,7 +58,7 @@ import java.util.Arrays;
  * we introduce a special convention <tt>PATH+FOO</tt> &mdash; all entries
  * that starts with <tt>PATH+</tt> are merged and prepended to the inherited
  * <tt>PATH</tt> variable, on the process where a new process is executed. 
- * 
+ *
  * @author Kohsuke Kawaguchi
  */
 public class EnvVars extends TreeMap<String,String> {
@@ -79,6 +94,9 @@ public class EnvVars extends TreeMap<String,String> {
         this((Map)m);
     }
 
+    /**
+     * Builds an environment variables from an array of the form <tt>"key","value","key","value"...</tt>
+     */
     public EnvVars(String... keyValuePairs) {
         this();
         if(keyValuePairs.length%2!=0)
@@ -138,6 +156,12 @@ public class EnvVars extends TreeMap<String,String> {
 			entry.setValue(Util.replaceMacro(entry.getValue(), env));
 		}
 	}
+
+    @Override
+    public String put(String key, String value) {
+        if (value==null)    throw new IllegalArgumentException("Null value not allowed as an environment variable: "+key);
+        return super.put(key,value);
+    }
     
     /**
      * Takes a string that looks like "a=b" and adds that to this map.
@@ -154,6 +178,14 @@ public class EnvVars extends TreeMap<String,String> {
      */
     public String expand(String s) {
         return Util.replaceMacro(s, this);
+    }
+
+    /**
+     * Creates a magic cookie that can be used as the model environment variable
+     * when we later kill the processes.
+     */
+    public static EnvVars createCookie() {
+        return new EnvVars("HUDSON_COOKIE", UUID.randomUUID().toString());
     }
 
     /**
@@ -194,7 +226,7 @@ public class EnvVars extends TreeMap<String,String> {
     private static EnvVars initMaster() {
         EnvVars vars = new EnvVars(System.getenv());
         vars.platform = Platform.current();
-        if(Functions.isUnitTest)
+        if(Main.isUnitTest || Main.isDevelopmentMode)
             // if unit test is launched with maven debug switch,
             // we need to prevent forked Maven processes from seeing it, or else
             // they'll hang

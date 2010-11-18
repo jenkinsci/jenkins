@@ -1,7 +1,7 @@
 <!--
 The MIT License
 
-Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi
+Copyright (c) 2004-2010, Sun Microsystems, Inc., Kohsuke Kawaguchi
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -23,32 +23,29 @@ THE SOFTWARE.
 -->
 
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
-  <j:choose xmlns:local="local">
-    <d:taglib uri="local">
-      <d:tag name="viewTabs">
-        <!-- view tab bar -->
-        <l:tabBar>
-          <j:forEach var="v" items="${app.views}">
-            <l:tab name="${v.viewName}" active="${v==it}" href="${rootURL}/${v.url}" />
-          </j:forEach>
-          <j:if test="${it.hasPermission(it.CREATE)}">
-            <l:tab name="+" href="${rootURL}/newView" active="false" />
-          </j:if>
-        </l:tabBar>
-      </d:tag>
-    </d:taglib>
-    <j:when test="${empty(items)}">
-      <j:if test="${!empty(app.items)}">
-        <local:viewTabs/>
-        <br/>
-      </j:if>
-      <st:include page="noJob.jelly" />
-    </j:when>
-    <j:otherwise>
-      <!-- set @jobBaseUrl="" so that links to jobs will be under this view. -->
-      <t:projectView jobs="${items}" jobBaseUrl="" showViewTabs="true" columnExtensions="${it.columns}">
-        <local:viewTabs/>
-      </t:projectView>
-    </j:otherwise>
-  </j:choose>
+    <j:choose>
+        <j:when test="${empty(items)}">
+            <j:if test="${!empty(app.items)}">
+                <j:set var="views" value="${it.owner.views}"/>
+                <j:set var="currentView" value="${it}"/>
+                <st:include page="viewTabs.jelly" it="${it.owner.viewsTabBar}"/>
+            </j:if>
+            <st:include page="noJob.jelly" />
+        </j:when>
+        <j:otherwise>
+            <!-- set @jobBaseUrl="" so that links to jobs will be under this view. -->
+            <t:projectView jobs="${items}" jobBaseUrl="" showViewTabs="true" columnExtensions="${it.columns}">
+                <j:set var="views" value="${it.owner.views}"/>
+                <j:set var="currentView" value="${it}"/>
+                <j:choose>
+                    <j:when test="${it.owner.class.name=='hudson.model.MyViewsProperty'}">
+                        <st:include page="myViewTabs.jelly" it="${it.owner.myViewsTabBar}"/>
+                    </j:when>
+                    <j:otherwise>
+                        <st:include page="viewTabs.jelly" it="${it.owner.viewsTabBar}"/>
+                    </j:otherwise>
+                </j:choose>
+            </t:projectView>
+        </j:otherwise>
+    </j:choose>
 </j:jelly>

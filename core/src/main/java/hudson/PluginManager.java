@@ -1,7 +1,7 @@
 /*
  * The MIT License
  * 
- * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, Stephen Connolly, Tom Huybrechts
+ * Copyright (c) 2004-2010, Sun Microsystems, Inc., Kohsuke Kawaguchi, Stephen Connolly, Tom Huybrechts
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,59 +23,87 @@
  */
 package hudson;
 
-import hudson.model.*;
-import hudson.util.Service;
+import static hudson.init.InitMilestone.PLUGINS_PREPARED;
+import static hudson.init.InitMilestone.PLUGINS_STARTED;
+import static hudson.init.InitMilestone.PLUGINS_LISTED;
 
-import java.util.Enumeration;
+import hudson.PluginWrapper.Dependency;
+import hudson.init.InitStrategy;
+import hudson.init.InitializerFinder;
+import hudson.model.AbstractModelObject;
+import hudson.model.Failure;
+import hudson.model.Hudson;
+import hudson.model.UpdateCenter;
+import hudson.model.UpdateSite;
+import hudson.util.CyclicGraphDetector;
+import hudson.util.CyclicGraphDetector.CycleDetectedException;
+import hudson.util.PersistedList;
+import hudson.util.Service;
+import org.apache.commons.fileupload.FileItem;
+import org.apache.commons.fileupload.disk.DiskFileItemFactory;
+import org.apache.commons.fileupload.servlet.ServletFileUpload;
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.logging.LogFactory;
+import org.jvnet.hudson.reactor.Executable;
+import org.jvnet.hudson.reactor.Reactor;
+import org.jvnet.hudson.reactor.TaskBuilder;
+import org.jvnet.hudson.reactor.TaskGraphBuilder;
+import org.kohsuke.stapler.HttpRedirect;
+import org.kohsuke.stapler.HttpResponse;
+import org.kohsuke.stapler.HttpResponses;
+import org.kohsuke.stapler.QueryParameter;
+import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.StaplerResponse;
+
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import java.io.File;
-import java.io.FilenameFilter;
 import java.io.IOException;
+import java.lang.ref.WeakReference;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Enumeration;
 import java.util.HashSet;
+import java.util.Hashtable;
 import java.util.List;
 import java.util.Set;
-import java.util.Arrays;
+import java.util.Map;
+import java.util.HashMap;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
-import org.apache.commons.logging.LogFactory;
-import org.apache.commons.fileupload.servlet.ServletFileUpload;
-import org.apache.commons.fileupload.disk.DiskFileItemFactory;
-import org.apache.commons.fileupload.FileItem;
-import org.apache.commons.io.FileUtils;
-import org.kohsuke.stapler.StaplerRequest;
-import org.kohsuke.stapler.StaplerResponse;
-import org.kohsuke.stapler.QueryParameter;
-import org.kohsuke.stapler.WebApp;
 
 /**
  * Manages {@link PluginWrapper}s.
  *
  * @author Kohsuke Kawaguchi
  */
-public final class PluginManager extends AbstractModelObject {
+public abstract class PluginManager extends AbstractModelObject {
     /**
      * All discovered plugins.
      */
-    private final List<PluginWrapper> plugins = new ArrayList<PluginWrapper>();
+    protected final List<PluginWrapper> plugins = new ArrayList<PluginWrapper>();
 
     /**
      * All active plugins.
      */
-    private final List<PluginWrapper> activePlugins = new ArrayList<PluginWrapper>();
+    protected final List<PluginWrapper> activePlugins = new ArrayList<PluginWrapper>();
 
-    private final List<FailedPlugin> failedPlugins = new ArrayList<FailedPlugin>();
+    protected final List<FailedPlugin> failedPlugins = new ArrayList<FailedPlugin>();
 
     /**
      * Plug-in root directory.
      */
     public final File rootDir;
 
+    /**
+     * @deprecated as of 1.355
+     *      {@link PluginManager} can now live longer than {@link Hudson} instance, so
+     *      use {@code Hudson.getInstance().servletContext} instead.
+     */
     public final ServletContext context;
 
     /**
@@ -92,72 +120,29 @@ public final class PluginManager extends AbstractModelObject {
      * This is used to report a message that Hudson needs to be restarted
      * for new plugins to take effect.
      */
-    public volatile boolean pluginUploaded =false;
+    public volatile boolean pluginUploaded = false;
+
+    /**
+     * The initialization of {@link PluginManager} splits into two parts;
+     * one is the part about listing them, extracting them, and preparing classloader for them.
+     * The 2nd part is about creating instances. Once the former completes this flags become true,
+     * as the 2nd part can be repeated for each Hudson instance.
+     */
+    private boolean pluginListed = false;
     
     /**
      * Strategy for creating and initializing plugins
      */
-    private PluginStrategy strategy;
+    private final PluginStrategy strategy;
 
-    public PluginManager(ServletContext context) {
+    public PluginManager(ServletContext context, File rootDir) {
         this.context = context;
-        // JSON binding needs to be able to see all the classes from all the plugins
-        WebApp.get(context).setClassLoader(uberClassLoader);
 
-        rootDir = new File(Hudson.getInstance().getRootDir(),"plugins");
+        this.rootDir = rootDir;
         if(!rootDir.exists())
             rootDir.mkdirs();
-
-        loadBundledPlugins();
-
-        File[] archives = rootDir.listFiles(new FilenameFilter() {
-            public boolean accept(File dir, String name) {
-                return name.endsWith(".hpi")        // plugin jar file
-                    || name.endsWith(".hpl");       // linked plugin. for debugging.
-            }
-        });
-
-        if(archives==null) {
-            LOGGER.severe("Hudson is unable to create "+rootDir+"\nPerhaps its security privilege is insufficient");
-            return;
-        }
         
         strategy = createPluginStrategy();
-
-        // load plugins from a system property, for use in the "mvn hudson-dev:run"
-        List<File> archivesList = new ArrayList<File>(Arrays.asList(archives));
-        String hplProperty = System.getProperty("hudson.bundled.plugins");
-        if (hplProperty != null) {
-            for (String hplLocation: hplProperty.split(",")) {
-                File hpl = new File(hplLocation.trim());
-                if (hpl.exists())
-                    archivesList.add(hpl);
-                else
-                    LOGGER.warning("bundled plugin " + hplLocation + " does not exist");
-            }
-        }
-
-        for( File arc : archivesList ) {
-            try {
-                PluginWrapper p = strategy.createPluginWrapper(arc);
-                plugins.add(p);
-                if(p.isActive())
-                    activePlugins.add(p);
-            } catch (IOException e) {
-                failedPlugins.add(new FailedPlugin(arc.getName(),e));
-                LOGGER.log(Level.SEVERE, "Failed to load a plug-in " + arc, e);
-            }
-        }
-
-        for (PluginWrapper p : activePlugins.toArray(new PluginWrapper[activePlugins.size()]))
-            try {
-            	strategy.load(p);
-            } catch (IOException e) {
-                failedPlugins.add(new FailedPlugin(p.getShortName(),e));
-                LOGGER.log(Level.SEVERE, "Failed to load a plug-in " + p.getShortName(), e);
-                activePlugins.remove(p);
-                plugins.remove(p);
-            }
     }
 
     /**
@@ -165,54 +150,205 @@ public final class PluginManager extends AbstractModelObject {
      * This is a separate method so that code executed from here will see a valid value in
      * {@link Hudson#pluginManager}. 
      */
-    public void initialize() {
-        for (PluginWrapper p : activePlugins.toArray(new PluginWrapper[activePlugins.size()])) {
-            strategy.initializeComponents(p);
-            try {
-                p.getPlugin().postInitialize();
-            } catch (Exception e) {
-                failedPlugins.add(new FailedPlugin(p.getShortName(), e));
-                LOGGER.log(Level.SEVERE, "Failed to post-initialize a plug-in " + p.getShortName(), e);
-                activePlugins.remove(p);
-                plugins.remove(p);
-            }
+    public TaskBuilder initTasks(final InitStrategy initStrategy) {
+        TaskBuilder builder;
+        if (!pluginListed) {
+            builder = new TaskGraphBuilder() {
+                List<File> archives;
+                Collection<String> bundledPlugins;
+
+                {
+                    Handle loadBundledPlugins = add("Loading bundled plugins", new Executable() {
+                        public void run(Reactor session) throws Exception {
+                            bundledPlugins = loadBundledPlugins();
+                        }
+                    });
+
+                    Handle listUpPlugins = requires(loadBundledPlugins).add("Listing up plugins", new Executable() {
+                        public void run(Reactor session) throws Exception {
+                            archives = initStrategy.listPluginArchives(PluginManager.this);
+                        }
+                    });
+
+                    requires(listUpPlugins).attains(PLUGINS_LISTED).add("Preparing plugins",new Executable() {
+                        public void run(Reactor session) throws Exception {
+                            // once we've listed plugins, we can fill in the reactor with plugin-specific initialization tasks
+                            TaskGraphBuilder g = new TaskGraphBuilder();
+
+                            final Map<String,File> inspectedShortNames = new HashMap<String,File>();
+
+                            for( final File arc : archives ) {
+                                g.followedBy().notFatal().attains(PLUGINS_LISTED).add("Inspecting plugin " + arc, new Executable() {
+                                    public void run(Reactor session1) throws Exception {
+                                        try {
+                                            PluginWrapper p = strategy.createPluginWrapper(arc);
+                                            if (isDuplicate(p)) return;
+
+                                            p.isBundled = bundledPlugins.contains(arc.getName());
+                                            plugins.add(p);
+                                            if(p.isActive())
+                                                activePlugins.add(p);
+                                        } catch (IOException e) {
+                                            failedPlugins.add(new FailedPlugin(arc.getName(),e));
+                                            throw e;
+                                        }
+                                    }
+
+                                    /**
+                                     * Inspects duplication. this happens when you run hpi:run on a bundled plugin,
+                                     * as well as putting numbered hpi files, like "cobertura-1.0.hpi" and "cobertura-1.1.hpi"
+                                     */
+                                    private boolean isDuplicate(PluginWrapper p) {
+                                        String shortName = p.getShortName();
+                                        if (inspectedShortNames.containsKey(shortName)) {
+                                            LOGGER.info("Ignoring "+arc+" because "+inspectedShortNames.get(shortName)+" is already loaded");
+                                            return true;
+                                        }
+
+                                        inspectedShortNames.put(shortName,arc);
+                                        return false;
+                                    }
+                                });
+                            }
+
+                            g.requires(PLUGINS_PREPARED).add("Checking cyclic dependencies",new Executable() {
+                                /**
+                                 * Makes sure there's no cycle in dependencies.
+                                 */
+                                public void run(Reactor reactor) throws Exception {
+                                    try {
+                                        new CyclicGraphDetector<PluginWrapper>() {
+                                            @Override
+                                            protected List<PluginWrapper> getEdges(PluginWrapper p) {
+                                                List<PluginWrapper> next = new ArrayList<PluginWrapper>();
+                                                addTo(p.getDependencies(),next);
+                                                addTo(p.getOptionalDependencies(),next);
+                                                return next;
+                                            }
+
+                                            private void addTo(List<Dependency> dependencies, List<PluginWrapper> r) {
+                                                for (Dependency d : dependencies) {
+                                                    PluginWrapper p = getPlugin(d.shortName);
+                                                    if (p!=null)
+                                                        r.add(p);
+                                                }
+                                            }
+                                        }.run(getPlugins());
+                                    } catch (CycleDetectedException e) {
+                                        stop(); // disable all plugins since classloading from them can lead to StackOverflow
+                                        throw e;    // let Hudson fail
+                                    }
+                                    Collections.sort(plugins);
+                                }
+                            });
+
+                            session.addAll(g.discoverTasks(session));
+
+                            pluginListed = true; // technically speaking this is still too early, as at this point tasks are merely scheduled, not necessarily executed.
+                        }
+                    });
+                }
+            };
+        } else {
+            builder = TaskBuilder.EMPTY_BUILDER;
         }
+
+        final InitializerFinder initializerFinder = new InitializerFinder(uberClassLoader);        // misc. stuff
+
+        // lists up initialization tasks about loading plugins.
+        return TaskBuilder.union(initializerFinder, // this scans @Initializer in the core once
+            builder,new TaskGraphBuilder() {{
+            requires(PLUGINS_LISTED).attains(PLUGINS_PREPARED).add("Loading plugins",new Executable() {
+                /**
+                 * Once the plugins are listed, schedule their initialization.
+                 */
+                public void run(Reactor session) throws Exception {
+                    Hudson.getInstance().lookup.set(PluginInstanceStore.class,new PluginInstanceStore());
+                    TaskGraphBuilder g = new TaskGraphBuilder();
+
+                    // schedule execution of loading plugins
+                    for (final PluginWrapper p : activePlugins.toArray(new PluginWrapper[activePlugins.size()])) {
+                        g.followedBy().notFatal().attains(PLUGINS_PREPARED).add("Loading plugin " + p.getShortName(), new Executable() {
+                            public void run(Reactor session) throws Exception {
+                                try {
+                                    p.resolvePluginDependencies();
+                                    strategy.load(p);
+                                } catch (IOException e) {
+                                    failedPlugins.add(new FailedPlugin(p.getShortName(), e));
+                                    activePlugins.remove(p);
+                                    plugins.remove(p);
+                                    throw e;
+                                }
+                            }
+                        });
+                    }
+
+                    // schedule execution of initializing plugins
+                    for (final PluginWrapper p : activePlugins.toArray(new PluginWrapper[activePlugins.size()])) {
+                        g.followedBy().notFatal().attains(PLUGINS_STARTED).add("Initializing plugin " + p.getShortName(), new Executable() {
+                            public void run(Reactor session) throws Exception {
+                                try {
+                                    p.getPlugin().postInitialize();
+                                } catch (Exception e) {
+                                    failedPlugins.add(new FailedPlugin(p.getShortName(), e));
+                                    activePlugins.remove(p);
+                                    plugins.remove(p);
+                                    throw e;
+                                }
+                            }
+                        });
+                    }
+
+                    g.followedBy().attains(PLUGINS_STARTED).add("Discovering plugin initialization tasks", new Executable() {
+                        public void run(Reactor reactor) throws Exception {
+                            // rescan to find plugin-contributed @Initializer
+                            reactor.addAll(initializerFinder.discoverTasks(reactor));
+                        }
+                    });
+
+                    // register them all
+                    session.addAll(g.discoverTasks(session));
+                }
+            });
+        }});
     }
 
     /**
      * If the war file has any "/WEB-INF/plugins/*.hpi", extract them into the plugin directory.
+     *
+     * @return
+     *      File names of the bundled plugins. Like {"ssh-slaves.hpi","subvesrion.hpi"}
+     * @throws Exception
+     *      Any exception will be reported and halt the startup.
      */
-    private void loadBundledPlugins() {
-        // this is used in tests, when we want to override the default bundled plugins with .hpl versions
-        if (System.getProperty("hudson.bundled.plugins") != null) {
-            return;
-        }
-        Set paths = context.getResourcePaths("/WEB-INF/plugins");
-        if(paths==null) return; // crap
-        for( String path : (Set<String>) paths) {
-            String fileName = path.substring(path.lastIndexOf('/')+1);
-            try {
-                URL url = context.getResource(path);
-                long lastModified = url.openConnection().getLastModified();
-                File file = new File(rootDir, fileName);
-                if (!file.exists() || file.lastModified() != lastModified) {
-                    FileUtils.copyURLToFile(url, file);
-                    file.setLastModified(url.openConnection().getLastModified());
-                    // lastModified is set for two reasons:
-                    // - to avoid unpacking as much as possible, but still do it on both upgrade and downgrade
-                    // - to make sure the value is not changed after each restart, so we can avoid
-                    // unpacking the plugin itself in ClassicPluginStrategy.explode
-                }
-            } catch (IOException e) {
-                LOGGER.log(Level.SEVERE, "Failed to extract the bundled plugin "+fileName,e);
-            }
+    protected abstract Collection<String> loadBundledPlugins() throws Exception;
+
+    /**
+     * Copies the bundled plugin from the given URL to the destination of the given file name (like 'abc.hpi'),
+     * with a reasonable up-to-date check. A convenience method to be used by the {@link #loadBundledPlugins()}.
+     */
+    protected void copyBundledPlugin(URL src, String fileName) throws IOException {
+        long lastModified = src.openConnection().getLastModified();
+        File file = new File(rootDir, fileName);
+        File pinFile = new File(rootDir, fileName+".pinned");
+
+        // update file if:
+        //  - no file exists today
+        //  - bundled version and current version differs (by timestamp), and the file isn't pinned.
+        if (!file.exists() || (file.lastModified() != lastModified && !pinFile.exists())) {
+            FileUtils.copyURLToFile(src, file);
+            file.setLastModified(src.openConnection().getLastModified());
+            // lastModified is set for two reasons:
+            // - to avoid unpacking as much as possible, but still do it on both upgrade and downgrade
+            // - to make sure the value is not changed after each restart, so we can avoid
+            // unpacking the plugin itself in ClassicPluginStrategy.explode
         }
     }
 
     /**
      * Creates a hudson.PluginStrategy, looking at the corresponding system property. 
      */
-	private PluginStrategy createPluginStrategy() {
+    private PluginStrategy createPluginStrategy() {
 		String strategyName = System.getProperty(PluginStrategy.class.getName());
 		if (strategyName != null) {
 			try {
@@ -238,14 +374,15 @@ public final class PluginManager extends AbstractModelObject {
 		
 		// default and fallback
 		return new ClassicPluginStrategy(this);
-	}
-	
-	public PluginStrategy getPluginStrategy() {
-		return strategy;
-	}
+    }
 
-	/**
-     * Retrurns true if any new plugin was added, which means a restart is required for the change to take effect.
+    public PluginStrategy getPluginStrategy() {
+        return strategy;
+    }
+
+    /**
+     * Returns true if any new plugin was added, which means a restart is required
+     * for the change to take effect.
      */
     public boolean isPluginUploaded() {
         return pluginUploaded;
@@ -297,7 +434,7 @@ public final class PluginManager extends AbstractModelObject {
     }
 
     public String getDisplayName() {
-        return "Plugin Manager";
+        return Messages.PluginManager_DisplayName();
     }
 
     public String getSearchUrl() {
@@ -324,10 +461,31 @@ public final class PluginManager extends AbstractModelObject {
     public void stop() {
         for (PluginWrapper p : activePlugins) {
             p.stop();
+            p.releaseClassLoader();
         }
+        activePlugins.clear();
         // Work around a bug in commons-logging.
         // See http://www.szegedi.org/articles/memleak.html
         LogFactory.release(uberClassLoader);
+    }
+
+    public HttpResponse doUpdateSources(StaplerRequest req) throws IOException {
+        Hudson.getInstance().checkPermission(Hudson.ADMINISTER);
+
+        if (req.hasParameter("remove")) {
+            UpdateCenter uc = Hudson.getInstance().getUpdateCenter();
+            BulkChange bc = new BulkChange(uc);
+            try {
+                for (String id : req.getParameterValues("sources"))
+                    uc.getSites().remove(uc.getById(id));
+            } finally {
+                bc.commit();
+            }
+        } else
+        if (req.hasParameter("add"))
+            return new HttpRedirect("addSite");
+
+        return new HttpRedirect("./sites");
     }
 
     /**
@@ -339,42 +497,64 @@ public final class PluginManager extends AbstractModelObject {
             String n =  en.nextElement();
             if(n.startsWith("plugin.")) {
                 n = n.substring(7);
-                UpdateCenter.Plugin p = Hudson.getInstance().getUpdateCenter().getPlugin(n);
-                if(p==null) {
-                    sendError("No such plugin: "+n,req,rsp);
-                    return;
+                if (n.indexOf(".") > 0) {
+                    String[] pluginInfo = n.split("\\.");
+                    UpdateSite.Plugin p = Hudson.getInstance().getUpdateCenter().getById(pluginInfo[1]).getPlugin(pluginInfo[0]);
+                    if(p==null)
+                        throw new Failure("No such plugin: "+n);
+                    p.deploy();
                 }
-                p.install();
             }
         }
         rsp.sendRedirect("../updateCenter/");
     }
+    
 
-    public void doProxyConfigure(
+    /**
+     * Bare-minimum configuration mechanism to change the update center.
+     */
+    public HttpResponse doSiteConfigure(@QueryParameter String site) throws IOException {
+        Hudson hudson = Hudson.getInstance();
+        hudson.checkPermission(Hudson.ADMINISTER);
+        UpdateCenter uc = hudson.getUpdateCenter();
+        PersistedList<UpdateSite> sites = uc.getSites();
+        for (UpdateSite s : sites) {
+            if (s.getId().equals("default"))
+                sites.remove(s);
+        }
+        sites.add(new UpdateSite("default",site));
+        
+        return HttpResponses.redirectToContextRoot();
+    }
+
+
+    public HttpResponse doProxyConfigure(
             @QueryParameter("proxy.server") String server,
             @QueryParameter("proxy.port") String port,
             @QueryParameter("proxy.userName") String userName,
-            @QueryParameter("proxy.password") String password,
-            StaplerResponse rsp) throws IOException {
-        Hudson.getInstance().checkPermission(Hudson.ADMINISTER);
-
+            @QueryParameter("proxy.password") String password) throws IOException {
         Hudson hudson = Hudson.getInstance();
+        hudson.checkPermission(Hudson.ADMINISTER);
+
         server = Util.fixEmptyAndTrim(server);
         if(server==null) {
             hudson.proxy = null;
             ProxyConfiguration.getXmlFile().delete();
-        } else {
-            hudson.proxy = new ProxyConfiguration(server,Integer.parseInt(Util.fixEmptyAndTrim(port)),
+        } else try {
+            hudson.proxy = new ProxyConfiguration(server,Integer.parseInt(Util.fixNull(port)),
                     Util.fixEmptyAndTrim(userName),Util.fixEmptyAndTrim(password));
             hudson.proxy.save();
+        } catch (NumberFormatException nfe) {
+            return HttpResponses.error(StaplerResponse.SC_BAD_REQUEST,
+                    new IllegalArgumentException("Invalid proxy port: " + port, nfe));
         }
-        rsp.sendRedirect("./advanced");
+        return new HttpRedirect("advanced");
     }
 
     /**
      * Uploads a plugin.
      */
-    public void doUploadPlugin( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
+    public HttpResponse doUploadPlugin(StaplerRequest req) throws IOException, ServletException {
         try {
             Hudson.getInstance().checkPermission(Hudson.ADMINISTER);
 
@@ -383,16 +563,16 @@ public final class PluginManager extends AbstractModelObject {
             // Parse the request
             FileItem fileItem = (FileItem) upload.parseRequest(req).get(0);
             String fileName = Util.getFileName(fileItem.getName());
-            if(!fileName.endsWith(".hpi")) {
-                sendError(hudson.model.Messages.Hudson_NotAPlugin(fileName),req,rsp);
-                return;
-            }
+            if("".equals(fileName))
+                return new HttpRedirect("advanced");
+            if(!fileName.endsWith(".hpi"))
+                throw new Failure(hudson.model.Messages.Hudson_NotAPlugin(fileName));
             fileItem.write(new File(rootDir, fileName));
             fileItem.delete();
 
-            pluginUploaded=true;
+            pluginUploaded = true;
 
-            rsp.sendRedirect2(".");
+            return new HttpRedirect(".");
         } catch (IOException e) {
             throw e;
         } catch (Exception e) {// grrr. fileItem.write throws this
@@ -400,13 +580,33 @@ public final class PluginManager extends AbstractModelObject {
         }
     }
 
-    private final class UberClassLoader extends ClassLoader {
+    /**
+     * {@link ClassLoader} that can see all plugins.
+     */
+    public final class UberClassLoader extends ClassLoader {
+        /**
+         * Make generated types visible.
+         * Keyed by the generated class name.
+         */
+        private ConcurrentMap<String, WeakReference<Class>> generatedClasses = new ConcurrentHashMap<String, WeakReference<Class>>();
+
         public UberClassLoader() {
             super(PluginManager.class.getClassLoader());
         }
 
+        public void addNamedClass(String className, Class c) {
+            generatedClasses.put(className,new WeakReference<Class>(c));
+        }
+
         @Override
         protected Class<?> findClass(String name) throws ClassNotFoundException {
+            WeakReference<Class> wc = generatedClasses.get(name);
+            if (wc!=null) {
+                Class c = wc.get();
+                if (c!=null)    return c;
+                else            generatedClasses.remove(name,wc);
+            }
+
             // first, use the context classloader so that plugins that are loading
             // can use its own classloader first.
             ClassLoader cl = Thread.currentThread().getContextClassLoader();
@@ -465,5 +665,12 @@ public final class PluginManager extends AbstractModelObject {
         public String getExceptionString() {
             return Functions.printThrowable(cause);
         }
+    }
+
+    /**
+     * Stores {@link Plugin} instances.
+     */
+    /*package*/ static final class PluginInstanceStore {
+        final Map<PluginWrapper,Plugin> store = new Hashtable<PluginWrapper,Plugin>();
     }
 }

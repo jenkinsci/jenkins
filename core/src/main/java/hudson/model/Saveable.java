@@ -24,7 +24,6 @@
 package hudson.model;
 
 import hudson.BulkChange;
-
 import java.io.IOException;
 
 /**
@@ -41,6 +40,8 @@ public interface Saveable {
      * <p>
      * For making a bulk change efficiently, see {@link BulkChange}.
      *
+     * <p>
+     * To support listeners monitoring changes to this object, call {@link SaveableListener.fireOnChange}
      * @throws IOException
      *      if the persistence failed.
      */

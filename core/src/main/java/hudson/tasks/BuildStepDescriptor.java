@@ -67,7 +67,7 @@ public abstract class BuildStepDescriptor<T extends BuildStep & Describable<T>> 
 
 
     /**
-     * Fiters a descriptor for {@link BuildStep}s by using {@link BuildStepDescriptor#isApplicable(Class)}.
+     * Filters a descriptor for {@link BuildStep}s by using {@link BuildStepDescriptor#isApplicable(Class)}.
      */
     public static <T extends BuildStep&Describable<T>>
     List<Descriptor<T>> filter(List<Descriptor<T>> base, Class<? extends AbstractProject> type) {

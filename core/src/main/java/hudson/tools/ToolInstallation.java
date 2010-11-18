@@ -1,7 +1,7 @@
 /*
  * The MIT License
  *
- * Copyright (c) 2004-${date.year}, Sun Microsystems, Inc., Tom Huybrechts
+ * Copyright (c) 2004-2010, Sun Microsystems, Inc., Tom Huybrechts
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -28,20 +28,18 @@ import hudson.DescriptorExtensionList;
 import hudson.EnvVars;
 import hudson.Extension;
 import hudson.ExtensionPoint;
-import hudson.model.Describable;
-import hudson.model.EnvironmentSpecific;
-import hudson.model.Hudson;
-import hudson.model.Node;
-import hudson.model.Saveable;
-import hudson.model.TaskListener;
+import hudson.diagnosis.OldDataMonitor;
+import hudson.model.*;
 import hudson.slaves.NodeSpecific;
 import hudson.util.DescribableList;
+import hudson.util.XStream2;
 
 import java.io.Serializable;
 import java.io.IOException;
 import java.util.List;
 
 import com.thoughtworks.xstream.annotations.XStreamSerializable;
+import com.thoughtworks.xstream.converters.UnmarshallingContext;
 
 /**
  * Formalization of a tool installed in nodes used for builds
@@ -71,9 +69,9 @@ import com.thoughtworks.xstream.annotations.XStreamSerializable;
  * @author huybrechts
  * @since 1.286
  */
-public abstract class ToolInstallation implements Serializable, Describable<ToolInstallation>, ExtensionPoint {
+public abstract class ToolInstallation extends AbstractDescribableImpl<ToolInstallation> implements Serializable, ExtensionPoint {
     private final String name;
-    private final String home;
+    private /*almost final*/ String home;
 
     /**
      * {@link ToolProperty}s that are associated with this tool.
@@ -132,10 +130,6 @@ public abstract class ToolInstallation implements Serializable, Describable<Tool
         return properties;
     }
 
-    public ToolDescriptor<?> getDescriptor() {
-        return (ToolDescriptor) Hudson.getInstance().getDescriptor(getClass());
-    }
-
     /**
      * Finds a tool on a node.
      * Checks if the location of the tool is overridden for the given node, and if so,
@@ -167,11 +161,26 @@ public abstract class ToolInstallation implements Serializable, Describable<Tool
     }
 
     /**
+     * Subclasses can extend this for data migration from old field storing home directory.
+     */
+    protected static abstract class ToolConverter extends XStream2.PassthruConverter<ToolInstallation> {
+        public ToolConverter(XStream2 xstream) { super(xstream); }
+        protected void callback(ToolInstallation obj, UnmarshallingContext context) {
+            String s;
+            if (obj.home == null && (s = oldHomeField(obj)) != null) {
+                obj.home = s;
+                OldDataMonitor.report(context, "1.286");
+            }
+        }
+        protected abstract String oldHomeField(ToolInstallation obj);
+    }
+
+    /**
      * Returns all the registered {@link ToolDescriptor}s.
      */
     public static DescriptorExtensionList<ToolInstallation,ToolDescriptor<?>> all() {
         // use getDescriptorList and not getExtensionList to pick up legacy instances
-        return Hudson.getInstance().getDescriptorList(ToolInstallation.class);
+        return Hudson.getInstance().<ToolInstallation,ToolDescriptor<?>>getDescriptorList(ToolInstallation.class);
     }
 
     private static final long serialVersionUID = 1L;

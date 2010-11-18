@@ -44,10 +44,13 @@ THE SOFTWARE.
       @target of the &lt;form> HTML element. Works like &lt;a target="...">
       and controls which window the result of the submission goes to.
     </st:attribute>
+    <st:attribute name="tableClass">
+      Optional class attribute for &lt;table> that is created in the form.
+    </st:attribute>
   </st:documentation>
-	<form action="${action}" method="${method}" enctype="${attrs.enctype}" name="${name}" target="${attrs.target}">
-	  <table width="100%">
-	    <d:invokeBody/>
-	  </table>
-	</form>
+  <form action="${action}" method="${method}" enctype="${attrs.enctype}" name="${name}" target="${attrs.target}">
+    <table width="100%" class="${attrs.tableClass}">
+      <d:invokeBody/>
+    </table>
+  </form>
 </j:jelly>

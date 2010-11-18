@@ -34,7 +34,7 @@ THE SOFTWARE.
   <h2>Copy Job</h2>
   <p>
     To copy a job, send a POST request to <a href="../createItem">this URL</a> with
-    three query parameters <tt>name=<i>NEWJOBNAME</i>&amp;mode=copyJob&amp;from=<i>FROMJOBNAME</i></tt>
+    three query parameters <tt>name=<i>NEWJOBNAME</i>&amp;mode=copy&amp;from=<i>FROMJOBNAME</i></tt>
   </p>
 
   <h2>Build Queue</h2>
@@ -42,12 +42,18 @@ THE SOFTWARE.
     Build queue has <a href="../queue/api/">its own separate API</a>.
   </p>
   
+  <h2>Load Statistics</h2>
+  <p>
+    Overall load statistics of Hudson has <a href="../overallLoad/api/">its own separate API</a>.
+  </p>
+
   <h2>Restarting Hudson</h2>
   <p>
     Hudson will enter into the "quiet down" mode by sending a request to <a href="../quietDown">this URL</a>.
     You can cancel this mode by sending a request to <a href="../cancelQuietDown">this URL</a>. On environments
     where Hudson can restart itself (such as when Hudson is installed as a Windows service), POSTing to
-    <a href="../restart">this URL</a> will start the restart sequence. All these URLs need the admin privilege
-    to the system.
+    <a href="../restart">this URL</a> will start the restart sequence, or
+    <a href="../safeRestart">this URL</a> to restart once no jobs are running.
+    All these URLs need the admin privilege to the system.
   </p>
 </j:jelly>

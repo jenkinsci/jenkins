@@ -27,10 +27,7 @@ import hudson.ExtensionPoint;
 import hudson.Util;
 import hudson.DescriptorExtensionList;
 import hudson.Extension;
-import hudson.model.Computer;
-import hudson.model.Describable;
-import hudson.model.Descriptor;
-import hudson.model.Hudson;
+import hudson.model.*;
 import hudson.util.DescriptorList;
 import org.kohsuke.stapler.DataBoundConstructor;
 
@@ -39,13 +36,11 @@ import java.util.logging.Logger;
 
 /**
  * Controls when to take {@link Computer} offline, bring it back online, or even to destroy it.
- * <p/>
- * <b>EXPERIMENTAL: SIGNATURE MAY CHANGE IN FUTURE RELEASES</b>
  *
  * @author Stephen Connolly
  * @author Kohsuke Kawaguchi
  */
-public abstract class RetentionStrategy<T extends Computer> implements Describable<RetentionStrategy<?>>, ExtensionPoint {
+public abstract class RetentionStrategy<T extends Computer> extends AbstractDescribableImpl<RetentionStrategy<?>> implements ExtensionPoint {
 
     /**
      * This method will be called periodically to allow this strategy to decide what to do with it's owning slave.
@@ -82,10 +77,6 @@ public abstract class RetentionStrategy<T extends Computer> implements Describab
         check(c);
     }
 
-    public Descriptor<RetentionStrategy<?>> getDescriptor() {
-        return Hudson.getInstance().getDescriptor(getClass());
-    }
-
     /**
      * Returns all the registered {@link RetentionStrategy} descriptors.
      */
@@ -105,7 +96,7 @@ public abstract class RetentionStrategy<T extends Computer> implements Describab
      */
     public static final RetentionStrategy<Computer> NOOP = new RetentionStrategy<Computer>() {
         public long check(Computer c) {
-            return 1;
+            return 60;
         }
 
         @Override
@@ -113,6 +104,7 @@ public abstract class RetentionStrategy<T extends Computer> implements Describab
             c.connect(false);
         }
 
+        @Override
         public Descriptor<RetentionStrategy<?>> getDescriptor() {
             return DESCRIPTOR;
         }
@@ -175,7 +167,7 @@ public abstract class RetentionStrategy<T extends Computer> implements Describab
 
         @DataBoundConstructor
         public Demand(long inDemandDelay, long idleDelay) {
-            this.inDemandDelay = Math.max(1, inDemandDelay);
+            this.inDemandDelay = Math.max(0, inDemandDelay);
             this.idleDelay = Math.max(1, idleDelay);
         }
 
@@ -200,12 +192,11 @@ public abstract class RetentionStrategy<T extends Computer> implements Describab
         public synchronized long check(SlaveComputer c) {
             if (c.isOffline()) {
                 final long demandMilliseconds = System.currentTimeMillis() - c.getDemandStartMilliseconds();
-                if (demandMilliseconds > inDemandDelay * 1000 * 60 /*MINS->MILLIS*/) {
+                if (demandMilliseconds > inDemandDelay * 1000 * 60 /*MINS->MILLIS*/ && c.isLaunchSupported()) {
                     // we've been in demand for long enough
                     logger.log(Level.INFO, "Launching computer {0} as it has been in demand for {1}",
                             new Object[]{c.getName(), Util.getTimeSpanString(demandMilliseconds)});
-                    if (c.isLaunchSupported())
-                        c.connect(false);
+                    c.connect(false);
                 }
             } else if (c.isIdle()) {
                 final long idleMilliseconds = System.currentTimeMillis() - c.getIdleStartMilliseconds();
@@ -213,7 +204,7 @@ public abstract class RetentionStrategy<T extends Computer> implements Describab
                     // we've been idle for long enough
                     logger.log(Level.INFO, "Disconnecting computer {0} as it has been idle for {1}",
                             new Object[]{c.getName(), Util.getTimeSpanString(idleMilliseconds)});
-                    c.disconnect();
+                    c.disconnect(OfflineCause.create(Messages._RetentionStrategy_Demand_OfflineIdle()));
                 }
             }
             return 1;

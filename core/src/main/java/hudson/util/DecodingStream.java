@@ -40,6 +40,7 @@ public class DecodingStream extends FilterOutputStream {
         super(out);
     }
 
+    @Override
     public void write(int b) throws IOException {
         if(last==-1) {
             last = b;
@@ -49,6 +50,4 @@ public class DecodingStream extends FilterOutputStream {
         out.write( Character.getNumericValue(last)*16 + Character.getNumericValue(b) );
         last = -1;
     }
-
-
 }

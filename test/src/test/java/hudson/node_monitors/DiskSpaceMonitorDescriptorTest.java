@@ -25,4 +25,14 @@ public class DiskSpaceMonitorDescriptorTest extends HudsonTestCase {
         du.toHtml();
         assertTrue(du.size>0);
     }
+
+    public void testParse() throws Exception {
+        assertEquals(1,DiskSpace.parse("1").size);
+        assertEquals(1024,DiskSpace.parse("1KB").size);
+        assertEquals(1024,DiskSpace.parse("1K").size);
+        assertEquals(1024,DiskSpace.parse("1kb").size);
+        assertEquals(1024*1024,DiskSpace.parse("1MB").size);
+        assertEquals(1024*1024*1024,DiskSpace.parse("1GB").size);
+        assertEquals(512*1024*1024,DiskSpace.parse("0.5GB").size);
+    }
 }

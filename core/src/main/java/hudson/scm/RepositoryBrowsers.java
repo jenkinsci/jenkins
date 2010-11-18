@@ -24,9 +24,7 @@
 package hudson.scm;
 
 import hudson.model.Descriptor;
-import hudson.model.Hudson;
 import hudson.model.Descriptor.FormException;
-import hudson.scm.browsers.*;
 import hudson.util.DescriptorList;
 import hudson.Extension;
 import org.kohsuke.stapler.StaplerRequest;
@@ -35,7 +33,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import net.sf.json.JSONObject;
-import net.sf.json.JSONArray;
 
 /**
  * List of all installed {@link RepositoryBrowsers}.
@@ -57,7 +54,7 @@ public class RepositoryBrowsers {
     public static List<Descriptor<RepositoryBrowser<?>>> filter(Class<? extends RepositoryBrowser> t) {
         List<Descriptor<RepositoryBrowser<?>>> r = new ArrayList<Descriptor<RepositoryBrowser<?>>>();
         for (Descriptor<RepositoryBrowser<?>> d : RepositoryBrowser.all())
-            if(t.isAssignableFrom(d.clazz))
+            if(d.isSubTypeOf(t))
                 r.add(d);
         return r;
     }
@@ -65,7 +62,7 @@ public class RepositoryBrowsers {
     /**
      * Creates an instance of {@link RepositoryBrowser} from a form submission.
      *
-     * @deprecated
+     * @deprecated since 2008-06-19.
      *      Use {@link #createInstance(Class, StaplerRequest, JSONObject, String)}.
      */
     public static <T extends RepositoryBrowser>

@@ -1,7 +1,7 @@
 /*
  * The MIT License
  * 
- * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi
+ * Copyright (c) 2004-2010, Sun Microsystems, Inc., Kohsuke Kawaguchi
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,11 +23,19 @@
  */
 package hudson.model;
 
-import com.thoughtworks.xstream.converters.Converter;
-import com.thoughtworks.xstream.converters.basic.AbstractBasicConverter;
+import com.thoughtworks.xstream.converters.SingleValueConverter;
+import com.thoughtworks.xstream.converters.basic.AbstractSingleValueConverter;
+import hudson.cli.declarative.OptionHandlerExtension;
+import hudson.util.EditDistance;
+import org.kohsuke.args4j.CmdLineException;
+import org.kohsuke.args4j.CmdLineParser;
+import org.kohsuke.args4j.OptionDef;
+import org.kohsuke.args4j.spi.*;
 import org.kohsuke.stapler.export.CustomExportedBean;
 
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * The build outcome.
@@ -65,7 +73,7 @@ public final class Result implements Serializable, CustomExportedBean {
     /**
      * Bigger numbers are worse.
      */
-    private final int ordinal;
+    public final int ordinal;
 
     /**
      * Default ball color for this status.
@@ -105,10 +113,30 @@ public final class Result implements Serializable, CustomExportedBean {
     }
 
 
+    @Override
     public String toString() {
         return name;
     }
+
+    public String toExportedObject() {
+        return name;
+    }
     
+    public static Result fromString(String s) {
+        for (Result r : all)
+            if (s.equalsIgnoreCase(r.name))
+                return r;
+        return FAILURE;
+    }
+
+    private static List<String> getNames() {
+        List<String> l = new ArrayList<String>();
+        for (Result r : all)
+            l.add(r.name);
+        return l;
+    }
+
+    // Maintain each Result as a singleton deserialized (like build result from a slave node)
     private Object readResolve() {
         for (Result r : all)
             if (ordinal==r.ordinal)
@@ -116,24 +144,40 @@ public final class Result implements Serializable, CustomExportedBean {
         return FAILURE;
     }
 
-    public String toExportedObject() {
-        return name;
-    }
-
     private static final long serialVersionUID = 1L;
 
     private static final Result[] all = new Result[] {SUCCESS,UNSTABLE,FAILURE,NOT_BUILT,ABORTED};
 
-    public static final Converter conv = new AbstractBasicConverter () {
+    public static final SingleValueConverter conv = new AbstractSingleValueConverter () {
         public boolean canConvert(Class clazz) {
             return clazz==Result.class;
         }
 
-        protected Object fromString(String s) {
-            for (Result r : all)
-                if (s.equals(r.name))
-                    return r;
-            return FAILURE;
+        public Object fromString(String s) {
+            return Result.fromString(s);
         }
     };
+
+    @OptionHandlerExtension
+    public static final class OptionHandlerImpl extends OptionHandler<Result> {
+        public OptionHandlerImpl(CmdLineParser parser, OptionDef option, Setter<? super Result> setter) {
+            super(parser, option, setter);
+        }
+
+        @Override
+        public int parseArguments(Parameters params) throws CmdLineException {
+            String param = params.getParameter(0);
+            Result v = fromString(param.replace('-', '_'));
+            if (v==null)
+                throw new CmdLineException(owner,"No such status '"+param+"'. Did you mean "+
+                        EditDistance.findNearest(param.replace('-', '_').toUpperCase(), getNames()));
+            setter.addValue(v);
+            return 1;
+        }
+
+        @Override
+        public String getDefaultMetaVariable() {
+            return "STATUS";
+        }
+    }
 }

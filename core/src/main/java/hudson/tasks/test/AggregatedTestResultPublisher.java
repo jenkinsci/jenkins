@@ -1,7 +1,7 @@
 /*
  * The MIT License
  * 
- * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, Michael B. Donohue
+ * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, Michael B. Donohue, Yahoo!, Inc.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,12 +23,12 @@
  */
 package hudson.tasks.test;
 
-import hudson.Launcher;
-import hudson.Util;
-import hudson.Extension;
-import static hudson.Util.fixNull;
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
+import hudson.Extension;
+import hudson.Launcher;
+import hudson.Util;
+import static hudson.Util.fixNull;
 import hudson.model.BuildListener;
 import hudson.model.Fingerprint.RangeSet;
 import hudson.model.Hudson;
@@ -38,14 +38,15 @@ import hudson.model.Run;
 import hudson.model.TaskListener;
 import hudson.model.listeners.RunListener;
 import hudson.tasks.BuildStepDescriptor;
+import hudson.tasks.BuildStepMonitor;
+import hudson.tasks.Fingerprinter.FingerprintAction;
 import hudson.tasks.Publisher;
 import hudson.tasks.Recorder;
-import hudson.tasks.Fingerprinter.FingerprintAction;
 import hudson.util.FormValidation;
 import net.sf.json.JSONObject;
+import org.kohsuke.stapler.AncestorInPath;
 import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.StaplerRequest;
-import org.kohsuke.stapler.AncestorInPath;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -75,6 +76,10 @@ public class AggregatedTestResultPublisher extends Recorder {
         // add a TestResult just so that it can show up later.
         build.addAction(new TestResultAction(jobs,build));
         return true;
+    }
+
+    public BuildStepMonitor getRequiredMonitorService() {
+        return BuildStepMonitor.NONE;
     }
 
     /**
@@ -152,6 +157,30 @@ public class AggregatedTestResultPublisher extends Recorder {
         public Object getResult() {
             upToDateCheck();
             return this;
+        }
+
+        /**
+         * Since there's no TestObject that points this action as the owner
+         * (aggregated {@link TestObject}s point to their respective real owners, not 'this'),
+         * so this method should be never invoked.
+         *
+         * @deprecated
+         *      so that IDE warns you if you accidentally try to call it.
+         */
+        @Override
+        protected String getDescription(TestObject object) {
+            throw new AssertionError();
+        }
+
+        /**
+         * See {@link #getDescription(TestObject)}
+         *
+         * @deprecated
+         *      so that IDE warns you if you accidentally try to call it.
+         */
+        @Override
+        protected void setDescription(TestObject object, String description) {
+            throw new AssertionError();
         }
 
         /**
@@ -243,10 +272,7 @@ public class AggregatedTestResultPublisher extends Recorder {
 
         @Extension
         public static class RunListenerImpl extends RunListener<Run> {
-            public RunListenerImpl() {
-                super(Run.class);
-            }
-
+            @Override
             public void onCompleted(Run run, TaskListener listener) {
                 lastChanged = System.currentTimeMillis();
             }
@@ -263,6 +289,7 @@ public class AggregatedTestResultPublisher extends Recorder {
             return Messages.AggregatedTestResultPublisher_DisplayName();
         }
 
+        @Override
         public String getHelpFile() {
             return "/help/tasks/aggregate-test/help.html";
         }
@@ -280,6 +307,7 @@ public class AggregatedTestResultPublisher extends Recorder {
             return FormValidation.ok();
         }
 
+        @Override
         public AggregatedTestResultPublisher newInstance(StaplerRequest req, JSONObject formData) throws FormException {
             JSONObject s = formData.getJSONObject("specify");
             if(s.isNullObject())

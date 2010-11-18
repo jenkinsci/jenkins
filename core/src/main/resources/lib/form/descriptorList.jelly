@@ -35,11 +35,11 @@ THE SOFTWARE.
     <st:attribute name="instances">
       Map&lt;Descriptor,Describable> that defines current instances of those descriptors.
       These are used to fill initial values. Other classes that define the get(Descriptor)
-      method works fine, too.
+      method works fine, too, such as DescribableList.
     </st:attribute>
     <st:attribute name="field">
-      Either @field or @instances are required. If field is specified, instances are assumed to be
-      instance[field].
+      Either @field or @instances are required (or @field needs to be inherited from the ancestor &lt;entry> elemetn.
+      If field is specified, instances are assumed to be instance[field].
 
       When this attribute is specified, JSON structure is properly set up so that the databinding
       can set the field (or pass this collection as a constructor parameter of the same name.
@@ -51,6 +51,11 @@ THE SOFTWARE.
       default to ${it.class}
     </st:attribute>
   </st:documentation>
+
+  <j:if test="${attrs.field==null}">
+    <!-- inherit @field if we should do so -->
+    <j:set target="${attrs}" property="field" value="${entry.field}" />
+  </j:if>
 
   <j:set var="targetType" value="${attrs.targetType ?: it.class}"/>
   <j:set var="instances" value="${attrs.instances ?: instance[field] ?: descriptor['default'+h.capitalize(field)]}"/>

@@ -24,19 +24,14 @@
 package hudson.util;
 
 import hudson.model.AbstractBuild;
-import org.jfree.chart.ChartRenderingInfo;
-import org.jfree.chart.ChartUtilities;
+import hudson.tasks.junit.History;
 import org.jfree.chart.JFreeChart;
 import org.jfree.chart.axis.NumberAxis;
 import org.jfree.data.category.CategoryDataset;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 
-import javax.imageio.ImageIO;
-import javax.servlet.ServletOutputStream;
 import java.awt.Font;
-import java.awt.HeadlessException;
-import java.awt.image.BufferedImage;
 import java.io.IOException;
 
 /**
@@ -62,16 +57,19 @@ public class ChartUtil {
             return this.build.number-that.build.number;
         }
 
+        @Override
         public boolean equals(Object o) {
             if(!(o instanceof NumberOnlyBuildLabel))    return false;
             NumberOnlyBuildLabel that = (NumberOnlyBuildLabel) o;
             return build==that.build;
         }
 
+        @Override
         public int hashCode() {
             return build.hashCode();
         }
 
+        @Override
         public String toString() {
             return build.getDisplayName();
         }
@@ -94,6 +92,9 @@ public class ChartUtil {
      * @param defaultSize
      *      The size of the picture to be generated. These values can be overridden
      *      by the query paramter 'width' and 'height' in the request.
+     * @deprecated as of 1.320
+     *      Bind {@link Graph} to the URL space. See {@link History} as an example (note that doing so involves
+     *      a bit of URL structure change.)
      */
     public static void generateGraph(StaplerRequest req, StaplerResponse rsp, JFreeChart chart, Area defaultSize) throws IOException {
         generateGraph(req,rsp,chart,defaultSize.width, defaultSize.height);
@@ -106,26 +107,24 @@ public class ChartUtil {
      * @param defaultH
      *      The size of the picture to be generated. These values can be overridden
      *      by the query paramter 'width' and 'height' in the request.
+     * @deprecated as of 1.320
+     *      Bind {@link Graph} to the URL space. See {@link History} as an example (note that doing so involves
+     *      a bit of URL structure change.)
      */
-    public static void generateGraph(StaplerRequest req, StaplerResponse rsp, JFreeChart chart, int defaultW, int defaultH) throws IOException {
-        try {
-            String w = req.getParameter("width");
-            if(w==null)     w=String.valueOf(defaultW);
-            String h = req.getParameter("height");
-            if(h==null)     h=String.valueOf(defaultH);
-            BufferedImage image = chart.createBufferedImage(Integer.parseInt(w),Integer.parseInt(h));
-            rsp.setContentType("image/png");
-            ServletOutputStream os = rsp.getOutputStream();
-            ImageIO.write(image, "PNG", os);
-            os.close();
-        } catch(HeadlessException e) {
-            // not available. send out error message
-            rsp.sendRedirect2(req.getContextPath()+"/images/headless.png");
-        }
+    public static void generateGraph(StaplerRequest req, StaplerResponse rsp, final JFreeChart chart, int defaultW, int defaultH) throws IOException {
+        new Graph(-1,defaultW,defaultH) {
+            protected JFreeChart createGraph() {
+                return chart;
+            }
+        }.doPng(req,rsp);
     }
 
     /**
      * Generates the clickable map info and sends that to the response.
+     *
+     * @deprecated as of 1.320
+     *      Bind {@link Graph} to the URL space. See {@link History} as an example (note that doing so involves
+     *      a bit of URL structure change.)
      */
     public static void generateClickableMap(StaplerRequest req, StaplerResponse rsp, JFreeChart chart, Area defaultSize) throws IOException {
         generateClickableMap(req,rsp,chart,defaultSize.width,defaultSize.height);
@@ -133,18 +132,17 @@ public class ChartUtil {
 
     /**
      * Generates the clickable map info and sends that to the response.
+     *
+     * @deprecated as of 1.320
+     *      Bind {@link Graph} to the URL space. See {@link History} as an example (note that doing so involves
+     *      a bit of URL structure change.)
      */
-    public static void generateClickableMap(StaplerRequest req, StaplerResponse rsp, JFreeChart chart, int defaultW, int defaultH) throws IOException {
-        String w = req.getParameter("width");
-        if(w==null)     w=String.valueOf(defaultW);
-        String h = req.getParameter("height");
-        if(h==null)     h=String.valueOf(defaultH);
-
-        ChartRenderingInfo info = new ChartRenderingInfo();
-        chart.createBufferedImage(Integer.parseInt(w),Integer.parseInt(h),info);
-
-        rsp.setContentType("text/plain;charset=UTF-8");
-        rsp.getWriter().println(ChartUtilities.getImageMap( "map", info ));
+    public static void generateClickableMap(StaplerRequest req, StaplerResponse rsp, final JFreeChart chart, int defaultW, int defaultH) throws IOException {
+        new Graph(-1,defaultW,defaultH) {
+            protected JFreeChart createGraph() {
+                return chart;
+            }
+        }.doMap(req,rsp);
     }
 
     /**

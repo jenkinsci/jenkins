@@ -29,6 +29,8 @@ import hudson.DependencyRunner.ProjectRunnable;
 import hudson.ExtensionPoint;
 import hudson.DescriptorExtensionList;
 import hudson.Extension;
+import hudson.init.Initializer;
+import static hudson.init.InitMilestone.JOB_LOADED;
 import hudson.model.AbstractProject;
 import hudson.model.Action;
 import hudson.model.Build;
@@ -104,13 +106,30 @@ public abstract class Trigger<J extends Item> implements Describable<Trigger<?>>
     /**
      * Returns an action object if this {@link Trigger} has an action
      * to contribute to a {@link Project}.
+     *
+     * @deprecated as of 1.341
+     *      Use {@link #getProjectActions()} instead.
      */
     public Action getProjectAction() {
         return null;
     }
 
+    /**
+     * {@link Action}s to be displayed in the job page.
+     *
+     * @return
+     *      can be empty but never null
+     * @since 1.341
+     */
+    public Collection<? extends Action> getProjectActions() {
+        // delegate to getJobAction (singular) for backward compatible behavior
+        Action a = getProjectAction();
+        if (a==null)    return Collections.emptyList();
+        return Collections.singletonList(a);
+    }
+
     public TriggerDescriptor getDescriptor() {
-        return (TriggerDescriptor)Hudson.getInstance().getDescriptor(getClass());
+        return (TriggerDescriptor)Hudson.getInstance().getDescriptorOrDie(getClass());
     }
 
 
@@ -250,6 +269,7 @@ public abstract class Trigger<J extends Item> implements Describable<Trigger<?>>
      */
     public static Timer timer;
 
+    @Initializer(after=JOB_LOADED)
     public static void init() {
         new DoubleLaunchChecker().schedule();
 

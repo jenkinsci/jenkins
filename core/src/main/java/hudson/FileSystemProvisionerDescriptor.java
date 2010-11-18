@@ -25,7 +25,6 @@ package hudson;
 
 import hudson.model.Descriptor;
 import hudson.model.TaskListener;
-import hudson.model.AbstractBuild;
 
 import java.io.IOException;
 

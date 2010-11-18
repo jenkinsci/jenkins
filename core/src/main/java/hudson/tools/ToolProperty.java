@@ -1,11 +1,32 @@
+/*
+ * The MIT License
+ *
+ * Copyright (c) 2004-2009, Sun Microsystems, Inc.
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ */
 package hudson.tools;
 
 import hudson.DescriptorExtensionList;
 import hudson.ExtensionPoint;
 import hudson.model.Describable;
 import hudson.model.Hudson;
-
-import java.util.List;
 
 /**
  * Extensible property of {@link ToolInstallation}.
@@ -19,7 +40,7 @@ import java.util.List;
  * <dl>
  * <dt>config.jelly</dt>
  * <dd>Added to the configuration page of the tool.
- * <dl>
+ * </dl>
  *
  * @param <T>
  *      {@link ToolProperty} can choose to only work with a certain subtype of {@link ToolInstallation}, and this 'T'
@@ -35,7 +56,7 @@ public abstract class ToolProperty<T extends ToolInstallation> implements Descri
     }
 
     public ToolPropertyDescriptor getDescriptor() {
-        return (ToolPropertyDescriptor) Hudson.getInstance().getDescriptor(getClass());
+        return (ToolPropertyDescriptor) Hudson.getInstance().getDescriptorOrDie(getClass());
     }
 
     /**

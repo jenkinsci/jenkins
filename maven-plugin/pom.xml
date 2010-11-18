@@ -27,7 +27,7 @@ THE SOFTWARE.
   <parent>
     <groupId>org.jvnet.hudson.main</groupId>
     <artifactId>pom</artifactId>
-    <version>1.306-SNAPSHOT</version>
+    <version>1.386-SNAPSHOT</version>
   </parent>
 
   <artifactId>maven-plugin</artifactId>
@@ -35,7 +35,8 @@ THE SOFTWARE.
   <name>Maven Integration plugin</name>
   <description>This plug-in provides deep integration of Hudson and Maven. This functionality used to be part of the Hudson core.
   Now it is a plug-in that is installed by default, but can be disabled.</description>
-
+  <url>http://wiki.hudson-ci.org/display/HUDSON/Maven+2+Project+Plugin</url>
+    
     <dependencies>
         <dependency>
             <groupId>org.jvnet.hudson.main</groupId>
@@ -51,25 +52,25 @@ THE SOFTWARE.
         </dependency>
 
         <dependency>
-          <groupId>${groupId}</groupId>
+          <groupId>${project.groupId}</groupId>
           <artifactId>maven-agent</artifactId>
           <version>${project.version}</version>
         </dependency>
         <dependency>
           <groupId>org.jvnet.hudson</groupId>
           <artifactId>maven2.1-interceptor</artifactId>
-          <version>1.1</version>
+          <version>1.2</version>
         </dependency>
         <dependency>
-          <groupId>org.apache.maven</groupId>
+          <groupId>org.jvnet.hudson</groupId>
           <artifactId>maven-embedder</artifactId>
-          <version>${maven.embedder.version}</version>
+          <version>2.0.4-hudson-1</version>
           <!--exclusions>   These are needed for Maven embedder to resolve parent POMs in remote repositories
             <exclusion>
               <groupId>org.apache.maven.wagon</groupId>
               <artifactId>wagon-file</artifactId>
             </exclusion>
-            <exclusion>t r
+            <exclusion>
               <groupId>org.apache.maven.wagon</groupId>
               <artifactId>wagon-http-lightweight</artifactId>
             </exclusion>
@@ -82,11 +83,6 @@ THE SOFTWARE.
               <artifactId>wagon-ssh</artifactId>
             </exclusion>
           </exclusions-->
-        </dependency>
-        <dependency>
-          <groupId>org.apache.maven</groupId>
-          <artifactId>maven-core</artifactId>
-          <version>${maven.version}</version>
           <exclusions>
             <exclusion><!-- we'll add our own patched version. see http://www.nabble.com/Issue-1680-td18383889.html -->
               <groupId>jtidy</groupId>
@@ -99,6 +95,11 @@ THE SOFTWARE.
             <exclusion>
               <groupId>xml-apis</groupId>
               <artifactId>xml-apis</artifactId>
+            </exclusion>
+            <exclusion>
+              <!-- we bundle our own version below -->
+              <groupId>org.apache.maven.wagon</groupId>
+              <artifactId>wagon-webdav</artifactId>
             </exclusion>
           </exclusions>
         </dependency>
@@ -128,13 +129,17 @@ THE SOFTWARE.
             <plugin>
                 <groupId>org.jvnet.hudson.tools</groupId>
                 <artifactId>maven-hpi-plugin</artifactId>
-                <version>1.31</version>
+                <version>1.54</version>
                 <extensions>true</extensions>
+                <configuration>
+                  <showDeprecation>true</showDeprecation>
+                  <disabledTestInjection>true</disabledTestInjection>
+                </configuration>
             </plugin>
             <plugin>
                 <groupId>org.kohsuke.stapler</groupId>
                 <artifactId>maven-stapler-plugin</artifactId>
-                <version>1.11</version>
+                <version>1.12</version>
                 <extensions>true</extensions>
             </plugin>
             <plugin>
@@ -153,14 +158,44 @@ THE SOFTWARE.
                     </execution>
                 </executions>
             </plugin>
-            <plugin>
-                <!--
-                  javadoc plugin 2.3 apparently interferes with the release process,
-                  so sticking to 2.2 (http://www.nabble.com/description-setting-plugin-tp14846399p14950047.html)
-                -->
-                <artifactId>maven-javadoc-plugin</artifactId>
-                <version>2.2</version>
-            </plugin>
         </plugins>
     </build>
-</project>
+    <profiles>
+      
+    <profile>
+      <id>cobertura2</id>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.codehaus.mojo</groupId>
+            <artifactId>cobertura-maven-plugin</artifactId>
+            <version>2.4-apb-SNAPSHOT</version>
+            <inherited>true</inherited>
+            <configuration>
+              <formats>
+                <format>html</format>
+                <format>xml</format>
+              </formats>
+            </configuration>
+            <executions>
+              <execution>
+                <id>coverage-instrument</id>
+                <phase>process-test-classes</phase>
+                <goals>
+                  <goal>instrument</goal>
+                </goals>
+              </execution>
+              <execution>
+                <id>coverage-report</id>
+                <phase>test</phase>
+                <goals>
+                  <goal>generate-report</goal>
+                </goals>
+              </execution>
+            </executions>
+          </plugin>                                       
+        </plugins>
+      </build>
+    </profile>
+    </profiles>
+  </project>

@@ -36,8 +36,7 @@
                   </select>
 				</f:entry>
 				<f:entry title="${%Home}">
-					<input class="setting-input" name="locations.home" type="text"
-						value="${location.home}" />
+					<f:textbox name="locations.home" value="${location.home}" />
 				</f:entry>
 				<f:entry title="">
 					<div align="right">

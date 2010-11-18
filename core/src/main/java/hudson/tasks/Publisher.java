@@ -25,7 +25,7 @@ package hudson.tasks;
 
 import hudson.DescriptorExtensionList;
 import hudson.Extension;
-import hudson.Launcher;
+import hudson.ExtensionComponent;
 import hudson.model.Action;
 import hudson.model.Build;
 import hudson.model.BuildListener;
@@ -33,7 +33,6 @@ import hudson.model.Describable;
 import hudson.model.Project;
 import hudson.model.Descriptor;
 import hudson.model.Hudson;
-import hudson.model.AbstractBuild;
 
 import java.util.List;
 import java.util.ArrayList;
@@ -67,6 +66,7 @@ public abstract class Publisher extends BuildStepCompatibilityLayer implements B
      *      Don't extend from {@link Publisher} directly. Instead, choose {@link Recorder} or {@link Notifier}
      *      as your base class.
      */
+    @Deprecated
     protected Publisher() {
     }
 
@@ -75,24 +75,24 @@ public abstract class Publisher extends BuildStepCompatibilityLayer implements B
 //
     /**
      * Default implementation that does nothing.
+     * @deprecated since 1.150
      */
-    @Deprecated
-    @Override
+    @Deprecated @Override
     public boolean prebuild(Build build, BuildListener listener) {
         return true;
     }
 
     /**
      * Default implementation that does nothing.
+     * @deprecated since 1.150
      */
-    @Deprecated
-    @Override
+    @Deprecated @Override
     public Action getProjectAction(Project project) {
         return null;
     }
 
     /**
-     * Returne true if this {@link Publisher} needs to run after the build result is
+     * Return true if this {@link Publisher} needs to run after the build result is
      * fully finalized.
      *
      * <p>
@@ -103,7 +103,7 @@ public abstract class Publisher extends BuildStepCompatibilityLayer implements B
      * <p>
      * So normally, that is the preferrable behavior, but in a few cases
      * this is problematic. One of such cases is when a publisher needs to
-     * trigger other builds, whcih in turn need to see this build as a
+     * trigger other builds, which in turn need to see this build as a
      * completed build. Those plugins that need to do this can return true
      * from this method, so that the {@link #perform(AbstractBuild, Launcher, BuildListener)} 
      * method is called after the build is marked as completed.
@@ -120,29 +120,31 @@ public abstract class Publisher extends BuildStepCompatibilityLayer implements B
     }
 
     public Descriptor<Publisher> getDescriptor() {
-        return Hudson.getInstance().getDescriptor(getClass());
+        return Hudson.getInstance().getDescriptorOrDie(getClass());
     }
 
     /**
      * {@link Publisher} has a special sort semantics that requires a subtype.
      *
-     * @see DescriptorExtensionList#create(Hudson, Class) 
+     * @see DescriptorExtensionList#createDescriptorList(Hudson, Class) 
      */
     public static final class DescriptorExtensionListImpl extends DescriptorExtensionList<Publisher,Descriptor<Publisher>>
-            implements Comparator<Descriptor<Publisher>> {
+            implements Comparator<ExtensionComponent<Descriptor<Publisher>>> {
         public DescriptorExtensionListImpl(Hudson hudson) {
             super(hudson,Publisher.class);
         }
 
         @Override
-        protected List<Descriptor<Publisher>> sort(List<Descriptor<Publisher>> r) {
-            List<Descriptor<Publisher>> copy = new ArrayList<Descriptor<Publisher>>(r);
+        protected List<ExtensionComponent<Descriptor<Publisher>>> sort(List<ExtensionComponent<Descriptor<Publisher>>> r) {
+            List<ExtensionComponent<Descriptor<Publisher>>> copy = new ArrayList<ExtensionComponent<Descriptor<Publisher>>>(r);
             Collections.sort(copy,this);
             return copy;
         }
 
-        public int compare(Descriptor<Publisher> lhs, Descriptor<Publisher> rhs) {
-            return classify(lhs)-classify(rhs);
+        public int compare(ExtensionComponent<Descriptor<Publisher>> lhs, ExtensionComponent<Descriptor<Publisher>> rhs) {
+            int r = classify(lhs.getInstance())-classify(rhs.getInstance());
+            if (r!=0)   return r;
+            return lhs.compareTo(rhs);
         }
 
         /**
@@ -150,8 +152,8 @@ public abstract class Publisher extends BuildStepCompatibilityLayer implements B
          * This is used as a sort key.
          */
         private int classify(Descriptor<Publisher> d) {
-            if(Recorder.class.isAssignableFrom(d.clazz))    return 0;
-            if(Notifier.class.isAssignableFrom(d.clazz))    return 2;
+            if(d.isSubTypeOf(Recorder.class))    return 0;
+            if(d.isSubTypeOf(Notifier.class))    return 2;
 
             // for compatibility, if the descriptor is manually registered in a specific way, detect that.
             Class<? extends Publisher> kind = PublisherList.KIND.get(d);
@@ -167,6 +169,6 @@ public abstract class Publisher extends BuildStepCompatibilityLayer implements B
      */
     // for backward compatibility, the signature is not BuildStepDescriptor
     public static DescriptorExtensionList<Publisher,Descriptor<Publisher>> all() {
-        return Hudson.getInstance().getDescriptorList(Publisher.class);
+        return Hudson.getInstance().<Publisher,Descriptor<Publisher>>getDescriptorList(Publisher.class);
     }
 }

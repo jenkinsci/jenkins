@@ -1,7 +1,8 @@
 <!--
 The MIT License
 
-Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, Daniel Dyer, Red Hat, Inc., Seiji Sogabe, id:cactusman
+Copyright (c) 2004-2010, Sun Microsystems, Inc., Kohsuke Kawaguchi,
+Daniel Dyer, Red Hat, Inc., Seiji Sogabe, id:cactusman
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -23,10 +24,10 @@ THE SOFTWARE.
 -->
 
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
-  
+
   <script type="text/javascript">
     function showFailures() {
-    
+
     var elms = document.getElementsByClassName("hidden");
     for(var i = 0; i &lt; elms.length; i++) {
     elms[i].style.display = "";
@@ -35,16 +36,17 @@ THE SOFTWARE.
     elm.style.display = "none";
     }
   </script>
-  
+
   <!-- summary -->
   <t:summary icon="clipboard.gif">
     <a href="${it.urlName}/">${it.displayName}</a>
+    <st:nbsp/>
     <t:test-result />
-    
+
     <j:set var="failedTests" value="${it.failedTests}" />
     <j:if test="${failedTests != null}">
       <j:set var="failedIterator" value="${failedTests.iterator()}" />
-      <j:set var="displayedCount" value="${1}" />        
+      <j:set var="displayedCount" value="${1}" />
       <ul style="list-style-type: none; margin: 0;">
         <j:while test="${failedIterator.hasNext()}">
           <j:set var="testObject" value="${failedIterator.next()}" />
@@ -62,8 +64,8 @@ THE SOFTWARE.
           <li class="${elementClass}" style="${elementStyle}">
             <!-- child test results are referenced from their parent builds -->
             <j:set var="build" value="${testObject.owner}" />
-              <a href="${it.getTestResultPath(testObject)}">
-              ${testObject.fullName}
+            <a href="${it.getTestResultPath(testObject)}">
+              <st:out value="${testObject.fullName}" />
             </a>
           </li>
         </j:while>
@@ -76,6 +78,6 @@ THE SOFTWARE.
            onclick="javascript:showFailures()">${%Show all failed tests} ${">>>"}</a>
       </j:if>
     </j:if>
-    
+
   </t:summary>
 </j:jelly>

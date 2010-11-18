@@ -33,6 +33,7 @@ import com.thoughtworks.xstream.io.HierarchicalStreamWriter;
 import hudson.Util;
 import hudson.XmlFile;
 import hudson.BulkChange;
+import hudson.model.listeners.SaveableListener;
 import hudson.util.HexBinaryConverter;
 import hudson.util.Iterators;
 import hudson.util.XStream2;
@@ -213,6 +214,7 @@ public class Fingerprint implements ModelObject, Saveable {
             return this.end==that.start;
         }
 
+        @Override
         public String toString() {
             return "["+start+","+end+")";
         }
@@ -400,8 +402,9 @@ public class Fingerprint implements ModelObject, Saveable {
             this.ranges.addAll(that.ranges.subList(rhs,that.ranges.size()));
         }
 
+        @Override
         public synchronized String toString() {
-            StringBuffer buf = new StringBuffer();
+            StringBuilder buf = new StringBuilder();
             for (Range r : ranges) {
                 if(buf.length()>0)  buf.append(',');
                 buf.append(r);
@@ -444,6 +447,33 @@ public class Fingerprint implements ModelObject, Saveable {
             return ranges.get(ranges.size() - 1).isSmallerThan(n);
         }
 
+        /**
+         * Parses a {@link RangeSet} from a string like "1-3,5,7-9"
+         */
+        public static RangeSet fromString(String list, boolean skipError) {
+            RangeSet rs = new RangeSet();
+            for (String s : Util.tokenize(list,",")) {
+                s = s.trim();
+                // s is either single number or range "x-y".
+                // note that the end range is inclusive in this notation, but not in the Range class
+                try {
+                    if(s.contains("-")) {
+                        String[] tokens = Util.tokenize(s,"-");
+                        rs.ranges.add(new Range(Integer.parseInt(tokens[0]),Integer.parseInt(tokens[1])+1));
+                    } else {
+                        int n = Integer.parseInt(s);
+                        rs.ranges.add(new Range(n,n+1));
+                    }
+                } catch (NumberFormatException e) {
+                    if (!skipError)
+                        throw new IllegalArgumentException("Unable to parse "+list);
+                    // ignore malformed text
+
+                }
+            }
+            return rs;
+        }
+
         static final class ConverterImpl implements Converter {
             private final Converter collectionConv; // used to convert ArrayList in it
 
@@ -479,24 +509,7 @@ public class Fingerprint implements ModelObject, Saveable {
                      */
                     return new RangeSet((List<Range>)(collectionConv.unmarshal(reader,context)));
                 } else {
-                    RangeSet rs = new RangeSet();
-                    for (String s : Util.tokenize(reader.getValue(),",")) {
-                        s = s.trim();
-                        // s is either single number or range "x-y".
-                        // note that the end range is inclusive in this notation, but not in the Range class
-                        try {
-                            if(s.contains("-")) {
-                                String[] tokens = Util.tokenize(s,"-");
-                                rs.ranges.add(new Range(Integer.parseInt(tokens[0]),Integer.parseInt(tokens[1])+1));
-                            } else {
-                                int n = Integer.parseInt(s);
-                                rs.ranges.add(new Range(n,n+1));
-                            }
-                        } catch (NumberFormatException e) {
-                            // ignore malformed text
-                        }
-                    }
-                    return rs;
+                    return RangeSet.fromString(reader.getValue(),true);
                 }
             }
         }
@@ -689,6 +702,7 @@ public class Fingerprint implements ModelObject, Saveable {
 
         File file = getFingerprintFile(md5sum);
         getConfigFile(file).write(this);
+        SaveableListener.fireOnChange(this, getConfigFile(file));
 
         if(logger.isLoggable(Level.FINE))
             logger.fine("Saving fingerprint "+file+" took "+(System.currentTimeMillis()-start)+"ms");
@@ -758,7 +772,8 @@ public class Fingerprint implements ModelObject, Saveable {
         XSTREAM.alias("ranges",RangeSet.class);
         XSTREAM.registerConverter(new HexBinaryConverter(),10);
         XSTREAM.registerConverter(new RangeSet.ConverterImpl(
-            new CollectionConverter(XSTREAM.getClassMapper()) {
+            new CollectionConverter(XSTREAM.getMapper()) {
+                @Override
                 protected Object createCollection(Class type) {
                     return new ArrayList();
                 }

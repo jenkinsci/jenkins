@@ -1,7 +1,7 @@
 /*
  * The MIT License
  * 
- * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi
+ * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, Yahoo! Inc.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -38,12 +38,13 @@ import hudson.security.SecurityRealm;
 import hudson.tasks.Ant;
 import hudson.tasks.BuildStep;
 import hudson.tasks.Ant.AntInstallation;
-import hudson.tasks.Ant.DescriptorImpl;
+import org.jvnet.hudson.test.Bug;
 import org.jvnet.hudson.test.Email;
 import org.jvnet.hudson.test.HudsonTestCase;
 import org.jvnet.hudson.test.recipes.LocalData;
 
-import static javax.servlet.http.HttpServletResponse.SC_BAD_REQUEST;
+import static javax.servlet.http.HttpServletResponse.SC_FORBIDDEN;
+import java.lang.reflect.Field;
 import java.net.URL;
 import java.util.List;
 
@@ -51,6 +52,13 @@ import java.util.List;
  * @author Kohsuke Kawaguchi
  */
 public class HudsonTest extends HudsonTestCase {
+    /**
+     * Tests the basic UI sanity and HtmlUnit set up.
+     */
+    public void testGlobalConfigRoundtrip() throws Exception {
+        submit(createWebClient().goTo("configure").getFormByName("config"));
+    }
+
     /**
      * Performs a very basic round-trip of a non-empty system configuration screen.
      * This makes sure that the structured form submission is working (to some limited extent.)
@@ -83,7 +91,7 @@ public class HudsonTest extends HudsonTestCase {
 
     private void assertAnt(AntInstallation ant, String name, String home) {
         assertEquals(ant.getName(),name);
-        assertEquals(ant.getAntHome(),home);
+        assertEquals(ant.getHome(),home);
     }
 
     private void assertJDK(JDK jdk, String name, String home) {
@@ -140,7 +148,7 @@ public class HudsonTest extends HudsonTestCase {
             wc.getPage(req);
             fail("Error code expected");
         } catch (FailingHttpStatusCodeException e) {
-            assertEquals(SC_BAD_REQUEST,e.getStatusCode());
+            assertEquals(SC_FORBIDDEN,e.getStatusCode());
         }
 
         // the master computer object should be still here
@@ -163,5 +171,20 @@ public class HudsonTest extends HudsonTestCase {
 
         BuildStep.PUBLISHERS.remove(dummy);
         assertNull(hudson.getDescriptor(HudsonTest.class.getName()));
+    }
+
+    /**
+     * Verify null/invalid primaryView setting doesn't result in infinite loop.
+     */
+    @Bug(6938)
+    public void testInvalidPrimaryView() throws Exception {
+        Field pv = Hudson.class.getDeclaredField("primaryView");
+        pv.setAccessible(true);
+        String value = null;
+        pv.set(hudson, value);
+        assertNull("null primaryView", hudson.getView(value));
+        value = "some bogus name";
+        pv.set(hudson, value);
+        assertNull("invalid primaryView", hudson.getView(value));
     }
 }

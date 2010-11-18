@@ -1,7 +1,7 @@
 /*
  * The MIT License
  * 
- * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, Erik Ramfelt
+ * Copyright (c) 2004-2010, Sun Microsystems, Inc., Kohsuke Kawaguchi, Erik Ramfelt
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -69,14 +69,7 @@ public final class DirectoryBrowserSupport implements HttpResponse {
     private final FilePath base;
     private final String icon;
     private final boolean serveDirIndex;
-
-    /**
-     * @deprecated
-     *      Use {@link #DirectoryBrowserSupport(ModelObject, String)}
-     */
-    public DirectoryBrowserSupport(ModelObject owner) {
-        this(owner,owner.getDisplayName());
-    }
+    private String indexFileName = "index.html";
 
     /**
      * @deprecated as of 1.297
@@ -116,6 +109,15 @@ public final class DirectoryBrowserSupport implements HttpResponse {
     }
 
     /**
+     * If the directory is requested but the directory listing is disabled, a file of this name
+     * is served. By default it's "index.html".
+     * @since 1.312
+     */
+    public void setIndexFileName(String fileName) {
+        this.indexFileName = fileName;
+    }
+
+    /**
      * Serves a file from the file system (Maps the URL to a directory in a file system.)
      *
      * @param icon
@@ -127,7 +129,7 @@ public final class DirectoryBrowserSupport implements HttpResponse {
      *      Instead of calling this method explicitly, just return the {@link DirectoryBrowserSupport} object
      *      from the {@code doXYZ} method and let Stapler generate a response for you.
      */
-    public final void serveFile(StaplerRequest req, StaplerResponse rsp, FilePath root, String icon, boolean serveDirIndex) throws IOException, ServletException, InterruptedException {
+    public void serveFile(StaplerRequest req, StaplerResponse rsp, FilePath root, String icon, boolean serveDirIndex) throws IOException, ServletException, InterruptedException {
         // handle form submission
         String pattern = req.getParameter("pattern");
         if(pattern==null)
@@ -189,7 +191,7 @@ public final class DirectoryBrowserSupport implements HttpResponse {
         if(baseFile.isDirectory()) {
             if(zip) {
                 rsp.setContentType("application/zip");
-                baseFile.createZipArchive(rsp.getOutputStream(),rest);
+                baseFile.zip(rsp.getOutputStream(),rest);
                 return;
             }
             if (plain) {
@@ -245,7 +247,7 @@ public final class DirectoryBrowserSupport implements HttpResponse {
 
             // convert a directory service request to a single file service request by serving
             // 'index.html'
-            baseFile = baseFile.child("index.html");
+            baseFile = baseFile.child(indexFileName);
         }
 
         //serve a single file
@@ -286,11 +288,11 @@ public final class DirectoryBrowserSupport implements HttpResponse {
     }
 
     private static final class ContentInfo implements FileCallable<ContentInfo> {
-        int contentLength;
+        long contentLength;
         long lastModified;
 
         public ContentInfo invoke(File f, VirtualChannel channel) throws IOException {
-            contentLength = (int) f.length();
+            contentLength = f.length();
             lastModified = f.lastModified();
             return this;
         }

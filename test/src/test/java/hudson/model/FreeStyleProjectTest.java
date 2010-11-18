@@ -31,6 +31,7 @@ import org.jvnet.hudson.test.Bug;
 import org.jvnet.hudson.test.HudsonTestCase;
 
 import java.util.List;
+import java.io.File;
 
 /**
  * @author Kohsuke Kawaguchi
@@ -56,7 +57,7 @@ public class FreeStyleProjectTest extends HudsonTestCase {
         List<Builder> builders = project.getBuilders();
         assertEquals(1,builders.size());
         assertEquals(Shell.class,builders.get(0).getClass());
-        assertEquals("echo hello",((Shell)builders.get(0)).getCommand());
+        assertEquals("echo hello",((Shell)builders.get(0)).getCommand().trim());
         assertTrue(builders.get(0)!=shell);
     }
 
@@ -92,5 +93,32 @@ public class FreeStyleProjectTest extends HudsonTestCase {
         submit(new WebClient().getPage(down, "configure").getFormByName("config"));
         assertTrue(up.getDownstreamProjects().contains(down));
         assertTrue(down.getUpstreamProjects().contains(up));
+    }
+
+    /**
+     * Custom workspace and concurrent build had a bad interaction.
+     */
+    @Bug(4206)
+    public void testCustomWorkspaceAllocation() throws Exception {
+        FreeStyleProject f = createFreeStyleProject();
+        File d = createTmpDir();
+        f.setCustomWorkspace(d.getPath());
+        buildAndAssertSuccess(f);
+    }
+
+    /**
+     * Custom workspace and variable expansion.
+     */
+    @Bug(3997)
+    public void testCustomWorkspaceVariableExpansion() throws Exception {
+        FreeStyleProject f = createFreeStyleProject();
+        File d = new File(createTmpDir(),"${JOB_NAME}");
+        f.setCustomWorkspace(d.getPath());
+        FreeStyleBuild b = buildAndAssertSuccess(f);
+
+        String path = b.getWorkspace().getRemote();
+        System.out.println(path);
+        assertFalse(path.contains("${JOB_NAME}"));
+        assertTrue(b.getWorkspace().getName().equals(f.getName()));
     }
 }

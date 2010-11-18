@@ -1,7 +1,7 @@
 /*
  * The MIT License
  * 
- * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, Erik Ramfelt, Xavier Le Vourch
+ * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, Erik Ramfelt, Xavier Le Vourch, Yahoo!, Inc.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -28,7 +28,11 @@ import java.util.List;
 import java.net.URISyntaxException;
 
 import junit.framework.TestCase;
-import org.dom4j.DocumentException;
+
+import hudson.XmlFile;
+import java.io.FileWriter;
+import java.io.PrintWriter;
+import java.io.Writer;
 
 /**
  * Test cases for parsing JUnit report XML files.
@@ -43,8 +47,8 @@ public class SuiteResultTest extends TestCase {
         return new File(SuiteResultTest.class.getResource(name).toURI());
     }
 
-    private SuiteResult parseOne(File file) throws DocumentException {
-        List<SuiteResult> results = SuiteResult.parse(file);
+    private SuiteResult parseOne(File file) throws Exception {
+        List<SuiteResult> results = SuiteResult.parse(file, false);
         assertEquals(1,results.size());
         return results.get(0);
     }
@@ -89,7 +93,7 @@ public class SuiteResultTest extends TestCase {
      * https://hudson.dev.java.net/issues/show_bug.cgi?id=1472
      */
     public void testIssue1472() throws Exception {
-        List<SuiteResult> results = SuiteResult.parse(getDataFile("junit-report-1472.xml"));
+        List<SuiteResult> results = SuiteResult.parse(getDataFile("junit-report-1472.xml"), false);
         assertTrue(results.size()>20); // lots of data here
 
         SuiteResult sr0 = results.get(0);
@@ -118,4 +122,59 @@ public class SuiteResultTest extends TestCase {
         }
         assertEquals("this normally has the string like, expected mullet, but got bream", cases.get(0).getErrorDetails());
     }
+
+    public void testSuiteResultPersistence() throws Exception {
+        SuiteResult source = parseOne(getDataFile("junit-report-1233.xml"));
+
+        File dest = File.createTempFile("testSuiteResultPersistence", ".xml");
+        try {
+            XmlFile xmlFile = new XmlFile(dest);
+            xmlFile.write(source);
+
+            SuiteResult result = (SuiteResult)xmlFile.read();
+            assertNotNull(result);
+
+            assertEquals(source.getName(), result.getName());
+            assertEquals(source.getTimestamp(), result.getTimestamp());
+            assertEquals(source.getDuration(), result.getDuration());
+            assertEquals(source.getStderr(), result.getStderr());
+            assertEquals(source.getStdout(), result.getStdout());
+            assertEquals(source.getCases().size(), result.getCases().size());
+            assertNotNull(result.getCase("testGetBundle"));
+        } finally {
+            dest.delete();
+}
+    }
+
+    //@Bug(6516)
+    public void testSuiteStdioTrimming() throws Exception {
+        File data = File.createTempFile("testSuiteStdioTrimming", ".xml");
+        try {
+            Writer w = new FileWriter(data);
+            try {
+                PrintWriter pw = new PrintWriter(w);
+                pw.println("<testsuites name='x'>");
+                pw.println("<testsuite failures='0' errors='0' tests='1' name='x'>");
+                pw.println("<testcase name='x' classname='x'/>");
+                pw.println("<system-out/>");
+                pw.print("<system-err><![CDATA[");
+                pw.println("First line is intact.");
+                for (int i = 0; i < 100; i++) {
+                    pw.println("Line #" + i + " might be elided.");
+                }
+                pw.println("Last line is intact.");
+                pw.println("]]></system-err>");
+                pw.println("</testsuite>");
+                pw.println("</testsuites>");
+                pw.flush();
+            } finally {
+                w.close();
+            }
+            SuiteResult sr = parseOne(data);
+            assertEquals(sr.getStderr(), 1028, sr.getStderr().length());
+        } finally {
+            data.delete();
+        }
+    }
+
 }

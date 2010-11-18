@@ -1,7 +1,7 @@
 <!--
 The MIT License
 
-Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi
+Copyright (c) 2004-2010, Sun Microsystems, Inc., Kohsuke Kawaguchi
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -33,29 +33,6 @@ THE SOFTWARE.
     <j:forEach var="log" items="${h.logRecords}">
       <pre>${h.printLogRecord(log)}</pre>
     </j:forEach>
-
-    <h2>
-      ${%Logger Configuration}
-      <t:help href="${%url}" />
-    </h2>
-    <form action="configLogger" method="post" name="configLogger">
-      ${%Name}: <input type="text" name="name" width="40" />
-      ${%Level}:
-      <select name="level">
-        <option>inherit</option>
-        <option>off</option>
-        <option>severe</option>
-        <option>warning</option>
-        <option>info</option>
-        <option>config</option>
-        <option>fine</option>
-        <option>finer</option>
-        <option>finest</option>
-        <option>all</option>
-      </select>
-      <st:nbsp/>
-      <f:submit value="${%Submit}"/>
-    </form>
 
     <st:include page="feeds.jelly" />
   </l:main-panel>

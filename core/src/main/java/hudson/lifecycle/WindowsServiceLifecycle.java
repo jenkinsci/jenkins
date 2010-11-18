@@ -87,6 +87,17 @@ public class WindowsServiceLifecycle extends Lifecycle {
      */
     @Override
     public void rewriteHudsonWar(File by) throws IOException {
+        File dest = getHudsonWar();
+        // this should be impossible given the canRewriteHudsonWar method,
+        // but let's be defensive
+        if(dest==null)  throw new IOException("hudson.war location is not known.");
+
+        // backing up the old hudson.war before its lost due to upgrading
+        // unless we are trying to rewrite hudson.war by a backup itself
+        File bak = new File(dest.getPath() + ".bak");
+        if (!by.equals(bak))
+            FileUtils.copyFile(dest, bak);
+
         File rootDir = Hudson.getInstance().getRootDir();
         File copyFiles = new File(rootDir,"hudson.copies");
 
@@ -103,7 +114,8 @@ public class WindowsServiceLifecycle extends Lifecycle {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         StreamTaskListener task = new StreamTaskListener(baos);
         task.getLogger().println("Restarting a service");
-        int r = new LocalLauncher(task).launch(new String[]{new File(home, "hudson.exe").getPath(), "restart"}, new String[0], task.getLogger(), new FilePath(home)).join();
+        int r = new LocalLauncher(task).launch().cmds(new File(home, "hudson.exe"), "restart")
+                .stdout(task).pwd(home).join();
         if(r!=0)
             throw new IOException(baos.toString());
     }

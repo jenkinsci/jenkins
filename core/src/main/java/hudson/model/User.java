@@ -1,7 +1,7 @@
 /*
  * The MIT License
  * 
- * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, Erik Ramfelt, Tom Huybrechts
+ * Copyright (c) 2004-2010, Sun Microsystems, Inc., Kohsuke Kawaguchi, Erik Ramfelt, Tom Huybrechts
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,14 +23,16 @@
  */
 package hudson.model;
 
+import com.infradna.tool.bridge_method_injector.WithBridgeMethods;
 import com.thoughtworks.xstream.XStream;
 import hudson.CopyOnWrite;
 import hudson.FeedAdapter;
+import hudson.Functions;
 import hudson.Util;
 import hudson.XmlFile;
 import hudson.BulkChange;
-import hudson.tasks.Mailer;
 import hudson.model.Descriptor.FormException;
+import hudson.model.listeners.SaveableListener;
 import hudson.security.ACL;
 import hudson.security.AccessControlled;
 import hudson.security.Permission;
@@ -40,7 +42,6 @@ import net.sf.json.JSONObject;
 
 import org.acegisecurity.Authentication;
 import org.acegisecurity.providers.anonymous.AnonymousAuthenticationToken;
-import org.kohsuke.stapler.Stapler;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 import org.kohsuke.stapler.export.Exported;
@@ -48,19 +49,19 @@ import org.kohsuke.stapler.export.ExportedBean;
 import org.apache.commons.io.filefilter.DirectoryFileFilter;
 
 import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletResponse;
 import java.io.File;
 import java.io.IOException;
 import java.io.FileFilter;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -104,9 +105,9 @@ public class User extends AbstractModelObject implements AccessControlled, Savea
     private volatile List<UserProperty> properties = new ArrayList<UserProperty>();
 
 
-    private User(String id) {
+    private User(String id, String fullName) {
         this.id = id;
-        this.fullName = id;   // fullName defaults to name
+        this.fullName = fullName;
         load();
     }
 
@@ -154,11 +155,11 @@ public class User extends AbstractModelObject implements AccessControlled, Savea
     }
 
     public String getUrl() {
-        return "user/"+id;
+        return "user/"+Util.rawEncode(id);
     }
 
     public String getSearchUrl() {
-        return "/user/"+id;
+        return "/user/"+Util.rawEncode(id);
     }
 
     /**
@@ -166,7 +167,7 @@ public class User extends AbstractModelObject implements AccessControlled, Savea
      */
     @Exported(visibility=999)
     public String getAbsoluteUrl() {
-        return Stapler.getCurrentRequest().getRootPath()+'/'+getUrl();
+        return Hudson.getInstance().getRootUrl()+getUrl();
     }
 
     /**
@@ -257,7 +258,7 @@ public class User extends AbstractModelObject implements AccessControlled, Savea
     }
 
     /**
-     * Gets the {@link User} object by its id.
+     * Gets the {@link User} object by its id or full name.
      *
      * @param create
      *      If true, this method will never return null for valid input
@@ -265,26 +266,30 @@ public class User extends AbstractModelObject implements AccessControlled, Savea
      *      If false, this method will return null if {@link User} object
      *      with the given name doesn't exist.
      */
-    public static User get(String id, boolean create) {
-        if(id==null)
+    public static User get(String idOrFullName, boolean create) {
+        if(idOrFullName==null)
             return null;
-        id = id.replace('\\', '_').replace('/', '_');
-        
+        String id = idOrFullName.replace('\\', '_').replace('/', '_').replace('<','_')
+                                .replace('>','_');  // 4 replace() still faster than regex
+        if (Functions.isWindows()) id = id.replace(':','_');
+
         synchronized(byName) {
             User u = byName.get(id);
-            if(u==null && create) {
-                u = new User(id);
-                byName.put(id,u);
+            if(u==null) {
+                User tmp = new User(id, idOrFullName);
+                if (create || tmp.getConfigFile().exists()) {
+                    byName.put(id,u=tmp);
+                }
             }
             return u;
         }
     }
 
     /**
-     * Gets the {@link User} object by its id.
+     * Gets the {@link User} object by its id or full name.
      */
-    public static User get(String id) {
-        return get(id,true);
+    public static User get(String idOrFullName) {
+        return get(idOrFullName,true);
     }
 
     /**
@@ -300,6 +305,7 @@ public class User extends AbstractModelObject implements AccessControlled, Savea
     }
 
     private static volatile long lastScanned;
+
     /**
      * Gets all the users.
      */
@@ -336,6 +342,13 @@ public class User extends AbstractModelObject implements AccessControlled, Savea
     }
 
     /**
+     * Stop gap hack. Don't use it. To be removed in the trunk.
+     */
+    public static void clear() {
+        byName.clear();
+    }
+
+    /**
      * Returns the user name.
      */
     public String getDisplayName() {
@@ -348,14 +361,14 @@ public class User extends AbstractModelObject implements AccessControlled, Savea
      * 
      * TODO: do we need some index for this?
      */
-    public List<AbstractBuild> getBuilds() {
+    @WithBridgeMethods(List.class)
+    public RunList getBuilds() {
         List<AbstractBuild> r = new ArrayList<AbstractBuild>();
         for (AbstractProject<?,?> p : Hudson.getInstance().getAllItems(AbstractProject.class))
             for (AbstractBuild<?,?> b : p.getBuilds())
                 if(b.hasParticipant(this))
                     r.add(b);
-        Collections.sort(r,Run.ORDER_BY_DATE);
-        return r;
+        return RunList.fromRuns(r);
     }
 
     /**
@@ -370,7 +383,7 @@ public class User extends AbstractModelObject implements AccessControlled, Savea
         return r;
     }
 
-    public String toString() {
+    public @Override String toString() {
         return fullName;
     }
 
@@ -394,6 +407,20 @@ public class User extends AbstractModelObject implements AccessControlled, Savea
     public synchronized void save() throws IOException {
         if(BulkChange.contains(this))   return;
         getConfigFile().write(this);
+        SaveableListener.fireOnChange(this, getConfigFile());
+    }
+
+    /**
+     * Deletes the data directory and removes this user from Hudson.
+     *
+     * @throws IOException
+     *      if we fail to delete.
+     */
+    public synchronized void delete() throws IOException {
+        synchronized (byName) {
+            byName.remove(id);
+            Util.deleteRecursive(new File(getRootDir(), id));
+        }
     }
 
     /**
@@ -406,53 +433,87 @@ public class User extends AbstractModelObject implements AccessControlled, Savea
     /**
      * Accepts submission from the configuration page.
      */
-    public void doConfigSubmit( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
+    public void doConfigSubmit( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException, FormException {
         checkPermission(Hudson.ADMINISTER);
 
         req.setCharacterEncoding("UTF-8");
 
-        try {
-            fullName = req.getParameter("fullName");
-            description = req.getParameter("description");
+        fullName = req.getParameter("fullName");
+        description = req.getParameter("description");
 
-            JSONObject json = req.getSubmittedForm();
+        JSONObject json = req.getSubmittedForm();
 
-            List<UserProperty> props = new ArrayList<UserProperty>();
-            int i=0;
-            for (UserPropertyDescriptor d : UserProperty.all()) {
-                UserProperty p = d.newInstance(req, json.getJSONObject("userProperty"+(i++)));
-                p.setUser(this);
-                props.add(p);
+        List<UserProperty> props = new ArrayList<UserProperty>();
+        int i = 0;
+        for (UserPropertyDescriptor d : UserProperty.all()) {
+            JSONObject o = json.getJSONObject("userProperty" + (i++));
+            UserProperty p = getProperty(d.clazz);
+            if (p != null) {
+                p = p.reconfigure(req, o);
+            } else {
+                p = d.newInstance(req, o);
             }
-            this.properties = props;
 
-            save();
-
-            rsp.sendRedirect(".");
-        } catch (FormException e) {
-            sendError(e,req,rsp);
+            p.setUser(this);
+            props.add(p);
         }
+        this.properties = props;
+
+        save();
+
+        rsp.sendRedirect(".");
     }
 
-    public void doRssAll( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
-        rss(req, rsp, " all builds", RunList.fromRuns(getBuilds()));
+    /**
+     * Deletes this user from Hudson.
+     */
+    public void doDoDelete(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
+        requirePOST();
+        checkPermission(Hudson.ADMINISTER);
+        if (id.equals(Hudson.getAuthentication().getName())) {
+            rsp.sendError(HttpServletResponse.SC_BAD_REQUEST, "Cannot delete self");
+            return;
+        }
+
+        delete();
+
+        rsp.sendRedirect2("../..");
     }
 
-    public void doRssFailed( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
-        rss(req, rsp, " regression builds", RunList.fromRuns(getBuilds()).regressionOnly());
+    public void doRssAll(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
+        rss(req, rsp, " all builds", RunList.fromRuns(getBuilds()), Run.FEED_ADAPTER);
     }
 
-    private void rss(StaplerRequest req, StaplerResponse rsp, String suffix, RunList runs) throws IOException, ServletException {
-        RSS.forwardToRss(getDisplayName()+ suffix, getUrl(),
-            runs.newBuilds(), FEED_ADAPTER, req, rsp );
+    public void doRssFailed(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
+        rss(req, rsp, " regression builds", RunList.fromRuns(getBuilds()).regressionOnly(), Run.FEED_ADAPTER);
     }
 
+    public void doRssLatest(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
+        final List<Run> lastBuilds = new ArrayList<Run>();
+        for (final TopLevelItem item : Hudson.getInstance().getItems()) {
+            if (!(item instanceof Job)) continue;
+            for (Run r = ((Job) item).getLastBuild(); r != null; r = r.getPreviousBuild()) {
+                if (!(r instanceof AbstractBuild)) continue;
+                final AbstractBuild b = (AbstractBuild) r;
+                if (b.hasParticipant(this)) {
+                    lastBuilds.add(b);
+                    break;
+                }
+            }
+        }
+        rss(req, rsp, " latest build", RunList.fromRuns(lastBuilds), Run.FEED_ADAPTER_LATEST);
+    }
+
+    private void rss(StaplerRequest req, StaplerResponse rsp, String suffix, RunList runs, FeedAdapter adapter)
+            throws IOException, ServletException {
+        RSS.forwardToRss(getDisplayName()+ suffix, getUrl(), runs.newBuilds(), adapter, req, rsp);
+    }
 
     /**
      * Keyed by {@link User#id}. This map is used to ensure
      * singleton-per-id semantics of {@link User} objects.
      */
-    private static final Map<String,User> byName = new HashMap<String,User>();
+    private static final Map<String,User> byName = new TreeMap<String,User>(String.CASE_INSENSITIVE_ORDER);
 
     /**
      * Used to load/save user configuration.
@@ -465,43 +526,13 @@ public class User extends AbstractModelObject implements AccessControlled, Savea
         XSTREAM.alias("user",User.class);
     }
 
-    /**
-     * {@link FeedAdapter} to produce build status summary in the feed.
-     */
-    public static final FeedAdapter<Run> FEED_ADAPTER = new FeedAdapter<Run>() {
-        public String getEntryTitle(Run entry) {
-            return entry+" : "+entry.getBuildStatusSummary().message;
-        }
-
-        public String getEntryUrl(Run entry) {
-            return entry.getUrl();
-        }
-
-        public String getEntryID(Run entry) {
-            return "tag:"+entry.getParent().getName()+':'+entry.getId();
-        }
-
-        public String getEntryDescription(Run entry) {
-            // TODO: provide useful details
-            return null;
-        }
-
-        public Calendar getEntryTimestamp(Run entry) {
-            return entry.getTimestamp();
-        }
-
-        public String getEntryAuthor(Run entry) {
-            return Mailer.descriptor().getAdminAddress();
-        }
-    };
-
-
     public ACL getACL() {
         final ACL base = Hudson.getInstance().getAuthorizationStrategy().getACL(this);
-        // always allow the user full control of himself.
+        // always allow a non-anonymous user full control of himself.
         return new ACL() {
             public boolean hasPermission(Authentication a, Permission permission) {
-                return a.getName().equals(id) || base.hasPermission(a, permission);
+                return (a.getName().equals(id) && !(a instanceof AnonymousAuthenticationToken))
+                        || base.hasPermission(a, permission);
             }
         };
     }
@@ -512,5 +543,24 @@ public class User extends AbstractModelObject implements AccessControlled, Savea
 
     public boolean hasPermission(Permission permission) {
         return getACL().hasPermission(permission);
+    }
+
+    /**
+     * With ADMINISTER permission, can delete users with persisted data but can't delete self.
+     */
+    public boolean canDelete() {
+        return hasPermission(Hudson.ADMINISTER) && !id.equals(Hudson.getAuthentication().getName())
+                && new File(getRootDir(), id).exists();
+    }
+
+    public Object getDynamic(String token) {
+        for (UserProperty property: getProperties().values()) {
+            if (property instanceof Action) {
+                Action a= (Action) property;
+            if(a.getUrlName().equals(token) || a.getUrlName().equals('/'+token))
+                return a;
+            }
+        }
+        return null;
     }
 }

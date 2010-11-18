@@ -25,10 +25,14 @@ package hudson;
 
 import hudson.util.DualOutputStream;
 import hudson.util.EncodingStream;
+import com.thoughtworks.xstream.core.util.Base64Encoder;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.net.HttpRetryException;
@@ -37,6 +41,7 @@ import java.net.URL;
 import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.List;
+import java.nio.charset.Charset;
 
 /**
  * Entry point to Hudson from command line.
@@ -58,8 +63,12 @@ public class Main {
 
     public static int run(String[] args) throws Exception {
         String home = getHudsonHome();
-        if(home==null) {
+        if (home==null) {
             System.err.println("HUDSON_HOME is not set.");
+            return -1;
+        }
+        if (args.length < 2) {
+            System.err.println("Usage: <job-name> <command> <args..>");
             return -1;
         }
 
@@ -79,8 +88,13 @@ public class Main {
         String home = getHudsonHome();
         if(!home.endsWith("/"))     home = home + '/';  // make sure it ends with '/'
 
+        // check for authentication info
+        String auth = new URL(home).getUserInfo();
+        if(auth != null) auth = "Basic " + new Base64Encoder().encode(auth.getBytes("UTF-8"));
+
         {// check if the home is set correctly
-            HttpURLConnection con = (HttpURLConnection)new URL(home).openConnection();
+            HttpURLConnection con = open(new URL(home));
+            if (auth != null) con.setRequestProperty("Authorization", auth);
             con.connect();
             if(con.getResponseCode()!=200
             || con.getHeaderField("X-Hudson")==null) {
@@ -92,7 +106,8 @@ public class Main {
         String projectNameEnc = URLEncoder.encode(projectName,"UTF-8").replaceAll("\\+","%20");
 
         {// check if the job name is correct
-            HttpURLConnection con = (HttpURLConnection)new URL(home+"job/"+projectNameEnc+"/acceptBuildResult").openConnection();
+            HttpURLConnection con = open(new URL(home+"job/"+projectNameEnc+"/acceptBuildResult"));
+            if (auth != null) con.setRequestProperty("Authorization", auth);
             con.connect();
             if(con.getResponseCode()!=200) {
                 System.err.println(projectName+" is not a valid job name on "+home+" ("+con.getResponseMessage()+")");
@@ -100,58 +115,108 @@ public class Main {
             }
         }
 
+        // get a crumb to pass the csrf check
+        String crumbField = null, crumbValue = null;
+        try {
+            HttpURLConnection con = open(new URL(home +
+                    "crumbIssuer/api/xml?xpath=concat(//crumbRequestField,\":\",//crumb)'"));
+            if (auth != null) con.setRequestProperty("Authorization", auth);
+            BufferedReader in = new BufferedReader(new InputStreamReader(con.getInputStream()));
+            String line = in.readLine();
+            in.close();
+            String[] components = line.split(":");
+            if (components.length == 2) {
+                crumbField = components[0];
+                crumbValue = components[1];
+            }
+        } catch (IOException e) {
+            // presumably this Hudson doesn't use CSRF protection
+        }
+
         // write the output to a temporary file first.
         File tmpFile = File.createTempFile("hudson","log");
-        tmpFile.deleteOnExit();
-        FileOutputStream os = new FileOutputStream(tmpFile);
+        try {
+            FileOutputStream os = new FileOutputStream(tmpFile);
 
-        Writer w = new OutputStreamWriter(os,"UTF-8");
-        w.write("<?xml version='1.0' encoding='UTF-8'?>");
-        w.write("<run><log encoding='hexBinary'>");
-        w.flush();
+            Writer w = new OutputStreamWriter(os,"UTF-8");
+            w.write("<?xml version='1.0' encoding='UTF-8'?>");
+            w.write("<run><log encoding='hexBinary' content-encoding='"+Charset.defaultCharset().name()+"'>");
+            w.flush();
 
-        // run the command
-        long start = System.currentTimeMillis();
+            // run the command
+            long start = System.currentTimeMillis();
 
-        List<String> cmd = new ArrayList<String>();
-        for( int i=1; i<args.length; i++ )
-            cmd.add(args[i]);
-        Proc proc = new Proc.LocalProc(cmd.toArray(new String[0]),(String[])null,System.in,
-            new DualOutputStream(System.out,new EncodingStream(os)));
+            List<String> cmd = new ArrayList<String>();
+            for( int i=1; i<args.length; i++ )
+                cmd.add(args[i]);
+            Proc proc = new Proc.LocalProc(cmd.toArray(new String[0]),(String[])null,System.in,
+                new DualOutputStream(System.out,new EncodingStream(os)));
 
-        int ret = proc.join();
+            int ret = proc.join();
 
-        w.write("</log><result>"+ret+"</result><duration>"+(System.currentTimeMillis()-start)+"</duration></run>");
-        w.close();
+            w.write("</log><result>"+ret+"</result><duration>"+(System.currentTimeMillis()-start)+"</duration></run>");
+            w.close();
 
-        String location = home+"job/"+projectNameEnc+"/postBuildResult";
-        while(true) {
-            try {
-                // start a remote connection
-                HttpURLConnection con = (HttpURLConnection) new URL(location).openConnection();
-                con.setDoOutput(true);
-                // this tells HttpURLConnection not to buffer the whole thing
-                con.setFixedLengthStreamingMode((int)tmpFile.length());
-                con.connect();
-                // send the data
-                FileInputStream in = new FileInputStream(tmpFile);
-                Util.copyStream(in,con.getOutputStream());
-                in.close();
+            String location = home+"job/"+projectNameEnc+"/postBuildResult";
+            while(true) {
+                try {
+                    // start a remote connection
+                    HttpURLConnection con = open(new URL(location));
+                    if (auth != null) con.setRequestProperty("Authorization", auth);
+                    if (crumbField != null && crumbValue != null) {
+                        con.setRequestProperty(crumbField, crumbValue);
+                    }
+                    con.setDoOutput(true);
+                    // this tells HttpURLConnection not to buffer the whole thing
+                    con.setFixedLengthStreamingMode((int)tmpFile.length());
+                    con.connect();
+                    // send the data
+                    FileInputStream in = new FileInputStream(tmpFile);
+                    Util.copyStream(in,con.getOutputStream());
+                    in.close();
 
-                if(con.getResponseCode()!=200) {
-                    Util.copyStream(con.getErrorStream(),System.err);
+                    if(con.getResponseCode()!=200) {
+                        Util.copyStream(con.getErrorStream(),System.err);
+                    }
+
+                    return ret;
+                } catch (HttpRetryException e) {
+                    if(e.getLocation()!=null) {
+                        // retry with the new location
+                        location = e.getLocation();
+                        continue;
+                    }
+                    // otherwise failed for reasons beyond us.
+                    throw e;
                 }
-
-                return ret;
-            } catch (HttpRetryException e) {
-                if(e.getLocation()!=null) {
-                    // retry with the new location
-                    location = e.getLocation();
-                    continue;
-                }
-                // otherwise failed for reasons beyond us.
-                throw e;
             }
+        } finally {
+            tmpFile.delete();
         }
     }
+
+    /**
+     * Connects to the given HTTP URL and configure time out, to avoid infinite hang.
+     */
+    private static HttpURLConnection open(URL url) throws IOException {
+        HttpURLConnection c = (HttpURLConnection)url.openConnection();
+        c.setReadTimeout(TIMEOUT);
+        c.setConnectTimeout(TIMEOUT);
+        return c;
+    }
+
+    /**
+     * Set to true if we are running unit tests.
+     */
+    public static boolean isUnitTest = false;
+
+    /**
+     * Set to true if we are running inside "mvn hpi:run" or "mvn hudson-dev:run"
+     */
+    public static boolean isDevelopmentMode = Boolean.getBoolean(Main.class.getName()+".development");
+
+    /**
+     * Time out for socket connection to Hudson.
+     */
+    public static final int TIMEOUT = Integer.getInteger(Main.class.getName()+".timeout",15000);
 }

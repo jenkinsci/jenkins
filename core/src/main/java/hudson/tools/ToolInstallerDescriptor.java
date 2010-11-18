@@ -33,6 +33,7 @@ import java.util.ArrayList;
 
 /**
  * Descriptor for a {@link ToolInstaller}.
+ * @since 1.305
  */
 public abstract class ToolInstallerDescriptor<T extends ToolInstaller> extends Descriptor<ToolInstaller> {
 
@@ -47,7 +48,7 @@ public abstract class ToolInstallerDescriptor<T extends ToolInstaller> extends D
     }
 
     public static DescriptorExtensionList<ToolInstaller,ToolInstallerDescriptor<?>> all() {
-        return Hudson.getInstance().getDescriptorList(ToolInstaller.class);
+        return Hudson.getInstance().<ToolInstaller,ToolInstallerDescriptor<?>>getDescriptorList(ToolInstaller.class);
     }
 
     /**

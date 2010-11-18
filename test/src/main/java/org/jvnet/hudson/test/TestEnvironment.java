@@ -23,6 +23,11 @@
  */
 package org.jvnet.hudson.test;
 
+import hudson.model.Computer;
+import hudson.model.Hudson;
+
+import java.io.IOException;
+
 /**
  * TODO: deprecate this, and just consolidate this to {@link HudsonTestCase}.
  * We can then pin down the current HudsonTestCase to the thread for easier access.
@@ -30,24 +35,38 @@ package org.jvnet.hudson.test;
  * @author Kohsuke Kawaguchi
  */
 public class TestEnvironment {
+    /**
+     * Current test case being run.
+     */
+    public final HudsonTestCase testCase;
+
     public final TemporaryDirectoryAllocator temporaryDirectoryAllocator = new TemporaryDirectoryAllocator();
 
-    /**
-     * Associates (or pin down) this {@link TestEnvironment} to the current thread, so that
-     * from within the test you can access this object without referring to any context.
-     */
+    public TestEnvironment(HudsonTestCase testCase) {
+        this.testCase = testCase;
+    }
+
     public void pin() {
-        ENVIRONMENT.set(this);
+        CURRENT = this;
     }
 
-    public void dispose() {
-        ENVIRONMENT.set(null);
-        temporaryDirectoryAllocator.disposeAsync();
+    public void dispose() throws IOException, InterruptedException {
+        temporaryDirectoryAllocator.dispose();
+        CURRENT = null;
     }
 
-    public static final ThreadLocal<TestEnvironment> ENVIRONMENT = new InheritableThreadLocal<TestEnvironment>();
+    /**
+     * We used to use {@link InheritableThreadLocal} here, but it turns out this is not reliable,
+     * especially in the {@link Computer#threadPoolForRemoting}, where threads can inherit
+     * the wrong test environment depending on when it's created.
+     *
+     * <p>
+     * Since the rest of Hudson still relies on static {@link Hudson#theInstance}, changing this
+     * to a static field for now shouldn't cause any problem. 
+     */
+    private static TestEnvironment CURRENT;
 
     public static TestEnvironment get() {
-        return ENVIRONMENT.get();
+        return CURRENT;
     }
 }

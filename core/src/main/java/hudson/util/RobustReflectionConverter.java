@@ -1,7 +1,7 @@
 /*
  * The MIT License
  * 
- * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi
+ * Copyright (c) 2004-2010, Sun Microsystems, Inc., Kohsuke Kawaguchi
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -41,7 +41,11 @@ import com.thoughtworks.xstream.io.ExtendedHierarchicalStreamWriterHelper;
 import com.thoughtworks.xstream.mapper.Mapper;
 import com.thoughtworks.xstream.mapper.CannotResolveClassException;
 
+import hudson.diagnosis.OldDataMonitor;
+import hudson.model.Saveable;
+
 import java.lang.reflect.Field;
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
@@ -49,7 +53,8 @@ import java.util.HashSet;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.logging.Logger;
-import java.util.logging.Level;
+
+import static java.util.logging.Level.WARNING;
 
 /**
  * Custom {@link ReflectionConverter} that handle errors more gracefully.
@@ -96,10 +101,9 @@ public class RobustReflectionConverter implements Converter {
         // Attributes might be preferred to child elements ...
          reflectionProvider.visitSerializableFields(source, new ReflectionProvider.Visitor() {
             public void visit(String fieldName, Class type, Class definedIn, Object value) {
-                SingleValueConverter converter = mapper.getConverterFromItemType(fieldName, type);
-                if (converter == null) {
-                    converter = mapper.getConverterFromItemType(type);
-                }
+                SingleValueConverter converter = mapper.getConverterFromItemType(fieldName, type, definedIn);
+                if (converter == null) converter = mapper.getConverterFromItemType(fieldName, type);
+                if (converter == null) converter = mapper.getConverterFromItemType(type);
                 if (converter != null) {
                     if (value != null) {
                         final String str = converter.toString(value);
@@ -145,7 +149,10 @@ public class RobustReflectionConverter implements Converter {
 
                     Class defaultType = mapper.defaultImplementationOf(fieldType);
                     if (!actualType.equals(defaultType)) {
-                        writer.addAttribute(mapper.aliasForAttribute("class"), mapper.serializedClass(actualType));
+                        String serializedClassName = mapper.serializedClass(actualType);
+                        if (!serializedClassName.equals(mapper.serializedClass(defaultType))) {
+                            writer.addAttribute(mapper.aliasForSystemAttribute("class"), serializedClassName);
+                        }
                     }
 
                     if (seenFields.contains(aliasName)) {
@@ -177,6 +184,9 @@ public class RobustReflectionConverter implements Converter {
     public Object doUnmarshal(final Object result, final HierarchicalStreamReader reader, final UnmarshallingContext context) {
         final SeenFields seenFields = new SeenFields();
         Iterator it = reader.getAttributeNames();
+        // Remember outermost Saveable encountered, for reporting below
+        if (result instanceof Saveable && context.get("Saveable") == null)
+            context.put("Saveable", result);
 
         // Process attributes before recursing into child elements.
         while (it.hasNext()) {
@@ -185,8 +195,9 @@ public class RobustReflectionConverter implements Converter {
             Class classDefiningField = determineWhichClassDefinesField(reader);
             boolean fieldExistsInClass = fieldDefinedInClass(result, attrName);
             if (fieldExistsInClass) {
-                SingleValueConverter converter = mapper.getConverterFromAttribute(attrName);
-                Class type = reflectionProvider.getFieldType(result, attrName, classDefiningField);
+                Field field = reflectionProvider.getField(result.getClass(), attrName);
+                SingleValueConverter converter = mapper.getConverterFromAttribute(field.getDeclaringClass(),attrName,field.getType());
+                Class type = field.getType();
                 if (converter == null) {
                     converter = mapper.getConverterFromItemType(type);
                 }
@@ -219,7 +230,7 @@ public class RobustReflectionConverter implements Converter {
                 final Object value;
                 if (fieldExistsInClass) {
                     Field field = reflectionProvider.getField(result.getClass(),fieldName);
-                    value = unmarshallField(context, result, type, field);
+                    value = unmarshalField(context, result, type, field);
                     // TODO the reflection provider should have returned the proper field in first place ....
                     Class definedType = reflectionProvider.getFieldType(result, fieldName, classDefiningField);
                     if (!definedType.isPrimitive()) {
@@ -241,15 +252,32 @@ public class RobustReflectionConverter implements Converter {
                     }
                 }
             } catch (NonExistentFieldException e) {
-                LOGGER.log(Level.WARNING,"Skipping a non-existent field "+e.getFieldName(),e);
+                LOGGER.log(WARNING,"Skipping a non-existent field "+e.getFieldName(),e);
+                addErrorInContext(context, e);
             } catch (CannotResolveClassException e) {
-                LOGGER.log(Level.WARNING,"Skipping a non-existend type",e);
+                LOGGER.log(WARNING,"Skipping a non-existent type",e);
+                addErrorInContext(context, e);
+            } catch (LinkageError e) {
+                LOGGER.log(WARNING,"Failed to resolve a type",e);
+                addErrorInContext(context, e);
             }
 
             reader.moveUp();
         }
 
+        // Report any class/field errors in Saveable objects
+        if (context.get("ReadError") != null && context.get("Saveable") == result) {
+            OldDataMonitor.report((Saveable)result, (ArrayList<Throwable>)context.get("ReadError"));
+            context.put("ReadError", null);
+        }
         return result;
+    }
+
+    public static void addErrorInContext(UnmarshallingContext context, Throwable e) {
+        ArrayList<Throwable> list = (ArrayList<Throwable>)context.get("ReadError");
+        if (list == null)
+            context.put("ReadError", list = new ArrayList<Throwable>());
+        list.add(e);
     }
 
     private boolean fieldDefinedInClass(Object result, String attrName) {
@@ -258,7 +286,7 @@ public class RobustReflectionConverter implements Converter {
         return reflectionProvider.getFieldOrNull(result.getClass(),attrName)!=null;
     }
 
-    protected Object unmarshallField(final UnmarshallingContext context, final Object result, Class type, Field field) {
+    protected Object unmarshalField(final UnmarshallingContext context, final Object result, Class type, Field field) {
         return context.convertAnother(result, type);
     }
 

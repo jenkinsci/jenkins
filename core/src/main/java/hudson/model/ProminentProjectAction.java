@@ -23,6 +23,10 @@
  */
 package hudson.model;
 
+import hudson.tasks.BuildStep;
+import hudson.tasks.BuildWrapper;
+import hudson.triggers.Trigger;
+
 /**
  * Marker interface for {@link Action}s that should be displayed
  * at the top of the project page.
@@ -30,6 +34,11 @@ package hudson.model;
  * {@link #getIconFileName()}, {@link #getUrlName()}, {@link #getDisplayName()}
  * are used to create a large, more visible icon in the top page to draw
  * users' attention.
+ *
+ * @see BuildStep#getProjectActions(AbstractProject)
+ * @see BuildWrapper#getProjectActions(AbstractProject)
+ * @see Trigger#getProjectActions()
+ * @see JobProperty#getJobActions(Job)
  *
  * @author Kohsuke Kawaguchi
  */

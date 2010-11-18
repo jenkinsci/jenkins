@@ -1,7 +1,7 @@
 /*
  * The MIT License
  * 
- * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi
+ * Copyright (c) 2004-2010, Sun Microsystems, Inc., Kohsuke Kawaguchi
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -25,9 +25,9 @@ package hudson.tasks;
 
 import hudson.FilePath;
 import hudson.Extension;
-import hudson.model.Descriptor;
 import hudson.model.AbstractProject;
 import net.sf.json.JSONObject;
+import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.StaplerRequest;
 
 /**
@@ -36,12 +36,13 @@ import org.kohsuke.stapler.StaplerRequest;
  * @author Kohsuke Kawaguchi
  */
 public class BatchFile extends CommandInterpreter {
+    @DataBoundConstructor
     public BatchFile(String command) {
         super(command);
     }
 
-    protected String[] buildCommandLine(FilePath script) {
-        return new String[] {script.getRemote()};
+    public String[] buildCommandLine(FilePath script) {
+        return new String[] {"cmd","/c","call",script.getRemote()};
     }
 
     protected String getContents() {
@@ -54,6 +55,7 @@ public class BatchFile extends CommandInterpreter {
 
     @Extension
     public static final class DescriptorImpl extends BuildStepDescriptor<Builder> {
+        @Override
         public String getHelpFile() {
             return "/help/project-config/batch.html";
         }
@@ -62,8 +64,9 @@ public class BatchFile extends CommandInterpreter {
             return Messages.BatchFile_DisplayName();
         }
 
+        @Override
         public Builder newInstance(StaplerRequest req, JSONObject data) {
-            return new BatchFile(data.getString("batchFile"));
+            return new BatchFile(data.getString("command"));
         }
 
         public boolean isApplicable(Class<? extends AbstractProject> jobType) {

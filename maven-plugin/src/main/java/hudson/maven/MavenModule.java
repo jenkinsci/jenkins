@@ -24,7 +24,6 @@
 package hudson.maven;
 
 import hudson.CopyOnWrite;
-import hudson.FilePath;
 import hudson.Util;
 import hudson.Functions;
 import hudson.maven.reporters.MavenMailer;
@@ -49,6 +48,7 @@ import hudson.util.DescribableList;
 import org.apache.maven.project.MavenProject;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
+import org.kohsuke.stapler.export.Exported;
 
 import javax.servlet.ServletException;
 import java.io.IOException;
@@ -59,7 +59,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.HashSet;
-import org.kohsuke.stapler.export.Exported;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * {@link Job} that builds projects based on Maven2.
@@ -69,6 +70,7 @@ import org.kohsuke.stapler.export.Exported;
 public final class MavenModule extends AbstractMavenProject<MavenModule,MavenBuild> implements Saveable {
     private DescribableList<MavenReporter,Descriptor<MavenReporter>> reporters =
         new DescribableList<MavenReporter,Descriptor<MavenReporter>>(this);
+
 
     /**
      * Name taken from {@link MavenProject#getName()}.
@@ -143,13 +145,35 @@ public final class MavenModule extends AbstractMavenProject<MavenModule,MavenBui
         return false;
     }
 
+    @Override
+    public boolean isBuildable() {
+        // not buildable if the parent project is disabled
+        return super.isBuildable() && getParent().isBuildable();
+    }
+
+    /**
+     * Computes the list of {@link MavenModule}s that are 'under' this POM filesystem-wise. The list doens't include
+     * this module itself.
+     *
+     * <p>
+     * Note that this doesn't necessary has anything to do with the module inheritance structure or parent/child
+     * relationship of the POM.
+     */
+    public List<MavenModule> getSubsidiaries() {
+        List<MavenModule> r = new ArrayList<MavenModule>();
+        for (MavenModule mm : getParent().getModules())
+            if(mm!=this && mm.getRelativePath().startsWith(getRelativePath()))
+                r.add(mm);
+        return r;
+    }
+
     /**
      * Called to update the module with the new POM.
      * <p>
      * This method is invoked on {@link MavenModule} that has the matching
      * {@link ModuleName}.
      */
-    /*package*/ final void reconfigure(PomInfo pom) {
+    /*package*/ void reconfigure(PomInfo pom) {
         this.displayName = pom.displayName;
         this.version = pom.version;
         this.relativePath = pom.relativePath;
@@ -171,6 +195,7 @@ public final class MavenModule extends AbstractMavenProject<MavenModule,MavenBui
         }
     }
 
+    @Override
     protected void doSetName(String name) {
         moduleName = ModuleName.fromFileSystemName(name);
         super.doSetName(moduleName.toString());
@@ -200,7 +225,7 @@ public final class MavenModule extends AbstractMavenProject<MavenModule,MavenBui
 
     /**
      * Relative path to this module's root directory
-     * from {@link MavenModuleSet#getWorkspace()}.
+     * from the workspace of a {@link MavenModuleSet}.
      *
      * The path separator is normalized to '/'.
      */
@@ -239,11 +264,6 @@ public final class MavenModule extends AbstractMavenProject<MavenModule,MavenBui
      */
     public String getUserConfiguredGoals() {
         return goals;
-    }
-
-    @Override
-    public FilePath getWorkspace() {
-        return getParent().getModuleRoot().child(relativePath);
     }
 
     public DescribableList<Publisher,Descriptor<Publisher>> getPublishersList() {
@@ -299,6 +319,7 @@ public final class MavenModule extends AbstractMavenProject<MavenModule,MavenBui
         return false;
     }
 
+    @Override
     public MavenModuleSet getParent() {
         return (MavenModuleSet)super.getParent();
     }
@@ -326,6 +347,7 @@ public final class MavenModule extends AbstractMavenProject<MavenModule,MavenBui
      * {@link MavenModule} uses the workspace of the {@link MavenModuleSet},
      * so it always needs to be built on the same slave as the parent.
      */
+    @Override
     public Label getAssignedLabel() {
         Node n = getParent().getLastBuiltOn();
         if(n==null) return null;
@@ -337,6 +359,8 @@ public final class MavenModule extends AbstractMavenProject<MavenModule,MavenBui
      * <p>
      * That is, {@Link MavenModuleSet} builds are incompatible with any {@link MavenModule}
      * builds, whereas {@link MavenModule} builds are compatible with each other.
+     *
+     * @deprecated as of 1.319 in {@link AbstractProject}.
      */
     @Override
     public Resource getWorkspaceResource() {
@@ -346,6 +370,11 @@ public final class MavenModule extends AbstractMavenProject<MavenModule,MavenBui
     @Override
     public boolean isFingerprintConfigured() {
         return true;
+    }
+
+    @Override // to make this accessible to MavenModuleSet
+    protected void updateTransientActions() {
+        super.updateTransientActions();
     }
 
     protected void buildDependencyGraph(DependencyGraph graph) {
@@ -379,25 +408,28 @@ public final class MavenModule extends AbstractMavenProject<MavenModule,MavenBui
         for (ModuleDependency d : dependencies) {
             MavenModule src = modules.get(d);
             if(src!=null) {
-                if(src.getParent().isAggregatorStyleBuild())
-                    graph.addDependency(src.getParent(),dest);
-                else
-                    graph.addDependency(src,dest);
+                DependencyGraph.Dependency dep = new MavenModuleDependency(
+                        src.getParent().isAggregatorStyleBuild() ? src.getParent() : src,dest);
+                if (!dep.pointsItself())
+                    graph.addDependency(dep);
             }
         }
     }
 
     @Override
-    protected void addTransientActionsFromBuild(MavenBuild build, Set<Class> added) {
+    protected void addTransientActionsFromBuild(MavenBuild build, List<Action> collection, Set<Class> added) {
         if(build==null)    return;
-        List<MavenReporter> list = build.projectActionReporters;
+        List<MavenProjectActionBuilder> list = build.projectActionReporters;
         if(list==null)   return;
 
-        for (MavenReporter step : list) {
+        for (MavenProjectActionBuilder step : list) {
             if(!added.add(step.getClass()))     continue;   // already added
-            Action a = step.getProjectAction(this);
-            if(a!=null)
-                transientActions.add(a);
+            try {
+                collection.addAll(step.getProjectActions(this));
+            } catch (Exception e) {
+                LOGGER.log(Level.WARNING, "Failed to getProjectAction from " + step
+                           + ". Report issue to plugin developers.", e);
+            }
         }
     }
 
@@ -412,6 +444,7 @@ public final class MavenModule extends AbstractMavenProject<MavenModule,MavenBui
         return reporters;
     }
 
+    @Override
     protected void submit(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException, FormException {
         super.submit(req, rsp);
 
@@ -423,6 +456,7 @@ public final class MavenModule extends AbstractMavenProject<MavenModule,MavenBui
         Hudson.getInstance().rebuildDependencyGraph();
     }
 
+    @Override
     protected void performDelete() throws IOException, InterruptedException {
         super.performDelete();
         getParent().onModuleDeleted(this);
@@ -431,20 +465,22 @@ public final class MavenModule extends AbstractMavenProject<MavenModule,MavenBui
     /**
      * Creates a list of {@link MavenReporter}s to be used for a build of this project.
      */
-    protected final List<MavenReporter> createReporters() {
-        List<MavenReporter> reporters = new ArrayList<MavenReporter>();
+    protected List<MavenReporter> createReporters() {
+        List<MavenReporter> reporterList = new ArrayList<MavenReporter>();
 
-        getReporters().addAllTo(reporters);
-        getParent().getReporters().addAllTo(reporters);
+        getReporters().addAllTo(reporterList);
+        getParent().getReporters().addAllTo(reporterList);
 
         for (MavenReporterDescriptor d : MavenReporterDescriptor.all()) {
             if(getReporters().contains(d))
                 continue;   // already configured
             MavenReporter auto = d.newAutoInstance(this);
             if(auto!=null)
-                reporters.add(auto);
+                reporterList.add(auto);
         }
 
-        return reporters;
+        return reporterList;
     }
+
+    private static final Logger LOGGER = Logger.getLogger(MavenModule.class.getName());
 }

@@ -1,7 +1,7 @@
 /*
  * The MIT License
  * 
- * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi
+ * Copyright (c) 2004-2010, Sun Microsystems, Inc., Kohsuke Kawaguchi
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -57,14 +57,19 @@ import java.net.Socket;
 import java.net.URLClassLoader;
 import java.net.InetSocketAddress;
 import java.net.HttpURLConnection;
+import java.net.Authenticator;
+import java.net.PasswordAuthentication;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.security.cert.X509Certificate;
 import java.security.cert.CertificateException;
 import java.security.NoSuchAlgorithmException;
 import java.security.KeyManagementException;
+import java.security.SecureRandom;
+import java.util.Properties;
 
 /**
  * Entry point for running a {@link Channel}. This is the main method of the slave JVM.
@@ -86,13 +91,16 @@ public class Launcher {
             "Useful for running slave over 8-bit unsafe protocol like telnet")
     public void setTextMode(boolean b) {
         mode = b?Mode.TEXT:Mode.BINARY;
-        System.out.println("Running in "+mode.name().toLowerCase()+" mode");
+        System.out.println("Running in "+mode.name().toLowerCase(Locale.ENGLISH)+" mode");
     }
 
     @Option(name="-jnlpUrl",usage="instead of talking to the master via stdin/stdout, " +
             "emulate a JNLP client by making a TCP connection to the master. " +
             "Connection parameters are obtained by parsing the JNLP file.")
     public URL slaveJnlpURL = null;
+
+    @Option(name="-jnlpCredentials",metaVar="USER:PASSWORD",usage="HTTP BASIC AUTH header to pass in for making HTTP requests.")
+    public String slaveJnlpCredentials = null;
 
     @Option(name="-cp",aliases="-classpath",metaVar="PATH",
             usage="add the given classpath elements to the system classloader.")
@@ -113,6 +121,10 @@ public class Launcher {
             "listens to a random local port, write that port number to the given file, " +
             "then wait for the master to connect to that port.")
     public File tcpPortFile=null;
+
+
+    @Option(name="-auth",metaVar="user:pass",usage="If your Hudson is security-enabeld, specify a valid user name and password.")
+    public String auth = null;
 
     public InetSocketAddress connectionTarget = null;
 
@@ -147,6 +159,7 @@ public class Launcher {
     }
 
     public static void main(String... args) throws Exception {
+        computeVersion();
         Launcher launcher = new Launcher();
         CmdLineParser parser = new CmdLineParser(launcher);
         try {
@@ -161,13 +174,29 @@ public class Launcher {
     }
 
     public void run() throws Exception {
+        if(auth!=null) {
+            final int idx = auth.indexOf(':');
+            if(idx<0)   throw new CmdLineException(null, "No ':' in the -auth option");
+            Authenticator.setDefault(new Authenticator() {
+                @Override public PasswordAuthentication getPasswordAuthentication() {
+                    return new PasswordAuthentication(auth.substring(0,idx), auth.substring(idx+1).toCharArray());
+                }
+            });
+        }
         if(connectionTarget!=null) {
             runAsTcpClient();
             System.exit(0);
         } else
         if(slaveJnlpURL!=null) {
             List<String> jnlpArgs = parseJnlpArguments();
-            hudson.remoting.jnlp.Main.main(jnlpArgs.toArray(new String[jnlpArgs.size()]));
+            try {
+                hudson.remoting.jnlp.Main._main(jnlpArgs.toArray(new String[jnlpArgs.size()]));
+            } catch (CmdLineException e) {
+                System.err.println("JNLP file "+slaveJnlpURL+" has invalid arguments: "+jnlpArgs);
+                System.err.println("Most likely a configuration error in the master");
+                System.err.println(e.getMessage());
+                System.exit(1);
+            }
         } else
         if(tcpPortFile!=null) {
             runAsTcpServer();
@@ -185,6 +214,12 @@ public class Launcher {
         while (true) {
             try {
                 URLConnection con = slaveJnlpURL.openConnection();
+                if (con instanceof HttpURLConnection && slaveJnlpCredentials != null) {
+                    HttpURLConnection http = (HttpURLConnection) con;
+                    String userPassword = slaveJnlpCredentials;
+                    String encoding = new sun.misc.BASE64Encoder().encode(userPassword.getBytes());
+                    http.setRequestProperty("Authorization", "Basic " + encoding);
+                }
                 con.connect();
 
                 if (con instanceof HttpURLConnection) {
@@ -216,6 +251,10 @@ public class Launcher {
                 List<String> jnlpArgs = new ArrayList<String>();
                 for( int i=0; i<argElements.getLength(); i++ )
                         jnlpArgs.add(argElements.item(i).getTextContent());
+                if (slaveJnlpCredentials != null) {
+                    jnlpArgs.add("-credentials");
+                    jnlpArgs.add(slaveJnlpCredentials);
+                }
                 // force a headless mode
                 jnlpArgs.add("-headless");
                 return jnlpArgs;
@@ -290,6 +329,35 @@ public class Launcher {
         // use stdin/stdout for channel communication
         ttyCheck();
 
+        if (isWindows()) {
+            /*
+                To prevent the dead lock between GetFileType from _ioinit in C runtime and blocking read that ChannelReaderThread
+                would do on stdin, load the crypto DLL first.
+
+                This is a band-aid solution to the problem. Still searching for more fundamental fix. 
+
+                02f1e750 7c90d99a ntdll!KiFastSystemCallRet
+                02f1e754 7c810f63 ntdll!NtQueryVolumeInformationFile+0xc
+                02f1e784 77c2c9f9 kernel32!GetFileType+0x7e
+                02f1e7e8 77c1f01d msvcrt!_ioinit+0x19f
+                02f1e88c 7c90118a msvcrt!__CRTDLL_INIT+0xac
+                02f1e8ac 7c91c4fa ntdll!LdrpCallInitRoutine+0x14
+                02f1e9b4 7c916371 ntdll!LdrpRunInitializeRoutines+0x344
+                02f1ec60 7c9164d3 ntdll!LdrpLoadDll+0x3e5
+                02f1ef08 7c801bbd ntdll!LdrLoadDll+0x230
+                02f1ef70 7c801d72 kernel32!LoadLibraryExW+0x18e
+                02f1ef84 7c801da8 kernel32!LoadLibraryExA+0x1f
+                02f1efa0 77de8830 kernel32!LoadLibraryA+0x94
+                02f1f05c 6d3eb1be ADVAPI32!CryptAcquireContextA+0x512
+                WARNING: Stack unwind information not available. Following frames may be wrong.
+                02f1f13c 6d99c844 java_6d3e0000!Java_sun_security_provider_NativeSeedGenerator_nativeGenerateSeed+0x6e
+
+                see http://weblogs.java.net/blog/kohsuke/archive/2009/09/28/reading-stdin-may-cause-your-jvm-hang
+                for more details
+             */
+            new SecureRandom().nextBoolean();
+        }
+
         // this will prevent programs from accidentally writing to System.out
         // and messing up the stream.
         OutputStream os = System.out;
@@ -335,9 +403,12 @@ public class Launcher {
         ExecutorService executor = Executors.newCachedThreadPool();
         Channel channel = new Channel("channel", executor, mode, is, os);
         System.err.println("channel started");
-        if(performPing) {
-//            System.err.println("Starting periodic ping thread");
-            new PingThread(channel) {
+        long timeout = 1000 * Long.parseLong(
+                System.getProperty("hudson.remoting.Launcher.pingTimeoutSec", "240")),
+             interval = 1000 * Long.parseLong(
+                System.getProperty("hudson.remoting.Launcher.pingIntervalSec", "600"));
+        if (performPing && timeout > 0 && interval > 0) {
+            new PingThread(channel, timeout, interval) {
                 @Override
                 protected void onDead() {
                     System.err.println("Ping failed. Terminating");
@@ -363,4 +434,25 @@ public class Launcher {
             return new X509Certificate[0];
         }
     }
+
+    public static boolean isWindows() {
+        return File.pathSeparatorChar==';';
+    }
+
+    private static void computeVersion() {
+        Properties props = new Properties();
+        try {
+            InputStream is = Launcher.class.getResourceAsStream("hudson-version.properties");
+            if(is!=null)
+                props.load(is);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        VERSION = props.getProperty("version", "?");
+    }
+
+    /**
+     * Version number of Hudson this slave.jar is from.
+     */
+    public static String VERSION = "?";
 }

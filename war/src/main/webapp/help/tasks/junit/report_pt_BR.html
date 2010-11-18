@@ -1,0 +1,17 @@
+<div>
+  O Hudson entende o formato XML de relatório de teste do JUnit (que também é usado pelo TestNG).
+  Quando esta opção é configurada, o Hudson pode fornecer informações úteis sobre os resultados dos testes,
+  tal como tendências de resultado de teste histórico, uma interface web para visualizar  relatórios de teste, rastreamento de falhas,
+  e assim por diante.
+
+  <p>
+  Usar esta característica, primeiro configure sua construção para executar os testes, então
+  especifique o caminho para os arquivos XML do JUnit XML
+  <a href="http://ant.apache.org/manual/Types/fileset.html">na sintaxe do glóbulo do Ant </a>,
+  tal como <tt>**/build/test-reports/*.xml</tt>. Tenha certeza de não incluir nenhum arquivo que
+  não seja de relatório neste padrão.
+
+  <p>
+  Um vez que exista algumas construções executando com resultados de teste, você começará a ver
+  algo como <a href="http://hudson-ci.org/screenshots/5.png">isto</a>.
+</div>

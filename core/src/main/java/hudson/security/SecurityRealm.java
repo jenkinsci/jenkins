@@ -29,7 +29,8 @@ import groovy.lang.Binding;
 import hudson.ExtensionPoint;
 import hudson.DescriptorExtensionList;
 import hudson.Extension;
-import hudson.model.Describable;
+import hudson.cli.CLICommand;
+import hudson.model.AbstractDescribableImpl;
 import hudson.model.Descriptor;
 import hudson.model.Hudson;
 import hudson.util.DescriptorList;
@@ -40,7 +41,9 @@ import org.acegisecurity.AuthenticationManager;
 import org.acegisecurity.GrantedAuthorityImpl;
 import org.acegisecurity.GrantedAuthority;
 import org.acegisecurity.context.SecurityContext;
+import org.acegisecurity.context.SecurityContextHolder;
 import org.acegisecurity.ui.rememberme.RememberMeServices;
+import static org.acegisecurity.ui.rememberme.TokenBasedRememberMeServices.ACEGI_SECURITY_HASHED_REMEMBER_ME_COOKIE_KEY;
 import org.acegisecurity.userdetails.UserDetailsService;
 import org.acegisecurity.userdetails.UserDetails;
 import org.acegisecurity.userdetails.UsernameNotFoundException;
@@ -54,6 +57,9 @@ import org.springframework.dao.DataAccessException;
 import javax.imageio.ImageIO;
 import javax.servlet.Filter;
 import javax.servlet.FilterConfig;
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpSession;
+import javax.servlet.http.Cookie;
 import java.io.IOException;
 import java.util.Map;
 import java.util.logging.Level;
@@ -117,7 +123,7 @@ import java.util.logging.Logger;
  * @since 1.160
  * @see PluginServletFilter
  */
-public abstract class SecurityRealm implements Describable<SecurityRealm>, ExtensionPoint {
+public abstract class SecurityRealm extends AbstractDescribableImpl<SecurityRealm> implements ExtensionPoint {
     /**
      * Creates fully-configured {@link AuthenticationManager} that performs authentication
      * against the user realm. The implementation hides how such authentication manager
@@ -137,6 +143,24 @@ public abstract class SecurityRealm implements Describable<SecurityRealm>, Exten
     public abstract SecurityComponents createSecurityComponents();
 
     /**
+     * Creates a {@link CliAuthenticator} object that authenticates an invocation of a CLI command.
+     * See {@link CliAuthenticator} for more details.
+     *
+     * @param command
+     *      The command about to be executed.
+     * @return
+     *      never null. By default, this method returns a no-op authenticator that always authenticates
+     *      the session as authenticated by the transport (which is often just {@link Hudson#ANONYMOUS}.)
+     */
+    public CliAuthenticator createCliAuthenticator(final CLICommand command) {
+        return new CliAuthenticator() {
+            public Authentication authenticate() {
+                return command.getTransportAuthentication();
+            }
+        };
+    }
+
+    /**
      * {@inheritDoc}
      *
      * <p>
@@ -145,7 +169,7 @@ public abstract class SecurityRealm implements Describable<SecurityRealm>, Exten
      * <tt>global.jelly</tt>. 
      */
     public Descriptor<SecurityRealm> getDescriptor() {
-        return Hudson.getInstance().getDescriptor(getClass());
+        return super.getDescriptor();
     }
 
     /**
@@ -165,6 +189,67 @@ public abstract class SecurityRealm implements Describable<SecurityRealm>, Exten
      */
     public String getLoginUrl() {
         return "login";
+    }
+
+    /**
+     * Returns true if this {@link SecurityRealm} supports explicit logout operation.
+     *
+     * <p>
+     * If the method returns false, "logout" link will not be displayed. This is useful
+     * when authentication doesn't require an explicit login activity (such as NTLM authentication
+     * or Kerberos authentication, where Hudson has no ability to log off the current user.)
+     *
+     * <p>
+     * By default, this method returns true.
+     *
+     * @since 1.307
+     */
+    public boolean canLogOut() {
+        return true;
+    }
+
+    /**
+     * Controls where the user is sent to after a logout. By default, it's the top page
+     * of Hudson, but you can return arbitrary URL.
+     *
+     * @param req
+     *      {@link StaplerRequest} that represents the current request. Primarily so that
+     *      you can get the context path. By the time this method is called, the session
+     *      is already invalidated. Never null.
+     * @param auth
+     *      The {@link Authentication} object that represents the user that was logging in.
+     *      This parameter allows you to redirect people to different pages depending on who they are.
+     * @return
+     *      never null.
+     * @since 1.314
+     * @see #doLogout(StaplerRequest, StaplerResponse) 
+     */
+    protected String getPostLogOutUrl(StaplerRequest req, Authentication auth) {
+        return req.getContextPath()+"/";
+    }
+
+    /**
+     * Handles the logout processing.
+     *
+     * <p>
+     * The default implementation erases the session and do a few other clean up, then
+     * redirect the user to the URL specified by {@link #getPostLogOutUrl(StaplerRequest, Authentication)}.
+     *
+     * @since 1.314
+     */
+    public void doLogout(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
+        HttpSession session = req.getSession(false);
+        if(session!=null)
+            session.invalidate();
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        SecurityContextHolder.clearContext();
+
+        // reset remember-me cookie
+        Cookie cookie = new Cookie(ACEGI_SECURITY_HASHED_REMEMBER_ME_COOKIE_KEY,"");
+        cookie.setPath(req.getContextPath().length()>0 ? req.getContextPath() : "/");
+        rsp.addCookie(cookie);
+
+        rsp.sendRedirect2(getPostLogOutUrl(req,auth));
     }
 
     /**
@@ -193,7 +278,7 @@ public abstract class SecurityRealm implements Describable<SecurityRealm>, Exten
      * @return
      *      never null.
      */
-    public final UserDetails loadUserByUsername(String username) throws UsernameNotFoundException, DataAccessException {
+    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException, DataAccessException {
         return getSecurityComponents().userDetails.loadUserByUsername(username);
     }
 
@@ -325,6 +410,7 @@ public abstract class SecurityRealm implements Describable<SecurityRealm>, Exten
          * This special instance is not configurable explicitly,
          * so it doesn't have a descriptor.
          */
+        @Override
         public Descriptor<SecurityRealm> getDescriptor() {
             return null;
         }
@@ -412,7 +498,7 @@ public abstract class SecurityRealm implements Describable<SecurityRealm>, Exten
      * Returns all the registered {@link SecurityRealm} descriptors.
      */
     public static DescriptorExtensionList<SecurityRealm,Descriptor<SecurityRealm>> all() {
-        return Hudson.getInstance().getDescriptorList(SecurityRealm.class);
+        return Hudson.getInstance().<SecurityRealm,Descriptor<SecurityRealm>>getDescriptorList(SecurityRealm.class);
     }
 
 
@@ -420,7 +506,7 @@ public abstract class SecurityRealm implements Describable<SecurityRealm>, Exten
 
     /**
      * {@link GrantedAuthority} that represents the built-in "authenticated" role, which is granted to
-     * anyone non-anomyous.
+     * anyone non-anonymous.
      */
     public static final GrantedAuthority AUTHENTICATED_AUTHORITY = new GrantedAuthorityImpl("authenticated");
 }

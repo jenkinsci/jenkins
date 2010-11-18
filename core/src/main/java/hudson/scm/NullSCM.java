@@ -42,12 +42,15 @@ import java.io.IOException;
  * @author Kohsuke Kawaguchi
  */
 public class NullSCM extends SCM {
-    public boolean pollChanges(AbstractProject project, Launcher launcher, FilePath dir, TaskListener listener) throws IOException {
-        // no change
-        return false;
+    public SCMRevisionState calcRevisionsFromBuild(AbstractBuild<?, ?> build, Launcher launcher, TaskListener listener) throws IOException, InterruptedException {
+        return null;
     }
 
-    public boolean checkout(AbstractBuild build, Launcher launcher, FilePath remoteDir, BuildListener listener, File changeLogFile) throws IOException, InterruptedException {
+    protected PollingResult compareRemoteRevisionWith(AbstractProject project, Launcher launcher, FilePath workspace, TaskListener listener, SCMRevisionState baseline) throws IOException, InterruptedException {
+        return PollingResult.NO_CHANGES;
+    }
+
+    public boolean checkout(AbstractBuild<?,?> build, Launcher launcher, FilePath remoteDir, BuildListener listener, File changeLogFile) throws IOException, InterruptedException {
         return createEmptyChangeLog(changeLogFile, listener, "log");
     }
 
@@ -65,6 +68,7 @@ public class NullSCM extends SCM {
             return Messages.NullSCM_DisplayName();
         }
 
+        @Override
         public SCM newInstance(StaplerRequest req, JSONObject formData) throws FormException {
             return new NullSCM();
         }

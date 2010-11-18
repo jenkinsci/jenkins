@@ -28,7 +28,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
 
 /**
  * Optional interface for {@link Action}s that are attached
- * to {@link AbstractProject} (through {@link JobProperty#getJobAction(Job)}),
+ * to {@link AbstractProject} (through {@link JobProperty#getJobActions(Job)}),
  * which allows plugins to define additional permalinks in the project.
  *
  * <p>
@@ -144,6 +144,34 @@ public interface PermalinkProjectAction extends Action {
 
                 public Run<?,?> resolve(Job<?,?> job) {
                     return job.getLastFailedBuild();
+                }
+            });
+
+            BUILTIN.add(new Permalink() {
+                public String getDisplayName() {
+                    return Messages.Permalink_LastUnstableBuild();
+                }
+
+                public String getId() {
+                    return "lastUnstableBuild";
+                }
+
+                public Run<?,?> resolve(Job<?,?> job) {
+                    return job.getLastUnstableBuild();
+                }
+            });
+
+            BUILTIN.add(new Permalink() {
+                public String getDisplayName() {
+                    return Messages.Permalink_LastUnsuccessfulBuild();
+                }
+
+                public String getId() {
+                    return "lastUnsuccessfulBuild";
+                }
+
+                public Run<?,?> resolve(Job<?,?> job) {
+                    return job.getLastUnsuccessfulBuild();
                 }
             });
         }

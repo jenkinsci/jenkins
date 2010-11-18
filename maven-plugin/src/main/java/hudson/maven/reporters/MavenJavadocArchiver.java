@@ -42,6 +42,8 @@ import org.codehaus.plexus.component.configurator.ComponentConfigurationExceptio
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Collection;
+import java.util.Collections;
 
 /**
  * Records the javadoc and archives it.
@@ -107,8 +109,8 @@ public class MavenJavadocArchiver extends MavenReporter {
         return postExecute(build,pom,report,listener,null);
     }
 
-    public Action getProjectAction(MavenModule project) {
-        return new JavadocAction(project);
+    public Collection<? extends Action> getProjectActions(MavenModule project) {
+        return Collections.singleton(new JavadocAction(project));
     }
 
     public Action getAggregatedProjectAction(MavenModuleSet project) {

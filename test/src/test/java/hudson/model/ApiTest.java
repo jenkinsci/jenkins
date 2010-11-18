@@ -1,7 +1,7 @@
 /*
  * The MIT License
  * 
- * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi
+ * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, Yahoo!, Inc.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -70,6 +70,12 @@ public class ApiTest extends HudsonTestCase {
         assertEquals("<name>All</name>", page.getWebResponse().getContentAsString());
     }
 
+    public void testUnwrappedLongString() throws Exception {
+        hudson.setSystemMessage("Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.");
+        Page page = new WebClient().goTo("api/xml?xpath=/hudson/description/text()", "text/plain");
+        assertEquals(hudson.getSystemMessage(), page.getWebResponse().getContentAsString());
+    }
+
     public void testUnwrappedMultipleItems() throws Exception {
         createFreeStyleProject();
         createFreeStyleProject();
@@ -79,5 +85,4 @@ public class ApiTest extends HudsonTestCase {
             assertEquals(500, x.getStatusCode());
         }
     }
-
 }

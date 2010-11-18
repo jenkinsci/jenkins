@@ -27,13 +27,12 @@ THE SOFTWARE.
     <l:header title="Hudson" />
     <l:side-panel />
     <l:main-panel>
-      <h1><img src="${imagesURL}/48x48/error.gif" alt="[!]"/><st:nbsp/>Error</h1>
+      <h1><img src="${imagesURL}/48x48/error.gif" alt="[!]"/><st:nbsp/>${%Error}</h1>
       <p>
-        Unable to create the home directory '${it.home}'. This is most likely a permission problem.
-      </p><p>
-        To change the home directory, use <tt>HUDSON_HOME</tt> environment variable or set the
-        <tt>HUDSON_HOME</tt> system property. See <a href="http://hudson.gotdns.com/wiki/display/HUDSON/Containers">
-        Container-specific documentation</a> for more details of how to do this.
+        ${%errorMessage.1(it.home)}
+      </p>
+      <p>
+         ${%errorMessage.2}
       </p>
     </l:main-panel>
   </l:layout>

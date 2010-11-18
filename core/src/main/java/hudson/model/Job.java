@@ -24,13 +24,18 @@
 package hudson.model;
 
 import static javax.servlet.http.HttpServletResponse.SC_BAD_REQUEST;
+import static javax.servlet.http.HttpServletResponse.SC_NO_CONTENT;
+
+import com.infradna.tool.bridge_method_injector.WithBridgeMethods;
 import hudson.ExtensionPoint;
-import hudson.Util;
 import hudson.XmlFile;
 import hudson.PermalinkList;
+import hudson.Extension;
+import hudson.cli.declarative.CLIResolver;
 import hudson.model.Descriptor.FormException;
-import hudson.model.listeners.ItemListener;
 import hudson.model.PermalinkProjectAction.Permalink;
+import hudson.model.Fingerprint.RangeSet;
+import hudson.model.Fingerprint.Range;
 import hudson.search.QuickSilver;
 import hudson.search.SearchIndex;
 import hudson.search.SearchIndexBuilder;
@@ -48,6 +53,7 @@ import hudson.util.RunList;
 import hudson.util.ShiftedCategoryAxis;
 import hudson.util.StackedAreaRenderer2;
 import hudson.util.TextFile;
+import hudson.util.Graph;
 import hudson.widgets.HistoryWidget;
 import hudson.widgets.Widget;
 import hudson.widgets.HistoryWidget.Adapter;
@@ -58,16 +64,16 @@ import java.io.File;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.io.PrintWriter;
-import java.text.ParseException;
+import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.SortedMap;
+import java.util.LinkedList;
 
 import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletResponse;
 import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactory;
@@ -77,8 +83,6 @@ import javax.xml.transform.stream.StreamSource;
 import net.sf.json.JSONObject;
 import net.sf.json.JSONException;
 
-import org.apache.tools.ant.taskdefs.Copy;
-import org.apache.tools.ant.types.FileSet;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.JFreeChart;
 import org.jfree.chart.axis.CategoryAxis;
@@ -90,10 +94,13 @@ import org.jfree.chart.renderer.category.StackedAreaRenderer;
 import org.jfree.data.category.CategoryDataset;
 import org.jfree.ui.RectangleInsets;
 import org.jvnet.localizer.Localizable;
+import org.kohsuke.stapler.StaplerOverridable;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 import org.kohsuke.stapler.WebMethod;
 import org.kohsuke.stapler.export.Exported;
+import org.kohsuke.args4j.Argument;
+import org.kohsuke.args4j.CmdLineException;
 
 /**
  * A job is an runnable entity under the monitoring of Hudson.
@@ -107,7 +114,7 @@ import org.kohsuke.stapler.export.Exported;
  * @author Kohsuke Kawaguchi
  */
 public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, RunT>>
-        extends AbstractItem implements ExtensionPoint {
+        extends AbstractItem implements ExtensionPoint, StaplerOverridable {
 
     /**
      * Next build number. Kept in a separate file because this is the only
@@ -118,6 +125,12 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
      * file, so even though this is marked as transient, don't move it around.
      */
     protected transient volatile int nextBuildNumber = 1;
+
+    /**
+     * Newly copied jobs get this flag set, so that Hudson doesn't try to run the job until its configuration
+     * is saved once.
+     */
+    private transient volatile boolean holdOffBuildUntilSave;
 
     private volatile LogRotator logRotator;
 
@@ -140,6 +153,13 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
         super(parent, name);
     }
 
+    @Override
+    public synchronized void save() throws IOException {
+        super.save();
+        holdOffBuildUntilSave = false;
+    }
+
+    @Override
     public void onLoad(ItemGroup<? extends Item> parent, String name)
             throws IOException {
         super.onLoad(parent, name);
@@ -150,7 +170,9 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
             // but old Hudson didn't do it, so if the file doesn't exist,
             // assume that nextBuildNumber was read from config.xml
             try {
-                this.nextBuildNumber = Integer.parseInt(f.readTrim());
+                synchronized (this) {
+                    this.nextBuildNumber = Integer.parseInt(f.readTrim());
+                }
             } catch (NumberFormatException e) {
                 throw new IOException2(f + " doesn't contain a number", e);
             }
@@ -170,9 +192,13 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
     @Override
     public void onCopiedFrom(Item src) {
         super.onCopiedFrom(src);
-        this.nextBuildNumber = 1; // reset the next build number
+        synchronized (this) {
+            this.nextBuildNumber = 1; // reset the next build number
+            this.holdOffBuildUntilSave = true;
+        }
     }
 
+    @Override
     protected void performDelete() throws IOException, InterruptedException {
         // if a build is in progress. Cancel it.
         RunT lb = getLastBuild();
@@ -186,11 +212,15 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
         super.performDelete();
     }
 
-    private TextFile getNextBuildNumberFile() {
+    /*package*/ TextFile getNextBuildNumberFile() {
         return new TextFile(new File(this.getRootDir(), "nextBuildNumber"));
     }
 
-    protected void saveNextBuildNumber() throws IOException {
+    protected boolean isHoldOffBuildUntilSave() {
+        return holdOffBuildUntilSave;
+    }
+
+    protected synchronized void saveNextBuildNumber() throws IOException {
         if (nextBuildNumber == 0) { // #3361
             nextBuildNumber = 1;
         }
@@ -208,6 +238,14 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
     @Exported
     public Queue.Item getQueueItem() {
         return null;
+    }
+
+    /**
+     * Returns true if a build of this project is in progress.
+     */
+    public boolean isBuilding() {
+        RunT b = getLastBuild();
+        return b!=null && b.isBuilding();
     }
 
     /**
@@ -256,12 +294,13 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
      * <p>
      * Much of Hudson assumes that the build number is unique and monotonic, so
      * this method can only accept a new value that's bigger than
-     * {@link #getNextBuildNumber()} returns. Otherwise it'll be no-op.
+     * {@link #getLastBuild()} returns. Otherwise it'll be no-op.
      * 
      * @since 1.199 (before that, this method was package private.)
      */
-    public void updateNextBuildNumber(int next) throws IOException {
-        if (next > nextBuildNumber) {
+    public synchronized void updateNextBuildNumber(int next) throws IOException {
+        RunT lb = getLastBuild();
+        if (lb!=null ?  next>lb.getNumber() : next>0) {
             this.nextBuildNumber = next;
             saveNextBuildNumber();
         }
@@ -294,6 +333,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
         return true;
     }
 
+    @Override
     protected SearchIndexBuilder makeSearchIndex() {
         return super.makeSearchIndex().add(new SearchIndex() {
             public void find(String token, List<SearchItem> result) {
@@ -387,6 +427,16 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
         return null;
     }
 
+    /**
+     * Overrides from job properties.
+     */
+    public Collection<?> getOverrides() {
+        List<Object> r = new ArrayList<Object>();
+        for (JobProperty<? super JobT> p : properties)
+            r.addAll(p.getJobOverrides());
+        return r;
+    }
+
     public List<Widget> getWidgets() {
         ArrayList<Widget> r = new ArrayList<Widget>();
         r.add(createHistoryWidget());
@@ -427,107 +477,9 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
 
     /**
      * Renames a job.
-     * 
-     * <p>
-     * This method is defined on {@link Job} but really only applicable for
-     * {@link Job}s that are top-level items.
      */
     public void renameTo(String newName) throws IOException {
-        // always synchronize from bigger objects first
-        final Hudson parent = Hudson.getInstance();
-        assert this instanceof TopLevelItem;
-        synchronized (parent) {
-            synchronized (this) {
-                // sanity check
-                if (newName == null)
-                    throw new IllegalArgumentException("New name is not given");
-                TopLevelItem existing = parent.getItem(newName);
-                if (existing != null && existing!=this)
-                    // the look up is case insensitive, so we need "existing!=this"
-                    // to allow people to rename "Foo" to "foo", for example.
-                    // see http://www.nabble.com/error-on-renaming-project-tt18061629.html
-                    throw new IllegalArgumentException("Job " + newName
-                            + " already exists");
-
-                // noop?
-                if (this.name.equals(newName))
-                    return;
-
-                String oldName = this.name;
-                File oldRoot = this.getRootDir();
-
-                doSetName(newName);
-                File newRoot = this.getRootDir();
-
-                boolean success = false;
-
-                try {// rename data files
-                    boolean interrupted = false;
-                    boolean renamed = false;
-
-                    // try to rename the job directory.
-                    // this may fail on Windows due to some other processes
-                    // accessing a file.
-                    // so retry few times before we fall back to copy.
-                    for (int retry = 0; retry < 5; retry++) {
-                        if (oldRoot.renameTo(newRoot)) {
-                            renamed = true;
-                            break; // succeeded
-                        }
-                        try {
-                            Thread.sleep(500);
-                        } catch (InterruptedException e) {
-                            // process the interruption later
-                            interrupted = true;
-                        }
-                    }
-
-                    if (interrupted)
-                        Thread.currentThread().interrupt();
-
-                    if (!renamed) {
-                        // failed to rename. it must be that some lengthy
-                        // process is going on
-                        // to prevent a rename operation. So do a copy. Ideally
-                        // we'd like to
-                        // later delete the old copy, but we can't reliably do
-                        // so, as before the VM
-                        // shuts down there might be a new job created under the
-                        // old name.
-                        Copy cp = new Copy();
-                        cp.setProject(new org.apache.tools.ant.Project());
-                        cp.setTodir(newRoot);
-                        FileSet src = new FileSet();
-                        src.setDir(getRootDir());
-                        cp.addFileset(src);
-                        cp.setOverwrite(true);
-                        cp.setPreserveLastModified(true);
-                        cp.setFailOnError(false); // keep going even if
-                                                    // there's an error
-                        cp.execute();
-
-                        // try to delete as much as possible
-                        try {
-                            Util.deleteRecursive(oldRoot);
-                        } catch (IOException e) {
-                            // but ignore the error, since we expect that
-                            e.printStackTrace();
-                        }
-                    }
-
-                    success = true;
-                } finally {
-                    // if failed, back out the rename.
-                    if (!success)
-                        doSetName(oldName);
-                }
-
-                parent.onRenamed((TopLevelItem) this, oldName, newName);
-
-                for (ItemListener l : Hudson.getInstance().getJobListeners())
-                    l.onRenamed(this, oldName, newName);
-            }
-        }
+        super.renameTo(newName);
     }
 
     /**
@@ -537,13 +489,29 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
     public abstract boolean isBuildable();
 
     /**
-     * Gets all the builds.
+     * Gets the read-only view of all the builds.
      * 
      * @return never null. The first entry is the latest build.
      */
     @Exported
-    public List<RunT> getBuilds() {
-        return new ArrayList<RunT>(_getRuns().values());
+    @WithBridgeMethods(List.class)
+    public RunList<RunT> getBuilds() {
+        return RunList.fromRuns(_getRuns().values());
+    }
+
+    /**
+     * Obtains all the {@link Run}s whose build numbers matches the given {@link RangeSet}.
+     */
+    public synchronized List<RunT> getBuilds(RangeSet rs) {
+        List<RunT> builds = new LinkedList<RunT>();
+
+        for (Range r : rs.getRanges()) {
+            for (RunT b = getNearestBuild(r.start); b!=null && b.getNumber()<r.end; b=b.getNextBuild()) {
+                builds.add(b);
+            }
+        }
+
+        return builds;
     }
 
     /**
@@ -554,8 +522,8 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
     }
 
     /**
-     * @deprecated This is only used to support backward compatibility with old
-     *             URLs.
+     * @deprecated since 2008-06-15.
+     *     This is only used to support backward compatibility with old URLs.
      */
     @Deprecated
     public RunT getBuild(String id) {
@@ -577,19 +545,39 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
     }
 
     /**
+     * Obtains a list of builds, in the descending order, that are within the specified time range [start,end).
+     *
+     * @return can be empty but never null.
+     * @deprecated
+     *      as of 1.372. Should just do {@code getBuilds().byTimestamp(s,e)} to avoid code bloat in {@link Job}.
+     */
+    @WithBridgeMethods(List.class)
+    public RunList<RunT> getBuildsByTimestamp(long start, long end) {
+        return getBuilds().byTimestamp(start,end);
+    }
+
+    @CLIResolver
+    public RunT getBuildForCLI(@Argument(required=true,metaVar="BUILD#",usage="Build number") String id) throws CmdLineException {
+        try {
+            int n = Integer.parseInt(id);
+            RunT r = getBuildByNumber(n);
+            if (r==null)
+                throw new CmdLineException(null, "No such build '#"+n+"' exists");
+            return r;
+        } catch (NumberFormatException e) {
+            throw new CmdLineException(null, id+ "is not a number");
+        }
+    }
+
+    /**
      * Gets the youngest build #m that satisfies <tt>n&lt;=m</tt>.
      * 
      * This is useful when you'd like to fetch a build but the exact build might
      * be already gone (deleted, rotated, etc.)
      */
     public final RunT getNearestBuild(int n) {
-        SortedMap<Integer, ? extends RunT> m = _getRuns().headMap(n - 1); // the
-                                                                            // map
-                                                                            // should
-                                                                            // include
-                                                                            // n,
-                                                                            // so
-                                                                            // n-1
+        SortedMap<Integer, ? extends RunT> m = _getRuns().headMap(n - 1); // the map should
+                                                                          // include n, so n-1
         if (m.isEmpty())
             return null;
         return m.get(m.lastKey());
@@ -608,6 +596,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
         return m.get(m.firstKey());
     }
 
+    @Override
     public Object getDynamic(String token, StaplerRequest req,
             StaplerResponse rsp) {
         try {
@@ -704,6 +693,34 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
     }
 
     /**
+     * Returns the last build that was anything but stable, if any. Otherwise null.
+     * @see #getLastSuccessfulBuild
+     */
+    @Exported
+    @QuickSilver
+    public RunT getLastUnsuccessfulBuild() {
+        RunT r = getLastBuild();
+        while (r != null
+                && (r.isBuilding() || r.getResult() == Result.SUCCESS))
+            r = r.getPreviousBuild();
+        return r;
+    }
+
+    /**
+     * Returns the last unstable build, if any. Otherwise null.
+     * @see #getLastSuccessfulBuild
+     */
+    @Exported
+    @QuickSilver
+    public RunT getLastUnstableBuild() {
+        RunT r = getLastBuild();
+        while (r != null
+                && (r.isBuilding() || r.getResult() != Result.UNSTABLE))
+            r = r.getPreviousBuild();
+        return r;
+    }
+
+    /**
      * Returns the last stable build, if any. Otherwise null.
      * @see #getLastSuccessfulBuild
      */
@@ -739,6 +756,42 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
         while (r != null && r.isBuilding())
             r = r.getPreviousBuild();
         return r;
+    }
+    
+    /**
+     * Returns the last 'numberOfBuilds' builds with a build result >= 'threshold'
+     * 
+     * @return a list with the builds. May be smaller than 'numberOfBuilds' or even empty
+     *   if not enough builds satisfying the threshold have been found. Never null.
+     */
+    public List<RunT> getLastBuildsOverThreshold(int numberOfBuilds, Result threshold) {
+        
+        List<RunT> result = new ArrayList<RunT>(numberOfBuilds);
+        
+        RunT r = getLastBuild();
+        while (r != null && result.size() < numberOfBuilds) {
+            if (!r.isBuilding() && 
+                 (r.getResult() != null && r.getResult().isBetterOrEqualTo(threshold))) {
+                result.add(r);
+            }
+            r = r.getPreviousBuild();
+        }
+        
+        return result;
+    }
+    
+    public final long getEstimatedDuration() {
+        List<RunT> builds = getLastBuildsOverThreshold(3, Result.UNSTABLE);
+        
+        if(builds.isEmpty())     return -1;
+
+        long totalDuration = 0;
+        for (RunT b : builds) {
+            totalDuration += b.getDuration();
+        }
+        if(totalDuration==0) return -1;
+
+        return Math.round((double)totalDuration / builds.size());
     }
 
     /**
@@ -858,11 +911,6 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
         }
         if (totalCount > 0) {
             int score = (int) ((100.0 * (totalCount - failCount)) / totalCount);
-            if (score < 100 && score > 0) {
-                // HACK
-                // force e.g. 4/5 to be in the 60-79 range
-                score--;
-            }
 
             Localizable description;
             if (failCount == 0) {
@@ -889,7 +937,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
      * Accepts submission from the configuration page.
      */
     public synchronized void doConfigSubmit(StaplerRequest req,
-            StaplerResponse rsp) throws IOException, ServletException {
+            StaplerResponse rsp) throws IOException, ServletException, FormException {
         checkPermission(CONFIGURE);
 
         req.setCharacterEncoding("UTF-8");
@@ -912,7 +960,8 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
             for (JobPropertyDescriptor d : JobPropertyDescriptor
                     .getPropertyDescriptors(Job.this.getClass())) {
                 String name = "jobProperty" + (i++);
-                JobProperty prop = d.newInstance(req, json.getJSONObject(name));
+                JSONObject config = json.getJSONObject(name);
+                JobProperty prop = d.newInstance(req, config);
                 if (prop != null) {
                     prop.setOwner(this);
                     properties.add(prop);
@@ -926,24 +975,15 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
             String newName = req.getParameter("name");
             if (newName != null && !newName.equals(name)) {
                 // check this error early to avoid HTTP response splitting.
-                try {
-                    Hudson.checkGoodName(newName);
-                } catch (ParseException e) {
-                    sendError(e, req, rsp);
-                    return;
-                }
-                rsp.sendRedirect("rename?newName=" + newName);
+                Hudson.checkGoodName(newName);
+                rsp.sendRedirect("rename?newName=" + URLEncoder.encode(newName, "UTF-8"));
             } else {
                 rsp.sendRedirect(".");
             }
-        } catch (FormException e) {
-            rsp.setStatus(SC_BAD_REQUEST);
-            sendError(e, req, rsp);
         } catch (JSONException e) {
             StringWriter sw = new StringWriter();
             PrintWriter pw = new PrintWriter(sw);
-            pw
-                    .println("Failed to parse form data. Please report this probelm as a bug");
+            pw.println("Failed to parse form data. Please report this problem as a bug");
             pw.println("JSON=" + req.getSubmittedForm());
             pw.println();
             e.printStackTrace(pw);
@@ -959,16 +999,16 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
     @WebMethod(name = "config.xml")
     public void doConfigDotXml(StaplerRequest req, StaplerResponse rsp)
             throws IOException {
-        checkPermission(CONFIGURE);
-
         if (req.getMethod().equals("GET")) {
             // read
+            checkPermission(EXTENDED_READ);
             rsp.setContentType("application/xml;charset=UTF-8");
             getConfigFile().writeRawTo(rsp.getWriter());
             return;
         }
         if (req.getMethod().equals("POST")) {
             // submission
+            checkPermission(CONFIGURE);
             XmlFile configXmlFile = getConfigFile();
             AtomicFileWriter out = new AtomicFileWriter(configXmlFile.getFile());
 
@@ -1007,174 +1047,176 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
     }
 
     /**
+     * Accepts and serves the job description
+     */
+    public void doDescription(StaplerRequest req, StaplerResponse rsp)
+            throws IOException {
+        if (req.getMethod().equals("GET")) {
+            //read
+            rsp.setContentType("text/plain;charset=UTF-8");
+            rsp.getWriter().write(this.getDescription());
+            return;
+        }
+        if (req.getMethod().equals("POST")) {
+            checkPermission(CONFIGURE);
+
+            // submission
+            if (req.getParameter("description") != null) {
+                this.setDescription(req.getParameter("description"));
+                rsp.sendError(SC_NO_CONTENT);
+                return;
+            }
+        }
+
+        // huh?
+        rsp.sendError(SC_BAD_REQUEST);
+    }
+
+    /**
      * Returns the image that shows the current buildCommand status.
      */
     public void doBuildStatus(StaplerRequest req, StaplerResponse rsp)
             throws IOException {
-        rsp.sendRedirect2(req.getContextPath() + "/nocacheImages/48x48/"
-                + getBuildStatusUrl());
+        rsp.sendRedirect2(req.getContextPath() + "/images/48x48/" + getBuildStatusUrl());
     }
 
     public String getBuildStatusUrl() {
         return getIconColor().getImage();
     }
 
-    /**
-     * Returns the graph that shows how long each build took.
-     */
-    public void doBuildTimeGraph(StaplerRequest req, StaplerResponse rsp)
-            throws IOException {
-        if (getLastBuild() == null) {
-            rsp.setStatus(HttpServletResponse.SC_NOT_FOUND);
-            return;
-        }
-        if (req.checkIfModified(getLastBuild().getTimestamp(), rsp))
-            return;
-        ChartUtil
-                .generateGraph(req, rsp, createBuildTimeTrendChart(), 500, 400);
-    }
+    public Graph getBuildTimeGraph() {
+        return new Graph(getLastBuild().getTimestamp(),500,400) {
+            @Override
+            protected JFreeChart createGraph() {
+                class ChartLabel implements Comparable<ChartLabel> {
+                    final Run run;
 
-    /**
-     * Returns the clickable map for the build time graph. Loaded lazily by
-     * AJAX.
-     */
-    public void doBuildTimeGraphMap(StaplerRequest req, StaplerResponse rsp)
-            throws IOException {
-        if (getLastBuild() == null) {
-            rsp.setStatus(HttpServletResponse.SC_NOT_FOUND);
-            return;
-        }
-        if (req.checkIfModified(getLastBuild().getTimestamp(), rsp))
-            return;
-        ChartUtil.generateClickableMap(req, rsp, createBuildTimeTrendChart(),
-                500, 400);
-    }
+                    public ChartLabel(Run r) {
+                        this.run = r;
+                    }
 
-    private JFreeChart createBuildTimeTrendChart() {
-        class ChartLabel implements Comparable<ChartLabel> {
-            final Run run;
+                    public int compareTo(ChartLabel that) {
+                        return this.run.number - that.run.number;
+                    }
 
-            public ChartLabel(Run r) {
-                this.run = r;
-            }
+                    @Override
+                    public boolean equals(Object o) {
+                        // HUDSON-2682 workaround for Eclipse compilation bug
+                        // on (c instanceof ChartLabel)
+                        if (o == null || !ChartLabel.class.isAssignableFrom( o.getClass() ))  {
+                            return false;
+                        }
+                        ChartLabel that = (ChartLabel) o;
+                        return run == that.run;
+                    }
 
-            public int compareTo(ChartLabel that) {
-                return this.run.number - that.run.number;
-            }
+                    public Color getColor() {
+                        // TODO: consider gradation. See
+                        // http://www.javadrive.jp/java2d/shape/index9.html
+                        Result r = run.getResult();
+                        if (r == Result.FAILURE)
+                            return ColorPalette.RED;
+                        else if (r == Result.UNSTABLE)
+                            return ColorPalette.YELLOW;
+                        else if (r == Result.ABORTED || r == Result.NOT_BUILT)
+                            return ColorPalette.GREY;
+                        else
+                            return ColorPalette.BLUE;
+                    }
 
-            public boolean equals(Object o) {
-                // HUDSON-2682 workaround for Eclipse compilation bug 
-            	// on (c instanceof ChartLabel)
-                if (o == null || !ChartLabel.class.isAssignableFrom( o.getClass() ))  {
-                	return false;
+                    @Override
+                    public int hashCode() {
+                        return run.hashCode();
+                    }
+
+                    @Override
+                    public String toString() {
+                        String l = run.getDisplayName();
+                        if (run instanceof Build) {
+                            String s = ((Build) run).getBuiltOnStr();
+                            if (s != null)
+                                l += ' ' + s;
+                        }
+                        return l;
+                    }
+
                 }
-                ChartLabel that = (ChartLabel) o;
-                return run == that.run;
-            }
 
-            public Color getColor() {
-                // TODO: consider gradation. See
-                // http://www.javadrive.jp/java2d/shape/index9.html
-                Result r = run.getResult();
-                if (r == Result.FAILURE)
-                    return ColorPalette.RED;
-                else if (r == Result.UNSTABLE)
-                    return ColorPalette.YELLOW;
-                else if (r == Result.ABORTED || r == Result.NOT_BUILT)
-                    return ColorPalette.GREY;
-                else
-                    return ColorPalette.BLUE;
-            }
-
-            public int hashCode() {
-                return run.hashCode();
-            }
-
-            public String toString() {
-                String l = run.getDisplayName();
-                if (run instanceof Build) {
-                    String s = ((Build) run).getBuiltOnStr();
-                    if (s != null)
-                        l += ' ' + s;
+                DataSetBuilder<String, ChartLabel> data = new DataSetBuilder<String, ChartLabel>();
+                for (Run r : getBuilds()) {
+                    if (r.isBuilding())
+                        continue;
+                    data.add(((double) r.getDuration()) / (1000 * 60), "min",
+                            new ChartLabel(r));
                 }
-                return l;
-            }
 
-        }
+                final CategoryDataset dataset = data.build();
 
-        DataSetBuilder<String, ChartLabel> data = new DataSetBuilder<String, ChartLabel>();
-        for (Run r : getBuilds()) {
-            if (r.isBuilding())
-                continue;
-            data.add(((double) r.getDuration()) / (1000 * 60), "min",
-                    new ChartLabel(r));
-        }
+                final JFreeChart chart = ChartFactory.createStackedAreaChart(null, // chart
+                                                                                    // title
+                        null, // unused
+                        Messages.Job_minutes(), // range axis label
+                        dataset, // data
+                        PlotOrientation.VERTICAL, // orientation
+                        false, // include legend
+                        true, // tooltips
+                        false // urls
+                        );
 
-        final CategoryDataset dataset = data.build();
+                chart.setBackgroundPaint(Color.white);
 
-        final JFreeChart chart = ChartFactory.createStackedAreaChart(null, // chart
-                                                                            // title
-                null, // unused
-                Messages.Job_minutes(), // range axis label
-                dataset, // data
-                PlotOrientation.VERTICAL, // orientation
-                false, // include legend
-                true, // tooltips
-                false // urls
-                );
+                final CategoryPlot plot = chart.getCategoryPlot();
 
-        chart.setBackgroundPaint(Color.white);
+                // plot.setAxisOffset(new Spacer(Spacer.ABSOLUTE, 5.0, 5.0, 5.0, 5.0));
+                plot.setBackgroundPaint(Color.WHITE);
+                plot.setOutlinePaint(null);
+                plot.setForegroundAlpha(0.8f);
+                // plot.setDomainGridlinesVisible(true);
+                // plot.setDomainGridlinePaint(Color.white);
+                plot.setRangeGridlinesVisible(true);
+                plot.setRangeGridlinePaint(Color.black);
 
-        final CategoryPlot plot = chart.getCategoryPlot();
+                CategoryAxis domainAxis = new ShiftedCategoryAxis(null);
+                plot.setDomainAxis(domainAxis);
+                domainAxis.setCategoryLabelPositions(CategoryLabelPositions.UP_90);
+                domainAxis.setLowerMargin(0.0);
+                domainAxis.setUpperMargin(0.0);
+                domainAxis.setCategoryMargin(0.0);
 
-        // plot.setAxisOffset(new Spacer(Spacer.ABSOLUTE, 5.0, 5.0, 5.0, 5.0));
-        plot.setBackgroundPaint(Color.WHITE);
-        plot.setOutlinePaint(null);
-        plot.setForegroundAlpha(0.8f);
-        // plot.setDomainGridlinesVisible(true);
-        // plot.setDomainGridlinePaint(Color.white);
-        plot.setRangeGridlinesVisible(true);
-        plot.setRangeGridlinePaint(Color.black);
+                final NumberAxis rangeAxis = (NumberAxis) plot.getRangeAxis();
+                ChartUtil.adjustChebyshev(dataset, rangeAxis);
+                rangeAxis.setStandardTickUnits(NumberAxis.createIntegerTickUnits());
 
-        CategoryAxis domainAxis = new ShiftedCategoryAxis(null);
-        plot.setDomainAxis(domainAxis);
-        domainAxis.setCategoryLabelPositions(CategoryLabelPositions.UP_90);
-        domainAxis.setLowerMargin(0.0);
-        domainAxis.setUpperMargin(0.0);
-        domainAxis.setCategoryMargin(0.0);
+                StackedAreaRenderer ar = new StackedAreaRenderer2() {
+                    @Override
+                    public Paint getItemPaint(int row, int column) {
+                        ChartLabel key = (ChartLabel) dataset.getColumnKey(column);
+                        return key.getColor();
+                    }
 
-        final NumberAxis rangeAxis = (NumberAxis) plot.getRangeAxis();
-        ChartUtil.adjustChebyshev(dataset, rangeAxis);
-        rangeAxis.setStandardTickUnits(NumberAxis.createIntegerTickUnits());
+                    @Override
+                    public String generateURL(CategoryDataset dataset, int row,
+                            int column) {
+                        ChartLabel label = (ChartLabel) dataset.getColumnKey(column);
+                        return String.valueOf(label.run.number);
+                    }
 
-        StackedAreaRenderer ar = new StackedAreaRenderer2() {
-            @Override
-            public Paint getItemPaint(int row, int column) {
-                ChartLabel key = (ChartLabel) dataset.getColumnKey(column);
-                return key.getColor();
-            }
+                    @Override
+                    public String generateToolTip(CategoryDataset dataset, int row,
+                            int column) {
+                        ChartLabel label = (ChartLabel) dataset.getColumnKey(column);
+                        return label.run.getDisplayName() + " : "
+                                + label.run.getDurationString();
+                    }
+                };
+                plot.setRenderer(ar);
 
-            @Override
-            public String generateURL(CategoryDataset dataset, int row,
-                    int column) {
-                ChartLabel label = (ChartLabel) dataset.getColumnKey(column);
-                return String.valueOf(label.run.number);
-            }
+                // crop extra space around the graph
+                plot.setInsets(new RectangleInsets(0, 0, 0, 5.0));
 
-            @Override
-            public String generateToolTip(CategoryDataset dataset, int row,
-                    int column) {
-                ChartLabel label = (ChartLabel) dataset.getColumnKey(column);
-                return label.run.getDisplayName() + " : "
-                        + label.run.getDurationString();
+                return chart;
             }
         };
-        plot.setRenderer(ar);
-
-        // crop extra space around the graph
-        plot.setInsets(new RectangleInsets(0, 0, 0, 5.0));
-
-        return chart;
     }
 
     /**
@@ -1183,15 +1225,17 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
     public/* not synchronized. see renameTo() */void doDoRename(
             StaplerRequest req, StaplerResponse rsp) throws IOException,
             ServletException {
+        requirePOST();
         // rename is essentially delete followed by a create
         checkPermission(CREATE);
         checkPermission(DELETE);
 
         String newName = req.getParameter("newName");
-        try {
-            Hudson.checkGoodName(newName);
-        } catch (ParseException e) {
-            sendError(e, req, rsp);
+        Hudson.checkGoodName(newName);
+
+        if (isBuilding()) {
+            // redirect to page explaining that we can't rename now
+            rsp.sendRedirect("rename?newName=" + URLEncoder.encode(newName, "UTF-8"));
             return;
         }
 
@@ -1205,12 +1249,12 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
 
     public void doRssAll(StaplerRequest req, StaplerResponse rsp)
             throws IOException, ServletException {
-        rss(req, rsp, " all builds", new RunList(this));
+        rss(req, rsp, " all builds", getBuilds());
     }
 
     public void doRssFailed(StaplerRequest req, StaplerResponse rsp)
             throws IOException, ServletException {
-        rss(req, rsp, " failed builds", new RunList(this).failureOnly());
+        rss(req, rsp, " failed builds", getBuilds().failureOnly());
     }
 
     private void rss(StaplerRequest req, StaplerResponse rsp, String suffix,
@@ -1224,7 +1268,12 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
      * We need to override the identical method in AbstractItem because we won't
      * call getACL(Job) otherwise (single dispatch)
      */
+    @Override
     public ACL getACL() {
         return Hudson.getInstance().getAuthorizationStrategy().getACL(this);
+    }
+
+    public BuildTimelineWidget getTimeline() {
+        return new BuildTimelineWidget(getBuilds());
     }
 }

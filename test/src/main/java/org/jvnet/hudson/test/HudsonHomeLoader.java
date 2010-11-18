@@ -65,7 +65,7 @@ public interface HudsonHomeLoader {
          * Either a zip file or a directory that contains the home image.
          */
         public CopyExisting(File source) throws MalformedURLException {
-            this(source.toURL());
+            this(source.toURI().toURL());
         }
 
         /**
@@ -82,7 +82,7 @@ public interface HudsonHomeLoader {
         public File allocate() throws Exception {
             File target = NEW.allocate();
             if(source.getProtocol().equals("file")) {
-                File src = new File(source.getPath());
+                File src = new File(source.toURI());
                 if(src.isDirectory())
                     new FilePath(src).copyRecursiveTo("**/*",new FilePath(target));
                 else
@@ -116,7 +116,7 @@ public interface HudsonHomeLoader {
             if(!res.getProtocol().equals("file"))
                 throw new AssertionError("Test data is not available in the file system: "+res);
             // if we picked up a directory, it's one level above config.xml
-            File home = new File(res.getPath());
+            File home = new File(res.toURI());
             if(!home.getName().endsWith(".zip"))
                 home = home.getParentFile();
 

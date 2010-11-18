@@ -28,6 +28,12 @@ THE SOFTWARE.
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
   <div style="float:right">
     <j:forEach var="a" items="${it.actions}">
+      <!--
+        For historical reason, we failed to expose the action as "it", so
+        this exposes it as "action", without breaking the compatibility with plugins
+         that may depend on the 'a' variable.
+      -->
+      <j:set var="action" value="${a}" />
       <st:include page="floatingBox.jelly" from="${a}" optional="true" />
     </j:forEach>
   </div>

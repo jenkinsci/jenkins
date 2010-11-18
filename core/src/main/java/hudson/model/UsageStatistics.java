@@ -1,7 +1,7 @@
 /*
  * The MIT License
  * 
- * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi
+ * Copyright (c) 2004-2010, Sun Microsystems, Inc., Kohsuke Kawaguchi
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -28,6 +28,7 @@ import hudson.PluginWrapper;
 import hudson.Util;
 import hudson.Extension;
 import hudson.node_monitors.ArchitectureMonitor.DescriptorImpl;
+import hudson.util.Secret;
 import static hudson.util.TimeUnit2.DAYS;
 import net.sf.json.JSONObject;
 import org.apache.commons.io.output.ByteArrayOutputStream;
@@ -88,7 +89,7 @@ public class UsageStatistics extends PageDecorator {
      */
     public boolean isDue() {
         // user opted out. no data collection.
-        if(!Hudson.getInstance().isUsageStatisticsCollected())     return false;
+        if(!Hudson.getInstance().isUsageStatisticsCollected() || DISABLED)     return false;
         
         long now = System.currentTimeMillis();
         if(now - lastAttempt > DAY) {
@@ -105,7 +106,7 @@ public class UsageStatistics extends PageDecorator {
                 key = keyFactory.generatePublic(new X509EncodedKeySpec(Util.fromHexString(keyImage)));
             }
 
-            Cipher cipher = Cipher.getInstance("RSA");
+            Cipher cipher = Secret.getCipher("RSA");
             cipher.init(Cipher.ENCRYPT_MODE, key);
             return cipher;
         } catch (GeneralSecurityException e) {
@@ -188,11 +189,11 @@ public class UsageStatistics extends PageDecorator {
             // create a new symmetric cipher key used for this stream
             SecretKey symKey = KeyGenerator.getInstance(algorithm).generateKey();
 
-            // place the symmetric key by encrypting it with assymetric cipher
+            // place the symmetric key by encrypting it with asymmetric cipher
             out.write(asym.doFinal(symKey.getEncoded()));
 
             // the rest of the data will be encrypted by this symmetric cipher
-            Cipher sym = Cipher.getInstance(algorithm);
+            Cipher sym = Secret.getCipher(algorithm);
             sym.init(Cipher.ENCRYPT_MODE,symKey);
             super.out = new CipherOutputStream(out,sym);
         }
@@ -204,7 +205,7 @@ public class UsageStatistics extends PageDecorator {
     public static final class CombinedCipherInputStream extends FilterInputStream {
         /**
          * @param keyLength
-         *      Block size of the assymetric cipher, in bits. I thought I can get it from {@code asym.getBlockSize()}
+         *      Block size of the asymmetric cipher, in bits. I thought I can get it from {@code asym.getBlockSize()}
          *      but that doesn't work with Sun's implementation.
          */
         public CombinedCipherInputStream(InputStream in, Cipher asym, String algorithm, int keyLength) throws IOException, GeneralSecurityException {
@@ -216,7 +217,7 @@ public class UsageStatistics extends PageDecorator {
             SecretKey symKey = new SecretKeySpec(asym.doFinal(symKeyBytes),algorithm);
 
             // the rest of the data will be decrypted by this symmetric cipher
-            Cipher sym = Cipher.getInstance(algorithm);
+            Cipher sym = Secret.getCipher(algorithm);
             sym.init(Cipher.DECRYPT_MODE,symKey);
             super.in = new CipherInputStream(in,sym);
         }
@@ -228,4 +229,6 @@ public class UsageStatistics extends PageDecorator {
     private static final String DEFAULT_KEY_BYTES = "30819f300d06092a864886f70d010101050003818d0030818902818100c14970473bd90fd1f2d20e4fa6e36ea21f7d46db2f4104a3a8f2eb097d6e26278dfadf3fe9ed05bbbb00a4433f4b7151e6683a169182e6ff2f6b4f2bb6490b2cddef73148c37a2a7421fc75f99fb0fadab46f191806599a208652f4829fd6f76e13195fb81ff3f2fce15a8e9a85ebe15c07c90b34ebdb416bd119f0d74105f3b0203010001";
 
     private static final long DAY = DAYS.toMillis(1);
+
+    public static boolean DISABLED = Boolean.getBoolean(UsageStatistics.class.getName()+".disabled");
 }

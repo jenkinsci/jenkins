@@ -48,6 +48,7 @@ public class HeadBufferingStream extends FilterInputStream {
         this.side = new ByteArrayOutputStream(sideBufferSize);
     }
 
+    @Override
     public int read() throws IOException {
         int i = in.read();
         if(i>=0 && space()>0)
@@ -55,6 +56,7 @@ public class HeadBufferingStream extends FilterInputStream {
         return i;
     }
 
+    @Override
     public int read(byte b[], int off, int len) throws IOException {
         int r = in.read(b, off, len);
         if(r>0) {

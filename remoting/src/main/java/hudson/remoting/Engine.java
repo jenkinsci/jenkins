@@ -27,6 +27,8 @@ import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.ByteArrayOutputStream;
 import java.net.HttpURLConnection;
 import java.net.Socket;
 import java.net.URL;
@@ -35,6 +37,8 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
 import java.util.List;
 import java.util.Collections;
+import java.util.logging.Logger;
+import static java.util.logging.Level.SEVERE;
 
 /**
  * Slave agent engine that proactively connects to Hudson master.
@@ -78,6 +82,7 @@ public class Engine extends Thread {
 
     private final String secretKey;
     public final String slaveName;
+    private String credentials;
 
     /**
      * See Main#tunnel in the jnlp-agent module for the details.
@@ -103,10 +108,15 @@ public class Engine extends Thread {
         this.tunnel = tunnel;
     }
 
+    public void setCredentials(String creds) {
+        this.credentials = creds;
+    }
+
     public void setNoReconnect(boolean noReconnect) {
         this.noReconnect = noReconnect;
     }
 
+    @SuppressWarnings({"ThrowableInstanceNeverThrown"})
     @Override
     public void run() {
         try {
@@ -130,24 +140,34 @@ public class Engine extends Thread {
 
                     // find out the TCP port
                     HttpURLConnection con = (HttpURLConnection)salURL.openConnection();
+                    if (con instanceof HttpURLConnection && credentials != null) {
+                        String encoding = new sun.misc.BASE64Encoder().encode(credentials.getBytes());
+                        con.setRequestProperty("Authorization", "Basic " + encoding);
+                    }
                     try {
-                        con.connect();
-                    } catch (IOException x) {
-                        if (firstError == null) {
-                            firstError = new IOException("Failed to connect to " + salURL + ": " + x.getMessage()).initCause(x);
+                        try {
+                            con.setConnectTimeout(30000);
+                            con.setReadTimeout(60000);
+                            con.connect();
+                        } catch (IOException x) {
+                            if (firstError == null) {
+                                firstError = new IOException("Failed to connect to " + salURL + ": " + x.getMessage()).initCause(x);
+                            }
+                            continue;
                         }
-                        continue;
-                    }
-                    port = con.getHeaderField("X-Hudson-JNLP-Port");
-                    if(con.getResponseCode()!=200) {
-                        if(firstError==null)
-                            firstError = new Exception(salURL+" is invalid: "+con.getResponseCode()+" "+con.getResponseMessage());
-                        continue;
-                    }
-                    if(port ==null) {
-                        if(firstError==null)
-                            firstError = new Exception(url+" is not Hudson");
-                        continue;
+                        port = con.getHeaderField("X-Hudson-JNLP-Port");
+                        if(con.getResponseCode()!=200) {
+                            if(firstError==null)
+                                firstError = new Exception(salURL+" is invalid: "+con.getResponseCode()+" "+con.getResponseMessage());
+                            continue;
+                        }
+                        if(port ==null) {
+                            if(firstError==null)
+                                firstError = new Exception(url+" is not Hudson");
+                            continue;
+                        }
+                    } finally {
+                        con.disconnect();
                     }
 
                     // this URL works. From now on, only try this URL
@@ -162,7 +182,7 @@ public class Engine extends Thread {
                     return;
                 }
 
-                Socket s = connect(port);
+                final Socket s = connect(port);
 
                 listener.status("Handshaking");
                 DataOutputStream dos = new DataOutputStream(s.getOutputStream());
@@ -170,12 +190,34 @@ public class Engine extends Thread {
                 dos.writeUTF(secretKey);
                 dos.writeUTF(slaveName);
 
-                Channel channel = new Channel("channel", executor,
-                        new BufferedInputStream(s.getInputStream()),
+                BufferedInputStream in = new BufferedInputStream(s.getInputStream());
+                String greeting = readLine(in); // why, oh why didn't I use DataOutputStream when writing to the network?
+                if (!greeting.equals(GREETING_SUCCESS)) {
+                    listener.error(new Exception("The server rejected the connection: "+greeting));
+                    Thread.sleep(10*1000);
+                    continue;
+                }
+
+                final Channel channel = new Channel("channel", executor,
+                        in,
                         new BufferedOutputStream(s.getOutputStream()));
+                PingThread t = new PingThread(channel) {
+                    protected void onDead() {
+                        try {
+                            if (!channel.isInClosed()) {
+                                LOGGER.info("Ping failed. Terminating the socket.");
+                                s.close();
+                            }
+                        } catch (IOException e) {
+                            LOGGER.log(SEVERE, "Failed to terminate the socket", e);
+                        }
+                    }
+                };
+                t.start();
                 listener.status("Connected");
                 channel.join();
                 listener.status("Terminated");
+                t.interrupt();  // make sure the ping thread is terminated
                 listener.onDisconnect();
 
                 if(noReconnect)
@@ -185,6 +227,19 @@ public class Engine extends Thread {
             }
         } catch (Throwable e) {
             listener.error(e);
+        }
+    }
+
+    /**
+     * Read until '\n' and returns it as a string.
+     */
+    private static String readLine(InputStream in) throws IOException {
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        while (true) {
+            int ch = in.read();
+            if (ch<0 || ch=='\n')
+                return baos.toString().trim(); // trim off possible '\r'
+            baos.write(ch);
         }
     }
 
@@ -207,12 +262,20 @@ public class Engine extends Thread {
         int retry = 1;
         while(true) {
             try {
-                return new Socket(host, Integer.parseInt(port));
+                Socket s = new Socket(host, Integer.parseInt(port));
+                s.setTcpNoDelay(true); // we'll do buffering by ourselves
+
+                // set read time out to avoid infinite hang. the time out should be long enough so as not
+                // to interfere with normal operation. the main purpose of this is that when the other peer dies
+                // abruptly, we shouldn't hang forever, and at some point we should notice that the connection
+                // is gone.
+                s.setSoTimeout(30*60*1000); // 30 mins. See PingThread for the ping interval
+                return s;
             } catch (IOException e) {
                 if(retry++>10)
-                    throw e;
+                    throw (IOException)new IOException("Failed to connect to "+host+':'+port).initCause(e);
                 Thread.sleep(1000*10);
-                listener.status(msg+" (retrying:"+retry+")");
+                listener.status(msg+" (retrying:"+retry+")",e);
             }
         }
     }
@@ -224,7 +287,8 @@ public class Engine extends Thread {
         while(true) {
             Thread.sleep(1000*10);
             try {
-                HttpURLConnection con = (HttpURLConnection)hudsonUrl.openConnection();
+                // Hudson top page might be read-protected. see http://www.nabble.com/more-lenient-retry-logic-in-Engine.waitForServerToBack-td24703172.html
+                HttpURLConnection con = (HttpURLConnection)new URL(hudsonUrl,"tcpSlaveAgentListener/").openConnection();
                 con.connect();
                 if(con.getResponseCode()==200)
                     return;
@@ -245,4 +309,8 @@ public class Engine extends Thread {
     }
 
     private static final ThreadLocal<Engine> CURRENT = new ThreadLocal<Engine>();
+
+    private static final Logger LOGGER = Logger.getLogger(Engine.class.getName());
+
+    public static final String GREETING_SUCCESS = "Welcome";
 }

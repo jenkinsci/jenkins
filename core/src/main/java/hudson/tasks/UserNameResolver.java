@@ -51,7 +51,7 @@ import java.util.List;
  */
 public abstract class UserNameResolver implements ExtensionPoint {
 
-	/**
+    /**
      * Finds full name of the given user.
      *
      * <p>
@@ -89,7 +89,7 @@ public abstract class UserNameResolver implements ExtensionPoint {
     /**
      * All registered {@link UserNameResolver} implementations.
      *
-     * @deprecated
+     * @deprecated since 2009-02-24.
      *      Use {@link #all()} for read access, and use {@link Extension} for registration.
      */
     public static final List<UserNameResolver> LIST = ExtensionListView.createList(UserNameResolver.class);

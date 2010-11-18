@@ -28,8 +28,8 @@ import java.util.WeakHashMap;
 
 import hudson.model.Computer;
 import hudson.model.Hudson;
+import hudson.model.Node;
 import hudson.model.PeriodicWork;
-import hudson.triggers.SafeTimerTask;
 import hudson.Extension;
 
 /**
@@ -57,6 +57,9 @@ public class ComputerRetentionWork extends PeriodicWork {
     protected void doRun() {
         final long startRun = System.currentTimeMillis();
         for (Computer c : Hudson.getInstance().getComputers()) {
+            Node n = c.getNode();
+            if (n!=null && n.isHoldOffLaunchUntilSave())
+                continue;
             if (!nextCheck.containsKey(c) || startRun > nextCheck.get(c)) {
                 // at the moment I don't trust strategies to wait more than 60 minutes
                 // strategies need to wait at least one minute

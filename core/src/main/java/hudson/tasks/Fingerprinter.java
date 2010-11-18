@@ -1,7 +1,7 @@
 /*
  * The MIT License
  * 
- * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi
+ * Copyright (c) 2004-2010, Sun Microsystems, Inc., Kohsuke Kawaguchi
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,6 +23,7 @@
  */
 package hudson.tasks;
 
+import com.google.common.collect.ImmutableMap;
 import hudson.Extension;
 import hudson.FilePath;
 import hudson.FilePath.FileCallable;
@@ -30,7 +31,6 @@ import hudson.Launcher;
 import hudson.Util;
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
-import hudson.model.Action;
 import hudson.model.Build;
 import hudson.model.BuildListener;
 import hudson.model.Fingerprint;
@@ -38,12 +38,16 @@ import hudson.model.Fingerprint.BuildPtr;
 import hudson.model.FingerprintMap;
 import hudson.model.Hudson;
 import hudson.model.Result;
+import hudson.model.Run;
+import hudson.model.RunAction;
 import hudson.remoting.VirtualChannel;
 import hudson.util.FormValidation;
 import hudson.util.IOException2;
+import net.sf.json.JSONObject;
 import org.apache.tools.ant.DirectoryScanner;
 import org.apache.tools.ant.types.FileSet;
 import org.kohsuke.stapler.AncestorInPath;
+import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.StaplerRequest;
 
@@ -52,7 +56,6 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -78,6 +81,7 @@ public class Fingerprinter extends Recorder implements Serializable {
      */
     private final boolean recordBuildArtifacts;
 
+    @DataBoundConstructor
     public Fingerprinter(String targets, boolean recordBuildArtifacts) {
         this.targets = targets;
         this.recordBuildArtifacts = recordBuildArtifacts;
@@ -91,6 +95,7 @@ public class Fingerprinter extends Recorder implements Serializable {
         return recordBuildArtifacts;
     }
 
+    @Override
     public boolean perform(AbstractBuild<?,?> build, Launcher launcher, BuildListener listener) throws InterruptedException {
         try {
             listener.getLogger().println(Messages.Fingerprinter_Recording());
@@ -101,8 +106,8 @@ public class Fingerprinter extends Recorder implements Serializable {
             if(targets.length()!=0)
                 record(build, listener, record, targets);
 
-            if(recordBuildArtifacts && build instanceof Build) {
-                ArtifactArchiver aa = ((Build<?,?>)build).getProject().getPublishersList().get(ArtifactArchiver.class);
+            if(recordBuildArtifacts) {
+                ArtifactArchiver aa = build.getProject().getPublishersList().get(ArtifactArchiver.class);
                 if(aa==null) {
                     // configuration error
                     listener.error(Messages.Fingerprinter_NoArchiving());
@@ -121,6 +126,10 @@ public class Fingerprinter extends Recorder implements Serializable {
 
         // failing to record fingerprints is an error but not fatal
         return true;
+    }
+
+    public BuildStepMonitor getRequiredMonitorService() {
+        return BuildStepMonitor.NONE;
     }
 
     private void record(AbstractBuild<?,?> build, BuildListener listener, Map<String,String> record, final String targets) throws IOException, InterruptedException {
@@ -145,10 +154,9 @@ public class Fingerprinter extends Recorder implements Serializable {
             private static final long serialVersionUID = 1L;
         }
 
-        AbstractProject p = build.getProject();
-        final long buildTimestamp = build.getTimestamp().getTimeInMillis();
+        final long buildTimestamp = build.getTimeInMillis();
 
-        FilePath ws = p.getWorkspace();
+        FilePath ws = build.getWorkspace();
         if(ws==null) {
             listener.error(Messages.Fingerprinter_NoWorkspace());
             build.setResult(Result.FAILURE);
@@ -200,6 +208,7 @@ public class Fingerprinter extends Recorder implements Serializable {
             return Messages.Fingerprinter_DisplayName();
         }
 
+        @Override
         public String getHelpFile() {
             return "/help/project-config/fingerprint.html";
         }
@@ -208,13 +217,12 @@ public class Fingerprinter extends Recorder implements Serializable {
          * Performs on-the-fly validation on the file mask wildcard.
          */
         public FormValidation doCheck(@AncestorInPath AbstractProject project, @QueryParameter String value) throws IOException {
-            return FilePath.validateFileMask(project.getWorkspace(),value);
+            return FilePath.validateFileMask(project.getSomeWorkspace(),value);
         }
 
-        public Publisher newInstance(StaplerRequest req) {
-            return new Fingerprinter(
-                req.getParameter("fingerprint_targets").trim(),
-                req.getParameter("fingerprint_artifacts")!=null);
+        @Override
+        public Publisher newInstance(StaplerRequest req, JSONObject formData) {
+            return req.bindJSON(Fingerprinter.class, formData);
         }
 
         public boolean isApplicable(Class<? extends AbstractProject> jobType) {
@@ -225,19 +233,28 @@ public class Fingerprinter extends Recorder implements Serializable {
     /**
      * Action for displaying fingerprints.
      */
-    public static final class FingerprintAction implements Action {
+    public static final class FingerprintAction implements RunAction {
         private final AbstractBuild build;
 
         /**
          * From file name to the digest.
          */
-        private final Map<String,String> record;
+        private /*almost final*/ ImmutableMap<String,String> record;
 
         private transient WeakReference<Map<String,Fingerprint>> ref;
 
         public FingerprintAction(AbstractBuild build, Map<String, String> record) {
             this.build = build;
-            this.record = record;
+            this.record = ImmutableMap.copyOf(record);
+            onLoad();   // make compact
+        }
+
+        public void add(Map<String,String> moreRecords) {
+            Map<String,String> r = new HashMap<String, String>(record);
+            r.putAll(moreRecords);
+            record = ImmutableMap.copyOf(r);
+            ref = null;
+            onLoad();
         }
 
         public String getIconFileName() {
@@ -260,7 +277,46 @@ public class Fingerprinter extends Recorder implements Serializable {
          * Obtains the raw data.
          */
         public Map<String,String> getRecords() {
-            return Collections.unmodifiableMap(record);
+            return record;
+        }
+
+        public void onLoad() {
+            Run pb = build.getPreviousBuild();
+            if (pb!=null) {
+                FingerprintAction a = pb.getAction(FingerprintAction.class);
+                if (a!=null)
+                    compact(a);
+            }
+        }
+
+        public void onAttached(Run r) {
+        }
+
+        public void onBuildComplete() {
+        }
+
+        /**
+         * Reuse string instances from another {@link FingerprintAction} to reduce memory footprint.
+         */
+        protected void compact(FingerprintAction a) {
+            Map<String,String> intern = new HashMap<String, String>(); // string intern map
+            for (Entry<String, String> e : a.record.entrySet()) {
+                intern.put(e.getKey(),e.getKey());
+                intern.put(e.getValue(),e.getValue());
+            }
+
+            Map<String,String> b = new HashMap<String, String>();
+            for (Entry<String,String> e : record.entrySet()) {
+                String k = intern.get(e.getKey());
+                if (k==null)    k = e.getKey();
+
+                String v = intern.get(e.getValue());
+                if (v==null)    v = e.getValue();
+
+                b.put(k,v);
+            }
+
+            record = ImmutableMap.copyOf(b);
         }
 
         /**
@@ -286,7 +342,7 @@ public class Fingerprinter extends Recorder implements Serializable {
                 }
             }
 
-            m = Collections.unmodifiableMap(m);
+            m = ImmutableMap.copyOf(m);
             ref = new WeakReference<Map<String,Fingerprint>>(m);
             return m;
         }
@@ -303,7 +359,8 @@ public class Fingerprinter extends Recorder implements Serializable {
                 if(bp==null)    continue;       // outside Hudson
                 if(bp.is(build))    continue;   // we are the owner
                 AbstractProject job = bp.getJob();
-                if(job!=null && job.getParent()==build.getParent())
+                if (job==null)  continue;   // no longer exists
+                if (job.getParent()==build.getParent())
                     continue;   // we are the parent of the build owner, that is almost like we are the owner 
 
                 Integer existing = r.get(job);

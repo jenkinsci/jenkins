@@ -54,7 +54,7 @@ public class SwapSpaceMonitor extends NodeMonitor {
         long free = usage.availableSwapSpace;
         free/=1024L;   // convert to KB
         free/=1024L;   // convert to MB
-        if(free>256 || usage.totalSwapSpace/usage.availableSwapSpace<5)
+        if(free>256 || usage.totalSwapSpace<usage.availableSwapSpace*5)
             return free+"MB"; // if we have more than 256MB free or less than 80% filled up, it's OK
 
         // Otherwise considered dangerously low.

@@ -89,6 +89,7 @@ public class TextFile {
         return read().trim();
     }
 
+    @Override
     public String toString() {
         return file.toString();
     }

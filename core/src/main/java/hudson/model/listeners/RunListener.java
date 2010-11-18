@@ -26,14 +26,15 @@ package hudson.model.listeners;
 import hudson.ExtensionPoint;
 import hudson.ExtensionListView;
 import hudson.Extension;
-import hudson.DescriptorExtensionList;
 import hudson.ExtensionList;
-import hudson.scm.RepositoryBrowser;
 import hudson.model.Run;
 import hudson.model.TaskListener;
-import hudson.model.Descriptor;
 import hudson.model.Hudson;
 import hudson.util.CopyOnWriteList;
+import org.jvnet.tiger_types.Types;
+
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
 
 /**
  * Receives notifications about builds.
@@ -53,6 +54,14 @@ public abstract class RunListener<R extends Run> implements ExtensionPoint {
 
     protected RunListener(Class<R> targetType) {
         this.targetType = targetType;
+    }
+
+    protected RunListener() {
+        Type type = Types.getBaseClass(getClass(), RunListener.class);
+        if (type instanceof ParameterizedType)
+            targetType = Types.erasure(Types.getTypeArgument(type,0));
+        else
+            throw new IllegalStateException(getClass()+" uses the raw type for extending RunListener");
     }
 
     /**
@@ -99,7 +108,7 @@ public abstract class RunListener<R extends Run> implements ExtensionPoint {
      * Registers this object as an active listener so that it can start getting
      * callbacks invoked.
      *
-     * @deprecated
+     * @deprecated as of 1.281
      *      Put {@link Extension} on your class to get it auto-registered.
      */
     public void register() {

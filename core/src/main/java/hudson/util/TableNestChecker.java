@@ -30,6 +30,7 @@ import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 import org.apache.commons.jelly.XMLOutput;
 
+import java.util.Locale;
 import java.util.Stack;
 import java.util.Map;
 import java.util.HashMap;
@@ -69,8 +70,9 @@ public class TableNestChecker extends XMLFilterImpl {
         setContentHandler(target);
     }
 
+    @Override
     public void startElement(String uri, String localName, String qName, Attributes atts) throws SAXException {
-        String tagName = localName.toUpperCase();
+        String tagName = localName.toUpperCase(Locale.ENGLISH);
 
         // make sure that this tag occurs in the proper context
         if(!elements.peek().isAllowed(tagName))
@@ -84,6 +86,7 @@ public class TableNestChecker extends XMLFilterImpl {
         super.startElement(uri, localName, qName, atts);
     }
 
+    @Override
     public void endElement(String uri, String localName, String qName) throws SAXException {
         elements.pop();
         tagNames.pop();

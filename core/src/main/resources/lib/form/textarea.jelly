@@ -1,7 +1,7 @@
 <!--
 The MIT License
 
-Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, Johnathon Jamison
+Copyright (c) 2004-2010, Sun Microsystems, Inc., Kohsuke Kawaguchi, Johnathon Jamison, Yahoo! Inc.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -40,6 +40,9 @@ THE SOFTWARE.
       will be set as the initial value automatically,
       which is the recommended approach.
     </st:attribute>
+    <st:attribute name="default">
+      The default value of the text box, in case both @value is and 'instance[field]' is null.
+    </st:attribute>
     <st:attribute name="checkUrl">
       If specified, the value entered in this input field will be checked (via AJAX)
       against this URL, and errors will be rendered under the text field.
@@ -52,10 +55,10 @@ THE SOFTWARE.
   <f:prepareDatabinding />
   <textarea id="${attrs.id}" style="${attrs.style}"
             name ="${attrs.name ?: '_.'+attrs.field}"
-            class="setting-input ${checkUrl!=null?'validated':''}"
-            checkUrl="${checkUrl}"
+            class="setting-input ${attrs.checkUrl!=null?'validated':''} ${attrs.class}"
+            checkUrl="${attrs.checkUrl}"
             rows="${h.determineRows(attrs.value)}">
-    <st:out value="${attrs.value ?: instance[attrs.field]}" />
+    <st:out value="${attrs.value ?: instance[attrs.field] ?: attrs.default}" />
   </textarea>
   <!-- resize handle -->
   <div class="textarea-handle"/>

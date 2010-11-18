@@ -45,7 +45,7 @@ import java.util.Arrays;
  * If the writing side flush, the reading side should see everything
  * written by then, without blocking (even if this happens outside the 3-byte boundary)
  * <li>
- * Readinh side won't block unnecessarily. 
+ * Reading side won't block unnecessarily. 
  * </ol>
  *
  * @author Kohsuke Kawaguchi

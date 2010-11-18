@@ -1,7 +1,8 @@
 /*
  * The MIT License
  * 
- * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi
+ * Copyright (c) 2004-2010, Sun Microsystems, Inc., Kohsuke Kawaguchi,
+ * Tom Huybrechts, Alan Harder
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,18 +24,25 @@
  */
 package hudson.model;
 
+import hudson.security.AccessControlled;
+import hudson.views.ViewsTabBar;
+
 import java.io.IOException;
 import java.util.Collection;
 
 /**
  * Container of {@link View}s.
  *
- * <h2>STILL EXPERIMENTAL: DO NOT IMPLEMENT</h2>
- * 
  * @author Kohsuke Kawaguchi
  * @since 1.269
  */
-public interface ViewGroup extends Saveable, ModelObject {
+public interface ViewGroup extends Saveable, ModelObject, AccessControlled {
+    /**
+     * Determine whether a view may be deleted.
+     * @since 1.365
+     */
+    boolean canDelete(View view);
+
     /**
      * Deletes a view in this group.
      */
@@ -71,4 +79,14 @@ public interface ViewGroup extends Saveable, ModelObject {
      * {@linkplain Hudson#checkGoodName(String) legal view name}.
      */
     void onViewRenamed(View view, String oldName, String newName);
+
+    /**
+     * Gets the TabBar for the views.
+     *
+     * TabBar for views can be provided by extension. Only one TabBar can be active
+     * at a given time (Selectable by user in the global Configuration page).
+     * Default TabBar is provided by Hudson Platform.
+     * @since 1.381
+     */
+    ViewsTabBar getViewsTabBar();
 }

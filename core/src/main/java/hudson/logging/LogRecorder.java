@@ -25,10 +25,12 @@ package hudson.logging;
 
 import com.thoughtworks.xstream.XStream;
 import hudson.BulkChange;
+import hudson.Util;
 import hudson.XmlFile;
 import hudson.model.AbstractModelObject;
 import hudson.model.Hudson;
 import hudson.model.Saveable;
+import hudson.model.listeners.SaveableListener;
 import hudson.util.CopyOnWriteList;
 import hudson.util.RingBufferLogHandler;
 import hudson.util.XStream2;
@@ -42,6 +44,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.List;
 import java.util.Arrays;
+import java.util.Locale;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
@@ -95,7 +98,7 @@ public class LogRecorder extends AbstractModelObject implements Saveable {
 
         @DataBoundConstructor
         public Target(String name, String level) {
-            this(name,Level.parse(level.toUpperCase()));
+            this(name,Level.parse(level.toUpperCase(Locale.ENGLISH)));
         }
 
         public Level getLevel() {
@@ -105,7 +108,8 @@ public class LogRecorder extends AbstractModelObject implements Saveable {
         public boolean includes(LogRecord r) {
             if(r.getLevel().intValue() < level)
                 return false;   // below the threshold
-            if(!r.getLoggerName().startsWith(name))
+            String logName = r.getLoggerName();
+            if(logName==null || !logName.startsWith(name))
                 return false;   // not within this logger
 
             String rest = r.getLoggerName().substring(name.length());
@@ -155,12 +159,16 @@ public class LogRecorder extends AbstractModelObject implements Saveable {
     public synchronized void doConfigSubmit( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
         JSONObject src = req.getSubmittedForm();
 
-        String newName = src.getString("name");
+        String newName = src.getString("name"), redirect = ".";
+        XmlFile oldFile = null;
         if(!name.equals(newName)) {
+            Hudson.checkGoodName(newName);
+            oldFile = getConfigFile();
             // rename
             getParent().logRecorders.remove(name);
             this.name = newName;
             getParent().logRecorders.put(name,this);
+            redirect = "../" + Util.rawEncode(newName) + '/';
         }
 
         List<Target> newTargets = req.bindJSONToList(Target.class, src.get("targets"));
@@ -169,7 +177,8 @@ public class LogRecorder extends AbstractModelObject implements Saveable {
         targets.replaceBy(newTargets);
 
         save();
-        rsp.sendRedirect2(".");
+        if (oldFile!=null) oldFile.delete();
+        rsp.sendRedirect2(redirect);
     }
 
     /**
@@ -187,6 +196,7 @@ public class LogRecorder extends AbstractModelObject implements Saveable {
     public synchronized void save() throws IOException {
         if(BulkChange.contains(this))   return;
         getConfigFile().write(this);
+        SaveableListener.fireOnChange(this, getConfigFile());
     }
 
     /**
@@ -196,6 +206,13 @@ public class LogRecorder extends AbstractModelObject implements Saveable {
         requirePOST();
         getConfigFile().delete();
         getParent().logRecorders.remove(name);
+        // Disable logging for all our targets,
+        // then reenable all other loggers in case any also log the same targets
+        for (Target t : targets)
+            t.getLogger().setLevel(null);
+        for (LogRecorder log : getParent().logRecorders.values())
+            for (Target t : log.targets)
+                t.enable();
         rsp.sendRedirect2("..");
     }
 

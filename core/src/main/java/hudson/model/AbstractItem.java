@@ -1,7 +1,8 @@
 /*
  * The MIT License
  * 
- * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, Daniel Dyer, Tom Huybrechts
+ * Copyright (c) 2004-2010, Sun Microsystems, Inc., Kohsuke Kawaguchi,
+ * Daniel Dyer, Tom Huybrechts
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -27,11 +28,15 @@ import hudson.XmlFile;
 import hudson.Util;
 import hudson.Functions;
 import hudson.BulkChange;
-import hudson.DescriptorExtensionList;
-import hudson.util.Iterators;
+import hudson.cli.declarative.CLIMethod;
+import hudson.cli.declarative.CLIResolver;
+import hudson.model.listeners.ItemListener;
+import hudson.model.listeners.SaveableListener;
 import hudson.security.AccessControlled;
 import hudson.security.Permission;
 import hudson.security.ACL;
+import org.apache.tools.ant.taskdefs.Copy;
+import org.apache.tools.ant.types.FileSet;
 import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.export.ExportedBean;
 
@@ -43,9 +48,10 @@ import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 import org.kohsuke.stapler.Stapler;
 import org.kohsuke.stapler.HttpDeletable;
+import org.kohsuke.args4j.Argument;
+import org.kohsuke.args4j.CmdLineException;
 
 import javax.servlet.ServletException;
-import static javax.servlet.http.HttpServletResponse.SC_BAD_REQUEST;
 
 /**
  * Partial default implementation of {@link Item}.
@@ -71,6 +77,10 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
     protected AbstractItem(ItemGroup parent, String name) {
         this.parent = parent;
         doSetName(name);
+    }
+
+    public void onCreatedFromScratch() {
+        // noop
     }
 
     @Exported(visibility=999)
@@ -103,8 +113,9 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
     /**
      * Sets the project description HTML.
      */
-    public void setDescription(String description) {
+    public void setDescription(String description) throws IOException {
         this.description = description;
+        save();
     }
 
     /**
@@ -113,6 +124,121 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
      */
     protected void doSetName(String name) {
         this.name = name;
+    }
+
+    /**
+     * Renames this item.
+     * Not all the Items need to support this operation, but if you decide to do so,
+     * you can use this method.
+     */
+    protected void renameTo(String newName) throws IOException {
+        // always synchronize from bigger objects first
+        final ItemGroup parent = getParent();
+        synchronized (parent) {
+            synchronized (this) {
+                // sanity check
+                if (newName == null)
+                    throw new IllegalArgumentException("New name is not given");
+
+                // noop?
+                if (this.name.equals(newName))
+                    return;
+
+                Item existing = parent.getItem(newName);
+                if (existing != null && existing!=this)
+                    // the look up is case insensitive, so we need "existing!=this"
+                    // to allow people to rename "Foo" to "foo", for example.
+                    // see http://www.nabble.com/error-on-renaming-project-tt18061629.html
+                    throw new IllegalArgumentException("Job " + newName
+                            + " already exists");
+
+                String oldName = this.name;
+                File oldRoot = this.getRootDir();
+
+                doSetName(newName);
+                File newRoot = this.getRootDir();
+
+                boolean success = false;
+
+                try {// rename data files
+                    boolean interrupted = false;
+                    boolean renamed = false;
+
+                    // try to rename the job directory.
+                    // this may fail on Windows due to some other processes
+                    // accessing a file.
+                    // so retry few times before we fall back to copy.
+                    for (int retry = 0; retry < 5; retry++) {
+                        if (oldRoot.renameTo(newRoot)) {
+                            renamed = true;
+                            break; // succeeded
+                        }
+                        try {
+                            Thread.sleep(500);
+                        } catch (InterruptedException e) {
+                            // process the interruption later
+                            interrupted = true;
+                        }
+                    }
+
+                    if (interrupted)
+                        Thread.currentThread().interrupt();
+
+                    if (!renamed) {
+                        // failed to rename. it must be that some lengthy
+                        // process is going on
+                        // to prevent a rename operation. So do a copy. Ideally
+                        // we'd like to
+                        // later delete the old copy, but we can't reliably do
+                        // so, as before the VM
+                        // shuts down there might be a new job created under the
+                        // old name.
+                        Copy cp = new Copy();
+                        cp.setProject(new org.apache.tools.ant.Project());
+                        cp.setTodir(newRoot);
+                        FileSet src = new FileSet();
+                        src.setDir(getRootDir());
+                        cp.addFileset(src);
+                        cp.setOverwrite(true);
+                        cp.setPreserveLastModified(true);
+                        cp.setFailOnError(false); // keep going even if
+                                                    // there's an error
+                        cp.execute();
+
+                        // try to delete as much as possible
+                        try {
+                            Util.deleteRecursive(oldRoot);
+                        } catch (IOException e) {
+                            // but ignore the error, since we expect that
+                            e.printStackTrace();
+                        }
+                    }
+
+                    success = true;
+                } finally {
+                    // if failed, back out the rename.
+                    if (!success)
+                        doSetName(oldName);
+                }
+
+                callOnRenamed(newName, parent, oldName);
+
+                for (ItemListener l : ItemListener.all())
+                    l.onRenamed(this, oldName, newName);
+            }
+        }
+    }
+
+    /**
+     * A pointless function to work around what appears to be a HotSpot problem. See HUDSON-5756 and bug 6933067
+     * on BugParade for more details.
+     */
+    private void callOnRenamed(String newName, ItemGroup parent, String oldName) throws IOException {
+        try {
+            parent.onRenamed(this, oldName, newName);
+        } catch (AbstractMethodError _) {
+            // ignore
+        }
     }
 
     /**
@@ -166,7 +292,7 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
     }
 
     public String getShortUrl() {
-        return getParent().getUrlChildPrefix()+'/'+getName()+'/';
+        return getParent().getUrlChildPrefix()+'/'+Util.rawEncode(getName())+'/';
     }
 
     public String getSearchUrl() {
@@ -178,7 +304,7 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
         StaplerRequest request = Stapler.getCurrentRequest();
         if(request==null)
             throw new IllegalStateException("Not processing a HTTP request");
-        return Util.encode(request.getRootPath()+'/'+getUrl());
+        return Util.encode(Hudson.getInstance().getRootUrl()+getUrl());
     }
 
     /**
@@ -215,6 +341,7 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
     public synchronized void save() throws IOException {
         if(BulkChange.contains(this))   return;
         getConfigFile().write(this);
+        SaveableListener.fireOnChange(this, getConfigFile());
     }
 
     public final XmlFile getConfigFile() {
@@ -233,22 +360,19 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
 
         req.setCharacterEncoding("UTF-8");
         setDescription(req.getParameter("description"));
-        save();
         rsp.sendRedirect(".");  // go to the top page
     }
 
     /**
      * Deletes this item.
      */
+    @CLIMethod(name="delete-job")
     public void doDoDelete( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException, InterruptedException {
         checkPermission(DELETE);
-        if(!"POST".equals(req.getMethod())) {
-            rsp.setStatus(SC_BAD_REQUEST);
-            sendError("Delete request has to be POST",req,rsp);
-            return;
-        }
+        requirePOST();
         delete();
-        rsp.sendRedirect2(req.getContextPath()+"/"+getParent().getUrl());
+        if (rsp != null) // null for CLI
+            rsp.sendRedirect2(req.getContextPath()+"/"+getParent().getUrl());
     }
 
     public void delete( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
@@ -276,10 +400,23 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
      * Does the real job of deleting the item.
      */
     protected void performDelete() throws IOException, InterruptedException {
+        getConfigFile().delete();
         Util.deleteRecursive(getRootDir());
     }
 
     public String toString() {
         return super.toString()+'['+getFullName()+']';
+    }
+
+    /**
+     * Used for CLI binding.
+     */
+    @CLIResolver
+    public static AbstractItem resolveForCLI(
+            @Argument(required=true,metaVar="NAME",usage="Job name") String name) throws CmdLineException {
+        AbstractItem item = Hudson.getInstance().getItemByFullName(name, AbstractItem.class);
+        if (item==null)
+            throw new CmdLineException(null,Messages.AbstractItem_NoSuchJobExists(name,AbstractProject.findNearest(name).getFullName()));
+        return item;
     }
 }

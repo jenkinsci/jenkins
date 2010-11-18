@@ -45,9 +45,13 @@ public abstract class AbstractMarkupText {
 
     /**
      * Returns the plain text portion of this {@link MarkupText} without
-     * any markup.
+     * any markup, nor any escape.
      */
     public abstract String getText();
+
+    public char charAt(int idx) {
+        return getText().charAt(idx);
+    }
 
     /**
      * Length of the plain text.
@@ -55,6 +59,14 @@ public abstract class AbstractMarkupText {
     public final int length() {
         return getText().length();
     }
+
+    /**
+     * Returns a subtext.
+     *
+     * @param end
+     *      If negative, -N means "trim the last N-1 chars". That is, (s,-1) is the same as (s,length)
+     */
+    public abstract MarkupText.SubText subText(int start, int end);
 
     /**
      * Adds a start tag and end tag at the specified position.
@@ -66,10 +78,34 @@ public abstract class AbstractMarkupText {
     public abstract void addMarkup( int startPos, int endPos, String startTag, String endTag );
 
     /**
+     * Inserts an A tag that surrounds the given position.
+     *
+     * @since 1.349
+     */
+    public void addHyperlink( int startPos, int endPos, String url ) {
+        addMarkup(startPos,endPos,"<a href='"+url+"'>","</a>");
+    }
+
+    /**
      * Adds a start tag and end tag around the entire text
      */
     public final void wrapBy(String startTag, String endTag) {
         addMarkup(0,length(),startTag,endTag);
+    }
+
+    /**
+     * Find the first occurrence of the given pattern in this text, or null.
+     *
+     * @since 1.349
+     */
+    public MarkupText.SubText findToken(Pattern pattern) {
+        String text = getText();
+        Matcher m = pattern.matcher(text);
+
+        if(m.find())
+            return createSubText(m);
+
+        return null;
     }
 
     /**

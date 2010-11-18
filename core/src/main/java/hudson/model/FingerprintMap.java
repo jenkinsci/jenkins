@@ -1,7 +1,7 @@
 /*
  * The MIT License
  * 
- * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi
+ * Copyright (c) 2004-2010, Sun Microsystems, Inc., Kohsuke Kawaguchi
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,10 +24,12 @@
 package hudson.model;
 
 import hudson.Util;
+import hudson.diagnosis.OldDataMonitor;
 import hudson.util.KeyedDataStorage;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Locale;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -44,7 +46,7 @@ import java.util.concurrent.ConcurrentHashMap;
 public final class FingerprintMap extends KeyedDataStorage<Fingerprint,FingerprintParams> {
 
     /**
-     * @deprecated
+     * @deprecated since 2007-03-26.
      *      Some old version of Hudson incorrectly serialized this information to the disk.
      *      So we need this field to be here for such configuration to be read correctly.
      *      This field is otherwise no longer in use.
@@ -55,7 +57,7 @@ public final class FingerprintMap extends KeyedDataStorage<Fingerprint,Fingerpri
      * Returns true if there's some data in the fingerprint database.
      */
     public boolean isReady() {
-        return new File( Hudson.getInstance().getRootDir(),"fingerprints").exists();
+        return new File(Hudson.getInstance().getRootDir(),"fingerprints").exists();
     }
 
     /**
@@ -72,11 +74,16 @@ public final class FingerprintMap extends KeyedDataStorage<Fingerprint,Fingerpri
         return super.getOrCreate(md5sum, new FingerprintParams(build,fileName));
     }
 
+    public Fingerprint getOrCreate(Run build, String fileName, String md5sum) throws IOException {
+        return super.getOrCreate(md5sum, new FingerprintParams(build,fileName));
+    }
+
+    @Override
     protected Fingerprint get(String md5sum, boolean createIfNotExist, FingerprintParams createParams) throws IOException {
         // sanity check
         if(md5sum.length()!=32)
             return null;    // illegal input
-        md5sum = md5sum.toLowerCase();
+        md5sum = md5sum.toLowerCase(Locale.ENGLISH);
 
         return super.get(md5sum,createIfNotExist,createParams);
     }
@@ -95,16 +102,21 @@ public final class FingerprintMap extends KeyedDataStorage<Fingerprint,Fingerpri
     protected Fingerprint load(String key) throws IOException {
         return Fingerprint.load(toByteArray(key));
     }
+
+    private Object readResolve() {
+        if (core != null) OldDataMonitor.report(Hudson.getInstance(), "1.91");
+        return this;
+    }
 }
 
 class FingerprintParams {
     /**
      * Null if the build isn't claiming to be the owner.
      */
-    final AbstractBuild build;
+    final Run build;
     final String fileName;
 
-    public FingerprintParams(AbstractBuild build, String fileName) {
+    public FingerprintParams(Run build, String fileName) {
         this.build = build;
         this.fileName = fileName;
 

@@ -26,8 +26,8 @@ package hudson.util;
 import static hudson.Util.fixEmpty;
 import hudson.EnvVars;
 import hudson.FilePath;
+import hudson.ProxyConfiguration;
 import hudson.Util;
-import hudson.tasks.JavadocArchiver;
 import hudson.model.AbstractProject;
 import hudson.model.Hudson;
 import hudson.model.Item;
@@ -41,6 +41,7 @@ import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLConnection;
+import java.util.Locale;
 
 import javax.servlet.ServletException;
 
@@ -252,7 +253,7 @@ public abstract class FormFieldValidator {
          */
         protected BufferedReader open(URL url) throws IOException {
             // use HTTP content type to find out the charset.
-            URLConnection con = url.openConnection();
+            URLConnection con = ProxyConfiguration.open(url);
             if (con == null) { // XXX is this even permitted by URL.openConnection?
                 throw new IOException(url.toExternalForm());
             }
@@ -294,7 +295,7 @@ public abstract class FormFieldValidator {
          */
         private String getCharset(URLConnection con) {
             for( String t : con.getContentType().split(";") ) {
-                t = t.trim().toLowerCase();
+                t = t.trim().toLowerCase(Locale.ENGLISH);
                 if(t.startsWith("charset="))
                     return t.substring(8);
             }
@@ -389,7 +390,7 @@ public abstract class FormFieldValidator {
          * The base directory from which the path name is resolved.
          */
         protected FilePath getBaseDirectory(AbstractProject<?,?> p) {
-            return p.getWorkspace();
+            return p.getSomeWorkspace();
         }
     }
 
@@ -481,7 +482,7 @@ public abstract class FormFieldValidator {
          * The base directory from which the path name is resolved.
          */
         protected FilePath getBaseDirectory(AbstractProject<?,?> p) {
-            return p.getWorkspace();
+            return p.getSomeWorkspace();
         }
     }
 

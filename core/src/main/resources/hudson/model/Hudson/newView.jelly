@@ -1,7 +1,7 @@
 <!--
 The MIT License
 
-Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, id:cactusman
+Copyright (c) 2004-2010, Sun Microsystems, Inc., Kohsuke Kawaguchi, id:cactusman, Yahoo! Inc.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -32,14 +32,14 @@ THE SOFTWARE.
     <l:main-panel>
       <f:form method="post" action="createView" name="createView">
         <f:entry title="${%View name}">
-          <f:textbox id="name" name="name" checkUrl="'${rootURL}/viewExistsCheck?value='+escape(this.value)"
+          <f:textbox id="name" name="name" checkUrl="'${rootURL}/viewExistsCheck?value='+encodeURIComponent(this.value)"
                      onchange="updateOk(this.form)" onkeyup="updateOk(this.form)" />
           <script>
             $('name').focus();
           </script>
         </f:entry>
 
-        <j:getStatic var="views" className="hudson.model.View" field="LIST" />
+        <j:invokeStatic var="views" className="hudson.model.View" method="all" />
         <j:forEach var="d" items="${views}">
           <j:if test="${d.isInstantiable()}">
             <f:block>

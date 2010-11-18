@@ -35,6 +35,7 @@
  */
 package hudson.util;
 
+import java.util.Locale;
 import java.util.StringTokenizer;
 
 /**
@@ -78,7 +79,7 @@ public class VersionNumber implements Comparable<VersionNumber> {
 
         int i=0;
         while( tokens.hasMoreTokens() ) {
-            String token = tokens.nextToken().toLowerCase();
+            String token = tokens.nextToken().toLowerCase(Locale.ENGLISH);
             if(token.equals("*")) {
                 digits[i++] = 1000;
             } else
@@ -98,6 +99,11 @@ public class VersionNumber implements Comparable<VersionNumber> {
         }
     }
 
+    public int digit(int idx) {
+        return digits[idx];
+    }
+
+    @Override
     public String toString() {
         StringBuffer buf = new StringBuffer();
         for( int i=0; i<digits.length; i++ ) {
@@ -116,11 +122,13 @@ public class VersionNumber implements Comparable<VersionNumber> {
     }
 
 
+    @Override
     public boolean equals( Object o ) {
         if (!(o instanceof VersionNumber))  return false;
         return compareTo((VersionNumber)o)==0;
     }
 
+    @Override
     public int hashCode() {
         int x=0;
         for (int i : digits)

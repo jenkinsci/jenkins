@@ -1,7 +1,7 @@
 /*
  * The MIT License
  * 
- * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, Yahoo! Inc., Peter Hayes, Tom Huybrechts
+ * Copyright (c) 2004-2010, Sun Microsystems, Inc., Kohsuke Kawaguchi, Yahoo! Inc., Peter Hayes, Tom Huybrechts
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,6 +23,7 @@
  */
 package hudson.security;
 
+import hudson.diagnosis.OldDataMonitor;
 import hudson.model.AbstractProject;
 import hudson.model.Item;
 import hudson.model.Job;
@@ -32,6 +33,7 @@ import hudson.model.Hudson;
 import hudson.model.Run;
 import hudson.Extension;
 import hudson.util.FormValidation;
+import hudson.util.RobustReflectionConverter;
 
 import java.util.Arrays;
 import java.util.HashMap;
@@ -39,7 +41,10 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.Collections;
 import java.util.Map.Entry;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.io.IOException;
 
 import net.sf.json.JSONObject;
@@ -59,20 +64,13 @@ import javax.servlet.ServletException;
 
 /**
  * {@link JobProperty} to associate ACL for each project.
+ *
+ * <p>
+ * Once created (and initialized), this object becomes immutable.
  */
 public class AuthorizationMatrixProperty extends JobProperty<Job<?, ?>> {
 
 	private transient SidACL acl = new AclImpl();
-
-	private boolean useProjectSecurity;
-
-	public boolean isUseProjectSecurity() {
-		return useProjectSecurity;
-	}
-
-	public void setUseProjectSecurity(boolean useProjectSecurity) {
-		this.useProjectSecurity = useProjectSecurity;
-	}
 
 	/**
 	 * List up all permissions that are granted.
@@ -83,6 +81,15 @@ public class AuthorizationMatrixProperty extends JobProperty<Job<?, ?>> {
 	private final Map<Permission, Set<String>> grantedPermissions = new HashMap<Permission, Set<String>>();
 
 	private Set<String> sids = new HashSet<String>();
+
+    private AuthorizationMatrixProperty() {
+    }
+
+    public AuthorizationMatrixProperty(Map<Permission, Set<String>> grantedPermissions) {
+        // do a deep copy to be safe
+        for (Entry<Permission,Set<String>> e : grantedPermissions.entrySet())
+            this.grantedPermissions.put(e.getKey(),new HashSet<String>(e.getValue()));
+    }
 
 	public Set<String> getGroups() {
 		return sids;
@@ -104,7 +111,17 @@ public class AuthorizationMatrixProperty extends JobProperty<Job<?, ?>> {
 		return Arrays.asList(data);
 	}
 
-	/**
+    /**
+     * Returns all the (Permission,sid) pairs that are granted, in the multi-map form.
+     *
+     * @return
+     *      read-only. never null.
+     */
+    public Map<Permission,Set<String>> getGrantedPermissions() {
+        return Collections.unmodifiableMap(grantedPermissions);
+    }
+
+    /**
 	 * Adds to {@link #grantedPermissions}. Use of this method should be limited
 	 * during construction, as this object itself is considered immutable once
 	 * populated.
@@ -118,24 +135,22 @@ public class AuthorizationMatrixProperty extends JobProperty<Job<?, ?>> {
 	}
 
     @Extension
-	public static class DescriptorImpl extends JobPropertyDescriptor {
+    public static class DescriptorImpl extends JobPropertyDescriptor {
 		@Override
-		public JobProperty<?> newInstance(StaplerRequest req,
-				JSONObject formData) throws FormException {
-            AuthorizationMatrixProperty amp = new AuthorizationMatrixProperty();
+		public JobProperty<?> newInstance(StaplerRequest req, JSONObject formData) throws FormException {
             formData = formData.getJSONObject("useProjectSecurity");
+            if (formData.isNullObject())
+                return null;
 
-            if(!formData.isNullObject()) {
-                amp.setUseProjectSecurity(true);
-                for (Map.Entry<String, Object> r : (Set<Map.Entry<String, Object>>) formData.getJSONObject("data").entrySet()) {
-                    String sid = r.getKey();
-                    if (r.getValue() instanceof JSONObject) {
-                        for (Map.Entry<String, Boolean> e : (Set<Map.Entry<String, Boolean>>) ((JSONObject) r
-                                .getValue()).entrySet()) {
-                            if (e.getValue()) {
-                                Permission p = Permission.fromId(e.getKey());
-                                amp.add(p, sid);
-                            }
+            AuthorizationMatrixProperty amp = new AuthorizationMatrixProperty();
+            for (Map.Entry<String, Object> r : (Set<Map.Entry<String, Object>>) formData.getJSONObject("data").entrySet()) {
+                String sid = r.getKey();
+                if (r.getValue() instanceof JSONObject) {
+                    for (Map.Entry<String, Boolean> e : (Set<Map.Entry<String, Boolean>>) ((JSONObject) r
+                            .getValue()).entrySet()) {
+                        if (e.getValue()) {
+                            Permission p = Permission.fromId(e.getKey());
+                            amp.add(p, sid);
                         }
                     }
                 }
@@ -159,10 +174,10 @@ public class AuthorizationMatrixProperty extends JobProperty<Job<?, ?>> {
 		}
 
         public boolean showPermission(Permission p) {
-            return p!=Item.CREATE;
+            return p.getEnabled() && p!=Item.CREATE;
         }
 
-        public FormValidation doCheckName(@AncestorInPath AbstractProject project, @QueryParameter String value) throws IOException, ServletException {
+        public FormValidation doCheckName(@AncestorInPath Job project, @QueryParameter String value) throws IOException, ServletException {
             return GlobalMatrixAuthorizationStrategy.DESCRIPTOR.doCheckName(value, project, AbstractProject.CONFIGURE);
         }
     }
@@ -173,12 +188,6 @@ public class AuthorizationMatrixProperty extends JobProperty<Job<?, ?>> {
 				return true;
 			return null;
 		}
-	}
-
-	private Object readResolve() {
-        GlobalMatrixAuthorizationStrategy.migrateHudson2324(grantedPermissions);
-		acl = new AclImpl();
-		return this;
 	}
 
 	public SidACL getACL() {
@@ -205,15 +214,17 @@ public class AuthorizationMatrixProperty extends JobProperty<Job<?, ?>> {
         return set != null && set.contains(sid);
     }
     
-	/**
-	 * Works like {@link #add(Permission, String)} but takes both parameters
-	 * from a single string of the form <tt>PERMISSIONID:sid</tt>
-	 */
-	private void add(String shortForm) {
-		int idx = shortForm.indexOf(':');
-		add(Permission.fromId(shortForm.substring(0, idx)), shortForm
-				.substring(idx + 1));
-	}
+    /**
+     * Works like {@link #add(Permission, String)} but takes both parameters
+     * from a single string of the form <tt>PERMISSIONID:sid</tt>
+     */
+    private void add(String shortForm) {
+        int idx = shortForm.indexOf(':');
+        Permission p = Permission.fromId(shortForm.substring(0, idx));
+        if (p==null)
+            throw new IllegalArgumentException("Failed to parse '"+shortForm+"' --- no such permission");
+        add(p, shortForm.substring(idx + 1));
+    }
 
 	/**
 	 * Persist {@link ProjectMatrixAuthorizationStrategy} as a list of IDs that
@@ -228,20 +239,15 @@ public class AuthorizationMatrixProperty extends JobProperty<Job<?, ?>> {
 				MarshallingContext context) {
 			AuthorizationMatrixProperty amp = (AuthorizationMatrixProperty) source;
 
-			writer.startNode("useProjectSecurity");
-			context.convertAnother(Boolean.valueOf(amp.isUseProjectSecurity()));
-			writer.endNode();
-			
 			for (Entry<Permission, Set<String>> e : amp.grantedPermissions
 					.entrySet()) {
 				String p = e.getKey().getId();
 				for (String sid : e.getValue()) {
 					writer.startNode("permission");
-					context.convertAnother(p + ':' + sid);
+					writer.setValue(p + ':' + sid);
 					writer.endNode();
 				}
 			}
-
 		}
 
 		public Object unmarshal(HierarchicalStreamReader reader,
@@ -251,20 +257,25 @@ public class AuthorizationMatrixProperty extends JobProperty<Job<?, ?>> {
 			String prop = reader.peekNextChild();
 			if (prop!=null && prop.equals("useProjectSecurity")) {
 				reader.moveDown();
-				Boolean useSecurity = (Boolean) context.convertAnother(as, Boolean.class);
-				as.setUseProjectSecurity(useSecurity.booleanValue());
+				reader.getValue(); // we used to use this but not any more.
 				reader.moveUp();
 			}
-			while (reader.hasMoreChildren()) {
-				reader.moveDown();
-				String id = (String) context.convertAnother(as, String.class);
-				as.add(id);
-				reader.moveUp();
-			}
+            while (reader.hasMoreChildren()) {
+                reader.moveDown();
+                try {
+                    as.add(reader.getValue());
+                } catch (IllegalArgumentException ex) {
+                     Logger.getLogger(AuthorizationMatrixProperty.class.getName())
+                           .log(Level.WARNING,"Skipping a non-existent permission",ex);
+                     RobustReflectionConverter.addErrorInContext(context, ex);
+                }
+                reader.moveUp();
+            }
 
-            GlobalMatrixAuthorizationStrategy.migrateHudson2324(as.grantedPermissions);
+            if (GlobalMatrixAuthorizationStrategy.migrateHudson2324(as.grantedPermissions))
+                OldDataMonitor.report(context, "1.301");
 
-			return as;
-		}
-	}
+            return as;
+        }
+    }
 }

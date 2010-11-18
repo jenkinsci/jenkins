@@ -43,6 +43,11 @@ public interface CliEntryPoint {
     int main(List<String> args, Locale locale, InputStream stdin, OutputStream stdout, OutputStream stderr);
 
     /**
+     * Does the named command exist?
+     */
+    boolean hasCommand(String name);
+
+    /**
      * Returns {@link #VERSION}, so that the client and the server can detect version incompatibility
      * gracefully.
      */

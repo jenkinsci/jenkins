@@ -1,7 +1,7 @@
 /*
  * The MIT License
  * 
- * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi
+ * Copyright (c) 2004-2010, Sun Microsystems, Inc., Kohsuke Kawaguchi
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,22 +23,23 @@
  */
 package hudson.model;
 
+import hudson.RelativePath;
 import hudson.XmlFile;
 import hudson.BulkChange;
 import hudson.Util;
 import static hudson.Util.singleQuote;
-import hudson.scm.CVSSCM;
+import hudson.diagnosis.OldDataMonitor;
+import hudson.model.listeners.SaveableListener;
+import hudson.util.ReflectionUtils;
+import hudson.util.ReflectionUtils.Parameter;
+import hudson.views.ListViewColumn;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
-import org.kohsuke.stapler.StaplerRequest;
-import org.kohsuke.stapler.Stapler;
-import org.kohsuke.stapler.StaplerResponse;
-import org.kohsuke.stapler.Ancestor;
+import org.kohsuke.stapler.*;
 import org.springframework.util.StringUtils;
 import org.jvnet.tiger_types.Types;
 import org.apache.commons.io.IOUtils;
 
-import javax.servlet.http.HttpServletRequest;
 import static javax.servlet.http.HttpServletResponse.SC_NOT_FOUND;
 import javax.servlet.ServletException;
 import javax.servlet.RequestDispatcher;
@@ -77,21 +78,20 @@ import java.beans.Introspector;
  * configuration/extensibility mechanism.
  *
  * <p>
- * For example, Take the CVS support as an example, which is implemented
- * in {@link CVSSCM} class. Whenever a job is configured with CVS, a new
- * {@link CVSSCM} instance is created with the per-job configuration
+ * Take the list view support as an example, which is implemented
+ * in {@link ListView} class. Whenever a new view is created, a new
+ * {@link ListView} instance is created with the configuration
  * information. This instance gets serialized to XML, and this instance
- * will be called to perform CVS operations for that job. This is the job
+ * will be called to render the view page. This is the job
  * of {@link Describable} &mdash; each instance represents a specific
- * configuration of the CVS support (branch, CVSROOT, etc.)
+ * configuration of a view (what projects are in it, regular expression, etc.)
  *
  * <p>
- * For Hudson to create such configured {@link CVSSCM} instance, Hudson
- * needs another object that captures the metadata of {@link CVSSCM},
- * and that is what a {@link Descriptor} is for. {@link CVSSCM} class
+ * For Hudson to create such configured {@link ListView} instance, Hudson
+ * needs another object that captures the metadata of {@link ListView},
+ * and that is what a {@link Descriptor} is for. {@link ListView} class
  * has a singleton descriptor, and this descriptor helps render
- * the configuration form, remember system-wide configuration (such as
- * where <tt>cvs.exe</tt> is), and works as a factory.
+ * the configuration form, remember system-wide configuration, and works as a factory.
  *
  * <p>
  * {@link Descriptor} also usually have its associated views.
@@ -118,7 +118,7 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable {
      * Going forward Hudson simply persists all the non-transient fields
      * of {@link Descriptor}, just like others, so this is pointless.
      *
-     * @deprecated
+     * @deprecated since 2006-11-16
      */
     @Deprecated
     private transient Map<String,Object> properties;
@@ -128,12 +128,12 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable {
      */
     public transient final Class<? extends T> clazz;
 
-    private transient final Map<String,Method> checkMethods = new ConcurrentHashMap<String,Method>();
+    private transient final Map<String,String> checkMethods = new ConcurrentHashMap<String,String>();
 
     /**
-     * Lazily computed list of properties on {@link #clazz}.
+     * Lazily computed list of properties on {@link #clazz} and on the descriptor itself.
      */
-    private transient volatile Map<String, PropertyType> propertyTypes;
+    private transient volatile Map<String, PropertyType> propertyTypes,globalPropertyTypes;
 
     /**
      * Represents a readable property on {@link Describable}.
@@ -188,12 +188,11 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable {
          * Returns {@link Descriptor} whose 'clazz' is the same as {@link #getItemType() the item type}.
          */
         public Descriptor getItemTypeDescriptor() {
-            Class itemType = getItemType();
-            for( Descriptor d : Hudson.getInstance().getExtensionList(Descriptor.class) )
-                if(d.clazz==itemType)
-                    return d;
-            return null;
+            return Hudson.getInstance().getDescriptor(getItemType());
+        }
 
+        public Descriptor getItemTypeDescriptorOrDie() {
+            return Hudson.getInstance().getDescriptorOrDie(getItemType());
         }
     }
 
@@ -225,6 +224,18 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable {
             if(!t.isAssignableFrom(clazz))
                 throw new AssertionError("Outer class "+clazz+" of "+getClass()+" is not assignable to "+t+". Perhaps wrong outer class?");
         }
+
+        // detect a type error. this Descriptor is supposed to be returned from getDescriptor(), so make sure its type match up.
+        // this prevents a bug like http://www.nabble.com/Creating-a-new-parameter-Type-%3A-Masked-Parameter-td24786554.html
+        try {
+            Method getd = clazz.getMethod("getDescriptor");
+            if(!getd.getReturnType().isAssignableFrom(getClass())) {
+                throw new AssertionError(getClass()+" must be assignable to "+getd.getReturnType());
+            }
+        } catch (NoSuchMethodException e) {
+            throw new AssertionError(getClass()+" is missing getDescriptor method.");
+        }
+
     }
 
     /**
@@ -233,52 +244,180 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable {
     public abstract String getDisplayName();
 
     /**
+     * Gets the URL that this Descriptor is bound to, relative to the nearest {@link DescriptorByNameOwner}.
+     * Since {@link Hudson} is a {@link DescriptorByNameOwner}, there's always one such ancestor to any request.
+     */
+    public String getDescriptorUrl() {
+        return "descriptorByName/"+clazz.getName();
+    }
+
+    private String getCurrentDescriptorByNameUrl() {
+        StaplerRequest req = Stapler.getCurrentRequest();
+        Ancestor a = req.findAncestor(DescriptorByNameOwner.class);
+        return a.getUrl();
+    }
+
+    /**
      * If the field "xyz" of a {@link Describable} has the corresponding "doCheckXyz" method,
      * return the form-field validation string. Otherwise null.
      * <p>
-     * This method is used to hook up the form validation method to
+     * This method is used to hook up the form validation method to the corresponding HTML input element.
      */
     public String getCheckUrl(String fieldName) {
-        String capitalizedFieldName = StringUtils.capitalize(fieldName);
-
-        Method method = checkMethods.get(fieldName);
+        String method = checkMethods.get(fieldName);
         if(method==null) {
-            method = NONE;
-            String methodName = "doCheck"+ capitalizedFieldName;
-            for( Method m : getClass().getMethods() ) {
-                if(m.getName().equals(methodName)) {
-                    method = m;
-                    break;
-                }
-            }
+            method = calcCheckUrl(fieldName);
             checkMethods.put(fieldName,method);
         }
 
-        if(method==NONE)
+        if (method.equals(NONE)) // == would do, but it makes IDE flag a warning
             return null;
 
-        StaplerRequest req = Stapler.getCurrentRequest();
-        Ancestor a = req.findAncestor(DescriptorByNameOwner.class);
+        // put this under the right contextual umbrella.
         // a is always non-null because we already have Hudson as the sentinel
-        return singleQuote(a.getUrl()+"/descriptorByName/"+clazz.getName()+"/check"+capitalizedFieldName+"?value=")+"+toValue(this)";
+        return singleQuote(getCurrentDescriptorByNameUrl()+'/')+'+'+method;
+    }
+
+    private String calcCheckUrl(String fieldName) {
+        String capitalizedFieldName = StringUtils.capitalize(fieldName);
+
+        Method method = ReflectionUtils.getPublicMethodNamed(getClass(),"doCheck"+ capitalizedFieldName);
+
+        if(method==null)
+            return NONE;
+
+        return singleQuote(getDescriptorUrl() +"/check"+capitalizedFieldName) + buildParameterList(method, new StringBuilder()).append(".toString()");
+    }
+
+    /**
+     * Builds query parameter line by figuring out what should be submitted
+     */
+    private StringBuilder buildParameterList(Method method, StringBuilder query) {
+        for (Parameter p : ReflectionUtils.getParameters(method)) {
+            QueryParameter qp = p.annotation(QueryParameter.class);
+            if (qp!=null) {
+                String name = qp.value();
+                if (name.length()==0) name = p.name();
+                if (name==null || name.length()==0)
+                    continue;   // unknown parameter name. we'll report the error when the form is submitted.
+
+                RelativePath rp = p.annotation(RelativePath.class);
+                if (rp!=null)
+                    name = rp.value()+'/'+name;
+
+                if (query.length()==0)  query.append("+qs(this)");
+
+                if (name.equals("value")) {
+                    // The special 'value' parameter binds to the the current field
+                    query.append(".addThis()");
+                } else {
+                    query.append(".nearBy('"+name+"')");
+                }
+                continue;
+            }
+
+            Method m = ReflectionUtils.getPublicMethodNamed(p.type(), "fromStapler");
+            if (m!=null)    buildParameterList(m,query);
+        }
+        return query;
+    }
+
+    /**
+     * Computes the list of other form fields that the given field depends on, via the doFillXyzItems method,
+     * and sets that as the 'fillDependsOn' attribute. Also computes the URL of the doFillXyzItems and
+     * sets that as the 'fillUrl' attribute.
+     */
+    public void calcFillSettings(String field, Map<String,Object> attributes) {
+        String capitalizedFieldName = StringUtils.capitalize(field);
+        String methodName = "doFill" + capitalizedFieldName + "Items";
+        Method method = ReflectionUtils.getPublicMethodNamed(getClass(), methodName);
+        if(method==null)
+            throw new IllegalStateException(String.format("%s doesn't have the %s method for filling a drop-down list", getClass(), methodName));
+
+        // build query parameter line by figuring out what should be submitted
+        List<String> depends = buildFillDependencies(method, new ArrayList<String>());
+
+        if (!depends.isEmpty())
+            attributes.put("fillDependsOn",Util.join(depends," "));
+        attributes.put("fillUrl", String.format("%s/%s/fill%sItems", getCurrentDescriptorByNameUrl(), getDescriptorUrl(), capitalizedFieldName));
+    }
+
+    private List<String> buildFillDependencies(Method method, List<String> depends) {
+        for (Parameter p : ReflectionUtils.getParameters(method)) {
+            QueryParameter qp = p.annotation(QueryParameter.class);
+            if (qp!=null) {
+                String name = qp.value();
+                if (name.length()==0) name = p.name();
+                if (name==null || name.length()==0)
+                    continue;   // unknown parameter name. we'll report the error when the form is submitted.
+
+                RelativePath rp = p.annotation(RelativePath.class);
+                if (rp!=null)
+                    name = rp.value()+'/'+name;
+
+                depends.add(name);
+                continue;
+            }
+
+            Method m = ReflectionUtils.getPublicMethodNamed(p.type(), "fromStapler");
+            if (m!=null)
+                buildFillDependencies(m,depends);
+        }
+        return depends;
+    }
+
+    /**
+     * Computes the auto-completion setting
+     */
+    public void calcAutoCompleteSettings(String field, Map<String,Object> attributes) {
+        String capitalizedFieldName = StringUtils.capitalize(field);
+        String methodName = "doAutoComplete" + capitalizedFieldName;
+        Method method = ReflectionUtils.getPublicMethodNamed(getClass(), methodName);
+        if(method==null)
+            return;    // no auto-completion
+
+        attributes.put("autoCompleteUrl", String.format("%s/%s/autoComplete%s", getCurrentDescriptorByNameUrl(), getDescriptorUrl(), capitalizedFieldName));
+    }
+
+    /**
+     * Used by Jelly to abstract away the handlign of global.jelly vs config.jelly databinding difference.
+     */
+    public PropertyType getPropertyType(Object instance, String field) {
+        // in global.jelly, instance==descriptor
+        return instance==this ? getGlobalPropertyType(field) : getPropertyType(field);
     }
 
     /**
      * Obtains the property type of the given field of {@link #clazz}
      */
     public PropertyType getPropertyType(String field) {
-        if(propertyTypes ==null) {
-            Map<String, PropertyType> r = new HashMap<String, PropertyType>();
-            for (Field f : clazz.getFields())
-                r.put(f.getName(),new PropertyType(f));
-
-            for (Method m : clazz.getMethods())
-                if(m.getName().startsWith("get"))
-                    r.put(Introspector.decapitalize(m.getName().substring(3)),new PropertyType(m));
-
-            propertyTypes = r;
-        }
+        if(propertyTypes==null)
+            propertyTypes = buildPropertyTypes(clazz);
         return propertyTypes.get(field);
+    }
+
+    /**
+     * Obtains the property type of the given field of this descriptor.
+     */
+    public PropertyType getGlobalPropertyType(String field) {
+        if(globalPropertyTypes==null)
+            globalPropertyTypes = buildPropertyTypes(getClass());
+        return globalPropertyTypes.get(field);
+    }
+
+    /**
+     * Given the class, list up its {@link PropertyType}s from its public fields/getters.
+     */
+    private Map<String, PropertyType> buildPropertyTypes(Class<?> clazz) {
+        Map<String, PropertyType> r = new HashMap<String, PropertyType>();
+        for (Field f : clazz.getFields())
+            r.put(f.getName(),new PropertyType(f));
+
+        for (Method m : clazz.getMethods())
+            if(m.getName().startsWith("get"))
+                r.put(Introspector.decapitalize(m.getName().substring(3)),new PropertyType(m));
+
+        return r;
     }
 
     /**
@@ -312,11 +451,20 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable {
      * <p>
      * ... which performs the databinding on the constructor of {@link #clazz}.
      *
+     * <p>
+     * For some types of {@link Describable}, such as {@link ListViewColumn}, this method
+     * can be invoked with null request object for historical reason. Such design is considered
+     * broken, but due to the compatibility reasons we cannot fix it. Because of this, the
+     * default implementation gracefully handles null request, but the contract of the method
+     * still is "request is always non-null." Extension points that need to define the "default instance"
+     * semantics should define a descriptor subtype and add the no-arg newInstance method.
+     *
      * @param req
-     *      Always non-null. This object includes represents the entire submisison.
+     *      Always non-null (see note above.) This object includes represents the entire submission.
      * @param formData
      *      The JSON object that captures the configuration data for this {@link Descriptor}.
      *      See http://hudson.gotdns.com/wiki/display/HUDSON/Structured+Form+Submission
+     *      Always non-null.
      *
      * @throws FormException
      *      Signals a problem in the submitted form.
@@ -329,14 +477,37 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable {
             if(!Modifier.isAbstract(m.getDeclaringClass().getModifiers())) {
                 // this class overrides newInstance(StaplerRequest).
                 // maintain the backward compatible behavior
-                return newInstance(req);
+                return verifyNewInstance(newInstance(req));
             } else {
+                if (req==null) {
+                    // yes, req is supposed to be always non-null, but see the note above
+                    return verifyNewInstance(clazz.newInstance());
+                }
+
                 // new behavior as of 1.206
-                return req.bindJSON(clazz,formData);
+                return verifyNewInstance(req.bindJSON(clazz,formData));
             }
         } catch (NoSuchMethodException e) {
             throw new AssertionError(e); // impossible
+        } catch (InstantiationException e) {
+            throw new Error("Failed to instantiate "+clazz+" from "+formData,e);
+        } catch (IllegalAccessException e) {
+            throw new Error("Failed to instantiate "+clazz+" from "+formData,e);
+        } catch (RuntimeException e) {
+            throw new RuntimeException("Failed to instantiate "+clazz+" from "+formData,e);
         }
+    }
+
+    /**
+     * Look out for a typical error a plugin developer makes.
+     * See http://hudson.361315.n4.nabble.com/Help-Hint-needed-Post-build-action-doesn-t-stay-activated-td2308833.html
+     */
+    private T verifyNewInstance(T t) {
+        if (t!=null && t.getDescriptor()!=this) {
+            // TODO: should this be a fatal error?
+            LOGGER.warning("Father of "+ t+" and its getDescriptor() points to two different instances. Probably malplaced @Extension. See http://hudson.361315.n4.nabble.com/Help-Hint-needed-Post-build-action-doesn-t-stay-activated-td2308833.html");
+        }
+        return t;
     }
 
     /**
@@ -400,12 +571,10 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable {
     }
 
     /**
-     * @deprecated
-     *      As of 1.64. Use {@link #configure(StaplerRequest)}.
+     * Checks if the type represented by this descriptor is a subtype of the given type.
      */
-    @Deprecated
-    public boolean configure( HttpServletRequest req ) throws FormException {
-        return true;
+    public final boolean isSubTypeOf(Class type) {
+        return type.isAssignableFrom(clazz);
     }
 
     /**
@@ -413,8 +582,7 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable {
      *      As of 1.239, use {@link #configure(StaplerRequest, JSONObject)}.
      */
     public boolean configure( StaplerRequest req ) throws FormException {
-        // compatibility
-        return configure( (HttpServletRequest) req );
+        return true;
     }
 
     /**
@@ -438,22 +606,26 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable {
     }
 
     public String getGlobalConfigPage() {
-        return getViewPage(clazz, "global.jelly");
+        return getViewPage(clazz, "global.jelly",null);
     }
 
-    protected final String getViewPage(Class<?> clazz, String pageName) {
+    private String getViewPage(Class<?> clazz, String pageName, String defaultValue) {
         while(clazz!=Object.class) {
             String name = clazz.getName().replace('.', '/').replace('$', '/') + "/" + pageName;
             if(clazz.getClassLoader().getResource(name)!=null)
                 return '/'+name;
             clazz = clazz.getSuperclass();
         }
+        return defaultValue;
+    }
+
+    protected final String getViewPage(Class<?> clazz, String pageName) {
         // We didn't find the configuration page.
         // Either this is non-fatal, in which case it doesn't matter what string we return so long as
         // it doesn't exist.
         // Or this error is fatal, in which case we want the developer to see what page he's missing.
         // so we put the page name.
-        return pageName;
+        return getViewPage(clazz,pageName,pageName);
     }
 
 
@@ -464,6 +636,7 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable {
         if(BulkChange.contains(this))   return;
         try {
             getConfigFile().write(this);
+            SaveableListener.fireOnChange(this, getConfigFile());
         } catch (IOException e) {
             LOGGER.log(Level.WARNING, "Failed to save "+getConfigFile(),e);
         }
@@ -483,25 +656,10 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable {
             return;
 
         try {
-            Object o = file.unmarshal(this);
-            if(o instanceof Map) {
-                // legacy format
-                @SuppressWarnings("unchecked")
-                Map<String,Object> _o = (Map) o;
-                convert(_o);
-                save();     // convert to the new format
-            }
+            file.unmarshal(this);
         } catch (IOException e) {
             LOGGER.log(Level.WARNING, "Failed to load "+file, e);
         }
-    }
-
-    /**
-     * {@link Descriptor}s that has existed &lt;= 1.61 needs to
-     * be able to read in the old configuration in a property bag
-     * and reflect that into the new layout.
-     */
-    protected void convert(Map<String, Object> oldPropertyBag) {
     }
 
     private XmlFile getConfigFile() {
@@ -539,7 +697,7 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable {
 
     private InputStream getHelpStream(Class c, String suffix) {
         Locale locale = Stapler.getCurrentRequest().getLocale();
-        String base = c.getName().replace('.', '/') + "/help"+suffix;
+        String base = c.getName().replace('.', '/').replace('$','/') + "/help"+suffix;
 
         ClassLoader cl = c.getClassLoader();
         if(cl==null)    return null;
@@ -627,7 +785,7 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable {
         return find(Hudson.getInstance().getExtensionList(Descriptor.class),className);
     }
 
-    public static final class FormException extends Exception {
+    public static final class FormException extends Exception implements HttpResponse {
         private final String formField;
 
         public FormException(String message, String formField) {
@@ -651,6 +809,11 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable {
         public String getFormField() {
             return formField;
         }
+
+        public void generateResponse(StaplerRequest req, StaplerResponse rsp, Object node) throws IOException, ServletException {
+            // for now, we can't really use the field name that caused the problem.
+            new Failure(getMessage()).generateResponse(req,rsp,node);
+        }
     }
 
     private static final Logger LOGGER = Logger.getLogger(Descriptor.class.getName());
@@ -658,13 +821,11 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable {
     /**
      * Used in {@link #checkMethods} to indicate that there's no check method.
      */
-    private static final Method NONE;
+    private static final String NONE = "\u0000";
 
-    static {
-        try {
-            NONE = Object.class.getMethod("toString");
-        } catch (NoSuchMethodException e) {
-            throw new AssertionError();
-        }
+    private Object readResolve() {
+        if (properties!=null)
+            OldDataMonitor.report(this, "1.62");
+        return this;
     }
 }

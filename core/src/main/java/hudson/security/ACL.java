@@ -84,7 +84,12 @@ public abstract class ACL {
      * but {@link ACL} is responsible for checking it nontheless, as if it was the
      * last entry in the granted authority.
      */
-    public static final Sid EVERYONE = new Sid() {};
+    public static final Sid EVERYONE = new Sid() {
+        @Override
+        public String toString() {
+            return "EVERYONE";
+        }
+    };
 
     /**
      * {@link Sid} that represents the anonymous unauthenticated users.
@@ -93,6 +98,8 @@ public abstract class ACL {
      * regardless of the current {@link SecurityRealm} in use.
      */
     public static final Sid ANONYMOUS = new PrincipalSid("anonymous");
+
+    protected static final Sid[] AUTOMATIC_SIDS = new Sid[]{EVERYONE,ANONYMOUS};
 
     /**
      * {@link Sid} that represents the Hudson itself.

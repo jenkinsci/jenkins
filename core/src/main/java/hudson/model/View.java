@@ -23,14 +23,13 @@
  */
 package hudson.model;
 
+import static hudson.model.Hudson.checkGoodName;
+import hudson.DescriptorExtensionList;
+import hudson.Extension;
 import hudson.ExtensionPoint;
 import hudson.Util;
-import hudson.Extension;
-import hudson.DescriptorExtensionList;
-import hudson.Plugin;
-import hudson.widgets.Widget;
 import hudson.model.Descriptor.FormException;
-import static hudson.model.Hudson.checkGoodName;
+import hudson.model.Node.Mode;
 import hudson.scm.ChangeLogSet.Entry;
 import hudson.search.CollectionSearchIndex;
 import hudson.search.SearchIndexBuilder;
@@ -40,24 +39,27 @@ import hudson.security.Permission;
 import hudson.security.PermissionGroup;
 import hudson.util.DescriptorList;
 import hudson.util.RunList;
-import org.kohsuke.stapler.Stapler;
-import org.kohsuke.stapler.StaplerRequest;
-import org.kohsuke.stapler.StaplerResponse;
-import org.kohsuke.stapler.export.Exported;
-import org.kohsuke.stapler.export.ExportedBean;
+import hudson.widgets.Widget;
 
-import javax.servlet.ServletException;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.GregorianCalendar;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.text.ParseException;
+
+import javax.servlet.ServletException;
+
+import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.StaplerResponse;
+import org.kohsuke.stapler.export.Exported;
+import org.kohsuke.stapler.export.ExportedBean;
 
 /**
  * Encapsulates the rendering of the list of {@link TopLevelItem}s
@@ -96,9 +98,24 @@ public abstract class View extends AbstractModelObject implements AccessControll
      * Message displayed in the view page.
      */
     protected String description;
+    
+    /**
+     * If true, only show relevant executors
+     */
+    protected boolean filterExecutors;
+
+    /**
+     * If true, only show relevant queue items
+     */
+    protected boolean filterQueue;
 
     protected View(String name) {
         this.name = name;
+    }
+
+    protected View(String name, ViewGroup owner) {
+        this.name = name;
+        this.owner = owner;
     }
 
     /**
@@ -139,9 +156,11 @@ public abstract class View extends AbstractModelObject implements AccessControll
     /**
      * Renames this view.
      */
-    public void rename(String newName) throws ParseException {
+    public void rename(String newName) throws Failure, FormException {
         if(name.equals(newName))    return; // noop
         checkGoodName(newName);
+        if(owner.getView(newName)!=null)
+            throw new FormException(Messages.Hudson_ViewAlreadyExists(newName),"name");
         String oldName = name;
         name = newName;
         owner.onViewRenamed(this,oldName,newName);
@@ -163,11 +182,36 @@ public abstract class View extends AbstractModelObject implements AccessControll
     }
 
     public ViewDescriptor getDescriptor() {
-        return (ViewDescriptor)Hudson.getInstance().getDescriptor(getClass());
+        return (ViewDescriptor)Hudson.getInstance().getDescriptorOrDie(getClass());
     }
 
     public String getDisplayName() {
         return getViewName();
+    }
+
+    /**
+     * By default, return true to render the "Edit view" link on the page.
+     * This method is really just for the default "All" view to hide the edit link
+     * so that the default Hudson top page remains the same as before 1.316.
+     *
+     * @since 1.316
+     */
+    public boolean isEditable() {
+        return true;
+    }
+    
+    /**
+     * If true, only show relevant executors
+     */
+    public boolean isFilterExecutors() {
+        return filterExecutors;
+    }
+    
+    /**
+     * If true, only show relevant queue items
+     */
+    public boolean isFilterQueue() {
+        return filterQueue;
     }
 
     /**
@@ -186,16 +230,73 @@ public abstract class View extends AbstractModelObject implements AccessControll
     public boolean isDefault() {
         return Hudson.getInstance().getPrimaryView()==this;
     }
+    
+    public List<Computer> getComputers() {
+    	Computer[] computers = Hudson.getInstance().getComputers();
+    	
+    	if (!isFilterExecutors()) {
+    		return Arrays.asList(computers);
+    	}
+    	
+    	List<Computer> result = new ArrayList<Computer>();
+    	
+    	boolean roam = false;
+    	HashSet<Label> labels = new HashSet<Label>();
+    	for (Item item: getItems()) {
+    		if (item instanceof AbstractProject<?,?>) {
+    			AbstractProject<?,?> p = (AbstractProject<?, ?>) item;
+    			Label l = p.getAssignedLabel();
+    			if (l != null) {
+    				labels.add(l);
+    			} else {
+    				roam = true;
+    			}
+    		}
+    	}
+    	
+    	for (Computer c: computers) {
+    		Node n = c.getNode();
+    		if (n != null) {
+    			if (roam && n.getMode() == Mode.NORMAL || !Collections.disjoint(n.getAssignedLabels(), labels)) {
+    				result.add(c);
+    			}
+    		}
+    	}
+    	
+    	return result;
+    }
+    
+    public List<Queue.Item> getQueueItems() {
+    	if (!isFilterQueue()) {
+    		return Arrays.asList(Hudson.getInstance().getQueue().getItems());
+    	}
+    	
+    	Collection<TopLevelItem> items = getItems(); 
+    	List<Queue.Item> result = new ArrayList<Queue.Item>();
+    	for (Queue.Item qi: Hudson.getInstance().getQueue().getItems()) {
+    		if (items.contains(qi.task)) {
+    			result.add(qi);
+    		}
+    	}
+    	return result;
+    }
 
     /**
      * Returns the path relative to the context root.
      *
-     * Doesn't start with '/' but ends with '/'. (except when this is
-     * Hudson, 
+     * Doesn't start with '/' but ends with '/' (except returns
+     * empty string when this is the default view).
      */
     public String getUrl() {
-        if(isDefault())   return "";
-        return owner.getUrl()+"view/"+getViewName()+'/';
+        return isDefault() ? "" : getViewUrl();
+    }
+
+    /**
+     * Same as {@link #getUrl()} except this returns a view/{name} path
+     * even for the default view.
+     */
+    public String getViewUrl() {
+        return (owner!=null ? owner.getUrl() : "") + "view/" + Util.rawEncode(getViewName()) + '/';
     }
 
     public String getSearchUrl() {
@@ -220,7 +321,7 @@ public abstract class View extends AbstractModelObject implements AccessControll
      */
     @Exported(visibility=2,name="url")
     public String getAbsoluteUrl() {
-        return Stapler.getCurrentRequest().getRootPath()+'/'+getUrl();
+        return Hudson.getInstance().getRootUrl()+getUrl();
     }
 
     public Api getApi() {
@@ -353,9 +454,9 @@ public abstract class View extends AbstractModelObject implements AccessControll
         public People(Hudson parent) {
             this.parent = parent;
             // for Hudson, really load all users
-            Map<User,UserInfo> users = getUserInfo(parent.getPrimaryView());
+            Map<User,UserInfo> users = getUserInfo(parent.getItems());
             User unknown = User.getUnknown();
-            for(User u : User.getAll()) {
+            for (User u : User.getAll()) {
                 if(u==unknown)  continue;   // skip the special 'unknown' user
                 if(!users.containsKey(u))
                     users.put(u,new UserInfo(u,null,null));
@@ -365,12 +466,12 @@ public abstract class View extends AbstractModelObject implements AccessControll
 
         public People(View parent) {
             this.parent = parent;
-            this.users = toList(getUserInfo(parent));
+            this.users = toList(getUserInfo(parent.getItems()));
         }
 
-        private Map<User,UserInfo> getUserInfo(View parent) {
+        private Map<User,UserInfo> getUserInfo(Collection<? extends Item> items) {
             Map<User,UserInfo> users = new HashMap<User,UserInfo>();
-            for (Item item : parent.getItems()) {
+            for (Item item : items) {
                 for (Job job : item.getAllJobs()) {
                     if (job instanceof AbstractProject) {
                         AbstractProject<?,?> p = (AbstractProject) job;
@@ -451,29 +552,22 @@ public abstract class View extends AbstractModelObject implements AccessControll
      *
      * Subtypes should override the {@link #submit(StaplerRequest)} method.
      */
-    public final synchronized void doConfigSubmit( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
-        try {
-            checkPermission(CONFIGURE);
+    public final synchronized void doConfigSubmit( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException, FormException {
+        checkPermission(CONFIGURE);
 
-            req.setCharacterEncoding("UTF-8");
+        req.setCharacterEncoding("UTF-8");
 
-            submit(req);
+        submit(req);
 
-            description = Util.nullify(req.getParameter("description"));
+        description = Util.nullify(req.getParameter("description"));
+        filterExecutors = req.getParameter("filterExecutors") != null;
+        filterQueue = req.getParameter("filterQueue") != null;
 
-            try {
-                rename(req.getParameter("name"));
-            } catch (ParseException e) {
-                sendError(e, req, rsp);
-                return;
-            }
+        rename(req.getParameter("name"));
 
-            owner.save();
+        owner.save();
 
-            rsp.sendRedirect2("../"+name);
-        } catch (FormException e) {
-            sendError(e,req,rsp);
-        }
+        rsp.sendRedirect2("../"+name);
     }
 
     /**
@@ -486,11 +580,13 @@ public abstract class View extends AbstractModelObject implements AccessControll
     /**
      * Deletes this view.
      */
-    public synchronized void doDoDelete( StaplerRequest req, StaplerResponse rsp ) throws IOException {
+    public synchronized void doDoDelete(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
+        requirePOST();
         checkPermission(DELETE);
 
         owner.deleteView(this);
-        rsp.sendRedirect2(req.getContextPath()+"/");
+
+        rsp.sendRedirect2(req.getContextPath()+"/" + owner.getUrl());
     }
 
 
@@ -516,6 +612,10 @@ public abstract class View extends AbstractModelObject implements AccessControll
     
     public RunList getBuilds() {
         return new RunList(this);
+    }
+    
+    public BuildTimelineWidget getTimeline() {
+        return new BuildTimelineWidget(getBuilds());
     }
 
     private void rss(StaplerRequest req, StaplerResponse rsp, String suffix, RunList runs) throws IOException, ServletException {
@@ -547,7 +647,7 @@ public abstract class View extends AbstractModelObject implements AccessControll
      * Returns all the registered {@link ViewDescriptor}s.
      */
     public static DescriptorExtensionList<View,ViewDescriptor> all() {
-        return Hudson.getInstance().getDescriptorList(View.class);
+        return Hudson.getInstance().<View,ViewDescriptor>getDescriptorList(View.class);
     }
 
     public static final Comparator<View> SORTER = new Comparator<View>() {
@@ -569,7 +669,8 @@ public abstract class View extends AbstractModelObject implements AccessControll
         return Item.CREATE;
     }
     
-    public static View create(StaplerRequest req, StaplerResponse rsp, ViewGroup owner) throws ParseException, FormException, IOException, ServletException {
+    public static View create(StaplerRequest req, StaplerResponse rsp, ViewGroup owner)
+            throws FormException, IOException, ServletException {
         req.setCharacterEncoding("UTF-8");
 
         String name = req.getParameter("name");
@@ -577,8 +678,12 @@ public abstract class View extends AbstractModelObject implements AccessControll
         if(owner.getView(name)!=null)
             throw new FormException(Messages.Hudson_ViewAlreadyExists(name),"name");
 
+        String mode = req.getParameter("mode");
+        if (mode==null || mode.length()==0)
+            throw new FormException(Messages.View_MissingMode(),"mode");
+
         // create a view
-        View v = all().findByName(req.getParameter("mode")).newInstance(req,req.getSubmittedForm());
+        View v = all().findByName(mode).newInstance(req,req.getSubmittedForm());
         v.owner = owner;
 
         // redirect to the config screen

@@ -24,11 +24,15 @@
 package hudson.maven;
 
 import hudson.AbortException;
+import hudson.Util;
 import hudson.model.BuildListener;
 import hudson.model.TaskListener;
 import hudson.model.AbstractProject;
+import hudson.model.AbstractBuild;
+import hudson.model.Hudson;
 import hudson.tasks.Maven.MavenInstallation;
 import hudson.tasks.Maven.ProjectWithMaven;
+
 import org.apache.maven.embedder.MavenEmbedderException;
 import org.apache.maven.embedder.MavenEmbedderLogger;
 import org.apache.maven.project.MavenProject;
@@ -37,6 +41,8 @@ import org.apache.commons.io.IOUtils;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Enumeration;
@@ -63,16 +69,63 @@ public class MavenUtil {
      *
      * @see #createEmbedder(TaskListener, File, String)
      */
-    public static MavenEmbedder createEmbedder(TaskListener listener, AbstractProject<?,?> project, String profiles) throws MavenEmbedderException, IOException {
+    public static MavenEmbedder createEmbedder(TaskListener listener, AbstractProject<?,?> project, String profiles) throws MavenEmbedderException, IOException, InterruptedException {
         MavenInstallation m=null;
         if (project instanceof ProjectWithMaven)
-            m = ((ProjectWithMaven) project).inferMavenInstallation();
+            m = ((ProjectWithMaven) project).inferMavenInstallation().forNode(Hudson.getInstance(),listener);
 
         return createEmbedder(listener,m!=null?m.getHomeDir():null,profiles);
     }
 
+    /**
+     * This version tries to infer mavenHome and other options by looking at a build.
+     *
+     * @see #createEmbedder(TaskListener, File, String)
+     */
+    public static MavenEmbedder createEmbedder(TaskListener listener, AbstractBuild<?,?> build) throws MavenEmbedderException, IOException, InterruptedException {
+        MavenInstallation m=null;
+        File settingsLoc = null;
+        String profiles = null;
+        Properties systemProperties = null;
+        String privateRepository = null;
+        
+        AbstractProject project = build.getProject();
+        
+        if (project instanceof ProjectWithMaven) {
+            m = ((ProjectWithMaven) project).inferMavenInstallation().forNode(Hudson.getInstance(),listener);
+        }
+        if (project instanceof MavenModuleSet) {
+            String altSet = ((MavenModuleSet) project).getAlternateSettings();
+            settingsLoc = (altSet == null) ? null 
+                : new File(build.getWorkspace().child(altSet).getRemote());
+
+            if (((MavenModuleSet) project).usesPrivateRepository()) {
+                privateRepository = build.getWorkspace().child(".repository").getRemote();
+            }
+
+            profiles = ((MavenModuleSet) project).getProfiles();
+            systemProperties = ((MavenModuleSet) project).getMavenProperties();
+        }
+        
+        return createEmbedder(listener,
+                              m!=null?m.getHomeDir():null,
+                              profiles,
+                              systemProperties,
+                              privateRepository,
+                              settingsLoc);
+    }
+
     public static MavenEmbedder createEmbedder(TaskListener listener, File mavenHome, String profiles) throws MavenEmbedderException, IOException {
         return createEmbedder(listener,mavenHome,profiles,new Properties());
+    }
+
+    public static MavenEmbedder createEmbedder(TaskListener listener, File mavenHome, String profiles, Properties systemProperties) throws MavenEmbedderException, IOException {
+        return createEmbedder(listener,mavenHome,profiles,systemProperties,null);
+    }
+
+    public static MavenEmbedder createEmbedder(TaskListener listener, File mavenHome, String profiles, Properties systemProperties,
+                                               String privateRepository) throws MavenEmbedderException, IOException {
+        return createEmbedder(listener,mavenHome,profiles,systemProperties,privateRepository,null);
     }
 
     /**
@@ -87,8 +140,13 @@ public class MavenUtil {
      *      Profiles to activate/deactivate. Can be null.
      * @param systemProperties
      *      The system properties that the embedded Maven sees. See {@link MavenEmbedder#setSystemProperties(Properties)}.
+     * @param privateRepository
+     *      Optional private repository to use as the local repository.
+     * @param alternateSettings
+     *      Optional alternate settings.xml file.
      */
-    public static MavenEmbedder createEmbedder(TaskListener listener, File mavenHome, String profiles, Properties systemProperties) throws MavenEmbedderException, IOException {
+    public static MavenEmbedder createEmbedder(TaskListener listener, File mavenHome, String profiles, Properties systemProperties,
+                                               String privateRepository, File alternateSettings) throws MavenEmbedderException, IOException {
         MavenEmbedder maven = new MavenEmbedder(mavenHome);
 
         ClassLoader cl = MavenUtil.class.getClassLoader();
@@ -111,7 +169,14 @@ public class MavenUtil {
             throw new AbortException("Failed to create "+m2Home+
                 "\nSee https://hudson.dev.java.net/cannot-create-.m2.html");
 
+        if (privateRepository!=null)
+            maven.setLocalRepositoryDirectory(new File(privateRepository));
+
         maven.setProfiles(profiles);
+
+        if (alternateSettings!=null) 
+            maven.setAlternateSettings(alternateSettings);
+
         maven.setSystemProperties(systemProperties);
         maven.start();
 
@@ -134,28 +199,38 @@ public class MavenUtil {
      * @throws AbortException
      *      errors will be reported to the listener and the exception thrown.
      */
-    public static void resolveModules(MavenEmbedder embedder, MavenProject project, String rel, Map<MavenProject,String> relativePathInfo, BuildListener listener) throws ProjectBuildingException, AbortException {
-
+    public static void resolveModules(MavenEmbedder embedder, MavenProject project,
+				      String rel, Map<MavenProject,String> relativePathInfo,
+				      BuildListener listener, boolean nonRecursive) throws ProjectBuildingException,
+											   AbortException {
+	
         File basedir = project.getFile().getParentFile();
         relativePathInfo.put(project,rel);
 
-        List<MavenProject> modules = new ArrayList<MavenProject>();
-
-        for (String modulePath : (List<String>) project.getModules()) {
-            File moduleFile = new File(new File(basedir, modulePath),"pom.xml");
-            if(!moduleFile.exists())
-                throw new AbortException(moduleFile+" is referenced from "+project.getFile()+" but it doesn't exist");
-
-            String relativePath = rel;
-            if(relativePath.length()>0) relativePath+='/';
-            relativePath+=modulePath;
-
-            MavenProject child = embedder.readProject(moduleFile);
-            resolveModules(embedder,child,relativePath,relativePathInfo,listener);
-            modules.add(child);
-        }
-
-        project.setCollectedProjects(modules);
+	if (!nonRecursive) {
+	    List<MavenProject> modules = new ArrayList<MavenProject>();
+	    
+	    for (String modulePath : (List<String>) project.getModules()) {
+		if (Util.fixEmptyAndTrim(modulePath)!=null) {
+		    File moduleFile = new File(basedir, modulePath);
+		    if (moduleFile.exists() && moduleFile.isDirectory()) {
+			moduleFile = new File(basedir, modulePath + "/pom.xml");
+		    }
+		    if(!moduleFile.exists())
+			throw new AbortException(moduleFile+" is referenced from "+project.getFile()+" but it doesn't exist");
+		    
+		    String relativePath = rel;
+		    if(relativePath.length()>0) relativePath+='/';
+		    relativePath+=modulePath;
+		    
+		    MavenProject child = embedder.readProject(moduleFile);
+		    resolveModules(embedder,child,relativePath,relativePathInfo,listener,nonRecursive);
+		    modules.add(child);
+		}
+	    }
+	    
+	    project.setCollectedProjects(modules);
+	}
     }
 
     /**
@@ -206,13 +281,23 @@ public class MavenUtil {
                     String s = url.toExternalForm();
                     if(s.contains("maven-plugin-tools-api"))
                         return true;
-                    if(s.endsWith("plexus/components.xml")) {
+                    // because RemoteClassLoader mangles the path, we can't check for plexus/components.xml,
+                    // which would have otherwise made the test cheaper.
+                    if(s.endsWith("components.xml")) {
+                        BufferedReader r=null;
                         try {
                             // is this designated for interception purpose? If so, don't load them in the MavenEmbedder
-                            IOUtils.closeQuietly(new URL(s + ".interception").openStream());
-                            return true;
+                            // earlier I tried to use a marker file in the same directory, but that won't work
+                            r = new BufferedReader(new InputStreamReader(url.openStream()));
+                            for (int i=0; i<2; i++) {
+                                String l = r.readLine();
+                                if(l!=null && l.contains("MAVEN-INTERCEPTION-TO-BE-MASKED"))
+                                    return true;
+                            }
                         } catch (IOException _) {
-                            // no such resource exists
+                            // let whoever requesting this resource re-discover an error and report it
+                        } finally {
+                            IOUtils.closeQuietly(r);
                         }
                     }
                     return false;

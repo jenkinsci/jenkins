@@ -27,16 +27,13 @@ import hudson.Extension;
 import hudson.ExtensionList;
 import hudson.ExtensionListView;
 import hudson.ExtensionPoint;
-import hudson.model.AbstractProject;
 import hudson.model.Hudson;
 import hudson.model.User;
-import hudson.scm.CVSSCM;
+import hudson.model.UserProperty;
 import hudson.scm.SCM;
-import hudson.scm.SubversionSCM;
 
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
+import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -53,6 +50,17 @@ import java.util.regex.Pattern;
  *   ...
  * }
  * </pre>
+ *
+ * <h2>Techniques</h2>
+ * <p>
+ * User identity in Hudson is global, and not specific to a particular job. As a result, mail address resolution
+ * only receives {@link User}, which by itself doesn't really have that much information in it.
+ *
+ * <p>
+ * So the common technique for a mail address resolution is to define your own {@link UserProperty} types and
+ * add it to {@link User} objects where more context is available. For example, an {@link SCM} implementation
+ * can have a lot more information about a particular user during a check out, so that would be a good place
+ * to capture information as {@link UserProperty}, which then later used by a {@link MailAddressResolver}. 
  *
  * @author Kohsuke Kawaguchi
  * @since 1.192
@@ -83,24 +91,35 @@ public abstract class MailAddressResolver implements ExtensionPoint {
     public abstract String findMailAddressFor(User u);
     
     public static String resolve(User u) {
+        LOGGER.fine("Resolving e-mail address for \""+u+"\" ID="+u.getId());
+
         for (MailAddressResolver r : all()) {
             String email = r.findMailAddressFor(u);
-            if(email!=null) return email;
+            if(email!=null) {
+                LOGGER.fine(r+" resolved "+u.getId()+" to "+email);
+                return email;
+            }
         }
 
         // fall back logic
-        String extractedAddress = extractAddressFromId(u.getId());
+        String extractedAddress = extractAddressFromId(u.getFullName());
         if (extractedAddress != null)
-                return extractedAddress;
+            return extractedAddress;
 
-        if(u.getId().contains("@"))
+        if(u.getFullName().contains("@"))
             // this already looks like an e-mail ID
-            return u.getId();
+            return u.getFullName();
 
         String ds = Mailer.descriptor().getDefaultSuffix();
-        if(ds!=null)
+        if(ds!=null) {
+            // another common pattern is "DOMAIN\person" in Windows. Only
+            // do this when this full name is not manually set. see HUDSON-5164
+            Matcher m = WINDOWS_DOMAIN_REGEXP.matcher(u.getFullName());
+            if (m.matches() && u.getFullName().replace('\\','_').equals(u.getId()))
+                return m.group(1)+ds; // user+defaultSuffix
+
             return u.getId()+ds;
-        else
+        } else
             return null;
     }
 
@@ -120,6 +139,10 @@ public abstract class MailAddressResolver implements ExtensionPoint {
      */
     private static final Pattern EMAIL_ADDRESS_REGEXP = Pattern.compile("^.*<([^>]+)>.*$");
 
+    /**
+     * Matches something like "DOMAIN\person"
+     */
+    private static final Pattern WINDOWS_DOMAIN_REGEXP = Pattern.compile("[^\\\\ ]+\\\\([^\\\\ ]+)");
 
     /**
      * All registered {@link MailAddressResolver} implementations.
@@ -136,73 +159,5 @@ public abstract class MailAddressResolver implements ExtensionPoint {
         return Hudson.getInstance().getExtensionList(MailAddressResolver.class);
     }
 
-    /**
-     * {@link MailAddressResolver} implemenations that cover well-known major public sites.
-     *
-     * <p>
-     * Since this has low UI visibility, we are open to having a large number of rules here.
-     * If you'd like to add one, please contribute more rules.
-     */
-    @Extension
-    public static class DefaultAddressResolver extends MailAddressResolver {
-        public String findMailAddressFor(User u) {
-            for (AbstractProject<?,?> p : u.getProjects()) {
-                SCM scm = p.getScm();
-                if (scm instanceof CVSSCM) {
-                    CVSSCM cvsscm = (CVSSCM) scm;
-                    
-                    String s = findMailAddressFor(u,cvsscm.getCvsRoot());
-                    if(s!=null) return s;
-                }
-                if (scm instanceof SubversionSCM) {
-                    SubversionSCM svn = (SubversionSCM) scm;
-                    for (SubversionSCM.ModuleLocation loc : svn.getLocations(p.getLastBuild())) {
-                        String s = findMailAddressFor(u,loc.remote);
-                        if(s!=null) return s;
-                    }
-                }
-            }
-
-            // didn't hit any known rules
-            return null;
-        }
-
-        /**
-         *
-         * @param scm
-         *      String that represents SCM connectivity.
-         */
-        protected String findMailAddressFor(User u, String scm) {
-            for (Map.Entry<Pattern, String> e : RULE_TABLE.entrySet())
-                if(e.getKey().matcher(scm).matches())
-                    return u.getId()+e.getValue();
-            return null;
-        }
-
-        private static final Map<Pattern,String/*suffix*/> RULE_TABLE = new HashMap<Pattern, String>();
-
-        static {
-            {// java.net
-                Pattern svnurl = Pattern.compile("https://[^.]+.dev.java.net/svn/([^/]+)(/.*)?");
-
-                String username = "([A-Za-z0-9_\\-])+";
-                String host = "(.*.dev.java.net|kohsuke.sfbay.*)";
-                Pattern cvsUrl = Pattern.compile(":pserver:"+username+"@"+host+":/cvs");
-
-                RULE_TABLE.put(svnurl,"@dev.java.net");
-                RULE_TABLE.put(cvsUrl,"@dev.java.net");
-            }
-
-            {// source forge
-                Pattern svnUrl = Pattern.compile("(http|https)://[^.]+.svn.(sourceforge|sf).net/svnroot/([^/]+)(/.*)?");
-                Pattern cvsUrl = Pattern.compile(":(pserver|ext):([^@]+)@([^.]+).cvs.(sourceforge|sf).net:.+");
-
-                RULE_TABLE.put(svnUrl,"@users.sourceforge.net");
-                RULE_TABLE.put(cvsUrl,"@users.sourceforge.net");
-            }
-
-            // TODO: read some file under $HUDSON_HOME?
-        }
-
-    }
+    private static final Logger LOGGER = Logger.getLogger(MailAddressResolver.class.getName());
 }

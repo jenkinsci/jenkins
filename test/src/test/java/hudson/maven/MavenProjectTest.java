@@ -1,7 +1,7 @@
 /*
  * The MIT License
  *
- * Copyright (c) 2004-2009, Sun Microsystems, Inc.
+ * Copyright (c) 2004-2010, Sun Microsystems, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,17 +23,13 @@
  */
 package hudson.maven;
 
-import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
-import hudson.model.Descriptor;
-import hudson.tasks.ArtifactArchiver;
 import hudson.tasks.Maven.MavenInstallation;
+import org.jvnet.hudson.test.Bug;
 import org.jvnet.hudson.test.ExtractResourceSCM;
 import org.jvnet.hudson.test.HudsonTestCase;
-import org.jvnet.hudson.test.Bug;
-import org.xml.sax.SAXException;
 
-import java.io.IOException;
+import java.io.File;
 
 /**
  * @author huybrechts
@@ -44,14 +40,18 @@ public class MavenProjectTest extends HudsonTestCase {
         MavenModuleSet project = createSimpleProject();
         project.setGoals("validate");
 
-        assertBuildStatusSuccess(project.scheduleBuild2(0).get());
+        buildAndAssertSuccess(project);
     }
 
     private MavenModuleSet createSimpleProject() throws Exception {
+        return createProject("/simple-projects.zip");
+    }
+
+    private MavenModuleSet createProject(final String scmResource) throws Exception {
         MavenModuleSet project = createMavenProject();
         MavenInstallation mi = configureDefaultMaven();
         project.setScm(new ExtractResourceSCM(getClass().getResource(
-                "/simple-projects.zip")));
+                scmResource)));
         project.setMaven(mi.getName());
         return project;
     }
@@ -61,20 +61,7 @@ public class MavenProjectTest extends HudsonTestCase {
         project.setGoals("validate");
         project.setAssignedLabel(createSlave().getSelfLabel());
 
-        assertBuildStatusSuccess(project.scheduleBuild2(0).get());
-    }
-
-    /**
-     * Makes sure that {@link ArtifactArchiver} doesn't show up in the m2 job type config screen.
-     * This is to make sure that the exclusion in {@link MavenModuleSet.DescriptorImpl#isApplicable(Descriptor)}
-     * is working.
-     */
-    public void testExclusion() throws Exception {
-        MavenModuleSet p = createMavenProject();
-        HtmlPage page = new WebClient().getPage(p, "configure");
-        assertFalse(page.getWebResponse().getContentAsString().contains(hudson.getDescriptorByType(ArtifactArchiver.DescriptorImpl.class).getDisplayName()));
-        // but this should exist. This verifies that the approach of the test is sane (and for example, to make sure getContentAsString()!="")
-        assertTrue(page.getWebResponse().getContentAsString().contains(hudson.getDescriptorByType(RedeployPublisher.DescriptorImpl.class).getDisplayName()));
+        buildAndAssertSuccess(project);
     }
 
     /**
@@ -85,7 +72,7 @@ public class MavenProjectTest extends HudsonTestCase {
         MavenModuleSet project = createSimpleProject();
         project.setGoals("site");
 
-        assertBuildStatusSuccess(project.scheduleBuild2(0).get());
+        buildAndAssertSuccess(project);
 
         // this should succeed
         HudsonTestCase.WebClient wc = new WebClient();
@@ -96,5 +83,63 @@ public class MavenProjectTest extends HudsonTestCase {
         } catch (FailingHttpStatusCodeException e) {
             assertEquals(404,e.getStatusCode());
         }
+    }
+
+    /**
+     * Check if the generated site is linked correctly for multi module projects.
+     */
+    public void testMultiModuleSiteBuild() throws Exception {
+        MavenModuleSet project = createProject("maven-multimodule-site.zip");
+        project.setGoals("site");
+
+        buildAndAssertSuccess(project);
+
+        // this should succeed
+        HudsonTestCase.WebClient wc = new WebClient();
+        wc.getPage(project, "site");
+        wc.getPage(project, "site/core");
+        wc.getPage(project, "site/client");
+    }
+
+    /**
+     * Check if the the site goal will work when run from a slave.
+     */
+    @Bug(5943)
+    public void testMultiModuleSiteBuildOnSlave() throws Exception {
+        MavenModuleSet project = createProject("maven-multimodule-site.zip");
+        project.setGoals("site");
+        project.setAssignedLabel(createSlave().getSelfLabel());
+
+        buildAndAssertSuccess(project);
+
+        // this should succeed
+        HudsonTestCase.WebClient wc = new WebClient();
+        wc.getPage(project, "site");
+        wc.getPage(project, "site/core");
+        wc.getPage(project, "site/client");
+    }
+
+    @Bug(6779)
+    public void testDeleteSetBuildDeletesModuleBuilds() throws Exception {
+        MavenModuleSet project = createProject("maven-multimod.zip");
+        project.setGoals("package");
+        buildAndAssertSuccess(project);
+        buildAndAssertSuccess(project.getModule("org.jvnet.hudson.main.test.multimod:moduleB"));
+        buildAndAssertSuccess(project);
+        assertEquals(2, project.getBuilds().size()); // Module build does not add a ModuleSetBuild
+        project.getFirstBuild().delete();
+        // A#1, B#1 and B#2 should all be deleted too
+        assertEquals(1, project.getModule("org.jvnet.hudson.main.test.multimod:moduleA").getBuilds().size());
+        assertEquals(1, project.getModule("org.jvnet.hudson.main.test.multimod:moduleB").getBuilds().size());
+    }
+    @Bug(7261)
+    public void testAbsolutePathPom() throws Exception {
+        File pom = new File(this.getClass().getResource("test-pom-7162.xml").toURI());
+        MavenModuleSet project = createMavenProject();
+        MavenInstallation mi = configureDefaultMaven();
+        project.setMaven(mi.getName());
+        project.setRootPOM(pom.getAbsolutePath());
+        project.setGoals("install");
+        buildAndAssertSuccess(project);
     }
 }

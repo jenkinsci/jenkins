@@ -42,7 +42,7 @@ public class LogRecorderManagerTest extends HudsonTestCase {
     public void testLoggerConfig() throws Exception {
         Logger logger = Logger.getLogger("foo.bar.zot");
 
-        HtmlPage page = new WebClient().goTo("log/all");
+        HtmlPage page = new WebClient().goTo("log/levels");
         HtmlForm form = page.getFormByName("configLogger");
         form.getInputByName("name").setValueAttribute("foo.bar.zot");
         form.getSelectByName("level").getOptionByValue("finest").setSelected(true);

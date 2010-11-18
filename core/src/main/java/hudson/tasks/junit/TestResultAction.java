@@ -1,7 +1,7 @@
 /*
  * The MIT License
  * 
- * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, Daniel Dyer, Red Hat, Inc.
+ * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, Daniel Dyer, Red Hat, Inc., Tom Huybrechts, Yahoo!, Inc.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -29,15 +29,17 @@ import hudson.model.AbstractBuild;
 import hudson.model.Action;
 import hudson.model.BuildListener;
 import hudson.tasks.test.AbstractTestResultAction;
-import hudson.util.StringConverter2;
+import hudson.tasks.test.TestObject;
+import hudson.util.HeapSpaceStringConverter;
 import hudson.util.XStream2;
-import java.util.List;
 import org.kohsuke.stapler.StaplerProxy;
-import org.kohsuke.stapler.export.Exported;
 
 import java.io.File;
 import java.io.IOException;
 import java.lang.ref.WeakReference;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -58,7 +60,7 @@ public class TestResultAction extends AbstractTestResultAction<TestResultAction>
     private int failCount;
     private int skipCount;
     private Integer totalCount;
-
+    private List<Data> testData = new ArrayList<Data>();
 
     public TestResultAction(AbstractBuild owner, TestResult result, BuildListener listener) {
         super(owner);
@@ -154,9 +156,49 @@ public class TestResultAction extends AbstractTestResultAction<TestResultAction>
     public Object getTarget() {
         return getResult();
     }
+    
+    public List<TestAction> getActions(TestObject object) {
+    	List<TestAction> result = new ArrayList<TestAction>();
+	// Added check for null testData to avoid NPE from issue 4257.
+	if (testData!=null) {
+        for (Data data : testData) {
+            result.addAll(data.getTestAction(object));
+        }
+    }
+	return Collections.unmodifiableList(result);
+	
+    }
+    public void setData(List<Data> testData) {
+	this.testData = testData;
+    }
 
+    /**
+     * Resolves {@link TestAction}s for the given {@link TestObject}.
+     *
+     * <p>
+     * This object itself is persisted as a part of {@link AbstractBuild}, so it needs to be XStream-serializable.
+     *
+     * @see TestDataPublisher
+     */
+    public static abstract class Data {
+    	/**
+    	 * Returns all TestActions for the testObject.
+         * 
+         * @return
+         *      Can be empty but never null. The caller must assume that the returned list is read-only.
+    	 */
+    	public abstract List<? extends TestAction> getTestAction(hudson.tasks.junit.TestObject testObject);
+    }
 
-
+    public Object readResolve() {
+        super.readResolve(); // let it do the post-deserialization work
+    	if (testData == null) {
+    		testData = new ArrayList<Data>();
+    	}
+    	
+    	return this;
+    }
+    
     private static final Logger logger = Logger.getLogger(TestResultAction.class.getName());
 
     private static final XStream XSTREAM = new XStream2();
@@ -165,7 +207,7 @@ public class TestResultAction extends AbstractTestResultAction<TestResultAction>
         XSTREAM.alias("result",TestResult.class);
         XSTREAM.alias("suite",SuiteResult.class);
         XSTREAM.alias("case",CaseResult.class);
-        XSTREAM.registerConverter(new StringConverter2(),100);
-
+        XSTREAM.registerConverter(new HeapSpaceStringConverter(),100);
     }
+
 }

@@ -42,21 +42,25 @@ public class DualOutputStream extends OutputStream {
         rhs.write(b);
     }
 
+    @Override
     public void write(byte[] b) throws IOException {
         lhs.write(b);
         rhs.write(b);
     }
 
+    @Override
     public void write(byte[] b, int off, int len) throws IOException {
         lhs.write(b,off,len);
         rhs.write(b,off,len);
     }
 
+    @Override
     public void flush() throws IOException {
         lhs.flush();
         rhs.flush();
     }
 
+    @Override
     public void close() throws IOException {
         lhs.close();
         rhs.close();

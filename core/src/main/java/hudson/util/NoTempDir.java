@@ -26,8 +26,6 @@ package hudson.util;
 import hudson.Functions;
 
 import java.io.IOException;
-import java.io.PrintWriter;
-import java.io.StringWriter;
 
 /**
  * Model object used to display the error top page if

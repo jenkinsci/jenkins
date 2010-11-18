@@ -29,6 +29,10 @@ import org.acegisecurity.acls.sid.PrincipalSid;
 import org.acegisecurity.acls.sid.GrantedAuthoritySid;
 import org.acegisecurity.acls.sid.Sid;
 
+import java.util.logging.Logger;
+import static java.util.logging.Level.FINE;
+import static java.util.logging.Level.FINER;
+
 /**
  * {@link ACL} that checks permissions based on {@link GrantedAuthority}
  * of the {@link Authentication}.
@@ -39,8 +43,16 @@ public abstract class SidACL extends ACL {
 
     @Override
     public boolean hasPermission(Authentication a, Permission permission) {
-        if(a==SYSTEM)   return true;
+        if(a==SYSTEM) {
+            if(LOGGER.isLoggable(FINE))
+                LOGGER.fine("hasPermission("+a+","+permission+")=>SYSTEM user has full access");
+            return true;
+        }
         Boolean b = _hasPermission(a,permission);
+
+        if(LOGGER.isLoggable(FINE))
+            LOGGER.fine("hasPermission("+a+","+permission+")=>"+(b==null?"null, thus false":b));
+
         if(b==null) b=false;    // default to rejection
         return b;
     }
@@ -55,22 +67,33 @@ public abstract class SidACL extends ACL {
     protected Boolean _hasPermission(Authentication a, Permission permission) {
         // ACL entries for this principal takes precedence
         Boolean b = hasPermission(new PrincipalSid(a),permission);
-        if(b!=null) return b;
+        if(b!=null) {
+            if(LOGGER.isLoggable(FINER))
+                LOGGER.finer("hasPermission(PrincipalSID:"+a.getPrincipal()+","+permission+")=>"+b);
+            return b;
+        }
 
         // after that, we check if the groups this principal belongs to
         // has any ACL entries.
         // here we are using GrantedAuthority as a group
         for(GrantedAuthority ga : a.getAuthorities()) {
             b = hasPermission(new GrantedAuthoritySid(ga),permission);
-            if(b!=null) return b;
+            if(b!=null) {
+                if(LOGGER.isLoggable(FINER))
+                    LOGGER.finer("hasPermission(GroupSID:"+ga.getAuthority()+","+permission+")=>"+b);
+                return b;
+            }
         }
 
-        // finally everyone
-        b = hasPermission(EVERYONE,permission);
-        if(b!=null) return b;
-        // permissions granted to anonymous users are granted to everyone
-        b=hasPermission(ANONYMOUS,permission);
-        if(b!=null) return b;
+        // permissions granted to 'everyone' and 'anonymous' users are granted to everyone
+        for (Sid sid : AUTOMATIC_SIDS) {
+            b = hasPermission(sid,permission);
+            if(b!=null) {
+                if(LOGGER.isLoggable(FINER))
+                    LOGGER.finer("hasPermission("+sid+","+permission+")=>"+b);
+                return b;
+            }
+        }
 
         return null;
     }
@@ -124,4 +147,6 @@ public abstract class SidACL extends ACL {
             }
         };
     }
+
+    private static final Logger LOGGER = Logger.getLogger(SidACL.class.getName());
 }

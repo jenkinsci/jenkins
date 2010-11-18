@@ -1,7 +1,8 @@
 /*
  * The MIT License
  * 
- * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, Jean-Baptiste Quenot, Seiji Sogabe, Tom Huybrechts
+ * Copyright (c) 2004-2010, Sun Microsystems, Inc., Kohsuke Kawaguchi,
+ * Jean-Baptiste Quenot, Seiji Sogabe, Tom Huybrechts
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,7 +27,10 @@ package hudson.model;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
+import java.util.AbstractList;
 
 import javax.servlet.ServletException;
 
@@ -35,6 +39,9 @@ import net.sf.json.JSONObject;
 
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
+import org.kohsuke.stapler.export.Exported;
+import org.kohsuke.stapler.export.ExportedBean;
+
 import hudson.Extension;
 
 /**
@@ -44,6 +51,7 @@ import hudson.Extension;
  * This class also implements {@link Action} so that <tt>index.jelly</tt> provides
  * a form to enter build parameters. 
  */
+@ExportedBean(defaultVisibility=2)
 public class ParametersDefinitionProperty extends JobProperty<AbstractProject<?, ?>>
         implements Action {
 
@@ -61,13 +69,29 @@ public class ParametersDefinitionProperty extends JobProperty<AbstractProject<?,
         return owner;
     }
 
+    @Exported
     public List<ParameterDefinition> getParameterDefinitions() {
         return parameterDefinitions;
     }
 
+    /**
+     * Gets the names of all the parameter definitions.
+     */
+    public List<String> getParameterDefinitionNames() {
+        return new AbstractList<String>() {
+            public String get(int index) {
+                return parameterDefinitions.get(index).getName();
+            }
+
+            public int size() {
+                return parameterDefinitions.size();
+            }
+        };
+    }
+
     @Override
-    public Action getJobAction(AbstractProject<?, ?> job) {
-        return this;
+    public Collection<Action> getJobActions(AbstractProject<?, ?> job) {
+        return Collections.<Action>singleton(this);
     }
 
     public AbstractProject<?, ?> getProject() {
@@ -103,14 +127,14 @@ public class ParametersDefinitionProperty extends JobProperty<AbstractProject<?,
             values.add(parameterValue);
         }
 
-    	Hudson.getInstance().getQueue().add(
-    			owner, 0, new ParametersAction(values), new CauseAction(new Cause.UserCause()));
+    	Hudson.getInstance().getQueue().schedule(
+                owner, owner.getDelay(req), new ParametersAction(values), new CauseAction(new Cause.UserCause()));
 
         // send the user back to the job top page.
         rsp.sendRedirect(".");
     }
-    
-    public void buildWithParameters(StaplerRequest req, StaplerResponse rsp) throws IOException {
+
+    public void buildWithParameters(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
         List<ParameterValue> values = new ArrayList<ParameterValue>();
         for (ParameterDefinition d: parameterDefinitions) {
         	ParameterValue value = d.createValue(req);
@@ -121,8 +145,8 @@ public class ParametersDefinitionProperty extends JobProperty<AbstractProject<?,
         	}
         }
 
-    	Hudson.getInstance().getQueue().add(
-    			owner, 0, new ParametersAction(values), new CauseAction(new Cause.UserCause()));
+    	Hudson.getInstance().getQueue().schedule(
+                owner, owner.getDelay(req), new ParametersAction(values), owner.getBuildCause(req));
 
         // send the user back to the job top page.
         rsp.sendRedirect(".");
@@ -181,6 +205,6 @@ public class ParametersDefinitionProperty extends JobProperty<AbstractProject<?,
     }
 
     public String getUrlName() {
-        return "parameters";
+        return null;
     }
 }
