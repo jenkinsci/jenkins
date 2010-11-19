@@ -22,7 +22,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 -->
-
+<?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:local="local">
   <st:documentation>
     Displays the status of executors.
@@ -71,9 +71,13 @@ THE SOFTWARE.
               <td class="pane">
                 <div style="white-space: normal">${%Building}
                   <j:set var="exe" value="${e.currentExecutable}" />
+                  <j:invokeStatic var="exeparent"
+                     className="hudson.model.queue.Executables" method="getParentOf">
+                    <j:arg type="hudson.model.Queue$Executable" value="${exe}" />
+                  </j:invokeStatic>
                   <j:choose>
-                    <j:when test="${h.hasPermission(exe.parent,exe.parent.READ)}">
-                      <a href="${rootURL}/${exe.parent.url}">${exe.parent.fullDisplayName}</a>&#160;<a href="${rootURL}/${exe.url}">#${exe.number}</a>
+                    <j:when test="${h.hasPermission(exeparent,exeparent.READ)}">
+                      <a href="${rootURL}/${exeparent.url}">${exeparent.fullDisplayName}</a>&#160;<a href="${rootURL}/${exe.url}">#${exe.number}</a>
                       <t:buildProgressBar build="${exe}" executor="${executor}"/>
                     </j:when>
                     <j:otherwise>
