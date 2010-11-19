@@ -42,7 +42,7 @@ import java.io.IOException;
  * instead of implementing this interface directly, to maintain
  * compatibility with future changes to this interface.
  *
- * @since 1.FATTASK
+ * @since 1.377
  */
 public interface SubTask extends ResourceActivity {
     /**

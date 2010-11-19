@@ -32,7 +32,7 @@ import hudson.model.Queue.Task;
  * Represents a unit of hand-over to {@link Executor} from {@link Queue}.
  *
  * @author Kohsuke Kawaguchi
- * @since 1.FATTASK
+ * @since 1.377
  */
 public final class WorkUnit {
     /**
