@@ -27,6 +27,7 @@ import hudson.model.Executor;
 import hudson.model.Queue;
 import hudson.model.Queue.Executable;
 import hudson.model.Queue.Task;
+import org.kohsuke.stapler.export.ExportedBean;
 
 /**
  * Represents a unit of hand-over to {@link Executor} from {@link Queue}.
@@ -34,6 +35,7 @@ import hudson.model.Queue.Task;
  * @author Kohsuke Kawaguchi
  * @since 1.377
  */
+@ExportedBean
 public final class WorkUnit {
     /**
      * Task to be executed.
