@@ -23,13 +23,12 @@
  */
 package hudson.console;
 
-import hudson.CloseProofOutputStream;
 import hudson.MarkupText;
 import hudson.model.Describable;
 import hudson.model.Hudson;
 import hudson.model.Run;
 import hudson.remoting.ObjectInputStreamEx;
-import hudson.util.FlushProofOutputStream;
+import hudson.util.IOException2;
 import hudson.util.IOUtils;
 import hudson.util.UnbufferedBase64InputStream;
 import org.apache.commons.codec.binary.Base64OutputStream;
@@ -213,24 +212,30 @@ public abstract class ConsoleNote<T> implements Serializable, Describable<Consol
      * @return null if the encoded form is malformed.
      */
     public static ConsoleNote readFrom(DataInputStream in) throws IOException, ClassNotFoundException {
-        byte[] preamble = new byte[PREAMBLE.length];
-        in.readFully(preamble);
-        if (!Arrays.equals(preamble,PREAMBLE))
-            return null;    // not a valid preamble
+        try {
+            byte[] preamble = new byte[PREAMBLE.length];
+            in.readFully(preamble);
+            if (!Arrays.equals(preamble,PREAMBLE))
+                return null;    // not a valid preamble
 
-        DataInputStream decoded = new DataInputStream(new UnbufferedBase64InputStream(in));
-        int sz = decoded.readInt();
-        byte[] buf = new byte[sz];
-        decoded.readFully(buf);
+            DataInputStream decoded = new DataInputStream(new UnbufferedBase64InputStream(in));
+            int sz = decoded.readInt();
+            byte[] buf = new byte[sz];
+            decoded.readFully(buf);
 
-        byte[] postamble = new byte[POSTAMBLE.length];
-        in.readFully(postamble);
-        if (!Arrays.equals(postamble,POSTAMBLE))
-            return null;    // not a valid postamble
+            byte[] postamble = new byte[POSTAMBLE.length];
+            in.readFully(postamble);
+            if (!Arrays.equals(postamble,POSTAMBLE))
+                return null;    // not a valid postamble
 
-        ObjectInputStream ois = new ObjectInputStreamEx(
-                new GZIPInputStream(new ByteArrayInputStream(buf)), Hudson.getInstance().pluginManager.uberClassLoader);
-        return (ConsoleNote) ois.readObject();
+            ObjectInputStream ois = new ObjectInputStreamEx(
+                    new GZIPInputStream(new ByteArrayInputStream(buf)), Hudson.getInstance().pluginManager.uberClassLoader);
+            return (ConsoleNote) ois.readObject();
+        } catch (Error e) {
+            // for example, bogus 'sz' can result in OutOfMemoryError.
+            // package that up as IOException so that the caller won't fatally die.
+            throw new IOException2(e);
+        }
     }
 
     /**
