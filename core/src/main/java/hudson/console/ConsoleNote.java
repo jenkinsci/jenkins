@@ -150,26 +150,10 @@ public abstract class ConsoleNote<T> implements Serializable, Describable<Consol
      * of {@link ConsoleAnnotator}.
      */
     public void encodeTo(OutputStream out) throws IOException {
-        ByteArrayOutputStream buf = new ByteArrayOutputStream();
-        ObjectOutputStream oos = new ObjectOutputStream(new GZIPOutputStream(buf));
-        oos.writeObject(this);
-        oos.close();
-
-        ByteArrayOutputStream buf2 = new ByteArrayOutputStream();
-        DataOutputStream dos = new DataOutputStream(new Base64OutputStream(buf2,true,-1,null));
-        dos.writeInt(buf.size());
-        buf.writeTo(dos);
-        dos.close();
-
         // atomically write to the final output, to minimize the chance of something else getting in between the output.
         // even with this, it is still technically possible to get such a mix-up to occur (for example,
         // if Java program is reading stdout/stderr separately and copying them into the same final stream.)
-        byte[] buf3 = buf2.toByteArray(),
-               buf4 = new byte[PREAMBLE.length + buf3.length + POSTAMBLE.length];
-        System.arraycopy(PREAMBLE, 0, buf4, 0, PREAMBLE.length);
-        System.arraycopy(buf3, 0, buf4, PREAMBLE.length, buf3.length);
-        System.arraycopy(POSTAMBLE, 0, buf4, PREAMBLE.length + buf3.length, POSTAMBLE.length);
-        out.write(buf4);
+        out.write(encodeToBytes().toByteArray());
     }
 
     /**
@@ -180,18 +164,24 @@ public abstract class ConsoleNote<T> implements Serializable, Describable<Consol
      * encoding is ASCII compatible.
      */
     public void encodeTo(Writer out) throws IOException {
+        out.write(encodeToBytes().toString());
+    }
+
+    private ByteArrayOutputStream encodeToBytes() throws IOException {
         ByteArrayOutputStream buf = new ByteArrayOutputStream();
         ObjectOutputStream oos = new ObjectOutputStream(new GZIPOutputStream(buf));
         oos.writeObject(this);
         oos.close();
 
-        ByteArrayOutputStream encoded = new ByteArrayOutputStream();
-        DataOutputStream dos = new DataOutputStream(new Base64OutputStream(encoded,true,-1,null));
+        ByteArrayOutputStream buf2 = new ByteArrayOutputStream();
+
+        DataOutputStream dos = new DataOutputStream(new Base64OutputStream(buf2,true,-1,null));
+        buf2.write(PREAMBLE);
         dos.writeInt(buf.size());
         buf.writeTo(dos);
         dos.close();
-
-        out.write(PREAMBLE_STR + encoded.toString() + POSTAMBLE_STR);
+        buf2.write(POSTAMBLE);
+        return buf2;
     }
 
     /**
