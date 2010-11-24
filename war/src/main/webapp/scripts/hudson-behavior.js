@@ -1535,8 +1535,9 @@ function updateListBox(listBox,url,config) {
             originalOnSuccess(rsp);
     },
     config.onFailure = function(rsp) {
-        var l = $(listBox);
-        l.options[0] = null;
+        // deleting values can result in the data loss, so let's not do that
+//        var l = $(listBox);
+//        l.options[0] = null;
     }
 
     new Ajax.Request(url, config);
