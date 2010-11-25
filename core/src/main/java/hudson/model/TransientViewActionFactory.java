@@ -1,6 +1,7 @@
 package hudson.model;
 
 import hudson.ExtensionList;
+import hudson.ExtensionPoint;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -8,8 +9,9 @@ import java.util.List;
 /**
  * Extension point for adding transient {@link Action}s to {@link View}s.
  *
+ * @since 1.388
  */
-public abstract class TransientViewActionFactory {
+public abstract class TransientViewActionFactory implements ExtensionPoint {
 
 	/**
 	 * returns a list of (transient) actions never null, may be empty
