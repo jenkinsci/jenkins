@@ -954,14 +954,14 @@ public class Channel implements VirtualChannel, IChannel {
                         ioe.initCause(e);
                         throw ioe;
                     } catch (ClassNotFoundException e) {
-                        logger.log(Level.SEVERE, "Unable to read a command",e);
+                        logger.log(Level.SEVERE, "Unable to read a command (channel " + name + ")",e);
                     }
                     if(logger.isLoggable(Level.FINE))
                         logger.fine("Received "+cmd);
                     try {
                         cmd.execute(Channel.this);
                     } catch (Throwable t) {
-                        logger.log(Level.SEVERE, "Failed to execute command "+cmd,t);
+                        logger.log(Level.SEVERE, "Failed to execute command "+cmd+ " (channel " + name + ")",t);
                         logger.log(Level.SEVERE, "This command is created here",cmd.createdAt);
                     }
                 }
