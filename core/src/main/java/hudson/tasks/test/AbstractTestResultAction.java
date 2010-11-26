@@ -311,11 +311,11 @@ public abstract class AbstractTestResultAction<T extends AbstractTestResultActio
                 AbstractTestResultAction a = label.build.getAction(AbstractTestResultAction.class);
                 switch (row) {
                     case 0:
-                        return String.valueOf(Messages.AbstractTestResultAction_fail(a.getFailCount()));
+                        return String.valueOf(Messages.AbstractTestResultAction_fail(label.build.getDisplayName(), a.getFailCount()));
                     case 1:
-                        return String.valueOf(Messages.AbstractTestResultAction_skip(a.getSkipCount()));
+                        return String.valueOf(Messages.AbstractTestResultAction_skip(label.build.getDisplayName(), a.getSkipCount()));
                     default:
-                        return String.valueOf(Messages.AbstractTestResultAction_test(a.getTotalCount()));
+                        return String.valueOf(Messages.AbstractTestResultAction_test(label.build.getDisplayName(), a.getTotalCount()));
                 }
             }
         };
