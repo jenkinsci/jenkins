@@ -26,6 +26,8 @@
 package hudson.model;
 
 import antlr.ANTLRException;
+import com.google.inject.Guice;
+import com.google.inject.Injector;
 import com.thoughtworks.xstream.XStream;
 import hudson.BulkChange;
 import hudson.DNSMultiCast;
@@ -242,6 +244,9 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
      * Stores various objects scoped to {@link Hudson}.
      */
     public transient final Lookup lookup = new Lookup();
+
+    // TODO: fix scope
+    public transient Injector container;
 
     /**
      * {@link Computer}s in this Hudson system. Read-only.

@@ -23,6 +23,13 @@
  */
 package hudson;
 
+import com.google.inject.AbstractModule;
+import com.google.inject.Guice;
+import com.google.inject.Injector;
+import com.google.inject.Module;
+import com.google.inject.Provider;
+import com.google.inject.Singleton;
+import com.google.inject.name.Names;
 import net.java.sezpoz.Index;
 import net.java.sezpoz.IndexItem;
 import hudson.model.Hudson;
@@ -202,6 +209,126 @@ public abstract class ExtensionFinder implements ExtensionPoint {
             }
         }
     }
-    
+
+    @Extension
+    public static final class GuiceFinder extends ExtensionFinder {
+        private Injector container;
+
+        public GuiceFinder() {
+            Module m = new AbstractModule() {
+                @Override
+                protected void configure() {
+                    ClassLoader cl = Hudson.getInstance().getPluginManager().uberClassLoader;
+                    int id=0;
+                    for (final IndexItem<Extension,Object> item : Index.load(Extension.class, Object.class, cl)) {
+                        id++;
+                        try {
+                            AnnotatedElement e = item.element();
+                            Class extType;
+                            if (e instanceof Class) {
+                                extType = (Class) e;
+                                bind((Class<?>)e);
+                                continue;
+                             } else
+                            if (e instanceof Field) {
+                                extType = ((Field)e).getType();
+                                bind(extType).annotatedWith(Names.named(String.valueOf(id)))
+                                    .toInstance(item.instance());
+                            } else
+                            if (e instanceof Method) {
+                                extType = ((Method)e).getReturnType();
+                            } else
+                                throw new AssertionError();
+
+                            if(type.isAssignableFrom(extType)) {
+                                Object instance = item.instance();
+                                if(instance!=null)
+                                    result.add(new ExtensionComponent<T>(type.cast(instance),item.annotation()));
+                            }
+                        } catch (LinkageError e) {
+                            // sometimes the instantiation fails in an indirect classloading failure,
+                            // which results in a LinkageError
+                            LOGGER.log(item.annotation().optional() ? Level.FINE : Level.WARNING,
+                                       "Failed to load "+item.className(), e);
+                        } catch (InstantiationException e) {
+                            LOGGER.log(item.annotation().optional() ? Level.FINE : Level.WARNING,
+                                       "Failed to load "+item.className(), e);
+                        }
+                    }
+                }
+            };
+            container = Guice.createInjector(m);
+        }
+
+        public <T> Collection<ExtensionComponent<T>> find(Class<T> type, Hudson hudson) {
+            List<ExtensionComponent<T>> result = new ArrayList<ExtensionComponent<T>>();
+
+            ClassLoader cl = hudson.getPluginManager().uberClassLoader;
+            for (IndexItem<Extension,Object> item : Index.load(Extension.class, Object.class, cl)) {
+                try {
+                    AnnotatedElement e = item.element();
+                    Class<?> extType;
+                    if (e instanceof Class) {
+                        extType = (Class) e;
+                    } else
+                    if (e instanceof Field) {
+                        extType = ((Field)e).getType();
+                    } else
+                    if (e instanceof Method) {
+                        extType = ((Method)e).getReturnType();
+                    } else
+                        throw new AssertionError();
+
+                    if(type.isAssignableFrom(extType)) {
+                        Object instance = item.instance();
+                        if(instance!=null)
+                            result.add(new ExtensionComponent<T>(type.cast(instance),item.annotation()));
+                    }
+                } catch (LinkageError e) {
+                    // sometimes the instantiation fails in an indirect classloading failure,
+                    // which results in a LinkageError
+                    LOGGER.log(item.annotation().optional() ? Level.FINE : Level.WARNING,
+                               "Failed to load "+item.className(), e);
+                } catch (InstantiationException e) {
+                    LOGGER.log(item.annotation().optional() ? Level.FINE : Level.WARNING,
+                               "Failed to load "+item.className(), e);
+                }
+            }
+
+            return result;
+        }
+
+        @Override
+        public void scout(Class extensionType, Hudson hudson) {
+            ClassLoader cl = hudson.getPluginManager().uberClassLoader;
+            for (IndexItem<Extension,Object> item : Index.load(Extension.class, Object.class, cl)) {
+                try {
+                    AnnotatedElement e = item.element();
+                    Class<?> extType;
+                    if (e instanceof Class) {
+                        extType = (Class) e;
+                    } else
+                    if (e instanceof Field) {
+                        extType = ((Field)e).getType();
+                    } else
+                    if (e instanceof Method) {
+                        extType = ((Method)e).getReturnType();
+                    } else
+                        throw new AssertionError();
+                    // accroding to http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=6459208
+                    // this appears to be the only way to force a class initialization
+                    Class.forName(extType.getName(),true,extType.getClassLoader());
+                } catch (InstantiationException e) {
+                    LOGGER.log(item.annotation().optional() ? Level.FINE : Level.WARNING,
+                               "Failed to scout "+item.className(), e);
+                } catch (ClassNotFoundException e) {
+                    LOGGER.log(Level.WARNING,"Failed to scout "+item.className(), e);
+                } catch (LinkageError e) {
+                    LOGGER.log(Level.WARNING,"Failed to scout "+item.className(), e);
+                }
+            }
+        }
+    }
+
     private static final Logger LOGGER = Logger.getLogger(ExtensionFinder.class.getName());
 }
