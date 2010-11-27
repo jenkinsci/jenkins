@@ -33,7 +33,7 @@ THE SOFTWARE.
   
   <groupId>org.jvnet.hudson.main</groupId>
   <artifactId>pom</artifactId>
-  <version>1.387-SNAPSHOT</version>
+  <version>1.388-SNAPSHOT</version>
   <packaging>pom</packaging>
   
   <name>Hudson main module</name>
@@ -56,10 +56,9 @@ THE SOFTWARE.
       <url>http://hudson.glassfish.org/job/hudson-trunk</url>
   </ciManagement>
   <scm>
-    <!-- release comes from the RC branch now -->
-    <connection>scm:svn:https://guest@svn.dev.java.net/svn/hudson/branches/rc/</connection>
-    <developerConnection>scm:svn:https://svn.dev.java.net/svn/hudson/branches/rc/</developerConnection>
-    <url>https://hudson.dev.java.net/source/browse/hudson/branches/rc/</url>
+    <connection>scm:git:git://github.com/hudson/hudson.git</connection>
+    <developerConnection>scm:git:ssh://git@github.com/hudson/hudson.git</developerConnection>
+    <url>https://github.com/hudson/hudson</url>
   </scm>
 
   <build>
