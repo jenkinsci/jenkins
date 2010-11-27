@@ -1298,11 +1298,4 @@ public class Functions {
         return Boolean.getBoolean("hudson.security.ArtifactsPermission");
     }
 
-    /**
-     * 1.387 special
-     */
-    public static String getBackgroundImage() {
-        // for one week.
-        return System.currentTimeMillis() < 1291363200000L ? "i387.jpg" : "hudson.png";
-    }
 }
