@@ -644,8 +644,12 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
             } else
                 tcpSlaveAgentListener = null;
 
-            udpBroadcastThread = new UDPBroadcastThread(this);
-            udpBroadcastThread.start();
+            try {
+                udpBroadcastThread = new UDPBroadcastThread(this);
+                udpBroadcastThread.start();
+            } catch (IOException e) {
+                LOGGER.log(Level.WARNING, "Faild to broadcast over UDP",e);
+            }
             dnsMultiCast = new DNSMultiCast(this);
 
             updateComputerList();
