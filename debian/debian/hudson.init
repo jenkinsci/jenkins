@@ -146,6 +146,12 @@ do_stop()
     case "$?" in
 	0) 
 	    $DAEMON $DAEMON_ARGS --stop || return 2
+        # wait for the process to really terminate
+        while true;
+        do
+            sleep 1
+            $DAEMON $DAEMON_ARGS --running || break
+        done
 	    ;;
 	*)
 	    force_stop || return 3
