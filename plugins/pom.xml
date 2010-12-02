@@ -1,0 +1,410 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <parent>
+    <groupId>org.jvnet.hudson</groupId>
+    <artifactId>hudson</artifactId>
+    <version>1.7</version>
+    <relativePath>../pom.xml</relativePath>
+  </parent>
+
+  <groupId>org.jvnet.hudson.plugins</groupId>
+  <artifactId>plugin</artifactId>
+  <name>Hudson plugin POM</name>
+  <version>1.387</version>
+  <packaging>pom</packaging>
+
+  <properties>
+    <!-- if your java.net user name is different from local user name, specify it here -->
+    <java.net.id>${user.name}</java.net.id>
+  </properties>
+
+  <!--
+    We need the following because the artifactId=plugin but directoryName=plugins, and
+    Maven infers the wrong value if I don't specify it explicitly.
+  -->
+  <scm>
+    <connection>scm:svn:https://guest@svn.dev.java.net/svn/hudson/trunk/hudson/plugins/</connection>
+    <developerConnection>scm:svn:https://svn.dev.java.net/svn/hudson/trunk/hudson/plugins/</developerConnection>
+    <url>https://hudson.dev.java.net/source/browse/hudson/trunk/hudson/plugins</url>
+  </scm>
+
+  <issueManagement>
+    <system>JIRA</system>
+    <url>http://issues.hudson-ci.org/</url>
+  </issueManagement>
+
+  <dependencyManagement>
+    <dependencies>
+      <dependency><!-- if a plugin wants to depend on the maven plugin, choose the right version automatically -->
+        <groupId>org.jvnet.hudson.main</groupId>
+        <artifactId>maven-plugin</artifactId>
+        <version>1.387</version>
+      </dependency>
+    </dependencies>
+  </dependencyManagement>
+
+  <dependencies>
+    <dependency>
+      <groupId>org.jvnet.hudson.main</groupId>
+      <artifactId>hudson-war</artifactId>
+      <type>war</type>
+      <version>1.387</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.jvnet.hudson.main</groupId>
+      <artifactId>hudson-core</artifactId>
+      <version>1.387</version>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.jvnet.hudson.main</groupId>
+      <artifactId>hudson-test-harness</artifactId>
+      <version>1.387</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.jvnet.hudson.main</groupId>
+      <artifactId>ui-samples-plugin</artifactId>
+      <version>1.387</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+      <version>4.3.1</version>
+      <scope>test</scope>
+    </dependency>
+    <!--
+      Maven is so brain-dead that when a dependency is like:
+
+      plugin -(provided)-> hudson-core -(compile)-> stapler -(provided)-> servlet-api
+
+      Artifacts beyond the provided/provided dependency will not be made available to the plugin.
+      See this in DefaultArtifactFactory.createArtifact() in the maven-artifact module.
+
+      So for us to have servlet API in the classpath, we need to explicitly list servlet-api.
+    -->
+    <dependency>
+      <groupId>javax.servlet</groupId>
+      <artifactId>servlet-api</artifactId>
+      <version>2.4</version>
+      <scope>provided</scope>
+    </dependency>
+  </dependencies>
+  <!--dependencyManagement>
+       <dependencies>
+       <dependency>
+       <groupId>org.jvnet.hudson.main</groupId>
+       <artifactId>maven-plugin</artifactId>
+       <version>1.387</version>
+       </dependency>
+       </dependencies>
+       </dependencyManagement-->
+
+  <build>
+    <!--
+      Since new versions need to overwrite old versions, it's better
+      not to have version number in the .hpi file name.
+    -->
+    <finalName>${project.artifactId}</finalName>
+    <!--
+      I don't really understand how this works, but it makes Maven recognizes
+      <packaging>hpi</packaging> defined in maven-hpi-plugin.
+
+      <extensions>true</extensions> is apparently needed to have Maven read
+      the plugin's Plexus component file.
+    -->
+    <defaultGoal>package</defaultGoal>
+    <plugins>
+      <plugin>
+        <groupId>org.jvnet.hudson.tools</groupId>
+        <artifactId>maven-hpi-plugin</artifactId>
+        <version>1.54</version>
+        <extensions>true</extensions>
+        <configuration>
+          <showDeprecation>true</showDeprecation>
+        </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.kohsuke.stapler</groupId>
+        <artifactId>maven-stapler-plugin</artifactId>
+        <version>1.12</version>
+        <extensions>true</extensions>
+      </plugin>
+      <plugin>
+        <artifactId>maven-release-plugin</artifactId>
+        <version>2.0-beta-9</version>
+        <!-- upload the plugin to java.net and make an announcement as well -->
+        <configuration>
+          <goals>deploy hpi:upload hpi:announce</goals>
+        </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.jvnet.localizer</groupId>
+        <artifactId>maven-localizer-plugin</artifactId>
+        <version>1.8</version>
+        <executions>
+          <execution>
+            <goals>
+              <goal>generate</goal>
+            </goals>
+            <configuration>
+              <fileMask>Messages.properties</fileMask>
+              <outputDirectory>target/generated-sources/localizer</outputDirectory>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <!--
+          javadoc plugin 2.3 apparently interferes with the release process,
+          so sticking to 2.2 (http://www.nabble.com/description-setting-plugin-tp14846399p14950047.html)
+        -->
+        <artifactId>maven-javadoc-plugin</artifactId>
+        <version>2.2</version>
+      </plugin>
+      <plugin>
+        <groupId>org.codehaus.groovy.maven</groupId>
+        <artifactId>gmaven-plugin</artifactId>
+        <version>1.0-rc-5</version>
+        <executions>
+          <execution>
+            <id>test-in-groovy</id>
+            <!-- allow tests written in Groovy -->
+            <goals>
+              <goal>generateTestStubs</goal>
+              <goal>testCompile</goal>
+            </goals>
+          </execution>
+        </executions>
+        <dependencies>
+          <dependency>
+            <groupId>ant</groupId>
+            <artifactId>ant</artifactId>
+            <version>1.6.5</version>
+          </dependency>
+        </dependencies>
+      </plugin>
+      <plugin>
+        <artifactId>maven-surefire-plugin</artifactId>
+        <configuration>
+          <systemProperties>
+            <property>
+              <name>hudson.udp</name>
+              <value>33849</value>
+            </property>
+          </systemProperties>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
+
+  <modules>
+    <!-- #2819: uses private repo, licensing questions: <module>codeviation</module> -->
+    <!--module>coverage</module--><!-- not ready for release yet -->
+    <!--module>drools/drools</module-->
+    <!-- module>jmx-invoker</module  maven-license-plugin causing h.g.o build failure -->
+    <!-- module>skype</module  h.g.o confuses file:libs repo so commenting this -->
+    <!--module>subversion</module-->
+    <module>accurev</module>
+    <module>active-directory</module>
+    <module>analysis-core</module>
+    <module>analysis-collector</module>
+    <module>analysis-pom</module>
+    <module>analysis-test</module>
+    <module>audit-trail</module>
+    <module>backup</module>
+    <module>batch-task</module>
+    <module>bazaar</module>
+    <module>bitkeeper</module>
+    <module>build-publisher</module>
+    <module>bugzilla</module>
+    <module>build-timeout</module>
+    <module>cccc</module>  
+    <module>checkstyle</module>
+    <module>changelog-history</module>
+    <module>chucknorris</module>
+    <module>ci-game</module>
+    <module>claim</module>
+    <module>clearcase</module>
+    <module>clover</module>
+    <module>cmakebuilder</module>
+    <module>cmvc</module>
+    <module>codeplex</module>
+    <module>cobertura</module>
+    <module>copyarchiver</module>  
+    <module>copyartifact</module>
+    <module>cppcheck</module>  
+    <module>cpptest</module>
+    <module>cppunit</module>
+    <module>crap4j</module>
+    <module>crowd</module>
+    <module>cvs-tag</module>
+    <module>cygpath</module>
+    <module>deploy</module>
+    <module>description-setter</module>
+    <module>disk-usage</module>
+    <module>doclinks</module>
+    <module>downstream-buildview</module>
+    <module>downstream-ext</module>
+    <module>doxygen</module>  
+    <module>dry</module>
+    <module>easyant</module>
+    <module>ec2</module>
+    <module>email-ext</module>
+    <module>emma</module>
+    <module>emotional-hudson</module>
+    <module>extended-read-permission</module>
+    <module>findbugs</module>
+    <module>gallio</module>
+    <module>gant</module>
+    <module>gcal</module>
+    <module>gnat</module>
+    <module>googleanalytics</module>
+    <module>googlecode</module>
+    <module>gradle</module>
+    <module>grails</module>
+    <module>greenballs</module>
+    <module>grinder</module>
+    <module>groovy</module>
+    <module>hadoop</module>
+    <module>hello-world</module>
+    <module>harvest</module>
+    <module>htmlpublisher</module>
+    <module>hudsontrayapp</module>
+    <module>instant-messaging</module>
+    <module>ircbot</module>
+    <module>ivy</module>
+    <module>jabber</module>
+    <module>japex</module>
+    <module>javatest-report</module>
+    <module>javancss</module>
+    <module>javanet</module>
+    <module>javanet-uploader</module>
+    <module>javanet-trigger-installer</module>
+    <!-- not compiling <module>jclouds</module> -->
+    <module>jira</module>
+    <module>jmx</module>
+    <module>jobConfigHistory</module>
+    <module>jobrevision</module>
+    <module>join</module>
+    <module>jprt</module>
+    <module>jsunit</module>
+    <module>jswidgets</module>
+    <module>jwsdp-sqe</module>
+    <module>kagemai</module>
+    <module>lastfailureversioncolumn</module>
+    <module>lastsuccessversioncolumn</module>
+    <module>locked-files-report</module>
+    <module>locks-and-latches</module>
+    <module>mantis</module>
+    <module>maven1-snapshot-plugin</module>
+    <module>m2release</module>
+    <module>measurement-plots</module>
+    <module>mercurial</module>
+    <module>mibsr</module>
+    <module>msbuild</module>
+    <module>mstest</module>
+    <module>multiline-tabbar-plugin</module>
+    <module>mysql-auth</module>
+    <module>nant</module>
+    <module>naginator</module>
+    <module>nested-view</module>
+    <module>network-monitor</module>
+    <module>next-build-number</module>
+    <module>nunit</module>
+    <module>plot</module>
+    <module>perforce</module>
+    <module>phing</module>
+    <module>platformlabeler</module>
+    <module>polarion</module>
+    <module>port-allocator</module>
+    <module>powershell</module>
+    <module>pmd</module>
+    <module>promoted-builds</module>
+    <module>promoted-builds-simple</module>
+    <module>pvcs_scm</module>
+    <module>pview</module>
+    <module>pxe</module>
+    <module>qmakebuilder</module>
+    <module>rake</module>
+    <module>redmine</module>
+    <module>release</module>
+    <module>rotatews</module>
+    <module>ruby</module>
+    <module>rubyMetrics</module>
+    <module>sametime</module>
+    <module>schedule-failed-builds</module>
+    <module>scons</module>
+    <module>scp</module>
+    <module>secret</module>
+    <module>sectioned-view</module>
+    <module>seleniumhq</module>
+    <module>setenv</module>
+    <module>sidebar-link</module>
+    <module>sloccount</module>
+    <module>sonar</module>
+    <module>sourcemonitor</module>
+    <module>ssh</module>
+    <module>ssh-slaves</module>
+    <module>sfee</module>
+    <module>svncompat13</module>
+    <module>svncompat14</module>
+    <module>svn-tag</module>
+    <module>swarm</module>
+    <module>tasks</module>
+    <module>testabilityexplorer</module>
+    <module>text-finder</module>
+    <module>tfs</module>
+    <module>toolenv</module>
+    <module>trac</module>
+    <module>translation</module>
+    <module>tusarnotifier</module>
+    <module>twitter</module>
+    <module>url-change-trigger</module>
+    <module>URLSCM</module>
+    <module>validating-string-parameter</module>
+    <module>viewVC</module>
+    <module>violations</module>
+    <module>virtualbox</module>
+    <module>vmware</module>
+    <module>vss</module>
+    <module>warnings</module>
+    <module>webtestpresenter</module>
+    <module>ws7</module>
+    <module>wsclean</module>
+    <module>xunit</module>
+    <module>xvnc</module>
+    <module>zentimestamp</module>
+    <module>terminal</module>
+  </modules>
+
+  <repositories>
+    <repository>
+      <id>m.g.o-public</id>
+      <url>http://maven.glassfish.org/content/groups/public/</url>
+      <releases>
+        <enabled>true</enabled>
+      </releases>
+      <snapshots>
+        <enabled>false</enabled>
+      </snapshots>
+    </repository>
+  </repositories>
+
+  <pluginRepositories>
+    <pluginRepository>
+      <id>m.g.o-public</id>
+      <url>http://maven.glassfish.org/content/groups/public/</url>
+      <releases>
+        <enabled>true</enabled>
+      </releases>
+      <snapshots>
+        <enabled>false</enabled>
+      </snapshots>
+    </pluginRepository>
+  </pluginRepositories>
+
+</project>
