@@ -2459,7 +2459,6 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
     }
 
     public synchronized void doTestPost( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
-        JSONObject form = req.getSubmittedForm();
         rsp.sendRedirect("foo");
     }
 

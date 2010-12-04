@@ -35,7 +35,7 @@ import hudson.model.Executor;
  * Gate-keeper that controls access to Hudson's model objects.
  *
  * @author Kohsuke Kawaguchi
- * @see http://hudson.gotdns.com/wiki/display/HUDSON/Making+your+plugin+behave+in+secured+Hudson
+ * @see http://wiki.hudson-ci.org/display/HUDSON/Making+your+plugin+behave+in+secured+Hudson
  */
 public abstract class ACL {
     /**

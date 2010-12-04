@@ -30,13 +30,10 @@ import hudson.model.Computer;
 import hudson.model.Hudson;
 import hudson.model.TaskListener;
 import hudson.remoting.Channel;
-import hudson.remoting.Channel.Listener;
 import hudson.util.DescriptorList;
 import hudson.util.StreamTaskListener;
 
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
 
 /**
  * Extension point to allow control over how {@link Computer}s are "launched",
