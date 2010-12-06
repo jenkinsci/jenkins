@@ -197,6 +197,7 @@ THE SOFTWARE.
 
       <plugin>
         <artifactId>maven-enforcer-plugin</artifactId>
+        <version>1.0</version>
         <executions>
           <execution>
             <goals>
