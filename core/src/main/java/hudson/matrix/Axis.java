@@ -208,7 +208,7 @@ public class Axis extends AbstractDescribableImpl<Axis> implements Comparable<Ax
      * Returns all the registered {@link AxisDescriptor}s.
      */
     public static DescriptorExtensionList<Axis,AxisDescriptor> all() {
-        return Hudson.getInstance().getDescriptorList(Axis.class);
+        return Hudson.getInstance().<Axis,AxisDescriptor>getDescriptorList(Axis.class);
     }
 
     /**

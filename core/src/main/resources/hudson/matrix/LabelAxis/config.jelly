@@ -35,7 +35,7 @@ THE SOFTWARE.
         var labels = new YAHOO.widget.TextNode("${%Labels}", tree.getRoot(), false);
         var machines = new YAHOO.widget.TextNode("${%Individual nodes}", tree.getRoot(), false);
 
-        var values = (e.getAttribute("values") || "").split(" ");
+        var values = (e.getAttribute("values") || "").split(/[ \n]/);
         function has(v) {
           return values.include(v) ? 'checked="checked" ' : "";
         }

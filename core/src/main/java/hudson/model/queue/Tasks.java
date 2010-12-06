@@ -32,7 +32,7 @@ import java.util.Collections;
  * Convenience methods around {@link Task} and {@link SubTask}.
  *
  * @author Kohsuke Kawaguchi
- * @since 1.FATTASK
+ * @since 1.377
  */
 public class Tasks {
 

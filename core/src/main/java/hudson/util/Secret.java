@@ -35,6 +35,7 @@ import org.kohsuke.stapler.Stapler;
 
 import javax.crypto.SecretKey;
 import javax.crypto.Cipher;
+import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
 import java.io.IOException;
 import java.security.GeneralSecurityException;
@@ -52,7 +53,7 @@ import java.security.GeneralSecurityException;
  *
  * @author Kohsuke Kawaguchi
  */
-public final class Secret {
+public final class Secret implements Serializable {
     /**
      * Unencrypted secret text.
      */
@@ -209,6 +210,8 @@ public final class Secret {
      * For testing only. Override the secret key so that we can test this class without {@link Hudson}.
      */
     /*package*/ static String SECRET = null;
+
+    private static final long serialVersionUID = 1L;
 
     static {
         Stapler.CONVERT_UTILS.register(new org.apache.commons.beanutils.Converter() {

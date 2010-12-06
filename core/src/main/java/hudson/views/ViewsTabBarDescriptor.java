@@ -29,7 +29,7 @@ import hudson.model.Descriptor;
  * {@link Descriptor} for {@link ViewsTabBar}.
  *
  * @author Winston Prakash
- * @since 1.378
+ * @since 1.381
  */
 public abstract class ViewsTabBarDescriptor extends Descriptor<ViewsTabBar> {
     // so far nothing different from plain Descriptor

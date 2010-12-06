@@ -25,7 +25,8 @@
 package hudson.model;
 
 import hudson.security.ACL;
-import org.acegisecurity.Authentication;
+import hudson.security.NotSerilizableSecurityContext;
+import org.acegisecurity.context.SecurityContext;
 import org.acegisecurity.context.SecurityContextHolder;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
@@ -92,10 +93,13 @@ public final class DependencyGraph implements Comparator<AbstractProject> {
      * Builds the dependency graph.
      */
     public DependencyGraph() {
-        // Set full privileges while computing to avoid missing any projects the current user cannot see
-        Authentication saveAuth = SecurityContextHolder.getContext().getAuthentication();
+        // Set full privileges while computing to avoid missing any projects the current user cannot see.
+        // Use setContext (NOT getContext().setAuthentication()) so we don't affect concurrent threads for same HttpSession.
+        SecurityContext saveCtx = SecurityContextHolder.getContext();
         try {
-            SecurityContextHolder.getContext().setAuthentication(ACL.SYSTEM);
+            NotSerilizableSecurityContext system = new NotSerilizableSecurityContext();
+            system.setAuthentication(ACL.SYSTEM);
+            SecurityContextHolder.setContext(system);
             for( AbstractProject p : Hudson.getInstance().getAllItems(AbstractProject.class) )
                 p.buildDependencyGraph(this);
 
@@ -104,7 +108,7 @@ public final class DependencyGraph implements Comparator<AbstractProject> {
 
             built = true;
         } finally {
-            SecurityContextHolder.getContext().setAuthentication(saveAuth);
+            SecurityContextHolder.setContext(saveCtx);
         }
     }
 

@@ -79,9 +79,8 @@ public class TextFile {
         try {
             w.write(text);
             w.commit();
-        } catch (IOException e) {
+        } finally {
             w.abort();
-            throw e;
         }
     }
 

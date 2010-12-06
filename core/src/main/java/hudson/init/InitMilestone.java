@@ -70,6 +70,12 @@ public enum InitMilestone implements Milestone {
     PLUGINS_STARTED("Started all plugins"),
 
     /**
+     * By this milestone, all programmatically constructed extension point implementations
+     * should be added.
+     */
+    EXTENSIONS_AUGMENTED("Augmented all extensions"),
+
+    /**
      * By this milestone, all jobs and their build records are loaded from disk.
      */
     JOB_LOADED("Loaded all jobs"),

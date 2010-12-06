@@ -30,6 +30,7 @@ import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 
 import java.io.IOException;
+import org.acegisecurity.AccessDeniedException;
 
 /**
  * Authorization token to allow projects to trigger themselves under the secured environment.
@@ -66,6 +67,7 @@ public final class BuildAuthorizationToken {
             String providedToken = req.getParameter("token");
             if (providedToken != null && providedToken.equals(token.token))
                 return;
+            throw new AccessDeniedException(Messages.BuildAuthorizationToken_InvalidTokenProvided());
         }
 
         project.checkPermission(AbstractProject.BUILD);

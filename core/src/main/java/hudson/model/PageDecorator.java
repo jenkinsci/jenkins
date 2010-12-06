@@ -114,6 +114,6 @@ public abstract class PageDecorator extends Descriptor<PageDecorator> implements
      * Returns all the registered {@link PageDecorator} descriptors.
      */
     public static ExtensionList<PageDecorator> all() {
-        return Hudson.getInstance().getDescriptorList(PageDecorator.class);
+        return Hudson.getInstance().<PageDecorator,PageDecorator>getDescriptorList(PageDecorator.class);
     }
 }

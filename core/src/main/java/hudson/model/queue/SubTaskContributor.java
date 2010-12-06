@@ -39,7 +39,7 @@ import java.util.Collections;
  * Put @{@link Extension} on your implementation classes to register them.
  *
  * @author Kohsuke Kawaguchi
- * @since 1.FATTASK
+ * @since 1.377
  */
 public abstract class SubTaskContributor implements ExtensionPoint {
     public Collection<? extends SubTask> forProject(AbstractProject<?,?> p) {

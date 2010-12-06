@@ -24,7 +24,6 @@
 package hudson.model;
 
 import hudson.tasks.BuildStep;
-import hudson.tasks.BuildTrigger;
 import hudson.tasks.BuildWrapper;
 import hudson.tasks.Builder;
 import hudson.tasks.Recorder;
@@ -165,8 +164,7 @@ public abstract class Build <P extends Project<P,B>,B extends Build<P,B>>
             // at this point it's too late to mark the build as a failure, so ignore return value.
             performAllBuildSteps(listener, project.getPublishers(), false);
             performAllBuildSteps(listener, project.getProperties(), false);
-            BuildTrigger.execute(Build.this, listener);
-            buildEnvironments = null;
+            super.cleanUp(listener);
         }
 
         private boolean build(BuildListener listener, Collection<Builder> steps) throws IOException, InterruptedException {

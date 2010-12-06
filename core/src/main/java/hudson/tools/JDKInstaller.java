@@ -305,7 +305,12 @@ public class JDKInstaller extends ToolInstaller {
         try {
             FileOutputStream out = new FileOutputStream(tmp);
             try {
-                IOUtils.copy(new RetryableHttpStream(src), out);
+                IOUtils.copy(new RetryableHttpStream(src) {
+                    @Override
+                    protected HttpURLConnection connect() throws IOException {
+                        return (HttpURLConnection) ProxyConfiguration.open(url);
+                    }
+                }, out);
             } finally {
                 out.close();
             }

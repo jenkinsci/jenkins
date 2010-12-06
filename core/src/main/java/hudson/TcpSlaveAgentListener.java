@@ -212,7 +212,7 @@ public final class TcpSlaveAgentListener extends Thread {
                 return;
             }
 
-            String nodeName = in.readUTF();
+            final String nodeName = in.readUTF();
             SlaveComputer computer = (SlaveComputer) Hudson.getInstance().getComputer(nodeName);
             if(computer==null) {
                 error(out, "No such slave: "+nodeName);
@@ -241,7 +241,7 @@ public final class TcpSlaveAgentListener extends Thread {
                                 e.printStackTrace();
                             }
                             if(cause!=null)
-                                LOGGER.log(Level.WARNING, "Connection #"+id+" terminated",cause);
+                                LOGGER.log(Level.WARNING, "Connection #"+id+" for + " + nodeName + " terminated",cause);
                             try {
                                 ConnectionHandler.this.s.close();
                             } catch (IOException e) {
@@ -254,7 +254,7 @@ public final class TcpSlaveAgentListener extends Thread {
                 logw.println("Failed to establish the connection with the slave");
                 throw e;
             } catch (IOException e) {
-                logw.println("Failed to establish the connection with the slave"); 
+                logw.println("Failed to establish the connection with the slave " + nodeName); 
                 e.printStackTrace(logw);
                 throw e;
             }

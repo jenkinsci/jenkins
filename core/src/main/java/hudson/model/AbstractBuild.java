@@ -47,6 +47,7 @@ import hudson.tasks.Builder;
 import hudson.tasks.Fingerprinter.FingerprintAction;
 import hudson.tasks.Publisher;
 import hudson.tasks.BuildStepMonitor;
+import hudson.tasks.BuildTrigger;
 import hudson.tasks.test.AbstractTestResultAction;
 import hudson.util.AdaptedIterator;
 import hudson.util.Iterators;
@@ -230,7 +231,7 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
     public final FilePath getModuleRoot() {
         FilePath ws = getWorkspace();
         if (ws==null)    return null;
-        return getParent().getScm().getModuleRoot(ws);
+        return getParent().getScm().getModuleRoot(ws,this);
     }
 
     /**
@@ -243,7 +244,7 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
     public FilePath[] getModuleRoots() {
         FilePath ws = getWorkspace();
         if (ws==null)    return null;
-        return getParent().getScm().getModuleRoots(ws);
+        return getParent().getScm().getModuleRoots(ws,this);
     }
 
     /**
@@ -488,7 +489,7 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
                             return;
                         }
                     } catch (AbortException e) {
-                        // checkout error already reported
+                        listener.error(e.getMessage());
                     } catch (IOException e) {
                         // checkout error not yet reported
                         e.printStackTrace(listener.getLogger());
@@ -543,7 +544,8 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
         }
 
         public void cleanUp(BuildListener listener) throws Exception {
-            // default is no-op
+            BuildTrigger.execute(AbstractBuild.this, listener);
+            buildEnvironments = null;
         }
 
         /**

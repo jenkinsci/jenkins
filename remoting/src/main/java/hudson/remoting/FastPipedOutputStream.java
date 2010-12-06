@@ -46,6 +46,8 @@ public class FastPipedOutputStream extends OutputStream {
      */
     private long written=0;
 
+    private final Throwable allocatedAt = new Throwable();
+
     /**
      * Creates an unconnected PipedOutputStream.
      */
@@ -75,7 +77,7 @@ public class FastPipedOutputStream extends OutputStream {
 
     private FastPipedInputStream sink() throws IOException {
         FastPipedInputStream s = sink.get();
-        if (s==null)    throw new IOException("Reader side has already been abandoned");
+        if (s==null)    throw (IOException)new IOException("Reader side has already been abandoned").initCause(allocatedAt);
         return s;
     }
 

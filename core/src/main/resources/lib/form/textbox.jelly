@@ -1,7 +1,7 @@
 <!--
 The MIT License
 
-Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi
+Copyright (c) 2004-2010, Sun Microsystems, Inc., Kohsuke Kawaguchi, Yahoo! Inc.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -58,6 +58,12 @@ THE SOFTWARE.
 
       If @field is specified, this will be inferred automatically,
       which is the recommended approach.
+    </st:attribute>
+    <st:attribute name="autoCompleteDelimChar">
+      A single character that can be used as a delimiter for autocompletion. Normal
+      autocomplete will replace the entire content of the text box with the autocomplete
+      selection. With this attribute set, the selection will be appended with the
+      delimiter to the existing value of the text box.
     </st:attribute>
   </st:documentation>
   <f:prepareDatabinding />

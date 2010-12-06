@@ -25,12 +25,15 @@ package hudson.remoting;
 
 import hudson.remoting.ChannelRunner.InProcessCompatibilityMode;
 import junit.framework.Test;
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.output.NullOutputStream;
 
+import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
 import java.io.OutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.Serializable;
 import java.util.Arrays;
 
 /**
@@ -38,7 +41,7 @@ import java.util.Arrays;
  *
  * @author Kohsuke Kawaguchi
  */
-public class PipeTest extends RmiTestBase {
+public class PipeTest extends RmiTestBase implements Serializable {
     /**
      * Test the "remote-write local-read" pipe.
      */
@@ -205,6 +208,28 @@ public class PipeTest extends RmiTestBase {
         f.close();
     }
 
+    /**
+     * Writer end closes even before the remote computation kicks in.
+     */
+    public void testQuickBurstWrite() throws Exception {
+        final Pipe p = Pipe.createLocalToRemote();
+        Future<Integer> f = channel.callAsync(new Callable<Integer, IOException>() {
+            public Integer call() throws IOException {
+                ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                IOUtils.copy(p.getIn(), baos);
+                return baos.size();
+            }
+        });
+        OutputStream os = p.getOut();
+        os.write(1);
+        os.close();
+
+        // at this point the async executable kicks in.
+        // TODO: introduce a lock to ensure the ordering.
+
+        assertEquals(1,(int)f.get());
+    }
+
     private static class DevNullSink implements Callable<OutputStream, IOException> {
         public OutputStream call() throws IOException {
             return new RemoteOutputStream(new NullOutputStream());
@@ -214,5 +239,9 @@ public class PipeTest extends RmiTestBase {
 
     public static Test suite() throws Exception {
         return buildSuite(PipeTest.class);
+    }
+
+    private Object writeReplace() {
+        return null;
     }
 }

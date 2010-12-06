@@ -358,20 +358,23 @@ public class MailSender {
         return msg;
     }
 
-    private void includeCulpritsOf(AbstractProject upstreamBuild, AbstractBuild<?, ?> currentBuild, BuildListener listener, Set<InternetAddress> recipientList) throws AddressException {
-        AbstractBuild<?,?> pb = currentBuild.getPreviousBuild();
-        AbstractBuild<?,?> ub = currentBuild.getUpstreamRelationshipBuild(upstreamBuild);
-        AbstractBuild<?,?> upb = pb!=null ? pb.getUpstreamRelationshipBuild(upstreamBuild) : null;
-        if(pb==null && ub==null && upb==null) {
-            listener.getLogger().println("Unable to compute the changesets in "+ upstreamBuild +". Is the fingerprint configured?");
+    private void includeCulpritsOf(AbstractProject upstreamProject, AbstractBuild<?, ?> currentBuild, BuildListener listener, Set<InternetAddress> recipientList) throws AddressException {
+        AbstractBuild<?,?> upstreamBuild = currentBuild.getUpstreamRelationshipBuild(upstreamProject);
+        AbstractBuild<?,?> previousBuild = currentBuild.getPreviousBuild();
+        AbstractBuild<?,?> previousBuildUpstreamBuild = previousBuild!=null ? previousBuild.getUpstreamRelationshipBuild(upstreamProject) : null;
+        if(previousBuild==null && upstreamBuild==null && previousBuildUpstreamBuild==null) {
+            listener.getLogger().println("Unable to compute the changesets in "+ upstreamProject +". Is the fingerprint configured?");
             return;
         }
-        if(pb==null || ub==null || upb==null) {
-            listener.getLogger().println("Unable to compute the changesets in "+ upstreamBuild);
+        if(previousBuild==null || upstreamBuild==null || previousBuildUpstreamBuild==null) {
+            listener.getLogger().println("Unable to compute the changesets in "+ upstreamProject);
             return;
         }
-        for( AbstractBuild<?,?> b=upb; b!=ub && b!=null; b=b.getNextBuild())
+        AbstractBuild<?,?> b=previousBuildUpstreamBuild;
+        do {
             recipientList.addAll(buildCulpritList(listener,b.getCulprits()));
+            b = b.getNextBuild();
+        } while ( b != upstreamBuild && b != null );
     }
 
     private Set<InternetAddress> buildCulpritList(BuildListener listener, Set<User> culprits) throws AddressException {

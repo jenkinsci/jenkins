@@ -37,24 +37,23 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 import java.io.PrintWriter;
-import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
 import java.lang.ref.WeakReference;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.Map;
 import java.util.Vector;
 import java.util.WeakHashMap;
-import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.logging.ConsoleHandler;
-import java.util.logging.Formatter;
 import java.util.logging.Level;
-import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import java.net.URL;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Executor;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadFactory;
 
 /**
  * Represents a communication channel to the remote peer.
@@ -955,14 +954,14 @@ public class Channel implements VirtualChannel, IChannel {
                         ioe.initCause(e);
                         throw ioe;
                     } catch (ClassNotFoundException e) {
-                        logger.log(Level.SEVERE, "Unable to read a command",e);
+                        logger.log(Level.SEVERE, "Unable to read a command (channel " + name + ")",e);
                     }
                     if(logger.isLoggable(Level.FINE))
                         logger.fine("Received "+cmd);
                     try {
                         cmd.execute(Channel.this);
                     } catch (Throwable t) {
-                        logger.log(Level.SEVERE, "Failed to execute command "+cmd,t);
+                        logger.log(Level.SEVERE, "Failed to execute command "+cmd+ " (channel " + name + ")",t);
                         logger.log(Level.SEVERE, "This command is created here",cmd.createdAt);
                     }
                 }

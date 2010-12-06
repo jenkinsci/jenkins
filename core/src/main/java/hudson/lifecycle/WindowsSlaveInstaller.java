@@ -1,7 +1,7 @@
 /*
  * The MIT License
  * 
- * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi
+ * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, CloudBees, Inc.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,29 +23,36 @@
  */
 package hudson.lifecycle;
 
+import com.sun.jna.Native;
 import hudson.Launcher.LocalLauncher;
 import hudson.Util;
+import hudson.model.TaskListener;
 import hudson.remoting.Callable;
 import hudson.remoting.Engine;
 import hudson.remoting.jnlp.MainDialog;
 import hudson.remoting.jnlp.MainMenu;
 import hudson.util.StreamTaskListener;
 import hudson.util.jna.DotNet;
+import hudson.util.jna.Kernel32Utils;
+import hudson.util.jna.SHELLEXECUTEINFO;
+import hudson.util.jna.Shell32;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.output.ByteArrayOutputStream;
 
 import javax.swing.*;
-import static javax.swing.JOptionPane.ERROR_MESSAGE;
-import static javax.swing.JOptionPane.OK_CANCEL_OPTION;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.net.URL;
+
+import static hudson.util.jna.SHELLEXECUTEINFO.*;
+import static javax.swing.JOptionPane.*;
 
 /**
  * @author Kohsuke Kawaguchi
@@ -90,6 +97,44 @@ public class WindowsSlaveInstaller implements Callable<Void,RuntimeException>, A
     }
 
     /**
+     * Invokes slave.exe with a SCM management command.
+     *
+     * <p>
+     * If it fails in a way that indicates the presence of UAC, retry in an UAC compatible manner.
+     */
+    static int runElevated(File slaveExe, String command, TaskListener out, File pwd) throws IOException, InterruptedException {
+        try {
+            return new LocalLauncher(out).launch().cmds(slaveExe, command).stdout(out).pwd(pwd).join();
+        } catch (IOException e) {
+            if (e.getMessage().contains("CreateProcess") && e.getMessage().contains("=740")) {
+                // fall through
+            } else {
+                throw e;
+            }
+        }
+
+        // error code 740 is ERROR_ELEVATION_REQUIRED, indicating that
+        // we run in UAC-enabled Windows and we need to run this in an elevated privilege
+        SHELLEXECUTEINFO sei = new SHELLEXECUTEINFO();
+        sei.fMask = SEE_MASK_NOCLOSEPROCESS;
+        sei.lpVerb = "runas";
+        sei.lpFile = slaveExe.getAbsolutePath();
+        sei.lpParameters = "/redirect redirect.log "+command;
+        sei.lpDirectory = pwd.getAbsolutePath();
+        sei.nShow = SW_HIDE;
+        if (!Shell32.INSTANCE.ShellExecuteEx(sei))
+            throw new IOException("Failed to shellExecute: "+ Native.getLastError());
+
+        try {
+            return Kernel32Utils.waitForExitProcess(sei.hProcess);
+        } finally {
+            FileInputStream fin = new FileInputStream(new File(pwd,"redirect.log"));
+            IOUtils.copy(fin,out.getLogger());
+            fin.close();
+        }
+    }
+
+    /**
      * Called when the install menu is selected
      */
     public void actionPerformed(ActionEvent e) {
@@ -131,7 +176,7 @@ public class WindowsSlaveInstaller implements Callable<Void,RuntimeException>, A
             // install as a service
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
             StreamTaskListener task = new StreamTaskListener(baos);
-            r = new LocalLauncher(task).launch().cmds(slaveExe, "install").stdout(task).pwd(dir).join();
+            r = runElevated(slaveExe,"install",task,dir);
             if(r!=0) {
                 JOptionPane.showMessageDialog(
                     dialog,baos.toString(),"Error", ERROR_MESSAGE);
@@ -148,7 +193,7 @@ public class WindowsSlaveInstaller implements Callable<Void,RuntimeException>, A
                 public void run() {
                     try {
                         StreamTaskListener task = StreamTaskListener.fromStdout();
-                        int r = new LocalLauncher(task).launch().cmds(slaveExe, "start").stdout(task).pwd(dir).join();
+                        int r = runElevated(slaveExe,"start",task,dir);
                         task.getLogger().println(r==0?"Successfully started":"start service failed. Exit code="+r);
                     } catch (IOException e) {
                         e.printStackTrace();

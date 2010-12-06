@@ -26,6 +26,7 @@ package hudson.model.queue;
 import hudson.model.Queue.Executable;
 
 import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 
 /**
  * Convenience methods around {@link Executable}.
@@ -41,7 +42,9 @@ public class Executables {
             return _getParentOf(e);
         } catch (AbstractMethodError _) {
             try {
-                return (SubTask)e.getClass().getMethod("getParent").invoke(e);
+                Method m = e.getClass().getMethod("getParent");
+                m.setAccessible(true);
+                return (SubTask) m.invoke(e);
             } catch (IllegalAccessException x) {
                 throw (Error)new IllegalAccessError().initCause(x);
             } catch (NoSuchMethodException x) {
@@ -61,5 +64,26 @@ public class Executables {
      */
     private static SubTask _getParentOf(Executable e) {
         return e.getParent();
+    }
+
+    /**
+     * Returns the estimated duration for the executable.
+     * Protects against {@link AbstractMethodError}s if the {@link Executable} implementation
+     * was compiled against Hudson < 1.383
+     */
+    public static long getEstimatedDurationFor(Executable e) {
+        try {
+            return _getEstimatedDuration(e);
+        } catch (AbstractMethodError error) {
+            return e.getParent().getEstimatedDuration();
+        }
+    }
+
+    /**
+     * A pointless function to work around what appears to be a HotSpot problem. See HUDSON-5756 and bug 6933067
+     * on BugParade for more details.
+     */
+    private static long _getEstimatedDuration(Executable e) {
+        return e.getEstimatedDuration();
     }
 }

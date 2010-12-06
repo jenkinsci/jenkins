@@ -157,6 +157,11 @@ public abstract class ExtensionFinder implements ExtensionPoint {
                         if(instance!=null)
                             result.add(new ExtensionComponent<T>(type.cast(instance),item.annotation()));
                     }
+                } catch (LinkageError e) {
+                    // sometimes the instantiation fails in an indirect classloading failure,
+                    // which results in a LinkageError
+                    LOGGER.log(item.annotation().optional() ? Level.FINE : Level.WARNING,
+                               "Failed to load "+item.className(), e);
                 } catch (InstantiationException e) {
                     LOGGER.log(item.annotation().optional() ? Level.FINE : Level.WARNING,
                                "Failed to load "+item.className(), e);

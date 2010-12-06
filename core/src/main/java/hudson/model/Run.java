@@ -2,7 +2,8 @@
  * The MIT License
  * 
  * Copyright (c) 2004-2010, Sun Microsystems, Inc., Kohsuke Kawaguchi,
- * Daniel Dyer, Red Hat, Inc., Tom Huybrechts, Romain Seguy
+ * Daniel Dyer, Red Hat, Inc., Tom Huybrechts, Romain Seguy, Yahoo! Inc.,
+ * Darek Ostolski
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,6 +25,7 @@
  */
 package hudson.model;
 
+import hudson.console.ConsoleLogFilter;
 import hudson.Functions;
 import hudson.AbortException;
 import hudson.BulkChange;
@@ -92,6 +94,7 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.io.input.NullInputStream;
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.jelly.XMLOutput;
 import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.StaplerRequest;
@@ -689,6 +692,42 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
         return r;
     }
 
+    /**
+     * Returns the last successful build before this build.
+     * @since 1.383
+     */
+    public RunT getPreviousSuccessfulBuild() {
+        RunT r=previousBuild;
+        while( r!=null && r.getResult()!=Result.SUCCESS )
+            r=r.previousBuild;
+        return r;
+    }
+
+    /**
+     * Returns the last 'numberOfBuilds' builds with a build result >= 'threshold'.
+     * 
+     * @param numberOfBuilds the desired number of builds
+     * @param threshold the build result threshold
+     * @return a list with the builds (youngest build first).
+     *   May be smaller than 'numberOfBuilds' or even empty
+     *   if not enough builds satisfying the threshold have been found. Never null.
+     * @since 1.383
+     */
+    public List<RunT> getPreviousBuildsOverThreshold(int numberOfBuilds, Result threshold) {
+        List<RunT> builds = new ArrayList<RunT>(numberOfBuilds);
+        
+        RunT r = getPreviousBuild();
+        while (r != null && builds.size() < numberOfBuilds) {
+            if (!r.isBuilding() && 
+                 (r.getResult() != null && r.getResult().isBetterOrEqualTo(threshold))) {
+                builds.add(r);
+            }
+            r = r.getPreviousBuild();
+        }
+        
+        return builds;
+    }
+
     public RunT getNextBuild() {
         return nextBuild;
     }
@@ -1034,8 +1073,19 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
      * @since 1.349
      */
     public void writeLogTo(long offset, XMLOutput out) throws IOException {
-        // TODO: resurrect compressed log file support
-        getLogText().writeHtmlTo(offset,out.asWriter());
+        try {
+			getLogText().writeHtmlTo(offset,out.asWriter());
+		} catch (IOException e) {
+			// try to fall back to the old getLogInputStream()
+			// mainly to support .gz compressed files
+			// In this case, console annotation handling will be turned off.
+			InputStream input = getLogInputStream();
+			try {
+				IOUtils.copy(input, out.asWriter());
+			} finally {
+				IOUtils.closeQuietly(input);
+			}
+		}
     }
 
     /**
@@ -1261,6 +1311,13 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
                     // served to the browser immediately
                     OutputStream logger = new FileOutputStream(getLogFile());
                     RunT build = job.getBuild();
+
+                    // Global log filters
+                    for (ConsoleLogFilter filter : ConsoleLogFilter.all()) {
+                        logger = filter.decorateLogger((AbstractBuild) build, logger);
+                    }
+
+                    // Project specific log filterss
                     if (project instanceof BuildableItemWithBuildWrappers && build instanceof AbstractBuild) {
                         BuildableItemWithBuildWrappers biwbw = (BuildableItemWithBuildWrappers) project;
                         for (BuildWrapper bw : biwbw.getBuildWrappersList()) {
@@ -1285,6 +1342,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
                     throw t;
                 } catch( AbortException e ) {// orderly abortion.
                     result = Result.FAILURE;
+                    listener.error(e.getMessage());
                     LOGGER.log(FINE, "Build "+this+" aborted",e);
                 } catch( RunnerAbortedException e ) {// orderly abortion.
                     result = Result.FAILURE;
@@ -1504,7 +1562,8 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
                 return new Summary(false, Messages.Run_Summary_BrokenForALongTime());
             if(since==prev)
                 return new Summary(true, Messages.Run_Summary_BrokenSinceThisBuild());
-            return new Summary(false, Messages.Run_Summary_BrokenSince(since.getDisplayName()));
+            RunT failedBuild = since.getNextBuild();
+            return new Summary(false, Messages.Run_Summary_BrokenSince(failedBuild.getDisplayName()));
         }
 
         if(getResult()==Result.ABORTED)
@@ -1677,7 +1736,10 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
      * @since 1.305
      */
     public EnvVars getEnvironment(TaskListener log) throws IOException, InterruptedException {
-        EnvVars env = Computer.currentComputer().getEnvironment().overrideAll(getCharacteristicEnvVars());
+        EnvVars env = getCharacteristicEnvVars();
+        Computer c = Computer.currentComputer();
+        if (c!=null)
+            env = c.getEnvironment().overrideAll(env);
         String rootUrl = Hudson.getInstance().getRootUrl();
         if(rootUrl!=null) {
             env.put("HUDSON_URL", rootUrl);
@@ -1731,6 +1793,17 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
         return job.getBuildByNumber(number);
     }
 
+    /**
+     * Returns the estimated duration for this run if it is currently running.
+     * Default to {@link Job#getEstimatedDuration()}, may be overridden in subclasses
+     * if duration may depend on run specific parameters (like incremental Maven builds).
+     * 
+     * @return the estimated duration in milliseconds
+     * @since 1.383
+     */
+    public long getEstimatedDuration() {
+        return project.getEstimatedDuration();
+    }
 
     public static final XStream XSTREAM = new XStream2();
     static {

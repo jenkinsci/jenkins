@@ -237,6 +237,11 @@ public class MatrixConfiguration extends Project<MatrixConfiguration,MatrixRun> 
     }
 
     @Override
+    public DescribableList<BuildWrapper, Descriptor<BuildWrapper>> getBuildWrappersList() {
+        return getParent().getBuildWrappersList();
+    }
+
+    @Override
     public Publisher getPublisher(Descriptor<Publisher> descriptor) {
         return getParent().getPublisher(descriptor);
     }

@@ -1,7 +1,7 @@
 /*
  * The MIT License
  *
- * Copyright (c) 2004-2009, Sun Microsystems, Inc., Tom Huybrechts, Yahoo!, Inc.
+ * Copyright (c) 2004-2010, Sun Microsystems, Inc., Tom Huybrechts, Yahoo!, Inc., Seiji Sogabe
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -25,9 +25,20 @@ package hudson.tasks.junit;
 
 import hudson.model.AbstractBuild;
 import hudson.model.Hudson;
-import hudson.tasks.test.TestResult;
 import hudson.tasks.test.TestObject;
-import hudson.util.*;
+import hudson.tasks.test.TestResult;
+import hudson.util.ChartUtil;
+import hudson.util.ColorPalette;
+import hudson.util.DataSetBuilder;
+import hudson.util.Graph;
+import hudson.util.ShiftedCategoryAxis;
+import hudson.util.StackedAreaRenderer2;
+
+import java.awt.Color;
+import java.awt.Paint;
+import java.util.ArrayList;
+import java.util.List;
+
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.JFreeChart;
 import org.jfree.chart.axis.CategoryAxis;
@@ -38,10 +49,7 @@ import org.jfree.chart.plot.PlotOrientation;
 import org.jfree.chart.renderer.category.StackedAreaRenderer;
 import org.jfree.data.category.CategoryDataset;
 import org.jfree.ui.RectangleInsets;
-
-import java.awt.*;
-import java.util.ArrayList;
-import java.util.List;
+import org.kohsuke.stapler.Stapler;
 
 /**
  * History of {@link hudson.tasks.test.TestObject} over time.
@@ -66,16 +74,21 @@ public class History {
            return false; 
     }
 	
+    public List<TestResult> getList(int start, int end) {
+    	List<TestResult> list = new ArrayList<TestResult>();
+    	end = Math.min(end, testObject.getOwner().getParent().getBuilds().size());
+    	for (AbstractBuild<?,?> b: testObject.getOwner().getParent().getBuilds().subList(start, end)) {
+    		if (b.isBuilding()) continue;
+    		TestResult o = testObject.getResultInBuild(b);
+    		if (o != null) {
+    			list.add(o);
+    		}
+    	}
+    	return list;
+    }
+    
 	public List<TestResult> getList() {
-		List<TestResult> list = new ArrayList<TestResult>();
-		for (AbstractBuild<?,?> b: testObject.getOwner().getParent().getBuilds()) {
-			if (b.isBuilding()) continue;
-			TestResult o = testObject.getResultInBuild(b);
-			if (o != null) {
-				list.add(o);
-			}
-		}
-		return list;
+		return getList(0, testObject.getOwner().getParent().getBuilds().size());
 	}
 
     /**
@@ -83,9 +96,20 @@ public class History {
      */
     public Graph getDurationGraph() {
        return new GraphImpl("seconds") {
+    	   
            protected DataSetBuilder<String, ChartLabel> createDataSet() {
                DataSetBuilder<String, ChartLabel> data = new DataSetBuilder<String, ChartLabel>();
-               for (hudson.tasks.test.TestResult o: getList()) {
+               
+               List<TestResult> list;
+               try {
+               	list = getList(
+               			Integer.parseInt(Stapler.getCurrentRequest().getParameter("start")), 
+               			Integer.parseInt(Stapler.getCurrentRequest().getParameter("end")));
+               } catch (NumberFormatException e) {
+               	list = getList();
+               }
+               
+			for (hudson.tasks.test.TestResult o: list) {
                    data.add(((double) o.getDuration()) / (1000), "", new ChartLabel(o)  {
                        @Override
                        public Color getColor() {
@@ -100,6 +124,7 @@ public class History {
                }
                return data;
            }
+           
        };
     }
 
@@ -111,7 +136,16 @@ public class History {
             protected DataSetBuilder<String, ChartLabel> createDataSet() {
                 DataSetBuilder<String, ChartLabel> data = new DataSetBuilder<String, ChartLabel>();
 
-                for (TestResult o: getList()) {
+                List<TestResult> list;
+                try {
+                	list = getList(
+                			Integer.parseInt(Stapler.getCurrentRequest().getParameter("start")), 
+                			Integer.parseInt(Stapler.getCurrentRequest().getParameter("end")));
+                } catch (NumberFormatException e) {
+                	list = getList();
+                }
+                
+                for (TestResult o: list) {
                     data.add(o.getPassCount(), "2Passed", new ChartLabel(o));
                     data.add(o.getFailCount(), "1Failed", new ChartLabel(o));
                     data.add(o.getSkipCount(), "0Skipped", new ChartLabel(o));
@@ -125,7 +159,7 @@ public class History {
         private final String yLabel;
 
         protected GraphImpl(String yLabel) {
-            super(testObject.getOwner().getTimestamp(),600,300);
+            super(-1,600,300); // cannot use timestamp, since ranges may change
             this.yLabel =  yLabel;
         }
 

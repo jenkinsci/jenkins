@@ -23,13 +23,12 @@
  */
 package hudson.console;
 
-import hudson.CloseProofOutputStream;
 import hudson.MarkupText;
 import hudson.model.Describable;
 import hudson.model.Hudson;
 import hudson.model.Run;
 import hudson.remoting.ObjectInputStreamEx;
-import hudson.util.FlushProofOutputStream;
+import hudson.util.IOException2;
 import hudson.util.IOUtils;
 import hudson.util.UnbufferedBase64InputStream;
 import org.apache.commons.codec.binary.Base64OutputStream;
@@ -151,20 +150,10 @@ public abstract class ConsoleNote<T> implements Serializable, Describable<Consol
      * of {@link ConsoleAnnotator}.
      */
     public void encodeTo(OutputStream out) throws IOException {
-        out.write(PREAMBLE);
-        ByteArrayOutputStream buf = new ByteArrayOutputStream();
-        ObjectOutputStream oos = new ObjectOutputStream(new GZIPOutputStream(buf));
-        oos.writeObject(this);
-        oos.close();
-
-        DataOutputStream dos = new DataOutputStream(new Base64OutputStream(new FlushProofOutputStream(new CloseProofOutputStream(out)),true,-1,null));
-        // we don't need the size by ourselves, but it's useful to gracefully recover from an error
-        // if the deserialization fail in the middle.
-        dos.writeInt(buf.size());
-        buf.writeTo(dos);
-        dos.close();
-
-        out.write(POSTAMBLE);
+        // atomically write to the final output, to minimize the chance of something else getting in between the output.
+        // even with this, it is still technically possible to get such a mix-up to occur (for example,
+        // if Java program is reading stdout/stderr separately and copying them into the same final stream.)
+        out.write(encodeToBytes().toByteArray());
     }
 
     /**
@@ -175,21 +164,24 @@ public abstract class ConsoleNote<T> implements Serializable, Describable<Consol
      * encoding is ASCII compatible.
      */
     public void encodeTo(Writer out) throws IOException {
-        out.write(PREAMBLE_STR);
+        out.write(encodeToBytes().toString());
+    }
+
+    private ByteArrayOutputStream encodeToBytes() throws IOException {
         ByteArrayOutputStream buf = new ByteArrayOutputStream();
         ObjectOutputStream oos = new ObjectOutputStream(new GZIPOutputStream(buf));
         oos.writeObject(this);
         oos.close();
 
-        ByteArrayOutputStream encoded = new ByteArrayOutputStream();
-        DataOutputStream dos = new DataOutputStream(new Base64OutputStream(encoded,true,-1,null));
+        ByteArrayOutputStream buf2 = new ByteArrayOutputStream();
+
+        DataOutputStream dos = new DataOutputStream(new Base64OutputStream(buf2,true,-1,null));
+        buf2.write(PREAMBLE);
         dos.writeInt(buf.size());
         buf.writeTo(dos);
         dos.close();
-
-        out.write(encoded.toString());
-
-        out.write(POSTAMBLE_STR);
+        buf2.write(POSTAMBLE);
+        return buf2;
     }
 
     /**
@@ -210,24 +202,30 @@ public abstract class ConsoleNote<T> implements Serializable, Describable<Consol
      * @return null if the encoded form is malformed.
      */
     public static ConsoleNote readFrom(DataInputStream in) throws IOException, ClassNotFoundException {
-        byte[] preamble = new byte[PREAMBLE.length];
-        in.readFully(preamble);
-        if (!Arrays.equals(preamble,PREAMBLE))
-            return null;    // not a valid preamble
+        try {
+            byte[] preamble = new byte[PREAMBLE.length];
+            in.readFully(preamble);
+            if (!Arrays.equals(preamble,PREAMBLE))
+                return null;    // not a valid preamble
 
-        DataInputStream decoded = new DataInputStream(new UnbufferedBase64InputStream(in));
-        int sz = decoded.readInt();
-        byte[] buf = new byte[sz];
-        decoded.readFully(buf);
+            DataInputStream decoded = new DataInputStream(new UnbufferedBase64InputStream(in));
+            int sz = decoded.readInt();
+            byte[] buf = new byte[sz];
+            decoded.readFully(buf);
 
-        byte[] postamble = new byte[POSTAMBLE.length];
-        in.readFully(postamble);
-        if (!Arrays.equals(postamble,POSTAMBLE))
-            return null;    // not a valid postamble
+            byte[] postamble = new byte[POSTAMBLE.length];
+            in.readFully(postamble);
+            if (!Arrays.equals(postamble,POSTAMBLE))
+                return null;    // not a valid postamble
 
-        ObjectInputStream ois = new ObjectInputStreamEx(
-                new GZIPInputStream(new ByteArrayInputStream(buf)), Hudson.getInstance().pluginManager.uberClassLoader);
-        return (ConsoleNote) ois.readObject();
+            ObjectInputStream ois = new ObjectInputStreamEx(
+                    new GZIPInputStream(new ByteArrayInputStream(buf)), Hudson.getInstance().pluginManager.uberClassLoader);
+            return (ConsoleNote) ois.readObject();
+        } catch (Error e) {
+            // for example, bogus 'sz' can result in OutOfMemoryError.
+            // package that up as IOException so that the caller won't fatally die.
+            throw new IOException2(e);
+        }
     }
 
     /**

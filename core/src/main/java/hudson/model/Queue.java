@@ -1,7 +1,8 @@
 /*
  * The MIT License
  * 
- * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, Stephen Connolly, Tom Huybrechts, InfraDNA, Inc.
+ * Copyright (c) 2004-2010, Sun Microsystems, Inc., Kohsuke Kawaguchi,
+ * Stephen Connolly, Tom Huybrechts, InfraDNA, Inc.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -1081,13 +1082,13 @@ public class Queue extends ResourceController implements Saveable {
          * Since this is a newly added method, the invocation may results in {@link AbstractMethodError}.
          * Use {@link Tasks#getSubTasksOf(Task)} that avoids this.
          *
-         * @since 1.FATTASK
+         * @since 1.377
          */
         Collection<? extends SubTask> getSubTasks();
     }
 
     /**
-     * Represents the real meet of the computation run by {@link Executor}.
+     * Represents the real meat of the computation run by {@link Executor}.
      *
      * <h2>Views</h2>
      * <p>
@@ -1100,7 +1101,7 @@ public class Queue extends ResourceController implements Saveable {
          * Never null.
          *
          * <p>
-         * Since this method went through a signature change in 1.FATTASK, the invocation may results in
+         * Since this method went through a signature change in 1.377, the invocation may results in
          * {@link AbstractMethodError}.
          * Use {@link Executables#getParentOf(Executable)} that avoids this.
          */
@@ -1110,6 +1111,18 @@ public class Queue extends ResourceController implements Saveable {
          * Called by {@link Executor} to perform the task
          */
         void run();
+        
+        /**
+         * Estimate of how long will it take to execute this executable.
+         * Measured in milliseconds.
+         * 
+         * Please, consider using {@link Executables#getEstimatedDurationFor(Executable)}
+         * to protected against AbstractMethodErrors!
+         *
+         * @return -1 if it's impossible to estimate.
+         * @since 1.383
+         */
+        long getEstimatedDuration();
 
         /**
          * Used to render the HTML. Should be a human readable text of what this executable is.

@@ -23,6 +23,8 @@
  */
 package hudson.util;
 
+import hudson.PluginManager.UberClassLoader;
+import hudson.model.Hudson;
 import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Type;
@@ -43,7 +45,7 @@ public class SubClassGenerator extends ClassLoader {
 
     public <T> Class<? extends T> generate(Class<T> base, String name) {
         ClassWriter cw = new ClassWriter(false,false);//?
-        cw.visit(49, ACC_PUBLIC, name, null,
+        cw.visit(49, ACC_PUBLIC, name.replace('.', '/'), null,
                 Type.getInternalName(base),null);
 
         for (Constructor c : base.getDeclaredConstructors()) {
@@ -72,7 +74,13 @@ public class SubClassGenerator extends ClassLoader {
         cw.visitEnd();
         byte[] image = cw.toByteArray();
 
-        return defineClass(name, image, 0, image.length).asSubclass(base);
+        Class<? extends T> c = defineClass(name, image, 0, image.length).asSubclass(base);
+
+        Hudson h = Hudson.getInstance();
+        if (h!=null)    // null only during tests.
+            ((UberClassLoader)h.pluginManager.uberClassLoader).addNamedClass(name,c); // can't change the field type as it breaks binary compatibility
+        
+        return c;
     }
 
     private String getMethodDescriptor(Constructor c) {

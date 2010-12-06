@@ -27,10 +27,12 @@ import hudson.util.DualOutputStream;
 import hudson.util.EncodingStream;
 import com.thoughtworks.xstream.core.util.Base64Encoder;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.net.HttpRetryException;
@@ -61,8 +63,12 @@ public class Main {
 
     public static int run(String[] args) throws Exception {
         String home = getHudsonHome();
-        if(home==null) {
+        if (home==null) {
             System.err.println("HUDSON_HOME is not set.");
+            return -1;
+        }
+        if (args.length < 2) {
+            System.err.println("Usage: <job-name> <command> <args..>");
             return -1;
         }
 
@@ -109,6 +115,24 @@ public class Main {
             }
         }
 
+        // get a crumb to pass the csrf check
+        String crumbField = null, crumbValue = null;
+        try {
+            HttpURLConnection con = open(new URL(home +
+                    "crumbIssuer/api/xml?xpath=concat(//crumbRequestField,\":\",//crumb)'"));
+            if (auth != null) con.setRequestProperty("Authorization", auth);
+            BufferedReader in = new BufferedReader(new InputStreamReader(con.getInputStream()));
+            String line = in.readLine();
+            in.close();
+            String[] components = line.split(":");
+            if (components.length == 2) {
+                crumbField = components[0];
+                crumbValue = components[1];
+            }
+        } catch (IOException e) {
+            // presumably this Hudson doesn't use CSRF protection
+        }
+
         // write the output to a temporary file first.
         File tmpFile = File.createTempFile("hudson","log");
         try {
@@ -139,6 +163,9 @@ public class Main {
                     // start a remote connection
                     HttpURLConnection con = open(new URL(location));
                     if (auth != null) con.setRequestProperty("Authorization", auth);
+                    if (crumbField != null && crumbValue != null) {
+                        con.setRequestProperty(crumbField, crumbValue);
+                    }
                     con.setDoOutput(true);
                     // this tells HttpURLConnection not to buffer the whole thing
                     con.setFixedLengthStreamingMode((int)tmpFile.length());

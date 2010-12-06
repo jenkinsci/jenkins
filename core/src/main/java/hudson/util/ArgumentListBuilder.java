@@ -286,15 +286,18 @@ public class ArgumentListBuilder implements Serializable {
      * This is done as follows:
      * Wrap arguments in double quotes if they contain any of:
      *   space *?,;^&<>|" or % followed by a letter.
-     * <br/> These characters are also prepended with a ^ character: ^&<>|
+     * <br/> When testing from command prompt, these characters also need to be
+     * prepended with a ^ character: ^&<>|  -- however, invoking cmd.exe from
+     * Hudson does not seem to require this extra escaping so it is not added by
+     * this method.
      * <br/> A " is prepended with another " character.  Note: Windows has issues
      * escaping some combinations of quotes and spaces.  Quotes should be avoided.
      * <br/> A % followed by a letter has that letter wrapped in double quotes,
      * to avoid possible variable expansion.  ie, %foo% becomes "%"f"oo%".
      * The second % does not need special handling because it is not followed
      * by a letter. <br/>
-     * Example: "-Dfoo=*abc?def;ghi^^jkl^&mno^<pqr^>stu^|vwx""yz%"e"nd"
-     * @return
+     * Example: "-Dfoo=*abc?def;ghi^jkl&mno<pqr>stu|vwx""yz%"e"nd"
+     * @return new ArgumentListBuilder that runs given command through cmd.exe /C
      */
     public ArgumentListBuilder toWindowsCommand() {
         StringBuilder quotedArgs = new StringBuilder();
@@ -308,7 +311,7 @@ public class ArgumentListBuilder implements Serializable {
                 }
                 else if (c == '^' || c == '&' || c == '<' || c == '>' || c == '|') {
                     if (!quoted) quoted = startQuoting(quotedArgs, arg, i);
-                    quotedArgs.append('^');
+                    // quotedArgs.append('^'); See note in javadoc above
                 }
                 else if (c == '"') {
                     if (!quoted) quoted = startQuoting(quotedArgs, arg, i);

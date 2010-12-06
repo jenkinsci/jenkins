@@ -1,7 +1,7 @@
 /*
  * The MIT License
  *
- * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi
+ * Copyright (c) 2004-2010, Sun Microsystems, Inc., Kohsuke Kawaguchi
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -119,7 +119,7 @@ public abstract class LoadBalancer /*implements ExtensionPoint*/ {
     /**
      * Traditional implementation of this.
      *
-     * @deprecated as of 1.FATTASK
+     * @deprecated as of 1.377
      *      The only implementation in the core now is the one based on consistent hash.
      */
     public static final LoadBalancer DEFAULT = CONSISTENT_HASH;

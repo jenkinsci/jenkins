@@ -143,7 +143,7 @@ public class MappingWorksheet {
         }
 
         private void execute(WorkChunk wc, WorkUnitContext wuc) {
-            assert capacity() > wc.size();
+            assert capacity() >= wc.size();
             int e = 0;
             for (SubTask s : wc) {
                 while (!get(e).isAvailable())

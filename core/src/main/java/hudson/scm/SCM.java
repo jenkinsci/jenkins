@@ -1,7 +1,7 @@
 /*
  * The MIT License
  * 
- * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, Stephen Connolly
+ * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, Stephen Connolly, InfraDNA, Inc.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -28,6 +28,7 @@ import hudson.FilePath;
 import hudson.Launcher;
 import hudson.DescriptorExtensionList;
 import hudson.Extension;
+import hudson.Util;
 import hudson.security.PermissionGroup;
 import hudson.security.Permission;
 import hudson.tasks.Builder;
@@ -470,8 +471,27 @@ public abstract class SCM implements Describable<SCM>, ExtensionPoint {
      *
      * @param workspace
      *      The workspace root directory.
+     * @param build
+     *      The build for which the module root is desired.
+     *      This parameter is null when existing legacy code calls deprecated {@link #getModuleRoot(FilePath)}.
+     *      Handle this situation gracefully if your can, but otherwise you can just fail with an exception, too.
+     *
+     * @since 1.382
+     */
+    public FilePath getModuleRoot(FilePath workspace, AbstractBuild build) {
+        // For backwards compatibility, call the one argument version of the method.
+        return getModuleRoot(workspace);
+    }
+    
+    /**
+     * @deprecated since 1.382
+     *      Use/override {@link #getModuleRoot(FilePath, AbstractBuild)} instead.
      */
     public FilePath getModuleRoot(FilePath workspace) {
+        if (Util.isOverridden(SCM.class,getClass(),"getModuleRoot", FilePath.class,AbstractBuild.class))
+            // if the subtype already implements newer getModuleRoot(FilePath,AbstractBuild), call that.
+            return getModuleRoot(workspace,null);
+
         return workspace;
     }
 
@@ -497,12 +517,36 @@ public abstract class SCM implements Describable<SCM>, ExtensionPoint {
      *
      * <p>
      * For normal SCMs, the array will be of length <code>1</code> and it's contents
-     * will be identical to calling {@link #getModuleRoot(FilePath)}.
+     * will be identical to calling {@link #getModuleRoot(FilePath, AbstractBuild)}.
      *
      * @param workspace The workspace root directory
+     * @param build
+     *      The build for which the module roots are desired.
+     *      This parameter is null when existing legacy code calls deprecated {@link #getModuleRoot(FilePath)}.
+     *      Handle this situation gracefully if your can, but otherwise you can just fail with an exception, too.
+     *
      * @return An array of all module roots.
+     * @since 1.382
+     */
+    public FilePath[] getModuleRoots(FilePath workspace, AbstractBuild build) {
+        if (Util.isOverridden(SCM.class,getClass(),"getModuleRoots", FilePath.class))
+            // if the subtype derives legacy getModuleRoots(FilePath), delegate to it
+            return getModuleRoots(workspace);
+
+        // otherwise the default implementation
+        return new FilePath[]{getModuleRoot(workspace,build)};
+    }
+    
+    /**
+     * @deprecated as of 1.382.
+     *      Use/derive from {@link #getModuleRoots(FilePath, AbstractBuild)} instead.
      */
     public FilePath[] getModuleRoots(FilePath workspace) {
+        if (Util.isOverridden(SCM.class,getClass(),"getModuleRoots", FilePath.class, AbstractBuild.class))
+            // if the subtype already derives newer getModuleRoots(FilePath,AbstractBuild), delegate to it
+            return getModuleRoots(workspace,null);
+
+        // otherwise the default implementation
         return new FilePath[] { getModuleRoot(workspace), };
     }
 
