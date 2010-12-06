@@ -2069,6 +2069,24 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
     }
 
     /**
+     * Overwrites the existing item by new one.
+     *
+     * <p>
+     * This is a short cut for deleting an existing job and adding a new one.
+     */
+    public synchronized void putItem(TopLevelItem item) throws IOException, InterruptedException {
+        String name = item.getName();
+        TopLevelItem old = items.get(name);
+        if (old ==item)  return; // noop
+
+        checkPermission(Item.CREATE);
+        if (old!=null)
+            old.delete();
+        items.put(name,item);
+        ItemListener.fireOnCreated(item);
+    }
+
+    /**
      * Creates a new job.
      *
      * <p>
