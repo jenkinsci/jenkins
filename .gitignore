@@ -10,6 +10,7 @@ work
 .settings
 .classpath
 .project
+build
 
 war/images/16x16
 war/images/24x24
