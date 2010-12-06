@@ -315,18 +315,6 @@ public class Main {
         return launcher.getExitCode();
     }
     
-    private static org.codehaus.classworlds.ClassWorld convertType(ClassWorld classWorld) 
-        throws org.codehaus.classworlds.DuplicateRealmException
-    {
-        org.codehaus.classworlds.ClassWorld old = new org.codehaus.classworlds.ClassWorld();
-        for (Iterator ite = classWorld.getRealms().iterator();ite.hasNext();)
-        {
-            ClassRealm realm = (ClassRealm) ite.next();
-            old.newRealm( realm.getId(), realm );
-        }
-        return old;
-    }
-    
     static class ChildFistClassCloader extends AntClassLoader
     {
         ChildFistClassCloader (ClassLoader parent)
