@@ -31,13 +31,11 @@ THE SOFTWARE.
       <f:textbox />
     </f:entry>
     <f:entry field="uniqueVersion">
-      <f:checkbox />
-      <label class="attach-previous">${%Assign unique versions to snapshots}</label>
+      <f:checkbox title="${%Assign unique versions to snapshots}"/>
     </f:entry>
     <j:if test="${descriptor.showEvenIfUnstableOption()}">
       <f:entry field="evenIfUnstable">
-        <f:checkbox />
-        <label>${%Deploy even if the build is unstable}</label>
+        <f:checkbox title="${%Deploy even if the build is unstable}" />
       </f:entry>
     </j:if>
   </f:advanced>

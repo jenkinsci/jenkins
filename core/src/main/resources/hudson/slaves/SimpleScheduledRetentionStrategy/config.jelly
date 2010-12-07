@@ -35,6 +35,6 @@ THE SOFTWARE.
                checkMessage="${%Scheduled Uptime is mandatory and must be a number.}"/>
     </f:entry>
     <f:entry title="${%Keep on-line while jobs are running}">
-    <f:checkbox name="retentionStrategy.keepUpWhenActive" checked="${h.defaultToTrue(instance.keepUpWhenActive)}"/>
+      <f:checkbox name="retentionStrategy.keepUpWhenActive" checked="${h.defaultToTrue(instance.keepUpWhenActive)}"/>
     </f:entry>
 </j:jelly>
