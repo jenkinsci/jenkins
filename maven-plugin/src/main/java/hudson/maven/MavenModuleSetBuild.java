@@ -55,15 +55,14 @@ import hudson.tasks.MailSender;
 import hudson.tasks.Maven.MavenInstallation;
 import hudson.util.ArgumentListBuilder;
 import hudson.util.IOUtils;
+import hudson.util.MaskingClassLoader;
 import hudson.util.StreamTaskListener;
 
 import java.io.File;
 import java.io.IOException;
 import java.io.InterruptedIOException;
 import java.io.PrintStream;
-import java.io.PrintWriter;
 import java.io.Serializable;
-import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -899,8 +898,16 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
                 if(!r.reportGenerated(proxy,project,report,listener))
                     throw new hudson.maven.agent.AbortException(r+" failed");
         }
+        
+        
 
         private static final long serialVersionUID = 1L;
+
+        @Override
+        public ClassLoader getClassLoader()
+        {
+            return new MaskingClassLoader( super.getClassLoader() );
+        }
     }
 
     /**

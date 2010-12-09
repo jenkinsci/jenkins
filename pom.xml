@@ -257,22 +257,22 @@ THE SOFTWARE.
       <dependency>
         <groupId>org.apache.maven</groupId>
         <artifactId>maven-core</artifactId>
-        <version>3.0</version>
+        <version>${mavenVersion}</version>
       </dependency>    
       <dependency>
         <groupId>org.apache.maven</groupId>
         <artifactId>maven-compat</artifactId>
-        <version>3.0</version>
+        <version>${mavenVersion}</version>
       </dependency>      
       <dependency>
         <groupId>org.apache.maven</groupId>
         <artifactId>maven-aether-provider</artifactId>
-        <version>3.0</version>
+        <version>${mavenVersion}</version>
       </dependency>      
       <dependency>
         <groupId>org.apache.maven</groupId>
         <artifactId>maven-embedder</artifactId>
-        <version>3.0</version>
+        <version>${mavenVersion}</version>
       </dependency>   
       <dependency>
         <groupId>org.sonatype.sisu</groupId>
@@ -298,7 +298,8 @@ THE SOFTWARE.
   </dependencyManagement>
 
   <properties>
-    <maven.version>3.0</maven.version>
+    <mavenVersion>3.0.1</mavenVersion>
+    <maven.version>${mavenVersion}</maven.version>
     
     <!-- *.html files are in UTF-8, and *.properties are in iso-8859-1, so this configuration is acturally incorrect,
     but this suppresses a warning from Maven, and as long as we don't do filtering we should be OK. -->
