@@ -275,6 +275,31 @@ THE SOFTWARE.
         <version>${mavenVersion}</version>
       </dependency>   
       <dependency>
+        <groupId>org.sonatype.aether</groupId>
+        <artifactId>aether-api</artifactId>
+        <version>${aetherVersion}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.sonatype.aether</groupId>
+        <artifactId>aether-impl</artifactId>
+        <version>${aetherVersion}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.sonatype.aether</groupId>
+        <artifactId>aether-spi</artifactId>
+        <version>${aetherVersion}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.sonatype.aether</groupId>
+        <artifactId>aether-util</artifactId>
+        <version>${aetherVersion}</version>
+      </dependency>                                   
+      <dependency>
+        <groupId>org.sonatype.aether</groupId>
+        <artifactId>aether-connector-wagon</artifactId>
+        <version>${aetherVersion}</version>
+      </dependency>      
+      <dependency>
         <groupId>org.sonatype.sisu</groupId>
         <artifactId>sisu-inject-plexus</artifactId>
         <version>1.4.2</version>
@@ -300,7 +325,7 @@ THE SOFTWARE.
   <properties>
     <mavenVersion>3.0.1</mavenVersion>
     <maven.version>${mavenVersion}</maven.version>
-    
+    <aetherVersion>1.8</aetherVersion>
     <!-- *.html files are in UTF-8, and *.properties are in iso-8859-1, so this configuration is acturally incorrect,
     but this suppresses a warning from Maven, and as long as we don't do filtering we should be OK. -->
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
