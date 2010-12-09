@@ -535,15 +535,20 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
                         
                         boolean maven3orLater = new ComparableVersion (mavenVersion).compareTo( new ComparableVersion ("3.0") ) >= 0;
                        
-                        if (maven3orLater)
+                        if ( maven3orLater )
                         {
                             LOGGER.info( "using maven 3 " + mavenVersion );
-                            process = MavenBuild.mavenProcessCache.get(launcher.getChannel(), slistener,
-                                                                                                 new Maven3ProcessFactory(project,launcher,envVars,pom.getParent()));
-                        } else 
+                            process =
+                                MavenBuild.mavenProcessCache.get( launcher.getChannel(), slistener,
+                                                                  new Maven3ProcessFactory( project, launcher, envVars,
+                                                                                            pom.getParent() ) );
+                        }
+                        else
                         {
-                            process = MavenBuild.mavenProcessCache.get(launcher.getChannel(), slistener,
-                            new MavenProcessFactory(project,launcher,envVars,pom.getParent()));
+                            process =
+                                MavenBuild.mavenProcessCache.get( launcher.getChannel(), slistener,
+                                                                  new MavenProcessFactory( project, launcher, envVars,
+                                                                                           pom.getParent() ) );
                         }
                         ArgumentListBuilder margs = new ArgumentListBuilder().add("-B").add("-f", pom.getRemote());
                         if(project.usesPrivateRepository())
