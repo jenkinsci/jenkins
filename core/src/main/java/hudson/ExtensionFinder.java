@@ -1,7 +1,7 @@
 /*
  * The MIT License
  *
- * Copyright (c) 2004-2010, Sun Microsystems, Inc., InfraDNA, Inc.
+ * Copyright (c) 2004-2010, Sun Microsystems, Inc., InfraDNA, Inc., CloudBees, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,11 +24,14 @@
 package hudson;
 
 import com.google.inject.AbstractModule;
+import com.google.inject.Binding;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
+import com.google.inject.Key;
 import com.google.inject.Module;
 import com.google.inject.Provider;
-import com.google.inject.Singleton;
+import com.google.inject.Scope;
+import com.google.inject.Scopes;
 import com.google.inject.name.Names;
 import net.java.sezpoz.Index;
 import net.java.sezpoz.IndexItem;
@@ -38,6 +41,7 @@ import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 
 import java.util.Collections;
+import java.util.Map.Entry;
 import java.util.logging.Logger;
 import java.util.logging.Level;
 import java.util.List;
@@ -130,6 +134,131 @@ public abstract class ExtensionFinder implements ExtensionPoint {
      * can results in a dead lock.
      */
     public void scout(Class extensionType, Hudson hudson) {
+    }
+
+    /**
+     * Discovers components via sezpoz but instantiates them by using Guice.
+     */
+    @Extension
+    public static final class GuiceFinder extends ExtensionFinder {
+        private Injector container;
+
+        public GuiceFinder() {
+            List<Module> modules = new ArrayList<Module>();
+            modules.add(new AbstractModule() {
+                @SuppressWarnings({"unchecked", "ChainOfInstanceofChecks"})
+                @Override
+                protected void configure() {
+                    ClassLoader cl = Hudson.getInstance().getPluginManager().uberClassLoader;
+                    int id=0;
+
+                    for (final IndexItem<Extension,Object> item : Index.load(Extension.class, Object.class, cl)) {
+                        id++;
+                        try {
+                            AnnotatedElement e = item.element();
+                            Class extType;
+                            if (e instanceof Class) {
+                                bind((Class<?>)e).in(FAULT_TOLERANT_SCOPE);
+                            } else {
+                                if (e instanceof Field) {
+                                    extType = ((Field)e).getType();
+                                } else
+                                if (e instanceof Method) {
+                                    extType = ((Method)e).getReturnType();
+                                } else
+                                    throw new AssertionError();
+
+                                // use arbitrary
+                                bind(extType).annotatedWith(Names.named(String.valueOf(id)))
+                                    .toProvider(new Provider() {
+                                        public Object get() {
+                                            return instantiate(item);
+                                        }
+                                    }).in(FAULT_TOLERANT_SCOPE);
+                            }
+                        } catch (LinkageError e) {
+                            // sometimes the instantiation fails in an indirect classloading failure,
+                            // which results in a LinkageError
+                            LOGGER.log(item.annotation().optional() ? Level.FINE : Level.WARNING,
+                                       "Failed to load "+item.className(), e);
+                        } catch (InstantiationException e) {
+                            LOGGER.log(item.annotation().optional() ? Level.FINE : Level.WARNING,
+                                       "Failed to load "+item.className(), e);
+                        }
+                    }
+                }
+            });
+
+            for (ExtensionComponent<Module> ec : new Sezpoz().find(Module.class, Hudson.getInstance())) {
+                modules.add(ec.getInstance());
+            }
+
+            container = Guice.createInjector(modules);
+        }
+
+        private Object instantiate(IndexItem<Extension, Object> item) {
+            try {
+                return item.instance();
+            } catch (LinkageError e) {
+                // sometimes the instantiation fails in an indirect classloading failure,
+                // which results in a LinkageError
+                LOGGER.log(item.annotation().optional() ? Level.FINE : Level.WARNING,
+                           "Failed to load "+item.className(), e);
+            } catch (InstantiationException e) {
+                LOGGER.log(item.annotation().optional() ? Level.FINE : Level.WARNING,
+                           "Failed to load "+item.className(), e);
+            }
+            return null;
+        }
+
+        public <T> Collection<ExtensionComponent<T>> find(Class<T> type, Hudson hudson) {
+            List<ExtensionComponent<T>> result = new ArrayList<ExtensionComponent<T>>();
+
+            for (Entry<Key<?>, Binding<?>> e : container.getBindings().entrySet()) {
+                if (type.isAssignableFrom(e.getKey().getTypeLiteral().getRawType())) {
+                    // TODO: how do we get ordinal?
+                    Object o = e.getValue().getProvider().get();
+                    if (o!=null)
+                        result.add(new ExtensionComponent<T>(type.cast(o)));
+                }
+            }
+
+            return result;
+        }
+
+        /**
+         * TODO: need to learn more about concurrent access to {@link Injector} and how it interacts
+         * with classloading.
+         */
+        @Override
+        public void scout(Class extensionType, Hudson hudson) {
+        }
+
+        /**
+         * {@link Scope} that allows a failure to create a component,
+         * and change the value to null.
+         *
+         * <p>
+         * This is necessary as a failure to load one plugin shouldn't fail the startup of the entire Hudson.
+         * Instead, we should just drop the failing plugins.
+         */
+        public static final Scope FAULT_TOLERANT_SCOPE = new Scope() {
+            public <T> Provider<T> scope(Key<T> key, Provider<T> unscoped) {
+                final Provider<T> base = Scopes.SINGLETON.scope(key,unscoped);
+                return new Provider<T>() {
+                    public T get() {
+                        try {
+                            return base.get();
+                        } catch (Exception e) {
+                            LOGGER.log(Level.WARNING,"Failed to instantiate",e);
+                            return null;
+                        }
+                    }
+                };
+            }
+        };
+
+        private static final Logger LOGGER = Logger.getLogger(GuiceFinder.class.getName());
     }
 
     /**
