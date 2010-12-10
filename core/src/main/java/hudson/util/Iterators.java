@@ -289,4 +289,28 @@ public class Iterators {
             }
         };
     }
+
+    /**
+     * Filters another iterator by eliminating duplicates.
+     */
+    public static <T> Iterator<T> removeDups(Iterator<T> iterator) {
+        return new FilterIterator<T>(iterator) {
+            final Set<T> found = new HashSet<T>();
+            @Override
+            protected boolean filter(T t) {
+                return found.add(t);
+            }
+        };
+    }
+
+    /**
+     * Filters another iterator by eliminating duplicates.
+     */
+    public static <T> Iterable<T> removeDups(final Iterable<T> base) {
+        return new Iterable<T>() {
+            public Iterator<T> iterator() {
+                return removeDups(base.iterator());
+            }
+        };
+    }
 }
