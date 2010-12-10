@@ -23,10 +23,18 @@
  */
 package hudson;
 
+import com.google.inject.AbstractModule;
+import com.google.inject.Binder;
+import com.google.inject.BindingAnnotation;
 import com.google.inject.Inject;
+import com.google.inject.Module;
 import hudson.model.PageDecorator;
 import org.jvnet.hudson.test.HudsonTestCase;
+import org.jvnet.hudson.test.TestEnvironment;
 import org.jvnet.hudson.test.TestExtension;
+
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 
 /**
  * @author Kohsuke Kawaguchi
@@ -59,7 +67,9 @@ public class ExtensionFinderTest extends HudsonTestCase {
      * Extensions are Guice components, so it should support injection.
      */
     public void testInjection() {
-        assertNotNull(PageDecorator.all().get(InjectingExtension.class).foo);
+        InjectingExtension i = PageDecorator.all().get(InjectingExtension.class);
+        assertNotNull(i.foo);
+        assertEquals("lion king",i.value);
     }
 
     @TestExtension("testInjection")
@@ -67,9 +77,26 @@ public class ExtensionFinderTest extends HudsonTestCase {
         @Inject
         Foo foo;
 
+        @Inject @LionKing
+        String value;
+
+
         public InjectingExtension() {
             super(InjectingExtension.class);
         }
         public static class Foo {}
+    }
+
+
+    @Retention(RetentionPolicy.RUNTIME) @BindingAnnotation
+    public static @interface LionKing {}
+
+    @Extension
+    public static class ModuleImpl extends AbstractModule {
+        protected void configure() {
+            if (TestEnvironment.get().testCase instanceof ExtensionFinderTest) {
+                bind(String.class).annotatedWith(LionKing.class).toInstance("lion king");
+            }
+        }
     }
 }
