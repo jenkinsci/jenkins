@@ -40,6 +40,7 @@ import hudson.model.Descriptor;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 
+import java.lang.annotation.Annotation;
 import java.util.Collections;
 import java.util.Map.Entry;
 import java.util.logging.Logger;
@@ -136,14 +137,25 @@ public abstract class ExtensionFinder implements ExtensionPoint {
     public void scout(Class extensionType, Hudson hudson) {
     }
 
+    @Extension
+    public static final class GuiceFinder extends AbstractGuiceFinder<Extension> {
+        public GuiceFinder() {
+            super(Extension.class);
+        }
+
+        @Override
+        protected boolean isOptional(Extension annotation) {
+            return annotation.optional();
+        }
+    }
+
     /**
      * Discovers components via sezpoz but instantiates them by using Guice.
      */
-    @Extension
-    public static final class GuiceFinder extends ExtensionFinder {
+    public static abstract class AbstractGuiceFinder<T extends Annotation> extends ExtensionFinder {
         private Injector container;
 
-        public GuiceFinder() {
+        public AbstractGuiceFinder(final Class<T> annotationType) {
             List<Module> modules = new ArrayList<Module>();
             modules.add(new AbstractModule() {
                 @SuppressWarnings({"unchecked", "ChainOfInstanceofChecks"})
@@ -152,14 +164,16 @@ public abstract class ExtensionFinder implements ExtensionPoint {
                     ClassLoader cl = Hudson.getInstance().getPluginManager().uberClassLoader;
                     int id=0;
 
-                    for (final IndexItem<Extension,Object> item : Index.load(Extension.class, Object.class, cl)) {
+                    for (final IndexItem<T,Object> item : Index.load(annotationType, Object.class, cl)) {
                         id++;
                         try {
                             AnnotatedElement e = item.element();
-                            Class extType;
+                            if (!isActive(e))   continue;
+
                             if (e instanceof Class) {
                                 bind((Class<?>)e).in(FAULT_TOLERANT_SCOPE);
                             } else {
+                                Class extType;
                                 if (e instanceof Field) {
                                     extType = ((Field)e).getType();
                                 } else
@@ -179,10 +193,10 @@ public abstract class ExtensionFinder implements ExtensionPoint {
                         } catch (LinkageError e) {
                             // sometimes the instantiation fails in an indirect classloading failure,
                             // which results in a LinkageError
-                            LOGGER.log(item.annotation().optional() ? Level.FINE : Level.WARNING,
+                            LOGGER.log(isOptional(item.annotation()) ? Level.FINE : Level.WARNING,
                                        "Failed to load "+item.className(), e);
                         } catch (InstantiationException e) {
-                            LOGGER.log(item.annotation().optional() ? Level.FINE : Level.WARNING,
+                            LOGGER.log(isOptional(item.annotation()) ? Level.FINE : Level.WARNING,
                                        "Failed to load "+item.className(), e);
                         }
                     }
@@ -196,16 +210,25 @@ public abstract class ExtensionFinder implements ExtensionPoint {
             container = Guice.createInjector(modules);
         }
 
-        private Object instantiate(IndexItem<Extension, Object> item) {
+        /**
+         * Hook to enable subtypes to control which ones to pick up and which ones to ignore.
+         */
+        protected boolean isActive(AnnotatedElement e) {
+            return true;
+        }
+
+        protected abstract boolean isOptional(T annotation);
+
+        private Object instantiate(IndexItem<T,Object> item) {
             try {
                 return item.instance();
             } catch (LinkageError e) {
                 // sometimes the instantiation fails in an indirect classloading failure,
                 // which results in a LinkageError
-                LOGGER.log(item.annotation().optional() ? Level.FINE : Level.WARNING,
+                LOGGER.log(isOptional(item.annotation()) ? Level.FINE : Level.WARNING,
                            "Failed to load "+item.className(), e);
             } catch (InstantiationException e) {
-                LOGGER.log(item.annotation().optional() ? Level.FINE : Level.WARNING,
+                LOGGER.log(isOptional(item.annotation()) ? Level.FINE : Level.WARNING,
                            "Failed to load "+item.className(), e);
             }
             return null;
