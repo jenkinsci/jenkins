@@ -33,30 +33,28 @@ import com.google.inject.Provider;
 import com.google.inject.Scope;
 import com.google.inject.Scopes;
 import com.google.inject.name.Names;
-import hudson.util.AdaptedIterator;
-import hudson.util.Iterators;
-import net.java.sezpoz.Index;
-import net.java.sezpoz.IndexItem;
-import hudson.model.Hudson;
 import hudson.model.Descriptor;
+import hudson.model.Hudson;
+import hudson.util.AdaptedIterator;
+import net.java.sezpoz.Index;
+import net.java.sezpoz.IndexError;
+import net.java.sezpoz.IndexItem;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 
 import java.io.IOException;
 import java.lang.annotation.Annotation;
-import java.lang.reflect.InvocationTargetException;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.Map.Entry;
-import java.util.Set;
-import java.util.logging.Logger;
-import java.util.List;
-import java.util.ArrayList;
-import java.util.Collection;
 import java.lang.reflect.AnnotatedElement;
 import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map.Entry;
+import java.util.logging.Logger;
 
 import static java.util.logging.Level.*;
 
@@ -301,20 +299,20 @@ public abstract class ExtensionFinder implements ExtensionPoint {
         @Override
         public void scout(Class extensionType, Hudson hudson) {
             ClassLoader cl = hudson.getPluginManager().uberClassLoader;
-            for (IndexItem<Extension,Object> item : Index.load(Extension.class, Object.class, cl)) {
+            for (AnnotatedElement e : combinedIndex(Extension.class, cl)) {
+                if (e==null)    continue;
+                Extension a = e.getAnnotation(Extension.class);
+                if (a==null)    continue;   // huh?
                 try {
-                    Class<?> extType = getInstanceType(item.element());
+                    Class<?> extType = getInstanceType(e);
                     
                     // accroding to http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=6459208
                     // this appears to be the only way to force a class initialization
                     Class.forName(extType.getName(),true,extType.getClassLoader());
-                } catch (InstantiationException e) {
-                    LOGGER.log(item.annotation().optional() ? FINE : WARNING,
-                               "Failed to scout "+item.className(), e);
-                } catch (ClassNotFoundException e) {
-                    LOGGER.log(WARNING,"Failed to scout "+item.className(), e);
-                } catch (LinkageError e) {
-                    LOGGER.log(WARNING,"Failed to scout "+item.className(), e);
+                } catch (ClassNotFoundException x) {
+                    LOGGER.log(WARNING,"Failed to scout "+e, x);
+                } catch (LinkageError x) {
+                    LOGGER.log(WARNING,"Failed to scout "+e, x);
                 }
             }
         }
@@ -326,40 +324,39 @@ public abstract class ExtensionFinder implements ExtensionPoint {
      * to look for both.
      */
     private static <T extends Annotation> Iterable<AnnotatedElement> combinedIndex(Class<T> annotationType, ClassLoader cl) {
-        final Index<T, Object> sezpoz = Index.load(annotationType, Object.class, cl);
-
         // load index from sezpoz
-        Iterable<AnnotatedElement> itr = new Iterable<AnnotatedElement>() {
-                    public Iterator<AnnotatedElement> iterator() {
-                        return new AdaptedIterator<IndexItem<T, Object>, AnnotatedElement>(sezpoz.iterator()) {
-                            protected AnnotatedElement adapt(IndexItem<T, Object> item) {
-                                try {
-                                    return item.element();
-                                } catch (LinkageError e) {
-                                    // sometimes the instantiation fails in an indirect classloading failure,
-                                    // which results in a LinkageError
-                                    LOGGER.log(WARNING, "Failed to load " + item.className(), e);
-                                } catch (InstantiationException e) {
-                                    LOGGER.log(WARNING, "Failed to load " + item.className(), e);
-                                }
-                                return null;
-                            }
-                        };
-                    }
-                };
-
-        // also load index from annotation-indexer
         try {
-            itr = Iterators.sequence(itr, org.jvnet.hudson.annotation_indexer.Index.list(annotationType, cl));
-        } catch (IOException e) {
-            LOGGER.log(WARNING, "Failed to list index",e);
+            final Index<T, Object> sezpoz = Index.load(annotationType, Object.class, cl);
+            // TODO: remove nulls
+            return new Iterable<AnnotatedElement>() {
+                        public Iterator<AnnotatedElement> iterator() {
+                            return new AdaptedIterator<IndexItem<T, Object>, AnnotatedElement>(sezpoz.iterator()) {
+                                protected AnnotatedElement adapt(IndexItem<T, Object> item) {
+                                    try {
+                                        return item.element();
+                                    } catch (LinkageError e) {
+                                        // sometimes the instantiation fails in an indirect classloading failure,
+                                        // which results in a LinkageError
+                                        LOGGER.log(WARNING, "Failed to load " + item.className(), e);
+                                    } catch (InstantiationException e) {
+                                        LOGGER.log(WARNING, "Failed to load " + item.className(), e);
+                                    }
+                                    return null;
+                                }
+                            };
+                        }
+                    };
+        } catch (IndexError e1) {
+            // also load index from annotation-indexer
+            try {
+                return org.jvnet.hudson.annotation_indexer.Index.list(annotationType, cl);
+            } catch (IOException e2) {
+                LOGGER.log(WARNING, "Failed to list index",e1);
+                LOGGER.log(WARNING, "Failed to list index",e2);
+            }
         }
 
-        // TODO: remove nulls
-
-        // during development it's possible to have both indices if earlier artifacts remain in target/classes,
-        // so remove duplicates to avoid double-counting.
-        return Iterators.removeDups(itr);
+        return Collections.emptySet();
     }
 
     static Class getInstanceType(AnnotatedElement e) {
