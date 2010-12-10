@@ -27,7 +27,7 @@ THE SOFTWARE.
           <j:choose>
               <j:when test="${lsBuild!=null}">
                   ${lsBuild.timestampString}
-                  (<a href="${jobBaseUrl}${job.shortUrl}lastSuccessfulBuild/">#${lsBuild.number}</a>)
+                  (<a href="${jobBaseUrl}${job.shortUrl}lastSuccessfulBuild/">${lsBuild.displayName}</a>)
               </j:when>
               <j:otherwise>
                   ${%N/A}

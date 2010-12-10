@@ -24,7 +24,7 @@ THE SOFTWARE.
 
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
   <j:if test="${!h.isArtifactsPermissionEnabled() or h.isArtifactsPermissionEnabled() and h.hasPermission(it.ARTIFACTS)}">
-    <l:layout title="${it.parent.displayName} #${it.number} Artifacts">
+    <l:layout title="${it.fullDisplayName} Artifacts">
       <st:include page="sidepanel.jelly" />
       <l:main-panel>
         <t:buildCaption>

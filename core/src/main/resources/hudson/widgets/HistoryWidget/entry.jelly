@@ -31,7 +31,7 @@ THE SOFTWARE.
   <tr class="build-row no-wrap ${transitive}">
     <td>
       <img width="16" height="16" src="${imagesURL}/16x16/${build.buildStatusUrl}" alt="${build.iconColor.description}" tooltip="${build.iconColor.description}" /><st:nbsp/>
-      #${build.number}
+      ${build.displayName}
     </td>
     <td style="padding-right:0">
       <a class="tip" href="${link}">

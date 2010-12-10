@@ -393,7 +393,7 @@ public class MailSender {
     }
 
     private String getSubject(AbstractBuild<?, ?> build, String caption) {
-        return caption + ' ' + build.getProject().getFullDisplayName() + " #" + build.getNumber();
+        return caption + ' ' + build.getFullDisplayName();
     }
 
     /**
