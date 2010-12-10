@@ -23,6 +23,7 @@
  */
 package hudson;
 
+import com.google.inject.Inject;
 import hudson.model.PageDecorator;
 import org.jvnet.hudson.test.HudsonTestCase;
 import org.jvnet.hudson.test.TestExtension;
@@ -31,22 +32,44 @@ import org.jvnet.hudson.test.TestExtension;
  * @author Kohsuke Kawaguchi
  */
 public class ExtensionFinderTest extends HudsonTestCase {
+    /**
+     * It's OK for some extensions to fail to load. The sytem needs to tolerate that.
+     */
+    public void testFailingInstance() {
+        FailingExtension i = PageDecorator.all().get(FailingExtension.class);
+        assertNull("Instantiation should have failed",i);
+        assertTrue("Instantiation should have been attempted", FailingExtension.error);
+    }
+
     @TestExtension("testFailingInstance")
-    public static class Impl extends PageDecorator {
-        public Impl() {
-            super(Impl.class);
+    public static class FailingExtension extends PageDecorator {
+        public FailingExtension() {
+            super(FailingExtension.class);
             error = true;
             throw new LinkageError();   // this component fails to load
         }
         public static boolean error;
     }
 
+
+
+
+
     /**
-     * It's OK for some extensions to fail to load. The sytem needs to tolerate that.
+     * Extensions are Guice components, so it should support injection.
      */
-    public void testFailingInstance() {
-        Impl i = PageDecorator.all().get(Impl.class);
-        assertNull("Instantiation should have failed",i);
-        assertTrue("Instantiation should have been attempted",Impl.error);
+    public void testInjection() {
+        assertNotNull(PageDecorator.all().get(InjectingExtension.class).foo);
+    }
+
+    @TestExtension("testInjection")
+    public static class InjectingExtension extends PageDecorator {
+        @Inject
+        Foo foo;
+
+        public InjectingExtension() {
+            super(InjectingExtension.class);
+        }
+        public static class Foo {}
     }
 }
