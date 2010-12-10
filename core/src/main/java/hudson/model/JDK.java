@@ -29,7 +29,6 @@ import hudson.util.FormValidation;
 import hudson.Launcher;
 import hudson.Extension;
 import hudson.EnvVars;
-import hudson.Util;
 import hudson.slaves.NodeSpecific;
 import hudson.tools.ToolInstallation;
 import hudson.tools.ToolDescriptor;

@@ -1116,7 +1116,7 @@ public class Queue extends ResourceController implements Saveable {
          * Estimate of how long will it take to execute this executable.
          * Measured in milliseconds.
          * 
-         * Please, consider using {@link Executor#getEstimatedDurationFor(Executable)}
+         * Please, consider using {@link Executables#getEstimatedDurationFor(Executable)}
          * to protected against AbstractMethodErrors!
          *
          * @return -1 if it's impossible to estimate.

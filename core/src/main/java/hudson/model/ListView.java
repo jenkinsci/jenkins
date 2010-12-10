@@ -223,6 +223,16 @@ public class ListView extends View implements Saveable {
         return jobNames.contains(item.getName());
     }
 
+    /**
+     * Adds the given item to this view.
+     *
+     * @since 1.389
+     */
+    public void add(TopLevelItem item) throws IOException {
+        jobNames.add(item.getName());
+        save();
+    }
+
     public String getIncludeRegex() {
         return includeRegex;
     }
@@ -235,7 +245,7 @@ public class ListView extends View implements Saveable {
         return statusFilter;
     }
 
-    public Item doCreateItem(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
+    public synchronized Item doCreateItem(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
         Item item = Hudson.getInstance().doCreateItem(req, rsp);
         if(item!=null) {
             jobNames.add(item.getName());

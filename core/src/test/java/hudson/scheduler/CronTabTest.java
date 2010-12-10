@@ -84,7 +84,7 @@ public class CronTabTest extends TestCase {
     }
 
     public void testFloor3() throws Exception {
-        // conflict between DoM and DoW. In this we need to find a day that's the last day of a month and Sunday in 2010
+        // conflict between DoM and DoW. In this we need to find a day that's the first day of a month and Sunday in 2010
         CronTab x = new CronTab("0 0 1 * 0");
         Calendar c = new GregorianCalendar(2011,0,1,15,55);
         // the last such day in 2010 is Aug 1st

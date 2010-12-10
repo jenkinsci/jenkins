@@ -126,12 +126,16 @@ THE SOFTWARE.
             </j:otherwise>
           </j:choose>
         </tr>
-        <j:forEach var="e" items="${c.executors}" varStatus="eloop">
-          <local:executor name="${eloop.index+1}" url="executors/${eloop.index}" />
-        </j:forEach>
-        <j:forEach var="e" items="${c.oneOffExecutors}" varStatus="eloop">
-          <local:executor name="" url="oneOffExecutors/${eloop.index}" />
-        </j:forEach>
+        <j:choose>
+          <j:when test="${!c.offline}">
+            <j:forEach var="e" items="${c.executors}" varStatus="eloop">
+              <local:executor name="${eloop.index+1}" url="executors/${eloop.index}" />
+            </j:forEach>
+            <j:forEach var="e" items="${c.oneOffExecutors}" varStatus="eloop">
+              <local:executor name="" url="oneOffExecutors/${eloop.index}" />
+            </j:forEach>
+          </j:when>
+        </j:choose>
       </j:forEach>
     </l:pane>
     <!-- schedule updates only for the full page reload -->
