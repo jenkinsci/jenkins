@@ -26,4 +26,5 @@ debian/build-stamp
 debian/configure-stamp
 *.debhelper
 *.debhelper.log
-
+hudson_*.build
+hudson_*.changes
