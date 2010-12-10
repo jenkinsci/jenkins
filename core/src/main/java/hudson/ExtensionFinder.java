@@ -33,6 +33,8 @@ import com.google.inject.Provider;
 import com.google.inject.Scope;
 import com.google.inject.Scopes;
 import com.google.inject.name.Names;
+import hudson.util.AdaptedIterator;
+import hudson.util.Iterators;
 import net.java.sezpoz.Index;
 import net.java.sezpoz.IndexItem;
 import hudson.model.Hudson;
@@ -40,17 +42,23 @@ import hudson.model.Descriptor;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 
+import java.io.IOException;
 import java.lang.annotation.Annotation;
+import java.lang.reflect.InvocationTargetException;
 import java.util.Collections;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Map.Entry;
+import java.util.Set;
 import java.util.logging.Logger;
-import java.util.logging.Level;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.lang.reflect.AnnotatedElement;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+
+import static java.util.logging.Level.*;
 
 /**
  * Discovers the implementations of an extension point.
@@ -158,46 +166,34 @@ public abstract class ExtensionFinder implements ExtensionPoint {
         public AbstractGuiceFinder(final Class<T> annotationType) {
             List<Module> modules = new ArrayList<Module>();
             modules.add(new AbstractModule() {
-                @SuppressWarnings({"unchecked", "ChainOfInstanceofChecks"})
                 @Override
                 protected void configure() {
-                    ClassLoader cl = Hudson.getInstance().getPluginManager().uberClassLoader;
                     int id=0;
 
-                    for (final IndexItem<T,Object> item : Index.load(annotationType, Object.class, cl)) {
-                        id++;
-                        try {
-                            AnnotatedElement e = item.element();
-                            if (!isActive(e))   continue;
+                    for (final AnnotatedElement e : combinedIndex(Extension.class, Hudson.getInstance().getPluginManager().uberClassLoader)) {
+                        if (e==null)    continue;
+                        final T a = e.getAnnotation(annotationType);
+                        if (a==null)    continue;   // huh?
 
-                            if (e instanceof Class) {
-                                bind((Class<?>)e).in(FAULT_TOLERANT_SCOPE);
-                            } else {
-                                Class extType;
-                                if (e instanceof Field) {
-                                    extType = ((Field)e).getType();
-                                } else
-                                if (e instanceof Method) {
-                                    extType = ((Method)e).getReturnType();
-                                } else
-                                    throw new AssertionError();
+                        if (!isActive(e)) continue;
 
-                                // use arbitrary
-                                bind(extType).annotatedWith(Names.named(String.valueOf(id)))
-                                    .toProvider(new Provider() {
-                                        public Object get() {
-                                            return instantiate(item);
+                        if (e instanceof Class) {
+                            bind((Class<?>)e).in(FAULT_TOLERANT_SCOPE);
+                        } else {
+                            Class extType = getInstanceType(e);
+
+                            // use arbitrary id to disambiguate
+                            bind(extType).annotatedWith(Names.named(String.valueOf(id++)))
+                                .toProvider(new Provider() {
+                                    public Object get() {
+                                        try {
+                                            return InstanceFactory._for(e).create();
+                                        } catch (InstantiationException e) {
+                                            LOGGER.log(isOptional(a) ? FINE : WARNING, "Failed to load "+e, e);
+                                            return null;
                                         }
-                                    }).in(FAULT_TOLERANT_SCOPE);
-                            }
-                        } catch (LinkageError e) {
-                            // sometimes the instantiation fails in an indirect classloading failure,
-                            // which results in a LinkageError
-                            LOGGER.log(isOptional(item.annotation()) ? Level.FINE : Level.WARNING,
-                                       "Failed to load "+item.className(), e);
-                        } catch (InstantiationException e) {
-                            LOGGER.log(isOptional(item.annotation()) ? Level.FINE : Level.WARNING,
-                                       "Failed to load "+item.className(), e);
+                                    }
+                                }).in(FAULT_TOLERANT_SCOPE);
                         }
                     }
                 }
@@ -218,21 +214,6 @@ public abstract class ExtensionFinder implements ExtensionPoint {
         }
 
         protected abstract boolean isOptional(T annotation);
-
-        private Object instantiate(IndexItem<T,Object> item) {
-            try {
-                return item.instance();
-            } catch (LinkageError e) {
-                // sometimes the instantiation fails in an indirect classloading failure,
-                // which results in a LinkageError
-                LOGGER.log(isOptional(item.annotation()) ? Level.FINE : Level.WARNING,
-                           "Failed to load "+item.className(), e);
-            } catch (InstantiationException e) {
-                LOGGER.log(isOptional(item.annotation()) ? Level.FINE : Level.WARNING,
-                           "Failed to load "+item.className(), e);
-            }
-            return null;
-        }
 
         public <T> Collection<ExtensionComponent<T>> find(Class<T> type, Hudson hudson) {
             List<ExtensionComponent<T>> result = new ArrayList<ExtensionComponent<T>>();
@@ -273,7 +254,7 @@ public abstract class ExtensionFinder implements ExtensionPoint {
                         try {
                             return base.get();
                         } catch (Exception e) {
-                            LOGGER.log(Level.WARNING,"Failed to instantiate",e);
+                            LOGGER.log(WARNING,"Failed to instantiate",e);
                             return null;
                         }
                     }
@@ -292,37 +273,25 @@ public abstract class ExtensionFinder implements ExtensionPoint {
      */
     public static final class Sezpoz extends ExtensionFinder {
         public <T> Collection<ExtensionComponent<T>> find(Class<T> type, Hudson hudson) {
+
             List<ExtensionComponent<T>> result = new ArrayList<ExtensionComponent<T>>();
-
-            ClassLoader cl = hudson.getPluginManager().uberClassLoader;
-            for (IndexItem<Extension,Object> item : Index.load(Extension.class, Object.class, cl)) {
+            for (AnnotatedElement e : combinedIndex(Extension.class, hudson.getPluginManager().uberClassLoader)) {
+                if (e==null)    continue;
+                Extension a = e.getAnnotation(Extension.class);
+                if (a==null)    continue;   // huh?
                 try {
-                    AnnotatedElement e = item.element();
-                    Class<?> extType;
-                    if (e instanceof Class) {
-                        extType = (Class) e;
-                    } else
-                    if (e instanceof Field) {
-                        extType = ((Field)e).getType();
-                    } else
-                    if (e instanceof Method) {
-                        extType = ((Method)e).getReturnType();
-                    } else
-                        throw new AssertionError();
-
+                    Class<?> extType = getInstanceType(e);
                     if(type.isAssignableFrom(extType)) {
-                        Object instance = item.instance();
-                        if(instance!=null)
-                            result.add(new ExtensionComponent<T>(type.cast(instance),item.annotation()));
+                        Object instance = InstanceFactory._for(e).create();
+                        if (instance!=null)
+                            result.add(new ExtensionComponent<T>(type.cast(instance), a));
                     }
-                } catch (LinkageError e) {
+                } catch (LinkageError x) {
                     // sometimes the instantiation fails in an indirect classloading failure,
                     // which results in a LinkageError
-                    LOGGER.log(item.annotation().optional() ? Level.FINE : Level.WARNING,
-                               "Failed to load "+item.className(), e);
-                } catch (InstantiationException e) {
-                    LOGGER.log(item.annotation().optional() ? Level.FINE : Level.WARNING,
-                               "Failed to load "+item.className(), e);
+                    LOGGER.log(a.optional() ? FINE : WARNING, "Failed to load "+e, x);
+                } catch (InstantiationException x) {
+                    LOGGER.log(a.optional() ? FINE : WARNING, "Failed to load "+e, x);
                 }
             }
 
@@ -334,30 +303,139 @@ public abstract class ExtensionFinder implements ExtensionPoint {
             ClassLoader cl = hudson.getPluginManager().uberClassLoader;
             for (IndexItem<Extension,Object> item : Index.load(Extension.class, Object.class, cl)) {
                 try {
-                    AnnotatedElement e = item.element();
-                    Class<?> extType;
-                    if (e instanceof Class) {
-                        extType = (Class) e;
-                    } else
-                    if (e instanceof Field) {
-                        extType = ((Field)e).getType();
-                    } else
-                    if (e instanceof Method) {
-                        extType = ((Method)e).getReturnType();
-                    } else
-                        throw new AssertionError();
+                    Class<?> extType = getInstanceType(item.element());
+                    
                     // accroding to http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=6459208
                     // this appears to be the only way to force a class initialization
                     Class.forName(extType.getName(),true,extType.getClassLoader());
                 } catch (InstantiationException e) {
-                    LOGGER.log(item.annotation().optional() ? Level.FINE : Level.WARNING,
+                    LOGGER.log(item.annotation().optional() ? FINE : WARNING,
                                "Failed to scout "+item.className(), e);
                 } catch (ClassNotFoundException e) {
-                    LOGGER.log(Level.WARNING,"Failed to scout "+item.className(), e);
+                    LOGGER.log(WARNING,"Failed to scout "+item.className(), e);
                 } catch (LinkageError e) {
-                    LOGGER.log(Level.WARNING,"Failed to scout "+item.className(), e);
+                    LOGGER.log(WARNING,"Failed to scout "+item.className(), e);
                 }
             }
+        }
+    }
+
+    /**
+     * Loads the combined index from sezpoz and annotation indexer.
+     * We used to use sezpoz then we switched to annotation-indexer, so to load old plugins we need
+     * to look for both.
+     */
+    private static <T extends Annotation> Iterable<AnnotatedElement> combinedIndex(Class<T> annotationType, ClassLoader cl) {
+        final Index<T, Object> sezpoz = Index.load(annotationType, Object.class, cl);
+
+        // load index from sezpoz
+        Iterable<AnnotatedElement> itr = new Iterable<AnnotatedElement>() {
+                    public Iterator<AnnotatedElement> iterator() {
+                        return new AdaptedIterator<IndexItem<T, Object>, AnnotatedElement>(sezpoz.iterator()) {
+                            protected AnnotatedElement adapt(IndexItem<T, Object> item) {
+                                try {
+                                    return item.element();
+                                } catch (LinkageError e) {
+                                    // sometimes the instantiation fails in an indirect classloading failure,
+                                    // which results in a LinkageError
+                                    LOGGER.log(WARNING, "Failed to load " + item.className(), e);
+                                } catch (InstantiationException e) {
+                                    LOGGER.log(WARNING, "Failed to load " + item.className(), e);
+                                }
+                                return null;
+                            }
+                        };
+                    }
+                };
+
+        // also load index from annotation-indexer
+        try {
+            itr = Iterators.sequence(itr, org.jvnet.hudson.annotation_indexer.Index.list(annotationType, cl));
+        } catch (IOException e) {
+            LOGGER.log(WARNING, "Failed to list index",e);
+        }
+
+        // TODO: remove nulls
+
+        // during development it's possible to have both indices if earlier artifacts remain in target/classes,
+        // so remove duplicates to avoid double-counting.
+        return Iterators.removeDups(itr);
+    }
+
+    static Class getInstanceType(AnnotatedElement e) {
+        if (e instanceof Class)
+            return (Class) e;
+        if (e instanceof Field)
+            return ((Field)e).getType();
+        if (e instanceof Method)
+            return ((Method)e).getReturnType();
+        throw new AssertionError();
+    }
+
+    /**
+     * Abstracts away how we obtain an instance from constructor/method/field.
+     */
+    static abstract class InstanceFactory {
+        abstract Object create() throws InstantiationException;
+
+        static InstanceFactory _for(final AnnotatedElement e) {
+            if (e instanceof Class) {
+                return new InstanceFactory() {
+                    Object create() throws InstantiationException {
+                        try {
+                            return ((Class) e).newInstance();
+                        } catch (IllegalAccessException x) {
+                            throw (InstantiationException)new InstantiationException("Failed to instantiate "+e).initCause(x);
+                        } catch (LinkageError x) {
+                            // sometimes the instantiation fails in an indirect classloading failure,
+                            // which results in a LinkageError
+                            throw (InstantiationException)new InstantiationException("Failed to instantiate "+e).initCause(x);
+                        }
+                    }
+                };
+            }
+            if (e instanceof Field) {
+                return new InstanceFactory() {
+                    Object create() throws InstantiationException {
+                        try {
+                            return ((Field) e).get(null);
+                        } catch (IllegalAccessException x) {
+                            throw (InstantiationException)new InstantiationException("Failed to instantiate "+e).initCause(x);
+                        } catch (LinkageError x) {
+                            throw (InstantiationException)new InstantiationException("Failed to instantiate "+e).initCause(x);
+                        }
+                    }
+                };
+            }
+            if (e instanceof Method) {
+                return new InstanceFactory() {
+                    Object create() throws InstantiationException {
+                        try {
+                            return ((Method) e).invoke(null);
+                        } catch (IllegalAccessException x) {
+                            throw (InstantiationException)new InstantiationException("Failed to instantiate "+e).initCause(x);
+                        } catch (InvocationTargetException x) {
+                            throw (InstantiationException)new InstantiationException("Failed to instantiate "+e).initCause(x);
+                        } catch (LinkageError x) {
+                            throw (InstantiationException)new InstantiationException("Failed to instantiate "+e).initCause(x);
+                        }
+                    }
+                };
+            }
+
+            throw new AssertionError();
+        }
+
+        static InstanceFactory wrap(final IndexItem<?,Object> item) {
+            return new InstanceFactory() {
+                Object create() throws InstantiationException {
+                    try {
+                        return item.instance();
+                    } catch (LinkageError x) {
+                        throw (InstantiationException)new InstantiationException("Failed to instantiate "+item.className()).initCause(x);
+                    }
+                }
+            };
         }
     }
 

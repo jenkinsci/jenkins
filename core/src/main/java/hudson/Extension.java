@@ -23,7 +23,7 @@
  */
 package hudson;
 
-import net.java.sezpoz.Indexable;
+import org.jvnet.hudson.annotation_indexer.Indexed;
 
 import java.lang.annotation.Documented;
 import java.lang.annotation.Retention;
@@ -64,7 +64,7 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
  * @see ExtensionFinder
  * @see ExtensionList
  */
-@Indexable
+@Indexed
 @Retention(RUNTIME)
 @Target({TYPE, FIELD, METHOD})
 @Documented

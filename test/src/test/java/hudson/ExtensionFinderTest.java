@@ -24,10 +24,8 @@
 package hudson;
 
 import com.google.inject.AbstractModule;
-import com.google.inject.Binder;
 import com.google.inject.BindingAnnotation;
 import com.google.inject.Inject;
-import com.google.inject.Module;
 import hudson.model.PageDecorator;
 import org.jvnet.hudson.test.HudsonTestCase;
 import org.jvnet.hudson.test.TestEnvironment;
@@ -58,8 +56,6 @@ public class ExtensionFinderTest extends HudsonTestCase {
         }
         public static boolean error;
     }
-
-
 
 
 
