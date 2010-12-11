@@ -25,9 +25,9 @@ package hudson.maven;
 
 import hudson.Extension;
 import hudson.FilePath;
+import hudson.maven.agent.AbortException;
 import hudson.maven.agent.Main;
 import hudson.maven.agent.Maven21Interceptor;
-import hudson.maven.agent.PluginManagerInterceptor;
 import hudson.model.Computer;
 import hudson.model.TaskListener;
 import hudson.remoting.Channel;
@@ -38,6 +38,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;
 
+import org.apache.maven.lifecycle.LifecycleExecutorInterceptor;
 import org.apache.tools.ant.AntClassLoader;
 import org.apache.tools.ant.Project;
 import org.apache.tools.ant.taskdefs.Zip;
@@ -58,7 +59,7 @@ public class MavenComputerListener extends ComputerListener {
         copyJar(logger, root, Main.class, "maven-agent");
         copyJar(logger, root, Maven3Main.class, "maven3-agent");
         copyJar(logger, root, Maven3Launcher.class, "maven3-listener");
-        copyJar(logger, root, PluginManagerInterceptor.class, "maven-interceptor");
+        copyJar(logger, root, AbortException.class, "maven-interceptor");
         copyJar(logger, root, Maven21Interceptor.class, "maven2.1-interceptor");
         copyJar(logger, root, ClassWorld.class, "plexus-classworld");
         copyJar(logger, root, AntClassLoader.class, "maven-plugin-ant");

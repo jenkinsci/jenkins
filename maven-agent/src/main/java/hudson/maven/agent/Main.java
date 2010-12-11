@@ -43,6 +43,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 
+import org.apache.maven.plugin.DefaultPluginManager;
 import org.apache.tools.ant.AntClassLoader;
 import org.codehaus.classworlds.ClassWorldAdapter;
 import org.codehaus.plexus.classworlds.ClassWorld;
@@ -196,6 +197,62 @@ public class Main {
     }
 
     /**
+     * Called by the code in remoting to launch.
+     * @throws org.codehaus.classworlds.DuplicateRealmException 
+     * @throws IllegalArgumentException 
+     */
+    public static int launch(String[] args) 
+        throws NoSuchMethodException, IllegalAccessException, InvocationTargetException, ClassNotFoundException, IOException, IllegalArgumentException {
+        
+        ClassWorld world = launcher.getWorld();
+
+        Set builtinRealms = new HashSet(world.getRealms());
+        URLClassLoader orig = (URLClassLoader) Thread.currentThread().getContextClassLoader();
+        System.out.println("orig " + orig.toString());
+      
+        
+        try {
+            launcher.setAppMain( "org.apache.maven.cli.MavenCli", "plexus.core.maven" );
+            ClassRealm newCl = launcher.getMainRealm();
+            Thread.currentThread().setContextClassLoader( newCl );
+            Method mainMethod = launcher.getMainClass().getMethod( "main", new Class[]{String[].class, org.codehaus.classworlds.ClassWorld.class} );
+            //launcher.launch(args);
+            
+            mainMethod.invoke( null,new Object[]{args,ClassWorldAdapter.getInstance( launcher.getWorld() )} );
+        //} catch (org.codehaus.classworlds.DuplicateRealmException e) {
+        //    throw new RuntimeException( e.getMessage(), e);
+        } catch (NoSuchRealmException e) {
+            throw new RuntimeException( e.getMessage(), e);
+        } finally {
+            Thread.currentThread().setContextClassLoader( orig );
+            // delete all realms created by Maven
+            // this is because Maven creates a child realm for each plugin it loads,
+            // and the realm id doesn't include the version.
+            // so unless we discard all the realms multiple invocations
+            // that use different versions of the same plugin will fail to work correctly.
+            Set all = new HashSet(world.getRealms());
+            all.removeAll(builtinRealms);
+            for (Iterator itr = all.iterator(); itr.hasNext();) {
+                ClassRealm cr = (ClassRealm) itr.next();
+                try
+                {
+                    world.disposeRealm(cr.getId());
+                }
+                catch ( NoSuchRealmException e )
+                {
+                    throw new RuntimeException( e.getMessage(), e);
+                }
+            }
+        }
+        return launcher.getExitCode();
+    }
+    
+
+    //---------------
+    // olamy tests
+    // TODO remove
+    //---------------
+    /**
      * with various classLoader hierarchy stuff
      * @throws MalformedURLException 
      * @throws DuplicateRealmException 
@@ -263,63 +320,7 @@ public class Main {
         }        
                 
     }    
-    
-    /**
-     * Called by the code in remoting to launch.
-     * @throws org.codehaus.classworlds.DuplicateRealmException 
-     * @throws IllegalArgumentException 
-     */
-    public static int launch(String[] args) 
-        throws NoSuchMethodException, IllegalAccessException, InvocationTargetException, ClassNotFoundException, IOException, IllegalArgumentException {
         
-        ClassWorld world = launcher.getWorld();
-
-        Set builtinRealms = new HashSet(world.getRealms());
-        URLClassLoader orig = (URLClassLoader) Thread.currentThread().getContextClassLoader();
-        System.out.println("orig " + orig.toString());
-      
-        URL cl = orig.getResource( "org/apache/maven/plugin/PluginManager.class" );
-        if (cl != null)
-        {
-            System.out.println("cl " + cl.toString());
-        }
-        // org.apache.maven.plugin.PluginManager
-        
-        try {
-            launcher.setAppMain( "org.apache.maven.cli.MavenCli", "plexus.core.maven" );
-            ClassRealm newCl = launcher.getMainRealm();
-            Thread.currentThread().setContextClassLoader( newCl );
-            Method mainMethod = launcher.getMainClass().getMethod( "main", new Class[]{String[].class, org.codehaus.classworlds.ClassWorld.class} );
-            //launcher.launch(args);
-            
-            mainMethod.invoke( null,new Object[]{args,ClassWorldAdapter.getInstance( launcher.getWorld() )} );
-        //} catch (org.codehaus.classworlds.DuplicateRealmException e) {
-        //    throw new RuntimeException( e.getMessage(), e);
-        } catch (NoSuchRealmException e) {
-            throw new RuntimeException( e.getMessage(), e);
-        } finally {
-            Thread.currentThread().setContextClassLoader( orig );
-            // delete all realms created by Maven
-            // this is because Maven creates a child realm for each plugin it loads,
-            // and the realm id doesn't include the version.
-            // so unless we discard all the realms multiple invocations
-            // that use different versions of the same plugin will fail to work correctly.
-            Set all = new HashSet(world.getRealms());
-            all.removeAll(builtinRealms);
-            for (Iterator itr = all.iterator(); itr.hasNext();) {
-                ClassRealm cr = (ClassRealm) itr.next();
-                try
-                {
-                    world.disposeRealm(cr.getId());
-                }
-                catch ( NoSuchRealmException e )
-                {
-                    throw new RuntimeException( e.getMessage(), e);
-                }
-            }
-        }
-        return launcher.getExitCode();
-    }
     
     static class ChildFistClassCloader extends AntClassLoader
     {
