@@ -200,6 +200,10 @@ public abstract class Proc {
                 copier2 = new StreamCopyThread(name+": stderr copier", proc.getErrorStream(), err);
                 copier2.start();
             } else {
+                // while this is not discussed in javadoc, even with ProcessBuilder.redirectErrorStream(true),
+                // Process.getErrorStream() still returns a distinct reader end of a pipe that needs to be closed.
+                // this is according to the source code of JVM
+                proc.getErrorStream().close();
                 copier2 = null;
             }
         }
