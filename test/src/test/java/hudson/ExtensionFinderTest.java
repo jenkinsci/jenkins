@@ -24,15 +24,13 @@
 package hudson;
 
 import com.google.inject.AbstractModule;
-import com.google.inject.Binder;
-import com.google.inject.BindingAnnotation;
-import com.google.inject.Inject;
-import com.google.inject.Module;
 import hudson.model.PageDecorator;
 import org.jvnet.hudson.test.HudsonTestCase;
 import org.jvnet.hudson.test.TestEnvironment;
 import org.jvnet.hudson.test.TestExtension;
 
+import javax.inject.Inject;
+import javax.inject.Qualifier;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 
@@ -88,7 +86,7 @@ public class ExtensionFinderTest extends HudsonTestCase {
     }
 
 
-    @Retention(RetentionPolicy.RUNTIME) @BindingAnnotation
+    @Retention(RetentionPolicy.RUNTIME) @Qualifier
     public static @interface LionKing {}
 
     @Extension

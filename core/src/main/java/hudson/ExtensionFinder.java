@@ -42,6 +42,8 @@ import org.kohsuke.accmod.restrictions.NoExternalUse;
 
 import java.lang.annotation.Annotation;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Map.Entry;
 import java.util.logging.Logger;
 import java.util.logging.Level;
@@ -147,6 +149,11 @@ public abstract class ExtensionFinder implements ExtensionPoint {
         protected boolean isOptional(Extension annotation) {
             return annotation.optional();
         }
+
+        @Override
+        protected double getOrdinal(Extension annotation) {
+            return annotation.ordinal();
+        }
     }
 
     /**
@@ -154,6 +161,8 @@ public abstract class ExtensionFinder implements ExtensionPoint {
      */
     public static abstract class AbstractGuiceFinder<T extends Annotation> extends ExtensionFinder {
         private Injector container;
+
+        private final Map<Key,T> annotations = new HashMap<Key,T>();
 
         public AbstractGuiceFinder(final Class<T> annotationType) {
             List<Module> modules = new ArrayList<Module>();
@@ -169,9 +178,12 @@ public abstract class ExtensionFinder implements ExtensionPoint {
                         try {
                             AnnotatedElement e = item.element();
                             if (!isActive(e))   continue;
+                            T a = item.annotation();
 
                             if (e instanceof Class) {
-                                bind((Class<?>)e).in(FAULT_TOLERANT_SCOPE);
+                                Key key = Key.get((Class)e);
+                                annotations.put(key,a);
+                                bind(key).in(FAULT_TOLERANT_SCOPE);
                             } else {
                                 Class extType;
                                 if (e instanceof Field) {
@@ -183,8 +195,9 @@ public abstract class ExtensionFinder implements ExtensionPoint {
                                     throw new AssertionError();
 
                                 // use arbitrary
-                                bind(extType).annotatedWith(Names.named(String.valueOf(id)))
-                                    .toProvider(new Provider() {
+                                Key key = Key.get(extType, Names.named(String.valueOf(id)));
+                                annotations.put(key,a);
+                                bind(key).toProvider(new Provider() {
                                         public Object get() {
                                             return instantiate(item);
                                         }
@@ -210,6 +223,8 @@ public abstract class ExtensionFinder implements ExtensionPoint {
             container = Guice.createInjector(modules);
         }
 
+        protected abstract double getOrdinal(T annotation);
+
         /**
          * Hook to enable subtypes to control which ones to pick up and which ones to ignore.
          */
@@ -234,15 +249,15 @@ public abstract class ExtensionFinder implements ExtensionPoint {
             return null;
         }
 
-        public <T> Collection<ExtensionComponent<T>> find(Class<T> type, Hudson hudson) {
-            List<ExtensionComponent<T>> result = new ArrayList<ExtensionComponent<T>>();
+        public <U> Collection<ExtensionComponent<U>> find(Class<U> type, Hudson hudson) {
+            List<ExtensionComponent<U>> result = new ArrayList<ExtensionComponent<U>>();
 
             for (Entry<Key<?>, Binding<?>> e : container.getBindings().entrySet()) {
                 if (type.isAssignableFrom(e.getKey().getTypeLiteral().getRawType())) {
-                    // TODO: how do we get ordinal?
+                    T a = annotations.get(e.getKey());
                     Object o = e.getValue().getProvider().get();
                     if (o!=null)
-                        result.add(new ExtensionComponent<T>(type.cast(o)));
+                        result.add(new ExtensionComponent<U>(type.cast(o),a!=null?getOrdinal(a):0));
                 }
             }
 

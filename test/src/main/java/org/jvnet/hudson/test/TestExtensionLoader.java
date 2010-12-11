@@ -1,7 +1,7 @@
 /*
  * The MIT License
  *
- * Copyright (c) 2004-2010, Sun Microsystems, Inc.
+ * Copyright (c) 2004-2010, Sun Microsystems, Inc., CloudBees, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,21 +24,11 @@
 package org.jvnet.hudson.test;
 
 import hudson.Extension;
-import hudson.ExtensionComponent;
-import hudson.ExtensionFinder;
 import hudson.ExtensionFinder.AbstractGuiceFinder;
-import hudson.model.Hudson;
-import net.java.sezpoz.Index;
-import net.java.sezpoz.IndexItem;
 
 import java.lang.reflect.AnnotatedElement;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  * Loads {@link TestExtension}s.
@@ -54,6 +44,11 @@ public class TestExtensionLoader extends AbstractGuiceFinder<TestExtension> {
     @Override
     protected boolean isOptional(TestExtension annotation) {
         return false;
+    }
+
+    @Override
+    protected double getOrdinal(TestExtension annotation) {
+        return 0;
     }
 
     @Override
