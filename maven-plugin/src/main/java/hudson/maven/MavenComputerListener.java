@@ -38,7 +38,6 @@ import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;
 
-import org.apache.maven.lifecycle.LifecycleExecutorInterceptor;
 import org.apache.tools.ant.AntClassLoader;
 import org.apache.tools.ant.Project;
 import org.apache.tools.ant.taskdefs.Zip;
