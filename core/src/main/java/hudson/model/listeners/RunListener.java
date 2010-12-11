@@ -31,6 +31,10 @@ import hudson.model.Run;
 import hudson.model.TaskListener;
 import hudson.model.Hudson;
 import hudson.util.CopyOnWriteList;
+import org.jvnet.tiger_types.Types;
+
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
 
 /**
  * Receives notifications about builds.
@@ -50,6 +54,14 @@ public abstract class RunListener<R extends Run> implements ExtensionPoint {
 
     protected RunListener(Class<R> targetType) {
         this.targetType = targetType;
+    }
+
+    protected RunListener() {
+        Type type = Types.getBaseClass(getClass(), RunListener.class);
+        if (type instanceof ParameterizedType)
+            targetType = Types.erasure(Types.getTypeArgument(type,0));
+        else
+            throw new IllegalStateException(getClass()+" uses the raw type for extending RunListener");
     }
 
     /**

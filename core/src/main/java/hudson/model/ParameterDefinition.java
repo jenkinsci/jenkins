@@ -111,6 +111,11 @@ public abstract class ParameterDefinition implements
     }
 
     @Exported
+    public String getType() {
+    	return this.getClass().getSimpleName();
+    }
+    
+    @Exported
     public String getName() {
         return name;
     }

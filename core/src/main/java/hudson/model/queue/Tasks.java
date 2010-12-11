@@ -32,7 +32,7 @@ import java.util.Collections;
  * Convenience methods around {@link Task} and {@link SubTask}.
  *
  * @author Kohsuke Kawaguchi
- * @since 1.FATTASK
+ * @since 1.377
  */
 public class Tasks {
 
@@ -78,7 +78,7 @@ public class Tasks {
 
     public static Task getOwnerTaskOf(SubTask t) {
         try {
-            return t.getOwnerTask();
+            return _getOwnerTaskOf(t);
         } catch (AbstractMethodError e) {
             return (Task)t;
         }

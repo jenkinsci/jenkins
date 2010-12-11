@@ -1,7 +1,7 @@
 /*
  * The MIT License
  * 
- * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi
+ * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, CloudBees, Inc.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,6 +23,8 @@
  */
 package hudson.util.jna;
 
+import com.sun.jna.Pointer;
+import com.sun.jna.ptr.IntByReference;
 import com.sun.jna.win32.StdCallLibrary;
 import com.sun.jna.Native;
 
@@ -45,4 +47,9 @@ public interface Kernel32 extends StdCallLibrary {
     static final int MOVEFILE_FAIL_IF_NOT_TRACKABLE = 32;
     static final int MOVEFILE_REPLACE_EXISTING = 1;
     static final int MOVEFILE_WRITE_THROUGH = 8;
+
+    int WaitForSingleObject(Pointer handle, int milliseconds);
+    boolean GetExitCodeProcess(Pointer handle, IntByReference r);
+
+    static final int STILL_ACTIVE = 259;
 }

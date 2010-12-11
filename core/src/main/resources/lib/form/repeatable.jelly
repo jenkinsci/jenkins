@@ -121,7 +121,10 @@ THE SOFTWARE.
     <!-- The first DIV is the master copy. -->
     <div class="repeated-chunk to-be-removed" name="${name}">
       <j:if test="${!empty(header)}"><div class="dd-handle">${header}</div></j:if>
-      <d:invokeBody />
+      <j:scope>
+        <j:set var="${var}" value="${null}"/>
+        <d:invokeBody />
+      </j:scope>
     </div>
     <!-- then populate them for each item -->
     <j:forEach var="loop" varStatus="loopStatus" items="${items}">

@@ -800,7 +800,7 @@ DIV.yahooTree td {
 #search-box {
   background: white url(../images/16x16/search.gif) no-repeat 2px center;
   padding-left: 20px;
-  width: 10em;
+  width: 15em;
   position: static; 
 }
 
@@ -810,14 +810,14 @@ DIV.yahooTree td {
 
 #search-box-completion {
   text-align: left;
-  width:10em;
+  width:25em;
   position: absolute;
   z-index: 999;
 }
 
 #search-box-completion .yui-ac-content {
   border: 1px solid black;
-  width:10em;
+  width:25em;
   background-color: white;
   overflow: hidden;
 }
@@ -838,13 +838,14 @@ DIV.yahooTree td {
 #search-box-minWidth {
   position:absolute;
   visibility: hidden;
-  width:5em;
+  width:15em;
 }
 
 #search-box-sizer {
   position:absolute;
   visibility: hidden;
 }
+
 
 /* ========================= resizable text area ========================= */
 

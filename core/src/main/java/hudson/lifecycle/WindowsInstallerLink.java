@@ -1,7 +1,7 @@
 /*
  * The MIT License
  * 
- * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, Seiji Sogabe
+ * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, Seiji Sogabe, CloudBees, Inc.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -30,7 +30,6 @@ import hudson.AbortException;
 import hudson.Extension;
 import hudson.util.StreamTaskListener;
 import hudson.util.jna.DotNet;
-import hudson.Launcher.LocalLauncher;
 import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
@@ -127,9 +126,8 @@ public class WindowsInstallerLink extends ManagementLink {
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
             StreamTaskListener task = new StreamTaskListener(baos);
             task.getLogger().println("Installing a service");
-            int r = new LocalLauncher(task).launch()
-                .cmds(new File(dir, "hudson.exe").getPath(), "install")
-                .stdout(task.getLogger()).pwd(dir).join();
+            int r = WindowsSlaveInstaller.runElevated(
+                    new File(dir, "hudson.exe"), "install", task, dir);
             if(r!=0) {
                 sendError(baos.toString(),req,rsp);
                 return;
@@ -197,8 +195,8 @@ public class WindowsInstallerLink extends ManagementLink {
                                 }
                                 LOGGER.info("Starting a Windows service");
                                 StreamTaskListener task = StreamTaskListener.fromStdout();
-                                int r = new LocalLauncher(task).launch().cmds(new File(installationDir, "hudson.exe"), "start")
-                                        .stdout(task).pwd(installationDir).join();
+                                int r = WindowsSlaveInstaller.runElevated(
+                                        new File(installationDir, "hudson.exe"), "start", task, installationDir);
                                 task.getLogger().println(r==0?"Successfully started":"start service failed. Exit code="+r);
                             } catch (IOException e) {
                                 e.printStackTrace();

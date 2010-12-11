@@ -359,7 +359,8 @@ public class Fingerprinter extends Recorder implements Serializable {
                 if(bp==null)    continue;       // outside Hudson
                 if(bp.is(build))    continue;   // we are the owner
                 AbstractProject job = bp.getJob();
-                if(job!=null && job.getParent()==build.getParent())
+                if (job==null)  continue;   // no longer exists
+                if (job.getParent()==build.getParent())
                     continue;   // we are the parent of the build owner, that is almost like we are the owner 
 
                 Integer existing = r.get(job);

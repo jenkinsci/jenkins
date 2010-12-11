@@ -177,6 +177,10 @@ public final class JDK extends ToolInstallation implements NodeSpecific<JDK>, En
 
             return FormValidation.ok();
         }
+
+        public FormValidation doCheckName(@QueryParameter String value) {
+            return FormValidation.validateRequired(value);
+        }
     }
 
     public static class ConverterImpl extends ToolConverter {

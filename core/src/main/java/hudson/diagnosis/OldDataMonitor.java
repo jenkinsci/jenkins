@@ -113,7 +113,7 @@ public class OldDataMonitor extends AdministrativeMonitor {
     };
 
     @Extension
-    public static final RunListener<Run> runDeleteListener = new RunListener<Run>(Run.class) {
+    public static final RunListener<Run> runDeleteListener = new RunListener<Run>() {
         @Override
         public void onDeleted(Run run) {
             remove(run, true);

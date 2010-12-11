@@ -71,10 +71,6 @@ public abstract class TopLevelItemDescriptor extends Descriptor<TopLevelItem> {
      */
     public abstract String getDisplayName();
 
-    public final String newInstanceDetailPage() {
-        return '/'+clazz.getName().replace('.','/').replace('$','/')+"/newJobDetail.jelly";
-    }
-
     /**
      * @deprecated since 2007-01-19.
      *      This is not a valid operation for {@link Job}s.
@@ -93,7 +89,7 @@ public abstract class TopLevelItemDescriptor extends Descriptor<TopLevelItem> {
      * Returns all the registered {@link TopLevelItem} descriptors.
      */
     public static ExtensionList<TopLevelItemDescriptor> all() {
-        return Hudson.getInstance().getExtensionList(TopLevelItemDescriptor.class);
+        return Items.all();
     }
 
 }

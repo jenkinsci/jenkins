@@ -29,12 +29,12 @@ THE SOFTWARE.
                checkUrl="'descriptorByName/Fingerprinter/check?value='+encodeURIComponent(this.value)" />
   </f:entry>
   <f:entry title="">
-    <f:checkbox name="recordBuildArtifacts" checked="${instance.recordBuildArtifacts}" />
-    <label class="attach-previous">${%Fingerprint all archived artifacts}</label>
+    <f:checkbox name="recordBuildArtifacts" checked="${instance.recordBuildArtifacts}"
+            title="${%Fingerprint all archived artifacts}"/>
   </f:entry>
   <!-- keepDependencies is actually a property of the Job, not Fingerprinter: -->
   <f:entry title="" help="/help/tasks/fingerprint/keepDependencies.html">
-    <f:checkbox name="keepDependencies" checked="${it.keepDependencies}" />
-    <label class="attach-previous">${%Keep the build logs of dependencies}</label> 
+    <f:checkbox name="keepDependencies" checked="${it.keepDependencies}"
+            title="${%Keep the build logs of dependencies}"/>
   </f:entry>
 </j:jelly>

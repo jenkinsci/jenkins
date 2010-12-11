@@ -1,7 +1,7 @@
 /*
  * The MIT License
  *
- * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi
+ * Copyright (c) 2004-2010, Sun Microsystems, Inc., Kohsuke Kawaguchi
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -62,14 +62,14 @@ public abstract class LoadBalancer /*implements ExtensionPoint*/ {
      *      Return null if you don't want the task to be executed right now,
      *      in which case this method will be called some time later with the same task.
      */
-    protected abstract Mapping map(Task task, MappingWorksheet worksheet);
+    public abstract Mapping map(Task task, MappingWorksheet worksheet);
 
     /**
      * Uses a consistent hash for scheduling.
      */
     public static final LoadBalancer CONSISTENT_HASH = new LoadBalancer() {
         @Override
-        protected Mapping map(Task task, MappingWorksheet ws) {
+        public Mapping map(Task task, MappingWorksheet ws) {
             // build consistent hash for each work chunk
             List<ConsistentHash<ExecutorChunk>> hashes = new ArrayList<ConsistentHash<ExecutorChunk>>(ws.works.size());
             for (int i=0; i<ws.works.size(); i++) {
@@ -119,7 +119,7 @@ public abstract class LoadBalancer /*implements ExtensionPoint*/ {
     /**
      * Traditional implementation of this.
      *
-     * @deprecated as of 1.FATTASK
+     * @deprecated as of 1.377
      *      The only implementation in the core now is the one based on consistent hash.
      */
     public static final LoadBalancer DEFAULT = CONSISTENT_HASH;
@@ -133,7 +133,7 @@ public abstract class LoadBalancer /*implements ExtensionPoint*/ {
         final LoadBalancer base = this;
         return new LoadBalancer() {
             @Override
-            protected Mapping map(Task task, MappingWorksheet worksheet) {
+            public Mapping map(Task task, MappingWorksheet worksheet) {
                 if (Queue.ifBlockedByHudsonShutdown(task)) {
                     // if we are quieting down, don't start anything new so that
                     // all executors will be eventually free.

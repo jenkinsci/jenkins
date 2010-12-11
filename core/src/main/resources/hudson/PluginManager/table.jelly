@@ -79,7 +79,7 @@ THE SOFTWARE.
                     <j:set var="p" value="${p.plugin}" />
                     <j:if test="${thisCat != lastCat}">
                       <tr>
-                        <td class="pane" colspan="3" onclick="showhideCategory(this)">${thisCat}</td>
+                        <td class="pane" colspan="4" onclick="showhideCategory(this)">${thisCat}</td>
                       </tr>
                     </j:if>
                     <j:set var="lastCat" value="${thisCat}" />
@@ -124,7 +124,7 @@ THE SOFTWARE.
               </j:when>
               <j:otherwise>
                 <tr>
-                  <td colspan="3" align="center">
+                  <td colspan="4" align="center">
                     <div style="padding:1em">
                       ${%No updates}
                     </div>

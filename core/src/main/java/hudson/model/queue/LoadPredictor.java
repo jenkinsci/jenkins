@@ -31,6 +31,7 @@ import hudson.model.Executor;
 import hudson.model.Hudson;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -52,8 +53,29 @@ public abstract class LoadPredictor implements ExtensionPoint {
      *
      * @param start
      *      Where to start enumeration. Always bigger or equal to the current time of the execution.
+     * @param plan
+     *      This is the execution plan for which we are making a load prediction. Never null. While
+     *      this object is still being partially constructed when this method is called, some
+     *      of its properties (like {@link MappingWorksheet#item} provide access to more contextual
+     *      information. 
+     * @since 1.380
      */
-    public abstract Iterable<FutureLoad> predict(Computer computer, long start, long end);
+    public Iterable<FutureLoad> predict(MappingWorksheet plan, Computer computer, long start, long end) {
+        // maintain backward compatibility by calling the old signature.
+        return predict(computer,start,end);
+    }
+
+    /**
+     * Estimates load starting from the 'start' timestamp, up to the 'end' timestamp.
+     *
+     * @param start
+     *      Where to start enumeration. Always bigger or equal to the current time of the execution.
+     * @deprecated as of 1.380
+     *      Use {@link #predict(MappingWorksheet, Computer, long, long)}
+     */
+    public Iterable<FutureLoad> predict(Computer computer, long start, long end) {
+        return Collections.emptyList();
+    }
 
     /**
      * All the registered instances.
@@ -68,7 +90,7 @@ public abstract class LoadPredictor implements ExtensionPoint {
     @Extension
     public static class CurrentlyRunningTasks extends LoadPredictor {
         @Override
-        public Iterable<FutureLoad> predict(final Computer computer, long start, long eternity) {
+        public Iterable<FutureLoad> predict(MappingWorksheet plan, final Computer computer, long start, long eternity) {
             long now = System.currentTimeMillis();
             List<FutureLoad> fl = new ArrayList<FutureLoad>();
             for (Executor e : computer.getExecutors()) {

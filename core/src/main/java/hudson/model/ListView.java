@@ -167,24 +167,16 @@ public class ListView extends View implements Saveable {
     }
 
     /**
-     * Returns the transient {@link Action}s associated with the top page.
-     *
-     * @see Hudson#getActions()
-     */
-    @Override
-    public List<Action> getActions() {
-        return Hudson.getInstance().getActions();
-    }
-    
-    /**
      * Used to determine if we want to display the Add button.
      */
     public boolean hasJobFilterExtensions() {
     	return !ViewJobFilter.all().isEmpty();
     }
+
     public Iterable<ViewJobFilter> getJobFilters() {
     	return jobFilters;
     }
+    
     public Iterable<ListViewColumn> getColumns() {
         return columns;
     }
@@ -231,6 +223,16 @@ public class ListView extends View implements Saveable {
         return jobNames.contains(item.getName());
     }
 
+    /**
+     * Adds the given item to this view.
+     *
+     * @since 1.389
+     */
+    public void add(TopLevelItem item) throws IOException {
+        jobNames.add(item.getName());
+        save();
+    }
+
     public String getIncludeRegex() {
         return includeRegex;
     }
@@ -243,7 +245,7 @@ public class ListView extends View implements Saveable {
         return statusFilter;
     }
 
-    public Item doCreateItem(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
+    public synchronized Item doCreateItem(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
         Item item = Hudson.getInstance().doCreateItem(req, rsp);
         if(item!=null) {
             jobNames.add(item.getName());

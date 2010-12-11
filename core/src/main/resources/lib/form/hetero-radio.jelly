@@ -46,9 +46,9 @@ THE SOFTWARE.
         <j:set var="instance" value="${currentDescriptor==d?currentInstance:null}" />
         <st:include from="${d}" page="${d.configPage}" optional="true" />
 
-        <f:block><!-- this tells Stapler which block is for which class -->
+        <f:invisibleEntry><!-- this tells Stapler which block is for which class -->
           <input type="hidden" name="stapler-class" value="${d.clazz.name}" />
-        </f:block>
+        </f:invisibleEntry>
       </f:radioBlock>
     </j:forEach>
   </table>

@@ -3,7 +3,8 @@
  * 
  * Copyright (c) 2004-2010, Sun Microsystems, Inc., Kohsuke Kawaguchi,
  * Brian Westrich, Erik Ramfelt, Ertan Deniz, Jean-Baptiste Quenot,
- * Luca Domenico Milanesio, R. Tyler Ballance, Stephen Connolly, Tom Huybrechts, id:cactusman
+ * Luca Domenico Milanesio, R. Tyler Ballance, Stephen Connolly, Tom Huybrechts,
+ * id:cactusman, Yahoo! Inc.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -25,6 +26,7 @@
  */
 package hudson.model;
 
+import java.util.regex.Pattern;
 import antlr.ANTLRException;
 import hudson.AbortException;
 import hudson.CopyOnWrite;
@@ -374,17 +376,29 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
      *      use {@link #getSomeWorkspace()}
      */
     public final FilePath getWorkspace() {
+        AbstractBuild b = getBuildForDeprecatedMethods();
+        return b != null ? b.getWorkspace() : null;
+
+    }
+    
+    /**
+     * Various deprecated methods in this class all need the 'current' build.  This method returns
+     * the build suitable for that purpose.
+     * 
+     * @return An AbstractBuild for deprecated methods to use.
+     */
+    private AbstractBuild getBuildForDeprecatedMethods() {
         Executor e = Executor.currentExecutor();
         if(e!=null) {
             Executable exe = e.getCurrentExecutable();
             if (exe instanceof AbstractBuild) {
                 AbstractBuild b = (AbstractBuild) exe;
                 if(b.getProject()==this)
-                    return b.getWorkspace();
+                    return b;
             }
         }
         R lb = getLastBuild();
-        if(lb!=null)    return lb.getWorkspace();
+        if(lb!=null)    return lb;
         return null;
     }
 
@@ -429,9 +443,8 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
      *      See {@link #getWorkspace()} for a migration strategy.
      */
     public FilePath getModuleRoot() {
-        FilePath ws = getWorkspace();
-        if(ws==null)    return null;
-        return getScm().getModuleRoot(ws);
+        AbstractBuild b = getBuildForDeprecatedMethods();
+        return b != null ? b.getModuleRoot() : null;
     }
 
     /**
@@ -445,7 +458,8 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
      *      See {@link #getWorkspace()} for a migration strategy.
      */
     public FilePath[] getModuleRoots() {
-        return getScm().getModuleRoots(getWorkspace());
+        AbstractBuild b = getBuildForDeprecatedMethods();
+        return b != null ? b.getModuleRoots() : null;
     }
 
     public int getQuietPeriod() {
@@ -539,7 +553,18 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
             return super.getIconColor();
     }
 
+    /**
+     * effectively deprecated. Since using updateTransientActions correctly
+     * under concurrent environment requires a lock that can too easily cause deadlocks.
+     *
+     * <p>
+     * Override {@link #createTransientActions()} instead.
+     */
     protected void updateTransientActions() {
+        transientActions = createTransientActions();
+    }
+
+    protected List<Action> createTransientActions() {
         Vector<Action> ta = new Vector<Action>();
 
         for (JobProperty<? super P> p : properties)
@@ -547,8 +572,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
 
         for (TransientProjectActionFactory tpaf : TransientProjectActionFactory.all())
             ta.addAll(Util.fixNull(tpaf.createFor(this))); // be defensive against null
-
-        transientActions = ta;
+        return ta;
     }
 
     /**
@@ -707,10 +731,22 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
      *      For the convenience of the caller, this array can contain null, and those will be silently ignored.
      */
     public Future<R> scheduleBuild2(int quietPeriod, Cause c, Action... actions) {
+        return scheduleBuild2(quietPeriod,c,Arrays.asList(actions));
+    }
+
+    /**
+     * Schedules a build of this project, and returns a {@link Future} object
+     * to wait for the completion of the build.
+     *
+     * @param actions
+     *      For the convenience of the caller, this collection can contain null, and those will be silently ignored.
+     * @since 1.383
+     */
+    public Future<R> scheduleBuild2(int quietPeriod, Cause c, Collection<? extends Action> actions) {
         if (!isBuildable())
             return null;
 
-        List<Action> queueActions = new ArrayList<Action>(Arrays.asList(actions));
+        List<Action> queueActions = new ArrayList<Action>(actions);
         if (isParameterized() && Util.filter(queueActions, ParametersAction.class).isEmpty()) {
             queueActions.add(new ParametersAction(getDefaultParametersValues()));
         }
@@ -1129,11 +1165,11 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
      */
     public PollingResult poll( TaskListener listener ) {
         SCM scm = getScm();
-        if(scm==null) {
+        if (scm==null) {
             listener.getLogger().println(Messages.AbstractProject_NoSCM());
             return NO_CHANGES;
         }
-        if(isDisabled()) {
+        if (isDisabled()) {
             listener.getLogger().println(Messages.AbstractProject_Disabled());
             return NO_CHANGES;
         }
@@ -1141,7 +1177,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
         R lb = getLastBuild();
         if (lb==null) {
             listener.getLogger().println(Messages.AbstractProject_NoBuilds());
-            return BUILD_NOW;
+            return isInQueue() ? NO_CHANGES : BUILD_NOW;
         }
 
         if (pollingBaseline==null) {
@@ -1160,7 +1196,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
         }
 
         try {
-            if(scm.requiresWorkspaceForPolling()) {
+            if (scm.requiresWorkspaceForPolling()) {
                 // lock the workspace of the last build
                 FilePath ws=lb.getWorkspace();
 
@@ -1176,8 +1212,13 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
                     listener.getLogger().println( ws==null
                         ? Messages.AbstractProject_WorkspaceOffline()
                         : Messages.AbstractProject_NoWorkspace());
-                    listener.getLogger().println(Messages.AbstractProject_NewBuildForWorkspace());
-                    return BUILD_NOW;
+                    if (isInQueue()) {
+                        listener.getLogger().println(Messages.AbstractProject_AwaitingBuildForWorkspace());
+                        return NO_CHANGES;
+                    } else {
+                        listener.getLogger().println(Messages.AbstractProject_NewBuildForWorkspace());
+                        return BUILD_NOW;
+                    }
                 } else {
                     WorkspaceList l = lb.getBuiltOn().toComputer().getWorkspaceList();
                     // if doing non-concurrent build, acquire a workspace in a way that causes builds to block for this workspace.
@@ -1210,6 +1251,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
                 return r;
             }
         } catch (AbortException e) {
+            listener.getLogger().println(e.getMessage());
             listener.fatalError(Messages.AbstractProject_Aborted());
             LOGGER.log(Level.FINE, "Polling "+this+" aborted",e);
             return NO_CHANGES;
@@ -1727,6 +1769,63 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
             if (Hudson.getInstance().getLabel(value).isEmpty())
                 return FormValidation.warning("There's no slave/cloud that matches this assignment");
             return FormValidation.ok();
+        }
+
+       public AutoCompletionCandidates doAutoCompleteAssignedLabelString(@QueryParameter String value) {
+            AutoCompletionCandidates c = new AutoCompletionCandidates();
+            Set<Label> labels = Hudson.getInstance().getLabels();
+            List<String> queries = new AutoCompleteSeeder(value).getSeeds();
+
+            for (String term : queries) {
+                for (Label l : labels) {
+                    if (l.getName().startsWith(term)) {
+                        c.add(l.getName());
+                    }
+                }
+            }
+            return c;
+        }
+
+        /**
+        * Utility class for taking the current input value and computing a list
+        * of potential terms to match against the list of defined labels.
+         */
+        static class AutoCompleteSeeder {
+            private String source;
+            private Pattern quoteMatcher = Pattern.compile("(\\\"?)(.+?)(\\\"?+)(\\s*)");
+
+            AutoCompleteSeeder(String source) {
+                this.source = source;
+            }
+
+            List<String> getSeeds() {
+                ArrayList<String> terms = new ArrayList();
+                boolean trailingQuote = source.endsWith("\"");
+                boolean leadingQuote = source.startsWith("\"");
+                boolean trailingSpace = source.endsWith(" ");
+
+                if (trailingQuote || (trailingSpace && !leadingQuote)) {
+                    terms.add("");
+                } else {
+                    if (leadingQuote) {
+                        int quote = source.lastIndexOf('"');
+                        if (quote == 0) {
+                            terms.add(source.substring(1));
+                        } else {
+                            terms.add("");
+                        }
+                    } else {
+                        int space = source.lastIndexOf(' ');
+                        if (space > -1) {
+                            terms.add(source.substring(space+1));
+                        } else {
+                            terms.add(source);
+                        }
+                    }
+                }
+
+                return terms;
+            }
         }
     }
 

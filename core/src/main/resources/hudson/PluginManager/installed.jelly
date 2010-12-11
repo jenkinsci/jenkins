@@ -105,6 +105,9 @@ THE SOFTWARE.
         <div style="margin: 1em; height: 1em">
           <div class="error">
             ${%New plugins will take effect once you restart Hudson}
+            <j:if test="${app.lifecycle.canRestart()}">
+              <s:submit value="${%Restart Once No Jobs Are Running}" />
+            </j:if>
           </div>
         </div>
       </j:if>

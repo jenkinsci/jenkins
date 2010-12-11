@@ -1,7 +1,8 @@
 /*
  * The MIT License
  * 
- * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, Martin Eigenbrodt, Tom Huybrechts, Yahoo!, Inc.
+ * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, Martin Eigenbrodt,
+ * Tom Huybrechts, Yahoo!, Inc., Richard Hierlmeier
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -119,9 +120,10 @@ public class JUnitResultArchiver extends Recorder implements Serializable,
     protected TestResult parse(String expandedTestResults, AbstractBuild build, Launcher launcher, BuildListener listener)
             throws IOException, InterruptedException
     {
-        return new JUnitParser(keepLongStdio).parse(expandedTestResults, build, launcher, listener);
+        return new JUnitParser(isKeepLongStdio()).parse(expandedTestResults, build, launcher, listener);
     }
 
+    @Override
 	public boolean perform(AbstractBuild build, Launcher launcher,
 			BuildListener listener) throws InterruptedException, IOException {
 		listener.getLogger().println(Messages.JUnitResultArchiver_Recording());
@@ -216,13 +218,19 @@ public class JUnitResultArchiver extends Recorder implements Serializable,
 	}
 
 	/**
+	 * @return the keepLongStdio
+	 */
+	public boolean isKeepLongStdio() {
+		return keepLongStdio;
+	}
+
+	/**
 	 * Test result tracks the diff from the previous run, hence the checkpoint.
 	 */
 	private static final CheckPoint CHECKPOINT = new CheckPoint(
 			"JUnit result archiving");
 
 	private static final long serialVersionUID = 1L;
-
 
     @Extension
     public static class DescriptorImpl extends BuildStepDescriptor<Publisher> {

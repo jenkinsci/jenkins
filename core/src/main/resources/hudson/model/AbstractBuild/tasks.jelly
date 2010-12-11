@@ -46,4 +46,5 @@ THE SOFTWARE.
           <l:task icon="images/24x24/terminal.gif" href="${buildUrl.baseUrl}/console" title="${%Console Output}" />
         </j:otherwise>
       </j:choose>
+      <l:task icon="images/24x24/setting.gif" href="${buildUrl.baseUrl}/configure" title="${h.hasPermission(it,it.UPDATE)?'%Configure':'%View Configuration'}"/>
 </j:jelly>

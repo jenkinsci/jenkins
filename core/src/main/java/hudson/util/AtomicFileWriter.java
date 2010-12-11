@@ -95,19 +95,29 @@ public class AtomicFileWriter extends Writer {
     }
 
     /**
-     * When the write operation failed and you'd like to leave the original file intact,
-     * you can optionally call this method to clean up a temporary file that was created by this writer.
+     * When the write operation failed, call this method to
+     * leave the original file intact and remove the temporary file.
+     * This method can be safely invoked from the "finally" block, even after
+     * the {@link #commit()} is called, to simplify coding.
      */
     public void abort() throws IOException {
-        core.close();
+        close();
         tmpFile.delete();
     }
 
     public void commit() throws IOException {
         close();
-        if(destFile.exists() && !destFile.delete())
+        if(destFile.exists() && !destFile.delete()) {
+            tmpFile.delete();
             throw new IOException("Unable to delete "+destFile);
+        }
         tmpFile.renameTo(destFile);
+    }
+
+    @Override
+    protected void finalize() throws Throwable {
+        // one way or the other, temporary file should be deleted.
+        tmpFile.delete();
     }
 
     /**

@@ -167,7 +167,7 @@ public final class XmlFile {
         } catch(StreamException e) {
             throw new IOException2(e);
         } finally {
-            w.close();
+            w.abort();
         }
     }
 

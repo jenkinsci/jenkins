@@ -42,7 +42,6 @@ import hudson.model.TaskListener;
 import hudson.remoting.Callable;
 import hudson.remoting.VirtualChannel;
 import hudson.slaves.NodeSpecific;
-import hudson.tasks._ant.AntConsoleAnnotator;
 import hudson.tasks._maven.MavenConsoleAnnotator;
 import hudson.tools.ToolDescriptor;
 import hudson.tools.ToolInstallation;
@@ -547,6 +546,10 @@ public class Maven extends Builder {
                     return FormValidation.error(Messages.Maven_NotMavenDirectory(value));
 
                 return FormValidation.ok();
+            }
+
+            public FormValidation doCheckName(@QueryParameter String value) {
+                return FormValidation.validateRequired(value);
             }
         }
 

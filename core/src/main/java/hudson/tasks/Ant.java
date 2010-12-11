@@ -30,7 +30,14 @@ import hudson.FilePath;
 import hudson.Functions;
 import hudson.Launcher;
 import hudson.Util;
-import hudson.model.*;
+import hudson.model.AbstractBuild;
+import hudson.model.AbstractProject;
+import hudson.model.BuildListener;
+import hudson.model.Computer;
+import hudson.model.EnvironmentSpecific;
+import hudson.model.Hudson;
+import hudson.model.Node;
+import hudson.model.TaskListener;
 import hudson.remoting.Callable;
 import hudson.slaves.NodeSpecific;
 import hudson.tasks._ant.AntConsoleAnnotator;
@@ -416,6 +423,10 @@ public class Ant extends Builder {
                     return FormValidation.error(Messages.Ant_NotAntDirectory(value));
 
                 return FormValidation.ok();
+            }
+
+            public FormValidation doCheckName(@QueryParameter String value) {
+                return FormValidation.validateRequired(value);
             }
         }
 

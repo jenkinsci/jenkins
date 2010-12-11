@@ -27,6 +27,7 @@ import hudson.model.Descriptor.FormException;
 import hudson.util.CaseInsensitiveComparator;
 import hudson.Indenter;
 import hudson.Extension;
+import hudson.views.ViewsTabBar;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
@@ -170,5 +171,9 @@ public class TreeView extends View implements ViewGroup {
         public String getDisplayName() {
             return "Tree View";
         }
+    }
+
+    public ViewsTabBar getViewsTabBar() {
+        return Hudson.getInstance().getViewsTabBar();
     }
 }

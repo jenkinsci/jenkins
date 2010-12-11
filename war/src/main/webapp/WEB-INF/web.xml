@@ -84,6 +84,22 @@ THE SOFTWARE.
       <param-value>public</param-value>
     </init-param>
   </filter>
+  <filter-mapping>
+    <filter-name>change-headers-filter</filter-name>
+    <url-pattern>*.css</url-pattern>
+  </filter-mapping>
+  <filter-mapping>
+    <filter-name>change-headers-filter</filter-name>
+    <url-pattern>*.gif</url-pattern>
+  </filter-mapping>
+  <filter-mapping>
+    <filter-name>change-headers-filter</filter-name>
+    <url-pattern>*.js</url-pattern>
+  </filter-mapping>
+  <filter-mapping>
+    <filter-name>change-headers-filter</filter-name>
+    <url-pattern>*.png</url-pattern>
+  </filter-mapping>
   -->
   
   <filter-mapping>

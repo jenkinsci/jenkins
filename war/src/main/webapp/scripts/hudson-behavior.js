@@ -2,7 +2,7 @@
  * The MIT License
  * 
  * Copyright (c) 2004-2010, Sun Microsystems, Inc., Kohsuke Kawaguchi,
- * Daniel Dyer, Yahoo! Inc., Alan Harder
+ * Daniel Dyer, Yahoo! Inc., Alan Harder, InfraDNA, Inc.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -605,6 +605,7 @@ var hudsonRules = {
         ac.animSpeed = 0;
         ac.useShadow = true;
         ac.autoSnapContainer = true;
+        ac.delimChar = e.getAttribute("autoCompleteDelimiChar");
         ac.doBeforeExpandContainer = function(textbox,container) {// adjust the width every time we show it
             container.style.width=textbox.clientWidth+"px";
             var Dom = YAHOO.util.Dom;
@@ -635,7 +636,8 @@ var hudsonRules = {
             }
 
             return false;
-        }
+        };
+        e.tabIndex = 9999; // make help link unnavigable from keyboard
         e = null; // avoid memory leak
     },
 
@@ -778,8 +780,8 @@ var hudsonRules = {
         applyNameRef(start,end,ref);
     },
 
-    "BODY TR.optional-block-start": function(e) { // see optionalBlock.jelly
-        // this is prefixed by a pointless BODY so that two processing for optional-block-start
+    "TR.optional-block-start ": function(e) { // see optionalBlock.jelly
+        // this is suffixed by a pointless string so that two processing for optional-block-start
         // can sandwitch row-set-end
         // this requires "TR.row-set-end" to mark rows
         var checkbox = e.firstChild.firstChild;
@@ -1027,7 +1029,7 @@ function refillOnChange(e,onChange) {
                 if (window.YUI!=null)      YUI.log("Unable to find a nearby control of the name "+name,"warn")
                 return;
             }
-            c.addEventListener("change",h,false);
+            try { c.addEventListener("change",h,false); } catch (ex) { c.attachEvent("change",h); }
             deps.push({name:Path.tail(name),control:c});
         });
     }
@@ -1533,8 +1535,9 @@ function updateListBox(listBox,url,config) {
             originalOnSuccess(rsp);
     },
     config.onFailure = function(rsp) {
-        var l = $(listBox);
-        l.options[0] = null;
+        // deleting values can result in the data loss, so let's not do that
+//        var l = $(listBox);
+//        l.options[0] = null;
     }
 
     new Ajax.Request(url, config);

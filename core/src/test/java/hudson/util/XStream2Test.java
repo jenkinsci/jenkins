@@ -164,4 +164,10 @@ public class XStream2Test extends TestCase {
         assertSame(m.getClass(),a.m.getClass());    // should get back the exact same type, not just a random map
         assertEquals(m,a.m);
     }
+
+    // @Bug(8006) -- Previously a null entry in an array caused NPE
+    public void testEmptyStack() {
+        assertEquals("<object-array><null/><null/></object-array>",
+                     Run.XSTREAM.toXML(new Object[2]).replaceAll("[ \n\r\t]+", ""));
+    }
 }

@@ -27,7 +27,7 @@ THE SOFTWARE.
   <parent>
     <groupId>org.jvnet.hudson.main</groupId>
     <artifactId>pom</artifactId>
-    <version>1.378-SNAPSHOT</version>
+    <version>1.390-SNAPSHOT</version>
     <relativePath>../pom.xml</relativePath>
   </parent>
   
@@ -119,12 +119,12 @@ THE SOFTWARE.
                 <resolveArtifact artifactId="remoting" tofile="${basedir}/target/generated-resources/WEB-INF/remoting.jar" />
                 <resolveArtifact artifactId="remoting" tofile="${basedir}/target/generated-resources/WEB-INF/slave.jar" />
                 <resolveArtifact groupId="${project.groupId}" artifactId="cli" classifier="jar-with-dependencies" version="${project.version}" type="jar" tofile="${basedir}/target/generated-resources/WEB-INF/hudson-cli.jar" />
-                <resolveArtifact groupId="org.jvnet.hudson.winstone" artifactId="winstone" version="0.9.10-hudson-22" type="jar" tofile="${basedir}/target/generated-resources/winstone.jar" />
+                <resolveArtifact groupId="org.jvnet.hudson.winstone" artifactId="winstone" version="0.9.10-hudson-24" type="jar" tofile="${basedir}/target/generated-resources/winstone.jar" />
 
                 <!-- bundled plugins -->
                 <resolveArtifact type="hpi" groupId="${project.groupId}" artifactId="maven-plugin" version="${project.version}" tofile="${basedir}/target/generated-resources/WEB-INF/plugins/maven-plugin.hpi" />
-                <resolveArtifact type="hpi" groupId="org.jvnet.hudson.plugins" artifactId="ssh-slaves" version="0.13" tofile="${basedir}/target/generated-resources/WEB-INF/plugins/ssh-slaves.hpi" />
-                <resolveArtifact type="hpi" groupId="org.jvnet.hudson.plugins" artifactId="subversion" version="1.17" tofile="${basedir}/target/generated-resources/WEB-INF/plugins/subversion.hpi" />
+                <resolveArtifact type="hpi" groupId="org.jvnet.hudson.plugins" artifactId="ssh-slaves" version="0.14" tofile="${basedir}/target/generated-resources/WEB-INF/plugins/ssh-slaves.hpi" />
+                <resolveArtifact type="hpi" groupId="org.jvnet.hudson.plugins" artifactId="subversion" version="1.20" tofile="${basedir}/target/generated-resources/WEB-INF/plugins/subversion.hpi" />
                 <resolveArtifact type="hpi" groupId="org.jvnet.hudson.plugins" artifactId="cvs" version="1.2" tofile="${basedir}/target/generated-resources/WEB-INF/plugins/cvs.hpi" />
               </tasks>
             </configuration>
@@ -184,12 +184,19 @@ THE SOFTWARE.
             <systemProperty>
               <!-- load view resources from the source directly, again for real time change -->
               <name>stapler.resourcePath</name>
-              <value>../core/src/main/resources;../ui-samples-plugin/src/main/resources;../maven-plugin/src/main/resources</value>
+              <value>
+                  ../core/src/main/resources;
+                  ../ui-samples-plugin/src/main/resources;
+                  ../maven-plugin/src/main/resources
+              </value>
             </systemProperty>
             <systemProperty>
               <!-- enable the plugins in main by default -->
               <name>hudson.bundled.plugins</name>
-              <value>${basedir}/../maven-plugin/target/test-classes/the.hpl,${basedir}/../ui-samples-plugin/target/test-classes/the.hpl</value>
+              <value>
+                  ${basedir}/../maven-plugin/target/test-classes/the.hpl,
+                  ${basedir}/../ui-samples-plugin/target/test-classes/the.hpl
+              </value>
             </systemProperty>
             <systemProperty>
               <!-- stat collection pointless -->

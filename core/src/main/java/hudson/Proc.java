@@ -200,6 +200,10 @@ public abstract class Proc {
                 copier2 = new StreamCopyThread(name+": stderr copier", proc.getErrorStream(), err);
                 copier2.start();
             } else {
+                // while this is not discussed in javadoc, even with ProcessBuilder.redirectErrorStream(true),
+                // Process.getErrorStream() still returns a distinct reader end of a pipe that needs to be closed.
+                // this is according to the source code of JVM
+                proc.getErrorStream().close();
                 copier2 = null;
             }
         }
@@ -228,7 +232,7 @@ public abstract class Proc {
                 if(copier.isAlive() || (copier2!=null && copier2.isAlive())) {
                     // looks like handles are leaking.
                     // closing these handles should terminate the threads.
-                    String msg = "Process leaked file descriptors. See http://hudson.gotdns.com/wiki/display/HUDSON/Spawning+processes+from+build for more information";
+                    String msg = "Process leaked file descriptors. See http://wiki.hudson-ci.org/display/HUDSON/Spawning+processes+from+build for more information";
                     Throwable e = new Exception().fillInStackTrace();
                     LOGGER.log(Level.WARNING,msg,e);
 

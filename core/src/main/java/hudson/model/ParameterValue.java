@@ -153,8 +153,9 @@ public abstract class ParameterValue implements Serializable {
     }
 
     /**
-     * Called at the beginning of a build to let a {@link ParameterValue}
-     * contributes a {@link BuildWrapper} to the build.
+     * Called at the beginning of a build (but after {@link SCM} operations
+     * have taken place) to let a {@link ParameterValue} contributes a
+     * {@link BuildWrapper} to the build.
      *
      * <p>
      * This provides a means for a parameter to perform more extensive

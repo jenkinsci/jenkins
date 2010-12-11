@@ -48,14 +48,32 @@ import java.util.zip.ZipInputStream;
 public class ExtractResourceWithChangesSCM extends NullSCM {
     private final URL firstZip;
     private final URL secondZip;
-
+    private final String moduleRoot;
+    
     public ExtractResourceWithChangesSCM(URL firstZip, URL secondZip) {
         if ((firstZip == null) || (secondZip == null))
             throw new IllegalArgumentException();
         this.firstZip = firstZip;
         this.secondZip = secondZip;
+        this.moduleRoot = null;
     }
 
+    public ExtractResourceWithChangesSCM(URL firstZip, URL secondZip, String moduleRoot) {
+        if ((firstZip == null) || (secondZip == null))
+            throw new IllegalArgumentException();
+        this.firstZip = firstZip;
+        this.secondZip = secondZip;
+        this.moduleRoot = moduleRoot;
+    }
+
+    @Override
+    public FilePath getModuleRoot(FilePath workspace) {
+        if (moduleRoot!=null) {
+            return workspace.child(moduleRoot);
+        }
+        return workspace;
+    }
+    
     @Override
     public boolean checkout(AbstractBuild build, Launcher launcher, FilePath workspace, BuildListener listener, File changeLogFile) throws IOException, InterruptedException {
         if (workspace.exists()) {

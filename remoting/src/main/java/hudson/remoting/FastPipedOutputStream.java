@@ -41,6 +41,14 @@ public class FastPipedOutputStream extends OutputStream {
     WeakReference<FastPipedInputStream> sink;
 
     /**
+     * Keeps track of the total # of bytes written via this output stream.
+     * Helps with debugging, and serves no other purpose.
+     */
+    private long written=0;
+
+    private final Throwable allocatedAt = new Throwable();
+
+    /**
      * Creates an unconnected PipedOutputStream.
      */
     public FastPipedOutputStream() {
@@ -69,7 +77,7 @@ public class FastPipedOutputStream extends OutputStream {
 
     private FastPipedInputStream sink() throws IOException {
         FastPipedInputStream s = sink.get();
-        if (s==null)    throw new IOException("Reader side has already been abandoned");
+        if (s==null)    throw (IOException)new IOException("Reader side has already been abandoned").initCause(allocatedAt);
         return s;
     }
 
@@ -178,6 +186,7 @@ public class FastPipedOutputStream extends OutputStream {
 
                 off += amount;
                 len -= amount;
+                written += amount;
 
                 s.buffer.notifyAll();
             }

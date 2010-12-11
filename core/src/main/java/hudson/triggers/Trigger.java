@@ -44,7 +44,6 @@ import hudson.model.TopLevelItem;
 import hudson.model.TopLevelItemDescriptor;
 import hudson.scheduler.CronTab;
 import hudson.scheduler.CronTabList;
-import hudson.tasks.BuildWrapper;
 import hudson.util.DoubleLaunchChecker;
 
 import java.io.InvalidObjectException;

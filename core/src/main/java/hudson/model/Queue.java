@@ -1,7 +1,8 @@
 /*
  * The MIT License
  * 
- * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, Stephen Connolly, Tom Huybrechts, InfraDNA, Inc.
+ * Copyright (c) 2004-2010, Sun Microsystems, Inc., Kohsuke Kawaguchi,
+ * Stephen Connolly, Tom Huybrechts, InfraDNA, Inc.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -36,6 +37,7 @@ import static hudson.util.Iterators.reverse;
 import hudson.cli.declarative.CLIMethod;
 import hudson.cli.declarative.CLIResolver;
 import hudson.model.queue.AbstractQueueTask;
+import hudson.model.queue.Executables;
 import hudson.model.queue.SubTask;
 import hudson.model.queue.FutureImpl;
 import hudson.model.queue.MappingWorksheet;
@@ -163,7 +165,7 @@ public class Queue extends ResourceController implements Saveable {
      * a new {@link JobOffer} and gets itself {@linkplain Queue#parked parked},
      * and we'll eventually hand out an {@link #workUnit} to build.
      */
-    public class JobOffer {
+    public class JobOffer extends MappingWorksheet.ExecutorSlot {
         public final Executor executor;
 
         /**
@@ -182,10 +184,16 @@ public class Queue extends ResourceController implements Saveable {
             this.executor = executor;
         }
 
-        public void set(WorkUnit p) {
+        @Override
+        protected void set(WorkUnit p) {
             assert this.workUnit == null;
             this.workUnit = p;
             event.signal();
+        }
+
+        @Override
+        public Executor getExecutor() {
+            return executor;
         }
 
         /**
@@ -750,7 +758,8 @@ public class Queue extends ResourceController implements Saveable {
                         if(j.canTake(p.task))
                             candidates.add(j);
 
-                    Mapping m = loadBalancer.map(p.task, new MappingWorksheet(p.task, candidates));
+                    MappingWorksheet ws = new MappingWorksheet(p, candidates);
+                    Mapping m = loadBalancer.map(p.task, ws);
                     if (m == null)
                         // if we couldn't find the executor that fits,
                         // just leave it in the buildables list and
@@ -1073,13 +1082,13 @@ public class Queue extends ResourceController implements Saveable {
          * Since this is a newly added method, the invocation may results in {@link AbstractMethodError}.
          * Use {@link Tasks#getSubTasksOf(Task)} that avoids this.
          *
-         * @since 1.FATTASK
+         * @since 1.377
          */
         Collection<? extends SubTask> getSubTasks();
     }
 
     /**
-     * Represents the real meet of the computation run by {@link Executor}.
+     * Represents the real meat of the computation run by {@link Executor}.
      *
      * <h2>Views</h2>
      * <p>
@@ -1090,6 +1099,11 @@ public class Queue extends ResourceController implements Saveable {
         /**
          * Task from which this executable was created.
          * Never null.
+         *
+         * <p>
+         * Since this method went through a signature change in 1.377, the invocation may results in
+         * {@link AbstractMethodError}.
+         * Use {@link Executables#getParentOf(Executable)} that avoids this.
          */
         SubTask getParent();
 
@@ -1097,6 +1111,18 @@ public class Queue extends ResourceController implements Saveable {
          * Called by {@link Executor} to perform the task
          */
         void run();
+        
+        /**
+         * Estimate of how long will it take to execute this executable.
+         * Measured in milliseconds.
+         * 
+         * Please, consider using {@link Executables#getEstimatedDurationFor(Executable)}
+         * to protected against AbstractMethodErrors!
+         *
+         * @return -1 if it's impossible to estimate.
+         * @since 1.383
+         */
+        long getEstimatedDuration();
 
         /**
          * Used to render the HTML. Should be a human readable text of what this executable is.
@@ -1303,7 +1329,7 @@ public class Queue extends ResourceController implements Saveable {
         @Exported
         public Calendar timestamp;
 
-        WaitingItem(Calendar timestamp, Task project, List<Action> actions) {
+        public WaitingItem(Calendar timestamp, Task project, List<Action> actions) {
             super(project, actions, COUNTER.incrementAndGet(), new FutureImpl(project));
             this.timestamp = timestamp;
         }

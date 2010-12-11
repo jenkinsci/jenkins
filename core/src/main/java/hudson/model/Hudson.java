@@ -1,4 +1,4 @@
-/*
+    /*
  * The MIT License
  * 
  * Copyright (c) 2004-2010, Sun Microsystems, Inc., Kohsuke Kawaguchi,
@@ -57,9 +57,6 @@ import hudson.cli.CliEntryPoint;
 import hudson.cli.CliManagerImpl;
 import hudson.cli.declarative.CLIMethod;
 import hudson.cli.declarative.CLIResolver;
-import static hudson.init.InitMilestone.JOB_LOADED;
-import static hudson.init.InitMilestone.PLUGINS_STARTED;
-import hudson.init.InitializerFinder;
 import hudson.init.InitMilestone;
 import hudson.init.InitReactorListener;
 import hudson.init.InitStrategy;
@@ -127,6 +124,10 @@ import hudson.util.VersionNumber;
 import hudson.util.XStream2;
 import hudson.util.Service;
 import hudson.util.IOUtils;
+import hudson.views.DefaultMyViewsTabBar;
+import hudson.views.DefaultViewsTabBar;
+import hudson.views.MyViewsTabBar;
+import hudson.views.ViewsTabBar;
 import hudson.widgets.Widget;
 import net.sf.json.JSONObject;
 import org.acegisecurity.AccessDeniedException;
@@ -176,6 +177,8 @@ import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletResponse;
+
+import static hudson.init.InitMilestone.*;
 import static javax.servlet.http.HttpServletResponse.SC_BAD_REQUEST;
 import static javax.servlet.http.HttpServletResponse.SC_NOT_FOUND;
 import java.io.File;
@@ -337,6 +340,16 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
     private List<JDK> jdks = new ArrayList<JDK>();
 
     private transient volatile DependencyGraph dependencyGraph;
+
+    /**
+     * Currently active Views tab bar.
+     */
+    private volatile ViewsTabBar viewsTabBar = new DefaultViewsTabBar();
+
+    /**
+     * Currently active My Views tab bar.
+     */
+    private volatile MyViewsTabBar myViewsTabBar = new DefaultMyViewsTabBar();
 
     /**
      * All {@link ExtensionList} keyed by their {@link ExtensionList#extensionType}.
@@ -556,7 +569,7 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
 
     /**
      * @param pluginManager
-     *      If non-null, use existing plugin manager. Otherwise create a new one.
+     *      If non-null, use existing plugin manager.  create a new one.
      */
     public Hudson(File root, ServletContext context, PluginManager pluginManager) throws IOException, InterruptedException, ReactorException {
     	// As hudson is starting, grant this process full control
@@ -612,7 +625,6 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
 
             // initialization consists of ...
             executeReactor( is,
-                    new InitializerFinder(),        // misc. stuff
                     pluginManager.initTasks(is),    // loading and preparing plugins
                     loadTasks(),                    // load jobs
                     InitMilestone.ordering()        // forced ordering among key milestones
@@ -632,8 +644,12 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
             } else
                 tcpSlaveAgentListener = null;
 
-            udpBroadcastThread = new UDPBroadcastThread(this);
-            udpBroadcastThread.start();
+            try {
+                udpBroadcastThread = new UDPBroadcastThread(this);
+                udpBroadcastThread.start();
+            } catch (IOException e) {
+                LOGGER.log(Level.WARNING, "Faild to broadcast over UDP",e);
+            }
             dnsMultiCast = new DNSMultiCast(this);
 
             updateComputerList();
@@ -1294,6 +1310,14 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
             throw new IllegalStateException("Cannot delete last view");
         views.remove(view);
         save();
+    }
+    
+    public ViewsTabBar getViewsTabBar() {
+        return viewsTabBar;
+    }
+
+    public MyViewsTabBar getMyViewsTabBar() {
+        return myViewsTabBar;
     }
 
     /**
@@ -2045,6 +2069,24 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
     }
 
     /**
+     * Overwrites the existing item by new one.
+     *
+     * <p>
+     * This is a short cut for deleting an existing job and adding a new one.
+     */
+    public synchronized void putItem(TopLevelItem item) throws IOException, InterruptedException {
+        String name = item.getName();
+        TopLevelItem old = items.get(name);
+        if (old ==item)  return; // noop
+
+        checkPermission(Item.CREATE);
+        if (old!=null)
+            old.delete();
+        items.put(name,item);
+        ItemListener.fireOnCreated(item);
+    }
+
+    /**
      * Creates a new job.
      *
      * <p>
@@ -2074,7 +2116,7 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
      * Called by {@link Job#renameTo(String)} to update relevant data structure.
      * assumed to be synchronized on Hudson by the caller.
      */
-    /*package*/ void onRenamed(TopLevelItem job, String oldName, String newName) throws IOException {
+    public void onRenamed(TopLevelItem job, String oldName, String newName) throws IOException {
         items.remove(oldName);
         items.put(newName,job);
 
@@ -2144,7 +2186,7 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
         });
 
         TaskGraphBuilder g = new TaskGraphBuilder();
-        Handle loadHudson = g.requires(PLUGINS_STARTED).attains(JOB_LOADED).add("Loading global config", new Executable() {
+        Handle loadHudson = g.requires(EXTENSIONS_AUGMENTED).attains(JOB_LOADED).add("Loading global config", new Executable() {
             public void run(Reactor session) throws Exception {
                 XmlFile cfg = getConfigFile();
                 if (cfg.exists()) {
@@ -2332,9 +2374,21 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
 
             if (json.has("csrf")) {
             	JSONObject csrf = json.getJSONObject("csrf");
-            	setCrumbIssuer(CrumbIssuer.all().newInstanceFromRadioList(csrf, "issuer"));
+                setCrumbIssuer(CrumbIssuer.all().newInstanceFromRadioList(csrf, "issuer"));
             } else {
             	setCrumbIssuer(null);
+            }
+
+            if (json.has("viewsTabBar")) {
+                viewsTabBar = req.bindJSON(ViewsTabBar.class,json.getJSONObject("viewsTabBar"));
+            } else {
+                viewsTabBar = new DefaultViewsTabBar();
+            }
+
+            if (json.has("myViewsTabBar")) {
+                myViewsTabBar = req.bindJSON(MyViewsTabBar.class,json.getJSONObject("myViewsTabBar"));
+            } else {
+                myViewsTabBar = new DefaultMyViewsTabBar();
             }
 
             primaryView = json.has("primaryView") ? json.getString("primaryView") : getViews().iterator().next().getViewName();
@@ -2423,7 +2477,6 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
     }
 
     public synchronized void doTestPost( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
-        JSONObject form = req.getSubmittedForm();
         rsp.sendRedirect("foo");
     }
 
@@ -2494,7 +2547,7 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
             if (timeout > 0) timeout += System.currentTimeMillis();
             while (isQuietingDown
                    && (timeout <= 0 || System.currentTimeMillis() < timeout)
-                   && RestartListener.isAllReady()) {
+                   && !RestartListener.isAllReady()) {
                 Thread.sleep(1000);
             }
         }

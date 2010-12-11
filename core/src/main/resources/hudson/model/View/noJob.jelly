@@ -23,7 +23,16 @@ THE SOFTWARE.
 -->
 
 <j:jelly xmlns:j="jelly:core">
-<div>
+    <style type="text/css">
+        #noJobDiv {
+            padding: 10px;
+            text-align: center;
+            border-width: 0px 1px 1px;
+            border-style: none solid solid;
+            border-color: #BBBBBB;
+        }
+    </style>
+<div id="noJobDiv">
   ${%description_1}
   <j:if test="${it.hasPermission(it.CONFIGURE)}">
       ${%description_2}

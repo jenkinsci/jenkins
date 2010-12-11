@@ -48,6 +48,8 @@ public class FastPipedInputStream extends InputStream {
     int writeLaps = 0;
     int writePosition = 0;
 
+    private final Throwable allocatedAt = new Throwable();
+    
     /**
      * Creates an unconnected PipedInputStream with a default buffer size.
      */
@@ -78,7 +80,7 @@ public class FastPipedInputStream extends InputStream {
 
     private FastPipedOutputStream source() throws IOException {
         FastPipedOutputStream s = source.get();
-        if (s==null)    throw new IOException("Writer side has already been abandoned");
+        if (s==null)    throw (IOException)new IOException("Writer side has already been abandoned").initCause(allocatedAt);
         return s;
     }
 

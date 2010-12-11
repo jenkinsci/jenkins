@@ -24,6 +24,7 @@
 package hudson.remoting;
 
 import hudson.remoting.ExportTable.ExportList;
+import hudson.remoting.PipeWindow.Key;
 import hudson.remoting.PipeWindow.Real;
 import hudson.remoting.forward.ListeningPort;
 import hudson.remoting.forward.ForwarderFactory;
@@ -37,17 +38,22 @@ import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
+import java.lang.ref.WeakReference;
 import java.util.Collections;
 import java.util.Hashtable;
 import java.util.Map;
 import java.util.Vector;
 import java.util.WeakHashMap;
-import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.net.URL;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Executor;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadFactory;
 
 /**
  * Represents a communication channel to the remote peer.
@@ -143,14 +149,23 @@ public class Channel implements VirtualChannel, IChannel {
     private final ExportTable<Object> exportedObjects = new ExportTable<Object>();
 
     /**
-     * {@link PipeWindow}s keyed by their OIDs. Weak map, to simplify the GC of the instances.
-     * Strong references are kept from {@link ProxyOutputStream}.
+     * {@link PipeWindow}s keyed by their OIDs (of the OutputStream exported by the other side.)
      *
-     * I haven't thought carefully, and it might be possible for us to lose the tracking of the window size
-     * in this way, but that will only result in a temporary spike in the effective window size,
+     * <p>
+     * To make the GC of {@link PipeWindow} automatic, the use of weak references here are tricky.
+     * A strong reference to {@link PipeWindow} is kept from {@link ProxyOutputStream}, and
+     * this is the only strong reference. Thus while {@link ProxyOutputStream} is alive,
+     * it keeps {@link PipeWindow} referenced, which in turn keeps its {@link PipeWindow.Real#key}
+     * referenced, hence this map can be looked up by the OID. When the {@link ProxyOutputStream}
+     * will be gone, the key is no longer strongly referenced, so it'll get cleaned up.
+     *
+     * <p>
+     * In some race condition situation, it might be possible for us to lose the tracking of the collect
+     * window size. But as long as we can be sure that there's only one {@link PipeWindow} instance
+     * per OID, it will only result in a temporary spike in the effective window size,
      * and therefore should be OK.
      */
-    private final WeakHashMap<Integer,PipeWindow> pipeWindows = new WeakHashMap<Integer, PipeWindow>();
+    private final WeakHashMap<PipeWindow.Key, WeakReference<PipeWindow>> pipeWindows = new WeakHashMap<PipeWindow.Key, WeakReference<PipeWindow>>();
 
     /**
      * Registered listeners. 
@@ -588,10 +603,17 @@ public class Channel implements VirtualChannel, IChannel {
             return PipeWindow.FAKE;
 
         synchronized (pipeWindows) {
-            PipeWindow v = pipeWindows.get(oid);
-            if (v==null)
-                pipeWindows.put(oid,v = new Real(PIPE_WINDOW_SIZE));
-            return v;
+            Key k = new Key(oid);
+            WeakReference<PipeWindow> v = pipeWindows.get(k);
+            if (v!=null) {
+                PipeWindow w = v.get();
+                if (w!=null)
+                    return w;
+            }
+
+            Real w = new Real(k, PIPE_WINDOW_SIZE);
+            pipeWindows.put(k,new WeakReference<PipeWindow>(w));
+            return w;
         }
     }
 
@@ -932,22 +954,23 @@ public class Channel implements VirtualChannel, IChannel {
                         ioe.initCause(e);
                         throw ioe;
                     } catch (ClassNotFoundException e) {
-                        logger.log(Level.SEVERE, "Unable to read a command",e);
+                        logger.log(Level.SEVERE, "Unable to read a command (channel " + name + ")",e);
                     }
                     if(logger.isLoggable(Level.FINE))
                         logger.fine("Received "+cmd);
                     try {
                         cmd.execute(Channel.this);
                     } catch (Throwable t) {
-                        logger.log(Level.SEVERE, "Failed to execute command "+cmd,t);
+                        logger.log(Level.SEVERE, "Failed to execute command "+cmd+ " (channel " + name + ")",t);
                         logger.log(Level.SEVERE, "This command is created here",cmd.createdAt);
                     }
                 }
                 ois.close();
-                pipeWriter.shutdown();
             } catch (IOException e) {
                 logger.log(Level.SEVERE, "I/O error in channel "+name,e);
                 terminate(e);
+            } finally {
+                pipeWriter.shutdown();
             }
         }
     }
