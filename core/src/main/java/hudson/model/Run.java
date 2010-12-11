@@ -619,6 +619,10 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
         return displayName!=null;
     }
 
+    /**
+     * @param value
+     *      Set to null to revert back to the default "#NNN".
+     */
     public void setDisplayName(String value) throws IOException {
         checkPermission(UPDATE);
         this.displayName = value;
@@ -1843,7 +1847,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
     }
 
     protected void submit(JSONObject json) throws IOException {
-        setDisplayName(json.getString("displayName"));
+        setDisplayName(Util.fixEmptyAndTrim(json.getString("displayName")));
         setDescription(json.getString("description"));
     }
 
