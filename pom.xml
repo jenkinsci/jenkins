@@ -47,7 +47,7 @@ THE SOFTWARE.
     <module>maven-agent</module>
     <module>maven-interceptor</module>
     <module>maven3-agent</module>
-    <module>maven3-listener</module>
+    <module>maven3-interceptor</module>
     <module>war</module>
     <module>test</module>
     <module>cli</module>

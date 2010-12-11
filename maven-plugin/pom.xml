@@ -77,7 +77,7 @@ THE SOFTWARE.
     
     <dependency>
       <groupId>org.jvnet.hudson.main</groupId>
-      <artifactId>maven3-listener</artifactId>
+      <artifactId>maven3-interceptor</artifactId>
       <version>${project.version}</version>
     </dependency>    
     

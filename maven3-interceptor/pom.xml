@@ -7,8 +7,8 @@
     <artifactId>pom</artifactId>
     <version>1.389-SNAPSHOT</version>
   </parent>
-  <artifactId>maven3-listener</artifactId>
-  <name>maven3-listener</name>
+  <artifactId>maven3-interceptor</artifactId>
+  <name>Maven3 Interceptor</name>
 
   <dependencies>
     <dependency>
