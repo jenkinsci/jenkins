@@ -80,7 +80,7 @@ public final class ExecutedMojo implements Serializable {
      */
     public final String digest;
 
-    ExecutedMojo(MojoInfo mojo, long duration) throws IOException, InterruptedException {
+    public ExecutedMojo(MojoInfo mojo, long duration) throws IOException, InterruptedException {
         this.groupId = mojo.pluginName.groupId;
         this.artifactId = mojo.pluginName.artifactId;
         this.version = mojo.pluginName.version;

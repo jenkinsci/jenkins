@@ -597,6 +597,7 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
                             }                            
                             
                         } else {
+                         
                             Builder builder = new Builder(slistener, proxies, project.sortedActiveModules, margs.toList(), envVars);
                             MavenProbeAction mpa=null;
                             try {
@@ -818,6 +819,7 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
                     lastProxy.appendLastLog();
             }
         }
+
 
         @Override
         void preBuild(MavenSession session, ReactorManager rm, EventDispatcher dispatcher) throws BuildFailureException, LifecycleExecutionException, IOException, InterruptedException {
@@ -1044,6 +1046,7 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
                 MavenEmbedder embedder = MavenUtil.
                         createEmbedder(listener, mavenHome.getHomeDir(), profiles,
                                        properties, privateRepository, settingsLoc);
+                
                 MavenProject mp = embedder.readProject(pom);
                 Map<MavenProject,String> relPath = new HashMap<MavenProject,String>();
                 MavenUtil.resolveModules(embedder,mp,getRootPath(rootPOMRelPrefix),relPath,listener,nonRecursive);

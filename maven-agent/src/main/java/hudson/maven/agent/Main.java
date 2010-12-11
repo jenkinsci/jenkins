@@ -278,6 +278,12 @@ public class Main {
         URLClassLoader orig = (URLClassLoader) Thread.currentThread().getContextClassLoader();
         System.out.println("orig " + orig.toString());
       
+        URL cl = orig.getResource( "org/apache/maven/plugin/PluginManager.class" );
+        if (cl != null)
+        {
+            System.out.println("cl " + cl.toString());
+        }
+        // org.apache.maven.plugin.PluginManager
         
         try {
             launcher.setAppMain( "org.apache.maven.cli.MavenCli", "plexus.core.maven" );

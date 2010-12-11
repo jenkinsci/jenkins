@@ -22,10 +22,8 @@ package org.jvnet.hudson.maven3.listeners;
 
 import javax.inject.Inject;
 
-import org.apache.maven.plugin.MavenPluginManager;
 import org.codehaus.plexus.PlexusContainer;
 import org.codehaus.plexus.component.annotations.Component;
-import org.codehaus.plexus.component.repository.exception.ComponentLookupException;
 import org.codehaus.plexus.personality.plexus.lifecycle.phase.Initializable;
 import org.codehaus.plexus.personality.plexus.lifecycle.phase.InitializationException;
 
@@ -39,7 +37,7 @@ public class HudsonMavenBuildHelper implements Initializable
 
     // must be available in a static way weird 
     // and not really good design !
-    private static MavenPluginManager mavenPluginManager;
+    //private static MavenPluginManager mavenPluginManager;
     
     @Inject 
     private PlexusContainer plexusContainer;
@@ -47,6 +45,7 @@ public class HudsonMavenBuildHelper implements Initializable
     public void initialize()
         throws InitializationException
     {
+        /*
         try
         {
             mavenPluginManager = plexusContainer.lookup( MavenPluginManager.class );
@@ -55,12 +54,12 @@ public class HudsonMavenBuildHelper implements Initializable
         {
             throw new InitializationException(e.getMessage(), e);
         }
-        
+        */
     }
     
-    public static MavenPluginManager getMavenPluginManager()
+    /*public static MavenPluginManager getMavenPluginManager()
     {
         return mavenPluginManager;
-    }
+    }*/
 
 }

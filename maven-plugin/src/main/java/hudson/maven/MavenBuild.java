@@ -410,7 +410,7 @@ public class MavenBuild extends AbstractMavenBuild<MavenModule,MavenBuild> {
         }
     }
 
-    class ProxyImpl2 extends ProxyImpl implements MavenBuildProxy2 {
+    public class ProxyImpl2 extends ProxyImpl implements MavenBuildProxy2 {
         private final SplittableBuildListener listener;
         long startTime;
         private final OutputStream log;

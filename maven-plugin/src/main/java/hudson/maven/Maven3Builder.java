@@ -54,15 +54,12 @@ import org.apache.maven.execution.ExecutionListener;
 import org.apache.maven.execution.MavenSession;
 import org.apache.maven.plugin.Mojo;
 import org.apache.maven.plugin.MojoExecution;
-import org.apache.maven.plugin.PluginConfigurationException;
-import org.apache.maven.plugin.PluginContainerException;
 import org.apache.maven.plugin.PluginParameterExpressionEvaluator;
 import org.apache.maven.project.MavenProject;
 import org.codehaus.plexus.component.configurator.expression.ExpressionEvaluator;
 import org.codehaus.plexus.configuration.xml.XmlPlexusConfiguration;
 import org.jvnet.hudson.maven3.agent.Maven3Main;
 import org.jvnet.hudson.maven3.launcher.Maven3Launcher;
-import org.jvnet.hudson.maven3.listeners.HudsonMavenBuildHelper;
 import org.jvnet.hudson.maven3.listeners.HudsonMavenExecutionResult;
 
 /**
@@ -279,10 +276,13 @@ public class Maven3Builder extends AbstractMavenBuilder implements DelegatingCal
             return null;
         }
         
+        // FIME really used somewhere ???
         // FIXME MojoInfo need the real mojo ?? 
-        // so tricky to do need to use MavenPluginManager on the current Maven Build
+        // so tricky to do. need to use MavenPluginManager on the current Maven Build
         private Mojo getMojo(MojoExecution mojoExecution, MavenSession mavenSession)
         {
+            return null;
+            /*
             try
             {
                 return HudsonMavenBuildHelper.getMavenPluginManager().getConfiguredMojo( Mojo.class, mavenSession,
@@ -295,7 +295,7 @@ public class Maven3Builder extends AbstractMavenBuilder implements DelegatingCal
             catch ( PluginConfigurationException e )
             {
                 throw new RuntimeException( e.getMessage(), e );
-            }
+            }*/
         }
         
         private ExpressionEvaluator getExpressionEvaluator(MavenSession session, MojoExecution mojoExecution)
