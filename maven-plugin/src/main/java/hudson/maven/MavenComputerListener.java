@@ -57,7 +57,7 @@ public class MavenComputerListener extends ComputerListener {
         PrintStream logger = listener.getLogger();
         copyJar(logger, root, Main.class, "maven-agent");
         copyJar(logger, root, Maven3Main.class, "maven3-agent");
-        copyJar(logger, root, Maven3Launcher.class, "maven3-listener");
+        copyJar(logger, root, Maven3Launcher.class, "maven3-interceptor");
         copyJar(logger, root, AbortException.class, "maven-interceptor");
         copyJar(logger, root, Maven21Interceptor.class, "maven2.1-interceptor");
         copyJar(logger, root, ClassWorld.class, "plexus-classworld");

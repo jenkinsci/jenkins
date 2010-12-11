@@ -71,7 +71,7 @@ public class Maven3Main {
 	 *            we'll run.
 	 * @param remotingJar
 	 *            Hudson's remoting.jar that we'll load.
-	 * @param listenerJar
+	 * @param interceptorJar
 	 *            maven-listener.jar that we'll load.
 	 * @param tcpPort
 	 *            TCP socket that the launching Hudson will be listening to.
@@ -79,7 +79,7 @@ public class Maven3Main {
 	 * @param projectBuildLaunch
 	 *            launch the projectBuilder and not a mavenExecution            
 	 */
-	public static void main(File m2Home, File remotingJar, File listenerJar,
+	public static void main(File m2Home, File remotingJar, File interceptorJar,
 			int tcpPort) throws Exception {
 		// Unix master with Windows slave ends up passing path in Unix format,
 		// so convert it to Windows format now so that no one chokes with the
@@ -99,8 +99,8 @@ public class Maven3Main {
 			
 		// expose variables used in the classworlds configuration
 		System.setProperty("maven.home", m2Home.getPath());
-		System.setProperty("maven3.listener", (listenerJar != null ? listenerJar
-				: listenerJar).getPath());
+		System.setProperty("maven3.interceptor", (interceptorJar != null ? interceptorJar
+				: interceptorJar).getPath());
 
 		// load the default realms
 		launcher = new Launcher();

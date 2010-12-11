@@ -280,7 +280,7 @@ public class Maven3ProcessFactory implements ProcessCache.Factory
         
         args.add(isMaster?
             Which.jarFile(Maven3Launcher.class).getAbsolutePath():
-            slaveRoot.child("maven3-listener.jar").getRemote());
+            slaveRoot.child("maven3-interceptor.jar").getRemote());
 
         // TCP/IP port to establish the remoting infrastructure
         args.add(tcpPort);
