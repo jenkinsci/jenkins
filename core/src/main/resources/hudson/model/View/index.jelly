@@ -26,7 +26,7 @@ THE SOFTWARE.
     <j:if test="${request.servletPath=='/' || request.servletPath==''}">
         <st:header name="X-Hudson" value="${servletContext.getAttribute('version')}" />
         <j:if test="${app.tcpSlaveAgentListener!=null}">
-      <!-- advertize the CLI TCP port -->
+            <!-- advertise the CLI TCP port -->
             <st:header name="X-Hudson-CLI-Port" value="${app.tcpSlaveAgentListener.port}" />
         </j:if>
     </j:if>
@@ -41,10 +41,10 @@ THE SOFTWARE.
             <st:include page="main.jelly" />
         </l:main-panel>
         <l:header>
-      <!-- for screen resolution detection -->
+            <!-- for screen resolution detection -->
             <l:yui module="cookie" suffix="-beta" />
             <script>
-        YAHOO.util.Cookie.set("screenResolution", screen.width+"x"+screen.height); 
+              YAHOO.util.Cookie.set("screenResolution", screen.width+"x"+screen.height);
             </script>
         </l:header>
     </l:layout>
