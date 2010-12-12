@@ -23,25 +23,24 @@
  */
 package hudson.maven.agent;
 
-import org.codehaus.classworlds.ClassRealm;
-import org.codehaus.classworlds.ClassWorld;
-import org.codehaus.classworlds.ClassWorldAdapter;
-import org.codehaus.classworlds.DefaultClassRealm;
-import org.codehaus.classworlds.Launcher;
-import org.codehaus.classworlds.NoSuchRealmException;
-
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FilterInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
 import java.lang.reflect.InvocationTargetException;
 import java.net.Socket;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
+
+import org.codehaus.classworlds.ClassRealm;
+import org.codehaus.classworlds.ClassWorld;
+import org.codehaus.classworlds.DefaultClassRealm;
+import org.codehaus.classworlds.Launcher;
+import org.codehaus.classworlds.NoSuchRealmException;
 
 /**
  * Entry point for launching Maven and Hudson remoting in the same VM,
@@ -111,13 +110,15 @@ public class Main {
 
         // have it eventually delegate to this class so that this can be visible
 
-        ClassWorldAdapter classWorldAdapter = ClassWorldAdapter.getInstance( launcher.getWorld() );
+        //ClassWorldAdapter classWorldAdapter = ClassWorldAdapter.getInstance( launcher.getWorld() );
         
         // create a realm for loading remoting subsystem.
         // this needs to be able to see maven.
-        ClassRealm remoting = new DefaultClassRealm(classWorldAdapter,"hudson-remoting", launcher.getSystemClassLoader());
+        //ClassRealm remoting = new DefaultClassRealm(classWorldAdapter,"hudson-remoting", launcher.getSystemClassLoader());
         
-        remoting.setParent(classWorldAdapter.getRealm("plexus.core.maven"));
+        ClassRealm remoting = new DefaultClassRealm(launcher.getWorld(),"hudson-remoting", launcher.getSystemClassLoader());
+        
+        remoting.setParent(launcher.getWorld().getRealm("plexus.core.maven"));
         remoting.addConstituent(remotingJar.toURI().toURL());
 
         final Socket s = new Socket((String)null,tcpPort);
@@ -162,9 +163,11 @@ public class Main {
      * Called by the code in remoting to launch.
      * @throws org.codehaus.plexus.classworlds.realm.NoSuchRealmException 
      */
-    public static int launch(String[] args) throws NoSuchMethodException, IllegalAccessException, NoSuchRealmException, InvocationTargetException, ClassNotFoundException, org.codehaus.plexus.classworlds.realm.NoSuchRealmException {
-        ClassWorld world = ClassWorldAdapter.getInstance( launcher.getWorld() );
+    public static int launch(String[] args) throws NoSuchMethodException, IllegalAccessException, NoSuchRealmException, InvocationTargetException, ClassNotFoundException {
+        //ClassWorld world = ClassWorldAdapter.getInstance( launcher.getWorld() );
 
+        ClassWorld world = launcher.getWorld();
+        
         Set builtinRealms = new HashSet(world.getRealms());
         try {
             launcher.launch(args);

@@ -45,18 +45,14 @@ THE SOFTWARE.
       <artifactId>maven-core</artifactId>
       <version>2.0.9</version>
       <scope>provided</scope>
-      <exclusions>
-        <exclusion>
-          <groupId>classworlds</groupId>
-          <artifactId>classworlds</artifactId>
-        </exclusion>
-      </exclusions>
     </dependency>
-    
+
     <dependency>
-      <groupId>org.codehaus.plexus</groupId>
-      <artifactId>plexus-classworlds</artifactId>
-    </dependency>    
+      <groupId>classworlds</groupId>
+      <artifactId>classworlds</artifactId>
+      <version>1.1</version>
+    </dependency>
+   
 
     <dependency>
       <!-- default dependency to 2.0.2 confuses IntelliJ. Otherwise this value doesn't really affect build or runtime. -->

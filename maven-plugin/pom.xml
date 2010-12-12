@@ -67,6 +67,12 @@ THE SOFTWARE.
       <groupId>org.jvnet.hudson.main</groupId>
       <artifactId>maven-interceptor</artifactId>
       <version>${project.version}</version>
+      <exclusions>
+        <exclusion>
+          <groupId>classworlds</groupId>
+          <artifactId>classworlds</artifactId>
+        </exclusion>
+      </exclusions>      
     </dependency>
      
     <dependency>

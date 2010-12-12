@@ -29,7 +29,6 @@ import hudson.maven.agent.Main;
 import hudson.maven.agent.PluginManagerListener;
 import hudson.maven.reporters.SurefireArchiver;
 import hudson.model.BuildListener;
-import hudson.model.Hudson;
 import hudson.model.Result;
 import hudson.remoting.Callable;
 import hudson.remoting.Channel;
@@ -206,10 +205,6 @@ public abstract class MavenBuilder extends AbstractMavenBuilder implements Deleg
             throw new IOException2(e);
         }
         catch ( NoSuchRealmException e ) {
-            throw new IOException2(e);
-        }
-        catch ( org.codehaus.plexus.classworlds.realm.NoSuchRealmException e )
-        {
             throw new IOException2(e);
         } finally {
             //PluginManagerInterceptor.setListener(null);

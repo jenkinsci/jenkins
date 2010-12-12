@@ -288,17 +288,14 @@ final class MavenProcessFactory implements ProcessCache.Factory {
 
         args.addTokenized(getMavenOpts());
         
-        args.add("-cp");
+        args.add( "-cp" );
         String classPath =
             ( isMaster ? Which.jarFile( Main.class ).getAbsolutePath()
                             : slaveRoot.child( "maven-agent.jar" ).getRemote() )
                 + ( launcher.isUnix() ? ":" : ";" )
-                + ( isMaster ? Which.jarFile( ClassWorld.class ).getAbsolutePath()
-                                : slaveRoot.child( "plexus-classworld.jar" ).getRemote() )
-                + ( launcher.isUnix() ? ":" : ";" )
-                + ( isMaster ? Which.jarFile( AntClassLoader.class ).getAbsolutePath()
-                                : slaveRoot.child( "maven-plugin-ant.jar" ).getRemote() );
-        args.add(classPath);
+                + ( isMaster ? new File( Hudson.getInstance().getRootDir(), "/war/classworlds-1.1.jar" ).getAbsolutePath()
+                                : slaveRoot.child( "classworlds-1.1.jar" ).getRemote() );
+        args.add( classPath );
             //+classWorldsJar);
         args.add(Main.class.getName());
 

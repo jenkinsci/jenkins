@@ -29,6 +29,7 @@ import hudson.maven.agent.AbortException;
 import hudson.maven.agent.Main;
 import hudson.maven.agent.Maven21Interceptor;
 import hudson.model.Computer;
+import hudson.model.Hudson;
 import hudson.model.TaskListener;
 import hudson.remoting.Channel;
 import hudson.remoting.Which;
@@ -38,7 +39,6 @@ import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;
 
-import org.apache.tools.ant.AntClassLoader;
 import org.apache.tools.ant.Project;
 import org.apache.tools.ant.taskdefs.Zip;
 import org.codehaus.plexus.classworlds.ClassWorld;
@@ -61,7 +61,11 @@ public class MavenComputerListener extends ComputerListener {
         copyJar(logger, root, AbortException.class, "maven-interceptor");
         copyJar(logger, root, Maven21Interceptor.class, "maven2.1-interceptor");
         copyJar(logger, root, ClassWorld.class, "plexus-classworld");
-        copyJar(logger, root, AntClassLoader.class, "maven-plugin-ant");
+        
+        // copy classworlds 1.1 for maven2 builds
+        new FilePath( new File( Hudson.getInstance().getRootDir(), "/war/classworlds-1.1.jar" ) )
+            .copyTo( root.child( "classworlds-1.1.jar" ) );
+        
     }
 
     /**
