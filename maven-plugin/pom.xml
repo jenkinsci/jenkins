@@ -55,6 +55,12 @@ THE SOFTWARE.
       <groupId>${project.groupId}</groupId>
       <artifactId>maven-agent</artifactId>
       <version>${project.version}</version>
+      <exclusions>
+        <exclusion>
+          <groupId>classworlds</groupId>
+          <artifactId>classworlds</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
      
     <dependency>

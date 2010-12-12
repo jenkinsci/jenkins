@@ -57,6 +57,7 @@ import org.apache.maven.plugin.Mojo;
 import org.apache.maven.plugin.MojoExecution;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.reporting.MavenReport;
+import org.codehaus.classworlds.NoSuchRealmException;
 import org.codehaus.plexus.component.configurator.expression.ExpressionEvaluator;
 import org.codehaus.plexus.configuration.PlexusConfiguration;
 
@@ -202,6 +203,13 @@ public abstract class MavenBuilder extends AbstractMavenBuilder implements Deleg
         } catch (InvocationTargetException e) {
             throw new IOException2(e);
         } catch (ClassNotFoundException e) {
+            throw new IOException2(e);
+        }
+        catch ( NoSuchRealmException e ) {
+            throw new IOException2(e);
+        }
+        catch ( org.codehaus.plexus.classworlds.realm.NoSuchRealmException e )
+        {
             throw new IOException2(e);
         } finally {
             //PluginManagerInterceptor.setListener(null);
