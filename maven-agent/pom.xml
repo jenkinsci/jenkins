@@ -87,12 +87,6 @@ THE SOFTWARE.
       <version>1.1</version>
     </dependency>
     
-    <!-- 
-    <dependency>
-      <groupId>org.codehaus.plexus</groupId>
-      <artifactId>plexus-classworlds</artifactId>
-    </dependency>
-     -->        
     <dependency>
       <groupId>org.apache.ant</groupId>
       <artifactId>ant</artifactId>
