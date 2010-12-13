@@ -127,15 +127,24 @@ public abstract class MavenBuilder extends AbstractMavenBuilder implements Deleg
      */
     abstract void onReportGenerated(MavenProject project, MavenReportInfo report) throws IOException, InterruptedException, AbortException;
 
+    private Class<?> pluginManagerInterceptorClazz;
+    
+    private Class<?> lifecycleInterceptorClazz;
+    
     /**
      * This code is executed inside the maven jail process.
      */
     public Result call() throws IOException {
+        
+        // hold a ref on correct classloader for finally call as something is changing tccl 
+        // and not restore it !
+        ClassLoader mavenJailProcessClassLoader = Thread.currentThread().getContextClassLoader();        
+        
         try {
-            System.out.println("MavenBuilder in call " + Thread.currentThread().getContextClassLoader());
+
             futures = new ArrayList<Future<?>>();
             Adapter a = new Adapter(this);
-            callSetListenerWithReflectOnInterceptors( a );
+            callSetListenerWithReflectOnInterceptors( a, mavenJailProcessClassLoader );
             
             /*
             PluginManagerInterceptor.setListener(a);
@@ -209,34 +218,39 @@ public abstract class MavenBuilder extends AbstractMavenBuilder implements Deleg
         } finally {
             //PluginManagerInterceptor.setListener(null);
             //LifecycleExecutorInterceptor.setListener(null);
-            callSetListenerWithReflectOnInterceptorsQuietly( null );
+            callSetListenerWithReflectOnInterceptorsQuietly( null, mavenJailProcessClassLoader );
         }
     }
 
-    private void callSetListenerWithReflectOnInterceptors( PluginManagerListener pluginManagerListener )
+    private void callSetListenerWithReflectOnInterceptors( PluginManagerListener pluginManagerListener, ClassLoader cl )
         throws ClassNotFoundException, SecurityException, NoSuchMethodException, IllegalArgumentException,
         IllegalAccessException, InvocationTargetException
     {
-        Class<?> pluginManagerInterceptorClazz = Thread.currentThread().getContextClassLoader()
-            .loadClass( "hudson.maven.agent.PluginManagerInterceptor" );
-        Method setListenerMethod = pluginManagerInterceptorClazz.getMethod( "setListener", new Class[] { Thread
-            .currentThread().getContextClassLoader().loadClass( "hudson.maven.agent.PluginManagerListener" ) } );
+        if (pluginManagerInterceptorClazz == null)
+        {
+            pluginManagerInterceptorClazz = cl.loadClass( "hudson.maven.agent.PluginManagerInterceptor" );
+        }
+        Method setListenerMethod =
+            pluginManagerInterceptorClazz.getMethod( "setListener",
+                                                     new Class[] { cl.loadClass( "hudson.maven.agent.PluginManagerListener" ) } );
         setListenerMethod.invoke( null, new Object[] { pluginManagerListener } );
 
-        Class<?> lifecycleInterceptorClazz = Thread.currentThread().getContextClassLoader()
-            .loadClass( "org.apache.maven.lifecycle.LifecycleExecutorInterceptor" );
-
-        setListenerMethod = lifecycleInterceptorClazz.getMethod( "setListener", new Class[] { Thread.currentThread()
-            .getContextClassLoader().loadClass( "org.apache.maven.lifecycle.LifecycleExecutorListener" ) } );
+        if (lifecycleInterceptorClazz == null)
+        {
+            lifecycleInterceptorClazz = cl.loadClass( "org.apache.maven.lifecycle.LifecycleExecutorInterceptor" );
+        }
+        setListenerMethod =
+            lifecycleInterceptorClazz.getMethod( "setListener",
+                                                 new Class[] { cl.loadClass( "org.apache.maven.lifecycle.LifecycleExecutorListener" ) } );
 
         setListenerMethod.invoke( null, new Object[] { pluginManagerListener } );
     }
     
-    private void callSetListenerWithReflectOnInterceptorsQuietly( PluginManagerListener pluginManagerListener )
+    private void callSetListenerWithReflectOnInterceptorsQuietly( PluginManagerListener pluginManagerListener, ClassLoader cl )
     {
         try
         {
-            callSetListenerWithReflectOnInterceptors(pluginManagerListener);
+            callSetListenerWithReflectOnInterceptors(pluginManagerListener, cl);
         }
         catch ( SecurityException e )
         {
