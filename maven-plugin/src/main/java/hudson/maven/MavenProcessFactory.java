@@ -312,7 +312,7 @@ final class MavenProcessFactory implements ProcessCache.Factory {
 
         // interceptor.jar
         args.add(isMaster?
-            Which.jarFile(PluginManagerInterceptor.class).getAbsolutePath():
+            Which.jarFile(AbortException.class).getAbsolutePath():
             slaveRoot.child("maven-interceptor.jar").getRemote());
 
         // TCP/IP port to establish the remoting infrastructure
