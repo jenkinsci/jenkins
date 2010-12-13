@@ -64,7 +64,6 @@ import org.sonatype.plexus.components.sec.dispatcher.model.SettingsSecurity;
 /**
  * Most of code is coming from asf svn repo waiting before having available
  * @author Olivier Lamy
- * @since 
  */
 @Component( role = MavenExecutionRequestBuilder.class)
 public class DefaultMavenExecutionRequestBuilder

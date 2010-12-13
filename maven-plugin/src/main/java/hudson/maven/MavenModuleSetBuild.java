@@ -1039,16 +1039,17 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
             }
             if (debug)
             {
-                logger.println("use settingsLoc " + settingsLoc);
+                logger.println("use settingsLoc " + settingsLoc + " , privateRepository " + privateRepository);
             }
             if ((settingsLoc != null) && (!settingsLoc.exists())) {
                 throw new AbortException(Messages.MavenModuleSetBuild_NoSuchAlternateSettings(settingsLoc.getAbsolutePath()));
             }
 
             try {
+                MavenEmbedderRequest mavenEmbedderRequest = new MavenEmbedderRequest(listener, mavenHome.getHomeDir(), profiles,
+                                                                                     properties, privateRepository, settingsLoc);
                 MavenEmbedder embedder = MavenUtil.
-                        createEmbedder(listener, mavenHome.getHomeDir(), profiles,
-                                       properties, privateRepository, settingsLoc);
+                        createEmbedder(mavenEmbedderRequest);
                 
                 MavenProject mp = embedder.readProject(pom);
                 Map<MavenProject,String> relPath = new HashMap<MavenProject,String>();

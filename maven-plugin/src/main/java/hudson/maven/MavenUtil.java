@@ -107,12 +107,12 @@ public class MavenUtil {
             systemProperties = ((MavenModuleSet) project).getMavenProperties();
         }
         
-        return createEmbedder(listener,
+        return createEmbedder(new MavenEmbedderRequest(listener,
                               m!=null?m.getHomeDir():null,
                               profiles,
                               systemProperties,
                               privateRepository,
-                              settingsLoc);
+                              settingsLoc ));
     }
 
     public static MavenEmbedder createEmbedder(TaskListener listener, File mavenHome, String profiles) throws MavenEmbedderException, IOException {
@@ -123,9 +123,12 @@ public class MavenUtil {
         return createEmbedder(listener,mavenHome,profiles,systemProperties,null);
     }
 
-    public static MavenEmbedder createEmbedder(TaskListener listener, File mavenHome, String profiles, Properties systemProperties,
-                                               String privateRepository) throws MavenEmbedderException, IOException {
-        return createEmbedder(listener,mavenHome,profiles,systemProperties,privateRepository,null);
+    public static MavenEmbedder createEmbedder( TaskListener listener, File mavenHome, String profiles,
+                                                Properties systemProperties, String privateRepository )
+        throws MavenEmbedderException, IOException
+    {
+        return createEmbedder( new MavenEmbedderRequest( listener, mavenHome, profiles, systemProperties,
+                                                         privateRepository, null ) );
     }
 
     /**
@@ -145,8 +148,7 @@ public class MavenUtil {
      * @param alternateSettings
      *      Optional alternate settings.xml file.
      */
-    public static MavenEmbedder createEmbedder(TaskListener listener, File mavenHome, String profiles, Properties systemProperties,
-                                               String privateRepository, File alternateSettings) throws MavenEmbedderException, IOException {
+    public static MavenEmbedder createEmbedder(MavenEmbedderRequest mavenEmbedderRequest) throws MavenEmbedderException, IOException {
         
         
         MavenRequest mavenRequest = new MavenRequest();
@@ -158,18 +160,18 @@ public class MavenUtil {
             throw new AbortException("Failed to create "+m2Home+
                 "\nSee https://hudson.dev.java.net/cannot-create-.m2.html");
 
-        if (privateRepository!=null)
-            mavenRequest.setLocalRepositoryPath( privateRepository );
+        if (mavenEmbedderRequest.getPrivateRepository()!=null)
+            mavenRequest.setLocalRepositoryPath( mavenEmbedderRequest.getPrivateRepository() );
 
-        if (profiles != null)
+        if (mavenEmbedderRequest.getProfiles() != null)
         {
-            mavenRequest.setProfiles(Arrays.asList( StringUtils.split( profiles, "," ) ));    
+            mavenRequest.setProfiles(Arrays.asList( StringUtils.split( mavenEmbedderRequest.getProfiles(), "," ) ));    
         }
         
 
-        if ( alternateSettings != null )
+        if ( mavenEmbedderRequest.getAlternateSettings() != null )
         {
-            mavenRequest.setUserSettingsFile( alternateSettings.getAbsolutePath() );
+            mavenRequest.setUserSettingsFile( mavenEmbedderRequest.getAlternateSettings().getAbsolutePath() );
         }
         else
         {
@@ -178,15 +180,15 @@ public class MavenUtil {
         
 
         // FIXME configure those !!
-        mavenRequest.setGlobalSettingsFile( new File( mavenHome, "conf/settings.xml" ).getAbsolutePath() );
+        mavenRequest.setGlobalSettingsFile( new File( mavenEmbedderRequest.getMavenHome(), "conf/settings.xml" ).getAbsolutePath() );
         
         
         // TODO olamy check this sould be userProperties 
-        mavenRequest.setSystemProperties(systemProperties);
+        mavenRequest.setSystemProperties(mavenEmbedderRequest.getSystemProperties());
 
         
         EmbedderLoggerImpl logger =
-            new EmbedderLoggerImpl( listener, debugMavenEmbedder ? org.codehaus.plexus.logging.Logger.LEVEL_DEBUG
+            new EmbedderLoggerImpl( mavenEmbedderRequest.getListener(), debugMavenEmbedder ? org.codehaus.plexus.logging.Logger.LEVEL_DEBUG
                             : org.codehaus.plexus.logging.Logger.LEVEL_INFO );
         mavenRequest.setMavenLoggerManager( logger );
         
@@ -334,6 +336,7 @@ public class MavenUtil {
             };
         }
     }
+    
 
     /**
      * If set to true, maximize the logging level of Maven embedder.
