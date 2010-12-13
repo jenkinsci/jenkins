@@ -1081,23 +1081,37 @@ public final class FilePath implements Serializable {
         if(!isUnix() || mask==-1)   return;
         act(new FileCallable<Void>() {
             public Void invoke(File f, VirtualChannel channel) throws IOException {
-                try {
-                    if(File.separatorChar=='/' && LIBC.chmod(f.getAbsolutePath(),mask)!=0) {
-                        throw new IOException("Failed to chmod "+f+" : "+LIBC.strerror(Native.getLastError()));
-                    }
-                } catch(UnsatisfiedLinkError e) { // HUDSON-8155: use Ant's chmod task on non-GNU C systems
-                    LOGGER.warning("GNU C Library not available: Using Ant's chmod task instead.");
-                    Chmod chmodTask = new Chmod();
-                    chmodTask.setProject(new Project());
-                    chmodTask.setFile(f);
-                    chmodTask.setPerm(Integer.toOctalString(mask));
-                    chmodTask.execute();
-                }
+                _chmod(f, mask);
 
                 return null;
             }
         });
     }
+
+    /**
+     * Run chmod via libc if we can, otherwise fall back to Ant.
+     */
+    private static void _chmod(File f, int mask) throws IOException {
+        if (Functions.isWindows())  return; // noop
+
+        try {
+            if(LIBC.chmod(f.getAbsolutePath(),mask)!=0) {
+                throw new IOException("Failed to chmod "+f+" : "+LIBC.strerror(Native.getLastError()));
+            }
+        } catch(UnsatisfiedLinkError e) { // HUDSON-8155: use Ant's chmod task on non-GNU C systems
+            if (!CHMOD_WARNED) {// only warn this once to avoid flooding the log
+                CHMOD_WARNED = true;
+                LOGGER.warning("GNU C Library not available: Using Ant's chmod task instead.");
+            }
+            Chmod chmodTask = new Chmod();
+            chmodTask.setProject(new Project());
+            chmodTask.setFile(f);
+            chmodTask.setPerm(Integer.toOctalString(mask));
+            chmodTask.execute();
+        }
+    }
+
+    private static boolean CHMOD_WARNED = false;
 
     /**
      * Gets the file permission bit mask.
@@ -1565,8 +1579,6 @@ public final class FilePath implements Serializable {
      * Reads from a tar stream and stores obtained files to the base dir.
      */
     private static void readFromTar(String name, File baseDir, InputStream in) throws IOException {
-        Chmod chmodTask = null; // HUDSON-8155
-
         TarInputStream t = new TarInputStream(in);
         try {
             TarEntry te;
@@ -1582,21 +1594,7 @@ public final class FilePath implements Serializable {
                     f.setLastModified(te.getModTime().getTime());
                     int mode = te.getMode()&0777;
                     if(mode!=0 && !Functions.isWindows()) // be defensive
-                        try {
-                            LIBC.chmod(f.getPath(),mode);
-                        } catch (NoClassDefFoundError e) {
-                            // be defensive: see http://hudson.361315.n4.nabble.com/3-0-6-Site-copy-problem-hudson-util-IOException2-java-lang-NoClassDefFoundError-Could-not-initializey-td382337.html
-                        } catch (UnsatisfiedLinkError ule) {
-                            // HUDSON-8155: use Ant's chmod task on non-GNU C systems
-                            if(chmodTask == null) {
-                                LOGGER.warning("GNU C Library not available: Using Ant's chmod task instead.");
-                                chmodTask = new Chmod();
-                            }
-                            chmodTask.setProject(new Project());
-                            chmodTask.setFile(f);
-                            chmodTask.setPerm(Integer.toOctalString(mode));
-                            chmodTask.execute();
-                        }
+                        _chmod(f,mode);
                 }
             }
         } catch(IOException e) {
