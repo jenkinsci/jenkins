@@ -23,6 +23,8 @@
  */
 package hudson.util;
 
+import com.google.common.base.Predicates;
+
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
@@ -276,12 +278,7 @@ public class Iterators {
      * Wraps another iterator and throws away nulls.
      */
     public static <T> Iterator<T> removeNull(final Iterator<T> itr) {
-        return new FilterIterator<T>(itr) {
-            @Override
-            protected boolean filter(T t) {
-                return t!=null;
-            }
-        };
+        return com.google.common.collect.Iterators.filter(itr, Predicates.notNull());
     }
 
     /**
