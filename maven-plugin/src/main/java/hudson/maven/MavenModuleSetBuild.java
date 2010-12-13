@@ -1037,7 +1037,10 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
                 if (!settingsLoc.exists() && mrSettingsLoc.exists())
                     settingsLoc = mrSettingsLoc;
             }
-
+            if (debug)
+            {
+                logger.println("use settingsLoc " + settingsLoc);
+            }
             if ((settingsLoc != null) && (!settingsLoc.exists())) {
                 throw new AbortException(Messages.MavenModuleSetBuild_NoSuchAlternateSettings(settingsLoc.getAbsolutePath()));
             }
@@ -1085,7 +1088,7 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
     /**
      * Extra verbose debug switch.
      */
-    public static boolean debug = false;
+    public static boolean debug = Boolean.getBoolean( "hudson.maven.debug" );
     
     @Override
     public MavenModuleSet getParent() {// don't know why, but javac wants this

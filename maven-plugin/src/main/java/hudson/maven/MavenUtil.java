@@ -167,9 +167,20 @@ public class MavenUtil {
         }
         
 
-        if (alternateSettings!=null) 
+        if ( alternateSettings != null )
+        {
             mavenRequest.setUserSettingsFile( alternateSettings.getAbsolutePath() );
+        }
+        else
+        {
+            mavenRequest.setUserSettingsFile( new File( m2Home, "settings.xml" ).getAbsolutePath() );
+        }
+        
 
+        // FIXME configure those !!
+        mavenRequest.setGlobalSettingsFile( new File( mavenHome, "conf/settings.xml" ).getAbsolutePath() );
+        
+        
         // TODO olamy check this sould be userProperties 
         mavenRequest.setSystemProperties(systemProperties);
 
