@@ -87,6 +87,9 @@ import org.apache.maven.project.MavenProject;
 import org.apache.maven.project.ProjectBuildingException;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
+import org.sonatype.aether.transfer.TransferCancelledException;
+import org.sonatype.aether.transfer.TransferEvent;
+import org.sonatype.aether.transfer.TransferListener;
 
 /**
  * {@link Build} for {@link MavenModuleSet}.
@@ -1046,10 +1049,11 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
             }
 
             try {
-                MavenEmbedderRequest mavenEmbedderRequest = new MavenEmbedderRequest(listener, mavenHome.getHomeDir(), profiles,
-                                                                                     properties, privateRepository, settingsLoc);
-                MavenEmbedder embedder = MavenUtil.
-                        createEmbedder(mavenEmbedderRequest);
+                MavenEmbedderRequest mavenEmbedderRequest = new MavenEmbedderRequest( listener, mavenHome.getHomeDir(),
+                                                                                      profiles, properties,
+                                                                                      privateRepository, settingsLoc );
+                mavenEmbedderRequest.setTransferListener( new SimpleTransferListener(listener) );
+                MavenEmbedder embedder = MavenUtil.createEmbedder( mavenEmbedderRequest );
                 
                 MavenProject mp = embedder.readProject(pom);
                 Map<MavenProject,String> relPath = new HashMap<MavenProject,String>();
@@ -1094,5 +1098,55 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
     @Override
     public MavenModuleSet getParent() {// don't know why, but javac wants this
         return super.getParent();
+    }
+    
+    /**
+     * will log in the {@link TaskListener} when transferFailed and transferSucceeded
+     * @author Olivier Lamy
+     * @since 
+     */
+    public static class SimpleTransferListener implements TransferListener
+    {
+        private TaskListener taskListener;
+        public SimpleTransferListener(TaskListener taskListener)
+        {
+            this.taskListener = taskListener;
+        }
+
+        public void transferCorrupted( TransferEvent arg0 )
+            throws TransferCancelledException
+        {
+            // no op
+        }
+
+        public void transferFailed( TransferEvent transferEvent )
+        {
+            taskListener.getLogger().println("failed to transfer " + transferEvent.getException().getMessage());
+        }
+
+        public void transferInitiated( TransferEvent arg0 )
+            throws TransferCancelledException
+        {
+            // no op
+        }
+
+        public void transferProgressed( TransferEvent arg0 )
+            throws TransferCancelledException
+        {
+            // no op            
+        }
+
+        public void transferStarted( TransferEvent arg0 )
+            throws TransferCancelledException
+        {
+            // no op
+        }
+
+        public void transferSucceeded( TransferEvent transferEvent )
+        {
+            taskListener.getLogger().println( "downloaded artifact " + transferEvent.getResource().getRepositoryUrl()
+                                                  + "/" + transferEvent.getResource().getResourceName() );
+        }
+        
     }
 }

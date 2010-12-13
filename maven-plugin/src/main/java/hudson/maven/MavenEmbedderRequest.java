@@ -27,6 +27,8 @@ import hudson.model.TaskListener;
 import java.io.File;
 import java.util.Properties;
 
+import org.sonatype.aether.transfer.TransferListener;
+
 /**
  * @author Olivier Lamy
  */
@@ -43,6 +45,8 @@ public class MavenEmbedderRequest
     private String privateRepository;
 
     private File alternateSettings;
+    
+    private TransferListener transferListener;
 
     public MavenEmbedderRequest( TaskListener listener, File mavenHome, String profiles, Properties systemProperties,
                                  String privateRepository, File alternateSettings )
@@ -118,6 +122,17 @@ public class MavenEmbedderRequest
     public MavenEmbedderRequest setAlternateSettings( File alternateSettings )
     {
         this.alternateSettings = alternateSettings;
+        return this;
+    }
+
+    public TransferListener getTransferListener()
+    {
+        return transferListener;
+    }
+
+    public MavenEmbedderRequest setTransferListener( TransferListener transferListener )
+    {
+        this.transferListener = transferListener;
         return this;
     }
 }

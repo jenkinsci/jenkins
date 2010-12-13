@@ -186,7 +186,12 @@ public class MavenUtil {
         // TODO olamy check this sould be userProperties 
         mavenRequest.setSystemProperties(mavenEmbedderRequest.getSystemProperties());
 
-        
+        if (mavenEmbedderRequest.getTransferListener() != null)
+        {
+            mavenEmbedderRequest.getListener().getLogger()
+                .println( "use transfertListener " + mavenEmbedderRequest.getTransferListener().getClass().getName() );
+            mavenRequest.setTransferListener( mavenEmbedderRequest.getTransferListener() );
+        }
         EmbedderLoggerImpl logger =
             new EmbedderLoggerImpl( mavenEmbedderRequest.getListener(), debugMavenEmbedder ? org.codehaus.plexus.logging.Logger.LEVEL_DEBUG
                             : org.codehaus.plexus.logging.Logger.LEVEL_INFO );
