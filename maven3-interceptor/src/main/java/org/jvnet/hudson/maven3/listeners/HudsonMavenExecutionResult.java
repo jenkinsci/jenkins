@@ -54,7 +54,11 @@ public class HudsonMavenExecutionResult implements Serializable
                 MavenProjectInfo mavenProjectInfo = new MavenProjectInfo( mavenProject );
                 mavenProjectInfos.add( mavenProjectInfo );
                 BuildSummary buildSummary = mavenExecutionResult.getBuildSummary( mavenProject );
-                mavenProjectInfo.setBuildTime( buildSummary.getTime() );
+                // NPE free :  weird this null ???
+                if ( buildSummary != null )
+                {
+                  mavenProjectInfo.setBuildTime( buildSummary.getTime() );
+                }
             }
         }
     }
