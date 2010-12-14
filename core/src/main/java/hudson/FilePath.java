@@ -2,7 +2,8 @@
  * The MIT License
  * 
  * Copyright (c) 2004-2010, Sun Microsystems, Inc., Kohsuke Kawaguchi,
- * Eric Lefevre-Ardant, Erik Ramfelt, Michael B. Donohue, Alan Harder
+ * Eric Lefevre-Ardant, Erik Ramfelt, Michael B. Donohue, Alan Harder,
+ * Manufacture Francaise des Pneumatiques Michelin, Romain Seguy
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -94,6 +95,8 @@ import java.util.zip.GZIPInputStream;
 import java.util.zip.ZipInputStream;
 
 import com.sun.jna.Native;
+import java.util.logging.Logger;
+import org.apache.tools.ant.taskdefs.Chmod;
 
 /**
  * {@link File} like object with remoting support.
@@ -1078,12 +1081,37 @@ public final class FilePath implements Serializable {
         if(!isUnix() || mask==-1)   return;
         act(new FileCallable<Void>() {
             public Void invoke(File f, VirtualChannel channel) throws IOException {
-                if(File.separatorChar=='/' && LIBC.chmod(f.getAbsolutePath(),mask)!=0)
-                    throw new IOException("Failed to chmod "+f+" : "+LIBC.strerror(Native.getLastError()));
+                _chmod(f, mask);
+
                 return null;
             }
         });
     }
+
+    /**
+     * Run chmod via libc if we can, otherwise fall back to Ant.
+     */
+    private static void _chmod(File f, int mask) throws IOException {
+        if (Functions.isWindows())  return; // noop
+
+        try {
+            if(LIBC.chmod(f.getAbsolutePath(),mask)!=0) {
+                throw new IOException("Failed to chmod "+f+" : "+LIBC.strerror(Native.getLastError()));
+            }
+        } catch(UnsatisfiedLinkError e) { // HUDSON-8155: use Ant's chmod task on non-GNU C systems
+            if (!CHMOD_WARNED) {// only warn this once to avoid flooding the log
+                CHMOD_WARNED = true;
+                LOGGER.warning("GNU C Library not available: Using Ant's chmod task instead.");
+            }
+            Chmod chmodTask = new Chmod();
+            chmodTask.setProject(new Project());
+            chmodTask.setFile(f);
+            chmodTask.setPerm(Integer.toOctalString(mask));
+            chmodTask.execute();
+        }
+    }
+
+    private static boolean CHMOD_WARNED = false;
 
     /**
      * Gets the file permission bit mask.
@@ -1566,11 +1594,7 @@ public final class FilePath implements Serializable {
                     f.setLastModified(te.getModTime().getTime());
                     int mode = te.getMode()&0777;
                     if(mode!=0 && !Functions.isWindows()) // be defensive
-                        try {
-                            LIBC.chmod(f.getPath(),mode);
-                        } catch (NoClassDefFoundError e) {
-                            // be defensive. see http://www.nabble.com/-3.0.6--Site-copy-problem%3A-hudson.util.IOException2%3A--java.lang.NoClassDefFoundError%3A-Could-not-initialize-class--hudson.util.jna.GNUCLibrary-td23588879.html
-                        }
+                        _chmod(f,mode);
                 }
             }
         } catch(IOException e) {
@@ -1876,6 +1900,8 @@ public final class FilePath implements Serializable {
     private static final long serialVersionUID = 1L;
 
     public static int SIDE_BUFFER_SIZE = 1024;
+
+    private static final Logger LOGGER = Logger.getLogger(FilePath.class.getName());
 
     /**
      * Adapts {@link FileCallable} to {@link Callable}.
