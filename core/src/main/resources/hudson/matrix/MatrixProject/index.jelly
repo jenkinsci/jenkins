@@ -29,8 +29,8 @@ THE SOFTWARE.
     <l:main-panel>
       <h1>${%Project} ${it.name}</h1>
       <t:editableDescription permission="${it.CONFIGURE}"/>
-	  <j:choose>
-      <j:when test="${it.disabled}">
+      <j:choose>
+        <j:when test="${it.disabled}">
         <div class="warning">
           <form method="post" action="enable">
             ${%This project is currently disabled}
