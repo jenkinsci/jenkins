@@ -130,6 +130,16 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.apache.maven.wagon</groupId>
       <artifactId>wagon-http-lightweight</artifactId>
+      <exclusions>
+        <exclusion>
+          <groupId>nekohtml</groupId>
+          <artifactId>nekohtml</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>nekohtml</groupId>
+          <artifactId>xercesMinimal</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
     <dependency>
       <groupId>org.apache.maven.wagon</groupId>
@@ -193,6 +203,17 @@ THE SOFTWARE.
           <groupId>org.apache.maven.wagon</groupId>
           <artifactId>wagon-webdav</artifactId>
         </exclusion>
+
+        <!-- prefer net.sourceforge.nekohtml:nekohtml:jar:1.9.13 so that we use consistent version across Hudson -->
+        <exclusion>
+          <groupId>nekohtml</groupId>
+          <artifactId>nekohtml</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>nekohtml</groupId>
+          <artifactId>xercesMinimal</artifactId>
+        </exclusion>
+
       </exclusions>
     </dependency>
 
@@ -207,6 +228,12 @@ THE SOFTWARE.
           <artifactId>jdom</artifactId>
         </exclusion>
       </exclusions>
+    </dependency>
+
+    <dependency>
+      <groupId>net.sourceforge.nekohtml</groupId>
+      <artifactId>nekohtml</artifactId>
+      <version>1.9.13</version>
     </dependency>
   </dependencies>
 
