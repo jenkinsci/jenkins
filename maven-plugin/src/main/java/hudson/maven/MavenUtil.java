@@ -134,19 +134,6 @@ public class MavenUtil {
     /**
      * Creates a fresh {@link MavenEmbedder} instance.
      *
-     * @param listener
-     *      This is where the log messages from Maven will be recorded.
-     * @param mavenHome
-     *      Directory of the Maven installation. We read {@code conf/settings.xml}
-     *      from here. Can be null.
-     * @param profiles
-     *      Profiles to activate/deactivate. Can be null.
-     * @param systemProperties
-     *      The system properties that the embedded Maven sees. See {@link MavenEmbedder#setSystemProperties(Properties)}.
-     * @param privateRepository
-     *      Optional private repository to use as the local repository.
-     * @param alternateSettings
-     *      Optional alternate settings.xml file.
      */
     public static MavenEmbedder createEmbedder(MavenEmbedderRequest mavenEmbedderRequest) throws MavenEmbedderException, IOException {
         
