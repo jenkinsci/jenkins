@@ -540,7 +540,9 @@ public class Maven3Builder extends AbstractMavenBuilder implements DelegatingCal
             if (mavenReporters != null) {
                 for (MavenReporter mavenReporter : mavenReporters) {
                     try {
-                        // FIXME get exception during mojo execution ?
+                        // TODO get exception during mojo execution ?
+                        // with maven 3.0.2 see http://jira.codehaus.org/browse/MNG-4922
+                        // catch NoSuchMethodError if folks not using 3.0.2+
                         mavenReporter.postExecute( mavenBuildProxy2, mavenProject, mojoInfo, maven3Builder.listener, null );
                     } catch ( InterruptedException e ) {
                         e.printStackTrace();
