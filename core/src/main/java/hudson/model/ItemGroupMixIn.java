@@ -117,6 +117,7 @@ public abstract class ItemGroupMixIn {
 
     /**
      * Creates a {@link TopLevelItem} from the submission of the '/lib/hudson/newFromList/formList'
+     * or throws an exception if it fails.
      */
     public synchronized TopLevelItem createTopLevelItem( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
         acl.checkPermission(Job.CREATE);
@@ -150,9 +151,8 @@ public abstract class ItemGroupMixIn {
                 else
                     throw new Failure("No such job: "+from);
             }
-            if (!(src instanceof TopLevelItem)) {
+            if (!(src instanceof TopLevelItem))
                 throw new Failure(from+" cannot be copied");
-            }
 
             result = copy((TopLevelItem) src,name);
         } else {
@@ -169,19 +169,15 @@ public abstract class ItemGroupMixIn {
             }
         }
 
-        // send the browser to the config page
-        // use View to trim view/{default-view} from URL if possible
-        String redirect = result.getUrl()+"configure";
-        List<Ancestor> ancestors = req.getAncestors();
-        for (int i = ancestors.size() - 1; i >= 0; i--) {
-            Object o = ancestors.get(i).getObject();
-            if (o instanceof View) {
-                redirect = req.getContextPath() + '/' + ((View)o).getUrl() + redirect;
-                break;
-            }
-        }
-        rsp.sendRedirect2(redirect);
+        rsp.sendRedirect2(redirectAfterCreateItem(req, result)+"configure");
         return result;
+    }
+
+    /**
+     * Computes the redirection target URL for the newly created {@link TopLevelItem}.
+     */
+    protected String redirectAfterCreateItem(StaplerRequest req, TopLevelItem result) throws IOException {
+        return req.getContextPath()+'/'+result.getUrl()+"configure";
     }
 
     /**

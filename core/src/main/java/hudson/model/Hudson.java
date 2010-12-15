@@ -154,6 +154,7 @@ import org.jvnet.hudson.reactor.ReactorListener;
 import org.jvnet.hudson.reactor.TaskGraphBuilder.Handle;
 import org.kohsuke.args4j.Argument;
 import org.kohsuke.args4j.Option;
+import org.kohsuke.stapler.Ancestor;
 import org.kohsuke.stapler.HttpRedirect;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.HttpResponses;
@@ -549,6 +550,24 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
         @Override
         protected File getRootDirFor(String name) {
             return Hudson.this.getRootDirFor(name);
+        }
+
+        /**
+         *send the browser to the config page
+         * use View to trim view/{default-view} from URL if possible
+         */
+        @Override
+        protected String redirectAfterCreateItem(StaplerRequest req, TopLevelItem result) throws IOException {
+            String redirect = result.getUrl()+"configure";
+            List<Ancestor> ancestors = req.getAncestors();
+            for (int i = ancestors.size() - 1; i >= 0; i--) {
+                Object o = ancestors.get(i).getObject();
+                if (o instanceof View) {
+                    redirect = req.getContextPath() + '/' + ((View)o).getUrl() + redirect;
+                    break;
+                }
+            }
+            return redirect;
         }
     };
 
