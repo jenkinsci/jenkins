@@ -175,8 +175,10 @@ public class MavenUtil {
 
         if (mavenEmbedderRequest.getTransferListener() != null)
         {
+            if (debugMavenEmbedder) {
             mavenEmbedderRequest.getListener().getLogger()
                 .println( "use transfertListener " + mavenEmbedderRequest.getTransferListener().getClass().getName() );
+            }
             mavenRequest.setTransferListener( mavenEmbedderRequest.getTransferListener() );
         }
         EmbedderLoggerImpl logger =
