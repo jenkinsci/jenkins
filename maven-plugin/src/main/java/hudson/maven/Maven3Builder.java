@@ -96,9 +96,7 @@ public class Maven3Builder extends AbstractMavenBuilder implements DelegatingCal
         this.reporters.putAll( reporters );
     }    
     
-    public Result call()
-        throws IOException
-    {
+    public Result call() throws IOException {
 
         MavenExecutionListener mavenExecutionListener = new MavenExecutionListener( this );
         try {

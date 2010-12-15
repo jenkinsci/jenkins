@@ -104,28 +104,24 @@ public final class ExecutedMojo implements Serializable {
         this.digest = digest;
     }
     
-    private Class<?> getMojoClass(MojoDescriptor md, PluginDescriptor pd) throws ClassNotFoundException
-    {
-        try
-        {
+    private Class<?> getMojoClass(MojoDescriptor md, PluginDescriptor pd) throws ClassNotFoundException {
+        try {
             return pd.getClassRealm().loadClass( md.getImplementation() );
-        } catch (NoSuchMethodError e)
-        {
+        } catch (NoSuchMethodError e) {
             // maybe we are in maven2 build ClassRealm package has changed
             return getMojoClassForMaven2( md, pd );
         }
     }
     
-    private Class<?> getMojoClassForMaven2(MojoDescriptor md, PluginDescriptor pd) throws ClassNotFoundException
-    {
-       
-            Method method = ReflectionUtils.getPublicMethodNamed( pd.getClass(), "getClassRealm" );
-            
-            org.codehaus.classworlds.ClassRealm cl = 
-                (org.codehaus.classworlds.ClassRealm) ReflectionUtils.invokeMethod( method, pd );
-            
-            Class<?> clazz = cl.loadClass( md.getImplementation() );
-            return clazz;
+    private Class<?> getMojoClassForMaven2(MojoDescriptor md, PluginDescriptor pd) throws ClassNotFoundException {
+        
+        Method method = ReflectionUtils.getPublicMethodNamed( pd.getClass(), "getClassRealm" );
+        
+        org.codehaus.classworlds.ClassRealm cl = 
+            (org.codehaus.classworlds.ClassRealm) ReflectionUtils.invokeMethod( method, pd );
+        
+        Class<?> clazz = cl.loadClass( md.getImplementation() );
+        return clazz;
        
     }
     
