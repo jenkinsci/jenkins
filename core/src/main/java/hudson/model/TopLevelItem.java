@@ -23,8 +23,8 @@
  */
 package hudson.model;
 
-import hudson.ExtensionPoint;
 import hudson.Extension;
+import hudson.ExtensionPoint;
 
 /**
  * {@link Item} that can be directly displayed under {@link Hudson}. 
@@ -36,11 +36,6 @@ import hudson.Extension;
  * @author Kohsuke Kawaguchi
  */
 public interface TopLevelItem extends Item, ExtensionPoint, Describable<TopLevelItem> {
-    /**
-     * By definition the parent of the top-level item is always {@link Hudson}.
-     */
-    Hudson getParent();
-
     /**
      *
      * @see Describable#getDescriptor()

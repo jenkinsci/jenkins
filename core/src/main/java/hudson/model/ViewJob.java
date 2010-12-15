@@ -76,7 +76,14 @@ public abstract class ViewJob<JobT extends ViewJob<JobT,RunT>, RunT extends Run<
         reloadThread.start();
     }
 
+    /**
+     * @deprecated as of 1.390
+     */
     protected ViewJob(Hudson parent, String name) {
+        super(parent,name);
+    }
+
+    protected ViewJob(ItemGroup parent, String name) {
         super(parent,name);
     }
 

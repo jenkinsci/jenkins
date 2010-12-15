@@ -225,16 +225,16 @@ public final class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,Ma
         new DescribableList<BuildWrapper, Descriptor<BuildWrapper>>(this);
 
     public MavenModuleSet(String name) {
+        this(Hudson.getInstance(),name);
+    }
+
+    public MavenModuleSet(ItemGroup parent, String name) {
         super(Hudson.getInstance(),name);
     }
 
     public String getUrlChildPrefix() {
         // seemingly redundant "./" is used to make sure that ':' is not interpreted as the scheme identifier
         return ".";
-    }
-
-    public Hudson getParent() {
-        return Hudson.getInstance();
     }
 
     public Collection<MavenModule> getItems() {

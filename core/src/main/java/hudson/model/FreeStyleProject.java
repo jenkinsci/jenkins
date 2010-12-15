@@ -46,18 +46,20 @@ public class FreeStyleProject extends Project<FreeStyleProject,FreeStyleBuild> i
      */
     private String customWorkspace;
 
+    /**
+     * @deprecated as of 1.390
+     */
     public FreeStyleProject(Hudson parent, String name) {
+        super(parent, name);
+    }
+
+    public FreeStyleProject(ItemGroup parent, String name) {
         super(parent, name);
     }
 
     @Override
     protected Class<FreeStyleBuild> getBuildClass() {
         return FreeStyleBuild.class;
-    }
-
-    @Override
-    public Hudson getParent() {
-        return Hudson.getInstance();
     }
 
     public String getCustomWorkspace() {

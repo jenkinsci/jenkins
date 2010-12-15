@@ -151,7 +151,11 @@ public class MatrixProject extends AbstractProject<MatrixProject,MatrixBuild> im
     private String customWorkspace;
     
     public MatrixProject(String name) {
-        super(Hudson.getInstance(), name);
+        this(Hudson.getInstance(), name);
+    }
+
+    public MatrixProject(ItemGroup parent, String name) {
+        super(parent, name);
     }
 
     public AxisList getAxes() {
@@ -469,11 +473,6 @@ public class MatrixProject extends AbstractProject<MatrixProject,MatrixBuild> im
             f = new File(f,"axis-"+e.getKey()+'/'+Util.rawEncode(e.getValue()));
         f.getParentFile().mkdirs();
         return f;
-    }
-
-    @Override
-    public Hudson getParent() {
-        return Hudson.getInstance();
     }
 
     /**
