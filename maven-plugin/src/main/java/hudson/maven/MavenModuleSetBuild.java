@@ -815,7 +815,9 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
         @Override
         public Result call() throws IOException {
             try {
-                System.out.println("Builder extends MavenBuilder in call " + Thread.currentThread().getContextClassLoader());
+                if (debug) {
+                    listener.getLogger().println("Builder extends MavenBuilder in call " + Thread.currentThread().getContextClassLoader());
+                }
                 return super.call();
             } finally {
                 if(lastProxy!=null)
