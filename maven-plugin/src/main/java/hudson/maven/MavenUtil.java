@@ -237,11 +237,11 @@ public class MavenUtil {
         File basedir = project.getFile().getParentFile();
         relativePathInfo.put( project, rel );
 
+        List<MavenProject> modules = new ArrayList<MavenProject>();
+
         if ( !nonRecursive )
         {
-            List<MavenProject> modules = new ArrayList<MavenProject>();
-
-            for ( String modulePath : (List<String>) project.getModules() )
+            for ( String modulePath : project.getModules())
             {
                 if ( Util.fixEmptyAndTrim( modulePath ) != null )
                 {
@@ -264,9 +264,9 @@ public class MavenUtil {
                     modules.add( child );
                 }
             }
-
-            project.setCollectedProjects( modules );
         }
+
+        project.setCollectedProjects( modules );
     }
 
     /**
