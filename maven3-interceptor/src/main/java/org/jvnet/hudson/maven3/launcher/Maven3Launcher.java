@@ -86,9 +86,6 @@ public class Maven3Launcher
             MavenExecutionRequest request = getMavenExecutionRequest( args, container );
 
             hudsonMavenExecutionResult = new HudsonMavenExecutionResult( maven.execute( request ) );
-            System.out.println("---- mavenExecutionResult ----");
-            System.out.println( "mavenExecutionResult.getMavenProjectInfos().size() " + hudsonMavenExecutionResult.getMavenProjectInfos().size() );
-            System.out.println("---- mavenExecutionResult ----");
             
             // we don't care about cli mavenExecutionResult will be study in the the plugin
             return 0;// cli.doMain( args, null );
