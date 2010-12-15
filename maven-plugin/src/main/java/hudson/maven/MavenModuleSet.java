@@ -902,8 +902,8 @@ public final class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,Ma
             return Messages.MavenModuleSet_DiplayName();
         }
 
-        public MavenModuleSet newInstance(String name) {
-            return new MavenModuleSet(name);
+        public MavenModuleSet newInstance(ItemGroup parent, String name) {
+            return new MavenModuleSet(parent,name);
         }
 
         public Maven.DescriptorImpl getMavenDescriptor() {

@@ -653,8 +653,8 @@ public class MatrixProject extends AbstractProject<MatrixProject,MatrixBuild> im
             return Messages.MatrixProject_DisplayName();
         }
 
-        public MatrixProject newInstance(String name) {
-            return new MatrixProject(name);
+        public MatrixProject newInstance(ItemGroup parent, String name) {
+            return new MatrixProject(parent,name);
         }
 
         /**

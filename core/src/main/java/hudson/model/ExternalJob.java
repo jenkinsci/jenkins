@@ -118,8 +118,8 @@ public class ExternalJob extends ViewJob<ExternalJob,ExternalRun> implements Top
             return Messages.ExternalJob_DisplayName();
         }
 
-        public ExternalJob newInstance(String name) {
-            return new ExternalJob(name);
+        public ExternalJob newInstance(ItemGroup parent, String name) {
+            return new ExternalJob(parent,name);
         }
     }
 }

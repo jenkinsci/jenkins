@@ -111,8 +111,8 @@ public class FreeStyleProject extends Project<FreeStyleProject,FreeStyleBuild> i
             return Messages.FreeStyleProject_DisplayName();
         }
 
-        public FreeStyleProject newInstance(String name) {
-            return new FreeStyleProject(Hudson.getInstance(),name);
+        public FreeStyleProject newInstance(ItemGroup parent, String name) {
+            return new FreeStyleProject(parent,name);
         }
     }
 }
