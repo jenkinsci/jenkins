@@ -30,7 +30,6 @@ import org.codehaus.plexus.ContainerConfiguration;
 import org.codehaus.plexus.DefaultContainerConfiguration;
 import org.codehaus.plexus.DefaultPlexusContainer;
 import org.codehaus.plexus.classworlds.realm.ClassRealm;
-import org.codehaus.plexus.component.configurator.expression.ExpressionEvaluator;
 import org.codehaus.plexus.component.repository.exception.ComponentLookupException;
 import org.jvnet.hudson.maven3.listeners.HudsonMavenBuildHelper;
 import org.jvnet.hudson.maven3.listeners.HudsonMavenExecutionResult;

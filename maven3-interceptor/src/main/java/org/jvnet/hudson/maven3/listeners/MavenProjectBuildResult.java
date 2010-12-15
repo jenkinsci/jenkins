@@ -21,7 +21,6 @@ package org.jvnet.hudson.maven3.listeners;
  */
 
 import java.io.Serializable;
-import java.util.List;
 
 import org.apache.maven.project.ProjectBuildingResult;
 
