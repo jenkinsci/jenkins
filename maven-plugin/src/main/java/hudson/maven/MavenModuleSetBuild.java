@@ -1081,7 +1081,7 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
         private void toPomInfo(MavenProject mp, PomInfo parent, Map<MavenProject,String> relPath, List<PomInfo> infos) {
             PomInfo pi = new PomInfo(mp, parent, relPath.get(mp));
             infos.add(pi);
-            for (MavenProject child : (List<MavenProject>)mp.getCollectedProjects())
+            for (MavenProject child : mp.getCollectedProjects())
                 toPomInfo(child,pi,relPath,infos);
         }
 
