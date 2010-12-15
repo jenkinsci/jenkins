@@ -250,6 +250,28 @@ THE SOFTWARE.
           </execution>
         </executions>
       </plugin>
+      <plugin>
+        <groupId>org.jvnet.maven-antrun-extended-plugin</groupId>
+        <artifactId>maven-antrun-extended-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>resgen</id>
+            <phase>generate-resources</phase>
+            <goals>
+              <goal>run</goal>
+            </goals>
+            <configuration>
+              <verifyArtifact>false</verifyArtifact>
+              <tasks>
+                <mkdir dir="target/classes" />
+
+                <!--  classworld 1.1 for maven 2 builds -->
+                <resolveArtifact groupId="classworlds" artifactId="classworlds" version="1.1" type="jar" tofile="target/classes/classworlds.jar" />
+              </tasks>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
     </plugins>
   </build>
   <profiles>

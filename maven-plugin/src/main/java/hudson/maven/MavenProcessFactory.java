@@ -293,8 +293,7 @@ final class MavenProcessFactory implements ProcessCache.Factory {
             ( isMaster ? Which.jarFile( Main.class ).getAbsolutePath()
                             : slaveRoot.child( "maven-agent.jar" ).getRemote() )
                 + ( launcher.isUnix() ? ":" : ";" )
-                + ( isMaster ? new File( Hudson.getInstance().getRootDir(), "/war/classworlds-1.1.jar" ).getAbsolutePath()
-                                : slaveRoot.child( "classworlds-1.1.jar" ).getRemote() );
+                + ( isMaster ? classWorldsJar : slaveRoot.child( "classworlds.jar" ).getRemote() );
         args.add( classPath );
             //+classWorldsJar);
         args.add(Main.class.getName());

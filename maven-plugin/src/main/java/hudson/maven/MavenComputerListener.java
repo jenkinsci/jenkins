@@ -63,10 +63,8 @@ public class MavenComputerListener extends ComputerListener {
         copyJar(logger, root, ClassWorld.class, "plexus-classworld");
         
         // copy classworlds 1.1 for maven2 builds
-        // FIXME take care of people using --webroot=  
-        new FilePath( new File( Hudson.getInstance().getRootDir(), "/war/classworlds-1.1.jar" ) )
-            .copyTo( root.child( "classworlds-1.1.jar" ) );
-        
+        root.child( "classworlds-1.1.jar" ).copyFrom(getClass().getClassLoader().getResource("classworlds.jar"));
+        logger.println("Copied classworlds.jar");
     }
 
     /**
