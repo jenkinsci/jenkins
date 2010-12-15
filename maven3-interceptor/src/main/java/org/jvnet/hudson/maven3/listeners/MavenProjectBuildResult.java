@@ -32,33 +32,25 @@ public class MavenProjectBuildResult implements Serializable
 {
     private MavenProjectInfo mavenProjectInfo;
 
-    public MavenProjectBuildResult()
-    {
+    public MavenProjectBuildResult() {
         // no op
     }
 
-    public MavenProjectBuildResult( ProjectBuildingResult projectBuildingResult )
-    {
+    public MavenProjectBuildResult( ProjectBuildingResult projectBuildingResult ) {
         // no op
         this.mavenProjectInfo = new MavenProjectInfo( projectBuildingResult.getProject() );
     }
 
-    public MavenProjectInfo getMavenProjectInfo()
-    {
+    public MavenProjectInfo getMavenProjectInfo() {
         return mavenProjectInfo;
     }
 
-    public void setMavenProjectInfo( MavenProjectInfo mavenProjectInfo )
-    {
+    public void setMavenProjectInfo( MavenProjectInfo mavenProjectInfo ) {
         this.mavenProjectInfo = mavenProjectInfo;
     }
 
     @Override
-    public String toString()
-    {
+    public String toString() {
         return mavenProjectInfo == null ? "null mavenProjectInfo" : this.mavenProjectInfo.toString();
     }
-    
-    
-    
 }

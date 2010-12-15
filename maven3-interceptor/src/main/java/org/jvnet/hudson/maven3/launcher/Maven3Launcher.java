@@ -37,39 +37,31 @@ import org.jvnet.hudson.maven3.listeners.HudsonMavenExecutionResult;
  * @author olamy
  *
  */
-public class Maven3Launcher
-{
+public class Maven3Launcher {
 
     private static HudsonMavenExecutionResult hudsonMavenExecutionResult;
 
     private static ExecutionListener mavenExecutionListener;
 
-    public static ExecutionListener getMavenExecutionListener()
-    {
+    public static ExecutionListener getMavenExecutionListener() {
         return mavenExecutionListener;
     }
 
-    public static void setMavenExecutionListener( ExecutionListener listener )
-    {
+    public static void setMavenExecutionListener( ExecutionListener listener ) {
         mavenExecutionListener = listener;
     }
 
-    public static HudsonMavenExecutionResult getMavenExecutionResult()
-    {
+    public static HudsonMavenExecutionResult getMavenExecutionResult() {
         return hudsonMavenExecutionResult;
     }
 
-    public static void setMavenExecutionResult( HudsonMavenExecutionResult result )
-    {
+    public static void setMavenExecutionResult( HudsonMavenExecutionResult result ) {
         hudsonMavenExecutionResult = result;
     }
 
-    public static int main( String[] args )
-        throws Exception
-    {
+    public static int main( String[] args ) throws Exception {
         ClassLoader orig = Thread.currentThread().getContextClassLoader();
-        try
-        {
+        try {
 
             ClassRealm containerRealm = (ClassRealm) Thread.currentThread().getContextClassLoader();
 
@@ -87,25 +79,18 @@ public class Maven3Launcher
             
             // we don't care about cli mavenExecutionResult will be study in the the plugin
             return 0;// cli.doMain( args, null );
-        }
-        catch ( ComponentLookupException e )
-        {
+        } catch ( ComponentLookupException e ) {
             throw new Exception( e.getMessage(), e );
-        }
-        finally
-        {
+        } finally {
             Thread.currentThread().setContextClassLoader( orig );
         }
     }
 
-    private static MavenExecutionRequest getMavenExecutionRequest( String[] args, DefaultPlexusContainer container )
-        throws Exception
-    {
+    private static MavenExecutionRequest getMavenExecutionRequest( String[] args, DefaultPlexusContainer container ) throws Exception {
         MavenExecutionRequestBuilder mavenExecutionRequestBuilder = container
             .lookup( MavenExecutionRequestBuilder.class );
         MavenExecutionRequest request = mavenExecutionRequestBuilder.getMavenExecutionRequest( args, System.out );
-        if ( mavenExecutionListener != null )
-        {
+        if ( mavenExecutionListener != null ) {
             request.setExecutionListener( mavenExecutionListener );
         }
         return request;
