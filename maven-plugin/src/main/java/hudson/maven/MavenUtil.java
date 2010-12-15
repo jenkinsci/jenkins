@@ -150,18 +150,14 @@ public class MavenUtil {
         if (mavenEmbedderRequest.getPrivateRepository()!=null)
             mavenRequest.setLocalRepositoryPath( mavenEmbedderRequest.getPrivateRepository() );
 
-        if (mavenEmbedderRequest.getProfiles() != null)
-        {
+        if (mavenEmbedderRequest.getProfiles() != null) {
             mavenRequest.setProfiles(Arrays.asList( StringUtils.split( mavenEmbedderRequest.getProfiles(), "," ) ));    
         }
         
 
-        if ( mavenEmbedderRequest.getAlternateSettings() != null )
-        {
+        if ( mavenEmbedderRequest.getAlternateSettings() != null ) {
             mavenRequest.setUserSettingsFile( mavenEmbedderRequest.getAlternateSettings().getAbsolutePath() );
-        }
-        else
-        {
+        } else {
             mavenRequest.setUserSettingsFile( new File( m2Home, "settings.xml" ).getAbsolutePath() );
         }
         
@@ -173,8 +169,7 @@ public class MavenUtil {
         // TODO olamy check this sould be userProperties 
         mavenRequest.setSystemProperties(mavenEmbedderRequest.getSystemProperties());
 
-        if (mavenEmbedderRequest.getTransferListener() != null)
-        {
+        if (mavenEmbedderRequest.getTransferListener() != null) {
             if (debugMavenEmbedder) {
             mavenEmbedderRequest.getListener().getLogger()
                 .println( "use transfertListener " + mavenEmbedderRequest.getTransferListener().getClass().getName() );
@@ -228,15 +223,11 @@ public class MavenUtil {
 
         List<MavenProject> modules = new ArrayList<MavenProject>();
 
-        if ( !nonRecursive )
-        {
-            for ( String modulePath : project.getModules())
-            {
-                if ( Util.fixEmptyAndTrim( modulePath ) != null )
-                {
+        if ( !nonRecursive ) {
+            for ( String modulePath : project.getModules()) {
+                if ( Util.fixEmptyAndTrim( modulePath ) != null ) {
                     File moduleFile = new File( basedir, modulePath );
-                    if ( moduleFile.exists() && moduleFile.isDirectory() )
-                    {
+                    if ( moduleFile.exists() && moduleFile.isDirectory() ) {
                         moduleFile = new File( basedir, modulePath + "/pom.xml" );
                     }
                     if ( !moduleFile.exists() )
