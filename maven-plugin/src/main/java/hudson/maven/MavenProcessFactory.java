@@ -32,7 +32,6 @@ import hudson.slaves.Channels;
 import static hudson.Util.fixNull;
 import hudson.maven.agent.Main;
 import hudson.maven.agent.Maven21Interceptor;
-import hudson.maven.agent.PluginManagerInterceptor;
 import hudson.maven.ProcessCache.NewProcess;
 import hudson.model.BuildListener;
 import hudson.model.Computer;
@@ -69,11 +68,6 @@ import java.nio.charset.Charset;
 import java.nio.charset.UnsupportedCharsetException;
 import java.util.Arrays;
 import java.util.logging.Logger;
-
-import javax.inject.Inject;
-
-import org.apache.tools.ant.AntClassLoader;
-import org.codehaus.plexus.classworlds.ClassWorld;
 
 
 /**
@@ -311,7 +305,7 @@ final class MavenProcessFactory implements ProcessCache.Factory {
 
         // interceptor.jar
         args.add(isMaster?
-            Which.jarFile(AbortException.class).getAbsolutePath():
+            Which.jarFile(hudson.maven.agent.AbortException.class).getAbsolutePath():
             slaveRoot.child("maven-interceptor.jar").getRemote());
 
         // TCP/IP port to establish the remoting infrastructure
