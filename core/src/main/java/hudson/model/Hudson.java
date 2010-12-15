@@ -126,7 +126,6 @@ import hudson.util.TextFile;
 import hudson.util.VersionNumber;
 import hudson.util.XStream2;
 import hudson.util.Service;
-import hudson.util.IOUtils;
 import hudson.views.DefaultMyViewsTabBar;
 import hudson.views.DefaultViewsTabBar;
 import hudson.views.MyViewsTabBar;
@@ -155,7 +154,6 @@ import org.jvnet.hudson.reactor.ReactorListener;
 import org.jvnet.hudson.reactor.TaskGraphBuilder.Handle;
 import org.kohsuke.args4j.Argument;
 import org.kohsuke.args4j.Option;
-import org.kohsuke.stapler.Ancestor;
 import org.kohsuke.stapler.HttpRedirect;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.HttpResponses;
@@ -538,6 +536,21 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
      * {@link AdjunctManager}
      */
     private transient final AdjunctManager adjuncts;
+
+    /**
+     * Code that handles {@link ItemGroup} work.
+     */
+    private transient final ItemGroupMixIn itemGroupMixIn = new ItemGroupMixIn(this,this) {
+        @Override
+        protected void add(TopLevelItem item) {
+            items.put(item.getName(),item);
+        }
+
+        @Override
+        protected File getRootDirFor(String name) {
+            return Hudson.this.getRootDirFor(name);
+        }
+    };
 
     @CLIResolver
     public static Hudson getInstance() {
@@ -2085,25 +2098,8 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
      * @throws IllegalArgumentException
      *      if a project of the give name already exists.
      */
-    public synchronized TopLevelItem createProject( TopLevelItemDescriptor type, String name, boolean notify )
-            throws IOException {
-        if(items.containsKey(name))
-            throw new IllegalArgumentException("Project of the name "+name+" already exists");
-
-        TopLevelItem item;
-        try {
-            item = type.newInstance(name);
-        } catch (Exception e) {
-            throw new IllegalArgumentException(e);
-        }
-        item.onCreatedFromScratch();
-        item.save();
-        items.put(name,item);
-
-        if (notify)
-            ItemListener.fireOnCreated(item);
-
-        return item;
+    public synchronized TopLevelItem createProject( TopLevelItemDescriptor type, String name, boolean notify ) throws IOException {
+        return itemGroupMixIn.createProject(type,name,notify);
     }
 
     /**
@@ -2613,67 +2609,7 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
     }
 
     public synchronized Item doCreateItem( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
-        checkPermission(Job.CREATE);
-
-        TopLevelItem result;
-
-        String requestContentType = req.getContentType();
-        if(requestContentType==null) {
-            rsp.sendError(HttpServletResponse.SC_BAD_REQUEST,"No Content-Type header set");
-            return null;
-        }
-        boolean isXmlSubmission = requestContentType.startsWith("application/xml") || requestContentType.startsWith("text/xml");
-
-        String name = req.getParameter("name");
-        if(name==null) {
-            rsp.sendError(HttpServletResponse.SC_BAD_REQUEST,"Query parameter 'name' is required");
-            return null;
-        }
-
-        name = checkJobName(name);
-
-        String mode = req.getParameter("mode");
-        if(mode!=null && mode.equals("copy")) {
-            String from = req.getParameter("from");
-            TopLevelItem src = getItem(from);
-            if(src==null) {
-                rsp.setStatus(SC_BAD_REQUEST);
-                if(Util.fixEmpty(from)==null)
-                    sendError("Specify which job to copy",req,rsp);
-                else
-                    sendError("No such job: "+from,req,rsp);
-                return null;
-            }
-
-            result = copy(src,name);
-        } else {
-            if(isXmlSubmission) {
-                result = createProjectFromXML(name, req.getInputStream());
-                rsp.setStatus(HttpServletResponse.SC_OK);
-                return result;
-            } else {
-                if(mode==null) {
-                    rsp.sendError(SC_BAD_REQUEST);
-                    return null;
-                }
-                // create empty job and redirect to the project config screen
-                result = createProject(Items.getDescriptor(mode), name);
-            }
-        }
-
-        // send the browser to the config page
-        // use View to trim view/{default-view} from URL if possible
-        String redirect = result.getUrl()+"configure";
-        List<Ancestor> ancestors = req.getAncestors();
-        for (int i = ancestors.size() - 1; i >= 0; i--) {
-            Object o = ancestors.get(i).getObject();
-            if (o instanceof View) {
-                redirect = req.getContextPath() + '/' + ((View)o).getUrl() + redirect;
-                break;
-            }
-        }
-        rsp.sendRedirect2(redirect);
-        return result;
+        return itemGroupMixIn.createTopLevelItem(req, rsp);
     }
 
     /**
@@ -2682,25 +2618,7 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
      * @since 1.319
      */
     public TopLevelItem createProjectFromXML(String name, InputStream xml) throws IOException {
-        // place it as config.xml
-        File configXml = Items.getConfigFile(getRootDirFor(name)).getFile();
-        configXml.getParentFile().mkdirs();
-        try {
-            IOUtils.copy(xml,configXml);
-
-            // load it
-            TopLevelItem result = (TopLevelItem)Items.load(this,configXml.getParentFile());
-            items.put(name,result);
-
-            ItemListener.fireOnCreated(result);
-            rebuildDependencyGraph();
-
-            return result;
-        } catch (IOException e) {
-            // if anything fails, delete the config file to avoid further confusion
-            Util.deleteRecursive(configXml.getParentFile());
-            throw e;
-        }
+        return itemGroupMixIn.createProjectFromXML(name,xml);
     }
 
     /**
@@ -2715,19 +2633,7 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
      */
     @SuppressWarnings({"unchecked"})
     public <T extends TopLevelItem> T copy(T src, String name) throws IOException {
-        T result = (T)createProject(src.getDescriptor(),name,false);
-
-        // copy config
-        Util.copyFile(Items.getConfigFile(src).getFile(),Items.getConfigFile(result).getFile());
-
-        // reload from the new config
-        result = (T)Items.load(this,result.getRootDir());
-        result.onCopiedFrom(src);
-        items.put(name,result);
-
-        ItemListener.fireOnCopied(src,result);
-
-        return result;
+        return itemGroupMixIn.copy(src,name);
     }
 
     // a little more convenient overloading that assumes the caller gives us the right type
