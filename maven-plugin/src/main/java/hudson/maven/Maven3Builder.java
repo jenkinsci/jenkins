@@ -155,32 +155,22 @@ public class Maven3Builder extends AbstractMavenBuilder implements DelegatingCal
 
             mavenExecutionResult = Maven3Launcher.getMavenExecutionResult();
             
-            
-            //FIXME handle
-            //mavenExecutionResult.getThrowables()
             PrintStream logger = listener.getLogger();
-            logger.println("Maven3Builder classLoaderDebug");
-            logger.println("getClass().getClassLoader(): " + getClass().getClassLoader());
             
-            if(r==0 && mavenExecutionResult.getThrowables().isEmpty()) {
-                logger.print( "r==0" );
-                markAsSuccess = true;
-            }
+            if(r==0 && mavenExecutionResult.getThrowables().isEmpty()) return Result.SUCCESS;
+            
             if (!mavenExecutionResult.getThrowables().isEmpty()) {
-                logger.println( "mavenExecutionResult.throwables not empty");
+                logger.println( "mavenExecutionResult exceptions not empty");
                 for(Throwable throwable : mavenExecutionResult.getThrowables()) {
                     throwable.printStackTrace( logger );
                 }
-                markAsSuccess = false;
+                
             }
 
             if(markAsSuccess) {
-                // FIXME message
-                //listener.getLogger().println(Messages.MavenBuilder_Failed());
-                listener.getLogger().println("success");
+                listener.getLogger().println(Messages.MavenBuilder_Failed());
                 return Result.SUCCESS;
             }
-
             return Result.FAILURE;
         } catch (NoSuchMethodException e) {
             throw new IOException2(e);
@@ -410,7 +400,7 @@ public class Maven3Builder extends AbstractMavenBuilder implements DelegatingCal
          * @see org.apache.maven.execution.ExecutionListener#projectFailed(org.apache.maven.execution.ExecutionEvent)
          */
         public void projectFailed( ExecutionEvent event ) {
-            maven3Builder.listener.getLogger().println("projectFailed" );
+            maven3Builder.listener.getLogger().println("projectFailed " + event.getProject().getGroupId() + ":"  + event.getProject().getArtifactId());
             MavenBuildProxy2 mavenBuildProxy2 = getMavenBuildProxy2( event.getProject() );
             mavenBuildProxy2.end();
             mavenBuildProxy2.setResult( Result.FAILURE );

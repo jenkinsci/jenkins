@@ -25,6 +25,7 @@ package hudson.maven.reporters;
 
 import hudson.Util;
 import hudson.Extension;
+import hudson.maven.Maven3Builder;
 import hudson.maven.MavenBuild;
 import hudson.maven.MavenBuildProxy;
 import hudson.maven.MavenBuildProxy.BuildCallable;
@@ -126,6 +127,10 @@ public class SurefireArchiver extends MavenReporter {
             if(failCount>0 && error instanceof MojoFailureException) {
                 MavenBuilder.markAsSuccess = true;
             }
+            // TODO currenlty error is empty : will be here with maven 3.0.2+
+            if(failCount>0) {
+                Maven3Builder.markAsSuccess = true;
+            }            
         }
 
         return true;
