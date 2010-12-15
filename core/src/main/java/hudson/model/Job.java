@@ -248,10 +248,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
         return b!=null && b.isBuilding();
     }
 
-    /**
-     * Get the term used in the UI to represent this kind of
-     * {@link AbstractProject}. Must start with a capital letter.
-     */
+    @Override
     public String getPronoun() {
         return Messages.Job_Pronoun();
     }

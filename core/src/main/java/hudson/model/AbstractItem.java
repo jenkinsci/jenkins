@@ -88,6 +88,14 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
         return name;
     }
 
+    /**
+     * Get the term used in the UI to represent this kind of
+     * {@link Item}. Must start with a capital letter.
+     */
+    public String getPronoun() {
+        return Messages.AbstractItem_Pronoun();
+    }
+
     @Exported
     public String getDisplayName() {
         return getName();
