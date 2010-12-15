@@ -37,10 +37,12 @@ THE SOFTWARE.
         <x:attribute name="onmouseover">this.className='healthReport hover';return true;
         </x:attribute>
         <x:attribute name="onmouseout">this.className='healthReport';return true;</x:attribute>
-        <a href="${empty(link)?'#':link}" style="${attrs.style}">
-            <img src="${rootURL}${buildHealth.getIconUrl(iconSize)}"
-                 alt="${buildHealth.score}%"/>
-        </a>
+        <j:if test="${buildHealth!=null}">
+            <a href="${empty(link)?'#':link}" style="${attrs.style}">
+                <img src="${rootURL}${buildHealth.getIconUrl(iconSize)}"
+                     alt="${buildHealth.score}%"/>
+            </a>
+        </j:if>
         <j:set var="healthReports" value="${job.buildHealthReports}"/>
         <j:if test="${!empty(healthReports)}">
             <div class="healthReportDetails">
