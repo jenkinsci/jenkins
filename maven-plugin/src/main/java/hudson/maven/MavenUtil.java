@@ -197,6 +197,7 @@ public class MavenUtil {
 
 
     /**
+     * @deprecated MavenEmbedder has now a method to read all projects 
      * Recursively resolves module POMs that are referenced from
      * the given {@link MavenProject} and parses them into
      * {@link MavenProject}s.
@@ -210,7 +211,7 @@ public class MavenUtil {
      *
      * @throws AbortException
      *      errors will be reported to the listener and the exception thrown.
-     * @throws MavenEmbedderException 
+     * @throws MavenEmbedderException
      */
     public static void resolveModules( MavenEmbedder embedder, MavenProject project, String rel,
                                        Map<MavenProject, String> relativePathInfo, BuildListener listener,

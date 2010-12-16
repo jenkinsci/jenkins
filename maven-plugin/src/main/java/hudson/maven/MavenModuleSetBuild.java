@@ -1057,9 +1057,12 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
                 mavenEmbedderRequest.setTransferListener( new SimpleTransferListener(listener) );
                 MavenEmbedder embedder = MavenUtil.createEmbedder( mavenEmbedderRequest );
                 
-                MavenProject mp = embedder.readProject(pom);
+                List<MavenProject> mps = embedder.readProjects( pom,true);
                 Map<MavenProject,String> relPath = new HashMap<MavenProject,String>();
-                MavenUtil.resolveModules(embedder,mp,getRootPath(rootPOMRelPrefix),relPath,listener,nonRecursive);
+                for(MavenProject mp : mps) {
+                    relPath.put( mp, mp.getBasedir().getAbsolutePath() );
+                }
+                //MavenUtil.resolveModules(embedder,mp,getRootPath(rootPOMRelPrefix),relPath,listener,nonRecursive);
 
                 if(verbose) {
                     for (Entry<MavenProject, String> e : relPath.entrySet())
@@ -1067,7 +1070,18 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
                 }
 
                 List<PomInfo> infos = new ArrayList<PomInfo>();
-                toPomInfo(mp,null,relPath,infos);
+                MavenProject rootProject = null;
+                for (MavenProject mp : mps) {
+                    if (mp.isExecutionRoot()) {
+                        rootProject = mp;
+                        continue;
+                    }
+                }
+                // if rootProject is null but no reason :-) use the first one
+                if (rootProject == null) {
+                    rootProject = mps.get( 0 );
+                }
+                toPomInfo(rootProject,null,relPath,infos);
 
                 for (PomInfo pi : infos)
                     pi.cutCycle();
