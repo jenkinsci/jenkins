@@ -165,7 +165,7 @@ THE SOFTWARE.
     </dependency>                      
     <dependency>
       <groupId>org.jvnet.hudson</groupId>
-      <artifactId>maven-embedder</artifactId>
+      <artifactId>hudson-maven-embedder</artifactId>
       <version>3.0-SNAPSHOT</version>
       <!--exclusions>   These are needed for Maven embedder to resolve parent POMs in remote repositories
         <exclusion>
