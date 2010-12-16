@@ -144,7 +144,12 @@ public abstract class ItemGroupMixIn {
         String mode = req.getParameter("mode");
         if(mode!=null && mode.equals("copy")) {
             String from = req.getParameter("from");
+
+            // resolve a name to Item
             Item src = parent.getItem(from);
+            if (src==null)
+                src = Hudson.getInstance().getItemByFullName(from);
+
             if(src==null) {
                 if(Util.fixEmpty(from)==null)
                     throw new Failure("Specify which job to copy");
