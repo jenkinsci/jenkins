@@ -169,7 +169,7 @@ public abstract class ItemGroupMixIn {
             }
         }
 
-        rsp.sendRedirect2(redirectAfterCreateItem(req, result)+"configure");
+        rsp.sendRedirect2(redirectAfterCreateItem(req, result));
         return result;
     }
 
