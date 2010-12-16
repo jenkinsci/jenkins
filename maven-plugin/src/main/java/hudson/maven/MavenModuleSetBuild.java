@@ -68,6 +68,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -1069,7 +1070,7 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
                         logger.printf("Discovered %s at %s\n",e.getKey().getId(),e.getValue());
                 }
 
-                List<PomInfo> infos = new ArrayList<PomInfo>();
+                Set<PomInfo> infos = new LinkedHashSet<PomInfo>();
                 MavenProject rootProject = null;
                 for (MavenProject mp : mps) {
                     if (mp.isExecutionRoot()) {
@@ -1086,7 +1087,7 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
                 for (PomInfo pi : infos)
                     pi.cutCycle();
 
-                return infos;
+                return new ArrayList<PomInfo>(infos);
             } catch (MavenEmbedderException e) {
                 throw new MavenExecutionException(e);
             } catch (ProjectBuildingException e) {
@@ -1094,7 +1095,7 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
             }
         }
 
-        private void toPomInfo(MavenProject mp, PomInfo parent, Map<MavenProject,String> relPath, List<PomInfo> infos) {
+        private void toPomInfo(MavenProject mp, PomInfo parent, Map<MavenProject,String> relPath, Set<PomInfo> infos) {
             PomInfo pi = new PomInfo(mp, parent, relPath.get(mp));
             infos.add(pi);
             for (MavenProject child : mp.getCollectedProjects())
