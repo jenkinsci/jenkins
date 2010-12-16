@@ -244,11 +244,28 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable {
     public abstract String getDisplayName();
 
     /**
+     * Uniquely identifies this {@link Descriptor} among all the other {@link Descriptor}s.
+     *
+     * <p>
+     * Historically {@link #clazz} is assumed to be unique, so this method uses that as the default,
+     * but if you are adding {@link Descriptor}s programmatically for the same type, you can change
+     * this to disambiguate them.
+     *
+     * @return
+     *      Stick to valid Java identifier character, plus '.', which had to be allowed for historical reasons.
+     * 
+     * @since 1.391
+     */
+    public String getId() {
+        return clazz.getName();
+    }
+
+    /**
      * Gets the URL that this Descriptor is bound to, relative to the nearest {@link DescriptorByNameOwner}.
      * Since {@link Hudson} is a {@link DescriptorByNameOwner}, there's always one such ancestor to any request.
      */
     public String getDescriptorUrl() {
-        return "descriptorByName/"+clazz.getName();
+        return "descriptorByName/"+getId();
     }
 
     private String getCurrentDescriptorByNameUrl() {
@@ -424,7 +441,7 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable {
      * Gets the class name nicely escaped to be usable as a key in the structured form submission.
      */
     public final String getJsonSafeClassName() {
-        return clazz.getName().replace('.','-');
+        return getId().replace('.','-');
     }
 
     /**
@@ -540,7 +557,7 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable {
      */
     public String getHelpFile(final String fieldName) {
         for(Class c=clazz; c!=null; c=c.getSuperclass()) {
-            String page = "/descriptor/" + clazz.getName() + "/help";
+            String page = "/descriptor/" + getId() + "/help";
             String suffix;
             if(fieldName==null) {
                 suffix="";
@@ -663,7 +680,7 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable {
     }
 
     private XmlFile getConfigFile() {
-        return new XmlFile(new File(Hudson.getInstance().getRootDir(),clazz.getName()+".xml"));
+        return new XmlFile(new File(Hudson.getInstance().getRootDir(),getId()+".xml"));
     }
 
     /**

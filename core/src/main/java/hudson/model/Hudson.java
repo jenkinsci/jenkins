@@ -907,16 +907,16 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
      * After doing all the {@code getXXX(shortClassName)} methods, I finally realized that
      * this just doesn't scale.
      *
-     * @param className
-     *      Either fully qualified class name (recommended) or the short name of a {@link Describable} subtype.
+     * @param id
+     *      Either {@link Descriptor#getId()} (recommended) or the short name of a {@link Describable} subtype (for compatibility)
      */
-    public Descriptor getDescriptor(String className) {
+    public Descriptor getDescriptor(String id) {
         // legacy descriptors that are reigstered manually doesn't show up in getExtensionList, so check them explicitly.
         for( Descriptor d : Iterators.sequence(getExtensionList(Descriptor.class),DescriptorExtensionList.listLegacyInstances()) ) {
-            String name = d.clazz.getName();
-            if(name.equals(className))
+            String name = d.getId();
+            if(name.equals(id))
                 return d;
-            if(name.substring(name.lastIndexOf('.')+1).equals(className))
+            if(name.substring(name.lastIndexOf('.')+1).equals(id))
                 return d;
         }
         return null;
@@ -925,8 +925,8 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
     /**
      * Alias for {@link #getDescriptor(String)}.
      */
-    public Descriptor getDescriptorByName(String className) {
-        return getDescriptor(className);
+    public Descriptor getDescriptorByName(String id) {
+        return getDescriptor(id);
     }
 
     /**
