@@ -65,6 +65,7 @@ import javax.servlet.ServletException;
 import java.io.File;
 import java.io.FileFilter;
 import java.io.IOException;
+import java.lang.Boolean;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -132,6 +133,11 @@ public class MatrixProject extends AbstractProject<MatrixProject,MatrixBuild> im
     private boolean runSequentially;
     
     /**
+    * Disable the creation of axis-specific workspace directories
+    */
+    private boolean shareWorkspaceAmongAxes; 
+
+    /**
      * Filter to select a number of combinations to build first
      */
     private String touchStoneCombinationFilter;
@@ -175,6 +181,18 @@ public class MatrixProject extends AbstractProject<MatrixProject,MatrixBuild> im
 
     public void setRunSequentially(boolean runSequentially) throws IOException {
         this.runSequentially = runSequentially;
+        save();
+    }
+
+    /**
+    * If true, {@link MatrixRun}s share workspaces rather than creating unique directories for themselves.
+    */
+    public boolean isShareWorkspaceAmongAxes() {
+        return shareWorkspaceAmongAxes; 
+    }
+
+    public void setShareWorkspaceAmongAxes(boolean shareWorkspaceAmongAxes) throws IOException {
+        this.shareWorkspaceAmongAxes = shareWorkspaceAmongAxes;
         save();
     }
 
@@ -592,6 +610,7 @@ public class MatrixProject extends AbstractProject<MatrixProject,MatrixBuild> im
 
         if(req.hasParameter("customWorkspace")) {
             customWorkspace = req.getParameter("customWorkspace.directory");
+            shareWorkspaceAmongAxes = json.getJSONObject("customWorkspace").getBoolean("shareWorkspaceAmongAxes");
         } else {
             customWorkspace = null;        
         }

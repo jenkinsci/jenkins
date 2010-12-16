@@ -35,7 +35,7 @@ THE SOFTWARE.
       <p:config-quietPeriod />
       <p:config-retryCount />
       <p:config-blockWhenUpstreamBuilding />
-      <p:config-customWorkspace />
+      <st:include page="config-customWorkspace.jelly"/>
     </f:advanced>
   </f:section>
 

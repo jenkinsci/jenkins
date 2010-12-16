@@ -153,7 +153,11 @@ public class MatrixRun extends Build<MatrixConfiguration,MatrixRun> {
                 // Use custom workspace as defined in the matrix project settings.
                 FilePath ws = n.getRootPath().child(getEnvironment(listener).expand(customWorkspace));
                 // We allow custom workspaces to be used concurrently between jobs.
-                return Lease.createDummyLease(ws.child(subtree));
+                if (getParent().getParent().isShareWorkspaceAmongAxes()) {
+                  return Lease.createDummyLease(ws);
+                } else {
+                  return Lease.createDummyLease(ws.child(subtree));
+                }
             } else {
                 // Use default workspace as assigned by Hudson.
                 Node node = getBuiltOn();
