@@ -175,6 +175,12 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
     protected volatile boolean disabled;
 
     /**
+     * True to keep builds of this project in queue when downstream projects are
+     * building. False by default to keep from breaking existing behavior.
+     */
+    protected volatile boolean blockBuildWhenDownstreamBuilding = false;
+
+    /**
      * True to keep builds of this project in queue when upstream projects are
      * building. False by default to keep from breaking existing behavior.
      */
@@ -498,6 +504,15 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
      */
     public boolean isConfigurable() {
         return true;
+    }
+
+    public boolean blockBuildWhenDownstreamBuilding() {
+        return blockBuildWhenDownstreamBuilding;
+    }
+
+    public void setBlockBuildWhenDownstreamBuilding(boolean b) throws IOException {
+        blockBuildWhenDownstreamBuilding = b;
+        save();
     }
 
     public boolean blockBuildWhenUpstreamBuilding() {
@@ -998,6 +1013,22 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
             return Messages.AbstractProject_BuildInProgress(lbn, eta);
         }
     }
+    
+    /**
+     * Because the downstream build is in progress, and we are configured to wait for that.
+     */
+    public static class BecauseOfDownstreamBuildInProgress extends CauseOfBlockage {
+        public final AbstractProject<?,?> up;
+
+        public BecauseOfDownstreamBuildInProgress(AbstractProject<?,?> up) {
+            this.up = up;
+        }
+
+        @Override
+        public String getShortDescription() {
+            return Messages.AbstractProject_DownstreamBuildInProgress(up.getName());
+        }
+    }
 
     /**
      * Because the upstream build is in progress, and we are configured to wait for that.
@@ -1018,10 +1049,32 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
     public CauseOfBlockage getCauseOfBlockage() {
         if (isBuilding() && !isConcurrentBuild())
             return new BecauseOfBuildInProgress(getLastBuild());
-        if (blockBuildWhenUpstreamBuilding()) {
+        if (blockBuildWhenDownstreamBuilding()) {
+            AbstractProject<?,?> bup = getBuildingDownstream();
+            if (bup!=null)
+                return new BecauseOfDownstreamBuildInProgress(bup);
+        } else if (blockBuildWhenUpstreamBuilding()) {
             AbstractProject<?,?> bup = getBuildingUpstream();
             if (bup!=null)
                 return new BecauseOfUpstreamBuildInProgress(bup);
+        }
+        return null;
+    }
+
+    /**
+     * Returns the project if any of the downstream project (or itself) is either
+     * building or is in the queue.
+     * <p>
+     * This means eventually there will be an automatic triggering of
+     * the given project (provided that all builds went smoothly.)
+     */
+    protected AbstractProject getBuildingDownstream() {
+    	DependencyGraph graph = Hudson.getInstance().getDependencyGraph();
+        Set<AbstractProject> tups = graph.getTransitiveDownstream(this);
+        tups.add(this);
+        for (AbstractProject tup : tups) {
+            if(tup!=this && (tup.isBuilding() || tup.isInQueue()))
+                return tup;
         }
         return null;
     }
@@ -1570,6 +1623,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
         } else {
             scmCheckoutRetryCount = null;
         }
+        blockBuildWhenDownstreamBuilding = req.getParameter("blockBuildWhenDownstreamBuilding")!=null;
         blockBuildWhenUpstreamBuilding = req.getParameter("blockBuildWhenUpstreamBuilding")!=null;
 
         if(req.getParameter("hasSlaveAffinity")!=null) {
