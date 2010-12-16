@@ -36,6 +36,7 @@ package hudson.model;
  *
  * @author Kohsuke Kawaguchi
  * @since 1.390
+ * @see StockStatusIcon
  */
 public interface StatusIcon {
     /**
