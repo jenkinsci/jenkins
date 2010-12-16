@@ -33,6 +33,8 @@ import hudson.model.queue.WorkUnit;
 import hudson.util.TimeUnit2;
 import hudson.util.InterceptingProxy;
 import hudson.security.ACL;
+import org.kohsuke.stapler.HttpResponse;
+import org.kohsuke.stapler.HttpResponses;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 import org.kohsuke.stapler.export.ExportedBean;
@@ -77,6 +79,8 @@ public class Executor extends Thread implements ModelObject {
 
     private Throwable causeOfDeath;
 
+    private boolean induceDeath;
+
     public Executor(Computer owner, int n) {
         super("Executor #"+n+" for "+owner.getDisplayName());
         this.owner = owner;
@@ -107,6 +111,7 @@ public class Executor extends Thread implements ModelObject {
                 // sometime an interrupt aborts a build but without clearing the flag.
                 // see issue #1583
                 if (Thread.interrupted())   continue;
+                if (induceDeath)        throw new ThreadDeath();
 
                 SubTask task;
                 try {
@@ -165,6 +170,14 @@ public class Executor extends Thread implements ModelObject {
             causeOfDeath = e;
             throw e;
         }
+    }
+
+    /**
+     * For testing only. Simulate a fatal unexpected failure.
+     */
+    public void killHard() {
+        induceDeath = true;
+        interrupt();
     }
 
     /**
@@ -359,6 +372,17 @@ public class Executor extends Thread implements ModelObject {
             interrupt();
         }
         rsp.forwardToPreviousPage(req);
+    }
+
+    /**
+     * Throws away this executor and get a new one.
+     */
+    public HttpResponse doYank() {
+        Hudson.getInstance().checkPermission(Hudson.ADMINISTER);
+        if (isAlive())
+            throw new Failure("Can't yank a live executor");
+        owner.removeExecutor(this);
+        return HttpResponses.redirectViaContextPath("/");
     }
 
     /**

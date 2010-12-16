@@ -47,6 +47,9 @@ THE SOFTWARE.
           <pre>
             <a href="http://wiki.hudson-ci.org/display/HUDSON/Dead+Executor">${%more info}</a>
           </pre>
+          <form method="post" action="yank" name="yank">
+            <f:submit value="${%Restart this thread}"/>
+          </form>
         </j:otherwise>
       </j:choose>
     </l:main-panel>
