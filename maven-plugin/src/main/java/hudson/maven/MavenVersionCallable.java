@@ -34,10 +34,11 @@ import org.kohsuke.stapler.framework.io.IOException2;
 /**
  * 
  * @author Olivier Lamy
+ * @since 3.0
  *
  */
 public class MavenVersionCallable
-    implements Callable<String, IOException>
+    implements Callable<MavenInformation, IOException>
 {
     
     private final String mavenHome;
@@ -47,7 +48,7 @@ public class MavenVersionCallable
         this.mavenHome = mavenHome;
     }
 
-    public String call()
+    public MavenInformation call()
         throws IOException
     {
         try

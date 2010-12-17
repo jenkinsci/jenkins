@@ -529,7 +529,11 @@ public class MavenBuild extends AbstractMavenBuild<MavenModule,MavenBuild> {
             
             mvn = mvn.forEnvironment(envVars).forNode(Computer.currentComputer().getNode(), listener);
             
-            String mavenVersion = getModuleRoot().act( new MavenVersionCallable( mvn.getHome() ));
+            MavenInformation mavenInformation = getModuleRoot().act( new MavenVersionCallable( mvn.getHome() ));
+            
+            String mavenVersion = mavenInformation.getVersion();
+            
+            listener.getLogger().println("Found mavenVersion " + mavenVersion + " from file " + mavenInformation.getVersionResourcePath());
             
             ProcessCache.MavenProcess process = null;
             
