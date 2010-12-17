@@ -469,7 +469,9 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
                 mvn = mvn.forEnvironment(envVars).forNode(Computer.currentComputer().getNode(), listener);
 
                 String mavenVersion = getModuleRoot().act( new MavenVersionCallable( mvn.getHome() ));
-                
+                if (debug) {
+                    logger.println("mavenVersion "+mavenVersion+" for mavenHome " + mvn.getHome());
+                }
                 if(!project.isAggregatorStyleBuild()) {
                     parsePoms(listener, logger, envVars, mvn);
                     // start module builds
