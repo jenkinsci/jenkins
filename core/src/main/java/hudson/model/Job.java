@@ -991,54 +991,6 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
     }
 
     /**
-     * Accepts <tt>config.xml</tt> submission, as well as serve it.
-     */
-    @WebMethod(name = "config.xml")
-    public void doConfigDotXml(StaplerRequest req, StaplerResponse rsp)
-            throws IOException {
-        if (req.getMethod().equals("GET")) {
-            // read
-            checkPermission(EXTENDED_READ);
-            rsp.setContentType("application/xml;charset=UTF-8");
-            getConfigFile().writeRawTo(rsp.getWriter());
-            return;
-        }
-        if (req.getMethod().equals("POST")) {
-            // submission
-            checkPermission(CONFIGURE);
-            XmlFile configXmlFile = getConfigFile();
-            AtomicFileWriter out = new AtomicFileWriter(configXmlFile.getFile());
-            try {
-                try {
-                    // this allows us to use UTF-8 for storing data,
-                    // plus it checks any well-formedness issue in the submitted
-                    // data
-                    Transformer t = TransformerFactory.newInstance()
-                            .newTransformer();
-                    t.transform(new StreamSource(req.getReader()),
-                            new StreamResult(out));
-                    out.close();
-                } catch (TransformerException e) {
-                    throw new IOException2("Failed to persist configuration.xml", e);
-                }
-
-                // try to reflect the changes by reloading
-                new XmlFile(Items.XSTREAM, out.getTemporaryFile()).unmarshal(this);
-                onLoad(getParent(), getRootDir().getName());
-
-                // if everything went well, commit this new version
-                out.commit();
-            } finally {
-                out.abort(); // don't leave anything behind
-            }
-            return;
-        }
-
-        // huh?
-        rsp.sendError(SC_BAD_REQUEST);
-    }
-
-    /**
      * Derived class can override this to perform additional config submission
      * work.
      */
