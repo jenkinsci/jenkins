@@ -33,14 +33,18 @@ THE SOFTWARE.
     <st:attribute name="title" use="required">
       Human readable title of this control.
     </st:attribute>
-    <st:attribute name="descriptors" use="required">
+    <st:attribute name="descriptors">
       Collection that lists up all the valid candidate descriptors.
+      If unspecified, inferred from the type of the field.
     </st:attribute>
     <st:attribute name="default">
       If specified, this will be chosen as the default value in case the current selection is null.
     </st:attribute>
   </st:documentation>
-  <f:dropdownList name="${attrs.field}" title="${attrs.title}">
+
+  <j:set target="${attrs}" property="descriptors" value="${attrs.descriptors ?: descriptor.getPropertyType(instance,attrs.field).getApplicableDescriptors()}" />
+
+  <f:dropdownList name="${attrs.field}" title="${attrs.title}" help="${descriptor.getHelpFile(attrs.field)}">
     <d:invokeBody />
 
     <j:set var="current" value="${instance[attrs.field]}"/>
