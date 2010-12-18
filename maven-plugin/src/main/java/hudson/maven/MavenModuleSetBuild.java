@@ -78,6 +78,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.apache.commons.io.FilenameUtils;
+import org.apache.commons.lang.StringUtils;
 import org.apache.maven.BuildFailureException;
 import org.apache.maven.artifact.versioning.ComparableVersion;
 import org.apache.maven.execution.MavenSession;
@@ -1104,6 +1105,7 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
             infos.add(pi);
             for (String modulePath : mp.getModules())
             {
+                if (StringUtils.isBlank( modulePath )) continue;
                 File path = new File(mp.getBasedir(), modulePath);
                 MavenProject child = abslPath.get( path.getAbsolutePath());
                 toPomInfo(child,pi,abslPath,infos);
