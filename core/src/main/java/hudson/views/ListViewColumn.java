@@ -29,12 +29,14 @@ import hudson.model.Describable;
 import hudson.model.Descriptor;
 import hudson.model.Hudson;
 import hudson.model.Item;
+import hudson.model.ItemGroup;
 import hudson.model.ListView;
+import hudson.model.View;
 import hudson.util.DescriptorList;
 import org.kohsuke.stapler.export.Exported;
 
 /**
- * Extension point for adding a column to {@link ListView}.
+ * Extension point for adding a column to a table rendering of {@link Item}s, such as {@link ListView}.
  *
  * <p>
  * This object must have the <tt>column.jelly</tt>. This view
@@ -44,11 +46,16 @@ import org.kohsuke.stapler.export.Exported;
  *
  * <p>
  * This object may have an additional <tt>columHeader.jelly</tt>. The default ColmnHeader
- * will render ColumnCaption.
+ * will render {@link #getColumnCaption()}.
  *
  * <p>
  * There also must be a default constructor, which is invoked to create a list view column in
  * the default configuration.
+ *
+ * <p>
+ * Originally, this extension point was designed for {@link ListView}, but since then
+ * it has grown to be applicable to other {@link View}s and {@link ItemGroup}s that render
+ * a collection of {@link Item}s in a tabular format.
  *
  * @author Kohsuke Kawaguchi
  * @since 1.279
