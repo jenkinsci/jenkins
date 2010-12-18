@@ -672,6 +672,13 @@ public abstract class HudsonTestCase extends TestCase implements RootAction {
     }
 
     /**
+     * Hits the Hudson system configuration and submits without any modification.
+     */
+    protected void configRoundtrip() throws Exception {
+        submit(createWebClient().goTo("configure").getFormByName("config"));
+    }
+
+    /**
      * Loads a configuration page and submits it without any modifications, to
      * perform a round-trip configuration test.
      * <p>
