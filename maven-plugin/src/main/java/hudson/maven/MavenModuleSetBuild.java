@@ -1063,15 +1063,15 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
                 MavenEmbedder embedder = MavenUtil.createEmbedder( mavenEmbedderRequest );
                 
                 List<MavenProject> mps = embedder.readProjects( pom,true);
-                Map<MavenProject,String> relPath = new HashMap<MavenProject,String>();
+                Map<String,MavenProject> absPath = new HashMap<String, MavenProject>( mps.size() );
                 for(MavenProject mp : mps) {
-                    relPath.put( mp, mp.getBasedir().getAbsolutePath() );
+                    absPath.put( mp.getBasedir().getAbsolutePath(), mp );
                 }
                 //MavenUtil.resolveModules(embedder,mp,getRootPath(rootPOMRelPrefix),relPath,listener,nonRecursive);
 
                 if(verbose) {
-                    for (Entry<MavenProject, String> e : relPath.entrySet())
-                        logger.printf("Discovered %s at %s\n",e.getKey().getId(),e.getValue());
+                    for (Entry<String,MavenProject> e : absPath.entrySet())
+                        logger.printf("Discovered %s at %s\n",e.getValue().getId(),e.getKey());
                 }
 
                 Set<PomInfo> infos = new LinkedHashSet<PomInfo>();
@@ -1086,7 +1086,7 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
                 if (rootProject == null) {
                     rootProject = mps.get( 0 );
                 }
-                toPomInfo(rootProject,null,relPath,infos);
+                toPomInfo(rootProject,null,absPath,infos);
 
                 for (PomInfo pi : infos)
                     pi.cutCycle();
@@ -1099,11 +1099,15 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
             }
         }
 
-        private void toPomInfo(MavenProject mp, PomInfo parent, Map<MavenProject,String> relPath, Set<PomInfo> infos) {
-            PomInfo pi = new PomInfo(mp, parent, relPath.get(mp));
+        private void toPomInfo(MavenProject mp, PomInfo parent, Map<String,MavenProject> abslPath, Set<PomInfo> infos) {
+            PomInfo pi = new PomInfo(mp, parent, mp.getBasedir().getAbsolutePath());
             infos.add(pi);
-            for (MavenProject child : mp.getCollectedProjects())
-                toPomInfo(child,pi,relPath,infos);
+            for (String modulePath : mp.getModules())
+            {
+                File path = new File(mp.getBasedir(), modulePath);
+                MavenProject child = abslPath.get( path.getAbsolutePath());
+                toPomInfo(child,pi,abslPath,infos);
+            }
         }
 
         private static final long serialVersionUID = 1L;
