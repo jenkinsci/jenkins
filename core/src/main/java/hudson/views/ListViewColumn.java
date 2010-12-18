@@ -49,7 +49,8 @@ import org.kohsuke.stapler.export.Exported;
  * will render {@link #getColumnCaption()}.
  *
  * <p>
- * There also must be a default constructor, which is invoked to create a list view column in
+ * If you opt to {@linkplain ListViewColumnDescriptor#shownByDefault() be shown by default},
+ * there also must be a default constructor, which is invoked to create a list view column in
  * the default configuration.
  *
  * <p>
