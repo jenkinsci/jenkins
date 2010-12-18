@@ -121,6 +121,8 @@ THE SOFTWARE.
           <label for="sat.disabled">${%Disable}</label>
         </f:entry>
 
+        <f:dropdownDescriptorSelector title="${%Markup Formatter}" field="markupFormatter" />
+
         <f:entry title="${%Access Control}">
           <table style="width:100%">
             <f:descriptorRadioList title="${%Security Realm}" varName="realm"

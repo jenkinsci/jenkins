@@ -1,4 +1,4 @@
-    /*
+/*
  * The MIT License
  * 
  * Copyright (c) 2004-2010, Sun Microsystems, Inc., Kohsuke Kawaguchi,
@@ -40,6 +40,7 @@ import hudson.Launcher;
 import hudson.Launcher.LocalLauncher;
 import hudson.LocalPluginManager;
 import hudson.Lookup;
+import hudson.markup.MarkupFormatter;
 import hudson.Plugin;
 import hudson.PluginManager;
 import hudson.PluginWrapper;
@@ -63,6 +64,7 @@ import hudson.init.InitStrategy;
 import hudson.lifecycle.Lifecycle;
 import hudson.logging.LogRecorderManager;
 import hudson.lifecycle.RestartNotSupportedException;
+import hudson.markup.RawHtmlMarkupFormatter;
 import hudson.model.Descriptor.FormException;
 import hudson.model.labels.LabelAtom;
 import hudson.model.listeners.ItemListener;
@@ -313,6 +315,8 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
      * Message displayed in the top page.
      */
     private String systemMessage;
+
+    private MarkupFormatter markupFormatter;
 
     /**
      * Root directory of the system.
@@ -1064,6 +1068,26 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
      */
     public String getSystemMessage() {
         return systemMessage;
+    }
+
+    /**
+     * Gets the markup formatter used in the system.
+     *
+     * @return
+     *      never null.
+     * @since 1.391
+     */
+    public MarkupFormatter getMarkupFormatter() {
+        return markupFormatter!=null ? markupFormatter : RawHtmlMarkupFormatter.INSTANCE;
+    }
+
+    /**
+     * Sets the markup formatter used in the system globally.
+     *
+     * @since 1.391
+     */
+    public void setMarkupFormatter(MarkupFormatter f) {
+        this.markupFormatter = f;
     }
 
     /**
@@ -2366,10 +2390,17 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
                 JSONObject security = json.getJSONObject("use_security");
                 setSecurityRealm(SecurityRealm.all().newInstanceFromRadioList(security,"realm"));
                 setAuthorizationStrategy(AuthorizationStrategy.all().newInstanceFromRadioList(security, "authorization"));
+
+                if (security.has("markupFormatter")) {
+                    markupFormatter = req.bindJSON(MarkupFormatter.class,security.getJSONObject("markupFormatter"));
+                } else {
+                    markupFormatter = null;
+                }
             } else {
                 useSecurity = null;
                 setSecurityRealm(SecurityRealm.NO_AUTHENTICATION);
                 authorizationStrategy = AuthorizationStrategy.UNSECURED;
+                markupFormatter = null;
             }
 
             if (json.has("csrf")) {
@@ -2392,7 +2423,7 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
             }
 
             primaryView = json.has("primaryView") ? json.getString("primaryView") : getViews().iterator().next().getViewName();
-            
+
             noUsageStatistics = json.has("usageStatisticsCollected") ? null : true;
 
             {
