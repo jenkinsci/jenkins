@@ -45,6 +45,8 @@ import java.io.Writer;
  * <p>
  * This extension point must have a valid <tt>config.jelly</tt> that feeds the constructor.
  *
+ * TODO: allow {@link MarkupFormatter} to control the UI that the user uses to edit.
+ *
  * @author Kohsuke Kawaguchi
  * @since 1.391
  * @see Hudson#getMarkupFormatter()
@@ -52,6 +54,12 @@ import java.io.Writer;
 public abstract class MarkupFormatter extends AbstractDescribableImpl<MarkupFormatter> implements ExtensionPoint {
     /**
      * Given the text, converts that to HTML according to whatever markup rules implicit in the implementation class.
+     *
+     * <p>
+     * Multiple threads can call this method concurrently with different inputs.
+     *
+     * @param output
+     *      Formatted HTML should be sent to this output.
      */
     public abstract void translate(String markup, Writer output) throws IOException;
 
