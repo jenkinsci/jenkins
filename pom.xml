@@ -237,6 +237,14 @@ THE SOFTWARE.
         </executions>
       </plugin>-->
     </plugins>
+
+    <extensions>
+      <extension>
+        <groupId>org.apache.maven.wagon</groupId>
+        <artifactId>wagon-http</artifactId>
+        <version>1.0-beta-5</version>
+      </extension>
+    </extensions>
   </build>
 
   <dependencies>
@@ -389,5 +397,13 @@ THE SOFTWARE.
       <id>hudson-www</id>
       <url>scp://hudson-labs.org/home/kohsuke/www/hudson-labs.org/maven-site/</url>
     </site>
+    <repository>
+      <id>maven.hudson-labs.org</id>
+      <url>http://maven.hudson-labs.org/content/repositories/releases</url>
+    </repository>
+    <snapshotRepository>
+      <id>maven.hudson-labs.org</id>
+      <url>http://maven.hudson-labs.org/content/repositories/snapshots</url>
+    </snapshotRepository>
   </distributionManagement>
 </project>
