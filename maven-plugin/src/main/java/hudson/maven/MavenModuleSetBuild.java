@@ -1064,14 +1064,14 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
                 MavenEmbedder embedder = MavenUtil.createEmbedder( mavenEmbedderRequest );
                 
                 List<MavenProject> mps = embedder.readProjects( pom,true);
-                Map<String,MavenProject> absPath = new HashMap<String, MavenProject>( mps.size() );
+                Map<String,MavenProject> canonicalPaths = new HashMap<String, MavenProject>( mps.size() );
                 for(MavenProject mp : mps) {
-                    absPath.put( mp.getBasedir().getAbsolutePath(), mp );
+                    canonicalPaths.put( mp.getBasedir().getCanonicalPath(), mp );
                 }
                 //MavenUtil.resolveModules(embedder,mp,getRootPath(rootPOMRelPrefix),relPath,listener,nonRecursive);
 
                 if(verbose) {
-                    for (Entry<String,MavenProject> e : absPath.entrySet())
+                    for (Entry<String,MavenProject> e : canonicalPaths.entrySet())
                         logger.printf("Discovered %s at %s\n",e.getValue().getId(),e.getKey());
                 }
 
@@ -1087,7 +1087,7 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
                 if (rootProject == null) {
                     rootProject = mps.get( 0 );
                 }
-                toPomInfo(rootProject,null,absPath,infos);
+                toPomInfo(rootProject,null,canonicalPaths,infos);
 
                 for (PomInfo pi : infos)
                     pi.cutCycle();
@@ -1100,14 +1100,14 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
             }
         }
 
-        private void toPomInfo(MavenProject mp, PomInfo parent, Map<String,MavenProject> abslPath, Set<PomInfo> infos) {
+        private void toPomInfo(MavenProject mp, PomInfo parent, Map<String,MavenProject> abslPath, Set<PomInfo> infos) throws IOException {
             PomInfo pi = new PomInfo(mp, parent, mp.getBasedir().getAbsolutePath());
             infos.add(pi);
             for (String modulePath : mp.getModules())
             {
                 if (StringUtils.isBlank( modulePath )) continue;
                 File path = new File(mp.getBasedir(), modulePath);
-                MavenProject child = abslPath.get( path.getAbsolutePath());
+                MavenProject child = abslPath.get( path.getCanonicalPath());
                 toPomInfo(child,pi,abslPath,infos);
             }
         }
