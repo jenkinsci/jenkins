@@ -362,6 +362,7 @@ public class Maven extends Builder {
          */
         public static final int MAVEN_20 = 0;
         public static final int MAVEN_21 = 1;
+        public static final int MAVEN_30 = 2;
         
     
         /**

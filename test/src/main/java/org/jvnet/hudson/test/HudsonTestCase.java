@@ -394,8 +394,12 @@ public abstract class HudsonTestCase extends TestCase implements RootAction {
      * Returns the older default Maven, while still allowing specification of other bundled Mavens.
      */
     protected MavenInstallation configureDefaultMaven() throws Exception {
-	return configureDefaultMaven("apache-maven-2.2.1", MavenInstallation.MAVEN_20);
+        return configureDefaultMaven("apache-maven-2.2.1", MavenInstallation.MAVEN_20);
     }
+    
+    protected MavenInstallation configureMaven3() throws Exception {
+        return configureDefaultMaven("apache-maven-3.0.1", MavenInstallation.MAVEN_30);
+    }    
     
     /**
      * Locates Maven2 and configure that as the only Maven in the system.
