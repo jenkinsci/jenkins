@@ -1106,10 +1106,14 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
         private void toPomInfo(MavenProject mp, PomInfo parent, Map<String,MavenProject> abslPath, Set<PomInfo> infos) throws IOException {
             String absolutePath = FilenameUtils.normalize( mp.getBasedir().getAbsolutePath());
             String relPath = StringUtils.removeStart( absolutePath, this.workspacePath );
+            
+            relPath = StringUtils.remove( relPath, '/' );
+            
             // root must be marked with only /
             if (StringUtils.isBlank( relPath )) {
                 relPath = "/";
             }
+            
             PomInfo pi = new PomInfo(mp, parent, relPath);
             infos.add(pi);
             for (String modulePath : mp.getModules())
