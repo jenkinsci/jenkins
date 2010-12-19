@@ -33,7 +33,7 @@ THE SOFTWARE.
   
   <artifactId>maven-interceptor</artifactId>
   <packaging>jar</packaging>
-  <name>Hudson Maven PluginManager interceptor</name>
+  <name>Hudson Maven 2 PluginManager interceptor</name>
   <description>
     Plexus module that intercepts invocations of key Maven components
     so that Hudson can monitor what's going on in Maven.

@@ -59,6 +59,7 @@ import hudson.util.MaskingClassLoader;
 import hudson.util.StreamTaskListener;
 
 import java.io.File;
+import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.InterruptedIOException;
 import java.io.PrintStream;
@@ -476,7 +477,7 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
                 listener.getLogger().println("Found mavenVersion " + mavenVersion + " from file " + mavenInformation.getVersionResourcePath());
 
                 if(!project.isAggregatorStyleBuild()) {
-                    parsePoms(listener, logger, envVars, mvn);
+                    parsePoms(listener, logger, envVars, mvn, getModuleRoot().getRemote());
                     // start module builds
                     logger.println("Triggering "+project.getRootModule().getModuleName());
                     project.getRootModule().scheduleBuild(new UpstreamCause((Run<?,?>)MavenModuleSetBuild.this));
@@ -501,7 +502,7 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
                         if(!preBuild(listener, project.getPublishers()))
                             return Result.FAILURE;
 
-                        parsePoms(listener, logger, envVars, mvn); // #5428 : do pre-build *before* parsing pom
+                        parsePoms(listener, logger, envVars, mvn,getModuleRoot().getRemote()); // #5428 : do pre-build *before* parsing pom
                         SplittableBuildListener slistener = new SplittableBuildListener(listener);
                         proxies = new HashMap<ModuleName, ProxyImpl2>();
                         List<String> changedModules = new ArrayList<String>();
@@ -565,7 +566,8 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
                         // If incrementalBuild is set, and we're on Maven 2.1 or later, *and* there's at least one module
                         // listed in changedModules, do the Maven incremental build commands - if there are no changed modules,
                         // We're building everything anyway.
-                        if (project.isIncrementalBuild() && mvn.isMaven2_1(launcher) && !changedModules.isEmpty()) {
+                        boolean maven2_1orLater = new ComparableVersion (mavenVersion).compareTo( new ComparableVersion ("2.1") ) >= 0;
+                        if (project.isIncrementalBuild() && maven2_1orLater && !changedModules.isEmpty()) {
                             margs.add("-amd");
                             margs.add("-pl", Util.join(changedModules, ","));
                         }
@@ -659,12 +661,12 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
             }
         }
 
-        private void parsePoms(BuildListener listener, PrintStream logger, EnvVars envVars, MavenInstallation mvn) throws IOException, InterruptedException {
+        private void parsePoms(BuildListener listener, PrintStream logger, EnvVars envVars, MavenInstallation mvn, String workspacePath) throws IOException, InterruptedException {
             logger.println("Parsing POMs");
 
             List<PomInfo> poms;
             try {
-                poms = getModuleRoot().act(new PomParser(listener, mvn, project));
+                poms = getModuleRoot().act(new PomParser(listener, mvn, project, workspacePath));
             } catch (IOException e) {
                 if (e.getCause() instanceof AbortException)
                     throw (AbortException) e.getCause();
@@ -964,8 +966,8 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
         private final boolean nonRecursive;
         // We're called against the module root, not the workspace, which can cause a lot of confusion.
         private final String workspaceProper;
-        
-        public PomParser(BuildListener listener, MavenInstallation mavenHome, MavenModuleSet project) {
+        private String workspacePath;
+        public PomParser(BuildListener listener, MavenInstallation mavenHome, MavenModuleSet project, String workspacePath) {
             // project cannot be shipped to the remote JVM, so all the relevant properties need to be captured now.
             this.listener = listener;
             this.mavenHome = mavenHome;
@@ -980,6 +982,7 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
                 this.privateRepository = null;
             }
             this.alternateSettings = project.getAlternateSettings();
+            this.workspacePath = FilenameUtils.normalize( workspacePath );
 
         }
 
@@ -1101,11 +1104,19 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
         }
 
         private void toPomInfo(MavenProject mp, PomInfo parent, Map<String,MavenProject> abslPath, Set<PomInfo> infos) throws IOException {
-            PomInfo pi = new PomInfo(mp, parent, mp.getBasedir().getAbsolutePath());
+            String absolutePath = FilenameUtils.normalize( mp.getBasedir().getAbsolutePath());
+            String relPath = StringUtils.removeStart( absolutePath, this.workspacePath );
+            // root must be marked with only /
+            if (StringUtils.isBlank( relPath )) {
+                relPath = "/";
+            }
+            PomInfo pi = new PomInfo(mp, parent, relPath);
             infos.add(pi);
             for (String modulePath : mp.getModules())
             {
-                if (StringUtils.isBlank( modulePath )) continue;
+                if (StringUtils.isBlank( modulePath )) {
+                    continue;
+                }
                 File path = new File(mp.getBasedir(), modulePath);
                 MavenProject child = abslPath.get( path.getCanonicalPath());
                 toPomInfo(child,pi,abslPath,infos);

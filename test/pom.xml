@@ -40,6 +40,7 @@ THE SOFTWARE.
 
   <properties>
     <concurrency>1</concurrency> <!-- -1 means # of processors in the system -->
+    <mavenDebug>false</mavenDebug>
   </properties>
 
   <build>
@@ -69,6 +70,10 @@ THE SOFTWARE.
                   <!-- use AntClassLoader that supports predictable file handle release -->
                   <name>hudson.ClassicPluginStrategy.useAntClassLoader</name>
                   <value>true</value>
+                </property>
+                <property>
+                  <name>hudson.maven.debug</name>
+                  <value>${mavenDebug}</value>
                 </property>
               </systemProperties>
             </configuration>

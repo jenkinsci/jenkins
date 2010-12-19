@@ -34,32 +34,32 @@ public class MavenMultiModuleTest extends HudsonTestCase {
         configureDefaultMaven("apache-maven-2.2.1", MavenInstallation.MAVEN_21);
         MavenModuleSet m = createMavenProject();
         m.getReporters().add(new TestReporter());
-	m.setScm(new ExtractResourceWithChangesSCM(getClass().getResource("maven-multimod.zip"),
-						   getClass().getResource("maven-multimod-changes.zip")));
+    	m.setScm(new ExtractResourceWithChangesSCM(getClass().getResource("maven-multimod.zip"),
+    						   getClass().getResource("maven-multimod-changes.zip")));
+    
+    	buildAndAssertSuccess(m);
+    
+    	// Now run a second build with the changes.
+    	m.setIncrementalBuild(true);
+        buildAndAssertSuccess(m);
+    
+    	MavenModuleSetBuild pBuild = m.getLastBuild();
+    	ExtractChangeLogSet changeSet = (ExtractChangeLogSet) pBuild.getChangeSet();
+    
+    	assertFalse("ExtractChangeLogSet should not be empty.", changeSet.isEmptySet());
 
-	buildAndAssertSuccess(m);
-
-	// Now run a second build with the changes.
-	m.setIncrementalBuild(true);
-    buildAndAssertSuccess(m);
-
-	MavenModuleSetBuild pBuild = m.getLastBuild();
-	ExtractChangeLogSet changeSet = (ExtractChangeLogSet) pBuild.getChangeSet();
-
-	assertFalse("ExtractChangeLogSet should not be empty.", changeSet.isEmptySet());
-
-	for (MavenBuild modBuild : pBuild.getModuleLastBuilds().values()) {
-	    String parentModuleName = modBuild.getParent().getModuleName().toString();
-	    if (parentModuleName.equals("org.jvnet.hudson.main.test.multimod:moduleA")) {
-		assertEquals("moduleA should have Result.NOT_BUILT", Result.NOT_BUILT, modBuild.getResult());
-	    }
-	    else if (parentModuleName.equals("org.jvnet.hudson.main.test.multimod:moduleB")) {
-		assertEquals("moduleB should have Result.SUCCESS", Result.SUCCESS, modBuild.getResult());
-	    }
-	    else if (parentModuleName.equals("org.jvnet.hudson.main.test.multimod:moduleC")) {
-		assertEquals("moduleC should have Result.SUCCESS", Result.SUCCESS, modBuild.getResult());
-	    }
-	}	
+    	for (MavenBuild modBuild : pBuild.getModuleLastBuilds().values()) {
+    	    String parentModuleName = modBuild.getParent().getModuleName().toString();
+    	    if (parentModuleName.equals("org.jvnet.hudson.main.test.multimod:moduleA")) {
+    	        assertEquals("moduleA should have Result.NOT_BUILT", Result.NOT_BUILT, modBuild.getResult());
+    	    }
+    	    else if (parentModuleName.equals("org.jvnet.hudson.main.test.multimod:moduleB")) {
+    	        assertEquals("moduleB should have Result.SUCCESS", Result.SUCCESS, modBuild.getResult());
+    	    }
+    	    else if (parentModuleName.equals("org.jvnet.hudson.main.test.multimod:moduleC")) {
+    	        assertEquals("moduleC should have Result.SUCCESS", Result.SUCCESS, modBuild.getResult());
+    	    }
+    	}	
 	
 	    long summedModuleDuration = 0;
 	    for (MavenBuild modBuild : pBuild.getModuleLastBuilds().values()) {
