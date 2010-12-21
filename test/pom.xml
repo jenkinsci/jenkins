@@ -75,6 +75,10 @@ THE SOFTWARE.
                   <name>hudson.maven.debug</name>
                   <value>${mavenDebug}</value>
                 </property>
+                <property>
+                  <name>java.io.tmpdir</name>
+                  <value>${project.build.directory}</value>
+                </property>                
               </systemProperties>
             </configuration>
           </execution>
