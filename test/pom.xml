@@ -78,7 +78,11 @@ THE SOFTWARE.
                 <property>
                   <name>java.io.tmpdir</name>
                   <value>${project.build.directory}</value>
-                </property>                
+                </property> 
+                <property>
+                  <name>buildDirectory</name>
+                  <value>${project.build.directory}</value>
+                </property>                               
               </systemProperties>
             </configuration>
           </execution>
