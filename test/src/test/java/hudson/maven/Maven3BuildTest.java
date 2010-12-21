@@ -21,8 +21,18 @@ public class Maven3BuildTest extends HudsonTestCase {
         MavenModuleSet m = createMavenProject();
         m.getReporters().add(new TestReporter());
         m.setScm(new ExtractResourceSCM(getClass().getResource("maven3-project.zip")));
+        m.setGoals( "clean test-compile" );
         buildAndAssertSuccess(m);
     }
+    
+    public void testSiteBuildWithForkedMojo() throws Exception {
+        configureMaven3();
+        MavenModuleSet m = createMavenProject();
+        m.getReporters().add(new TestReporter());
+        m.setScm(new ExtractResourceSCM(getClass().getResource("maven3-project.zip")));
+        m.setGoals( "clean site" );
+        buildAndAssertSuccess(m);
+    }    
     
 
     
