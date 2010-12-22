@@ -107,7 +107,7 @@ public class MavenArtifactRecord extends MavenAbstractArtifactRecord<MavenBuild>
     @Override
     public void deploy(MavenEmbedder embedder, ArtifactRepository deploymentRepository, TaskListener listener) throws MavenEmbedderException, IOException, ComponentLookupException, ArtifactDeploymentException {
         ArtifactHandlerManager handlerManager = embedder.lookup(ArtifactHandlerManager.class);
-        ArtifactDeployer deployer = embedder.lookup(ArtifactDeployer.class);
+        
         ArtifactFactory factory = embedder.lookup(ArtifactFactory.class);
         PrintStream logger = listener.getLogger();
 
@@ -117,15 +117,21 @@ public class MavenArtifactRecord extends MavenAbstractArtifactRecord<MavenBuild>
 
         // deploy the main artifact. This also deploys the POM
         logger.println(Messages.MavenArtifact_DeployingMainArtifact(main.getFile().getName()));
-        deployer.deploy(main.getFile(),main,deploymentRepository,embedder.getLocalRepository());
+        deployMavenArtifact( main, deploymentRepository, embedder );
 
         for (MavenArtifact aa : attachedArtifacts) {
             Artifact a = aa.toArtifact(handlerManager,factory, parent);
             logger.println(Messages.MavenArtifact_DeployingAttachedArtifact(a.getFile().getName()));
-            deployer.deploy(a.getFile(),a,deploymentRepository,embedder.getLocalRepository());
+            deployMavenArtifact( a, deploymentRepository, embedder );
         }
     }
 
+    protected void deployMavenArtifact(Artifact artifact, ArtifactRepository deploymentRepository, MavenEmbedder embedder) 
+        throws ArtifactDeploymentException, ComponentLookupException {
+        
+        ArtifactDeployer deployer = embedder.lookup(ArtifactDeployer.class);
+        deployer.deploy(artifact.getFile(),artifact,deploymentRepository,embedder.getLocalRepository());
+    }
     /**
      * Installs the artifact to the local Maven repository.
      */
