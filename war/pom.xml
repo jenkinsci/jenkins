@@ -232,6 +232,14 @@ THE SOFTWARE.
         </exclusion>
       </exclusions>
     </dependency>
+    <!-- declare this in reactors, so i can use now directly : mvn install -pl war -am to get the war  -->
+    <!-- TO REMOVE when maven-plugin won't be anymore a bundle plugin -->
+    <dependency>
+      <groupId>${project.groupId}</groupId>
+      <artifactId>maven-plugin</artifactId>
+      <version>${project.version}</version>
+      <scope>provided</scope>
+    </dependency>
     <!-- offline profiler API when we need it -->
     <!--dependency>
       <groupId>com.yourkit.api</groupId>
