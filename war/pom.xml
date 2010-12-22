@@ -240,6 +240,19 @@ THE SOFTWARE.
       <version>${project.version}</version>
       <scope>provided</scope>
     </dependency>
+    <dependency>
+      <groupId>${project.groupId}</groupId>
+      <artifactId>remoting</artifactId>
+      <version>${project.version}</version>
+      <scope>provided</scope>
+    </dependency>    
+    <dependency>
+      <groupId>${project.groupId}</groupId>
+      <artifactId>cli</artifactId>
+      <classifier>jar-with-dependencies</classifier>
+      <version>${project.version}</version>
+      <scope>provided</scope>
+    </dependency>
     <!-- offline profiler API when we need it -->
     <!--dependency>
       <groupId>com.yourkit.api</groupId>
