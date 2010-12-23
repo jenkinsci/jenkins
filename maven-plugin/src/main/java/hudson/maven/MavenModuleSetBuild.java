@@ -474,6 +474,8 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
                 
                 String mavenVersion = mavenInformation.getVersion();
                 
+                
+                
                 listener.getLogger().println("Found mavenVersion " + mavenVersion + " from file " + mavenInformation.getVersionResourcePath());
 
                 if(!project.isAggregatorStyleBuild()) {

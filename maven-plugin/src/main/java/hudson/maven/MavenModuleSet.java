@@ -180,6 +180,8 @@ public final class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,Ma
      * If true, do not archive artifacts to the master.
      */
     private boolean archivingDisabled = false;
+    
+    private String mavenVersionUsed;
 
     /**
      * Reporters configured at {@link MavenModuleSet} level. Applies to all {@link MavenModule} builds.
@@ -634,6 +636,15 @@ public final class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,Ma
         this.alternateSettings = alternateSettings;
         save();
     }
+    
+    public String getMavenVersionUsed() {
+        return mavenVersionUsed;
+    }
+
+    public void setMavenVersionUsed( String mavenVersionUsed ) throws IOException {
+        this.mavenVersionUsed = mavenVersionUsed;
+        save();
+    }    
 
     /**
      * If the list of configured goals contain the "-P" option,
@@ -873,4 +884,6 @@ public final class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,Ma
             JUnitResultArchiver.class // done by SurefireArchiver
         ));
     }
+
+
 }

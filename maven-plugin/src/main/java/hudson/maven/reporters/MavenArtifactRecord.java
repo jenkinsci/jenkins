@@ -129,7 +129,7 @@ public class MavenArtifactRecord extends MavenAbstractArtifactRecord<MavenBuild>
     protected void deployMavenArtifact(Artifact artifact, ArtifactRepository deploymentRepository, MavenEmbedder embedder) 
         throws ArtifactDeploymentException, ComponentLookupException {
         
-        ArtifactDeployer deployer = embedder.lookup(ArtifactDeployer.class);
+        ArtifactDeployer deployer = embedder.lookup(ArtifactDeployer.class,"maven2");
         deployer.deploy(artifact.getFile(),artifact,deploymentRepository,embedder.getLocalRepository());
     }
     /**

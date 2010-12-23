@@ -162,29 +162,16 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.codehaus.plexus</groupId>
       <artifactId>plexus-classworlds</artifactId>
-    </dependency>                      
+    </dependency>  
+    <dependency>
+      <groupId>org.jvnet.hudson</groupId>
+      <artifactId>hudson-maven-artifact-manager</artifactId>
+      <version>1.0-SNAPSHOT</version>
+    </dependency>                        
     <dependency>
       <groupId>org.jvnet.hudson</groupId>
       <artifactId>hudson-maven-embedder</artifactId>
       <version>3.0</version>
-      <!--exclusions>   These are needed for Maven embedder to resolve parent POMs in remote repositories
-        <exclusion>
-          <groupId>org.apache.maven.wagon</groupId>
-          <artifactId>wagon-file</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>org.apache.maven.wagon</groupId>
-          <artifactId>wagon-http-lightweight</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>org.apache.maven.wagon</groupId>
-          <artifactId>wagon-ssh-external</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>org.apache.maven.wagon</groupId>
-          <artifactId>wagon-ssh</artifactId>
-        </exclusion>
-      </exclusions-->
       <exclusions>
         <exclusion><!-- we'll add our own patched version. see http://www.nabble.com/Issue-1680-td18383889.html -->
           <groupId>jtidy</groupId>
