@@ -42,6 +42,7 @@ import java.util.List;
 
 import net.sf.json.JSONObject;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.deployer.ArtifactDeploymentException;
 import org.apache.maven.artifact.metadata.ArtifactMetadata;
@@ -202,10 +203,10 @@ public class RedeployPublisher extends Recorder {
     //---------------------------------------------
     
     
-    private static class WrappedArtifactRepository implements ArtifactRepository {
+    public static class WrappedArtifactRepository implements ArtifactRepository {
         private ArtifactRepository artifactRepository;
         private boolean uniqueVersion;
-        WrappedArtifactRepository (ArtifactRepository artifactRepository, boolean uniqueVersion)
+        public WrappedArtifactRepository (ArtifactRepository artifactRepository, boolean uniqueVersion)
         {
             this.artifactRepository = artifactRepository;
             this.uniqueVersion = uniqueVersion;
@@ -278,6 +279,11 @@ public class RedeployPublisher extends Recorder {
         {
             return this.uniqueVersion;
         }
+        
+        public void setUniqueVersion(boolean uniqueVersion) {
+            this.uniqueVersion = uniqueVersion;
+        }
+        
         public boolean isBlacklisted()
         {
             return artifactRepository.isBlacklisted();

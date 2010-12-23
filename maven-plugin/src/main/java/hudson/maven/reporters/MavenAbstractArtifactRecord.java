@@ -27,6 +27,7 @@ import hudson.console.AnnotatedLargeText;
 import hudson.maven.MavenEmbedder;
 import hudson.maven.MavenEmbedderException;
 import hudson.maven.MavenUtil;
+import hudson.maven.RedeployPublisher.WrappedArtifactRepository;
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
 import hudson.model.BallColor;
@@ -212,8 +213,8 @@ public abstract class MavenAbstractArtifactRecord<T extends AbstractBuild<?,?>> 
 
                     ArtifactRepository repository = factory.createDeploymentArtifactRepository(
                             id, repositoryUrl, layout, uniqueVersion);
-
-                    deploy(embedder,repository,listener);
+                    WrappedArtifactRepository repo = new WrappedArtifactRepository(repository, uniqueVersion);
+                    deploy(embedder,repo,listener);
 
                     record.result = Result.SUCCESS;
                 } finally {

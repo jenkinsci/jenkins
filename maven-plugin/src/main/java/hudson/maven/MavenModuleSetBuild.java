@@ -474,7 +474,7 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
                 
                 String mavenVersion = mavenInformation.getVersion();
                 
-                
+                project.setMavenVersionUsed( mavenVersion );
                 
                 listener.getLogger().println("Found mavenVersion " + mavenVersion + " from file " + mavenInformation.getVersionResourcePath());
 
@@ -545,7 +545,7 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
                         
                         ProcessCache.MavenProcess process = null;
                         
-                        boolean maven3orLater = new ComparableVersion (mavenVersion).compareTo( new ComparableVersion ("3.0") ) >= 0;
+                        boolean maven3orLater = MavenUtil.maven3orLater( mavenVersion ); 
                        
                         if ( maven3orLater )
                         {

@@ -30,6 +30,8 @@ import hudson.maven.MavenEmbedder;
 import hudson.maven.MavenEmbedderException;
 import hudson.maven.MavenModule;
 import hudson.maven.MavenModuleSetBuild;
+import hudson.maven.MavenUtil;
+import hudson.maven.RedeployPublisher.WrappedArtifactRepository;
 import hudson.model.Action;
 import hudson.model.TaskListener;
 
@@ -110,7 +112,11 @@ public class MavenArtifactRecord extends MavenAbstractArtifactRecord<MavenBuild>
         
         ArtifactFactory factory = embedder.lookup(ArtifactFactory.class);
         PrintStream logger = listener.getLogger();
-
+        boolean maven3orLater = MavenUtil.maven3orLater( parent.getModuleSetBuild().getProject().getMavenVersionUsed());
+        if (!deploymentRepository.isUniqueVersion() && maven3orLater) {
+            logger.println("uniqueVersion == false is not anymore supported in maven 3");
+            ((WrappedArtifactRepository) deploymentRepository).setUniqueVersion( true );
+        }
         Artifact main = mainArtifact.toArtifact(handlerManager,factory,parent);
         if(!isPOM())
             main.addMetadata(new ProjectArtifactMetadata(main,pomArtifact.getFile(parent)));

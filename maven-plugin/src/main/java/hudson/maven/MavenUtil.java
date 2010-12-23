@@ -48,6 +48,7 @@ import java.util.logging.Logger;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
+import org.apache.maven.artifact.versioning.ComparableVersion;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.project.ProjectBuildingException;
 
@@ -321,6 +322,14 @@ public class MavenUtil {
                 }
             };
         }
+    }
+    
+    public static boolean maven3orLater(String mavenVersion) {
+        // null or empty so false !
+        if (StringUtils.isBlank( mavenVersion )) {
+            return false;
+        }
+        return new ComparableVersion (mavenVersion).compareTo( new ComparableVersion ("3.0") ) >= 0;
     }
     
 

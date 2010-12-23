@@ -398,7 +398,11 @@ public abstract class HudsonTestCase extends TestCase implements RootAction {
     }
     
     protected MavenInstallation configureMaven3() throws Exception {
-        return configureDefaultMaven("apache-maven-3.0.1", MavenInstallation.MAVEN_30);
+        MavenInstallation mvn = configureDefaultMaven("apache-maven-3.0.1", MavenInstallation.MAVEN_30);
+        
+        MavenInstallation m3 = new MavenInstallation("apache-maven-3.0.1",mvn.getHome(), NO_PROPERTIES);
+        hudson.getDescriptorByType(Maven.DescriptorImpl.class).setInstallations(m3);
+        return m3;
     }    
     
     /**
