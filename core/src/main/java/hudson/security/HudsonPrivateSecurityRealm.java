@@ -557,14 +557,19 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
             HttpServletRequest req = (HttpServletRequest) request;
 
             if(req.getRequestURI().equals(req.getContextPath()+"/")) {
-                if(hasSomeUser()) {// the first user already created. the role of this filter is over.
+                if (needsToCreateFirstUser()) {
+                    ((HttpServletResponse)response).sendRedirect("securityRealm/firstUser");
+                } else {// the first user already created. the role of this filter is over.
                     PluginServletFilter.removeFilter(this);
                     chain.doFilter(request,response);
-                } else {
-                    ((HttpServletResponse)response).sendRedirect("securityRealm/firstUser");
                 }
             } else
                 chain.doFilter(request,response);
+        }
+
+        private boolean needsToCreateFirstUser() {
+            return !hasSomeUser()
+                && Hudson.getInstance().getSecurityRealm() instanceof HudsonPrivateSecurityRealm;
         }
 
         public void destroy() {
