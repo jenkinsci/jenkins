@@ -207,6 +207,11 @@ THE SOFTWARE.
               <name>hudson.Main.development</name>
               <value>true</value>
             </systemProperty>
+            <systemProperty>
+              <!-- this adds 3 sec to the shutdown, and most likely pointless, too -->
+              <name>hudson.DNSMultiCast.disabled</name>
+              <value>true</value>
+            </systemProperty>
           </systemProperties>
         </configuration>
       </plugin>
