@@ -31,6 +31,7 @@ import org.jvnet.hudson.test.SingleFileSCM;
 import org.jvnet.hudson.test.Email;
 
 import java.io.File;
+import java.io.FilenameFilter;
 
 /**
  * @author Kohsuke Kawaguchi
@@ -98,6 +99,30 @@ public class RedeployPublisherTest extends HudsonTestCase {
 
         assertTrue("tar.gz doesn't exist",new File(repo,"test/test/0.1-SNAPSHOT/test-0.1-SNAPSHOT-bin.tar.gz").exists());
     }
+    
+    public void testTarGzUniqueVersionTrue() throws Exception {
+        configureDefaultMaven();
+        MavenModuleSet m2 = createMavenProject();
+        File repo = createTmpDir();
+
+        // a fake build
+        m2.setScm(new SingleFileSCM("pom.xml",getClass().getResource("targz-artifact.pom")));
+        m2.getPublishersList().add(new RedeployPublisher("",repo.toURI().toString(),true, false));
+
+        MavenModuleSetBuild b = m2.scheduleBuild2(0).get();
+        assertBuildStatus(Result.SUCCESS, b);
+        File artifactDir = new File(repo,"test/test/0.1-SNAPSHOT/");
+        String[] files = artifactDir.list( new FilenameFilter()
+        {
+            
+            public boolean accept( File dir, String name )
+            {
+                return name.endsWith( "tar.gz" );
+            }
+        });
+        assertFalse("tar.gz doesn't exist",new File(repo,"test/test/0.1-SNAPSHOT/test-0.1-SNAPSHOT-bin.tar.gz").exists());
+        assertTrue("tar.gz doesn't exist",!files[0].contains( "SNAPSHOT" ));
+    }    
 
     @Bug(3773)
     public void testDeployUnstable() throws Exception {
