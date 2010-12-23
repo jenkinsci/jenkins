@@ -38,7 +38,9 @@ import hudson.tasks.Recorder;
 import hudson.util.FormValidation;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map.Entry;
 
 import net.sf.json.JSONObject;
 
@@ -104,8 +106,8 @@ public class RedeployPublisher extends Recorder {
             return true;
         }
 
-        MavenAbstractArtifactRecord mar = getAction(build);
-        if(mar==null) {
+        List<MavenAbstractArtifactRecord> mars = getActions( build, listener );
+        if(mars==null || mars.isEmpty()) {
             listener.getLogger().println("No artifacts are recorded. Is this a Maven project?");
             build.setResult(Result.FAILURE);
             return true;
@@ -123,7 +125,8 @@ public class RedeployPublisher extends Recorder {
             final ArtifactRepository repository = factory.createDeploymentArtifactRepository(
                     id, url, layout, uniqueVersion);
             WrappedArtifactRepository repo = new WrappedArtifactRepository(repository,uniqueVersion);
-            mar.deploy(embedder,repo,listener);
+            for (MavenAbstractArtifactRecord mar : mars)
+                mar.deploy(embedder,repo,listener);
 
             return true;
         } catch (MavenEmbedderException e) {
@@ -147,6 +150,23 @@ public class RedeployPublisher extends Recorder {
      */
     protected MavenAbstractArtifactRecord getAction(AbstractBuild<?, ?> build) {
         return build.getAction(MavenAbstractArtifactRecord.class);
+    }
+    
+    protected List<MavenAbstractArtifactRecord> getActions(AbstractBuild<?, ?> build, BuildListener listener) {
+        List<MavenAbstractArtifactRecord> actions = new ArrayList<MavenAbstractArtifactRecord>();
+        if (!(build instanceof MavenModuleSetBuild)) {
+            return actions;
+        }
+        for (Entry<MavenModule, MavenBuild> e : ((MavenModuleSetBuild)build).getModuleLastBuilds().entrySet()) {
+            MavenAbstractArtifactRecord a = e.getValue().getAction( MavenAbstractArtifactRecord.class );
+            if (a == null) {
+                listener.getLogger().println("No artifacts are recorded for module" + e.getKey().getName() + ". Is this a Maven project?");
+            } else {
+                actions.add( a );    
+            }
+            
+        }
+        return actions;
     }
 
     public BuildStepMonitor getRequiredMonitorService() {

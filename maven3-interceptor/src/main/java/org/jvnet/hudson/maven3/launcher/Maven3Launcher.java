@@ -26,6 +26,7 @@ import org.apache.maven.cli.MavenLoggerManager;
 import org.apache.maven.cli.PrintStreamLogger;
 import org.apache.maven.execution.ExecutionListener;
 import org.apache.maven.execution.MavenExecutionRequest;
+import org.apache.maven.execution.MavenExecutionResult;
 import org.codehaus.plexus.ContainerConfiguration;
 import org.codehaus.plexus.DefaultContainerConfiguration;
 import org.codehaus.plexus.DefaultPlexusContainer;
@@ -75,7 +76,8 @@ public class Maven3Launcher {
             Maven maven = (Maven) container.lookup( "org.apache.maven.Maven", "default" );
             MavenExecutionRequest request = getMavenExecutionRequest( args, container );
 
-            hudsonMavenExecutionResult = new HudsonMavenExecutionResult( maven.execute( request ) );
+            MavenExecutionResult result = maven.execute( request );
+            hudsonMavenExecutionResult = new HudsonMavenExecutionResult( result );
             
             // we don't care about cli mavenExecutionResult will be study in the the plugin
             return 0;// cli.doMain( args, null );
