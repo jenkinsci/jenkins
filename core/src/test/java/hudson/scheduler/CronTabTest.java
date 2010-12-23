@@ -83,10 +83,7 @@ public class CronTabTest extends TestCase {
         compare(new GregorianCalendar(2000,2,1,3,45),x.floor(c));
     }
 
-    /**
-     * olamy turn to infinite loop in my ubuntu
-     */
-    public void NOtestFloor3() throws Exception {
+    public void testFloor3() throws Exception {
         // conflict between DoM and DoW. In this we need to find a day that's the first day of a month and Sunday in 2010
         CronTab x = new CronTab("0 0 1 * 0");
         Calendar c = new GregorianCalendar(2011,0,1,15,55);
