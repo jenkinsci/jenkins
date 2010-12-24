@@ -6,11 +6,13 @@ work
 *.iws
 *.ipr
 .idea
+=======
 
 # eclipse project file
 .settings
 .classpath
 .project
+build
 
 war/images/16x16
 war/images/24x24
@@ -29,3 +31,5 @@ debian/configure-stamp
 *.debhelper.log
 hudson_*.build
 hudson_*.changes
+=======
+push-build.sh

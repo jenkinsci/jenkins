@@ -25,10 +25,11 @@ package hudson.maven;
 
 import hudson.Extension;
 import hudson.FilePath;
+import hudson.maven.agent.AbortException;
 import hudson.maven.agent.Main;
-import hudson.maven.agent.PluginManagerInterceptor;
 import hudson.maven.agent.Maven21Interceptor;
 import hudson.model.Computer;
+import hudson.model.Hudson;
 import hudson.model.TaskListener;
 import hudson.remoting.Channel;
 import hudson.remoting.Which;
@@ -38,8 +39,11 @@ import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;
 
-import org.apache.tools.ant.taskdefs.Zip;
 import org.apache.tools.ant.Project;
+import org.apache.tools.ant.taskdefs.Zip;
+import org.codehaus.plexus.classworlds.ClassWorld;
+import org.jvnet.hudson.maven3.agent.Maven3Main;
+import org.jvnet.hudson.maven3.launcher.Maven3Launcher;
 
 /**
  * When a slave is connected, copy <tt>maven-agent.jar</tt> and <tt>maven-intercepter.jar</tt>
@@ -52,8 +56,15 @@ public class MavenComputerListener extends ComputerListener {
     public void preOnline(Computer c, Channel channel,FilePath root,  TaskListener listener) throws IOException, InterruptedException {
         PrintStream logger = listener.getLogger();
         copyJar(logger, root, Main.class, "maven-agent");
-        copyJar(logger, root, PluginManagerInterceptor.class, "maven-interceptor");
+        copyJar(logger, root, Maven3Main.class, "maven3-agent");
+        copyJar(logger, root, Maven3Launcher.class, "maven3-interceptor");
+        copyJar(logger, root, AbortException.class, "maven-interceptor");
         copyJar(logger, root, Maven21Interceptor.class, "maven2.1-interceptor");
+        copyJar(logger, root, ClassWorld.class, "plexus-classworld");
+        
+        // copy classworlds 1.1 for maven2 builds
+        root.child( "classworlds.jar" ).copyFrom(getClass().getClassLoader().getResource("classworlds.jar"));
+        logger.println("Copied classworlds.jar");
     }
 
     /**
