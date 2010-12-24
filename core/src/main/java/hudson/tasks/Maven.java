@@ -362,6 +362,7 @@ public class Maven extends Builder {
          */
         public static final int MAVEN_20 = 0;
         public static final int MAVEN_21 = 1;
+        public static final int MAVEN_30 = 2;
         
     
         /**
@@ -405,6 +406,8 @@ public class Maven extends Builder {
          *      Represents the minimum required Maven version - constants defined above.
          */
         public boolean meetsMavenReqVersion(Launcher launcher, int mavenReqVersion) throws IOException, InterruptedException {
+            // FIXME using similar stuff as in the maven plugin could be better 
+            // olamy : but will add a dependency on maven in core -> so not so good 
             String mavenVersion = launcher.getChannel().call(new Callable<String,IOException>() {
                     public String call() throws IOException {
                         File[] jars = new File(getHomeDir(),"lib").listFiles();
@@ -428,6 +431,10 @@ public class Maven extends Builder {
                     if(mavenVersion.startsWith("maven-2.") && !mavenVersion.startsWith("maven-2.0"))
                         return true;
                 }
+                else if (mavenReqVersion == MAVEN_30) {
+                    if(mavenVersion.startsWith("maven-3.") && !mavenVersion.startsWith("maven-2.0"))
+                        return true;
+                }                
             }
             return false;
             

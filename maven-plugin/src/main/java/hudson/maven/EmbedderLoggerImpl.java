@@ -24,11 +24,13 @@
 package hudson.maven;
 
 import hudson.model.TaskListener;
-import org.apache.maven.embedder.AbstractMavenEmbedderLogger;
-import org.apache.maven.embedder.MavenEmbedderLogger;
 
 import java.io.PrintStream;
 import java.util.StringTokenizer;
+
+import org.apache.maven.cli.MavenLoggerManager;
+import org.codehaus.plexus.logging.Logger;
+import org.codehaus.plexus.logging.console.ConsoleLogger;
 
 /**
  * {@link MavenEmbedderLogger} implementation that
@@ -36,10 +38,11 @@ import java.util.StringTokenizer;
  * 
  * @author Kohsuke Kawaguchi
  */
-public final class EmbedderLoggerImpl extends AbstractMavenEmbedderLogger {
+public final class EmbedderLoggerImpl extends MavenLoggerManager {
     private final PrintStream logger;
 
-    public EmbedderLoggerImpl(TaskListener listener) {
+    public EmbedderLoggerImpl(TaskListener listener, int threshold) {
+        super(new ConsoleLogger( threshold, "hudson-logger" ));
         logger = listener.getLogger();
     }
 
@@ -57,22 +60,22 @@ public final class EmbedderLoggerImpl extends AbstractMavenEmbedderLogger {
     }
 
     public void debug(String message, Throwable throwable) {
-        print(message, throwable, LEVEL_DEBUG, "[DEBUG] ");
+        print(message, throwable, Logger.LEVEL_DEBUG, "[DEBUG] ");
     }
 
     public void info(String message, Throwable throwable) {
-        print(message, throwable, LEVEL_INFO, "[INFO ] ");
+        print(message, throwable, Logger.LEVEL_INFO, "[INFO ] ");
     }
 
     public void warn(String message, Throwable throwable) {
-        print(message, throwable, LEVEL_WARN, "[WARN ] ");
+        print(message, throwable, Logger.LEVEL_WARN, "[WARN ] ");
     }
 
     public void error(String message, Throwable throwable) {
-        print(message, throwable, LEVEL_ERROR, "[ERROR] ");
+        print(message, throwable, Logger.LEVEL_ERROR, "[ERROR] ");
     }
 
     public void fatalError(String message, Throwable throwable) {
-        print(message, throwable, LEVEL_FATAL, "[FATAL] ");
+        print(message, throwable, Logger.LEVEL_FATAL, "[FATAL] ");
     }
 }
