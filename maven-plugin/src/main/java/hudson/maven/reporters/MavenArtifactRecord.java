@@ -27,10 +27,19 @@ import hudson.maven.AggregatableAction;
 import hudson.maven.MavenAggregatedReport;
 import hudson.maven.MavenBuild;
 import hudson.maven.MavenEmbedder;
+import hudson.maven.MavenEmbedderException;
 import hudson.maven.MavenModule;
 import hudson.maven.MavenModuleSetBuild;
+import hudson.maven.MavenUtil;
+import hudson.maven.RedeployPublisher.WrappedArtifactRepository;
 import hudson.model.Action;
 import hudson.model.TaskListener;
+
+import java.io.IOException;
+import java.io.PrintStream;
+import java.util.List;
+import java.util.Map;
+
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.deployer.ArtifactDeployer;
 import org.apache.maven.artifact.deployer.ArtifactDeploymentException;
@@ -39,14 +48,8 @@ import org.apache.maven.artifact.handler.manager.ArtifactHandlerManager;
 import org.apache.maven.artifact.installer.ArtifactInstallationException;
 import org.apache.maven.artifact.installer.ArtifactInstaller;
 import org.apache.maven.artifact.repository.ArtifactRepository;
-import org.apache.maven.embedder.MavenEmbedderException;
 import org.apache.maven.project.artifact.ProjectArtifactMetadata;
 import org.codehaus.plexus.component.repository.exception.ComponentLookupException;
-
-import java.io.IOException;
-import java.io.PrintStream;
-import java.util.List;
-import java.util.Map;
 
 /**
  * {@link Action} that remembers {@link MavenArtifact artifact}s that are built.
@@ -105,33 +108,43 @@ public class MavenArtifactRecord extends MavenAbstractArtifactRecord<MavenBuild>
 
     @Override
     public void deploy(MavenEmbedder embedder, ArtifactRepository deploymentRepository, TaskListener listener) throws MavenEmbedderException, IOException, ComponentLookupException, ArtifactDeploymentException {
-        ArtifactHandlerManager handlerManager = (ArtifactHandlerManager) embedder.lookup(ArtifactHandlerManager.ROLE);
-        ArtifactDeployer deployer = (ArtifactDeployer) embedder.lookup(ArtifactDeployer.ROLE);
-        ArtifactFactory factory = (ArtifactFactory) embedder.lookup(ArtifactFactory.ROLE);
+        ArtifactHandlerManager handlerManager = embedder.lookup(ArtifactHandlerManager.class);
+        
+        ArtifactFactory factory = embedder.lookup(ArtifactFactory.class);
         PrintStream logger = listener.getLogger();
-
+        boolean maven3orLater = MavenUtil.maven3orLater( parent.getModuleSetBuild().getProject().getMavenVersionUsed());
+        if (!deploymentRepository.isUniqueVersion() && maven3orLater) {
+            logger.println("uniqueVersion == false is not anymore supported in maven 3");
+            ((WrappedArtifactRepository) deploymentRepository).setUniqueVersion( true );
+        }
         Artifact main = mainArtifact.toArtifact(handlerManager,factory,parent);
         if(!isPOM())
             main.addMetadata(new ProjectArtifactMetadata(main,pomArtifact.getFile(parent)));
 
         // deploy the main artifact. This also deploys the POM
         logger.println(Messages.MavenArtifact_DeployingMainArtifact(main.getFile().getName()));
-        deployer.deploy(main.getFile(),main,deploymentRepository,embedder.getLocalRepository());
+        deployMavenArtifact( main, deploymentRepository, embedder );
 
         for (MavenArtifact aa : attachedArtifacts) {
             Artifact a = aa.toArtifact(handlerManager,factory, parent);
             logger.println(Messages.MavenArtifact_DeployingAttachedArtifact(a.getFile().getName()));
-            deployer.deploy(a.getFile(),a,deploymentRepository,embedder.getLocalRepository());
+            deployMavenArtifact( a, deploymentRepository, embedder );
         }
     }
 
+    protected void deployMavenArtifact(Artifact artifact, ArtifactRepository deploymentRepository, MavenEmbedder embedder) 
+        throws ArtifactDeploymentException, ComponentLookupException {
+        
+        ArtifactDeployer deployer = embedder.lookup(ArtifactDeployer.class,"maven2");
+        deployer.deploy(artifact.getFile(),artifact,deploymentRepository,embedder.getLocalRepository());
+    }
     /**
      * Installs the artifact to the local Maven repository.
      */
     public void install(MavenEmbedder embedder) throws MavenEmbedderException, IOException, ComponentLookupException, ArtifactInstallationException {
-        ArtifactHandlerManager handlerManager = (ArtifactHandlerManager) embedder.lookup(ArtifactHandlerManager.ROLE);
-        ArtifactInstaller installer = (ArtifactInstaller) embedder.lookup(ArtifactInstaller.class.getName());
-        ArtifactFactory factory = (ArtifactFactory) embedder.lookup(ArtifactFactory.class.getName());
+        ArtifactHandlerManager handlerManager = embedder.lookup(ArtifactHandlerManager.class);
+        ArtifactInstaller installer = embedder.lookup(ArtifactInstaller.class);
+        ArtifactFactory factory = embedder.lookup(ArtifactFactory.class);
 
         Artifact main = mainArtifact.toArtifact(handlerManager,factory,parent);
         if(!isPOM())

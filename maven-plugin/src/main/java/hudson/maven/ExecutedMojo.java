@@ -23,22 +23,24 @@
  */
 package hudson.maven;
 
+import static hudson.Util.intern;
 import hudson.Util;
 import hudson.model.Hudson;
 import hudson.remoting.Which;
-import org.apache.maven.plugin.descriptor.MojoDescriptor;
-import org.apache.maven.plugin.descriptor.PluginDescriptor;
-import org.kohsuke.stapler.Stapler;
+import hudson.util.ReflectionUtils;
 
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.Serializable;
-import java.util.Map;
+import java.lang.reflect.Method;
 import java.util.HashMap;
-import java.util.logging.Logger;
+import java.util.Map;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 
-import static hudson.Util.intern;
+import org.apache.maven.plugin.descriptor.MojoDescriptor;
+import org.apache.maven.plugin.descriptor.PluginDescriptor;
+import org.kohsuke.stapler.Stapler;
 
 /**
  * Persisted record of mojo execution.
@@ -80,7 +82,7 @@ public final class ExecutedMojo implements Serializable {
      */
     public final String digest;
 
-    ExecutedMojo(MojoInfo mojo, long duration) throws IOException, InterruptedException {
+    public ExecutedMojo(MojoInfo mojo, long duration) throws IOException, InterruptedException {
         this.groupId = mojo.pluginName.groupId;
         this.artifactId = mojo.pluginName.artifactId;
         this.version = mojo.pluginName.version;
@@ -92,7 +94,7 @@ public final class ExecutedMojo implements Serializable {
         MojoDescriptor md = mojo.mojoExecution.getMojoDescriptor();
         PluginDescriptor pd = md.getPluginDescriptor();
         try {
-            Class clazz = pd.getClassRealm().loadClass(md.getImplementation());
+            Class clazz = getMojoClass( md, pd );// pd.getClassRealm().loadClass(md.getImplementation());
             digest = Util.getDigestOf(new FileInputStream(Which.jarFile(clazz)));
         } catch (IllegalArgumentException e) {
             LOGGER.log(Level.WARNING, "Failed to locate jar for "+md.getImplementation(),e);
@@ -101,6 +103,28 @@ public final class ExecutedMojo implements Serializable {
         }
         this.digest = digest;
     }
+    
+    private Class<?> getMojoClass(MojoDescriptor md, PluginDescriptor pd) throws ClassNotFoundException {
+        try {
+            return pd.getClassRealm().loadClass( md.getImplementation() );
+        } catch (NoSuchMethodError e) {
+            // maybe we are in maven2 build ClassRealm package has changed
+            return getMojoClassForMaven2( md, pd );
+        }
+    }
+    
+    private Class<?> getMojoClassForMaven2(MojoDescriptor md, PluginDescriptor pd) throws ClassNotFoundException {
+        
+        Method method = ReflectionUtils.getPublicMethodNamed( pd.getClass(), "getClassRealm" );
+        
+        org.codehaus.classworlds.ClassRealm cl = 
+            (org.codehaus.classworlds.ClassRealm) ReflectionUtils.invokeMethod( method, pd );
+        
+        Class<?> clazz = cl.loadClass( md.getImplementation() );
+        return clazz;
+       
+    }
+    
 
     /**
      * Copy constructor used for interning.
