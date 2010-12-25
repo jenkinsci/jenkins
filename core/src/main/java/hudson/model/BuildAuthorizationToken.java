@@ -67,7 +67,8 @@ public final class BuildAuthorizationToken {
             String providedToken = req.getParameter("token");
             if (providedToken != null && providedToken.equals(token.token))
                 return;
-            throw new AccessDeniedException(Messages.BuildAuthorizationToken_InvalidTokenProvided());
+            if (providedToken != null)
+                throw new AccessDeniedException(Messages.BuildAuthorizationToken_InvalidTokenProvided());
         }
 
         project.checkPermission(AbstractProject.BUILD);

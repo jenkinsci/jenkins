@@ -1,7 +1,7 @@
 <!--
 The MIT License
 
-Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi
+Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, CloudBees, Inc.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -21,15 +21,20 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 -->
-
-<!--
-  Display the ball in <TD>:
-
-  @it : BallColor object
--->
 <j:jelly xmlns:j="jelly:core" xmlns:x="jelly:xml" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
+  <st:documentation>
+    Display the ball in a TD.
+    <st:attribute name="it" type="hudson.model.BallColor">
+      Color of the ball or null to skip drawing.
+    </st:attribute>
+    <st:attribute name="style">
+      Additional CSS styles to apply.
+    </st:attribute>
+  </st:documentation>
   <td data="${it.ordinal()}">
-    <img src="${imagesURL}/${iconSize}/${it.image}" alt="${it.description}"
-         tooltip="${it.description}" style="${attrs.style}"/>
+    <j:if test="${attrs.it!=null}">
+      <img src="${it.getImageOf(iconSize)}" alt="${it.description}"
+           tooltip="${it.description}" style="${attrs.style}"/>
+    </j:if>
   </td>
 </j:jelly>

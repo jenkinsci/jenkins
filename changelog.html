@@ -40,17 +40,55 @@ Upcoming changes</a>
 <!-- Record your changes in the trunk here. -->
 <div id="trunk" style="display:none"><!--=TRUNK-BEGIN=-->
 <ul class=image>
-  <li class=bug>
-    throw AccessDeniedException if "Authentication Token" is invalid.
-    (<a href="http://hudson.361315.n4.nabble.com/-td3069369.html">hudson-ja</a>)
+  <li class=rfe>
+    Maven 3 support in maven-plugin. 
+    (<a href="http://issues.hudson-ci.org/browse/HUDSON-4988">issue 4988</a>)
 </ul>
 </div><!--=TRUNK-END=-->
 
 <!-- these changes are controlled by the release process. DO NOT MODIFY -->
 <div id="rc" style="display:none;"><!--=BEGIN=-->
-<h3><a name=v1.389>What's new in 1.389</a> <!--=DATE=--></h3>
-<!--=RC-CHANGES=-->
+<h3><a name=v1.391>What's new in 1.391</a> <!--=DATE=--></h3>
+<ul class=image>
+  <li class=bug>
+    failed to build with "Trigger builds remotely" enabled.
+    (<a href="http://issues.hudson-ci.org/browse/HUDSON-8319">issue 8319</a>)
+  <li class=rfe>
+    added a new extension point to use markup for job/user description
+</ul>
 </div><!--=END=-->
+<h3><a name=v1.390>What's new in 1.390</a> (2010/12/18)</h3>
+<ul class=image>
+  <li class=bug>
+    " (from WhateverTest)" gratuitously appended to test result detail pages.
+    (<a href="http://issues.hudson-ci.org/browse/HUDSON-5655">issue 5655</a>)
+  <li class=bug>
+    Fixed a pipe leak to child processes.
+    (<a href="http://issues.hudson-ci.org/browse/HUDSON-8244">issue 8244</a>)
+  <li class=bug>
+    Fixed an NPE in ComputerRetentionWork
+    (<a href="http://issues.hudson-ci.org/browse/HUDSON-3696">issue 3696</a>)
+  <li class=bug>
+    Fixed an issue preventing to copy data on AIX, HP-UX or Linux for S/390.
+    (<a href="http://issues.hudson-ci.org/browse/HUDSON-8155">issue 8155</a>)
+  <li class=rfe>
+    Debian package init script now honors <tt>~/.profile</tt>.
+  <li class=rfe>
+    Build names (e.g., "#123") can be now modified by users/plugins to arbitrary text.
+    (<a href="http://issues.hudson-ci.org/browse/HUDSON-53">issue 53</a>,
+     <a href="http://issues.hudson-ci.org/browse/HUDSON-4884">issue 4884</a>)
+  <li class=rfe>
+    Allow the administrator to yank out dead executors.
+</ul>
+<h3><a name=v1.389>What's new in 1.389</a> (2010/12/11)</h3>
+<ul class=image>
+  <li class=rfe>
+    Hide executors for offline nodes to conserve space in Build Executors Status list.
+    (<a href="http://issues.hudson-ci.org/browse/HUDSON-8252">issue 8252</a>)
+  <li class=bug>
+    throw AccessDeniedException if "Authentication Token" is invalid.
+    (<a href="http://hudson.361315.n4.nabble.com/-td3069369.html">hudson-ja</a>)
+</ul>
 <h3><a name=v1.388>What's new in 1.388</a> (2010/12/04)</h3>
 <ul class=image>
   <li class=bug>

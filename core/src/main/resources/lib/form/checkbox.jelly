@@ -46,6 +46,10 @@ THE SOFTWARE.
     <st:attribute name="field">
       Used for databinding. TBD.
     </st:attribute>
+    <st:attribute name="title">
+      If specified, this human readable text will follow the checkbox, and clicking this text also
+      toggles the checkbox.
+    </st:attribute>
   </st:documentation>
   <f:prepareDatabinding />
   <input type="checkbox"
@@ -54,4 +58,10 @@ THE SOFTWARE.
          onclick="${attrs.onclick}" id="${attrs.id}" class="${attrs.negative!=null ? 'negative' : null} ${attrs.checkUrl!=null?'validated':''}"
          checkUrl="${attrs.checkUrl}" json="${attrs.json}"
          checked="${(attrs.checked ?: instance[attrs.field] ?: attrs.default) ? 'true' : null}"/>
+  <j:if test="${attrs.title!=null}">
+    <label class="attach-previous">
+      <j:whitespace> </j:whitespace>
+      ${attrs.title}
+    </label>
+  </j:if>
 </j:jelly>

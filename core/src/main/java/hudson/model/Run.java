@@ -40,6 +40,7 @@ import hudson.console.AnnotatedLargeText;
 import hudson.console.ConsoleNote;
 import hudson.matrix.MatrixBuild;
 import hudson.matrix.MatrixRun;
+import hudson.model.Descriptor.FormException;
 import hudson.model.listeners.RunListener;
 import hudson.model.listeners.SaveableListener;
 import hudson.search.SearchIndexBuilder;
@@ -47,11 +48,14 @@ import hudson.security.ACL;
 import hudson.security.AccessControlled;
 import hudson.security.Permission;
 import hudson.security.PermissionGroup;
+import hudson.tasks.BuildTrigger;
 import hudson.tasks.LogRotator;
 import hudson.tasks.Mailer;
 import hudson.tasks.BuildWrapper;
 import hudson.tasks.BuildStep;
+import hudson.tasks.Publisher;
 import hudson.tasks.test.AbstractTestResultAction;
+import hudson.util.DescribableList;
 import hudson.util.FlushProofOutputStream;
 import hudson.util.IOException2;
 import hudson.util.LogTaskListener;
@@ -93,9 +97,12 @@ import java.util.zip.GZIPInputStream;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletResponse;
 
+import net.sf.json.JSONObject;
 import org.apache.commons.io.input.NullInputStream;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.jelly.XMLOutput;
+import org.kohsuke.stapler.HttpResponse;
+import org.kohsuke.stapler.HttpResponses;
 import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
@@ -167,6 +174,13 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
      * Human-readable description. Can be null.
      */
     protected volatile String description;
+
+    /**
+     * Human-readable name of this build. Can be null.
+     * If non-null, this text is displayed instead of "#NNN", which is the default.
+     * @since 1.390
+     */
+    private volatile String displayName;
 
     /**
      * The current build state.
@@ -594,11 +608,25 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
 
     @Exported
     public String getFullDisplayName() {
-        return project.getFullDisplayName()+" #"+number;
+        return project.getFullDisplayName()+' '+getDisplayName();
     }
 
     public String getDisplayName() {
-        return "#"+number;
+        return displayName!=null ? displayName : "#"+number;
+    }
+
+    public boolean hasCustomDisplayName() {
+        return displayName!=null;
+    }
+
+    /**
+     * @param value
+     *      Set to null to revert back to the default "#NNN".
+     */
+    public void setDisplayName(String value) throws IOException {
+        checkPermission(UPDATE);
+        this.displayName = value;
+        save();
     }
 
     @Exported(visibility=2)
@@ -1803,6 +1831,25 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
      */
     public long getEstimatedDuration() {
         return project.getEstimatedDuration();
+    }
+
+    public HttpResponse doConfigSubmit( StaplerRequest req ) throws IOException, ServletException, FormException {
+        checkPermission(UPDATE);
+        req.setCharacterEncoding("UTF-8");
+        BulkChange bc = new BulkChange(this);
+        try {
+            JSONObject json = req.getSubmittedForm();
+            submit(json);
+            bc.commit();
+        } finally {
+            bc.abort();
+        }
+        return HttpResponses.redirectToDot();
+    }
+
+    protected void submit(JSONObject json) throws IOException {
+        setDisplayName(Util.fixEmptyAndTrim(json.getString("displayName")));
+        setDescription(json.getString("description"));
     }
 
     public static final XStream XSTREAM = new XStream2();

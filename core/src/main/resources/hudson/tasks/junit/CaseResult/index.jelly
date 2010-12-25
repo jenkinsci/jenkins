@@ -35,8 +35,8 @@ THE SOFTWARE.
         <span style="font-weight:bold">
           <st:out value="${it.fullName}"/>
         </span>
-        <j:if test="${it.className != it.parent.name}">
-          (from <st:out value="${it.parent.name}"/>)
+        <j:if test="${it.suiteResult != null &amp;&amp; it.className != it.suiteResult.name}">
+          (from <st:out value="${it.suiteResult.name}"/>)
         </j:if>
       </p>
       <j:if test="${!it.passed}">

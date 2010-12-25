@@ -876,16 +876,12 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
 
         return new Iterable<AbstractBuild<?, ?>>() {
             public Iterator<AbstractBuild<?, ?>> iterator() {
-                return new Iterators.FilterIterator<AbstractBuild<?,?>>(
-                        new AdaptedIterator<Integer,AbstractBuild<?,?>>(nums) {
-                            protected AbstractBuild<?, ?> adapt(Integer item) {
-                                return that.getBuildByNumber(item);
-                            }
-                        }) {
-                    protected boolean filter(AbstractBuild<?,?> build) {
-                        return build!=null;
-                    }
-                };
+                return Iterators.removeNull(
+                    new AdaptedIterator<Integer,AbstractBuild<?,?>>(nums) {
+                        protected AbstractBuild<?, ?> adapt(Integer item) {
+                            return that.getBuildByNumber(item);
+                        }
+                    });
             }
         };
     }

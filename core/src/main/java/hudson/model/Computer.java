@@ -685,8 +685,21 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
      */
     /*package*/ synchronized void removeExecutor(Executor e) {
         executors.remove(e);
-        if(executors.isEmpty())
+        if(!isAlive())
             Hudson.getInstance().removeComputer(this);
+    }
+
+    /**
+     * Returns true if any of the executors are functioning.
+     *
+     * Note that if an executor dies, we'll leave it in {@link #executors} until
+     * the administrator yanks it out, so that we can see why it died.
+     */
+    private boolean isAlive() {
+        for (Executor e : executors)
+            if (e.isAlive())
+                return true;
+        return false;
     }
 
     /**

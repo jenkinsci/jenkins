@@ -30,8 +30,7 @@ THE SOFTWARE.
 		<f:textbox />
 	</f:entry>
 	<f:entry field="keepLongStdio" title="">
-		<f:checkbox name="keepLongStdio" checked="${instance.keepLongStdio}"/>
-		<label class="attach-previous">${%Retain long standard output/error}</label>
+		<f:checkbox name="keepLongStdio" checked="${instance.keepLongStdio}" title="${%Retain long standard output/error}"/>
 	</f:entry>
 	<j:invokeStatic var="testDataPublisherDescriptors"
 		className="hudson.tasks.junit.TestDataPublisher" method="all" />

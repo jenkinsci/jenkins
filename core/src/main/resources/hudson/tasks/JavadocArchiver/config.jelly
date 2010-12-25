@@ -29,7 +29,7 @@ THE SOFTWARE.
         checkUrl="'descriptorByName/JavadocArchiver/check?value='+encodeURIComponent(this.value)"/>
   </f:entry>
   <f:entry help="/help/project-config/javadoc-keep-all.html">
-    <f:checkbox name="keep_all" checked="${instance.keepAll}" />
-    <label class="attach-previous">${%Retain Javadoc for each successful build}</label>
+    <f:checkbox name="keep_all" checked="${instance.keepAll}"
+            title="${%Retain Javadoc for each successful build}"/>
   </f:entry>
 </j:jelly>

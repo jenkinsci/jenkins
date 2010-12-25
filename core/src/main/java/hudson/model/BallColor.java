@@ -23,9 +23,12 @@
  */
 package hudson.model;
 
+import hudson.Functions;
 import hudson.util.ColorPalette;
 import org.jvnet.localizer.LocaleProvider;
 import org.jvnet.localizer.Localizable;
+import org.kohsuke.stapler.Stapler;
+import org.kohsuke.stapler.StaplerRequest;
 
 import java.awt.*;
 import java.util.Locale;
@@ -50,7 +53,7 @@ import java.util.Locale;
  *
  * @author Kohsuke Kawaguchi
  */
-public enum BallColor {
+public enum BallColor implements StatusIcon {
     RED("red",Messages._BallColor_Failed(), ColorPalette.RED),
     RED_ANIME("red_anime",Messages._BallColor_InProgress(), ColorPalette.RED),
     YELLOW("yellow",Messages._BallColor_Unstable(), ColorPalette.YELLOW),
@@ -84,6 +87,10 @@ public enum BallColor {
      */
     public String getImage() {
         return image;
+    }
+
+    public String getImageOf(String size) {
+        return Stapler.getCurrentRequest().getContextPath()+Hudson.RESOURCE_PATH+"/images/"+size+'/'+image;
     }
 
     /**

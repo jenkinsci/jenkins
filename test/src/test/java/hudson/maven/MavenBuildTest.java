@@ -78,7 +78,7 @@ public class MavenBuildTest extends HudsonTestCase {
     public void testParallelModuleBuild() throws Exception {
         configureDefaultMaven();
         MavenModuleSet m = createMavenProject();
-        SubversionSCM scm = new SubversionSCM("https://www.dev.java.net/svn/hudson/trunk/hudson/test-projects/multimodule-maven");
+        SubversionSCM scm = new SubversionSCM("https://svn.java.net/svn/hudson~svn/trunk/hudson/test-projects/multimodule-maven");
         setJavaNetCredential(scm);
         m.setScm(scm);
         

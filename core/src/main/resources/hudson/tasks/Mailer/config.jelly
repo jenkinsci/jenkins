@@ -27,12 +27,11 @@ THE SOFTWARE.
     <f:textbox name="mailer_recipients" value="${instance.recipients}"/>
   </f:entry>
   <f:entry title="">
-    <f:checkbox name="mailer_notifyEveryUnstableBuild" checked="${h.defaultToTrue(!instance.dontNotifyEveryUnstableBuild)}" />
-    <label class="attach-previous">${%Send e-mail for every unstable build}</label>
+    <f:checkbox name="mailer_notifyEveryUnstableBuild" checked="${h.defaultToTrue(!instance.dontNotifyEveryUnstableBuild)}"
+            title="${%Send e-mail for every unstable build}"/>
   </f:entry>
   <f:entry title="" help="/help/tasks/mailer/sendToindividuals.html">
     <f:checkbox name="mailer_sendToIndividuals" checked="${instance.sendToIndividuals}"
-        />
-    <label class="attach-previous">${%Send separate e-mails to individuals who broke the build}</label>
+        title="${%Send separate e-mails to individuals who broke the build}"/>
   </f:entry>
 </j:jelly>

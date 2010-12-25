@@ -54,7 +54,7 @@ THE SOFTWARE.
         <td>
           <a href="${jobBaseUrl}${b.parent.url}">${b.parent.fullDisplayName}</a>
           <st:nbsp/>
-          <a href="${jobBaseUrl}${b.url}">#${b.number}</a>
+          <a href="${jobBaseUrl}${b.url}">${b.displayName}</a>
         </td>
         <td data="${b.timestampString2}">
           ${b.timestampString}

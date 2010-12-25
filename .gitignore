@@ -5,6 +5,8 @@ work
 *.iml
 *.iws
 *.ipr
+.idea
+=======
 
 # eclipse project file
 .settings
@@ -27,4 +29,7 @@ debian/build-stamp
 debian/configure-stamp
 *.debhelper
 *.debhelper.log
-
+hudson_*.build
+hudson_*.changes
+=======
+push-build.sh

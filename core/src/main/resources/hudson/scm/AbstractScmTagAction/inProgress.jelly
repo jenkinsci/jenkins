@@ -26,7 +26,7 @@ THE SOFTWARE.
   <l:layout norefresh="true">
     <st:include it="${it.build}" page="sidepanel.jelly" />
     <l:main-panel>
-      <h1>Build #${it.build.number}</h1>
+      <h1>Build ${it.build.displayName}</h1>
       <p>
         ${%Tagging is in progress:}
       </p>

@@ -92,8 +92,8 @@ import javax.management.timer.Timer;
 import javax.servlet.ServletException;
 
 import org.acegisecurity.AccessDeniedException;
-import org.kohsuke.stapler.StaplerRequest;
-import org.kohsuke.stapler.StaplerResponse;
+import org.kohsuke.stapler.HttpResponse;
+import org.kohsuke.stapler.HttpResponses;
 import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.export.ExportedBean;
 
@@ -1251,9 +1251,9 @@ public class Queue extends ResourceController implements Saveable {
         /**
          * Called from queue.jelly.
          */
-        public void doCancelQueue( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
+        public HttpResponse doCancelQueue() throws IOException, ServletException {
         	Hudson.getInstance().getQueue().cancel(this);
-            rsp.forwardToPreviousPage(req);
+            return HttpResponses.forwardToPreviousPage();
         }
 
         /**

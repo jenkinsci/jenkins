@@ -273,6 +273,18 @@ public class Iterators {
     }
 
     /**
+     * Wraps another iterator and throws away nulls.
+     */
+    public static <T> Iterator<T> removeNull(final Iterator<T> itr) {
+        return new FilterIterator<T>(itr) {
+            @Override
+            protected boolean filter(T t) {
+                return t!=null;
+            }
+        };
+    }
+
+    /**
      * Returns an {@link Iterable} that iterates over all the given {@link Iterable}s.
      *
      * <p>

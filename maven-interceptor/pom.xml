@@ -27,13 +27,13 @@ THE SOFTWARE.
   <parent>
     <groupId>org.jvnet.hudson.main</groupId>
     <artifactId>pom</artifactId>
-    <version>1.389-SNAPSHOT</version>
+    <version>1.392-SNAPSHOT</version>
     <relativePath>../pom.xml</relativePath>
   </parent>
   
   <artifactId>maven-interceptor</artifactId>
   <packaging>jar</packaging>
-  <name>Hudson Maven PluginManager interceptor</name>
+  <name>Hudson Maven 2 PluginManager interceptor</name>
   <description>
     Plexus module that intercepts invocations of key Maven components
     so that Hudson can monitor what's going on in Maven.
@@ -43,8 +43,16 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.apache.maven</groupId>
       <artifactId>maven-core</artifactId>
-      <version>${maven.version}</version>
+      <version>2.0.9</version>
+      <scope>provided</scope>
     </dependency>
+
+    <dependency>
+      <groupId>classworlds</groupId>
+      <artifactId>classworlds</artifactId>
+      <version>1.1</version>
+    </dependency>
+   
 
     <dependency>
       <!-- default dependency to 2.0.2 confuses IntelliJ. Otherwise this value doesn't really affect build or runtime. -->

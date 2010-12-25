@@ -445,7 +445,7 @@ public class SlaveComputer extends Computer {
 
     public RetentionStrategy getRetentionStrategy() {
         Slave n = getNode();
-        return n==null ? null : n.getRetentionStrategy();
+        return n==null ? RetentionStrategy.INSTANCE : n.getRetentionStrategy();
     }
 
     /**

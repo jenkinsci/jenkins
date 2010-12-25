@@ -24,6 +24,6 @@ THE SOFTWARE.
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
 <f:entry title="">
-  <f:checkbox name="yellow" checked="${fruit.yellow}"/> Yellow?
+  <f:checkbox name="yellow" checked="${fruit.yellow}" title="Yellow?"/>
 </f:entry>
 </j:jelly>

@@ -27,7 +27,7 @@ THE SOFTWARE.
   <parent>
     <groupId>org.jvnet.hudson.main</groupId>
     <artifactId>pom</artifactId>
-    <version>1.389-SNAPSHOT</version>
+    <version>1.392-SNAPSHOT</version>
     <relativePath>../pom.xml</relativePath>
   </parent>
   
@@ -120,7 +120,7 @@ THE SOFTWARE.
                 <resolveArtifact artifactId="remoting" tofile="${basedir}/target/generated-resources/WEB-INF/slave.jar" />
                 <resolveArtifact groupId="${project.groupId}" artifactId="cli" classifier="jar-with-dependencies" version="${project.version}" type="jar" tofile="${basedir}/target/generated-resources/WEB-INF/hudson-cli.jar" />
                 <resolveArtifact groupId="org.jvnet.hudson.winstone" artifactId="winstone" version="0.9.10-hudson-24" type="jar" tofile="${basedir}/target/generated-resources/winstone.jar" />
-
+                
                 <!-- bundled plugins -->
                 <resolveArtifact type="hpi" groupId="${project.groupId}" artifactId="maven-plugin" version="${project.version}" tofile="${basedir}/target/generated-resources/WEB-INF/plugins/maven-plugin.hpi" />
                 <resolveArtifact type="hpi" groupId="org.jvnet.hudson.plugins" artifactId="ssh-slaves" version="0.14" tofile="${basedir}/target/generated-resources/WEB-INF/plugins/ssh-slaves.hpi" />
@@ -207,6 +207,11 @@ THE SOFTWARE.
               <name>hudson.Main.development</name>
               <value>true</value>
             </systemProperty>
+            <systemProperty>
+              <!-- this adds 3 sec to the shutdown, and most likely pointless, too -->
+              <name>hudson.DNSMultiCast.disabled</name>
+              <value>true</value>
+            </systemProperty>
           </systemProperties>
         </configuration>
       </plugin>
@@ -231,6 +236,26 @@ THE SOFTWARE.
           <artifactId>jsp-api</artifactId>
         </exclusion>
       </exclusions>
+    </dependency>
+    <!-- declare this in reactors, so i can use now directly : mvn install -pl war -am to get the war  -->
+    <!-- TO REMOVE when maven-plugin won't be anymore a bundle plugin -->
+    <dependency>
+      <groupId>${project.groupId}</groupId>
+      <artifactId>maven-plugin</artifactId>
+      <version>${project.version}</version>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>${project.groupId}</groupId>
+      <artifactId>remoting</artifactId>
+      <version>${project.version}</version>
+    </dependency>    
+    <dependency>
+      <groupId>${project.groupId}</groupId>
+      <artifactId>cli</artifactId>
+      <classifier>jar-with-dependencies</classifier>
+      <version>${project.version}</version>
+      <scope>provided</scope>
     </dependency>
     <!-- offline profiler API when we need it -->
     <!--dependency>

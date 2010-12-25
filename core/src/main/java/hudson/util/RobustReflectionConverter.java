@@ -322,14 +322,15 @@ public class RobustReflectionConverter implements Converter {
 
     protected Object instantiateNewInstance(HierarchicalStreamReader reader, UnmarshallingContext context) {
         String readResolveValue = reader.getAttribute(mapper.aliasForAttribute("resolves-to"));
+
+        Class type = readResolveValue != null ? mapper.realClass(readResolveValue) : context.getRequiredType();
+
         Object currentObject = context.currentObject();
         if (currentObject != null) {
-            return currentObject;
-        } else if (readResolveValue != null) {
-            return reflectionProvider.newInstance(mapper.realClass(readResolveValue));
-        } else {
-            return reflectionProvider.newInstance(context.getRequiredType());
+            if (type.isInstance(currentObject))
+                return currentObject;
         }
+        return reflectionProvider.newInstance(type);
     }
 
     private static class SeenFields {
