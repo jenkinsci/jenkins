@@ -391,6 +391,6 @@ public class Maven3ProcessFactory implements ProcessCache.Factory
         }
     };
     
-    private static final Logger LOGGER = Logger.getLogger(MavenProcessFactory.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(Maven3ProcessFactory.class.getName());
 
 }
