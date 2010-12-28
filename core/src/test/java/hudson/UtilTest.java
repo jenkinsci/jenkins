@@ -170,4 +170,11 @@ public class UtilTest extends TestCase {
             Util.deleteRecursive(d);
         }
     }
+
+    public void TestEscape() {
+        assertEquals("<br>", Util.escape("\n"));
+        assertEquals("&lt;a>", Util.escape("<a>"));
+        assertEquals("&quot;&#039;", Util.escape("'\""));
+        assertEquals("&nbsp; ", Util.escape("  "));
+    }
 }
