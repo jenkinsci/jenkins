@@ -132,7 +132,7 @@ public class Maven extends Builder {
         this.pom = Util.fixEmptyAndTrim(pom);
         this.properties = Util.fixEmptyAndTrim(properties);
         this.jvmOptions = Util.fixEmptyAndTrim(jvmOptions);
-	this.usePrivateRepository = usePrivateRepository;
+        this.usePrivateRepository = usePrivateRepository;
     }
 
     public String getTargets() {
