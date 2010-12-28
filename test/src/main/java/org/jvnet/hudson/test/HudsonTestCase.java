@@ -412,7 +412,7 @@ public abstract class HudsonTestCase extends TestCase implements RootAction {
         // first if we are running inside Maven, pick that Maven, if it meets the criteria we require..
         // does it exists in the buildDirectory see maven-junit-plugin systemProperties 
         // buildDirectory -> ${project.build.directory} (so no reason to be null ;-) )
-        String buildDirectory = System.getProperty( "buildDirectory" );
+        String buildDirectory = System.getProperty( "buildDirectory", "./target/classes/" );
         File mavenAlreadyInstalled = new File(buildDirectory, mavenVersion);
         if (mavenAlreadyInstalled.exists()) {
             MavenInstallation mavenInstallation = new MavenInstallation("default",mavenAlreadyInstalled.getAbsolutePath(), NO_PROPERTIES);
