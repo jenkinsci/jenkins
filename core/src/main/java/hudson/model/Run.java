@@ -1785,6 +1785,9 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
                 env.put("NODE_LABELS",Util.join(n.getAssignedLabels()," "));
         }
 
+        for (EnvironmentContributor ec : EnvironmentContributor.all())
+            ec.buildEnvironmentFor(this,env,log);
+
         return env;
     }
 
