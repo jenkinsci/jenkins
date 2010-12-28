@@ -807,6 +807,12 @@ public class Util {
             if(ch=='&')
                 buf.append("&amp;");
             else
+            if(ch=='"')
+                buf.append("&quot;");
+            else
+            if(ch=='\'')
+                buf.append("&#039;");
+            else
             if(ch==' ') {
                 // All spaces in a block of consecutive spaces are converted to
                 // non-breaking space (&nbsp;) except for the last one.  This allows
