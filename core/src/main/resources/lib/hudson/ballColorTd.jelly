@@ -34,7 +34,7 @@ THE SOFTWARE.
   <td data="${it.ordinal()}">
     <j:if test="${attrs.it!=null}">
       <img src="${it.getImageOf(iconSize)}" alt="${it.description}"
-           tooltip="${it.description}" style="${attrs.style}"/>
+           tooltip="${it.description}" style="${attrs.style}" class="icon${iconSize}"/>
     </j:if>
   </td>
 </j:jelly>

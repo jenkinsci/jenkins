@@ -481,6 +481,22 @@ div.behavior-loading {
     background-position: left center;
     background-repeat: no-repeat;
 }
+
+.icon16x16 {
+    width: 16px;
+    height: 16px;
+}
+
+.icon24x24 {
+    width: 24px;
+    height: 24px;
+}
+
+.icon32x32 {
+    width: 32px;
+    height: 32px;
+}
+
 /* ====================== help ===================================== */
 
 .help {
