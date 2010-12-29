@@ -76,7 +76,7 @@ public enum BallColor implements StatusIcon {
         this.baseColor = baseColor;
         // name() is not usable in the constructor, so I have to repeat the name twice
         // in the constants definition.
-        this.image = image+".gif";
+        this.image = image+ (image.endsWith("_anime")?".gif":".png");
         this.description = description;
     }
 
