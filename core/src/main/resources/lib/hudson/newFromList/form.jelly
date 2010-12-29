@@ -34,13 +34,13 @@ THE SOFTWARE.
 -->
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:s="/lib/form">
   <s:form method="post" action="createItem">
-    <s:entry title="${nameTitle}">
-      <s:textbox id="name" name="name" checkUrl="'${rootURL}/${checkUrl}?value='+encodeURIComponent(this.value)"
+    <s:entry title="${attrs.nameTitle}">
+      <s:textbox id="name" name="name" checkUrl="'${rootURL}/${attrs.checkUrl}?value='+encodeURIComponent(this.value)"
                  onchange="updateOk(this.form)" onkeyup="updateOk(this.form)" />
       <script>$('name').focus();</script>
     </s:entry>
 
-    <j:forEach var="descriptor" items="${descriptors}">
+    <j:forEach var="descriptor" items="${attrs.descriptors}">
       <s:block>
         <input type="radio" name="mode" value="${descriptor.class.name}" onchange="updateOk(this.form)" onclick="updateOk(this.form)" />
         <st:nbsp/>
@@ -51,15 +51,15 @@ THE SOFTWARE.
         <st:include page="newInstanceDetail.jelly" it="${descriptor}" />
       </s:entry>
     </j:forEach>
-    <j:if test="${!empty(copyNames)}">
+    <j:if test="${!empty(attrs.copyNames)}">
       <s:block>
         <input type="radio" name="mode" value="copy" onchange="updateOk(this.form)" onclick="updateOk(this.form)" />
         <st:nbsp/>
-        <label class="attach-previous"><b>${copyTitle}</b></label>
+        <label class="attach-previous"><b>${attrs.copyTitle}</b></label>
       </s:block>
       <s:entry>
         ${%Copy from}
-        <s:editableComboBox id="from" name="from" items="${copyNames}" />
+        <s:editableComboBox id="from" name="from" items="${attrs.copyNames}" />
       </s:entry>
     </j:if>
 
