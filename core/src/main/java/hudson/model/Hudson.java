@@ -955,7 +955,8 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
      */
     public Descriptor getDescriptorOrDie(Class<? extends Describable> type) {
         Descriptor d = getDescriptor(type);
-        if (d==null)    throw new AssertionError(type+" is missing its descriptor");
+        if (d==null)
+            throw new AssertionError(type+" is missing its descriptor");
         return d;
     }
     
