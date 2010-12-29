@@ -29,9 +29,12 @@ THE SOFTWARE.
     yet your UI would still like to render it
 
     <st:attribute name="field" use="required" />
+    <st:attribute name="propertyDescriptor">
+      If specified, bypass the item descriptor inference and use this instead.
+    </st:attribute>
   </st:documentation>
   <f:rowSet name="${field}">
-    <j:set var="descriptor" value="${app.getDescriptorOrDie(descriptor.getPropertyType(instance,field).clazz)}" />
+    <j:set var="descriptor" value="${attrs.propertyDescriptor ?: app.getDescriptorOrDie(descriptor.getPropertyType(instance,field).clazz)}" />
     <j:set var="instance" value="${instance[field]}"/>
     <st:include from="${descriptor}" page="${descriptor.configPage}" />
   </f:rowSet>
