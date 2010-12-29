@@ -783,9 +783,17 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable {
         List<T> items = new ArrayList<T>();
 
         if(!formData.has(key))   return items;
-        JSONArray a = JSONArray.fromObject(formData.get(key));
 
-        for (Object o : a) {
+        return newInstancesFromHeteroList(req,formData.get(key),descriptors);
+    }
+
+    public static <T extends Describable<T>>
+    List<T> newInstancesFromHeteroList(StaplerRequest req, Object formData,
+                Collection<? extends Descriptor<T>> descriptors) throws FormException {
+
+        List<T> items = new ArrayList<T>();
+
+        for (Object o : JSONArray.fromObject(formData)) {
             JSONObject jo = (JSONObject)o;
             String kind = jo.getString("kind");
             items.add(find(descriptors,kind).newInstance(req,jo));
