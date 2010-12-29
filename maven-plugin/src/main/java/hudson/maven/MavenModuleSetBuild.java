@@ -473,6 +473,8 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
                 
                 String mavenVersion = mavenInformation.getVersion();
                 
+                MavenBuildInformation mavenBuildInformation = new MavenBuildInformation( mavenVersion );
+                
                 project.setMavenVersionUsed( mavenVersion );
                 
                 listener.getLogger().println("Found mavenVersion " + mavenVersion + " from file " + mavenInformation.getVersionResourcePath());
@@ -595,7 +597,7 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
                             {
                                 reporters.put( mavenModule.getModuleName(), mavenModule.createReporters() );
                             }
-                            Maven3Builder maven3Builder = new Maven3Builder( slistener, proxies, reporters, margs.toList(), envVars );
+                            Maven3Builder maven3Builder = new Maven3Builder( slistener, proxies, reporters, margs.toList(), envVars, mavenBuildInformation );
                             MavenProbeAction mpa=null;
                             try {
                                 mpa = new MavenProbeAction(project,process.channel);
@@ -610,7 +612,7 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
                             
                         } else {
                          
-                            Builder builder = new Builder(slistener, proxies, project.sortedActiveModules, margs.toList(), envVars);
+                            Builder builder = new Builder(slistener, proxies, project.sortedActiveModules, margs.toList(), envVars, mavenBuildInformation);
                             MavenProbeAction mpa=null;
                             try {
                                 mpa = new MavenProbeAction(project,process.channel);
@@ -781,19 +783,22 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
          */
         private final transient Map<ModuleName,ProxyImpl2> sourceProxies;
 
-        public Builder(BuildListener listener,Map<ModuleName,ProxyImpl2> proxies, Collection<MavenModule> modules, List<String> goals, Map<String,String> systemProps) {
+        public Builder(BuildListener listener,Map<ModuleName,ProxyImpl2> proxies, Collection<MavenModule> modules, List<String> goals, Map<String,String> systemProps,  MavenBuildInformation mavenBuildInformation) {
             super(listener,goals,systemProps);
             this.sourceProxies = proxies;
             this.proxies = new HashMap<ModuleName, MavenBuildProxy2>(proxies);
             for (Entry<ModuleName,MavenBuildProxy2> e : this.proxies.entrySet())
-                e.setValue(new FilterImpl(e.getValue()));
+                e.setValue(new FilterImpl(e.getValue(), mavenBuildInformation));
 
             for (MavenModule m : modules)
                 reporters.put(m.getModuleName(),m.createReporters());
         }
 
         private class FilterImpl extends MavenBuildProxy2.Filter<MavenBuildProxy2> implements Serializable {
-            public FilterImpl(MavenBuildProxy2 core) {
+            
+            private MavenBuildInformation mavenBuildInformation;
+            
+            public FilterImpl(MavenBuildProxy2 core, MavenBuildInformation mavenBuildInformation) {
                 super(core);
             }
 
@@ -802,7 +807,13 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
                 futures.add(Channel.current().callAsync(new AsyncInvoker(core,program)));
             }
 
+            public MavenBuildInformation getMavenBuildInformation() {
+                return mavenBuildInformation;
+            }            
+            
             private static final long serialVersionUID = 1L;
+
+
         }
 
         /**

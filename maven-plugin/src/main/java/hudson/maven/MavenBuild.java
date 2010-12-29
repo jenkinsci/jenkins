@@ -278,7 +278,13 @@ public class MavenBuild extends AbstractMavenBuild<MavenModule,MavenBuild> {
                 futures.add(Channel.current().callAsync(new AsyncInvoker(core,program)));
             }
 
+            public MavenBuildInformation getMavenBuildInformation()
+            {
+                return super.core.getMavenBuildInformation();
+            }            
+            
             private static final long serialVersionUID = 1L;
+
         }
 
         @Override
@@ -407,6 +413,11 @@ public class MavenBuild extends AbstractMavenBuild<MavenModule,MavenBuild> {
 
         private Object writeReplace() {
             return Channel.current().export(MavenBuildProxy.class,this);
+        }
+
+        public MavenBuildInformation getMavenBuildInformation()
+        {
+            return new MavenBuildInformation( MavenBuild.this.getModuleSetBuild().getProject().getMavenVersionUsed());
         }
     }
 

@@ -26,6 +26,7 @@ package hudson.maven;
 import hudson.Launcher;
 import hudson.maven.MavenBuild.ProxyImpl2;
 import hudson.model.BuildListener;
+import hudson.model.FreeStyleProject;
 import hudson.model.Hudson;
 import hudson.model.Result;
 import hudson.remoting.Channel;
@@ -86,12 +87,15 @@ public class Maven3Builder extends AbstractMavenBuilder implements DelegatingCal
     private final Map<ModuleName,ProxyImpl2> sourceProxies;
     private final Map<ModuleName,List<MavenReporter>> reporters = new HashMap<ModuleName,List<MavenReporter>>();
     
-    protected Maven3Builder(BuildListener listener,Map<ModuleName,ProxyImpl2> proxies, Map<ModuleName,List<MavenReporter>> reporters, List<String> goals, Map<String, String> systemProps) {
+    private final MavenBuildInformation mavenBuildInformation;
+    
+    protected Maven3Builder(BuildListener listener,Map<ModuleName,ProxyImpl2> proxies, Map<ModuleName,List<MavenReporter>> reporters, List<String> goals, Map<String, String> systemProps, MavenBuildInformation mavenBuildInformation) {
         super( listener, goals, systemProps );
+        this.mavenBuildInformation = mavenBuildInformation;
         sourceProxies = new HashMap<ModuleName, ProxyImpl2>(proxies);
         this.proxies = new HashMap<ModuleName, MavenBuildProxy2>(proxies);
         for (Entry<ModuleName,MavenBuildProxy2> e : this.proxies.entrySet())
-            e.setValue(new FilterImpl(e.getValue()));
+            e.setValue(new FilterImpl(e.getValue(), this.mavenBuildInformation));
 
         this.reporters.putAll( reporters );
     }    
@@ -208,8 +212,12 @@ public class Maven3Builder extends AbstractMavenBuilder implements DelegatingCal
     }      
 
     private class FilterImpl extends MavenBuildProxy2.Filter<MavenBuildProxy2> implements Serializable {
-        public FilterImpl(MavenBuildProxy2 core) {
+        
+        private MavenBuildInformation mavenBuildInformation;
+        
+        public FilterImpl(MavenBuildProxy2 core, MavenBuildInformation mavenBuildInformation) {
             super(core);
+            this.mavenBuildInformation = mavenBuildInformation;
         }
 
         @Override
@@ -218,6 +226,11 @@ public class Maven3Builder extends AbstractMavenBuilder implements DelegatingCal
         }
 
         private static final long serialVersionUID = 1L;
+
+        public MavenBuildInformation getMavenBuildInformation()
+        {
+            return mavenBuildInformation;
+        }
     }    
     
     
@@ -244,7 +257,7 @@ public class Maven3Builder extends AbstractMavenBuilder implements DelegatingCal
             this.proxies = new HashMap<ModuleName, MavenBuildProxy2>(maven3Builder.proxies);
             for (Entry<ModuleName,MavenBuildProxy2> e : this.proxies.entrySet())
             {
-                e.setValue(maven3Builder.new FilterImpl(e.getValue()));
+                e.setValue(maven3Builder.new FilterImpl(e.getValue(), maven3Builder.mavenBuildInformation));
                 executedMojosPerModule.put( e.getKey(), new CopyOnWriteArrayList<ExecutedMojo>() );
             }
             this.reporters.putAll( new HashMap<ModuleName, List<MavenReporter>>(maven3Builder.reporters) );
