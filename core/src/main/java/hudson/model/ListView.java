@@ -111,11 +111,8 @@ public class ListView extends View implements Saveable {
     }
 
     protected void initJobFilters() {
-        if (jobFilters != null) {
-            return;
-        }
-        ArrayList<ViewJobFilter> r = new ArrayList<ViewJobFilter>();
-        jobFilters = new DescribableList<ViewJobFilter, Descriptor<ViewJobFilter>>(this,r);
+        if (jobFilters == null)
+            jobFilters = new DescribableList<ViewJobFilter, Descriptor<ViewJobFilter>>(this);
     }
 
     /**
