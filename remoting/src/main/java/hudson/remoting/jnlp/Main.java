@@ -23,7 +23,6 @@
  */
 package hudson.remoting.jnlp;
 
-import hudson.remoting.Launcher;
 import org.kohsuke.args4j.Option;
 import org.kohsuke.args4j.CmdLineParser;
 import org.kohsuke.args4j.Argument;

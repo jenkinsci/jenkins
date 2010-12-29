@@ -27,7 +27,6 @@ import org.apache.maven.plugin.MojoExecution;
 import org.apache.maven.plugin.Mojo;
 import org.apache.maven.plugin.descriptor.PluginDescriptor;
 import org.codehaus.classworlds.ClassRealm;
-import org.codehaus.classworlds.ClassRealmAdapter;
 import org.codehaus.plexus.configuration.PlexusConfiguration;
 import org.codehaus.plexus.component.configurator.expression.ExpressionEvaluator;
 import org.codehaus.plexus.component.configurator.converters.lookup.ConverterLookup;

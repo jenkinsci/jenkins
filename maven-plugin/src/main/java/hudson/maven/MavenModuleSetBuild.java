@@ -59,7 +59,6 @@ import hudson.util.MaskingClassLoader;
 import hudson.util.StreamTaskListener;
 
 import java.io.File;
-import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.InterruptedIOException;
 import java.io.PrintStream;

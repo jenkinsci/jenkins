@@ -29,7 +29,6 @@ import hudson.maven.agent.AbortException;
 import hudson.maven.agent.Main;
 import hudson.maven.agent.Maven21Interceptor;
 import hudson.model.Computer;
-import hudson.model.Hudson;
 import hudson.model.TaskListener;
 import hudson.remoting.Channel;
 import hudson.remoting.Which;

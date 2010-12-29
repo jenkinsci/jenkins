@@ -28,7 +28,6 @@ import static javax.servlet.http.HttpServletResponse.SC_NO_CONTENT;
 
 import com.infradna.tool.bridge_method_injector.WithBridgeMethods;
 import hudson.ExtensionPoint;
-import hudson.XmlFile;
 import hudson.PermalinkList;
 import hudson.Extension;
 import hudson.cli.declarative.CLIResolver;
@@ -43,7 +42,6 @@ import hudson.search.SearchItem;
 import hudson.search.SearchItems;
 import hudson.security.ACL;
 import hudson.tasks.LogRotator;
-import hudson.util.AtomicFileWriter;
 import hudson.util.ChartUtil;
 import hudson.util.ColorPalette;
 import hudson.util.CopyOnWriteList;
@@ -74,11 +72,6 @@ import java.util.SortedMap;
 import java.util.LinkedList;
 
 import javax.servlet.ServletException;
-import javax.xml.transform.Transformer;
-import javax.xml.transform.TransformerException;
-import javax.xml.transform.TransformerFactory;
-import javax.xml.transform.stream.StreamResult;
-import javax.xml.transform.stream.StreamSource;
 
 import net.sf.json.JSONObject;
 import net.sf.json.JSONException;
@@ -97,7 +90,6 @@ import org.jvnet.localizer.Localizable;
 import org.kohsuke.stapler.StaplerOverridable;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
-import org.kohsuke.stapler.WebMethod;
 import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.args4j.Argument;
 import org.kohsuke.args4j.CmdLineException;

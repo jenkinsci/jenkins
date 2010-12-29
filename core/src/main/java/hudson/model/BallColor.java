@@ -23,12 +23,10 @@
  */
 package hudson.model;
 
-import hudson.Functions;
 import hudson.util.ColorPalette;
 import org.jvnet.localizer.LocaleProvider;
 import org.jvnet.localizer.Localizable;
 import org.kohsuke.stapler.Stapler;
-import org.kohsuke.stapler.StaplerRequest;
 
 import java.awt.*;
 import java.util.Locale;
