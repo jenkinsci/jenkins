@@ -234,12 +234,12 @@ public class ListView extends View implements Saveable {
         }
 
         if (columns == null) {
-            columns = new DescribableList<ListViewColumn,Descriptor<ListViewColumn>>(Saveable.NOOP);
+            columns = new DescribableList<ListViewColumn,Descriptor<ListViewColumn>>(this);
         }
         columns.rebuildHetero(req, req.getSubmittedForm(), ListViewColumn.all(), "columns");
         
         if (jobFilters == null) {
-        	jobFilters = new DescribableList<ViewJobFilter,Descriptor<ViewJobFilter>>(Saveable.NOOP);
+        	jobFilters = new DescribableList<ViewJobFilter,Descriptor<ViewJobFilter>>(this);
         }
         jobFilters.rebuildHetero(req, req.getSubmittedForm(), ViewJobFilter.all(), "jobFilters");
 
