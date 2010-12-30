@@ -77,4 +77,9 @@ public interface ItemGroup<T extends Item> extends PersistenceRoot, ModelObject 
      * Internal method. Called by {@link Item}s when they are renamed by users.
      */
     void onRenamed(T item, String oldName, String newName) throws IOException;
+
+    /**
+     * Internal method. Called by {@link Item}s when they are deleted by users.
+     */
+    void onDeleted(T item) throws IOException;
 }

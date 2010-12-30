@@ -449,6 +449,10 @@ public final class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,Ma
         throw new UnsupportedOperationException();
     }
 
+    public void onDeleted(MavenModule item) throws IOException {
+        // noop
+    }
+
     public Collection<Job> getAllJobs() {
         Set<Job> jobs = new HashSet<Job>(getItems());
         jobs.add(this);

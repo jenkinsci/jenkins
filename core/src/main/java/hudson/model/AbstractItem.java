@@ -412,10 +412,21 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
         checkPermission(DELETE);
         performDelete();
 
-        if(this instanceof TopLevelItem)
-            Hudson.getInstance().deleteJob((TopLevelItem)this);
+        try {
+            invokeOnDeleted();
+        } catch (AbstractMethodError e) {
+            // ignore
+        }
 
         Hudson.getInstance().rebuildDependencyGraph();
+    }
+
+    /**
+     * A pointless function to work around what appears to be a HotSpot problem. See HUDSON-5756 and bug 6933067
+     * on BugParade for more details.
+     */
+    private void invokeOnDeleted() throws IOException {
+        getParent().onDeleted(this);
     }
 
     /**

@@ -2153,19 +2153,6 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
     }
 
     /**
-     * Called in response to {@link Job#doDoDelete(StaplerRequest, StaplerResponse)}
-     */
-    /*package*/ void deleteJob(TopLevelItem item) throws IOException {
-        for (ItemListener l : ItemListener.all())
-            l.onDeleted(item);
-
-        items.remove(item.getName());
-        for (View v : views)
-            v.onJobRenamed(item, item.getName(), null);
-        save();
-    }
-
-    /**
      * Called by {@link Job#renameTo(String)} to update relevant data structure.
      * assumed to be synchronized on Hudson by the caller.
      */
@@ -2175,6 +2162,19 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
 
         for (View v : views)
             v.onJobRenamed(job, oldName, newName);
+        save();
+    }
+
+    /**
+     * Called in response to {@link Job#doDoDelete(StaplerRequest, StaplerResponse)}
+     */
+    public void onDeleted(TopLevelItem item) throws IOException {
+        for (ItemListener l : ItemListener.all())
+            l.onDeleted(item);
+
+        items.remove(item.getName());
+        for (View v : views)
+            v.onJobRenamed(item, item.getName(), null);
         save();
     }
 

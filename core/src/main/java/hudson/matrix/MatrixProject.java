@@ -467,6 +467,10 @@ public class MatrixProject extends AbstractProject<MatrixProject,MatrixBuild> im
         throw new UnsupportedOperationException();
     }
 
+    public void onDeleted(MatrixConfiguration item) throws IOException {
+        // noop
+    }
+
     public File getRootDirFor(Combination combination) {
         File f = getConfigurationsDir();
         for (Entry<String, String> e : combination.entrySet())
