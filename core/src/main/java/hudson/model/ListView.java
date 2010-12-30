@@ -40,6 +40,7 @@ import org.kohsuke.stapler.StaplerResponse;
 import javax.servlet.ServletException;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.SortedSet;
 import java.util.TreeSet;
@@ -164,6 +165,8 @@ public class ListView extends View implements Saveable {
     	for (ViewJobFilter jobFilter: jobFilters) {
     		items = jobFilter.filter(items, allItems, this);
     	}
+        // for sanity, trim off duplicates
+        items = new ArrayList<TopLevelItem>(new LinkedHashSet<TopLevelItem>(items));
         
         return items;
     }
