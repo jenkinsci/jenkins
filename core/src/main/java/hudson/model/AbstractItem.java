@@ -386,7 +386,6 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
      */
     @CLIMethod(name="delete-job")
     public void doDoDelete( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException, InterruptedException {
-        checkPermission(DELETE);
         requirePOST();
         delete();
         if (rsp != null) // null for CLI
@@ -406,6 +405,7 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
      * Deletes this item.
      */
     public synchronized void delete() throws IOException, InterruptedException {
+        checkPermission(DELETE);
         performDelete();
 
         if(this instanceof TopLevelItem)
