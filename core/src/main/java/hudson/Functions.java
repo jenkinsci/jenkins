@@ -30,6 +30,7 @@ import hudson.model.AbstractProject;
 import hudson.model.Action;
 import hudson.model.Describable;
 import hudson.model.Descriptor;
+import hudson.model.DescriptorVisibilityFilter;
 import hudson.model.Hudson;
 import hudson.model.Item;
 import hudson.model.ItemGroup;
@@ -1272,6 +1273,10 @@ public class Functions {
         if (o==null)    return null;
         if (o instanceof Secret)    return ((Secret)o).getEncryptedValue();
         return o.toString();
+    }
+
+    public List filterDescriptors(Object context, Iterable descriptors) {
+        return DescriptorVisibilityFilter.apply(context,descriptors);
     }
     
     private static final Pattern SCHEME = Pattern.compile("[a-z]+://.+");

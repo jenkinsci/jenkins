@@ -33,6 +33,8 @@ THE SOFTWARE.
     @checkUrl    : form field validation url
 -->
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:s="/lib/form">
+  <j:set var="descriptors" value="${h.filterDescriptors(it,attrs.descriptors)}" />
+
   <s:form method="post" action="createItem">
     <s:entry title="${attrs.nameTitle}">
       <s:textbox id="name" name="name" checkUrl="'${rootURL}/${attrs.checkUrl}?value='+encodeURIComponent(this.value)"
@@ -40,7 +42,7 @@ THE SOFTWARE.
       <script>$('name').focus();</script>
     </s:entry>
 
-    <j:forEach var="descriptor" items="${attrs.descriptors}">
+    <j:forEach var="descriptor" items="${descriptors}">
       <s:block>
         <input type="radio" name="mode" value="${descriptor.class.name}" onchange="updateOk(this.form)" onclick="updateOk(this.form)" />
         <st:nbsp/>
