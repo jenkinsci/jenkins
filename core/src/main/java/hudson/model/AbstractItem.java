@@ -376,7 +376,6 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
     public synchronized void doSubmitDescription( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
         checkPermission(CONFIGURE);
 
-        req.setCharacterEncoding("UTF-8");
         setDescription(req.getParameter("description"));
         rsp.sendRedirect(".");  // go to the top page
     }

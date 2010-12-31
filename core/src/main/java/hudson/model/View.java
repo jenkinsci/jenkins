@@ -558,7 +558,6 @@ public abstract class View extends AbstractModelObject implements AccessControll
     public synchronized void doSubmitDescription( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
         checkPermission(CONFIGURE);
 
-        req.setCharacterEncoding("UTF-8");
         description = req.getParameter("description");
         owner.save();
         rsp.sendRedirect(".");  // go to the top page
@@ -571,8 +570,6 @@ public abstract class View extends AbstractModelObject implements AccessControll
      */
     public final synchronized void doConfigSubmit( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException, FormException {
         checkPermission(CONFIGURE);
-
-        req.setCharacterEncoding("UTF-8");
 
         submit(req);
 
@@ -688,8 +685,6 @@ public abstract class View extends AbstractModelObject implements AccessControll
     
     public static View create(StaplerRequest req, StaplerResponse rsp, ViewGroup owner)
             throws FormException, IOException, ServletException {
-        req.setCharacterEncoding("UTF-8");
-
         String name = req.getParameter("name");
         checkGoodName(name);
         if(owner.getView(name)!=null)

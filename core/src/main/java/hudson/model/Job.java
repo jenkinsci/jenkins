@@ -929,8 +929,6 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
             StaplerResponse rsp) throws IOException, ServletException, FormException {
         checkPermission(CONFIGURE);
 
-        req.setCharacterEncoding("UTF-8");
-
         description = req.getParameter("description");
 
         keepDependencies = req.getParameter("keepDependencies") != null;

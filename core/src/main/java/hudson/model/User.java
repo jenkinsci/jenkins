@@ -240,7 +240,6 @@ public class User extends AbstractModelObject implements AccessControlled, Savea
      */
     public synchronized void doSubmitDescription( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
         checkPermission(Hudson.ADMINISTER);
-        req.setCharacterEncoding("UTF-8");
 
         description = req.getParameter("description");
         save();
@@ -435,8 +434,6 @@ public class User extends AbstractModelObject implements AccessControlled, Savea
      */
     public void doConfigSubmit( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException, FormException {
         checkPermission(Hudson.ADMINISTER);
-
-        req.setCharacterEncoding("UTF-8");
 
         fullName = req.getParameter("fullName");
         description = req.getParameter("description");

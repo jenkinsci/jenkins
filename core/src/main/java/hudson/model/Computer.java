@@ -919,7 +919,6 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
         checkPermission(Hudson.ADMINISTER);
 
         rsp.setContentType("text/plain");
-        rsp.setCharacterEncoding("UTF-8");
         PrintWriter w = new PrintWriter(rsp.getCompressedWriter(req));
         VirtualChannel vc = getChannel();
         if (vc instanceof Channel) {
@@ -983,7 +982,6 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
      */
     public void doConfigSubmit( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException, FormException {
         checkPermission(CONFIGURE);
-        req.setCharacterEncoding("UTF-8");
         
         final Hudson app = Hudson.getInstance();
 

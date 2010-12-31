@@ -190,7 +190,6 @@ public abstract class Project<P extends Project<P,B>,B extends Build<P,B>>
     protected void submit( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException, FormException {
         super.submit(req,rsp);
 
-        req.setCharacterEncoding("UTF-8");
         JSONObject json = req.getSubmittedForm();
 
         buildWrappers.rebuild(req,json, BuildWrappers.getFor(this));

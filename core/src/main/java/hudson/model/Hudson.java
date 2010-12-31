@@ -2379,8 +2379,6 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
         try {
             checkPermission(ADMINISTER);
 
-            req.setCharacterEncoding("UTF-8");
-
             JSONObject json = req.getSubmittedForm();
 
             // keep using 'useSecurity' field as the main configuration setting
@@ -2612,13 +2610,6 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
             return null;
         }
         boolean isXmlSubmission = requestContentType.startsWith("application/xml") || requestContentType.startsWith("text/xml");
-        if(!isXmlSubmission) {
-            // containers often implement RFCs incorrectly in that it doesn't interpret query parameter
-            // decoding with UTF-8. This will ensure we get it right.
-            // but doing this for config.xml submission could potentiall overwrite valid
-            // "text/xml;charset=xxx"
-            req.setCharacterEncoding("UTF-8");
-        }
 
         String name = req.getParameter("name");
         if(name==null) {
@@ -3401,7 +3392,6 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
      * http://hudson.gotdns.com/wiki/display/HUDSON/Tomcat#Tomcat-i18n
      */
     public FormValidation doCheckURIEncoding(StaplerRequest request) throws IOException {
-        request.setCharacterEncoding("UTF-8");
         // expected is non-ASCII String
         final String expected = "\u57f7\u4e8b";
         final String value = fixEmpty(request.getParameter("value"));
