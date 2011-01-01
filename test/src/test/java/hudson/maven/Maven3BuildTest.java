@@ -26,8 +26,8 @@ public class Maven3BuildTest extends HudsonTestCase {
         m.getReporters().add(new TestReporter());
         m.setScm(new ExtractResourceSCM(getClass().getResource("maven3-project.zip")));
         m.setGoals( "clean install" );
-        buildAndAssertSuccess(m);
-        assertTrue( MavenUtil.maven3orLater( m.getMavenVersionUsed() ) );
+        MavenModuleSetBuild b = buildAndAssertSuccess(m);
+        assertTrue( MavenUtil.maven3orLater( b.getMavenVersionUsed() ) );
     }
     
     public void testSimpleMaven3BuildRedeployPublisher() throws Exception {
@@ -41,8 +41,8 @@ public class Maven3BuildTest extends HudsonTestCase {
         m.getPublishersList().add(new RedeployPublisher("",repo.toURI().toString(),true, false));
         m.setScm(new ExtractResourceSCM(getClass().getResource("maven3-project.zip")));
         m.setGoals( "clean install" );
-        buildAndAssertSuccess(m);
-        assertTrue( MavenUtil.maven3orLater( m.getMavenVersionUsed() ) );
+        MavenModuleSetBuild b = buildAndAssertSuccess(m);
+        assertTrue( MavenUtil.maven3orLater( b.getMavenVersionUsed() ) );
         File artifactDir = new File(repo,"com/mycompany/app/my-app/1.7-SNAPSHOT/");
         String[] files = artifactDir.list( new FilenameFilter()
         {
@@ -64,8 +64,8 @@ public class Maven3BuildTest extends HudsonTestCase {
         m.getReporters().add(new TestReporter());
         m.setScm(new ExtractResourceSCM(getClass().getResource("maven3-project.zip")));
         m.setGoals( "clean site" );
-        buildAndAssertSuccess(m);
-        assertTrue( MavenUtil.maven3orLater( m.getMavenVersionUsed() ) );
+        MavenModuleSetBuild b = buildAndAssertSuccess(m);
+        assertTrue( MavenUtil.maven3orLater( b.getMavenVersionUsed() ) );
     }    
     
 
