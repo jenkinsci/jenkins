@@ -1027,7 +1027,6 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
 
         public List<PomInfo> invoke(File ws, VirtualChannel channel) throws IOException {
             File pom;
-            String rootPOMRelPrefix;
             
             PrintStream logger = listener.getLogger();
 
@@ -1045,18 +1044,6 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
 
             if(!pom.exists())
                 throw new AbortException(Messages.MavenModuleSetBuild_NoSuchPOMFile(pom));
-
-            if (rootPOM.startsWith("../") || rootPOM.startsWith("..\\")) {
-                File wsp = new File(workspaceProper);
-                               
-                if (!ws.equals(wsp)) {
-                    rootPOMRelPrefix = ws.getCanonicalPath().substring(wsp.getCanonicalPath().length()+1)+"/";
-                } else {
-                    rootPOMRelPrefix = wsp.getName() + "/";
-                }
-            } else {
-                rootPOMRelPrefix = "";
-            }
 
             if(verbose)
                 logger.println("Parsing "
