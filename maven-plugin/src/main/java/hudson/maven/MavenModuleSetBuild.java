@@ -117,6 +117,8 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
      */
     /*package*/ List<MavenReporter> projectActionReporters;
 
+    private String mavenVersionUsed;
+
     public MavenModuleSetBuild(MavenModuleSet job) throws IOException {
         super(job);
     }
@@ -301,6 +303,22 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
         return Math.round((double)overhead / moduleSetBuilds.size());
     }
 
+    /**
+     * Gets the version of Maven used for build.
+     *
+     * @return
+     *      null if this build is done by earlier version of Hudson that didn't record this information
+     *      (this means the build was done by Maven2.x)
+     */
+    public String getMavenVersionUsed() {
+        return mavenVersionUsed;
+    }
+
+    public void setMavenVersionUsed( String mavenVersionUsed ) throws IOException {
+        this.mavenVersionUsed = mavenVersionUsed;
+        save();
+    }
+
     @Override
     public synchronized void delete() throws IOException {
         super.delete();
@@ -475,7 +493,7 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
                 
                 MavenBuildInformation mavenBuildInformation = new MavenBuildInformation( mavenVersion );
                 
-                project.setMavenVersionUsed( mavenVersion );
+                setMavenVersionUsed( mavenVersion );
                 
                 listener.getLogger().println("Found mavenVersion " + mavenVersion + " from file " + mavenInformation.getVersionResourcePath());
 

@@ -143,7 +143,7 @@ public class RedeployPublisherTest extends HudsonTestCase {
         MavenModuleSetBuild b = m3.scheduleBuild2(0).get();
         assertBuildStatus(Result.SUCCESS, b);
 
-        assertTrue( MavenUtil.maven3orLater( m3.getMavenVersionUsed() ) );
+        assertTrue( MavenUtil.maven3orLater( b.getMavenVersionUsed() ) );
         File artifactDir = new File(repo,"test/test/0.1-SNAPSHOT/");
         String[] files = artifactDir.list( new FilenameFilter()
         {
@@ -170,7 +170,7 @@ public class RedeployPublisherTest extends HudsonTestCase {
         MavenModuleSetBuild b = m3.scheduleBuild2(0).get();
         assertBuildStatus(Result.SUCCESS, b);
         
-        assertTrue( MavenUtil.maven3orLater( m3.getMavenVersionUsed() ) );
+        assertTrue( MavenUtil.maven3orLater( b.getMavenVersionUsed() ) );
         
         File artifactDir = new File(repo,"test/test/0.1-SNAPSHOT/");
         String[] files = artifactDir.list( new FilenameFilter()

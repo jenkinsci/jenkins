@@ -112,7 +112,7 @@ public class MavenArtifactRecord extends MavenAbstractArtifactRecord<MavenBuild>
         
         ArtifactFactory factory = embedder.lookup(ArtifactFactory.class);
         PrintStream logger = listener.getLogger();
-        boolean maven3orLater = MavenUtil.maven3orLater( parent.getModuleSetBuild().getProject().getMavenVersionUsed());
+        boolean maven3orLater = MavenUtil.maven3orLater(parent.getModuleSetBuild().getMavenVersionUsed());
         if (!deploymentRepository.isUniqueVersion() && maven3orLater) {
             logger.println("uniqueVersion == false is not anymore supported in maven 3");
             ((WrappedArtifactRepository) deploymentRepository).setUniqueVersion( true );

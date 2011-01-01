@@ -415,9 +415,8 @@ public class MavenBuild extends AbstractMavenBuild<MavenModule,MavenBuild> {
             return Channel.current().export(MavenBuildProxy.class,this);
         }
 
-        public MavenBuildInformation getMavenBuildInformation()
-        {
-            return new MavenBuildInformation( MavenBuild.this.getModuleSetBuild().getProject().getMavenVersionUsed());
+        public MavenBuildInformation getMavenBuildInformation() {
+            return new MavenBuildInformation( MavenBuild.this.getModuleSetBuild().getMavenVersionUsed());
         }
     }
 
