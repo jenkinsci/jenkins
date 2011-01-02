@@ -184,8 +184,12 @@ public class MavenUtil {
         
         ClassLoader cl = MavenUtil.class.getClassLoader();
         
+        ClassLoader mavenEmbedderClassLoader =
+            mavenEmbedderRequest.getClassLoader() == null ? new MaskingClassLoader( cl )
+                            : mavenEmbedderRequest.getClassLoader(); 
+        
         // TODO check this MaskingClassLoader with maven 3 artifacts
-        MavenEmbedder maven = new MavenEmbedder( new MaskingClassLoader(cl), mavenRequest );
+        MavenEmbedder maven = new MavenEmbedder( mavenEmbedderClassLoader, mavenRequest );
         {
             Enumeration<URL> e = cl.getResources("META-INF/plexus/components.xml");
             while (e.hasMoreElements()) {

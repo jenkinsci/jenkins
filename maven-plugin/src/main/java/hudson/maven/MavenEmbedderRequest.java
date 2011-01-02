@@ -47,6 +47,11 @@ public class MavenEmbedderRequest
     private File alternateSettings;
     
     private TransferListener transferListener;
+    
+    /**
+     * @since 1.393
+     */
+    private ClassLoader classLoader;
 
     /**
      * @param listener
@@ -148,6 +153,17 @@ public class MavenEmbedderRequest
     public MavenEmbedderRequest setTransferListener( TransferListener transferListener )
     {
         this.transferListener = transferListener;
+        return this;
+    }
+
+    public ClassLoader getClassLoader()
+    {
+        return classLoader;
+    }
+
+    public MavenEmbedderRequest setClassLoader( ClassLoader classLoader )
+    {
+        this.classLoader = classLoader;
         return this;
     }
 }
