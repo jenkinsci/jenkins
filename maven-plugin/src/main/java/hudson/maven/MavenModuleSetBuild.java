@@ -1079,7 +1079,7 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
                                                                                       privateRepository, settingsLoc );
                 mavenEmbedderRequest.setTransferListener( new SimpleTransferListener(listener) );
                 
-                mavenEmbedderRequest.setClassLoader( MavenEmbedderUtils.buildClassRealm( mavenHome.getHomeDir(), null, null ) );
+                //mavenEmbedderRequest.setClassLoader( MavenEmbedderUtils.buildClassRealm( mavenHome.getHomeDir(), null, null ) );
                 
                 MavenEmbedder embedder = MavenUtil.createEmbedder( mavenEmbedderRequest );
                 

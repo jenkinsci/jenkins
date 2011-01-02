@@ -513,6 +513,16 @@ THE SOFTWARE.
         <enabled>false</enabled>
       </snapshots>
     </repository>
+    <repository>
+      <id>maven.hudson-labs.org.snapshots</id>
+      <url>http://maven.hudson-labs.org/content/repositories/snapshots/</url>
+      <releases>
+        <enabled>false</enabled>
+      </releases>
+      <snapshots>
+        <enabled>true</enabled>
+      </snapshots>
+    </repository>
   </repositories>
 
   <pluginRepositories>
