@@ -186,6 +186,11 @@ public abstract class SecurityRealm extends AbstractDescribableImpl<SecurityReal
      * On legacy implementation this should point to {@code loginEntry}, which
      * is protected by <tt>web.xml</tt>, so that the user can be eventually authenticated
      * by the container.
+     *
+     * <p>
+     * Path is relative from the context root of the Hudson application.
+     * The URL returned by this method will get the "from" query parameter indicating
+     * the page that the user was at.
      */
     public String getLoginUrl() {
         return "login";
@@ -382,6 +387,7 @@ public abstract class SecurityRealm extends AbstractDescribableImpl<SecurityReal
         Binding binding = new Binding();
         SecurityComponents sc = getSecurityComponents();
         binding.setVariable("securityComponents", sc);
+        binding.setVariable("securityRealm",this);
         BeanBuilder builder = new BeanBuilder();
         builder.parse(filterConfig.getServletContext().getResourceAsStream("/WEB-INF/security/SecurityFilters.groovy"),binding);
         WebApplicationContext context = builder.createApplicationContext();
