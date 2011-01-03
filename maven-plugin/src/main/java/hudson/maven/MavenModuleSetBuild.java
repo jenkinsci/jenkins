@@ -1017,18 +1017,7 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
             this.mavenVersion = mavenVersion;
         }
 
-        /**
-         * Computes the path of {@link #rootPOM}.
-         *
-         * Returns "abc" if rootPOM="abc/pom.xml"
-         * If rootPOM="pom.xml", this method returns "".
-         */
-        private String getRootPath(String prefix) {
-            int idx = Math.max(rootPOM.lastIndexOf('/'), rootPOM.lastIndexOf('\\'));
-            if(idx==-1) return "";
-            return prefix + rootPOM.substring(0,idx);
-        }
-
+        
         public List<PomInfo> invoke(File ws, VirtualChannel channel) throws IOException {
             File pom;
             
