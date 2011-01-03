@@ -818,6 +818,7 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
             
             public FilterImpl(MavenBuildProxy2 core, MavenBuildInformation mavenBuildInformation) {
                 super(core);
+                this.mavenBuildInformation = mavenBuildInformation;
             }
 
             @Override
