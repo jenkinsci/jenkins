@@ -1,7 +1,6 @@
 package hudson.maven;
 
 import hudson.Launcher;
-import hudson.maven.reporters.MavenAbstractArtifactRecord;
 import hudson.model.BuildListener;
 import hudson.model.Result;
 import hudson.tasks.Maven.MavenInstallation;
@@ -9,7 +8,6 @@ import hudson.tasks.Maven.MavenInstallation;
 import java.io.File;
 import java.io.FilenameFilter;
 import java.io.IOException;
-import java.util.concurrent.Future;
 
 import org.apache.commons.io.FileUtils;
 import org.jvnet.hudson.test.Bug;
@@ -83,7 +81,8 @@ public class Maven3BuildTest extends HudsonTestCase {
         m.setGoals( "clean validate" );
         MavenModuleSetBuild mmsb =  m.scheduleBuild2( 0 ).get();
         assertBuildStatus( Result.FAILURE, mmsb );
-        assertTrue( mmsb.getProject().getModules() == null);
+        System.out.println("mmsb.getProject().getModules " + mmsb.getProject().getModules() );
+        assertTrue( mmsb.getProject().getModules().isEmpty());
     }
 
     
