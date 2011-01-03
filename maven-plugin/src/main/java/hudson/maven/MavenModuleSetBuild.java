@@ -1087,7 +1087,9 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
                 List<MavenProject> mps = embedder.readProjects( pom,true);
                 Map<String,MavenProject> canonicalPaths = new HashMap<String, MavenProject>( mps.size() );
                 for(MavenProject mp : mps) {
-                    canonicalPaths.put( mp.getBasedir().getCanonicalPath(), mp );
+                    // Projects are indexed by POM path and not module path because
+                    // Maven allows to have several POMs with different names in the same directory
+                    canonicalPaths.put( mp.getFile().getCanonicalPath(), mp );
                 }
                 //MavenUtil.resolveModules(embedder,mp,getRootPath(rootPOMRelPrefix),relPath,listener,nonRecursive);
 
@@ -1140,6 +1142,10 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
                     continue;
                 }
                 File path = new File(mp.getBasedir(), modulePath);
+                // HUDSON-8391 : Modules are indexed by POM path thus
+                // by default we have to add the default pom.xml file
+                if(path.isDirectory())
+                  path = new File(mp.getBasedir(), modulePath+"/pom.xml");
                 MavenProject child = abslPath.get( path.getCanonicalPath());
                 toPomInfo(child,pi,abslPath,infos);
             }
