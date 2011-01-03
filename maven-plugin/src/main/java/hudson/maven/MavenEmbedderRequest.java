@@ -27,6 +27,7 @@ import hudson.model.TaskListener;
 import java.io.File;
 import java.util.Properties;
 
+import org.apache.maven.model.building.ModelBuildingRequest;
 import org.sonatype.aether.transfer.TransferListener;
 
 /**
@@ -52,7 +53,26 @@ public class MavenEmbedderRequest
      * @since 1.393
      */
     private ClassLoader classLoader;
+    
+    /**
+     * will processPlugins during project reading
+     * @since 1.393
+     */
+    private boolean processPlugins;
+    
+    /**
+     * will resolve dependencies during project reading
+     * @since 1.393
+     */    
+    private boolean resolveDependencies;    
 
+    /**
+     * level of validation when reading pom (ie model building request)
+     * default value : {@link ModelBuildingRequest#VALIDATION_LEVEL_MAVEN_2_0} etc...
+     * @since 1.393
+     */    
+    private int validationLevel = ModelBuildingRequest.VALIDATION_LEVEL_MAVEN_2_0;
+    
     /**
      * @param listener
      *      This is where the log messages from Maven will be recorded.
@@ -69,8 +89,7 @@ public class MavenEmbedderRequest
      *      Optional alternate settings.xml file.
      */
     public MavenEmbedderRequest( TaskListener listener, File mavenHome, String profiles, Properties systemProperties,
-                                 String privateRepository, File alternateSettings )
-    {
+                                 String privateRepository, File alternateSettings ) {
         this.listener = listener;
         this.mavenHome = mavenHome;
         this.profiles = profiles;
@@ -79,91 +98,104 @@ public class MavenEmbedderRequest
         this.alternateSettings = alternateSettings;
     }
 
-    public TaskListener getListener()
-    {
+    public TaskListener getListener() {
         return listener;
     }
 
-    public MavenEmbedderRequest setListener( TaskListener listener )
-    {
+    public MavenEmbedderRequest setListener( TaskListener listener ) {
         this.listener = listener;
         return this;
     }
 
-    public File getMavenHome()
-    {
+    public File getMavenHome() {
         return mavenHome;
     }
 
-    public MavenEmbedderRequest setMavenHome( File mavenHome )
-    {
+    public MavenEmbedderRequest setMavenHome( File mavenHome ) {
         this.mavenHome = mavenHome;
         return this;
     }
 
-    public String getProfiles()
-    {
+    public String getProfiles() {
         return profiles;
     }
 
-    public MavenEmbedderRequest setProfiles( String profiles )
-    {
+    public MavenEmbedderRequest setProfiles( String profiles ) {
         this.profiles = profiles;
         return this;
     }
 
-    public Properties getSystemProperties()
-    {
+    public Properties getSystemProperties() {
         return systemProperties;
     }
 
-    public MavenEmbedderRequest setSystemProperties( Properties systemProperties )
-    {
+    public MavenEmbedderRequest setSystemProperties( Properties systemProperties ) {
         this.systemProperties = systemProperties;
         return this;
     }
 
-    public String getPrivateRepository()
-    {
+    public String getPrivateRepository() {
         return privateRepository;
     }
 
-    public MavenEmbedderRequest setPrivateRepository( String privateRepository )
-    {
+    public MavenEmbedderRequest setPrivateRepository( String privateRepository ) {
         this.privateRepository = privateRepository;
         return this;
     }
 
-    public File getAlternateSettings()
-    {
+    public File getAlternateSettings() {
         return alternateSettings;
     }
 
-    public MavenEmbedderRequest setAlternateSettings( File alternateSettings )
-    {
+    public MavenEmbedderRequest setAlternateSettings( File alternateSettings ) {
         this.alternateSettings = alternateSettings;
         return this;
     }
 
-    public TransferListener getTransferListener()
-    {
+    public TransferListener getTransferListener() {
         return transferListener;
     }
 
-    public MavenEmbedderRequest setTransferListener( TransferListener transferListener )
-    {
+    public MavenEmbedderRequest setTransferListener( TransferListener transferListener ) {
         this.transferListener = transferListener;
         return this;
     }
 
-    public ClassLoader getClassLoader()
-    {
+    public ClassLoader getClassLoader() {
         return classLoader;
     }
 
-    public MavenEmbedderRequest setClassLoader( ClassLoader classLoader )
-    {
+    public MavenEmbedderRequest setClassLoader( ClassLoader classLoader ) {
         this.classLoader = classLoader;
+        return this;
+    }
+
+    public boolean isProcessPlugins() {
+        return processPlugins;
+    }
+
+    public MavenEmbedderRequest setProcessPlugins( boolean processPlugins ) {
+        this.processPlugins = processPlugins;
+        return this;
+    }
+
+    public boolean isResolveDependencies() {
+        return resolveDependencies;
+    }
+
+    public MavenEmbedderRequest setResolveDependencies( boolean resolveDependencies ) {
+        this.resolveDependencies = resolveDependencies;
+        return this;
+    }
+
+    public int getValidationLevel()
+    {
+        return validationLevel;
+    }
+
+    public MavenEmbedderRequest setValidationLevel( int validationLevel )
+    {
+        this.validationLevel = validationLevel;
         return this;
     }
 }

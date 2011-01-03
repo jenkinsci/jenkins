@@ -31,6 +31,7 @@ import hudson.FilePath;
 import hudson.FilePath.FileCallable;
 import hudson.Launcher;
 import hudson.Util;
+import hudson.cli.VersionCommand;
 import hudson.maven.MavenBuild.ProxyImpl2;
 import hudson.maven.reporters.MavenFingerprinter;
 import hudson.maven.reporters.MavenMailer;
@@ -84,6 +85,7 @@ import org.apache.maven.artifact.versioning.ComparableVersion;
 import org.apache.maven.execution.MavenSession;
 import org.apache.maven.execution.ReactorManager;
 import org.apache.maven.lifecycle.LifecycleExecutionException;
+import org.apache.maven.model.building.ModelBuildingRequest;
 import org.apache.maven.monitor.event.EventDispatcher;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.project.ProjectBuildingException;
@@ -498,7 +500,7 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
                 listener.getLogger().println("Found mavenVersion " + mavenVersion + " from file " + mavenInformation.getVersionResourcePath());
 
                 if(!project.isAggregatorStyleBuild()) {
-                    parsePoms(listener, logger, envVars, mvn);
+                    parsePoms(listener, logger, envVars, mvn, mavenVersion);
                     // start module builds
                     logger.println("Triggering "+project.getRootModule().getModuleName());
                     project.getRootModule().scheduleBuild(new UpstreamCause((Run<?,?>)MavenModuleSetBuild.this));
@@ -523,7 +525,7 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
                         if(!preBuild(listener, project.getPublishers()))
                             return Result.FAILURE;
 
-                        parsePoms(listener, logger, envVars, mvn); // #5428 : do pre-build *before* parsing pom
+                        parsePoms(listener, logger, envVars, mvn, mavenVersion); // #5428 : do pre-build *before* parsing pom
                         SplittableBuildListener slistener = new SplittableBuildListener(listener);
                         proxies = new HashMap<ModuleName, ProxyImpl2>();
                         List<String> changedModules = new ArrayList<String>();
@@ -682,12 +684,12 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
             }
         }
 
-        private void parsePoms(BuildListener listener, PrintStream logger, EnvVars envVars, MavenInstallation mvn) throws IOException, InterruptedException {
+        private void parsePoms(BuildListener listener, PrintStream logger, EnvVars envVars, MavenInstallation mvn, String mavenVersion) throws IOException, InterruptedException {
             logger.println("Parsing POMs");
 
             List<PomInfo> poms;
             try {
-                poms = getModuleRoot().act(new PomParser(listener, mvn, project));
+                poms = getModuleRoot().act(new PomParser(listener, mvn, project, mavenVersion));
             } catch (IOException e) {
                 if (e.getCause() instanceof AbortException)
                     throw (AbortException) e.getCause();
@@ -997,7 +999,8 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
         private final boolean nonRecursive;
         // We're called against the module root, not the workspace, which can cause a lot of confusion.
         private final String workspaceProper;
-        public PomParser(BuildListener listener, MavenInstallation mavenHome, MavenModuleSet project) {
+        private final String mavenVersion;
+        public PomParser(BuildListener listener, MavenInstallation mavenHome, MavenModuleSet project,String mavenVersion) {
             // project cannot be shipped to the remote JVM, so all the relevant properties need to be captured now.
             this.listener = listener;
             this.mavenHome = mavenHome;
@@ -1012,6 +1015,7 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
                 this.privateRepository = null;
             }
             this.alternateSettings = project.getAlternateSettings();
+            this.mavenVersion = mavenVersion;
         }
 
         /**
@@ -1079,6 +1083,16 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
                                                                                       profiles, properties,
                                                                                       privateRepository, settingsLoc );
                 mavenEmbedderRequest.setTransferListener( new SimpleTransferListener(listener) );
+                
+                // FIXME must be configurable tru the ui !!
+                mavenEmbedderRequest.setProcessPlugins( true );
+                mavenEmbedderRequest.setResolveDependencies( true );
+                
+                // FIXME handle 3.1 level when version will be here : no rush :-)
+                // or made something configurable tru the ui ?
+                boolean maven3OrLater = new ComparableVersion (mavenVersion).compareTo( new ComparableVersion ("3.0") ) >= 0;
+                if (maven3OrLater)
+                    mavenEmbedderRequest.setValidationLevel( ModelBuildingRequest.VALIDATION_LEVEL_MAVEN_3_0 );
                 
                 //mavenEmbedderRequest.setClassLoader( MavenEmbedderUtils.buildClassRealm( mavenHome.getHomeDir(), null, null ) );
                 

@@ -188,6 +188,10 @@ public class MavenUtil {
             mavenEmbedderRequest.getClassLoader() == null ? new MaskingClassLoader( cl )
                             : mavenEmbedderRequest.getClassLoader(); 
         
+        mavenRequest.setProcessPlugins( mavenEmbedderRequest.isProcessPlugins() );
+        mavenRequest.setResolveDependencies( mavenEmbedderRequest.isResolveDependencies() );
+        mavenRequest.setValidationLevel( mavenEmbedderRequest.getValidationLevel() );
+            
         // TODO check this MaskingClassLoader with maven 3 artifacts
         MavenEmbedder maven = new MavenEmbedder( mavenEmbedderClassLoader, mavenRequest );
         {
