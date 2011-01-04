@@ -23,6 +23,7 @@
  */
 package hudson.node_monitors;
 
+import hudson.Functions.ThreadGroupMap;
 import hudson.model.Computer;
 import hudson.model.Descriptor;
 import hudson.model.Hudson;
@@ -190,9 +191,12 @@ public abstract class   AbstractNodeMonitorDescriptor<T> extends Descriptor<Node
         @Override
         public void run() {
             long startTime = System.currentTimeMillis();
+            String oldName = getName();
 
             for( Computer c : Hudson.getInstance().getComputers() ) {
                 try {
+                    setName("Monitoring "+c.getDisplayName()+" for "+getDisplayName());
+
                     if(c.getChannel()==null)
                         data.put(c,null);
                     else
@@ -203,6 +207,7 @@ public abstract class   AbstractNodeMonitorDescriptor<T> extends Descriptor<Node
                     LOGGER.log(Level.WARNING,"Node monitoring "+c.getDisplayName()+" for "+getDisplayName()+" aborted.",e);
                 }
             }
+            setName(oldName);
 
             synchronized(AbstractNodeMonitorDescriptor.this) {
                 assert inProgress==this;
