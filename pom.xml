@@ -27,8 +27,7 @@ THE SOFTWARE.
   <parent>
     <groupId>org.jvnet.hudson</groupId>
     <artifactId>hudson</artifactId>
-    <version>1.7</version>
-    <relativePath>../pom.xml</relativePath>
+    <version>1.8</version>
   </parent>
   
   <groupId>org.jvnet.hudson.main</groupId>
@@ -513,16 +512,6 @@ THE SOFTWARE.
         <enabled>false</enabled>
       </snapshots>
     </repository>
-    <repository>
-      <id>maven.hudson-labs.org.snapshots</id>
-      <url>http://maven.hudson-labs.org/content/repositories/snapshots/</url>
-      <releases>
-        <enabled>false</enabled>
-      </releases>
-      <snapshots>
-        <enabled>true</enabled>
-      </snapshots>
-    </repository>
   </repositories>
 
   <pluginRepositories>
@@ -551,13 +540,9 @@ THE SOFTWARE.
       <id>hudson-www</id>
       <url>scp://hudson-labs.org/home/kohsuke/www/hudson-labs.org/maven-site/</url>
     </site>
-    <repository>
-      <id>maven.hudson-labs.org</id>
-      <url>http://maven.hudson-labs.org/content/repositories/releases</url>
-    </repository>
     <snapshotRepository>
       <id>maven.hudson-labs.org</id>
-      <url>http://maven.hudson-labs.org/content/repositories/snapshots</url>
+      <url>http://maven.hudson-labs.org:8081/content/repositories/snapshots</url>
     </snapshotRepository>
   </distributionManagement>
 </project>
