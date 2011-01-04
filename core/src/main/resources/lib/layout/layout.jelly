@@ -245,8 +245,6 @@ THE SOFTWARE.
         <a href="http://hudson-ci.org/">Hudson ver. ${h.version}</a>
       </td></tr>
     </table>
-    <!-- during the loading 'app' object is not Hudson, so it may not have update center -->
-    <st:include it="${app.updateCenter}" page="main.jelly" optional="true" />
     <j:forEach var="pd" items="${h.pageDecorators}">
       <st:include it="${pd}" page="footer.jelly" optional="true" />
     </j:forEach>
