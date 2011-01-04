@@ -49,7 +49,7 @@ import java.util.logging.Logger;
  *
  * @author Kohsuke Kawaguchi
  */
-public abstract class AbstractNodeMonitorDescriptor<T> extends Descriptor<NodeMonitor> {
+public abstract class   AbstractNodeMonitorDescriptor<T> extends Descriptor<NodeMonitor> {
     protected AbstractNodeMonitorDescriptor() {
         this(HOUR);
     }
@@ -189,30 +189,28 @@ public abstract class AbstractNodeMonitorDescriptor<T> extends Descriptor<NodeMo
 
         @Override
         public void run() {
-            try {
-                long startTime = System.currentTimeMillis();
+            long startTime = System.currentTimeMillis();
 
-                for( Computer c : Hudson.getInstance().getComputers() ) {
-                    try {
-                        if(c.getChannel()==null)
-                            data.put(c,null);
-                        else
-                            data.put(c,monitor(c));
-                    } catch (IOException e) {
-                        LOGGER.log(Level.WARNING, "Failed to monitor "+c.getDisplayName()+" for "+getDisplayName(), e);
-                    }
+            for( Computer c : Hudson.getInstance().getComputers() ) {
+                try {
+                    if(c.getChannel()==null)
+                        data.put(c,null);
+                    else
+                        data.put(c,monitor(c));
+                } catch (IOException e) {
+                    LOGGER.log(Level.WARNING, "Failed to monitor "+c.getDisplayName()+" for "+getDisplayName(), e);
+                } catch (InterruptedException e) {
+                    LOGGER.log(Level.WARNING,"Node monitoring "+c.getDisplayName()+" for "+getDisplayName()+" aborted.",e);
                 }
-
-                synchronized(AbstractNodeMonitorDescriptor.this) {
-                    assert inProgress==this;
-                    inProgress = null;
-                    record = this;
-                }
-
-                LOGGER.fine("Node monitoring "+getDisplayName()+" completed in "+(System.currentTimeMillis()-startTime)+"ms");
-            } catch (InterruptedException e) {
-                LOGGER.log(Level.WARNING,"Node monitoring "+getDisplayName()+" aborted.",e);
             }
+
+            synchronized(AbstractNodeMonitorDescriptor.this) {
+                assert inProgress==this;
+                inProgress = null;
+                record = this;
+            }
+
+            LOGGER.fine("Node monitoring "+getDisplayName()+" completed in "+(System.currentTimeMillis()-startTime)+"ms");
         }
     }
 
