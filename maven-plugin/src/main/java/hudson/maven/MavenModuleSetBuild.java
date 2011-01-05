@@ -1078,21 +1078,40 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
                 
                 // FIXME handle 3.1 level when version will be here : no rush :-)
                 // or made something configurable tru the ui ?
+                ReactorReader reactorReader = null;
                 boolean maven3OrLater = new ComparableVersion (mavenVersion).compareTo( new ComparableVersion ("3.0") ) >= 0;
-                if (maven3OrLater)
+                if (maven3OrLater) {
                     mavenEmbedderRequest.setValidationLevel( ModelBuildingRequest.VALIDATION_LEVEL_MAVEN_3_0 );
-                
+                } else {
+                    reactorReader = new ReactorReader( new HashMap<String, MavenProject>(), new File(workspaceProper) );
+                    mavenEmbedderRequest.setWorkspaceReader( reactorReader );
+                }
                 //mavenEmbedderRequest.setClassLoader( MavenEmbedderUtils.buildClassRealm( mavenHome.getHomeDir(), null, null ) );
                 
                 MavenEmbedder embedder = MavenUtil.createEmbedder( mavenEmbedderRequest );
                 
-                List<MavenProject> mps = embedder.readProjects( pom,true);
+                MavenProject rootProject = null;
+                
+                List<MavenProject> mps = new ArrayList<MavenProject>(0);
+                if (maven3OrLater) {
+                    mps = embedder.readProjects( pom,true );
+
+                } else {
+                    // http://issues.hudson-ci.org/browse/HUDSON-8390
+                    // we cannot read maven projects in one time for backward compatibility
+                    // but we have to use a ReactorReader to get some pom with bad inheritence configured
+                    MavenProject mavenProject = embedder.readProject( pom );
+                    rootProject = mavenProject;
+                    mps.add( mavenProject );
+                    reactorReader.addProject( mavenProject );
+                    readChilds( mavenProject, embedder, mps, reactorReader );
+                }
                 Map<String,MavenProject> canonicalPaths = new HashMap<String, MavenProject>( mps.size() );
                 for(MavenProject mp : mps) {
                     // Projects are indexed by POM path and not module path because
                     // Maven allows to have several POMs with different names in the same directory
                     canonicalPaths.put( mp.getFile().getCanonicalPath(), mp );
-                }
+                }                
                 //MavenUtil.resolveModules(embedder,mp,getRootPath(rootPOMRelPrefix),relPath,listener,nonRecursive);
 
                 if(verbose) {
@@ -1101,11 +1120,13 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
                 }
 
                 Set<PomInfo> infos = new LinkedHashSet<PomInfo>();
-                MavenProject rootProject = null;
-                for (MavenProject mp : mps) {
-                    if (mp.isExecutionRoot()) {
-                        rootProject = mp;
-                        continue;
+                
+                if (maven3OrLater) {
+                    for (MavenProject mp : mps) {
+                        if (mp.isExecutionRoot()) {
+                            rootProject = mp;
+                            continue;
+                        }
                     }
                 }
                 // if rootProject is null but no reason :-) use the first one
@@ -1150,6 +1171,22 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
                   path = new File(mp.getBasedir(), modulePath+"/pom.xml");
                 MavenProject child = abslPath.get( path.getCanonicalPath());
                 toPomInfo(child,pi,abslPath,infos);
+            }
+        }
+        
+        private void readChilds(MavenProject mp, MavenEmbedder mavenEmbedder, List<MavenProject> mavenProjects, ReactorReader reactorReader) 
+            throws ProjectBuildingException, MavenEmbedderException {
+            if (mp.getModules() == null || mp.getModules().isEmpty()) {
+                return;
+            }
+            for (String module : mp.getModules()) {
+                if ( Util.fixEmptyAndTrim( module ) != null ) {
+                    MavenProject mavenProject2 = 
+                        mavenEmbedder.readProject( new File(mp.getFile().getParent(), module + "/pom.xml") );
+                    mavenProjects.add( mavenProject2 );
+                    reactorReader.addProject( mavenProject2 );
+                    readChilds( mavenProject2, mavenEmbedder, mavenProjects, reactorReader );
+                }
             }
         }
 

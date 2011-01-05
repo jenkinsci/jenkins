@@ -84,6 +84,21 @@ public class Maven3BuildTest extends HudsonTestCase {
         System.out.println("mmsb.getProject().getModules " + mmsb.getProject().getModules() );
         assertTrue( mmsb.getProject().getModules().isEmpty());
     }
+    
+    @Bug(value=8390)
+    public void testMaven3BuildWrongInheritence() throws Exception {
+        
+        MavenModuleSet m = createMavenProject();
+        MavenInstallation mavenInstallation = configureMaven3();
+        m.setMaven( mavenInstallation.getName() );
+        m.getReporters().add(new TestReporter());
+        m.setScm(new ExtractResourceSCM(getClass().getResource("incorrect-inheritence-testcase.zip")));
+        m.setGoals( "clean validate" );
+        MavenModuleSetBuild mmsb =  m.scheduleBuild2( 0 ).get();
+        assertBuildStatus( Result.FAILURE, mmsb );
+        System.out.println("mmsb.getProject().getModules " + mmsb.getProject().getModules() );
+        assertTrue( mmsb.getProject().getModules().isEmpty());
+    }    
 
     
     

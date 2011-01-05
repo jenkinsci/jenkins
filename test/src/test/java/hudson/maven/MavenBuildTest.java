@@ -64,15 +64,6 @@ public class MavenBuildTest extends HudsonTestCase {
         assertBuildStatus(Result.FAILURE, m.scheduleBuild2(0).get());
     }
     
-    private static class TestReporter extends MavenReporter {
-        @Override
-        public boolean end(MavenBuild build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
-            assertNotNull(build.getProject().getWorkspace());
-            assertNotNull(build.getWorkspace());
-            return true;
-        }
-    }
-    
     /**
      * Workspace determination problem on non-aggregator style build.
      */
@@ -105,6 +96,28 @@ public class MavenBuildTest extends HudsonTestCase {
         m.setGoals( "clean validate" );
         MavenModuleSetBuild mmsb =  buildAndAssertSuccess(m);
         assertFalse( mmsb.getProject().getModules().isEmpty());
+    }    
+    
+    @Bug(value=8390)
+    public void testMaven2BuildWrongInheritence() throws Exception {
+        
+        MavenModuleSet m = createMavenProject();
+        MavenInstallation mavenInstallation = configureDefaultMaven();
+        m.setMaven( mavenInstallation.getName() );
+        m.getReporters().add(new TestReporter());
+        m.setScm(new ExtractResourceSCM(getClass().getResource("incorrect-inheritence-testcase.zip")));
+        m.setGoals( "clean validate" );
+        MavenModuleSetBuild mmsb =  buildAndAssertSuccess(m);
+        assertFalse( mmsb.getProject().getModules().isEmpty());
+    }    
+    
+    private static class TestReporter extends MavenReporter {
+        @Override
+        public boolean end(MavenBuild build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
+            assertNotNull(build.getProject().getWorkspace());
+            assertNotNull(build.getWorkspace());
+            return true;
+        }
     }    
     
 }
