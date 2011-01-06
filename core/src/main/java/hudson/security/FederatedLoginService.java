@@ -32,14 +32,15 @@ import java.io.IOException;
  *
  * <li>
  * After getting authenticated by some means, the user can add additional identifiers to their account.
- * Your implementation would do protocol specific thing to verify that the user indeed owns those identifiers,
- * then call {@link #onAssociated(String)} to record such association.
+ * Your implementation would do protocol specific thing to verify that the user indeed owns the claimed identifier,
+ * create a {@link FederatedIdentity} instance,
+ * then call {@link FederatedIdentity#addToCurrentUser()} to record such association.
  *
  * <li>
  * In the login page, instead of entering the username and password, the user opts for authenticating
  * via other services. Think of OpenID, OAuth, your corporate SSO service, etc.
- * The user proves (by your protocol specific way) that they own some identifier, then you call
- * {@link #onIdentified(String)} to sign in that user.
+ * The user proves (by your protocol specific way) that they own some identifier, then
+ * create a {@link FederatedIdentity} instance, and invoke {@link FederatedIdentity#signin()} to sign in that user.
  *
  * </ul>
  *
@@ -79,62 +80,110 @@ public abstract class FederatedLoginService implements ExtensionPoint {
     public abstract Class<? extends FederatedLoginServiceUserProperty> getUserPropertyClass();
 
     /**
-     * Locates the user who owns a particular identifier.
+     * Identity information as obtained from {@link FederatedLoginService}.
      */
-    public User findUserByIdentifier(String identifier) {
-        Class<? extends FederatedLoginServiceUserProperty> pt = getUserPropertyClass();
-        for (User u : User.getAll()) {
-            if (u.getProperty(pt).has(identifier))
-                return u;
+    public abstract class FederatedIdentity {
+        /**
+         * Gets the string representation of the identity in the form that makes sense to the enclosing
+         * {@link FederatedLoginService}, such as full OpenID URL.
+         *
+         * @return must not be null.
+         */
+        public abstract String getIdentifier();
+
+        /**
+         * Gets a short ID of this user, as a suitable candidate for {@link User#getId()}.
+         * This should be Unix username like token.
+         *
+         * @return null if this information is not available.
+         */
+        public abstract String getNickname();
+
+        /**
+         * Gets a human readable full name of this user. Maps to {@link User#getDisplayName()}
+         *
+         * @return null if this information is not available.
+         */
+        public abstract String getFullName();
+
+        /**
+         * Gets the e-mail address of this user, like "abc@def.com"
+         *
+         * @return null if this information is not available.
+         */
+        public abstract String getEmailAddress();
+
+        /**
+         * Locates the user who owns this identifier.
+         */
+        public final User locateUser() {
+            Class<? extends FederatedLoginServiceUserProperty> pt = getUserPropertyClass();
+            String id = getIdentifier();
+
+            for (User u : User.getAll()) {
+                if (u.getProperty(pt).has(id))
+                    return u;
+            }
+            return null;
         }
-        return null;
+
+        /**
+         * Call this method to authenticate the user when you confirmed (via your protocol specific work) that
+         * the current HTTP request indeed owns this identifier.
+         *
+         * <p>
+         * This method will locate the user who owns this identifier, associate the credential with
+         * the current session. IOW, it signs in the user.
+         *
+         * @throws UnclaimedIdentityException
+         *      If this identifier is not claimed by anyone.
+         */
+        public final void signin() throws UnclaimedIdentityException {
+            User u = locateUser();
+            if (u!=null) {
+                // login as this user
+                UserDetails d = Hudson.getInstance().getSecurityRealm().loadUserByUsername(u.getId());
+
+                UsernamePasswordAuthenticationToken token = new UsernamePasswordAuthenticationToken(d,"",d.getAuthorities());
+                token.setDetails(d);
+                SecurityContextHolder.getContext().setAuthentication(token);
+            } else {
+                // unassociated identity
+                throw new UnclaimedIdentityException(this);
+            }
+        }
+
+        /**
+         * Your implementation will call this method to add this identifier to the current user
+         * of an already authenticated session.
+         *
+         * <p>
+         * This method will record the identifier in {@link FederatedLoginServiceUserProperty} so that
+         * in the future the user can login to Hudson with the identifier.
+         */
+        public void addToCurrentUser() throws IOException {
+            User u = User.current();
+            if (u==null)    throw new IllegalStateException("Current request is unauthenticated");
+
+            FederatedLoginServiceUserProperty p = u.getProperty(getUserPropertyClass());
+            if (p==null) {
+                p = (FederatedLoginServiceUserProperty) UserProperty.all().find(getUserPropertyClass()).newInstance(u);
+                u.addProperty(p);
+            }
+            p.addIdentifier(getIdentifier());
+        }
+
+        @Override
+        public String toString() {
+            return getIdentifier();
+        }
     }
 
-    /**
-     * Your implementation will call this method to authenticate the user when you confirmed that
-     * the current HTTP request owns the given identifier.
-     *
-     * <p>
-     * This method will locate the user who owns this identifier, associate the credential with
-     * the current session, and returns true. IOW, it signs in the user.
-     *
-     * @return
-     *      true if the user who owns the identifier is discovered and the user is signed in.
-     *      false if the given identifier is not claimed by anyone.
-     */
-    protected boolean onIdentified(String identifier) {
-        User u = findUserByIdentifier(identifier);
-        if (u!=null) {
-            // login as this user
-            UserDetails d = Hudson.getInstance().getSecurityRealm().loadUserByUsername(u.getId());
-
-            UsernamePasswordAuthenticationToken token = new UsernamePasswordAuthenticationToken(d,"",d.getAuthorities());
-            token.setDetails(d);
-            SecurityContextHolder.getContext().setAuthentication(token);
-            return true;
-        } else {
-            // unassociated identity
-            return false;
+    public static class UnclaimedIdentityException extends Exception {
+        public final FederatedIdentity identity;
+        public UnclaimedIdentityException(FederatedIdentity identity) {
+            this.identity = identity;
         }
-    }
-
-    /**
-     * Your implementation will call this method when you confirmed that
-     * the current user owns the given identifier.
-     * <p>
-     * This method will record the identifier in {@link FederatedLoginServiceUserProperty} so that
-     * in the future the user can login to Hudson with the identifier.
-     */
-    protected void onAssociated(String identifier) throws IOException {
-        User u = User.current();
-        if (u==null)    throw new IllegalStateException("Current request is unauthenticated");
-
-        FederatedLoginServiceUserProperty p = u.getProperty(getUserPropertyClass());
-        if (p==null) {
-            p = (FederatedLoginServiceUserProperty) UserProperty.all().find(getUserPropertyClass()).newInstance(u);
-            u.addProperty(p);
-        }
-        p.addIdentifier(identifier);
     }
 
     public static ExtensionList<FederatedLoginService> all() {
