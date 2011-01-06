@@ -50,7 +50,7 @@ def commonProviders() {
         bean(ExceptionTranslationFilter) {
             accessDeniedHandler = new AccessDeniedHandlerImpl()
             authenticationEntryPoint = bean(HudsonAuthenticationEntryPoint) {
-                loginFormUrl = securityRealm.getLoginUrl()+"?from={0}";
+                loginFormUrl = '/'+securityRealm.getLoginUrl()+"?from={0}";
             }
         },
         bean(UnwrapSecurityExceptionFilter)
