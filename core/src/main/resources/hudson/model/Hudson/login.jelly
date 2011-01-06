@@ -55,6 +55,12 @@ THE SOFTWARE.
           </script>
         </form>
 
+        <j:forEach var="fls" items="${it.getFederatedLoginServices()}">
+          <div>
+            <st:include page="loginFragment.jelly" it="${fls}"/>
+          </div>
+        </j:forEach>
+
         <j:if test="${it.securityRealm.allowsSignup()}">
           <div style="margin-top:2em">
             ${%signUp}
