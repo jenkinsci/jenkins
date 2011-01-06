@@ -1,3 +1,26 @@
+/*
+ * The MIT License
+ *
+ * Copyright (c) 2010, CloudBees, Inc.
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ */
 package hudson.security;
 
 import hudson.ExtensionList;
@@ -8,7 +31,11 @@ import hudson.model.UserProperty;
 import org.acegisecurity.context.SecurityContextHolder;
 import org.acegisecurity.providers.UsernamePasswordAuthenticationToken;
 import org.acegisecurity.userdetails.UserDetails;
+import org.kohsuke.stapler.HttpResponse;
+import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.StaplerResponse;
 
+import javax.servlet.ServletException;
 import java.io.IOException;
 
 /**
@@ -61,7 +88,7 @@ import java.io.IOException;
  * "/federatedLoginService/openid" as the URL.
  *
  * @author Kohsuke Kawaguchi
- * @since 1.393
+ * @since 1.394
  */
 public abstract class FederatedLoginService implements ExtensionPoint {
     /**
@@ -114,6 +141,12 @@ public abstract class FederatedLoginService implements ExtensionPoint {
         public abstract String getEmailAddress();
 
         /**
+         * Returns a human-readable pronoun that describes this kind of identifier.
+         * This is used for rendering UI. For example, "OpenID", "Twitter ID", etc.
+         */
+        public abstract String getPronoun();
+
+        /**
          * Locates the user who owns this identifier.
          */
         public final User locateUser() {
@@ -136,7 +169,9 @@ public abstract class FederatedLoginService implements ExtensionPoint {
          * the current session. IOW, it signs in the user.
          *
          * @throws UnclaimedIdentityException
-         *      If this identifier is not claimed by anyone.
+         *      If this identifier is not claimed by anyone. If you just let this exception propagate
+         *      to the caller of your "doXyz" method, it will either render an error page or initiate
+         *      a user registration session (provided that {@link SecurityRealm} supports that.)
          */
         public final void signin() throws UnclaimedIdentityException {
             User u = locateUser();
@@ -148,7 +183,7 @@ public abstract class FederatedLoginService implements ExtensionPoint {
                 token.setDetails(d);
                 SecurityContextHolder.getContext().setAuthentication(token);
             } else {
-                // unassociated identity
+                // Unassociated identity. 
                 throw new UnclaimedIdentityException(this);
             }
         }
@@ -179,10 +214,27 @@ public abstract class FederatedLoginService implements ExtensionPoint {
         }
     }
 
-    public static class UnclaimedIdentityException extends Exception {
+    public static class UnclaimedIdentityException extends Exception implements HttpResponse {
         public final FederatedIdentity identity;
+
         public UnclaimedIdentityException(FederatedIdentity identity) {
             this.identity = identity;
+        }
+
+        public void generateResponse(StaplerRequest req, StaplerResponse rsp, Object node) throws IOException, ServletException {
+            SecurityRealm sr = Hudson.getInstance().getSecurityRealm();
+            if (sr.allowsSignup()) {
+                try {
+                    sr.commenceSignup(identity).generateResponse(req,rsp,node);
+                    return;
+                } catch (UnsupportedOperationException e) {
+                    // fall through
+                }
+            }
+
+            // this security realm doesn't support user registration.
+            // just report an error
+            req.getView(this,"error").forward(req,rsp);
         }
     }
 
