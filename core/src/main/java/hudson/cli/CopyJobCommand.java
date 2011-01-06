@@ -42,10 +42,10 @@ public class CopyJobCommand extends CLICommand {
         return "Copies a job";
     }
 
-    @Argument(metaVar="SRC",usage="Name of the job to copy")
+    @Argument(metaVar="SRC",usage="Name of the job to copy",required=true)
     public TopLevelItem src;
 
-    @Argument(metaVar="DST",usage="Name of the new job to be created.",index=1)
+    @Argument(metaVar="DST",usage="Name of the new job to be created.",index=1,required=true)
     public String dst;
 
     protected int run() throws Exception {
