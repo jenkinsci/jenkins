@@ -120,7 +120,7 @@
       <plugin>
         <groupId>org.jvnet.hudson.tools</groupId>
         <artifactId>maven-hpi-plugin</artifactId>
-        <version>1.54</version>
+        <version>1.57</version>
         <extensions>true</extensions>
         <configuration>
           <showDeprecation>true</showDeprecation>
