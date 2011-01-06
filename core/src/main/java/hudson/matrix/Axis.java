@@ -27,6 +27,7 @@ import hudson.DescriptorExtensionList;
 import hudson.ExtensionPoint;
 import hudson.Util;
 import hudson.model.AbstractDescribableImpl;
+import hudson.model.Descriptor;
 import hudson.model.Hudson;
 import hudson.util.QuotedStringTokenizer;
 import org.kohsuke.stapler.StaplerRequest;

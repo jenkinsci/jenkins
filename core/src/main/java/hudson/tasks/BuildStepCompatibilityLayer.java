@@ -29,6 +29,8 @@ import hudson.model.Action;
 import hudson.model.Project;
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
+import hudson.model.Run;
+import hudson.model.CheckPoint;
 import hudson.Launcher;
 
 import java.io.IOException;

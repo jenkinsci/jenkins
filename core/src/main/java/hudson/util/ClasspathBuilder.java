@@ -2,6 +2,7 @@ package hudson.util;
 
 import hudson.FilePath;
 import hudson.Util;
+import hudson.remoting.Channel;
 import hudson.remoting.Which;
 
 import java.io.Serializable;
