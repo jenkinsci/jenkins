@@ -200,6 +200,13 @@ public abstract class FederatedLoginService implements ExtensionPoint {
             User u = User.current();
             if (u==null)    throw new IllegalStateException("Current request is unauthenticated");
 
+            addTo(u);
+        }
+
+        /**
+         * Adds this identity to the specified user.
+         */
+        public void addTo(User u) throws IOException {
             FederatedLoginServiceUserProperty p = u.getProperty(getUserPropertyClass());
             if (p==null) {
                 p = (FederatedLoginServiceUserProperty) UserProperty.all().find(getUserPropertyClass()).newInstance(u);

@@ -34,6 +34,7 @@ import hudson.model.ModelObject;
 import hudson.model.User;
 import hudson.model.UserProperty;
 import hudson.model.UserPropertyDescriptor;
+import hudson.security.FederatedLoginService.FederatedIdentity;
 import hudson.tasks.Mailer;
 import hudson.util.PluginServletFilter;
 import hudson.util.Protector;
@@ -51,6 +52,9 @@ import org.acegisecurity.providers.encoding.ShaPasswordEncoder;
 import org.acegisecurity.userdetails.UserDetails;
 import org.acegisecurity.userdetails.UsernameNotFoundException;
 import org.kohsuke.stapler.DataBoundConstructor;
+import org.kohsuke.stapler.ForwardToView;
+import org.kohsuke.stapler.HttpResponse;
+import org.kohsuke.stapler.HttpResponses;
 import org.kohsuke.stapler.Stapler;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
@@ -148,13 +152,43 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
     }
 
     /**
+     * Show the sign up page with the data from the identity.
+     *
+     * TODO: associate identity after a signup
+     */
+    @Override
+    public HttpResponse commenceSignup(final FederatedIdentity identity) {
+        // store the identity in the session so that we can use this later
+        Stapler.getCurrentRequest().getSession().setAttribute(FEDERATED_IDENTITY_SESSION_KEY,identity);
+        return new ForwardToView(this,"signupWithFederatedIdentity.jelly") {
+            @Override
+            public void generateResponse(StaplerRequest req, StaplerResponse rsp, Object node) throws IOException, ServletException {
+                req.setAttribute("data",new SignupInfo(identity));
+                super.generateResponse(req, rsp, node);
+            }
+        };
+    }
+
+    /**
+     * Creates an account and associates that with the given identity. Used in conjunction
+     * with {@link #commenceSignup(FederatedIdentity)}.
+     */
+    public User doCreateAccountWithFederatedIdentity(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
+        User u = doCreateAccount(req,rsp);
+        if (u!=null)
+            ((FederatedIdentity)req.getSession().getAttribute(FEDERATED_IDENTITY_SESSION_KEY)).addTo(u);
+        return u;
+    }
+
+    private static final String FEDERATED_IDENTITY_SESSION_KEY = HudsonPrivateSecurityRealm.class.getName()+".federatedIdentity";
+
+    /**
      * Creates an user account. Used for self-registration.
      */
-    public void doCreateAccount(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
-        if(!allowsSignup()) {
-            rsp.sendError(SC_UNAUTHORIZED,"User sign up is prohibited");
-            return;
-        }
+    public User doCreateAccount(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
+        if(!allowsSignup())
+            throw HttpResponses.error(SC_UNAUTHORIZED,new Exception("User sign up is prohibited"));
+
         boolean firstUser = !hasSomeUser();
         User u = createAccount(req, rsp, true, "signup.jelly");
         if(u!=null) {
@@ -162,6 +196,7 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
                 tryToMakeAdmin(u);  // the first user should be admin, or else there's a risk of lock out
             loginAndTakeBack(req, rsp, u);
         }
+        return u;
     }
 
     /**
@@ -227,8 +262,7 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
     private User createAccount(StaplerRequest req, StaplerResponse rsp, boolean selfRegistration, String formView) throws ServletException, IOException {
         // form field validation
         // this pattern needs to be generalized and moved to stapler
-        SignupInfo si = new SignupInfo();
-        req.bindParameters(si);
+        SignupInfo si = new SignupInfo(req);
 
         if(selfRegistration && !validateCaptcha(si.captcha))
             si.errorMessage = "Text didn't match the word shown in the image";
@@ -328,6 +362,19 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
          * To display an error message, set it here.
          */
         public String errorMessage;
+
+        public SignupInfo() {
+        }
+
+        public SignupInfo(StaplerRequest req) {
+            req.bindParameters(this);
+        }
+
+        public SignupInfo(FederatedIdentity i) {
+            this.username = i.getNickname();
+            this.fullname = i.getFullName();
+            this.email = i.getEmailAddress();
+        }
     }
 
     /**
