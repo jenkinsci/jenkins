@@ -443,12 +443,15 @@ public class User extends AbstractModelObject implements AccessControlled, Savea
         List<UserProperty> props = new ArrayList<UserProperty>();
         int i = 0;
         for (UserPropertyDescriptor d : UserProperty.all()) {
-            JSONObject o = json.getJSONObject("userProperty" + (i++));
             UserProperty p = getProperty(d.clazz);
-            if (p != null) {
-                p = p.reconfigure(req, o);
-            } else {
-                p = d.newInstance(req, o);
+
+            JSONObject o = json.optJSONObject("userProperty" + (i++));
+            if (o!=null) {
+                if (p != null) {
+                    p = p.reconfigure(req, o);
+                } else {
+                    p = d.newInstance(req, o);
+                }
             }
 
             p.setUser(this);
