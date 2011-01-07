@@ -75,172 +75,11 @@ import java.util.logging.Logger;
  *
  * @author Kohsuke Kawaguchi
  */
-final class MavenProcessFactory implements ProcessCache.Factory {
-    private final MavenModuleSet mms;
-    private final Launcher launcher;
-    /**
-     * Environment variables to be set to the maven process.
-     * The same variables are exposed to the system property as well.
-     */
-    private final EnvVars envVars;
+final class MavenProcessFactory extends AbstractMavenProcessFactory implements ProcessCache.Factory {
 
-    /**
-     * Optional working directory. Because of the process reuse, we can't always guarantee
-     * that the returned Maven process has this as the working directory. But for the
-     * aggregator style build, the process reuse is disabled, so in practice this always works.
-     *
-     * Also, Maven is supposed to work correctly regardless of the process current directory,
-     * so a good behaving maven project shouldn't rely on the current project.
-     */
-    private final FilePath workDir;
 
     MavenProcessFactory(MavenModuleSet mms, Launcher launcher, EnvVars envVars, FilePath workDir) {
-        this.mms = mms;
-        this.launcher = launcher;
-        this.envVars = envVars;
-        this.workDir = workDir;
-    }
-
-    /**
-     * Represents a bi-directional connection.
-     *
-     * <p>
-     * This implementation is remoting aware, so it can be safely sent to the remote callable object.
-     *
-     * <p>
-     * When we run Maven on a slave, the master may not have a direct TCP/IP connectivty to the slave.
-     * That means the {@link Channel} between the master and the Maven needs to be tunneled through
-     * the channel between master and the slave, then go to TCP socket to the Maven.
-     */
-    private static final class Connection implements Serializable {
-        public InputStream in;
-        public OutputStream out;
-
-        Connection(InputStream in, OutputStream out) {
-            this.in = in;
-            this.out = out;
-        }
-
-        private Object writeReplace() {
-            return new Connection(new RemoteInputStream(in),new RemoteOutputStream(out));
-        }
-
-        private Object readResolve() {
-            // ObjectInputStream seems to access data at byte-level and do not do any buffering,
-            // so if we are remoted, buffering would be crucial.
-            this.in = new BufferedInputStream(in);
-            this.out = new BufferedOutputStream(out);
-            return this;
-        }
-
-        private static final long serialVersionUID = 1L;
-    }
-
-    interface Acceptor {
-        Connection accept() throws IOException;
-        int getPort();
-    }
-
-    private static final class GetCharset implements Callable<String,IOException> {
-        public String call() throws IOException {
-            return System.getProperty("file.encoding");
-        }
-    }
-
-    /**
-     * Opens a server socket and returns {@link Acceptor} so that
-     * we can accept a connection later on it.
-     */
-    private static final class SocketHandler implements Callable<Acceptor,IOException> {
-        public Acceptor call() throws IOException {
-            return new AcceptorImpl();
-        }
-
-        private static final long serialVersionUID = 1L;
-
-        static final class AcceptorImpl implements Acceptor, Serializable {
-            private transient final ServerSocket serverSocket;
-            private transient Socket socket;
-
-            AcceptorImpl() throws IOException {
-                // open a TCP socket to talk to the launched Maven process.
-                // let the OS pick up a random open port
-                this.serverSocket = new ServerSocket();
-                serverSocket.bind(null); // new InetSocketAddress(InetAddress.getLocalHost(),0));
-                // prevent a hang at the accept method in case the forked process didn't start successfully
-                serverSocket.setSoTimeout(socketTimeOut);
-            }
-
-            public Connection accept() throws IOException {
-                socket = serverSocket.accept();
-                // we'd only accept one connection
-                serverSocket.close();
-
-                return new Connection(new SocketInputStream(socket),new SocketOutputStream(socket));
-            }
-
-            public int getPort() {
-                return serverSocket.getLocalPort();
-            }
-
-            /**
-             * When sent to the remote node, send a proxy.
-             */
-            private Object writeReplace() {
-                return Channel.current().export(Acceptor.class, this);
-            }
-        }
-    }
-
-    /**
-     * Starts maven process.
-     */
-    public NewProcess newProcess(BuildListener listener, OutputStream out) throws IOException, InterruptedException {
-        if(debug)
-            listener.getLogger().println("Using env variables: "+ envVars);
-        try {
-            //launcher.getChannel().export( type, instance )
-            final Acceptor acceptor = launcher.getChannel().call(new SocketHandler());
-            Charset charset;
-            try {
-                charset = Charset.forName(launcher.getChannel().call(new GetCharset()));
-            } catch (UnsupportedCharsetException e) {
-                // choose the bit preserving charset. not entirely sure if iso-8859-1 does that though.
-                charset = Charset.forName("iso-8859-1");
-            }
-
-            MavenConsoleAnnotator mca = new MavenConsoleAnnotator(out,charset);
-
-            final ArgumentListBuilder cmdLine = buildMavenCmdLine(listener,acceptor.getPort());
-            String[] cmds = cmdLine.toCommandArray();
-            final Proc proc = launcher.launch().cmds(cmds).envs(envVars).stdout(mca).pwd(workDir).start();
-
-            Connection con;
-            try {
-                con = acceptor.accept();
-            } catch (SocketTimeoutException e) {
-                // failed to connect. Is the process dead?
-                // if so, the error should have been provided by the launcher already.
-                // so abort gracefully without a stack trace.
-                if(!proc.isAlive())
-                    throw new AbortException("Failed to launch Maven. Exit code = "+proc.join());
-                throw e;
-            }
-
-            return new NewProcess(
-                Channels.forProcess("Channel to Maven "+ Arrays.toString(cmds),
-                    Computer.threadPoolForRemoting, new BufferedInputStream(con.in), new BufferedOutputStream(con.out),
-                    listener.getLogger(), proc),
-                proc);
-        } catch (IOException e) {
-            if(fixNull(e.getMessage()).contains("java: not found")) {
-                // diagnose issue #659
-                JDK jdk = mms.getJDK();
-                if(jdk==null)
-                    throw new IOException2(mms.getDisplayName()+" is not configured with a JDK, but your PATH doesn't include Java",e);
-            }
-            throw e;
-        }
+        super( mms, launcher, envVars, workDir );
     }
 
     /**
@@ -248,7 +87,7 @@ final class MavenProcessFactory implements ProcessCache.Factory {
      *
      * UGLY.
      */
-    private ArgumentListBuilder buildMavenCmdLine(BuildListener listener,int tcpPort) throws IOException, InterruptedException {
+    protected ArgumentListBuilder buildMavenAgentCmdLine(BuildListener listener,int tcpPort) throws IOException, InterruptedException {
         MavenInstallation mvn = getMavenInstallation(listener);
         if(mvn==null) {
             listener.error("Maven version is not configured for this project. Can't determine which Maven to run");
@@ -260,7 +99,7 @@ final class MavenProcessFactory implements ProcessCache.Factory {
         }
 
         // find classworlds.jar
-        String classWorldsJar = launcher.getChannel().call(new GetClassWorldsJar(mvn.getHome(),listener));
+        String classWorldsJar = getLauncher().getChannel().call(new GetClassWorldsJar(mvn.getHome(),listener));
 
         boolean isMaster = getCurrentNode()== Hudson.getInstance();
         FilePath slaveRoot=null;
@@ -286,7 +125,7 @@ final class MavenProcessFactory implements ProcessCache.Factory {
         String classPath =
             ( isMaster ? Which.jarFile( Main.class ).getAbsolutePath()
                             : slaveRoot.child( "maven-agent.jar" ).getRemote() )
-                + ( launcher.isUnix() ? ":" : ";" )
+                + ( getLauncher().isUnix() ? ":" : ";" )
                 + ( isMaster ? classWorldsJar : slaveRoot.child( "classworlds.jar" ).getRemote() );
         args.add( classPath );
             //+classWorldsJar);
@@ -296,7 +135,7 @@ final class MavenProcessFactory implements ProcessCache.Factory {
         args.add(mvn.getHome());
 
         // remoting.jar
-        String remotingJar = launcher.getChannel().call(new GetRemotingJar());
+        String remotingJar = getLauncher().getChannel().call(new GetRemotingJar());
         if(remotingJar==null) {// this shouldn't be possible, but there are still reports indicating this, so adding a probe here.
             listener.error("Failed to determine the location of slave.jar");
             throw new RunnerAbortedException();
@@ -312,7 +151,7 @@ final class MavenProcessFactory implements ProcessCache.Factory {
         args.add(tcpPort);
 
         // if this is Maven 2.1, interceptor override
-        if(mvn.isMaven2_1(launcher)) {
+        if(mvn.isMaven2_1(getLauncher())) {
             args.add(isMaster?
                 Which.jarFile(Maven21Interceptor.class).getAbsolutePath():
                 slaveRoot.child("maven2.1-interceptor.jar").getRemote());
@@ -320,44 +159,7 @@ final class MavenProcessFactory implements ProcessCache.Factory {
        
         return args;
     }
-
-    public String getMavenOpts() {
-        String mavenOpts = mms.getMavenOpts();
-
-        if ((mavenOpts==null) || (mavenOpts.trim().length()==0)) {
-            Node n = getCurrentNode();
-            if (n!=null) {
-                try {
-                    String localMavenOpts = n.toComputer().getEnvironment().get("MAVEN_OPTS");
-                    
-                    if ((localMavenOpts!=null) && (localMavenOpts.trim().length()>0)) {
-                        mavenOpts = localMavenOpts;
-                    }
-                } catch (IOException e) {
-                } catch (InterruptedException e) {
-                    // Don't do anything - this just means the slave isn't running, so we
-                    // don't want to use its MAVEN_OPTS anyway.
-                }
-
-            }
-        }
-        
-        return envVars.expand(mavenOpts);
-    }
-
-    public MavenInstallation getMavenInstallation(TaskListener log) throws IOException, InterruptedException {
-        MavenInstallation mi = mms.getMaven();
-        if (mi != null) mi = mi.forNode(getCurrentNode(), log).forEnvironment(envVars);
-        return mi;
-
-    }
-
-    public JDK getJava(TaskListener log) throws IOException, InterruptedException {
-        JDK jdk = mms.getJDK();
-        if (jdk != null) jdk = jdk.forNode(getCurrentNode(), log).forEnvironment(envVars);
-        return jdk;
-    }
-
+    
     /**
      * Finds classworlds.jar
      */
@@ -386,20 +188,7 @@ final class MavenProcessFactory implements ProcessCache.Factory {
             return classworlds[0].getAbsolutePath();
         }
     }
-
-    private static final class GetRemotingJar implements Callable<String,IOException> {
-        public String call() throws IOException {
-            return Which.jarFile(hudson.remoting.Launcher.class).getPath();
-        }
-    }
-
-    /**
-     * Returns the current {@link Node} on which we are buildling.
-     */
-    private Node getCurrentNode() {
-        return Executor.currentExecutor().getOwner().getNode();
-    }
-
+    
     /**
      * Locates classworlds jar file.
      *
@@ -421,6 +210,10 @@ final class MavenProcessFactory implements ProcessCache.Factory {
             return name.contains("classworlds") && name.endsWith(".jar");
         }
     };
+    
+    //-------------------------------------------------
+    // Some of those fields are used for maven 3 too
+    //-------------------------------------------------
 
     /**
      * Set true to produce debug output.
