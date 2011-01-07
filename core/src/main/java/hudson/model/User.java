@@ -452,9 +452,9 @@ public class User extends AbstractModelObject implements AccessControlled, Savea
                 } else {
                     p = d.newInstance(req, o);
                 }
+                p.setUser(this);
             }
 
-            p.setUser(this);
             props.add(p);
         }
         this.properties = props;
