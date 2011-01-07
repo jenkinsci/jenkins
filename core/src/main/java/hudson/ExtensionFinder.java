@@ -23,22 +23,27 @@
  */
 package hudson;
 
+import hudson.model.Descriptor;
+import hudson.model.Hudson;
 import net.java.sezpoz.Index;
 import net.java.sezpoz.IndexItem;
-import hudson.model.Hudson;
-import hudson.model.Descriptor;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
+import org.springframework.beans.BeansException;
+import org.springframework.beans.factory.config.BeanDefinition;
+import org.springframework.beans.factory.config.BeanFactoryPostProcessor;
+import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
+import org.springframework.context.annotation.AnnotationConfigApplicationContext;
+import org.springframework.context.support.ClassPathXmlApplicationContext;
 
-import java.util.Collections;
-import java.util.logging.Logger;
-import java.util.logging.Level;
-import java.util.List;
-import java.util.ArrayList;
-import java.util.Collection;
+import javax.inject.Provider;
+import java.lang.annotation.Annotation;
 import java.lang.reflect.AnnotatedElement;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.util.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Discovers the implementations of an extension point.
@@ -93,7 +98,7 @@ public abstract class ExtensionFinder implements ExtensionPoint {
     }
 
     /**
-     * Performs class initializations without creating instances. 
+     * Performs class initializations without creating instances.
      *
      * If two threads try to initialize classes in the opposite order, a dead lock will ensue,
      * and we can get into a similar situation with {@link ExtensionFinder}s.
@@ -125,13 +130,136 @@ public abstract class ExtensionFinder implements ExtensionPoint {
     public void scout(Class extensionType, Hudson hudson) {
     }
 
+
+    @Extension
+    public static class SpringExtensionFinder extends AbstractSpringExtensionFinder<Extension> {
+
+        public SpringExtensionFinder() {
+            super(Extension.class);
+        }
+
+        @Override
+        protected boolean isOptional(Extension annotation) {
+            return false;
+        }
+    }
+
+    public static abstract class AbstractSpringExtensionFinder<T extends Annotation> extends ExtensionFinder {
+        private final ClassPathXmlApplicationContext applicationContext;
+
+        public AbstractSpringExtensionFinder(final Class<T> annotationType) {
+
+            applicationContext = new ClassPathXmlApplicationContext();
+//                    new AnnotationConfigApplicationContext();
+            applicationContext.getBeanFactoryPostProcessors(new BeanFactoryPostProcessor() {
+
+                public void postProcessBeanFactory(ConfigurableListableBeanFactory beanFactory) throws BeansException {
+                    beanFactory.isFactoryBean()
+                }
+            });
+            applicationContext.addBeanFactoryPostProcessor(new BeanFactoryPostProcessor() {
+                public void postProcessBeanFactory(ConfigurableListableBeanFactory beanFactory) throws BeansException {
+                    for (String name: beanFactory.getBeanDefinitionNames()) {
+                        BeanDefinition beanDefinition = beanFactory.getBeanDefinition(name);
+                        beanDefinition.setLazyInit(true);
+                    }
+                }
+            });
+            ClassLoader cl = Hudson.getInstance().getPluginManager().uberClassLoader;
+            int id=0;
+
+            for (final IndexItem<T,Object> item : Index.load(annotationType, Object.class, cl)) {
+                id++;
+                try {
+                    AnnotatedElement e = item.element();
+                    if (!isActive(e))   continue;
+                    T a = item.annotation();
+
+                    if (e instanceof Class) {
+                        applicationContext.register((Class) e);
+                    } else {
+                        Class extType;
+                        if (e instanceof Field) {
+                            extType = ((Field)e).getType();
+                        } else
+                        if (e instanceof Method) {
+                            extType = ((Method)e).getReturnType();
+                        } else
+                            throw new AssertionError();
+
+                        final Class extTypeFinal = extType;
+                        // use arbitrary
+                        applicationContext.getBeanFactory().registerSingleton(String.valueOf(id), createProvider(extType, item));
+                    }
+                } catch (LinkageError e) {
+                    // sometimes the instantiation fails in an indirect classloading failure,
+                    // which results in a LinkageError
+                    LOGGER.log(isOptional(item.annotation()) ? Level.FINE : Level.WARNING,
+                               "Failed to load "+item.className(), e);
+                } catch (InstantiationException e) {
+                    LOGGER.log(isOptional(item.annotation()) ? Level.FINE : Level.WARNING,
+                               "Failed to load "+item.className(), e);
+                }
+            }
+            applicationContext.refresh();
+
+        }
+
+        private <S> Provider<S> createProvider(Class<S> type, final IndexItem<T,Object> item) {
+            return new Provider<S>() {
+
+                public S get() {
+                    return (S) instantiate(item);
+                }
+            };
+        }
+
+        protected abstract boolean isOptional(T annotation);
+
+        private Object instantiate(IndexItem<T,Object> item) {
+            try {
+                return item.instance();
+            } catch (LinkageError e) {
+                // sometimes the instantiation fails in an indirect classloading failure,
+                // which results in a LinkageError
+                LOGGER.log(isOptional(item.annotation()) ? Level.FINE : Level.WARNING,
+                           "Failed to load "+item.className(), e);
+            } catch (InstantiationException e) {
+                LOGGER.log(isOptional(item.annotation()) ? Level.FINE : Level.WARNING,
+                           "Failed to load "+item.className(), e);
+            }
+            return null;
+        }
+
+        public <U> Collection<ExtensionComponent<U>> find(Class<U> type, Hudson hudson) {
+            List<ExtensionComponent<U>> result = new ArrayList<ExtensionComponent<U>>();
+
+            Map<String, U> beans = applicationContext.getBeansOfType(type);
+            for (Map.Entry<String, U> bean: beans.entrySet()) {
+                Object o = bean.getValue();
+                if (o!=null)
+                    result.add(new ExtensionComponent<U>(type.cast(o),0));
+            }
+
+            return result;
+        }
+
+
+
+        /**
+         * Hook to enable subtypes to control which ones to pick up and which ones to ignore.
+         */
+        protected boolean isActive(AnnotatedElement e) {
+            return true;
+        }
+    }
+
     /**
      * The default implementation that looks for the {@link Extension} marker.
      *
      * <p>
      * Uses Sezpoz as the underlying mechanism.
      */
-    @Extension
     public static final class Sezpoz extends ExtensionFinder {
         public <T> Collection<ExtensionComponent<T>> find(Class<T> type, Hudson hudson) {
             List<ExtensionComponent<T>> result = new ArrayList<ExtensionComponent<T>>();
@@ -202,6 +330,6 @@ public abstract class ExtensionFinder implements ExtensionPoint {
             }
         }
     }
-    
+
     private static final Logger LOGGER = Logger.getLogger(ExtensionFinder.class.getName());
 }
