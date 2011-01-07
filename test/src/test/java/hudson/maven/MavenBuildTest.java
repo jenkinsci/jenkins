@@ -109,7 +109,20 @@ public class MavenBuildTest extends HudsonTestCase {
         m.setGoals( "clean validate" );
         MavenModuleSetBuild mmsb =  buildAndAssertSuccess(m);
         assertFalse( mmsb.getProject().getModules().isEmpty());
-    }    
+    }   
+
+    @Bug(value=8445)
+    public void testMaven2SeveralModulesInDirectory() throws Exception {
+        
+        MavenModuleSet m = createMavenProject();
+        MavenInstallation mavenInstallation = configureDefaultMaven();
+        m.setMaven( mavenInstallation.getName() );
+        m.getReporters().add(new TestReporter());
+        m.setScm(new ExtractResourceSCM(getClass().getResource("several-modules-in-directory.zip")));
+        m.setGoals( "clean validate" );
+        MavenModuleSetBuild mmsb =  buildAndAssertSuccess(m);
+        assertFalse( mmsb.getProject().getModules().isEmpty());
+    }     
     
     private static class TestReporter extends MavenReporter {
         @Override

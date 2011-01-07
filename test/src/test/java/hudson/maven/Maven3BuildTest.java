@@ -100,6 +100,18 @@ public class Maven3BuildTest extends HudsonTestCase {
         assertTrue( mmsb.getProject().getModules().isEmpty());
     }    
 
+    @Bug(value=8445)
+    public void testMavenSeveralModulesInDirectory() throws Exception {
+        
+        MavenModuleSet m = createMavenProject();
+        MavenInstallation mavenInstallation = configureMaven3();
+        m.setMaven( mavenInstallation.getName() );
+        m.getReporters().add(new TestReporter());
+        m.setScm(new ExtractResourceSCM(getClass().getResource("several-modules-in-directory.zip")));
+        m.setGoals( "clean validate" );
+        MavenModuleSetBuild mmsb =  buildAndAssertSuccess(m);
+        assertFalse( mmsb.getProject().getModules().isEmpty());
+    }    
     
     
     private static class TestReporter extends MavenReporter {

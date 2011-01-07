@@ -1181,8 +1181,13 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
             }
             for (String module : mp.getModules()) {
                 if ( Util.fixEmptyAndTrim( module ) != null ) {
-                    MavenProject mavenProject2 = 
-                        mavenEmbedder.readProject( new File(mp.getFile().getParent(), module + "/pom.xml") );
+                    File pomFile = new File(mp.getFile().getParent(), module);
+                    MavenProject mavenProject2 = null;
+                    // take care of HUDSON-8445
+                    if (pomFile.isFile() && pomFile.exists())
+                        mavenProject2 = mavenEmbedder.readProject( pomFile );
+                    else
+                        mavenProject2 = mavenEmbedder.readProject( new File(mp.getFile().getParent(), module + "/pom.xml") );
                     mavenProjects.add( mavenProject2 );
                     reactorReader.addProject( mavenProject2 );
                     readChilds( mavenProject2, mavenEmbedder, mavenProjects, reactorReader );
