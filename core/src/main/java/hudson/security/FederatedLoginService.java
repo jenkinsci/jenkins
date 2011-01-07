@@ -173,7 +173,7 @@ public abstract class FederatedLoginService implements ExtensionPoint {
          *      to the caller of your "doXyz" method, it will either render an error page or initiate
          *      a user registration session (provided that {@link SecurityRealm} supports that.)
          */
-        public final void signin() throws UnclaimedIdentityException {
+        public final User signin() throws UnclaimedIdentityException {
             User u = locateUser();
             if (u!=null) {
                 // login as this user
@@ -182,6 +182,7 @@ public abstract class FederatedLoginService implements ExtensionPoint {
                 UsernamePasswordAuthenticationToken token = new UsernamePasswordAuthenticationToken(d,"",d.getAuthorities());
                 token.setDetails(d);
                 SecurityContextHolder.getContext().setAuthentication(token);
+                return u;
             } else {
                 // Unassociated identity. 
                 throw new UnclaimedIdentityException(this);
