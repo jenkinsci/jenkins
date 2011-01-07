@@ -27,6 +27,7 @@ import com.thoughtworks.xstream.XStream;
 import hudson.XmlFile;
 import hudson.DescriptorExtensionList;
 import hudson.Extension;
+import hudson.scm.RepositoryBrowser;
 import hudson.matrix.MatrixProject;
 import hudson.matrix.MatrixConfiguration;
 import hudson.matrix.Axis;

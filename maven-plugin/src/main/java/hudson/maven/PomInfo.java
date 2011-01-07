@@ -23,6 +23,7 @@
  */
 package hudson.maven;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.maven.model.CiManagement;
 import org.apache.maven.model.Dependency;
 import org.apache.maven.model.Extension;
@@ -94,6 +95,16 @@ final class PomInfo implements Serializable {
      * Parent module.
      */
     public final PomInfo parent;
+    
+    /**
+     * maven groupId
+     */
+    private final String groupId;
+    
+    /**
+     * maven artifactId
+     */    
+    private final String artifactId;
 
     public final Notifier mailNotifier;
 
@@ -140,6 +151,9 @@ final class PomInfo implements Serializable {
             this.mailNotifier = mailNotifier;
         } else
             this.mailNotifier = null;
+        
+        this.groupId = project.getGroupId();
+        this.artifactId = project.getArtifactId();
     }
 
     /**
@@ -189,4 +203,29 @@ final class PomInfo implements Serializable {
     }
 
     private static final long serialVersionUID = 1L;
+
+    @Override
+    public int hashCode()
+    {
+        int hash = 23 + this.groupId == null ? 1 : this.groupId.hashCode();
+        hash += this.artifactId == null ? 1 : this.artifactId.hashCode();
+        return hash;
+    }
+
+    @Override
+    public boolean equals( Object obj )
+    {
+        if (obj == null) {
+            return false;
+        }
+        if (obj == this) {
+            return true;
+        }
+        if (!(obj instanceof PomInfo)) {
+            return false;
+        }
+        PomInfo pomInfo = (PomInfo) obj;
+        return StringUtils.equals( pomInfo.groupId, this.groupId ) 
+            && StringUtils.equals( pomInfo.artifactId, this.artifactId ); 
+    }
 }

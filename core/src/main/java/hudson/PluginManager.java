@@ -646,6 +646,13 @@ public abstract class PluginManager extends AbstractModelObject {
             }
             return Collections.enumeration(resources);
         }
+
+        @Override
+        public String toString()
+        {
+            // only for debugging purpose
+            return "classLoader " +  getClass().getName();
+        }
     }
 
     private static final Logger LOGGER = Logger.getLogger(PluginManager.class.getName());

@@ -43,8 +43,8 @@ public interface DescriptorByNameOwner extends ModelObject {
      * <p>
      * Implementation should always delegate to {@link Hudson#getDescriptorByName(String)}.
      *
-     * @param className
-     *      Either fully qualified class name (recommended) or the short name.
+     * @param id
+     *      Either {@link Descriptor#getId()} (recommended) or the short name.
      */
-    Descriptor getDescriptorByName(String className);    
+    Descriptor getDescriptorByName(String id);    
 }

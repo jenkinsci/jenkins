@@ -48,14 +48,11 @@ import hudson.security.ACL;
 import hudson.security.AccessControlled;
 import hudson.security.Permission;
 import hudson.security.PermissionGroup;
-import hudson.tasks.BuildTrigger;
 import hudson.tasks.LogRotator;
 import hudson.tasks.Mailer;
 import hudson.tasks.BuildWrapper;
 import hudson.tasks.BuildStep;
-import hudson.tasks.Publisher;
 import hudson.tasks.test.AbstractTestResultAction;
-import hudson.util.DescribableList;
 import hudson.util.FlushProofOutputStream;
 import hudson.util.IOException2;
 import hudson.util.LogTaskListener;
@@ -1723,7 +1720,6 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
      * Accepts the new description.
      */
     public synchronized void doSubmitDescription( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
-        req.setCharacterEncoding("UTF-8");
         setDescription(req.getParameter("description"));
         rsp.sendRedirect(".");  // go to the top page
     }
@@ -1788,6 +1784,9 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
                 env.put("NODE_LABELS",Util.join(n.getAssignedLabels()," "));
         }
 
+        for (EnvironmentContributor ec : EnvironmentContributor.all())
+            ec.buildEnvironmentFor(this,env,log);
+
         return env;
     }
 
@@ -1835,7 +1834,6 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
 
     public HttpResponse doConfigSubmit( StaplerRequest req ) throws IOException, ServletException, FormException {
         checkPermission(UPDATE);
-        req.setCharacterEncoding("UTF-8");
         BulkChange bc = new BulkChange(this);
         try {
             JSONObject json = req.getSubmittedForm();

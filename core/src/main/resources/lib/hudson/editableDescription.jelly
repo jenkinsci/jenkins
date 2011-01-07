@@ -35,7 +35,7 @@ THE SOFTWARE.
 
   <div id="description">
     <div>
-      ${it.description}
+      <j:out value="${it.description!=null ? app.markupFormatter.translate(it.description) : ''}" />
     </div>
 
     <l:hasPermission permission="${permission}">

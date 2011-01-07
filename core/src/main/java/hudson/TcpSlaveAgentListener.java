@@ -149,6 +149,7 @@ public final class TcpSlaveAgentListener extends Thread {
             synchronized(getClass()) {
                 id = iotaGen++;
             }
+            setName("TCP slave agent connection handler #"+id+" with "+s.getRemoteSocketAddress());
         }
 
         @Override

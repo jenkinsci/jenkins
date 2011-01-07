@@ -35,12 +35,8 @@ import java.util.Properties;
 import java.util.Map.Entry;
 import java.io.Serializable;
 import java.io.File;
-import java.io.StringReader;
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.util.Set;
-
-import org.jvnet.animal_sniffer.IgnoreJRERequirement;
 
 /**
  * Used to build up arguments for a process invocation.
@@ -194,7 +190,7 @@ public class ArgumentListBuilder implements Serializable {
     public ArgumentListBuilder addKeyValuePairsFromPropertyString(String prefix, String properties, VariableResolver vr) throws IOException {
         if(properties==null)    return this;
 
-        for (Entry<Object,Object> entry : load(properties).entrySet()) {
+        for (Entry<Object,Object> entry : Util.loadProperties(properties).entrySet()) {
             addKeyValuePair(prefix, (String)entry.getKey(), Util.replaceMacro(entry.getValue().toString(),vr), false);
         }
         return this;
@@ -218,24 +214,10 @@ public class ArgumentListBuilder implements Serializable {
     public ArgumentListBuilder addKeyValuePairsFromPropertyString(String prefix, String properties, VariableResolver vr, Set<String> propsToMask) throws IOException {
         if(properties==null)    return this;
 
-        for (Entry<Object,Object> entry : load(properties).entrySet()) {
+        for (Entry<Object,Object> entry : Util.loadProperties(properties).entrySet()) {
             addKeyValuePair(prefix, (String)entry.getKey(), Util.replaceMacro(entry.getValue().toString(),vr), (propsToMask == null) ? false : propsToMask.contains((String)entry.getKey()));
         }
         return this;
-    }
-
-    @IgnoreJRERequirement
-    private Properties load(String properties) throws IOException {
-        Properties p = new Properties();
-        try {
-            p.load(new StringReader(properties));
-        } catch (NoSuchMethodError e) {
-            // load(Reader) method is only available on JDK6.
-            // this fall back version doesn't work correctly with non-ASCII characters,
-            // but there's no other easy ways out it seems.
-            p.load(new ByteArrayInputStream(properties.getBytes()));
-        }
-        return p;
     }
 
     public String[] toCommandArray() {

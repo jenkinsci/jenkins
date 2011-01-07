@@ -82,7 +82,6 @@ public class AllView extends View {
     public synchronized void doSubmitDescription( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
         checkPermission(Hudson.ADMINISTER);
 
-        req.setCharacterEncoding("UTF-8");
         Hudson.getInstance().setSystemMessage(req.getParameter("description"));
         rsp.sendRedirect(".");
     }

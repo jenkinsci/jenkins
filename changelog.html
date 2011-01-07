@@ -40,15 +40,50 @@ Upcoming changes</a>
 <!-- Record your changes in the trunk here. -->
 <div id="trunk" style="display:none"><!--=TRUNK-BEGIN=-->
 <ul class=image>
-  <li class=bug>
-    failed to build with "Trigger builds remotely" enabled.
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-8319">issue 8319</a>)
+  <li class=>
 </ul>
 </div><!--=TRUNK-END=-->
 
 <!-- these changes are controlled by the release process. DO NOT MODIFY -->
 <div id="rc" style="display:none;"><!--=BEGIN=-->
-<h3><a name=v1.390>What's new in 1.390</a> <!--=DATE=--></h3>
+<h3><a name=v1.393>What's new in 1.393</a> <!--=DATE=--></h3>
+<ul class=image>
+  <li class=rfe>
+   Added CharacterEncodingFilter to prevent Non-ASCII characters from getting garbled.
+  <li class=bug> Maven mirrors not used when project uses Maven 2.2
+   (<a href="http://issues.hudson-ci.org/browse/HUDSON-8387">issue 8387</a>) 
+  <li class=bug> NPE while parsing POMs
+   (<a href="http://issues.hudson-ci.org/browse/HUDSON-8391">issue 8391</a>)   
+  <li class=bug> M2 POMs aren't parsed if there is a M3 control error like an invalid scope in a plugin dep.
+   (<a href="http://issues.hudson-ci.org/browse/HUDSON-8395">issue 8395</a>)  
+  <li class=bug> POMs parsing fails in m2 projects which has a wrong inheritence (m3 constraint).
+   (<a href="http://issues.hudson-ci.org/browse/HUDSON-8390">issue 8390</a>)      
+</ul>
+</div><!--=END=-->
+<h3><a name=v1.392>What's new in 1.392</a> (2010/12/31)</h3>
+<ul class=image>
+  <li class='major rfe'>
+    Maven 3 support in maven-plugin. 
+    (<a href="http://issues.hudson-ci.org/browse/HUDSON-4988">issue 4988</a>)
+  <li class=bug>
+    Turn Off "Show Friendly HTTP Error Messages" Feature on the Server Side.
+    (<a href="http://issues.hudson-ci.org/browse/HUDSON-8352">issue 8352</a>)
+  <li class=bug>
+    Hudson installed as Windows service wasn't restarting properly
+    (<a href="http://issues.hudson-ci.org/browse/HUDSON-5090">issue 5090</a>)
+  <li class=bug>
+    Escape quotes.
+    (<a href="http://issues.hudson-ci.org/browse/HUDSON-8270">issue 8270</a>)
+</ul>
+<h3><a name=v1.391>What's new in 1.391</a> (2010/12/26)</h3>
+<ul class=image>
+  <li class=bug>
+    failed to build with "Trigger builds remotely" enabled.
+    (<a href="http://issues.hudson-ci.org/browse/HUDSON-8319">issue 8319</a>)
+  <li class=rfe>
+    added a new extension point to use markup for job/user description
+</ul>
+<h3><a name=v1.390>What's new in 1.390</a> (2010/12/18)</h3>
 <ul class=image>
   <li class=bug>
     " (from WhateverTest)" gratuitously appended to test result detail pages.
@@ -71,7 +106,6 @@ Upcoming changes</a>
   <li class=rfe>
     Allow the administrator to yank out dead executors.
 </ul>
-</div><!--=END=-->
 <h3><a name=v1.389>What's new in 1.389</a> (2010/12/11)</h3>
 <ul class=image>
   <li class=rfe>

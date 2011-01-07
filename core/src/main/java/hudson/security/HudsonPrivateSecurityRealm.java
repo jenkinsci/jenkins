@@ -225,8 +225,6 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
      *      a valid {@link User} object if the user creation was successful.
      */
     private User createAccount(StaplerRequest req, StaplerResponse rsp, boolean selfRegistration, String formView) throws ServletException, IOException {
-        req.setCharacterEncoding("UTF-8");
-
         // form field validation
         // this pattern needs to be generalized and moved to stapler
         SignupInfo si = new SignupInfo();
@@ -557,14 +555,19 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
             HttpServletRequest req = (HttpServletRequest) request;
 
             if(req.getRequestURI().equals(req.getContextPath()+"/")) {
-                if(hasSomeUser()) {// the first user already created. the role of this filter is over.
+                if (needsToCreateFirstUser()) {
+                    ((HttpServletResponse)response).sendRedirect("securityRealm/firstUser");
+                } else {// the first user already created. the role of this filter is over.
                     PluginServletFilter.removeFilter(this);
                     chain.doFilter(request,response);
-                } else {
-                    ((HttpServletResponse)response).sendRedirect("securityRealm/firstUser");
                 }
             } else
                 chain.doFilter(request,response);
+        }
+
+        private boolean needsToCreateFirstUser() {
+            return !hasSomeUser()
+                && Hudson.getInstance().getSecurityRealm() instanceof HudsonPrivateSecurityRealm;
         }
 
         public void destroy() {

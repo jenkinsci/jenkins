@@ -53,12 +53,13 @@ THE SOFTWARE.
   </st:documentation>
 
   <f:prepareDatabinding />
+  <j:set var="value" value="${attrs.value ?: instance[attrs.field] ?: attrs.default}" />
   <textarea id="${attrs.id}" style="${attrs.style}"
             name ="${attrs.name ?: '_.'+attrs.field}"
             class="setting-input ${attrs.checkUrl!=null?'validated':''} ${attrs.class}"
             checkUrl="${attrs.checkUrl}"
-            rows="${h.determineRows(attrs.value)}">
-    <st:out value="${attrs.value ?: instance[attrs.field] ?: attrs.default}" />
+            rows="${h.determineRows(value)}">
+    <st:out value="${value}" />
   </textarea>
   <!-- resize handle -->
   <div class="textarea-handle"/>

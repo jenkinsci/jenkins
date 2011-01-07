@@ -483,4 +483,5 @@ public final class MavenModule extends AbstractMavenProject<MavenModule,MavenBui
     }
 
     private static final Logger LOGGER = Logger.getLogger(MavenModule.class.getName());
+    
 }

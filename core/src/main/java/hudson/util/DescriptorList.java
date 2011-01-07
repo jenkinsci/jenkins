@@ -162,13 +162,13 @@ public final class DescriptorList<T extends Describable<T>> extends AbstractList
     }
 
     /**
-     * Finds a descriptor by their {@link Descriptor#clazz}.
+     * Finds a descriptor by their {@link Descriptor#getId()}.
      *
      * If none is found, null is returned.
      */
-    public Descriptor<T> findByName(String fullyQualifiedClassName) {
+    public Descriptor<T> findByName(String id) {
         for (Descriptor<T> d : this)
-            if(d.clazz.getName().equals(fullyQualifiedClassName))
+            if(d.getId().equals(id))
                 return d;
         return null;
     }

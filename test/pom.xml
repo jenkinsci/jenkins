@@ -27,7 +27,7 @@ THE SOFTWARE.
   <parent>
     <artifactId>pom</artifactId>
     <groupId>org.jvnet.hudson.main</groupId>
-    <version>1.391-SNAPSHOT</version>
+    <version>1.394-SNAPSHOT</version>
   </parent>
   <modelVersion>4.0.0</modelVersion>
   <groupId>org.jvnet.hudson.main</groupId>
@@ -40,6 +40,7 @@ THE SOFTWARE.
 
   <properties>
     <concurrency>1</concurrency> <!-- -1 means # of processors in the system -->
+    <mavenDebug>false</mavenDebug>
   </properties>
 
   <build>
@@ -70,6 +71,18 @@ THE SOFTWARE.
                   <name>hudson.ClassicPluginStrategy.useAntClassLoader</name>
                   <value>true</value>
                 </property>
+                <property>
+                  <name>hudson.maven.debug</name>
+                  <value>${mavenDebug}</value>
+                </property>
+                <property>
+                  <name>java.io.tmpdir</name>
+                  <value>${project.build.directory}</value>
+                </property> 
+                <property>
+                  <name>buildDirectory</name>
+                  <value>${project.build.directory}</value>
+                </property>                               
               </systemProperties>
             </configuration>
           </execution>

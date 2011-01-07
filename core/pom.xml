@@ -28,7 +28,7 @@ THE SOFTWARE.
   <parent>
     <groupId>org.jvnet.hudson.main</groupId>
     <artifactId>pom</artifactId>
-    <version>1.391-SNAPSHOT</version>
+    <version>1.394-SNAPSHOT</version>
     <relativePath>../pom.xml</relativePath>
   </parent>
 
@@ -461,7 +461,6 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.apache.ant</groupId>
       <artifactId>ant</artifactId>
-      <version>1.8.0</version>
     </dependency>
     <dependency>
       <groupId>javax.servlet</groupId>
@@ -742,7 +741,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>com.sun.winsw</groupId>
       <artifactId>winsw</artifactId>
-      <version>1.9</version>
+      <version>1.10</version>
       <classifier>bin</classifier>
       <type>exe</type>
       <scope>provided</scope><!-- this isn't really a dependency that Maven should care about, so putting 'provided' -->

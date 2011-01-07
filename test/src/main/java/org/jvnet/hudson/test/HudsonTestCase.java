@@ -394,14 +394,31 @@ public abstract class HudsonTestCase extends TestCase implements RootAction {
      * Returns the older default Maven, while still allowing specification of other bundled Mavens.
      */
     protected MavenInstallation configureDefaultMaven() throws Exception {
-	return configureDefaultMaven("apache-maven-2.2.1", MavenInstallation.MAVEN_20);
+        return configureDefaultMaven("apache-maven-2.2.1", MavenInstallation.MAVEN_20);
     }
+    
+    protected MavenInstallation configureMaven3() throws Exception {
+        MavenInstallation mvn = configureDefaultMaven("apache-maven-3.0.1", MavenInstallation.MAVEN_30);
+        
+        MavenInstallation m3 = new MavenInstallation("apache-maven-3.0.1",mvn.getHome(), NO_PROPERTIES);
+        hudson.getDescriptorByType(Maven.DescriptorImpl.class).setInstallations(m3);
+        return m3;
+    }    
     
     /**
      * Locates Maven2 and configure that as the only Maven in the system.
      */
     protected MavenInstallation configureDefaultMaven(String mavenVersion, int mavenReqVersion) throws Exception {
         // first if we are running inside Maven, pick that Maven, if it meets the criteria we require..
+        // does it exists in the buildDirectory see maven-junit-plugin systemProperties 
+        // buildDirectory -> ${project.build.directory} (so no reason to be null ;-) )
+        String buildDirectory = System.getProperty( "buildDirectory", "./target/classes/" );
+        File mavenAlreadyInstalled = new File(buildDirectory, mavenVersion);
+        if (mavenAlreadyInstalled.exists()) {
+            MavenInstallation mavenInstallation = new MavenInstallation("default",mavenAlreadyInstalled.getAbsolutePath(), NO_PROPERTIES);
+            hudson.getDescriptorByType(Maven.DescriptorImpl.class).setInstallations(mavenInstallation);
+            return mavenInstallation;
+        }
         String home = System.getProperty("maven.home");
         if(home!=null) {
             MavenInstallation mavenInstallation = new MavenInstallation("default",home, NO_PROPERTIES);
@@ -417,7 +434,7 @@ public abstract class HudsonTestCase extends TestCase implements RootAction {
                 "To avoid a performance hit, set the system property 'maven.home' to point to a Maven2 installation.");
         FilePath mvn = hudson.getRootPath().createTempFile("maven", "zip");
         mvn.copyFrom(HudsonTestCase.class.getClassLoader().getResource(mavenVersion + "-bin.zip"));
-        File mvnHome = createTmpDir();
+        File mvnHome =  new File(buildDirectory);//createTmpDir();
         mvn.unzip(new FilePath(mvnHome));
         // TODO: switch to tar that preserves file permissions more easily
         if(!Functions.isWindows())
@@ -672,12 +689,24 @@ public abstract class HudsonTestCase extends TestCase implements RootAction {
     }
 
     /**
+     * Hits the Hudson system configuration and submits without any modification.
+     */
+    protected void configRoundtrip() throws Exception {
+        submit(createWebClient().goTo("configure").getFormByName("config"));
+    }
+
+    /**
      * Loads a configuration page and submits it without any modifications, to
      * perform a round-trip configuration test.
      * <p>
      * See http://wiki.hudson-ci.org/display/HUDSON/Unit+Test#UnitTest-Configurationroundtriptesting
      */
     protected <P extends Job> P configRoundtrip(P job) throws Exception {
+        submit(createWebClient().getPage(job,"configure").getFormByName("config"));
+        return job;
+    }
+
+    protected <P extends Item> P configRoundtrip(P job) throws Exception {
         submit(createWebClient().getPage(job,"configure").getFormByName("config"));
         return job;
     }
@@ -1212,9 +1241,7 @@ public abstract class HudsonTestCase extends TestCase implements RootAction {
 
                     String dependencies = m.getMainAttributes().getValue("Plugin-Dependencies");
                     if(dependencies!=null) {
-                        MavenEmbedder embedder = new MavenEmbedder(null);
-                        embedder.setClassLoader(getClass().getClassLoader());
-                        embedder.start();
+                        MavenEmbedder embedder = new MavenEmbedder(getClass().getClassLoader(), null);
                         for( String dep : dependencies.split(",")) {
                             String[] tokens = dep.split(":");
                             String artifactId = tokens[0];
@@ -1252,7 +1279,6 @@ public abstract class HudsonTestCase extends TestCase implements RootAction {
                                 FileUtils.copyFile(dependencyJar, dst);
                             }
                         }
-                        embedder.stop();
                     }
                 }
             }

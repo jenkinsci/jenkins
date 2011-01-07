@@ -1763,11 +1763,12 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
             try {
                 Label.parseExpression(value);
             } catch (ANTLRException e) {
-                return FormValidation.error(e,"Invalid boolean expression: "+e.getMessage());
+                return FormValidation.error(e,
+                        Messages.AbstractProject_AssignedLabelString_InvalidBooleanExpression(e.getMessage()));
             }
             // TODO: if there's an atom in the expression that is empty, report it
             if (Hudson.getInstance().getLabel(value).isEmpty())
-                return FormValidation.warning("There's no slave/cloud that matches this assignment");
+                return FormValidation.warning(Messages.AbstractProject_AssignedLabelString_NoMatch());
             return FormValidation.ok();
         }
 

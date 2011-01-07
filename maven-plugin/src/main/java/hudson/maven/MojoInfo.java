@@ -25,6 +25,8 @@ package hudson.maven;
 
 import org.apache.maven.plugin.MojoExecution;
 import org.apache.maven.plugin.Mojo;
+import org.apache.maven.plugin.descriptor.PluginDescriptor;
+import org.codehaus.classworlds.ClassRealm;
 import org.codehaus.plexus.configuration.PlexusConfiguration;
 import org.codehaus.plexus.component.configurator.expression.ExpressionEvaluator;
 import org.codehaus.plexus.component.configurator.converters.lookup.ConverterLookup;
@@ -39,6 +41,7 @@ import java.lang.reflect.Proxy;
 import java.lang.reflect.Method;
 
 import hudson.util.InvocationInterceptor;
+import hudson.util.ReflectionUtils;
 
 /**
  * Information about Mojo to be executed. This object provides
@@ -126,13 +129,26 @@ public class MojoInfo {
     public <T> T getConfigurationValue(String configName, Class<T> type) throws ComponentConfigurationException {
         PlexusConfiguration child = configuration.getChild(configName);
         if(child==null) return null;    // no such config
-
+       
+        ClassLoader cl = null;
+        PluginDescriptor pd = mojoExecution.getMojoDescriptor().getPluginDescriptor();
+        // for maven2 builds ClassRealm doesn't extends ClassLoader !
+        // so check stuff with reflection
+        Method method = ReflectionUtils.getPublicMethodNamed( pd.getClass(), "getClassRealm" );
+       
+        if ( ReflectionUtils.invokeMethod( method, pd ) instanceof ClassRealm)
+        {
+            ClassRealm cr = (ClassRealm) ReflectionUtils.invokeMethod( method, pd );
+            cl = cr.getClassLoader();
+        } else {
+            cl = mojoExecution.getMojoDescriptor().getPluginDescriptor().getClassRealm();
+        }
         ConfigurationConverter converter = converterLookup.lookupConverterForType(type);
         return type.cast(converter.fromConfiguration(converterLookup,child,type,
             // the implementation seems to expect the type of the bean for which the configuration is done
             // in this parameter, but we have no such type. So passing in a dummy
             Object.class,
-            mojoExecution.getMojoDescriptor().getPluginDescriptor().getClassRealm().getClassLoader(),
+            cl,
             expressionEvaluator));
     }
 

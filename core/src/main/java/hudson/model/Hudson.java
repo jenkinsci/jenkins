@@ -1,4 +1,4 @@
-    /*
+/*
  * The MIT License
  * 
  * Copyright (c) 2004-2010, Sun Microsystems, Inc., Kohsuke Kawaguchi,
@@ -40,6 +40,7 @@ import hudson.Launcher;
 import hudson.Launcher.LocalLauncher;
 import hudson.LocalPluginManager;
 import hudson.Lookup;
+import hudson.markup.MarkupFormatter;
 import hudson.Plugin;
 import hudson.PluginManager;
 import hudson.PluginWrapper;
@@ -63,6 +64,7 @@ import hudson.init.InitStrategy;
 import hudson.lifecycle.Lifecycle;
 import hudson.logging.LogRecorderManager;
 import hudson.lifecycle.RestartNotSupportedException;
+import hudson.markup.RawHtmlMarkupFormatter;
 import hudson.model.Descriptor.FormException;
 import hudson.model.labels.LabelAtom;
 import hudson.model.listeners.ItemListener;
@@ -313,6 +315,8 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
      * Message displayed in the top page.
      */
     private String systemMessage;
+
+    private MarkupFormatter markupFormatter;
 
     /**
      * Root directory of the system.
@@ -907,16 +911,16 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
      * After doing all the {@code getXXX(shortClassName)} methods, I finally realized that
      * this just doesn't scale.
      *
-     * @param className
-     *      Either fully qualified class name (recommended) or the short name of a {@link Describable} subtype.
+     * @param id
+     *      Either {@link Descriptor#getId()} (recommended) or the short name of a {@link Describable} subtype (for compatibility)
      */
-    public Descriptor getDescriptor(String className) {
+    public Descriptor getDescriptor(String id) {
         // legacy descriptors that are reigstered manually doesn't show up in getExtensionList, so check them explicitly.
         for( Descriptor d : Iterators.sequence(getExtensionList(Descriptor.class),DescriptorExtensionList.listLegacyInstances()) ) {
-            String name = d.clazz.getName();
-            if(name.equals(className))
+            String name = d.getId();
+            if(name.equals(id))
                 return d;
-            if(name.substring(name.lastIndexOf('.')+1).equals(className))
+            if(name.substring(name.lastIndexOf('.')+1).equals(id))
                 return d;
         }
         return null;
@@ -925,8 +929,8 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
     /**
      * Alias for {@link #getDescriptor(String)}.
      */
-    public Descriptor getDescriptorByName(String className) {
-        return getDescriptor(className);
+    public Descriptor getDescriptorByName(String id) {
+        return getDescriptor(id);
     }
 
     /**
@@ -951,7 +955,8 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
      */
     public Descriptor getDescriptorOrDie(Class<? extends Describable> type) {
         Descriptor d = getDescriptor(type);
-        if (d==null)    throw new AssertionError(type+" is missing its descriptor");
+        if (d==null)
+            throw new AssertionError(type+" is missing its descriptor");
         return d;
     }
     
@@ -1064,6 +1069,26 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
      */
     public String getSystemMessage() {
         return systemMessage;
+    }
+
+    /**
+     * Gets the markup formatter used in the system.
+     *
+     * @return
+     *      never null.
+     * @since 1.391
+     */
+    public MarkupFormatter getMarkupFormatter() {
+        return markupFormatter!=null ? markupFormatter : RawHtmlMarkupFormatter.INSTANCE;
+    }
+
+    /**
+     * Sets the markup formatter used in the system globally.
+     *
+     * @since 1.391
+     */
+    public void setMarkupFormatter(MarkupFormatter f) {
+        this.markupFormatter = f;
     }
 
     /**
@@ -2354,8 +2379,6 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
         try {
             checkPermission(ADMINISTER);
 
-            req.setCharacterEncoding("UTF-8");
-
             JSONObject json = req.getSubmittedForm();
 
             // keep using 'useSecurity' field as the main configuration setting
@@ -2366,10 +2389,17 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
                 JSONObject security = json.getJSONObject("use_security");
                 setSecurityRealm(SecurityRealm.all().newInstanceFromRadioList(security,"realm"));
                 setAuthorizationStrategy(AuthorizationStrategy.all().newInstanceFromRadioList(security, "authorization"));
+
+                if (security.has("markupFormatter")) {
+                    markupFormatter = req.bindJSON(MarkupFormatter.class,security.getJSONObject("markupFormatter"));
+                } else {
+                    markupFormatter = null;
+                }
             } else {
                 useSecurity = null;
                 setSecurityRealm(SecurityRealm.NO_AUTHENTICATION);
                 authorizationStrategy = AuthorizationStrategy.UNSECURED;
+                markupFormatter = null;
             }
 
             if (json.has("csrf")) {
@@ -2392,7 +2422,7 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
             }
 
             primaryView = json.has("primaryView") ? json.getString("primaryView") : getViews().iterator().next().getViewName();
-            
+
             noUsageStatistics = json.has("usageStatisticsCollected") ? null : true;
 
             {
@@ -2580,13 +2610,6 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
             return null;
         }
         boolean isXmlSubmission = requestContentType.startsWith("application/xml") || requestContentType.startsWith("text/xml");
-        if(!isXmlSubmission) {
-            // containers often implement RFCs incorrectly in that it doesn't interpret query parameter
-            // decoding with UTF-8. This will ensure we get it right.
-            // but doing this for config.xml submission could potentiall overwrite valid
-            // "text/xml;charset=xxx"
-            req.setCharacterEncoding("UTF-8");
-        }
 
         String name = req.getParameter("name");
         if(name==null) {
@@ -3369,7 +3392,6 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
      * http://hudson.gotdns.com/wiki/display/HUDSON/Tomcat#Tomcat-i18n
      */
     public FormValidation doCheckURIEncoding(StaplerRequest request) throws IOException {
-        request.setCharacterEncoding("UTF-8");
         // expected is non-ASCII String
         final String expected = "\u57f7\u4e8b";
         final String value = fixEmpty(request.getParameter("value"));
@@ -3685,6 +3707,9 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
                 // fall through
             }
 
+            // totally unparseable
+            return null;
+        } catch (IllegalArgumentException e) {
             // totally unparseable
             return null;
         }

@@ -23,8 +23,8 @@
  */
 package hudson.maven;
 
-import hudson.Launcher;
 import hudson.Extension;
+import hudson.Launcher;
 import hudson.Util;
 import hudson.maven.reporters.MavenAbstractArtifactRecord;
 import hudson.model.AbstractBuild;
@@ -32,22 +32,31 @@ import hudson.model.AbstractProject;
 import hudson.model.BuildListener;
 import hudson.model.Result;
 import hudson.tasks.BuildStepDescriptor;
+import hudson.tasks.BuildStepMonitor;
 import hudson.tasks.Publisher;
 import hudson.tasks.Recorder;
-import hudson.tasks.BuildStepMonitor;
 import hudson.util.FormValidation;
-import net.sf.json.JSONObject;
-import org.apache.maven.artifact.deployer.ArtifactDeploymentException;
-import org.apache.maven.artifact.repository.ArtifactRepository;
-import org.apache.maven.artifact.repository.ArtifactRepositoryFactory;
-import org.apache.maven.artifact.repository.layout.ArtifactRepositoryLayout;
-import org.apache.maven.embedder.MavenEmbedderException;
-import org.codehaus.plexus.component.repository.exception.ComponentLookupException;
-import org.kohsuke.stapler.DataBoundConstructor;
-import org.kohsuke.stapler.StaplerRequest;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map.Entry;
+
+import net.sf.json.JSONObject;
+
+import org.apache.maven.artifact.Artifact;
+import org.apache.maven.artifact.deployer.ArtifactDeploymentException;
+import org.apache.maven.artifact.metadata.ArtifactMetadata;
+import org.apache.maven.artifact.repository.ArtifactRepository;
+import org.apache.maven.artifact.repository.ArtifactRepositoryFactory;
+import org.apache.maven.artifact.repository.ArtifactRepositoryPolicy;
+import org.apache.maven.artifact.repository.Authentication;
+import org.apache.maven.artifact.repository.layout.ArtifactRepositoryLayout;
+import org.apache.maven.repository.Proxy;
+import org.codehaus.plexus.component.repository.exception.ComponentLookupException;
+import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.QueryParameter;
+import org.kohsuke.stapler.StaplerRequest;
 
 /**
  * {@link Publisher} for {@link MavenModuleSetBuild} to deploy artifacts
@@ -96,8 +105,8 @@ public class RedeployPublisher extends Recorder {
             return true;
         }
 
-        MavenAbstractArtifactRecord mar = getAction(build);
-        if(mar==null) {
+        List<MavenAbstractArtifactRecord> mars = getActions( build, listener );
+        if(mars==null || mars.isEmpty()) {
             listener.getLogger().println("No artifacts are recorded. Is this a Maven project?");
             build.setResult(Result.FAILURE);
             return true;
@@ -108,16 +117,16 @@ public class RedeployPublisher extends Recorder {
             
             MavenEmbedder embedder = MavenUtil.createEmbedder(listener,build);
             ArtifactRepositoryLayout layout =
-                (ArtifactRepositoryLayout) embedder.getContainer().lookup( ArtifactRepositoryLayout.ROLE,"default");
+                (ArtifactRepositoryLayout) embedder.lookup( ArtifactRepositoryLayout.ROLE,"default");
             ArtifactRepositoryFactory factory =
                 (ArtifactRepositoryFactory) embedder.lookup(ArtifactRepositoryFactory.ROLE);
 
-            ArtifactRepository repository = factory.createDeploymentArtifactRepository(
+            final ArtifactRepository repository = factory.createDeploymentArtifactRepository(
                     id, url, layout, uniqueVersion);
+            WrappedArtifactRepository repo = new WrappedArtifactRepository(repository,uniqueVersion);
+            for (MavenAbstractArtifactRecord mar : mars)
+                mar.deploy(embedder,repo,listener);
 
-            mar.deploy(embedder,repository,listener);
-
-            embedder.stop();
             return true;
         } catch (MavenEmbedderException e) {
             e.printStackTrace(listener.error(e.getMessage()));
@@ -131,6 +140,8 @@ public class RedeployPublisher extends Recorder {
         return true;
     }
 
+
+    
     /**
      * Obtains the {@link MavenAbstractArtifactRecord} that we'll work on.
      * <p>
@@ -138,6 +149,23 @@ public class RedeployPublisher extends Recorder {
      */
     protected MavenAbstractArtifactRecord getAction(AbstractBuild<?, ?> build) {
         return build.getAction(MavenAbstractArtifactRecord.class);
+    }
+    
+    protected List<MavenAbstractArtifactRecord> getActions(AbstractBuild<?, ?> build, BuildListener listener) {
+        List<MavenAbstractArtifactRecord> actions = new ArrayList<MavenAbstractArtifactRecord>();
+        if (!(build instanceof MavenModuleSetBuild)) {
+            return actions;
+        }
+        for (Entry<MavenModule, MavenBuild> e : ((MavenModuleSetBuild)build).getModuleLastBuilds().entrySet()) {
+            MavenAbstractArtifactRecord a = e.getValue().getAction( MavenAbstractArtifactRecord.class );
+            if (a == null) {
+                listener.getLogger().println("No artifacts are recorded for module" + e.getKey().getName() + ". Is this a Maven project?");
+            } else {
+                actions.add( a );    
+            }
+            
+        }
+        return actions;
     }
 
     public BuildStepMonitor getRequiredMonitorService() {
@@ -190,4 +218,126 @@ public class RedeployPublisher extends Recorder {
             return FormValidation.ok();
         }
     }
+    
+    //---------------------------------------------
+    
+    
+    public static class WrappedArtifactRepository implements ArtifactRepository {
+        private ArtifactRepository artifactRepository;
+        private boolean uniqueVersion;
+        public WrappedArtifactRepository (ArtifactRepository artifactRepository, boolean uniqueVersion)
+        {
+            this.artifactRepository = artifactRepository;
+            this.uniqueVersion = uniqueVersion;
+        }
+        public String pathOf( Artifact artifact )
+        {
+            return artifactRepository.pathOf( artifact );
+        }
+        public String pathOfRemoteRepositoryMetadata( ArtifactMetadata artifactMetadata )
+        {
+            return artifactRepository.pathOfRemoteRepositoryMetadata( artifactMetadata );
+        }
+        public String pathOfLocalRepositoryMetadata( ArtifactMetadata metadata, ArtifactRepository repository )
+        {
+            return artifactRepository.pathOfLocalRepositoryMetadata( metadata, repository );
+        }
+        public String getUrl()
+        {
+            return artifactRepository.getUrl();
+        }
+        public void setUrl( String url )
+        {
+            artifactRepository.setUrl( url );
+        }
+        public String getBasedir()
+        {
+            return artifactRepository.getBasedir();
+        }
+        public String getProtocol()
+        {
+            return artifactRepository.getProtocol();
+        }
+        public String getId()
+        {
+            return artifactRepository.getId();
+        }
+        public void setId( String id )
+        {
+            artifactRepository.setId( id );
+        }
+        public ArtifactRepositoryPolicy getSnapshots()
+        {
+            return artifactRepository.getSnapshots();
+        }
+        public void setSnapshotUpdatePolicy( ArtifactRepositoryPolicy policy )
+        {
+            artifactRepository.setSnapshotUpdatePolicy( policy );
+        }
+        public ArtifactRepositoryPolicy getReleases()
+        {
+            return artifactRepository.getReleases();
+        }
+        public void setReleaseUpdatePolicy( ArtifactRepositoryPolicy policy )
+        {
+            artifactRepository.setReleaseUpdatePolicy( policy );
+        }
+        public ArtifactRepositoryLayout getLayout()
+        {
+            return artifactRepository.getLayout();
+        }
+        public void setLayout( ArtifactRepositoryLayout layout )
+        {
+            artifactRepository.setLayout( layout );
+        }
+        public String getKey()
+        {
+            return artifactRepository.getKey();
+        }
+        public boolean isUniqueVersion()
+        {
+            return this.uniqueVersion;
+        }
+        
+        public void setUniqueVersion(boolean uniqueVersion) {
+            this.uniqueVersion = uniqueVersion;
+        }
+        
+        public boolean isBlacklisted()
+        {
+            return artifactRepository.isBlacklisted();
+        }
+        public void setBlacklisted( boolean blackListed )
+        {
+            artifactRepository.setBlacklisted( blackListed );
+        }
+        public Artifact find( Artifact artifact )
+        {
+            return artifactRepository.find( artifact );
+        }
+        public List<String> findVersions( Artifact artifact )
+        {
+            return artifactRepository.findVersions( artifact );
+        }
+        public boolean isProjectAware()
+        {
+            return artifactRepository.isProjectAware();
+        }
+        public void setAuthentication( Authentication authentication )
+        {
+            artifactRepository.setAuthentication( authentication );
+        }
+        public Authentication getAuthentication()
+        {
+            return artifactRepository.getAuthentication();
+        }
+        public void setProxy( Proxy proxy )
+        {
+            artifactRepository.setProxy( proxy );
+        }
+        public Proxy getProxy()
+        {
+            return artifactRepository.getProxy();
+        }
+    }    
 }
