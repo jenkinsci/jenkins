@@ -173,7 +173,7 @@ public abstract class FederatedLoginService implements ExtensionPoint {
          *      to the caller of your "doXyz" method, it will either render an error page or initiate
          *      a user registration session (provided that {@link SecurityRealm} supports that.)
          */
-        public final User signin() throws UnclaimedIdentityException {
+        public User signin() throws UnclaimedIdentityException {
             User u = locateUser();
             if (u!=null) {
                 // login as this user
