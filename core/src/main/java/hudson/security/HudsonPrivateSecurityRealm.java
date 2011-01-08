@@ -153,8 +153,6 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
 
     /**
      * Show the sign up page with the data from the identity.
-     *
-     * TODO: associate identity after a signup
      */
     @Override
     public HttpResponse commenceSignup(final FederatedIdentity identity) {
@@ -163,7 +161,9 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
         return new ForwardToView(this,"signupWithFederatedIdentity.jelly") {
             @Override
             public void generateResponse(StaplerRequest req, StaplerResponse rsp, Object node) throws IOException, ServletException {
-                req.setAttribute("data",new SignupInfo(identity));
+                SignupInfo si = new SignupInfo(identity);
+                si.errorMessage = Messages.HudsonPrivateSecurityRealm_WouldYouLikeToSignUp(identity.getPronoun(),identity.getIdentifier());
+                req.setAttribute("data", si);
                 super.generateResponse(req, rsp, node);
             }
         };
@@ -174,7 +174,7 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
      * with {@link #commenceSignup(FederatedIdentity)}.
      */
     public User doCreateAccountWithFederatedIdentity(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
-        User u = doCreateAccount(req,rsp);
+        User u = _doCreateAccount(req,rsp,"signupWithFederatedIdentity.jelly");
         if (u!=null)
             ((FederatedIdentity)req.getSession().getAttribute(FEDERATED_IDENTITY_SESSION_KEY)).addTo(u);
         return u;
@@ -186,11 +186,15 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
      * Creates an user account. Used for self-registration.
      */
     public User doCreateAccount(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
+        return _doCreateAccount(req, rsp, "signup.jelly");
+    }
+
+    private User _doCreateAccount(StaplerRequest req, StaplerResponse rsp, String formView) throws ServletException, IOException {
         if(!allowsSignup())
             throw HttpResponses.error(SC_UNAUTHORIZED,new Exception("User sign up is prohibited"));
 
         boolean firstUser = !hasSomeUser();
-        User u = createAccount(req, rsp, true, "signup.jelly");
+        User u = createAccount(req, rsp, true, formView);
         if(u!=null) {
             if(firstUser)
                 tryToMakeAdmin(u);  // the first user should be admin, or else there's a risk of lock out
