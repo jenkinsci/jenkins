@@ -222,7 +222,11 @@ public abstract class FederatedLoginService implements ExtensionPoint {
         }
     }
 
-    public static class UnclaimedIdentityException extends Exception implements HttpResponse {
+    /**
+     * Used in {@link FederatedIdentity#signin()} to indicate that the identifier is not currently
+     * associated with anyone.
+     */
+    public static class UnclaimedIdentityException extends RuntimeException implements HttpResponse {
         public final FederatedIdentity identity;
 
         public UnclaimedIdentityException(FederatedIdentity identity) {
