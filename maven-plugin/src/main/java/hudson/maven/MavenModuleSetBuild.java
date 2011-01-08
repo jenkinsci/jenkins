@@ -999,6 +999,9 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
         // We're called against the module root, not the workspace, which can cause a lot of confusion.
         private final String workspaceProper;
         private final String mavenVersion;
+        
+        String rootPOMRelPrefix;
+        
         public PomParser(BuildListener listener, MavenInstallation mavenHome, MavenModuleSet project,String mavenVersion) {
             // project cannot be shipped to the remote JVM, so all the relevant properties need to be captured now.
             this.listener = listener;
@@ -1038,6 +1041,18 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
             if(!pom.exists())
                 throw new AbortException(Messages.MavenModuleSetBuild_NoSuchPOMFile(pom));
 
+            if (rootPOM.startsWith("../") || rootPOM.startsWith("..\\")) {
+                File wsp = new File(workspaceProper);
+                               
+                if (!ws.equals(wsp)) {
+                    rootPOMRelPrefix = ws.getCanonicalPath().substring(wsp.getCanonicalPath().length()+1)+"/";
+                } else {
+                    rootPOMRelPrefix = wsp.getName() + "/";
+                }
+            } else {
+                rootPOMRelPrefix = "";
+            }            
+            
             if(verbose)
                 logger.println("Parsing "
 			       + (nonRecursive ? "non-recursively " : "recursively ")
@@ -1150,12 +1165,11 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
             String absolutePath = FilenameUtils.normalize( mp.getBasedir().getAbsolutePath());
             String relPath = StringUtils.removeStart( absolutePath, this.workspaceProper );
             
-            relPath = StringUtils.remove( relPath, '/' );
-            
-            // root must be marked with only /
-            if (StringUtils.isBlank( relPath )) {
-                relPath = "/";
+            if (parent == null ) {
+                relPath = getRootPath(rootPOMRelPrefix);
             }
+            
+            relPath = StringUtils.removeStart( relPath, "/" );
             
             PomInfo pi = new PomInfo(mp, parent, relPath);
             infos.add(pi);
@@ -1194,6 +1208,19 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
                 }
             }
         }
+        
+        /**
+         * Computes the path of {@link #rootPOM}.
+         *
+         * Returns "abc" if rootPOM="abc/pom.xml"
+         * If rootPOM="pom.xml", this method returns "".
+         */
+        private String getRootPath(String prefix) {
+            int idx = Math.max(rootPOM.lastIndexOf('/'), rootPOM.lastIndexOf('\\'));
+            if(idx==-1) return "";
+            return prefix + rootPOM.substring(0,idx);
+        }
+        
 
         private static final long serialVersionUID = 1L;
     }
