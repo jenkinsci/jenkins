@@ -661,7 +661,7 @@ public final class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,Ma
      * Check for "-N" or "--non-recursive" in the Maven goals/options.
      */
     public boolean isNonRecursive() {
-	return checkMavenOption("-N", "--non-recursive");
+        return checkMavenOption("-N", "--non-recursive");
     }
 
     /**

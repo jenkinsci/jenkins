@@ -128,7 +128,7 @@ public class MavenBuildTest extends HudsonTestCase {
     }    
 
     @Email("https://groups.google.com/d/msg/hudson-users/Xhw00UopVN0/FA9YqDAIsSYJ")
-    public void testMavenVersionWithEnvVar() throws Exception {
+    public void testMavenWithDependencyVersionInEnvVar() throws Exception {
         
         MavenModuleSet m = createMavenProject();
         MavenInstallation mavenInstallation = configureDefaultMaven();

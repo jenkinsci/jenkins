@@ -1,7 +1,6 @@
 package hudson.maven;
 
 import hudson.Launcher;
-import hudson.maven.MavenBuildTest.TestReporter;
 import hudson.model.BuildListener;
 import hudson.model.ParametersDefinitionProperty;
 import hudson.model.Result;

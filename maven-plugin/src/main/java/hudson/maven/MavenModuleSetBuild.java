@@ -43,9 +43,12 @@ import hudson.model.Computer;
 import hudson.model.Environment;
 import hudson.model.Fingerprint;
 import hudson.model.Hudson;
+import hudson.model.ParameterDefinition;
 import hudson.model.ParametersAction;
+import hudson.model.ParametersDefinitionProperty;
 import hudson.model.Result;
 import hudson.model.Run;
+import hudson.model.StringParameterDefinition;
 import hudson.model.TaskListener;
 import hudson.remoting.Channel;
 import hudson.remoting.VirtualChannel;
@@ -1009,6 +1012,15 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
             this.rootPOM = project.getRootPOM();
             this.profiles = project.getProfiles();
             this.properties = project.getMavenProperties();
+            ParametersDefinitionProperty parametersDefinitionProperty = project.getProperty( ParametersDefinitionProperty.class );
+            if (parametersDefinitionProperty != null && parametersDefinitionProperty.getParameterDefinitions() != null) {
+                for (ParameterDefinition parameterDefinition : parametersDefinitionProperty.getParameterDefinitions()) {
+                    // those must used as env var
+                    if (parameterDefinition instanceof StringParameterDefinition) {
+                        this.properties.put( "env." + parameterDefinition.getName(), ((StringParameterDefinition)parameterDefinition).getDefaultValue() );
+                    }
+                }
+            }
             this.nonRecursive = project.isNonRecursive();
             this.workspaceProper = project.getLastBuild().getWorkspace().getRemote();
             if (project.usesPrivateRepository()) {
