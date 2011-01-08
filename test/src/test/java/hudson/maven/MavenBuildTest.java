@@ -2,7 +2,9 @@ package hudson.maven;
 
 import hudson.Launcher;
 import hudson.model.BuildListener;
+import hudson.model.ParametersDefinitionProperty;
 import hudson.model.Result;
+import hudson.model.StringParameterDefinition;
 import hudson.scm.SubversionSCM;
 import hudson.tasks.Maven.MavenInstallation;
 import hudson.util.NullStream;
@@ -12,6 +14,7 @@ import java.io.IOException;
 import java.io.PrintWriter;
 
 import org.jvnet.hudson.test.Bug;
+import org.jvnet.hudson.test.Email;
 import org.jvnet.hudson.test.ExtractResourceSCM;
 import org.jvnet.hudson.test.HudsonTestCase;
 import org.tmatesoft.svn.core.SVNException;
@@ -120,6 +123,23 @@ public class MavenBuildTest extends HudsonTestCase {
         m.getReporters().add(new TestReporter());
         m.setScm(new ExtractResourceSCM(getClass().getResource("several-modules-in-directory.zip")));
         m.setGoals( "clean validate" );
+        MavenModuleSetBuild mmsb =  buildAndAssertSuccess(m);
+        assertFalse( mmsb.getProject().getModules().isEmpty());
+    }    
+
+    @Email("https://groups.google.com/d/msg/hudson-users/Xhw00UopVN0/FA9YqDAIsSYJ")
+    public void testMavenVersionWithEnvVar() throws Exception {
+        
+        MavenModuleSet m = createMavenProject();
+        MavenInstallation mavenInstallation = configureDefaultMaven();
+        ParametersDefinitionProperty parametersDefinitionProperty = 
+            new ParametersDefinitionProperty(new StringParameterDefinition( "JUNITVERSION", "3.8.2" ));
+        
+        m.addProperty( parametersDefinitionProperty );
+        m.setMaven( mavenInstallation.getName() );
+        m.getReporters().add(new TestReporter());
+        m.setScm(new ExtractResourceSCM(getClass().getResource("envars-maven-project.zip")));
+        m.setGoals( "clean test-compile" );
         MavenModuleSetBuild mmsb =  buildAndAssertSuccess(m);
         assertFalse( mmsb.getProject().getModules().isEmpty());
     }     

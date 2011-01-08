@@ -1,8 +1,11 @@
 package hudson.maven;
 
 import hudson.Launcher;
+import hudson.maven.MavenBuildTest.TestReporter;
 import hudson.model.BuildListener;
+import hudson.model.ParametersDefinitionProperty;
 import hudson.model.Result;
+import hudson.model.StringParameterDefinition;
 import hudson.tasks.Maven.MavenInstallation;
 
 import java.io.File;
@@ -11,6 +14,7 @@ import java.io.IOException;
 
 import org.apache.commons.io.FileUtils;
 import org.jvnet.hudson.test.Bug;
+import org.jvnet.hudson.test.Email;
 import org.jvnet.hudson.test.ExtractResourceSCM;
 import org.jvnet.hudson.test.HudsonTestCase;
 
@@ -113,6 +117,22 @@ public class Maven3BuildTest extends HudsonTestCase {
         assertFalse( mmsb.getProject().getModules().isEmpty());
     }    
     
+    @Email("https://groups.google.com/d/msg/hudson-users/Xhw00UopVN0/FA9YqDAIsSYJ")
+    public void testMavenWithDependencyVersionInEnvVar() throws Exception {
+        
+        MavenModuleSet m = createMavenProject();
+        MavenInstallation mavenInstallation = configureMaven3();
+        ParametersDefinitionProperty parametersDefinitionProperty = 
+            new ParametersDefinitionProperty(new StringParameterDefinition( "JUNITVERSION", "3.8.2" ));
+        
+        m.addProperty( parametersDefinitionProperty );
+        m.setMaven( mavenInstallation.getName() );
+        m.getReporters().add(new TestReporter());
+        m.setScm(new ExtractResourceSCM(getClass().getResource("envars-maven-project.zip")));
+        m.setGoals( "clean test-compile" );
+        MavenModuleSetBuild mmsb =  buildAndAssertSuccess(m);
+        assertFalse( mmsb.getProject().getModules().isEmpty());
+    }    
     
     private static class TestReporter extends MavenReporter {
         @Override
