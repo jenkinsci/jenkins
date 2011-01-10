@@ -1008,6 +1008,8 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
         private final String workspaceProper;
         private final String mavenVersion;
         
+        private final String moduleRootPath;
+        
         private boolean resolveDependencies = false;
   
         private boolean processPlugins = false;
@@ -1043,7 +1045,12 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
             this.mavenVersion = mavenVersion;
             this.resolveDependencies = project.isResolveDependencies();
             this.processPlugins = project.isProcessPlugins();
+            
+            this.moduleRootPath = 
+                project.getScm().getModuleRoot( project.getLastBuild().getWorkspace(), project.getLastBuild() ).getRemote();            
+            
             this.mavenValidationLevel = project.getMavenValidationLevel();
+
         }
 
         
@@ -1197,7 +1204,8 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
          */
         private void toPomInfo(MavenProject mp, PomInfo parent, Map<String,MavenProject> abslPath, Set<PomInfo> infos) throws IOException {
             
-            String relPath = PathTool.getRelativeFilePath( this.workspaceProper, mp.getBasedir().getPath() );
+            String relPath = PathTool.getRelativeFilePath( this.moduleRootPath, mp.getBasedir().getPath() );
+                //PathTool.getRelativeFilePath( this.workspaceProper, mp.getBasedir().getPath() );
             relPath = FilenameUtils.normalize( relPath );
             
             if (parent == null ) {
