@@ -73,6 +73,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -83,6 +84,8 @@ import javax.servlet.ServletException;
 
 import net.sf.json.JSONObject;
 
+import org.apache.commons.lang.math.NumberUtils;
+import org.apache.maven.model.building.ModelBuildingRequest;
 import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
@@ -193,6 +196,13 @@ public final class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,Ma
      * @since 1.394
      */    
     private boolean processPlugins = false;
+    
+    /**
+     * parameter for validation level during pom parsing by default the one corresponding
+     * to the maven version used (2 or 3)
+     * @since 1.394
+     */    
+    private int mavenValidationLevel = -1;
 
     /**
      * Reporters configured at {@link MavenModuleSet} level. Applies to all {@link MavenModule} builds.
@@ -376,21 +386,22 @@ public final class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,Ma
         return resolveDependencies;
     }
 
-    public void setResolveDependencies( boolean resolveDependencies )
-    {
+    public void setResolveDependencies( boolean resolveDependencies ) {
         this.resolveDependencies = resolveDependencies;
     }
 
-    public boolean isProcessPlugins()
-    {
+    public boolean isProcessPlugins() {
         return processPlugins;
     }
 
-    public void setProcessPlugins( boolean processPlugins )
-    {
+    public void setProcessPlugins( boolean processPlugins ) {
         this.processPlugins = processPlugins;
     }    
 
+    public int getMavenValidationLevel() {
+        return mavenValidationLevel;
+    }    
+    
     /**
      * List of active {@link MavenReporter}s that should be applied to all module builds.
      */
@@ -798,6 +809,7 @@ public final class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,Ma
         archivingDisabled = req.hasParameter("maven.archivingDisabled");
         resolveDependencies = req.hasParameter( "maven.resolveDependencies" );
         processPlugins = req.hasParameter( "maven.processPlugins" );
+        mavenValidationLevel = NumberUtils.toInt( req.getParameter( "maven.validationLevel" ), -1 );
         reporters.rebuild(req,json,MavenReporters.getConfigurableList());
         publishers.rebuild(req,json,BuildStepDescriptor.filter(Publisher.all(),this.getClass()));
         buildWrappers.rebuild(req,json,BuildWrappers.getFor(this));
@@ -860,10 +872,21 @@ public final class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,Ma
          * Globally-defined MAVEN_OPTS.
          */
         private String globalMavenOpts;
+        
+        /**
+         * @since 1.394
+         */
+        private Map<String, Integer> mavenValidationLevels = new LinkedHashMap<String, Integer>();
 
         public DescriptorImpl() {
             super();
             load();
+            mavenValidationLevels.put( "DEFAULT", -1 );
+            mavenValidationLevels.put( "LEVEL_MINIMAL", ModelBuildingRequest.VALIDATION_LEVEL_MINIMAL );
+            mavenValidationLevels.put( "LEVEL_MAVEN_2_0", ModelBuildingRequest.VALIDATION_LEVEL_MAVEN_2_0 );
+            mavenValidationLevels.put( "LEVEL_MAVEN_3_0", ModelBuildingRequest.VALIDATION_LEVEL_MAVEN_3_0 );
+            mavenValidationLevels.put( "LEVEL_MAVEN_3_1", ModelBuildingRequest.VALIDATION_LEVEL_MAVEN_3_1 );
+            mavenValidationLevels.put( "LEVEL_STRICT", ModelBuildingRequest.VALIDATION_LEVEL_STRICT );
         }
         
         public String getGlobalMavenOpts() {
@@ -886,6 +909,14 @@ public final class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,Ma
         public Maven.DescriptorImpl getMavenDescriptor() {
             return Hudson.getInstance().getDescriptorByType(Maven.DescriptorImpl.class);
         }
+        
+        /**
+         * @since 1.394
+         * @return
+         */
+        public Map<String, Integer> getMavenValidationLevels() {
+            return mavenValidationLevels;
+        }
 
         @Override
         public boolean configure( StaplerRequest req, JSONObject o ) {
@@ -906,7 +937,11 @@ public final class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,Ma
             Mailer.class,           // for historical reasons, Maven uses MavenMailer
             JUnitResultArchiver.class // done by SurefireArchiver
         ));
+
+
     }
+
+
 
 
 

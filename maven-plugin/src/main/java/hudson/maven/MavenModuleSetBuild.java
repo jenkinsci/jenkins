@@ -1007,6 +1007,8 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
   
         private boolean processPlugins = false;
         
+        private int mavenValidationLevel = -1;
+        
         String rootPOMRelPrefix;
         
         public PomParser(BuildListener listener, MavenInstallation mavenHome, MavenModuleSet project,String mavenVersion) {
@@ -1036,6 +1038,7 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
             this.mavenVersion = mavenVersion;
             this.resolveDependencies = project.isResolveDependencies();
             this.processPlugins = project.isProcessPlugins();
+            this.mavenValidationLevel = project.getMavenValidationLevel();
         }
 
         
@@ -1118,6 +1121,12 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
                     reactorReader = new ReactorReader( new HashMap<String, MavenProject>(), new File(workspaceProper) );
                     mavenEmbedderRequest.setWorkspaceReader( reactorReader );
                 }
+                
+                
+                if (this.mavenValidationLevel >= 0) {
+                    mavenEmbedderRequest.setValidationLevel( this.mavenValidationLevel );
+                }
+                
                 //mavenEmbedderRequest.setClassLoader( MavenEmbedderUtils.buildClassRealm( mavenHome.getHomeDir(), null, null ) );
                 
                 MavenEmbedder embedder = MavenUtil.createEmbedder( mavenEmbedderRequest );
