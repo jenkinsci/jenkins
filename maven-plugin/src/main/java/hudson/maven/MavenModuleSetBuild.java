@@ -1006,6 +1006,12 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
         private final String workspaceProper;
         private final String mavenVersion;
         
+        private boolean resolveDependencies = false;
+  
+        private boolean processPlugins = false;
+        
+        private int mavenValidationLevel = -1;
+        
         String rootPOMRelPrefix;
         
         public PomParser(BuildListener listener, MavenInstallation mavenHome, MavenModuleSet project,String mavenVersion) {
@@ -1033,6 +1039,9 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
             }
             this.alternateSettings = project.getAlternateSettings();
             this.mavenVersion = mavenVersion;
+            this.resolveDependencies = project.isResolveDependencies();
+            this.processPlugins = project.isProcessPlugins();
+            this.mavenValidationLevel = project.getMavenValidationLevel();
         }
 
         
@@ -1102,9 +1111,8 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
                                                                                       privateRepository, settingsLoc );
                 mavenEmbedderRequest.setTransferListener( new SimpleTransferListener(listener) );
                 
-                // FIXME must be configurable tru the ui !!
-                mavenEmbedderRequest.setProcessPlugins( true );
-                mavenEmbedderRequest.setResolveDependencies( true );
+                mavenEmbedderRequest.setProcessPlugins( this.processPlugins );
+                mavenEmbedderRequest.setResolveDependencies( this.resolveDependencies );
                 
                 // FIXME handle 3.1 level when version will be here : no rush :-)
                 // or made something configurable tru the ui ?
@@ -1116,6 +1124,12 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
                     reactorReader = new ReactorReader( new HashMap<String, MavenProject>(), new File(workspaceProper) );
                     mavenEmbedderRequest.setWorkspaceReader( reactorReader );
                 }
+                
+                
+                if (this.mavenValidationLevel >= 0) {
+                    mavenEmbedderRequest.setValidationLevel( this.mavenValidationLevel );
+                }
+                
                 //mavenEmbedderRequest.setClassLoader( MavenEmbedderUtils.buildClassRealm( mavenHome.getHomeDir(), null, null ) );
                 
                 MavenEmbedder embedder = MavenUtil.createEmbedder( mavenEmbedderRequest );
