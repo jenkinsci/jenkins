@@ -80,6 +80,7 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.maven.BuildFailureException;
@@ -91,6 +92,7 @@ import org.apache.maven.model.building.ModelBuildingRequest;
 import org.apache.maven.monitor.event.EventDispatcher;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.project.ProjectBuildingException;
+import org.codehaus.plexus.util.PathTool;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 import org.sonatype.aether.transfer.TransferCancelledException;
@@ -1190,9 +1192,13 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
             }
         }
 
+        /**
+         * @see PomInfo#relativePath to understand relPath calculation
+         */
         private void toPomInfo(MavenProject mp, PomInfo parent, Map<String,MavenProject> abslPath, Set<PomInfo> infos) throws IOException {
-            String absolutePath = FilenameUtils.normalize( mp.getBasedir().getAbsolutePath());
-            String relPath = StringUtils.removeStart( absolutePath, this.workspaceProper );
+            
+            String relPath = PathTool.getRelativeFilePath( this.workspaceProper, mp.getBasedir().getPath() );
+            relPath = FilenameUtils.normalize( relPath );
             
             if (parent == null ) {
                 relPath = getRootPath(rootPOMRelPrefix);
