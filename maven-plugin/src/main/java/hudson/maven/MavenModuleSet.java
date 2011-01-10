@@ -181,6 +181,18 @@ public final class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,Ma
      * If true, do not archive artifacts to the master.
      */
     private boolean archivingDisabled = false;
+    
+    /**
+     * parameter for pom parsing by default <code>false</code> to be faster
+     * @since 1.394
+     */
+    private boolean resolveDependencies = false;
+    
+    /**
+     * parameter for pom parsing by default <code>false</code> to be faster
+     * @since 1.394
+     */    
+    private boolean processPlugins = false;
 
     /**
      * Reporters configured at {@link MavenModuleSet} level. Applies to all {@link MavenModule} builds.
@@ -358,6 +370,26 @@ public final class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,Ma
     public void setIsArchivingDisabled(boolean archivingDisabled) {
         this.archivingDisabled = archivingDisabled;
     }
+    
+    public boolean isResolveDependencies()
+    {
+        return resolveDependencies;
+    }
+
+    public void setResolveDependencies( boolean resolveDependencies )
+    {
+        this.resolveDependencies = resolveDependencies;
+    }
+
+    public boolean isProcessPlugins()
+    {
+        return processPlugins;
+    }
+
+    public void setProcessPlugins( boolean processPlugins )
+    {
+        this.processPlugins = processPlugins;
+    }    
 
     /**
      * List of active {@link MavenReporter}s that should be applied to all module builds.
@@ -764,7 +796,8 @@ public final class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,Ma
         ignoreUpstremChanges = !json.has("triggerByDependency");
         incrementalBuild = req.hasParameter("maven.incrementalBuild");
         archivingDisabled = req.hasParameter("maven.archivingDisabled");
-        
+        resolveDependencies = req.hasParameter( "maven.resolveDependencies" );
+        processPlugins = req.hasParameter( "maven.processPlugins" );
         reporters.rebuild(req,json,MavenReporters.getConfigurableList());
         publishers.rebuild(req,json,BuildStepDescriptor.filter(Publisher.all(),this.getClass()));
         buildWrappers.rebuild(req,json,BuildWrappers.getFor(this));
@@ -874,6 +907,8 @@ public final class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,Ma
             JUnitResultArchiver.class // done by SurefireArchiver
         ));
     }
+
+
 
 
 }

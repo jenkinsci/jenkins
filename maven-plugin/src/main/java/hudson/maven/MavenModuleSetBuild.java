@@ -1003,6 +1003,10 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
         private final String workspaceProper;
         private final String mavenVersion;
         
+        private boolean resolveDependencies = false;
+  
+        private boolean processPlugins = false;
+        
         String rootPOMRelPrefix;
         
         public PomParser(BuildListener listener, MavenInstallation mavenHome, MavenModuleSet project,String mavenVersion) {
@@ -1030,6 +1034,8 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
             }
             this.alternateSettings = project.getAlternateSettings();
             this.mavenVersion = mavenVersion;
+            this.resolveDependencies = project.isResolveDependencies();
+            this.processPlugins = project.isProcessPlugins();
         }
 
         
@@ -1099,9 +1105,8 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
                                                                                       privateRepository, settingsLoc );
                 mavenEmbedderRequest.setTransferListener( new SimpleTransferListener(listener) );
                 
-                // FIXME must be configurable tru the ui !!
-                mavenEmbedderRequest.setProcessPlugins( true );
-                mavenEmbedderRequest.setResolveDependencies( true );
+                mavenEmbedderRequest.setProcessPlugins( this.processPlugins );
+                mavenEmbedderRequest.setResolveDependencies( this.resolveDependencies );
                 
                 // FIXME handle 3.1 level when version will be here : no rush :-)
                 // or made something configurable tru the ui ?
