@@ -534,7 +534,8 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
 
                         for (MavenModule m : project.sortedActiveModules) {
                             MavenBuild mb = m.newBuild();
-                            
+                            // HUDSON-8418
+                            mb.setBuiltOnStr( getBuiltOnStr() );
                             // Check if incrementalBuild is selected and that there are changes -
                             // we act as if incrementalBuild is not set if there are no changes.
                             if (!MavenModuleSetBuild.this.getChangeSet().isEmptySet()
@@ -619,7 +620,8 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
                             {
                                 reporters.put( mavenModule.getModuleName(), mavenModule.createReporters() );
                             }
-                            Maven3Builder maven3Builder = new Maven3Builder( slistener, proxies, reporters, margs.toList(), envVars, mavenBuildInformation );
+                            Maven3Builder maven3Builder = 
+                                new Maven3Builder( slistener, proxies, reporters, margs.toList(), envVars, mavenBuildInformation );
                             MavenProbeAction mpa=null;
                             try {
                                 mpa = new MavenProbeAction(project,process.channel);
@@ -634,7 +636,8 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
                             
                         } else {
                          
-                            Builder builder = new Builder(slistener, proxies, project.sortedActiveModules, margs.toList(), envVars, mavenBuildInformation);
+                            Builder builder = 
+                                new Builder(slistener, proxies, project.sortedActiveModules, margs.toList(), envVars, mavenBuildInformation);
                             MavenProbeAction mpa=null;
                             try {
                                 mpa = new MavenProbeAction(project,process.channel);
