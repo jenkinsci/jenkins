@@ -79,6 +79,7 @@ public final class LegacySecurityRealm extends SecurityRealm implements Authenti
         Binding binding = new Binding();
         SecurityComponents sc = this.createSecurityComponents();
         binding.setVariable("securityComponents", sc);
+        binding.setVariable("securityRealm",this);
         BeanBuilder builder = new BeanBuilder();
         builder.parse(filterConfig.getServletContext().getResourceAsStream("/WEB-INF/security/SecurityFilters.groovy"),binding);
         

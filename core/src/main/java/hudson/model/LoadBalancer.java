@@ -29,6 +29,7 @@ import hudson.model.queue.MappingWorksheet.ExecutorChunk;
 import hudson.model.queue.MappingWorksheet.Mapping;
 import hudson.util.ConsistentHash;
 import hudson.util.ConsistentHash.Hash;
+import hudson.matrix.MatrixConfiguration;
 
 import java.util.ArrayList;
 import java.util.List;

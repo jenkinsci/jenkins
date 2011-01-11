@@ -28,6 +28,7 @@ import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.export.Exported;
 
 import java.util.Locale;
+import java.util.Map;
 
 import hudson.util.VariableResolver;
 

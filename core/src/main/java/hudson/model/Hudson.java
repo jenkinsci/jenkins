@@ -3709,6 +3709,9 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
 
             // totally unparseable
             return null;
+        } catch (IllegalArgumentException e) {
+            // totally unparseable
+            return null;
         }
     }
 

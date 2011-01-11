@@ -1,5 +1,9 @@
 package hudson.scm;
 
+import hudson.model.AbstractProject;
+import hudson.model.TaskListener;
+import hudson.Launcher;
+import hudson.FilePath;
 
 import java.io.Serializable;
 

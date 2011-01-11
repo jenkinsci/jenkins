@@ -166,6 +166,9 @@ public class MavenUtil {
         // FIXME configure those !!
         mavenRequest.setGlobalSettingsFile( new File( mavenEmbedderRequest.getMavenHome(), "conf/settings.xml" ).getAbsolutePath() );
         
+        if (mavenEmbedderRequest.getWorkspaceReader() != null ) {
+            mavenRequest.setWorkspaceReader( mavenEmbedderRequest.getWorkspaceReader() );
+        }
         
         // TODO olamy check this sould be userProperties 
         mavenRequest.setSystemProperties(mavenEmbedderRequest.getSystemProperties());
