@@ -43,9 +43,12 @@ import hudson.model.Computer;
 import hudson.model.Environment;
 import hudson.model.Fingerprint;
 import hudson.model.Hudson;
+import hudson.model.ParameterDefinition;
 import hudson.model.ParametersAction;
+import hudson.model.ParametersDefinitionProperty;
 import hudson.model.Result;
 import hudson.model.Run;
+import hudson.model.StringParameterDefinition;
 import hudson.model.TaskListener;
 import hudson.remoting.Channel;
 import hudson.remoting.VirtualChannel;
@@ -77,6 +80,7 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.maven.BuildFailureException;
@@ -88,6 +92,7 @@ import org.apache.maven.model.building.ModelBuildingRequest;
 import org.apache.maven.monitor.event.EventDispatcher;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.project.ProjectBuildingException;
+import org.codehaus.plexus.util.PathTool;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 import org.sonatype.aether.transfer.TransferCancelledException;
@@ -531,7 +536,8 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
 
                         for (MavenModule m : project.sortedActiveModules) {
                             MavenBuild mb = m.newBuild();
-                            
+                            // HUDSON-8418
+                            mb.setBuiltOnStr( getBuiltOnStr() );
                             // Check if incrementalBuild is selected and that there are changes -
                             // we act as if incrementalBuild is not set if there are no changes.
                             if (!MavenModuleSetBuild.this.getChangeSet().isEmptySet()
@@ -616,7 +622,8 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
                             {
                                 reporters.put( mavenModule.getModuleName(), mavenModule.createReporters() );
                             }
-                            Maven3Builder maven3Builder = new Maven3Builder( slistener, proxies, reporters, margs.toList(), envVars, mavenBuildInformation );
+                            Maven3Builder maven3Builder = 
+                                new Maven3Builder( slistener, proxies, reporters, margs.toList(), envVars, mavenBuildInformation );
                             MavenProbeAction mpa=null;
                             try {
                                 mpa = new MavenProbeAction(project,process.channel);
@@ -631,7 +638,8 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
                             
                         } else {
                          
-                            Builder builder = new Builder(slistener, proxies, project.sortedActiveModules, margs.toList(), envVars, mavenBuildInformation);
+                            Builder builder = 
+                                new Builder(slistener, proxies, project.sortedActiveModules, margs.toList(), envVars, mavenBuildInformation);
                             MavenProbeAction mpa=null;
                             try {
                                 mpa = new MavenProbeAction(project,process.channel);
@@ -999,6 +1007,17 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
         // We're called against the module root, not the workspace, which can cause a lot of confusion.
         private final String workspaceProper;
         private final String mavenVersion;
+        
+        private final String moduleRootPath;
+        
+        private boolean resolveDependencies = false;
+  
+        private boolean processPlugins = false;
+        
+        private int mavenValidationLevel = -1;
+        
+        String rootPOMRelPrefix;
+        
         public PomParser(BuildListener listener, MavenInstallation mavenHome, MavenModuleSet project,String mavenVersion) {
             // project cannot be shipped to the remote JVM, so all the relevant properties need to be captured now.
             this.listener = listener;
@@ -1006,6 +1025,15 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
             this.rootPOM = project.getRootPOM();
             this.profiles = project.getProfiles();
             this.properties = project.getMavenProperties();
+            ParametersDefinitionProperty parametersDefinitionProperty = project.getProperty( ParametersDefinitionProperty.class );
+            if (parametersDefinitionProperty != null && parametersDefinitionProperty.getParameterDefinitions() != null) {
+                for (ParameterDefinition parameterDefinition : parametersDefinitionProperty.getParameterDefinitions()) {
+                    // those must used as env var
+                    if (parameterDefinition instanceof StringParameterDefinition) {
+                        this.properties.put( "env." + parameterDefinition.getName(), ((StringParameterDefinition)parameterDefinition).getDefaultValue() );
+                    }
+                }
+            }
             this.nonRecursive = project.isNonRecursive();
             this.workspaceProper = project.getLastBuild().getWorkspace().getRemote();
             if (project.usesPrivateRepository()) {
@@ -1015,6 +1043,14 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
             }
             this.alternateSettings = project.getAlternateSettings();
             this.mavenVersion = mavenVersion;
+            this.resolveDependencies = project.isResolveDependencies();
+            this.processPlugins = project.isProcessPlugins();
+            
+            this.moduleRootPath = 
+                project.getScm().getModuleRoot( project.getLastBuild().getWorkspace(), project.getLastBuild() ).getRemote();            
+            
+            this.mavenValidationLevel = project.getMavenValidationLevel();
+
         }
 
         
@@ -1038,6 +1074,18 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
             if(!pom.exists())
                 throw new AbortException(Messages.MavenModuleSetBuild_NoSuchPOMFile(pom));
 
+            if (rootPOM.startsWith("../") || rootPOM.startsWith("..\\")) {
+                File wsp = new File(workspaceProper);
+                               
+                if (!ws.equals(wsp)) {
+                    rootPOMRelPrefix = ws.getCanonicalPath().substring(wsp.getCanonicalPath().length()+1)+"/";
+                } else {
+                    rootPOMRelPrefix = wsp.getName() + "/";
+                }
+            } else {
+                rootPOMRelPrefix = "";
+            }            
+            
             if(verbose)
                 logger.println("Parsing "
 			       + (nonRecursive ? "non-recursively " : "recursively ")
@@ -1072,27 +1120,51 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
                                                                                       privateRepository, settingsLoc );
                 mavenEmbedderRequest.setTransferListener( new SimpleTransferListener(listener) );
                 
-                // FIXME must be configurable tru the ui !!
-                mavenEmbedderRequest.setProcessPlugins( true );
-                mavenEmbedderRequest.setResolveDependencies( true );
+                mavenEmbedderRequest.setProcessPlugins( this.processPlugins );
+                mavenEmbedderRequest.setResolveDependencies( this.resolveDependencies );
                 
                 // FIXME handle 3.1 level when version will be here : no rush :-)
                 // or made something configurable tru the ui ?
+                ReactorReader reactorReader = null;
                 boolean maven3OrLater = new ComparableVersion (mavenVersion).compareTo( new ComparableVersion ("3.0") ) >= 0;
-                if (maven3OrLater)
+                if (maven3OrLater) {
                     mavenEmbedderRequest.setValidationLevel( ModelBuildingRequest.VALIDATION_LEVEL_MAVEN_3_0 );
+                } else {
+                    reactorReader = new ReactorReader( new HashMap<String, MavenProject>(), new File(workspaceProper) );
+                    mavenEmbedderRequest.setWorkspaceReader( reactorReader );
+                }
+                
+                
+                if (this.mavenValidationLevel >= 0) {
+                    mavenEmbedderRequest.setValidationLevel( this.mavenValidationLevel );
+                }
                 
                 //mavenEmbedderRequest.setClassLoader( MavenEmbedderUtils.buildClassRealm( mavenHome.getHomeDir(), null, null ) );
                 
                 MavenEmbedder embedder = MavenUtil.createEmbedder( mavenEmbedderRequest );
                 
-                List<MavenProject> mps = embedder.readProjects( pom,true);
+                MavenProject rootProject = null;
+                
+                List<MavenProject> mps = new ArrayList<MavenProject>(0);
+                if (maven3OrLater) {
+                    mps = embedder.readProjects( pom,true );
+
+                } else {
+                    // http://issues.hudson-ci.org/browse/HUDSON-8390
+                    // we cannot read maven projects in one time for backward compatibility
+                    // but we have to use a ReactorReader to get some pom with bad inheritence configured
+                    MavenProject mavenProject = embedder.readProject( pom );
+                    rootProject = mavenProject;
+                    mps.add( mavenProject );
+                    reactorReader.addProject( mavenProject );
+                    readChilds( mavenProject, embedder, mps, reactorReader );
+                }
                 Map<String,MavenProject> canonicalPaths = new HashMap<String, MavenProject>( mps.size() );
                 for(MavenProject mp : mps) {
                     // Projects are indexed by POM path and not module path because
                     // Maven allows to have several POMs with different names in the same directory
                     canonicalPaths.put( mp.getFile().getCanonicalPath(), mp );
-                }
+                }                
                 //MavenUtil.resolveModules(embedder,mp,getRootPath(rootPOMRelPrefix),relPath,listener,nonRecursive);
 
                 if(verbose) {
@@ -1101,11 +1173,13 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
                 }
 
                 Set<PomInfo> infos = new LinkedHashSet<PomInfo>();
-                MavenProject rootProject = null;
-                for (MavenProject mp : mps) {
-                    if (mp.isExecutionRoot()) {
-                        rootProject = mp;
-                        continue;
+                
+                if (maven3OrLater) {
+                    for (MavenProject mp : mps) {
+                        if (mp.isExecutionRoot()) {
+                            rootProject = mp;
+                            continue;
+                        }
                     }
                 }
                 // if rootProject is null but no reason :-) use the first one
@@ -1125,16 +1199,20 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
             }
         }
 
+        /**
+         * @see PomInfo#relativePath to understand relPath calculation
+         */
         private void toPomInfo(MavenProject mp, PomInfo parent, Map<String,MavenProject> abslPath, Set<PomInfo> infos) throws IOException {
-            String absolutePath = FilenameUtils.normalize( mp.getBasedir().getAbsolutePath());
-            String relPath = StringUtils.removeStart( absolutePath, this.workspaceProper );
             
-            relPath = StringUtils.remove( relPath, '/' );
+            String relPath = PathTool.getRelativeFilePath( this.moduleRootPath, mp.getBasedir().getPath() );
+                //PathTool.getRelativeFilePath( this.workspaceProper, mp.getBasedir().getPath() );
+            relPath = FilenameUtils.normalize( relPath );
             
-            // root must be marked with only /
-            if (StringUtils.isBlank( relPath )) {
-                relPath = "/";
+            if (parent == null ) {
+                relPath = getRootPath(rootPOMRelPrefix);
             }
+            
+            relPath = StringUtils.removeStart( relPath, "/" );
             
             PomInfo pi = new PomInfo(mp, parent, relPath);
             infos.add(pi);
@@ -1152,6 +1230,40 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
                 toPomInfo(child,pi,abslPath,infos);
             }
         }
+        
+        private void readChilds(MavenProject mp, MavenEmbedder mavenEmbedder, List<MavenProject> mavenProjects, ReactorReader reactorReader) 
+            throws ProjectBuildingException, MavenEmbedderException {
+            if (mp.getModules() == null || mp.getModules().isEmpty()) {
+                return;
+            }
+            for (String module : mp.getModules()) {
+                if ( Util.fixEmptyAndTrim( module ) != null ) {
+                    File pomFile = new File(mp.getFile().getParent(), module);
+                    MavenProject mavenProject2 = null;
+                    // take care of HUDSON-8445
+                    if (pomFile.isFile() && pomFile.exists())
+                        mavenProject2 = mavenEmbedder.readProject( pomFile );
+                    else
+                        mavenProject2 = mavenEmbedder.readProject( new File(mp.getFile().getParent(), module + "/pom.xml") );
+                    mavenProjects.add( mavenProject2 );
+                    reactorReader.addProject( mavenProject2 );
+                    readChilds( mavenProject2, mavenEmbedder, mavenProjects, reactorReader );
+                }
+            }
+        }
+        
+        /**
+         * Computes the path of {@link #rootPOM}.
+         *
+         * Returns "abc" if rootPOM="abc/pom.xml"
+         * If rootPOM="pom.xml", this method returns "".
+         */
+        private String getRootPath(String prefix) {
+            int idx = Math.max(rootPOM.lastIndexOf('/'), rootPOM.lastIndexOf('\\'));
+            if(idx==-1) return "";
+            return prefix + rootPOM.substring(0,idx);
+        }
+        
 
         private static final long serialVersionUID = 1L;
     }

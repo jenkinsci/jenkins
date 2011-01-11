@@ -44,6 +44,7 @@ import java.io.OutputStream;
 import java.io.StringReader;
 import java.io.StringWriter;
 import java.util.List;
+import java.util.logging.Logger;
 
 /**
  * Used to expose remote access API for ".../api/"

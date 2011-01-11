@@ -28,6 +28,7 @@ import java.io.File;
 import java.util.Properties;
 
 import org.apache.maven.model.building.ModelBuildingRequest;
+import org.sonatype.aether.repository.WorkspaceReader;
 import org.sonatype.aether.transfer.TransferListener;
 
 /**
@@ -72,6 +73,11 @@ public class MavenEmbedderRequest
      * @since 1.393
      */    
     private int validationLevel = ModelBuildingRequest.VALIDATION_LEVEL_MAVEN_2_0;
+    
+    /**
+     * @since 1.393
+     */
+    private WorkspaceReader workspaceReader;
     
     /**
      * @param listener
@@ -188,14 +194,20 @@ public class MavenEmbedderRequest
         return this;
     }
 
-    public int getValidationLevel()
-    {
+    public int getValidationLevel() {
         return validationLevel;
     }
 
-    public MavenEmbedderRequest setValidationLevel( int validationLevel )
-    {
+    public MavenEmbedderRequest setValidationLevel( int validationLevel ) {
         this.validationLevel = validationLevel;
         return this;
+    }
+
+    public WorkspaceReader getWorkspaceReader() {
+        return workspaceReader;
+    }
+
+    public void setWorkspaceReader( WorkspaceReader workspaceReader ) {
+        this.workspaceReader = workspaceReader;
     }
 }

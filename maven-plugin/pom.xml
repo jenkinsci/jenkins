@@ -27,7 +27,7 @@ THE SOFTWARE.
   <parent>
     <groupId>org.jvnet.hudson.main</groupId>
     <artifactId>pom</artifactId>
-    <version>1.393-SNAPSHOT</version>
+    <version>1.394-SNAPSHOT</version>
   </parent>
 
   <artifactId>maven-plugin</artifactId>
@@ -186,7 +186,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.jvnet.hudson</groupId>
       <artifactId>hudson-maven-embedder</artifactId>
-      <version>3.2-SNAPSHOT</version>
+      <version>3.2</version>
       <exclusions>
         <exclusion><!-- we'll add our own patched version. see http://www.nabble.com/Issue-1680-td18383889.html -->
           <groupId>jtidy</groupId>
