@@ -228,4 +228,11 @@ final class PomInfo implements Serializable {
         return StringUtils.equals( pomInfo.groupId, this.groupId ) 
             && StringUtils.equals( pomInfo.artifactId, this.artifactId ); 
     }
+    
+    /**
+     * for debug purpose
+     */
+    public String toString() {
+        return "PomInfo:["+groupId+':'+artifactId+']'+"[relativePath:"+relativePath+']';
+    }    
 }
