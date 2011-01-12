@@ -66,7 +66,7 @@ THE SOFTWARE.
           <td><!-- config link -->
             <j:if test="${c.hasPermission(c.CONFIGURE)}">
               <a href="${rootURL}/${c.url}configure">
-                <img src="${imagesURL}/32x32/setting.gif"
+                <img src="${imagesURL}/32x32/setting.png"
                      title="${%Configure}" alt="${%Configure}"
                      border="0"/>
               </a>
