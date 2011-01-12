@@ -44,6 +44,7 @@ import java.util.Enumeration;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.apache.commons.io.IOUtils;
@@ -51,6 +52,8 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.maven.artifact.versioning.ComparableVersion;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.project.ProjectBuildingException;
+
+import static java.util.logging.Level.FINE;
 
 /**
  * @author Kohsuke Kawaguchi
@@ -185,25 +188,25 @@ public class MavenUtil {
                             : org.codehaus.plexus.logging.Logger.LEVEL_INFO );
         mavenRequest.setMavenLoggerManager( logger );
         
-        ClassLoader cl = MavenUtil.class.getClassLoader();
-        
         ClassLoader mavenEmbedderClassLoader =
-            mavenEmbedderRequest.getClassLoader() == null ? new MaskingClassLoader( cl )
+            mavenEmbedderRequest.getClassLoader() == null ? new MaskingClassLoader( MavenUtil.class.getClassLoader() )
                             : mavenEmbedderRequest.getClassLoader(); 
-        
+
+        {// are we loading the right components.xml? (and not from Maven that's running Jetty, if we are running in "mvn hudson-dev:run" or "mvn hpi:run"?
+            Enumeration<URL> e = mavenEmbedderClassLoader.getResources("META-INF/plexus/components.xml");
+            while (e.hasMoreElements()) {
+                URL url = e.nextElement();
+                LOGGER.fine("components.xml from "+url);
+            }
+        }
+
         mavenRequest.setProcessPlugins( mavenEmbedderRequest.isProcessPlugins() );
         mavenRequest.setResolveDependencies( mavenEmbedderRequest.isResolveDependencies() );
         mavenRequest.setValidationLevel( mavenEmbedderRequest.getValidationLevel() );
             
         // TODO check this MaskingClassLoader with maven 3 artifacts
         MavenEmbedder maven = new MavenEmbedder( mavenEmbedderClassLoader, mavenRequest );
-        {
-            Enumeration<URL> e = cl.getResources("META-INF/plexus/components.xml");
-            while (e.hasMoreElements()) {
-                URL url = e.nextElement();
-                LOGGER.fine("components.xml from "+url);
-            }
-        }
+
         return maven;
     }
 
