@@ -40,6 +40,7 @@ import hudson.model.Items;
 import hudson.model.JDK;
 import hudson.model.Job;
 import hudson.model.Label;
+import hudson.model.Node;
 import hudson.model.Queue.FlyweightTask;
 import hudson.model.ResourceController;
 import hudson.model.Result;
@@ -55,6 +56,8 @@ import hudson.tasks.Publisher;
 import hudson.triggers.Trigger;
 import hudson.util.CopyOnWriteMap;
 import hudson.util.DescribableList;
+import hudson.util.FormValidation;
+import hudson.util.FormValidation.Kind;
 import net.sf.json.JSONObject;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.StaplerRequest;
@@ -93,7 +96,7 @@ public class MatrixProject extends AbstractProject<MatrixProject,MatrixBuild> im
     private volatile AxisList axes = new AxisList();
     
     /**
-     * The filter that is applied to combinatios. It is a Groovy if condition.
+     * The filter that is applied to combinations. It is a Groovy if condition.
      * This can be null, which means "true".
      *
      * @see #getCombinationFilter()
@@ -617,7 +620,10 @@ public class MatrixProject extends AbstractProject<MatrixProject,MatrixBuild> im
     private void checkAxisNames(Iterable<Axis> newAxes) throws FormException {
         HashSet<String> axisNames = new HashSet<String>();
         for (Axis a : newAxes) {
-            a.getDescriptor().doCheckName(a.getName());
+            FormValidation fv = a.getDescriptor().doCheckName(a.getName());
+            if (fv.kind!=Kind.OK)
+                throw new FormException(Messages.MatrixProject_DuplicateAxisName(),fv,"axis.name");
+
             if (axisNames.contains(a.getName()))
                 throw new FormException(Messages.MatrixProject_DuplicateAxisName(),"axis.name");
             axisNames.add(a.getName());
