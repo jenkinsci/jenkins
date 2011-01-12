@@ -26,7 +26,6 @@ package hudson.maven;
 import hudson.Launcher;
 import hudson.maven.MavenBuild.ProxyImpl2;
 import hudson.model.BuildListener;
-import hudson.model.FreeStyleProject;
 import hudson.model.Hudson;
 import hudson.model.Result;
 import hudson.remoting.Channel;
