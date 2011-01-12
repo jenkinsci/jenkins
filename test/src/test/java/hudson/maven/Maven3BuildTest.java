@@ -133,6 +133,19 @@ public class Maven3BuildTest extends HudsonTestCase {
         assertFalse( mmsb.getProject().getModules().isEmpty());
     }    
     
+    @Bug(8484)
+    public void testMultiModMavenNonRecursive() throws Exception {
+        MavenInstallation mavenInstallation = configureMaven3();
+        MavenModuleSet m = createMavenProject();
+        m.setMaven( mavenInstallation.getName() );
+        m.getReporters().add(new TestReporter());
+        m.setScm(new ExtractResourceSCM(getClass().getResource("maven-multimod.zip")));
+        m.setGoals( "-N validate" );
+        assertTrue("MavenModuleSet.isNonRecursive() should be true", m.isNonRecursive());
+        buildAndAssertSuccess(m);
+        assertEquals("not only one module", 1, m.getModules().size());
+    }    
+    
     private static class TestReporter extends MavenReporter {
         @Override
         public boolean end(MavenBuild build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {

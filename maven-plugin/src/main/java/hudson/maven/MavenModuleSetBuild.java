@@ -877,7 +877,6 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
         void preBuild(MavenSession session, ReactorManager rm, EventDispatcher dispatcher) throws BuildFailureException, LifecycleExecutionException, IOException, InterruptedException {
             // set all modules which are not actually being build (in incremental builds) to NOT_BUILD
             
-            @SuppressWarnings("unchecked")
             List<MavenProject> projects = rm.getSortedProjects();
             Set<ModuleName> buildingProjects = new HashSet<ModuleName>();
             for (MavenProject p : projects) {
@@ -1146,7 +1145,7 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
                 
                 List<MavenProject> mps = new ArrayList<MavenProject>(0);
                 if (maven3OrLater) {
-                    mps = embedder.readProjects( pom,true );
+                    mps = embedder.readProjects( pom,!this.nonRecursive );
 
                 } else {
                     // http://issues.hudson-ci.org/browse/HUDSON-8390
@@ -1156,7 +1155,9 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
                     rootProject = mavenProject;
                     mps.add( mavenProject );
                     reactorReader.addProject( mavenProject );
-                    readChilds( mavenProject, embedder, mps, reactorReader );
+                    if (!this.nonRecursive) {
+                        readChilds( mavenProject, embedder, mps, reactorReader );
+                    }
                 }
                 Map<String,MavenProject> canonicalPaths = new HashMap<String, MavenProject>( mps.size() );
                 for(MavenProject mp : mps) {
@@ -1215,18 +1216,24 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
             
             PomInfo pi = new PomInfo(mp, parent, relPath);
             infos.add(pi);
-            for (String modulePath : mp.getModules())
-            {
-                if (StringUtils.isBlank( modulePath )) {
-                    continue;
+            if(!this.nonRecursive) {
+                for (String modulePath : mp.getModules())
+                {
+                    if (StringUtils.isBlank( modulePath )) {
+                        continue;
+                    }
+                    File path = new File(mp.getBasedir(), modulePath);
+                    // HUDSON-8391 : Modules are indexed by POM path thus
+                    // by default we have to add the default pom.xml file
+                    if(path.isDirectory())
+                      path = new File(mp.getBasedir(), modulePath+"/pom.xml");
+                    MavenProject child = abslPath.get( path.getCanonicalPath());
+                    if (child == null) {
+                        listener.getLogger().printf("Found a module with path " + modulePath + " but no associated project");
+                        continue;
+                    }
+                    toPomInfo(child,pi,abslPath,infos);
                 }
-                File path = new File(mp.getBasedir(), modulePath);
-                // HUDSON-8391 : Modules are indexed by POM path thus
-                // by default we have to add the default pom.xml file
-                if(path.isDirectory())
-                  path = new File(mp.getBasedir(), modulePath+"/pom.xml");
-                MavenProject child = abslPath.get( path.getCanonicalPath());
-                toPomInfo(child,pi,abslPath,infos);
             }
         }
         
