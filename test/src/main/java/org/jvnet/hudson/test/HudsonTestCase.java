@@ -1317,11 +1317,25 @@ public abstract class HudsonTestCase extends TestCase implements RootAction {
 
 
     /**
-     * Executes the given closure on the server, in the context of an HTTP request.
-     * This is useful for testing some methods that require {@link StaplerRequest} and {@link StaplerResponse}.
+     * Executes the given closure on the server, by the servlet request handling thread,
+     * in the context of an HTTP request.
      *
      * <p>
-     * The closure will get the request and response as parameters.
+     * In {@link HudsonTestCase}, a thread that's executing the test code is different from the thread
+     * that carries out HTTP requests made through {@link WebClient}. But sometimes you want to
+     * make assertions and other calls with side-effect from within the request handling thread.
+     *
+     * <p>
+     * This method allows you to do just that. It is useful for testing some methods that
+     * require {@link StaplerRequest} and {@link StaplerResponse}, or getting the credential
+     * of the current user (via {@link Hudson#getAuthentication()}, and so on.
+     *
+     * @param c
+     *      The closure to be executed on the server.
+     * @return
+     *      The return value from the closure.
+     * @throws Exception
+     *      If a closure throws any exception, that exception will be carried forward.
      */
     public <V> V executeOnServer(final Callable<V> c) throws Exception {
         final Exception[] t = new Exception[1];
