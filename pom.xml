@@ -375,9 +375,9 @@ THE SOFTWARE.
   </dependencyManagement>
 
   <properties>
-    <mavenVersion>3.0.1</mavenVersion>
+    <mavenVersion>3.0.2</mavenVersion>
     <maven.version>${mavenVersion}</maven.version>
-    <aetherVersion>1.8</aetherVersion>
+    <aetherVersion>1.9</aetherVersion>
     <wagonVersion>1.0-beta-7</wagonVersion>
     <!-- *.html files are in UTF-8, and *.properties are in iso-8859-1, so this configuration is acturally incorrect,
     but this suppresses a warning from Maven, and as long as we don't do filtering we should be OK. -->
