@@ -23,8 +23,8 @@
  */
 package hudson.maven.reporters;
 
-import hudson.Util;
 import hudson.Extension;
+import hudson.Util;
 import hudson.maven.Maven3Builder;
 import hudson.maven.MavenBuild;
 import hudson.maven.MavenBuildProxy;
@@ -40,12 +40,6 @@ import hudson.model.BuildListener;
 import hudson.model.Result;
 import hudson.tasks.junit.TestResult;
 import hudson.tasks.test.TestResultProjectAction;
-import org.apache.maven.plugin.MojoFailureException;
-import org.apache.maven.project.MavenProject;
-import org.apache.tools.ant.DirectoryScanner;
-import org.apache.tools.ant.types.FileSet;
-import org.codehaus.plexus.component.configurator.ComponentConfigurationException;
-import org.codehaus.plexus.configuration.xml.XmlPlexusConfiguration;
 
 import java.io.File;
 import java.io.IOException;
@@ -53,6 +47,16 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.ListIterator;
+
+import org.apache.commons.lang.StringUtils;
+import org.apache.maven.artifact.versioning.ComparableVersion;
+import org.apache.maven.plugin.MojoFailureException;
+import org.apache.maven.project.MavenProject;
+import org.apache.tools.ant.DirectoryScanner;
+import org.apache.tools.ant.types.FileSet;
+import org.codehaus.plexus.component.configurator.ComponentConfigurationException;
+import org.codehaus.plexus.configuration.xml.XmlPlexusConfiguration;
+import org.codehaus.plexus.util.xml.Xpp3Dom;
 
 /**
  * Records the surefire test result.
@@ -68,8 +72,21 @@ public class SurefireArchiver extends MavenReporter {
                 // so that we can record this as yellow.
                 // note that because of the way Maven works, just updating system property at this point is too late
                 XmlPlexusConfiguration c = (XmlPlexusConfiguration) mojo.configuration.getChild("testFailureIgnore");
-                if(c!=null && c.getValue().equals("${maven.test.failure.ignore}") && System.getProperty("maven.test.failure.ignore")==null)
-                    c.setValue("true");
+                if(c!=null && c.getValue().equals("${maven.test.failure.ignore}") && System.getProperty("maven.test.failure.ignore")==null) {
+                    if (maven3orLater( build.getMavenBuildInformation().getMavenVersion() )) {
+                        String fieldName = "testFailureIgnore";
+                        if (mojo.mojoExecution.getConfiguration().getChild( fieldName ) != null) {
+                          mojo.mojoExecution.getConfiguration().getChild( fieldName ).setValue( Boolean.TRUE.toString() );
+                        } else {
+                            Xpp3Dom child = new Xpp3Dom( fieldName );
+                            child.setValue( Boolean.TRUE.toString() );
+                            mojo.mojoExecution.getConfiguration().addChild( child );
+                        }
+                        
+                    } else {
+                        c.setValue(Boolean.TRUE.toString());
+                    }
+                }
             }
         }
         return true;
@@ -212,6 +229,14 @@ public class SurefireArchiver extends MavenReporter {
 
         return true;
     }
+    
+    public boolean maven3orLater(String mavenVersion) {
+        // null or empty so false !
+        if (StringUtils.isBlank( mavenVersion )) {
+            return false;
+        }
+        return new ComparableVersion (mavenVersion).compareTo( new ComparableVersion ("3.0") ) >= 0;
+    }       
 
     @Extension
     public static final class DescriptorImpl extends MavenReporterDescriptor {
