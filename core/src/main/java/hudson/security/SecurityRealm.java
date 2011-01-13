@@ -33,6 +33,7 @@ import hudson.cli.CLICommand;
 import hudson.model.AbstractDescribableImpl;
 import hudson.model.Descriptor;
 import hudson.model.Hudson;
+import hudson.security.FederatedLoginService.FederatedIdentity;
 import hudson.util.DescriptorList;
 import hudson.util.PluginServletFilter;
 import hudson.util.spring.BeanBuilder;
@@ -47,6 +48,7 @@ import static org.acegisecurity.ui.rememberme.TokenBasedRememberMeServices.ACEGI
 import org.acegisecurity.userdetails.UserDetailsService;
 import org.acegisecurity.userdetails.UserDetails;
 import org.acegisecurity.userdetails.UsernameNotFoundException;
+import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.Stapler;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
@@ -297,6 +299,28 @@ public abstract class SecurityRealm extends AbstractDescribableImpl<SecurityReal
      */
     public GroupDetails loadGroupByGroupname(String groupname) throws UsernameNotFoundException, DataAccessException {
         throw new UserMayOrMayNotExistException(groupname);
+    }
+
+    /**
+     * Starts the user registration process for a new user that has the given verified identity.
+     *
+     * <p>
+     * If the user logs in through a {@link FederatedLoginService}, verified that the current user
+     * owns an {@linkplain FederatedIdentity identity}, but no existing user account has claimed that identity,
+     * then this method is invoked.
+     *
+     * <p>
+     * The expected behaviour is to confirm that the user would like to create a new account, and
+     * associate this federated identity to the newly created account (via {@link FederatedIdentity#addToCurrentUser()}.
+     *
+     * @throws UnsupportedOperationException
+     *      If this implementation doesn't support the signup through this mechanism.
+     *      This is the default implementation.
+     *
+     * @since 1.394
+     */
+    public HttpResponse commenceSignup(FederatedIdentity identity) {
+        throw new UnsupportedOperationException();
     }
 
     /**

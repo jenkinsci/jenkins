@@ -1,20 +1,20 @@
 /*
  * The MIT License
- * 
+ *
  * Copyright (c) 2004-2010, Sun Microsystems, Inc., Kohsuke Kawaguchi,
  * Erik Ramfelt, Koichi Fujikawa, Red Hat, Inc., Seiji Sogabe,
  * Stephen Connolly, Tom Huybrechts, Yahoo! Inc., Alan Harder
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -81,6 +81,7 @@ import hudson.security.ACL;
 import hudson.security.AccessControlled;
 import hudson.security.AuthorizationStrategy;
 import hudson.security.BasicAuthenticationFilter;
+import hudson.security.FederatedLoginService;
 import hudson.security.HudsonFilter;
 import hudson.security.LegacyAuthorizationStrategy;
 import hudson.security.LegacySecurityRealm;
@@ -263,7 +264,7 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
      */
     // this field needs to be at the very top so that other components can look at this value even during unmarshalling
     private String version = "1.0";
-    
+
     /**
      * Number of executors of the master node.
      */
@@ -419,9 +420,9 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
      * This is {@link Integer} so that we can initialize it to '5' for upgrading users.
      */
     /*package*/ Integer quietPeriod;
-    
+
     /**
-     * Global default for {@link AbstractProject#getScmCheckoutRetryCount()}  
+     * Global default for {@link AbstractProject#getScmCheckoutRetryCount()}
      */
     /*package*/ int scmCheckoutRetryCount;
 
@@ -483,7 +484,7 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
      * {@link hudson.security.csrf.CrumbIssuer}
      */
     private volatile CrumbIssuer crumbIssuer;
-    
+
     /**
      * All labels known to Hudson. This allows us to reuse the same label instances
      * as much as possible, even though that's not a strict requirement.
@@ -586,12 +587,12 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
                 throw new IllegalStateException("second instance");
             theInstance = this;
 
-            // doing this early allows InitStrategy to set environment upfront 
+            // doing this early allows InitStrategy to set environment upfront
             final InitStrategy is = InitStrategy.get(Thread.currentThread().getContextClassLoader());
-            
+
             Trigger.timer = new Timer("Hudson cron thread");
             queue = new Queue(CONSISTENT_HASH?LoadBalancer.CONSISTENT_HASH:LoadBalancer.DEFAULT);
-            
+
             try {
                 dependencyGraph = DependencyGraph.EMPTY;
             } catch (InternalError e) {
@@ -725,7 +726,7 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
      *
      * <p>
      * At this point plugins are not loaded yet, so we fall back to the META-INF/services look up to discover implementations.
-     * As such there's no way for plugins to participate into this process. 
+     * As such there's no way for plugins to participate into this process.
      */
     private ReactorListener buildReactorListener() throws IOException {
         List<ReactorListener> r = (List) Service.loadInstances(Thread.currentThread().getContextClassLoader(), InitReactorListener.class);
@@ -959,7 +960,7 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
             throw new AssertionError(type+" is missing its descriptor");
         return d;
     }
-    
+
     /**
      * Gets the {@link Descriptor} instance in the current Hudson by its type.
      */
@@ -1099,6 +1100,18 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
         save();
     }
 
+    public FederatedLoginService getFederatedLoginService(String name) {
+        for (FederatedLoginService fls : FederatedLoginService.all()) {
+            if (fls.getUrlName().equals(name))
+                return fls;
+        }
+        return null;
+    }
+
+    public List<FederatedLoginService> getFederatedLoginServices() {
+        return FederatedLoginService.all();
+    }
+
     public Launcher createLauncher(TaskListener listener) {
         return new LocalLauncher(listener).decorateFor(this);
     }
@@ -1214,7 +1227,7 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
             if (item.hasPermission(Item.READ))
                 viewableItems.add(item);
         }
-        
+
         return viewableItems;
     }
 
@@ -1222,7 +1235,7 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
      * Returns the read-only view of all the {@link TopLevelItem}s keyed by their names.
      * <p>
      * This method is efficient, as it doesn't involve any copying.
-     * 
+     *
      * @since 1.296
      */
     public Map<String,TopLevelItem> getItemMap() {
@@ -1336,7 +1349,7 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
         views.remove(view);
         save();
     }
-    
+
     public ViewsTabBar getViewsTabBar() {
         return viewsTabBar;
     }
@@ -1659,15 +1672,15 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
     public int getQuietPeriod() {
         return quietPeriod!=null ? quietPeriod : 5;
     }
-    
+
     /**
      * Gets the global SCM check out retry count.
      */
     public int getScmCheckoutRetryCount() {
         return scmCheckoutRetryCount;
     }
-    
-    
+
+
 
     /**
      * @deprecated
@@ -1822,7 +1835,7 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
     public boolean isUseCrumbs() {
         return crumbIssuer!=null;
     }
-    
+
     /**
      * Returns the constant that captures the three basic security modes
      * in Hudson.
@@ -1954,7 +1967,7 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
      *
      * @return
      *      {@link InitMilestone#STARTED} even if the initialization hasn't been started, so that this method
-     *      never returns null. 
+     *      never returns null.
      */
     public InitMilestone getInitLevel() {
         return initLevel;
@@ -2463,7 +2476,7 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
             label = json.optString("labelString","");
 
             quietPeriod = json.getInt("quiet_period");
-            
+
             scmCheckoutRetryCount = json.getInt("retry_count");
 
             systemMessage = Util.nullify(req.getParameter("system_message"));
@@ -2501,7 +2514,7 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
     public CrumbIssuer getCrumbIssuer() {
         return crumbIssuer;
     }
-    
+
     public void setCrumbIssuer(CrumbIssuer issuer) {
         crumbIssuer = issuer;
     }
@@ -2897,7 +2910,7 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
         // Parse the request
         MultipartFormDataParser p = new MultipartFormDataParser(req);
         if(Hudson.getInstance().isUseCrumbs() && !Hudson.getInstance().getCrumbIssuer().validateCrumb(req, p)) {
-            rsp.sendError(HttpServletResponse.SC_FORBIDDEN,"No crumb found");                
+            rsp.sendError(HttpServletResponse.SC_FORBIDDEN,"No crumb found");
         }
         try {
             rsp.sendRedirect2(req.getContextPath()+"/fingerprint/"+
@@ -2999,7 +3012,7 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
      * Queues up a restart of Hudson for when there are no builds running, if we can.
      *
      * This first replaces "app" to {@link HudsonIsRestarting}
-     * 
+     *
      * @since 1.332
      */
     @CLIMethod(name="safe-restart")
@@ -3055,7 +3068,7 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
         lifecycle.verifyRestartable(); // verify that Hudson is restartable
         // Quiet down so that we won't launch new builds.
         isQuietingDown = true;
-        
+
         new Thread("safe-restart thread") {
             final String exitUser = getAuthentication().getName();
             @Override
@@ -3105,7 +3118,7 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
         System.exit(0);
     }
 
-    
+
     /**
      * Shutdown the system safely.
      * @since 1.332
@@ -3268,7 +3281,7 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
         // this method can be used to check if a file exists anywhere in the file system,
         // so it should be protected.
         checkPermission(Item.CREATE);
-        
+
         if(fixEmpty(value)==null)
             return FormValidation.ok();
 
@@ -3470,6 +3483,7 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
             || rest.startsWith("/tcpSlaveAgentListener")
             || rest.startsWith("/cli")
             || rest.startsWith("/whoAmI")
+            || rest.startsWith("/federatedLoginService/")
             || rest.startsWith("/securityRealm"))
                 return this;    // URLs that are always visible without READ permission
             throw e;
@@ -3588,7 +3602,7 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
     public static <T> T lookup(Class<T> type) {
         return Hudson.getInstance().lookup.get(type);
     }
-    
+
     /**
      * @deprecated since 2007-12-18.
      *      Use {@link #checkPermission(Permission)}
@@ -3764,7 +3778,7 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
      * Automatically try to launch a slave when Hudson is initialized or a new slave is created.
      */
     public static boolean AUTOMATIC_SLAVE_LAUNCH = true;
-    
+
     private static final Logger LOGGER = Logger.getLogger(Hudson.class.getName());
 
     private static final Pattern ICON_SIZE = Pattern.compile("\\d+x\\d+");
