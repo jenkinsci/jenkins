@@ -304,6 +304,27 @@ public abstract class CLICommand implements ExtensionPoint, Cloneable {
     }
 
     /**
+     * Convenience method for subtypes to obtain environment variables of the client.
+     */
+    protected String getClientEnvironmentVariable(String name) throws IOException, InterruptedException {
+        return channel.call(new GetEnvironmentVariable(name));
+    }
+
+    private static final class GetEnvironmentVariable implements Callable<String, IOException> {
+        private final String name;
+
+        private GetEnvironmentVariable(String name) {
+            this.name = name;
+        }
+
+        public String call() throws IOException {
+            return System.getenv(name);
+        }
+
+        private static final long serialVersionUID = 1L;
+    }
+
+    /**
      * Creates a clone to be used to execute a command.
      */
     protected CLICommand createClone() {
