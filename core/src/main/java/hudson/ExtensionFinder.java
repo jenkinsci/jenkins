@@ -23,6 +23,8 @@
  */
 package hudson;
 
+import com.google.common.collect.ImmutableList;
+import hudson.init.InitMilestone;
 import net.java.sezpoz.Index;
 import net.java.sezpoz.IndexItem;
 import hudson.model.Hudson;
@@ -133,11 +135,33 @@ public abstract class ExtensionFinder implements ExtensionPoint {
      */
     @Extension
     public static final class Sezpoz extends ExtensionFinder {
+
+        private volatile List<IndexItem<Extension,Object>> indices;
+
+        /**
+         * Loads indices (ideally once but as few times as possible), then reuse them later.
+         * {@link ExtensionList#ensureLoaded()} guarantees that this method won't be called until
+         * {@link InitMilestone#PLUGINS_PREPARED} is attained, so this method is guaranteed to
+         * see all the classes and indices.
+         */
+        private List<IndexItem<Extension,Object>> getIndicies() {
+            // this method cannot be synchronized because of a dead lock possibility in the following order of events:
+            // 1. thread X can start listing indices, locking this object 'SZ'
+            // 2. thread Y starts loading a class, locking a classloader 'CL'
+            // 3. thread X needs to load a class, now blocked on CL
+            // 4. thread Y decides to load extensions, now blocked on SZ.
+            // 5. dead lock
+            if (indices==null) {
+                ClassLoader cl = Hudson.getInstance().getPluginManager().uberClassLoader;
+                indices = ImmutableList.copyOf(Index.load(Extension.class, Object.class, cl));
+            }
+            return indices;
+        }
+
         public <T> Collection<ExtensionComponent<T>> find(Class<T> type, Hudson hudson) {
             List<ExtensionComponent<T>> result = new ArrayList<ExtensionComponent<T>>();
 
-            ClassLoader cl = hudson.getPluginManager().uberClassLoader;
-            for (IndexItem<Extension,Object> item : Index.load(Extension.class, Object.class, cl)) {
+            for (IndexItem<Extension,Object> item : getIndicies()) {
                 try {
                     AnnotatedElement e = item.element();
                     Class<?> extType;
@@ -173,9 +197,12 @@ public abstract class ExtensionFinder implements ExtensionPoint {
 
         @Override
         public void scout(Class extensionType, Hudson hudson) {
-            ClassLoader cl = hudson.getPluginManager().uberClassLoader;
-            for (IndexItem<Extension,Object> item : Index.load(Extension.class, Object.class, cl)) {
+            for (IndexItem<Extension,Object> item : getIndicies()) {
                 try {
+                    // we might end up having multiple threads concurrently calling into element(),
+                    // but we can't synchronize this --- if we do, the one thread that's supposed to load a class
+                    // can block while other threads wait for the entry into the element call().
+                    // looking at the sezpoz code, it should be safe to do so
                     AnnotatedElement e = item.element();
                     Class<?> extType;
                     if (e instanceof Class) {
@@ -188,7 +215,7 @@ public abstract class ExtensionFinder implements ExtensionPoint {
                         extType = ((Method)e).getReturnType();
                     } else
                         throw new AssertionError();
-                    // accroding to http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=6459208
+                    // according to http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=6459208
                     // this appears to be the only way to force a class initialization
                     Class.forName(extType.getName(),true,extType.getClassLoader());
                 } catch (InstantiationException e) {

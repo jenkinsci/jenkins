@@ -23,6 +23,7 @@
  */
 package hudson;
 
+import hudson.ExtensionFinder.Sezpoz;
 import hudson.init.InitMilestone;
 import hudson.model.Hudson;
 import hudson.util.AdaptedIterator;
@@ -37,6 +38,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 import java.util.Vector;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.logging.Level;
@@ -282,13 +284,15 @@ public class ExtensionList<T> extends AbstractList<T> {
     public static <T> ExtensionList<T> create(Hudson hudson, Class<T> type) {
         if(type==ExtensionFinder.class)
             return new ExtensionList<T>(hudson,type) {
+                Set<Sezpoz> finders = Collections.singleton(new Sezpoz());
+
                 /**
                  * If this ExtensionList is searching for ExtensionFinders, calling hudson.getExtensionList
                  * results in infinite recursion.
                  */
                 @Override
                 protected Iterable<? extends ExtensionFinder> finders() {
-                    return Collections.singleton(new ExtensionFinder.Sezpoz());
+                    return finders;
                 }
             };
         if(type.getAnnotation(LegacyInstancesAreScopedToHudson.class)!=null)
