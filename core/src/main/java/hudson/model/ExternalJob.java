@@ -42,12 +42,11 @@ import java.io.IOException;
  */
 public class ExternalJob extends ViewJob<ExternalJob,ExternalRun> implements TopLevelItem {
     public ExternalJob(String name) {
-        super(Hudson.getInstance(),name);
+        this(Hudson.getInstance(),name);
     }
 
-    @Override
-    public Hudson getParent() {
-        return (Hudson)super.getParent();
+    public ExternalJob(ItemGroup parent, String name) {
+        super(parent,name);
     }
 
     @Override
@@ -119,8 +118,8 @@ public class ExternalJob extends ViewJob<ExternalJob,ExternalRun> implements Top
             return Messages.ExternalJob_DisplayName();
         }
 
-        public ExternalJob newInstance(String name) {
-            return new ExternalJob(name);
+        public ExternalJob newInstance(ItemGroup parent, String name) {
+            return new ExternalJob(parent,name);
         }
     }
 }

@@ -24,6 +24,7 @@
  */
 package hudson.model;
 
+import com.infradna.tool.bridge_method_injector.WithBridgeMethods;
 import hudson.XmlFile;
 import hudson.Util;
 import hudson.Functions;
@@ -115,6 +116,10 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
         return parent.getRootDirFor(this);
     }
 
+    /**
+     * This bridge method is to maintain binary compatibility with {@link TopLevelItem#getParent()}.
+     */
+    @WithBridgeMethods(value=Hudson.class,castRequired=true)
     public ItemGroup getParent() {
         assert parent!=null;
         return parent;
@@ -407,10 +412,21 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
         checkPermission(DELETE);
         performDelete();
 
-        if(this instanceof TopLevelItem)
-            Hudson.getInstance().deleteJob((TopLevelItem)this);
+        try {
+            invokeOnDeleted();
+        } catch (AbstractMethodError e) {
+            // ignore
+        }
 
         Hudson.getInstance().rebuildDependencyGraph();
+    }
+
+    /**
+     * A pointless function to work around what appears to be a HotSpot problem. See HUDSON-5756 and bug 6933067
+     * on BugParade for more details.
+     */
+    private void invokeOnDeleted() throws IOException {
+        getParent().onDeleted(this);
     }
 
     /**

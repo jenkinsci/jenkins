@@ -30,6 +30,7 @@ import hudson.*;
 import hudson.Util;
 import hudson.model.*;
 import hudson.model.Queue.Executable;
+import hudson.security.ACL;
 import hudson.security.AbstractPasswordBasedSecurityRealm;
 import hudson.security.GroupDetails;
 import hudson.security.SecurityRealm;
@@ -100,6 +101,7 @@ import net.sourceforge.htmlunit.corejs.javascript.ContextFactory.Listener;
 import org.acegisecurity.AuthenticationException;
 import org.acegisecurity.BadCredentialsException;
 import org.acegisecurity.GrantedAuthority;
+import org.acegisecurity.context.SecurityContextHolder;
 import org.acegisecurity.userdetails.UserDetails;
 import org.acegisecurity.userdetails.UsernameNotFoundException;
 import org.apache.commons.httpclient.NameValuePair;
@@ -316,6 +318,8 @@ public abstract class HudsonTestCase extends TestCase implements RootAction {
     @Override
     protected void runTest() throws Throwable {
         System.out.println("=== Starting "+ getClass().getSimpleName() + "." + getName());
+        // so that test code has all the access to the system
+        SecurityContextHolder.getContext().setAuthentication(ACL.SYSTEM);
         super.runTest();
     }
 

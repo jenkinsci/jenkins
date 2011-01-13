@@ -261,6 +261,18 @@ public class MavenMultiModuleTest extends HudsonTestCase {
         }	
     }
     
+    @Bug(8484)
+    public void testMultiModMavenNonRecursive() throws Exception {
+        configureDefaultMaven("apache-maven-2.2.1", MavenInstallation.MAVEN_21);
+        MavenModuleSet m = createMavenProject();
+        m.getReporters().add(new TestReporter());
+        m.setScm(new ExtractResourceSCM(getClass().getResource("maven-multimod.zip")));
+        m.setGoals( "-N validate" );
+        assertTrue("MavenModuleSet.isNonRecursive() should be true", m.isNonRecursive());
+        buildAndAssertSuccess(m);
+        assertEquals("not only one module", 1, m.getModules().size());
+    }    
+    
     /*
     public void testParallelMultiModMavenWsExists() throws Exception {
         configureDefaultMaven();

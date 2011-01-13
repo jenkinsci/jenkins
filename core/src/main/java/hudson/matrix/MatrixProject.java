@@ -40,6 +40,7 @@ import hudson.model.Items;
 import hudson.model.JDK;
 import hudson.model.Job;
 import hudson.model.Label;
+import hudson.model.Node;
 import hudson.model.Queue.FlyweightTask;
 import hudson.model.ResourceController;
 import hudson.model.Result;
@@ -55,6 +56,8 @@ import hudson.tasks.Publisher;
 import hudson.triggers.Trigger;
 import hudson.util.CopyOnWriteMap;
 import hudson.util.DescribableList;
+import hudson.util.FormValidation;
+import hudson.util.FormValidation.Kind;
 import net.sf.json.JSONObject;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.StaplerRequest;
@@ -93,7 +96,7 @@ public class MatrixProject extends AbstractProject<MatrixProject,MatrixBuild> im
     private volatile AxisList axes = new AxisList();
     
     /**
-     * The filter that is applied to combinatios. It is a Groovy if condition.
+     * The filter that is applied to combinations. It is a Groovy if condition.
      * This can be null, which means "true".
      *
      * @see #getCombinationFilter()
@@ -148,7 +151,11 @@ public class MatrixProject extends AbstractProject<MatrixProject,MatrixBuild> im
     private String customWorkspace;
     
     public MatrixProject(String name) {
-        super(Hudson.getInstance(), name);
+        this(Hudson.getInstance(), name);
+    }
+
+    public MatrixProject(ItemGroup parent, String name) {
+        super(parent, name);
     }
 
     public AxisList getAxes() {
@@ -460,17 +467,16 @@ public class MatrixProject extends AbstractProject<MatrixProject,MatrixBuild> im
         throw new UnsupportedOperationException();
     }
 
+    public void onDeleted(MatrixConfiguration item) throws IOException {
+        // noop
+    }
+
     public File getRootDirFor(Combination combination) {
         File f = getConfigurationsDir();
         for (Entry<String, String> e : combination.entrySet())
             f = new File(f,"axis-"+e.getKey()+'/'+Util.rawEncode(e.getValue()));
         f.getParentFile().mkdirs();
         return f;
-    }
-
-    @Override
-    public Hudson getParent() {
-        return Hudson.getInstance();
     }
 
     /**
@@ -617,7 +623,10 @@ public class MatrixProject extends AbstractProject<MatrixProject,MatrixBuild> im
     private void checkAxisNames(Iterable<Axis> newAxes) throws FormException {
         HashSet<String> axisNames = new HashSet<String>();
         for (Axis a : newAxes) {
-            a.getDescriptor().doCheckName(a.getName());
+            FormValidation fv = a.getDescriptor().doCheckName(a.getName());
+            if (fv.kind!=Kind.OK)
+                throw new FormException(Messages.MatrixProject_DuplicateAxisName(),fv,"axis.name");
+
             if (axisNames.contains(a.getName()))
                 throw new FormException(Messages.MatrixProject_DuplicateAxisName(),"axis.name");
             axisNames.add(a.getName());
@@ -648,8 +657,8 @@ public class MatrixProject extends AbstractProject<MatrixProject,MatrixBuild> im
             return Messages.MatrixProject_DisplayName();
         }
 
-        public MatrixProject newInstance(String name) {
-            return new MatrixProject(name);
+        public MatrixProject newInstance(ItemGroup parent, String name) {
+            return new MatrixProject(parent,name);
         }
 
         /**

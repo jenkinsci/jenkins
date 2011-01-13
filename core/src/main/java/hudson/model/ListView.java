@@ -123,7 +123,7 @@ public class ListView extends View implements Saveable {
     	return !ViewJobFilter.all().isEmpty();
     }
 
-    public Iterable<ViewJobFilter> getJobFilters() {
+    public DescribableList<ViewJobFilter, Descriptor<ViewJobFilter>> getJobFilters() {
     	return jobFilters;
     }
     

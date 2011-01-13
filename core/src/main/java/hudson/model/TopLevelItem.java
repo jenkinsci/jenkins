@@ -23,11 +23,14 @@
  */
 package hudson.model;
 
-import hudson.ExtensionPoint;
 import hudson.Extension;
+import hudson.ExtensionPoint;
+import hudson.matrix.MatrixConfiguration;
 
 /**
- * {@link Item} that can be directly displayed under {@link Hudson}. 
+ * {@link Item} that can be directly displayed under {@link Hudson} or other containers.
+ * Ones that don't need to be under specific parent (say, unlike {@link MatrixConfiguration}),
+ * and thus can be freely moved, copied, etc.
  *
  * <p>
  * To register a custom {@link TopLevelItem} class from a plugin, put {@link Extension} on your
@@ -36,11 +39,6 @@ import hudson.Extension;
  * @author Kohsuke Kawaguchi
  */
 public interface TopLevelItem extends Item, ExtensionPoint, Describable<TopLevelItem> {
-    /**
-     * By definition the parent of the top-level item is always {@link Hudson}.
-     */
-    Hudson getParent();
-
     /**
      *
      * @see Describable#getDescriptor()

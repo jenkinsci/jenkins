@@ -27,7 +27,7 @@ THE SOFTWARE.
   <parent>
     <groupId>org.jvnet.hudson.main</groupId>
     <artifactId>pom</artifactId>
-    <version>1.394-SNAPSHOT</version>
+    <version>1.395-SNAPSHOT</version>
     <relativePath>../pom.xml</relativePath>
   </parent>
   
@@ -135,7 +135,7 @@ THE SOFTWARE.
         <!-- this is really just a patched version of maven-jetty-plugin to workaround issue #932 -->
         <groupId>org.jvnet.hudson.tools</groupId>
         <artifactId>maven-hudson-dev-plugin</artifactId>
-        <version>6.1.7</version>
+        <version>6.1.7-hudson-1</version>
         <configuration>
           <contextPath>${contextPath}</contextPath>
           <connectors>

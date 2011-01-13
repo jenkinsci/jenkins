@@ -25,7 +25,10 @@ package hudson.cli;
 
 import groovy.lang.GroovyShell;
 import groovy.lang.Binding;
+import hudson.model.AbstractProject;
 import hudson.model.Hudson;
+import hudson.model.Item;
+import hudson.model.Run;
 import hudson.remoting.Callable;
 import hudson.AbortException;
 import hudson.Extension;
@@ -71,6 +74,17 @@ public class GroovyCommand extends CLICommand implements Serializable {
 
         Binding binding = new Binding();
         binding.setProperty("out",new PrintWriter(stdout,true));
+        String j = getClientEnvironmentVariable("JOB_NAME");
+        if (j!=null) {
+            Item job = Hudson.getInstance().getItemByFullName(j);
+            binding.setProperty("currentJob", job);
+            String b = getClientEnvironmentVariable("BUILD_NUMBER");
+            if (b!=null && job instanceof AbstractProject) {
+                Run r = ((AbstractProject) job).getBuildByNumber(Integer.parseInt(b));
+                binding.setProperty("currentBuild", r);
+            }
+        }
+
         GroovyShell groovy = new GroovyShell(binding);
         groovy.run(loadScript(),"RemoteClass",remaining.toArray(new String[remaining.size()]));
         return 0;

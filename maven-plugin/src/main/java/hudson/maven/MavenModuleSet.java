@@ -225,16 +225,16 @@ public final class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,Ma
         new DescribableList<BuildWrapper, Descriptor<BuildWrapper>>(this);
 
     public MavenModuleSet(String name) {
+        this(Hudson.getInstance(),name);
+    }
+
+    public MavenModuleSet(ItemGroup parent, String name) {
         super(Hudson.getInstance(),name);
     }
 
     public String getUrlChildPrefix() {
         // seemingly redundant "./" is used to make sure that ':' is not interpreted as the scheme identifier
         return ".";
-    }
-
-    public Hudson getParent() {
-        return Hudson.getInstance();
     }
 
     public Collection<MavenModule> getItems() {
@@ -447,6 +447,10 @@ public final class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,Ma
 
     public void onRenamed(MavenModule item, String oldName, String newName) throws IOException {
         throw new UnsupportedOperationException();
+    }
+
+    public void onDeleted(MavenModule item) throws IOException {
+        // noop
     }
 
     public Collection<Job> getAllJobs() {
@@ -902,8 +906,8 @@ public final class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,Ma
             return Messages.MavenModuleSet_DiplayName();
         }
 
-        public MavenModuleSet newInstance(String name) {
-            return new MavenModuleSet(name);
+        public MavenModuleSet newInstance(ItemGroup parent, String name) {
+            return new MavenModuleSet(parent,name);
         }
 
         public Maven.DescriptorImpl getMavenDescriptor() {

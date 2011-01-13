@@ -206,8 +206,8 @@ public class QueueTest extends HudsonTestCase {
         StringBuilder causes = new StringBuilder();
         for (Cause c : ca.getCauses()) causes.append(c.getShortDescription() + "\n");
         assertEquals("Build causes should have all items, even duplicates",
-                "Started by user anonymous\nStarted by an SCM change\n"
-                + "Started by user anonymous\nStarted by timer\n"
+                "Started by user SYSTEM\nStarted by an SCM change\n"
+                + "Started by user SYSTEM\nStarted by timer\n"
                 + "Started by remote host 1.2.3.4 with note: test\n"
                 + "Started by remote host 4.3.2.1 with note: test\n"
                 + "Started by an SCM change\n"
@@ -220,7 +220,7 @@ public class QueueTest extends HudsonTestCase {
         WebClient wc = new WebClient();
         String buildPage = wc.getPage(build, "").asText().replace('\n',' ');
         assertTrue("Build page should combine duplicates and show counts: " + buildPage,
-                   buildPage.contains("Started by user anonymous (2 times) "
+                   buildPage.contains("Started by user SYSTEM (2 times) "
                         + "Started by an SCM change (3 times) "
                         + "Started by timer (2 times) "
                         + "Started by remote host 1.2.3.4 with note: test (2 times) "

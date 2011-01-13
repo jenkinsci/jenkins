@@ -1,7 +1,7 @@
 /*
  * The MIT License
  *
- * Copyright (c) 2004-2009, Sun Microsystems, Inc.
+ * Copyright (c) 2010, CloudBees, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -21,36 +21,39 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package hudson.model;
+package hudson.security;
 
-import hudson.EnvVars;
-import hudson.model.Queue.Task;
-import hudson.tasks.Builder;
-import hudson.tasks.BuildWrapper;
+import hudson.model.UserProperty;
+
+import java.io.IOException;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
- * {@link Action} that contributes environment variables during a build.
- *
- * <p>
- * For example, your {@link Builder} can add an {@link EnvironmentContributingAction} so that
- * the rest of the builders or publishers see some behavior changes.
- *
- * Another use case is for you to {@linkplain Queue#schedule(Task, int, Action...) submit a job} with
- * {@link EnvironmentContributingAction}s.
  *
  * @author Kohsuke Kawaguchi
- * @since 1.318
- * @see AbstractBuild#getEnvironment(TaskListener)
- * @see BuildWrapper
+ * @since 1.394
+ * @see FederatedLoginService
  */
-public interface EnvironmentContributingAction extends Action {
-    /**
-     * Called by {@link AbstractBuild} to allow plugins to contribute environment variables.
-     *
-     * @param build
-     *      The calling build. Never null.
-     * @param env
-     *      Environment variables should be added to this map.
-     */
-    public void buildEnvVars(AbstractBuild<?,?> build, EnvVars env);
+public class FederatedLoginServiceUserProperty extends UserProperty {
+    protected final Set<String> identifiers;
+
+    protected FederatedLoginServiceUserProperty(Collection<String> identifiers) {
+        this.identifiers = new HashSet<String>(identifiers);
+    }
+
+    public boolean has(String identifier) {
+        return identifiers.contains(identifier);
+    }
+
+    public Collection<String> getIdentifiers() {
+        return Collections.unmodifiableSet(identifiers);
+    }
+
+    public synchronized void addIdentifier(String id) throws IOException {
+        identifiers.add(id);
+        user.save();
+    }
 }
