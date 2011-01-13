@@ -1,7 +1,7 @@
 /*
  * The MIT License
  * 
- * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi
+ * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, Olivier Lamy
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -33,7 +33,7 @@ import java.io.Serializable;
 import hudson.Functions;
 
 /**
- * group id + artifact id + version.
+ * group id + artifact id + version and a flag to know if it's a plugin 
  *
  * @author Kohsuke Kawaguchi
  * @see ModuleName
@@ -42,6 +42,11 @@ public final class ModuleDependency implements Serializable {
     public final String groupId;
     public final String artifactId;
     public final String version;
+    
+    /**
+     * @since 1.395
+     */
+    public boolean plugin = false;
 
     public ModuleDependency(String groupId, String artifactId, String version) {
         this.groupId = groupId.intern();
@@ -64,10 +69,12 @@ public final class ModuleDependency implements Serializable {
 
     public ModuleDependency(Plugin p) {
         this(p.getGroupId(),p.getArtifactId(), Functions.defaulted(p.getVersion(),NONE));
+        this.plugin = true;
     }
 
     public ModuleDependency(ReportPlugin p) {
         this(p.getGroupId(),p.getArtifactId(),p.getVersion());
+        this.plugin = true;
     }
 
     public ModuleDependency(Extension ext) {
@@ -93,7 +100,8 @@ public final class ModuleDependency implements Serializable {
 
         return this.artifactId.equals(that.artifactId)
             && this.groupId.equals(that.groupId)
-            && this.version.equals(that.version);
+            && this.version.equals(that.version)
+            && this.plugin == that.plugin;
     }
 
     public int hashCode() {
@@ -101,6 +109,7 @@ public final class ModuleDependency implements Serializable {
         result = groupId.hashCode();
         result = 31 * result + artifactId.hashCode();
         result = 31 * result + version.hashCode();
+        result = 31 * result + (plugin ? 1 : 2);
         return result;
     }
 
