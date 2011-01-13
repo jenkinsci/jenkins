@@ -107,7 +107,7 @@ public abstract class ExtensionFinder implements ExtensionPoint {
      * <p>
      * In the mean time, another thread can load and initialize a class, and that initialization
      * can eventually results in listing up extensions, for example through static initializer.
-     * Such activitiy locks class initialization first, then locks extension list.
+     * Such activity locks class initialization first, then locks extension list.
      *
      * <p>
      * This inconsistent locking order results in a dead lock, you see.
