@@ -1,7 +1,7 @@
 /*
  * The MIT License
  * 
- * Copyright (c) 2004-2010, Sun Microsystems, Inc., Kohsuke Kawaguchi
+ * Copyright (c) 2004-2010, Sun Microsystems, Inc., Kohsuke Kawaguchi, CloudBees, Inc.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,15 +24,25 @@
 package hudson.util;
 
 import groovy.lang.GroovyShell;
+import hudson.FilePath;
 import hudson.Functions;
 import hudson.model.Hudson;
 import hudson.remoting.Callable;
-import hudson.remoting.VirtualChannel;
 import hudson.remoting.DelegatingCallable;
+import hudson.remoting.VirtualChannel;
+import hudson.security.AccessControlled;
+import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.StaplerResponse;
+import org.kohsuke.stapler.WebMethod;
 
+import javax.management.JMException;
+import javax.management.MBeanServer;
+import javax.management.ObjectName;
+import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.lang.management.ManagementFactory;
 import java.lang.management.ThreadInfo;
 import java.util.Collections;
 import java.util.LinkedHashMap;
@@ -43,7 +53,7 @@ import java.util.TreeMap;
  * Various remoting operations related to diagnostics.
  *
  * <p>
- * These code are useful whereever {@link VirtualChannel} is used, such as master, slaves, Maven JVMs, etc.
+ * These code are useful wherever {@link VirtualChannel} is used, such as master, slaves, Maven JVMs, etc.
  *
  * @author Kohsuke Kawaguchi
  * @since 1.175
@@ -127,6 +137,67 @@ public final class RemotingDiagnostics {
                 t.printStackTrace(pw);
             }
             return out.toString();
+        }
+    }
+
+    /**
+     * Obtains the heap dump in an HPROF file.
+     */
+    public static FilePath getHeapDump(VirtualChannel channel) throws IOException, InterruptedException {
+        return channel.call(new Callable<FilePath, IOException>() {
+            public FilePath call() throws IOException {
+                final File hprof = File.createTempFile("hudson-heapdump", "hprof");
+                hprof.delete();
+                try {
+                    MBeanServer server = ManagementFactory.getPlatformMBeanServer();
+                    server.invoke(new ObjectName("com.sun.management:type=HotSpotDiagnostic"), "dumpHeap",
+                            new Object[]{hprof.getAbsolutePath(), true}, new String[]{String.class.getName(), boolean.class.getName()});
+
+                    return new FilePath(hprof);
+                } catch (JMException e) {
+                    throw new IOException2(e);
+                }
+            }
+
+            private static final long serialVersionUID = 1L;
+        });
+    }
+
+    /**
+     * Heap dump, exposable to URL via Stapler.
+     *
+     */
+    public static class HeapDump {
+        private final AccessControlled owner;
+        private final VirtualChannel channel;
+
+        public HeapDump(AccessControlled owner, VirtualChannel channel) {
+            this.owner = owner;
+            this.channel = channel;
+        }
+
+        /**
+         * Obtains the heap dump.
+         */
+        public void doIndex(StaplerResponse rsp) throws IOException {
+            rsp.sendRedirect("heapdump.hprof");
+        }
+
+        @WebMethod(name="heapdump.hprof")
+        public void doHeapDump(StaplerRequest req, StaplerResponse rsp) throws IOException, InterruptedException {
+            owner.checkPermission(Hudson.ADMINISTER);
+            rsp.setContentType("application/octet-stream");
+
+            FilePath dump = obtain();
+            try {
+                dump.copyTo(rsp.getCompressedOutputStream(req));
+            } finally {
+                dump.delete();
+            }
+        }
+
+        public FilePath obtain() throws IOException, InterruptedException {
+            return RemotingDiagnostics.getHeapDump(channel);
         }
     }
 }
