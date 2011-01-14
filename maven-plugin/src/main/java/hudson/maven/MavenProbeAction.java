@@ -1,7 +1,7 @@
 /*
  * The MIT License
  * 
- * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi
+ * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, CloudBees, Inc.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,13 +24,16 @@
 package hudson.maven;
 
 import hudson.EnvVars;
+import hudson.FilePath;
 import hudson.model.AbstractProject;
 import hudson.model.Action;
 import hudson.model.Hudson;
 import hudson.remoting.Channel;
 import hudson.util.RemotingDiagnostics;
+import hudson.util.RemotingDiagnostics.HeapDump;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
+import org.kohsuke.stapler.WebMethod;
 
 import javax.servlet.ServletException;
 import java.io.IOException;
@@ -111,5 +114,12 @@ public final class MavenProbeAction implements Action {
         }
 
         req.getView(this,"_script.jelly").forward(req,rsp);
+    }
+
+    /**
+     * Obtains the heap dump.
+     */
+    public HeapDump getHeapDump() throws IOException {
+        return new HeapDump(owner,channel);
     }
 }

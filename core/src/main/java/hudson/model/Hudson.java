@@ -3,7 +3,7 @@
  *
  * Copyright (c) 2004-2010, Sun Microsystems, Inc., Kohsuke Kawaguchi,
  * Erik Ramfelt, Koichi Fujikawa, Red Hat, Inc., Seiji Sogabe,
- * Stephen Connolly, Tom Huybrechts, Yahoo! Inc., Alan Harder
+ * Stephen Connolly, Tom Huybrechts, Yahoo! Inc., Alan Harder, CloudBees, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -121,6 +121,7 @@ import hudson.util.Iterators;
 import hudson.util.Memoizer;
 import hudson.util.MultipartFormDataParser;
 import hudson.util.RemotingDiagnostics;
+import hudson.util.RemotingDiagnostics.HeapDump;
 import hudson.util.StreamTaskListener;
 import hudson.util.TextFile;
 import hudson.util.VersionNumber;
@@ -166,6 +167,7 @@ import org.kohsuke.stapler.StaplerProxy;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 import org.kohsuke.stapler.WebApp;
+import org.kohsuke.stapler.WebMethod;
 import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.export.ExportedBean;
 import org.kohsuke.stapler.framework.adjunct.AdjunctManager;
@@ -2567,14 +2569,14 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
             bc.commit();
         }
 
-        rsp.sendRedirect(req.getContextPath()+'/');  // go to the top page
+        rsp.sendRedirect(req.getContextPath() + '/');  // go to the top page
     }
 
     /**
      * Accepts the new description.
      */
     public synchronized void doSubmitDescription( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
-        getPrimaryView().doSubmitDescription(req,rsp);
+        getPrimaryView().doSubmitDescription(req, rsp);
     }
 
     /**
@@ -2582,7 +2584,7 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
      *      Use {@link #doQuietDown()} instead.
      */
     public synchronized void doQuietDown(StaplerResponse rsp) throws IOException, ServletException {
-        doQuietDown().generateResponse(null,rsp,this);
+        doQuietDown().generateResponse(null, rsp, this);
     }
 
     public synchronized HttpRedirect doQuietDown() throws IOException {
@@ -2637,7 +2639,7 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
      * @since 1.319
      */
     public TopLevelItem createProjectFromXML(String name, InputStream xml) throws IOException {
-        return itemGroupMixIn.createProjectFromXML(name,xml);
+        return itemGroupMixIn.createProjectFromXML(name, xml);
     }
 
     /**
@@ -2652,7 +2654,7 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
      */
     @SuppressWarnings({"unchecked"})
     public <T extends TopLevelItem> T copy(T src, String name) throws IOException {
-        return itemGroupMixIn.copy(src,name);
+        return itemGroupMixIn.copy(src, name);
     }
 
     // a little more convenient overloading that assumes the caller gives us the right type
@@ -2765,7 +2767,7 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
      * Logs out the user.
      */
     public void doLogout( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
-        securityRealm.doLogout(req,rsp);
+        securityRealm.doLogout(req, rsp);
     }
 
     /**
@@ -2798,7 +2800,7 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
         checkPermission(ADMINISTER);
 
         // engage "loading ..." UI and then run the actual task in a separate thread
-        servletContext.setAttribute("app",new HudsonIsLoading());
+        servletContext.setAttribute("app", new HudsonIsLoading());
 
         new Thread("Hudson config reload thread") {
             @Override
@@ -2823,7 +2825,7 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
      * Reloads the configuration synchronously.
      */
     public void reload() throws IOException, InterruptedException, ReactorException {
-        executeReactor(null,loadTasks());
+        executeReactor(null, loadTasks());
         User.reload();
         servletContext.setAttribute("app", this);
     }
@@ -2854,6 +2856,13 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
         rsp.setStatus(HttpServletResponse.SC_OK);
         rsp.setContentType("text/plain");
         rsp.getWriter().println("GCed");
+    }
+
+    /**
+     * Obtains the heap dump.
+     */
+    public HeapDump getHeapDump() throws IOException {
+        return new HeapDump(this,MasterComputer.localChannel);
     }
 
     /**
@@ -2960,7 +2969,7 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
     public void restart() throws RestartNotSupportedException {
         final Lifecycle lifecycle = Lifecycle.get();
         lifecycle.verifyRestartable(); // verify that Hudson is restartable
-        servletContext.setAttribute("app",new HudsonIsRestarting());
+        servletContext.setAttribute("app", new HudsonIsRestarting());
 
         new Thread("restart thread") {
             final String exitUser = getAuthentication().getName();
@@ -3151,7 +3160,7 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
      * Sign up for the user account.
      */
     public void doSignup( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
-        req.getView(getSecurityRealm(),"signup.jelly").forward(req,rsp);
+        req.getView(getSecurityRealm(), "signup.jelly").forward(req, rsp);
     }
 
     /**
