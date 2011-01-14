@@ -66,7 +66,10 @@ THE SOFTWARE.
                 e.appendChild(p); // Needs to be first for IE
                 // Use "outerHTML" for IE; workaround for:
                 // http://www.quirksmode.org/bugreports/archives/2004/11/innerhtml_and_t.html
-                if (p.outerHTML) p.outerHTML = '<pre>'+text+'</pre>';
+                if (p.outerHTML) {
+                  p.outerHTML = '<pre>'+text+'</pre>';
+                  p = e.lastChild;
+                }
                 else p.innerHTML = text;
                 Behaviour.applySubtree(p);
                 if(stickToBottom) scroller.scrollToBottom();
