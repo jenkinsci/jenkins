@@ -23,6 +23,7 @@
  */
 package hudson.console;
 
+import hudson.Functions;
 import hudson.MarkupText;
 import hudson.model.Describable;
 import hudson.model.Hudson;
@@ -117,6 +118,7 @@ import java.util.zip.GZIPOutputStream;
  *
  * @author Kohsuke Kawaguchi
  * @see ConsoleAnnotationDescriptor
+ * @see Functions#generateConsoleAnnotationScriptAndStylesheet()
  * @since 1.349
  */
 public abstract class ConsoleNote<T> implements Serializable, Describable<ConsoleNote<?>> {
