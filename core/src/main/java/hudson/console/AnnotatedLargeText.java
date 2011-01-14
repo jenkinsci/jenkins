@@ -114,7 +114,7 @@ public class AnnotatedLargeText<T> extends LargeText {
 
     private ConsoleAnnotator createAnnotator(StaplerRequest req) throws IOException {
         try {
-            String base64 = req.getHeader("X-ConsoleAnnotator");
+            String base64 = req!=null ? req.getHeader("X-ConsoleAnnotator") : null;
             if (base64!=null) {
                 Cipher sym = Secret.getCipher("AES");
                 sym.init(Cipher.DECRYPT_MODE, Hudson.getInstance().getSecretKeyAsAES128());
@@ -162,7 +162,9 @@ public class AnnotatedLargeText<T> extends LargeText {
             oos.writeLong(System.currentTimeMillis()); // send timestamp to prevent a replay attack
             oos.writeObject(caw.getConsoleAnnotator());
             oos.close();
-            Stapler.getCurrentResponse().setHeader("X-ConsoleAnnotator",new String(Base64.encode(baos.toByteArray())));
+            StaplerResponse rsp = Stapler.getCurrentResponse();
+            if (rsp!=null)
+                rsp.setHeader("X-ConsoleAnnotator", new String(Base64.encode(baos.toByteArray())));
         } catch (GeneralSecurityException e) {
             throw new IOException2(e);
         }
