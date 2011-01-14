@@ -63,7 +63,7 @@ public abstract class ComputerLauncher extends AbstractDescribableImpl<ComputerL
      * Launches the slave agent for the given {@link Computer}.
      *
      * <p>
-     * If the slave agent is launched successfully, {@link SlaveComputer#setChannel(InputStream, OutputStream, TaskListener, Listener)}
+     * If the slave agent is launched successfully, {@link SlaveComputer#setChannel(InputStream, OutputStream, TaskListener, Channel.Listener)}
      * should be invoked in the end to notify Hudson of the established connection.
      * The operation could also fail, in which case there's no need to make any callback notification,
      * (except to notify the user of the failure through {@link StreamTaskListener}.)
