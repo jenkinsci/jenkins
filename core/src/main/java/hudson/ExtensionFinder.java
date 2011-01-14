@@ -144,7 +144,7 @@ public abstract class ExtensionFinder implements ExtensionPoint {
          * {@link InitMilestone#PLUGINS_PREPARED} is attained, so this method is guaranteed to
          * see all the classes and indices.
          */
-        private List<IndexItem<Extension,Object>> getIndicies() {
+        private List<IndexItem<Extension,Object>> getIndices() {
             // this method cannot be synchronized because of a dead lock possibility in the following order of events:
             // 1. thread X can start listing indices, locking this object 'SZ'
             // 2. thread Y starts loading a class, locking a classloader 'CL'
@@ -161,7 +161,7 @@ public abstract class ExtensionFinder implements ExtensionPoint {
         public <T> Collection<ExtensionComponent<T>> find(Class<T> type, Hudson hudson) {
             List<ExtensionComponent<T>> result = new ArrayList<ExtensionComponent<T>>();
 
-            for (IndexItem<Extension,Object> item : getIndicies()) {
+            for (IndexItem<Extension,Object> item : getIndices()) {
                 try {
                     AnnotatedElement e = item.element();
                     Class<?> extType;
@@ -197,7 +197,7 @@ public abstract class ExtensionFinder implements ExtensionPoint {
 
         @Override
         public void scout(Class extensionType, Hudson hudson) {
-            for (IndexItem<Extension,Object> item : getIndicies()) {
+            for (IndexItem<Extension,Object> item : getIndices()) {
                 try {
                     // we might end up having multiple threads concurrently calling into element(),
                     // but we can't synchronize this --- if we do, the one thread that's supposed to load a class
