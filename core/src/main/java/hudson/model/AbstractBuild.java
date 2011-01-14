@@ -1,7 +1,7 @@
 /*
  * The MIT License
  *
- * Copyright (c) 2004-2010, Sun Microsystems, Inc., Kohsuke Kawaguchi, Yahoo! Inc.
+ * Copyright (c) 2004-2010, Sun Microsystems, Inc., Kohsuke Kawaguchi, Yahoo! Inc., CloudBees, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -29,7 +29,8 @@ import hudson.Functions;
 import hudson.Launcher;
 import hudson.Util;
 import hudson.FilePath;
-import hudson.console.HyperlinkNote;
+import hudson.console.AnnotatedLargeText;
+import hudson.console.ExpandableDetailsNote;
 import hudson.slaves.WorkspaceList;
 import hudson.slaves.NodeProperty;
 import hudson.slaves.WorkspaceList.Lease;
@@ -63,6 +64,7 @@ import org.xml.sax.SAXException;
 import javax.servlet.ServletException;
 import java.io.File;
 import java.io.IOException;
+import java.io.StringWriter;
 import java.util.AbstractSet;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -419,9 +421,17 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
 
                 Computer c = node.toComputer();
                 if (c==null || c.isOffline()) {
-                    // See HUDSON-5073. looks like we went offline during the build
-                    // point the user to the slave log
+                    // As can be seen in HUDSON-5073, when a build fails because of the slave connectivity problem,
+                    // error message doesn't point users to the slave. So let's do it here.
                     listener.hyperlink("/computer/"+builtOn+"/log","Looks like the node went offline during the build. Check the slave log for the details.");
+
+                    // grab the end of the log file. This might not work very well if the slave already
+                    // starts reconnecting. Fixing this requires a ring buffer in slave logs.
+                    AnnotatedLargeText<Computer> log = c.getLogText();
+                    StringWriter w = new StringWriter();
+                    log.writeHtmlTo(Math.max(0,c.getLogFile().length()-10240),w);
+
+                    listener.getLogger().print(ExpandableDetailsNote.encodeTo("details",w.toString()));
                     listener.getLogger().println();
                 }
 
