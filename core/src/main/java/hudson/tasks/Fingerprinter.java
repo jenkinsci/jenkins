@@ -43,6 +43,7 @@ import hudson.model.RunAction;
 import hudson.remoting.VirtualChannel;
 import hudson.util.FormValidation;
 import hudson.util.IOException2;
+import hudson.util.PackedMap;
 import net.sf.json.JSONObject;
 import org.apache.tools.ant.DirectoryScanner;
 import org.apache.tools.ant.types.FileSet;
@@ -239,20 +240,20 @@ public class Fingerprinter extends Recorder implements Serializable {
         /**
          * From file name to the digest.
          */
-        private /*almost final*/ ImmutableMap<String,String> record;
+        private /*almost final*/ PackedMap<String,String> record;
 
         private transient WeakReference<Map<String,Fingerprint>> ref;
 
         public FingerprintAction(AbstractBuild build, Map<String, String> record) {
             this.build = build;
-            this.record = ImmutableMap.copyOf(record);
+            this.record = PackedMap.of(record);
             onLoad();   // make compact
         }
 
         public void add(Map<String,String> moreRecords) {
             Map<String,String> r = new HashMap<String, String>(record);
             r.putAll(moreRecords);
-            record = ImmutableMap.copyOf(r);
+            record = PackedMap.of(r);
             ref = null;
             onLoad();
         }
@@ -316,7 +317,7 @@ public class Fingerprinter extends Recorder implements Serializable {
                 b.put(k,v);
             }
 
-            record = ImmutableMap.copyOf(b);
+            record = PackedMap.of(b);
         }
 
         /**
