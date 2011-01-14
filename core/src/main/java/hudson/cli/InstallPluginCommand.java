@@ -27,14 +27,18 @@ import hudson.Extension;
 import hudson.FilePath;
 import hudson.model.Hudson;
 import hudson.model.UpdateSite;
+import hudson.model.UpdateSite.Data;
+import hudson.util.EditDistance;
 import org.kohsuke.args4j.Argument;
 import org.kohsuke.args4j.Option;
 
 import java.io.File;
 import java.net.URL;
 import java.net.MalformedURLException;
+import java.util.HashSet;
 import java.util.List;
 import java.util.ArrayList;
+import java.util.Set;
 
 /**
  * Installs a plugin either from a file, an URL, or from update center.
@@ -101,6 +105,23 @@ public class InstallPluginCommand extends CLICommand {
             }
 
             stdout.println(source+" is neither a valid file, URL, nor a plugin artifact name in the update center");
+
+            if (!source.contains(".") && !source.contains(":") && !source.contains("/") && !source.contains("\\")) {
+                // looks like a short plugin name. Why did we fail to find it in the update center?
+                if (h.getUpdateCenter().getSites().isEmpty()) {
+                    stdout.println("Note that no update center is defined in this Hudson.");
+                } else {
+                    Set<String> candidates = new HashSet<String>();
+                    for (UpdateSite s : h.getUpdateCenter().getSites()) {
+                        Data dt = s.getData();
+                        if (dt==null)
+                            stdout.println("No update center data is retrieved yet from: "+s.getUrl());
+                        candidates.addAll(dt.plugins.keySet());
+                    }
+                    stdout.println(source+" looks like a short plugin name. Did you mean '"+ EditDistance.findNearest(source,candidates)+"'?");
+                }
+            }
+
             return 1;
         }
 
