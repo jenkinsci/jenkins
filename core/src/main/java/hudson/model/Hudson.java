@@ -2515,6 +2515,13 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
                 globalNodeProperties.rebuild(req, np, NodeProperty.for_(this));
             }
 
+            // Monitors
+            for (AdministrativeMonitor monitor : administrativeMonitors) {
+                if (json.has(monitor.id)) {
+                    monitor.disable(false);
+                }
+            }
+
             version = VERSION;
 
             save();

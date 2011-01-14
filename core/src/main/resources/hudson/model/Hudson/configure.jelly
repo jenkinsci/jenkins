@@ -44,6 +44,7 @@ THE SOFTWARE.
       <f:entry title="${%# of executors}" field="numExecutors">
         <f:textbox />
       </f:entry>
+
       <j:if test="${!empty(it.slaves)}">
         <f:entry title="${%Labels}" field="labelString">
           <f:textbox />
@@ -188,6 +189,24 @@ THE SOFTWARE.
           </f:block>
         </f:section>
       </j:if>
+
+      <f:section title="${%monitors.disabled}">
+        <f:block>
+          <!-- list of monitors -->
+          <j:set var="disabledMonitorsNb" value="0" />
+          <j:forEach var="monitor" items="${it.administrativeMonitors}">
+            <j:if test="${!monitor.enabled}">
+              <f:optionalBlock name="${monitor.id}" checked="${monitor.enabled}"
+                               title="${monitor.displayName}" help="/help/system-config/enableMonitor.html" />
+              <j:set var="disabledMonitorsNb" value="${disabledMonitorsNb+1}" />
+            </j:if>
+          </j:forEach>
+          <j:if test="${disabledMonitorsNb eq 0}">
+            ${%monitors.disabled.empty}
+          </j:if>
+        </f:block>
+      </f:section>
+
 
       <f:block>
         <f:submit value="${%Save}" />
