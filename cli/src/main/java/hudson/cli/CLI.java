@@ -29,6 +29,7 @@ import hudson.remoting.RemoteOutputStream;
 import hudson.remoting.PingThread;
 import hudson.remoting.SocketInputStream;
 import hudson.remoting.SocketOutputStream;
+import hudson.cli.client.Messages;
 
 import java.net.URL;
 import java.net.URLConnection;
