@@ -76,6 +76,9 @@ public interface TaskListener extends Serializable {
 
     /**
      * Places a {@link HyperlinkNote} on the given text.
+     *
+     * @param url
+     *      If this starts with '/', it's interpreted as a path within the context path.
      */
     void hyperlink(String url, String text) throws IOException;
 

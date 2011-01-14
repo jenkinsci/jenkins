@@ -29,6 +29,7 @@ import hudson.Functions;
 import hudson.Launcher;
 import hudson.Util;
 import hudson.FilePath;
+import hudson.console.HyperlinkNote;
 import hudson.slaves.WorkspaceList;
 import hudson.slaves.NodeProperty;
 import hudson.slaves.WorkspaceList.Lease;
@@ -415,6 +416,14 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
                     return Result.FAILURE;
 
                 Result result = doRun(listener);
+
+                Computer c = node.toComputer();
+                if (c==null || c.isOffline()) {
+                    // See HUDSON-5073. looks like we went offline during the build
+                    // point the user to the slave log
+                    listener.hyperlink("/computer/"+builtOn+"/log","Looks like the node went offline during the build. Check the slave log for the details.");
+                    listener.getLogger().println();
+                }
 
                 // kill run-away processes that are left
                 // use multiple environment variables so that people can escape this massacre by overriding an environment
