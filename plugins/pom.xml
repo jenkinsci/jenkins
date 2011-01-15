@@ -10,7 +10,7 @@
   <groupId>org.jvnet.hudson.plugins</groupId>
   <artifactId>plugin</artifactId>
   <name>Hudson plugin POM</name>
-  <version>1.393</version>
+  <version>1.394</version>
   <packaging>pom</packaging>
 
   <properties>
@@ -38,7 +38,7 @@
       <dependency><!-- if a plugin wants to depend on the maven plugin, choose the right version automatically -->
         <groupId>org.jvnet.hudson.main</groupId>
         <artifactId>maven-plugin</artifactId>
-        <version>1.393</version>
+        <version>1.394</version>
       </dependency>
     </dependencies>
   </dependencyManagement>
@@ -48,25 +48,25 @@
       <groupId>org.jvnet.hudson.main</groupId>
       <artifactId>hudson-war</artifactId>
       <type>war</type>
-      <version>1.393</version>
+      <version>1.394</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.jvnet.hudson.main</groupId>
       <artifactId>hudson-core</artifactId>
-      <version>1.393</version>
+      <version>1.394</version>
       <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>org.jvnet.hudson.main</groupId>
       <artifactId>hudson-test-harness</artifactId>
-      <version>1.393</version>
+      <version>1.394</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.jvnet.hudson.main</groupId>
       <artifactId>ui-samples-plugin</artifactId>
-      <version>1.393</version>
+      <version>1.394</version>
       <scope>test</scope>
     </dependency>
     <dependency>
@@ -97,7 +97,7 @@
        <dependency>
        <groupId>org.jvnet.hudson.main</groupId>
        <artifactId>maven-plugin</artifactId>
-       <version>1.393</version>
+       <version>1.394</version>
        </dependency>
        </dependencies>
        </dependencyManagement-->
