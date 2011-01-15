@@ -27,6 +27,7 @@ import hudson.model.PageDecorator;
 import org.jvnet.hudson.test.HudsonTestCase;
 import org.jvnet.hudson.test.TestExtension;
 
+import javax.inject.Inject;
 import javax.inject.Qualifier;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -64,21 +65,23 @@ public class ExtensionFinderTest extends HudsonTestCase {
     public void testInjection() {
         InjectingExtension i = PageDecorator.all().get(InjectingExtension.class);
         assertNotNull(i);
-//        assertEquals("lion king",i.value);
+        assertNotNull(i.foo);
     }
 
     @TestExtension
     public static class InjectingExtension extends PageDecorator {
-//        @Inject
+        @Inject
         Foo foo;
 
 //        @Inject @LionKing
-        String value;
+//        String value;
 
 
         public InjectingExtension() {
             super(InjectingExtension.class);
         }
+
+        @TestExtension
         public static class Foo {}
     }
 

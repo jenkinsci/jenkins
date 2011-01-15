@@ -30,13 +30,12 @@ import net.java.sezpoz.IndexItem;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.springframework.beans.BeansException;
+import org.springframework.beans.factory.FactoryBean;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.config.BeanFactoryPostProcessor;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
-import org.springframework.context.support.ClassPathXmlApplicationContext;
 
-import javax.inject.Provider;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.AnnotatedElement;
 import java.lang.reflect.Field;
@@ -145,18 +144,11 @@ public abstract class ExtensionFinder implements ExtensionPoint {
     }
 
     public static abstract class AbstractSpringExtensionFinder<T extends Annotation> extends ExtensionFinder {
-        private final ClassPathXmlApplicationContext applicationContext;
+        private final AnnotationConfigApplicationContext applicationContext;
 
         public AbstractSpringExtensionFinder(final Class<T> annotationType) {
 
-            applicationContext = new ClassPathXmlApplicationContext();
-//                    new AnnotationConfigApplicationContext();
-            applicationContext.getBeanFactoryPostProcessors(new BeanFactoryPostProcessor() {
-
-                public void postProcessBeanFactory(ConfigurableListableBeanFactory beanFactory) throws BeansException {
-                    beanFactory.isFactoryBean()
-                }
-            });
+            applicationContext = new AnnotationConfigApplicationContext();
             applicationContext.addBeanFactoryPostProcessor(new BeanFactoryPostProcessor() {
                 public void postProcessBeanFactory(ConfigurableListableBeanFactory beanFactory) throws BeansException {
                     for (String name: beanFactory.getBeanDefinitionNames()) {
@@ -205,11 +197,19 @@ public abstract class ExtensionFinder implements ExtensionPoint {
 
         }
 
-        private <S> Provider<S> createProvider(Class<S> type, final IndexItem<T,Object> item) {
-            return new Provider<S>() {
+        private <S> FactoryBean<S> createProvider(final Class<S> type, final IndexItem<T,Object> item) {
+            return new FactoryBean<S>() {
 
-                public S get() {
+                public S getObject() throws Exception {
                     return (S) instantiate(item);
+                }
+
+                public Class<?> getObjectType() {
+                    return type;
+                }
+
+                public boolean isSingleton() {
+                    return false;
                 }
             };
         }
