@@ -33,6 +33,7 @@ import hudson.util.DescriptorList;
 import hudson.util.FormValidation;
 import hudson.DescriptorExtensionList;
 import hudson.Util;
+import hudson.model.Failure;
 
 import java.io.IOException;
 import java.util.List;
@@ -96,10 +97,15 @@ public abstract class NodeDescriptor extends Descriptor<Node> {
     }
 
     public FormValidation doCheckName(@QueryParameter String value ) {
-        if(Util.fixEmptyAndTrim(value)==null)
-            return FormValidation.error("Name is mandatory");
-        else
-            return FormValidation.ok();
+        String name = Util.fixEmptyAndTrim(value);
+        if(name==null)
+            return FormValidation.error(Messages.NodeDescripter_CheckName_Mandatory());
+        try {
+            Hudson.checkGoodName(name);
+        } catch (Failure f) {
+            return FormValidation.error(f.getMessage());
+        }
+        return FormValidation.ok();
     }
 
     /**
