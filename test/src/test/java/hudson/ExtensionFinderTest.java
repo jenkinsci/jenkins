@@ -26,6 +26,8 @@ package hudson;
 import hudson.model.PageDecorator;
 import org.jvnet.hudson.test.HudsonTestCase;
 import org.jvnet.hudson.test.TestExtension;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
 
 import javax.inject.Inject;
 import javax.inject.Qualifier;
@@ -36,9 +38,9 @@ import java.lang.annotation.RetentionPolicy;
  * @author Kohsuke Kawaguchi
  */
 public class ExtensionFinderTest extends HudsonTestCase {
-//    /**
-//     * It's OK for some extensions to fail to load. The sytem needs to tolerate that.
-//     */
+    /**
+     * It's OK for some extensions to fail to load. The sytem needs to tolerate that.
+     */
 //    public void testFailingInstance() {
 //        FailingExtension i = PageDecorator.all().get(FailingExtension.class);
 //        assertNull("Instantiation should have failed",i);
@@ -54,10 +56,6 @@ public class ExtensionFinderTest extends HudsonTestCase {
 //        }
 //        public static boolean error;
 //    }
-//
-
-
-
 
     /**
      * Extensions are Guice components, so it should support injection.
@@ -66,6 +64,7 @@ public class ExtensionFinderTest extends HudsonTestCase {
         InjectingExtension i = PageDecorator.all().get(InjectingExtension.class);
         assertNotNull(i);
         assertNotNull(i.foo);
+        assertEquals(i.value,"Lion King");
     }
 
     @TestExtension
@@ -73,8 +72,8 @@ public class ExtensionFinderTest extends HudsonTestCase {
         @Inject
         Foo foo;
 
-//        @Inject @LionKing
-//        String value;
+        @Inject @LionKing
+        String value;
 
 
         public InjectingExtension() {
@@ -83,6 +82,15 @@ public class ExtensionFinderTest extends HudsonTestCase {
 
         @TestExtension
         public static class Foo {}
+    }
+
+    @TestExtension
+    @Configuration
+    public static class LionKingConfig {
+        @Bean @LionKing
+        public  String lionKing() {
+            return "Lion King";
+        }
     }
 
 

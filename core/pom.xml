@@ -812,6 +812,12 @@ THE SOFTWARE.
     </dependency>
 
     <dependency>
+      <groupId>cglib</groupId>
+      <artifactId>cglib-nodep</artifactId>
+      <version>2.2</version>
+    </dependency>
+
+    <dependency>
       <groupId>org.kohsuke</groupId>
       <artifactId>access-modifier-annotation</artifactId>
       <version>1.0</version>
