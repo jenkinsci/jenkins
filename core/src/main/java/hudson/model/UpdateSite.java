@@ -549,7 +549,7 @@ public class UpdateSite {
             List<Plugin> deps = new ArrayList<Plugin>();
 
             for(Map.Entry<String,String> e : dependencies.entrySet()) {
-                Plugin depPlugin = getPlugin(e.getKey());
+                Plugin depPlugin = Hudson.getInstance().getUpdateCenter().getPlugin(e.getKey());
                 VersionNumber requiredVersion = new VersionNumber(e.getValue());
                 
                 // Is the plugin installed already? If not, add it.
