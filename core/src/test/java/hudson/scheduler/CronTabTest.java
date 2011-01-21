@@ -28,6 +28,7 @@ import java.text.DateFormat;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
 import junit.framework.TestCase;
+import org.jvnet.hudson.test.Bug;
 
 import static java.util.Calendar.MONDAY;
 
@@ -93,7 +94,7 @@ public class CronTabTest extends TestCase {
         compare(new GregorianCalendar(2010,7,1,0,0),x.floor(c));
     }
 
-    // @Bug(8401)
+    @Bug(8401)
     public void testFloor4() throws Exception {
         // conflict between DoM and DoW. In this we need to find a day that's the first day of a month and Sunday in 2010
         CronTab x = new CronTab("0 0 1 * 0");

@@ -155,6 +155,12 @@ THE SOFTWARE.
       <version>6.1.11</version>
     </dependency>
     <dependency>
+      <groupId>org.jvnet.hudson</groupId>
+      <artifactId>test-annotations</artifactId>
+      <version>1.0</version>
+      <scope>compile</scope><!-- in this module we need this as a compile scope, whereas in the parent it's test -->
+    </dependency>
+    <dependency>
       <groupId>org.jvnet.mock-javamail</groupId>
       <artifactId>mock-javamail</artifactId>
       <version>1.7</version>
