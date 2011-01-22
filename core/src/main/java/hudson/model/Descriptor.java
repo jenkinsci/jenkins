@@ -782,8 +782,6 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable {
 
         List<T> items = new ArrayList<T>();
 
-        if(!formData.has(key))   return items;
-
         return newInstancesFromHeteroList(req,formData.get(key),descriptors);
     }
 
@@ -793,10 +791,12 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable {
 
         List<T> items = new ArrayList<T>();
 
-        for (Object o : JSONArray.fromObject(formData)) {
-            JSONObject jo = (JSONObject)o;
-            String kind = jo.getString("kind");
-            items.add(find(descriptors,kind).newInstance(req,jo));
+        if (formData!=null) {
+            for (Object o : JSONArray.fromObject(formData)) {
+                JSONObject jo = (JSONObject)o;
+                String kind = jo.getString("kind");
+                items.add(find(descriptors,kind).newInstance(req,jo));
+            }
         }
 
         return items;
