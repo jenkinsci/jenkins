@@ -45,6 +45,9 @@ Upcoming changes</a>
     (<a href="http://issues.hudson-ci.org/browse/HUDSON-8401">issue 8401</a>)
   <li class=bug>
     If a master fails to ping a slave, it should be hard-disconnected.
+  <li class=bug>
+    "java -jar hudson.war --daemon" was forcing umask 027. This includes Debian/redhat packages.
+    (<a href="http://issues.hudson-ci.org/browse/HUDSON-5114">issue 5114</a>)
   <li class=rfe>
     If the JNLP-connected slave drops out without the master not noticing, allow the reconnection
     without rejecting it.
