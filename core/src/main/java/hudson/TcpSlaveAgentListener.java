@@ -116,6 +116,12 @@ public final class TcpSlaveAgentListener extends Thread {
             // the loop eventually terminates when the socket is closed.
             while (true) {
                 Socket s = serverSocket.accept();
+
+                // this prevents a connection from silently terminated by the router in between or the other peer
+                // and that goes without unnoticed. However, the time out is often very long (for example 2 hours
+                // by default in Linux) that this alone is enough to prevent that.
+                s.setKeepAlive(true);
+
                 new ConnectionHandler(s).start();
             }
         } catch (IOException e) {
