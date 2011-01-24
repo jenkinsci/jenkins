@@ -42,8 +42,6 @@ import hudson.slaves.OfflineCause.ChannelTermination;
 
 import java.io.File;
 import java.io.OutputStream;
-import java.io.FileOutputStream;
-import java.io.FileNotFoundException;
 import java.io.InputStream;
 import java.io.IOException;
 import java.io.PrintStream;
@@ -59,7 +57,6 @@ import java.util.concurrent.Future;
 import java.security.Security;
 
 import hudson.util.io.ReopenableFileOutputStream;
-import org.apache.commons.io.IOUtils;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 import org.kohsuke.stapler.QueryParameter;
@@ -370,7 +367,7 @@ public class SlaveComputer extends Computer {
     }
 
     @Override
-    public VirtualChannel getChannel() {
+    public Channel getChannel() {
         return channel;
     }
 

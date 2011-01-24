@@ -32,6 +32,7 @@ import java.io.ByteArrayOutputStream;
 import java.net.HttpURLConnection;
 import java.net.Socket;
 import java.net.URL;
+import java.util.Properties;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
@@ -90,6 +91,13 @@ public class Engine extends Thread {
     private String tunnel;
 
     private boolean noReconnect;
+
+    /**
+     * This cookie identifiesof the current connection, allowing us to force the server to drop
+     * the client if we initiate a reconnection from our end (even when the server still thinks
+     * the connection is alive.)
+     */
+    private String cookie;
 
     public Engine(EngineListener listener, List<URL> hudsonUrls, String secretKey, String slaveName) {
         this.listener = listener;
@@ -182,22 +190,51 @@ public class Engine extends Thread {
                     return;
                 }
 
-                final Socket s = connect(port);
+                Socket s = connect(port);
 
                 listener.status("Handshaking");
-                DataOutputStream dos = new DataOutputStream(s.getOutputStream());
-                dos.writeUTF("Protocol:JNLP-connect");
-                dos.writeUTF(secretKey);
-                dos.writeUTF(slaveName);
 
+                DataOutputStream dos = new DataOutputStream(s.getOutputStream());
                 BufferedInputStream in = new BufferedInputStream(s.getInputStream());
-                String greeting = readLine(in); // why, oh why didn't I use DataOutputStream when writing to the network?
-                if (!greeting.equals(GREETING_SUCCESS)) {
-                    listener.error(new Exception("The server rejected the connection: "+greeting));
-                    Thread.sleep(10*1000);
-                    continue;
+
+                dos.writeUTF("Protocol:JNLP2-connect");
+                Properties props = new Properties();
+                props.put("Secret-Key", secretKey);
+                props.put("Node-Name", slaveName);
+                if (cookie!=null)
+                    props.put("Cookie", cookie);
+                ByteArrayOutputStream o = new ByteArrayOutputStream();
+                props.store(o, null);
+                dos.writeUTF(o.toString("UTF-8"));
+
+                String greeting = readLine(in);
+                if (greeting.startsWith("Unknown protocol")) {
+                    LOGGER.info("The server didn't understand the v2 handshake. Falling back to v1 handshake");
+                    s.close();
+                    s = connect(port);
+                    in = new BufferedInputStream(s.getInputStream());
+                    dos = new DataOutputStream(s.getOutputStream());
+
+                    dos.writeUTF("Protocol:JNLP-connect");
+                    dos.writeUTF(secretKey);
+                    dos.writeUTF(slaveName);
+
+                    greeting = readLine(in); // why, oh why didn't I use DataOutputStream when writing to the network?
+                    if (!greeting.equals(GREETING_SUCCESS)) {
+                        onConnectionRejected(greeting);
+                        continue;
+                    }
+                } else {
+                    if (greeting.equals(GREETING_SUCCESS)) {
+                        Properties responses = readResponseHeaders(in);
+                        cookie = responses.getProperty("Cookie");
+                    } else {
+                        onConnectionRejected(greeting);
+                        continue;
+                    }
                 }
 
+                final Socket socket = s;
                 final Channel channel = new Channel("channel", executor,
                         in,
                         new BufferedOutputStream(s.getOutputStream()));
@@ -206,7 +243,7 @@ public class Engine extends Thread {
                         try {
                             if (!channel.isInClosed()) {
                                 LOGGER.info("Ping failed. Terminating the socket.");
-                                s.close();
+                                socket.close();
                             }
                         } catch (IOException e) {
                             LOGGER.log(SEVERE, "Failed to terminate the socket", e);
@@ -227,6 +264,22 @@ public class Engine extends Thread {
             }
         } catch (Throwable e) {
             listener.error(e);
+        }
+    }
+
+    private void onConnectionRejected(String greeting) throws InterruptedException {
+        listener.error(new Exception("The server rejected the connection: "+greeting));
+        Thread.sleep(10*1000);
+    }
+
+    private Properties readResponseHeaders(BufferedInputStream in) throws IOException {
+        Properties response = new Properties();
+        while (true) {
+            String line = readLine(in);
+            if (line.length()==0)
+                return response;
+            int idx = line.indexOf(':');
+            response.put(line.substring(0,idx).trim(), line.substring(idx+1).trim());
         }
     }
 
