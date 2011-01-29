@@ -51,7 +51,7 @@ THE SOFTWARE.
     <f:optionalBlock name="hasSlaveAffinity" title="${%Restrict where this project can be run}" checked="${it.assignedLabel!=null}"
         help="/help/project-config/slave.html">
       <f:entry title="${%Label Expression}" field="assignedLabelString">
-        <f:textbox autoCompleteDelimiChar=" "/>
+        <f:textbox autoCompleteDelimChar=" "/>
       </f:entry>
     </f:optionalBlock>
   </j:if>
