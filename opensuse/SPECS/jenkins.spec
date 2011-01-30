@@ -1,19 +1,19 @@
 # TODO:
 # - how to add to the trusted service of the firewall?
 
-%define _prefix	%{_usr}/lib/hudson
+%define _prefix	%{_usr}/lib/jenkins
 %define workdir	%{_var}/lib/hudson
 
-Name:		hudson
+Name:		jenkins
 Version:	%{ver}
 Release:	1.1
 Summary:	Continous Build Server
-Source:		hudson.war
-Source1:	hudson.init.in
-Source2:	hudson.sysconfig.in
-Source3:	hudson.logrotate
-Source4:    hudson.repo
-URL:		https://hudson.dev.java.net/
+Source:		jenkins.war
+Source1:	jenkins.init.in
+Source2:	jenkins.sysconfig.in
+Source3:	jenkins.logrotate
+Source4:    jenkins.repo
+URL:		http://jenkins-ci.org/
 Group:		Development/Tools/Building
 License:	MIT/X License, GPL/CDDL, ASL2
 BuildRoot:	%{_tmppath}/build-%{name}-%{version}
@@ -30,6 +30,7 @@ BuildRoot:	%{_tmppath}/build-%{name}-%{version}
 #
 # java-1_6_0-sun provides this at least
 Requires:	java-sun >= 1.6.0
+Conflicts:  hudson
 PreReq:		/usr/sbin/groupadd /usr/sbin/useradd
 #PreReq:		%{fillup_prereq}
 BuildArch:	noarch
@@ -67,7 +68,7 @@ rm -rf "%{buildroot}"
 %__install -d "%{buildroot}%{workdir}"
 %__install -d "%{buildroot}%{workdir}/plugins"
 
-%__install -d "%{buildroot}/var/log/hudson"
+%__install -d "%{buildroot}/var/log/jenkins"
 
 %__install -D -m0755 "%{SOURCE1}" "%{buildroot}/etc/init.d/%{name}"
 %__sed -i 's,@@WAR@@,%{_prefix}/%{name}.war,g' "%{buildroot}/etc/init.d/%{name}"
@@ -79,7 +80,7 @@ rm -rf "%{buildroot}"
 
 %__install -D -m0644 "%{SOURCE3}" "%{buildroot}/etc/logrotate.d/%{name}"
 
-%__install -D -m0644 "%{SOURCE4}" "%{buildroot}/etc/zypp/repos.d/hudson.repo"
+%__install -D -m0644 "%{SOURCE4}" "%{buildroot}/etc/zypp/repos.d/jenkins.repo"
 %pre
 /usr/sbin/groupadd -r hudson &>/dev/null || :
 # SUSE version had -o here, but in Fedora -o isn't allowed without -u
@@ -87,19 +88,19 @@ rm -rf "%{buildroot}"
 	-d "%{workdir}" hudson &>/dev/null || :
 
 %post
-/sbin/chkconfig --add hudson
+/sbin/chkconfig --add jenkins
 
 %preun
 if [ "$1" = 0 ] ; then
     # if this is uninstallation as opposed to upgrade, delete the service
-    /sbin/service hudson stop > /dev/null 2>&1
-    /sbin/chkconfig --del hudson
+    /sbin/service jenkins stop > /dev/null 2>&1
+    /sbin/chkconfig --del jenkins
 fi
 exit 0
 
 %postun
 if [ "$1" -ge 1 ]; then
-    /sbin/service hudson condrestart > /dev/null 2>&1
+    /sbin/service jenkins condrestart > /dev/null 2>&1
 fi
 exit 0
 
@@ -111,11 +112,11 @@ exit 0
 %dir %{_prefix}
 %{_prefix}/%{name}.war
 %attr(0755,hudson,hudson) %dir %{workdir}
-%attr(0750,hudson,hudson) /var/log/hudson
+%attr(0750,hudson,hudson) /var/log/jenkins
 %config /etc/logrotate.d/%{name}
 %config /etc/init.d/%{name}
 %config /etc/sysconfig/%{name}
-/etc/zypp/repos.d/hudson.repo
+/etc/zypp/repos.d/jenkins.repo
 /usr/sbin/rc%{name}
 
 %changelog

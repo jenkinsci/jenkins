@@ -2,77 +2,77 @@
 ## Description: Configuration for the Hudson continuous build server
 ## Type:        string
 ## Default:     "@@HOME@@"
-## ServiceRestart: hudson
+## ServiceRestart: jenkins
 #
 # Directory where Hudson store its configuration and working
 # files (checkouts, build reports, artifacts, ...).
 #
-HUDSON_HOME="@@HOME@@"
+JENKINS_HOME="@@HOME@@"
 
 ## Type:        string
 ## Default:     ""
-## ServiceRestart: hudson
+## ServiceRestart: jenkins
 #
 # Java executable to run Hudson
 # When left empty, we'll try to find the suitable Java.
 #
-HUDSON_JAVA_CMD=""
+JENKINS_JAVA_CMD=""
 
 ## Type:        string
 ## Default:     "hudson"
-## ServiceRestart: hudson
+## ServiceRestart: jenkins
 #
 # Unix user account that runs the Hudson daemon
 # Be careful when you change this, as you need to update
-# permissions of $HUDSON_HOME and /var/log/hudson.
+# permissions of $JENKINS_HOME and /var/log/jenkins.
 #
-HUDSON_USER="hudson"
+JENKINS_USER="hudson"
 
 ## Type:        string
 ## Default:     "-Djava.awt.headless=true"
-## ServiceRestart: hudson
+## ServiceRestart: jenkins
 #
 # Options to pass to java when running Hudson.
 #
-HUDSON_JAVA_OPTIONS="-Djava.awt.headless=true"
+JENKINS_JAVA_OPTIONS="-Djava.awt.headless=true"
 
 ## Type:        integer(0:65535)
 ## Default:     8080
-## ServiceRestart: hudson
+## ServiceRestart: jenkins
 #
 # Port Hudson is listening on.
 #
-HUDSON_PORT="8080"
+JENKINS_PORT="8080"
 
 ## Type:        integer(1:9)
 ## Default:     5
-## ServiceRestart: hudson
+## ServiceRestart: jenkins
 #
 # Debug level for logs -- the higher the value, the more verbose.
 # 5 is INFO.
 #
-HUDSON_DEBUG_LEVEL="5"
+JENKINS_DEBUG_LEVEL="5"
 
 ## Type:        yesno
 ## Default:     no
-## ServiceRestart: hudson
+## ServiceRestart: jenkins
 #
 # Whether to enable access logging or not.
 #
-HUDSON_ENABLE_ACCESS_LOG="no"
+JENKINS_ENABLE_ACCESS_LOG="no"
 
 ## Type:        integer
 ## Default:     100
-## ServiceRestart: hudson
+## ServiceRestart: jenkins
 #
 # Maximum number of HTTP worker threads.
 #
-HUDSON_HANDLER_MAX="100"
+JENKINS_HANDLER_MAX="100"
 
 ## Type:        integer
 ## Default:     20
-## ServiceRestart: hudson
+## ServiceRestart: jenkins
 #
 # Maximum number of idle HTTP worker threads.
 #
-HUDSON_HANDLER_IDLE="20"
+JENKINS_HANDLER_IDLE="20"
