@@ -2,14 +2,14 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
   <modelVersion>4.0.0</modelVersion>
   <parent>
-    <groupId>org.jvnet.hudson</groupId>
+    <groupId>org.jenkins-ci</groupId>
     <artifactId>hudson</artifactId>
     <version>1.8</version>
   </parent>
 
-  <groupId>org.jvnet.hudson.plugins</groupId>
+  <groupId>org.jenkins-ci.plugins</groupId>
   <artifactId>plugin</artifactId>
-  <name>Hudson plugin POM</name>
+  <name>Jenkins plugin POM</name>
   <version>1.395</version>
   <packaging>pom</packaging>
 
@@ -36,7 +36,7 @@
   <dependencyManagement>
     <dependencies>
       <dependency><!-- if a plugin wants to depend on the maven plugin, choose the right version automatically -->
-        <groupId>org.jvnet.hudson.main</groupId>
+        <groupId>org.jenkins-ci.main</groupId>
         <artifactId>maven-plugin</artifactId>
         <version>1.395</version>
       </dependency>
@@ -45,26 +45,26 @@
 
   <dependencies>
     <dependency>
-      <groupId>org.jvnet.hudson.main</groupId>
+      <groupId>org.jenkins-ci.main</groupId>
       <artifactId>hudson-war</artifactId>
       <type>war</type>
       <version>1.395</version>
       <scope>test</scope>
     </dependency>
     <dependency>
-      <groupId>org.jvnet.hudson.main</groupId>
+      <groupId>org.jenkins-ci.main</groupId>
       <artifactId>hudson-core</artifactId>
       <version>1.395</version>
       <scope>provided</scope>
     </dependency>
     <dependency>
-      <groupId>org.jvnet.hudson.main</groupId>
+      <groupId>org.jenkins-ci.main</groupId>
       <artifactId>hudson-test-harness</artifactId>
       <version>1.395</version>
       <scope>test</scope>
     </dependency>
     <dependency>
-      <groupId>org.jvnet.hudson.main</groupId>
+      <groupId>org.jenkins-ci.main</groupId>
       <artifactId>ui-samples-plugin</artifactId>
       <version>1.395</version>
       <scope>test</scope>
@@ -95,7 +95,7 @@
   <!--dependencyManagement>
        <dependencies>
        <dependency>
-       <groupId>org.jvnet.hudson.main</groupId>
+       <groupId>org.jenkins-ci.main</groupId>
        <artifactId>maven-plugin</artifactId>
        <version>1.395</version>
        </dependency>

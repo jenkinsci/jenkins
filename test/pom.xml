@@ -26,16 +26,16 @@ THE SOFTWARE.
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
   <parent>
     <artifactId>pom</artifactId>
-    <groupId>org.jvnet.hudson.main</groupId>
+    <groupId>org.jenkins-ci.main</groupId>
     <version>1.396-SNAPSHOT</version>
   </parent>
   <modelVersion>4.0.0</modelVersion>
-  <groupId>org.jvnet.hudson.main</groupId>
+  <groupId>org.jenkins-ci.main</groupId>
   <artifactId>hudson-test-harness</artifactId>
   <packaging>stapler-jar</packaging>
-  <name>Test harness for Hudson and plugins</name>
+  <name>Test harness for Jenkins and plugins</name>
   <description>
-    Unit test harness (src/main) and Unit tests for Hudson core (src/test)
+    Unit test harness (src/main) and Unit tests for Jenkins core (src/test)
   </description>
 
   <properties>

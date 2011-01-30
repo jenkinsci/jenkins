@@ -26,7 +26,7 @@ THE SOFTWARE.
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
   <modelVersion>4.0.0</modelVersion>
   <parent>
-    <groupId>org.jvnet.hudson.main</groupId>
+    <groupId>org.jenkins-ci.main</groupId>
     <artifactId>pom</artifactId>
     <version>1.396-SNAPSHOT</version>
     <relativePath>../pom.xml</relativePath>
@@ -34,9 +34,9 @@ THE SOFTWARE.
 
   <artifactId>hudson-core</artifactId>
   <packaging>stapler-jar</packaging>
-  <name>Hudson core</name>
+  <name>Jenkins core</name>
   <description>
-    Contains the core Hudson code and view files to render HTML.
+    Contains the core Jenkins code and view files to render HTML.
   </description>
   
   <properties>
@@ -399,7 +399,7 @@ THE SOFTWARE.
       <artifactId>stapler-adjunct-timeline</artifactId>
       <version>1.2</version>
     </dependency>
-    <dependency><!-- this helps us see the source code of the control while we edit Hudson. -->
+    <dependency><!-- this helps us see the source code of the control while we edit Jenkins. -->
       <groupId>org.kohsuke.stapler</groupId>
       <artifactId>stapler-adjunct-timeline</artifactId>
       <version>1.0</version>
@@ -634,7 +634,7 @@ THE SOFTWARE.
       <artifactId>spring-core</artifactId>
       <version>2.5</version>
     </dependency>
-    <dependency><!-- Hudson core doesn't use it but HUDSON-3811 requires us to put it. -->
+    <dependency><!-- Jenkins core doesn't use it but HUDSON-3811 requires us to put it. -->
       <groupId>org.springframework</groupId>
       <artifactId>spring-aop</artifactId>
       <version>2.5</version>
@@ -793,7 +793,7 @@ THE SOFTWARE.
       <version>1.1</version>
     </dependency>
 
-    <dependency><!-- Hudson doesn't depend on it but some plugin wants the latest version. Bundling 1.4 until we figure out a mechanism to let plugins load its own -->
+    <dependency><!-- Jenkins doesn't depend on it but some plugin wants the latest version. Bundling 1.4 until we figure out a mechanism to let plugins load its own -->
       <groupId>commons-codec</groupId>
       <artifactId>commons-codec</artifactId>
       <version>1.4</version>

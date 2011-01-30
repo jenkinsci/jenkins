@@ -25,7 +25,7 @@ THE SOFTWARE.
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
   <modelVersion>4.0.0</modelVersion>
   <parent>
-    <groupId>org.jvnet.hudson.main</groupId>
+    <groupId>org.jenkins-ci.main</groupId>
     <artifactId>pom</artifactId>
     <version>1.396-SNAPSHOT</version>
   </parent>
@@ -33,13 +33,13 @@ THE SOFTWARE.
   <artifactId>maven-plugin</artifactId>
   <packaging>hpi</packaging>
   <name>Maven Integration plugin</name>
-  <description>This plug-in provides deep integration of Hudson and Maven. This functionality used to be part of the Hudson core.
+  <description>This plug-in provides deep integration of Jenkins and Maven. This functionality used to be part of the Jenkins core.
   Now it is a plug-in that is installed by default, but can be disabled.</description>
   <url>http://wiki.hudson-ci.org/display/HUDSON/Maven+2+Project+Plugin</url>
     
   <dependencies>
     <dependency>
-      <groupId>org.jvnet.hudson.main</groupId>
+      <groupId>org.jenkins-ci.main</groupId>
       <artifactId>hudson-core</artifactId>
       <version>${project.version}</version>
       <scope>provided</scope>
@@ -64,7 +64,7 @@ THE SOFTWARE.
     </dependency>
      
     <dependency>
-      <groupId>org.jvnet.hudson.main</groupId>
+      <groupId>org.jenkins-ci.main</groupId>
       <artifactId>maven-interceptor</artifactId>
       <version>${project.version}</version>
       <exclusions>
@@ -82,13 +82,13 @@ THE SOFTWARE.
     </dependency>
     
     <dependency>
-      <groupId>org.jvnet.hudson.main</groupId>
+      <groupId>org.jenkins-ci.main</groupId>
       <artifactId>maven3-agent</artifactId>
       <version>${project.version}</version>
     </dependency>    
     
     <dependency>
-      <groupId>org.jvnet.hudson.main</groupId>
+      <groupId>org.jenkins-ci.main</groupId>
       <artifactId>maven3-interceptor</artifactId>
       <version>${project.version}</version>
     </dependency>    
@@ -210,7 +210,7 @@ THE SOFTWARE.
           <artifactId>wagon-webdav</artifactId>
         </exclusion>
 
-        <!-- prefer net.sourceforge.nekohtml:nekohtml:jar:1.9.13 so that we use consistent version across Hudson -->
+        <!-- prefer net.sourceforge.nekohtml:nekohtml:jar:1.9.13 so that we use consistent version across Jenkins -->
         <exclusion>
           <groupId>nekohtml</groupId>
           <artifactId>nekohtml</artifactId>
@@ -252,9 +252,9 @@ THE SOFTWARE.
     <defaultGoal>package</defaultGoal>
     <plugins>
       <plugin>
-        <groupId>org.jvnet.hudson.tools</groupId>
+        <groupId>org.jenkins-ci.tools</groupId>
         <artifactId>maven-hpi-plugin</artifactId>
-        <version>1.54</version>
+        <version>1.61</version>
         <extensions>true</extensions>
         <configuration>
           <showDeprecation>true</showDeprecation>
