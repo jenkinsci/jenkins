@@ -1,4 +1,4 @@
 #
-# Regular cron jobs for the hudson package
+# Regular cron jobs for the jenkins package
 #
-0 4	* * *	root	hudson_maintenance
+0 4	* * *	root	jenkins_maintenance

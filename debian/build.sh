@@ -22,10 +22,10 @@
 # THE SOFTWARE.
 
 if [ -z "$1" ]; then
-  echo "Usage: build.sh path/to/hudson.war"
+  echo "Usage: build.sh path/to/jenkins.war"
   exit 1
 fi
 
-cp "$1" hudson.war
+cp "$1" jenkins.war
 
 exec debuild -us -uc -B

@@ -1,13 +1,13 @@
-Source: hudson
+Source: jenkins
 Section: devel
 Priority: extra
 Maintainer: Kohsuke Kawaguchi <kk@kohsuke.org>
 Build-Depends: debhelper (>= 5)
 Standards-Version: 3.7.2
-Homepage: https://hudson.dev.java.net/
+Homepage: https://jenkins-ci.org/
 
-Package: hudson
+Package: jenkins
 Architecture: all
 Depends: ${shlibs:Depends}, ${misc:Depends}, daemon, adduser, java-virtual-machine, java2-runtime, psmisc
 Description: Continuous integration system written in Java
- Hudson is an extensible continuous engine written in Java.
+ Jenkins is an extensible continuous engine written in Java.

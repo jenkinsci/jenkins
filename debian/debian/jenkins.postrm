@@ -1,5 +1,5 @@
 #!/bin/sh
-# postrm script for hudson
+# postrm script for jenkins
 #
 # see: dh_installdeb(1)
 
@@ -23,7 +23,7 @@ set -e
 case "$1" in
     purge)
 	userdel hudson || true
-    # TODO: remove log files rm -rf /var/log/hudson
+    # TODO: remove log files rm -rf /var/log/jenkins
     ;;
     
     remove|upgrade|failed-upgrade|abort-install|abort-upgrade|disappear)

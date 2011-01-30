@@ -1,5 +1,5 @@
 #!/bin/sh
-# postinst script for hudson
+# postinst script for jenkins
 #
 # see: dh_installdeb(1)
 
@@ -22,8 +22,8 @@ case "$1" in
     configure)
     
         # Create hudson user if it doesn't exist.
-        # sometimes tools that users want Hudson to run need a shell,
-        # so use /bin/bash. See HUDSON-4830
+        # sometimes tools that users want Jenkins to run need a shell,
+        # so use /bin/bash. See JENKINS-4830
 	    if ! id hudson > /dev/null 2>&1 ; then
 	        adduser --system --home /var/lib/hudson --no-create-home \
 		    --ingroup nogroup --disabled-password --shell /bin/bash \
@@ -40,8 +40,8 @@ case "$1" in
         # we prune symlinks instead of -P to avoid chmod/chown getting symlinks as arguments
         # (which ends up changing the target of the symlink, even though it's not recursive)
         find /var/lib/hudson -path "*jobs" -prune -o -path "*.ssh" -prune -o -type l -prune -o -exec chmod 750 {} + || true
-    	chmod -R 750 /var/run/hudson
-    	chmod 750 /var/log/hudson
+    	chmod -R 750 /var/run/jenkins
+    	chmod 750 /var/log/jenkins
     ;;
 
     abort-upgrade|abort-remove|abort-deconfigure)
