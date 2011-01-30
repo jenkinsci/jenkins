@@ -31,7 +31,7 @@ THE SOFTWARE.
     <relativePath>../pom.xml</relativePath>
   </parent>
   
-  <artifactId>hudson-war</artifactId>
+  <artifactId>jenkins-war</artifactId>
   <packaging>war</packaging>
   <name>Jenkins war</name>
   <description>
@@ -40,7 +40,7 @@ THE SOFTWARE.
   </description>
   
   <build>
-    <finalName>hudson</finalName>
+    <finalName>jenkins</finalName>
     <plugins>
       <plugin>
         <artifactId>maven-war-plugin</artifactId>
@@ -93,7 +93,7 @@ THE SOFTWARE.
             <configuration>
               <tasks>
                 <!-- deploy the war as a jar, so that the tests can pull this into the classpath -->
-                <attachArtifact file="target/hudson.war" classifier="war-for-test" type="jar" />
+                <attachArtifact file="target/jenkins.war" classifier="war-for-test" type="jar" />
               </tasks>
             </configuration>
           </execution>
@@ -222,7 +222,7 @@ THE SOFTWARE.
   <dependencies>
     <dependency>
       <groupId>org.jenkins-ci.main</groupId>
-      <artifactId>hudson-core</artifactId>
+      <artifactId>jenkins-core</artifactId>
       <version>${project.version}</version>
       <exclusions>
         <!--
@@ -324,7 +324,7 @@ THE SOFTWARE.
 
                       For release, you should define the real values in ~/.m2/settings.xml
                     -->
-                    <signjar jar="target/hudson.war" alias="${hudson.sign.alias}" keystore="${hudson.sign.keystore}" storepass="${hudson.sign.storepass}" />
+                    <signjar jar="target/jenkins.war" alias="${hudson.sign.alias}" keystore="${hudson.sign.keystore}" storepass="${hudson.sign.storepass}" />
                   </tasks>
                 </configuration>
               </execution>

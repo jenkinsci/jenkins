@@ -32,7 +32,7 @@ THE SOFTWARE.
     <relativePath>../pom.xml</relativePath>
   </parent>
 
-  <artifactId>hudson-core</artifactId>
+  <artifactId>jenkins-core</artifactId>
   <packaging>stapler-jar</packaging>
   <name>Jenkins core</name>
   <description>

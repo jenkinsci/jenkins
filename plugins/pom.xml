@@ -53,7 +53,7 @@
     </dependency>
     <dependency>
       <groupId>org.jenkins-ci.main</groupId>
-      <artifactId>hudson-core</artifactId>
+      <artifactId>jenkins-core</artifactId>
       <version>1.395</version>
       <scope>provided</scope>
     </dependency>
@@ -78,7 +78,7 @@
     <!--
       Maven is so brain-dead that when a dependency is like:
 
-      plugin -(provided)-> hudson-core -(compile)-> stapler -(provided)-> servlet-api
+      plugin -(provided)-> jenkins-core -(compile)-> stapler -(provided)-> servlet-api
 
       Artifacts beyond the provided/provided dependency will not be made available to the plugin.
       See this in DefaultArtifactFactory.createArtifact() in the maven-artifact module.
