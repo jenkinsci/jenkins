@@ -44,7 +44,7 @@ THE SOFTWARE.
         ${%introduced(it.timestampString)}
         <j:choose>
           <j:when test="${it.original==null}">
-            ${%outside Hudson}
+            ${%outside Jenkins}
           </j:when>
           <j:otherwise>
             <t:buildLink job="${it.original.job}" number="${it.original.number}" jobName="${it.original.name}" />

@@ -24,12 +24,12 @@ THE SOFTWARE.
 
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define">
   <st:documentation>
-    Generates the body as the main content part of a Hudson page.
+    Generates the body as the main content part of a Jenkins page.
   </st:documentation>
 
   <j:if test="${mode=='main-panel'}">
     <j:if test="${app.isQuietingDown()}">
-      <div id='shutdown-msg'>${%Hudson is going to shut down}</div>
+      <div id='shutdown-msg'>${%Jenkins is going to shut down}</div>
     </j:if>
     <a name="skip2content" />
     <d:invokeBody />

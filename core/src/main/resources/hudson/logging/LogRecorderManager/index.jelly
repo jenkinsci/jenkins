@@ -54,7 +54,7 @@ THE SOFTWARE.
         <th initialSortDir="down">${%Name}</th>
         <th width="32"/>
       </tr>
-      <local:row href="all" name="${%All Hudson Logs}" />
+      <local:row href="all" name="${%All Jenkins Logs}" />
       <j:forEach var="lr" items="${it.logRecorders.values()}">
         <local:row name="${lr.name}" href="${lr.name}/">
           <a href="${lr.name}/configure">

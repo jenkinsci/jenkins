@@ -27,16 +27,16 @@ THE SOFTWARE.
   Side panel for the build view.
 -->
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:s="/lib/form">
-  <l:header title="Hudson">
-    <link rel="alternate" title="Hudson:${it.viewName} (all builds)" href="${rootURL}/${it.url}rssAll" type="application/rss+xml" />
-    <link rel="alternate" title="Hudson:${it.viewName} (all builds) (RSS 2.0)" href="${rootURL}/${it.url}rssAll?flavor=rss20" type="application/rss+xml" />
-    <link rel="alternate" title="Hudson:${it.viewName} (failed builds)" href="${rootURL}/${it.url}rssFailed" type="application/rss+xml" />
-    <link rel="alternate" title="Hudson:${it.viewName} (failed builds) (RSS 2.0)" href="${rootURL}/${it.url}rssFailed?flavor=rss20" type="application/rss+xml" />
+  <l:header title="Jenkins">
+    <link rel="alternate" title="Jenkins:${it.viewName} (all builds)" href="${rootURL}/${it.url}rssAll" type="application/rss+xml" />
+    <link rel="alternate" title="Jenkins:${it.viewName} (all builds) (RSS 2.0)" href="${rootURL}/${it.url}rssAll?flavor=rss20" type="application/rss+xml" />
+    <link rel="alternate" title="Jenkins:${it.viewName} (failed builds)" href="${rootURL}/${it.url}rssFailed" type="application/rss+xml" />
+    <link rel="alternate" title="Jenkins:${it.viewName} (failed builds) (RSS 2.0)" href="${rootURL}/${it.url}rssFailed?flavor=rss20" type="application/rss+xml" />
   </l:header>
   <l:side-panel>
     <l:tasks>
       <l:task icon="images/24x24/new-package.gif" href="${rootURL}/${it.viewUrl}newJob" title="${%New Job}" permission="${it.itemCreatePermission}" it="${app}" />
-      <l:task icon="images/24x24/setting.gif" href="${rootURL}/manage" title="${%Manage Hudson}" permission="${app.ADMINISTER}" it="${app}" />
+      <l:task icon="images/24x24/setting.gif" href="${rootURL}/manage" title="${%Manage Jenkins}" permission="${app.ADMINISTER}" it="${app}" />
       <j:choose>
         <j:when test="${it.class.name=='hudson.model.AllView'}">
           <l:task icon="images/24x24/user.gif" href="${rootURL}/people/" title="${%People}" />
@@ -47,7 +47,7 @@ THE SOFTWARE.
       </j:choose>
       <l:task icon="images/24x24/notepad.gif" href="${rootURL}/${it.url}builds" title="${%Build History}"/>
       <j:if test="${it.isEditable()}">
-        <!-- /configure URL on Hudson object is overloaded with Hudson's system config, so always use the explicit name. -->
+        <!-- /configure URL on Jenkins object is overloaded with Jenkins's system config, so always use the explicit name. -->
         <l:task icon="images/24x24/gear.gif" href="${rootURL}/${it.viewUrl}configure" title="${%Edit View}" permission="${it.CONFIGURE}" />
       </j:if>
       <j:if test="${it.owner.canDelete(it)}">

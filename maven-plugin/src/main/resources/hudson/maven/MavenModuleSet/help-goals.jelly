@@ -32,7 +32,7 @@ THE SOFTWARE.
       will be run.
 
       <p>
-        This field can also include any other Maven options. Hudson also makes
+        This field can also include any other Maven options. Jenkins also makes
         <a href="${rootURL}/env-vars.html">these variables</a>
         available as system properties to builds.
       </p>

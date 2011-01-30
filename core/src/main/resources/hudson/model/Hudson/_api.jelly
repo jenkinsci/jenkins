@@ -27,7 +27,7 @@ THE SOFTWARE.
   <p>
     To create a new job, post <tt>config.xml</tt> to <a href="../createItem">this URL</a> with
     query parameter <tt>name=<i>JOBNAME</i></tt>. You'll get 200 status code if the creation is successful,
-    or 4xx/5xx code if it fails. <tt>config.xml</tt> is the format Hudson uses to store the project
+    or 4xx/5xx code if it fails. <tt>config.xml</tt> is the format Jenkins uses to store the project
     in the file system, so you can see examples of them in <tt>${app.rootDir}</tt>.
   </p>
 
@@ -44,14 +44,14 @@ THE SOFTWARE.
   
   <h2>Load Statistics</h2>
   <p>
-    Overall load statistics of Hudson has <a href="../overallLoad/api/">its own separate API</a>.
+    Overall load statistics of Jenkins has <a href="../overallLoad/api/">its own separate API</a>.
   </p>
 
-  <h2>Restarting Hudson</h2>
+  <h2>Restarting Jenkins</h2>
   <p>
-    Hudson will enter into the "quiet down" mode by sending a request to <a href="../quietDown">this URL</a>.
+    Jenkins will enter into the "quiet down" mode by sending a request to <a href="../quietDown">this URL</a>.
     You can cancel this mode by sending a request to <a href="../cancelQuietDown">this URL</a>. On environments
-    where Hudson can restart itself (such as when Hudson is installed as a Windows service), POSTing to
+    where Jenkins can restart itself (such as when Jenkins is installed as a Windows service), POSTing to
     <a href="../restart">this URL</a> will start the restart sequence, or
     <a href="../safeRestart">this URL</a> to restart once no jobs are running.
     All these URLs need the admin privilege to the system.

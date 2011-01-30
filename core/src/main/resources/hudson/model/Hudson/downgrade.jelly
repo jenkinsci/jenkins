@@ -26,7 +26,7 @@ THE SOFTWARE.
   <div class="downgrade">
       <j:if test="${app.updateCenter.downgradable}">
         <form method="post" action="${rootURL}/updateCenter/downgrade">
-            <br/>${%Restore the previous version of Hudson}
+            <br/>${%Restore the previous version of Jenkins}
             <f:submit value="${%buttonText(app.updateCenter.backupVersion)}"/>
         </form>
       </j:if>

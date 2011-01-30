@@ -26,7 +26,7 @@ THE SOFTWARE.
   Entrance to the configuration page
 -->
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
-<l:layout title="${%Manage Hudson}" xmlns:local="local" permission="${app.ADMINISTER}">
+<l:layout title="${%Manage Jenkins}" xmlns:local="local" permission="${app.ADMINISTER}">
   <d:taglib uri="local">
     <!-- table to show a map -->
     <d:tag name="feature">
@@ -42,7 +42,7 @@ THE SOFTWARE.
 
   <st:include page="sidepanel.jelly" />
   <l:main-panel>
-    <h1>${%Manage Hudson}</h1>
+    <h1>${%Manage Jenkins}</h1>
     <j:if test="${it.checkURIEncodingEnabled}">
       <script>
         var url='checkURIEncoding';
@@ -74,7 +74,7 @@ THE SOFTWARE.
         ${%Useful when you modified config files directly on disk.}
       </local:feature>
       <local:feature icon="plugin.gif"        href="pluginManager/" title="${%Manage Plugins}">
-        ${%Add, remove, disable or enable plugins that can extend the functionality of Hudson.}
+        ${%Add, remove, disable or enable plugins that can extend the functionality of Jenkins.}
         <j:if test="${it.updateCenter.hasUpdates()}">
           <span style="color:red; font-weight:bold">(${%updates available})</span>
         </j:if>
@@ -88,14 +88,14 @@ THE SOFTWARE.
       <local:feature icon="monitor.gif"    href="load-statistics"         title="${%Load Statistics}">
         ${%LoadStatisticsText}
       </local:feature>
-      <local:feature icon="terminal.gif"    href="cli"         title="${%Hudson CLI}">
+      <local:feature icon="terminal.gif"    href="cli"         title="${%Jenkins CLI}">
         ${%HudsonCliText}
       </local:feature>
       <local:feature icon="notepad.gif"      href="script"      title="${%Script Console}">
         ${%Executes arbitrary script for administration/trouble-shooting/diagnostics.}
       </local:feature>
       <local:feature icon="network.gif"      href="computer/"   title="${%Manage Nodes}">
-        ${%Add, remove, control and monitor the various nodes that Hudson runs jobs on.}
+        ${%Add, remove, control and monitor the various nodes that Jenkins runs jobs on.}
       </local:feature>
       <!-- TODO: replace all the hard-coded ones with the standard extension point -->
       <j:forEach var="m" items="${it.managementLinks}">

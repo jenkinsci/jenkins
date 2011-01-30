@@ -33,7 +33,7 @@ THE SOFTWARE.
     <f:entry title="${%System Admin E-mail Address}" field="adminAddress">
       <f:textbox />
     </f:entry>
-    <f:entry title="${%Hudson URL}" field="url">
+    <f:entry title="${%Jenkins URL}" field="url">
       <f:textbox default="${h.inferHudsonURL(request)}" />
     </f:entry>
     <f:advanced>

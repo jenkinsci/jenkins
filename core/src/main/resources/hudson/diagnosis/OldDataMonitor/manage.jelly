@@ -57,7 +57,7 @@ THE SOFTWARE.
     <j:choose>
       <j:when test="${vers.hasNext()}">
         <form action="upgrade" method="POST" name="oldDataUpgrade">
-          ${%Resave data files with structure changes no newer than Hudson}
+          ${%Resave data files with structure changes no newer than Jenkins}
           <select name="thruVer">
             <j:forEach var="ver" items="${vers}">
               <f:option>${ver}</f:option>

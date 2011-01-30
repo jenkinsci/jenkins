@@ -40,7 +40,7 @@ THE SOFTWARE.
       </j:otherwise>
     </j:choose>
     <author>
-      <name>Hudson Server</name>
+      <name>Jenkins Server</name>
     </author>
     <id>urn:uuid:903deee0-7bfa-11db-9fe1-0800200c9a66</id>
 

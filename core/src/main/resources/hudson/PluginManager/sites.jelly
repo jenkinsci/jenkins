@@ -37,7 +37,7 @@ THE SOFTWARE.
         <tr style="border-bottom:none">
           <td colspan="2">
             <p>
-              This Hudson is configured to receive updates from the following sourcse:
+              This Jenkins is configured to receive updates from the following sourcse:
             </p>
           </td>
         </tr>

@@ -27,7 +27,7 @@ THE SOFTWARE.
   <st:documentation>
     Outer-most tag for a normal (non-AJAX) HTML rendering.
     This is used with nested &lt;header>, &lt;side-panel>, and &lt;main-panel>
-    to form Hudson's basic HTML layout.
+    to form Jenkins's basic HTML layout.
 
     <st:attribute name="title" use="required">
       Title of the HTML page. Rendered into &lt;title> tag.
@@ -63,7 +63,7 @@ THE SOFTWARE.
   load static resources from the path dedicated to a specific version.
   This "/static/VERSION/abc/def.ghi" path is interpreted by stapler to be
   the same thing as "/abc/def.ghi", but this avoids the stale cache
-  problem when the user upgrades to new Hudson. Stapler also sets a long
+  problem when the user upgrades to new Jenkins. Stapler also sets a long
   future expiration dates for such static resources.
 -->
 <j:set var="resURL"  value="${rootURL}${h.resourcePath}" />
@@ -72,7 +72,7 @@ THE SOFTWARE.
   <head>
     ${h.checkPermission(it,permission)}
 
-    <title>${h.appendIfNotNull(title, ' [Hudson]', 'Hudson')}</title>
+    <title>${h.appendIfNotNull(title, ' [Jenkins]', 'Jenkins')}</title>
     <link rel="stylesheet" href="${resURL}/css/style.css" type="text/css" />
     <link rel="stylesheet" href="${resURL}/css/color.css" type="text/css" />
     <j:if test="${attrs.css!=null}">
@@ -118,7 +118,7 @@ THE SOFTWARE.
     <link rel="stylesheet" href="${resURL}/scripts/yui/menu/assets/skins/sam/menu.css" type="text/css" />
     <!--link rel="stylesheet" href="${resURL}/scripts/yui/editor/assets/skins/sam/editor.css" type="text/css" /-->
 
-    <link rel="search" type="application/opensearchdescription+xml" href="${rootURL}/opensearch.xml" title="Hudson" />
+    <link rel="search" type="application/opensearchdescription+xml" href="${rootURL}/opensearch.xml" title="Jenkins" />
     <meta name="ROBOTS" content="INDEX,NOFOLLOW" />
     <j:set var="mode" value="header" />
     <d:invokeBody />
@@ -242,7 +242,7 @@ THE SOFTWARE.
           ${%Page generated}:
           <i:formatDate value="${h.getCurrentTime()}" type="both" dateStyle="medium" timeStyle="medium"/>
         </span>
-        <a href="http://hudson-ci.org/">Hudson ver. ${h.version}</a>
+        <a href="http://jenkins-ci.org/">Jenkins ver. ${h.version}</a>
       </td></tr>
     </table>
     <j:forEach var="pd" items="${h.pageDecorators}">

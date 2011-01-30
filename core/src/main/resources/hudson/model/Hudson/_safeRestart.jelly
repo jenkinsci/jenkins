@@ -24,11 +24,11 @@ THE SOFTWARE.
 
 <!-- Delete view -->
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
-	<l:layout title="Safely Restart Hudson">
+	<l:layout title="Safely Restart Jenkins">
 		<st:include page="sidepanel.jelly" />
 		<l:main-panel>
 		  <form method="post" action="safeRestart">
-		    ${%Are you sure about restarting Hudson? Hudson will restart once all running jobs are finished.}
+		    ${%Are you sure about restarting Jenkins? Jenkins will restart once all running jobs are finished.}
 		    <f:submit value="${%Yes}" />
 		  </form>
 		</l:main-panel>

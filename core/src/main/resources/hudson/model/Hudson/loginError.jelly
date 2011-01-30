@@ -28,7 +28,7 @@ THE SOFTWARE.
     <j:new var="h" className="hudson.Functions" />
     <j:when test="${app.isUseSecurity() and h.isAnonymous()}">
       <!--
-        The only time the error message makes sense is when Hudson is protected and the user failed to authenticate.
+        The only time the error message makes sense is when Jenkins is protected and the user failed to authenticate.
         If the user accidentally comes to this page (by back button, etc), redirect away to prevent a confusion.
       -->
       <st:statusCode value="401" />

@@ -51,7 +51,7 @@ THE SOFTWARE.
             <td>
               <j:choose>
                 <j:when test="${f.original==null}">
-                  ${%outside Hudson}
+                  ${%outside Jenkins}
                 </j:when>
                 <j:when test="${f.original.run==it.build}">
                   ${%this build}

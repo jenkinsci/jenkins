@@ -104,7 +104,7 @@ THE SOFTWARE.
       <j:if test="${it.isPluginUploaded()}">
         <div style="margin: 1em; height: 1em">
           <div class="error">
-            ${%New plugins will take effect once you restart Hudson}
+            ${%New plugins will take effect once you restart Jenkins}
             <j:if test="${app.lifecycle.canRestart()}">
               <s:submit value="${%Restart Once No Jobs Are Running}" />
             </j:if>
@@ -113,7 +113,7 @@ THE SOFTWARE.
       </j:if>
       <div class="warning" id="needRestart" style="display:none; margin: 1em; height: 1em">
         <form method="post" action="${rootURL}/safeRestart">
-          ${%Changes will take effect when you restart Hudson}
+          ${%Changes will take effect when you restart Jenkins}
           <j:if test="${app.lifecycle.canRestart()}">
             <s:submit value="${%Restart Once No Jobs Are Running}" />
           </j:if>
