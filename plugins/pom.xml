@@ -4,7 +4,7 @@
   <parent>
     <groupId>org.jenkins-ci</groupId>
     <artifactId>hudson</artifactId>
-    <version>1.8</version>
+    <version>1.10</version>
   </parent>
 
   <groupId>org.jenkins-ci.plugins</groupId>
@@ -46,7 +46,7 @@
   <dependencies>
     <dependency>
       <groupId>org.jenkins-ci.main</groupId>
-      <artifactId>hudson-war</artifactId>
+      <artifactId>jenkins-war</artifactId>
       <type>war</type>
       <version>1.395</version>
       <scope>test</scope>
@@ -59,7 +59,7 @@
     </dependency>
     <dependency>
       <groupId>org.jenkins-ci.main</groupId>
-      <artifactId>hudson-test-harness</artifactId>
+      <artifactId>jenkins-test-harness</artifactId>
       <version>1.395</version>
       <scope>test</scope>
     </dependency>
@@ -118,9 +118,9 @@
     <defaultGoal>package</defaultGoal>
     <plugins>
       <plugin>
-        <groupId>org.jvnet.hudson.tools</groupId>
+        <groupId>org.jenkins-ci.tools</groupId>
         <artifactId>maven-hpi-plugin</artifactId>
-        <version>1.57</version>
+        <version>1.62</version>
         <extensions>true</extensions>
         <configuration>
           <showDeprecation>true</showDeprecation>
@@ -228,7 +228,7 @@
   <distributionManagement>
     <snapshotRepository>
       <id>maven.hudson-labs.org</id>
-      <url>http://maven.hudson-labs.org:8081/content/repositories/snapshots</url>
+      <url>http://maven.jenkins-ci.org:8081/content/repositories/snapshots</url>
     </snapshotRepository>
   </distributionManagement>
 </project>
