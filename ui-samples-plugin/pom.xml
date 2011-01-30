@@ -37,7 +37,7 @@ THE SOFTWARE.
   <dependencies>
     <dependency>
       <groupId>org.jenkins-ci.main</groupId>
-      <artifactId>hudson-core</artifactId>
+      <artifactId>jenkins-core</artifactId>
       <version>${project.version}</version>
       <scope>provided</scope>
     </dependency>
@@ -82,7 +82,7 @@ THE SOFTWARE.
       <plugin>
         <groupId>org.jenkins-ci.tools</groupId>
         <artifactId>maven-hpi-plugin</artifactId>
-        <version>1.61</version>
+        <version>1.63</version>
         <extensions>true</extensions>
         <configuration>
           <showDeprecation>true</showDeprecation>

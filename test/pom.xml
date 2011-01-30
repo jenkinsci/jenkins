@@ -31,7 +31,7 @@ THE SOFTWARE.
   </parent>
   <modelVersion>4.0.0</modelVersion>
   <groupId>org.jenkins-ci.main</groupId>
-  <artifactId>hudson-test-harness</artifactId>
+  <artifactId>jenkins-test-harness</artifactId>
   <packaging>stapler-jar</packaging>
   <name>Test harness for Jenkins and plugins</name>
   <description>
