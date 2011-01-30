@@ -60,7 +60,6 @@ JENKINS_PID_FILE="/var/run/jenkins.pid"
 [ -d "$JENKINS_HOME" ] || { echo "JENKINS_HOME directory does not exist: $JENKINS_HOME";
 	if [ "$1" = "stop" ]; then exit 0;
 	else exit 1; fi; }
-export JENKINS_HOME
 
 # Search usable Java. We do this because various reports indicated
 # that /usr/bin/java may not always point to Java 1.5
