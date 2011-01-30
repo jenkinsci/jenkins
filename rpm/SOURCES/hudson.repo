@@ -1,4 +1,0 @@
-[hudson]
-name=Hudson
-baseurl=http://pkg.hudson-labs.org/redhat/
-gpgcheck=1
