@@ -24,25 +24,26 @@ case "$1" in
         # Create jenkins user if it doesn't exist.
         # sometimes tools that users want Jenkins to run need a shell,
         # so use /bin/bash. See JENKINS-4830
-	    if ! id jenkins > /dev/null 2>&1 ; then
-	        adduser --system --home /var/lib/jenkins --no-create-home \
-		    --ingroup nogroup --disabled-password --shell /bin/bash \
-		    jenkins
-	    fi
+        if ! id jenkins > /dev/null 2>&1 ; then
+            adduser --system --home /var/lib/jenkins --no-create-home \
+                --ingroup nogroup --disabled-password --shell /bin/bash \
+                jenkins
+        fi
 	
         # If we have an old hudson install, rename it to jenkins
-	    if test -d /var/lib/hudson; then
-                # We need to ensure that the .??* wildcard matches something
-                touch /var/lib/hudson/.moving-hudson
-                mv -f /var/lib/hudson/* /var/lib/hudson/.??* /var/lib/jenkins
-                rmdir /var/lib/hudson
-                rm /var/lib/jenkins/.moving-hudson
-                find /var/lib/jenkins -user hudson -exec chown jenkins {} + || true
-            fi
-	    if test -d /var/run/hudson; then
-                mv -f /var/run/hudson/* /var/run/jenkins
-                rmdir /var/run/hudson
-            fi
+        if test -d /var/lib/hudson; then
+            # leave a marker to indicate this came from Hudson.
+            # could be useful down the road
+            # This also ensures that the .??* wildcard matches something
+            touch /var/lib/hudson/.from-hudson
+            mv -f /var/lib/hudson/* /var/lib/hudson/.??* /var/lib/jenkins
+            rmdir /var/lib/hudson
+            find /var/lib/jenkins -user hudson -exec chown jenkins {} + || true
+        fi
+        if test -d /var/run/hudson; then
+            mv -f /var/run/hudson/* /var/run/jenkins
+            rmdir /var/run/hudson
+        fi
       
     	# Fix permissions on runtime directories/files.
     	# change group/owner to jenkins:adm - exclude jobs directory. See HUDSON-4047
