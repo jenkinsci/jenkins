@@ -23,6 +23,8 @@
  */
 package hudson.model;
 
+import hudson.DescriptorExtensionList;
+import hudson.ExtensionComponent;
 import hudson.RelativePath;
 import hudson.XmlFile;
 import hudson.BulkChange;
@@ -265,6 +267,22 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable {
      */
     public String getId() {
         return clazz.getName();
+    }
+
+    /**
+     * Unlike {@link #clazz}, return the parameter type 'T', which determines
+     * the {@link DescriptorExtensionList} that this goes to.
+     *
+     * <p>
+     * In those situations where subtypes cannot provide the type parameter,
+     * this method can be overridden to provide it.
+     */
+    public Class<T> getT() {
+        Type subTyping = Types.getBaseClass(getClass(), Descriptor.class);
+        if (!(subTyping instanceof ParameterizedType)) {
+            throw new IllegalStateException(getClass()+" doesn't extend Descriptor with a type parameter.");
+        }
+        return Types.erasure(Types.getTypeArgument(subTyping, 0));
     }
 
     /**
