@@ -21,27 +21,37 @@ set -e
 case "$1" in
     configure)
     
-        # Create hudson user if it doesn't exist.
+        # If we have an old hudson install, rename it to jenkins
+	    if test -d /var/lib/hudson ; then
+                mv /var/lib/hudson /var/lib/jenkins
+            fi
+      
+        # Create jenkins user if it doesn't exist.
         # sometimes tools that users want Jenkins to run need a shell,
         # so use /bin/bash. See JENKINS-4830
-	    if ! id hudson > /dev/null 2>&1 ; then
-	        adduser --system --home /var/lib/hudson --no-create-home \
+	    if ! id jenkins > /dev/null 2>&1 ; then
+	        adduser --system --home /var/lib/jenkins --no-create-home \
 		    --ingroup nogroup --disabled-password --shell /bin/bash \
-		    hudson
+		    jenkins
 	    fi
 	
     	# Fix permissions on runtime directories/files.
-    	# change group/owner to hudson:adm - exclude jobs directory. See HUDSON-4047
+    	# change group/owner to jenkins:adm - exclude jobs directory. See HUDSON-4047
         # even if it fails on some files, don't let that interfere with the upgrade process
         # (that can happen on dangling symlinks, for example.)
-        find /var/lib/hudson -path "*jobs" -prune -o -type l -prune -o -exec chown hudson:adm {} + || true
-    	chown -R hudson:adm /var/run/jenkins /var/log/jenkins
+        find /var/lib/jenkins -path "*jobs" -prune -o -type l -prune -o -exec chown jenkins:adm {} + || true
+    	chown -R jenkins:adm /var/run/jenkins /var/log/jenkins
     	# change mode to 750 - exclude jobs and .ssh directories. See HUDSON-4047
         # we prune symlinks instead of -P to avoid chmod/chown getting symlinks as arguments
         # (which ends up changing the target of the symlink, even though it's not recursive)
-        find /var/lib/hudson -path "*jobs" -prune -o -path "*.ssh" -prune -o -type l -prune -o -exec chmod 750 {} + || true
+        find /var/lib/jenkins -path "*jobs" -prune -o -path "*.ssh" -prune -o -type l -prune -o -exec chmod 750 {} + || true
     	chmod -R 750 /var/run/jenkins
     	chmod 750 /var/log/jenkins
+
+        # delete old hudson user if it's still here
+        if ! id hudson > /dev/null 2>&1 ; then
+            userdel hudson || true
+        fi
     ;;
 
     abort-upgrade|abort-remove|abort-deconfigure)
