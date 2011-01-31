@@ -551,7 +551,7 @@ public class SlaveComputer extends Computer {
             }
             logger.addHandler(SLAVE_LOG_HANDLER);
 
-            // remove Sun PKCS11 provider if present. See http://hudson.gotdns.com/wiki/display/HUDSON/Solaris+Issue+6276483
+            // remove Sun PKCS11 provider if present. See http://wiki.jenkins-ci.org/display/JENKINS/Solaris+Issue+6276483
             try {
                 Security.removeProvider("SunPKCS11-Solaris");
             } catch (SecurityException e) {

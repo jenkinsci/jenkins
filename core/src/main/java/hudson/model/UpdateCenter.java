@@ -607,7 +607,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable {
          * @deprecated as of 1.333
          *      With the introduction of multiple update center capability, this information
          *      is now a part of the <tt>update-center.json</tt> file. See
-         *      <tt>http://hudson-ci.org/update-center.json</tt> as an example.
+         *      <tt>http://jenkins-ci.org/update-center.json</tt> as an example.
          */
         public String getConnectionCheckUrl() {
             return "http://www.google.com";
@@ -635,7 +635,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable {
          *      we aren't downloading from anywhere unsecure.
          */
         public String getPluginRepositoryBaseUrl() {
-            return "http://hudson-ci.org/";
+            return "http://jenkins-ci.org/";
         }
 
 

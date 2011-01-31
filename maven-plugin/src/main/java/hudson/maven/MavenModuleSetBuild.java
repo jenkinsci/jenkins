@@ -1148,7 +1148,7 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
                     mps = embedder.readProjects( pom,!this.nonRecursive );
 
                 } else {
-                    // http://issues.hudson-ci.org/browse/HUDSON-8390
+                    // http://issues.jenkins-ci.org/browse/HUDSON-8390
                     // we cannot read maven projects in one time for backward compatibility
                     // but we have to use a ReactorReader to get some pom with bad inheritence configured
                     MavenProject mavenProject = embedder.readProject( pom );

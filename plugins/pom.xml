@@ -30,7 +30,7 @@
 
   <issueManagement>
     <system>JIRA</system>
-    <url>http://issues.hudson-ci.org/</url>
+    <url>http://issues.jenkins-ci.org/</url>
   </issueManagement>
 
   <dependencyManagement>

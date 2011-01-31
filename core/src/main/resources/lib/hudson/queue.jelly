@@ -66,7 +66,7 @@ THE SOFTWARE.
                   </a>
                   <j:if test="${stuck}">
                     &#160;
-                    <a href="http://wiki.hudson-ci.org/display/HUDSON/Executor+Starvation">
+                    <a href="http://wiki.jenkins-ci.org/display/JENKINS/Executor+Starvation">
                       <img src="${imagesURL}/16x16/hourglass.gif"  />
                     </a>
                   </j:if>

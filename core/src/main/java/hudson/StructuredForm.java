@@ -33,7 +33,7 @@ import java.util.List;
 
 /**
  * Obtains the structured form data from {@link StaplerRequest}.
- * See http://hudson.gotdns.com/wiki/display/HUDSON/Structured+Form+Submission
+ * See http://wiki.jenkins-ci.org/display/JENKINS/Structured+Form+Submission
  *
  * @author Kohsuke Kawaguchi
  */

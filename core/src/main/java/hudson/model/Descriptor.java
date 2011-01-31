@@ -487,7 +487,7 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable {
      *      Always non-null (see note above.) This object includes represents the entire submission.
      * @param formData
      *      The JSON object that captures the configuration data for this {@link Descriptor}.
-     *      See http://hudson.gotdns.com/wiki/display/HUDSON/Structured+Form+Submission
+     *      See http://wiki.jenkins-ci.org/display/JENKINS/Structured+Form+Submission
      *      Always non-null.
      *
      * @throws FormException
@@ -616,7 +616,7 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable {
      *
      * @param json
      *      The JSON object that captures the configuration data for this {@link Descriptor}.
-     *      See http://hudson.gotdns.com/wiki/display/HUDSON/Structured+Form+Submission
+     *      See http://wiki.jenkins-ci.org/display/JENKINS/Structured+Form+Submission
      * @return false
      *      to keep the client in the same config page.
      */

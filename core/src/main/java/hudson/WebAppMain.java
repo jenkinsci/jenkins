@@ -105,7 +105,7 @@ public final class WebAppMain implements ServletContextListener {
                 return;
             }
 
-            try {// remove Sun PKCS11 provider if present. See http://hudson.gotdns.com/wiki/display/HUDSON/Solaris+Issue+6276483
+            try {// remove Sun PKCS11 provider if present. See http://wiki.jenkins-ci.org/display/JENKINS/Solaris+Issue+6276483
                 Security.removeProvider("SunPKCS11-Solaris");
             } catch (SecurityException e) {
                 // ignore this error.
@@ -134,7 +134,7 @@ public final class WebAppMain implements ServletContextListener {
 //            // make sure JNA works. this can fail if
 //            //    - platform is unsupported
 //            //    - JNA is already loaded in another classloader
-//            // see http://wiki.hudson-ci.org/display/HUDSON/JNA+is+already+loaded
+//            // see http://wiki.jenkins-ci.org/display/JENKINS/JNA+is+already+loaded
 //            // TODO: or shall we instead modify Hudson to work gracefully without JNA?
 //            try {
 //                /*

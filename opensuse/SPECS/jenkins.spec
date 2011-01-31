@@ -162,7 +162,7 @@ exit 0
   * Don't populate the default value of the Subversion local directory name.
     (report [http://www.nabble.com/Is-%%22%%22Local-module-directory%%22-really-optional--td24035475.html])
   * Integrated SVNKit 1.3.0
-  * Implemented more intelligent polling assisted by commit-hook from SVN repository. (details [http://wiki.hudson-ci.org/display/HUDSON/Subversion+post-commit+hook])
+  * Implemented more intelligent polling assisted by commit-hook from SVN repository. (details [http://wiki.jenkins-ci.org/display/JENKINS/Subversion+post-commit+hook])
   * Subversion support is moved into a plugin to isolate SVNKit that has GPL-like license.
   * Fixed a performance problem in master/slave file copy.
     (issue 3799 [https://hudson.dev.java.net/issues/show_bug.cgi?id=3799])
