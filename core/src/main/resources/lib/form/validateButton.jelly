@@ -28,7 +28,7 @@ THE SOFTWARE.
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
   <st:documentation>
     See
-    http://hudson.gotdns.com/wiki/display/HUDSON/Jelly+form+controls
+    http://wiki.jenkins-ci.org/display/JENKINS/Jelly+form+controls
     for the reference.
 
     <st:attribute name="method" use="required">

@@ -42,7 +42,7 @@ import java.lang.management.ManagementFactory;
 import java.lang.reflect.Method;
 
 /**
- * Makes sure that no other Hudson uses our <tt>HUDSON_HOME</tt> directory,
+ * Makes sure that no other Hudson uses our <tt>JENKINS_HOME</tt> directory,
  * to forestall the problem of running multiple instances of Hudson that point to the same data directory.
  *
  * <p>

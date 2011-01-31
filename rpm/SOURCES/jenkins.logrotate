@@ -1,4 +1,4 @@
-/var/log/hudson/hudson.log /var/log/hudson/access_log {
+/var/log/jenkins/jenkins.log /var/log/jenkins/access_log {
     compress
     dateext
     maxage 365
@@ -8,6 +8,6 @@
     missingok
     create 644
     postrotate
-     kill -SIGALRM `cat /var/run/hudson.pid`
+     kill -SIGALRM `cat /var/run/jenkins.pid`
     endscript
 }

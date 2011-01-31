@@ -41,7 +41,7 @@ import org.kohsuke.stapler.DataBoundConstructor;
  * The subclass should have a {@link ToolInstallerDescriptor}.
  * A {@code config.jelly} should be provided to customize specific fields;
  * {@code <t:label xmlns:t="/hudson/tools"/>} to customize {@code label}.
- * @see <a href="http://wiki.hudson-ci.org/display/HUDSON/Tool+Auto-Installation">Tool Auto-Installation</a>
+ * @see <a href="http://wiki.jenkins-ci.org/display/JENKINS/Tool+Auto-Installation">Tool Auto-Installation</a>
  * @since 1.305
  */
 public abstract class ToolInstaller implements Describable<ToolInstaller>, ExtensionPoint {

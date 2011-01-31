@@ -284,10 +284,12 @@ public abstract class Slave extends Node implements Serializable {
         }
 
         public URL getURL() throws MalformedURLException {
-            URL res = Hudson.getInstance().servletContext.getResource("/WEB-INF/" + fileName);
+            String name = fileName;
+            if (name.equals("hudson-cli.jar"))  name="jenkins-cli.jar";
+            URL res = Hudson.getInstance().servletContext.getResource("/WEB-INF/" + name);
             if(res==null) {
                 // during the development this path doesn't have the files.
-                res = new URL(new File(".").getAbsoluteFile().toURI().toURL(),"target/generated-resources/WEB-INF/"+fileName);
+                res = new URL(new File(".").getAbsoluteFile().toURI().toURL(),"target/generated-resources/WEB-INF/"+name);
             }
             return res;
         }

@@ -38,7 +38,7 @@ THE SOFTWARE.
       <information>
         <title>Slave Agent for ${it.displayName}</title>
         <vendor>Jenkins project</vendor>
-        <homepage href="https://hudson-ci.org/"/>
+        <homepage href="https://jenkins-ci.org/"/>
       </information>
 
       <security>

@@ -61,7 +61,7 @@ import java.util.logging.Logger;
  * <h2>How does a CLI command work</h2>
  * <p>
  * The users starts {@linkplain CLI the "CLI agent"} on a remote system, by specifying arguments, like
- * <tt>"java -jar hudson-cli.jar command arg1 arg2 arg3"</tt>. The CLI agent creates
+ * <tt>"java -jar jenkins-cli.jar command arg1 arg2 arg3"</tt>. The CLI agent creates
  * a remoting channel with the server, and it sends the entire arguments to the server, along with
  * the remoted stdin/out/err.
  *
@@ -70,7 +70,7 @@ import java.util.logging.Logger;
  * calls {@link #main(List, Locale, InputStream, PrintStream, PrintStream)} method.
  *
  * <h2>Note for CLI command implementor</h2>
- * Start with <a href="http://wiki.hudson-ci.org/display/HUDSON/Writing+CLI+commands">this document</a>
+ * Start with <a href="http://wiki.jenkins-ci.org/display/JENKINS/Writing+CLI+commands">this document</a>
  * to get the general idea of CLI.
  *
  * <ul>
@@ -268,7 +268,7 @@ public abstract class CLICommand implements ExtensionPoint, Cloneable {
     protected abstract int run() throws Exception;
 
     protected void printUsage(PrintStream stderr, CmdLineParser p) {
-        stderr.println("java -jar hudson-cli.jar "+getName()+" args...");
+        stderr.println("java -jar jenkins-cli.jar "+getName()+" args...");
         printUsageSummary(stderr);
         p.printUsage(stderr);
     }

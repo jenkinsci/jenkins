@@ -43,12 +43,12 @@ install: build
 	dh_installdirs
 	dh_install
 	    
-	# Add here commands to install the package into debian/hudson.
+	# Add here commands to install the package into debian/jenkins.
 	
 	# Moved creation of dirs to dirs template to be invoked by dh_installdirs
 
-    # Moved copying of 'upstream' files (hudson.war) to install template to be invoked by dh_install
-	#cp hudson.war $(CURDIR)/debian/hudson/usr/share/hudson/hudson.war
+    # Moved copying of 'upstream' files (jenkins.war) to install template to be invoked by dh_install
+	#cp jenkins.war $(CURDIR)/debian/jenkins/usr/share/jenkins/jenkins.war
 
 
 # Build architecture-independent files here.

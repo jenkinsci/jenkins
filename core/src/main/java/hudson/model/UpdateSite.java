@@ -71,7 +71,7 @@ import javax.servlet.ServletContext;
 
 
 /**
- * Source of the update center information, like "http://hudson-ci.org/update-center.json"
+ * Source of the update center information, like "http://jenkins-ci.org/update-center.json"
  *
  * <p>
  * Hudson can have multiple {@link UpdateSite}s registered in the system, so that it can pick up plugins
@@ -103,7 +103,7 @@ public class UpdateSite {
     private final String id;
 
     /**
-     * Path to <tt>update-center.json</tt>, like <tt>http://hudson-ci.org/update-center.json</tt>.
+     * Path to <tt>update-center.json</tt>, like <tt>http://jenkins-ci.org/update-center.json</tt>.
      */
     private final String url;
 
@@ -339,7 +339,7 @@ public class UpdateSite {
      * Is this the legacy default update center site?
      */
     public boolean isLegacyDefault() {
-        return id.equals("default") && url.startsWith("http://hudson-ci.org/");
+        return id.equals("default") && url.startsWith("http://hudson-ci.org/") || url.startsWith("http://updates.hudson-labs.org/");
     }
 
     /**

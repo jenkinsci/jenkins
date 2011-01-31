@@ -37,7 +37,7 @@ import java.io.IOException;
 import java.util.List;
 
 /**
- * Monitors the disk usage of <tt>HUDSON_HOME</tt>, and if it's almost filled up, warn the user.
+ * Monitors the disk usage of <tt>JENKINS_HOME</tt>, and if it's almost filled up, warn the user.
  *
  * @author Kohsuke Kawaguchi
  */
@@ -90,13 +90,13 @@ public final class HudsonHomeDiskUsageMonitor extends AdministrativeMonitor {
     }
 
     /**
-     * Extension point for suggesting solutions for full HUDSON_HOME.
+     * Extension point for suggesting solutions for full JENKINS_HOME.
      *
      * <h3>Views</h3>
      * <dl>
      * <dt>message.jelly</dt>
      * <dd>
-     * This view is rendered inside an LI tag as a possible solution to the full HUDSON_HOME problem.
+     * This view is rendered inside an LI tag as a possible solution to the full JENKINS_HOME problem.
      * </dd>
      * </dl>
      */

@@ -1,30 +1,30 @@
 <?xml version="1.0"?>
 <Wix xmlns='http://schemas.microsoft.com/wix/2006/wi'>
-  <Product Name='Hudson $(var.VERSION)' Id='*' UpgradeCode='ca304bcd-a9a4-4178-8fac-e0505b1e05f3'
-    Language='1033' Codepage='1252' Version='0.$(var.VERSION).0' Manufacturer='Hudson project'>
+  <Product Name='Jenkins $(var.VERSION)' Id='*' UpgradeCode='ca304bcd-a9a4-4178-8fac-e0505b1e05f3'
+    Language='1033' Codepage='1252' Version='0.$(var.VERSION).0' Manufacturer='Jenkins project'>
 
-    <Package Id='*' Keywords='Installer' Description="Hudson"
+    <Package Id='*' Keywords='Installer' Description="Jenkins"
       Comments='Continuous Integration Server'
       InstallerVersion='100' Compressed='yes' SummaryCodepage='1252' />
-      <Media Id='1' Cabinet='hudson.cab' EmbedCab='yes'/>
+      <Media Id='1' Cabinet='jenkins.cab' EmbedCab='yes'/>
       <Directory Id='TARGETDIR' Name='SourceDir'>
         <Directory Id='ProgramFilesFolder' Name='PFiles'>
-          <Directory Id='HudsonDir' Name='Hudson' FileSource=".">
+          <Directory Id='JenkinsDir' Name='Jenkins' FileSource=".">
               <Directory Id='JreDir' Name='jre'/>
               <Component Id='Main' Guid='8fd00c9c-e018-46d6-9135-67696ea0bcbf'>
-                <File Name="hudson.exe" Source='tmp/hudson.exe' KeyPath='yes'/>
-                <File Name="hudson.xml" Source='tmp/hudson.xml' DiskId='1' />
-                <File Name="hudson.war" Source='$(var.WAR)' DiskId='1' />
-                <ServiceInstall Id="HudsonService"
-                     Name="Hudson"
-                     DisplayName="Hudson"
+                <File Name="jenkins.exe" Source='tmp/jenkins.exe' KeyPath='yes'/>
+                <File Name="jenkins.xml" Source='tmp/jenkins.xml' DiskId='1' />
+                <File Name="jenkins.war" Source='$(var.WAR)' DiskId='1' />
+                <ServiceInstall Id="JenkinsService"
+                     Name="Jenkins"
+                     DisplayName="Jenkins"
                      Type="ownProcess"
                      Start="auto"
                      ErrorControl="normal"
-                     Description="Hudson Continuous Integration Server"
+                     Description="Jenkins Continuous Integration Server"
                      Account="[SERVICEACCOUNT]"
                      Password="[SERVICEPASSWORD]" />
-                 <ServiceControl Id="ControlHudsonService" Name="Hudson" Start="install" Stop="both" Wait="yes" Remove="uninstall"/>
+                 <ServiceControl Id="ControlJenkinsService" Name="Jenkins" Start="install" Stop="both" Wait="yes" Remove="uninstall"/>
               </Component>
           </Directory>
         </Directory>

@@ -2363,7 +2363,7 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
             pluginManager.stop();
 
         if(getRootDir().exists())
-            // if we are aborting because we failed to create HUDSON_HOME,
+            // if we are aborting because we failed to create JENKINS_HOME,
             // don't try to save. Issue #536
             getQueue().save();
 
@@ -2917,7 +2917,7 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
     }
 
     /**
-     * Binds /userContent/... to $HUDSON_HOME/userContent.
+     * Binds /userContent/... to $JENKINS_HOME/userContent.
      */
     public DirectoryBrowserSupport doUserContent() {
         return new DirectoryBrowserSupport(this,getRootPath().child("userContent"),"User content","folder.gif",true);
@@ -3336,7 +3336,7 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
 
     /**
      * Checks if container uses UTF-8 to decode URLs. See
-     * http://hudson.gotdns.com/wiki/display/HUDSON/Tomcat#Tomcat-i18n
+     * http://wiki.jenkins-ci.org/display/JENKINS/Tomcat#Tomcat-i18n
      */
     public FormValidation doCheckURIEncoding(StaplerRequest request) throws IOException {
         // expected is non-ASCII String

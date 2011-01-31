@@ -135,7 +135,7 @@ THE SOFTWARE.
         because Maven excludes all wars from classpath automatically. so we need a jar artifact.
       -->
       <groupId>${project.groupId}</groupId>
-      <artifactId>hudson-war</artifactId>
+      <artifactId>jenkins-war</artifactId>
       <version>${project.version}</version>
       <classifier>war-for-test</classifier>
     </dependency>

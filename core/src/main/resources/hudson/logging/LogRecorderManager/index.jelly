@@ -31,7 +31,7 @@ THE SOFTWARE.
   <l:main-panel xmlns:local="local">
     <h1><img src="${imagesURL}/48x48/clipboard.gif" alt=""/>
       ${%Log Recorders}
-      <t:help href="http://wiki.hudson-ci.org/display/HUDSON/Log+Recorders" />
+      <t:help href="http://wiki.jenkins-ci.org/display/JENKINS/Log+Recorders" />
     </h1>
 
     <d:taglib uri="local">

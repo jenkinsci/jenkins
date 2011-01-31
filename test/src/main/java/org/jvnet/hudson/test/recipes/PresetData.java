@@ -33,7 +33,7 @@ import java.lang.annotation.Target;
 import java.util.Locale;
 
 /**
- * Runs a test case with one of the preset HUDSON_HOME data set.
+ * Runs a test case with one of the preset JENKINS_HOME data set.
  *
  * @author Kohsuke Kawaguchi
  * @see LocalData

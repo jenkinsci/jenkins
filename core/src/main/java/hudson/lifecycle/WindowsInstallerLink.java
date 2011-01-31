@@ -117,17 +117,17 @@ public class WindowsInstallerLink extends ManagementLink {
 
         try {
             // copy files over there
-            copy(req, rsp, dir, getClass().getResource("/windows-service/hudson.exe"), "hudson.exe");
-            copy(req, rsp, dir, getClass().getResource("/windows-service/hudson.xml"), "hudson.xml");
-            if(!hudsonWar.getCanonicalFile().equals(new File(dir,"hudson.war").getCanonicalFile()))
-                copy(req, rsp, dir, hudsonWar.toURI().toURL(), "hudson.war");
+            copy(req, rsp, dir, getClass().getResource("/windows-service/jenkins.exe"), "jenkins.exe");
+            copy(req, rsp, dir, getClass().getResource("/windows-service/jenkins.xml"), "jenkins.xml");
+            if(!hudsonWar.getCanonicalFile().equals(new File(dir,"jenkins.war").getCanonicalFile()))
+                copy(req, rsp, dir, hudsonWar.toURI().toURL(), "jenkins.war");
 
             // install as a service
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
             StreamTaskListener task = new StreamTaskListener(baos);
             task.getLogger().println("Installing a service");
             int r = WindowsSlaveInstaller.runElevated(
-                    new File(dir, "hudson.exe"), "install", task, dir);
+                    new File(dir, "jenkins.exe"), "install", task, dir);
             if(r!=0) {
                 sendError(baos.toString(),req,rsp);
                 return;
@@ -196,7 +196,7 @@ public class WindowsInstallerLink extends ManagementLink {
                                 LOGGER.info("Starting a Windows service");
                                 StreamTaskListener task = StreamTaskListener.fromStdout();
                                 int r = WindowsSlaveInstaller.runElevated(
-                                        new File(installationDir, "hudson.exe"), "start", task, installationDir);
+                                        new File(installationDir, "jenkins.exe"), "start", task, installationDir);
                                 task.getLogger().println(r==0?"Successfully started":"start service failed. Exit code="+r);
                             } catch (IOException e) {
                                 e.printStackTrace();
@@ -245,13 +245,13 @@ public class WindowsInstallerLink extends ManagementLink {
         if(Lifecycle.get() instanceof WindowsServiceLifecycle)
             return null; // already installed as Windows service
 
-        // this system property is set by the launcher when we run "java -jar hudson.war"
-        // and this is how we know where is hudson.war.
+        // this system property is set by the launcher when we run "java -jar jenkins.war"
+        // and this is how we know where is jenkins.war.
         String war = System.getProperty("executable-war");
         if(war!=null && new File(war).exists()) {
             WindowsInstallerLink link = new WindowsInstallerLink(new File(war));
 
-            // in certain situations where we know the user is just trying Hudson (like when Hudson is launched
+            // in certain situations where we know the user is just trying Jenkins (like when Jenkins is launched
             // from JNLP from https://hudson.dev.java.net/), also put this link on the navigation bar to increase
             // visibility
             if(System.getProperty(WindowsInstallerLink.class.getName()+".prominent")!=null)

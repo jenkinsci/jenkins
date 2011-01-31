@@ -45,7 +45,7 @@ THE SOFTWARE.
           </h1>
           <pre>${h.printThrowable(it.causeOfDeath)}</pre>
           <pre>
-            <a href="http://wiki.hudson-ci.org/display/HUDSON/Dead+Executor">${%more info}</a>
+            <a href="http://wiki.jenkins-ci.org/display/JENKINS/Dead+Executor">${%more info}</a>
           </pre>
           <form method="post" action="yank" name="yank">
             <f:submit value="${%Restart this thread}"/>

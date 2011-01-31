@@ -154,7 +154,7 @@ import java.util.concurrent.CountDownLatch;
 /**
  * Base class for all Hudson test cases.
  *
- * @see <a href="http://wiki.hudson-ci.org/display/HUDSON/Unit+Test">Wiki article about unit testing in Hudson</a>
+ * @see <a href="http://wiki.jenkins-ci.org/display/JENKINS/Unit+Test">Wiki article about unit testing in Hudson</a>
  * @author Kohsuke Kawaguchi
  */
 public abstract class HudsonTestCase extends TestCase implements RootAction {
@@ -703,7 +703,7 @@ public abstract class HudsonTestCase extends TestCase implements RootAction {
      * Loads a configuration page and submits it without any modifications, to
      * perform a round-trip configuration test.
      * <p>
-     * See http://wiki.hudson-ci.org/display/HUDSON/Unit+Test#UnitTest-Configurationroundtriptesting
+     * See http://wiki.jenkins-ci.org/display/JENKINS/Unit+Test#UnitTest-Configurationroundtriptesting
      */
     protected <P extends Job> P configRoundtrip(P job) throws Exception {
         submit(createWebClient().getPage(job,"configure").getFormByName("config"));

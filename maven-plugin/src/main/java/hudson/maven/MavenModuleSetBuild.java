@@ -682,7 +682,7 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
                 return Result.FAILURE;
             } catch (RuntimeException e) {
                 // bug in the code.
-                e.printStackTrace(listener.error("Processing failed due to a bug in the code. Please report this to hudson-users@googlegroups.com"));
+                e.printStackTrace(listener.error("Processing failed due to a bug in the code. Please report this to jenkins-users@googlegroups.com"));
                 logger.println("project="+project);
                 logger.println("project.getModules()="+project.getModules());
                 logger.println("project.getRootModule()="+project.getRootModule());
@@ -1148,7 +1148,7 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
                     mps = embedder.readProjects( pom,!this.nonRecursive );
 
                 } else {
-                    // http://issues.hudson-ci.org/browse/HUDSON-8390
+                    // http://issues.jenkins-ci.org/browse/HUDSON-8390
                     // we cannot read maven projects in one time for backward compatibility
                     // but we have to use a ReactorReader to get some pom with bad inheritence configured
                     MavenProject mavenProject = embedder.readProject( pom );
