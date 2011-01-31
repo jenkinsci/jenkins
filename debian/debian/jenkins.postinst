@@ -33,6 +33,7 @@ case "$1" in
 	        adduser --system --home /var/lib/jenkins --no-create-home \
 		    --ingroup nogroup --disabled-password --shell /bin/bash \
 		    jenkins
+                find /var/lib/jenkins -user hudson -exec chown jenkins {} + || true
 	    fi
 	
     	# Fix permissions on runtime directories/files.
@@ -49,8 +50,8 @@ case "$1" in
     	chmod 750 /var/log/jenkins
 
         # delete old hudson user if it's still here
-        if ! id hudson > /dev/null 2>&1 ; then
-            userdel hudson || true
+        if id hudson > /dev/null 2>&1 ; then
+            deluser hudson || true
         fi
     ;;
 
