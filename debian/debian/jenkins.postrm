@@ -22,7 +22,7 @@ set -e
 
 case "$1" in
     purge)
-	userdel hudson || true
+	userdel jenkins || true
     # TODO: remove log files rm -rf /var/log/jenkins
     ;;
     

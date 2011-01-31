@@ -5,7 +5,7 @@ usr/sbin
 usr/share/jenkins
 
 # this is where JENKINS_HOME is stored, so let's leave it as is for now
-var/lib/hudson
+var/lib/jenkins
 
 # Need to create jenkins's own directory to track the pid since the daemon is not run as root 
 # and doesn't have permission to write the pid to /var/run (which would be the preferred location).

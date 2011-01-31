@@ -12,13 +12,13 @@ JAVA=/usr/bin/java
 PIDFILE=/var/run/jenkins/jenkins.pid
 
 # user id to be invoked as (otherwise will run as root; not wise!)
-JENKINS_USER=hudson
+JENKINS_USER=jenkins
 
 # location of the jenkins war file
 JENKINS_WAR=/usr/share/jenkins/jenkins.war
 
-# hudson home location
-JENKINS_HOME=/var/lib/hudson
+# jenkins home location
+JENKINS_HOME=/var/lib/jenkins
 
 # set this to false if you don't want Hudson to run by itself
 # in this set up, you are expected to provide a servlet containr
