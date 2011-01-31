@@ -78,7 +78,7 @@ public class Main {
     private static String getHudsonHome() {
         String home = EnvVars.masterEnvVars.get("JENKINS_HOME");
         if (home!=null) return home;
-        return EnvVars.masterEnvVars.get("JENKINS_HOME");
+        return EnvVars.masterEnvVars.get("HUDSON_HOME");
     }
 
     /**
