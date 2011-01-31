@@ -9,7 +9,11 @@ sudo apt-get install -y rpm expect || true
 # figure out the version to package
 cp "$1" $(dirname $0)/SOURCES/jenkins.war
 pushd $(dirname $0)
-version=$(unzip -p SOURCES/jenkins.war META-INF/MANIFEST.MF | grep Implementation-Version | cut -d ' ' -f2 | tr - .)
+if [ -z "$2" ]; then
+  version=$(unzip -p SOURCES/jenkins.war META-INF/MANIFEST.MF | grep Implementation-Version | cut -d ' ' -f2 | tr - .)
+else
+  version="$2"
+fi
 echo Version is $version
 
 # prepare fresh directories
