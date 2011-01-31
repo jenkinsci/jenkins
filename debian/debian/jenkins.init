@@ -19,8 +19,6 @@ DESC="Jenkins Continuous Integration Server"
 NAME=jenkins
 SCRIPTNAME=/etc/init.d/$NAME
 
-# load hudson config file for backward compatibility if it exists
-[ -r /etc/default/hudson ] && . /etc/default/hudson
 [ -r /etc/default/$NAME ] && . /etc/default/$NAME
 
 #DAEMON=$JENKINS_SH

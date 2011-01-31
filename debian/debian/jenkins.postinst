@@ -35,7 +35,7 @@ case "$1" in
         # even if it fails on some files, don't let that interfere with the upgrade process
         # (that can happen on dangling symlinks, for example.)
         find /var/lib/hudson -path "*jobs" -prune -o -type l -prune -o -exec chown hudson:adm {} + || true
-    	chown -R hudson:adm /var/run/hudson /var/log/hudson
+    	chown -R hudson:adm /var/run/jenkins /var/log/jenkins
     	# change mode to 750 - exclude jobs and .ssh directories. See HUDSON-4047
         # we prune symlinks instead of -P to avoid chmod/chown getting symlinks as arguments
         # (which ends up changing the target of the symlink, even though it's not recursive)

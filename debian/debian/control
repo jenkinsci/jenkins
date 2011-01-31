@@ -10,5 +10,6 @@ Package: jenkins
 Architecture: all
 Depends: ${shlibs:Depends}, ${misc:Depends}, daemon, adduser, java-virtual-machine, java2-runtime, psmisc
 Conflicts: hudson
+Replaces: hudson
 Description: Continuous integration system written in Java
  Jenkins is an extensible continuous engine written in Java.
