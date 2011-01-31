@@ -62,14 +62,14 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- * Encourages the user to migrate HUDSON_HOME on a ZFS file system. 
+ * Encourages the user to migrate JENKINS_HOME on a ZFS file system.
  *
  * @author Kohsuke Kawaguchi
  * @since 1.283
  */
 public class ZFSInstaller extends AdministrativeMonitor implements Serializable {
     /**
-     * True if $HUDSON_HOME is a ZFS file system by itself.
+     * True if $JENKINS_HOME is a ZFS file system by itself.
      */
     private final boolean active = shouldBeActive();
 
@@ -302,7 +302,7 @@ public class ZFSInstaller extends AdministrativeMonitor implements Serializable 
     }
 
     /**
-     * Migrates $HUDSON_HOME to a new ZFS file system.
+     * Migrates $JENKINS_HOME to a new ZFS file system.
      *
      * TODO: do this in a separate JVM to elevate the privilege.
      *

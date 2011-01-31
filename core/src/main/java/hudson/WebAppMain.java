@@ -261,36 +261,46 @@ public final class WebAppMain implements ServletContextListener {
     }
 
     /**
-     * Determines the home directory for Hudson.
+     * Determines the home directory for Jenkins.
      *
+     * <p>
+     * We look for a setting that affects the smallest scope first, then bigger ones later.
+     *
+     * <p>
      * People makes configuration mistakes, so we are trying to be nice
      * with those by doing {@link String#trim()}.
      */
     private File getHomeDir(ServletContextEvent event) {
         // check JNDI for the home directory first
-        try {
-            InitialContext iniCtxt = new InitialContext();
-            Context env = (Context) iniCtxt.lookup("java:comp/env");
-            String value = (String) env.lookup("HUDSON_HOME");
-            if(value!=null && value.trim().length()>0)
-                return new File(value.trim());
-            // look at one more place. See issue #1314 
-            value = (String) iniCtxt.lookup("HUDSON_HOME");
-            if(value!=null && value.trim().length()>0)
-                return new File(value.trim());
-        } catch (NamingException e) {
-            // ignore
+        for (String name : HOME_NAMES) {
+            try {
+                InitialContext iniCtxt = new InitialContext();
+                Context env = (Context) iniCtxt.lookup("java:comp/env");
+                String value = (String) env.lookup(name);
+                if(value!=null && value.trim().length()>0)
+                    return new File(value.trim());
+                // look at one more place. See issue #1314
+                value = (String) iniCtxt.lookup(name);
+                if(value!=null && value.trim().length()>0)
+                    return new File(value.trim());
+            } catch (NamingException e) {
+                // ignore
+            }
         }
 
-        // finally check the system property
-        String sysProp = System.getProperty("HUDSON_HOME");
-        if(sysProp!=null)
-            return new File(sysProp.trim());
-        
+        // next the system property
+        for (String name : HOME_NAMES) {
+            String sysProp = System.getProperty(name);
+            if(sysProp!=null)
+                return new File(sysProp.trim());
+        }
+
         // look at the env var next
-        String env = EnvVars.masterEnvVars.get("HUDSON_HOME");
-        if(env!=null)
-            return new File(env.trim()).getAbsoluteFile();
+        for (String name : HOME_NAMES) {
+            String env = EnvVars.masterEnvVars.get(name);
+            if(env!=null)
+                return new File(env.trim()).getAbsoluteFile();
+        }
 
         // otherwise pick a place by ourselves
 
@@ -304,8 +314,11 @@ public final class WebAppMain implements ServletContextListener {
                 return ws;
         }
 
-        // if for some reason we can't put it within the webapp, use home directory.
-        return new File(new File(System.getProperty("user.home")),".hudson");
+        File legacyHome = new File(new File(System.getProperty("user.home")), ".hudson");
+        if (legacyHome.exists())
+            return legacyHome; // before rename, this is where it was stored
+
+        return new File(new File(System.getProperty("user.home")), ".jenkins");
     }
 
     public void contextDestroyed(ServletContextEvent event) {
@@ -320,4 +333,6 @@ public final class WebAppMain implements ServletContextListener {
 
     private static final Logger LOGGER = Logger.getLogger(WebAppMain.class.getName());
 
+
+    private static final String[] HOME_NAMES = {"JENKINS_HOME","HUDSON_HOME"};
 }

@@ -64,7 +64,7 @@ public class Main {
     public static int run(String[] args) throws Exception {
         String home = getHudsonHome();
         if (home==null) {
-            System.err.println("HUDSON_HOME is not set.");
+            System.err.println("JENKINS_HOME is not set.");
             return -1;
         }
         if (args.length < 2) {
@@ -76,7 +76,9 @@ public class Main {
     }
 
     private static String getHudsonHome() {
-        return EnvVars.masterEnvVars.get("HUDSON_HOME");
+        String home = EnvVars.masterEnvVars.get("JENKINS_HOME");
+        if (home!=null) return home;
+        return EnvVars.masterEnvVars.get("JENKINS_HOME");
     }
 
     /**

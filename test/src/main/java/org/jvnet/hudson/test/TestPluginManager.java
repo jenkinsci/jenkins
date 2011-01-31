@@ -84,7 +84,7 @@ public class TestPluginManager extends PluginManager {
         }
 
         // and pick up test dependency *.hpi that are placed by maven-hpi-plugin TestDependencyMojo.
-        // and copy them into $HUDSON_HOME/plugins.
+        // and copy them into $JENKINS_HOME/plugins.
         URL index = getClass().getResource("/test-dependencies/index");
         if (index!=null) {// if built with maven-hpi-plugin < 1.52 this file won't exist.
             BufferedReader r = new BufferedReader(new InputStreamReader(index.openStream(),"UTF-8"));

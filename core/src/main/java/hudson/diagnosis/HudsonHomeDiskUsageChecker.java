@@ -31,7 +31,7 @@ import org.jvnet.animal_sniffer.IgnoreJRERequirement;
 import java.util.logging.Logger;
 
 /**
- * Periodically checks the disk usage of <tt>HUDSON_HOME</tt>,
+ * Periodically checks the disk usage of <tt>JENKINS_HOME</tt>,
  * and activate {@link HudsonHomeDiskUsageMonitor} if necessary.
  *
  * @author Kohsuke Kawaguchi
@@ -49,12 +49,12 @@ public class HudsonHomeDiskUsageChecker extends PeriodicWork {
             long total = Hudson.getInstance().getRootDir().getTotalSpace();
             if(free<=0 || total<=0) {
                 // information unavailable. pointless to try.
-                LOGGER.info("HUDSON_HOME disk usage information isn't available. aborting to monitor");
+                LOGGER.info("JENKINS_HOME disk usage information isn't available. aborting to monitor");
                 cancel();
                 return;
             }
 
-            LOGGER.fine("Monitoring disk usage of HUDSON_HOME. total="+total+" free="+free);
+            LOGGER.fine("Monitoring disk usage of JENKINS_HOME. total="+total+" free="+free);
 
 
             // if it's more than 90% full and less than the minimum, activate
@@ -63,7 +63,7 @@ public class HudsonHomeDiskUsageChecker extends PeriodicWork {
             HudsonHomeDiskUsageMonitor.get().activated = (total/free>10 && free< FREE_SPACE_THRESHOLD);
         } catch (LinkageError _) {
             // pre Mustang
-            LOGGER.info("Not on JDK6. Cannot monitor HUDSON_HOME disk usage");
+            LOGGER.info("Not on JDK6. Cannot monitor JENKINS_HOME disk usage");
             cancel();
         }
     }

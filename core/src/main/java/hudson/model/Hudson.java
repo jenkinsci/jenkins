@@ -2363,7 +2363,7 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
             pluginManager.stop();
 
         if(getRootDir().exists())
-            // if we are aborting because we failed to create HUDSON_HOME,
+            // if we are aborting because we failed to create JENKINS_HOME,
             // don't try to save. Issue #536
             getQueue().save();
 
@@ -2917,7 +2917,7 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
     }
 
     /**
-     * Binds /userContent/... to $HUDSON_HOME/userContent.
+     * Binds /userContent/... to $JENKINS_HOME/userContent.
      */
     public DirectoryBrowserSupport doUserContent() {
         return new DirectoryBrowserSupport(this,getRootPath().child("userContent"),"User content","folder.gif",true);

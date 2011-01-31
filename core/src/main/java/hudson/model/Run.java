@@ -1771,8 +1771,8 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
             env.put("JOB_URL", rootUrl+getParent().getUrl());
         }
         
-        if(!env.containsKey("HUDSON_HOME"))
-            env.put("HUDSON_HOME", Hudson.getInstance().getRootDir().getPath() );
+        env.put("JENKINS_HOME", Hudson.getInstance().getRootDir().getPath() );
+        env.put("HUDSON_HOME", Hudson.getInstance().getRootDir().getPath() );   // legacy compatibility
 
         Thread t = Thread.currentThread();
         if (t instanceof Executor) {
