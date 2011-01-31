@@ -119,15 +119,15 @@ public class WindowsInstallerLink extends ManagementLink {
             // copy files over there
             copy(req, rsp, dir, getClass().getResource("/windows-service/jenkins.exe"), "jenkins.exe");
             copy(req, rsp, dir, getClass().getResource("/windows-service/jenkins.xml"), "jenkins.xml");
-            if(!hudsonWar.getCanonicalFile().equals(new File(dir,"hudson.war").getCanonicalFile()))
-                copy(req, rsp, dir, hudsonWar.toURI().toURL(), "hudson.war");
+            if(!hudsonWar.getCanonicalFile().equals(new File(dir,"jenkins.war").getCanonicalFile()))
+                copy(req, rsp, dir, hudsonWar.toURI().toURL(), "jenkins.war");
 
             // install as a service
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
             StreamTaskListener task = new StreamTaskListener(baos);
             task.getLogger().println("Installing a service");
             int r = WindowsSlaveInstaller.runElevated(
-                    new File(dir, "hudson.exe"), "install", task, dir);
+                    new File(dir, "jenkins.exe"), "install", task, dir);
             if(r!=0) {
                 sendError(baos.toString(),req,rsp);
                 return;
