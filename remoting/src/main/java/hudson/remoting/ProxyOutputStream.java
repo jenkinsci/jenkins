@@ -81,7 +81,7 @@ final class ProxyOutputStream extends OutputStream {
         this.channel = channel;
         this.oid = oid;
 
-        window =  channel.getPipeWindow(oid);
+        window = channel.getPipeWindow(oid);
 
         // if we already have bytes to write, do so now.
         if(tmp!=null) {
@@ -115,6 +115,11 @@ final class ProxyOutputStream extends OutputStream {
             while (len>0) {
                 int sendable;
                 try {
+                    // @TODO This is just a hack for now. Figure out why the window is unexpectedly destroyed.
+                    if (window == null)
+                    {
+                        window = channel.getPipeWindow(oid);
+                    }
                     sendable = Math.min(window.get(),len);
                 } catch (InterruptedException e) {
                     throw (IOException)new InterruptedIOException().initCause(e);

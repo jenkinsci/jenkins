@@ -99,8 +99,6 @@ abstract class PipeWindow {
 
     static class Real extends PipeWindow {
         private int available;
-        private long written;
-        private long acked;
         private final int oid;
         /**
          * The only strong reference to the key, which in turn
@@ -118,7 +116,6 @@ abstract class PipeWindow {
             if (LOGGER.isLoggable(FINER))
                 LOGGER.finer(String.format("increase(%d,%d)->%d",oid,delta,delta+available));
             available += delta;
-            acked += delta;
             notifyAll();
         }
 
@@ -139,7 +136,7 @@ abstract class PipeWindow {
                 if (available>0)
                     return available;
 
-                while (available==0) {
+                while (available<=0) {
                     wait();
                 }
             }
@@ -155,7 +152,6 @@ abstract class PipeWindow {
             if (LOGGER.isLoggable(FINER))
                 LOGGER.finer(String.format("decrease(%d,%d)->%d",oid,delta,available-delta));
             available -= delta;
-            written+= delta;
             /*
             HUDSON-7745 says the following assertion fails, which AFAICT is only possible if multiple
             threads write to OutputStream concurrently, but that doesn't happen in most of the situations, so
