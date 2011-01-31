@@ -96,8 +96,8 @@ case "$1" in
 	    # get own session ID
 	    MY_SESSION_ID=`/bin/ps h -o sess -p $$`
 	    # get PID
-	    /bin/ps hww -u hudson -o sess,pid,cmd | \
-		while read sess pid cmd; do [ "$sess" = "$MY_SESSION_ID" -a "$cmd" = "$JAVA_CMD $PARAMS" ] && echo $pid; done | \
+	    /bin/ps hww -u hudson -o sess,pid,cmd | grep java | grep -i jenkins | \
+		while read sess pid cmd; do [ "$sess" = $MY_SESSION_ID ] && echo $pid; done | \
 		head -1 > "$JENKINS_PID_FILE"
 	else
 	    rc_failed 1
