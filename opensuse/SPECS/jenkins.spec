@@ -30,7 +30,7 @@ BuildRoot:	%{_tmppath}/build-%{name}-%{version}
 #
 # java-1_6_0-sun provides this at least
 Requires:	java-sun >= 1.6.0
-Conflicts:  hudson
+Obsoletes:  hudson
 PreReq:		/usr/sbin/groupadd /usr/sbin/useradd
 #PreReq:		%{fillup_prereq}
 BuildArch:	noarch
