@@ -170,7 +170,7 @@ THE SOFTWARE.
 
                 <!-- download winsw.exe -->
                 <mkdir dir="target/classes/windows-service" />
-                <resolveArtifact artifactId="winsw" tofile="target/classes/windows-service/hudson.exe" />
+                <resolveArtifact artifactId="winsw" tofile="target/classes/windows-service/jenkins.exe" />
               </tasks>
             </configuration>
             <goals>
