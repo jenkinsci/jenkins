@@ -21,11 +21,6 @@ set -e
 case "$1" in
     configure)
     
-        # If we have an old hudson install, rename it to jenkins
-	    if test -d /var/lib/hudson ; then
-                mv /var/lib/hudson /var/lib/jenkins
-            fi
-      
         # Create jenkins user if it doesn't exist.
         # sometimes tools that users want Jenkins to run need a shell,
         # so use /bin/bash. See JENKINS-4830
@@ -33,9 +28,22 @@ case "$1" in
 	        adduser --system --home /var/lib/jenkins --no-create-home \
 		    --ingroup nogroup --disabled-password --shell /bin/bash \
 		    jenkins
-                find /var/lib/jenkins -user hudson -exec chown jenkins {} + || true
 	    fi
 	
+        # If we have an old hudson install, rename it to jenkins
+	    if test -d /var/lib/hudson; then
+                # We need to ensure that the .??* wildcard matches something
+                touch /var/lib/hudson/.moving-hudson
+                mv -f /var/lib/hudson/* /var/lib/hudson/.??* /var/lib/jenkins
+                rmdir /var/lib/hudson
+                rm /var/lib/jenkins/.moving-hudson
+                find /var/lib/jenkins -user hudson -exec chown jenkins {} + || true
+            fi
+	    if test -d /var/run/hudson; then
+                mv -f /var/run/hudson/* /var/run/jenkins
+                rmdir /var/run/hudson
+            fi
+      
     	# Fix permissions on runtime directories/files.
     	# change group/owner to jenkins:adm - exclude jobs directory. See HUDSON-4047
         # even if it fails on some files, don't let that interfere with the upgrade process
@@ -51,7 +59,7 @@ case "$1" in
 
         # delete old hudson user if it's still here
         if id hudson > /dev/null 2>&1 ; then
-            deluser hudson || true
+            userdel hudson || true
         fi
     ;;
 
