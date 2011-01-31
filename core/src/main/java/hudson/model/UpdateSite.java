@@ -339,7 +339,7 @@ public class UpdateSite {
      * Is this the legacy default update center site?
      */
     public boolean isLegacyDefault() {
-        return id.equals("default") && url.startsWith("http://jenkins-ci.org/");
+        return id.equals("default") && url.startsWith("http://hudson-ci.org/") || url.startsWith("http://updates.hudson-labs.org/");
     }
 
     /**
