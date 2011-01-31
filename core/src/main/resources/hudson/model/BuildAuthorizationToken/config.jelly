@@ -36,7 +36,7 @@ THE SOFTWARE.
       <f:entry title="${%Authentication Token}">
         <f:textbox name="authToken" value="${it.authToken.token}" />
         ${%Use the following URL to trigger build remotely:}
-        <tt>HUDSON_URL</tt>/${it.url}build?token=<tt>TOKEN_NAME</tt>
+        <tt>JENKINS_URL</tt>/${it.url}build?token=<tt>TOKEN_NAME</tt>
         ${%or}
         /buildWithParameters?token=<tt>TOKEN_NAME</tt>
         <br/>

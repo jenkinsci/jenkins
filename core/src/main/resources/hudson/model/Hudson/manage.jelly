@@ -89,7 +89,7 @@ THE SOFTWARE.
         ${%LoadStatisticsText}
       </local:feature>
       <local:feature icon="terminal.gif"    href="cli"         title="${%Jenkins CLI}">
-        ${%HudsonCliText}
+        ${%JenkinsCliText}
       </local:feature>
       <local:feature icon="notepad.gif"      href="script"      title="${%Script Console}">
         ${%Executes arbitrary script for administration/trouble-shooting/diagnostics.}

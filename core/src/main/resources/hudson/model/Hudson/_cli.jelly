@@ -35,7 +35,7 @@ THE SOFTWARE.
       </p>
       <pre style="color: white; background-color:black; padding:1em; font-weight: bold">java -jar <a
               style="color: white"
-              href="jnlpJars/hudson-cli.jar">hudson-cli.jar</a> -s ${h.inferHudsonURL(request)} help</pre>
+              href="jnlpJars/jenkins-cli.jar">jenkins-cli.jar</a> -s ${h.inferHudsonURL(request)} help</pre>
     </l:main-panel>
   </l:layout>
 </j:jelly>
