@@ -116,8 +116,7 @@ final class ProxyOutputStream extends OutputStream {
                 int sendable;
                 try {
                     // @TODO This is just a hack for now. Figure out why the window is unexpectedly destroyed.
-                    if (window == null)
-                    {
+                    if (window == null) {
                         window = channel.getPipeWindow(oid);
                     }
                     sendable = Math.min(window.get(),len);
