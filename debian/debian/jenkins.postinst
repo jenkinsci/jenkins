@@ -57,11 +57,6 @@ case "$1" in
         find /var/lib/jenkins -path "*jobs" -prune -o -path "*.ssh" -prune -o -type l -prune -o -exec chmod 750 {} + || true
     	chmod -R 750 /var/run/jenkins
     	chmod 750 /var/log/jenkins
-
-        # delete old hudson user if it's still here
-        if id hudson > /dev/null 2>&1 ; then
-            userdel hudson || true
-        fi
     ;;
 
     abort-upgrade|abort-remove|abort-deconfigure)
