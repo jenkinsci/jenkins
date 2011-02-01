@@ -62,7 +62,7 @@ final class WarExploder {
     }
 
     /**
-     * Explodes hudson.war, if necesasry, and returns its root dir.
+     * Explodes hudson.war, if necessary, and returns its root dir.
      */
     private static File explode() throws Exception {
         // are we in the hudson main workspace? If so, pick up hudson/main/war/resources
@@ -71,15 +71,15 @@ final class WarExploder {
         File d = new File(".").getAbsoluteFile();
 
         // just in case we were started from hudson instead of from hudson/main/...
-        if (new File(d, "main/war/target/hudson").exists()) {
-            return new File(d, "main/war/target/hudson");
+        if (new File(d, "main/war/target/jenkins").exists()) {
+            return new File(d, "main/war/target/jenkins");
         }
 
         for( ; d!=null; d=d.getParentFile()) {
-            if(new File(d,".hudson").exists()) {
-                File dir = new File(d,"war/target/hudson");
+            if(new File(d,".jenkins").exists()) {
+                File dir = new File(d,"war/target/jenkins");
                 if(dir.exists()) {
-                    System.out.println("Using hudson.war resources from "+dir);
+                    System.out.println("Using jenkins.war resources from "+dir);
                     return dir;
                 }
             }
@@ -89,14 +89,14 @@ final class WarExploder {
         URL winstone = WarExploder.class.getResource("/winstone.jar");
         if(winstone==null)
         // impossible, since the test harness pulls in hudson.war
-            throw new AssertionError("hudson.war is not in the classpath.");
+            throw new AssertionError("jenkins.war is not in the classpath.");
         File war = Which.jarFile(Class.forName("executable.Executable"));
 
-        File explodeDir = new File("./target/hudson-for-test").getAbsoluteFile();
+        File explodeDir = new File("./target/jenkins-for-test").getAbsoluteFile();
         File timestamp = new File(explodeDir,".timestamp");
 
         if(!timestamp.exists() || (timestamp.lastModified()!=war.lastModified())) {
-            System.out.println("Exploding hudson.war at "+war);
+            System.out.println("Exploding jenkins.war at "+war);
             new FilePath(explodeDir).deleteRecursive();
             new FilePath(war).unzip(new FilePath(explodeDir));
             if(!explodeDir.exists())    // this is supposed to be impossible, but I'm investigating HUDSON-2605
@@ -104,7 +104,7 @@ final class WarExploder {
             new FileOutputStream(timestamp).close();
             timestamp.setLastModified(war.lastModified());
         } else {
-            System.out.println("Picking up existing exploded hudson.war at "+explodeDir.getAbsolutePath());
+            System.out.println("Picking up existing exploded jenkins.war at "+explodeDir.getAbsolutePath());
         }
 
         return explodeDir;

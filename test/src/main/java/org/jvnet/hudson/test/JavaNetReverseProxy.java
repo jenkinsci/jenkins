@@ -80,7 +80,7 @@ public class JavaNetReverseProxy extends HttpServlet {
 
         File cache = new File(cacheFolder, d);
         if(!cache.exists()) {
-            URL url = new URL("http://jenkins-ci.org/" + path);
+            URL url = new URL("http://updates.jenkins-ci.org/" + path);
             FileUtils.copyURLToFile(url,cache);
         }
 
