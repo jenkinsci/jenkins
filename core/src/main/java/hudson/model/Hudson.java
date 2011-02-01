@@ -1731,7 +1731,10 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
     }
 
     public void onViewRenamed(View view, String oldName, String newName) {
-        // implementation of Hudson is immune to view name change.
+        // If this view was the default view, change reference
+        if (oldName.equals(primaryView)) {
+            primaryView = newName;
+        }
     }
 
     @Override
