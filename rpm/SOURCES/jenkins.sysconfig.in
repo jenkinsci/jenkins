@@ -19,14 +19,14 @@ JENKINS_HOME="@@HOME@@"
 JENKINS_JAVA_CMD=""
 
 ## Type:        string
-## Default:     "hudson"
+## Default:     "jenkins"
 ## ServiceRestart: jenkins
 #
 # Unix user account that runs the Jenkins daemon
 # Be careful when you change this, as you need to update
 # permissions of $JENKINS_HOME and /var/log/jenkins.
 #
-JENKINS_USER="hudson"
+JENKINS_USER="jenkins"
 
 ## Type:        string
 ## Default:     "-Djava.awt.headless=true"

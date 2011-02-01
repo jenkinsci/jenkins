@@ -2,7 +2,7 @@
 # - how to add to the trusted service of the firewall?
 
 %define _prefix	%{_usr}/lib/jenkins
-%define workdir	%{_var}/lib/hudson
+%define workdir	%{_var}/lib/jenkins
 
 Name:		jenkins
 Version:	%{ver}
@@ -40,18 +40,18 @@ PreReq:		/usr/sbin/groupadd /usr/sbin/useradd
 BuildArch:	noarch
 
 %description
-Hudson monitors executions of repeated jobs, such as building a software
-project or jobs run by cron. Among those things, current Hudson focuses on the
+Jenkins monitors executions of repeated jobs, such as building a software
+project or jobs run by cron. Among those things, current Jenkins focuses on the
 following two jobs:
 - Building/testing software projects continuously, just like CruiseControl or
-  DamageControl. In a nutshell, Hudson provides an easy-to-use so-called
+  DamageControl. In a nutshell, Jenkins provides an easy-to-use so-called
   continuous integration system, making it easier for developers to integrate
   changes to the project, and making it easier for users to obtain a fresh
   build. The automated, continuous build increases the productivity.
 - Monitoring executions of externally-run jobs, such as cron jobs and procmail
   jobs, even those that are run on a remote machine. For example, with cron,
   all you receive is regular e-mails that capture the output, and it is up to
-  you to look at them diligently and notice when it broke. Hudson keeps those
+  you to look at them diligently and notice when it broke. Jenkins keeps those
   outputs and makes it easy for you to notice when something is wrong.
 
 
@@ -86,13 +86,29 @@ rm -rf "%{buildroot}"
 %__install -D -m0644 "%{SOURCE4}" "%{buildroot}/etc/yum.repos.d/jenkins.repo"
 
 %pre
-/usr/sbin/groupadd -r hudson &>/dev/null || :
+/usr/sbin/groupadd -r jenkins &>/dev/null || :
 # SUSE version had -o here, but in Fedora -o isn't allowed without -u
-/usr/sbin/useradd -g hudson -s /bin/false -r -c "Hudson Continuous Build server" \
-	-d "%{workdir}" hudson &>/dev/null || :
+/usr/sbin/useradd -g jenkins -s /bin/false -r -c "Jenkins Continuous Build server" \
+	-d "%{workdir}" jenkins &>/dev/null || :
 
 %post
 /sbin/chkconfig --add jenkins
+
+# If we have an old hudson install, rename it to jenkins
+if test -d /var/lib/hudson; then
+    # leave a marker to indicate this came from Hudson.
+    # could be useful down the road
+    # This also ensures that the .??* wildcard matches something
+    touch /var/lib/hudson/.moving-hudson
+    mv -f /var/lib/hudson/* /var/lib/hudson/.??* /var/lib/jenkins
+    rmdir /var/lib/hudson
+    find /var/lib/jenkins -user hudson -exec chown jenkins {} + || true
+fi
+if test -d /var/run/hudson; then
+    mv -f /var/run/hudson/* /var/run/jenkins
+    rmdir /var/run/hudson
+fi
+
 
 %preun
 if [ "$1" = 0 ] ; then
@@ -115,8 +131,8 @@ exit 0
 %defattr(-,root,root)
 %dir %{_prefix}
 %{_prefix}/%{name}.war
-%attr(0755,hudson,hudson) %dir %{workdir}
-%attr(0750,hudson,hudson) /var/log/jenkins
+%attr(0755,jenkins,jenkins) %dir %{workdir}
+%attr(0750,jenkins,jenkins) /var/log/jenkins
 %config /etc/logrotate.d/%{name}
 %config /etc/init.d/%{name}
 %config /etc/sysconfig/%{name}
