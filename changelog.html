@@ -50,16 +50,16 @@ Upcoming changes</a>
 <ul class=image>
   <li class=bug>
     Fixed a bug in crontab "day of week" handling in locales where a week starts from Monday.
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-8401">issue 8401</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-8401">issue 8401</a>)
   <li class=bug>
     If a master fails to ping a slave, it should be hard-disconnected.
   <li class=bug>
     "java -jar hudson.war --daemon" was forcing umask 027. This includes Debian/redhat packages.
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-5114">issue 5114</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-5114">issue 5114</a>)
   <li class=rfe>
     If the JNLP-connected slave drops out without the master not noticing, allow the reconnection
     without rejecting it.
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-5055">issue 5055</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-5055">issue 5055</a>)
   <li class'major rfe'>
     Fixed a trademark bug that caused a considerable fiasco by renaming to Jenkins
 </ul>
@@ -68,18 +68,18 @@ Upcoming changes</a>
 <ul class=image>
   <li class=bug>
     Do not chmod/chown symlink targets in /var/lib/hudson (debian package)
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-8502">issue 8502</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-8502">issue 8502</a>)
   <li class=bug>
     M2 and M3 builds behave differently when tests fail.
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-8415">issue 8415</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-8415">issue 8415</a>)
   <li class=bug>
     Hudson was failing to record the connection termination problem in slave logs.
   <li class=bug>
     Node names can be edited to include slashes and then cannot be removed.
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-8438">issue 8437</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-8438">issue 8437</a>)
   <li class=bug>
     Fix temporarily offline slaves not showing active jobs
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-8546">issue 8546</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-8546">issue 8546</a>)
   <li class=rfe>
     Startup performance improvement
   <li class=rfe>
@@ -91,67 +91,67 @@ Upcoming changes</a>
     the browser.
   <li class=rfe>
     MavenReporter#postExecute parameter Throwable error is always empty in case of mojo failure
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-8493">issue 8493</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-8493">issue 8493</a>)
   <li class=rfe>
     Improved the error diagnosis if a build fails because of the slave connectivity problem.
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-5073">issue 5073</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-5073">issue 5073</a>)
 </ul>
 <h3><a name=v1.394>What's new in 1.394</a> (2011/01/15)</h3>
 <ul class=image>
   <li class=bug> Parsing poms fails if a module is a path to a pom (and not to a directory)
-   (<a href="http://issues.hudson-ci.org/browse/HUDSON-8445">issue 8445</a>)
+   (<a href="http://issues.jenkins-ci.org/browse/JENKINS-8445">issue 8445</a>)
   <li class=bug> M3 builds doesn't have a colorized console
-   (<a href="http://issues.hudson-ci.org/browse/HUDSON-8411">issue 8411</a>)
+   (<a href="http://issues.jenkins-ci.org/browse/JENKINS-8411">issue 8411</a>)
   <li class=bug> Bad path for submodules
-   (<a href="http://issues.hudson-ci.org/browse/HUDSON-8452">issue 8452</a>)      
+   (<a href="http://issues.jenkins-ci.org/browse/JENKINS-8452">issue 8452</a>)      
   <li class=rfe> Add more options to configure maven project building
-   (<a href="http://issues.hudson-ci.org/browse/HUDSON-8406">issue 8406</a>)
+   (<a href="http://issues.jenkins-ci.org/browse/JENKINS-8406">issue 8406</a>)
   <li class=rfe> Violations plugin tries to access nonexistant directory.
-   (<a href="http://issues.hudson-ci.org/browse/HUDSON-8418">issue 8418</a>)
+   (<a href="http://issues.jenkins-ci.org/browse/JENKINS-8418">issue 8418</a>)
   <li class=rfe> maven2 build fails due to 'RELEASE' plugin version.
-   (<a href="http://issues.hudson-ci.org/browse/HUDSON-8462">issue 8462</a>)          
+   (<a href="http://issues.jenkins-ci.org/browse/JENKINS-8462">issue 8462</a>)          
   <li class=rfe>
    Block build when downstream projects are building.
-   (<a href="http://issues.hudson-ci.org/browse/HUDSON-7046">issue 7046</a>)  
+   (<a href="http://issues.jenkins-ci.org/browse/JENKINS-7046">issue 7046</a>)  
    <li class=bug> nonRecursive option is not honored anymore when parsing pom
-   (<a href="http://issues.hudson-ci.org/browse/HUDSON-8484">issue 8484</a>)   
+   (<a href="http://issues.jenkins-ci.org/browse/JENKINS-8484">issue 8484</a>)   
    <li class=ref>
    Maven 3 support : display same logging output as a maven build with the cli
-   (<a href="http://issues.hudson-ci.org/browse/HUDSON-8490">issue 8490</a>)           
+   (<a href="http://issues.jenkins-ci.org/browse/JENKINS-8490">issue 8490</a>)           
 </ul>
 <h3><a name=v1.393>What's new in 1.393</a> (2011/01/09)</h3>
 <ul class=image>
   <li class=rfe>
    Added CharacterEncodingFilter to prevent Non-ASCII characters from getting garbled.
   <li class=bug> Maven mirrors not used when project uses Maven 2.2
-   (<a href="http://issues.hudson-ci.org/browse/HUDSON-8387">issue 8387</a>) 
+   (<a href="http://issues.jenkins-ci.org/browse/JENKINS-8387">issue 8387</a>) 
   <li class=bug> NPE while parsing POMs
-   (<a href="http://issues.hudson-ci.org/browse/HUDSON-8391">issue 8391</a>)   
+   (<a href="http://issues.jenkins-ci.org/browse/JENKINS-8391">issue 8391</a>)   
   <li class=bug> M2 POMs aren't parsed if there is a M3 control error like an invalid scope in a plugin dep.
-   (<a href="http://issues.hudson-ci.org/browse/HUDSON-8395">issue 8395</a>)  
+   (<a href="http://issues.jenkins-ci.org/browse/JENKINS-8395">issue 8395</a>)  
   <li class=bug> POMs parsing fails in m2 projects which has a wrong inheritence (m3 constraint).
-   (<a href="http://issues.hudson-ci.org/browse/HUDSON-8390">issue 8390</a>)      
+   (<a href="http://issues.jenkins-ci.org/browse/JENKINS-8390">issue 8390</a>)      
 </ul>
 <h3><a name=v1.392>What's new in 1.392</a> (2010/12/31)</h3>
 <ul class=image>
   <li class='major rfe'>
     Maven 3 support in maven-plugin. 
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-4988">issue 4988</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-4988">issue 4988</a>)
   <li class=bug>
     Turn Off "Show Friendly HTTP Error Messages" Feature on the Server Side.
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-8352">issue 8352</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-8352">issue 8352</a>)
   <li class=bug>
     Hudson installed as Windows service wasn't restarting properly
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-5090">issue 5090</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-5090">issue 5090</a>)
   <li class=bug>
     Escape quotes.
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-8270">issue 8270</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-8270">issue 8270</a>)
 </ul>
 <h3><a name=v1.391>What's new in 1.391</a> (2010/12/26)</h3>
 <ul class=image>
   <li class=bug>
     failed to build with "Trigger builds remotely" enabled.
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-8319">issue 8319</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-8319">issue 8319</a>)
   <li class=rfe>
     added a new extension point to use markup for job/user description
 </ul>
@@ -159,22 +159,22 @@ Upcoming changes</a>
 <ul class=image>
   <li class=bug>
     " (from WhateverTest)" gratuitously appended to test result detail pages.
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-5655">issue 5655</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-5655">issue 5655</a>)
   <li class=bug>
     Fixed a pipe leak to child processes.
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-8244">issue 8244</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-8244">issue 8244</a>)
   <li class=bug>
     Fixed an NPE in ComputerRetentionWork
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-3696">issue 3696</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-3696">issue 3696</a>)
   <li class=bug>
     Fixed an issue preventing to copy data on AIX, HP-UX or Linux for S/390.
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-8155">issue 8155</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-8155">issue 8155</a>)
   <li class=rfe>
     Debian package init script now honors <tt>~/.profile</tt>.
   <li class=rfe>
     Build names (e.g., "#123") can be now modified by users/plugins to arbitrary text.
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-53">issue 53</a>,
-     <a href="http://issues.hudson-ci.org/browse/HUDSON-4884">issue 4884</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-53">issue 53</a>,
+     <a href="http://issues.jenkins-ci.org/browse/JENKINS-4884">issue 4884</a>)
   <li class=rfe>
     Allow the administrator to yank out dead executors.
 </ul>
@@ -182,7 +182,7 @@ Upcoming changes</a>
 <ul class=image>
   <li class=rfe>
     Hide executors for offline nodes to conserve space in Build Executors Status list.
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-8252">issue 8252</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-8252">issue 8252</a>)
   <li class=bug>
     throw AccessDeniedException if "Authentication Token" is invalid.
     (<a href="http://hudson.361315.n4.nabble.com/-td3069369.html">hudson-ja</a>)
@@ -193,16 +193,16 @@ Upcoming changes</a>
     Failure to UDP broadcast shouldn't kill the Hudson bootup process.
   <li class=bug>
     Fixed an <tt>AbstractMethodError</tt> in listing up executors.
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-8106">issue 8106</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-8106">issue 8106</a>)
   <li class=bug>
     Slaves launched by JNLP fail to reprot their version numbers.
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-8060">issue 8060</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-8060">issue 8060</a>)
   <li class=bug>
     Restarting Hudson via debian init script didn't wait for the process to really terminate.
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-7937">issue 7937</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-7937">issue 7937</a>)
   <li class=rfe>
     Test history with long build records had a scalability problem.
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-4621">issue 4621</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-4621">issue 4621</a>)
   <li class=rfe>
     Added the build number to the test result graph tooltip.
   <li class=rfe>
@@ -222,7 +222,7 @@ Upcoming changes</a>
     Hudson is made more robust in the face of malformed console annotations.
   <li class=rfe>
     Add parameter definition type and job name to job API
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-8133">issue 8133</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-8133">issue 8133</a>)
   <li class=rfe>
     "Install as a service" now supports Vista and Windows 7.
   <li class=rfe>
@@ -236,38 +236,38 @@ Upcoming changes</a>
 <ul class=image>
   <li class=bug>
     Support CSRF protection when submitting results of an external job.
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-7961">issue 7961</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-7961">issue 7961</a>)
   <li class=bug>
     Allow build to start when polling interval is shorter than quiet period and
     we need a workspace for polling.
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-8007">issue 8007</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-8007">issue 8007</a>)
   <li class=bug>
     Fix escaping of some special characters when passing properties to Ant on Windows.
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-7657">issue 7657</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-7657">issue 7657</a>)
   <li class=bug>
     Check poll_scm_threads.
   <li class=bug>
     "Retain long standard output/error" option could not be checked when
     configuring a job.
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-7562">issue 7562</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-7562">issue 7562</a>)
   <li class=bug>
     Build number in Build History status was off-by-one.
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-7973">issue 7973</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-7973">issue 7973</a>)
   <li class=bug>
     Check whether the name of ToolInstlation is not null.
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-8088">issue 8088</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-8088">issue 8088</a>)
   <li class=bug>
     Prevent AbstractMethodError because of new method in Queue.Executor interface.
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-8033">issue 8033</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-8033">issue 8033</a>)
   <li class=bug>
     View "Delete" permission was not checked properly for showing link.
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-7605">issue 7605</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-7605">issue 7605</a>)
   <li class=bug>
     Fix javascript error in IE for some UI elements, such as one used by copyartifact plugin.
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-6756">issue 6756</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-6756">issue 6756</a>)
   <li class=bug>
     Fix serialization of array containing null elements.
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-8006">issue 8006</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-8006">issue 8006</a>)
   <li class=rfe>
     Update bundled subversion plugin to version 1.20 and ssh-slaves to version 0.14.
 </ul>
@@ -279,16 +279,16 @@ Upcoming changes</a>
 <ul class=image>
   <li class=bug>
     JDK download for auto installation was not honoring the proxy setting.
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-7327">issue 7327</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-7327">issue 7327</a>)
   <li class=bug>
     Fixed the "Not in GZIP format" error when archiving site / copying files / etc.
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-7745">issue 7745</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-7745">issue 7745</a>)
   <li class=bug>
     Fixed garbled node description.
     (<a href="http://hudson.361315.n4.nabble.com/-td3023036.html#a3023036">Hudson-ja</a>)
   <li class=bug>
     Fixed 404 Not Found error when downgrade buttons are clicked.
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-7988">issue 7988</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-7988">issue 7988</a>)
   <li class=rfe>
     Label expression textbox for "Restrict where this project can be run" now
     provides autocompletion suggestions.
@@ -298,10 +298,10 @@ Upcoming changes</a>
   <li class="major bug">
     Fix security issue where a user with job configure permission could obtain
     admin permission for their session.
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-7256">issue 7256</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-7256">issue 7256</a>)
   <li class=bug>
     Build wrappers can now decorate the launcher or logger for matrix builds.
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-7868">issue 7868</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-7868">issue 7868</a>)
   <li class=bug>
     Fixed a bug where non-existent optional dependencies can result in a cascading load failure.
   <li class=rfe>
@@ -310,13 +310,13 @@ Upcoming changes</a>
   <li class=rfe>
     Calculate "Estimated remaining time" for incremental Maven builds based on
     the modules which are actually being build.
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-6544">issue 6544</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-6544">issue 6544</a>)
 </ul>
 <h3><a name=v1.382>What's new in 1.382</a> (2010/10/24)</h3>
 <ul class=image>
   <li class=bug>
     Recognize initialization tasks from plugins.
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-5427">issue 5427</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-5427">issue 5427</a>)
   <li class=bug>
     Hudson was failing to report error messages in several situations during a build.
   <li class=bug>
@@ -328,11 +328,11 @@ Upcoming changes</a>
     Fixed a race condition.
   <li class=bug>
     Fixed issue with LabelAxis longer than 30 characters causing failures when saving matrix job configuration.
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-7500">issue 7500</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-7500">issue 7500</a>)
   <li class=rfe>
     Improved packet fragmentation in Winstone when writing out HTTP responses.
-  <li class=rfe><a href="http://wiki.hudson-ci.org/display/HUDSON/Extension+Point+for+Project+Views+Navigation">Extension Point to provide alternate UI for Project Views implemented</a>
-    </l> (<a href="http://issues.hudson-ci.org/browse/HUDSON-1467">issue 1467</a>)
+  <li class=rfe><a href="http://wiki.jenkins-ci.org/display/JENKINS//Extension+Point+for+Project+Views+Navigation">Extension Point to provide alternate UI for Project Views implemented</a>
+    </l> (<a href="http://issues.jenkins-ci.org/browse/JENKINS-1467">issue 1467</a>)
 </ul>
 <h3><a name=v1.380>What's new in 1.380</a> (2010/10/09)</h3>
 <ul class=image>
@@ -342,67 +342,67 @@ Upcoming changes</a>
     Don't let help icons get keyboard focus. This improves the keyboard navigability of the configuration page.
   <li class=bug>
     Debug message crept into the production code in 1.379.
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-7662">issue 7662</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-7662">issue 7662</a>)
   <li class=bug>
     Fixed an AbstractMethodError in the UI with plugins (such as batch task.)
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-7546">issue 7546</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-7546">issue 7546</a>)
   <li class=rfe>
     Add "proxy compatible" option to default crumb issuing algoritm
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-7518">issue 7518</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-7518">issue 7518</a>)
 </ul>
 <h3><a name=v1.379>What's new in 1.379</a> (2010/10/02)</h3>
 <ul class=image>
   <li class='major bug'>
     Fixed a pipe clogging problem that can result in a hanging build.
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-5977">issue 5977</a>,
-     <a href="http://issues.hudson-ci.org/browse/HUDSON-7572">issue 7572</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-5977">issue 5977</a>,
+     <a href="http://issues.jenkins-ci.org/browse/JENKINS-7572">issue 7572</a>)
   <li class=bug>
     Fixed a possible NPE in computing dependency changes.
   <li class=bug>
     Fixed the malformed HTTP request error recovery behavior in Winstone.
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-7201">issue 7201</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-7201">issue 7201</a>)
   <li class=bug>
     When checking module descendant relationships, SCM changelog paths were using system file separators while module paths were always using /s.
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-7611">issue 7611</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-7611">issue 7611</a>)
   <li class=bug>
     Hudson was creating multiple instances of <tt>PageDecorator</tt>s, resulting in data consistency problem.
     (<a href="http://hudson.361315.n4.nabble.com/PageDecorator-and-global-jelly-tp2552804p2552804.html">report</a>)
   <li class=bug>
     Fixed a possible AbstractMethodError 
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-7546">issue 7546</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-7546">issue 7546</a>)
   <li class=rfe>
     Supported failsafe reports for the Maven2 job type.
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-4229">issue 4229</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-4229">issue 4229</a>)
 </ul>
 <h3><a name=v1.378>What's new in 1.378</a> (2010/09/25)</h3>
 <ul class=image>
   <li class='major bug'>
     Improving the master/slave communication to avoid pipe clogging problem.
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-5977">issue 5977</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-5977">issue 5977</a>)
   <li class='major bug'>
     Rolling back to Ant 1.8.0 due to bug in Ant 1.8.1 file copy with large files.
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-7013">issue 7013</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-7013">issue 7013</a>)
   <li class=bug>
     Multiple fingerprints and "redeploy artifacts" links are added to M2 builds when multiple forked lifecycles are invovled.
   <li class=bug>
     Computation of the module build time in the m2 job was incorrect when multiple forked lifecycles are involved.
   <li class=bug>
     Standardized logic for determining alternate settings file location in Maven projects for POM parsing and actual Maven execution.
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-4963">issue 4963</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-4963">issue 4963</a>)
   <li class=bug>
-    Side effect from earlier fix of <a href="http://issues.hudson-ci.org/browse/HUDSON-7300">issue 7300</a> - some help files were linking to a now-moved file in SVN directly. Those are all changed to relative paths now.
+    Side effect from earlier fix of <a href="http://issues.jenkins-ci.org/browse/JENKINS-7300">issue 7300</a> - some help files were linking to a now-moved file in SVN directly. Those are all changed to relative paths now.
   <li class=bug>
     BuildWrapper teardowns could not get result of build for Maven2 projects.
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-6033">issue 6033</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-6033">issue 6033</a>)
   <li class=bug>
     Properly handle incremental builds of Maven projects using relative paths to modules.
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-5357">issue 5357</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-5357">issue 5357</a>)
   <li class=bug>
     Setting of MAXOPENFILES was not reflected in the debian init script.
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-5721">issue 5721</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-5721">issue 5721</a>)
   <li class=bug>
     Do not expose static resources under <tt>WEB-INF</tt> to clients
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-7457">issue 7457</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-7457">issue 7457</a>)
   <li class=rfe>
     Console annotations are added to highlight warnings/errors in Maven
   <li class=rfe>
@@ -411,29 +411,29 @@ Upcoming changes</a>
     Added a new extension point to prolong the quiet down period programmatically.
   <li class=rfe>
     Added a new extension point to make the ping behaviour customizable.
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-5249">issue 5249</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-5249">issue 5249</a>)
   <li class=rfe>
     Added a new classloader ("a la" child first for plugin)
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-5360">issue 5360</a>)    
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-5360">issue 5360</a>)    
 </ul>
 <h3><a name=v1.377>What's new in 1.377</a> (2010/09/19)</h3>
 <ul class=image>
   <li class=bug>
     Moved nulling out of buildEnvironments to cleanUp, so that node variables are available in Publishers.
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-5925">issue 5925</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-5925">issue 5925</a>)
   <li class=bug>
     Fixed a persistence problem in the label properties.
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-7378">issue 7378</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-7378">issue 7378</a>)
   <li class=bug>
     Fixed a problem in saving configuration for matrix projects with multiple label axes.
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-7281">issue 7281</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-7281">issue 7281</a>)
   <li class=bug>
     Fixed French localization problem.
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-6003">issue 6003</a>,
-     <a href="http://issues.hudson-ci.org/browse/HUDSON-7404">issue 7404</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-6003">issue 6003</a>,
+     <a href="http://issues.jenkins-ci.org/browse/JENKINS-7404">issue 7404</a>)
   <li class=rfe>
     Matrix project now supports custom workspace.
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-5077">issue 5077</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-5077">issue 5077</a>)
   <li class='major rfe'>
     Queue/execution model is extended to allow jobs that consume multiple executors on different nodes.
 </ul>
@@ -441,16 +441,16 @@ Upcoming changes</a>
 <ul class=image>
   <li class=bug>
     Error in some remote API requests since 1.373.
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-7299">issue 7299</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-7299">issue 7299</a>)
   <li class=bug>
     Fixed RSS of each user's "last builds only" are not found.
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-7384">issue 7384</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-7384">issue 7384</a>)
   <li class=bug>
     Handle initialization problem more gracefully
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-7380">issue 7380</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-7380">issue 7380</a>)
   <li class=bug>
     A matrix build configuration page with multiple nodes/labels was broken since 1.373.
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-7281">issue 7281</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-7281">issue 7281</a>)
   <li class="rfe">
     Added downgrade support for the core and plugins.
 </ul>
@@ -458,13 +458,13 @@ Upcoming changes</a>
 <ul class=image>
   <li class=bug>
     CLI login did not work for about half of the CLI commands (those defined via @CLIMethod annotation).
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-6628">issue 6628</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-6628">issue 6628</a>)
   <li class=bug>
     Add escaping for comma character for Ant properties on Windows.
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-2149">issue 2149</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-2149">issue 2149</a>)
   <li class=bug>
     Small update to empty Ant properties on Windows fix from 1.374, now also working for two consecutive empty properties.
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-7204">issue 7204</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-7204">issue 7204</a>)
   <li class=bug>
     Fixed a possible race condition during Hudson start up.
   <li class=rfe>
@@ -478,39 +478,39 @@ Upcoming changes</a>
 <ul class=image>
   <li class=bug>
     Unable to add empty Ant properties on Windows since 1.370.
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-7204">issue 7204</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-7204">issue 7204</a>)
   <li class=rfe>
     Maven2 projects now pick up Flexmojo test results automatically.
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-6893">issue 6893</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-6893">issue 6893</a>)
   <li class=rfe>
     Auto-completion can be now easily added to text boxes by plugins. 
   <li class=rfe>
     Non build modules in incremental Maven builds are now set to NOT_BUILD at the beginning of the build, already. 
   <li class=rfe>
     Plugins can now transform the console output.
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-7112">issue 7112</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-7112">issue 7112</a>)
   <li class=rfe>
     Administrator can unpin plugins that are pinned.
   <li class=rfe>
     Memory footprint reduction with fingerprints.
   <li class=rfe>
     Added "This build is disabled" on Matrix project when it disabled.
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-7266">issue 7266</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-7266">issue 7266</a>)
 </ul>
 <h3><a name=v1.373>What's new in 1.373</a> (2010/08/23)</h3>
 <ul class=image>
   <li class=bug>
     Fixed a config page regression in the matrix project.
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-7213">issue 7213</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-7213">issue 7213</a>)
   <li class=bug>
     Ant target annotation should allow colon in the target name.
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-7026">issue 7026</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-7026">issue 7026</a>)
   <li class=bug>
     Fixed a 1.372 regression in handling whitespace and other characters in label names.
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-7216">issue 7216</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-7216">issue 7216</a>)
   <li class=bug>
     Allow use of username/password parameters for CLI when using LDAP authentication.
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-6628">issue 6628</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-6628">issue 6628</a>)
   <li class=rfe>
     Axes in multi-configuration projects are now extensible.
   <li class=rfe>
@@ -520,7 +520,7 @@ Upcoming changes</a>
     (<a href="http://hudson.361315.n4.nabble.com/PATCH-Prefer-Y-axis-based-on-size-td2324178.html#a2324178">patch</a>)
   <li class=rfe>
     JUnit report archiving now captures stdout of tests run in Surefire.
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-4158">issue 4158</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-4158">issue 4158</a>)
   <li class=rfe>
     Updated bundled ssh-slaves plugin to version 0.13.
 </ul>
@@ -528,7 +528,7 @@ Upcoming changes</a>
 <ul class=image>
   <li class=rfe>
     Persist matrix-based security settings in a consistent order
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-7138">issue 7138</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-7138">issue 7138</a>)
   <li class='major rfe'>
     Jobs can now use boolean expression over labels to control where they run.
 </ul>
@@ -543,13 +543,13 @@ Upcoming changes</a>
 <ul class=image>
   <li class=bug>
     Added escaping of special characters when passing properties to Ant on Windows.
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-7108">issue 7108</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-7108">issue 7108</a>)
   <li class=bug>
     Workaround issue in IBM JVM causing intermittent ClassNotFoundExceptions.
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-5141">issue 5141</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-5141">issue 5141</a>)
   <li class=bug>
     Fixed a memory leak in Winstone
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-5119">issue 5119</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-5119">issue 5119</a>)
   <li class=rfe>
     Updated bundled cvs plugin to version 1.2.
   <li class=rfe>
@@ -559,53 +559,53 @@ Upcoming changes</a>
 <ul class=image>
   <li class="major bug">
     <code>X-Hudson</code> header not being sent in 1.368.
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-7100">issue 7100</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-7100">issue 7100</a>)
   <li class=bug>
     NPE on build after incremental Maven builds are aborted.
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-6429">issue 6429</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-6429">issue 6429</a>)
   <li class=bug>
     On-demand slaves would launch even when "only for tied jobs" is set.
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-7054">issue 7054</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-7054">issue 7054</a>)
   <li class=bug>
     Fix links to ant targets in console output view that were added in 1.367.
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-7041">issue 7041</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-7041">issue 7041</a>)
   <li class=bug>
     Avoid error with invalid or null primary view, such as in upgrade from older Hudson.
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-6938">issue 6938</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-6938">issue 6938</a>)
   <li class=bug>
     Support LogRotator deletion of old artifacts in multiconfiguration projects.
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-6925">issue 6925</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-6925">issue 6925</a>)
   <li class=bug>
     Build queue was not saved in safeRestart or safeExit.
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-6804">issue 6804</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-6804">issue 6804</a>)
   <li class=rfe>
     CLI can now work with a reverse proxy that requires BASIC auth.
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-3796">issue 3796</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-3796">issue 3796</a>)
 </ul>
 <h3><a name=v1.368>What's new in 1.368</a> (2010/07/26)</h3>
 <ul class=image>
   <li class=bug>
     Make <tt>/buildWithParameters</tt> support remote cause and user supplied cause text
     for build via authentication token, just as <tt>/build</tt> does.
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-7004">issue 7004</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-7004">issue 7004</a>)
   <li class=bug>
     Auto install of JDK when master/slave are different platforms would fail.
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-6880">issue 6880</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-6880">issue 6880</a>)
   <li class=bug>
     Modified to work with Tomcat 7.
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-6738">issue 6738</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-6738">issue 6738</a>)
 </ul>
 <h3><a name=v1.367>What's new in 1.367</a> (2010/07/16)</h3>
 <ul class=image>
   <li class=bug>
     Safe restart made Hudson unresponsive until all running jobs complete, since 1.361.
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-6649">issue 6649</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-6649">issue 6649</a>)
   <li class=bug>
     Plugins with dependencies show wrong description on installed plugins page.
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-6966">issue 6966</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-6966">issue 6966</a>)
   <li class=bug>
     Fix redirect after login when return URL has characters that need encoding.
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-6960">issue 6960</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-6960">issue 6960</a>)
   <li class=bug>
     &lt;input type='hidden'> field shouldn't be getting the plain text password value.
   <li class=rfe>
@@ -616,7 +616,7 @@ Upcoming changes</a>
     Show outline structure for Ant execution in the console output view.
   <li class=rfe>
     Remote API now supports the 'tree' filter query parameter which is more efficient and easier to use.
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-5940">issue 5940</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-5940">issue 5940</a>)
 </ul>
 <h3><a name=v1.366>What's new in 1.366</a> (2010/07/09)</h3>
 <ul class=image>
@@ -628,22 +628,22 @@ Upcoming changes</a>
   <li class=bug>
     Delete contained module builds when a maven project build is deleted, to avoid
     orphaned builds which can then affect the displayed result of a prior build.
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-6779">issue 6779</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-6779">issue 6779</a>)
   <li class=bug>
     Hide some sidepanel links that should not be shown in user-private views.
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-6832">issue 6832</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-6832">issue 6832</a>)
   <li class=bug>
     Fix for file parameters that are copied to a subdirectory of the workspace.
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-6889">issue 6889</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-6889">issue 6889</a>)
   <li class=bug>
     File parameters uploaded via the CLI are now displayed correctly on the build Parameters page.
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-6896">issue 6896</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-6896">issue 6896</a>)
   <li class=bug>
     Allowed file parameters to be downloaded even when the name contains URL-unfriendly characters.
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-6897">issue 6897</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-6897">issue 6897</a>)
   <li class=bug>
     Fixed a garbage in the raw console plain text output.
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-6034">issue 6034</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-6034">issue 6034</a>)
   <li class=bug>
     "Hudson is loading" page didn't take the user back to the same page.
   <li class=rfe>
@@ -662,13 +662,13 @@ Upcoming changes</a>
 <ul class=image>
   <li class=bug>
     Fixed a race condition where a queued build may get executed multiple times.
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-6819">issue 6819</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-6819">issue 6819</a>)
   <li class=bug>
     Some UI labels related to JUnit results were shown in the wrong locale.
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-6824">issue 6824</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-6824">issue 6824</a>)
   <li class=rfe>
     <tt>BuildWrapper</tt>s can now contribute build variables.
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-6497">issue 6497</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-6497">issue 6497</a>)
 </ul>
 <h3><a name=v1.363>What's new in 1.363</a> (2010/06/18)</h3>
 <ul class=image>
@@ -679,50 +679,50 @@ Upcoming changes</a>
   <li class=bug>
     Allow multiple dependencies between same two projects, as they may trigger under
     different conditions and with different parameters.
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-5708">issue 5708</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-5708">issue 5708</a>)
   <li class=bug>
     Timeline on build trend page should use server timezone instead of always GMT.
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-6692">issue 6692</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-6692">issue 6692</a>)
   <li class=bug>
     Don't mask the cause of the checkout related exception.
   <li class=bug>
     "who am I?" page should be visible to everyone.
   <li class=rfe>
     Avoid pointless and harmful redirection when downloading slave.jar. 
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-5752">issue 5752</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-5752">issue 5752</a>)
   <li class=rfe>
     Cache downloaded JDKs.
   <li class=bug>
     Reinstall a JDK when a different version is selected.
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-5551">issue 5551</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-5551">issue 5551</a>)
   <li class=rfe>
     Integrated community-contributed translations (Germany, Greek, Spanish, Finnish, Hungarian, Italian, Japanese, French,
     Russian, Slovenian, Dutch, Traditional Chinese, Swedish, Ukrainian, and Portuguese.) 
   <li class=rfe>
     Upgraded bundled Ant to version 1.8.1.
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-6562">issue 6562</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-6562">issue 6562</a>)
 </ul>
 <h3><a name=v1.362>What's new in 1.362</a> (2010/06/11)</h3>
 <ul class=image>
   <li class=bug>
     Restored optional container-based authentication for CLI.
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-6587">issue 6587</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-6587">issue 6587</a>)
   <li class=bug>
     Fix javascript error when a plugin uses an empty <tt>dropdownList</tt>, resulting in LOADING overlay being left up.
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-6542">issue 6542</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-6542">issue 6542</a>)
   <li class=rfe>
     Add setting so job views may show only enabled or disabled jobs.
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-6673">issue 6673</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-6673">issue 6673</a>)
   <li class=rfe>
     File parameters can now be downloaded from the build Parameters page.
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-6719">issue 6719</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-6719">issue 6719</a>)
   <li class=rfe>
     Added an ability to point to different update sites.
   <li class=rfe>
     Added a new extension point to plug in custom utility to kill processes.
   <li class=rfe>
     Added a proactive error diagnostics to look for a broken reverse proxy setup.
-    (<a href="http://wiki.hudson-ci.org/display/HUDSON/Running+Hudson+behind+Apache#RunningHudsonbehindApache-modproxywithHTTPS">report</a>)
+    (<a href="http://wiki.jenkins-ci.org/display/JENKINS//Running+Hudson+behind+Apache#RunningHudsonbehindApache-modproxywithHTTPS">report</a>)
 </ul>
 <h3><a name=v1.361>What's new in 1.361</a> (2010/06/04)</h3>
 <ul class=image>
@@ -731,42 +731,42 @@ Upcoming changes</a>
     (<a href="http://hudson.361315.n4.nabble.com/winstone-container-and-ssl-td383501.html">report</a>)
   <li class=bug>
     "java -jar hudson.war" with AJP was broken.
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-5753">issue 5753</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-5753">issue 5753</a>)
   <li class=bug>
     Safe restart stopped working on protected Hudson since 1.359.
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-6667">issue 6667</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-6667">issue 6667</a>)
   <li class=bug>
     Parameterized jobs did not use configured quiet period.
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-6660">issue 6660</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-6660">issue 6660</a>)
   <li class=bug>
     Fix form data conflict when fingerprinting is used with Promoted Builds plugin.
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-6642">issue 6642</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-6642">issue 6642</a>)
   <li class=bug>
     Avoid possible exception at startup when some plugins have optional dependencies.
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-6435">issue 6435</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-6435">issue 6435</a>)
   <li class=bug>
     Add <tt>autocomplete="off"</tt> for LDAP managerDN and managerPassword fields.
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-3586">issue 3586</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-3586">issue 3586</a>)
   <li class=bug>
     Set a TCP timeout when slaves connect to the master.
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-6262">issue 6262</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-6262">issue 6262</a>)
   <li class=bug>
     File parameter builds started with the CLI command no longer throw an NPE.
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-4296">issue 4296</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-4296">issue 4296</a>)
   <li class=bug>
     Workaround for bug in Glassfish Enterprise.
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-6459">issue 6459</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-6459">issue 6459</a>)
   <li class=bug>
     Ensure nested <tt>f:repeatable</tt> content does not inherit outer list when inner list is null.
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-6679">issue 6679</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-6679">issue 6679</a>)
   <li class=rfe>
     Add two new permalinks to job pages: "Last unstable build" and "Last unsuccessful build".
   <li class=rfe>
     Allow the build number to be set so long as it's still bigger than the last build.
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-4930">issue 4930</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-4930">issue 4930</a>)
   <li class=rfe>
     Copied jobs are now disabled until configuration is saved, so they don't start building before ready.
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-2494">issue 2494</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-2494">issue 2494</a>)
   <li class=rfe>
     Reduced logging from jmDNS.
 </ul>
@@ -774,19 +774,19 @@ Upcoming changes</a>
 <ul class=image>
   <li class=bug>
     A Java6 dependency had crept in in 1.359.
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-6653">issue 6653</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-6653">issue 6653</a>)
   <li class=bug>
     Workaround for bug in Glassfish Enterprise.
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-6459">issue 6459</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-6459">issue 6459</a>)
   <li class=rfe>
     Added an extension point to control the assignment of tasks to nodes.
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-6598">issue 6598</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-6598">issue 6598</a>)
 </ul>
 <h3><a name=v1.359>What's new in 1.359</a> (2010/05/21)</h3>
 <ul class=image>
   <li class=bug>
     Accept latest JRockit JVM release as a compatible JVM.
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-6556">issue 6556</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-6556">issue 6556</a>)
   <li class=rfe>
     Hudson now broadcasts itself in DNS multicast at "_hudson._tcp.local" to facilitate auto-discovery from other tools
   <li class=rfe>
@@ -796,22 +796,22 @@ Upcoming changes</a>
 <ul class=image>
   <li class=bug>
     Too much memory used by stdout/stderr from test results.
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-6516">issue 6516</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-6516">issue 6516</a>)
   <li class=bug>
     Fixed a memory leak in Winstone sessions.
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-5119">issue 5119</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-5119">issue 5119</a>)
   <li class=bug>
     Fix to handle usernames with colon character on Windows.
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-6476">issue 6476</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-6476">issue 6476</a>)
   <li class=bug>
     Fixed the port number handling problem in debian init script.
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-6474">issue 6474</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-6474">issue 6474</a>)
   <li class=bug>
     Fix FilePath.getParent() handling of edge cases.
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-6494">issue 6494</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-6494">issue 6494</a>)
   <li class=bug>
     Fix css conflict introduced in 1.357 that caused missing data display in analysis plugins.
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-6496">issue 6496</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-6496">issue 6496</a>)
   <li class=rfe>
     Support "optional=true" parameter for @Extension.
   <li class=rfe>
@@ -825,25 +825,25 @@ Upcoming changes</a>
 <ul class=image>
   <li class=bug>
     Maven builds abort unexpectedly due to a SocketTimeoutException on machine with poor resources.
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-3273">issue 3273</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-3273">issue 3273</a>)
   <li class=bug>
     Fix incorrect handling of ".." in paths with mix of / and \ separators since 1.349.
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-5951">issue 5951</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-5951">issue 5951</a>)
   <li class=bug>
     Javadoc publishing should not fail build if javadoc is already current.
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-6332">issue 6332</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-6332">issue 6332</a>)
   <li class=bug>
     Fix download of files/artifacts larger than 2GB.
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-6351">issue 6351</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-6351">issue 6351</a>)
   <li class=bug>
     Build page may not list all of the artifacts since 1.348.
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-6371">issue 6371</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-6371">issue 6371</a>)
   <li class=bug>
     Add workaround for Opera 10.52/53 bug causing error in saving job configuration.
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-6424">issue 6424</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-6424">issue 6424</a>)
   <li class=bug>
     Fix createSymlink problem on *nix systems that do not use GNUCLibrary since 1.356.
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-6437">issue 6437</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-6437">issue 6437</a>)
   <li class=bug>
     Hide add/edit description link on test result pages when user does not have
     permission to submit a description.
@@ -854,13 +854,13 @@ Upcoming changes</a>
     Add "LOADING" overlay on global and job config pages until form is ready for use.
   <li class=rfe>
     Email recipient lists now support build parameters.
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-6394">issue 6394</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-6394">issue 6394</a>)
   <li class=rfe>
     Make it easier to see the latest update jobs on the Update Center page.
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-4255">issue 4255</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-4255">issue 4255</a>)
   <li class=rfe>
     Allow plugins to use forms with an onsubmit handler, and fix "no-json" handling.
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-5927">issue 5927</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-5927">issue 5927</a>)
   <li class=rfe>
     Updated bundled subversion plugin to version 1.17.
 </ul>
@@ -868,13 +868,13 @@ Upcoming changes</a>
 <ul class=image>
   <li class=bug>
     Fix <tt>StringIndexOutOfBoundsException</tt> in console log from <tt>UrlAnnotator</tt>.
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-6252">issue 6252</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-6252">issue 6252</a>)
   <li class=bug>
     Fixed potential deadlock between saving project config and getting project page.
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-6269">issue 6269</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-6269">issue 6269</a>)
   <li class=bug>
     Fixed timeline display on build time trend page.
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-6439">issue 6439</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-6439">issue 6439</a>)
   <li class=bug>
     Fixed garbled response of XML API if xpath is specified.
     (<a href="http://n4.nabble.com/Hudson-API-XML-td1723766.html#a1723766">ja@hudson.dev.javanet</a>)
@@ -882,7 +882,7 @@ Upcoming changes</a>
     Fix broken links for stopping jobs in executor list on pages for slave nodes or filtered views.
   <li class=bug>
     Fixed <tt>NoSuchMethodError</tt> with Maven and Ivy plugins.
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-6311">issue 6311</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-6311">issue 6311</a>)
   <li class=rfe>
     Extension points can be now sorted.
 </ul>
@@ -891,10 +891,10 @@ Upcoming changes</a>
   <li class=bug>
     Colored ball image at top of build pages was broken for Hudson in some web
     containers (fixed by removing workaround for a Firefox bug fixed since 3.0.5/Dec2008).
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-2341">issue 2341</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-2341">issue 2341</a>)
   <li class=bug>
     Console page while build is running did not wrap lines when viewed in IE.
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-5869">issue 5869</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-5869">issue 5869</a>)
   <li class=bug>
     Fixed build history to indicate test failure for MavenBuild and MavenModuleSetBuild.
   <li class=bug>
@@ -914,18 +914,18 @@ Upcoming changes</a>
 <ul class=image>
   <li class=bug>
     POM parsing was still using the module root as the base for relative paths for alternate settings files.
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-6080">issue 6080</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-6080">issue 6080</a>)
   <li class=bug>
     Fix dynamic updates of build history table when CSRF protection is turned on.
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-6072">issue 6072</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-6072">issue 6072</a>)
   <li class=bug>
     Improved the error reporting mechanism in LDAP setting.
   <li class=bug>
     Raw console output contains garbage.
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-6034">issue 6034</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-6034">issue 6034</a>)
   <li class=bug>
     Fixed a file handle leak in the slave connection.
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-6137">issue 6137</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-6137">issue 6137</a>)
   <li class=bug>
     Quiet period wasn't taking effect properly when doing parameterized builds.
 </ul>
@@ -935,31 +935,31 @@ Upcoming changes</a>
     Tagging a repository can result in NPE. 
   <li class=bug>
     Fix possible form submission error when using multiple combobox elements.
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-6025">issue 6025</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-6025">issue 6025</a>)
   <li class=bug>
     Better escaping of test case names in test results pages.
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-5982">issue 5982</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-5982">issue 5982</a>)
   <li class=bug>
     Make radio buttons work in repeatable content, such as a build step.
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-5028">issue 5028</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-5028">issue 5028</a>)
   <li class=bug>
     Fixed the handling of verifying that the POM path entered for Maven projects exists.
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-4693">issue 4693</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-4693">issue 4693</a>)
   <li class=rfe>
     Added link to builds in buildTimeTrend
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-3993">issue 3993</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-3993">issue 3993</a>)
 </ul>
 <h3><a name=v1.352>What's new in 1.352</a> (2010/03/19)</h3>
 <ul class=image>
   <li class=bug>
     Fixed a file handle leak when a copy fails.
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-5899">issue 5899</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-5899">issue 5899</a>)
   <li class=bug>
     Replace '&gt;' with '_' in username, as already done for '&lt;'.
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-5833">issue 5833</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-5833">issue 5833</a>)
   <li class=bug>
     Fix <tt>editableComboBox</tt> to select item when mouse click takes more than 100ms.
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-2722">issue 2722</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-2722">issue 2722</a>)
   <li class=bug>
     Fixed NPE when configuring a view without "Regular expression".
   <li class=bug>
@@ -969,15 +969,15 @@ Upcoming changes</a>
     (<a href="http://n4.nabble.com/Resolution-of-help-files-in-jelly-entries-tp1592533p1592533.html">report</a>)
   <li class=bug>
     Fixed Maven site goal archiving from slaves.
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-5943">issue 5943</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-5943">issue 5943</a>)
   <li class=bug>
     Fixed a regression with NetBeans Hudson plugin progressive console output.
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-5941">issue 5941</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-5941">issue 5941</a>)
   <li class=bug>
     Fixed a situation where a failure in plugin start up can prevent massive number of job loss. 
   <li class=rfe>
     Supported JBoss EAP 5.0.0 GA.
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-5922">issue 5922</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-5922">issue 5922</a>)
   <li class=rfe>
     CLI commands on protected Hudson now asks a password interactively, if run on Java6.
   <li class=rfe>
@@ -1003,11 +1003,11 @@ Upcoming changes</a>
 <ul class=image>
   <li class=bug>
     Fix handling of relative paths in alternate settings.xml path for Maven projects.
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-4693">issue 4693</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-4693">issue 4693</a>)
   <li class=bug>
     Alternate settings, private repository, profiles, etc were not used in embedded Maven for
     deploy publisher.
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-4939">issue 4939</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-4939">issue 4939</a>)
   <li class=bug>
     Make <tt>editableComboBox</tt> work in repeatable content, such as a build step.
   <li class=bug>
@@ -1015,16 +1015,16 @@ Upcoming changes</a>
     fixed this to use proper HTML rendering when appropriate.
   <li class=bug>
     '&lt;' and '&amp;' in the console output was not escaped since 1.349
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-5852">issue 5852</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-5852">issue 5852</a>)
   <li class='major bug'>
     Fixed an <tt>AbstractMethodError</tt> in SCM polling under some circumstances.
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-5756">issue 5756</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-5756">issue 5756</a>)
   <li class='major bug'>
     Fixed a <tt>ClassCastException</tt> in the Subversion plugin - now using Subversion plugin 1.13.
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-5827">issue 5827</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-5827">issue 5827</a>)
   <li class=bug>
     The Maven Integration plugin link in the Update Center was going to a dead location.
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-4811">issue 4811</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-4811">issue 4811</a>)
   <li class=bug>
     On RPM/DEB/etc installation, don't offer the self upgrade. It should be done by the native package manager.
     (<a href="http://n4.nabble.com/RPM-for-Hudson-1-345-does-not-Upgrade-Automatically-tp1579580p1579580.html">report</a>)
@@ -1033,10 +1033,10 @@ Upcoming changes</a>
   <li class=rfe>
     Added advanced option to LogRotator to allow for removing artifacts from old builds
     without removing the logs, history, etc.
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-834">issue 834</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-834">issue 834</a>)
   <li class=rfe>
     Authentication support in Hudson CLI.
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-3796">issue 3796</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-3796">issue 3796</a>)
   <li class=rfe>
     Added console annotation support to SCM polling logs.
 </ul>
@@ -1044,13 +1044,13 @@ Upcoming changes</a>
 <ul class=image>
   <li class=bug>
     Fix deserialization problem with fields containing double underscore.
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-5768">issue 5768</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-5768">issue 5768</a>)
   <li class=bug>
     Fix deserialization problem for Exception objects where the XML has bad/old data.
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-5769">issue 5769</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-5769">issue 5769</a>)
   <li class=bug>
     Fix serialization problem with empty CopyOnWriteMap.Tree.
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-5776">issue 5776</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-5776">issue 5776</a>)
   <li class=bug>
     Fixed a bug that can cause 404 in the form validation check.
   <li class=rfe>
@@ -1065,7 +1065,7 @@ Upcoming changes</a>
     (<a href="http://n4.nabble.com/preconfigured-hudson-war-tp1575216p1575216.html">report</a>)
   <li class=rfe>
     Added an extension point to annotate console output.
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-2137">issue 2137</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-2137">issue 2137</a>)
 </ul>
 <h3><a name=v1.348>What's new in 1.348</a> (2010/02/26)</h3>
 <ul class=image>
@@ -1078,55 +1078,55 @@ Upcoming changes</a>
 <ul class=image>
   <li class=bug>
     Fix javascript problem showing test failure detail for test name with a quote character.
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-1544">issue 1544</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-1544">issue 1544</a>)
   <li class=bug>
     Hudson can incorrectly configure labels for the master when bleeding edge EC2 plugin is used.
   <li class=bug>
     Fixed the regression wrt the whitespace trimming caused by 1.346.
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-5633">issue 5633</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-5633">issue 5633</a>)
   <li class=bug>
     Under some circumstances, Hudson can incorrectly delete the temporary directory itself.
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-5642">issue 5642</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-5642">issue 5642</a>)
   <li class=bug>
     Newlines in MAVEN_OPTS environment variable can cause problems in other contexts.
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-5651">issue 5651</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-5651">issue 5651</a>)
   <li class=rfe>
     Improved the form validation mechanism to support multiple controls.
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-5610">issue 5610</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-5610">issue 5610</a>)
   <li class=rfe>
     Added message to slave log when it has successfully come online.
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-5630">issue 5630</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-5630">issue 5630</a>)
 </ul>
 <h3><a name=v1.346>What's new in 1.346</a> (2010/02/12)</h3>
 <ul class=image>
   <li class=bug>
     Maven modules should not be buildable when the parent project is disabled.
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-1375">issue 1375</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-1375">issue 1375</a>)
   <li class=bug>
     Fixed the broken quiet period implementation when polling interval is shorter than
     the quiet period.  (Changes in SCM impls are needed for this to take effect.) 
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-2180">issue 2180</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-2180">issue 2180</a>)
   <li class=bug>
     Escape username in URLs in case it contains special characters such as "#".
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-2610">issue 2610</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-2610">issue 2610</a>)
   <li class=bug>
     Fix sidepanel link for People to be visible and show view-specific info when appropriate.
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-5443">issue 5443</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-5443">issue 5443</a>)
   <li class=bug>
     Improved HTML rendering, not using closing tags that do not exist in HTML.
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-5458">issue 5458</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-5458">issue 5458</a>)
   <li class=bug>
     Show better error message for missing view type selection when creating a view.
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-5469">issue 5469</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-5469">issue 5469</a>)
   <li class=bug>
     Hudson wasn't properly streaming a large external build submission,
     which can result in OOME and unresponsiveness.
   <li class=rfe>
     Use fixed-width font in text area for shell/batch build steps.
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-5471">issue 5471</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-5471">issue 5471</a>)
   <li class=rfe>
     Use user selected icon size on People page.
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-5447">issue 5447</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-5447">issue 5447</a>)
   <li class=rfe>
     Speed/footprint improvement in the HTML rendering.
 </ul>
@@ -1134,34 +1134,34 @@ Upcoming changes</a>
 <ul class=image>
   <li class='major bug'>
     Update center retrieval, "build now" link, and real-time console update was broken in 1.344.
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-5536">issue 5536</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-5536">issue 5536</a>)
   <li class=bug>
-    Fixed the backward incompatibility introduced in HUDSON-5391 fix in 1.344.
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-5391">issue 5391</a>)
+    Fixed the backward incompatibility introduced in JENKINS-5391 fix in 1.344.
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-5391">issue 5391</a>)
 </ul>
 <h3><a name=v1.344>What's new in 1.344</a> (2010/02/05)</h3>
 <ul class=image>
   <li class=bug>
     Removed the forced upper casing in parameterized builds.
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-5391">issue 5391</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-5391">issue 5391</a>)
   <li class=bug>
     Password parameter on the disk should be encrypted.
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-5420">issue 5420</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-5420">issue 5420</a>)
   <li class=bug>
     Duplicate entries on Upstream/Downstream project with "Build modules in parallel".
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-5293">issue 5293</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-5293">issue 5293</a>)
   <li class=bug>
     "Projects tied on" should be "Projects tied to".
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-5451">issue 5451</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-5451">issue 5451</a>)
   <li class=bug>
     Fixed the bug that prevents update center metadata retrieval in Jetty.
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-5210">issue 5210</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-5210">issue 5210</a>)
   <li class=rfe>
     Show which plugins have already been upgraded in Plugin Manager.
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-2313">issue 2313</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-2313">issue 2313</a>)
   <li class=rfe>
     Show Hudson upgrade status on manage page instead of offering same upgrade again.
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-3055">issue 3055</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-3055">issue 3055</a>)
   <li class=rfe>
     Make badges in build history line up.
     (<a href="http://n4.nabble.com/Align-lock-sign-of-keep-build-forever-td1016427.html">report</a>)
@@ -1170,23 +1170,23 @@ Upcoming changes</a>
 <ul class=image>
   <li class=bug>
     Don't report a computer as idle if it running the parent job for a matrix project.
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-5049">issue 5049</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-5049">issue 5049</a>)
   <li class=bug>
     Improve error message for a name conflict when renaming a job.
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-1916">issue 1916</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-1916">issue 1916</a>)
   <li class=bug>
     Job description set via the remote API was not saved.
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-5351">issue 5351</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-5351">issue 5351</a>)
   <li class=bug>
     Work around a JVM bug on Windows that causes the "Access denied" error
     while creating a temp file.
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-5313">issue 5313</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-5313">issue 5313</a>)
   <li class=bug>
     Fixed a NPE in the update center with the container authentication mode.
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-5382">issue 5382</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-5382">issue 5382</a>)
   <li class=bug>
     Global MAVEN_OPTS for Maven projects wasn't getting loaded properly for configuration.
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-5405">issue 5405</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-5405">issue 5405</a>)
   <li class=bug>
     Fix for parameterized project with choice parameter value that has &lt; or &gt; character.
     (<a href="http://n4.nabble.com/Fwd-IllegalArgumentException-when-use-parametrised-build-with-choice-parametr-td1311451.html#a1311451">report</a>)
@@ -1195,69 +1195,69 @@ Upcoming changes</a>
     old ones later.
   <li class=rfe>
     Move form to adjust logging levels to its own page and include table of configured levels.
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-2210">issue 2210</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-2210">issue 2210</a>)
   <li class=rfe>
     Allow the administrator to control the host names via a system property "host.name" per slave,
     in case auto-detection fails.
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-5373">issue 5373</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-5373">issue 5373</a>)
   <li class=rfe>
     Introduced a new extension point for test result parsers.
     (<a href="http://n4.nabble.com/Review-requested-Test-Result-Refactoring-tp978100p978100.html">discussion</a>)
   <li class=rfe>
     Data loading is made more robust in the face of linkage failures.
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-5383">issue 5383</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-5383">issue 5383</a>)
   <li class=rfe>
     Auto-detect if Hudson is run in Solaris <a href="http://www.sun.com/bigadmin/content/selfheal/smf-quickstart.jsp">SMF</a>
     and provide restart capability.
     (<a href="http://n4.nabble.com/Self-restart-not-available-when-running-as-Solaris-SMF-tp1289605p1289605.html">report</a>)
   <li class=rfe>
     Formalized an extension point to control priority among builds in the queue.
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-833">issue 833</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-833">issue 833</a>)
 </ul>
 <h3><a name=v1.342>What's new in 1.342</a> (2010/01/22)</h3>
 <ul class=image>
   <li class=bug>
     Commands run on slaves (such as SCM operations) were not printed to the log
     the way they would be when run on master.
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-5296">issue 5296</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-5296">issue 5296</a>)
   <li class=bug>
     Downstream jobs could fail to trigger when using per-project read permissions.
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-5265">issue 5265</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-5265">issue 5265</a>)
   <li class=bug>
     Update lastStable/lastSuccessful symlinks on filesystem later in build process to avoid
     incorrectly updating links when build fails in post-build actions, and links briefly
     pointing to a build that is not yet complete.
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-2543">issue 2543</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-2543">issue 2543</a>)
   <li class=bug>
     Debian package no longer changes the permissions and owner of the jobs and .ssh directory.
     This is to improve upgrade speed and so that ssh works properly after upgrading.
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-4047">issue 4047</a> and
-     <a href="http://issues.hudson-ci.org/browse/HUDSON-5112">issue 5112</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-4047">issue 4047</a> and
+     <a href="http://issues.jenkins-ci.org/browse/JENKINS-5112">issue 5112</a>)
   <li class=bug>
     Automatic tool installation wasn't honoring proxy setting.
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-5271">issue 5271</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-5271">issue 5271</a>)
   <li class=bug>
     Fixed a bug that induces a NPE during list view column construction.
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-5061">issue 5061</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-5061">issue 5061</a>)
   <li class=bug>
     Fixed a bug that can cause Hudson to fail to encode non-ASCII characters in URL.
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-5155">issue 5155</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-5155">issue 5155</a>)
   <li class=bug>
     Added "process-test-classes" phase to Maven intercepter.
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-2226">issue 2226</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-2226">issue 2226</a>)
   <li class=bug>
     Fixed a regression in the remote API in 1.341.
     (<a href="http://n4.nabble.com/GZIP-encoded-response-only-for-css-js-resources-tp1010358p1010358.html">report</a>)
   <li class=rfe>
     Improved error diagnostics when failing to auto install Maven/Ant.
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-5272">issue 5272</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-5272">issue 5272</a>)
   <li class=rfe>
     Infer the default e-mail address more smartly with user IDs like "DOMAIN\user" (often seen in Windows)
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-5164">issue 5164</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-5164">issue 5164</a>)
   <li class=rfe>
     The hudson.model.Run.ArtifactList.treeCutoff property should not limit the number 
     of artifacts shown by the API.
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-5247">issue 5247</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-5247">issue 5247</a>)
   <li class=rfe>
     Spanish translation made a great progress.
 </ul>
@@ -1265,15 +1265,15 @@ Upcoming changes</a>
 <ul class=image>
   <li class=bug>
     Completed fix started in 1.325 for updating bundled plugins, now working when security is enabled.
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-3662">issue 3662</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-3662">issue 3662</a>)
   <li class=bug>
     TemporarySpaceMonitor and DiskSpaceMonitor fail to instantiate on fresh systems.
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-5162">issue 5162</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-5162">issue 5162</a>)
   <li class=bug>
     /tmp space monitoring didn't work if /tmp is filled up completely. 
   <li class=rfe>
     Plugins can now control how builds are triggered when they declare downstream jobs.
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-5236">issue 5236</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-5236">issue 5236</a>)
   <li class=rfe>
     Hudson now detects a cyclic dependencies among plugins and report the error gracefully.
   <li class=rfe>
@@ -1283,7 +1283,7 @@ Upcoming changes</a>
     (<a href="http://n4.nabble.com/GZIP-encoded-response-only-for-css-js-resources-tp1010358p1010358.html">report</a>)
   <li class=rfe>
     Link to project changes summary instead of this build's changes for "still unstable" email.
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-3283">issue 3283</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-3283">issue 3283</a>)
   <li class=rfe>
     SCM retry count and "Block build when upstream project is building" is now available on matrix projects.
     (<a href="http://n4.nabble.com/Advanced-configuration-in-matrix-projects-td1011215.html#a1011215">report</a>)
@@ -1292,10 +1292,10 @@ Upcoming changes</a>
 <ul class=image>
   <li class=bug>
     Non ASCII chars get mangled when a new user is created.
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-2026">issue 2026</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-2026">issue 2026</a>)
   <li class=bug>
     Fixed garbled mail text when default encoding is not UTF-8.
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-1811">issue 1811</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-1811">issue 1811</a>)
   <li class=bug>
     Fixed a bug in the log rotation setting of RPM packages.
     (<a href="http://n4.nabble.com/Hudson-logrotate-for-RPM-incorrect-tp999444p999444.html">report</a>)
@@ -1306,57 +1306,57 @@ Upcoming changes</a>
     (<a href="http://n4.nabble.com/Version-1-329-Java-Error-2-tp387349p387349.html">report</a>)
   <li class=rfe>
     User IDs in Hudson are now case preserving but case insensitive.
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-4354">issue 4354</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-4354">issue 4354</a>)
   <li class=rfe>
     CVS support is separated into a plugin, although it's still bundled by default for compatibility.
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-3101">issue 3101</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-3101">issue 3101</a>)
 </ul>
 <h3><a name=v1.339>What's new in 1.339</a> (2009/12/24)</h3>
 <ul class=image>
   <li class=bug>
     <tt>slave.jar</tt> incorrectly shipped with a version number indicating a private build.
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-5138">issue 5138</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-5138">issue 5138</a>)
   <li class=bug>
     Global MAVEN_OPTS weren't saving due to TopLevelItemDescriptors not being configured in global configuration.
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-5142">issue 5142</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-5142">issue 5142</a>)
   <li class=bug>
     Make maven project more resilient to exceptions from plugins.
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-3279">issue 3279</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-3279">issue 3279</a>)
   <li class=rfe>
     Add the ability to configure low-disk space thresholds.
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-2552">issue 2552</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-2552">issue 2552</a>)
   <li class=rfe>
     Allow BuildWrapper tearDown code to detect when the build has failed.
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-2485">issue 2485</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-2485">issue 2485</a>)
   <li class=rfe>
     Add help regarding "Auto" repository browser selection and add support
     for this in Subversion plugin.
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-2082">issue 2082</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-2082">issue 2082</a>)
   <li class=rfe>
     Introduced a mechanism so that writing XSS-free code is easier.
-    (<a href="http://wiki.hudson-ci.org/display/HUDSON/Jelly+and+XSS+prevention">discussion</a>)
+    (<a href="http://wiki.jenkins-ci.org/display/JENKINS//Jelly+and+XSS+prevention">discussion</a>)
 </ul>
 <h3><a name=v1.338>What's new in 1.338</a> (2009/12/18)</h3>
 <ul class=image>
   <li class=rfe>
     Maven projects will now use per-project MAVEN_OPTS if defined first, then global MAVEN_OPTS if defined, and finally
     as fallback, MAVEN_OPTS environment variable on executor.
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-2932">issue 2932</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-2932">issue 2932</a>)
   <li class=rfe>
     Expose upstream cause details via remote API.
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-5074">issue 5074</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-5074">issue 5074</a>)
 </ul>
 <h3><a name=v1.337>What's new in 1.337</a> (2009/12/11)</h3>
 <ul class=image>
   <li class=bug>
     Matrix parent build shouldn't consume an executor.
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-936">issue 936</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-936">issue 936</a>)
   <li class=bug>
     Exceptions in one publisher shouldn't block all other publishers from running.
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-5023">issue 5023</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-5023">issue 5023</a>)
   <li class=bug>
     Fixed <tt>OutOfMemoryError</tt> in JNLP slaves that are running for too long.
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-3406">issue 3406</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-3406">issue 3406</a>)
   <li class=bug>
     Auto installer for Maven couldn't be configured after the fact.
   <li class=bug>
@@ -1364,32 +1364,32 @@ Upcoming changes</a>
     (<a href="http://n4.nabble.com/f-validateButton-of-a-select-field-s-value-tp948691p948691.html">report</a>)
   <li class=bug>
     Fixed a possible "XYZ is missing its descriptor" storm.
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-5067">issue 5067</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-5067">issue 5067</a>)
   <li class=rfe>
     Group available plugins in Plugin Manager by category.
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-1836">issue 1836</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-1836">issue 1836</a>)
   <li class=rfe>
     Add sorting and link to directory browser for artifact list and tree display.
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-4976">issue 4976</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-4976">issue 4976</a>)
   <li class=rfe>
     Make links in build history for a view stay under that view.
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-5021">issue 5021</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-5021">issue 5021</a>)
   <li class=rfe>
     Automatically install dependent plugins.
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-4983">issue 4983</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-4983">issue 4983</a>)
   <li class='major rfe'>
     Implemented a proper serialization of multi-classloader object graph.
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-5048">issue 5048</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-5048">issue 5048</a>)
 </ul>
 <h3><a name=v1.336>What's new in 1.336</a> (2009/11/28)</h3>
 <ul class=image>
   <li class=bug>
     Update or remove lastSuccessful/lastStable symlinks on filesystem as appropriate
     when a build is deleted.
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-1986">issue 1986</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-1986">issue 1986</a>)
   <li class=bug>
     In-demand strategy could not relaunch slave nodes since 1.302.
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-3890">issue 3890</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-3890">issue 3890</a>)
   <li class=bug>
     Actual cause for slave going offline was always masked by channel-terminated cause.
   <li class=bug>
@@ -1403,57 +1403,57 @@ Upcoming changes</a>
     and guests were allowed to edit the user profile for anonymous user.
   <li class=bug>
     Debian package now demands full JRE, not just a headless JRE.
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-4879">issue 4879</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-4879">issue 4879</a>)
   <li class=bug>
     Avoid exception if a plugin provides null for a dynamic node label.
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-4924">issue 4924</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-4924">issue 4924</a>)
   <li class=bug>
     If restart is not supported, explain why.
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-4876">issue 4876</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-4876">issue 4876</a>)
   <li class=bug>
     Matrix configuration builds should continue even when Hudson is about to shut down.
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-4873">issue 4873</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-4873">issue 4873</a>)
   <li class=bug>
     Send build status email to valid addresses rather than aborting for one invalid address.
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-4927">issue 4927</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-4927">issue 4927</a>)
   <li class=bug>
     Smart JDK/Maven/Ant auto installers aren't available for existing tool configurations.
   <li class=bug>
     Hudson can now run gracefully (albeit bit slowly) where JNA is not available.
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-4820">issue 4820</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-4820">issue 4820</a>)
   <li class=rfe>
     Add ability to delete users from Hudson.
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-1867">issue 1867</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-1867">issue 1867</a>)
   <li class=rfe>
     Gracefully detect the double loading of JNA instead of failing later with <tt>NoClassDefFoundError</tt>
-    (<a href="http://wiki.hudson-ci.org/display/HUDSON/JNA+is+already+loaded">detail</a>)
+    (<a href="http://wiki.jenkins-ci.org/display/JENKINS//JNA+is+already+loaded">detail</a>)
   <li class=rfe>
     Introduced a structure around the initialization process for better reporting and etc.
   <li class=rfe>
     Debian packages creates Hudson user with <tt>/bin/bash</tt> to accomodate some tools that want a valid shell.
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-4830">issue 4830</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-4830">issue 4830</a>)
 </ul>
 <h3><a name=v1.335>What's new in 1.335</a> (2009/11/20)</h3>
 <ul class=image>
   <li class=bug>
     Space in axis value for matrix type project was lost on reconfiguration.
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-2360">issue 2360</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-2360">issue 2360</a>)
   <li class=bug>
     Remember me did not work with unix authentication.
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-3057">issue 3057</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-3057">issue 3057</a>)
   <li class=bug>
     Node variables not passed through to Maven jobs.
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-4030">issue 4030</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-4030">issue 4030</a>)
   <li class=bug>
     Fix handling of non-ASCII characters in external job submission.
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-4877">issue 4877</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-4877">issue 4877</a>)
   <li class=bug>
     Job assigned to label that no longer has any nodes generates exception since 1.330.
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-4878">issue 4878</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-4878">issue 4878</a>)
   <li class=bug>
     Custom workspace on Windows with just a drive letter or using forward slashes in path
     failed to build in 1.334.
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-4894">issue 4894</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-4894">issue 4894</a>)
   <li class=bug>
     Core version number in plugin manager warning message was missing in 1.334.
   <li class=bug>
@@ -1465,23 +1465,23 @@ Upcoming changes</a>
 <ul class=image>
   <li class='major bug'>
     Fixed a possible exception in submitting forms and obtaining update center metadata with Winstone in 1.333.
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-4804">issue 4804</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-4804">issue 4804</a>)
   <li class='major bug'>
     Remoting layer was unable to kill remote processes. Prevented Mercurial plugin from implementing poll timeout on slaves.
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-4611">issue 4611</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-4611">issue 4611</a>)
   <li class=bug>
     Display of console output as plain text did not work in browsers since 1.323.
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-4557">issue 4557</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-4557">issue 4557</a>)
   <li class=bug>
     Show "Latest Test Results" link even when a new build is running.
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-4580">issue 4580</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-4580">issue 4580</a>)
   <li class=bug>
     Fix broken links for failed tests on build page for a matrix type project.
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-4765">issue 4765</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-4765">issue 4765</a>)
   <li class=bug>
     "Enable project-based security" always comes up unchecked on configure pages in 1.333,
     so project permissions are lost if not rechecked before clicking Save.
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-4826">issue 4826</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-4826">issue 4826</a>)
   <li class=bug>
     Project read permission was not enforced via /jobCaseInsensitive/jobname path.
   <li class=bug>
@@ -1491,25 +1491,25 @@ Upcoming changes</a>
     Fixed the over zealous escaping in the inlined unit test failure report.
   <li class=bug>
     Fixed <tt>OutOfMemoryError</tt> in Winp
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-4058">issue 4058</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-4058">issue 4058</a>)
   <li class=bug>
     Write log message and ignore unrecognized permissions when loading XML.
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-4573">issue 4573</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-4573">issue 4573</a>)
   <li class=bug>
     Fix in stapler so we don't redirect to "." which causes problem in some containers.
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-4787">issue 4787</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-4787">issue 4787</a>)
   <li class=bug>
     List counts for duplicate cause entries for a build rather than listing many times.
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-4831">issue 4831</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-4831">issue 4831</a>)
   <li class=rfe>
     Plugin manager now shows warning for upgrade/install of plugins into a Hudson that
     is older than the plugin was built for.
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-541">issue 541</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-541">issue 541</a>)
   <li class=rfe>
     CLI "build" command now supports passing parameters.
   <li class=rfe>
     Job should provide doDescription to allow easy manipulation over http
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-4802">issue 4802</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-4802">issue 4802</a>)
   <li class=rfe>
     Improvement in the caching of the view templates.
   <li class=rfe>
@@ -1522,10 +1522,10 @@ Upcoming changes</a>
     (<a href="http://d.hatena.ne.jp/tosik/20091026/1256553925">report</a>)
   <li class=bug>
     Allow non-absolute URLs in sidebar links that do not end with slash character.
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-4720">issue 4720</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-4720">issue 4720</a>)
   <li class=bug>
     Build other projects "even when unstable" option was not working with Maven projects.
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-4739">issue 4739</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-4739">issue 4739</a>)
   <li class=bug>
     When renaming a log recorder, check new name uses valid characters, remove config file for
     old name and redirect to new name after save.
@@ -1543,7 +1543,7 @@ Upcoming changes</a>
     Hudson is internally capable of supporting multiple update sites.
   <li class=rfe>
     Added a new "safe-restart" CLI command, also accessible at "/safeRestart", and used for post-upgrade/plugin install restart.
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-4553">issue 4553</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-4553">issue 4553</a>)
   <li class=rfe>
     Added "delete-builds" CLI command for bulk build record deletion.
   <li class=rfe>
@@ -1551,13 +1551,13 @@ Upcoming changes</a>
   <li class='major bug'>
     Fixed another <tt>NotExportableException</tt> when making a remote API call on a project.
     Broke NetBeans integration and possibly others.
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-4760">issue 4760</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-4760">issue 4760</a>)
 </ul>
 <h3><a name=v1.332>What's new in 1.332</a> (2009/11/02)</h3>
 <ul class=image>
   <li class=bug>
     Fixed a regression in 1.331 where previously disabled plugins and their artifacts in <tt>build.xml</tt> can cause build records to fail to load.
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-4752">issue 4752</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-4752">issue 4752</a>)
   <li class='major bug'>
     Fixed <tt>NotExportableException</tt> when making a remote API call on a project.
     (<a href="https://hudson.dev.java.net/servlets/BrowseList?list=users&by=thread&from=2222483">report</a>)
@@ -1569,16 +1569,16 @@ Upcoming changes</a>
 <ul class=image>
   <li class=bug>
     Fixed a memory leak problem with the groovysh Hudson CLI command.
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-4618">issue 4618</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-4618">issue 4618</a>)
   <li class=bug>
     CVS changelog reports were incorrect if built from tags.
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-1816">issue 1816</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-1816">issue 1816</a>)
   <li class=bug>
     Upstream projects list was lost when saving matrix type project.
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-3607">issue 3607</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-3607">issue 3607</a>)
   <li class=bug>
     <tt>slave.jar</tt> now supports HTTP BASIC auth.
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-4071">issue 4071</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-4071">issue 4071</a>)
   <li class=bug>
     Fixed a problem where taglibs defined in plugins cannot be seen from other plugins.
     (<a href="http://www.nabble.com/Declaring-jelly-tag-lib-in-plugin-and-reusing-in-another-plugin-td25890803.html">report</a>)
@@ -1586,7 +1586,7 @@ Upcoming changes</a>
     Improved the UI of taking a node offline.
   <li class=bug>
     Added improved logging for exceptions encountered when attempting to invoke Maven in Maven projects.
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-3273">issue 3273</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-3273">issue 3273</a>)
   <li class=rfe>
     Automated tool downloads are made more robust by using HTTP download retries.
   <li class=rfe>
@@ -1599,30 +1599,30 @@ Upcoming changes</a>
 <ul class=image>
   <li class=bug>
     Fixed <tt>NoSuchMethodError</tt> error during error recovery with Maven 2.1.
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-2373">issue 2373</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-2373">issue 2373</a>)
   <li class=bug>
     RemoteClassLoader does not persist retrieved classes with package structure
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-4657">issue 4657</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-4657">issue 4657</a>)
   <li class=rfe>
     Update center switched over from <tt>https://hudson.dev.java.net/</tt> to <tt>http://hudson-ci.org/</tt>
   <li class=rfe>
     Use tree view to show 17-40 build artifacts on build/project pages.
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-2280">issue 2280</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-2280">issue 2280</a>)
   <li class=rfe>
     When showing why a build is pending, Hudson now puts hyperlinks to node/label/project names.
   <li class=rfe>
     Custom workspace is now subject to the variable expansion.
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-3997">issue 3997</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-3997">issue 3997</a>)
 </ul>
 <h3><a name=v1.329>What's new in 1.329</a> (2009/10/16)</h3>
 <ul class=image>
   <li class=bug>
     Fixed UI selector (hetero-list) to handle nested selectors (resolves conflict between
     Promoted Builds and Parameterized Trigger plugins).
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-4414">issue 4414</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-4414">issue 4414</a>)
   <li class=bug>
     Fixed incremental Maven build behavior to properly handle new modules without hitting NPE.
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-4624">issue 4624</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-4624">issue 4624</a>)
   <li class=bug>
     Added the "build" CLI command that can not only schedule a new build, but also wait until its completion.
   <li class=bug>
@@ -1632,13 +1632,13 @@ Upcoming changes</a>
     (<a href="http://www.nabble.com/206-response-code-HTTP-1.1-Range-header-td25888373.html">report</a>)
   <li class=bug>
     Fixed a bug in <tt>.cvspass</tt> form field persistence.
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-4456">issue 4456</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-4456">issue 4456</a>)
 </ul>
 <h3><a name=v1.328>What's new in 1.328</a> (2009/10/09)</h3>
 <ul class=image>
   <li class=bug>
     Overview of all SCM polling activity was never showing any entries.
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-4609">issue 4609</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-4609">issue 4609</a>)
   <li class=bug>
     Fixed a bogus IOException in the termination of CLI.
   <li class=bug>
@@ -1655,10 +1655,10 @@ Upcoming changes</a>
 <ul class=image>
   <li class=bug>
     Worked around a possible Windows slave hang on start up.
-    (<a href="http://wiki.hudson-ci.org/display/HUDSON/Windows+slaves+fail+to+start+via+ssh">details</a>)
+    (<a href="http://wiki.jenkins-ci.org/display/JENKINS//Windows+slaves+fail+to+start+via+ssh">details</a>)
   <li class=bug>
     Inability to access <tt>hudson.dev.java.net</tt> shouldn't prevent Hudson from working.
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-4590">issue 4590</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-4590">issue 4590</a>)
   <li class=rfe>
     Added a CLI command <tt>install-tool</tt> to invoke a tool auto-installation from Hudson CLI.
     (<a href="http://www.nabble.com/Passing-env-variables-automatically-td25584186.html">report</a>)
@@ -1668,7 +1668,7 @@ Upcoming changes</a>
     Build page now shows where the build was done.
   <li class=rfe>
     Job-enabling API should reject GET requests
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-3721">issue 3721</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-3721">issue 3721</a>)
   <li class=rfe>
     Added an extension point for inserting actions across all projects without configuration.
     (<a href="http://www.nabble.com/Howto-expose-action-for-every-job-without-configuration--td25638153.html">report</a>)
@@ -1681,7 +1681,7 @@ Upcoming changes</a>
 <ul class=image>
   <li class='major bug'>
     Hudson fails to update a plugin due to a bug in the up-to-date check logic.
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-4353">issue 4353</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-4353">issue 4353</a>)
 </ul>
 <h3><a name=v1.325>What's new in 1.325</a> (2009/09/25)</h3>
 <ul class=image>
@@ -1695,67 +1695,67 @@ Upcoming changes</a>
     Permission check was missing for file mask validators.
   <li class=bug>
     Fixed a problem regarding SCM plugin evolution and SCM browser settings, as observed in the Mercurial plugin.
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-4514">issue 4514</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-4514">issue 4514</a>)
   <li class=bug>
     Update center wasn't capable of updating bundled plugins, such as subversion.
   <li class=bug>
     Fixed a problem in the up-to-date check of the plugin extraction.
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-4353">issue 4353</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-4353">issue 4353</a>)
   <li class=bug>
     Fixed a bug in the Debian package init script.
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-4304">issue 4304</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-4304">issue 4304</a>)
   <li class=bug>
     Fixed an NPE in <tt>MavenBuild$RunnerImpl.decideWorkspace</tt>
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-4226">issue 4226</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-4226">issue 4226</a>)
   <li class=bug>
     "Test e-mail" feature in the system configuration page wasn't taking most of the parameters from the current values of the form.
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-3983">issue 3983</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-3983">issue 3983</a>)
   <li class=rfe>
     If a Maven project is built with "-N" or "--non-recursive" in the goals, it will not attempt to
     load and parse the POMs for any modules defined in the root POM.
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-4491">issue 4491</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-4491">issue 4491</a>)
   <li class=rfe>
     Update center will create <tt>*.bak</tt> files to make it easier for manual roll back of botched upgrades.
   <li class=rfe>
     Vastly improved the default MIME type table of the built-in servlet container. 
   <li class=rfe>
     Javadoc location is now subject to the variable expansions.
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-3942">issue 3942</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-3942">issue 3942</a>)
   <li class=rfe>
     JNLP clients now report the reason when the connection is rejected by the master.
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-3889">issue 3889</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-3889">issue 3889</a>)
 </ul>
 <h3><a name=v1.324>What's new in 1.324</a> (2009/09/18)</h3>
 <ul class=image>
   <li class=bug>
     Added call to MailSender in RunnerImpl.cleanUp so that mail gets sent for top-level Maven project as well as individual modules. This means mail will be sent if there are POM parsing errors, etc.
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-1066">issue 1066</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-1066">issue 1066</a>)
   <li class=bug>
     Default value for password parameter in a parameterized project was not saved.
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-4333">issue 4333</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-4333">issue 4333</a>)
   <li class=bug>
     Run sequentially option for Matrix project was not visible unless Axes was checked.
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-4366">issue 4366</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-4366">issue 4366</a>)
   <li class=bug>
     Fix launching Windows slave for slave name with space or other characters needed encoding.
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-4392">issue 4392</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-4392">issue 4392</a>)
   <li class=bug>
     Support authentication when running java -jar hudson-core-*.jar using username/password
     included in HUDSON_HOME URL; also removed dependency on winstone.jar.
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-4400">issue 4400</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-4400">issue 4400</a>)
   <li class=bug>
     Fixed links on age values in JUnit test reports.
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-4402">issue 4402</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-4402">issue 4402</a>)
   <li class=bug>
     Maven project POM parser now ignores empty modules or modules only containing whitespace,
     matching Maven's behavior.
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-4442">issue 4442</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-4442">issue 4442</a>)
   <li class=bug>
     Fixed setting of "blockBuildWhenUpstreamBuilding" for AbstractProject - wasn't being set at all, or displayed.
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-4423">issue 4423</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-4423">issue 4423</a>)
   <li class=bug>
     Handling of URLs with encoded character at end of a path component did not work in 1.323.
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-4454">issue 4454</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-4454">issue 4454</a>)
   <li class=bug>
     Fixed some field validators to work for values including + character.
   <li class=bug>
@@ -1763,7 +1763,7 @@ Upcoming changes</a>
     (<a href="http://www.nabble.com/Build-log%27s-charset-problem.-td25424831.html">patch</a>)
   <li class=bug>
     Fixed a bug in the workspace archive support.
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-4039">issue 4039</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-4039">issue 4039</a>)
   <li class=rfe>
     Added client-side validator for required fields and used this to replace some AJAX calls.
   <li class=rfe>
@@ -1774,7 +1774,7 @@ Upcoming changes</a>
 <ul class=image>
   <li class=bug>
     Creation of symlinks failed (or created in wrong location) since 1.320.
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-4301">issue 4301</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-4301">issue 4301</a>)
   <li class=bug>
     Fixed a NoClassDefFoundError problem that happens in remoting+maven+3rd plugin combo.
     <a href="http://www.nabble.com/NoClassDefFoundError%3A-hudson-maven-MavenBuildProxy%24BuildCallable-td24719002.html#a24719002">report</a>
@@ -1784,34 +1784,34 @@ Upcoming changes</a>
     Manually wiping out a workspace from GUI can cause NPE with some SCM plugins.
   <li class=bug>
     Fixed <tt>ClassCastException</tt> in JavaMail with some application servers.
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-1261">issue 1261</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-1261">issue 1261</a>)
   <li class=bug>
     Fixed a bug in the tabular display of matrix projects.
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-4245">issue 4245</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-4245">issue 4245</a>)
   <li class=bug>
     Avoid division by zero error in swap space monitor.
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-4284">issue 4284</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-4284">issue 4284</a>)
   <li class=bug>
     Avoid duplicate My Views links after Reload configuration from disk.
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-4272">issue 4272</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-4272">issue 4272</a>)
   <li class=bug>
     Removed need for hack that lowered build health scores by one, so now 4/5 is reported as 80 instead of 79.
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-4286">issue 4286</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-4286">issue 4286</a>)
   <li class=bug>
     Fixed renaming a job to a name that includes a + character.
   <li class=bug>
     Matrix project did not properly handle axis values with some special characters such as slash.
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-2670">issue 2670</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-2670">issue 2670</a>)
   <li class=rfe>
     Added validation for axis names in Matrix project.
   <li class=rfe>
     Ajax validator for name of a new job now warns about invalid characters.
   <li class=rfe>
     Maven builder in freestyle projects now supports "Use private repository" option.
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-4205">issue 4205</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-4205">issue 4205</a>)
   <li class=rfe>
     Maven incremental builds now rebuild failed/unstable modules from previous builds, even if they are unchanged.
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-4152">issue 4152</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-4152">issue 4152</a>)
   <li class=rfe>
     Labels are listed in lexicographic order.
     (<a href="http://www.nabble.com/selenium-grid-overview%3A-labels-sometimes-inversed-td25049542.html">report</a>)
@@ -1825,12 +1825,12 @@ Upcoming changes</a>
     Make dynamic labelling of nodes clearer and easier to work with.
   <li class=rfe>
     Plugins can mark themselves as incompatible with earlier versions to notify users during upgrade.
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-4056">issue 4056</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-4056">issue 4056</a>)
   <li class=rfe>
     Footer now includes a timestamp.
   <li class=rfe>
     Advanced option now available for all project types to keep builds in queue while upstream projects are building. Off by default.
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-1938">issue 1938</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-1938">issue 1938</a>)
   <li class=rfe>
     Fixed a bug in Winstone that hides the root cause of exceptions. 
 </ul>
@@ -1838,33 +1838,33 @@ Upcoming changes</a>
 <ul class=image>
   <li class="major bug">
     NPE in Subversion polling problem.
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-4299">issue 4299</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-4299">issue 4299</a>)
   <li class="major bug">
     Changing credential in Subversion can still result in "svn authentication cancelled"
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-3936">issue 3936</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-3936">issue 3936</a>)
   <li class=bug>
     Debian init script now uses "su" to properly initialize the environment.
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-4304">issue 4304</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-4304">issue 4304</a>)
 </ul>
 <h3><a name=v1.321>What's new in 1.321</a> (2009/08/21)</h3>
 <ul class=image>
   <li class='major bug'>
     "Tag this build" was failing.
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-4018">issue 4018</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-4018">issue 4018</a>)
   <li class='major bug'>
     Build history AJAX update was buggy.
   <li class=bug>
     Failed Junit tests will display error message and stacktrace even when no
     additional TestDataPublishers are attached to the project.
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-4257">issue 4257</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-4257">issue 4257</a>)
   <li class=bug>
     Maven test failures will again properly mark a build as unstable,
     even if later task segments are successful.
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-4177">issue 4177</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-4177">issue 4177</a>)
   <li class=bug>
     Matrix permissions with LDAP now properly validates group names using configured
     prefix and case settings; added help text about these settings.
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-3459">issue 3459</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-3459">issue 3459</a>)
   <li class=bug>
     Improved the debian package to set <tt>USER</tt> and <tt>HOME</tt>.
     (<a href="http://www.nabble.com/Debian-Hudson-daemon-runs-as-separate-user-but-still-env-reports--USER%3Droot-td24979804.html">report</a>)
@@ -1878,7 +1878,7 @@ Upcoming changes</a>
     Debian start-up script should inherit <tt>LANG</tt> and other key environment variables.
   <li class=bug>
     Dynamic label computation wasn't re-done properly for the master node.
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-4235">issue 4235</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-4235">issue 4235</a>)
   <li class=bug>
     Form validation for the remote FS root of slaves was not functioning.
   <li class=bug>
@@ -1891,24 +1891,24 @@ Upcoming changes</a>
     (<a href="http://www.nabble.com/Re%3A-Hudson-on-Weblogic-10.3-td25038378.html#a25043415">report</a>)
   <li class=bug>
     Fix New Job and Edit View links when default view is not "All" jobs.
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-4212">issue 4212</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-4212">issue 4212</a>)
   <li class=bug>
     Revert logger settings when a log recorder is deleted.
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-4201">issue 4201</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-4201">issue 4201</a>)
   <li class=bug>
     Add xml header on RSS/atom feeds and fix RSS URLs in header for non-default views.
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-4080">issue 4080</a>,
-     <a href="http://issues.hudson-ci.org/browse/HUDSON-4081">issue 4081</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-4080">issue 4080</a>,
+     <a href="http://issues.jenkins-ci.org/browse/JENKINS-4081">issue 4081</a>)
   <li class=rfe>
     Plugin installation / Hudson upgrade are made more robust in the face of possible connection abortion.
     (<a href="http://www.ashlux.com/wordpress/2009/08/14/hudson-and-the-sonar-plugin-fail-maveninstallation-nosuchmethoderror/comment-page-1/#comment-26">report</a>)
   <li class=rfe>
     Global and per-node environment vars are made available to SCM checkout.
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-4124">issue 4124</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-4124">issue 4124</a>)
   <li class=rfe>
     You can designate certain combinations in a matrix project as "touchstone builds". These will
     be run first, and the rest of the combinations will run if the touchstone builds are successful.
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-1613">issue 1613</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-1613">issue 1613</a>)
   <li class=rfe>
     Added <tt>BUILD_URL</tt> and <tt>JOB_URL</tt> to the exposed environment variables.
     (<a href="http://www.nabble.com/url-for-job-td25015395.html">request</a>)
@@ -1919,47 +1919,47 @@ Upcoming changes</a>
 <ul class=image>
   <li class=bug>
     Fixed an encoding problem in CVS changelog calculation.
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-3979">issue 3979</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-3979">issue 3979</a>)
   <li class='bug'>
     Environment variables are considered in test paths.
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-3451">issue 3451</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-3451">issue 3451</a>)
   <li class='bug'>
     A failing test is recorded when JUnit XML is invalid
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-3149">issue 3149</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-3149">issue 3149</a>)
   <li class=bug>
     Fixed possible <tt>Unable to call getCredential. Invalid object ID</tt> race problem.
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-4176">issue 4176</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-4176">issue 4176</a>)
   <li class='bug'>
     If the timing coincides between polling and build, Hudson ended up creating multiple workspaces for the same job,
     even when concurrent build is off.
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-4202">issue 4202</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-4202">issue 4202</a>)
   <li class='bug'>
     Fixed a "Releasing unallocated workspace" assertion error.
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-4206">issue 4206</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-4206">issue 4206</a>)
   <li class='bug'>
     Fixed NPE in various Maven reporters caused by Hudson core problem.
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-4192">issue 4192</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-4192">issue 4192</a>)
   <li class=bug>
     Show warning if zero value entered for #builds/#days to save for discarding old builds
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-4110">issue 4110</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-4110">issue 4110</a>)
   <li class=rfe>
     Added <tt>create-job</tt> CLI command.
   <li class=rfe>
     Hudson now tracks why a slave is put offline.
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-2431">issue 2431</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-2431">issue 2431</a>)
   <li class='rfe'>
     User-settable descriptions for tests.
   <li class='rfe'>
     A history page with test count and duration charts.
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-2228">issue 2228</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-2228">issue 2228</a>)
   <li class='rfe'>
     A collapsible panel with test error details on the overview pages.
   <li class='rfe'>
     Skipped tests counts are included in tables.
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-1820">issue 1820</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-1820">issue 1820</a>)
   <li class='rfe'>
     New tests are shown in bold.
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-2046">issue 2046</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-2046">issue 2046</a>)
   <li class='major rfe'>
     JUnit report improvements: A new extension point for contributing to test reports.
 </ul>
@@ -1975,7 +1975,7 @@ Upcoming changes</a>
     here for background.</a>
   <li class=bug>
     Moved Maven help files to maven-plugin.
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-3527">issue 3527</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-3527">issue 3527</a>)
   <li class=bug>
     Hudson shouldn't immediately launch a slave newly created via copy.
     <a href="http://www.nabble.com/copying-slave-td24791624.html">report</a>
@@ -1983,7 +1983,7 @@ Upcoming changes</a>
     Added support for optional alternate Maven settings file for use
     in embedded Maven for POM parsing as well as actual Maven
     execution.
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-2575">issue 2575</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-2575">issue 2575</a>)
   <li class=rfe>
     Added a test button to the PAM configuration to make sure Hudson has read access to
     /etc/shadow
@@ -1997,7 +1997,7 @@ Upcoming changes</a>
     (<a href="http://www.nabble.com/Creating-a-new-parameter-Type-%3A-Masked-Parameter-td24786554.html">report</a>)
   <li class=rfe>
     Matrix projects can now run sequentially
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-3028">issue 3028</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-3028">issue 3028</a>)
   <li class='major rfe'>
     Hudson now allows builds of a single project to execute concurrently.
 </ul>
@@ -2012,20 +2012,20 @@ Upcoming changes</a>
   <li class=bug>
     Fixed Maven plugin to properly use private repository (when
     specified) when parsing POMs.
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-4102">issue 4102</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-4102">issue 4102</a>)
   <li class=bug>
     Edit Description worked incorrectly when default view is changed from All jobs.
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-4070">issue 4070</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-4070">issue 4070</a>)
   <li class=bug>
     Fixed a bug in JDK auto-installation to Windows with directories with whitespaces.
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-4118">issue 4118</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-4118">issue 4118</a>)
   <li class=rfe>
     Added support for incremental Maven project builds,
     using <a href="http://docs.codehaus.org/display/MAVEN/Make+Like+Reactor+Mode">Maven's
     make-like reactor mode</a>.
   <li class=rfe>
     Script console can now see classes from all the plugins, not just core.
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-4086">issue 4086</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-4086">issue 4086</a>)
   <li class=rfe>
     <tt>slave.jar</tt> now has the <tt>-auth</tt> option to specify the credential for accessing Hudson
     (<a href="http://www.nabble.com/Hudson-Linux-Master-%2B-Windows-Slave-issues-to24679421.html">report</a>)
@@ -2045,24 +2045,24 @@ Upcoming changes</a>
       (<a href="http://www.nabble.com/Hudson-non-anonymous-LDAP-broken---td24529557.html">report</a>)
   <li class=bug>
     Fixed a MissingResourceException for "Ajp13Listener.ShortPacket"
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-4053">issue 4053</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-4053">issue 4053</a>)
   <li class=bug>
     Fixed 500 error when requesting the zip URL.
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-4039">issue 4039</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-4039">issue 4039</a>)
   <li class=bug>
     Debian package now has 750 permission on /var/run/hudson and /var/lib/hudson to make ssh work
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-4047">issue 4047</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-4047">issue 4047</a>)
   <li class=bug>
     Fixed <tt>LinkageError</tt> in PAM authentication on Solaris.
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-3546">issue 3546</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-3546">issue 3546</a>)
   <li class=bug>
     Fixed a JDK path separator issue between Windows master and Unix slaves.
   <li class=bug>
     Fixed a memory leak in the remoting layer.
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-4045">issue 4045</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-4045">issue 4045</a>)
   <li class=bug>
     Fixed Maven dependency build order logic.
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-2736">issue 2736</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-2736">issue 2736</a>)
   <li class=bug>
     Renaming views and jobs, and deleting jobs should use POST instead of GET.
     (<a href="http://www.nabble.com/Changing-some-GETs-to-POSTs-td24401229.html">discussion</a>)
@@ -2087,25 +2087,25 @@ Upcoming changes</a>
 <ul class=image>
   <li class=bug>
     Matrix configuration should show a test trend.
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-840">issue 840</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-840">issue 840</a>)
   <li class=bug>
     Fixed a possible NPE in installing Windows service.
     (<a href="http://d.hatena.ne.jp/ushiday/20090708">report</a>)
   <li class=bug>
     Fixed a possible NPE in <tt>CrumbFilter.getCrumbIssuer</tt>.
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-3986">issue 3986</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-3986">issue 3986</a>)
   <li class=bug>
     Login may result in 403 if the user realm is delegated to container.
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-1235">issue 1235</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-1235">issue 1235</a>)
   <li class=bug>
     The <tt>--logfile</tt> option stopped working on Windows.
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-3272">issue 3272</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-3272">issue 3272</a>)
   <li class=bug>
     On-demand retention policy almost immediately turns off slaves.
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-3972">issue 3972</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-3972">issue 3972</a>)
   <li class=bug>
     Fixed "incomplete LifecycleExecutor" warning with Maven 2.2
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-2373">issue 2373</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-2373">issue 2373</a>)
   <li class=bug>
     Fixed a bug in Winstone that may result in "unable to create new native thread" error
     (<a href="http://www.nabble.com/OutOfMemoryError-on-all-jobs-after-a-while-td24408800.html">report</a>)
@@ -2114,19 +2114,19 @@ Upcoming changes</a>
     (<a href="http://www.nabble.com/Hudson-throws-NPE-after-upgrade-to-1.1315-td24476619.html">report</a>)
   <li class=bug>
     Fixed a possible StringIndexOutOfBoundsException with Windows process execution.
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-4034">issue 4034</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-4034">issue 4034</a>)
   <li class=bug>
     Fixed an NPE when environment variables are enabled but no variables are set.
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-4032">issue 4032</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-4032">issue 4032</a>)
   <li class=rfe>
     Added <tt>ibm-web-bnd.xmi</tt> to simplify the automated deployment with WebSphere.
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-3270">issue 3270</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-3270">issue 3270</a>)
   <li class=rfe>
     When deleting the workspace of a matrix project, do so for all configurations.
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-3087">issue 3087</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-3087">issue 3087</a>)
   <li class=rfe>
     Enclose URLs in angle brackets when sending mail.
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-3647">issue 3647</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-3647">issue 3647</a>)
   <li class=rfe>
     Plugins can now hide classes in the core so that they can ship their own versions.
     (<a href="http://www.nabble.com/jaxen-JDOM-classloading-issues.-td24459951.html">report</a>)
@@ -2137,10 +2137,10 @@ Upcoming changes</a>
     (<a href="http://www.nabble.com/Queue-handling-contribution-td24322512.html">patch</a>)
   <li class=rfe>
     Added support for proxy authentication on non-NTLM systems
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-1920">issue 1920</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-1920">issue 1920</a>)
   <li class=rfe>
     Added MIME type mapping for several well-known file extensions so that it works everywhere.
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-3803">issue 3803</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-3803">issue 3803</a>)
 </ul>
 <h3><a name=v1.315>What's new in 1.315</a> (2009/07/10)</h3>
 <ul class=image>
@@ -2150,16 +2150,16 @@ Upcoming changes</a>
     (<a href="http://www.nabble.com/Losing-build-state-after-aborts--td24335949.html">report</a>)
   <li class=bug>
     TCP/IP hostname calculation of slaves may fail due in high latency network.
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-3981">issue 3981</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-3981">issue 3981</a>)
   <li class=bug>
     Expose MAVEN_OPTS as env. var, in addition to set it to Maven JVM.
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-3644">issue 3644</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-3644">issue 3644</a>)
   <li class=bug>
     Fixed winp.dll load problem on WebSphere
     (<a href="http://www.nabble.com/winp.dll-problem-still-exists-td24390682.html">report</a>)
   <li class=bug>
     Subversion checkouts created files for symlinks
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-3949">issue 3949</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-3949">issue 3949</a>)
   <li class=rfe>
     Hudson CLI now tries to connect to Hudson via plain TCP/IP, then fall back to tunneling over HTTP.
   <li class=rfe>
@@ -2181,10 +2181,10 @@ Upcoming changes</a>
     <a href="http://d.hatena.ne.jp/tanamon/20090630/1246372887">report</a>
   <li class='major bug'>
     Fixed regression in handling of usernames containing <code>&lt;</code>, often used by Mercurial.
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-3964">issue 3964</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-3964">issue 3964</a>)
   <li class=rfe>
     Allow Maven projects to have their own artifact archiver settings.
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-3289">issue 3289</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-3289">issue 3289</a>)
 </ul>
 <h3><a name=v1.313>What's new in 1.313</a> (2009/06/26)</h3>
 <ul class=image>
@@ -2200,15 +2200,15 @@ Upcoming changes</a>
     Added Retry Logic to SCM Checkout
   <li class=bug>
     Fix bug in crumb validation when client is coming through a proxy.
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-3854">issue 3854</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-3854">issue 3854</a>)
   <li class=bug>
     Replaced "appears to be stuck" with an icon.
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-3891">issue 3891</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-3891">issue 3891</a>)
   <li class=bug>
     WebDAV deployment from Maven was failing with VerifyError.
   <li class=bug>
     Subversion checkout/update gets in an infinite loop when a previously valid password goes invalid.
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-2909">issue 2909</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-2909">issue 2909</a>)
 </ul>
 <h3><a name=v1.312>What's new in 1.312</a> (2009/06/23)</h3>
 <ul class=image>
@@ -2222,10 +2222,10 @@ Upcoming changes</a>
 <ul class=image>
   <li class=bug>
     Gracefully handle IBM JVMs on PowerPC.
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-3875">issue 3875</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-3875">issue 3875</a>)
   <li class=bug>
     Fixed NPE with GlassFish v3 when CSRF protection is on.
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-3878">issue 3878</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-3878">issue 3878</a>)
   <li class=bug>
     Fixed a bug in CLI where the state of command executions may interfere with each other.
   <li class=bug>
@@ -2239,12 +2239,12 @@ Upcoming changes</a>
     Integrated SVNKit 1.3.0
   <li class=rfe>
     Implemented more intelligent polling assisted by <tt>commit-hook</tt> from SVN repository. 
-    (<a href="http://wiki.hudson-ci.org/display/HUDSON/Subversion+post-commit+hook">details</a>)
+    (<a href="http://wiki.jenkins-ci.org/display/JENKINS//Subversion+post-commit+hook">details</a>)
   <li class=rfe>
     Subversion support is moved into a plugin to isolate SVNKit that has GPL-like license.
   <li class=rfe>
     Fixed a performance problem in master/slave file copy.
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-3799">issue 3799</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-3799">issue 3799</a>)
   <li class=rfe>
     Set time out to avoid infinite hang when SMTP servers don't respond in time.
     (<a href="http://www.nabble.com/Lockup-during-e-mail-notification.-td23718820.html">report</a>)
@@ -2253,15 +2253,15 @@ Upcoming changes</a>
 <ul class=image>
   <li class=bug>
     Ant/Maven installers weren't setting the file permissions on Unix.
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-3850">issue 3850</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-3850">issue 3850</a>)
   <li class=bug>
     Fixed cross-site scripting vulnerabilities, thanks to Steve Milner.
   <li class=bug>
     Changing number of executors for master node required Hudson restart.
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-3092">issue 3092</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-3092">issue 3092</a>)
   <li class=bug>
     Improved validation and help text regarding when number of executors setting may be zero.
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-2110">issue 2110</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-2110">issue 2110</a>)
   <li class=bug>
     NPE fix in the remote API if @xpath is used without @exclude.
     (<a href="http://www.nabble.com/Adding-Remote-API-support-to-findbugs-and-emma-plugins-td23819499.html">patch</a>)
@@ -2290,7 +2290,7 @@ Upcoming changes</a>
     init script (<tt>$HUDSON_HOME/init.groovy</tt>) is now run with uber-classloader.
   <li class=bug>
     Maven2 projects may fail with "Cannot lookup required component".
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-3706">issue 3706</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-3706">issue 3706</a>)
   <li class=bug>
     Toned down the form validation of JDK, Maven, Ant installations given that we can now auto-install them.
   <li class=rfe>
@@ -2302,7 +2302,7 @@ Upcoming changes</a>
 <ul class=image>
   <li class=bug>
     AbstractProject.doWipeOutWorkspace() wasn't calling SCM.processWorkspaceBeforeDeletion.
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-3506">issue 3506</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-3506">issue 3506</a>)
   <li class=bug>
     <tt>X-Hudson</tt> header was sent for all views, not just the top page.
     (<a href="http://www.netbeans.org/issues/show_bug.cgi?id=165067">report</a>)
@@ -2332,25 +2332,25 @@ Upcoming changes</a>
 <ul class=image>
   <li class=bug>
     Fixed a bug that caused Hudson to delete slave workspaces too often.
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-3653">issue 3653</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-3653">issue 3653</a>)
   <li class=bug>
     If distributed build isn't enabled, slave selection drop-down shouldn't be displayed in the job config.
   <li class=bug>
     Added support for Svent 2.x SCM browsers.
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-3357">issue 3357</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-3357">issue 3357</a>)
   <li class=bug>
     Fixed unexpanded rootURL in CLI. 
     (<a href="http://d.hatena.ne.jp/masanobuimai/20090511#1242050331">report</a>)
   <li class=bug>
     Trying to see the generated maven site results in 404.
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-3497">issue 3497</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-3497">issue 3497</a>)
   <li class=rfe>
     Long lines in console output are now wrapped in most browsers.
   <li class='major rfe'>
     Hudson can now automatically install JDKs from java.sun.com
   <li class='major rfe'>
     The native m2 mode now works with Maven 2.1
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-2373">issue 2373</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-2373">issue 2373</a>)
 </ul>
 <h3><a name=v1.304>What's new in 1.304</a> (2009/05/08)</h3>
 <ul class=image>
@@ -2359,10 +2359,10 @@ Upcoming changes</a>
     (<a href="http://d.hatena.ne.jp/masanobuimai/20090503#1241357664">report</a>)
   <li class=bug>
     Link to the jar file in the CLI usage page is made more robust.
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-3621">issue 3621</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-3621">issue 3621</a>)
   <li class=bug>
     "Build after other projects are built" wasn't loading the proper setting.
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-3284">issue 3284</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-3284">issue 3284</a>)
   <li class=rfe>
     Hudson started as "java -jar hudson.war" can now restart itself on all Unix flavors.
   <li class=rfe>
@@ -2370,8 +2370,8 @@ Upcoming changes</a>
   <li class=rfe>
     Added a new extension point to contribute fragment to UDP-based auto discovery.
   <li class=bug>
-    Rolled back changes for HUDSON-3580 - workspace is once again deleted on svn checkout.
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-3580">issue 3580</a>)
+    Rolled back changes for JENKINS-3580 - workspace is once again deleted on svn checkout.
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-3580">issue 3580</a>)
 </ul>
 <h3><a name=v1.303>What's new in 1.303</a> (2009/05/03)</h3>
 <ul class=image>
@@ -2385,24 +2385,24 @@ Upcoming changes</a>
 <ul class=image>
   <li class='major bug'>
     The elusive 'Not in GZIP format' exception is finally fixed thanks to <tt>cristiano_k</tt>'s great detective work
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-2154">issue 2154</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-2154">issue 2154</a>)
   <li class='bug'>
     Hudson kept relaunching the slave under the "on-demand" retention strategy.
     (<a href="http://www.nabble.com/SlaveComputer.connect-Called-Multiple-Times-td23208903.html">report</a>)
   <li class=bug>
     Extra slash (/) included in path to workspace copy of svn external.
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-3533">issue 3533</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-3533">issue 3533</a>)
   <li class=bug>
     NPE prevents Hudson from starting up on some environments
     (<a href="http://www.nabble.com/Failed-to-initialisze-Hudson-%3A-NullPointerException-td23252806.html">report</a>)
   <li class=bug>
     Workspace deleted when subversion checkout happens.
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-3580">issue 3580</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-3580">issue 3580</a>)
   <li class=bug>
     Hudson now handles unexpected failures in trigger plugins more gracefully.
   <li class='rfe'>
     Use 8K buffer to improve remote file copy performance.
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-3524">issue 3524</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-3524">issue 3524</a>)
   <li class='rfe'>
     Hudson now has a CLI
   <li class='major rfe'>
@@ -2416,10 +2416,10 @@ Upcoming changes</a>
     When polling SCMs, boolean parameter sets default value collectly.
   <li class=bug>
     Sidebar build descriptions will not have "..." appended unless they have been truncated.
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-3541">issue 3541</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-3541">issue 3541</a>)
   <li class=bug>
     Workspace with symlink causes svn exception when updating externals.
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-3532">issue 3532</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-3532">issue 3532</a>)
   <li class=rfe>
     Hudson now started bundling ssh-slaves plugin out of the box.
   <li class=rfe>
@@ -2428,14 +2428,14 @@ Upcoming changes</a>
   <li class=rfe>
     You can now configure which columns are displayed in a view.
     "Last Stable" was also added as an optional column (not displayed by default).
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-3465">issue 3465</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-3465">issue 3465</a>)
   <li class=rfe>
     Preventive node monitoring like /tmp size check, swap space size check can be now disabled selectively.
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-2596">issue 2596</a>,
-     <a href="http://issues.hudson-ci.org/browse/HUDSON-2552">issue 2552</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-2596">issue 2596</a>,
+     <a href="http://issues.jenkins-ci.org/browse/JENKINS-2552">issue 2552</a>)
   <li class='major rfe'>
     Per-project read permission support.
-    (<a href="http://issues.hudson-ci.org/browse/HUDSON-2324">issue 2324</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-2324">issue 2324</a>)
 </ul>
 
 <p>
