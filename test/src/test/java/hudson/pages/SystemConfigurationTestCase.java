@@ -23,7 +23,6 @@
  */
 package hudson.pages;
 
-import static com.gargoylesoftware.htmlunit.WebAssert.assertElementPresent;
 import com.gargoylesoftware.htmlunit.html.HtmlForm;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import hudson.model.PageDecorator;

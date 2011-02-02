@@ -33,7 +33,6 @@ import hudson.model.BuildListener;
 import hudson.model.Cause;
 import hudson.model.FreeStyleBuild;
 import hudson.model.FreeStyleProject;
-import hudson.model.Hudson;
 import hudson.model.TaskListener;
 import hudson.model.Cause.UserCause;
 import hudson.scm.NullSCM;

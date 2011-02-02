@@ -27,8 +27,6 @@ import hudson.remoting.Channel.Mode;
 import junit.framework.Assert;
 
 import java.io.IOException;
-import java.io.PipedInputStream;
-import java.io.PipedOutputStream;
 import java.io.File;
 import java.io.OutputStream;
 import java.io.FileOutputStream;

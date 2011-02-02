@@ -4,15 +4,8 @@ import org.jvnet.hudson.test.HudsonTestCase;
 import org.jvnet.hudson.test.Bug;
 import org.jvnet.hudson.test.ExtractResourceSCM;
 import hudson.EnvVars;
-import hudson.Launcher;
-import hudson.model.BuildListener;
 import hudson.model.Result;
-import hudson.util.NullStream;
 import hudson.tasks.Maven.MavenInstallation;
-
-import java.io.IOException;
-import java.io.PrintWriter;
-
 
 /**
  * @author Andrew Bayer

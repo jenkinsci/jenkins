@@ -25,7 +25,6 @@ package org.jvnet.hudson.test;
 
 import hudson.Extension;
 import hudson.model.AbstractDescribableImpl;
-import hudson.model.Describable;
 import hudson.model.Descriptor;
 import hudson.slaves.ComputerConnector;
 import hudson.slaves.ComputerConnectorDescriptor;

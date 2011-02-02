@@ -7,8 +7,6 @@ import hudson.tasks.Ant;
 import hudson.model.JDK;
 import hudson.model.Hudson;
 
-import static junit.framework.Assert.*;
-
 import java.util.Arrays;
 
 /**

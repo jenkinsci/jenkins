@@ -27,7 +27,6 @@ import hudson.EnvVars;
 import org.kohsuke.stapler.DataBoundConstructor;
 
 import java.util.Locale;
-import java.util.Map;
 
 public class JobParameterValue extends ParameterValue {
     public final Job job;

@@ -28,7 +28,6 @@ import hudson.PluginWrapper;
 import org.jvnet.hudson.test.HudsonTestCase;
 import org.jvnet.hudson.test.recipes.LocalData;
 
-import java.io.File;
 import java.net.URL;
 import java.util.Enumeration;
 

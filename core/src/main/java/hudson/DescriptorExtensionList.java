@@ -41,10 +41,7 @@ import java.util.Iterator;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.concurrent.CopyOnWriteArrayList;
-import java.lang.reflect.Type;
-import java.lang.reflect.ParameterizedType;
 
-import org.jvnet.tiger_types.Types;
 import org.kohsuke.stapler.Stapler;
 import net.sf.json.JSONObject;
 

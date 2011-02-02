@@ -2,7 +2,6 @@ package hudson.security;
 
 import hudson.cli.CLI;
 import hudson.cli.CLICommand;
-import hudson.cli.CliManagerImpl;
 import hudson.cli.ClientAuthenticationCache;
 import hudson.cli.LoginCommand;
 import hudson.cli.LogoutCommand;
@@ -12,10 +11,6 @@ import org.jvnet.hudson.test.For;
 import org.jvnet.hudson.test.HudsonTestCase;
 import org.jvnet.hudson.test.TestExtension;
 import junit.framework.Assert;
-
-import java.io.IOException;
-import java.util.Arrays;
-import java.util.Locale;
 
 /**
  * @author Kohsuke Kawaguchi

@@ -26,15 +26,12 @@ package hudson.maven;
 import hudson.ExtensionPoint;
 import hudson.ExtensionList;
 import hudson.Extension;
-import hudson.scm.ChangeLogAnnotator;
 import hudson.model.Hudson;
 import org.apache.maven.project.MavenProject;
 
 import java.util.Collection;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
-import java.util.concurrent.CopyOnWriteArrayList;
 
 /**
  * Extension point in Hudson to find additional dependencies from {@link MavenProject}.

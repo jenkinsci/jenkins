@@ -1,17 +1,12 @@
 package hudson.slaves;
 
-import hudson.model.Build;
 import hudson.model.FreeStyleBuild;
 import hudson.model.FreeStyleProject;
-import hudson.model.Hudson;
-import hudson.model.JDK;
 import hudson.model.Node;
 import hudson.model.ParametersDefinitionProperty;
 import hudson.model.Result;
 import hudson.model.StringParameterDefinition;
 import hudson.slaves.EnvironmentVariablesNodeProperty.Entry;
-import hudson.tasks.Maven;
-import hudson.tasks.Maven.MavenInstallation;
 
 import java.io.IOException;
 import java.util.Collections;
@@ -21,7 +16,6 @@ import junit.framework.Assert;
 
 import org.jvnet.hudson.test.CaptureEnvironmentBuilder;
 import org.jvnet.hudson.test.HudsonTestCase;
-import org.jvnet.hudson.test.HudsonTestCase.WebClient;
 
 import com.gargoylesoftware.htmlunit.html.HtmlForm;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;

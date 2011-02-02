@@ -30,7 +30,6 @@ import static hudson.init.InitMilestone.PLUGINS_PREPARED;
 import hudson.model.AbstractModelObject;
 import hudson.model.Hudson;
 import hudson.model.RSS;
-import hudson.model.Failure;
 import hudson.tasks.Mailer;
 import hudson.util.CopyOnWriteMap;
 import org.apache.commons.io.filefilter.WildcardFileFilter;

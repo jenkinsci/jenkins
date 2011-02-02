@@ -26,12 +26,9 @@ package hudson.tasks.junit;
 import hudson.FilePath;
 import hudson.model.FreeStyleBuild;
 import hudson.model.FreeStyleProject;
-import hudson.model.Hudson;
 import hudson.slaves.DumbSlave;
 import hudson.tasks.test.TestObject;
 
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.util.concurrent.TimeUnit;
 
 import org.jvnet.hudson.test.HudsonTestCase;

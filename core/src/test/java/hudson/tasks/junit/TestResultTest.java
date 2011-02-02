@@ -32,7 +32,6 @@ import java.net.URISyntaxException;
 import java.util.Collection;
 import java.util.List;
 import junit.framework.TestCase;
-import static org.junit.Assert.*;
 
 /**
  *

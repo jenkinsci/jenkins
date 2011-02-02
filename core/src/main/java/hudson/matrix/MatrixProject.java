@@ -81,8 +81,6 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import static hudson.Util.*;
-
 /**
  * {@link Job} that allows you to run multiple different configurations
  * from a single setting.

@@ -23,7 +23,6 @@
  */
 package hudson.node_monitors;
 
-import hudson.Functions.ThreadGroupMap;
 import hudson.model.Computer;
 import hudson.model.Descriptor;
 import hudson.model.Hudson;

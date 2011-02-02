@@ -7,7 +7,6 @@ import hudson.model.FreeStyleProject;
 import hudson.tasks.Ant;
 import org.jvnet.hudson.test.HudsonTestCase;
 import org.jvnet.hudson.test.SingleFileSCM;
-import org.mozilla.javascript.tools.debugger.Dim;
 
 /**
  * @author Kohsuke Kawaguchi

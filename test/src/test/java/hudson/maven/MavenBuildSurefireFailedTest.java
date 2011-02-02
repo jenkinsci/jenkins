@@ -1,7 +1,6 @@
 package hudson.maven;
 
 import hudson.model.Result;
-import hudson.tasks.Maven.MavenInstallation;
 
 import org.jvnet.hudson.test.Bug;
 import org.jvnet.hudson.test.ExtractResourceSCM;

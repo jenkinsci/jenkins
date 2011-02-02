@@ -25,13 +25,11 @@
 package hudson.model.listeners;
 
 import hudson.ExtensionPoint;
-import hudson.ExtensionListView;
 import hudson.Extension;
 import hudson.ExtensionList;
 import hudson.XmlFile;
 import hudson.model.Hudson;
 import hudson.model.Saveable;
-import hudson.util.CopyOnWriteList;
 
 /**
  * Receives notifications about save actions on {@link Saveable} objects in Hudson.

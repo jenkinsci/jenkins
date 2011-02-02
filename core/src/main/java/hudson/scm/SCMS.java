@@ -23,12 +23,9 @@
  */
 package hudson.scm;
 
-import hudson.model.Descriptor;
-import hudson.model.Hudson;
 import hudson.model.AbstractProject;
 import hudson.model.Descriptor.FormException;
 import hudson.util.DescriptorList;
-import hudson.DescriptorExtensionList;
 import hudson.Extension;
 
 import java.util.List;

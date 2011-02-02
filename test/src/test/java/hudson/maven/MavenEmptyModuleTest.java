@@ -7,11 +7,8 @@ import org.jvnet.hudson.test.ExtractResourceSCM;
 
 import hudson.Launcher;
 import hudson.model.BuildListener;
-import hudson.model.Result;
 
 import java.io.IOException;
-import java.util.List;
-import java.util.Map;
 
 /**
  * @author Andrew Bayer
