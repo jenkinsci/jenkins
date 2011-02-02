@@ -106,7 +106,7 @@ final class ProxyOutputStream extends OutputStream {
     /**
      * {@link #write(byte[])} without the close check.
      */
-    private void _write(byte[] b, int off, int len) throws IOException {
+    private synchronized void _write(byte[] b, int off, int len) throws IOException {
         if(channel==null) {
             if(tmp==null)
                 tmp = new ByteArrayOutputStream();
@@ -128,7 +128,7 @@ final class ProxyOutputStream extends OutputStream {
         }
     }
 
-    public void flush() throws IOException {
+    public synchronized void flush() throws IOException {
         if(channel!=null)
             channel.send(new Flush(oid));
     }
