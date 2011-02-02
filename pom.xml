@@ -426,9 +426,9 @@ THE SOFTWARE.
         <activeByDefault>true</activeByDefault>
       </activation>
       <properties>
-        <hudson.sign.alias>hudson</hudson.sign.alias>
+        <hudson.sign.alias>jenkins</hudson.sign.alias>
         <hudson.sign.keystore>../dummy.keystore</hudson.sign.keystore>
-        <hudson.sign.storepass>hudson</hudson.sign.storepass>
+        <hudson.sign.storepass>jenkins</hudson.sign.storepass>
       </properties>
     </profile>
     <profile>
