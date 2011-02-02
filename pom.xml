@@ -426,9 +426,9 @@ THE SOFTWARE.
         <activeByDefault>true</activeByDefault>
       </activation>
       <properties>
-        <hudson.sign.alias>hudson</hudson.sign.alias>
+        <hudson.sign.alias>jenkins</hudson.sign.alias>
         <hudson.sign.keystore>../dummy.keystore</hudson.sign.keystore>
-        <hudson.sign.storepass>hudson</hudson.sign.storepass>
+        <hudson.sign.storepass>jenkins</hudson.sign.storepass>
       </properties>
     </profile>
     <profile>
@@ -559,11 +559,11 @@ THE SOFTWARE.
   <distributionManagement>
     <site>
       <id>hudson-www</id>
-      <url>scp://hudson-labs.org/home/kohsuke/www/hudson-labs.org/maven-site/</url>
+      <url>scp://jenkins-ci.org/home/kohsuke/www/hudson-labs.org/maven-site/</url>
     </site>
     <snapshotRepository>
       <id>maven.hudson-labs.org</id>
-      <url>http://maven.hudson-labs.org:8081/content/repositories/snapshots</url>
+      <url>http://maven.jenkins-ci.org:8081/content/repositories/snapshots</url>
     </snapshotRepository>
   </distributionManagement>
 </project>
