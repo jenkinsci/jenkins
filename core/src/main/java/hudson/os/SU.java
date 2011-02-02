@@ -47,7 +47,7 @@ import java.util.Collections;
  * if necessary.
  *
  * <p>
- * A best effort is made to execute the closure as root, but we may still end up exeucting the closure
+ * A best effort is made to execute the closure as root, but we may still end up executing the closure
  * in the non-root privilege, so the closure should expect that and handle it gracefully.
  *
  * <p>

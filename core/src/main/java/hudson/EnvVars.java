@@ -65,7 +65,7 @@ public class EnvVars extends TreeMap<String,String> {
     /**
      * If this {@link EnvVars} object represents the whole environment variable set,
      * not just a partial list used for overriding later, then we need to know
-     * the platform for which this env vars are targeted for, or else we won't konw
+     * the platform for which this env vars are targeted for, or else we won't know
      * how to merge variables properly.
      *
      * <p>
