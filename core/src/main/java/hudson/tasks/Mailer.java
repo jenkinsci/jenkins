@@ -455,7 +455,7 @@ public class Mailer extends Notifier {
                 
                 MimeMessage msg = new MimeMessage(createSession(smtpServer,smtpPort,useSsl,smtpAuthUserName,Secret.fromString(smtpAuthPassword)));
                 msg.setSubject("Test email #" + ++testEmailCount);
-                msg.setContent("This is test email #" + testEmailCount + " sent from Hudson Continuous Integration server.", "text/plain");
+                msg.setContent("This is test email #" + testEmailCount + " sent from Jenkins Continuous Integration server.", "text/plain");
                 msg.setFrom(new InternetAddress(adminAddress));
                 msg.setSentDate(new Date());
                 msg.setRecipient(Message.RecipientType.TO, new InternetAddress(adminAddress));
