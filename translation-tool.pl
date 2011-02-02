@@ -1,7 +1,7 @@
 #!/usr/bin/perl
 # The MIT License
 #
-# Copyright (c) 2004-2010, Sun Microsystems, Inc.
+# Copyright (c) 2004-, Kohsuke Kawaguchi, Sun Microsystems, Inc., and a number of other of contributers
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -38,11 +38,14 @@
 #     properties files to iso or unicode hex representation is ascii. 
 # 
 
+# Note, while the migration to Jenkins this file will report the keys which should point 
+# to Jenkins instead of the old name.
+
 use strict;
 use File::Find;
 
 my ($lang, $editor, $dir, $toiso, $toascii, $add, $remove, $reuse) = (undef, undef, "./", undef, undef, undef, undef, undef);
-my ($tfiles, $tkeys, $tmissing, $tunused, $tempty, $tsame) = (0, 0, 0, 0, 0, 0);
+my ($tfiles, $tkeys, $tmissing, $tunused, $tempty, $tsame, $tnojenkins) = (0, 0, 0, 0, 0, 0);
 ## read arguments
 foreach (@ARGV) {
   if (/^--lang=(.*)$/) {
@@ -86,11 +89,11 @@ foreach (@files) {
 }
 
 ## print statistics
-my $tdone = $tkeys - $tmissing - $tunused - $tempty - $tsame;
-printf ("\nTOTAL: Files: %d Keys: %d Done: %d(%.2f\%)\n       Missing: %d(%.2f\%) Orphan: %d(%.2f\%) Empty: %d(%.2f\%) Same: %d(%.2f\%)\n\n",
+my $tdone = $tkeys - $tmissing - $tunused - $tempty - $tsame - $tnojenkins;
+printf ("\nTOTAL: Files: %d Keys: %d Done: %d(%.2f\%)\n       Missing: %d(%.2f\%) Orphan: %d(%.2f\%) Empty: %d(%.2f\%) Same: %d(%.2f\%) NoJenkins: %d(%.2f\%)\n\n", 
         $tfiles, $tkeys, $tdone, 
         $tdone/$tkeys*100, $tmissing, $tmissing/$tkeys*100, $tunused, $tunused/$tkeys*100, 
-        $tempty, $tempty/$tkeys*100, $tsame, $tsame/$tkeys*100);
+        $tempty, $tempty/$tkeys*100, $tsame, $tsame/$tkeys*100, $tnojenkins, $tnojenkins/$tkeys*100);
 ## end
 exit();
 
@@ -153,8 +156,17 @@ sub processFile {
       }
    }
 
+   my $nj = "";
+   foreach (keys %okeys) {
+      if ($okeys{$_} && $okeys{$_} =~ /Hudson/i ) {
+         $nj .= "  Non Jenknis    -> $_ -> $okeys{$_}\n" ;
+         $tnojenkins ++;
+      }
+   }
+   
+
    # Show Alerts   
-   print "\nFile: $ofile\n$missing$unused$same" if ($missing ne "" || $unused ne '' || $same ne '');
+   print "\nFile: $ofile\n$missing$unused$same$nj" if ($missing ne "" || $unused ne '' || $same ne '' || $nj ne '');
 
    # write new keys in our file adding the English translation as a reference
    if ($add && $missing ne "") {
@@ -172,7 +184,7 @@ sub processFile {
    }
    
    # open the editor if the user has especified it and there are changes to manage
-   system("$editor $ofile") if ($editor && $add && ($missing ne "" || $same ne ""));
+   system("$editor $ofile") if ($editor && $add && ($missing ne "" || $same ne "" || $nj ne ''));
 
    # write new keys in our file adding the English translation as a reference
    removeUnusedKeys($ofile, %keys) if ($remove && $unused ne "");
