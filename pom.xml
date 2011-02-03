@@ -27,7 +27,7 @@ THE SOFTWARE.
   <parent>
     <groupId>org.jenkins-ci</groupId>
     <artifactId>jenkins</artifactId>
-    <version>1.10</version>
+    <version>1.12</version>
   </parent>
   
   <groupId>org.jenkins-ci.main</groupId>
