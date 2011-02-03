@@ -23,13 +23,6 @@ import org.tmatesoft.svn.core.SVNException;
  * @author Kohsuke Kawaguchi
  */
 public class MavenBuildTest extends HudsonTestCase {
-    /**
-     * Sets guest credentials to access java.net Subversion repo.
-     */
-    protected void setJavaNetCredential(SubversionSCM scm) throws SVNException, IOException {
-        // set the credential to access svn.dev.java.net
-        scm.getDescriptor().postCredential("https://www.dev.java.net/svn/hudson/","guest","",null,new PrintWriter(new NullStream()));
-    }
     
     /**
      * NPE in {@code build.getProject().getWorkspace()} for {@link MavenBuild}.
@@ -74,9 +67,7 @@ public class MavenBuildTest extends HudsonTestCase {
     public void testParallelModuleBuild() throws Exception {
         configureDefaultMaven();
         MavenModuleSet m = createMavenProject();
-        SubversionSCM scm = new SubversionSCM("https://svn.java.net/svn/hudson~svn/trunk/hudson/test-projects/multimodule-maven");
-        setJavaNetCredential(scm);
-        m.setScm(scm);
+        m.setScm(new ExtractResourceSCM(getClass().getResource("multimodule-maven.zip")));
         
         buildAndAssertSuccess(m);
 
