@@ -40,17 +40,15 @@ Upcoming changes</a>
 <!-- Record your changes in the trunk here. -->
 <div id="trunk" style="display:none"><!--=TRUNK-BEGIN=-->
 <ul class=image>
-  <li class=rfe>
-    Added auto-completion to the build trigger.
+  <li class='major bug'>
+    Fixed a master/slave communication problem that often manifests as "Not in GZIP format"
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-7745">issue 7745</a>)
 </ul>
 </div><!--=TRUNK-END=-->
 
 <!-- these changes are controlled by the release process. DO NOT MODIFY -->
 <div id="rc" style="display:none;"><!--=BEGIN=-->
-<h3><a name=v1.397>What's new in 1.397</a> <!--=DATE=--></h3>
-<!--=RC-CHANGES=-->
-</div><!--=END=-->
-<h3><a name=v1.396>What's new in 1.396</a> (2011/02/02)</h3>
+<h3><a name=v1.396>What's new in 1.396</a> <!--=DATE=--></h3>
 <ul class=image>
   <li class=bug>
     Fixed a bug in crontab "day of week" handling in locales where a week starts from Monday.
@@ -64,9 +62,10 @@ Upcoming changes</a>
     If the JNLP-connected slave drops out without the master not noticing, allow the reconnection
     without rejecting it.
     (<a href="http://issues.jenkins-ci.org/browse/JENKINS-5055">issue 5055</a>)
-  <li class='major rfe'>
+  <li class'major rfe'>
     Fixed a trademark bug that caused a considerable fiasco by renaming to Jenkins
 </ul>
+</div><!--=END=-->
 <h3><a name=v1.395>What's new in 1.395</a> (2011/01/21)</h3>
 <ul class=image>
   <li class=bug>
