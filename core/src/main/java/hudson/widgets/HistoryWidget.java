@@ -151,6 +151,8 @@ public class HistoryWidget<O extends ModelObject,T> extends Widget {
     public void doAjax( StaplerRequest req, StaplerResponse rsp,
                   @Header("n") String n ) throws IOException, ServletException {
 
+        // FIXME n can be null if the client behave incorrectly. We should fail gracefully (404?) instead of NPEing
+
         rsp.setContentType("text/html;charset=UTF-8");
 
         // pick up builds to send back
