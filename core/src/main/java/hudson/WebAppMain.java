@@ -262,7 +262,7 @@ public final class WebAppMain implements ServletContextListener {
     }
 
     /** Add some metadata to a File, allowing to trace setup issues */
-    private class FileAndDescription {
+    private static class FileAndDescription {
         File file;
         String description;
         public FileAndDescription(File file,String description) {
