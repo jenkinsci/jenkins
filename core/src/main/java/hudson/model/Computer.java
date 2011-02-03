@@ -69,11 +69,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Enumeration;
+import java.util.*;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -585,12 +581,27 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
                     e.interrupt();
         } else {
             // if the number is increased, add new ones
-            while(executors.size()<numExecutors) {
-                Executor e = new Executor(this, executors.size());
-                e.start();
-                executors.add(e);
-            }
+            addNewExecutorIfNecessary();
         }
+    }
+
+    private void addNewExecutorIfNecessary() {
+        for (Integer number : getAvailableExecutorNumbers()) {
+            Executor e = new Executor(this, number);
+            e.start();
+            executors.add(e);
+        }
+    }
+
+    private Set<Integer> getAvailableExecutorNumbers() {
+        Set<Integer> availableNumbers  = new HashSet<Integer>();
+        for (int number = 0; number < numExecutors; number++)
+            availableNumbers.add(number);
+
+        for (Executor executor : executors)
+            availableNumbers.remove(executor.getNumber());
+
+        return availableNumbers;
     }
 
     /**
@@ -689,6 +700,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
      */
     /*package*/ synchronized void removeExecutor(Executor e) {
         executors.remove(e);
+        addNewExecutorIfNecessary();
         if(!isAlive())
             Hudson.getInstance().removeComputer(this);
     }
