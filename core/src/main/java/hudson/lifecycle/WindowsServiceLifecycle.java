@@ -87,7 +87,7 @@ public class WindowsServiceLifecycle extends Lifecycle {
     }
 
     /**
-     * On Windows, hudson.war is locked, so we place a new version under a special name,
+     * On Windows, jenkins.war is locked, so we place a new version under a special name,
      * which is picked up by the service wrapper upon restart.
      */
     @Override
@@ -98,7 +98,7 @@ public class WindowsServiceLifecycle extends Lifecycle {
         if(dest==null)  throw new IOException("jenkins.war location is not known.");
 
         // backing up the old jenkins.war before its lost due to upgrading
-        // unless we are trying to rewrite hudson.war by a backup itself
+        // unless we are trying to rewrite jenkins.war by a backup itself
         File bak = new File(dest.getPath() + ".bak");
         if (!by.equals(bak))
             FileUtils.copyFile(dest, bak);
