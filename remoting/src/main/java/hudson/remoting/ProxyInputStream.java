@@ -55,7 +55,7 @@ final class ProxyInputStream extends InputStream {
     @Override
     public int read() throws IOException {
         try {
-            Buffer buf = new Chunk(oid, 1).call(channel);
+            Buffer buf = _read(1);
             if(buf.len==1)
                 // byte->int expansion needs to be done carefully becaue byte in Java is signed
                 // whose idea was it to make byte signed, anyway!?
@@ -70,10 +70,14 @@ final class ProxyInputStream extends InputStream {
         }
     }
 
+    private synchronized Buffer _read(int len) throws IOException, InterruptedException {
+        return new Chunk(oid, len).call(channel);
+    }
+
     @Override
     public int read(byte b[], int off, int len) throws IOException {
         try {
-            Buffer buf = new Chunk(oid,len).call(channel);
+            Buffer buf = _read(len);
             if(buf.len==-1) return -1;
             System.arraycopy(buf.buf,0,b,off,buf.len);
             return buf.len;
