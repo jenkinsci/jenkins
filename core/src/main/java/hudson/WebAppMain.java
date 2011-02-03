@@ -113,9 +113,10 @@ public final class WebAppMain implements ServletContextListener {
 
             installLogger();
 
-            final File home = getHomeDir(event).getAbsoluteFile();
+            final FileAndDescription describedHomeDir = getHomeDir(event);
+            final File home = describedHomeDir.file.getAbsoluteFile();
             home.mkdirs();
-            System.out.println("hudson home directory: "+home);
+            System.out.println("hudson home directory: "+home+" found at: "+describedHomeDir.description);
 
             // check that home exists (as mkdirs could have failed silently), otherwise throw a meaningful error
             if (! home.exists()) {
@@ -260,6 +261,16 @@ public final class WebAppMain implements ServletContextListener {
         Logger.getLogger("hudson").addHandler(handler);
     }
 
+    /** Add some metadata to a File, allowing to trace setup issues */
+    private class FileAndDescription {
+        File file;
+        String description;
+        public FileAndDescription(File file,String description) {
+            this.file = file;
+            this.description = description;
+        }
+    }
+
     /**
      * Determines the home directory for Jenkins.
      *
@@ -269,8 +280,11 @@ public final class WebAppMain implements ServletContextListener {
      * <p>
      * People makes configuration mistakes, so we are trying to be nice
      * with those by doing {@link String#trim()}.
+     * 
+     * <p>
+     * @return the File alongside with some description to help the user troubleshoot issues
      */
-    private File getHomeDir(ServletContextEvent event) {
+    private FileAndDescription getHomeDir(ServletContextEvent event) {
         // check JNDI for the home directory first
         for (String name : HOME_NAMES) {
             try {
@@ -278,11 +292,11 @@ public final class WebAppMain implements ServletContextListener {
                 Context env = (Context) iniCtxt.lookup("java:comp/env");
                 String value = (String) env.lookup(name);
                 if(value!=null && value.trim().length()>0)
-                    return new File(value.trim());
+                    return new FileAndDescription(new File(value.trim()),"JNDI/java:comp/env/"+name);
                 // look at one more place. See issue #1314
                 value = (String) iniCtxt.lookup(name);
                 if(value!=null && value.trim().length()>0)
-                    return new File(value.trim());
+                    return new FileAndDescription(new File(value.trim()),"JNDI/"+name);
             } catch (NamingException e) {
                 // ignore
             }
@@ -292,14 +306,14 @@ public final class WebAppMain implements ServletContextListener {
         for (String name : HOME_NAMES) {
             String sysProp = System.getProperty(name);
             if(sysProp!=null)
-                return new File(sysProp.trim());
+                return new FileAndDescription(new File(sysProp.trim()),"System.getProperty(\""+name+"\")");
         }
 
         // look at the env var next
         for (String name : HOME_NAMES) {
             String env = EnvVars.masterEnvVars.get(name);
             if(env!=null)
-                return new File(env.trim()).getAbsoluteFile();
+                return new FileAndDescription(new File(env.trim()).getAbsoluteFile(),"EnvVars.masterEnvVars.get(\""+name+"\")");
         }
 
         // otherwise pick a place by ourselves
@@ -311,14 +325,16 @@ public final class WebAppMain implements ServletContextListener {
                 // Hudson <1.42 used to prefer this before ~/.hudson, so
                 // check the existence and if it's there, use it.
                 // otherwise if this is a new installation, prefer ~/.hudson
-                return ws;
+                return new FileAndDescription(ws,"getServletContext().getRealPath(\"/WEB-INF/workspace\")");
         }
 
-        File legacyHome = new File(new File(System.getProperty("user.home")), ".hudson");
-        if (legacyHome.exists())
-            return legacyHome; // before rename, this is where it was stored
+        File legacyHome = new File(new File(System.getProperty("user.home")),".hudson");
+        if (legacyHome.exists()) {
+            return new FileAndDescription(legacyHome,"$user.home/.hudson"); // before rename, this is where it was stored
+        }
 
-        return new File(new File(System.getProperty("user.home")), ".jenkins");
+        File newHome = new File(new File(System.getProperty("user.home")),".jenkins");
+        return new FileAndDescription(newHome,"$user.home/.jenkins");
     }
 
     public void contextDestroyed(ServletContextEvent event) {
