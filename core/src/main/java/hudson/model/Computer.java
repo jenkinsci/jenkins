@@ -509,6 +509,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
     public void setTemporarilyOffline(boolean temporarilyOffline, OfflineCause cause) {
         offlineCause = temporarilyOffline ? cause : null;
         this.temporarilyOffline = temporarilyOffline;
+        getNode().setTemporaryOfflineCause(offlineCause);
         Hudson.getInstance().getQueue().scheduleMaintenance();
     }
 
@@ -563,6 +564,16 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
             this.nodeName = null;
 
         setNumExecutors(node.getNumExecutors());
+        if (this.temporarilyOffline) {
+            // When we get a new node, push our current temp offline
+            // status to it (as the status is not carried across
+            // configuration changes that recreate the node).
+            // Since this is also called the very first time this
+            // Computer is created, avoid pushing an empty status
+            // as that could overwrite any status that the Node
+            // brought along from its persisted config data.
+            node.setTemporaryOfflineCause(this.offlineCause);
+        }
     }
 
     /**

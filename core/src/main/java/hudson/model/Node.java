@@ -25,6 +25,7 @@
 package hudson.model;
 
 import com.infradna.tool.bridge_method_injector.WithBridgeMethods;
+import hudson.Extension;
 import hudson.ExtensionPoint;
 import hudson.FilePath;
 import hudson.FileSystemProvisioner;
@@ -37,9 +38,11 @@ import hudson.remoting.VirtualChannel;
 import hudson.security.ACL;
 import hudson.security.AccessControlled;
 import hudson.security.Permission;
+import hudson.slaves.ComputerListener;
 import hudson.slaves.NodeDescriptor;
 import hudson.slaves.NodeProperty;
 import hudson.slaves.NodePropertyDescriptor;
+import hudson.slaves.OfflineCause;
 import hudson.util.ClockDifference;
 import hudson.util.DescribableList;
 import hudson.util.EnumConverter;
@@ -51,6 +54,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.List;
+import java.util.logging.Logger;
 
 import org.kohsuke.stapler.Stapler;
 import org.kohsuke.stapler.export.ExportedBean;
@@ -68,6 +72,9 @@ import org.kohsuke.stapler.export.Exported;
  */
 @ExportedBean
 public abstract class Node extends AbstractModelObject implements Describable<Node>, ExtensionPoint, AccessControlled {
+
+    private static final Logger LOGGER = Logger.getLogger(Node.class.getName());
+
     /**
      * Newly copied slaves get this flag set, so that Hudson doesn't try to start this node until its configuration
      * is saved once.
@@ -164,6 +171,41 @@ public abstract class Node extends AbstractModelObject implements Describable<No
      * Nobody but {@link Hudson#updateComputerList()} should call this method.
      */
     protected abstract Computer createComputer();
+
+    /**
+     * Let Nodes be aware of the lifecycle of their own {@link Computer}.
+     */
+    @Extension
+    public static class InternalComputerListener extends ComputerListener {
+        @Override
+        public void onOnline(Computer c, TaskListener listener) {
+            Node node = c.getNode();
+
+            // At startup, we need to restore any previously in-effect temp offline cause.
+            // We wait until the computer is started rather than getting the data to it sooner
+            // so that the normal computer start up processing works as expected.
+            if (node.temporaryOfflineCause != null && node.temporaryOfflineCause != c.getOfflineCause()) {
+                c.setTemporarilyOffline(true, node.temporaryOfflineCause);
+            }
+        }
+    }
+
+    private OfflineCause temporaryOfflineCause;
+
+    /**
+     * Enable a {@link Computer} to inform its node when it is taken
+     * temporarily offline.
+     */
+    void setTemporaryOfflineCause(OfflineCause cause) {
+        try {
+            if (temporaryOfflineCause != cause) {
+                temporaryOfflineCause = cause;
+                Hudson.getInstance().save(); // Gotta be a better way to do this
+            }
+        } catch (java.io.IOException e) {
+            LOGGER.warning("Unable to complete save, temporary offline status will not be persisted: " + e.getMessage());
+        }
+    }
 
     /**
      * Return the possibly empty tag cloud for the labels of this node.
