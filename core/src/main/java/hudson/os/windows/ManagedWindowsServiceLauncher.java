@@ -212,14 +212,14 @@ public class ManagedWindowsServiceLauncher extends ComputerLauncher {
 
                 // copy exe
                 logger.println(Messages.ManagedWindowsServiceLauncher_CopyingSlaveExe());
-                copyStreamAndClose(getClass().getResource("/windows-service/hudson.exe").openStream(), new SmbFile(remoteRoot,"hudson-slave.exe").getOutputStream());
+                copyStreamAndClose(getClass().getResource("/windows-service/jenkins.exe").openStream(), new SmbFile(remoteRoot,"jenkins-slave.exe").getOutputStream());
 
                 copySlaveJar(logger, remoteRoot);
 
-                // copy hudson-slave.xml
+                // copy jenkins-slave.xml
                 logger.println(Messages.ManagedWindowsServiceLauncher_CopyingSlaveXml());
                 String xml = WindowsSlaveInstaller.generateSlaveXml(id,"javaw.exe","-tcp %BASE%\\port.txt");
-                copyStreamAndClose(new ByteArrayInputStream(xml.getBytes("UTF-8")), new SmbFile(remoteRoot,"hudson-slave.xml").getOutputStream());
+                copyStreamAndClose(new ByteArrayInputStream(xml.getBytes("UTF-8")), new SmbFile(remoteRoot,"jenkins-slave.xml").getOutputStream());
 
                 // install it as a service
                 logger.println(Messages.ManagedWindowsServiceLauncher_RegisteringService());
@@ -228,7 +228,7 @@ public class ManagedWindowsServiceLauncher extends ComputerLauncher {
                 int r = svc.Create(
                         id,
                         dom.selectSingleNode("/service/name").getText()+" at "+path,
-                        path+"\\hudson-slave.exe",
+                        path+"\\jenkins-slave.exe",
                         Win32OwnProcess, 0, "Manual", true);
                 if(r!=0) {
                     listener.error("Failed to create a service: "+svc.getErrorMessage(r));
@@ -310,7 +310,7 @@ public class ManagedWindowsServiceLauncher extends ComputerLauncher {
             JISession session = JISession.createSession(auth);
             session.setGlobalSocketTimeout(60000);
             SWbemServices services = WMI.connect(session, computer.getName());
-            Win32Service slaveService = services.getService("hudsonslave");
+            Win32Service slaveService = services.getService("jenkinsslave");
             if(slaveService!=null) {
                 listener.getLogger().println(Messages.ManagedWindowsServiceLauncher_StoppingService());
                 slaveService.StopService();
