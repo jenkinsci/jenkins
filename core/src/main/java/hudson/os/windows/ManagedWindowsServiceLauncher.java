@@ -311,9 +311,6 @@ public class ManagedWindowsServiceLauncher extends ComputerLauncher {
             session.setGlobalSocketTimeout(60000);
             SWbemServices services = WMI.connect(session, computer.getName());
             Win32Service slaveService = services.getService("jenkinsslave");
-            if(slaveService==null) { // backward compatibility. is this needed ?
-                slaveService = services.getService("hudsonslave");
-            }
             if(slaveService!=null) {
                 listener.getLogger().println(Messages.ManagedWindowsServiceLauncher_StoppingService());
                 slaveService.StopService();
