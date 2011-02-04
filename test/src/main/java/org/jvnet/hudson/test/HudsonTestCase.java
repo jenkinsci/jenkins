@@ -294,7 +294,7 @@ public abstract class HudsonTestCase extends TestCase implements RootAction {
                 WebClient c = client.get();
                 if(c==null) continue;
                 // unload the page to cancel asynchronous operations
-                c.getPage("about:blank");
+                safeUnloadPage(c, 2);
             }
             clients.clear();
         } finally {
@@ -312,6 +312,16 @@ public abstract class HudsonTestCase extends TestCase implements RootAction {
             // at some later point, leading to possible file descriptor overflow. So encourage GC now.
             // see http://bugs.sun.com/view_bug.do?bug_id=4950148
             System.gc();
+        }
+    }
+
+    private void safeUnloadPage(WebClient c, int maxTries) {
+        if (maxTries == 0) return;
+        try{
+            c.getPage("about:blank");
+        } catch(Exception e){
+            e.printStackTrace();
+            safeUnloadPage(c, maxTries--);
         }
     }
 
