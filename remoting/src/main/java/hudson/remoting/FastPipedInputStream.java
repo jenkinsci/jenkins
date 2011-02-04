@@ -147,7 +147,7 @@ public class FastPipedInputStream extends InputStream {
     }
 
     @Override
-    public int read(byte[] b) throws IOException { // FIXME-CHECK-CALLERS
+    public int read(byte[] b) throws IOException { // CHECKED-CALLERS
         return read(b, 0, b.length);
     }
 

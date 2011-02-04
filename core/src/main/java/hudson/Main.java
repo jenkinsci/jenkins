@@ -26,12 +26,14 @@ package hudson;
 import hudson.util.DualOutputStream;
 import hudson.util.EncodingStream;
 import com.thoughtworks.xstream.core.util.Base64Encoder;
+import hudson.util.IOUtils;
 
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
@@ -174,11 +176,19 @@ public class Main {
                     con.connect();
                     // send the data
                     FileInputStream in = new FileInputStream(tmpFile);
-                    Util.copyStream(in,con.getOutputStream());
-                    in.close();
+                    try {
+                        Util.copyStream(in,con.getOutputStream());
+                    } finally {
+                        IOUtils.closeQuietly(in);
+                    }
 
                     if(con.getResponseCode()!=200) {
-                        Util.copyStream(con.getErrorStream(),System.err);
+                      InputStream errorStream = con.getErrorStream();
+                      try{
+                        Util.copyStream(errorStream,System.err);
+                      } finally{
+                        IOUtils.closeQuietly(errorStream);
+                      }
                     }
 
                     return ret;

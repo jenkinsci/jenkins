@@ -140,8 +140,8 @@ public class CompressedFile {
                     try {
                         Util.copyStream(in,out);
                     } finally {
-                        in.close();
-                        out.close();
+                        IOUtils.closeQuietly(in);
+                        IOUtils.closeQuietly(out);
                     }
                     // if the compressed file is created successfully, remove the original
                     file.delete();
