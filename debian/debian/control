@@ -8,7 +8,7 @@ Homepage: https://jenkins-ci.org/
 
 Package: jenkins
 Architecture: all
-Depends: ${shlibs:Depends}, ${misc:Depends}, daemon, adduser, java-virtual-machine, java2-runtime, psmisc
+Depends: ${shlibs:Depends}, ${misc:Depends}, daemon, adduser, psmisc, default-jre
 Conflicts: hudson
 Replaces: hudson
 Description: Continuous integration system written in Java
