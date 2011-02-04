@@ -46,11 +46,14 @@ class Copier extends Thread {
         try {
             byte[] buf = new byte[8192];
             int len;
-            while((len=in.read(buf))>0)
-                out.write(buf,0,len);
-            in.close();
+            try {
+                while((len=in.read(buf))>=0)
+                    out.write(buf,0,len);
+            } finally {
+              in.close();
+            }
         } catch (IOException e) {
-            // TODO: what to do?
+            throw new RuntimeException(e);
         }
     }
 }

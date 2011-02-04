@@ -143,11 +143,11 @@ public class FastPipedInputStream extends InputStream {
 
     public int read() throws IOException {
         byte[] b = new byte[1];
-        return read(b, 0, b.length) == -1 ? -1 : (255 & b[0]);
+        return read(b, 0, b.length) == -1 ? -1 : (255 & b[0]);  // FIXME check if read() guarantees to return at least 1 character, otherwise bug lurking
     }
 
     @Override
-    public int read(byte[] b) throws IOException {
+    public int read(byte[] b) throws IOException { // FIXME-CHECK-CALLERS
         return read(b, 0, b.length);
     }
 

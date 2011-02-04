@@ -453,9 +453,12 @@ final class RemoteClassLoader extends URLClassLoader {
 
             byte[] buf = new byte[8192];
             int len;
-            while((len=in.read(buf))>0)
-                baos.write(buf,0,len);
-            in.close();
+            try {
+                while((len=in.read(buf))>=0)
+                    baos.write(buf,0,len);
+            } finally {
+                in.close();
+            }
 
             return baos.toByteArray();
         }

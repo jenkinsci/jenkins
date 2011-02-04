@@ -68,11 +68,11 @@ public class RemoteInputStream extends InputStream implements Serializable {
         return core.read();
     }
 
-    public int read(byte[] b) throws IOException {
+    public int read(byte[] b) throws IOException { // FIXME-CHECK-CALLERS
         return core.read(b);
     }
 
-    public int read(byte[] b, int off, int len) throws IOException {
+    public int read(byte[] b, int off, int len) throws IOException { // FIXME-CHECK-CALLERS
         return core.read(b, off, len);
     }
 
