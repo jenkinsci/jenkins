@@ -55,7 +55,7 @@ import java.net.URL;
 public class WindowsInstallerLink extends ManagementLink {
 
     /**
-     * Location of the hudson.war.
+     * Location of the jenkins.war.
      * In general case, we can't determine this value, yet having this is a requirement for the installer.
      */
     private final File hudsonWar;
@@ -65,8 +65,8 @@ public class WindowsInstallerLink extends ManagementLink {
      */
     private volatile File installationDir;
 
-    private WindowsInstallerLink(File hudsonWar) {
-        this.hudsonWar = hudsonWar;
+    private WindowsInstallerLink(File jenkinsWar) {
+        this.hudsonWar = jenkinsWar;
     }
 
     public String getIconFileName() {

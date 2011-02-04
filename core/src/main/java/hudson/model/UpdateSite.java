@@ -74,7 +74,7 @@ import javax.servlet.ServletContext;
  * Source of the update center information, like "http://jenkins-ci.org/update-center.json"
  *
  * <p>
- * Hudson can have multiple {@link UpdateSite}s registered in the system, so that it can pick up plugins
+ * Jenkins can have multiple {@link UpdateSite}s registered in the system, so that it can pick up plugins
  * from different locations.
  *
  * @author Andrew Bayer
@@ -173,7 +173,7 @@ public class UpdateSite {
                 certs.add(c);
             }
 
-            // all default root CAs in JVM are trusted, plus certs bundled in Hudson
+            // all default root CAs in JVM are trusted, plus certs bundled in Jenkins
             Set<TrustAnchor> anchors = CertificateUtil.getDefaultRootCAs();
             ServletContext context = Hudson.getInstance().servletContext;
             for (String cert : (Set<String>) context.getResourcePaths("/WEB-INF/update-center-rootCAs")) {
@@ -320,7 +320,7 @@ public class UpdateSite {
         for (PluginWrapper pw : Hudson.getInstance().getPluginManager().getPlugins()) {
             if(!pw.isBundled() && pw.getUpdateInfo()!=null)
                 // do not advertize updates to bundled plugins, since we generally want users to get them
-                // as a part of hudson.war updates. This also avoids unnecessary pinning of plugins. 
+                // as a part of jenkins.war updates. This also avoids unnecessary pinning of plugins. 
                 return true;
         }
         return false;
@@ -352,7 +352,7 @@ public class UpdateSite {
         public final String sourceId;
 
         /**
-         * The latest hudson.war.
+         * The latest jenkins.war.
          */
         public final Entry core;
         /**
@@ -361,7 +361,7 @@ public class UpdateSite {
         public final Map<String,Plugin> plugins = new TreeMap<String,Plugin>(String.CASE_INSENSITIVE_ORDER);
 
         /**
-         * If this is non-null, Hudson is going to check the connectivity to this URL to make sure
+         * If this is non-null, Jenkins is going to check the connectivity to this URL to make sure
          * the network connection is up. Null to skip the check.
          */
         public final String connectionCheckUrl;
@@ -464,7 +464,7 @@ public class UpdateSite {
          */
         public final String compatibleSinceVersion;
         /**
-         * Version of Hudson core this plugin was compiled against.
+         * Version of Jenkins core this plugin was compiled against.
          */
         public final String requiredCore;
         /**

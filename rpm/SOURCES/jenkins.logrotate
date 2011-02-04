@@ -8,6 +8,6 @@
     missingok
     create 644
     postrotate
-     kill -SIGALRM `cat /var/run/jenkins.pid`
+     kill -s SIGALRM `cat /var/run/jenkins.pid`
     endscript
 }

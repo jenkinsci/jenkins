@@ -172,7 +172,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable {
     }
 
     /**
-     * Returns latest Hudson upgrade job.
+     * Returns latest Jenkins upgrade job.
      * @return HudsonUpgradeJob or null if not found
      */
     public HudsonUpgradeJob getHudsonJob() {
@@ -231,7 +231,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable {
     }
 
     /**
-     * Gets the {@link UpdateSite} from which we receive updates for <tt>hudson.war</tt>.
+     * Gets the {@link UpdateSite} from which we receive updates for <tt>jenkins.war</tt>.
      *
      * @return
      *      null if no such update center is provided.
@@ -268,14 +268,14 @@ public class UpdateCenter extends AbstractModelObject implements Saveable {
     }
 
     /**
-     * Schedules a Hudson upgrade.
+     * Schedules a Jenkins upgrade.
      */
     public void doUpgrade(StaplerResponse rsp) throws IOException, ServletException {
         requirePOST();
         Hudson.getInstance().checkPermission(Hudson.ADMINISTER);
         HudsonUpgradeJob job = new HudsonUpgradeJob(getCoreSource(), Hudson.getAuthentication());
         if(!Lifecycle.get().canRewriteHudsonWar()) {
-            sendError("Hudson upgrade not supported in this running mode");
+            sendError("Jenkins upgrade not supported in this running mode");
             return;
         }
 
@@ -285,7 +285,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable {
     }
 
     /**
-     * Returns true if backup of hudson.war exists on the hard drive
+     * Returns true if backup of jenkins.war exists on the hard drive
      */
     public boolean isDowngradable() {
         return new File(Lifecycle.get().getHudsonWar() + ".bak").exists();
@@ -298,7 +298,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable {
         requirePOST();
         Hudson.getInstance().checkPermission(Hudson.ADMINISTER);
         if(!isDowngradable()) {
-            sendError("Hudson downgrade is not possible, probably backup does not exist");
+            sendError("Jenkins downgrade is not possible, probably backup does not exist");
             return;
         }
 
@@ -312,10 +312,9 @@ public class UpdateCenter extends AbstractModelObject implements Saveable {
      * Returns String with version of backup .war file,
      * if the file does not exists returns null
      */
-    public String getBackupVersion()
-    {
+    public String getBackupVersion() {
         try {
-            JarFile backupWar = new JarFile(new File(Lifecycle.get().getHudsonWar().getParentFile(), "hudson.war.bak"));
+            JarFile backupWar = new JarFile(new File(Lifecycle.get().getHudsonWar() + ".bak"));
             return backupWar.getManifest().getMainAttributes().getValue("Hudson-Version");
         } catch (IOException e) {
             LOGGER.log(Level.WARNING, "Failed to read backup version ", e);
@@ -434,7 +433,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable {
 
 
     /**
-     * {@link AdministrativeMonitor} that checks if there's Hudson update.
+     * {@link AdministrativeMonitor} that checks if there's Jenkins update.
      */
     @Extension
     public static final class CoreUpdateMonitor extends AdministrativeMonitor {
@@ -736,7 +735,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable {
     }
 
     /**
-     * Base class for a job that downloads a file from the Hudson project.
+     * Base class for a job that downloads a file from the Jenkins project.
      */
     public abstract class DownloadJob extends UpdateCenterJob {
         /**
@@ -771,8 +770,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable {
         /**
          * Get the user that initiated this job
          */
-        public Authentication getUser()
-        {
+        public Authentication getUser() {
             return this.authentication;
         }
 
@@ -958,8 +956,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable {
             return new File(baseDir, plugin.name + ".hpi");
         }
 
-        protected File getBackup()
-        {
+        protected File getBackup() {
             File baseDir = pm.rootDir;
             return new File(baseDir, plugin.name + ".bak");
         }
@@ -1015,7 +1012,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable {
     }
 
     /**
-     * Represents the state of the upgrade activity of Hudson core.
+     * Represents the state of the upgrade activity of Jenkins core.
      */
     public final class HudsonUpgradeJob extends DownloadJob {
         public HudsonUpgradeJob(UpdateSite site, Authentication auth) {
@@ -1031,7 +1028,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable {
         }
 
         public String getName() {
-            return "hudson.war";
+            return "jenkins.war";
         }
 
         protected void onSuccess() {
@@ -1058,7 +1055,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable {
         }
 
         public String getName() {
-            return "hudson.war";
+            return "jenkins.war";
         }
         protected void onSuccess() {
             status = new Success();

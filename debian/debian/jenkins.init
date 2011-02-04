@@ -147,11 +147,13 @@ do_stop()
 	0) 
 	    $DAEMON $DAEMON_ARGS --stop || return 2
         # wait for the process to really terminate
-        while true;
-        do
+        for n in 1 2 3 4 5; do
             sleep 1
             $DAEMON $DAEMON_ARGS --running || break
         done
+        if get_daemon_status; then
+	        force_stop || return 3
+        fi
 	    ;;
 	*)
 	    force_stop || return 3

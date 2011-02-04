@@ -50,8 +50,8 @@ import java.util.Enumeration;
 import java.util.jar.JarFile;
 
 /**
- * Represents a Hudson plug-in and associated control information
- * for Hudson to control {@link Plugin}.
+ * Represents a Jenkins plug-in and associated control information
+ * for Jenkins to control {@link Plugin}.
  *
  * <p>
  * A plug-in is packaged into a jar file whose extension is <tt>".hpi"</tt>,
@@ -60,9 +60,9 @@ import java.util.jar.JarFile;
  * <p>
  * At the runtime, a plugin has two distinct state axis.
  * <ol>
- *  <li>Enabled/Disabled. If enabled, Hudson is going to use it
- *      next time Hudson runs. Otherwise the next run will ignore it.
- *  <li>Activated/Deactivated. If activated, that means Hudson is using
+ *  <li>Enabled/Disabled. If enabled, Jenkins is going to use it
+ *      next time Jenkins runs. Otherwise the next run will ignore it.
+ *  <li>Activated/Deactivated. If activated, that means Jenkins is using
  *      the plugin in this session. Otherwise it's not.
  * </ol>
  * <p>
@@ -104,7 +104,7 @@ public class PluginWrapper implements Comparable<PluginWrapper> {
 
     /**
      * Used to control the unpacking of the bundled plugin.
-     * If a pin file exists, Hudson assumes that the user wants to pin down a particular version
+     * If a pin file exists, Jenkins assumes that the user wants to pin down a particular version
      * of a plugin, and will not try to overwrite it. Otherwise, it'll be overwritten
      * by a bundled copy, to ensure consistency across upgrade/downgrade.
      * @since 1.325
@@ -113,7 +113,7 @@ public class PluginWrapper implements Comparable<PluginWrapper> {
 
     /**
      * Short name of the plugin. The artifact Id of the plugin.
-     * This is also used in the URL within Hudson, so it needs
+     * This is also used in the URL within Jenkins, so it needs
      * to remain stable even when the *.hpi file name is changed
      * (like Maven does.)
      */
@@ -129,7 +129,7 @@ public class PluginWrapper implements Comparable<PluginWrapper> {
     private final List<Dependency> optionalDependencies;
 
     /**
-     * Is this plugin bundled in hudson.war?
+     * Is this plugin bundled in jenkins.war?
      */
     /*package*/ boolean isBundled;
 
@@ -349,7 +349,7 @@ public class PluginWrapper implements Comparable<PluginWrapper> {
     }
 
     /**
-     * Enables this plugin next time Hudson runs.
+     * Enables this plugin next time Jenkins runs.
      */
     public void enable() throws IOException {
         if(!disableFile.delete())
@@ -357,7 +357,7 @@ public class PluginWrapper implements Comparable<PluginWrapper> {
     }
 
     /**
-     * Disables this plugin next time Hudson runs.
+     * Disables this plugin next time Jenkins runs.
      */
     public void disable() throws IOException {
         // creates an empty file
@@ -378,7 +378,7 @@ public class PluginWrapper implements Comparable<PluginWrapper> {
 
     /**
      * If true, the plugin is going to be activated next time
-     * Hudson runs.
+     * Jenkins runs.
      */
     public boolean isEnabled() {
         return !disableFile.exists();

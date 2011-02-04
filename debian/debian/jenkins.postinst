@@ -31,7 +31,7 @@ case "$1" in
         fi
 	
         # If we have an old hudson install, rename it to jenkins
-        if test -d /var/lib/hudson; then
+        if test -d /var/lib/hudson -a \! \( -e /var/lib/hudson/.for-jenkins \) ; then
             # leave a marker to indicate this came from Hudson.
             # could be useful down the road
             # This also ensures that the .??* wildcard matches something
@@ -40,23 +40,14 @@ case "$1" in
             rmdir /var/lib/hudson
             find /var/lib/jenkins -user hudson -exec chown jenkins {} + || true
         fi
-        if test -d /var/run/hudson; then
-            mv -f /var/run/hudson/* /var/run/jenkins
-            rmdir /var/run/hudson
-        fi
       
-    	# Fix permissions on runtime directories/files.
-    	# change group/owner to jenkins:adm - exclude jobs directory. See HUDSON-4047
-        # even if it fails on some files, don't let that interfere with the upgrade process
-        # (that can happen on dangling symlinks, for example.)
-        find /var/lib/jenkins -path "*jobs" -prune -o -type l -prune -o -exec chown jenkins:adm {} + || true
-    	chown -R jenkins:adm /var/run/jenkins /var/log/jenkins
-    	# change mode to 750 - exclude jobs and .ssh directories. See HUDSON-4047
-        # we prune symlinks instead of -P to avoid chmod/chown getting symlinks as arguments
-        # (which ends up changing the target of the symlink, even though it's not recursive)
-        find /var/lib/jenkins -path "*jobs" -prune -o -path "*.ssh" -prune -o -type l -prune -o -exec chmod 750 {} + || true
-    	chmod -R 750 /var/run/jenkins
-    	chmod 750 /var/log/jenkins
+        # directories needed for jenkins
+        chown jenkins:admin /var/lib/jenkins /var/log/jenkins
+        chmod 750           /var/lib/jenkins /var/log/jenkins
+
+        # make sure jenkins can delete everything in /var/run/jenkins to re-explode war
+        chown -R jenkins:admin /var/run/jenkins
+        chmod -R 750           /var/run/jenkins
     ;;
 
     abort-upgrade|abort-remove|abort-deconfigure)
