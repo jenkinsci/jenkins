@@ -1926,8 +1926,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
         }
 
         public String getEntryDescription(Run entry) {
-            // TODO: this could provide some useful details
-            return null;
+            return entry.getDescription();
         }
 
         public Calendar getEntryTimestamp(Run entry) {
