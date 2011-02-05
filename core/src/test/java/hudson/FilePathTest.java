@@ -47,7 +47,7 @@ public class FilePathTest extends ChannelTestCase {
      * An attempt to reproduce the file descriptor leak.
      * If this operation leaks a file descriptor, 2500 should be enough, I think.
      */
-    public void testCopyTo2() throws Exception {
+    public void DISABLED_testCopyTo2() throws Exception {
         for (int j=0; j<2500; j++) {
             File tmp = File.createTempFile("testCopyFrom","");
             FilePath f = new FilePath(tmp);
