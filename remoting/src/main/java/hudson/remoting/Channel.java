@@ -609,7 +609,7 @@ public class Channel implements VirtualChannel, IChannel {
             }
 
             PipeWindow w;
-            if (!remoteCapability.supportsPipeThrottling())
+            if (remoteCapability.supportsPipeThrottling())
                 w = new Real(k, PIPE_WINDOW_SIZE);
             else
                 w = new PipeWindow.Fake();
