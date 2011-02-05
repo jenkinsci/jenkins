@@ -1,6 +1,7 @@
 package hudson.model;
 
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
+import org.jvnet.hudson.test.Bug;
 import org.jvnet.hudson.test.HudsonTestCase;
 
 /**
@@ -28,8 +29,8 @@ public class ExecutorTest extends HudsonTestCase {
         waitUntilExecutorSizeIs(c, 2);
     }
 
+    @Bug(4756)
     public void testWhenAnExecuterIsYankedANewExecuterTakesItsPlace() throws Exception {
-        final Hudson hudson = Hudson.getInstance();
         Computer c = hudson.toComputer();
         Executor e = getExecutorByNumber(c, 0);
 

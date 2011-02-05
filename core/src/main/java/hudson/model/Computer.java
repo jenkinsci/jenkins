@@ -25,12 +25,10 @@
 package hudson.model;
 
 import hudson.EnvVars;
-import hudson.FilePath;
 import hudson.Util;
 import hudson.cli.declarative.CLIMethod;
 import hudson.console.AnnotatedLargeText;
 import hudson.model.Descriptor.FormException;
-import hudson.model.Hudson.MasterComputer;
 import hudson.model.queue.WorkUnit;
 import hudson.node_monitors.NodeMonitor;
 import hudson.remoting.Channel;
@@ -59,7 +57,6 @@ import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.HttpResponses;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.HttpRedirect;
-import org.kohsuke.stapler.WebMethod;
 import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.export.ExportedBean;
 import org.kohsuke.args4j.Option;
@@ -586,22 +583,18 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
     }
 
     private void addNewExecutorIfNecessary() {
-        for (Integer number : getAvailableExecutorNumbers()) {
-            Executor e = new Executor(this, number);
-            e.start();
-            executors.add(e);
-        }
-    }
-
-    private Set<Integer> getAvailableExecutorNumbers() {
         Set<Integer> availableNumbers  = new HashSet<Integer>();
-        for (int number = 0; number < numExecutors; number++)
-            availableNumbers.add(number);
+        for (int i = 0; i < numExecutors; i++)
+            availableNumbers.add(i);
 
         for (Executor executor : executors)
             availableNumbers.remove(executor.getNumber());
 
-        return availableNumbers;
+        for (Integer number : availableNumbers) {
+            Executor e = new Executor(this, number);
+            e.start();
+            executors.add(e);
+        }
     }
 
     /**
