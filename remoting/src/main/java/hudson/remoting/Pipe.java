@@ -23,6 +23,7 @@
  */
 package hudson.remoting;
 
+import java.io.FilterInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.ObjectInputStream;
@@ -92,7 +93,19 @@ public final class Pipe implements Serializable {
      * Gets the reading end of the pipe.
      */
     public InputStream getIn() {
-        return in;
+        return new FilterInputStream(in) {
+            @Override
+            public void close() throws IOException {
+                try {
+                    // Since closing the reading side does not stop the writing side. We read till the stream is done.
+                    final byte[] buffer = new byte[4096];
+                    while(read(buffer) != -1) {
+                    }
+                } finally {
+                    super.close();
+                }
+            }
+        };
     }
 
     /**

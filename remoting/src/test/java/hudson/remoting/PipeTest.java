@@ -24,9 +24,13 @@
 package hudson.remoting;
 
 import hudson.remoting.ChannelRunner.InProcessCompatibilityMode;
+import hudson.remoting.FastPipedInputStream.ClosedBy;
 import junit.framework.Test;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.output.NullOutputStream;
+import org.jvnet.hudson.test.Bug;
+import org.jvnet.hudson.test.For;
+import org.jvnet.hudson.test.Url;
 
 import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
@@ -35,6 +39,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.Serializable;
 import java.util.Arrays;
+import java.util.logging.Handler;
+import java.util.logging.LogRecord;
+import java.util.logging.Logger;
 
 /**
  * Test {@link Pipe}.
@@ -54,6 +61,60 @@ public class PipeTest extends RmiTestBase implements Serializable {
         int r = f.get();
         System.out.println("result=" + r);
         assertEquals(5,r);
+    }
+    
+    /**
+     * Helper class for testPartialReadQuietlyConsumesPipeOnClose.
+     */
+    private static class EventCounterHandler extends Handler {
+        int count = 0;
+        
+        @Override
+        public void publish(final LogRecord record) {
+            if (ProxyOutputStream.class.getName().equals(record.getLoggerName())) {
+                Throwable thrown = record.getThrown();
+                while (thrown != null) {
+                    if (thrown instanceof ClosedBy) {
+                        count += 1;
+                        break;
+                    }
+                    thrown = thrown.getCause();
+                }
+            }
+        }
+        
+        @Override
+        public void flush() {
+        }
+        
+        @Override
+        public void close() throws SecurityException {
+        }
+
+        public int getCount() {
+            return count;
+        }
+    }
+    
+    /**
+     * This test should be reproducing the initial bug as reported in JENKINS-8592. The assert in this test is not the
+     * best and is fragile, but it is the best I can come up with.
+     */
+    @Bug(8592)
+    @For(Pipe.class)
+    @Url("http://issues.jenkins-ci.org/browse/JENKINS-8592")
+    public void testPartialReadQuietlyConsumesPipeOnClose() throws Exception {
+        final EventCounterHandler handler = new EventCounterHandler();
+        final Logger logger = Logger.getLogger(ProxyOutputStream.class.getName());
+        logger.addHandler(handler);
+        final Pipe p = Pipe.createRemoteToLocal();
+        final Future<Integer> f = channel.callAsync(new WritingCallable(p));
+        final InputStream in = p.getIn();
+        assertEquals(in.read(), 0);
+        in.close();
+        f.get();
+        logger.removeHandler(handler);
+        assertEquals(0, handler.getCount());
     }
 
     private static class WritingCallable implements Callable<Integer, IOException> {
