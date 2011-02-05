@@ -105,7 +105,7 @@ public class VersionNumber implements Comparable<VersionNumber> {
 
     @Override
     public String toString() {
-        StringBuffer buf = new StringBuffer();
+        StringBuilder buf = new StringBuilder();
         for( int i=0; i<digits.length; i++ ) {
             if(i!=0)    buf.append('.');
             buf.append( Integer.toString(digits[i]) );
