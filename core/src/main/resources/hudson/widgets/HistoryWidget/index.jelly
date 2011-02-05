@@ -48,6 +48,13 @@ THE SOFTWARE.
       <tr class="build-row">
         <td colspan="3" align="right">
           <script>
+            function replace(a, b) {
+                  var p = a.parentNode;
+                  var next = a.nextSibling;
+                  p.removeChild(a);
+                  p.insertBefore(b,next);
+            }
+
             function loadAllBuildHistory() {
               // first display the "loading..." icon
               var box = $("loadAllBuildHistory");
@@ -59,14 +66,12 @@ THE SOFTWARE.
                 onComplete: function(rsp,_) {
                   <!-- neither outerHTML nor responseXML works in Firefox 2.0 -->
                   var hist = $$("buildHistory");
-                  var p = hist.parentNode;
-                  var next = hist.nextSibling;
-                  p.removeChild(hist);
 
-                  var div = document.createElement('div');
-                  div.innerHTML = rsp.responseText;
+                  var newhist = document.createElement('div');
+                  newhist.innerHTML = rsp.responseText;
+                  newhist.headers = hist.headers
 
-                  p.insertBefore(div,next);
+                  replace(hist, newhist);
                 }
             });
             }

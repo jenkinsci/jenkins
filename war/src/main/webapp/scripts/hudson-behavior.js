@@ -1472,6 +1472,9 @@ function updateBuildHistory(ajaxUrl,nBuild) {
 
     function updateBuilds() {
         var bh = $('buildHistory');
+        if (bh.headers == null) {
+            // Yahoo.log("Missing headers in buildHistory element");
+        }
         new Ajax.Request(ajaxUrl, {
             requestHeaders: bh.headers,
             onSuccess: function(rsp) {

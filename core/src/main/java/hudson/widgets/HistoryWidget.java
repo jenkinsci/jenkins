@@ -27,15 +27,19 @@ import hudson.Functions;
 import hudson.model.ModelObject;
 import hudson.model.Run;
 import org.kohsuke.stapler.Header;
+import org.kohsuke.stapler.HttpResponses;
 import org.kohsuke.stapler.Stapler;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 
 import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+
+import static javax.servlet.http.HttpServletResponse.SC_BAD_REQUEST;
 
 /**
  * Displays the history of records (normally {@link Run}s) on the side panel.
@@ -150,6 +154,8 @@ public class HistoryWidget<O extends ModelObject,T> extends Widget {
      */
     public void doAjax( StaplerRequest req, StaplerResponse rsp,
                   @Header("n") String n ) throws IOException, ServletException {
+
+        if (n==null)    throw HttpResponses.error(SC_BAD_REQUEST,new Exception("Missing the 'n' HTTP header"));
 
         rsp.setContentType("text/html;charset=UTF-8");
 
