@@ -29,6 +29,7 @@ import org.apache.commons.io.IOUtils;
 
 import java.io.IOException;
 import java.net.URL;
+import java.util.logging.Logger;
 
 /**
  * Quick test for {@link UpdateCenter}.
@@ -50,6 +51,6 @@ public class UpdateCenterTest extends TestCase {
         UpdateSite.Data data = us.new Data(JSONObject.fromObject(json));
         assertTrue(data.core.url.startsWith("http://updates.hudson-labs.org/"));
         assertTrue(data.plugins.containsKey("rake"));
-        System.out.println(data.core.url);
+        Logger.getLogger(UpdateCenterTest.class.getName()).fine(data.core.url);
     }
 }

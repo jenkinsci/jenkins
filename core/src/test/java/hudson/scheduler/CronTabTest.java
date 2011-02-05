@@ -28,6 +28,7 @@ import java.text.DateFormat;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
 import java.util.Locale;
+import java.util.logging.Logger;
 
 import junit.framework.TestCase;
 import org.jvnet.hudson.test.Bug;
@@ -156,8 +157,9 @@ public class CronTabTest extends TestCase {
      */
     private void compare(Calendar a, Calendar b) {
         DateFormat f = DateFormat.getDateTimeInstance();
-        System.out.println(f.format(a.getTime())+" vs "+f.format(b.getTime()));
-        assertEquals(a,b);
+        String msg = f.format(a.getTime()) + " vs " + f.format(b.getTime());
+        Logger.getLogger(CronTabTest.class.getName()).fine(msg);
+        assertEquals(msg, a,b);
     }
 
 }

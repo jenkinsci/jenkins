@@ -32,6 +32,7 @@ import java.util.Iterator;
 import java.util.Set;
 import java.util.HashSet;
 import java.util.Map.Entry;
+import java.util.logging.Logger;
 
 /**
  * @author Kohsuke Kawaguchi
@@ -46,7 +47,7 @@ public class ConsistentHashTest extends TestCase {
         hash.add("data2");
         hash.add("data3");
 
-        System.out.println(hash.lookup(0));
+        Logger.getLogger(ConsistentHashTest.class.getName()).fine(hash.lookup(0));
 
         // there's one in 2^32 chance that this test fails, but these two query points are
         // only off by one.
@@ -82,9 +83,9 @@ public class ConsistentHashTest extends TestCase {
             else                    odd++;
         }
 
-        // again, there's a small chance tha this test fails. 
-        System.out.printf("%d/%d\n",even,odd);
-        assertTrue(even*8<odd);
+        // again, there's a small chance tha this test fails.
+        String msg = ""+even+"/"+odd;
+        assertTrue(msg,even*8<odd);
     }
 
     /**

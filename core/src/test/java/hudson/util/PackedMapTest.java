@@ -5,6 +5,7 @@ import junit.framework.TestCase;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.TreeMap;
+import java.util.logging.Logger;
 
 /**
  * @author Kohsuke Kawaguchi
@@ -26,7 +27,7 @@ public class PackedMapTest extends TestCase {
         assertEquals("d", p.get("c"));
         assertEquals(p.size(),2);
         for (Entry<String,String> e : p.entrySet()) {
-            System.out.println(e.getKey()+'='+e.getValue());
+            Logger.getLogger(PackedMapTest.class.getName()).fine(e.getKey()+'='+e.getValue());
         }
 
         Holder h = new Holder();
