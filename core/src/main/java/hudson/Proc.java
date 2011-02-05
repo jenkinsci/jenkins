@@ -183,6 +183,7 @@ public abstract class Proc {
             return pb;
         }
 
+        
         private LocalProc( String name, ProcessBuilder procBuilder, InputStream in, OutputStream out, OutputStream err ) throws IOException {
             Logger.getLogger(Proc.class.getName()).log(Level.FINE, "Running: {0}", name);
             this.name = name;
@@ -200,10 +201,12 @@ public abstract class Proc {
                 copier2 = new StreamCopyThread(name+": stderr copier", proc.getErrorStream(), err);
                 copier2.start();
             } else {
-                // while this is not discussed in javadoc, even with ProcessBuilder.redirectErrorStream(true),
-                // Process.getErrorStream() still returns a distinct reader end of a pipe that needs to be closed.
-                // this is according to the source code of JVM
-                proc.getErrorStream().close();
+                if(System.getProperty("java.vm.name").contains("HotSpot")) {
+               	 // while this is not discussed in javadoc, even with ProcessBuilder.redirectErrorStream(true),
+               	 // Process.getErrorStream() still returns a distinct reader end of a pipe that needs to be closed.
+               	 // this is according to the source code of HotSpot JVM
+               	 proc.getErrorStream().close();
+            	 }
                 copier2 = null;
             }
         }
