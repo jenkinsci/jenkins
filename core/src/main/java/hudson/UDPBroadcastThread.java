@@ -61,10 +61,13 @@ public class UDPBroadcastThread extends Thread {
     @Override
     public void run() {
         try {
+          try{
             mcs.joinGroup(MULTICAST);
+          } finally{
             ready.signal();
+          }
 
-            while(true) {
+          while(true) {
                 byte[] buf = new byte[2048];
                 DatagramPacket p = new DatagramPacket(buf,buf.length);
                 mcs.receive(p);

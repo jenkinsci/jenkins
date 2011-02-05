@@ -17,6 +17,8 @@ import java.io.IOException;
  * @author Kohsuke Kawaguchi
  */
 public class UDPBroadcastThreadTest extends HudsonTestCase {
+    // FIXME these tests will fail if don't have a network link
+
     /**
      * Old unicast based clients should still be able to receive some reply,
      * as we haven't changed the port.
