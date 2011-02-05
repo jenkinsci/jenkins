@@ -36,16 +36,13 @@ import java.net.URL;
  * @author Kohsuke Kawaguchi
  */
 public class UpdateCenterTest extends TestCase {
-    public void testData() throws IOException {
-        // check if we have the internet connectivity. See HUDSON-2095
-        try {
-            new URL("http://updates.hudson-labs.org/").openStream();
-        } catch (IOException e) {
-            System.out.println("Skipping this test. No internet connectivity");
-            return;
-        }
 
-        URL url = new URL("http://updates.hudson-labs.org/update-center.json?version=build");
+    private URL getDataFileURL(String name) {
+        return UpdateCenterTest.class.getResource(name);
+    }
+
+    public void testData() throws IOException {
+        URL url = getDataFileURL("light_update-center.json?version=build"); // we use the "light" version to speed things up.
         String jsonp = IOUtils.toString(url.openStream());
         String json = jsonp.substring(jsonp.indexOf('(')+1,jsonp.lastIndexOf(')'));
 
