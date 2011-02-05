@@ -170,8 +170,8 @@ public final class TestResult extends MetaTabulatedResult {
             File f = new File(baseDir,includedFiles[0]);
             throw new AbortException(
                 String.format(
-                "Test reports were found but none of them are new. Did tests run? \n"+
-                "For example, %s is %s old\n", f,
+                "Test reports were found but none of them are new. Did tests run? %n"+
+                "For example, %s is %s old%n", f,
                 Util.getTimeSpanString(buildTime-f.lastModified())));
         }
     }
