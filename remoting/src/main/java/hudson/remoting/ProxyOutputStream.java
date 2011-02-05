@@ -184,12 +184,23 @@ final class ProxyOutputStream extends OutputStream {
                     try {
                         os.write(buf);
                     } catch (IOException e) {
-                        // ignore errors
-                        LOGGER.log(Level.WARNING, "Failed to write to stream",e);
+                        try {
+                            channel.send(new NotifyDeadWriter(e,oid));
+                        } catch (ChannelClosedException x) {
+                            // the other direction can be already closed if the connection
+                            // shut down is initiated from this side. In that case, remain silent.
+                        } catch (IOException x) {
+                            // ignore errors
+                            LOGGER.log(Level.WARNING, "Failed to notify the sender that the write end is dead",x);
+                            LOGGER.log(Level.WARNING, "... the failed write was:",e);
+                        }
                     } finally {
                         if (channel.remoteCapability.supportsPipeThrottling()) {
                             try {
                                 channel.send(new Ack(oid,buf.length));
+                            } catch (ChannelClosedException x) {
+                                // the other direction can be already closed if the connection
+                                // shut down is initiated from this side. In that case, remain silent.
                             } catch (IOException e) {
                                 // ignore errors
                                 LOGGER.log(Level.WARNING, "Failed to ack the stream",e);
@@ -324,6 +335,30 @@ final class ProxyOutputStream extends OutputStream {
 
         public String toString() {
             return "Pipe.Ack("+oid+','+size+")";
+        }
+
+        private static final long serialVersionUID = 1L;
+    }
+
+    /**
+     * {@link Command} to notify the sender that the receiver is dead.
+     */
+    private static final class NotifyDeadWriter extends Command {
+        private final int oid;
+
+        private NotifyDeadWriter(Throwable cause, int oid) {
+            super(cause);
+            this.oid = oid;
+        }
+
+        @Override
+        protected void execute(Channel channel) {
+            PipeWindow w = channel.getPipeWindow(oid);
+            w.dead(createdAt.getCause());
+        }
+
+        public String toString() {
+            return "Pipe.Dead("+oid+")";
         }
 
         private static final long serialVersionUID = 1L;
