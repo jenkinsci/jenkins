@@ -3,6 +3,8 @@ package hudson.remoting.forward;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Copies a stream and close them at EOF.
@@ -10,6 +12,7 @@ import java.io.OutputStream;
  * @author Kohsuke Kawaguchi
  */
 final class CopyThread extends Thread {
+    private static final Logger LOGGER = Logger.getLogger(CopyThread.class.getName());
     private final InputStream in;
     private final OutputStream out;
 
@@ -31,7 +34,7 @@ final class CopyThread extends Thread {
                 out.close();
             }
         } catch (IOException e) {
-            // TODO: what to do?
+            LOGGER.log(Level.WARNING, "Exception while copying in thread: " + getName(), e);
         }
     }
 }
