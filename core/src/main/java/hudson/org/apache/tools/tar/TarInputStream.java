@@ -291,7 +291,7 @@ public class TarInputStream extends FilterInputStream {
      * @throws IOException on error
      */
     public int read() throws IOException {
-        int num = this.read(this.oneBuf, 0, 1); // FIXME check if read() guarantees to return at least 1 character, otherwise bug lurking
+        int num = this.read(this.oneBuf, 0, 1);
         return num == -1 ? -1 : ((int) this.oneBuf[0]) & 0xFF;
     }
 

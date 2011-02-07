@@ -113,16 +113,12 @@ public class LargeText {
             final Session session = source.open();
             public int read() throws IOException {
                 byte[] buf = new byte[1];
-                int n;
-                while ((n = session.read(buf)) != -1) {
-                    if (n > 0) {
-                        return buf[0];
-                    }
-                }
-                return -1; // EOF
+                int n = session.read(buf);
+                if(n==1)    return buf[0];
+                else        return -1; // EOF
             }
 
-            public int read(byte[] buf, int off, int len) throws IOException { // CHECKED-CALLERS
+            public int read(byte[] buf, int off, int len) throws IOException {
                 return session.read(buf,off,len);
             }
 
@@ -365,11 +361,11 @@ public class LargeText {
                 n -= in.skip(n);
         }
 
-        public int read(byte[] buf) throws IOException { // CHECKED-CALLERS
+        public int read(byte[] buf) throws IOException {
             return in.read(buf);
         }
 
-        public int read(byte[] buf, int offset, int length) throws IOException { // CHECKED-CALLERS
+        public int read(byte[] buf, int offset, int length) throws IOException {
             return in.read(buf,offset,length);
         }
     }

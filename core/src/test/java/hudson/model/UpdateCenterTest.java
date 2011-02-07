@@ -29,7 +29,6 @@ import org.apache.commons.io.IOUtils;
 
 import java.io.IOException;
 import java.net.URL;
-import java.util.logging.Logger;
 
 /**
  * Quick test for {@link UpdateCenter}.
@@ -37,13 +36,16 @@ import java.util.logging.Logger;
  * @author Kohsuke Kawaguchi
  */
 public class UpdateCenterTest extends TestCase {
-
-    private URL getDataFileURL(String name) {
-        return UpdateCenterTest.class.getResource(name);
-    }
-
     public void testData() throws IOException {
-        URL url = getDataFileURL("light_update-center.json?version=build"); // we use the "light" version to speed things up.
+        // check if we have the internet connectivity. See HUDSON-2095
+        try {
+            new URL("http://updates.hudson-labs.org/").openStream();
+        } catch (IOException e) {
+            System.out.println("Skipping this test. No internet connectivity");
+            return;
+        }
+
+        URL url = new URL("http://updates.hudson-labs.org/update-center.json?version=build");
         String jsonp = IOUtils.toString(url.openStream());
         String json = jsonp.substring(jsonp.indexOf('(')+1,jsonp.lastIndexOf(')'));
 
@@ -51,6 +53,6 @@ public class UpdateCenterTest extends TestCase {
         UpdateSite.Data data = us.new Data(JSONObject.fromObject(json));
         assertTrue(data.core.url.startsWith("http://updates.hudson-labs.org/"));
         assertTrue(data.plugins.containsKey("rake"));
-        Logger.getLogger(UpdateCenterTest.class.getName()).fine(data.core.url);
+        System.out.println(data.core.url);
     }
 }

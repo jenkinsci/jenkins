@@ -45,12 +45,9 @@ public class TestCallable implements Callable {
 
         byte[] buf = new byte[8192];
         int len;
-        try {
-            while((len=in.read(buf))>=0)
-                baos.write(buf,0,len);
-        } finally {
-          in.close();
-        }
+        while((len=in.read(buf))>0)
+            baos.write(buf,0,len);
+        in.close();
 
         r[1] = baos.toByteArray();
 

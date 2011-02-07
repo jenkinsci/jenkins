@@ -40,7 +40,6 @@ import hudson.util.DescribableList;
 import java.io.File;
 import java.io.IOException;
 import java.util.Set;
-import java.util.logging.Logger;
 
 import org.apache.commons.io.FileUtils;
 
@@ -123,7 +122,7 @@ public class NodeListTest extends TestCase {
             x.write(nl);
 
             String xml = FileUtils.readFileToString(tmp);
-            Logger.getLogger(NodeListTest.class.getName()).fine(xml);
+            System.out.println(xml);
             assertEquals(4,xml.split("\n").length);
 
             NodeList back = (NodeList)x.read();

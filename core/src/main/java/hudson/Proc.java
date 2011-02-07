@@ -306,7 +306,7 @@ public abstract class Proc {
                     try {
                         byte[] buf = new byte[8192];
                         int len;
-                        while ((len = in.read(buf)) >= 0) {
+                        while ((len = in.read(buf)) > 0) {
                             out.write(buf, 0, len);
                             out.flush();
                         }
@@ -315,7 +315,7 @@ public abstract class Proc {
                         out.close();
                     }
                 } catch (IOException e) {
-                    throw new RuntimeException(e);
+                    // TODO: what to do?
                 }
             }
         }
@@ -331,7 +331,7 @@ public abstract class Proc {
     }
 
     /**
-     * Remotely launched process via {@link hudson.remoting.Channel}.
+     * Retemoly launched process via {@link Channel}.
      */
     public static final class RemoteProc extends Proc {
         private final Future<Integer> process;

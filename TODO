@@ -1,3 +1,0 @@
-* check classes moved to stapler
-* check why we can't just use IOUtil
-* check cases where we don't want to closeQuietly. We should at least log. Why not having a global error handler instead ?

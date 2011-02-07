@@ -51,7 +51,8 @@ public class SecretTest extends TestCase {
         assertEquals("abc",secret.getPlainText());
 
         // make sure we got some encryption going
-        assertNotSame("abc", secret.getEncryptedValue());
+        System.out.println(secret.getEncryptedValue());
+        assertTrue(!"abc".equals(secret.getEncryptedValue()));
 
         // can we round trip?
         assertEquals(secret,Secret.fromString(secret.getEncryptedValue()));

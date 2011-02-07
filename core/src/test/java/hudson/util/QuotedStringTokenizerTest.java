@@ -33,7 +33,8 @@ import java.util.Arrays;
 public class QuotedStringTokenizerTest extends TestCase {
     private void check(String src, String... expected) {
         String[] r = QuotedStringTokenizer.tokenize(src);
-        assertTrue(Arrays.asList(r).toString(), Arrays.equals(r, expected));
+        System.out.println(Arrays.asList(r));
+        assertTrue(Arrays.equals(r, expected));
     }
 
     public void test1() {

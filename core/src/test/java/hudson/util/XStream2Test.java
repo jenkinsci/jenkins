@@ -29,7 +29,6 @@ import hudson.model.Result;
 import hudson.model.Run;
 
 import java.util.Map;
-import java.util.logging.Logger;
 
 /**
  * Tests for XML serialization of java objects.
@@ -37,9 +36,7 @@ import java.util.logging.Logger;
  */
 public class XStream2Test extends TestCase {
 
-  public static final Logger LOGGER = Logger.getLogger(XStream2Test.class.getName());
-
-  public static final class Foo {
+    public static final class Foo {
         Result r1,r2;
     }
 
@@ -147,7 +144,7 @@ public class XStream2Test extends TestCase {
         ImmutableMapHolder a = new ImmutableMapHolder();
         a.m = m;
         String xml = xs.toXML(a);
-        LOGGER.fine(xml);
+        System.out.println(xml);
         assertFalse("shouldn't contain the class name",xml.contains("google"));
         assertFalse("shouldn't contain the class name",xml.contains("class"));
         a = (ImmutableMapHolder)xs.fromXML(xml);
@@ -160,7 +157,7 @@ public class XStream2Test extends TestCase {
         MapHolder a = new MapHolder();
         a.m = m;
         String xml = xs.toXML(a);
-        LOGGER.fine(xml);
+        System.out.println(xml);
         assertTrue("XML should mention the class name",xml.contains('\"'+ImmutableMap.class.getName()+'\"'));
         a = (MapHolder)xs.fromXML(xml);
 

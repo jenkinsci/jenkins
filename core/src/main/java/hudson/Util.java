@@ -419,19 +419,17 @@ public class Util {
         }
     }
 
-    // FIXME we are using 8k buffers instead of 4k in IOUtil. Do we really want to support our own version ? Or is it to avoid a dependency ?
     public static void copyStream(InputStream in,OutputStream out) throws IOException {
         byte[] buf = new byte[8192];
         int len;
-        while((len=in.read(buf))>=0)
+        while((len=in.read(buf))>0)
             out.write(buf,0,len);
     }
 
-    // FIXME we are using 8k buffers instead of 4k in IOUtil. Do we really want to support our own version ? Or is it to avoid a dependency ?
     public static void copyStream(Reader in, Writer out) throws IOException {
         char[] buf = new char[8192];
         int len;
-        while((len=in.read(buf))>=0)
+        while((len=in.read(buf))>0)
             out.write(buf,0,len);
     }
 
@@ -521,7 +519,7 @@ public class Util {
 
             DigestInputStream in =new DigestInputStream(source,md5);
             try {
-                while(in.read(garbage)>=0)
+                while(in.read(garbage)>0)
                     ; // simply discard the input
             } finally {
                 in.close();

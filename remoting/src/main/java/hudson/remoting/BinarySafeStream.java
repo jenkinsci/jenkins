@@ -186,10 +186,7 @@ public final class BinarySafeStream {
                             int avail = super.available();
                             if(avail >0) {
                                 byte[] buf = new byte[avail];
-                                int len2 = super.read(buf);
-                                if (len2 > 0) {
-                                    baos.write(buf,0,len2);
-                                }
+                                baos.write(buf,0,super.read(buf));
                             }
                             StringBuilder buf = new StringBuilder("Invalid encoded sequence encountered:");
                             for (byte ch : baos.toByteArray())
