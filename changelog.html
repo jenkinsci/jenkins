@@ -1,5 +1,21 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
 <html>
+<!--
+
+We record noteworthy changes in this file, which then become http://jenkins-ci.org/changelog
+
+Some tips:
+
+- record your changes between "TRUNK-BEGIN" and "TRUNK-END".
+  (unless you are making changes in the RC branch, in which case it goes
+  to the rc section.
+
+- there are four CSS classes to denote the kind of changes. "rfe" for enhancement and "bug" for bug fixes,
+  plus 'major' to indicate major RFE/bugfix.
+
+- link to bugs in the issue tracker, e-mail thread in the archive, and so on if you can.
+
+-->
 <head>
   <meta http-equiv="Content-Type" content="text/html;charset=utf-8">
   <title>Changelog</title>
@@ -83,7 +99,10 @@ Upcoming changes</a>
 
 <!-- these changes are controlled by the release process. DO NOT MODIFY -->
 <div id="rc" style="display:none;"><!--=BEGIN=-->
-<h3><a name=v1.396>What's new in 1.396</a> <!--=DATE=--></h3>
+<h3><a name=v1.397>What's new in 1.397</a> <!--=DATE=--></h3>
+<!--=RC-CHANGES=-->
+</div><!--=END=-->
+<h3><a name=v1.396>What's new in 1.396</a> (2011/02/02)</h3>
 <ul class=image>
   <li class=bug>
     Fixed a bug in crontab "day of week" handling in locales where a week starts from Monday.
@@ -100,7 +119,6 @@ Upcoming changes</a>
   <li class='major rfe'>
     Fixed a trademark bug that caused a considerable fiasco by renaming to Jenkins
 </ul>
-</div><!--=END=-->
 <h3><a name=v1.395>What's new in 1.395</a> (2011/01/21)</h3>
 <ul class=image>
   <li class=bug>
