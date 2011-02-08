@@ -30,4 +30,5 @@ debian/configure-stamp
 *.debhelper.log
 jenkins_*.build
 jenkins_*.changes
+*.deb
 push-build.sh
