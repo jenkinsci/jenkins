@@ -103,8 +103,8 @@ public abstract class DefaultTestResultParserImpl extends TestResultParser imple
                     // none of the files were new
                     throw new AbortException(
                         String.format(
-                        "Test reports were found but none of them are new. Did tests run? \n"+
-                        "For example, %s is %s old\n", paths[0].getRemote(),
+                        "Test reports were found but none of them are new. Did tests run? %n"+
+                        "For example, %s is %s old%n", paths[0].getRemote(),
                         Util.getTimeSpanString(localBuildTime-paths[0].lastModified())));
                 }
 

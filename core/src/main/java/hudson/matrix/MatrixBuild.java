@@ -220,7 +220,7 @@ public class MatrixBuild extends AbstractBuild<MatrixProject,MatrixBuild> {
                 }
                 
                 if (p.getTouchStoneResultCondition() != null && r.isWorseThan(p.getTouchStoneResultCondition())) {
-                    logger.printf("Touchstone configurations resulted in %s, so aborting...\n", r);
+                    logger.printf("Touchstone configurations resulted in %s, so aborting...%n", r);
                     return r;
                 }
                 

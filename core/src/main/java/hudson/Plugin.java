@@ -227,8 +227,9 @@ public abstract class Plugin implements Saveable {
      */
     public void save() throws IOException {
         if(BulkChange.contains(this))   return;
-        getConfigXml().write(this);
-        SaveableListener.fireOnChange(this, getConfigXml());
+        XmlFile config = getConfigXml();
+        config.write(this);
+        SaveableListener.fireOnChange(this, config);
     }
 
     /**

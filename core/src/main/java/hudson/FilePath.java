@@ -1819,7 +1819,7 @@ public final class FilePath implements Serializable {
         value = fixEmpty(value);
 
         // none entered yet, or something is seriously wrong
-        if(value==null || (AbstractProject<?,?>)subject ==null) return FormValidation.ok();
+        if(value==null) return FormValidation.ok();
 
         // a common mistake is to use wildcard
         if(value.contains("*")) return FormValidation.error(Messages.FilePath_validateRelativePath_wildcardNotAllowed());
