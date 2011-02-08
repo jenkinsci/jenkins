@@ -391,9 +391,9 @@ public class BeanBuilder extends GroovyObjectSupport {
     private void finalizeDeferredProperties() {
         for (DeferredProperty dp : deferredProperties.values()) {
             if (dp.value instanceof List) {
-                dp.value = manageListIfNecessary(dp.value);
+                dp.value = manageListIfNecessary((List)dp.value);
             } else if (dp.value instanceof Map) {
-                dp.value = manageMapIfNecessary(dp.value);
+                dp.value = manageMapIfNecessary((Map)dp.value);
             }
             dp.setInBeanConfig();
         }
@@ -558,10 +558,9 @@ public class BeanBuilder extends GroovyObjectSupport {
 	 * @param value The current map
 	 * @return A ManagedMap or a normal map
 	 */
-	private Object manageMapIfNecessary(Object value) {
-		Map<Object,Object> map = (Map)value;
+	private Object manageMapIfNecessary(Map<Object, Object> value) {
 		boolean containsRuntimeRefs = false;
-        for (Entry<Object,Object> e : map.entrySet()) {
+        for (Entry<Object, Object> e : value.entrySet()) {
             Object v = e.getValue();
             if (v instanceof RuntimeBeanReference) {
                 containsRuntimeRefs = true;
@@ -575,7 +574,7 @@ public class BeanBuilder extends GroovyObjectSupport {
 		if(containsRuntimeRefs) {
 //			return new ManagedMap(map);
             ManagedMap m = new ManagedMap();
-            m.putAll(map);
+            m.putAll(value);
             return m;
         }
 		return value;
@@ -588,10 +587,9 @@ public class BeanBuilder extends GroovyObjectSupport {
 	 * @param value The object that represents the list
 	 * @return Either a new list or a managed one
 	 */
-	private Object manageListIfNecessary(Object value) {
-		List list = (List)value;
+	private Object manageListIfNecessary(List<Object> value) {
 		boolean containsRuntimeRefs = false;
-		for (ListIterator i = list.listIterator(); i.hasNext();) {
+		for (ListIterator<Object> i = value.listIterator(); i.hasNext();) {
 			Object e = i.next();
 			if(e instanceof RuntimeBeanReference) {
 				containsRuntimeRefs = true;
@@ -604,7 +602,7 @@ public class BeanBuilder extends GroovyObjectSupport {
         }
 		if(containsRuntimeRefs) {
 			List tmp = new ManagedList();
-			tmp.addAll((List)value);
+			tmp.addAll(value);
 			value = tmp;
 		}
 		return value;

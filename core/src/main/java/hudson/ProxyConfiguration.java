@@ -89,8 +89,9 @@ public final class ProxyConfiguration implements Saveable {
 
     public void save() throws IOException {
         if(BulkChange.contains(this))   return;
-        getXmlFile().write(this);
-        SaveableListener.fireOnChange(this, getXmlFile());
+        XmlFile config = getXmlFile();
+        config.write(this);
+        SaveableListener.fireOnChange(this, config);
     }
 
     public static XmlFile getXmlFile() {
