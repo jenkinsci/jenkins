@@ -21,7 +21,7 @@ News and Website
 All about Jenkkins CI can be found on our [website]. Follow us an Twitter @[jenkinsci].
 
 [ButlerImage]: http://jenkins-ci.org/images/butler.png
-[MIT License]: LICENSE.txt
+[MIT License]: https://github.com/jenkinsci/jenkins/raw/master/LICENSE.txt
 [Mirrors]: http://mirrors.jenkins-ci.org
 [GitHub]: https://github.com/jenkinsci/jenkins
 [website]: http://jenkins-ci.org
