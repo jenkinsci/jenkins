@@ -721,7 +721,7 @@ public abstract class HudsonTestCase extends TestCase implements RootAction {
     protected <B extends Builder> B configRoundtrip(B before) throws Exception {
         FreeStyleProject p = createFreeStyleProject();
         p.getBuildersList().add(before);
-        configRoundtrip(p);
+        configRoundtrip((Item)p);
         return (B)p.getBuildersList().get(before.getClass());
     }
 
@@ -731,7 +731,7 @@ public abstract class HudsonTestCase extends TestCase implements RootAction {
     protected <P extends Publisher> P configRoundtrip(P before) throws Exception {
         FreeStyleProject p = createFreeStyleProject();
         p.getPublishersList().add(before);
-        configRoundtrip(p);
+        configRoundtrip((Item)p);
         return (P)p.getPublishersList().get(before.getClass());
     }
 
