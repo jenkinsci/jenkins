@@ -218,18 +218,23 @@ public final class CronTab {
         private static final CalendarField DAY_OF_WEEK  = new CalendarField("dow", Calendar.DAY_OF_WEEK,   1,-1, true,  HOUR) {
             long bits(CronTab c) { return c.dayOfWeek; }
             void rollUp(Calendar cal, int i) {
-                cal.add(Calendar.DAY_OF_WEEK,7);
+                cal.add(Calendar.DAY_OF_WEEK, 7 * i);
             }
 
             @Override
             void setTo(Calendar c, int i) {
                 int v = i-offset;
+                int was = c.get(field);
                 c.set(field,v);
-                if (v<c.getFirstDayOfWeek()) {
+                final int firstDayOfWeek = c.getFirstDayOfWeek();
+                if (v < firstDayOfWeek && was >= firstDayOfWeek) {
                     // in crontab, the first DoW is always Sunday, but in Java, it can be Monday or in theory arbitrary other days.
                     // When first DoW is 1/2 Monday, calendar points to 1/2 Monday, setting the DoW to Sunday makes
                     // the calendar moves forward to 1/8 Sunday, instead of 1/1 Sunday. So we need to compensate that effect here.
                     addTo(c,-7);
+                } else if (was < firstDayOfWeek && firstDayOfWeek <= v) {
+                    // If we wrap the other way around, we need to adjust in the opposite direction of above.
+                    addTo(c, 7);
                 }
             }
         };

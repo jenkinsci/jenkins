@@ -798,8 +798,6 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable {
     List<T> newInstancesFromHeteroList(StaplerRequest req, JSONObject formData, String key,
                 Collection<? extends Descriptor<T>> descriptors) throws FormException {
 
-        List<T> items = new ArrayList<T>();
-
         return newInstancesFromHeteroList(req,formData.get(key),descriptors);
     }
 
