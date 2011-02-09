@@ -485,9 +485,10 @@ public class PluginWrapper implements Comparable<PluginWrapper> {
      * or null if there's no back up.
      */
     public String getBackupVersion() {
-        if (getBackupFile().exists()) {
+        File backup = getBackupFile();
+        if (backup.exists()) {
             try {
-                JarFile backupPlugin = new JarFile(getBackupFile());
+                JarFile backupPlugin = new JarFile(backup);
                 return backupPlugin.getManifest().getMainAttributes().getValue("Plugin-Version");
             } catch (IOException e) {
                 LOGGER.log(WARNING, "Failed to get backup version ", e);

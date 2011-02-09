@@ -580,7 +580,7 @@ public class SlaveComputer extends Computer {
 
         // if this method is called from within the slave computation thread, this should work
         Channel c = Channel.current();
-        if (c!=null && c.getProperty("slave")==Boolean.TRUE)
+        if (c!=null && Boolean.TRUE.equals(c.getProperty("slave")))
             return c;
 
         return null;

@@ -148,11 +148,6 @@ public abstract class Graph {
     public void doMap(StaplerRequest req, StaplerResponse rsp) throws IOException {
         if (req.checkIfModified(timestamp, rsp)) return;
 
-        String w = req.getParameter("width");
-        if(w==null)     w=String.valueOf(defaultW);
-        String h = req.getParameter("height");
-        if(h==null)     h=String.valueOf(defaultH);
-
         ChartRenderingInfo info = new ChartRenderingInfo();
         render(req,info);
 

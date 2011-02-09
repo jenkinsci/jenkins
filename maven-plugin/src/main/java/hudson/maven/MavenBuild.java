@@ -44,6 +44,7 @@ import hudson.scm.ChangeLogSet.Entry;
 import hudson.tasks.BuildWrapper;
 import hudson.tasks.Maven.MavenInstallation;
 import hudson.util.ArgumentListBuilder;
+import hudson.util.IOUtils;
 import org.apache.maven.BuildFailureException;
 import org.apache.maven.artifact.versioning.ComparableVersion;
 import org.apache.maven.execution.MavenSession;
@@ -601,6 +602,21 @@ public class MavenBuild extends AbstractMavenBuild<MavenModule,MavenBuild> {
                 // use the per-project repository. should it be per-module? But that would cost too much in terms of disk
                 // the workspace must be on this node, so getRemote() is safe.
                 margs.add("-Dmaven.repo.local="+getWorkspace().child(".repository").getRemote());
+
+            if (mms.getAlternateSettings() != null) {
+                if (IOUtils.isAbsolute(mms.getAlternateSettings())) {
+                    margs.add("-s").add(mms.getAlternateSettings());
+                } else {
+                    FilePath mrSettings = getModuleRoot().child(mms.getAlternateSettings());
+                    FilePath wsSettings = getWorkspace().child(mms.getAlternateSettings());
+                    if (!wsSettings.exists() && mrSettings.exists())
+                        wsSettings = mrSettings;
+
+                    margs.add("-s").add(wsSettings.getRemote());
+                }
+            }
+
+
             margs.add("-f",getModuleRoot().child("pom.xml").getRemote());
             margs.addTokenized(getProject().getGoals());
 
