@@ -36,6 +36,8 @@ import hudson.security.GroupDetails;
 import hudson.security.SecurityRealm;
 import hudson.slaves.ComputerConnector;
 import hudson.tasks.Builder;
+import hudson.tasks.BuildWrapper;
+import hudson.tasks.BuildWrapperDescriptor;
 import hudson.tasks.Publisher;
 import hudson.tools.ToolProperty;
 import hudson.remoting.Which;
@@ -96,6 +98,7 @@ import javax.servlet.ServletContextEvent;
 
 import junit.framework.TestCase;
 
+import net.sf.json.JSONObject;
 import net.sourceforge.htmlunit.corejs.javascript.Context;
 import net.sourceforge.htmlunit.corejs.javascript.ContextFactory.Listener;
 import org.acegisecurity.AuthenticationException;
@@ -1688,5 +1691,38 @@ public abstract class HudsonTestCase extends TestCase implements RootAction {
         // DNS multicast support takes up a lot of time during tests, so just disable it altogether
         // this also prevents tests from falsely advertising Hudson
         DNSMultiCast.disabled = true;
+    }
+
+    public static class TestBuildWrapper extends BuildWrapper {
+        public Result buildResultInTearDown;
+
+        @Override
+        public Environment setUp(AbstractBuild build, Launcher launcher, BuildListener listener) throws IOException, InterruptedException {
+            return new BuildWrapper.Environment() {
+                @Override
+                public boolean tearDown(AbstractBuild build, BuildListener listener) throws IOException, InterruptedException {
+                    buildResultInTearDown = build.getResult();
+                    return true;
+                }
+            };
+        }
+
+        @Extension
+        public static class TestBuildWrapperDescriptor extends BuildWrapperDescriptor {
+            @Override
+            public boolean isApplicable(AbstractProject<?, ?> project) {
+                return true;
+            }
+
+            @Override
+            public BuildWrapper newInstance(StaplerRequest req, JSONObject formData) {
+                throw new UnsupportedOperationException();
+            }
+
+            @Override
+            public String getDisplayName() {
+                return this.getClass().getName();
+            }
+        }
     }
 }
