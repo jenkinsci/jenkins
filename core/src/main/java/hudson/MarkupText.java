@@ -193,7 +193,7 @@ public class MarkupText extends AbstractMarkupText {
          * Replaces the group tokens like "$0", "$1", and etc with their actual matches.
          */
         public String replace(String s) {
-            StringBuffer buf = new StringBuffer();
+            StringBuilder buf = new StringBuilder(s.length() + 10);
 
             for( int i=0; i<s.length(); i++) {
                 char ch = s.charAt(i);

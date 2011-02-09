@@ -1033,7 +1033,7 @@ public class Util {
                 listener.getLogger().println(String.format("ln -s %s %s failed: %d %s",targetPath, symlinkFile, r, errmsg));
         } catch (IOException e) {
             PrintStream log = listener.getLogger();
-            log.printf("ln %s %s failed\n",targetPath, new File(baseDir, symlinkPath));
+            log.printf("ln %s %s failed%n",targetPath, new File(baseDir, symlinkPath));
             Util.displayIOException(e,listener);
             e.printStackTrace( log );
         }

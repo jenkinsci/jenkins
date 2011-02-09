@@ -116,7 +116,8 @@ public class InstallPluginCommand extends CLICommand {
                         Data dt = s.getData();
                         if (dt==null)
                             stdout.println(Messages.InstallPluginCommand_NoUpdateDataRetrieved(s.getUrl()));
-                        candidates.addAll(dt.plugins.keySet());
+                        else
+                            candidates.addAll(dt.plugins.keySet());
                     }
                     stdout.println(Messages.InstallPluginCommand_DidYouMean(source,EditDistance.findNearest(source,candidates)));
                 }

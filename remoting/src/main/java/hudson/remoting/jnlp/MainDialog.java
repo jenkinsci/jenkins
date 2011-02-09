@@ -39,7 +39,7 @@ public class MainDialog extends JFrame {
     private final JLabel statusLabel;
 
     public MainDialog() throws HeadlessException {
-        super("Hudson slave agent");
+        super("Jenkins slave agent");
 
         ImageIcon background = new ImageIcon(getClass().getResource("title.png"));
 
