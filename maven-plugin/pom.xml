@@ -179,9 +179,9 @@ THE SOFTWARE.
       <artifactId>plexus-classworlds</artifactId>
     </dependency>  
     <dependency>
-      <groupId>org.jvnet.hudson</groupId>
-      <artifactId>hudson-maven-artifact-manager</artifactId>
-      <version>1.0</version>
+      <groupId>org.jenkins-ci.lib</groupId>
+      <artifactId>lib-jenkins-maven-artifact-manager</artifactId>
+      <version>1.1</version>
     </dependency>                
     <dependency>
       <groupId>commons-io</groupId>

@@ -23,43 +23,78 @@
  */
 package org.jvnet.hudson.test;
 
-import com.gargoylesoftware.htmlunit.DefaultCssErrorHandler;
-import com.gargoylesoftware.htmlunit.javascript.HtmlUnitContextFactory;
-import com.gargoylesoftware.htmlunit.javascript.host.xml.XMLHttpRequest;
-import hudson.*;
+import hudson.ClassicPluginStrategy;
+import hudson.CloseProofOutputStream;
+import hudson.DNSMultiCast;
+import hudson.DescriptorExtensionList;
+import hudson.EnvVars;
+import hudson.ExtensionList;
+import hudson.FilePath;
+import hudson.Functions;
+import hudson.Launcher.LocalLauncher;
+import hudson.Main;
+import hudson.PluginManager;
 import hudson.Util;
-import hudson.model.*;
+import hudson.WebAppMain;
+import hudson.matrix.MatrixBuild;
+import hudson.matrix.MatrixProject;
+import hudson.matrix.MatrixRun;
+import hudson.maven.MavenBuild;
+import hudson.maven.MavenEmbedder;
+import hudson.maven.MavenModule;
+import hudson.maven.MavenModuleSet;
+import hudson.maven.MavenModuleSetBuild;
+import hudson.model.AbstractBuild;
+import hudson.model.AbstractProject;
+import hudson.model.Computer;
+import hudson.model.Describable;
+import hudson.model.Descriptor;
+import hudson.model.DownloadService;
+import hudson.model.Executor;
+import hudson.model.FreeStyleBuild;
+import hudson.model.FreeStyleProject;
+import hudson.model.Hudson;
+import hudson.model.Item;
+import hudson.model.JDK;
+import hudson.model.Job;
+import hudson.model.Label;
+import hudson.model.Node;
+import hudson.model.Node.Mode;
 import hudson.model.Queue.Executable;
+import hudson.model.Result;
+import hudson.model.RootAction;
+import hudson.model.Run;
+import hudson.model.Saveable;
+import hudson.model.TaskListener;
+import hudson.model.UpdateSite;
+import hudson.model.User;
+import hudson.model.View;
+import hudson.remoting.Which;
 import hudson.security.ACL;
 import hudson.security.AbstractPasswordBasedSecurityRealm;
 import hudson.security.GroupDetails;
 import hudson.security.SecurityRealm;
-import hudson.slaves.ComputerConnector;
-import hudson.tasks.Builder;
-import hudson.tasks.Publisher;
-import hudson.tools.ToolProperty;
-import hudson.remoting.Which;
-import hudson.Launcher.LocalLauncher;
-import hudson.matrix.MatrixProject;
-import hudson.matrix.MatrixBuild;
-import hudson.matrix.MatrixRun;
-import hudson.maven.MavenModuleSet;
-import hudson.maven.MavenEmbedder;
-import hudson.model.Node.Mode;
 import hudson.security.csrf.CrumbIssuer;
 import hudson.slaves.CommandLauncher;
+import hudson.slaves.ComputerConnector;
+import hudson.slaves.ComputerListener;
 import hudson.slaves.DumbSlave;
 import hudson.slaves.RetentionStrategy;
-import hudson.tasks.Mailer;
-import hudson.tasks.Maven;
 import hudson.tasks.Ant;
 import hudson.tasks.Ant.AntInstallation;
+import hudson.tasks.Builder;
+import hudson.tasks.Mailer;
+import hudson.tasks.Mailer.DescriptorImpl;
+import hudson.tasks.Maven;
 import hudson.tasks.Maven.MavenInstallation;
+import hudson.tasks.Publisher;
+import hudson.tools.ToolProperty;
 import hudson.util.PersistedList;
 import hudson.util.ReflectionUtils;
 import hudson.util.StreamTaskListener;
 import hudson.util.jna.GNUCLibrary;
 
+import java.beans.PropertyDescriptor;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
@@ -68,45 +103,45 @@ import java.lang.annotation.Annotation;
 import java.lang.ref.WeakReference;
 import java.lang.reflect.Array;
 import java.lang.reflect.Constructor;
-import java.lang.reflect.Method;
 import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.UUID;
 import java.util.concurrent.Callable;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Future;
 import java.util.jar.Manifest;
 import java.util.logging.Filter;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
-import java.beans.PropertyDescriptor;
 
 import javax.servlet.ServletContext;
 import javax.servlet.ServletContextEvent;
 
 import junit.framework.TestCase;
-
 import net.sourceforge.htmlunit.corejs.javascript.Context;
 import net.sourceforge.htmlunit.corejs.javascript.ContextFactory.Listener;
+
 import org.acegisecurity.AuthenticationException;
 import org.acegisecurity.BadCredentialsException;
 import org.acegisecurity.GrantedAuthority;
 import org.acegisecurity.context.SecurityContextHolder;
 import org.acegisecurity.userdetails.UserDetails;
 import org.acegisecurity.userdetails.UsernameNotFoundException;
+import org.apache.commons.beanutils.PropertyUtils;
 import org.apache.commons.httpclient.NameValuePair;
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.beanutils.PropertyUtils;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.resolver.AbstractArtifactResolutionException;
 import org.jvnet.hudson.test.HudsonHomeLoader.CopyExisting;
@@ -119,9 +154,9 @@ import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.Dispatcher;
 import org.kohsuke.stapler.MetaClass;
 import org.kohsuke.stapler.MetaClassLoader;
+import org.kohsuke.stapler.Stapler;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
-import org.kohsuke.stapler.Stapler;
 import org.mortbay.jetty.MimeTypes;
 import org.mortbay.jetty.Server;
 import org.mortbay.jetty.bio.SocketConnector;
@@ -140,16 +175,19 @@ import org.xml.sax.SAXException;
 
 import com.gargoylesoftware.htmlunit.AjaxController;
 import com.gargoylesoftware.htmlunit.BrowserVersion;
+import com.gargoylesoftware.htmlunit.DefaultCssErrorHandler;
 import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
 import com.gargoylesoftware.htmlunit.Page;
 import com.gargoylesoftware.htmlunit.WebRequestSettings;
+import com.gargoylesoftware.htmlunit.html.DomNode;
+import com.gargoylesoftware.htmlunit.html.HtmlButton;
+import com.gargoylesoftware.htmlunit.html.HtmlElement;
+import com.gargoylesoftware.htmlunit.html.HtmlForm;
+import com.gargoylesoftware.htmlunit.html.HtmlInput;
+import com.gargoylesoftware.htmlunit.html.HtmlPage;
+import com.gargoylesoftware.htmlunit.javascript.HtmlUnitContextFactory;
+import com.gargoylesoftware.htmlunit.javascript.host.xml.XMLHttpRequest;
 import com.gargoylesoftware.htmlunit.xml.XmlPage;
-import com.gargoylesoftware.htmlunit.html.*;
-import hudson.maven.MavenBuild;
-import hudson.maven.MavenModule;
-import hudson.maven.MavenModuleSetBuild;
-import hudson.slaves.ComputerListener;
-import java.util.concurrent.CountDownLatch;
 
 /**
  * Base class for all Hudson test cases.
@@ -265,7 +303,9 @@ public abstract class HudsonTestCase extends TestCase implements RootAction {
 
         // cause all the descriptors to reload.
         // ideally we'd like to reset them to properly emulate the behavior, but that's not possible.
-        Mailer.descriptor().setHudsonUrl(null);
+        DescriptorImpl desc = Mailer.descriptor();
+        // prevent NPE with eclipse 
+        if (desc != null) Mailer.descriptor().setHudsonUrl(null);
         for( Descriptor d : hudson.getExtensionList(Descriptor.class) )
             d.load();
     }
@@ -721,7 +761,7 @@ public abstract class HudsonTestCase extends TestCase implements RootAction {
     protected <B extends Builder> B configRoundtrip(B before) throws Exception {
         FreeStyleProject p = createFreeStyleProject();
         p.getBuildersList().add(before);
-        configRoundtrip(p);
+        configRoundtrip((Item)p);
         return (B)p.getBuildersList().get(before.getClass());
     }
 
@@ -731,7 +771,7 @@ public abstract class HudsonTestCase extends TestCase implements RootAction {
     protected <P extends Publisher> P configRoundtrip(P before) throws Exception {
         FreeStyleProject p = createFreeStyleProject();
         p.getPublishersList().add(before);
-        configRoundtrip(p);
+        configRoundtrip((Item)p);
         return (P)p.getPublishersList().get(before.getClass());
     }
 

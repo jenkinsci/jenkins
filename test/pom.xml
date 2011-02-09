@@ -55,7 +55,7 @@ THE SOFTWARE.
         <!-- see http://maven-junit-plugin.kenai.com/ for more info -->
         <groupId>com.sun.maven</groupId>
         <artifactId>maven-junit-plugin</artifactId>
-        <version>1.6</version>
+        <version>1.7</version>
         <executions>
           <execution>
             <goals>
@@ -165,6 +165,11 @@ THE SOFTWARE.
       <artifactId>mock-javamail</artifactId>
       <version>1.7</version>
     </dependency>
+    <dependency>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+      <version>4.8.2</version>
+    </dependency>
     <!--dependency>
       <groupId>org.openqa.selenium.client-drivers</groupId>
       <artifactId>selenium-java-client-driver</artifactId>
@@ -193,11 +198,6 @@ THE SOFTWARE.
       <groupId>org.jvnet.hudson</groupId>
       <artifactId>netx</artifactId>
       <version>0.5-hudson-2</version>
-    </dependency>
-    <dependency>
-      <groupId>junit</groupId>
-      <artifactId>junit</artifactId>
-      <version>3.8.1</version>
     </dependency>
     <dependency>
       <groupId>org.easymock</groupId>
