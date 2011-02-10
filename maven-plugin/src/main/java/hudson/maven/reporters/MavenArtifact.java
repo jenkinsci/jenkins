@@ -30,6 +30,8 @@ import hudson.maven.MavenBuildProxy;
 import hudson.model.BuildListener;
 import hudson.model.FingerprintMap;
 import hudson.model.Hudson;
+
+import org.apache.maven.RepositoryUtils;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.factory.ArtifactFactory;
 import org.apache.maven.artifact.handler.ArtifactHandler;
@@ -148,6 +150,7 @@ public final class MavenArtifact implements Serializable {
         final String canonicalExtension = canonicalName.substring(canonicalName.lastIndexOf('.')+1);
         ArtifactHandler ah = handlerManager.getArtifactHandler(type);
         Map<String,ArtifactHandler> handlers = Maps.newHashMap();
+        
         handlers.put( type, new DefaultArtifactHandler(type) {
                         public String getExtension() {
                             return canonicalExtension;
@@ -159,6 +162,7 @@ public final class MavenArtifact implements Serializable {
 
         Artifact a = factory.createArtifactWithClassifier(groupId, artifactId, version, type, classifier);
         a.setFile(getFile(build));
+       
         return a;
     }
 
