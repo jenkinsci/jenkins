@@ -24,6 +24,7 @@
  */
 package hudson.maven;
 
+import static hudson.model.Result.ABORTED;
 import static hudson.model.Result.FAILURE;
 import hudson.AbortException;
 import hudson.EnvVars;
@@ -651,6 +652,9 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
                                 process.discard();
                             }
                         }
+                    } catch (InterruptedException e) {
+                        r = ABORTED;
+                        throw e;
                     } finally {
                         if (r != null) {
                             setResult(r);

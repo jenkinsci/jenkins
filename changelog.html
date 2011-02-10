@@ -1,5 +1,23 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
 <html>
-<head id="head">
+<!--
+
+We record noteworthy changes in this file, which then become http://jenkins-ci.org/changelog
+
+Some tips:
+
+- record your changes between "TRUNK-BEGIN" and "TRUNK-END".
+  (unless you are making changes in the RC branch, in which case it goes
+  to the rc section.
+
+- there are four CSS classes to denote the kind of changes. "rfe" for enhancement and "bug" for bug fixes,
+  plus 'major' to indicate major RFE/bugfix.
+
+- link to bugs in the issue tracker, e-mail thread in the archive, and so on if you can.
+
+-->
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=utf-8">
   <title>Changelog</title>
   <link rel="alternate" title="Hudson announcements" href="https://hudson.dev.java.net/servlets/ProjectNewsRSS" type="application/rss+xml">
   <link rel="stylesheet" TYPE="text/css" href="changelog.css">
@@ -22,14 +40,14 @@
 <div id="ratings" style="display:none; font-size:120%;
      border:1px solid black; background-color:#eee; padding:0.5em; margin-bottom:1em">
 Help other Hudson users by letting the community know which releases you've used,
-and whether they had any significant issues. <br/>
-Legend: <br/>
+and whether they had any significant issues. <br>
+Legend: <br>
  <img src="http://ci.jenkins-ci.org/images/16x16/health-80plus.gif" width="16" height="16"
-  alt="Sunny"/> = I use it on my production site without major issues. <br/>
+  alt="Sunny"> = I use it on my production site without major issues. <br>
  <img src="http://ci.jenkins-ci.org/images/16x16/health-40to59.gif" width="16" height="16"
-  alt="Cloudy"/> = I don't recommend it. <br/>
+  alt="Cloudy"> = I don't recommend it. <br>
  <img src="http://ci.jenkins-ci.org/images/16x16/health-00to19.gif" width="16" height="16"
-  alt="Lightning"/> = I tried it but rolled back to a previous version. <br/>
+  alt="Lightning"> = I tried it but rolled back to a previous version. <br>
 View ratings below, and click one of the icons next to your version to provide your input.
 </div>
 
@@ -39,6 +57,22 @@ Upcoming changes</a>
 
 <!-- Record your changes in the trunk here. -->
 <div id="trunk" style="display:none"><!--=TRUNK-BEGIN=-->
+<ul class=image>
+  <li class=bug>
+    MavenBuild does not respect the "alternate settings" value of its parent MavenModuleSetBuild
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-8670">issue 8670</a>)
+  <li class=bug>
+    Jenkins wasn't telling build wrappers that builds were aborted when they were aborted.
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-8054">issue 8054</a>)
+  <li class=bug>
+    Maven deployment with uniqueVersion == true creating "new" versions for attached artifacts
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-8651">issue 8651</a>)    
+</ul>
+</div><!--=TRUNK-END=-->
+
+<!-- these changes are controlled by the release process. DO NOT MODIFY -->
+<div id="rc" style="display:none;"><!--=BEGIN=-->
+<h3><a name=v1.397>What's new in 1.397</a> <!--=DATE=--></h3>
 <ul class=image>
   <li class='major bug'>
     Fixed a master/slave communication problem since 1.378 that often manifests as "Not in GZIP format"
@@ -59,17 +93,26 @@ Upcoming changes</a>
     Windows XP slave stopped working in 1.396 (related to name change)
     (<a href="http://issues.jenkins-ci.org/browse/JENKINS-8676">issue 8676</a>)
   <li class=bug>
-    Maven deployment with uniqueVersion == true creating "new" versions for attached artifacts
-    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-8651">issue 8651</a>)    
+    Unnecessary log messages if a remote pipe is not read until EOF
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-8592">issue 8592</a>)
+  <li class=bug>
+    Fixed a bug in the calendar computation.
+    (<a href="http://issues.hudson-ci.org/browse/HUDSON-8656">issue 8656 in Hudson</a>)
+  <li class=bug>
+    Fixed an NPE when loading full build history.
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-8660">issue 8660</a>)
+  <li class=bug>
+    EXECUTOR_NUMBER uniqueness can degrate over time
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-4756">issue 4756</a>)
+  <li class=rfe>
+    build RSS feeds now contain description of builds.
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-3935">issue 3935</a>)
   <li class=rfe>
     Debian package will force-terminate Jenkins if it fails to shut down in 5 seconds.
     (<a href="http://issues.jenkins-ci.org/browse/JENKINS-5415">issue 5415</a>)
 </ul>
-</div><!--=TRUNK-END=-->
-
-<!-- these changes are controlled by the release process. DO NOT MODIFY -->
-<div id="rc" style="display:none;"><!--=BEGIN=-->
-<h3><a name=v1.396>What's new in 1.396</a> <!--=DATE=--></h3>
+</div><!--=END=-->
+<h3><a name=v1.396>What's new in 1.396</a> (2011/02/02)</h3>
 <ul class=image>
   <li class=bug>
     Fixed a bug in crontab "day of week" handling in locales where a week starts from Monday.
@@ -83,10 +126,9 @@ Upcoming changes</a>
     If the JNLP-connected slave drops out without the master not noticing, allow the reconnection
     without rejecting it.
     (<a href="http://issues.jenkins-ci.org/browse/JENKINS-5055">issue 5055</a>)
-  <li class'major rfe'>
+  <li class='major rfe'>
     Fixed a trademark bug that caused a considerable fiasco by renaming to Jenkins
 </ul>
-</div><!--=END=-->
 <h3><a name=v1.395>What's new in 1.395</a> (2011/01/21)</h3>
 <ul class=image>
   <li class=bug>
@@ -294,7 +336,7 @@ Upcoming changes</a>
   <li class=rfe>
     Update bundled subversion plugin to version 1.20 and ssh-slaves to version 0.14.
 </ul>
-<s><h4><a name=v1.385>What's new in 1.385</a> (2010/11/15)</h4></s>
+<h4><s><a name=v1.385>What's new in 1.385</a> (2010/11/15)</s></h4>
 <ul class=image>
   <li class=rfe> Oops, same as 1.384
 </ul>
@@ -355,7 +397,7 @@ Upcoming changes</a>
   <li class=rfe>
     Improved packet fragmentation in Winstone when writing out HTTP responses.
   <li class=rfe><a href="http://wiki.jenkins-ci.org/display/JENKINS//Extension+Point+for+Project+Views+Navigation">Extension Point to provide alternate UI for Project Views implemented</a>
-    </l> (<a href="http://issues.jenkins-ci.org/browse/JENKINS-1467">issue 1467</a>)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-1467">issue 1467</a>)
 </ul>
 <h3><a name=v1.380>What's new in 1.380</a> (2010/10/09)</h3>
 <ul class=image>
@@ -630,7 +672,7 @@ Upcoming changes</a>
     Fix redirect after login when return URL has characters that need encoding.
     (<a href="http://issues.jenkins-ci.org/browse/JENKINS-6960">issue 6960</a>)
   <li class=bug>
-    &lt;input type='hidden'> field shouldn't be getting the plain text password value.
+    &lt;input type='hidden'&gt; field shouldn't be getting the plain text password value.
   <li class=rfe>
     Added a mechanism to register CLI option handler as an extension point.
   <li class=rfe>
@@ -1583,7 +1625,7 @@ Upcoming changes</a>
     (<a href="http://issues.jenkins-ci.org/browse/JENKINS-4752">issue 4752</a>)
   <li class='major bug'>
     Fixed <tt>NotExportableException</tt> when making a remote API call on a project.
-    (<a href="https://hudson.dev.java.net/servlets/BrowseList?list=users&by=thread&from=2222483">report</a>)
+    (<a href="https://hudson.dev.java.net/servlets/BrowseList?list=users&amp;by=thread&amp;from=2222483">report</a>)
   <li class=bug>
     Fixed <tt>IllegalArgumentException: name</tt>
     (<a href="http://old.nabble.com/bug-1.331-to26145963.html">report</a>)

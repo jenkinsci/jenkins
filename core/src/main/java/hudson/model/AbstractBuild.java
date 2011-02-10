@@ -425,14 +425,16 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
                     // error message doesn't point users to the slave. So let's do it here.
                     listener.hyperlink("/computer/"+builtOn+"/log","Looks like the node went offline during the build. Check the slave log for the details.");
 
-                    // grab the end of the log file. This might not work very well if the slave already
-                    // starts reconnecting. Fixing this requires a ring buffer in slave logs.
-                    AnnotatedLargeText<Computer> log = c.getLogText();
-                    StringWriter w = new StringWriter();
-                    log.writeHtmlTo(Math.max(0,c.getLogFile().length()-10240),w);
+                    if (c != null) {
+                        // grab the end of the log file. This might not work very well if the slave already
+                        // starts reconnecting. Fixing this requires a ring buffer in slave logs.
+                        AnnotatedLargeText<Computer> log = c.getLogText();
+                        StringWriter w = new StringWriter();
+                        log.writeHtmlTo(Math.max(0,c.getLogFile().length()-10240),w);
 
-                    listener.getLogger().print(ExpandableDetailsNote.encodeTo("details",w.toString()));
-                    listener.getLogger().println();
+                        listener.getLogger().print(ExpandableDetailsNote.encodeTo("details",w.toString()));
+                        listener.getLogger().println();
+                    }
                 }
 
                 // kill run-away processes that are left

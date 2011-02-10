@@ -51,7 +51,7 @@ public class UpdateCenterTest extends TestCase {
 
         UpdateSite us = new UpdateSite("default", url.toExternalForm());
         UpdateSite.Data data = us.new Data(JSONObject.fromObject(json));
-        assertTrue(data.core.url.startsWith("http://updates.hudson-labs.org/"));
+        assertTrue(data.core.url.startsWith("http://updates.jenkins-ci.org/"));
         assertTrue(data.plugins.containsKey("rake"));
         System.out.println(data.core.url);
     }

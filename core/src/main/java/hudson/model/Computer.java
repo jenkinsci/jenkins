@@ -25,12 +25,10 @@
 package hudson.model;
 
 import hudson.EnvVars;
-import hudson.FilePath;
 import hudson.Util;
 import hudson.cli.declarative.CLIMethod;
 import hudson.console.AnnotatedLargeText;
 import hudson.model.Descriptor.FormException;
-import hudson.model.Hudson.MasterComputer;
 import hudson.model.queue.WorkUnit;
 import hudson.node_monitors.NodeMonitor;
 import hudson.remoting.Channel;
@@ -59,7 +57,6 @@ import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.HttpResponses;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.HttpRedirect;
-import org.kohsuke.stapler.WebMethod;
 import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.export.ExportedBean;
 import org.kohsuke.args4j.Option;
@@ -69,11 +66,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Enumeration;
+import java.util.*;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -596,11 +589,22 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
                     e.interrupt();
         } else {
             // if the number is increased, add new ones
-            while(executors.size()<numExecutors) {
-                Executor e = new Executor(this, executors.size());
-                e.start();
-                executors.add(e);
-            }
+            addNewExecutorIfNecessary();
+        }
+    }
+
+    private void addNewExecutorIfNecessary() {
+        Set<Integer> availableNumbers  = new HashSet<Integer>();
+        for (int i = 0; i < numExecutors; i++)
+            availableNumbers.add(i);
+
+        for (Executor executor : executors)
+            availableNumbers.remove(executor.getNumber());
+
+        for (Integer number : availableNumbers) {
+            Executor e = new Executor(this, number);
+            e.start();
+            executors.add(e);
         }
     }
 
@@ -700,6 +704,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
      */
     /*package*/ synchronized void removeExecutor(Executor e) {
         executors.remove(e);
+        addNewExecutorIfNecessary();
         if(!isAlive())
             Hudson.getInstance().removeComputer(this);
     }
