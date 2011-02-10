@@ -56,7 +56,7 @@ public class AbstractProjectTest extends HudsonTestCase {
         FreeStyleProject project = createFreeStyleProject();
         Label l = hudson.getLabel("foo && bar");
         project.setAssignedLabel(l);
-        configRoundtrip(project);
+        configRoundtrip((Item)project);
 
         assertEquals(l,project.getAssignedLabel());
     }

@@ -113,8 +113,15 @@ public class MavenArtifactRecord extends MavenAbstractArtifactRecord<MavenBuild>
         ArtifactFactory factory = embedder.lookup(ArtifactFactory.class);
         PrintStream logger = listener.getLogger();
         boolean maven3orLater = MavenUtil.maven3orLater(parent.getModuleSetBuild().getMavenVersionUsed());
-        if (!deploymentRepository.isUniqueVersion() && maven3orLater) {
-            logger.println("uniqueVersion == false is not anymore supported in maven 3");
+        boolean uniqueVersion = true;
+        if (!deploymentRepository.isUniqueVersion()) {
+            if (maven3orLater) {
+                logger.println("uniqueVersion == false is not anymore supported in maven 3");
+            } else {
+                ((WrappedArtifactRepository) deploymentRepository).setUniqueVersion( false );
+                uniqueVersion = false;
+            }
+        } else {
             ((WrappedArtifactRepository) deploymentRepository).setUniqueVersion( true );
         }
         Artifact main = mainArtifact.toArtifact(handlerManager,factory,parent);
@@ -123,21 +130,22 @@ public class MavenArtifactRecord extends MavenAbstractArtifactRecord<MavenBuild>
 
         // deploy the main artifact. This also deploys the POM
         logger.println(Messages.MavenArtifact_DeployingMainArtifact(main.getFile().getName()));
-        deployMavenArtifact( main, deploymentRepository, embedder );
+        
+        ArtifactDeployer deployer = embedder.lookup(ArtifactDeployer.class,uniqueVersion ? "default":"maven2");
+        
+        deployer.deploy( main.getFile(), main, deploymentRepository, embedder.getLocalRepository() );
+        
+        //deployMavenArtifact( main, deploymentRepository, embedder, uniqueVersion );
 
         for (MavenArtifact aa : attachedArtifacts) {
             Artifact a = aa.toArtifact(handlerManager,factory, parent);
             logger.println(Messages.MavenArtifact_DeployingAttachedArtifact(a.getFile().getName()));
-            deployMavenArtifact( a, deploymentRepository, embedder );
+            deployer.deploy( a.getFile(), a, deploymentRepository, embedder.getLocalRepository() );
         }
     }
-
-    protected void deployMavenArtifact(Artifact artifact, ArtifactRepository deploymentRepository, MavenEmbedder embedder) 
-        throws ArtifactDeploymentException, ComponentLookupException {
-        
-        ArtifactDeployer deployer = embedder.lookup(ArtifactDeployer.class,"maven2");
-        deployer.deploy(artifact.getFile(),artifact,deploymentRepository,embedder.getLocalRepository());
-    }
+    
+    
+    
     /**
      * Installs the artifact to the local Maven repository.
      */
