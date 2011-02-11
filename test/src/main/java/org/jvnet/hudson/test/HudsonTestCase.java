@@ -28,9 +28,11 @@ import hudson.CloseProofOutputStream;
 import hudson.DNSMultiCast;
 import hudson.DescriptorExtensionList;
 import hudson.EnvVars;
+import hudson.Extension;
 import hudson.ExtensionList;
 import hudson.FilePath;
 import hudson.Functions;
+import hudson.Launcher;
 import hudson.Launcher.LocalLauncher;
 import hudson.Main;
 import hudson.PluginManager;
@@ -46,6 +48,7 @@ import hudson.maven.MavenModuleSet;
 import hudson.maven.MavenModuleSetBuild;
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
+import hudson.model.BuildListener;
 import hudson.model.Computer;
 import hudson.model.Describable;
 import hudson.model.Descriptor;
@@ -82,6 +85,8 @@ import hudson.slaves.DumbSlave;
 import hudson.slaves.RetentionStrategy;
 import hudson.tasks.Ant;
 import hudson.tasks.Ant.AntInstallation;
+import hudson.tasks.BuildWrapper;
+import hudson.tasks.BuildWrapperDescriptor;
 import hudson.tasks.Builder;
 import hudson.tasks.Mailer;
 import hudson.tasks.Mailer.DescriptorImpl;
@@ -130,6 +135,7 @@ import javax.servlet.ServletContext;
 import javax.servlet.ServletContextEvent;
 
 import junit.framework.TestCase;
+import net.sf.json.JSONObject;
 import net.sourceforge.htmlunit.corejs.javascript.Context;
 import net.sourceforge.htmlunit.corejs.javascript.ContextFactory.Listener;
 
@@ -1728,5 +1734,38 @@ public abstract class HudsonTestCase extends TestCase implements RootAction {
         // DNS multicast support takes up a lot of time during tests, so just disable it altogether
         // this also prevents tests from falsely advertising Hudson
         DNSMultiCast.disabled = true;
+    }
+
+    public static class TestBuildWrapper extends BuildWrapper {
+        public Result buildResultInTearDown;
+
+        @Override
+        public Environment setUp(AbstractBuild build, Launcher launcher, BuildListener listener) throws IOException, InterruptedException {
+            return new BuildWrapper.Environment() {
+                @Override
+                public boolean tearDown(AbstractBuild build, BuildListener listener) throws IOException, InterruptedException {
+                    buildResultInTearDown = build.getResult();
+                    return true;
+                }
+            };
+        }
+
+        @Extension
+        public static class TestBuildWrapperDescriptor extends BuildWrapperDescriptor {
+            @Override
+            public boolean isApplicable(AbstractProject<?, ?> project) {
+                return true;
+            }
+
+            @Override
+            public BuildWrapper newInstance(StaplerRequest req, JSONObject formData) {
+                throw new UnsupportedOperationException();
+            }
+
+            @Override
+            public String getDisplayName() {
+                return this.getClass().getName();
+            }
+        }
     }
 }
