@@ -23,9 +23,9 @@
     Maven infers the wrong value if I don't specify it explicitly.
   -->
   <scm>
-    <connection>scm:svn:https://guest@svn.java.net/svn/hudson~svn/trunk/hudson/plugins/</connection>
-    <developerConnection>scm:svn:https://svn.java.net/svn/hudson~svn/trunk/hudson/plugins/</developerConnection>
-    <url>https://svn.java.net/svn/hudson~svn/trunk/hudson/plugins/</url>
+    <connection>scm:svn:https://svn.jenkins-ci.org/trunk/hudson/plugins/</connection>
+    <developerConnection>scm:svn:https://svn.jenkins-ci.org/trunk/hudson/plugins/</developerConnection>
+    <url>https://svn.jenkins-ci.org/trunk/hudson/plugins/</url>
   </scm>
 
   <issueManagement>
