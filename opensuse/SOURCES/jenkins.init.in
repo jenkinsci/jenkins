@@ -91,35 +91,13 @@ fi
 case "$1" in
     start)
 	echo -n "Starting Jenkins "
-	if /sbin/startproc -l /var/log/jenkins.rc -u "$JENKINS_USER" -p "$JENKINS_PID_FILE" $JAVA_CMD $PARAMS; then
-	    rc_status
-	    # get own session ID
-	    MY_SESSION_ID=`/bin/ps h -o sess -p $$`
-	    # get PID
-	    /bin/ps hww -u hudson -o sess,pid,cmd | grep java | grep -i jenkins | \
-		while read sess pid cmd; do [ "$sess" = $MY_SESSION_ID ] && echo $pid; done | \
-		head -1 > "$JENKINS_PID_FILE"
-	else
-	    rc_failed 1
-	fi
+	JPID=`/sbin/startproc -v -s -l /var/log/jenkins.rc -u "$JENKINS_USER" -p "$JENKINS_PID_FILE" $JAVA_CMD $PARAMS`
 	rc_status -v
+	[ -s "$JENKINS_PID_FILE" ] || echo $JPID >"$JENKINS_PID_FILE"
 	;;
     stop)
 	echo -n "Shutting down Jenkins "
-	PID=`cat "$JENKINS_PID_FILE" 2>/dev/null`
-	if [ -n "$PID" ]; then
-	    if /bin/kill -0 "$PID"; then
-		# process exists
-		/bin/kill -INT "$PID"
-		rc=$?
-		[ "$rc" = "0" ] && /bin/rm -f "$JENKINS_PID_FILE"
-		rc_failed "$rc"
-	    else
-		rc_failed 7
-	    fi
-	else
-	    rc_failed 1
-	fi
+	/sbin/killproc -p "$JENKINS_PID_FILE" $JAVA_HOME/bin/java
 	rc_status -v
 	;;
     try-restart|condrestart)
