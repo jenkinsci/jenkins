@@ -412,6 +412,7 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
                 workspace = lease.path.getRemote();
                 node.getFileSystemProvisioner().prepareWorkspace(AbstractBuild.this,lease.path,listener);
 
+                preCheckout(launcher,listener);
                 checkout(listener);
 
                 if (!preBuild(listener,project.getProperties()))
@@ -489,6 +490,25 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
             return l;
         }
 
+        
+        /**
+         * Run preCheckout on {@link BuildWrapper}s
+         * 
+         * @param launcher
+         * 		The launcher, never null.
+         * @param listener
+         * 		Never null, connected to the main build output.
+         * @throws IOException
+         * @throws InterruptedException
+         */
+        private void preCheckout(Launcher launcher, BuildListener listener) throws IOException, InterruptedException{
+        	if (project instanceof BuildableItemWithBuildWrappers) {
+                BuildableItemWithBuildWrappers biwbw = (BuildableItemWithBuildWrappers) project;
+                for (BuildWrapper bw : biwbw.getBuildWrappersList())
+                    bw.preCheckout(AbstractBuild.this,launcher,listener);
+            }
+        }
+        
         private void checkout(BuildListener listener) throws Exception {
             try {
                 for (int retryCount=project.getScmCheckoutRetryCount(); ; retryCount--) {
