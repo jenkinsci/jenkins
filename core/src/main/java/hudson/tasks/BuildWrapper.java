@@ -202,6 +202,28 @@ public abstract class BuildWrapper extends AbstractDescribableImpl<BuildWrapper>
     }
 
     /**
+     * Provides an opportunity for a {@link BuildWrapper} to perform some actions before SCM checkout.
+     *
+     * <p>
+     * This hook is called early on in the build (before {@link #setUp(AbstractBuild, Launcher, BuildListener)}, 
+     * but after {@link #decorateLauncher(AbstractBuild, Launcher, BuildListener)} is invoked.)
+     * The typical use is delete existing workspace before new build starts etc.
+     *
+     * <p>
+     * The default implementation is no-op.
+     * 
+     * @param build
+     *      The build in progress for which this {@link BuildWrapper} is called. Never null.
+     * @param launcher
+     *      The launcher. Never null. 
+     * @param listener
+     *      Connected to the build output. Never null. Can be used for error reporting.
+     *      
+     */
+    public void preCheckout(AbstractBuild build, Launcher launcher, BuildListener listener) throws IOException, InterruptedException{
+    }
+    
+    /**
      * {@link Action} to be displayed in the job page.
      *
      * @param job
