@@ -852,7 +852,7 @@ public final class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,Ma
             return FormValidation.ok();
         }
         if ((v.startsWith("/")) || (v.startsWith("\\")) || (v.matches("^\\w\\:\\\\.*"))) {
-            return FormValidation.error("Alternate settings file must be a relative path.");
+            return FormValidation.error(Messages.MavenModuleSet_AlternateSettingsRelativePath());
         }
         
         MavenModuleSetBuild lb = getLastBuild();
