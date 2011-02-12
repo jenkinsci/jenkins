@@ -25,7 +25,6 @@ package hudson.util;
 
 import com.sun.jna.Memory;
 import com.sun.jna.Native;
-import static com.sun.jna.Pointer.NULL;
 import com.sun.jna.ptr.IntByReference;
 import hudson.EnvVars;
 import hudson.Util;
@@ -35,8 +34,6 @@ import hudson.remoting.Channel;
 import hudson.remoting.VirtualChannel;
 import hudson.slaves.SlaveComputer;
 import hudson.util.ProcessTree.OSProcess;
-import static hudson.util.jna.GNUCLibrary.LIBC;
-
 import hudson.util.ProcessTreeRemoting.IOSProcess;
 import hudson.util.ProcessTreeRemoting.IProcessTree;
 import org.apache.commons.io.FileUtils;
@@ -56,6 +53,7 @@ import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -64,11 +62,13 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.SortedMap;
-import java.util.Arrays;
 import java.util.logging.Level;
+import java.util.logging.Logger;
+
+import static com.sun.jna.Pointer.NULL;
+import static hudson.util.jna.GNUCLibrary.LIBC;
 import static java.util.logging.Level.FINER;
 import static java.util.logging.Level.FINEST;
-import java.util.logging.Logger;
 
 /**
  * Represents a snapshot of the process tree of the current system.
@@ -224,7 +224,7 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
          * Note that the notion of "descendants" is somewhat vague,
          * in the presence of such things like daemons. On platforms
          * where the recursive operation is not supported, this just kills
-         * the current process. 
+         * the current process.
          */
         public abstract void killRecursively() throws InterruptedException;
 
@@ -874,6 +874,16 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
      */
     private static class Darwin extends Unix {
         Darwin() {
+            String arch = System.getProperty("sun.arch.data.model");
+            if ("64".equals(arch)) {
+                sizeOf_kinfo_proc = sizeOf_kinfo_proc_64;
+                kinfo_proc_pid_offset = kinfo_proc_pid_offset_64;
+                kinfo_proc_ppid_offset = kinfo_proc_ppid_offset_64;
+            } else {
+                sizeOf_kinfo_proc = sizeOf_kinfo_proc_32;
+                kinfo_proc_pid_offset = kinfo_proc_pid_offset_32;
+                kinfo_proc_ppid_offset = kinfo_proc_ppid_offset_32;
+            }
             try {
                 IntByReference _ = new IntByReference(sizeOfInt);
                 IntByReference size = new IntByReference(sizeOfInt);
@@ -898,8 +908,8 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
                 LOGGER.fine("Found "+count+" processes");
 
                 for( int base=0; base<size.getValue(); base+=sizeOf_kinfo_proc) {
-                    int pid = m.getInt(base+24);
-                    int ppid = m.getInt(base+416);
+                    int pid = m.getInt(base+ kinfo_proc_pid_offset);
+                    int ppid = m.getInt(base+ kinfo_proc_ppid_offset);
 //                    int effective_uid = m.getInt(base+304);
 //                    byte[] comm = new byte[16];
 //                    m.read(base+163,comm,0,16);
@@ -1052,7 +1062,15 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
         }
 
         // local constants
-        private static final int sizeOf_kinfo_proc = 492; // TODO:checked on 32bit Mac OS X. is this different on 64bit?
+        private final int sizeOf_kinfo_proc;
+        private static final int sizeOf_kinfo_proc_32 = 492; // TODO:checked on 32bit Mac OS X. is this different on 64bit?
+        private static final int sizeOf_kinfo_proc_64 = 648; // checked on 64bit Mac OS X.
+        private final int kinfo_proc_pid_offset;
+        private static final int kinfo_proc_pid_offset_32 = 24;
+        private static final int kinfo_proc_pid_offset_64 = 40;
+        private final int kinfo_proc_ppid_offset;
+        private static final int kinfo_proc_ppid_offset_32 = 416;
+        private static final int kinfo_proc_ppid_offset_64 = 560;
         private static final int sizeOfInt = Native.getNativeSize(int.class);
         private static final int CTL_KERN = 1;
         private static final int KERN_PROC = 14;
@@ -1097,7 +1115,7 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
         Object writeReplace() {
             return this; // cancel out super.writeReplace()
         }
-        
+
         private static final long serialVersionUID = 1L;
 
         private class RemoteProcess extends OSProcess implements Serializable {
