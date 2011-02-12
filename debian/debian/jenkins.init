@@ -207,12 +207,12 @@ case "$1" in
   status)
       get_daemon_status
       case "$?" in 
-	 0) echo "Hudson is running with the pid `cat $PIDFILE`";;
+	 0) echo "$DESC is running with the pid `cat $PIDFILE`";;
          *) 
 	      get_running
 	      procs=$?
 	      if [ $procs -eq 0 ]; then 
-		  echo -n "Hudson is not running"
+		  echo -n "$DESC is not running"
 		  if [ -f $PIDFILE ]; then 
 		      echo ", but the pidfile ($PIDFILE) still exists"
 		  else 
