@@ -39,13 +39,13 @@ public class UpdateCenterTest extends TestCase {
     public void testData() throws IOException {
         // check if we have the internet connectivity. See HUDSON-2095
         try {
-            new URL("http://updates.hudson-labs.org/").openStream();
+            new URL("http://updates.jenkins-ci.org/").openStream();
         } catch (IOException e) {
             System.out.println("Skipping this test. No internet connectivity");
             return;
         }
 
-        URL url = new URL("http://updates.hudson-labs.org/update-center.json?version=build");
+        URL url = new URL("http://updates.jenkins-ci.org/update-center.json?version=build");
         String jsonp = IOUtils.toString(url.openStream());
         String json = jsonp.substring(jsonp.indexOf('(')+1,jsonp.lastIndexOf(')'));
 

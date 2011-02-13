@@ -31,7 +31,11 @@ THE SOFTWARE.
   </j:if>
   <l:ajax>
     <form action="submitDescription" method="post">
-      <f:textarea name="description" value="${it.description}" />
+      <table>
+        <f:entry help="${app.markupFormatter.helpUrl}">
+          <f:textarea name="description" value="${it.description}" />
+        </f:entry>
+      </table>
       <div align="right">
         <f:submit value="${%Submit}" />
       </div>

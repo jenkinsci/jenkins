@@ -39,7 +39,7 @@ THE SOFTWARE.
             <f:textbox name="name" value="${it.name}" />
           </f:entry>
         </j:if>
-        <f:entry title="${%Description}" help="/help/project-config/description.html">
+        <f:entry title="${%Description}" help="${app.markupFormatter.helpUrl}">
           <f:textarea name="description" value="${it.description}"/>
         </f:entry>
 

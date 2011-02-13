@@ -4,7 +4,7 @@
   <parent>
     <groupId>org.jenkins-ci.main</groupId>
     <artifactId>pom</artifactId>
-    <version>1.398-SNAPSHOT</version>
+    <version>1.399-SNAPSHOT</version>
   </parent>
   <artifactId>maven3-agent</artifactId>
   <name>Jenkins Maven3 CLI Agent</name>

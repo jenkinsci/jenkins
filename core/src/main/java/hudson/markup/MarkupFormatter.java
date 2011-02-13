@@ -69,6 +69,20 @@ public abstract class MarkupFormatter extends AbstractDescribableImpl<MarkupForm
         return w.toString();
     }
 
+    /**
+     * Gets the URL of the help file. This help will shown next to the text area of the description,
+     * and is ideal of describing what the allowed syntax is.
+     *
+     * By default, we look for colocated help-syntax.html.
+     *
+     * @since 1.398
+     * @return null
+     *      If there's no help file.
+     */
+    public String getHelpUrl() {
+        return getDescriptor().getHelpFile("syntax");
+    }
+
     @Override
     public MarkupFormatterDescriptor getDescriptor() {
         return (MarkupFormatterDescriptor)super.getDescriptor();
