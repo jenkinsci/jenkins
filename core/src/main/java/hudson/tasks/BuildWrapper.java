@@ -105,7 +105,7 @@ public abstract class BuildWrapper extends AbstractDescribableImpl<BuildWrapper>
     }
 
     /**
-     * Runs before the {@link Builder} runs, and performs a set up.
+     * Runs before the {@link Builder} runs (but after the checkout has occurred), and performs a set up.
      *
      * @param build
      *      The build in progress for which an {@link Environment} object is created.
