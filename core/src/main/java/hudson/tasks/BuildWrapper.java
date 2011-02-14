@@ -210,6 +210,10 @@ public abstract class BuildWrapper extends AbstractDescribableImpl<BuildWrapper>
      * The typical use is delete existing workspace before new build starts etc.
      *
      * <p>
+     * By the time this method is called, the workspace is assigned to the build, which can be obtained
+     * via {@code build.getWorkspace()}.
+     *
+     * <p>
      * The default implementation is no-op.
      * 
      * @param build
@@ -218,7 +222,7 @@ public abstract class BuildWrapper extends AbstractDescribableImpl<BuildWrapper>
      *      The launcher. Never null. 
      * @param listener
      *      Connected to the build output. Never null. Can be used for error reporting.
-     *      
+     * @since 1.399
      */
     public void preCheckout(AbstractBuild build, Launcher launcher, BuildListener listener) throws IOException, InterruptedException{
     }
