@@ -58,6 +58,9 @@ Upcoming changes</a>
 <!-- Record your changes in the trunk here. -->
 <div id="trunk" style="display:none"><!--=TRUNK-BEGIN=-->
 <ul class=image>
+  <li class='major bug'>
+    On IBM JDKs, Jenkins incorrectly ended up closing stdout to read from forked processes.
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-8420">issue 8420</a>)
   <li class=bug>
     Jenkins was unable to kill/list up native processses on 64bit Mac JVMs.
   <li class=bug>

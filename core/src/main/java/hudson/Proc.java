@@ -202,12 +202,12 @@ public abstract class Proc {
                 copier2 = new StreamCopyThread(name+": stderr copier", procErrorStream, err);
                 copier2.start();
             } else {
-                // On IBM JDK5, returned input and error streams might be the same. 
-                // So, in this case, closing one isn't a good idea since it will close both.
+                // the javadoc is unclear about what getErrorStream() returns when ProcessBuilder.redirectErrorStream(true),
+                //
+                // according to the source code, Sun JREs still still returns a distinct reader end of a pipe that needs to be closed.
+                // but apparently at least on some IBM JDK5, returned input and error streams are the same.
+                // so try to close them smartly
                 if (procErrorStream!=procInputStream) {
-                    // while this is not discussed in javadoc, even with ProcessBuilder.redirectErrorStream(true),
-                    // Process.getErrorStream() still returns a distinct reader end of a pipe that needs to be closed.
-                    // this is according to the source code of HotSpot JVM
                     procErrorStream.close();
                 }
                 copier2 = null;
