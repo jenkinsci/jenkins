@@ -139,7 +139,7 @@ abstract class PipeWindow {
                 if (available>0)
                     return available;
 
-                while (available==0) {
+                while (available<=0) {
                     wait();
                 }
             }
