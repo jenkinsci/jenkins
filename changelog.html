@@ -66,6 +66,10 @@ Upcoming changes</a>
   <li class=bug>
     Many messages about RecordReaper IllegalArgumentException
     (<a href="http://issues.jenkins-ci.org/browse/JENKINS-8647">issue 8647</a>)
+  <li class=bug>
+    Multiple polling events triggering a single build show up as multiple identical BuildActions in the sidebar, since there
+    is only one polling log file, regardless of how many times polling happened. Should only be the latest polling instance now.
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-7649">issue 7649</a>)
   <li class=rfe>
     Lock down maven plugin versions to shut up m3
     (<a href="http://issues.jenkins-ci.org/browse/JENKINS-7275">issue 7275</a>)
