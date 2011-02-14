@@ -42,12 +42,12 @@ case "$1" in
         fi
       
         # directories needed for jenkins
-        chown jenkins:admin /var/lib/jenkins /var/log/jenkins
-        chmod 750           /var/lib/jenkins /var/log/jenkins
+        chown jenkins:adm /var/lib/jenkins /var/log/jenkins
+        chmod 750         /var/lib/jenkins /var/log/jenkins
 
         # make sure jenkins can delete everything in /var/run/jenkins to re-explode war
-        chown -R jenkins:admin /var/run/jenkins
-        chmod -R 750           /var/run/jenkins
+        chown -R jenkins:adm /var/run/jenkins
+        chmod -R 750         /var/run/jenkins
     ;;
 
     abort-upgrade|abort-remove|abort-deconfigure)
