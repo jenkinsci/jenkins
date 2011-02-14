@@ -1063,8 +1063,8 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
 
         // local constants
         private final int sizeOf_kinfo_proc;
-        private static final int sizeOf_kinfo_proc_32 = 492; // TODO:checked on 32bit Mac OS X. is this different on 64bit?
-        private static final int sizeOf_kinfo_proc_64 = 648; // checked on 64bit Mac OS X.
+        private static final int sizeOf_kinfo_proc_32 = 492; // on 32bit Mac OS X.
+        private static final int sizeOf_kinfo_proc_64 = 648; // on 64bit Mac OS X.
         private final int kinfo_proc_pid_offset;
         private static final int kinfo_proc_pid_offset_32 = 24;
         private static final int kinfo_proc_pid_offset_64 = 40;
