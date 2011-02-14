@@ -881,9 +881,10 @@ public class Queue extends ResourceController implements Saveable {
             BlockedItem p = itr.next();
             if (!isBuildBlocked(p.task) && allowNewBuildableTask(p.task)) {
                 // ready to be executed
+                if (makeBuildable(new BuildableItem(p))) {
                 LOGGER.fine(p.task.getFullDisplayName() + " no longer blocked");
                 itr.remove();
-                makeBuildable(new BuildableItem(p));
+                }
             }
         }
 
@@ -895,10 +896,13 @@ public class Queue extends ResourceController implements Saveable {
 
             waitingList.remove(top);
             Task p = top.task;
+            boolean isReady = false;
             if (!isBuildBlocked(p) && allowNewBuildableTask(p)) {
-                // ready to be executed immediately
+                // maybe ready to be executed immediately
+                isReady = makeBuildable(new BuildableItem(top));
+            }
+            if (isReady) {
                 LOGGER.fine(p.getFullDisplayName() + " ready to build");
-                makeBuildable(new BuildableItem(top));
             } else {
                 // this can't be built now because another build is in progress
                 // set this project aside.
@@ -912,7 +916,7 @@ public class Queue extends ResourceController implements Saveable {
         	s.sortBuildableItems(buildables);
     }
 
-    private void makeBuildable(BuildableItem p) {
+    private boolean makeBuildable(BuildableItem p) {
         if(Hudson.FLYWEIGHT_SUPPORT && p.task instanceof FlyweightTask && !ifBlockedByHudsonShutdown(p.task)) {
             ConsistentHash<Node> hash = new ConsistentHash<Node>(new Hash<Node>() {
                 public String hash(Node node) {
@@ -929,14 +933,35 @@ public class Queue extends ResourceController implements Saveable {
                 Computer c = n.toComputer();
                 if (c==null || c.isOffline())    continue;
                 if (lbl!=null && !lbl.contains(n))  continue;
+
+                // Prevent multiple instances of a project's FlyWeightTask
+                // from all executing on the same computer at the same time.
+                // Without this logic, queuing-up several builds for a
+                // parameterized matrix project didn't work:  parent builds
+                // weren't waiting their turn in the queue.
+
+                List<OneOffExecutor> oneOffExecutors = c.getOneOffExecutors();
+                for (OneOffExecutor ooe : oneOffExecutors) {
+                    Queue.Executable exe = ooe.getCurrentExecutable();
+                    if (exe == null)
+                        return false;
+                    if (exe instanceof AbstractBuild) {
+                        AbstractBuild b = (AbstractBuild) exe;
+                        String running = b.getProject().getName();
+                        String toRun = p.task.getName();
+                        if (toRun.equals(running))
+                            return false;
+                    }
+                }
                 c.startFlyWeightTask(new WorkUnitContext(p).createWorkUnit(p.task));
-                return;
+                return true;
             }
             // if the execution get here, it means we couldn't schedule it anywhere.
             // so do the scheduling like other normal jobs.
         }
         
         buildables.put(p.task,p);
+        return true;
     }
 
     public static boolean ifBlockedByHudsonShutdown(Task task) {
