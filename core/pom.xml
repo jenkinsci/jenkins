@@ -738,9 +738,9 @@ THE SOFTWARE.
       <version>3.2.7</version>
     </dependency>
     <dependency>
-      <groupId>org.jvnet.hudson</groupId>
+      <groupId>javax.jmdns</groupId>
       <artifactId>jmdns</artifactId>
-      <version>3.2.1-hudson-1</version>
+      <version>3.4.0</version>
     </dependency>
     <dependency>
       <groupId>com.sun.winsw</groupId>
