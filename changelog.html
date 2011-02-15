@@ -62,6 +62,9 @@ Upcoming changes</a>
     On IBM JDKs, Jenkins incorrectly ended up closing stdout to read from forked processes.
     (<a href="http://issues.jenkins-ci.org/browse/JENKINS-8420">issue 8420</a>)
   <li class=bug>
+    Fixed a race condition in obtaining the tail of the output from remote process.
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-7809">issue 7809</a>)
+  <li class=bug>
     Jenkins was unable to kill/list up native processses on 64bit Mac JVMs.
   <li class=bug>
     Many messages about RecordReaper IllegalArgumentException
