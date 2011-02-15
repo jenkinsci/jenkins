@@ -155,11 +155,18 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
     /*package*/ final List<ProcessKiller> getKillers() throws InterruptedException {
         if (killers==null)
             try {
-                killers = SlaveComputer.getChannelToMaster().call(new Callable<List<ProcessKiller>, IOException>() {
-                    public List<ProcessKiller> call() throws IOException {
-                        return new ArrayList<ProcessKiller>(ProcessKiller.all());
-                    }
-                });
+                VirtualChannel channelToMaster = SlaveComputer.getChannelToMaster();
+                if (channelToMaster!=null) {
+                    killers = channelToMaster.call(new Callable<List<ProcessKiller>, IOException>() {
+                        public List<ProcessKiller> call() throws IOException {
+                            return new ArrayList<ProcessKiller>(ProcessKiller.all());
+                        }
+                    });
+                } else {
+                    // used in an environment that doesn't support talk-back to the master.
+                    // let's do with what we have.
+                    killers = Collections.emptyList();
+                }
             } catch (IOException e) {
                 LOGGER.log(Level.WARNING, "Failed to obtain killers",e);
                 killers = Collections.emptyList();
