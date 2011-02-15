@@ -872,7 +872,7 @@ public abstract class Launcher {
         }
     }
 
-    private static class IOTriplet implements Serializable {
+    public static class IOTriplet implements Serializable {
         InputStream stdout,stderr;
         OutputStream stdin;
         private static final long serialVersionUID = 1L;
@@ -880,7 +880,7 @@ public abstract class Launcher {
     /**
      * Remoting interface of a remote process
      */
-    static interface RemoteProcess {
+    public static interface RemoteProcess {
         int join() throws InterruptedException, IOException;
         void kill() throws IOException, InterruptedException;
         boolean isAlive() throws IOException, InterruptedException;
