@@ -141,6 +141,7 @@ public class Ant extends Builder {
         ArgumentListBuilder args = new ArgumentListBuilder();
 
         EnvVars env = build.getEnvironment(listener);
+        env.overrideAll(build.getBuildVariables());
         
         AntInstallation ai = getAnt();
         if(ai==null) {
@@ -156,10 +157,9 @@ public class Ant extends Builder {
             args.add(exe);
         }
 
-        VariableResolver<String> vr = build.getBuildVariableResolver();
-
+        VariableResolver<String> vr = new VariableResolver.ByMap<String>(env);
         String buildFile = env.expand(this.buildFile);
-        String targets = Util.replaceMacro(env.expand(this.targets), vr);
+        String targets = env.expand(this.targets);
         
         FilePath buildFilePath = buildFilePath(build.getModuleRoot(), buildFile, targets);
 
