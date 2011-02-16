@@ -1,10 +1,10 @@
-## Path:        Development/Hudson
-## Description: Configuration for the Hudson continuous build server
+## Path:        Development/Jenkins
+## Description: Configuration for the Jenkins continuous build server
 ## Type:        string
 ## Default:     "@@HOME@@"
 ## ServiceRestart: jenkins
 #
-# Directory where Hudson store its configuration and working
+# Directory where Jenkins store its configuration and working
 # files (checkouts, build reports, artifacts, ...).
 #
 JENKINS_HOME="@@HOME@@"
@@ -13,7 +13,7 @@ JENKINS_HOME="@@HOME@@"
 ## Default:     ""
 ## ServiceRestart: jenkins
 #
-# Java executable to run Hudson
+# Java executable to run Jenkins
 # When left empty, we'll try to find the suitable Java.
 #
 JENKINS_JAVA_CMD=""
@@ -22,7 +22,7 @@ JENKINS_JAVA_CMD=""
 ## Default:     "jenkins"
 ## ServiceRestart: jenkins
 #
-# Unix user account that runs the Hudson daemon
+# Unix user account that runs the Jenkins daemon
 # Be careful when you change this, as you need to update
 # permissions of $JENKINS_HOME and /var/log/jenkins.
 #
@@ -32,7 +32,7 @@ JENKINS_USER="jenkins"
 ## Default:     "-Djava.awt.headless=true"
 ## ServiceRestart: jenkins
 #
-# Options to pass to java when running Hudson.
+# Options to pass to java when running Jenkins.
 #
 JENKINS_JAVA_OPTIONS="-Djava.awt.headless=true"
 
@@ -40,7 +40,7 @@ JENKINS_JAVA_OPTIONS="-Djava.awt.headless=true"
 ## Default:     8080
 ## ServiceRestart: jenkins
 #
-# Port Hudson is listening on.
+# Port Jenkins is listening on.
 #
 JENKINS_PORT="8080"
 
