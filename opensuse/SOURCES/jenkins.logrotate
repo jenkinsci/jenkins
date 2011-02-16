@@ -8,10 +8,10 @@
     missingok
     create 644
     postrotate
-        # NB: no dependencies to configuration in /etc/sysconfig/jenkins
+        [ -r /etc/sysconfig/jenkins ] && source /etc/sysconfig/jenkins
         if [ -s /var/run/jenkins.pid ]; then
             JPID=`cat /var/run/jenkins.pid`
-            test -n "`find /proc/$JPID -maxdepth 0 -user jenkins 2>/dev/null`" && kill -s ALRM $JPID || :
+            test -n "`find /proc/$JPID -maxdepth 0 -user ${JENKINS_USER:-jenkins} 2>/dev/null`" && kill -s ALRM $JPID || :
         fi
     endscript
 }
