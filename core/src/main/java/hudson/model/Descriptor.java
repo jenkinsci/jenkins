@@ -1,7 +1,7 @@
 /*
  * The MIT License
  * 
- * Copyright (c) 2004-2010, Sun Microsystems, Inc., Kohsuke Kawaguchi
+ * Copyright (c) 2004-2011, Sun Microsystems, Inc., Kohsuke Kawaguchi
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,12 +24,11 @@
 package hudson.model;
 
 import hudson.DescriptorExtensionList;
-import hudson.ExtensionComponent;
 import hudson.RelativePath;
 import hudson.XmlFile;
 import hudson.BulkChange;
 import hudson.Util;
-import static hudson.Util.singleQuote;
+import static hudson.Functions.jsStringEscape;
 import hudson.diagnosis.OldDataMonitor;
 import hudson.model.listeners.SaveableListener;
 import hudson.util.ReflectionUtils;
@@ -317,7 +316,7 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable {
 
         // put this under the right contextual umbrella.
         // a is always non-null because we already have Hudson as the sentinel
-        return singleQuote(getCurrentDescriptorByNameUrl()+'/')+'+'+method;
+        return '\'' + jsStringEscape(getCurrentDescriptorByNameUrl()) + "/'+" + method;
     }
 
     private String calcCheckUrl(String fieldName) {
@@ -328,7 +327,7 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable {
         if(method==null)
             return NONE;
 
-        return singleQuote(getDescriptorUrl() +"/check"+capitalizedFieldName) + buildParameterList(method, new StringBuilder()).append(".toString()");
+        return '\'' + getDescriptorUrl() + "/check" + capitalizedFieldName + '\'' + buildParameterList(method, new StringBuilder()).append(".toString()");
     }
 
     /**

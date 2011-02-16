@@ -36,6 +36,6 @@ THE SOFTWARE.
 
         <f:textbox
             field="proxiedViewName"
-            checkUrl="'${rootURL}/${it.url}/viewExistsCheck?value='+encodeURIComponent(this.value)" />
+            checkUrl="'${rootURL}/${h.jsStringEscape(it.url)}viewExistsCheck?value='+encodeURIComponent(this.value)" />
  -->
 </j:jelly>

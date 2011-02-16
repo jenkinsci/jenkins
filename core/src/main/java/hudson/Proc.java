@@ -24,6 +24,7 @@
 package hudson;
 
 import hudson.model.TaskListener;
+import hudson.remoting.Channel;
 import hudson.util.IOException2;
 import hudson.util.StreamCopyThread;
 import hudson.util.ProcessTree;
@@ -337,7 +338,7 @@ public abstract class Proc {
     }
 
     /**
-     * Retemoly launched process via {@link Channel}.
+     * Remotely launched process via {@link Channel}.
      */
     public static final class RemoteProc extends Proc {
         private final Future<Integer> process;

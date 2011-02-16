@@ -795,6 +795,13 @@ public abstract class Launcher {
                 return p.join();
             } catch (InterruptedException e) {
                 return -1;
+            } finally {
+                // make sure I/O is delivered to the remote before we return
+                try {
+                    Channel.current().syncIO();
+                } catch (Throwable _) {
+                    // this includes a failure to sync, slave.jar too old, etc
+                }
             }
         }
 
