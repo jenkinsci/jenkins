@@ -43,8 +43,7 @@ test -r "$JENKINS_CONFIG" || { echo "$JENKINS_CONFIG not existing";
 	else exit 6; fi; }
 
 JENKINS_PID_FILE="/var/run/jenkins.pid"
-JENKINS_USER="hudson"
-JENKINS_GROUP="hudson"
+JENKINS_USER="jenkins"
 
 # Read config	
 . "$JENKINS_CONFIG"
