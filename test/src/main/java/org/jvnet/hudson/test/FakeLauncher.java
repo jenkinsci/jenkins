@@ -4,6 +4,8 @@ import hudson.Launcher.ProcStarter;
 import hudson.Proc;
 
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 
 /**
  * Fake a process launch.
@@ -46,6 +48,24 @@ public interface FakeLauncher {
         @Override
         public int join() throws IOException, InterruptedException {
             return exitCode;
+        }
+
+        @Override
+        public InputStream getStdout() {
+            // TODO
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public InputStream getStderr() {
+            // TODO
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public OutputStream getStdin() {
+            // TODO
+            throw new UnsupportedOperationException();
         }
     }
 }

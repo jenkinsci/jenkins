@@ -39,13 +39,28 @@ import java.io.ObjectInputStream;
  */
 public class RemoteInputStream extends InputStream implements Serializable {
     private transient InputStream core;
+    private boolean autoUnexport;
 
+    /**
+     * Short for {@code RemoteInputStream(core,true)}.
+     */
     public RemoteInputStream(InputStream core) {
+        this(core,true);
+    }
+
+    /**
+     * @param autoUnexport
+     *      If true, the {@link InputStream} will be automatically unexported when
+     *      the callable that took it with returns. If false, it'll not unexported
+     *      until the close method is called.
+     */
+    public RemoteInputStream(InputStream core, boolean autoUnexport) {
         this.core = core;
+        this.autoUnexport = autoUnexport;
     }
 
     private void writeObject(ObjectOutputStream oos) throws IOException {
-        int id = Channel.current().export(core);
+        int id = Channel.current().export(core,autoUnexport);
         oos.writeInt(id);
     }
 

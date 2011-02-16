@@ -908,6 +908,32 @@ public class Channel implements VirtualChannel, IChannel {
                 ForwarderFactory.create(forwardHost, forwardPort));
     }
 
+    /**
+     * Blocks until all the I/O packets sent before this gets fully executed by the remote side, then return.
+     *
+     * @throws IOException
+     *      If the remote doesn't support this operation, or if sync fails for other reasons.
+     */
+    public void syncIO() throws IOException, InterruptedException {
+        call(new IOSyncer());
+    }
+
+    private static final class IOSyncer implements Callable<Object, InterruptedException> {
+        public Object call() throws InterruptedException {
+            try {
+                return Channel.current().pipeWriter.submit(new Runnable() {
+                    public void run() {
+                        // noop
+                    }
+                }).get();
+            } catch (ExecutionException e) {
+                throw new AssertionError(e); // impossible
+            }
+        }
+
+        private static final long serialVersionUID = 1L;
+    }
+
     @Override
     public String toString() {
         return super.toString()+":"+name;

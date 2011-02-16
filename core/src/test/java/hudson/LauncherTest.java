@@ -28,11 +28,12 @@ import hudson.util.ProcessTree;
 import hudson.util.StreamTaskListener;
 import hudson.remoting.Callable;
 import org.apache.commons.io.FileUtils;
+import org.jvnet.hudson.test.Bug;
 
 import java.io.File;
 
 public class LauncherTest extends ChannelTestCase {
-    //@Bug(4611)
+    @Bug(4611)
     public void testRemoteKill() throws Exception {
         if (File.pathSeparatorChar != ':') {
             System.err.println("Skipping, currently Unix-specific test");

@@ -26,6 +26,11 @@ package hudson.tasks;
 import com.gargoylesoftware.htmlunit.html.HtmlButton;
 import com.gargoylesoftware.htmlunit.html.HtmlForm;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
+import hudson.matrix.Axis;
+import hudson.matrix.AxisList;
+import hudson.matrix.MatrixRun;
+import hudson.matrix.MatrixProject;
+import hudson.model.Cause.UserCause;
 import hudson.model.FreeStyleBuild;
 import hudson.model.FreeStyleProject;
 import hudson.model.ParametersDefinitionProperty;
@@ -38,6 +43,7 @@ import hudson.tools.InstallSourceProperty;
 import hudson.tools.ToolProperty;
 import hudson.tools.ToolPropertyDescriptor;
 import hudson.util.DescribableList;
+import org.jvnet.hudson.test.ExtractResourceSCM;
 import org.jvnet.hudson.test.HudsonTestCase;
 import org.jvnet.hudson.test.SingleFileSCM;
 
@@ -80,7 +86,7 @@ public class AntTest extends HudsonTestCase {
         submit(f);
         verify();
 
-        // another submission and verfify it survives a roundtrip
+        // another submission and verify it survives a roundtrip
         p = new WebClient().goTo("configure");
         f = p.getFormByName("config");
         submit(f);
@@ -113,9 +119,45 @@ public class AntTest extends HudsonTestCase {
         project.getBuildersList().add(new Ant("foo",null,null,null,null));
 
         FreeStyleBuild build = project.scheduleBuild2(0).get();
-        String buildLog = build.getLog();
+        String buildLog = getLog(build);
         assertNotNull(buildLog);
 	System.out.println(buildLog);
         assertFalse(buildLog.contains("-Dpassword=12345"));
-}
+    }
+
+    public void testParameterExpansion() throws Exception {
+        // *_URL vars are not set if hudson.getRootUrl() is null:
+        ((Mailer.DescriptorImpl)hudson.getDescriptor(Mailer.class)).setHudsonUrl("http://test/");
+        // Use a matrix project so we have env stuff via builtins, parameters and matrix axis.
+        MatrixProject project = createMatrixProject("test project"); // Space in name
+        project.setAxes(new AxisList(new Axis("AX", "is")));
+        project.addProperty(new ParametersDefinitionProperty(
+                new StringParameterDefinition("FOO", "bar", "")));
+        project.setScm(new ExtractResourceSCM(getClass().getResource("ant-job.zip")));
+        project.getBuildersList().add(new Ant("", null, null, null,
+                "vNUM=$BUILD_NUMBER\nvID=$BUILD_ID\nvJOB=$JOB_NAME\nvTAG=$BUILD_TAG\nvEXEC=$EXECUTOR_NUMBER\n"
+                + "vNODE=$NODE_NAME\nvLAB=$NODE_LABELS\nvJAV=$JAVA_HOME\nvWS=$WORKSPACE\nvHURL=$HUDSON_URL\n"
+                + "vBURL=$BUILD_URL\nvJURL=$JOB_URL\nvHH=$HUDSON_HOME\nvJH=$JENKINS_HOME\nvFOO=$FOO\nvAX=$AX"));
+        assertBuildStatusSuccess(project.scheduleBuild2(0, new UserCause()));
+        MatrixRun build = project.getItem("AX=is").getLastBuild();
+        String log = getLog(build);
+        assertTrue("Missing $BUILD_NUMBER: " + log, log.contains("vNUM=1"));
+        assertTrue("Missing $BUILD_ID: " + log, log.contains("vID=2")); // Assuming the year starts with 2!
+        assertTrue("Missing $JOB_NAME: " + log, log.contains(project.getName()));
+        // Odd build tag, but it's constructed with getParent().getName() and the parent is the matrix
+        // configuration, not the project.. if matrix build tag ever changes, update expected value here:
+        assertTrue("Missing $BUILD_TAG: " + log, log.contains("vTAG=jenkins-AX=is-1"));
+        assertTrue("Missing $EXECUTOR_NUMBER: " + log, log.matches("(?s).*vEXEC=\\d.*"));
+        // $NODE_NAME is expected to be empty when running on master.. not checking.
+        assertTrue("Missing $NODE_LABELS: " + log, log.contains("vLAB=master"));
+        assertTrue("Missing $JAVA_HOME: " + log, log.matches("(?s).*vJH=[^\\r\\n].*"));
+        assertTrue("Missing $WORKSPACE: " + log, log.matches("(?s).*vWS=[^\\r\\n].*"));
+        assertTrue("Missing $HUDSON_URL: " + log, log.contains("vHURL=http"));
+        assertTrue("Missing $BUILD_URL: " + log, log.contains("vBURL=http"));
+        assertTrue("Missing $JOB_URL: " + log, log.contains("vJURL=http"));
+        assertTrue("Missing $HUDSON_HOME: " + log, log.matches("(?s).*vHH=[^\\r\\n].*"));
+        assertTrue("Missing $JENKINS_HOME: " + log, log.matches("(?s).*vJH=[^\\r\\n].*"));
+        assertTrue("Missing build parameter $FOO: " + log, log.contains("vFOO=bar"));
+        assertTrue("Missing matrix axis $AX: " + log, log.contains("vAX=is"));
+    }
 }

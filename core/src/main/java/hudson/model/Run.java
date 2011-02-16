@@ -1801,7 +1801,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
         env.put("HUDSON_SERVER_COOKIE",Util.getDigestOf("ServerID:"+Hudson.getInstance().getSecretKey())); // Legacy compatibility
         env.put("BUILD_NUMBER",String.valueOf(number));
         env.put("BUILD_ID",getId());
-        env.put("BUILD_TAG","hudson-"+getParent().getName()+"-"+number);
+        env.put("BUILD_TAG","jenkins-"+getParent().getName()+"-"+number);
         env.put("JOB_NAME",getParent().getFullName());
         return env;
     }

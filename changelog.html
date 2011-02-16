@@ -58,7 +58,37 @@ Upcoming changes</a>
 <!-- Record your changes in the trunk here. -->
 <div id="trunk" style="display:none"><!--=TRUNK-BEGIN=-->
 <ul class=image>
-  <li class=>
+  <li class='major bug'>
+    On IBM JDKs, Jenkins incorrectly ended up closing stdout to read from forked processes.
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-8420">issue 8420</a>)
+  <li class=bug>
+    Fixed a race condition in obtaining the tail of the output from remote process.
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-7809">issue 7809</a>)
+  <li class=bug>
+    Jenkins was unable to kill/list up native processses on 64bit Mac JVMs.
+  <li class=bug>
+    Many messages about RecordReaper IllegalArgumentException
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-8647">issue 8647</a>)
+  <li class=bug>
+    Multiple polling events triggering a single build show up as multiple identical BuildActions in the sidebar, since there
+    is only one polling log file, regardless of how many times polling happened. Should only be the latest polling instance now.
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-7649">issue 7649</a>)
+  <li class=bug>
+    Fix javascript errors on config pages when view name or user name contains an apostrophe.
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-8789">issue 8789</a>)
+  <li class=bug>
+    Fix expansion of builtin environment variables in Ant properties on Windows.
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-7442">issue 7442</a>)
+  <li class=rfe>
+    Change prefix of BUILD_TAG variable to "jenkins-"
+  <li class=rfe>
+    Lock down maven plugin versions to shut up m3
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-7275">issue 7275</a>)
+  <li class=rfe>
+    <tt>BuildWrapper</tt>s can now act on the build in progress before the checkout occurs.
+  <li class=rfe>
+    Improved the process forking abstractions so that plugins can more easily read from child processes.
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-7809">issue 7809</a>)
 </ul>
 </div><!--=TRUNK-END=-->
 
@@ -128,9 +158,6 @@ Upcoming changes</a>
   <li class=rfe>
     Debian package will force-terminate Jenkins if it fails to shut down in 5 seconds.
     (<a href="http://issues.jenkins-ci.org/browse/JENKINS-5415">issue 5415</a>)
-  <li class=rfe>
-    Lock down maven plugin versions to shut up m3
-    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-7275">issue 7275</a>)
 </ul>
 <h3><a name=v1.396>What's new in 1.396</a> (2011/02/02)</h3>
 <ul class=image>

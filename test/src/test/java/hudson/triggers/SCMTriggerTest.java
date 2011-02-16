@@ -35,13 +35,23 @@ import hudson.model.FreeStyleBuild;
 import hudson.model.FreeStyleProject;
 import hudson.model.Hudson;
 import hudson.model.TaskListener;
+import hudson.model.Cause.UserCause;
 import hudson.scm.NullSCM;
+import hudson.scm.PollingResult;
+import hudson.scm.PollingResult.Change;
+import hudson.scm.RepositoryBrowser;
+import hudson.scm.SCMDescriptor;
+import hudson.scm.SCMRevisionState;
+import hudson.triggers.SCMTrigger.SCMTriggerCause;
+import hudson.triggers.SCMTrigger.BuildAction;
 import org.jvnet.hudson.test.Bug;
 import org.jvnet.hudson.test.HudsonTestCase;
+import org.jvnet.hudson.test.SingleFileSCM;
+import org.jvnet.hudson.test.TestBuilder;
 import java.io.File;
 import java.io.IOException;
 import java.util.concurrent.Future;
-
+import java.util.List;
 /**
  * @author Alan Harder
  */
@@ -86,4 +96,46 @@ public class SCMTriggerTest extends HudsonTestCase {
             return super.checkout(build, launcher, remoteDir, listener, changeLogFile);
         }
     }
+
+    /**
+     * Make sure that only one polling result shows up per build.
+     */
+    @Bug(7649)
+    public void testMultiplePollingOneBuildAction() throws Exception {
+        final OneShotEvent buildStarted = new OneShotEvent();
+        final OneShotEvent buildShouldComplete = new OneShotEvent();
+        FreeStyleProject p = createFreeStyleProject();
+        // Make build sleep a while so it blocks new builds
+        p.getBuildersList().add(new TestBuilder() {
+            public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
+                buildStarted.signal();
+                buildShouldComplete.block();
+                return true;
+            }
+        });
+
+        SCMTrigger t = new SCMTrigger("@daily");
+        t.start(p,true);
+        p.addTrigger(t);
+
+        // Start one build to block others
+        assertTrue(p.scheduleBuild(new UserCause()));
+        buildStarted.block(); // wait for the build to really start
+
+        // Schedule a new build, and trigger it many ways while it sits in queue
+        Future<FreeStyleBuild> fb = p.scheduleBuild2(0, new UserCause());
+        assertNotNull(fb);
+        assertFalse(p.scheduleBuild(new SCMTriggerCause("First poll")));
+        assertFalse(p.scheduleBuild(new SCMTriggerCause("Second poll")));
+        assertFalse(p.scheduleBuild(new SCMTriggerCause("Third poll")));
+
+        // Wait for 2nd build to finish
+        buildShouldComplete.signal();
+        FreeStyleBuild build = fb.get();
+
+        List<BuildAction> ba = build.getActions(BuildAction.class);
+
+        assertFalse("There should only be one BuildAction.", ba.size()!=1);
+    }
 }
+
