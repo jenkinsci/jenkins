@@ -88,7 +88,7 @@ rm -rf "%{buildroot}"
 	-d "%{workdir}" jenkins &>/dev/null || :
 
 %post
-/sbin/chkconfig --add jenkins
+[ $1 -eq 1 ] && /sbin/chkconfig --add jenkins
 
 # If we have an old hudson install, rename it to jenkins
 if test -d /var/lib/hudson; then

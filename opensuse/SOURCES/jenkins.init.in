@@ -95,7 +95,7 @@ case "$1" in
         if [ $CHECK -eq 7 ]; then
                 rm -f "$JENKINS_PID_FILE"
                 startproc -s -l /var/log/jenkins.rc -u "$JENKINS_USER" -p "$JENKINS_PID_FILE" $JAVA_CMD $PARAMS
-                JPROC=$( find /proc -maxdepth 2 -user jenkins -name exe -lname "*/bin/java" )
+                JPROC=$( find /proc -maxdepth 2 -user $JENKINS_USER -name exe -lname "*/bin/java" )
                 if [ -n "$JPROC" ]; then
                         basename `dirname $JPROC` >"$JENKINS_PID_FILE"
                         rc_status -v
