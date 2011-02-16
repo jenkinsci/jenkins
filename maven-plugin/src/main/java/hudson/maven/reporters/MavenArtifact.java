@@ -196,16 +196,16 @@ public final class MavenArtifact implements Serializable {
      */
     public void archive(MavenBuildProxy build, File file, BuildListener listener) throws IOException, InterruptedException {
         if (build.isArchivingDisabled()) {
-            listener.getLogger().println("[HUDSON] Archiving disabled - not archiving " + file);
+            listener.getLogger().println("[JENKINS] Archiving disabled - not archiving " + file);
         }
         else {
             FilePath target = getArtifactArchivePath(build,groupId,artifactId,version);
             FilePath origin = new FilePath(file);
             if (!target.exists()) {
-                listener.getLogger().println("[HUDSON] Archiving "+ file+" to "+target);
+                listener.getLogger().println("[JENKINS] Archiving "+ file+" to "+target);
                 origin.copyTo(target);
             } else if (!origin.digest().equals(target.digest())) {
-                listener.getLogger().println("[HUDSON] Re-archiving "+file);
+                listener.getLogger().println("[JENKINS] Re-archiving "+file);
                 origin.copyTo(target);
             } else {
                 LOGGER.fine("Not actually archiving "+origin+" due to digest match");

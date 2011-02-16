@@ -77,10 +77,10 @@ public class MavenJavadocArchiver extends MavenReporter {
             FilePath target;
             if(aggregated) {
                 // store at MavenModuleSet level. 
-                listener.getLogger().println("[HUDSON] Archiving aggregated javadoc");
+                listener.getLogger().println("[JENKINS] Archiving aggregated javadoc");
                 target = build.getModuleSetRootDir();
             } else {
-                listener.getLogger().println("[HUDSON] Archiving javadoc");
+                listener.getLogger().println("[JENKINS] Archiving javadoc");
                 target = build.getProjectRootDir();
             }
 

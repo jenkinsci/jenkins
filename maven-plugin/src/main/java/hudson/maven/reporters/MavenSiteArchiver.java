@@ -77,7 +77,7 @@ public class MavenSiteArchiver extends MavenReporter {
             // store at MavenModuleSet level and moduleName
             final FilePath target = build.getModuleSetRootDir().child("site").child(moduleName);
             try {
-                listener.getLogger().printf("[HUDSON] Archiving site from %s to %s\n", destDir, target);
+                listener.getLogger().printf("[JENKINS] Archiving site from %s to %s\n", destDir, target);
                 new FilePath(destDir).copyRecursiveTo("**/*",target);
             } catch (IOException e) {
                 Util.displayIOException(e,listener);

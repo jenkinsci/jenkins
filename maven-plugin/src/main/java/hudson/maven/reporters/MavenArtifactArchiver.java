@@ -89,7 +89,7 @@ public class MavenArtifactArchiver extends MavenReporter {
                     }
                 });
             } catch (NoSuchFieldException e) {
-                listener.getLogger().println("[HUDSON] Failed to monitor the execution of the assembly plugin: "+e.getMessage());
+                listener.getLogger().println("[JENKINS] Failed to monitor the execution of the assembly plugin: "+e.getMessage());
             }
         }
         return true;
@@ -150,11 +150,11 @@ public class MavenArtifactArchiver extends MavenReporter {
             if(mavenArtifacts.contains(assembly))
                 continue;   // looks like this is already archived
             if (build.isArchivingDisabled()) {
-                listener.getLogger().println("[HUDSON] Archiving disabled - not archiving " + assembly);
+                listener.getLogger().println("[JENKINS] Archiving disabled - not archiving " + assembly);
             }
             else {
                 FilePath target = build.getArtifactsDir().child(assembly.getName());
-                listener.getLogger().println("[HUDSON] Archiving "+ assembly+" to "+target);
+                listener.getLogger().println("[JENKINS] Archiving "+ assembly+" to "+target);
                 new FilePath(assembly).copyTo(target);
                 // TODO: fingerprint
             }
