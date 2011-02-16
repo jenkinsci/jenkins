@@ -78,7 +78,6 @@ THE SOFTWARE.
                 intervalUnit:   Timeline.DateTime.DAY,
                 intervalPixels: 200,
                 eventSource:    eventSource1,
-                date:           d,
                 timeZone:       tz,
                 theme:          theme1,
                 layout:         'overview'  // original, overview, detailed
