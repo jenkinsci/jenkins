@@ -759,7 +759,7 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
 
     /**
      * Builds up a set of variable names that contain sensitive values that
-     * should not be exposed. The expection is that this set is populated with
+     * should not be exposed. The expectation is that this set is populated with
      * keys returned by {@link #getBuildVariables()} that should have their
      * values masked for display purposes.
      *
