@@ -90,13 +90,27 @@ fi
 case "$1" in
     start)
 	echo -n "Starting Jenkins "
-	JPID=`/sbin/startproc -v -s -l /var/log/jenkins.rc -u "$JENKINS_USER" -p "$JENKINS_PID_FILE" $JAVA_CMD $PARAMS`
-	rc_status -v
-	[ -s "$JENKINS_PID_FILE" ] || echo $JPID >"$JENKINS_PID_FILE"
+        /sbin/checkproc -k -p "$JENKINS_PID_FILE" "$JAVA_HOME/bin/java" >/var/log/jenkins.rc 2>&1
+        CHECK=$?
+        if [ $CHECK -eq 7 ]; then
+                rm -f "$JENKINS_PID_FILE"
+                startproc -s -l /var/log/jenkins.rc -u "$JENKINS_USER" -p "$JENKINS_PID_FILE" $JAVA_CMD $PARAMS
+                JPROC=$( find /proc -maxdepth 2 -user jenkins -name exe -lname "*/bin/java" )
+                if [ -n "$JPROC" ]; then
+                        basename `dirname $JPROC` >"$JENKINS_PID_FILE"
+                        rc_status -v
+                else
+                        rc_failed
+                        rc_status -v
+                fi
+        else
+                rc_failed $CHECK
+                rc_status -v
+        fi
 	;;
     stop)
 	echo -n "Shutting down Jenkins "
-	/sbin/killproc -p "$JENKINS_PID_FILE" $JAVA_HOME/bin/java
+	/sbin/killproc -p "$JENKINS_PID_FILE" "$JAVA_HOME/bin/java"
 	rc_status -v
 	;;
     try-restart|condrestart)
