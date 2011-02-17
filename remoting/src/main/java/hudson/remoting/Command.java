@@ -47,6 +47,10 @@ abstract class Command implements Serializable {
         this(true);
     }
 
+    protected Command(Throwable cause) {
+        this.createdAt = new Source(cause);
+    }
+
     /**
      * @param recordCreatedAt
      *      If false, skip the recording of where the command is created. This makes the trouble-shooting
@@ -72,6 +76,10 @@ abstract class Command implements Serializable {
 
     private final class Source extends Exception {
         public Source() {
+        }
+
+        private Source(Throwable cause) {
+            super(cause);
         }
 
         public String toString() {

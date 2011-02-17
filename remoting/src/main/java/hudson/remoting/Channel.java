@@ -599,9 +599,6 @@ public class Channel implements VirtualChannel, IChannel {
     }
 
     /*package*/ PipeWindow getPipeWindow(int oid) {
-        if (!remoteCapability.supportsPipeThrottling())
-            return PipeWindow.FAKE;
-
         synchronized (pipeWindows) {
             Key k = new Key(oid);
             WeakReference<PipeWindow> v = pipeWindows.get(k);
@@ -611,7 +608,11 @@ public class Channel implements VirtualChannel, IChannel {
                     return w;
             }
 
-            Real w = new Real(k, PIPE_WINDOW_SIZE);
+            PipeWindow w;
+            if (remoteCapability.supportsPipeThrottling())
+                w = new Real(k, PIPE_WINDOW_SIZE);
+            else
+                w = new PipeWindow.Fake();
             pipeWindows.put(k,new WeakReference<PipeWindow>(w));
             return w;
         }

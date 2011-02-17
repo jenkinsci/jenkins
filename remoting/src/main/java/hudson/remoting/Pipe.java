@@ -93,19 +93,7 @@ public final class Pipe implements Serializable {
      * Gets the reading end of the pipe.
      */
     public InputStream getIn() {
-        return new FilterInputStream(in) {
-            @Override
-            public void close() throws IOException {
-                try {
-                    // Since closing the reading side does not stop the writing side. We read till the stream is done.
-                    final byte[] buffer = new byte[4096];
-                    while(read(buffer) != -1) {
-                    }
-                } finally {
-                    super.close();
-                }
-            }
-        };
+        return in;
     }
 
     /**

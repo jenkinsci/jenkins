@@ -23,6 +23,7 @@
  */
 package hudson.remoting;
 
+import java.io.IOException;
 import java.io.OutputStream;
 import java.util.logging.Logger;
 
@@ -47,21 +48,46 @@ import static java.util.logging.Level.*;
  * @author Kohsuke Kawaguchi
  */
 abstract class PipeWindow {
+    protected Throwable dead;
+
     abstract void increase(int delta);
 
     abstract int peek();
 
     /**
      * Blocks until some space becomes available.
+     *
+     * @throws IOException
+     *      If we learned that there is an irrecoverable problem on the remote side that prevents us from writing.
+     * @throws InterruptedException
+     *      If a thread was interrupted while blocking.
      */
-    abstract int get() throws InterruptedException;
+    abstract int get() throws InterruptedException, IOException;
 
     abstract void decrease(int delta);
 
     /**
+     * Indicates that the remote end has died and all the further send attempt should fail.
+     */
+    void dead(Throwable cause) {
+        this.dead = cause;
+    }
+
+    /**
+     * If we already know that the remote end had developed a problem, throw an exception.
+     * Otherwise no-op.
+     */
+    protected void checkDeath() throws IOException {
+        if (dead!=null)
+            // the remote end failed to write.
+            throw (IOException)new IOException("Pipe is already closed").initCause(dead);
+    }
+
+
+    /**
      * Fake implementation used when the receiver side doesn't support throttling.
      */
-    static final PipeWindow FAKE = new PipeWindow() {
+    static class Fake extends PipeWindow {
         void increase(int delta) {
         }
 
@@ -69,13 +95,14 @@ abstract class PipeWindow {
             return Integer.MAX_VALUE;
         }
 
-        int get() throws InterruptedException {
+        int get() throws InterruptedException, IOException {
+            checkDeath();
             return Integer.MAX_VALUE;
         }
 
         void decrease(int delta) {
         }
-    };
+    }
 
     static final class Key {
         public final int oid;
@@ -134,13 +161,15 @@ abstract class PipeWindow {
          * to avoid fragmenting the window size. That is, if a bunch of small ACKs come in a sequence,
          * bundle them up into a bigger size before making a call.
          */
-        public int get() throws InterruptedException {
+        public int get() throws InterruptedException, IOException {
+            checkDeath();
             synchronized (this) {
                 if (available>0)
                     return available;
 
                 while (available<=0) {
                     wait();
+                    checkDeath();
                 }
             }
 
