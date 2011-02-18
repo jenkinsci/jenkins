@@ -436,9 +436,11 @@ public class LDAPSecurityRealm extends AbstractPasswordBasedSecurityRealm {
                     // intern attributes
                     Attributes v = ldapUser.getAttributes();
                     if (v instanceof BasicAttributes) {// BasicAttributes.equals is what makes the interning possible
-                        Attributes vv = (Attributes)attributesCache.get(v);
-                        if (vv==null)   attributesCache.put(v,vv=v);
-                        user.setAttributes(vv);
+                        synchronized (attributesCache) {
+                            Attributes vv = (Attributes)attributesCache.get(v);
+                            if (vv==null)   attributesCache.put(v,vv=v);
+                            user.setAttributes(vv);
+                        }
                     }
 
                     GrantedAuthority[] extraAuthorities = authoritiesPopulator.getGrantedAuthorities(ldapUser);
