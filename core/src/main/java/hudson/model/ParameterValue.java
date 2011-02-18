@@ -26,6 +26,8 @@ package hudson.model;
 
 import hudson.EnvVars;
 import hudson.Util;
+import hudson.scm.SCM;
+import hudson.slaves.OfflineCause;
 import hudson.tasks.BuildWrapper;
 import hudson.tasks.Builder;
 import hudson.util.VariableResolver;
@@ -51,7 +53,7 @@ import org.kohsuke.stapler.export.ExportedBean;
  * Instances of {@link ParameterValue}s are persisted into build's <tt>build.xml</tt>
  * through XStream (via {@link ParametersAction}), so instances need to be persistable.
  *
- * <h2>Assocaited Views</h2>
+ * <h2>Associated Views</h2>
  * <h4>value.jelly</h4>
  * The <tt>value.jelly</tt> view contributes a UI fragment to display the parameter
  * values used for a build.
@@ -64,6 +66,7 @@ import org.kohsuke.stapler.export.ExportedBean;
  *     {@link ParameterDefinition} is.
  * </ol>
  * @see ParameterDefinition
+ * @see ParametersAction
  */
 @ExportedBean(defaultVisibility=3)
 public abstract class ParameterValue implements Serializable {
