@@ -6,17 +6,17 @@
              可能な限りオンラインのままにする
         </b></dt>
         <dd>
-            これはデフォルトで通常の設定です。 このモードでは、Hudsonはスレーブを極力オンラインのままにしようとします。
-            ユーザーの手助けなしにHudsonがスレーブを開始できるなら、スレーブが使用できない場合に定期的にリスタートしようとします。
-           Hudsonはスレーブをオフラインにはしません。
+            これはデフォルトで通常の設定です。 このモードでは、Jenkinsはスレーブを極力オンラインのままにしようとします。
+            ユーザーの手助けなしにJenkinsがスレーブを開始できるなら、スレーブが使用できない場合に定期的にリスタートしようとします。
+           Jenkinsはスレーブをオフラインにはしません。
         </dd>
 
         <!--dt><b>
             Take this slave on-line and off-line at specific times
         </b></dt>
         <dd>
-            In this mode, Hudson will keep the slave on-line according to the configured schedule.
-            If Hudson can start the slave without user assistance, it will periodically
+            In this mode, Jenkins will keep the slave on-line according to the configured schedule.
+            If Jenkins can start the slave without user assistance, it will periodically
             attempt to start the slave if it is unavailable during an on-line window.
 
             During an off-line window, the slave will only be taken off-line if there are no active
@@ -27,7 +27,7 @@
             要求時にはオンラインにし、待機中にはオフラインにする
         </b></dt>
         <dd>
-             このモードでは、ユーザーの手助けなしにHudsonがスレーブを開始できるなら、
+             このモードでは、ユーザーの手助けなしにJenkinsがスレーブを開始できるなら、
              次の条件に合う未実行のジョブがある間はスレーブを開始しようとします。
             <ul>
                 <li>少なくともある一定の起動要求期間にキューにある</li>
