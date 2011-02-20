@@ -193,6 +193,18 @@ public class MavenBuild extends AbstractMavenBuild<MavenModule,MavenBuild> {
         String opts = project.getParent().getMavenOpts();
         if(opts!=null)
             envs.put("MAVEN_OPTS", opts);
+        // We need to add M2_HOME and the mvn binary to the PATH so if Maven
+        // needs to run Maven it will pick the correct one.
+        // This can happen if maven calls ANT which itself calls Maven
+        // or if Maven calls itself e.g. maven-release-plugin
+        MavenInstallation mvn = project.getParent().getMaven();
+        if (mvn == null)
+            throw new AbortException(
+                    "A Maven installation needs to be available for this project to be built.\n"
+                    + "Either your server has no Maven installations defined, or the requested Maven version does not exist.");
+        mvn = mvn.forEnvironment(envs).forNode(Computer.currentComputer().getNode(), log);
+        envs.put("M2_HOME", mvn.getHome());
+        envs.put("PATH+MAVEN", mvn.getHome() + "/bin");
         return envs;
     }
 
