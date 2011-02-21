@@ -1,3 +1,9 @@
+jenkins (1.398) unstable; urgency=low
+
+  * See http://jenkins-ci.org/changelog for more details.
+
+ -- Kohsuke Kawaguchi <kk@kohsuke.org>  Sun, 20 Feb 2011 20:01:53 -0800
+
 jenkins (1.397) unstable; urgency=low
 
   * See http://jenkins-ci.org/changelog for more details.
