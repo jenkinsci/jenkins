@@ -1209,9 +1209,11 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
         private void toPomInfo(MavenProject mp, PomInfo parent, Map<String,MavenProject> abslPath, Set<PomInfo> infos) throws IOException {
             
             String relPath = PathTool.getRelativeFilePath( this.moduleRootPath, mp.getBasedir().getPath() );
-                //PathTool.getRelativeFilePath( this.workspaceProper, mp.getBasedir().getPath() );
-            relPath = FilenameUtils.normalize( relPath );
             
+            // JENKINS-8525 FilenameUtils.normalize for ../foo returns null 
+            if (!StringUtils.startsWith( relPath, "../" )) {
+                relPath = FilenameUtils.normalize( relPath );
+            }
             if (parent == null ) {
                 relPath = getRootPath(rootPOMRelPrefix);
             }
