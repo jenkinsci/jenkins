@@ -127,6 +127,17 @@ THE SOFTWARE.
         </exclusion>
       </exclusions>      
     </dependency> 
+    
+    <dependency>
+      <groupId>org.sonatype.sisu</groupId>
+      <artifactId>sisu-inject-plexus</artifactId>
+    </dependency> 
+    
+    <dependency>
+      <groupId>org.sonatype.sisu</groupId>
+      <artifactId>sisu-inject-bean</artifactId>
+    </dependency> 
+    
     <dependency>
       <groupId>org.apache.maven.wagon</groupId>
       <artifactId>wagon-http-lightweight</artifactId>
