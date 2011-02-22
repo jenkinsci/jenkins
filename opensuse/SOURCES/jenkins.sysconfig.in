@@ -28,6 +28,14 @@ JENKINS_JAVA_CMD=""
 #
 JENKINS_USER="jenkins"
 
+## Type:        integer(-20:20)
+## Default:     0
+## ServiceRestart: jenkins
+#
+# The nice level at which the Jenkins server (and its build jobs) run.
+#
+JENKINS_NICE="0"
+
 ## Type:        string
 ## Default:     "-Djava.awt.headless=true"
 ## ServiceRestart: jenkins
