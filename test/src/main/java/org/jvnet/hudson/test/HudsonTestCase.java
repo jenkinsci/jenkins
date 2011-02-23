@@ -1383,29 +1383,8 @@ public abstract class HudsonTestCase extends TestCase implements RootAction {
      * @throws Exception
      *      If a closure throws any exception, that exception will be carried forward.
      */
-    public <V> V executeOnServer(final Callable<V> c) throws Exception {
-        final Exception[] t = new Exception[1];
-        final List<V> r = new ArrayList<V>(1);  // size 1 list
-
-        ClosureExecuterAction cea = hudson.getExtensionList(RootAction.class).get(ClosureExecuterAction.class);
-        UUID id = UUID.randomUUID();
-        cea.add(id,new Runnable() {
-            public void run() {
-                try {
-                    StaplerResponse rsp = Stapler.getCurrentResponse();
-                    rsp.setStatus(200);
-                    rsp.setContentType("text/html");
-                    r.add(c.call());
-                } catch (Exception e) {
-                    t[0] = e;
-                }
-            }
-        });
-        createWebClient().goTo("closures/?uuid="+id);
-
-        if (t[0]!=null)
-            throw t[0];
-        return r.get(0);
+    public <V> V executeOnServer(Callable<V> c) throws Exception {
+        return createWebClient().executeOnServer(c);
     }
 
     /**
@@ -1503,6 +1482,52 @@ public abstract class HudsonTestCase extends TestCase implements RootAction {
         public WebClient login(String username) throws Exception {
             login(username,username);
             return this;
+        }
+
+        /**
+         * Executes the given closure on the server, by the servlet request handling thread,
+         * in the context of an HTTP request.
+         *
+         * <p>
+         * In {@link HudsonTestCase}, a thread that's executing the test code is different from the thread
+         * that carries out HTTP requests made through {@link WebClient}. But sometimes you want to
+         * make assertions and other calls with side-effect from within the request handling thread.
+         *
+         * <p>
+         * This method allows you to do just that. It is useful for testing some methods that
+         * require {@link StaplerRequest} and {@link StaplerResponse}, or getting the credential
+         * of the current user (via {@link Hudson#getAuthentication()}, and so on.
+         *
+         * @param c
+         *      The closure to be executed on the server.
+         * @return
+         *      The return value from the closure.
+         * @throws Exception
+         *      If a closure throws any exception, that exception will be carried forward.
+         */
+        public <V> V executeOnServer(final Callable<V> c) throws Exception {
+            final Exception[] t = new Exception[1];
+            final List<V> r = new ArrayList<V>(1);  // size 1 list
+
+            ClosureExecuterAction cea = hudson.getExtensionList(RootAction.class).get(ClosureExecuterAction.class);
+            UUID id = UUID.randomUUID();
+            cea.add(id,new Runnable() {
+                public void run() {
+                    try {
+                        StaplerResponse rsp = Stapler.getCurrentResponse();
+                        rsp.setStatus(200);
+                        rsp.setContentType("text/html");
+                        r.add(c.call());
+                    } catch (Exception e) {
+                        t[0] = e;
+                    }
+                }
+            });
+            goTo("closures/?uuid="+id);
+
+            if (t[0]!=null)
+                throw t[0];
+            return r.get(0);
         }
 
         public HtmlPage search(String q) throws IOException, SAXException {
