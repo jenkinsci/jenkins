@@ -25,6 +25,7 @@ package hudson.security;
 
 import com.octo.captcha.service.CaptchaServiceException;
 import com.octo.captcha.service.image.DefaultManageableImageCaptchaService;
+import com.octo.captcha.service.image.ImageCaptchaService;
 import groovy.lang.Binding;
 import hudson.ExtensionPoint;
 import hudson.DescriptorExtensionList;
@@ -326,8 +327,8 @@ public abstract class SecurityRealm extends AbstractDescribableImpl<SecurityReal
     /**
      * {@link DefaultManageableImageCaptchaService} holder to defer initialization.
      */
-    private static final class CaptchaService {
-        private static final DefaultManageableImageCaptchaService INSTANCE = new DefaultManageableImageCaptchaService();
+    public static final class CaptchaService {
+        public static ImageCaptchaService INSTANCE = new DefaultManageableImageCaptchaService();
     }
 
     /**
