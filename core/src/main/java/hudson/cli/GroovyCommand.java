@@ -74,6 +74,10 @@ public class GroovyCommand extends CLICommand implements Serializable {
 
         Binding binding = new Binding();
         binding.setProperty("out",new PrintWriter(stdout,true));
+        binding.setProperty("stdin",stdin);
+        binding.setProperty("stdout",stdout);
+        binding.setProperty("stderr",stderr);
+        binding.setProperty("channel",channel);
         String j = getClientEnvironmentVariable("JOB_NAME");
         if (j!=null) {
             Item job = Hudson.getInstance().getItemByFullName(j);
