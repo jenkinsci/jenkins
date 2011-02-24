@@ -18,7 +18,7 @@ Our latest and greatest source of Jenkins CI can be found on [GitHub]. Fork us!
 
 News and Website
 ----------------
-All about Jenkkins CI can be found on our [website]. Follow us an Twitter @[jenkinsci].
+All about Jenkins CI can be found on our [website]. Follow us an Twitter @[jenkinsci].
 
 [ButlerImage]: http://jenkins-ci.org/images/butler.png
 [MIT License]: https://github.com/jenkinsci/jenkins/raw/master/LICENSE.txt
