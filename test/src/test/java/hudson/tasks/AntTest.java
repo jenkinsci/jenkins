@@ -126,6 +126,7 @@ public class AntTest extends HudsonTestCase {
     }
 
     public void testParameterExpansion() throws Exception {
+        configureDefaultAnt();
         // *_URL vars are not set if hudson.getRootUrl() is null:
         ((Mailer.DescriptorImpl)hudson.getDescriptor(Mailer.class)).setHudsonUrl("http://test/");
         // Use a matrix project so we have env stuff via builtins, parameters and matrix axis.
