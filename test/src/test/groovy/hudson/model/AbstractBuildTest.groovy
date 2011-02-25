@@ -34,16 +34,16 @@ import org.jvnet.hudson.test.GroovyHudsonTestCase
 public class AbstractBuildTest extends GroovyHudsonTestCase {
 	void testVariablesResolved() {
 		def project = createFreeStyleProject();
-		hudson.getNodeProperties().replaceBy([
+		hudson.nodeProperties.replaceBy([
                 new EnvironmentVariablesNodeProperty(new Entry("KEY1", "value"), new Entry("KEY2",'$KEY1'))]);
 		def builder = new CaptureEnvironmentBuilder();
-		project.getBuildersList().add(builder);
+		project.buildersList.add(builder);
 		
 		buildAndAssertSuccess(project);
 		
 		def envVars = builder.getEnvVars();
-		Assert.assertEquals("value", envVars.get("KEY1"));
-		Assert.assertEquals("value", envVars.get("KEY2"));
+		assertEquals("value", envVars["KEY1"]);
+		assertEquals("value", envVars["KEY2"]);
 	}
 
     /**
