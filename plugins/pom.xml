@@ -120,7 +120,7 @@
       <plugin>
         <groupId>org.jenkins-ci.tools</groupId>
         <artifactId>maven-hpi-plugin</artifactId>
-        <version>1.63</version>
+        <version>1.64</version>
         <extensions>true</extensions>
         <configuration>
           <showDeprecation>true</showDeprecation>
@@ -227,7 +227,7 @@
 
   <distributionManagement>
     <snapshotRepository>
-      <id>maven.hudson-labs.org</id>
+      <id>maven.jenkins-ci.org</id>
       <url>http://maven.jenkins-ci.org:8081/content/repositories/snapshots</url>
     </snapshotRepository>
   </distributionManagement>
