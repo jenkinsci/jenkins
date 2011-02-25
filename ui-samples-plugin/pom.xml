@@ -82,7 +82,7 @@ THE SOFTWARE.
       <plugin>
         <groupId>org.jenkins-ci.tools</groupId>
         <artifactId>maven-hpi-plugin</artifactId>
-        <version>1.63</version>
+        <version>1.64</version>
         <extensions>true</extensions>
         <configuration>
           <showDeprecation>true</showDeprecation>
