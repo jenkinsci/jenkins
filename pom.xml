@@ -27,7 +27,7 @@ THE SOFTWARE.
   <parent>
     <groupId>org.jenkins-ci</groupId>
     <artifactId>jenkins</artifactId>
-    <version>1.13</version>
+    <version>1.15</version>
   </parent>
   
   <groupId>org.jenkins-ci.main</groupId>
@@ -36,7 +36,7 @@ THE SOFTWARE.
   <packaging>pom</packaging>
   
   <name>Jenkins main module</name>
-  <description>The module that constitutes the main hudson.war</description>
+  <description>The module that constitutes the main jenkins.war</description>
   
   <modules>
     <module>remoting</module>
@@ -53,9 +53,9 @@ THE SOFTWARE.
   </modules>
   
   <scm>
-    <connection>scm:git:git://github.com/hudson/hudson.git</connection>
-    <developerConnection>scm:git:ssh://git@github.com/hudson/hudson.git</developerConnection>
-    <url>https://github.com/hudson/hudson</url>
+    <connection>scm:git:git://github.com/jenkinsci/jenkins.git</connection>
+    <developerConnection>scm:git:ssh://git@github.com/jenkinsci/jenkins.git</developerConnection>
+    <url>https://github.com/jenkinsci/jenkins</url>
   </scm>
 
   <build>
@@ -571,7 +571,7 @@ THE SOFTWARE.
       <url>scp://jenkins-ci.org/home/kohsuke/www/hudson-labs.org/maven-site/</url>
     </site>
     <snapshotRepository>
-      <id>maven.hudson-labs.org</id>
+      <id>maven.jenkins-ci.org</id>
       <url>http://maven.jenkins-ci.org:8081/content/repositories/snapshots</url>
     </snapshotRepository>
   </distributionManagement>
