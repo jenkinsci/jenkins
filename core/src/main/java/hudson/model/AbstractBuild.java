@@ -23,6 +23,7 @@
  */
 package hudson.model;
 
+import com.google.common.collect.ImmutableSortedSet;
 import hudson.AbortException;
 import hudson.EnvVars;
 import hudson.Functions;
@@ -628,7 +629,7 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
                 HashSet<String> r = new HashSet<String>();
                 for (User u : getCulprits())
                     r.add(u.getId());
-                culprits = r;
+                culprits = ImmutableSortedSet.copyOf(r);
                 CheckPoint.CULPRITS_DETERMINED.report();
             }
         }
