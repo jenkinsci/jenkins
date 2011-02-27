@@ -24,6 +24,7 @@
 package hudson;
 
 import hudson.PluginWrapper.Dependency;
+import hudson.model.Hudson;
 import hudson.util.IOException2;
 import hudson.util.MaskingClassLoader;
 import hudson.util.VersionNumber;
@@ -47,6 +48,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.jar.Manifest;
 import java.util.jar.Attributes;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.apache.tools.ant.BuildException;
@@ -254,6 +256,38 @@ public class ClassicPluginStrategy implements PluginStrategy {
     }
 
     public void initializeComponents(PluginWrapper plugin) {
+    }
+
+    public <T> List<ExtensionComponent<T>> findComponents(Class<T> type, Hudson hudson) {
+
+        List<ExtensionFinder> finders;
+        if (type==ExtensionFinder.class) {
+            // Avoid infinite recursion of using ExtensionFinders to find ExtensionFinders
+            finders = Collections.<ExtensionFinder>singletonList(new ExtensionFinder.Sezpoz());
+        } else {
+            finders = hudson.getExtensionList(ExtensionFinder.class);
+        }
+
+        /**
+         * See {@link ExtensionFinder#scout(Class, Hudson)} for the dead lock issue and what this does.
+         */
+        if (LOGGER.isLoggable(Level.FINER))
+            LOGGER.log(Level.FINER,"Scout-loading ExtensionList: "+type, new Throwable());
+        for (ExtensionFinder finder : finders) {
+            finder.scout(type, hudson);
+        }
+
+        List<ExtensionComponent<T>> r = new ArrayList<ExtensionComponent<T>>();
+        for (ExtensionFinder finder : finders) {
+            try {
+                r.addAll(finder._find(type, hudson));
+            } catch (AbstractMethodError e) {
+                // backward compatibility
+                for (T t : finder.findExtensions(type, hudson))
+                    r.add(new ExtensionComponent<T>(t));
+            }
+        }
+        return r;
     }
 
     public void load(PluginWrapper wrapper) throws IOException {
