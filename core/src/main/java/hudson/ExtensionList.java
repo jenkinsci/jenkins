@@ -23,7 +23,6 @@
  */
 package hudson;
 
-import hudson.ExtensionFinder.Sezpoz;
 import hudson.init.InitMilestone;
 import hudson.model.Hudson;
 import hudson.util.AdaptedIterator;
@@ -31,6 +30,7 @@ import hudson.util.DescriptorList;
 import hudson.util.Memoizer;
 import hudson.util.Iterators;
 import hudson.ExtensionPoint.LegacyInstancesAreScopedToHudson;
+import hudson.PluginStrategy;
 
 import java.util.AbstractList;
 import java.util.ArrayList;
@@ -197,21 +197,11 @@ public class ExtensionList<T> extends AbstractList<T> {
         return null;
     }
 
-
-    /**
-     * Returns {@link ExtensionFinder}s used to search for the extension instances.
-     */
-    protected Iterable<? extends ExtensionFinder> finders() {
-        return hudson.getExtensionList(ExtensionFinder.class);
-    }
-
     private List<ExtensionComponent<T>> ensureLoaded() {
         if(extensions!=null)
             return extensions; // already loaded
         if(Hudson.getInstance().getInitLevel().compareTo(InitMilestone.PLUGINS_PREPARED)<0)
             return legacyInstances; // can't perform the auto discovery until all plugins are loaded, so just make the legacy instances visible
-
-        scoutLoad();
 
         synchronized (getLoadLock()) {
             if(extensions==null) {
@@ -238,34 +228,13 @@ public class ExtensionList<T> extends AbstractList<T> {
     private static final class Lock {}
 
     /**
-     * See {@link ExtensionFinder#scout(Class, Hudson)} for the dead lock issue and what this does.
-     */
-    protected void scoutLoad() {
-        if (LOGGER.isLoggable(Level.FINER))
-            LOGGER.log(Level.FINER,"Scout-loading ExtensionList: "+extensionType, new Throwable());
-        for (ExtensionFinder finder : finders()) {
-            finder.scout(extensionType, hudson);
-        }
-    }
-
-    /**
      * Loads all the extensions.
      */
     protected List<ExtensionComponent<T>> load() {
         if (LOGGER.isLoggable(Level.FINE))
             LOGGER.log(Level.FINE,"Loading ExtensionList: "+extensionType, new Throwable());
 
-        List<ExtensionComponent<T>> r = new ArrayList<ExtensionComponent<T>>();
-        for (ExtensionFinder finder : finders()) {
-            try {
-                r.addAll(finder._find(extensionType, hudson));
-            } catch (AbstractMethodError e) {
-                // backward compatibility
-                for (T t : finder.findExtensions(extensionType, hudson))
-                    r.add(new ExtensionComponent<T>(t));
-            }
-        }
-        return r;
+        return hudson.getPluginManager().getPluginStrategy().findComponents(extensionType, hudson);
     }
 
     /**
@@ -282,19 +251,6 @@ public class ExtensionList<T> extends AbstractList<T> {
     }
 
     public static <T> ExtensionList<T> create(Hudson hudson, Class<T> type) {
-        if(type==ExtensionFinder.class)
-            return new ExtensionList<T>(hudson,type) {
-                Set<Sezpoz> finders = Collections.singleton(new Sezpoz());
-
-                /**
-                 * If this ExtensionList is searching for ExtensionFinders, calling hudson.getExtensionList
-                 * results in infinite recursion.
-                 */
-                @Override
-                protected Iterable<? extends ExtensionFinder> finders() {
-                    return finders;
-                }
-            };
         if(type.getAnnotation(LegacyInstancesAreScopedToHudson.class)!=null)
             return new ExtensionList<T>(hudson,type);
         else {

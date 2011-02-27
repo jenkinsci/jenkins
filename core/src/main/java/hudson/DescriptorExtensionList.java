@@ -141,11 +141,6 @@ public class DescriptorExtensionList<T extends Describable<T>, D extends Descrip
         return this;
     }
 
-    @Override
-    protected void scoutLoad() {
-        // no-op, since our load() doesn't by itself do any classloading
-    }
-
     /**
      * Loading the descriptors in this case means filtering the descriptor from the master {@link ExtensionList}.
      */
