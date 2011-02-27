@@ -89,7 +89,7 @@ public class GroovyCommand extends CLICommand implements Serializable {
             }
         }
 
-        GroovyShell groovy = new GroovyShell(binding);
+        GroovyShell groovy = new GroovyShell(Hudson.getInstance().getPluginManager().uberClassLoader, binding);
         groovy.run(loadScript(),"RemoteClass",remaining.toArray(new String[remaining.size()]));
         return 0;
     }
