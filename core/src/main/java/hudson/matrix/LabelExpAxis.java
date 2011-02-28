@@ -24,6 +24,7 @@
 package hudson.matrix;
 
 import hudson.Extension;
+import hudson.Util;
 import hudson.model.Hudson;
 
 import java.util.LinkedList;
@@ -86,7 +87,7 @@ public class LabelExpAxis extends Axis {
 		List<String> expressions = new LinkedList<String>();
 		String[] exprs = valuesString.split("\n");
 		for(String expr: exprs){
-    		expressions.add(expr);
+    		expressions.add(Util.fixEmptyAndTrim(expr));
     	}
 		return expressions;
 	}
