@@ -120,7 +120,7 @@
       <plugin>
         <groupId>org.jenkins-ci.tools</groupId>
         <artifactId>maven-hpi-plugin</artifactId>
-        <!-- version specified in parent pom -->
+        <version>1.64</version>
         <extensions>true</extensions>
         <configuration>
           <showDeprecation>true</showDeprecation>
