@@ -26,6 +26,8 @@ package org.jvnet.hudson.maven3.agent;
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FilterInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -102,8 +104,7 @@ public class Maven3Main {
 		// load the default realms
 		launcher = new Launcher();
 		launcher.setSystemClassLoader(Maven3Main.class.getClassLoader());
-		launcher.configure(Maven3Main.class
-				.getResourceAsStream("classworlds.conf"));
+		launcher.configure(getClassWorldsConfStream());
 		
 
 		// create a realm for loading remoting subsystem.
@@ -150,6 +151,17 @@ public class Maven3Main {
 		} 
 		return launcher.getExitCode();
 	}
+
+    private static InputStream getClassWorldsConfStream() throws FileNotFoundException {
+        String classWorldsConfLocation = System.getProperty("classworlds.conf");
+        if (classWorldsConfLocation == null || classWorldsConfLocation.trim().length() == 0) {
+            classWorldsConfLocation = System.getenv("classworlds.conf");
+            if (classWorldsConfLocation == null || classWorldsConfLocation.trim().length() == 0) {
+                return Maven3Main.class.getResourceAsStream("classworlds.conf");
+            }
+        }
+        return new FileInputStream(new File(classWorldsConfLocation));
+    }
 	
     /**
      * Makes sure that this is Java5 or later.
