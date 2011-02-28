@@ -27,7 +27,7 @@ THE SOFTWARE.
   <parent>
     <groupId>org.jenkins-ci.main</groupId>
     <artifactId>pom</artifactId>
-    <version>1.399-SNAPSHOT</version>
+    <version>1.400-SNAPSHOT</version>
     <relativePath>../pom.xml</relativePath>
   </parent>
   
@@ -164,8 +164,8 @@ THE SOFTWARE.
           </userRealms>
           <systemProperties>
             <systemProperty>
-              <name>HUDSON_HOME</name>
-              <value>${HUDSON_HOME}</value>
+              <name>JENKINS_HOME</name>
+              <value>${JENKINS_HOME}</value>
             </systemProperty>
             <systemProperty>
               <!-- always reload views during debugging -->
@@ -269,7 +269,7 @@ THE SOFTWARE.
   </dependencies>
   
   <properties>
-    <HUDSON_HOME>${basedir}/work</HUDSON_HOME>
+    <JENKINS_HOME>${basedir}/work</JENKINS_HOME>
     <contextPath>/</contextPath><!-- context path during test -->
     <port>8080</port><!-- HTTP listener port -->
   </properties>

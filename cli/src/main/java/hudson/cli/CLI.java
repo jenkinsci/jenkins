@@ -153,7 +153,10 @@ public class CLI {
     public static void main(final String[] _args) throws Exception {
         List<String> args = Arrays.asList(_args);
 
-        String url = System.getenv("HUDSON_URL");
+        String url = System.getenv("JENKINS_URL");
+
+        if (url==null)
+            url = System.getenv("HUDSON_URL");
 
         while(!args.isEmpty()) {
             String head = args.get(0);

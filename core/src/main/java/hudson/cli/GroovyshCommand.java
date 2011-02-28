@@ -76,7 +76,8 @@ public class GroovyshCommand extends CLICommand {
         Binding binding = new Binding();
         // redirect "println" to the CLI
         binding.setProperty("out", new PrintWriter(stdout,true));
-        binding.setProperty("hudson", hudson.model.Hudson.getInstance());
+        binding.setProperty("hudson", hudson.model.Hudson.getInstance()); // backward compatibility
+        binding.setProperty("jenkins", hudson.model.Hudson.getInstance());
 
         IO io = new IO(new BufferedInputStream(stdin),stdout,stderr);
 

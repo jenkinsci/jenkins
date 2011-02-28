@@ -21,7 +21,7 @@ JENKINS_WAR=/usr/share/jenkins/jenkins.war
 JENKINS_HOME=/var/lib/jenkins
 
 # set this to false if you don't want Hudson to run by itself
-# in this set up, you are expected to provide a servlet containr
+# in this set up, you are expected to provide a servlet container
 # to host jenkins.
 RUN_STANDALONE=true
 

@@ -1,7 +1,8 @@
 <!--
 The MIT License
 
-Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, Daniel Dyer, Erik Ramfelt, Stephen Connolly, Tom Huybrechts
+Copyright (c) 2004-2011, Sun Microsystems, Inc., Kohsuke Kawaguchi,
+Daniel Dyer, Erik Ramfelt, Stephen Connolly, Tom Huybrechts
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -27,7 +28,7 @@ THE SOFTWARE.
   <parent>
     <groupId>org.jenkins-ci.main</groupId>
     <artifactId>pom</artifactId>
-    <version>1.399-SNAPSHOT</version>
+    <version>1.400-SNAPSHOT</version>
   </parent>
 
   <artifactId>maven-plugin</artifactId>
@@ -127,6 +128,17 @@ THE SOFTWARE.
         </exclusion>
       </exclusions>      
     </dependency> 
+    
+    <dependency>
+      <groupId>org.sonatype.sisu</groupId>
+      <artifactId>sisu-inject-plexus</artifactId>
+    </dependency> 
+    
+    <dependency>
+      <groupId>org.sonatype.sisu</groupId>
+      <artifactId>sisu-inject-bean</artifactId>
+    </dependency> 
+    
     <dependency>
       <groupId>org.apache.maven.wagon</groupId>
       <artifactId>wagon-http-lightweight</artifactId>
@@ -254,7 +266,7 @@ THE SOFTWARE.
       <plugin>
         <groupId>org.jenkins-ci.tools</groupId>
         <artifactId>maven-hpi-plugin</artifactId>
-        <version>1.63</version>
+        <!-- version specified in grandparent pom -->
         <extensions>true</extensions>
         <configuration>
           <showDeprecation>true</showDeprecation>
