@@ -201,6 +201,8 @@ public class Axis extends AbstractDescribableImpl<Axis> implements Comparable<Ax
             return new JDKAxis(getValues());
         if (getName().equals("label"))
             return new LabelAxis(getName(),getValues());
+        if (getName().equals("labelExp"))
+            return new LabelExpAxis(getName(),getValues());
         return new TextAxis(getName(),getValues());
     }
 
