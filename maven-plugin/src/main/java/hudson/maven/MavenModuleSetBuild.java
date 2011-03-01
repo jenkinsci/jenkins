@@ -126,12 +126,20 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
 
     private String mavenVersionUsed;
 
+    private transient Object notifyModuleBuildLock = new Object();
+
     public MavenModuleSetBuild(MavenModuleSet job) throws IOException {
         super(job);
     }
 
     public MavenModuleSetBuild(MavenModuleSet project, File buildDir) throws IOException {
         super(project, buildDir);
+    }
+
+    @Override
+    protected void onLoad() {
+        super.onLoad();
+        notifyModuleBuildLock = new Object();
     }
 
     /**
@@ -457,7 +465,9 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
 
             // actions need to be replaced atomically especially
             // given that two builds might complete simultaneously.
-            synchronized(this) {
+            // use a separate lock object since this synchronized block calls into plugins,
+            // which in turn can access other MavenModuleSetBuild instances, which will result in a dead lock.
+            synchronized(notifyModuleBuildLock) {
                 boolean modified = false;
 
                 List<Action> actions = getActions();
@@ -1318,7 +1328,7 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
      * Extra verbose debug switch.
      */
     public static boolean debug = Boolean.getBoolean( "hudson.maven.debug" );
-    
+
     @Override
     public MavenModuleSet getParent() {// don't know why, but javac wants this
         return super.getParent();
