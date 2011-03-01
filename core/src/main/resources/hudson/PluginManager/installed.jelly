@@ -138,7 +138,7 @@ THE SOFTWARE.
 
         function updateMsg() {
           <!-- is anything changed since its original state? -->
-          var e = $A($('plugins').getElementsByTagName('input')).find(function(e) {
+          var e = $A(Form.getInputs('plugins', 'checkbox')).find(function(e) {
             return String(e.checked)!=e.getAttribute('original');
           });
 
