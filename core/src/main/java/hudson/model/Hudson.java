@@ -189,6 +189,7 @@ import java.io.FileFilter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.net.BindException;
 import java.net.URL;
 import java.nio.charset.Charset;
@@ -2629,6 +2630,38 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
      */
     public void doClassicThreadDump(StaplerResponse rsp) throws IOException, ServletException {
         rsp.sendRedirect2("threadDump");
+    }
+
+    /**
+     * Obtains the thread dump of all slaves (including the master.)
+     *
+     * <p>
+     * Since this is for diagnostics, it has a built-in precautionary measure against hang slaves.
+     */
+    public Map<String,Map<String,String>> getAllThreadDumps() throws IOException, InterruptedException {
+        checkPermission(ADMINISTER);
+
+        // issue the requests all at once
+        Map<String,Future<Map<String,String>>> future = new HashMap<String, Future<Map<String, String>>>();
+        for (Computer c : getComputers()) {
+            future.put(c.getName(), RemotingDiagnostics.getThreadDumpAsync(c.getChannel()));
+        }
+
+        // if the result isn't available in 5 sec, ignore that.
+        // this is a precaution against hang nodes
+        long endTime = System.currentTimeMillis() + 5000;
+
+        Map<String,Map<String,String>> r = new HashMap<String, Map<String, String>>();
+        for (Entry<String, Future<Map<String, String>>> e : future.entrySet()) {
+            try {
+                r.put(e.getKey(), e.getValue().get(endTime-System.currentTimeMillis(), TimeUnit.MILLISECONDS));
+            } catch (Exception x) {
+                StringWriter sw = new StringWriter();
+                x.printStackTrace(new PrintWriter(sw,true));
+                r.put(e.getKey(), Collections.singletonMap("Failed to retrieve thread dump",sw.toString()));
+            }
+        }
+        return r;
     }
 
     public synchronized Item doCreateItem( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {

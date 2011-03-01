@@ -1,7 +1,7 @@
 <!--
 The MIT License
 
-Copyright (c) 2004-2010, Sun Microsystems, Inc., Kohsuke Kawaguchi, Tom Huybrechts
+Copyright (c) 2004-2010, Sun Microsystems, Inc., Kohsuke Kawaguchi, Tom Huybrechts, CloudBees, Inc.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -31,9 +31,15 @@ THE SOFTWARE.
 
     <l:main-panel>
       <h1>${%Thread Dump}</h1>
-      <j:forEach var="t" items="${it.toComputer().getThreadDump().entrySet()}">
-        <h2>${t.key}</h2>
-        <pre>${t.value}</pre>
+      <j:forEach var="e" items="${it.getAllThreadDumps().entrySet()}" varStatus="loop">
+        <j:if test="${!loop.first}">
+          <hr style="margin-bottom:6em"/>
+        </j:if>
+        <h1>${e.key}</h1>
+        <j:forEach var="t" items="${e.value.entrySet()}">
+          <h2>${t.key}</h2>
+          <pre>${t.value}</pre>
+        </j:forEach>
       </j:forEach>
     </l:main-panel>
   </l:layout>
