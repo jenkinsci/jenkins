@@ -113,6 +113,7 @@ import java.util.ConcurrentModificationException;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.SortedMap;
 import java.util.TreeMap;
@@ -1223,6 +1224,16 @@ public class Functions {
 
     public static Date getCurrentTime() {
         return new Date();
+    }
+
+    public static Locale getCurrentLocale() {
+        Locale locale=null;
+        StaplerRequest req = Stapler.getCurrentRequest();
+        if(req!=null)
+            locale = req.getLocale();
+        if(locale==null)
+            locale = Locale.getDefault();
+        return locale;
     }
 
     /**
