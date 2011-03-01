@@ -31,26 +31,10 @@ THE SOFTWARE.
 
     <l:main-panel>
       <h1>${%Thread Dump}</h1>
-      <j:choose>
-        <j:when test="${h.isMustangOrAbove()}">
-          <!-- use a new Mustang feature to get more detailed dump -->
-          <j:set var="data" value="${h.getThreadInfos()}"/>
-          <j:set var="map" value="${h.sortThreadsAndGetGroupMap(data)}"/>
-          <j:forEach var="t" items="${data}">
-            <h2>${t.threadName}</h2>
-            <pre>${h.dumpThreadInfo(t,map)}</pre>
-          </j:forEach>
-        </j:when>
-        <j:otherwise>
-          <!-- fall back --> 
-          <j:forEach var="e" items="${h.dumpAllThreads().entrySet()}">
-            <h2>${e.key} (${e.key.state})</h2>
-            <j:forEach var="f" items="${e.value}">
-              <div>${f}</div>
-            </j:forEach>
-          </j:forEach>
-        </j:otherwise>
-      </j:choose>
+      <j:forEach var="t" items="${it.toComputer().getThreadDump().entrySet()}">
+        <h2>${t.key}</h2>
+        <pre>${t.value}</pre>
+      </j:forEach>
     </l:main-panel>
   </l:layout>
 </j:jelly>
