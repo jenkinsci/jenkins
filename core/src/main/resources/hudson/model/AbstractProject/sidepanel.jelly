@@ -42,7 +42,7 @@ THE SOFTWARE.
       </l:task>
       <j:if test="${it.configurable}">
         <j:if test="${it.buildable}">
-          <l:task icon="images/24x24/clock.gif" href="${url}/build?delay=0sec" title="${%Build Now}"
+          <l:task icon="images/24x24/clock.gif" href="${url}/build?delay=0sec" title="${it.buildNowText}"
                   onclick="${it.parameterized?null:'return build(this)'}" permission="${it.BUILD}" />
           <script>
             function build(a) {
