@@ -70,6 +70,8 @@ import hudson.tasks.Publisher;
 import hudson.triggers.SCMTrigger;
 import hudson.triggers.Trigger;
 import hudson.triggers.TriggerDescriptor;
+import hudson.util.AlternativeUiTextProvider;
+import hudson.util.AlternativeUiTextProvider.Message;
 import hudson.util.DescribableList;
 import hudson.util.EditDistance;
 import hudson.util.FormValidation;
@@ -351,6 +353,15 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
     @Override
     public String getPronoun() {
         return Messages.AbstractProject_Pronoun();
+    }
+
+    /**
+     * Gets the human readable display name to be rendered in the "Build Now" link.
+     *
+     * @since 1.401
+     */
+    public String getBuildNowText() {
+        return AlternativeUiTextProvider.get(BUILD_NOW_TEXT,this,Messages.AbstractProject_BuildNow());
     }
 
     /**
@@ -1909,6 +1920,8 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
      * Permission to abort a build. For now, let's make it the same as {@link #BUILD}
      */
     public static final Permission ABORT = BUILD;
+
+    public static final Message<AbstractProject> BUILD_NOW_TEXT = new Message<AbstractProject>();
 
     /**
      * Used for CLI binding.
