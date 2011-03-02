@@ -126,7 +126,7 @@ public class AntTest extends HudsonTestCase {
     }
 
     public void testParameterExpansion() throws Exception {
-        configureDefaultAnt();
+        String antName = configureDefaultAnt().getName();
         // *_URL vars are not set if hudson.getRootUrl() is null:
         ((Mailer.DescriptorImpl)hudson.getDescriptor(Mailer.class)).setHudsonUrl("http://test/");
         // Use a matrix project so we have env stuff via builtins, parameters and matrix axis.
@@ -135,7 +135,7 @@ public class AntTest extends HudsonTestCase {
         project.addProperty(new ParametersDefinitionProperty(
                 new StringParameterDefinition("FOO", "bar", "")));
         project.setScm(new ExtractResourceSCM(getClass().getResource("ant-job.zip")));
-        project.getBuildersList().add(new Ant("", null, null, null,
+        project.getBuildersList().add(new Ant("", antName, null, null,
                 "vNUM=$BUILD_NUMBER\nvID=$BUILD_ID\nvJOB=$JOB_NAME\nvTAG=$BUILD_TAG\nvEXEC=$EXECUTOR_NUMBER\n"
                 + "vNODE=$NODE_NAME\nvLAB=$NODE_LABELS\nvJAV=$JAVA_HOME\nvWS=$WORKSPACE\nvHURL=$HUDSON_URL\n"
                 + "vBURL=$BUILD_URL\nvJURL=$JOB_URL\nvHH=$HUDSON_HOME\nvJH=$JENKINS_HOME\nvFOO=$FOO\nvAX=$AX"));
