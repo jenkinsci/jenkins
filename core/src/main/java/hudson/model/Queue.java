@@ -77,6 +77,7 @@ import java.util.Collections;
 import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
@@ -631,6 +632,17 @@ public class Queue extends ResourceController implements Saveable {
      */
     public synchronized List<BuildableItem> getPendingItems() {
         return new ArrayList<BuildableItem>(pendings.values());
+    }
+
+    /**
+     * Gets all items that are in the queue but not blocked
+     */
+    synchronized ItemList<Item> getUnblockedItems() {
+    	ItemList<Item> queuedNotBlocked = new ItemList<Item>();
+        queuedNotBlocked.addAll(waitingList);
+        queuedNotBlocked.addAll(pendings);
+        queuedNotBlocked.addAll(buildables);
+        return queuedNotBlocked;
     }
 
     /**
@@ -1557,7 +1569,7 @@ public class Queue extends ResourceController implements Saveable {
     /**
      * {@link ArrayList} of {@link Item} with more convenience methods.
      */
-    private static class ItemList<T extends Item> extends ArrayList<T> {
+    static class ItemList<T extends Item> extends ArrayList<T> {
     	public T get(Task task) {
     		for (T item: this) {
     			if (item.task == task) {

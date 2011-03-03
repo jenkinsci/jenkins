@@ -98,6 +98,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -1071,9 +1072,10 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
     protected AbstractProject getBuildingDownstream() {
     	DependencyGraph graph = Hudson.getInstance().getDependencyGraph();
         Set<AbstractProject> tups = graph.getTransitiveDownstream(this);
-        tups.add(this);
+        Queue queue = Hudson.getInstance().getQueue();
+
         for (AbstractProject tup : tups) {
-            if(tup!=this && (tup.isBuilding() || tup.isInQueue()))
+			if(tup.isBuilding() || queue.getUnblockedItems().containsKey(tup))
                 return tup;
         }
         return null;
