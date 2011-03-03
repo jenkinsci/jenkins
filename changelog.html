@@ -6,20 +6,22 @@ We record noteworthy changes in this file, which then become http://jenkins-ci.o
 
 Some tips:
 
-- record your changes between "TRUNK-BEGIN" and "TRUNK-END".
-  (unless you are making changes in the RC branch, in which case it goes
-  to the rc section.
+- Record your changes between "TRUNK-BEGIN" and "TRUNK-END".
+  (except in rare cases when you are making changes in the RC branch,
+   in which case it goes to the rc section)
 
-- there are four CSS classes to denote the kind of changes. "rfe" for enhancement and "bug" for bug fixes,
-  plus 'major' to indicate major RFE/bugfix.
+- There are four CSS classes to denote the kind of changes.
+  "rfe" for enhancement and "bug" for bug fixes,
+  plus "major" to indicate major RFE/bugfix.
 
-- link to bugs in the issue tracker, e-mail thread in the archive, and so on if you can.
+- Link to bugs in the issue tracker, e-mail thread in the archive, and so on if you can.
 
 -->
 <head>
   <meta http-equiv="Content-Type" content="text/html;charset=utf-8">
   <title>Changelog</title>
-  <link rel="alternate" title="Hudson announcements" href="https://hudson.dev.java.net/servlets/ProjectNewsRSS" type="application/rss+xml">
+  <!-- TODO replace with new link:
+   link rel="alternate" title="Hudson announcements" href="https://hudson.dev.java.net/servlets/ProjectNewsRSS" type="application/rss+xml" -->
   <link rel="stylesheet" TYPE="text/css" href="changelog.css">
 <!--[if IE]>
 <style type="text/css">div.rate-offset { bottom: 0.2em !important; left: 5em !important; }</style>
@@ -33,13 +35,13 @@ Some tips:
         <img src="images/bug2.gif" alt="major bug">major bug fix     <img src="images/bug.gif" alt="bug">bug fix
     </span><span style="visibility:hidden">xxxxx</span>
 </div>
-<div align=right>
+<!-- TODO replace with new link: div align=right>
   <a href="https://hudson.dev.java.net/servlets/ProjectNewsRSS"><img src=atom.gif border=0 alt="Atom"> Subscribe to RSS feed</a>
-</div>
+</div -->
 
 <div id="ratings" style="display:none; font-size:120%;
      border:1px solid black; background-color:#eee; padding:0.5em; margin-bottom:1em">
-Help other Hudson users by letting the community know which releases you've used,
+Help other Jenkins users by letting the community know which releases you've used,
 and whether they had any significant issues. <br>
 Legend: <br>
  <img src="http://ci.jenkins-ci.org/images/16x16/health-80plus.gif" width="16" height="16"
