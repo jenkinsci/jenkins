@@ -32,6 +32,7 @@ import hudson.Extension;
 import hudson.ExtensionList;
 import hudson.FilePath;
 import hudson.remoting.Channel;
+import hudson.AbortException;
 
 import java.io.IOException;
 
@@ -42,6 +43,23 @@ import java.io.IOException;
  * @since 1.246
  */
 public abstract class ComputerListener implements ExtensionPoint {
+    /**
+     * Called before a {@link Computer} is brought online.
+     *
+     * <p>
+     * This enables you to do some configurable checks to see if we
+     * want to bring this slave online or if there are considerations
+     * that would keep us from doing so.
+     *
+     * @throws AbortException
+     *      Exceptions will be recorded to the listener, and
+     *      the computer will not become online.
+     *
+     * @since 1.400
+     */
+    public void allowOnline(Computer c) throws AbortException {
+    }
+
     /**
      * Called before a {@link Computer} is marked online.
      *

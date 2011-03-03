@@ -191,6 +191,8 @@ public class SlaveComputer extends Computer {
                 try {
                     log.rewind();
                     try {
+                        for (ComputerListener cl : ComputerListener.all())
+                            cl.allowOnline(SlaveComputer.this);
                         launcher.launch(SlaveComputer.this, taskListener);
                         return null;
                     } catch (AbortException e) {
