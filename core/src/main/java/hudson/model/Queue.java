@@ -639,9 +639,8 @@ public class Queue extends ResourceController implements Saveable {
      */
     synchronized ItemList<Item> getUnblockedItems() {
     	ItemList<Item> queuedNotBlocked = new ItemList<Item>();
-        queuedNotBlocked.addAll(waitingList);
-        queuedNotBlocked.addAll(pendings);
-        queuedNotBlocked.addAll(buildables);
+        queuedNotBlocked.addAll(Arrays.asList(getItems()));
+        queuedNotBlocked.removeAll(blockedProjects);
         return queuedNotBlocked;
     }
 
