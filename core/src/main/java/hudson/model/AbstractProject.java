@@ -43,6 +43,7 @@ import hudson.model.Cause.UserCause;
 import hudson.model.Descriptor.FormException;
 import hudson.model.Fingerprint.RangeSet;
 import hudson.model.Queue.Executable;
+import hudson.model.Queue.ItemList;
 import hudson.model.Queue.Task;
 import hudson.model.queue.SubTask;
 import hudson.model.Queue.WaitingItem;
@@ -1074,8 +1075,8 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
     }
 
     /**
-     * Returns the project if any of the downstream project (or itself) is either
-     * building or is in the queue.
+     * Returns the project if any of the downstream project is either
+     * building, waiting, pending or buildable.
      * <p>
      * This means eventually there will be an automatic triggering of
      * the given project (provided that all builds went smoothly.)
@@ -1084,16 +1085,16 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
     	DependencyGraph graph = Hudson.getInstance().getDependencyGraph();
         Set<AbstractProject> tups = graph.getTransitiveDownstream(this);
         Queue queue = Hudson.getInstance().getQueue();
-
+        ItemList<Queue.Item> unblockedItems = queue.getUnblockedItems();
         for (AbstractProject tup : tups) {
-			if(tup.isBuilding() || queue.getUnblockedItems().containsKey(tup))
+			if(tup.isBuilding() || unblockedItems.containsKey(tup))
                 return tup;
         }
         return null;
     }
 
     /**
-     * Returns the project if any of the upstream project (or itself) is either
+     * Returns the project if any of the upstream project is either
      * building or is in the queue.
      * <p>
      * This means eventually there will be an automatic triggering of
@@ -1102,9 +1103,8 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
     protected AbstractProject getBuildingUpstream() {
     	DependencyGraph graph = Hudson.getInstance().getDependencyGraph();
         Set<AbstractProject> tups = graph.getTransitiveUpstream(this);
-        tups.add(this);
         for (AbstractProject tup : tups) {
-            if(tup!=this && (tup.isBuilding() || tup.isInQueue()))
+            if(tup.isBuilding() || tup.isInQueue())
                 return tup;
         }
         return null;
