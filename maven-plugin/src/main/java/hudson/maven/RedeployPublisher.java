@@ -187,7 +187,7 @@ public class RedeployPublisher extends Recorder {
                 if (StringUtils.isBlank( altSettingsPath ) ) {
                     // get userHome from the node where job has been executed
                     String remoteUserHome = project.getSomeWorkspace().act( new GetUserHome() );
-                    altSettingsPath = remoteUserHome + ".m2/settings.xml";
+                    altSettingsPath = remoteUserHome + "/.m2/settings.xml";
                 }
                 
                 // we copy this file in the master in a  temporary file 
