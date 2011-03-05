@@ -168,9 +168,10 @@ public class RedeployPublisher extends Recorder {
         try {
             AbstractProject project = build.getProject();
             
-            if (project instanceof ProjectWithMaven) {
-                m = ((ProjectWithMaven) project).inferMavenInstallation().forNode(Hudson.getInstance(),listener);
-            }
+            // don't care here as it's executed in the master
+            //if (project instanceof ProjectWithMaven) {
+            //    m = ((ProjectWithMaven) project).inferMavenInstallation().forNode(Hudson.getInstance(),listener);
+            //}
             if (project instanceof MavenModuleSet) {
                 profiles = ((MavenModuleSet) project).getProfiles();
                 systemProperties = ((MavenModuleSet) project).getMavenProperties();
