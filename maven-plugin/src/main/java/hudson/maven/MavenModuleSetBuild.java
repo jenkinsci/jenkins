@@ -35,22 +35,8 @@ import hudson.Util;
 import hudson.maven.MavenBuild.ProxyImpl2;
 import hudson.maven.reporters.MavenFingerprinter;
 import hudson.maven.reporters.MavenMailer;
-import hudson.model.AbstractProject;
-import hudson.model.Action;
-import hudson.model.Build;
-import hudson.model.BuildListener;
+import hudson.model.*;
 import hudson.model.Cause.UpstreamCause;
-import hudson.model.Computer;
-import hudson.model.Environment;
-import hudson.model.Fingerprint;
-import hudson.model.Hudson;
-import hudson.model.ParameterDefinition;
-import hudson.model.ParametersAction;
-import hudson.model.ParametersDefinitionProperty;
-import hudson.model.Result;
-import hudson.model.Run;
-import hudson.model.StringParameterDefinition;
-import hudson.model.TaskListener;
 import hudson.remoting.Channel;
 import hudson.remoting.VirtualChannel;
 import hudson.scm.ChangeLogSet;
@@ -94,6 +80,8 @@ import org.apache.maven.monitor.event.EventDispatcher;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.project.ProjectBuildingException;
 import org.codehaus.plexus.util.PathTool;
+import org.jenkinsci.plugins.tokenmacro.MacroEvaluationException;
+import org.jenkinsci.plugins.tokenmacro.TokenMacro;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 import org.sonatype.aether.transfer.TransferCancelledException;
@@ -153,7 +141,8 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
     @Override
     public EnvVars getEnvironment(TaskListener log) throws IOException, InterruptedException {
         EnvVars envs = super.getEnvironment(log);
-        String opts = project.getMavenOpts();
+        String opts = getMavenOpts(log);
+
         if(opts!=null)
             envs.put("MAVEN_OPTS", opts);
         // We need to add M2_HOME and the mvn binary to the PATH so if Maven
@@ -510,6 +499,22 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
         }
     }
 
+    public String getMavenOpts(TaskListener listener) {
+        String opts = project.getMavenOpts();
+
+        try {
+            opts = TokenMacro.expand(this, listener, opts);
+        }
+        catch(Exception tokenException) {
+            listener.error("Problem expanding maven opts macros");
+        }
+        catch(LinkageError linkageError) {
+            // Token plugin not present. Ignore, this is OK.
+        }
+
+        return opts;
+    }
+
     /**
      * The sole job of the {@link MavenModuleSet} build is to update SCM
      * and triggers module builds.
@@ -615,14 +620,14 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
                             LOGGER.info( "using maven 3 " + mavenVersion );
                             process =
                                 MavenBuild.mavenProcessCache.get( launcher.getChannel(), slistener,
-                                                                  new Maven3ProcessFactory( project, launcher, envVars,
+                                                                  new Maven3ProcessFactory( project, launcher, envVars, getMavenOpts(listener),
                                                                                             pom.getParent() ) );
                         }
                         else
                         {
                             process =
                                 MavenBuild.mavenProcessCache.get( launcher.getChannel(), slistener,
-                                                                  new MavenProcessFactory( project, launcher, envVars,
+                                                                  new MavenProcessFactory( project, launcher, envVars,getMavenOpts(listener),
                                                                                            pom.getParent() ) );
                         }
                         ArgumentListBuilder margs = new ArgumentListBuilder().add("-B").add("-f", pom.getRemote());
