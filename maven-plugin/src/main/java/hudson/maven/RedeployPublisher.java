@@ -47,6 +47,7 @@ import hudson.util.FormValidation;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
 import java.util.Map.Entry;
@@ -415,6 +416,14 @@ public class RedeployPublisher extends Recorder {
         public Proxy getProxy()
         {
             return artifactRepository.getProxy();
+        }
+        public List<ArtifactRepository> getMirroredRepositories()
+        {
+            return Collections.emptyList();
+        }
+        public void setMirroredRepositories( List<ArtifactRepository> arg0 )
+        {
+            // noop            
         }
     }    
 }
