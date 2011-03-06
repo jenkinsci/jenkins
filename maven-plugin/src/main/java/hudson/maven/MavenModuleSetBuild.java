@@ -1088,6 +1088,8 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
             } else {
                 this.privateRepository = null;
             }
+            // TODO maybe in goals with -s,--settings
+            // or -Dmaven.repo.local
             this.alternateSettings = project.getAlternateSettings();
             this.mavenVersion = mavenVersion;
             this.resolveDependencies = project.isResolveDependencies();

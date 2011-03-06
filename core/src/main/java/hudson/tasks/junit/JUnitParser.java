@@ -60,12 +60,12 @@ public class JUnitParser extends TestResultParser {
 
     @Override
     public String getDisplayName() {
-        return "JUnit Parser";
+        return Messages.JUnitParser_DisplayName();
     }
 
     @Override
     public String getTestResultLocationMessage() {
-        return "JUnit xml files:";
+        return Messages.JUnitParser_TestResultLocationMessage();
     }
 
     @Override
