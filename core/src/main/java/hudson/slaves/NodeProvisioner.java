@@ -34,6 +34,7 @@ import hudson.model.MultiStageTimeSeries.TimeScale;
 import hudson.Extension;
 
 import java.awt.Color;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.Future;
 import java.util.concurrent.ExecutionException;
 import java.util.List;
@@ -84,7 +85,7 @@ public class NodeProvisioner {
      */
     private final Label label;
 
-    private List<PlannedNode> pendingLaunches = new ArrayList<PlannedNode>();
+    private List<PlannedNode> pendingLaunches = new CopyOnWriteArrayList<PlannedNode>();
 
     /**
      * Exponential moving average of the "planned capacity" over time, which is the number of
@@ -99,6 +100,17 @@ public class NodeProvisioner {
     public NodeProvisioner(Label label, LoadStatistics loadStatistics) {
         this.label = label;
         this.stat = loadStatistics;
+    }
+
+    /**
+     * Nodes that are being launched.
+     *
+     * @return
+     *      Can be empty but never null
+     * @since 1.401
+     */
+    public List<PlannedNode> getPendingLaunches() {
+        return new ArrayList<PlannedNode>(pendingLaunches);
     }
 
     /**
