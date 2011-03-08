@@ -1681,7 +1681,7 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
         public static final DescriptorImpl INSTANCE = new DescriptorImpl();
 
         public String getDisplayName() {
-            throw new UnsupportedOperationException();
+            return "";
         }
 
         @Override
