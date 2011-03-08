@@ -4,7 +4,7 @@
   <parent>
     <groupId>org.jenkins-ci</groupId>
     <artifactId>jenkins</artifactId>
-    <version>1.16</version>
+    <version>1.17</version>
   </parent>
 
   <groupId>org.jenkins-ci.plugins</groupId>
@@ -120,7 +120,7 @@
       <plugin>
         <groupId>org.jenkins-ci.tools</groupId>
         <artifactId>maven-hpi-plugin</artifactId>
-        <version>1.64</version>
+        <!-- version specified in parent pom -->
         <extensions>true</extensions>
         <configuration>
           <showDeprecation>true</showDeprecation>
@@ -129,7 +129,7 @@
       <plugin>
         <groupId>org.kohsuke.stapler</groupId>
         <artifactId>maven-stapler-plugin</artifactId>
-        <version>1.12</version>
+        <!-- version specified in parent pom -->
         <extensions>true</extensions>
       </plugin>
       <plugin>
@@ -142,7 +142,7 @@
       <plugin>
         <groupId>org.jvnet.localizer</groupId>
         <artifactId>maven-localizer-plugin</artifactId>
-        <version>1.8</version>
+        <!-- version specified in parent pom -->
         <executions>
           <execution>
             <goals>
