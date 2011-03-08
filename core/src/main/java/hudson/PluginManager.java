@@ -456,6 +456,20 @@ public abstract class PluginManager extends AbstractModelObject {
     }
 
     /**
+     * Return the {@link PluginWrapper} that loaded the given class 'c'.
+     *
+     * @since 1.402.
+     */
+    public PluginWrapper whichPlugin(Class c) {
+        ClassLoader cl = c.getClassLoader();
+        for (PluginWrapper p : activePlugins) {
+            if (p.classLoader==cl)
+                return p;
+        }
+        return null;
+    }
+
+    /**
      * Orderly terminates all the plugins.
      */
     public void stop() {
