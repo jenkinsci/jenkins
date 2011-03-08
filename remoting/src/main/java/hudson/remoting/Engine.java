@@ -98,6 +98,10 @@ public class Engine extends Thread {
      * the connection is alive.)
      */
     private String cookie;
+    
+    private PingThread pingThread;
+    private Socket socket;
+    private Channel channel;
 
     public Engine(EngineListener listener, List<URL> hudsonUrls, String secretKey, String slaveName) {
         this.listener = listener;
@@ -207,6 +211,7 @@ public class Engine extends Thread {
                 props.store(o, null);
                 dos.writeUTF(o.toString("UTF-8"));
 
+                int pingIntervalInMinutes = 10; // Same as the default in hudson.model.Hudson
                 String greeting = readLine(in);
                 if (greeting.startsWith("Unknown protocol")) {
                     LOGGER.info("The server didn't understand the v2 handshake. Falling back to v1 handshake");
@@ -228,34 +233,32 @@ public class Engine extends Thread {
                     if (greeting.equals(GREETING_SUCCESS)) {
                         Properties responses = readResponseHeaders(in);
                         cookie = responses.getProperty("Cookie");
+                        String interval = responses.getProperty("PingInterval", Integer.toString(pingIntervalInMinutes));
+                        try {
+                            pingIntervalInMinutes = Integer.valueOf(interval);
+                        } catch (NumberFormatException e) {
+                            LOGGER.warning("Invalid PingInterval " + interval + ", falling back to default of " + pingIntervalInMinutes + " minutes");
+                        }
                     } else {
                         onConnectionRejected(greeting);
                         continue;
                     }
                 }
 
-                final Socket socket = s;
-                final Channel channel = new Channel("channel", executor,
+                socket = s;
+                channel = new Channel("channel", executor,
                         in,
                         new BufferedOutputStream(s.getOutputStream()));
-                PingThread t = new PingThread(channel) {
-                    protected void onDead() {
-                        try {
-                            if (!channel.isInClosed()) {
-                                LOGGER.info("Ping failed. Terminating the socket.");
-                                socket.close();
-                            }
-                        } catch (IOException e) {
-                            LOGGER.log(SEVERE, "Failed to terminate the socket", e);
-                        }
-                    }
-                };
-                t.start();
+
+                updatePingInterval(pingIntervalInMinutes);
                 listener.status("Connected");
                 channel.join();
                 listener.status("Terminated");
-                t.interrupt();  // make sure the ping thread is terminated
+                stopPinging();
                 listener.onDisconnect();
+
+                socket = null;
+                channel = null;
 
                 if(noReconnect)
                     return; // exit
@@ -265,6 +268,35 @@ public class Engine extends Thread {
         } catch (Throwable e) {
             listener.error(e);
         }
+    }
+    
+    public synchronized void updatePingInterval(int pingIntervalInMinutes) {
+        stopPinging();
+        if (pingIntervalInMinutes > 0) {
+            LOGGER.info("Pinging at " + pingIntervalInMinutes + " minute intervals");
+            pingThread = new PingThread(channel, pingIntervalInMinutes * 60 * 1000) {
+                protected void onDead() {
+                    try {
+                        if (!channel.isInClosed()) {
+                            LOGGER.info("Ping failed. Terminating the socket.");
+                            socket.close();
+                        }
+                    } catch (IOException e) {
+                        LOGGER.log(SEVERE, "Failed to terminate the socket", e);
+                    }
+                }
+            };
+
+            pingThread.start();
+        }
+        else {
+            LOGGER.info("Pinging disabled");
+        }
+    }
+    
+    public synchronized void stopPinging() {
+        if (pingThread != null) pingThread.interrupt();  // make sure the ping thread is terminated
+        pingThread = null;
     }
 
     private void onConnectionRejected(String greeting) throws InterruptedException {

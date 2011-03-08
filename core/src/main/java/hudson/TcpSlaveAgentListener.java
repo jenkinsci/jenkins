@@ -89,12 +89,15 @@ public final class TcpSlaveAgentListener extends Thread {
     private volatile boolean shuttingDown;
 
     public final int configuredPort;
+    public final int pingInterval;
 
     /**
      * @param port
      *      Use 0 to choose a random port.
+     * @param pingInterval
+     *      The ping interval in minutes to give to slaves
      */
-    public TcpSlaveAgentListener(int port) throws IOException {
+    public TcpSlaveAgentListener(int port, int pingInterval) throws IOException {
         super("TCP slave agent listener port="+port);
         try {
             serverSocket = new ServerSocket(port);
@@ -102,6 +105,7 @@ public final class TcpSlaveAgentListener extends Thread {
             throw (BindException)new BindException("Failed to listen on port "+port+" because it's already in use.").initCause(e);
         }
         this.configuredPort = port;
+        this.pingInterval = pingInterval;
 
         LOGGER.info("JNLP slave agent listener started on TCP port "+getPort());
 
@@ -291,6 +295,7 @@ public final class TcpSlaveAgentListener extends Thread {
             Properties response = new Properties();
             String cookie = generateCookie();
             response.put("Cookie",cookie);
+            response.put("PingInterval", Integer.toString(pingInterval));
             writeResponseHeaders(out, response);
 
             ch = jnlpConnect(computer);

@@ -121,6 +121,12 @@ THE SOFTWARE.
           <label for="sat.disabled">${%Disable}</label>
         </f:entry>
 
+        <f:entry title="${%Ping interval for JNLP slave agents}"
+            help="/help/system-config/master-slave/slave-agent-ping-interval.html">
+          <input type="text" class="number" name="slaveAgentPingInterval" id="sat.pingInterval"
+             value="${it.slaveAgentPingInterval}" />
+        </f:entry>
+
         <f:dropdownDescriptorSelector title="${%Markup Formatter}" field="markupFormatter" />
 
         <f:entry title="${%Access Control}">

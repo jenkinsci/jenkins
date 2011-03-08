@@ -70,7 +70,9 @@ import hudson.model.labels.LabelAtom;
 import hudson.model.listeners.ItemListener;
 import hudson.model.listeners.SCMListener;
 import hudson.model.listeners.SaveableListener;
+import hudson.remoting.Callable;
 import hudson.remoting.Channel;
+import hudson.remoting.Engine;
 import hudson.remoting.LocalChannel;
 import hudson.remoting.VirtualChannel;
 import hudson.scm.RepositoryBrowser;
@@ -190,6 +192,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.net.BindException;
 import java.net.URL;
 import java.nio.charset.Charset;
@@ -477,6 +481,16 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
     private int slaveAgentPort =0;
 
     /**
+     * Ping interval for JNLP slaves in minutes.
+     * A value of -1 disables the ping. We assume 0 means we
+     * have older config data, and use the default of 10 minutes.
+     */
+    private int slaveAgentPingInterval;
+
+    private static final int defaultSlaveAgentPingInterval = 10;
+    private static final int disableSlaveAgentPingInterval = -1;
+
+    /**
      * Whitespace-separated labels assigned to the master as a {@link Node}.
      */
     private String label="";
@@ -674,7 +688,7 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
 
             if(slaveAgentPort!=-1) {
                 try {
-                    tcpSlaveAgentListener = new TcpSlaveAgentListener(slaveAgentPort);
+                    tcpSlaveAgentListener = new TcpSlaveAgentListener(slaveAgentPort, getSlaveAgentPingInterval());
                 } catch (BindException e) {
                     new AdministrativeError(getClass().getName()+".tcpBind",
                             "Failed to listen to incoming slave connection",
@@ -808,6 +822,76 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
     @Exported
     public int getSlaveAgentPort() {
         return slaveAgentPort;
+    }
+
+    @Exported
+    public int getSlaveAgentPingInterval() {
+        switch (slaveAgentPingInterval) {
+            case 0: return defaultSlaveAgentPingInterval; // No data persisted
+            case disableSlaveAgentPingInterval: return 0; // Show the user 0 for disabled
+            default: return slaveAgentPingInterval;
+        }
+    }
+
+    private void setSlaveAgentPingInterval(JSONObject cfg) throws FormException {
+        if (cfg.has("slaveAgentPingInterval")) {
+            try {
+                slaveAgentPingInterval = cfg.getInt("slaveAgentPingInterval");
+            } catch (net.sf.json.JSONException e) {
+                throw new FormException(Messages.Hudson_NotANumber(), "slaveAgentPingInterval");
+            }
+
+            // Inverse of the logic in the getter - if the user enters 0, store our special flag value
+            if (slaveAgentPingInterval < 1) {
+                slaveAgentPingInterval = disableSlaveAgentPingInterval;
+            }
+        }
+        else {
+            slaveAgentPingInterval = defaultSlaveAgentPingInterval;
+        }
+    }
+
+    private void updatePingIntervalForActiveSlaves() {
+        for (Computer c : getComputers()) {
+            if (c.isOnline() && !(c instanceof MasterComputer)) {
+                try {
+                    String result = c.getChannel().call(new UpdatePingInterval(getSlaveAgentPingInterval()));
+                    LOGGER.fine("Result of updating ping interval for " + c.getName() + ": " + result);
+                } catch (Exception e) {
+                    LOGGER.warning("Unable to update ping interval for " + c.getName() + ": " + e);
+                }
+            }
+        }
+    }
+    
+    private static class UpdatePingInterval implements Callable<String, IOException> {
+        private static final long serialVersionUID = 3703472798975124868L;
+        private int newPingInterval;
+
+        public UpdatePingInterval(int newPingInterval) {
+            this.newPingInterval = newPingInterval;
+        }
+
+        public String call() throws IOException {
+            Engine engine = Engine.current();
+            if (engine != null) {
+                // Extra hoops to gracefully handle older slaves
+                try {
+                    Method m = engine.getClass().getMethod("updatePingInterval", int.class);
+                    m.invoke(engine, newPingInterval);
+                    return "Ping interval updated";
+                } catch (NoSuchMethodException e) {
+                    throw new IOException("Slave does not support ping interval configuration");
+                } catch (InvocationTargetException e) {
+                    throw new IOException(e);
+                } catch (IllegalAccessException e) {
+                    throw new IOException(e);
+                }
+            }
+            else {
+                return "Not a JNLP slave";
+            }
+        }
     }
 
     /**
@@ -2413,6 +2497,8 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
             checkPermission(ADMINISTER);
 
             JSONObject json = req.getSubmittedForm();
+            
+            boolean slaveAgentPingIntervalChanged = false;
 
             // keep using 'useSecurity' field as the main configuration setting
             // until we get the new security implementation working
@@ -2422,6 +2508,10 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
                 JSONObject security = json.getJSONObject("use_security");
                 setSecurityRealm(SecurityRealm.all().newInstanceFromRadioList(security,"realm"));
                 setAuthorizationStrategy(AuthorizationStrategy.all().newInstanceFromRadioList(security, "authorization"));
+
+                int originalSlaveAgentPingInterval = getSlaveAgentPingInterval();
+                setSlaveAgentPingInterval(security);
+                slaveAgentPingIntervalChanged = originalSlaveAgentPingInterval != getSlaveAgentPingInterval();
 
                 if (security.has("markupFormatter")) {
                     markupFormatter = req.bindJSON(MarkupFormatter.class,security.getJSONObject("markupFormatter"));
@@ -2476,15 +2566,19 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
                 // relaunch the agent
                 if(tcpSlaveAgentListener==null) {
                     if(slaveAgentPort!=-1)
-                        tcpSlaveAgentListener = new TcpSlaveAgentListener(slaveAgentPort);
+                        tcpSlaveAgentListener = new TcpSlaveAgentListener(slaveAgentPort, getSlaveAgentPingInterval());
                 } else {
-                    if(tcpSlaveAgentListener.configuredPort!=slaveAgentPort) {
+                    if(tcpSlaveAgentListener.configuredPort!=slaveAgentPort || slaveAgentPingIntervalChanged) {
                         tcpSlaveAgentListener.shutdown();
                         tcpSlaveAgentListener = null;
                         if(slaveAgentPort!=-1)
-                            tcpSlaveAgentListener = new TcpSlaveAgentListener(slaveAgentPort);
+                            tcpSlaveAgentListener = new TcpSlaveAgentListener(slaveAgentPort, getSlaveAgentPingInterval());
                     }
                 }
+            }
+            
+            if (slaveAgentPingIntervalChanged) {
+                updatePingIntervalForActiveSlaves();
             }
 
             numExecutors = json.getInt("numExecutors");
