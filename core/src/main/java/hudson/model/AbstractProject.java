@@ -43,7 +43,6 @@ import hudson.model.Cause.UserCause;
 import hudson.model.Descriptor.FormException;
 import hudson.model.Fingerprint.RangeSet;
 import hudson.model.Queue.Executable;
-import hudson.model.Queue.ItemList;
 import hudson.model.Queue.Task;
 import hudson.model.queue.SubTask;
 import hudson.model.Queue.WaitingItem;
@@ -1082,12 +1081,10 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
      * the given project (provided that all builds went smoothly.)
      */
     protected AbstractProject getBuildingDownstream() {
-    	DependencyGraph graph = Hudson.getInstance().getDependencyGraph();
-        Set<AbstractProject> tups = graph.getTransitiveDownstream(this);
-        Queue queue = Hudson.getInstance().getQueue();
-        ItemList<Queue.Item> unblockedItems = queue.getUnblockedItems();
-        for (AbstractProject tup : tups) {
-			if(tup.isBuilding() || unblockedItems.containsKey(tup))
+        Set<Task> unblockedTasks = Hudson.getInstance().getQueue().getUnblockedTasks();
+
+        for (AbstractProject tup : Hudson.getInstance().getDependencyGraph().getTransitiveDownstream(this)) {
+			if (tup!=this && (tup.isBuilding() || unblockedTasks.contains(tup)))
                 return tup;
         }
         return null;
@@ -1101,10 +1098,10 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
      * the given project (provided that all builds went smoothly.)
      */
     protected AbstractProject getBuildingUpstream() {
-    	DependencyGraph graph = Hudson.getInstance().getDependencyGraph();
-        Set<AbstractProject> tups = graph.getTransitiveUpstream(this);
-        for (AbstractProject tup : tups) {
-            if(tup.isBuilding() || tup.isInQueue())
+        Set<Task> unblockedTasks = Hudson.getInstance().getQueue().getUnblockedTasks();
+
+        for (AbstractProject tup : Hudson.getInstance().getDependencyGraph().getTransitiveUpstream(this)) {
+			if (tup!=this && (tup.isBuilding() || unblockedTasks.contains(tup)))
                 return tup;
         }
         return null;
