@@ -192,7 +192,7 @@ public class SlaveComputer extends Computer {
                     log.rewind();
                     try {
                         for (ComputerListener cl : ComputerListener.all())
-                            cl.allowOnline(SlaveComputer.this);
+                            cl.preLaunch(SlaveComputer.this, taskListener);
                         launcher.launch(SlaveComputer.this, taskListener);
                         return null;
                     } catch (AbortException e) {
@@ -207,8 +207,11 @@ public class SlaveComputer extends Computer {
                         throw e;
                     }
                 } finally {
-                    if (channel==null)
+                    if (channel==null) {
                         offlineCause = new OfflineCause.LaunchFailed();
+                        for (ComputerListener cl : ComputerListener.all())
+                            cl.onLaunchFailure(SlaveComputer.this, taskListener);
+                    }
                 }
             }
         });

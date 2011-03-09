@@ -44,20 +44,43 @@ import java.io.IOException;
  */
 public abstract class ComputerListener implements ExtensionPoint {
     /**
-     * Called before a {@link Computer} is brought online.
+     * Called before a {@link ComputerLauncher} is asked to launch a connection with {@link Computer}.
      *
      * <p>
      * This enables you to do some configurable checks to see if we
      * want to bring this slave online or if there are considerations
      * that would keep us from doing so.
      *
+     * <p>
+     * Throwing {@link AbortException} would let you veto the launch operation. Other thrown exceptions
+     * will also have the same effect, but their stack trace will be dumped, so they are meant for error situation.
+     *
+     * @param c
+     *      Computer that's being launched. Never null.
+     * @param taskListener
+     *      Connected to the slave console log. Useful for reporting progress/errors on a lengthy operation.
+     *      Never null.
      * @throws AbortException
      *      Exceptions will be recorded to the listener, and
      *      the computer will not become online.
      *
-     * @since 1.400
+     * @since 1.402
      */
-    public void allowOnline(Computer c) throws AbortException {
+    public void preLaunch(Computer c, TaskListener taskListener) throws IOException, InterruptedException {
+    }
+
+    /**
+     * Called when a slave attempted to connect via {@link ComputerLauncher} but it failed.
+     *
+     * @param c
+     *      Computer that was trying to launch. Never null.
+     * @param taskListener
+     *      Connected to the slave console log. Useful for reporting progress/errors on a lengthy operation.
+     *      Never null.
+     *
+     * @since 1.402
+     */
+    public void onLaunchFailure(Computer c, TaskListener taskListener) throws IOException, InterruptedException {
     }
 
     /**
