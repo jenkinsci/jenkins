@@ -2119,9 +2119,8 @@ function createComboBox(idOrField,valueFunction) {
 }
 
 
-if (isRunAsTest) {
-    // during the unit test, make Ajax errors fatal
-    Ajax.Request.prototype.dispatchException = function(e) {
-        throw e;
-    }
+// Exception in code during the AJAX processing should be reported,
+// so that our users can find them more easily.
+Ajax.Request.prototype.dispatchException = function(e) {
+    throw e;
 }
