@@ -353,7 +353,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
      */
     @Override
     public String getPronoun() {
-        return Messages.AbstractProject_Pronoun();
+        return AlternativeUiTextProvider.get(PRONOUN, this,Messages.AbstractProject_Pronoun());
     }
 
     /**
@@ -1920,6 +1920,9 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
      */
     public static final Permission ABORT = BUILD;
 
+    /**
+     * Replaceable "Build Now" text.
+     */
     public static final Message<AbstractProject> BUILD_NOW_TEXT = new Message<AbstractProject>();
 
     /**

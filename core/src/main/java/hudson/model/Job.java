@@ -42,6 +42,8 @@ import hudson.search.SearchItem;
 import hudson.search.SearchItems;
 import hudson.security.ACL;
 import hudson.tasks.LogRotator;
+import hudson.util.AlternativeUiTextProvider;
+import hudson.util.AlternativeUiTextProvider.Message;
 import hudson.util.ChartUtil;
 import hudson.util.ColorPalette;
 import hudson.util.CopyOnWriteList;
@@ -242,7 +244,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
 
     @Override
     public String getPronoun() {
-        return Messages.Job_Pronoun();
+        return AlternativeUiTextProvider.get(PRONOUN, this, Messages.Job_Pronoun());
     }
 
     /**

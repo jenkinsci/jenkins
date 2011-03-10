@@ -24,6 +24,7 @@
 package hudson.matrix;
 
 import hudson.Util;
+import hudson.util.AlternativeUiTextProvider;
 import hudson.util.DescribableList;
 import hudson.model.AbstractBuild;
 import hudson.model.Cause;
@@ -200,7 +201,7 @@ public class MatrixConfiguration extends Project<MatrixConfiguration,MatrixRun> 
 
     @Override
     public String getPronoun() {
-        return Messages.MatrixConfiguration_Pronoun();
+        return AlternativeUiTextProvider.get(PRONOUN, this, Messages.MatrixConfiguration_Pronoun());
     }
 
     @Override

@@ -36,6 +36,8 @@ import hudson.model.listeners.SaveableListener;
 import hudson.security.AccessControlled;
 import hudson.security.Permission;
 import hudson.security.ACL;
+import hudson.util.AlternativeUiTextProvider;
+import hudson.util.AlternativeUiTextProvider.Message;
 import hudson.util.AtomicFileWriter;
 import hudson.util.IOException2;
 import org.apache.tools.ant.taskdefs.Copy;
@@ -104,7 +106,7 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
      * {@link Item}. Must start with a capital letter.
      */
     public String getPronoun() {
-        return Messages.AbstractItem_Pronoun();
+        return AlternativeUiTextProvider.get(PRONOUN, this, Messages.AbstractItem_Pronoun());
     }
 
     @Exported
@@ -500,4 +502,9 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
             throw new CmdLineException(null,Messages.AbstractItem_NoSuchJobExists(name,AbstractProject.findNearest(name).getFullName()));
         return item;
     }
+
+    /**
+     * Replaceable pronoun of that points to a job. Defaults to "Job"/"Project" depending on the context.
+     */
+    public static final Message<AbstractItem> PRONOUN = new Message<AbstractItem>();
 }

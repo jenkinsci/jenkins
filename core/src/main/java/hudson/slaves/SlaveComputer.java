@@ -193,6 +193,7 @@ public class SlaveComputer extends Computer {
                     try {
                         for (ComputerListener cl : ComputerListener.all())
                             cl.preLaunch(SlaveComputer.this, taskListener);
+
                         launcher.launch(SlaveComputer.this, taskListener);
                         return null;
                     } catch (AbortException e) {

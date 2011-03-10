@@ -44,6 +44,7 @@ import hudson.model.Saveable;
 import hudson.tasks.LogRotator;
 import hudson.tasks.Publisher;
 import hudson.tasks.Maven.MavenInstallation;
+import hudson.util.AlternativeUiTextProvider;
 import hudson.util.DescribableList;
 import org.apache.maven.project.MavenProject;
 import org.kohsuke.stapler.StaplerRequest;
@@ -314,7 +315,7 @@ public final class MavenModule extends AbstractMavenProject<MavenModule,MavenBui
 
     @Override
     public String getPronoun() {
-        return Messages.MavenModule_Pronoun();
+        return AlternativeUiTextProvider.get(PRONOUN, this, Messages.MavenModule_Pronoun());
     }
 
     @Override

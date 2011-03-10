@@ -92,10 +92,12 @@ public abstract class AlternativeUiTextProvider implements ExtensionPoint {
     }
 
     /**
+     * Each instance of this class represents a text that can be replaced by {@link AlternativeUiTextProvider}.
+     *
      * @param <T>
      *          Context object type. Use {@link Void} to indicate that there's no context.
      */
-    public static class Message<T> {
+    public static final class Message<T> {
         // decided not to retain T as Class so that we can have Message<List<Foo>>, for example.
 
         /**
