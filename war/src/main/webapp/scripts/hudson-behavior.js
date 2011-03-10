@@ -443,13 +443,16 @@ var hudsonRules = {
             prototypes = prototypes.previousSibling;
         var insertionPoint = prototypes.previousSibling;    // this is where the new item is inserted.
 
+        var proxy = eval(prototypes.getAttribute("proxy")); // JavaScript proxy to HeteroListConfigPageRenderer
+
         // extract templates
         var templates = []; var i=0;
         for(var n=prototypes.firstChild;n!=null;n=n.nextSibling,i++) {
             var name = n.getAttribute("name");
             var tooltip = n.getAttribute("tooltip");
+            var descriptorId = n.getAttribute("descriptorId");
             menu.options[i] = new Option(n.getAttribute("title"),""+i);
-            templates.push({html:n.innerHTML, name:name, tooltip:tooltip});
+            templates.push({html:n.innerHTML, name:name, tooltip:tooltip,descriptorId:descriptorId});
         }
         Element.remove(prototypes);
 
@@ -463,11 +466,16 @@ var hudsonRules = {
             nc.className = "repeated-chunk";
             nc.setAttribute("name",t.name);
             nc.innerHTML = t.html;
-            insertionPoint.parentNode.insertBefore(nc, insertionPoint);
-            if(withDragDrop)    prepareDD(nc);
 
-            hudsonRules['DIV.repeated-chunk'](nc);  // applySubtree doesn't get nc itself
-            Behaviour.applySubtree(nc);
+            proxy.renderConfigPage(t.descriptorId, function (t) {
+                Element.replace(findElementsBySelector(nc,"TR.config-page")[0],t.responseText);
+                
+                insertionPoint.parentNode.insertBefore(nc, insertionPoint);
+                if(withDragDrop)    prepareDD(nc);
+
+                hudsonRules['DIV.repeated-chunk'](nc);  // applySubtree doesn't get nc itself
+                Behaviour.applySubtree(nc);
+            });
         });
 
         menuButton.getMenu().renderEvent.subscribe(function(type,args,value) {
@@ -2124,3 +2132,4 @@ function createComboBox(idOrField,valueFunction) {
 Ajax.Request.prototype.dispatchException = function(e) {
     throw e;
 }
+
