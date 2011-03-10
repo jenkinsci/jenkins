@@ -1404,12 +1404,11 @@ var repeatableSupport = {
 
     // called when 'delete' button is clicked
     onDelete : function(n) {
-        while (!Element.hasClassName(n,"repeated-chunk"))
-            n = n.parentNode;
-
+        n = findAncestorClass(n,"repeated-chunk");
         var p = n.parentNode;
         p.removeChild(n);
-        p.tag.update();
+        if (p.tag)
+            p.tag.update();
     },
 
     // called when 'add' button is clicked
