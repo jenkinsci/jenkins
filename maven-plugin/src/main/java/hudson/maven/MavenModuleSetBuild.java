@@ -324,14 +324,24 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
     }
 
     private static String normalizePath(String relPath) {
-        // JENKINS-8525 FilenameUtils.normalize for ../foo returns null
-        if (StringUtils.isEmpty(relPath) || StringUtils.startsWith( relPath, "../" )) {
-            LOGGER.config("No need to normalize " + (StringUtils.isEmpty(relPath) ? "an empty path" : relPath));
+        relPath = StringUtils.trimToEmpty( relPath );
+        if (StringUtils.isEmpty( relPath )) {
+            LOGGER.config("No need to normalize an empty path.");
         } else {
-            String tmp = FilenameUtils.normalize( relPath );
-            LOGGER.config("Normalized path " + relPath + " to "+tmp);
-            relPath = tmp;
+            if(FilenameUtils.indexOfLastSeparator( relPath ) == -1) {
+                LOGGER.config("No need to normalize "+relPath);
+            } else {
+                String tmp = FilenameUtils.normalize( relPath );
+                if(tmp == null) {
+                    LOGGER.config("Path " + relPath + " can not be normalized (parent dir is unknown). Keeping as is.");
+                } else {
+                    LOGGER.config("Normalized path " + relPath + " to "+tmp);
+                    relPath = tmp;
+                }
+                relPath = FilenameUtils.separatorsToUnix( relPath );
+            }
         }
+        LOGGER.fine("Returning path " + relPath);
         return relPath;
     }
 
