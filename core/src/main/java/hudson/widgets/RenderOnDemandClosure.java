@@ -24,6 +24,7 @@
 package hudson.widgets;
 
 import hudson.Util;
+import hudson.model.Descriptor;
 import hudson.model.DescriptorByNameOwner;
 import hudson.util.IOException2;
 import hudson.util.PackedMap;
@@ -74,10 +75,7 @@ public class RenderOnDemandClosure {
             variables.put(v,context.getVariable(v));
 
         // capture the current base of context for descriptors
-        StaplerRequest req = Stapler.getCurrentRequest();
-        Ancestor a = req.findAncestor(DescriptorByNameOwner.class);
-        currentDescriptorByNameUrl = a.getUrl();
-
+        currentDescriptorByNameUrl = Descriptor.getCurrentDescriptorByNameUrl();
 
         this.variables = PackedMap.of(variables);
     }
