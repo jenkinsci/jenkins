@@ -35,7 +35,7 @@ THE SOFTWARE.
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:s="/lib/form">
   <j:set var="descriptors" value="${h.filterDescriptors(it,attrs.descriptors)}" />
 
-  <s:form method="post" action="createItem">
+  <s:form method="post" action="createItem" name="createItem">
     <s:entry title="${attrs.nameTitle}">
       <s:textbox id="name" name="name" checkUrl="'${rootURL}/${attrs.checkUrl}?value='+encodeURIComponent(this.value)"
                  onchange="updateOk(this.form)" onkeyup="updateOk(this.form)" />
