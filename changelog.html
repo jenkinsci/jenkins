@@ -69,6 +69,8 @@ Upcoming changes</a>
   <li class=bug>
     Email fails when sending to multiple recipients if _any_ of them are in error
     (<a href="http://issues.jenkins-ci.org/browse/JENKINS-9006">issue 9006</a>)
+  <li class=bug>
+    Fixed a concurrent data access corruption in crumb generation.
   <li class=rfe>
     Allow maven builds to (opionally) make use of the token-macro-plugin.
   <li class=rfe>
@@ -77,6 +79,14 @@ Upcoming changes</a>
   <li class=rfe>
     Added more event callbacks on <tt>ComputerListener</tt>
     (<a href="http://jenkins.361315.n4.nabble.com/Hooking-into-failed-slave-launches-td3339646.html">thread</a>)
+  <li class=rfe>
+    Improved the auto-completion for creating a job by copying.
+  <li class=rfe>
+    Improved the performance of the configuration page rendering by lazy-loading fragments.
+  <li class=rfe>
+    Introduced a behind-the-scene mechanism to lazy-load portions of HTML pages.
+  <li class=rfe>
+    Introduced a behind-the-scene mechanism to simplify server/client communication through JavaScript proxies.
 </ul>
 </div><!--=TRUNK-END=-->
 
