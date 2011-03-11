@@ -144,7 +144,9 @@ public abstract class ItemGroupMixIn {
             String from = req.getParameter("from");
 
             // resolve a name to Item
-            Item src = parent.getItem(from);
+            Item src = null;
+            if (!from.startsWith("/"))
+                src = parent.getItem(from);
             if (src==null)
                 src = Hudson.getInstance().getItemByFullName(from);
 
