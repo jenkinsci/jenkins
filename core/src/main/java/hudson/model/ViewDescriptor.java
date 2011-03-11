@@ -23,6 +23,8 @@
  */
 package hudson.model;
 
+import org.kohsuke.stapler.QueryParameter;
+
 /**
  * {@link Descriptor} for {@link View}.
  *
@@ -57,5 +59,14 @@ public abstract class ViewDescriptor extends Descriptor<View> {
     }
 
     protected ViewDescriptor() {
+    }
+
+    public AutoCompletionCandidates doAutoCompleteCopyNewItemFrom(@QueryParameter String value) {
+        AutoCompletionCandidates r = new AutoCompletionCandidates();
+        for (String s : Hudson.getInstance().getTopLevelItemNames()) {
+            if (s.startsWith(value))
+                r.add(s);
+        }
+        return r;
     }
 }
