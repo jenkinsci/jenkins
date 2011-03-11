@@ -52,6 +52,7 @@ import org.apache.maven.execution.ReactorManager;
 import org.apache.maven.lifecycle.LifecycleExecutionException;
 import org.apache.maven.monitor.event.EventDispatcher;
 import org.apache.maven.project.MavenProject;
+import org.jenkinsci.plugins.tokenmacro.TokenMacro;
 import org.kohsuke.stapler.Ancestor;
 import org.kohsuke.stapler.Stapler;
 import org.kohsuke.stapler.StaplerRequest;
@@ -598,14 +599,14 @@ public class MavenBuild extends AbstractMavenBuild<MavenModule,MavenBuild> {
                 process =
                     MavenBuild.mavenProcessCache.get( launcher.getChannel(), listener,
                                                       new Maven3ProcessFactory( getParent().getParent(), launcher,
-                                                                                envVars, null ) );
+                                                                                envVars, getMavenOpts(listener), null ) );
             }
             else
             {
                 process =
                     MavenBuild.mavenProcessCache.get( launcher.getChannel(), listener,
                                                       new MavenProcessFactory( getParent().getParent(), launcher,
-                                                                               envVars, null ) );
+                                                                               envVars, getMavenOpts(listener), null ) );
             }
 
 
@@ -672,6 +673,23 @@ public class MavenBuild extends AbstractMavenBuild<MavenModule,MavenBuild> {
                 reporter.end(MavenBuild.this,launcher,listener);
         }
 
+    }
+
+    public String getMavenOpts(TaskListener listener) {
+        MavenModuleSet mms = getProject().getParent();
+        String opts = mms.getMavenOpts();
+
+        try {
+            opts = TokenMacro.expand(this, listener, opts);
+        }
+        catch(Exception tokenException) {
+            listener.error("Problem expanding maven opts macros");
+        }
+        catch(LinkageError linkageError) {
+            // Token plugin not present. Ignore, this is OK.
+        }
+
+        return opts;
     }
 
     private static final int MAX_PROCESS_CACHE = 5;

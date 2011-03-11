@@ -51,8 +51,8 @@ import org.jvnet.hudson.maven3.launcher.Maven3Launcher;
 public class Maven3ProcessFactory extends AbstractMavenProcessFactory implements ProcessCache.Factory
 {
 
-    Maven3ProcessFactory(MavenModuleSet mms, Launcher launcher, EnvVars envVars, FilePath workDir) {
-        super( mms, launcher, envVars, workDir );
+    Maven3ProcessFactory(MavenModuleSet mms, Launcher launcher, EnvVars envVars, String mavenOpts, FilePath workDir) {
+        super( mms, launcher, envVars, mavenOpts, workDir );
     }
     /**
      * Builds the command line argument list to launch the maven process.
