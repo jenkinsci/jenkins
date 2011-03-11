@@ -85,7 +85,7 @@ public class NodeProvisioner {
      */
     private final Label label;
 
-    private List<PlannedNode> pendingLaunches = new CopyOnWriteArrayList<PlannedNode>();
+    private List<PlannedNode> pendingLaunches = new ArrayList<PlannedNode>();
 
     /**
      * Exponential moving average of the "planned capacity" over time, which is the number of
@@ -109,7 +109,7 @@ public class NodeProvisioner {
      *      Can be empty but never null
      * @since 1.401
      */
-    public List<PlannedNode> getPendingLaunches() {
+    public synchronized List<PlannedNode> getPendingLaunches() {
         return new ArrayList<PlannedNode>(pendingLaunches);
     }
 
@@ -117,7 +117,7 @@ public class NodeProvisioner {
      * Periodically invoked to keep track of the load.
      * Launches additional nodes if necessary.
      */
-    private void update() {
+    private synchronized void update() {
         Hudson hudson = Hudson.getInstance();
 
         // clean up the cancelled launch activity, then count the # of executors that we are about to bring up.
