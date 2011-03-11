@@ -2612,6 +2612,11 @@ public class Hudson extends Node implements ItemGroup<TopLevelItem>, StaplerProx
         }
     }
 
+    /**
+     * Gets the {@link CrumbIssuer} currently in use.
+     *
+     * @return null if none is in use.
+     */
     public CrumbIssuer getCrumbIssuer() {
         return crumbIssuer;
     }
