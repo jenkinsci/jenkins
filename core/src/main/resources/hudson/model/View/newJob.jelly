@@ -31,7 +31,7 @@ THE SOFTWARE.
     <st:include page="sidepanel.jelly" />
     <l:main-panel>
       <j:invokeStatic var="jobs" className="hudson.model.Items" method="all" />
-      <n:form nameTitle="${%Job name}" copyTitle="${%Copy existing job}" copyNames="${app.topLevelItemNames}"
+      <n:form nameTitle="${%Job name}" copyTitle="${%Copy existing job}" showCopyOption="${!empty(app.itemMap)}"
               descriptors="${jobs}" checkUrl="checkJobName" xmlns:n="/lib/hudson/newFromList" />
     </l:main-panel>
   </l:layout>
