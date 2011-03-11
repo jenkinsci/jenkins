@@ -421,6 +421,25 @@ function isInsideRemovable(e) {
     return Element.ancestors(e).find(function(f){return f.hasClassName("to-be-removed");});
 }
 
+/**
+ * Render the template captured by &lt;l:renderOnDemand> at the element 'e' and replace 'e' by the content.
+ *
+ * @param {HTMLElement} e
+ *      The place holder element to be lazy-rendered.
+ * @param {boolean} noBehaviour
+ *      if specified, skip the application of behaviour rule.
+ */
+function renderOnDemand(e,callback,noBehaviour) {
+    if (!e) return;
+    var proxy = eval(e.getAttribute("proxy"));
+    proxy.render(function (t) {
+        Element.replace(e, t.responseText);
+        if (callback)   callback(t);
+        noBehaviour || Behaviour.applySubtree(e);
+    });
+}
+
+
 var hudsonRules = {
     "BODY" : function() {
         tooltip = new YAHOO.widget.Tooltip("tt", {context:[], zindex:999});
@@ -442,8 +461,6 @@ var hudsonRules = {
         while(!Element.hasClassName(prototypes,"prototypes"))
             prototypes = prototypes.previousSibling;
         var insertionPoint = prototypes.previousSibling;    // this is where the new item is inserted.
-
-        var proxy = eval(prototypes.getAttribute("proxy")); // JavaScript proxy to HeteroListConfigPageRenderer
 
         // extract templates
         var templates = []; var i=0;
@@ -467,15 +484,13 @@ var hudsonRules = {
             nc.setAttribute("name",t.name);
             nc.innerHTML = t.html;
 
-            proxy.renderConfigPage(t.descriptorId, function (t) {
-                Element.replace(findElementsBySelector(nc,"TR.config-page")[0],t.responseText);
-                
+            renderOnDemand(findElementsBySelector(nc,"TR.config-page")[0],function() {
                 insertionPoint.parentNode.insertBefore(nc, insertionPoint);
                 if(withDragDrop)    prepareDD(nc);
 
                 hudsonRules['DIV.repeated-chunk'](nc);  // applySubtree doesn't get nc itself
                 Behaviour.applySubtree(nc);
-            });
+            },true);
         });
 
         menuButton.getMenu().renderEvent.subscribe(function(type,args,value) {
