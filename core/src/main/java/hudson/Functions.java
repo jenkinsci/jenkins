@@ -71,6 +71,7 @@ import hudson.util.Secret;
 import hudson.views.MyViewsTabBar;
 import hudson.views.ViewsTabBar;
 import hudson.widgets.HeteroListConfigPageRenderer;
+import hudson.widgets.RenderOnDemandClosure;
 import org.acegisecurity.providers.anonymous.AnonymousAuthenticationToken;
 import org.apache.commons.jelly.JellyContext;
 import org.apache.commons.jelly.JellyTagException;
@@ -1315,7 +1316,7 @@ public class Functions {
         return Boolean.getBoolean("hudson.security.ArtifactsPermission");
     }
 
-    public static String createHeteroListConfigPageRendererProxy(Object it) {
-        return Stapler.getCurrentRequest().createJavaScriptProxy(new HeteroListConfigPageRenderer(it));
+    public static String createRenderOnDemandProxy(JellyContext context, String attributesToCapture) {
+        return Stapler.getCurrentRequest().createJavaScriptProxy(new RenderOnDemandClosure(context,attributesToCapture));
     }
 }
