@@ -70,7 +70,6 @@ import hudson.scm.SCMDescriptor;
 import hudson.util.Secret;
 import hudson.views.MyViewsTabBar;
 import hudson.views.ViewsTabBar;
-import hudson.widgets.HeteroListConfigPageRenderer;
 import hudson.widgets.RenderOnDemandClosure;
 import org.acegisecurity.providers.anonymous.AnonymousAuthenticationToken;
 import org.apache.commons.jelly.JellyContext;

@@ -305,6 +305,11 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable {
      */
     public static String getCurrentDescriptorByNameUrl() {
         StaplerRequest req = Stapler.getCurrentRequest();
+
+        // this override allows RenderOnDemandClosure to preserve the proper value
+        Object url = req.getAttribute("currentDescriptorByNameUrl");
+        if (url!=null)  return url.toString();
+
         Ancestor a = req.findAncestor(DescriptorByNameOwner.class);
         return a.getUrl();
     }

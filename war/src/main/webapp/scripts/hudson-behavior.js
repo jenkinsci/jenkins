@@ -430,7 +430,7 @@ function isInsideRemovable(e) {
  *      if specified, skip the application of behaviour rule.
  */
 function renderOnDemand(e,callback,noBehaviour) {
-    if (!e) return;
+    if (!e || !Element.hasClassName(e,"render-on-demand")) return;
     var proxy = eval(e.getAttribute("proxy"));
     proxy.render(function (t) {
         Element.replace(e, t.responseText);
@@ -1347,9 +1347,10 @@ function updateDropDownList(sel) {
         var tr = f.start;
         while (true) {
             tr.style.display = (show ? "" : "none");
-            if(show)
+            if(show) {
                 tr.removeAttribute("field-disabled");
-            else    // buildFormData uses this attribute and ignores the contents
+                renderOnDemand(tr);
+            } else    // buildFormData uses this attribute and ignores the contents
                 tr.setAttribute("field-disabled","true");
             if (tr == f.end) break;
             tr = tr.nextSibling;
