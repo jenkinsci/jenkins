@@ -50,9 +50,12 @@ THE SOFTWARE.
     <j:set var="current" value="${instance[attrs.field]}"/>
     <j:forEach var="descriptor" items="${attrs.descriptors}" varStatus="loop">
       <f:dropdownListBlock value="${loop.index}" title="${descriptor.displayName}"
-        selected="${current.descriptor==descriptor || (current==null and descriptor==attrs.default)}" staplerClass="${descriptor.clazz.name}">
-        <j:set var="instance" value="${current.descriptor==descriptor ? current : null}" />
-        <st:include from="${descriptor}" page="${descriptor.configPage}" />
+        selected="${current.descriptor==descriptor || (current==null and descriptor==attrs.default)}" staplerClass="${descriptor.clazz.name}"
+        lazy="descriptor">
+        <l:ajax>
+          <j:set var="instance" value="${current.descriptor==descriptor ? current : null}" />
+          <st:include from="${descriptor}" page="${descriptor.configPage}" />
+        </l:ajax>
       </f:dropdownListBlock>
     </j:forEach>
   </f:dropdownList>
