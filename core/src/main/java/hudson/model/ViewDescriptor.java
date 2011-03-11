@@ -25,6 +25,8 @@ package hudson.model;
 
 import org.kohsuke.stapler.QueryParameter;
 
+import java.util.Stack;
+
 /**
  * {@link Descriptor} for {@link View}.
  *
@@ -61,12 +63,28 @@ public abstract class ViewDescriptor extends Descriptor<View> {
     protected ViewDescriptor() {
     }
 
+    /**
+     * Auto-completion for the "copy from" field in the new job page.
+     */
     public AutoCompletionCandidates doAutoCompleteCopyNewItemFrom(@QueryParameter String value) {
         AutoCompletionCandidates r = new AutoCompletionCandidates();
-        for (String s : Hudson.getInstance().getTopLevelItemNames()) {
-            if (s.startsWith(value))
-                r.add(s);
+
+        Stack<ItemGroup> q = new Stack<ItemGroup>();
+        q.push(Hudson.getInstance());
+
+        while(!q.isEmpty()) {
+            ItemGroup<?> parent = q.pop();
+            for (Item i : parent.getItems()) {
+                if (i.hasPermission(Item.READ))
+                    r.add(i.getFullName());
+
+                // only dig deep when the path matches what's typed.
+                // for example, if 'foo/bar' is typed, we want to show 'foo/barcode'
+                if(i instanceof ItemGroup && value.startsWith(i.getFullName()))
+                    q.push((ItemGroup)i);
+            }
         }
+
         return r;
     }
 }

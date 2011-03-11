@@ -1312,6 +1312,15 @@ public class Hudson extends Node implements ItemGroup<TopLevelItem>, StaplerProx
     }
 
     /**
+     * Gets all the items recursively.
+     *
+     * @since 1.402
+     */
+    public List<Item> getAllItems() {
+        return getAllItems(Item.class);
+    }
+
+    /**
      * Gets the list of all the projects.
      *
      * <p>
