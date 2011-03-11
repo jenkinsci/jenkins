@@ -3447,6 +3447,7 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
             if(rest.startsWith("/login")
             || rest.startsWith("/logout")
             || rest.startsWith("/accessDenied")
+            || rest.startsWith("/adjuncts/")
             || rest.startsWith("/signup")
             || rest.startsWith("/jnlpJars/")
             || rest.startsWith("/tcpSlaveAgentListener")
