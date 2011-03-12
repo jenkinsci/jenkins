@@ -31,15 +31,15 @@ THE SOFTWARE.
     <script>
       Behaviour.register({
         ".a" : function (e) {
-          e.innerHTML = "applied";
+          e.innerHTML = e.getAttribute("value");
         }
       });
     </script>
 
     <l:renderOnDemand clazz="lazy">
-      <div class="a"/>
-      <div class="a"/>
-      <div class="a"/>
+      <div class="a" value="Alpha"/>
+      <div class="a" value="Bravo"/>
+      <div class="a" value="Charlie"/>
     </l:renderOnDemand>
   </l:main-panel>
 </l:layout>

@@ -44,6 +44,6 @@ public class RenderOnDemandTest extends HudsonTestCase {
         // all AJAX calls complete before the above method returns
 
         ScriptResult r = p.executeJavaScript("var r=document.getElementsBySelector('DIV.a'); r[0].innerHTML+r[1].innerHTML+r[2].innerHTML");
-        assertEquals("appliedappliedapplied",r.getJavaScriptResult().toString());
+        assertEquals("AlphaBravoCharlie",r.getJavaScriptResult().toString());
     }
 }
