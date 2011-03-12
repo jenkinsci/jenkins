@@ -58,6 +58,7 @@ public class AutoCompletionCandidates implements HttpResponse {
 
     /**
      * Exposes the raw value, in case you want to modify {@link List} directly.
+     * @since 1.402
      */
     public List<String> getValues() {
         return values;
