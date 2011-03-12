@@ -28,6 +28,8 @@ import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import org.jvnet.hudson.test.HudsonTestCase;
 
 /**
+ * Tests <tt>behaviour.js</tt>
+ *
  * @author Kohsuke Kawaguchi
  */
 public class BehaviorTest extends HudsonTestCase {
