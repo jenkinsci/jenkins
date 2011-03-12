@@ -41,6 +41,10 @@ public class BehaviorTest extends HudsonTestCase {
         // 'includeSelf' should only affect the first axis and not afterward
         assertEquals(1,asInt(p.executeJavaScript("findElementsBySelector($('test2'),'.a .b',true).length")));
         assertEquals(1,asInt(p.executeJavaScript("findElementsBySelector($('test2'),'.a .b',false).length")));
+
+        // tag.class. Should exclude itself anyway even if it's included
+        assertEquals(1,asInt(p.executeJavaScript("findElementsBySelector($('test3'),'P.a',true).length")));
+        assertEquals(1,asInt(p.executeJavaScript("findElementsBySelector($('test3'),'P.a',false).length")));
     }
 
     private int asInt(ScriptResult r) {
