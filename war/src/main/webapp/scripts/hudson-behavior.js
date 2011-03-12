@@ -439,7 +439,8 @@ function renderOnDemand(e,callback,noBehaviour) {
         while (c.firstChild!=null) {
             var n = c.firstChild;
             e.parentNode.insertBefore(n,e);
-            noBehaviour || Behaviour.applySubtree(n,true);
+            if (n.nodeType==1 && !noBehaviour)
+                Behaviour.applySubtree(n,true);
         }
         Element.remove(e);
 
