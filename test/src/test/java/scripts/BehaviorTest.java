@@ -33,8 +33,14 @@ import org.jvnet.hudson.test.HudsonTestCase;
 public class BehaviorTest extends HudsonTestCase {
     public void testCssSelectors() throws Exception {
         HtmlPage p = createWebClient().goTo("self/testCssSelectors");
+
+        // basic class selector, that we use the most often
         assertEquals(2,asInt(p.executeJavaScript("findElementsBySelector($('test1'),'.a',true).length")));
         assertEquals(1,asInt(p.executeJavaScript("findElementsBySelector($('test1'),'.a',false).length")));
+
+        // 'includeSelf' should only affect the first axis and not afterward
+        assertEquals(1,asInt(p.executeJavaScript("findElementsBySelector($('test2'),'.a .b',true).length")));
+        assertEquals(1,asInt(p.executeJavaScript("findElementsBySelector($('test2'),'.a .b',false).length")));
     }
 
     private int asInt(ScriptResult r) {

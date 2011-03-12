@@ -31,6 +31,13 @@ THE SOFTWARE.
     <div id="test1" class="a">
       <div class="a" />
     </div>
+
+    <div id="test2">
+      <div class="a b">
+        <div class="b"/>
+      </div>
+    </div>
+
   </l:main-panel>
 </l:layout>
 </j:jelly>
