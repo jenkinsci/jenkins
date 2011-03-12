@@ -1096,7 +1096,8 @@ public class Functions {
     public static String getActionUrl(String itUrl,Action action) {
         String urlName = action.getUrlName();
         if(urlName==null)   return null;    // to avoid NPE and fail to render the whole page
-
+        if (!urlName.endsWith("/"))
+            urlName += '/';
         if(SCHEME.matcher(urlName).matches())
             return urlName; // absolute URL
         if(urlName.startsWith("/"))
