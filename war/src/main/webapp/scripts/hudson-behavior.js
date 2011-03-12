@@ -488,8 +488,7 @@ var hudsonRules = {
                 insertionPoint.parentNode.insertBefore(nc, insertionPoint);
                 if(withDragDrop)    prepareDD(nc);
 
-                hudsonRules['DIV.repeated-chunk'](nc);  // applySubtree doesn't get nc itself
-                Behaviour.applySubtree(nc);
+                Behaviour.applySubtree(nc,true);
             },true);
         });
 
@@ -1399,8 +1398,7 @@ var repeatableSupport = {
         this.insertionPoint.parentNode.insertBefore(nc, this.insertionPoint);
         if (this.withDragDrop) prepareDD(nc);
 
-        hudsonRules['DIV.repeated-chunk'](nc);  // applySubtree doesn't get nc itself
-        Behaviour.applySubtree(nc);
+        Behaviour.applySubtree(nc,true);
         this.update();
     },
 
