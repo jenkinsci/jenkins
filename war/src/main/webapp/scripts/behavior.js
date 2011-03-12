@@ -101,20 +101,20 @@ Behaviour.start();
    -- Opera 7 fails
 */
 
-function getAllChildren(e) {
-  // Returns all children of element. Workaround required for IE5/Windows. Ugh.
-  return e.all ? e.all : e.getElementsByTagName('*');
-}
-
-function isAncestor(p,c) {
-  while(true) {
-    if(p==c)      return true;
-    if(c==null)   return false;
-    c = c.parentNode;
-  }
-}
-
 function findElementsBySelector(startNode,selector) {
+    function getAllChildren(e) {
+      // Returns all children of element. Workaround required for IE5/Windows. Ugh.
+      return e.all ? e.all : e.getElementsByTagName('*');
+    }
+
+    function isAncestor(p,c) {
+      while(true) {
+        if(p==c)      return true;
+        if(c==null)   return false;
+        c = c.parentNode;
+      }
+    }
+
   // Split selector in to tokens
   var tokens = selector.replace(/^\s+/,'').replace(/\s+$/,'').split(' ');
   var currentContext = new Array(startNode);
