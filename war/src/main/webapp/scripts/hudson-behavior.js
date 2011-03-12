@@ -433,9 +433,17 @@ function renderOnDemand(e,callback,noBehaviour) {
     if (!e || !Element.hasClassName(e,"render-on-demand")) return;
     var proxy = eval(e.getAttribute("proxy"));
     proxy.render(function (t) {
-        Element.replace(e, t.responseText);
+        var c = document.createElement("div");
+        c.innerHTML = t.responseText;
+
+        while (c.firstChild!=null) {
+            var n = c.firstChild;
+            e.parentNode.insertBefore(n,e);
+            noBehaviour || Behaviour.applySubtree(n,true);
+        }
+        Element.remove(e);
+
         if (callback)   callback(t);
-        noBehaviour || Behaviour.applySubtree(e);
     });
 }
 
