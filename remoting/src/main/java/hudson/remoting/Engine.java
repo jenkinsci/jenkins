@@ -39,7 +39,6 @@ import java.util.concurrent.ThreadFactory;
 import java.util.List;
 import java.util.Collections;
 import java.util.logging.Logger;
-import static java.util.logging.Level.SEVERE;
 
 /**
  * Slave agent engine that proactively connects to Hudson master.
@@ -234,27 +233,13 @@ public class Engine extends Thread {
                     }
                 }
 
-                final Socket socket = s;
                 final Channel channel = new Channel("channel", executor,
                         in,
                         new BufferedOutputStream(s.getOutputStream()));
-                PingThread t = new PingThread(channel) {
-                    protected void onDead() {
-                        try {
-                            if (!channel.isInClosed()) {
-                                LOGGER.info("Ping failed. Terminating the socket.");
-                                socket.close();
-                            }
-                        } catch (IOException e) {
-                            LOGGER.log(SEVERE, "Failed to terminate the socket", e);
-                        }
-                    }
-                };
-                t.start();
+                
                 listener.status("Connected");
                 channel.join();
                 listener.status("Terminated");
-                t.interrupt();  // make sure the ping thread is terminated
                 listener.onDisconnect();
 
                 if(noReconnect)
