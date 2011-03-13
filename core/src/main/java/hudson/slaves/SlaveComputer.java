@@ -508,6 +508,20 @@ public class SlaveComputer extends Computer {
         return ((Slave)node).getLauncher();
     }
 
+    /**
+     * Get the slave version
+     */
+    public String getSlaveVersion() throws IOException, InterruptedException {
+        return channel.call(new SlaveVersion());
+    }
+
+    /**
+     * Get the OS description.
+     */
+    public String getOSDescription() throws IOException, InterruptedException {
+        return channel.call(new DetectOS()) ? "Unix" : "Windows";
+    }
+
     private static final Logger logger = Logger.getLogger(SlaveComputer.class.getName());
 
     private static final class SlaveVersion implements Callable<String,IOException> {
