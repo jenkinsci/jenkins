@@ -25,6 +25,7 @@ package hudson.tasks.test;
 
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
+import hudson.model.AutoCompletionCandidates;
 import hudson.Extension;
 import hudson.Launcher;
 import hudson.Util;
@@ -33,6 +34,7 @@ import hudson.model.BuildListener;
 import hudson.model.Fingerprint.RangeSet;
 import hudson.model.Hudson;
 import hudson.model.Item;
+import hudson.model.Job;
 import hudson.model.Result;
 import hudson.model.Run;
 import hudson.model.TaskListener;
@@ -348,6 +350,20 @@ public class AggregatedTestResultPublisher extends Recorder {
             else
                 return new AggregatedTestResultPublisher(s.getString("jobs"));
         }
+
+        public AutoCompletionCandidates doAutoCompleteJobs(@QueryParameter String value) {
+            AutoCompletionCandidates candidates = new AutoCompletionCandidates();
+            List<Job> jobs = Hudson.getInstance().getItems(Job.class);
+            for (Job job: jobs) {
+                if (job.getFullName().startsWith(value)) {
+                    if (job.hasPermission(Item.READ)) {
+                        candidates.add(job.getFullName());
+                    }
+                }
+            }
+            return candidates;
+        }
+
     }
 
 }
