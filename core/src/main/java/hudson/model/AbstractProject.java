@@ -1,10 +1,10 @@
 /*
  * The MIT License
  * 
- * Copyright (c) 2004-2010, Sun Microsystems, Inc., Kohsuke Kawaguchi,
+ * Copyright (c) 2004-2011, Sun Microsystems, Inc., Kohsuke Kawaguchi,
  * Brian Westrich, Erik Ramfelt, Ertan Deniz, Jean-Baptiste Quenot,
  * Luca Domenico Milanesio, R. Tyler Ballance, Stephen Connolly, Tom Huybrechts,
- * id:cactusman, Yahoo! Inc.
+ * id:cactusman, Yahoo! Inc., Andrew Bayer
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -1837,7 +1837,20 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
             return FormValidation.ok();
         }
 
-       public AutoCompletionCandidates doAutoCompleteAssignedLabelString(@QueryParameter String value) {
+        public AutoCompletionCandidates doAutoCompleteUpstreamProjects(@QueryParameter String value) {
+            AutoCompletionCandidates candidates = new AutoCompletionCandidates();
+            List<Job> jobs = Hudson.getInstance().getItems(Job.class);
+            for (Job job: jobs) {
+                if (job.getFullName().startsWith(value)) {
+                    if (job.hasPermission(Item.READ)) {
+                        candidates.add(job.getFullName());
+                    }
+                }
+            }
+            return candidates;
+        }
+
+        public AutoCompletionCandidates doAutoCompleteAssignedLabelString(@QueryParameter String value) {
             AutoCompletionCandidates c = new AutoCompletionCandidates();
             Set<Label> labels = Hudson.getInstance().getLabels();
             List<String> queries = new AutoCompleteSeeder(value).getSeeds();
