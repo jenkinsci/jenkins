@@ -392,8 +392,9 @@ public final class MavenModule extends AbstractMavenProject<MavenModule,MavenBui
 
         for (MavenModule m : Hudson.getInstance().getAllItems(MavenModule.class)) {
             if(m.isDisabled())  continue;
-            modules.put(m.asDependency(),m);
-            modules.put(m.asDependency().withUnknownVersion(),m);
+            ModuleDependency moduleDependency = m.asDependency();
+            modules.put(moduleDependency,m);
+            modules.put(moduleDependency.withUnknownVersion(),m);
         }
 
         // in case two modules with the same name is defined, modules in the same MavenModuleSet
@@ -401,8 +402,9 @@ public final class MavenModule extends AbstractMavenProject<MavenModule,MavenBui
 
         for (MavenModule m : getParent().getModules()) {
             if(m.isDisabled())  continue;
-            modules.put(m.asDependency(),m);
-            modules.put(m.asDependency().withUnknownVersion(),m);
+            ModuleDependency moduleDependency = m.asDependency();
+            modules.put(moduleDependency,m);
+            modules.put(moduleDependency.withUnknownVersion(),m);
         }
 
         // if the build style is the aggregator build, define dependencies against project,
