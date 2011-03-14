@@ -198,7 +198,7 @@ THE SOFTWARE.
         -->
         <groupId>org.codehaus.mojo</groupId>
         <artifactId>apt-maven-plugin</artifactId>
-        <version>1.0-alpha-2</version>
+        <version>1.0-alpha-4</version>
         <configuration>
           <force>true</force><!-- disable staleness check -->
           <factory>org.jvnet.hudson.tools.ExtensionPointListerFactory</factory>
@@ -209,9 +209,9 @@ THE SOFTWARE.
         </configuration>
         <dependencies>
           <dependency>
-            <groupId>org.jvnet.hudson.tools</groupId>
+            <groupId>org.jenkins-ci.tools</groupId>
             <artifactId>extension-point-lister</artifactId>
-            <version>1.7</version>
+            <version>1.8</version>
             <exclusions>
                <exclusion>
                  <groupId>com.sun</groupId>
