@@ -51,6 +51,7 @@ import hudson.tasks.Publisher;
 import hudson.tasks.BuildStepMonitor;
 import hudson.tasks.BuildTrigger;
 import hudson.tasks.test.AbstractTestResultAction;
+import hudson.tasks.test.AggregatedTestResultAction;
 import hudson.util.AdaptedIterator;
 import hudson.util.Iterators;
 import hudson.util.LogTaskListener;
@@ -835,6 +836,13 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
      */
     public AbstractTestResultAction getTestResultAction() {
         return getAction(AbstractTestResultAction.class);
+    }
+
+    /**
+     * Gets {@link AggregatedTestResultAction} associated with this build if any.
+     */
+    public AggregatedTestResultAction getAggregatedTestResultAction() {
+        return getAction(AggregatedTestResultAction.class);
     }
 
     /**
