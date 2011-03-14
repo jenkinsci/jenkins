@@ -433,13 +433,14 @@ function renderOnDemand(e,callback,noBehaviour) {
     if (!e || !Element.hasClassName(e,"render-on-demand")) return;
     var proxy = eval(e.getAttribute("proxy"));
     proxy.render(function (t) {
-        var c = document.createElement("div");
+        var c = document.createElement(e.parentNode.tagName);
         c.innerHTML = t.responseText;
 
         while (c.firstChild!=null) {
             var n = c.firstChild;
             e.parentNode.insertBefore(n,e);
-            noBehaviour || Behaviour.applySubtree(n,true);
+            if (n.nodeType==1 && !noBehaviour)
+                Behaviour.applySubtree(n,true);
         }
         Element.remove(e);
 
