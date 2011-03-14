@@ -346,9 +346,9 @@ public class AggregatedTestResultPublisher extends Recorder {
         public AggregatedTestResultPublisher newInstance(StaplerRequest req, JSONObject formData) throws FormException {
             JSONObject s = formData.getJSONObject("specify");
             if(s.isNullObject())
-                return new AggregatedTestResultPublisher(null);
+                return new AggregatedTestResultPublisher(null, req.getParameter("includeFailedBuilds") != null);
             else
-                return new AggregatedTestResultPublisher(s.getString("jobs"));
+                return new AggregatedTestResultPublisher(s.getString("jobs"), req.getParameter("includeFailedBuilds") != null);
         }
 
         public AutoCompletionCandidates doAutoCompleteJobs(@QueryParameter String value) {
