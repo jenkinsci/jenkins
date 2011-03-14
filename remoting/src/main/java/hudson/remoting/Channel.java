@@ -919,17 +919,22 @@ public class Channel implements VirtualChannel, IChannel {
         call(new IOSyncer());
     }
 
+    public void syncLocalIO() throws InterruptedException {
+        try {
+            pipeWriter.submit(new Runnable() {
+                public void run() {
+                    // noop
+                }
+            }).get();
+        } catch (ExecutionException e) {
+            throw new AssertionError(e); // impossible
+        }
+    }
+
     private static final class IOSyncer implements Callable<Object, InterruptedException> {
         public Object call() throws InterruptedException {
-            try {
-                return Channel.current().pipeWriter.submit(new Runnable() {
-                    public void run() {
-                        // noop
-                    }
-                }).get();
-            } catch (ExecutionException e) {
-                throw new AssertionError(e); // impossible
-            }
+            Channel.current().syncLocalIO();
+            return null;
         }
 
         private static final long serialVersionUID = 1L;
