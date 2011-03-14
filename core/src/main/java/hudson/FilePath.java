@@ -1405,6 +1405,10 @@ public final class FilePath implements Serializable {
                 }
             }
         });
+
+        // make sure the write fully happens before we return.
+        if (channel!=null)
+            channel.syncLocalIO();
     }
 
     /**

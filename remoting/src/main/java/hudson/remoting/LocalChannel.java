@@ -98,4 +98,8 @@ public class LocalChannel implements VirtualChannel {
     public <T> T export(Class<T> intf, T instance) {
         return instance;
     }
+
+    public void syncLocalIO() throws InterruptedException {
+        // noop
+    }
 }

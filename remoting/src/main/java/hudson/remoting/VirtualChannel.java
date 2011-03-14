@@ -103,4 +103,12 @@ public interface VirtualChannel {
      *      will invoke the same method on the given local <tt>instance</tt> object.
      */
     <T> T export( Class<T> type, T instance);
+
+    /**
+     * Blocks until all the I/O packets sent from remote is fully locally executed, then return.
+     *
+     * @since 1.402
+     */
+    void syncLocalIO() throws InterruptedException;
 }
+
