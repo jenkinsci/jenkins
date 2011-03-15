@@ -433,16 +433,28 @@ function renderOnDemand(e,callback,noBehaviour) {
     if (!e || !Element.hasClassName(e,"render-on-demand")) return;
     var proxy = eval(e.getAttribute("proxy"));
     proxy.render(function (t) {
-        var c = document.createElement(e.parentNode.tagName);
-        c.innerHTML = t.responseText;
+        var contextTagName = e.parentNode.tagName;
+        var c;
+        if (contextTagName=="TBODY") {
+            c = document.createElement("DIV");
+            c.innerHTML = "<TABLE><TBODY>"+t.responseText+"</TBODY></TABLE>";
+            c = c.firstChild.firstChild;
+        } else {
+            c = document.createElement(contextTagName);
+            c.innerHTML = t.responseText;
+        }
 
+        var elements = [];
         while (c.firstChild!=null) {
             var n = c.firstChild;
             e.parentNode.insertBefore(n,e);
             if (n.nodeType==1 && !noBehaviour)
-                Behaviour.applySubtree(n,true);
+                elements.push(n);
         }
         Element.remove(e);
+
+        t.responseText.evalScripts();
+        elements.each(function(n) { Behaviour.applySubtree(n,true); });
 
         if (callback)   callback(t);
     });
@@ -1660,7 +1672,7 @@ function findFormParent(e,form,static) {
             return null;  // this field shouldn't contribute to the final result
 
         var name = e.getAttribute("name");
-        if(name!=null) {
+        if(name!=null && name.length>0) {
             if(e.tagName=="INPUT" && !static && !xor(e.checked,Element.hasClassName(e,"negative")))
                 return null;  // field is not active
 
