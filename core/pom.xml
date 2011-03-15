@@ -738,9 +738,9 @@ THE SOFTWARE.
       <version>3.2.7</version>
     </dependency>
     <dependency>
-      <groupId>javax.jmdns</groupId>
+      <groupId>org.jenkins-ci</groupId>
       <artifactId>jmdns</artifactId>
-      <version>3.4.0</version>
+      <version>3.4.0-jenkins-1</version>
     </dependency>
     <dependency>
       <groupId>com.sun.winsw</groupId>
