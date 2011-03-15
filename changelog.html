@@ -59,6 +59,27 @@ Upcoming changes</a>
 <div id="trunk" style="display:none"><!--=TRUNK-BEGIN=-->
 <ul class=image>
   <li class=bug>
+    When both "block build when upstream/downstream is building" are checked, the upstream block check wasn't taking effect.
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-8968">issue 8968</a>)
+  <li class=rfe>
+    Added the <tt>--mimeTypes</tt> command line option to define additional MIME type mappings.
+  <li class=rfe>
+    Added a new axis type to the matrix project that lets you use boolean expressions
+    (<a href="https://github.com/jenkinsci/jenkins/pull/66">pull request #66</a>)
+</ul>
+</div><!--=TRUNK-END=-->
+
+<!-- these changes are controlled by the release process. DO NOT MODIFY -->
+<div id="rc" style="display:none;"><!--=BEGIN=-->
+<h3><a name=v1.402>What's new in 1.402</a> <!--=DATE=--></h3>
+<ul class=image>
+  <li class='major bug'>
+    Fixed a race condition in the remote data transfer that results in silent file copy failures.
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-7871">issue 7871</a>)
+  <li class=bug>
+   Maven Plugin : Successful build ends with NPE 
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-8436">issue 8436</a>)
+  <li class=bug>
     Fixed a deadlock when upstream and downstream jobs are blocked on each other
     (<a href="http://issues.jenkins-ci.org/browse/JENKINS-8929">issue 8929</a>)
   <li class=rfe>
