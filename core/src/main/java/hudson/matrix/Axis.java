@@ -197,12 +197,16 @@ public class Axis extends AbstractDescribableImpl<Axis> implements Comparable<Ax
     public Object readResolve() {
         if (getClass()!=Axis.class) return this;
 
+        /*
+            This method is necessary only because earlier versions of Jenkins treated
+            axis names "label" and "jdk" differently,
+            plus Axis was a concrete class, and we need to be able to read that back.
+            So this measure is not needed for newly added Axes.
+         */
         if (getName().equals("jdk"))
             return new JDKAxis(getValues());
         if (getName().equals("label"))
             return new LabelAxis(getName(),getValues());
-        if (getName().equals("labelExp"))
-            return new LabelExpAxis(getName(),getValues());
         return new TextAxis(getName(),getValues());
     }
 
