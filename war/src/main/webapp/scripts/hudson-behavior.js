@@ -1672,7 +1672,7 @@ function findFormParent(e,form,static) {
             return null;  // this field shouldn't contribute to the final result
 
         var name = e.getAttribute("name");
-        if(name!=null) {
+        if(name!=null && name.length>0) {
             if(e.tagName=="INPUT" && !static && !xor(e.checked,Element.hasClassName(e,"negative")))
                 return null;  // field is not active
 
