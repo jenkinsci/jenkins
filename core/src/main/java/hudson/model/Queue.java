@@ -756,6 +756,13 @@ public class Queue extends ResourceController implements Saveable {
     public synchronized WorkUnit pop() throws InterruptedException {
         final Executor exec = Executor.currentExecutor();
 
+        if (exec instanceof OneOffExecutor) {
+            OneOffExecutor ooe = (OneOffExecutor) exec;
+            final WorkUnit wu = ooe.getAssignedWorkUnit();
+            pendings.remove(wu.context.item);
+            return wu;
+        }
+
         try {
             while (true) {
                 final JobOffer offer = new JobOffer(exec);
@@ -959,6 +966,7 @@ public class Queue extends ResourceController implements Saveable {
                 if (c==null || c.isOffline())    continue;
                 if (lbl!=null && !lbl.contains(n))  continue;
                 c.startFlyWeightTask(new WorkUnitContext(p).createWorkUnit(p.task));
+                pendings.add(p);
                 return;
             }
             // if the execution get here, it means we couldn't schedule it anywhere.
