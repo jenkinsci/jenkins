@@ -195,7 +195,7 @@ public class MatrixConfiguration extends Project<MatrixConfiguration,MatrixRun> 
     @Override
     public Label getAssignedLabel() {
         // combine all the label axes by &&.
-    	String expr = "";
+    	String expr;
         String exprSlave = Util.join(combination.values(getParent().getAxes().subList(LabelAxis.class)), "&&");
         String exprLabel = Util.join(combination.values(getParent().getAxes().subList(LabelExpAxis.class)), "&&");
         if(!exprSlave.equals("") && !exprLabel.equals("")){
