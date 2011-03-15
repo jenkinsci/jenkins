@@ -433,16 +433,29 @@ function renderOnDemand(e,callback,noBehaviour) {
     if (!e || !Element.hasClassName(e,"render-on-demand")) return;
     var proxy = eval(e.getAttribute("proxy"));
     proxy.render(function (t) {
-        var c = document.createElement(e.parentNode.tagName);
-        c.innerHTML = t.responseText;
+        var contextTagName = e.parentNode.tagName;
+        var c;
+        if (contextTagName=="TBODY") {
+            c = document.createElement("TABLE");
+            c.innerHTML = t.responseText;
+            if (c.firstChild && c.firstChild.tagName=="TBODY")
+                c = c.firstChild;
+        } else {
+            c = document.createElement(contextTagName);
+            c.innerHTML = t.responseText;
+        }
 
+        var elements = [];
         while (c.firstChild!=null) {
             var n = c.firstChild;
             e.parentNode.insertBefore(n,e);
             if (n.nodeType==1 && !noBehaviour)
-                Behaviour.applySubtree(n,true);
+                elements.push(n);
         }
         Element.remove(e);
+
+        t.responseText.evalScripts();
+        elements.each(function(n) { Behaviour.applySubtree(n,true); });
 
         if (callback)   callback(t);
     });
