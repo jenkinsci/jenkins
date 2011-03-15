@@ -92,6 +92,8 @@ import org.apache.maven.model.building.ModelBuildingRequest;
 import org.apache.maven.monitor.event.EventDispatcher;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.project.ProjectBuildingException;
+import org.codehaus.plexus.PlexusConstants;
+import org.codehaus.plexus.configuration.DefaultPlexusConfiguration;
 import org.codehaus.plexus.util.PathTool;
 import org.jenkinsci.plugins.tokenmacro.TokenMacro;
 import org.kohsuke.stapler.StaplerRequest;
