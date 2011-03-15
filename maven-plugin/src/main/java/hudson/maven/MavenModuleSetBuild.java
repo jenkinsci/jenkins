@@ -95,6 +95,7 @@ import org.apache.maven.project.ProjectBuildingException;
 import org.codehaus.plexus.PlexusConstants;
 import org.codehaus.plexus.configuration.DefaultPlexusConfiguration;
 import org.codehaus.plexus.util.PathTool;
+import org.jenkinsci.plugins.tokenmacro.MacroEvaluationException;
 import org.jenkinsci.plugins.tokenmacro.TokenMacro;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
@@ -525,12 +526,14 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
 
     public String getMavenOpts(TaskListener listener) {
         String opts = project.getMavenOpts();
-
+        if (opts == null ) return null;
         try {
             opts = TokenMacro.expand(this, listener, opts);
+        } catch (MacroEvaluationException e) {
+            listener.error( "Ignore MacroEvaluationException " + e.getMessage() );            
         }
         catch(Exception tokenException) {
-            listener.error("Problem expanding maven opts macros");
+            listener.error("Ignore Problem expanding maven opts macros " + tokenException.getMessage());
         }
         catch(LinkageError linkageError) {
             // Token plugin not present. Ignore, this is OK.

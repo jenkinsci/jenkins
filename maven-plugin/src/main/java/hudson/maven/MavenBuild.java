@@ -23,39 +23,28 @@
  */
 package hudson.maven;
 
-import hudson.FilePath;
 import hudson.EnvVars;
-import hudson.maven.reporters.SurefireArchiver;
-import hudson.slaves.WorkspaceList;
-import hudson.slaves.WorkspaceList.Lease;
+import hudson.FilePath;
 import hudson.maven.agent.AbortException;
+import hudson.maven.reporters.SurefireArchiver;
 import hudson.model.BuildListener;
 import hudson.model.Computer;
+import hudson.model.Environment;
+import hudson.model.Executor;
 import hudson.model.Hudson;
+import hudson.model.Node;
 import hudson.model.Result;
 import hudson.model.Run;
-import hudson.model.Environment;
 import hudson.model.TaskListener;
-import hudson.model.Node;
-import hudson.model.Executor;
 import hudson.remoting.Channel;
 import hudson.scm.ChangeLogSet;
 import hudson.scm.ChangeLogSet.Entry;
+import hudson.slaves.WorkspaceList;
+import hudson.slaves.WorkspaceList.Lease;
 import hudson.tasks.BuildWrapper;
 import hudson.tasks.Maven.MavenInstallation;
 import hudson.util.ArgumentListBuilder;
 import hudson.util.IOUtils;
-import org.apache.maven.BuildFailureException;
-import org.apache.maven.artifact.versioning.ComparableVersion;
-import org.apache.maven.execution.MavenSession;
-import org.apache.maven.execution.ReactorManager;
-import org.apache.maven.lifecycle.LifecycleExecutionException;
-import org.apache.maven.monitor.event.EventDispatcher;
-import org.apache.maven.project.MavenProject;
-import org.jenkinsci.plugins.tokenmacro.TokenMacro;
-import org.kohsuke.stapler.Ancestor;
-import org.kohsuke.stapler.Stapler;
-import org.kohsuke.stapler.StaplerRequest;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -69,6 +58,19 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import org.apache.maven.BuildFailureException;
+import org.apache.maven.artifact.versioning.ComparableVersion;
+import org.apache.maven.execution.MavenSession;
+import org.apache.maven.execution.ReactorManager;
+import org.apache.maven.lifecycle.LifecycleExecutionException;
+import org.apache.maven.monitor.event.EventDispatcher;
+import org.apache.maven.project.MavenProject;
+import org.jenkinsci.plugins.tokenmacro.MacroEvaluationException;
+import org.jenkinsci.plugins.tokenmacro.TokenMacro;
+import org.kohsuke.stapler.Ancestor;
+import org.kohsuke.stapler.Stapler;
+import org.kohsuke.stapler.StaplerRequest;
 
 /**
  * {@link Run} for {@link MavenModule}.
@@ -678,12 +680,14 @@ public class MavenBuild extends AbstractMavenBuild<MavenModule,MavenBuild> {
     public String getMavenOpts(TaskListener listener) {
         MavenModuleSet mms = getProject().getParent();
         String opts = mms.getMavenOpts();
-
+        if (opts == null ) return null;
         try {
             opts = TokenMacro.expand(this, listener, opts);
+        } catch (MacroEvaluationException e) {
+            listener.error( "Ignore MacroEvaluationException " + e.getMessage() );
         }
         catch(Exception tokenException) {
-            listener.error("Problem expanding maven opts macros");
+            listener.error("Ignore Problem expanding maven opts macros " + tokenException.getMessage());
         }
         catch(LinkageError linkageError) {
             // Token plugin not present. Ignore, this is OK.
