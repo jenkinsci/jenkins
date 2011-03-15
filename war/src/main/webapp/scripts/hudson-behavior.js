@@ -436,10 +436,9 @@ function renderOnDemand(e,callback,noBehaviour) {
         var contextTagName = e.parentNode.tagName;
         var c;
         if (contextTagName=="TBODY") {
-            c = document.createElement("TABLE");
-            c.innerHTML = t.responseText;
-            if (c.firstChild && c.firstChild.tagName=="TBODY")
-                c = c.firstChild;
+            c = document.createElement("DIV");
+            c.innerHTML = "<TABLE><TBODY>"+t.responseText+"</TBODY></TABLE>";
+            c = c.firstChild.firstChild;
         } else {
             c = document.createElement(contextTagName);
             c.innerHTML = t.responseText;
