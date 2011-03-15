@@ -29,9 +29,6 @@ import hudson.XmlFile;
 import hudson.BulkChange;
 import hudson.Util;
 import static hudson.Functions.jsStringEscape;
-import hudson.diagnosis.OldDataMonitor;
-import hudson.init.InitMilestone;
-import hudson.init.Initializer;
 import hudson.model.listeners.SaveableListener;
 import hudson.util.ReflectionUtils;
 import hudson.util.ReflectionUtils.Parameter;
@@ -43,14 +40,12 @@ import org.springframework.util.StringUtils;
 import org.jvnet.tiger_types.Types;
 import org.apache.commons.io.IOUtils;
 
-import static hudson.init.InitMilestone.EXTENSIONS_AUGMENTED;
 import static javax.servlet.http.HttpServletResponse.SC_NOT_FOUND;
 import javax.servlet.ServletException;
 import javax.servlet.RequestDispatcher;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.LinkedHashMap;
@@ -118,16 +113,6 @@ import java.beans.Introspector;
  * @see Describable
  */
 public abstract class Descriptor<T extends Describable<T>> implements Saveable {
-    /**
-     * Up to Hudson 1.61 this was used as the primary persistence mechanism.
-     * Going forward Hudson simply persists all the non-transient fields
-     * of {@link Descriptor}, just like others, so this is pointless.
-     *
-     * @deprecated since 2006-11-16
-     */
-    @Deprecated
-    private transient Map<String,Object> properties;
-
     /**
      * The class being described by this descriptor.
      */
@@ -881,10 +866,4 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable {
      * Used in {@link #checkMethods} to indicate that there's no check method.
      */
     private static final String NONE = "\u0000";
-
-    private Object readResolve() {
-        if (properties!=null)
-            OldDataMonitor.report(this, "1.62");
-        return this;
-    }
 }

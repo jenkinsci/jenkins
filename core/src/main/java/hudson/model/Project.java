@@ -1,7 +1,8 @@
 /*
  * The MIT License
  * 
- * Copyright (c) 2004-2010, Sun Microsystems, Inc., Kohsuke Kawaguchi, Jorg Heymans, Stephen Connolly, Tom Huybrechts
+ * Copyright (c) 2004-2011, Sun Microsystems, Inc., Kohsuke Kawaguchi,
+ * Jorg Heymans, Stephen Connolly, Tom Huybrechts
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -211,17 +212,5 @@ public abstract class Project<P extends Project<P,B>,B extends Build<P,B>>
             r.addAll(trigger.getProjectActions());
 
         return r;
-    }
-
-    /**
-     * @deprecated since 2006-11-05.
-     *      Left for legacy config file compatibility
-     */
-    @Deprecated
-    private transient String slave;
-
-    private Object readResolve() {
-        if (slave != null) OldDataMonitor.report(this, "1.60");
-        return this;
     }
 }

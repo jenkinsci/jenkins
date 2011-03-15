@@ -1,7 +1,8 @@
 /*
  * The MIT License
  * 
- * Copyright (c) 2004-2010, Sun Microsystems, Inc., Kohsuke Kawaguchi, Erik Ramfelt, Martin Eigenbrodt, Stephen Connolly, Tom Huybrechts
+ * Copyright (c) 2004-2011, Sun Microsystems, Inc., Kohsuke Kawaguchi,
+ * Erik Ramfelt, Martin Eigenbrodt, Stephen Connolly, Tom Huybrechts
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -27,7 +28,6 @@ import hudson.FilePath;
 import hudson.Launcher;
 import hudson.Util;
 import hudson.Launcher.RemoteLauncher;
-import hudson.diagnosis.OldDataMonitor;
 import hudson.model.Descriptor.FormException;
 import hudson.remoting.Callable;
 import hudson.remoting.VirtualChannel;
@@ -337,12 +337,6 @@ public abstract class Slave extends Node implements Serializable {
      */
     private Object readResolve() {
         // convert the old format to the new one
-        if(command!=null && agentCommand==null) {
-            if(command.length()>0)  command += ' ';
-            agentCommand = command+"java -jar ~/bin/slave.jar";
-        }
-        if (command!=null || localFS!=null)
-            OldDataMonitor.report(Hudson.getInstance(), "1.69");
         if (launcher == null) {
             launcher = (agentCommand == null || agentCommand.trim().length() == 0)
                     ? new JNLPLauncher()
@@ -384,25 +378,9 @@ public abstract class Slave extends Node implements Serializable {
 // backward compatibility
 //
     /**
-     * In Hudson < 1.69 this was used to store the local file path
-     * to the remote workspace. No longer in use.
-     *
-     * @deprecated
-     *      ... but still in use during the transition.
-     */
-    private File localFS;
-
-    /**
-     * In Hudson < 1.69 this was used to store the command
-     * to connect to the remote machine, like "ssh myslave".
-     *
-     * @deprecated
-     */
-    private transient String command;
-
-    /**
      * Command line to launch the agent, like
      * "ssh myslave java -jar /path/to/hudson-remoting.jar"
+     * @deprecated in 1.216
      */
     private transient String agentCommand;
 

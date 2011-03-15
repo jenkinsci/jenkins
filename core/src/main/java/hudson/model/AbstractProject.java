@@ -100,7 +100,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashSet;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -201,11 +200,6 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
      */
     private volatile String jdk;
 
-    /**
-     * @deprecated since 2007-01-29.
-     */
-    private transient boolean enableRemoteTrigger;
-
     private volatile BuildAuthorizationToken authToken = null;
 
     /**
@@ -253,8 +247,6 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
             }
         });
 
-        // boolean! Can't tell if xml file contained false..
-        if (enableRemoteTrigger) OldDataMonitor.report(this, "1.77");
         if(triggers==null) {
             // it didn't exist in < 1.28
             triggers = new Vector<Trigger<?>>();
