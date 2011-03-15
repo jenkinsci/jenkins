@@ -35,6 +35,7 @@ import org.kohsuke.stapler.DataBoundConstructor;
 /**
  * {@link Axis} that selects label expressions.
  *
+ * @since 1.403
  */
 public class LabelExpAxis extends Axis {
 	
