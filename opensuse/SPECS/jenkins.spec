@@ -128,9 +128,9 @@ exit 0
 %{_prefix}/%{name}.war
 %attr(0755,jenkins,jenkins) %dir %{workdir}
 %attr(0750,jenkins,jenkins) /var/log/jenkins
-%config /etc/logrotate.d/%{name}
+%config(noreplace) /etc/logrotate.d/%{name}
 %config /etc/init.d/%{name}
-%config /etc/sysconfig/%{name}
+%config(noreplace) /etc/sysconfig/%{name}
 /etc/zypp/repos.d/jenkins.repo
 /usr/sbin/rc%{name}
 
