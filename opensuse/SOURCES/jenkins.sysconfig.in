@@ -10,6 +10,19 @@
 JENKINS_HOME="@@HOME@@"
 
 ## Type:        string
+## Default:     "/bin/bash"
+## ServiceRestart: jenkins
+#
+# Shell used to initialize the Jenkins server's environment.
+# Setting this option to the path of a shell executable allows 
+# initialization of the Jenkins server environment using
+# standard shell startup scripts.
+# Disabling this option causes the Jenkins server to be run
+# with a minimal environment.
+#
+JENKINS_INIT_SHELL="/bin/bash"
+
+## Type:        string
 ## Default:     ""
 ## ServiceRestart: jenkins
 #

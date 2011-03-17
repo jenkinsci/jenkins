@@ -6,7 +6,7 @@
 
 Name:		jenkins
 Version:	%{ver}
-Release:	1.1
+Release:	1.2
 Summary:	Continous Build Server
 Source:		jenkins.war
 Source1:	jenkins.init.in
