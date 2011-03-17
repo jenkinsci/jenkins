@@ -35,6 +35,7 @@ import hudson.Util;
 import hudson.maven.MavenBuild.ProxyImpl2;
 import hudson.maven.reporters.MavenFingerprinter;
 import hudson.maven.reporters.MavenMailer;
+import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
 import hudson.model.Action;
 import hudson.model.Build;
@@ -60,6 +61,7 @@ import hudson.tasks.Maven.MavenInstallation;
 import hudson.util.ArgumentListBuilder;
 import hudson.util.IOUtils;
 import hudson.util.MaskingClassLoader;
+import hudson.util.ReflectionUtils;
 import hudson.util.StreamTaskListener;
 
 import java.io.File;
@@ -67,6 +69,7 @@ import java.io.IOException;
 import java.io.InterruptedIOException;
 import java.io.PrintStream;
 import java.io.Serializable;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -92,11 +95,7 @@ import org.apache.maven.model.building.ModelBuildingRequest;
 import org.apache.maven.monitor.event.EventDispatcher;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.project.ProjectBuildingException;
-import org.codehaus.plexus.PlexusConstants;
-import org.codehaus.plexus.configuration.DefaultPlexusConfiguration;
 import org.codehaus.plexus.util.PathTool;
-import org.jenkinsci.plugins.tokenmacro.MacroEvaluationException;
-import org.jenkinsci.plugins.tokenmacro.TokenMacro;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 import org.sonatype.aether.transfer.TransferCancelledException;
@@ -528,9 +527,13 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
         String opts = project.getMavenOpts();
         if (opts == null ) return null;
         try {
-            opts = TokenMacro.expand(this, listener, opts);
-        } catch (MacroEvaluationException e) {
-            listener.error( "Ignore MacroEvaluationException " + e.getMessage() );            
+            Class<?> clazz = Class.forName( "org.jenkinsci.plugins.tokenmacro.TokenMacro" );
+            Method expandMethod =
+                ReflectionUtils.findMethod(clazz, "expand", new Class[]{ AbstractBuild.class, TaskListener.class, String.class} );
+            opts = (String) expandMethod.invoke( null, this, listener, opts );
+            //opts = TokenMacro.expand(this, listener, opts);
+        //} catch (MacroEvaluationException e) {
+        //    listener.error( "Ignore MacroEvaluationException " + e.getMessage() );            
         }
         catch(Exception tokenException) {
             listener.error("Ignore Problem expanding maven opts macros " + tokenException.getMessage());

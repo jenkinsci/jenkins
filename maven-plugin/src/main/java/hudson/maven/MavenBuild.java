@@ -1,7 +1,7 @@
 /*
  * The MIT License
  * 
- * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi
+ * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, Olivier Lamy
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -27,6 +27,7 @@ import hudson.EnvVars;
 import hudson.FilePath;
 import hudson.maven.agent.AbortException;
 import hudson.maven.reporters.SurefireArchiver;
+import hudson.model.AbstractBuild;
 import hudson.model.BuildListener;
 import hudson.model.Computer;
 import hudson.model.Environment;
@@ -45,6 +46,7 @@ import hudson.tasks.BuildWrapper;
 import hudson.tasks.Maven.MavenInstallation;
 import hudson.util.ArgumentListBuilder;
 import hudson.util.IOUtils;
+import hudson.util.ReflectionUtils;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -52,6 +54,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.Serializable;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
@@ -66,8 +69,6 @@ import org.apache.maven.execution.ReactorManager;
 import org.apache.maven.lifecycle.LifecycleExecutionException;
 import org.apache.maven.monitor.event.EventDispatcher;
 import org.apache.maven.project.MavenProject;
-import org.jenkinsci.plugins.tokenmacro.MacroEvaluationException;
-import org.jenkinsci.plugins.tokenmacro.TokenMacro;
 import org.kohsuke.stapler.Ancestor;
 import org.kohsuke.stapler.Stapler;
 import org.kohsuke.stapler.StaplerRequest;
@@ -682,9 +683,13 @@ public class MavenBuild extends AbstractMavenBuild<MavenModule,MavenBuild> {
         String opts = mms.getMavenOpts();
         if (opts == null ) return null;
         try {
-            opts = TokenMacro.expand(this, listener, opts);
-        } catch (MacroEvaluationException e) {
-            listener.error( "Ignore MacroEvaluationException " + e.getMessage() );
+            Class<?> clazz = Class.forName( "org.jenkinsci.plugins.tokenmacro.TokenMacro" );
+            Method expandMethod =
+                ReflectionUtils.findMethod(clazz, "expand", new Class[]{ AbstractBuild.class, TaskListener.class, String.class} );
+            opts = (String) expandMethod.invoke( null, this, listener, opts );
+            //opts = TokenMacro.expand(this, listener, opts);
+        //} catch (MacroEvaluationException e) {
+        //    listener.error( "Ignore MacroEvaluationException " + e.getMessage() );            
         }
         catch(Exception tokenException) {
             listener.error("Ignore Problem expanding maven opts macros " + tokenException.getMessage());
