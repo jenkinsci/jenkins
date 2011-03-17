@@ -7,8 +7,9 @@ name1=value1
 name2=$VAR2
 </pre>
   These are passed to Ant like <tt>"-Dname1=value1 -Dname2=value2"</tt>.
-  Always use <tt>$VAR</tt> style for parameter references (do not use %VAR% style,
-  even when build runs on Windows).
+  Always use <tt>$VAR</tt> style (even on Windows) for references to Jenkins-defined
+  environment variables.  On Windows, <tt>%VAR%</tt> style references may be used
+  for environment variables that exist outside of Jenkins.
   Backslashes are used for escaping, so use <tt>\\</tt> for a single backslash.
   Double quotes (") should be avoided, as ant on *nix wraps parameters in quotes
   quotes and runs them through <tt>eval</tt>, and Windows has its own issues

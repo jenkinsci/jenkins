@@ -26,6 +26,7 @@ package hudson.tasks;
 import com.gargoylesoftware.htmlunit.html.HtmlButton;
 import com.gargoylesoftware.htmlunit.html.HtmlForm;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
+import hudson.Functions;
 import hudson.matrix.Axis;
 import hudson.matrix.AxisList;
 import hudson.matrix.MatrixRun;
@@ -43,6 +44,7 @@ import hudson.tools.InstallSourceProperty;
 import hudson.tools.ToolProperty;
 import hudson.tools.ToolPropertyDescriptor;
 import hudson.util.DescribableList;
+import org.jvnet.hudson.test.Bug;
 import org.jvnet.hudson.test.ExtractResourceSCM;
 import org.jvnet.hudson.test.HudsonTestCase;
 import org.jvnet.hudson.test.SingleFileSCM;
@@ -145,8 +147,9 @@ public class AntTest extends HudsonTestCase {
         assertTrue("Missing $BUILD_NUMBER: " + log, log.contains("vNUM=1"));
         assertTrue("Missing $BUILD_ID: " + log, log.contains("vID=2")); // Assuming the year starts with 2!
         assertTrue("Missing $JOB_NAME: " + log, log.contains(project.getName()));
-        // Odd build tag, but it's constructed with getParent().getName() and the parent is the matrix
-        // configuration, not the project.. if matrix build tag ever changes, update expected value here:
+        // Odd build tag, but it's constructed with getParent().getName() and the parent is the
+        // matrix configuration, not the project.. if matrix build tag ever changes, update
+        // expected value here:
         assertTrue("Missing $BUILD_TAG: " + log, log.contains("vTAG=jenkins-AX=is-1"));
         assertTrue("Missing $EXECUTOR_NUMBER: " + log, log.matches("(?s).*vEXEC=\\d.*"));
         // $NODE_NAME is expected to be empty when running on master.. not checking.
@@ -160,5 +163,44 @@ public class AntTest extends HudsonTestCase {
         assertTrue("Missing $JENKINS_HOME: " + log, log.matches("(?s).*vJH=[^\\r\\n].*"));
         assertTrue("Missing build parameter $FOO: " + log, log.contains("vFOO=bar"));
         assertTrue("Missing matrix axis $AX: " + log, log.contains("vAX=is"));
+    }
+
+    public void testParameterExpansionByShell() throws Exception {
+        String antName = configureDefaultAnt().getName();
+        FreeStyleProject project = createFreeStyleProject();
+        project.setScm(new ExtractResourceSCM(getClass().getResource("ant-job.zip")));
+        String homeVar = Functions.isWindows() ? "%HOME%" : "$HOME";
+        project.addProperty(new ParametersDefinitionProperty(
+                new StringParameterDefinition("vFOO", homeVar, ""),
+                new StringParameterDefinition("vBAR", "Home sweet " + homeVar + ".", "")));
+        project.getBuildersList().add(new Ant("", antName, null, null,
+                "vHOME=" + homeVar + "\nvFOOHOME=Foo " + homeVar + "\n"));
+        FreeStyleBuild build = project.scheduleBuild2(0, new UserCause()).get();
+        assertBuildStatusSuccess(build);
+        String log = getLog(build);
+        if (!Functions.isWindows()) homeVar = "\\" + homeVar; // Regex escape for $
+        assertTrue("Missing simple HOME parameter: " + log,
+                   log.matches("(?s).*vFOO=(?!" + homeVar + ").*"));
+        assertTrue("Missing HOME parameter with other text: " + log,
+                   log.matches("(?s).*vBAR=Home sweet (?!" + homeVar + ")[^\\r\\n]*\\..*"));
+        assertTrue("Missing HOME ant property: " + log,
+                   log.matches("(?s).*vHOME=(?!" + homeVar + ").*"));
+        assertTrue("Missing HOME ant property with other text: " + log,
+                   log.matches("(?s).*vFOOHOME=Foo (?!" + homeVar + ").*"));
+    }
+
+    @Bug(7108)
+    public void testEscapeXmlInParameters() throws Exception {
+        String antName = configureDefaultAnt().getName();
+        FreeStyleProject project = createFreeStyleProject();
+        project.setScm(new ExtractResourceSCM(getClass().getResource("ant-job.zip")));
+        project.addProperty(new ParametersDefinitionProperty(
+                new StringParameterDefinition("vFOO", "<xml/>", "")));
+        project.getBuildersList().add(new Ant("", antName, null, null, "vBAR=<xml/>\n"));
+        FreeStyleBuild build = project.scheduleBuild2(0, new UserCause()).get();
+        assertBuildStatusSuccess(build);
+        String log = getLog(build);
+        assertTrue("Missing parameter: " + log, log.contains("vFOO=<xml/>"));
+        assertTrue("Missing ant property: " + log, log.contains("vBAR=<xml/>"));
     }
 }
