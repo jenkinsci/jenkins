@@ -24,7 +24,7 @@ THE SOFTWARE.
 
 <st:compress xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
     <j:if test="${request.servletPath=='/' || request.servletPath==''}">
-        <st:header name="X-Hudson" value="${servletContext.getAttribute('version')}" />
+        <st:header name="X-Hudson" value="1.395" />
         <st:header name="X-Jenkins" value="${servletContext.getAttribute('version')}" />
         <j:if test="${app.tcpSlaveAgentListener!=null}">
             <!-- advertise the CLI TCP port -->
