@@ -66,6 +66,7 @@ import javax.servlet.ServletException;
 import java.io.File;
 import java.io.IOException;
 import java.io.StringWriter;
+import java.text.MessageFormat;
 import java.util.AbstractSet;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -621,7 +622,10 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
             for (BuildStep bs : buildSteps) {
                 if ((bs instanceof Publisher && ((Publisher)bs).needsToRunAfterFinalized()) ^ phase)
                     try {
-                        r &= perform(bs,listener);
+                        if (!perform(bs,listener)) {
+                            LOGGER.fine(MessageFormat.format("{0} : {1} failed", AbstractBuild.this.toString(), bs));
+                            r = false;
+                        }
                     } catch (Exception e) {
                         String msg = "Publisher " + bs.getClass().getName() + " aborted due to exception";
                         e.printStackTrace(listener.error(msg));
@@ -655,8 +659,10 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
 
         protected final boolean preBuild(BuildListener listener,Iterable<? extends BuildStep> steps) {
             for (BuildStep bs : steps)
-                if (!bs.prebuild(AbstractBuild.this,listener))
+                if (!bs.prebuild(AbstractBuild.this,listener)) {
+                    LOGGER.fine(MessageFormat.format("{0} : {1} failed", AbstractBuild.this.toString(), bs));
                     return false;
+                }
             return true;
         }
     }
