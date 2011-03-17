@@ -29,7 +29,7 @@ BuildRoot:	%{_tmppath}/build-%{name}-%{version}
 # provides >= 1.6.0 must specify the epoch, "java >= 1:1.6.0".
 #
 # java-1_6_0-sun provides this at least
-Requires:	java-sun >= 1.6.0
+Requires:	java >= 1.6
 Obsoletes:  hudson
 PreReq:		/usr/sbin/groupadd /usr/sbin/useradd
 #PreReq:		%{fillup_prereq}

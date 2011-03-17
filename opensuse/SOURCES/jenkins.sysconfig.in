@@ -13,10 +13,11 @@ JENKINS_HOME="@@HOME@@"
 ## Default:     ""
 ## ServiceRestart: jenkins
 #
-# Java executable to run Jenkins
-# When left empty, we'll try to find the suitable Java.
+# Java runtime to run Jenkins
+# When left empty, the current system default JRE, as defined
+# by update-alternatives(8), is used.
 #
-JENKINS_JAVA_CMD=""
+JENKINS_JAVA_HOME=""
 
 ## Type:        string
 ## Default:     "jenkins"
