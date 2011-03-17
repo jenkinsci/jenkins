@@ -27,6 +27,7 @@ import hudson.EnvVars;
 import hudson.FilePath;
 import hudson.maven.agent.AbortException;
 import hudson.maven.reporters.SurefireArchiver;
+import hudson.model.AbstractBuild;
 import hudson.model.BuildListener;
 import hudson.model.Computer;
 import hudson.model.Environment;
@@ -682,9 +683,9 @@ public class MavenBuild extends AbstractMavenBuild<MavenModule,MavenBuild> {
         String opts = mms.getMavenOpts();
         if (opts == null ) return null;
         try {
-            Class<?> clazz = Class.forName( "org.jenkinsci.plugins.tokenmacro.MacroEvaluationException" );
+            Class<?> clazz = Class.forName( "org.jenkinsci.plugins.tokenmacro.TokenMacro" );
             Method expandMethod =
-                ReflectionUtils.findMethod(clazz, "expand", new Class[]{ this.getClass(), listener.getClass(), String.class} );
+                ReflectionUtils.findMethod(clazz, "expand", new Class[]{ AbstractBuild.class, TaskListener.class, String.class} );
             opts = (String) expandMethod.invoke( null, this, listener, opts );
             //opts = TokenMacro.expand(this, listener, opts);
         //} catch (MacroEvaluationException e) {

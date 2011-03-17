@@ -35,6 +35,7 @@ import hudson.Util;
 import hudson.maven.MavenBuild.ProxyImpl2;
 import hudson.maven.reporters.MavenFingerprinter;
 import hudson.maven.reporters.MavenMailer;
+import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
 import hudson.model.Action;
 import hudson.model.Build;
@@ -526,9 +527,9 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
         String opts = project.getMavenOpts();
         if (opts == null ) return null;
         try {
-            Class<?> clazz = Class.forName( "org.jenkinsci.plugins.tokenmacro.MacroEvaluationException" );
+            Class<?> clazz = Class.forName( "org.jenkinsci.plugins.tokenmacro.TokenMacro" );
             Method expandMethod =
-                ReflectionUtils.findMethod(clazz, "expand", new Class[]{ this.getClass(), listener.getClass(), String.class} );
+                ReflectionUtils.findMethod(clazz, "expand", new Class[]{ AbstractBuild.class, TaskListener.class, String.class} );
             opts = (String) expandMethod.invoke( null, this, listener, opts );
             //opts = TokenMacro.expand(this, listener, opts);
         //} catch (MacroEvaluationException e) {
