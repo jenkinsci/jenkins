@@ -47,8 +47,11 @@ import java.io.FilterInputStream;
 import java.io.InputStream;
 import java.io.DataInputStream;
 import java.security.GeneralSecurityException;
+import java.security.Key;
 import java.security.KeyFactory;
 import java.security.PublicKey;
+import java.security.interfaces.RSAKey;
+import java.security.interfaces.RSAPublicKey;
 import java.security.spec.X509EncodedKeySpec;
 import java.util.ArrayList;
 import java.util.List;
@@ -64,7 +67,7 @@ public class UsageStatistics extends PageDecorator {
     /**
      * Lazily computed {@link PublicKey} representation of {@link #keyImage}.
      */
-    private volatile transient PublicKey key;
+    private volatile transient RSAPublicKey key;
 
     /**
      * When was the last time we asked a browser to send the usage stats for us?
@@ -99,16 +102,13 @@ public class UsageStatistics extends PageDecorator {
         return false;
     }
 
-    private Cipher getCipher() {
+    private RSAPublicKey getKey() {
         try {
             if (key == null) {
                 KeyFactory keyFactory = KeyFactory.getInstance("RSA");
-                key = keyFactory.generatePublic(new X509EncodedKeySpec(Util.fromHexString(keyImage)));
+                key = (RSAPublicKey)keyFactory.generatePublic(new X509EncodedKeySpec(Util.fromHexString(keyImage)));
             }
-
-            Cipher cipher = Secret.getCipher("RSA");
-            cipher.init(Cipher.ENCRYPT_MODE, key);
-            return cipher;
+            return key;
         } catch (GeneralSecurityException e) {
             throw new Error(e); // impossible
         }
@@ -166,7 +166,7 @@ public class UsageStatistics extends PageDecorator {
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
 
             // json -> UTF-8 encode -> gzip -> encrypt -> base64 -> string
-            OutputStreamWriter w = new OutputStreamWriter(new GZIPOutputStream(new CombinedCipherOutputStream(baos,getCipher(),"AES")), "UTF-8");
+            OutputStreamWriter w = new OutputStreamWriter(new GZIPOutputStream(new CombinedCipherOutputStream(baos,getKey(),"AES")), "UTF-8");
             o.write(w);
             w.close();
 
@@ -197,6 +197,10 @@ public class UsageStatistics extends PageDecorator {
             sym.init(Cipher.ENCRYPT_MODE,symKey);
             super.out = new CipherOutputStream(out,sym);
         }
+
+        public CombinedCipherOutputStream(OutputStream out, RSAKey key, String algorithm) throws IOException, GeneralSecurityException {
+            this(out,toCipher(key,Cipher.ENCRYPT_MODE),algorithm);
+        }
     }
 
     /**
@@ -221,6 +225,16 @@ public class UsageStatistics extends PageDecorator {
             sym.init(Cipher.DECRYPT_MODE,symKey);
             super.in = new CipherInputStream(in,sym);
         }
+
+        public CombinedCipherInputStream(InputStream in, RSAKey key, String algorithm, int keyLength) throws IOException, GeneralSecurityException {
+            this(in,toCipher(key,Cipher.DECRYPT_MODE),algorithm,keyLength);
+        }
+    }
+
+    private static Cipher toCipher(RSAKey key, int mode) throws GeneralSecurityException {
+        Cipher cipher = Cipher.getInstance("RSA");
+        cipher.init(mode, (Key)key);
+        return cipher;
     }
 
     /**
