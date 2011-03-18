@@ -71,6 +71,22 @@ import java.util.logging.Logger;
  * ... write to out ...
  * </pre>
  *
+ * Similarly, for remote to local pipe,
+ *
+ * <pre>
+ * final Pipe p = Pipe.createRemoteToLocal();
+ *
+ * channel.callAsync(new Callable() {
+ *   public Object call() {
+ *     OutputStream out = p.getOut();
+ *     ... write to out ...
+ *   }
+ * });
+ *
+ * InputStream in = p.getIn();
+ * ... read from in ...
+ * </pre>
+ *
  * <h2>Implementation Note</h2>
  * <p>
  * For better performance, {@link Pipe} uses lower-level {@link Command} abstraction
