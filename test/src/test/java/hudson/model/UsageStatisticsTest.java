@@ -57,7 +57,7 @@ public class UsageStatisticsTest extends HudsonTestCase {
 
         byte[] cipherText = Base64.decode(data.toCharArray());
         InputStreamReader r = new InputStreamReader(new GZIPInputStream(
-                new CombinedCipherInputStream(new ByteArrayInputStream(cipherText),priv,"AES",1024)), "UTF-8");
+                new CombinedCipherInputStream(new ByteArrayInputStream(cipherText),priv,"AES")), "UTF-8");
         JSONObject o = JSONObject.fromObject(IOUtils.toString(r));
         System.out.println(o);
         assertEquals(1,o.getInt("stat"));

@@ -226,8 +226,8 @@ public class UsageStatistics extends PageDecorator {
             super.in = new CipherInputStream(in,sym);
         }
 
-        public CombinedCipherInputStream(InputStream in, RSAKey key, String algorithm, int keyLength) throws IOException, GeneralSecurityException {
-            this(in,toCipher(key,Cipher.DECRYPT_MODE),algorithm,keyLength);
+        public CombinedCipherInputStream(InputStream in, RSAKey key, String algorithm) throws IOException, GeneralSecurityException {
+            this(in,toCipher(key,Cipher.DECRYPT_MODE),algorithm,key.getModulus().bitLength());
         }
     }
 
