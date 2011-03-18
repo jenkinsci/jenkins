@@ -38,6 +38,7 @@ import javax.crypto.CipherOutputStream;
 import javax.crypto.KeyGenerator;
 import javax.crypto.SecretKey;
 import javax.crypto.CipherInputStream;
+import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
@@ -187,14 +188,15 @@ public class UsageStatistics extends PageDecorator {
             super(out);
 
             // create a new symmetric cipher key used for this stream
-            SecretKey symKey = KeyGenerator.getInstance(algorithm).generateKey();
+            String keyAlgorithm = getKeyAlgorithm(algorithm);
+            SecretKey symKey = KeyGenerator.getInstance(keyAlgorithm).generateKey();
 
             // place the symmetric key by encrypting it with asymmetric cipher
             out.write(asym.doFinal(symKey.getEncoded()));
 
             // the rest of the data will be encrypted by this symmetric cipher
             Cipher sym = Secret.getCipher(algorithm);
-            sym.init(Cipher.ENCRYPT_MODE,symKey);
+            sym.init(Cipher.ENCRYPT_MODE,symKey, keyAlgorithm.equals(algorithm) ? null : new IvParameterSpec(symKey.getEncoded()));
             super.out = new CipherOutputStream(out,sym);
         }
 
@@ -215,20 +217,27 @@ public class UsageStatistics extends PageDecorator {
         public CombinedCipherInputStream(InputStream in, Cipher asym, String algorithm, int keyLength) throws IOException, GeneralSecurityException {
             super(in);
 
+            String keyAlgorithm = getKeyAlgorithm(algorithm);
+
             // first read the symmetric key cipher
             byte[] symKeyBytes = new byte[keyLength/8];
             new DataInputStream(in).readFully(symKeyBytes);
-            SecretKey symKey = new SecretKeySpec(asym.doFinal(symKeyBytes),algorithm);
+            SecretKey symKey = new SecretKeySpec(asym.doFinal(symKeyBytes),keyAlgorithm);
 
             // the rest of the data will be decrypted by this symmetric cipher
             Cipher sym = Secret.getCipher(algorithm);
-            sym.init(Cipher.DECRYPT_MODE,symKey);
+            sym.init(Cipher.DECRYPT_MODE,symKey, keyAlgorithm.equals(algorithm) ? null : new IvParameterSpec(symKey.getEncoded()));
             super.in = new CipherInputStream(in,sym);
         }
 
         public CombinedCipherInputStream(InputStream in, RSAKey key, String algorithm) throws IOException, GeneralSecurityException {
             this(in,toCipher(key,Cipher.DECRYPT_MODE),algorithm,key.getModulus().bitLength());
         }
+    }
+
+    private static String getKeyAlgorithm(String algorithm) {
+        int index = algorithm.indexOf('/');
+        return (index>0)?algorithm.substring(0,index):algorithm;
     }
 
     private static Cipher toCipher(RSAKey key, int mode) throws GeneralSecurityException {
