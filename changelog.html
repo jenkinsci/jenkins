@@ -64,6 +64,19 @@ Upcoming changes</a>
   <li class=bug>
     When both "block build when upstream/downstream is building" are checked, the upstream block check wasn't taking effect.
     (<a href="http://issues.jenkins-ci.org/browse/JENKINS-8968">issue 8968</a>)
+  <li class=bug>
+    A project aggregating tests without any tests itself should now link properly
+    to latest aggregated results, rather than broken link to non-existent test
+    results.
+  <li class=bug>
+    Initial position of the "build time" timeline was off by one day
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-8865">issue 8865</a>)
+  <li class=bug>
+    Build list tables had "Date" as column label, but actual content of the column was "Time Since".
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-9102">issue 9102</a>)
+  <li class=bug>
+    PAM authentication fails to restore group membership information on "remember me" tokens.
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-9094">issue 9094</a>)
   <li class=rfe>
     Added the <tt>--mimeTypes</tt> command line option to define additional MIME type mappings.
   <li class=rfe>
