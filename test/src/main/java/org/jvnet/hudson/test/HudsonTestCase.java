@@ -788,6 +788,11 @@ public abstract class HudsonTestCase extends TestCase implements RootAction {
         return (C)computerConnectorTester.connector;
     }
 
+    protected User configRoundtrip(User u) throws Exception {
+        submit(createWebClient().goTo(u.getUrl()+"/configure").getFormByName("config"));
+        return u;
+    }
+
 
     /**
      * Asserts that the outcome of the build is a specific outcome.
