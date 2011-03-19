@@ -23,52 +23,52 @@
  */
 package hudson.model;
 
-import hudson.EnvVars;
 import hudson.ExtensionList;
 import hudson.ExtensionPoint;
+import hudson.tasks.Builder;
+import hudson.tasks.Publisher;
 
-import java.io.IOException;
+import java.util.Map;
 
 /**
- * Contributes environment variables to builds.
+ * Contributes build variables to builds.
  *
  * <p>
- * This extension point can be used to externally add environment variables. Aside from adding environment variables
+ * This extension point can be used to externally add build variables, which are then used for
+ * various parameter expansions by {@link Builder}s and {@link Publisher}s. Aside from adding variables
  * of the fixed name, a typical strategy is to look for specific {@link JobProperty}s and other similar configurations
  * of {@link Job}s to compute values.
  *
  * @author Kohsuke Kawaguchi
- * @since 1.392
- * @see BuildVariableContributor
+ * @since 1.403
+ * @see EnvironmentContributor
  */
-public abstract class EnvironmentContributor implements ExtensionPoint {
+public abstract class BuildVariableContributor implements ExtensionPoint {
     /**
-     * Contributes environment variables used for a build.
+     * Contributes build variables used for a build.
      *
      * <p>
-     * This method can be called repeatedly for the same {@link Run}, thus
+     * This method can be called repeatedly for the same {@link AbstractBuild}, thus
      * the computation of this method needs to be efficient. If you have a time-consuming
      * computation, one strategy is to take the hit once and then add the result as {@link InvisibleAction}
-     * to {@link Run}, then reuse those values later on.
+     * to {@link AbstractBuild}, then reuse those values later on.
      *
      * <p>
      * This method gets invoked concurrently for multiple {@link Run}s that are being built at the same time,
      * so it must be concurrent-safe.
      *
-     * @param r
+     * @param build
      *      Build that's being performed. Never null.
-     * @param envs
-     *      Partially built environment variable map. Implementation of this method is expected to
+     * @param variables
+     *      Partially built variable map. Implementation of this method is expected to
      *      add additional variables here. Never null.
-     * @param listener
-     *      Connected to the build console. Can be used to report errors. Never null.
      */
-    public abstract void buildEnvironmentFor(Run r, EnvVars envs, TaskListener listener) throws IOException, InterruptedException;
+    public abstract void buildVariablesFor(AbstractBuild build, Map<String,String> variables);
 
     /**
      * Returns all the registered {@link EnvironmentContributor}s.
      */
-    public static ExtensionList<EnvironmentContributor> all() {
-        return Hudson.getInstance().getExtensionList(EnvironmentContributor.class);
+    public static ExtensionList<BuildVariableContributor> all() {
+        return Hudson.getInstance().getExtensionList(BuildVariableContributor.class);
     }
 }

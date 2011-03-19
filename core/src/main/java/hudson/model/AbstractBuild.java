@@ -827,6 +827,9 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
                 bw.makeBuildVariables(this,r);
         }
 
+        for (BuildVariableContributor bvc : BuildVariableContributor.all())
+            bvc.buildVariablesFor(this,r);
+
         return r;
     }
 
