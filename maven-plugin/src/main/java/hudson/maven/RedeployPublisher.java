@@ -202,7 +202,7 @@ public class RedeployPublisher extends Recorder {
                     String settingsPath = mavenHome + "/conf/settings.xml";
                     remoteSettings = build.getWorkspace().child( settingsPath);
                 }
-                System.out.print( "use remote maven settings from : " + remoteSettings.getRemote() );
+                listener.getLogger().println( "use remote maven settings from : " + remoteSettings.getRemote() );
                 remoteSettings.copyTo( filePath );
                 settingsLoc = tmpSettings;
                 
