@@ -261,7 +261,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.jenkins-ci.modules</groupId>
       <artifactId>instance-identity</artifactId>
-      <version>1.0</version>
+      <version>1.1</version>
     </dependency>
 
     <!-- offline profiler API when we need it -->
