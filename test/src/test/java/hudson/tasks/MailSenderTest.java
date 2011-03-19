@@ -10,7 +10,6 @@ import hudson.model.User;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.Set;
 
 import javax.mail.MessagingException;
