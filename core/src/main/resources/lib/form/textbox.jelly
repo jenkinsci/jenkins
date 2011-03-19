@@ -71,7 +71,7 @@ THE SOFTWARE.
     </st:attribute>
   </st:documentation>
   <f:prepareDatabinding />
-  ${descriptor.calcAutoCompleteSettings(autoCompleteField!=null?autoCompleteField:field,attrs)} <!-- this figures out the 'autoCompleteUrl' attribute -->
+  ${descriptor.calcAutoCompleteSettings(autoCompleteField?:field,attrs)} <!-- this figures out the 'autoCompleteUrl' attribute -->
 
   <!-- mostly pass-through all the attributes -->
   <m:input xmlns:m="jelly:hudson.util.jelly.MorphTagLibrary"
