@@ -1317,4 +1317,19 @@ public class Functions {
     public static String createRenderOnDemandProxy(JellyContext context, String attributesToCapture) {
         return Stapler.getCurrentRequest().createJavaScriptProxy(new RenderOnDemandClosure(context,attributesToCapture));
     }
+
+    public static String getCurrentDescriptorByNameUrl() {
+        return Descriptor.getCurrentDescriptorByNameUrl();
+    }
+    
+    public static String setCurrentDescriptorByNameUrl(String value) {
+        String o = getCurrentDescriptorByNameUrl();
+        Stapler.getCurrentRequest().setAttribute("currentDescriptorByNameUrl", value);
+
+        return o;
+    }
+
+    public static void restoreCurrentDescriptorByNameUrl(String old) {
+        Stapler.getCurrentRequest().setAttribute("currentDescriptorByNameUrl", old);
+    }
 }
