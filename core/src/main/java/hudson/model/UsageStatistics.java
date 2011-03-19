@@ -38,6 +38,7 @@ import javax.crypto.CipherOutputStream;
 import javax.crypto.KeyGenerator;
 import javax.crypto.SecretKey;
 import javax.crypto.CipherInputStream;
+import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
@@ -47,8 +48,11 @@ import java.io.FilterInputStream;
 import java.io.InputStream;
 import java.io.DataInputStream;
 import java.security.GeneralSecurityException;
+import java.security.Key;
 import java.security.KeyFactory;
 import java.security.PublicKey;
+import java.security.interfaces.RSAKey;
+import java.security.interfaces.RSAPublicKey;
 import java.security.spec.X509EncodedKeySpec;
 import java.util.ArrayList;
 import java.util.List;
@@ -64,7 +68,7 @@ public class UsageStatistics extends PageDecorator {
     /**
      * Lazily computed {@link PublicKey} representation of {@link #keyImage}.
      */
-    private volatile transient PublicKey key;
+    private volatile transient RSAPublicKey key;
 
     /**
      * When was the last time we asked a browser to send the usage stats for us?
@@ -99,16 +103,13 @@ public class UsageStatistics extends PageDecorator {
         return false;
     }
 
-    private Cipher getCipher() {
+    private RSAPublicKey getKey() {
         try {
             if (key == null) {
                 KeyFactory keyFactory = KeyFactory.getInstance("RSA");
-                key = keyFactory.generatePublic(new X509EncodedKeySpec(Util.fromHexString(keyImage)));
+                key = (RSAPublicKey)keyFactory.generatePublic(new X509EncodedKeySpec(Util.fromHexString(keyImage)));
             }
-
-            Cipher cipher = Secret.getCipher("RSA");
-            cipher.init(Cipher.ENCRYPT_MODE, key);
-            return cipher;
+            return key;
         } catch (GeneralSecurityException e) {
             throw new Error(e); // impossible
         }
@@ -166,7 +167,7 @@ public class UsageStatistics extends PageDecorator {
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
 
             // json -> UTF-8 encode -> gzip -> encrypt -> base64 -> string
-            OutputStreamWriter w = new OutputStreamWriter(new GZIPOutputStream(new CombinedCipherOutputStream(baos,getCipher(),"AES")), "UTF-8");
+            OutputStreamWriter w = new OutputStreamWriter(new GZIPOutputStream(new CombinedCipherOutputStream(baos,getKey(),"AES")), "UTF-8");
             o.write(w);
             w.close();
 
@@ -187,15 +188,20 @@ public class UsageStatistics extends PageDecorator {
             super(out);
 
             // create a new symmetric cipher key used for this stream
-            SecretKey symKey = KeyGenerator.getInstance(algorithm).generateKey();
+            String keyAlgorithm = getKeyAlgorithm(algorithm);
+            SecretKey symKey = KeyGenerator.getInstance(keyAlgorithm).generateKey();
 
             // place the symmetric key by encrypting it with asymmetric cipher
             out.write(asym.doFinal(symKey.getEncoded()));
 
             // the rest of the data will be encrypted by this symmetric cipher
             Cipher sym = Secret.getCipher(algorithm);
-            sym.init(Cipher.ENCRYPT_MODE,symKey);
+            sym.init(Cipher.ENCRYPT_MODE,symKey, keyAlgorithm.equals(algorithm) ? null : new IvParameterSpec(symKey.getEncoded()));
             super.out = new CipherOutputStream(out,sym);
+        }
+
+        public CombinedCipherOutputStream(OutputStream out, RSAKey key, String algorithm) throws IOException, GeneralSecurityException {
+            this(out,toCipher(key,Cipher.ENCRYPT_MODE),algorithm);
         }
     }
 
@@ -211,16 +217,33 @@ public class UsageStatistics extends PageDecorator {
         public CombinedCipherInputStream(InputStream in, Cipher asym, String algorithm, int keyLength) throws IOException, GeneralSecurityException {
             super(in);
 
+            String keyAlgorithm = getKeyAlgorithm(algorithm);
+
             // first read the symmetric key cipher
             byte[] symKeyBytes = new byte[keyLength/8];
             new DataInputStream(in).readFully(symKeyBytes);
-            SecretKey symKey = new SecretKeySpec(asym.doFinal(symKeyBytes),algorithm);
+            SecretKey symKey = new SecretKeySpec(asym.doFinal(symKeyBytes),keyAlgorithm);
 
             // the rest of the data will be decrypted by this symmetric cipher
             Cipher sym = Secret.getCipher(algorithm);
-            sym.init(Cipher.DECRYPT_MODE,symKey);
+            sym.init(Cipher.DECRYPT_MODE,symKey, keyAlgorithm.equals(algorithm) ? null : new IvParameterSpec(symKey.getEncoded()));
             super.in = new CipherInputStream(in,sym);
         }
+
+        public CombinedCipherInputStream(InputStream in, RSAKey key, String algorithm) throws IOException, GeneralSecurityException {
+            this(in,toCipher(key,Cipher.DECRYPT_MODE),algorithm,key.getModulus().bitLength());
+        }
+    }
+
+    private static String getKeyAlgorithm(String algorithm) {
+        int index = algorithm.indexOf('/');
+        return (index>0)?algorithm.substring(0,index):algorithm;
+    }
+
+    private static Cipher toCipher(RSAKey key, int mode) throws GeneralSecurityException {
+        Cipher cipher = Cipher.getInstance("RSA");
+        cipher.init(mode, (Key)key);
+        return cipher;
     }
 
     /**
