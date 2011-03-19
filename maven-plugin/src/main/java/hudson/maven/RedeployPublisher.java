@@ -181,9 +181,13 @@ public class RedeployPublisher extends Recorder {
                 // order tru configuration 
                 // TODO maybe in goals with -s,--settings last wins but not done in during pom parsing
                 // or -Dmaven.repo.local
-                // if not wet must get ~/.m2/settings.xml
+                // if not we must get ~/.m2/settings.xml then $M2_HOME/conf/settings.xml
+                
+                // TODO check if the remoteSettings has a localRepository configured and disabled it
                 
                 String altSettingsPath = ((MavenModuleSet) project).getAlternateSettings();
+                
+                Node buildNode =  Hudson.getInstance().getNode( build.getBuiltOnStr() );
                 
                 if (StringUtils.isBlank( altSettingsPath ) ) {
                     // get userHome from the node where job has been executed
@@ -196,13 +200,14 @@ public class RedeployPublisher extends Recorder {
                 FilePath remoteSettings = build.getWorkspace().child( altSettingsPath );
                 if (!remoteSettings.exists()) {
                     // JENKINS-9084 we finally use $M2_HOME/conf/settings.xml as maven do
-                    Node buildNode =  Hudson.getInstance().getNode( build.getBuiltOnStr() );
+                    
                     String mavenHome = 
                         ((MavenModuleSet) project).getMaven().forNode(buildNode, listener ).getHome();
                     String settingsPath = mavenHome + "/conf/settings.xml";
                     remoteSettings = build.getWorkspace().child( settingsPath);
                 }
-                listener.getLogger().println( "Maven RedeployPublished use remote maven settings from : " + remoteSettings.getRemote() );
+                listener.getLogger().println( "Maven RedeployPublished use remote " + buildNode.getNodeName()  
+                                              + " maven settings from : " + remoteSettings.getRemote() );
                 remoteSettings.copyTo( filePath );
                 settingsLoc = tmpSettings;
                 
