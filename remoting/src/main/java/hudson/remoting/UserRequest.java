@@ -98,6 +98,10 @@ final class UserRequest<RSP,EXC extends Throwable> extends Request<UserResponse<
                     o = deserialize(channel,request,cl);
                 } catch (ClassNotFoundException e) {
                     throw new ClassNotFoundException("Failed to deserialize the Callable object. Perhaps you needed to implement DelegatingCallable?",e);
+                } catch (RuntimeException e) {
+                    // if the error is during deserialization, throw it in one of the types Channel.call will
+                    // capture its call site stack trace. See 
+                    throw new Error("Failed to deserialize the Callable object.",e);
                 }
 
                 Callable<RSP,EXC> callable = (Callable<RSP,EXC>)o;
