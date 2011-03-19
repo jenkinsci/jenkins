@@ -419,6 +419,18 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
     }
 
     /**
+     * Bind {@link JobProperty}s to URL spaces.
+     *
+     * @since 1.403
+     */
+    public JobProperty getProperty(String className) {
+        for (JobProperty p : properties)
+            if (p.getClass().getName().equals(className))
+                return p;
+        return null;
+    }
+
+    /**
      * Overrides from job properties.
      */
     public Collection<?> getOverrides() {
