@@ -26,7 +26,7 @@ THE SOFTWARE.
   Edit View Page
 -->
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
-  <l:layout norefresh="true">
+  <l:layout norefresh="true" title="${%Edit View}">
     <st:include page="sidepanel.jelly" />
     <l:main-panel>
       <!-- to make the form field binding work -->
