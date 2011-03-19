@@ -26,7 +26,7 @@ THE SOFTWARE.
   Config page
 -->
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:s="/lib/form">
-  <l:layout title="Update Center" permission="${app.ADMINISTER}" norefresh="true">
+  <l:layout title="${%Update Center}" permission="${app.ADMINISTER}" norefresh="true">
     <st:include page="sidepanel.jelly"/>
     <l:main-panel>
       <local:tabBar page="installed" xmlns:local="/hudson/PluginManager" />
