@@ -358,7 +358,7 @@ public class MailSender {
         return msg;
     }
 
-    private void includeCulpritsOf(AbstractProject upstreamProject, AbstractBuild<?, ?> currentBuild, BuildListener listener, Set<InternetAddress> recipientList) throws AddressException {
+    void includeCulpritsOf(AbstractProject upstreamProject, AbstractBuild<?, ?> currentBuild, BuildListener listener, Set<InternetAddress> recipientList) throws AddressException {
         AbstractBuild<?,?> upstreamBuild = currentBuild.getUpstreamRelationshipBuild(upstreamProject);
         AbstractBuild<?,?> previousBuild = currentBuild.getPreviousBuild();
         AbstractBuild<?,?> previousBuildUpstreamBuild = previousBuild!=null ? previousBuild.getUpstreamRelationshipBuild(upstreamProject) : null;
@@ -372,8 +372,10 @@ public class MailSender {
         }
         AbstractBuild<?,?> b=previousBuildUpstreamBuild;
         do {
-            recipientList.addAll(buildCulpritList(listener,b.getCulprits()));
             b = b.getNextBuild();
+            if (b != null) {
+                recipientList.addAll(buildCulpritList(listener,b.getCulprits()));
+            }
         } while ( b != upstreamBuild && b != null );
     }
 
