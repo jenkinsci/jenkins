@@ -31,17 +31,16 @@ import hudson.maven.reporters.MavenAbstractArtifactRecord;
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
 import hudson.model.BuildListener;
-import hudson.model.Computer;
 import hudson.model.Hudson;
+import hudson.model.Node;
 import hudson.model.Result;
 import hudson.model.TaskListener;
 import hudson.remoting.Callable;
 import hudson.tasks.BuildStepDescriptor;
 import hudson.tasks.BuildStepMonitor;
+import hudson.tasks.Maven.MavenInstallation;
 import hudson.tasks.Publisher;
 import hudson.tasks.Recorder;
-import hudson.tasks.Maven.MavenInstallation;
-import hudson.tasks.Maven.ProjectWithMaven;
 import hudson.util.FormValidation;
 
 import java.io.File;
@@ -49,8 +48,8 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Properties;
 import java.util.Map.Entry;
+import java.util.Properties;
 
 import net.sf.json.JSONObject;
 
@@ -194,11 +193,18 @@ public class RedeployPublisher extends Recorder {
                 
                 // we copy this file in the master in a  temporary file 
                 FilePath filePath = new FilePath( tmpSettings );
-                FilePath remoteSettings = build.getWorkspace().child( altSettingsPath);
-                if (remoteSettings.exists()) {
-                    remoteSettings.copyTo( filePath );
-                    settingsLoc = tmpSettings;
+                FilePath remoteSettings = build.getWorkspace().child( altSettingsPath );
+                if (!remoteSettings.exists()) {
+                    // JENKINS-9084 we finally use $M2_HOME/conf/settings.xml as maven do
+                    Node buildNode =  Hudson.getInstance().getNode( build.getBuiltOnStr() );
+                    String mavenHome = 
+                        ((MavenModuleSet) project).getMaven().forNode(buildNode, listener ).getHome();
+                    String settingsPath = mavenHome + "/conf/settings.xml";
+                    remoteSettings = build.getWorkspace().child( settingsPath);
                 }
+                System.out.print( "use remote maven settings from : " + remoteSettings.getRemote() );
+                remoteSettings.copyTo( filePath );
+                settingsLoc = tmpSettings;
                 
             }
             
