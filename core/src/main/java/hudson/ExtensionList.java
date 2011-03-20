@@ -156,7 +156,7 @@ public class ExtensionList<T> extends AbstractList<T> {
     }
 
     @Override
-    public synchronized T remove(int index) {
+    public final synchronized T remove(int index) {
         T t = get(index);
         remove(t);
         return t;
