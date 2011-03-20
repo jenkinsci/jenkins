@@ -442,6 +442,7 @@ public abstract class HudsonTestCase extends TestCase implements RootAction {
         context.setMimeTypes(MIME_TYPES);
 
         SocketConnector connector = new SocketConnector();
+        connector.setHeaderBufferSize(12*1024); // use a bigger buffer as Stapler traces can get pretty large on deeply nested URL
 
         server.setThreadPool(new ThreadPoolImpl(new ThreadPoolExecutor(10, 10, 10L, TimeUnit.SECONDS, new LinkedBlockingQueue<Runnable>(),new ThreadFactory() {
             public Thread newThread(Runnable r) {
