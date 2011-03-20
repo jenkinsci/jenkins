@@ -683,7 +683,11 @@ public class Fingerprint implements ModelObject, Saveable {
             if(j==null)
                 continue;
 
-            int oldest = j.getFirstBuild().getNumber();
+            Run firstBuild = j.getFirstBuild();
+            if(firstBuild==null)
+                continue;
+
+            int oldest = firstBuild.getNumber();
             if(!e.getValue().isSmallerThan(oldest))
                 return true;
         }
