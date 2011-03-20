@@ -58,6 +58,7 @@ THE SOFTWARE.
 <!-- The path starts with a "/" character but does not end with a "/" character. -->
 <j:set var="rootURL" value="${request.contextPath}" />
 <j:new var="h" className="hudson.Functions" /><!-- instead of JSP functions -->
+<j:set var="_" value="${request.getSession()}"/><!-- depending on what tags are used, we can later end up discovering that we needed a session, but it's too late because the headers are already committed. so ensure we always have a session -->
 <j:set var="_" value="${h.configureAutoRefresh(request, response, attrs.norefresh!=null)}"/>
 <!--
   load static resources from the path dedicated to a specific version.
