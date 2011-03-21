@@ -117,6 +117,7 @@ import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.Iterator;
@@ -1155,6 +1156,15 @@ public abstract class HudsonTestCase extends TestCase implements RootAction {
         // compare shallow primitive properties
         if (!primitiveProperties.isEmpty())
             assertEqualBeans(lhs,rhs,Util.join(primitiveProperties,","));
+    }
+
+    /**
+     * Makes sure that two collections are identical via {@link #assertEqualDataBoundBeans(Object, Object)}
+     */
+    public void assertEqualDataBoundBeans(List<?> lhs, List<?> rhs) throws Exception {
+        assertEquals(lhs.size(), rhs.size());
+        for (int i=0; i<lhs.size(); i++) 
+            assertEqualDataBoundBeans(lhs.get(i),rhs.get(i));
     }
 
     private Constructor<?> findDataBoundConstructor(Class<?> c) {
