@@ -1,7 +1,7 @@
 /*
  * The MIT License
  *
- * Copyright (c) 2004-2009, Sun Microsystems, Inc., Tom Huybrechts
+ * Copyright (c) 2004-2011, Sun Microsystems, Inc., Tom Huybrechts, Seiji Sogabe
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -21,7 +21,6 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-
 package hudson.tools;
 
 import hudson.DescriptorExtensionList;
@@ -34,6 +33,7 @@ import hudson.slaves.NodeProperty;
 import hudson.slaves.NodePropertyDescriptor;
 import hudson.slaves.NodeSpecific;
 import java.io.IOException;
+import java.util.ArrayList;
 import org.kohsuke.stapler.DataBoundConstructor;
 
 import java.util.Arrays;
@@ -46,6 +46,7 @@ import java.util.List;
  * @since 1.286
  */
 public class ToolLocationNodeProperty extends NodeProperty<Node> {
+
     /**
      * Override locations. Never null.
      */
@@ -53,7 +54,9 @@ public class ToolLocationNodeProperty extends NodeProperty<Node> {
 
     @DataBoundConstructor
     public ToolLocationNodeProperty(List<ToolLocation> locations) {
-        if(locations==null) throw new IllegalArgumentException();
+        if (locations == null) {
+            locations = new ArrayList<ToolLocation>();
+        }
         this.locations = locations;
     }
 
@@ -91,13 +94,19 @@ public class ToolLocationNodeProperty extends NodeProperty<Node> {
 
         // node-specific configuration takes precedence
         ToolLocationNodeProperty property = node.getNodeProperties().get(ToolLocationNodeProperty.class);
-        if (property != null)   result = property.getHome(installation);
-        if (result != null)     return result;
+        if (property != null) {
+            result = property.getHome(installation);
+        }
+        if (result != null) {
+            return result;
+        }
 
         // consult translators
-        for( ToolLocationTranslator t : ToolLocationTranslator.all() ) {
+        for (ToolLocationTranslator t : ToolLocationTranslator.all()) {
             result = t.getToolHome(node, installation, log);
-            if(result!=null)    return result;
+            if (result != null) {
+                return result;
+            }
         }
 
         // fall back is no-op
@@ -111,7 +120,7 @@ public class ToolLocationNodeProperty extends NodeProperty<Node> {
             return Messages.ToolLocationNodeProperty_displayName();
         }
 
-        public DescriptorExtensionList<ToolInstallation,ToolDescriptor<?>> getToolDescriptors() {
+        public DescriptorExtensionList<ToolInstallation, ToolDescriptor<?>> getToolDescriptors() {
             return ToolInstallation.all();
         }
 
@@ -126,9 +135,13 @@ public class ToolLocationNodeProperty extends NodeProperty<Node> {
     }
 
     public static final class ToolLocation {
+
         private final String type;
+
         private final String name;
+
         private final String home;
+
         private transient volatile ToolDescriptor descriptor;
 
         public ToolLocation(ToolDescriptor type, String name, String home) {
@@ -137,10 +150,10 @@ public class ToolLocationNodeProperty extends NodeProperty<Node> {
             this.name = name;
             this.home = home;
         }
-        
+
         @DataBoundConstructor
         public ToolLocation(String key, String home) {
-            this.type =  key.substring(0, key.indexOf('@'));
+            this.type = key.substring(0, key.indexOf('@'));
             this.name = key.substring(key.indexOf('@') + 1);
             this.home = home;
         }
@@ -154,15 +167,14 @@ public class ToolLocationNodeProperty extends NodeProperty<Node> {
         }
 
         public ToolDescriptor getType() {
-            if (descriptor == null) descriptor = (ToolDescriptor) Descriptor.find(type); 
+            if (descriptor == null) {
+                descriptor = (ToolDescriptor) Descriptor.find(type);
+            }
             return descriptor;
         }
 
         public String getKey() {
             return type + "@" + name;
         }
-
     }
-    
-
 }
