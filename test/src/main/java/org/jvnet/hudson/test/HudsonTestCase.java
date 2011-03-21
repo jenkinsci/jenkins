@@ -1167,7 +1167,7 @@ public abstract class HudsonTestCase extends TestCase implements RootAction {
             assertEqualDataBoundBeans(lhs.get(i),rhs.get(i));
     }
 
-    private Constructor<?> findDataBoundConstructor(Class<?> c) {
+    protected Constructor<?> findDataBoundConstructor(Class<?> c) {
         for (Constructor<?> m : c.getConstructors()) {
             if (m.getAnnotation(DataBoundConstructor.class)!=null)
                 return m;
