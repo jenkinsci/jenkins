@@ -1,18 +1,18 @@
 /*
  * The MIT License
- * 
+ *
  * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, Erik Ramfelt, Xavier Le Vourch, Tom Huybrechts, Yahoo!, Inc.
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -68,6 +68,8 @@ public final class SuiteResult implements Serializable {
      * AFAICT, this is not a required attribute in XML, so the value may be null.
      */
     private String timestamp;
+    /** Optional ID attribute of a test suite. E.g., Eclipse plug-ins tests always have the name 'tests' but a different id. **/
+    private String id;
 
     /**
      * All test cases.
@@ -130,6 +132,7 @@ public final class SuiteResult implements Serializable {
         }
         this.name = TestObject.safe(name);
         this.timestamp = suite.attributeValue("timestamp");
+        this.id = suite.attributeValue("id");
 
         Element ex = suite.element("error");
         if(ex!=null) {
@@ -184,7 +187,7 @@ public final class SuiteResult implements Serializable {
 
     /*package*/ void addCase(CaseResult cr) {
         cases.add(cr);
-        duration += cr.getDuration(); 
+        duration += cr.getDuration();
     }
 
     @Exported(visibility=9)
@@ -194,7 +197,7 @@ public final class SuiteResult implements Serializable {
 
     @Exported(visibility=9)
     public float getDuration() {
-        return duration; 
+        return duration;
     }
 
     /**
@@ -210,7 +213,7 @@ public final class SuiteResult implements Serializable {
 
     /**
      * The stderr of this test.
-     * 
+     *
      * @since 1.281
      * @see CaseResult#getStderr()
      */
@@ -218,7 +221,7 @@ public final class SuiteResult implements Serializable {
     public String getStderr() {
         return stderr;
     }
-    
+
     /**
      * The absolute path to the original test report. OS-dependent.
      */
@@ -233,6 +236,11 @@ public final class SuiteResult implements Serializable {
     @Exported(visibility=9)
     public String getTimestamp() {
         return timestamp;
+    }
+
+    @Exported(visibility=9)
+    public String getId() {
+        return id;
     }
 
     @Exported(inline=true,visibility=9)
@@ -262,7 +270,7 @@ public final class SuiteResult implements Serializable {
         }
         return null;
     }
-    
+
 	public Set<String> getClassNames() {
 		Set<String> result = new HashSet<String>();
 		for (CaseResult c : cases) {
@@ -274,7 +282,7 @@ public final class SuiteResult implements Serializable {
     /** KLUGE. We have to call this to prevent freeze()
      * from calling c.freeze() on all its children,
      * because that in turn calls c.getOwner(),
-     * which requires a non-null parent. 
+     * which requires a non-null parent.
      * @param parent
      */
     void setParent(hudson.tasks.junit.TestResult parent) {
