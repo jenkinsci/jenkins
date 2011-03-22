@@ -39,6 +39,7 @@ import java.io.IOException;
  *
  * @author Kohsuke Kawaguchi
  * @since 1.392
+ * @see BuildVariableContributor
  */
 public abstract class EnvironmentContributor implements ExtensionPoint {
     /**

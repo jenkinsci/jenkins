@@ -83,13 +83,7 @@ public final class WebAppMain implements ServletContextListener {
             // use the current request to determine the language
             LocaleProvider.setProvider(new LocaleProvider() {
                 public Locale get() {
-                    Locale locale=null;
-                    StaplerRequest req = Stapler.getCurrentRequest();
-                    if(req!=null)
-                        locale = req.getLocale();
-                    if(locale==null)
-                        locale = Locale.getDefault();
-                    return locale;
+                    return Functions.getCurrentLocale();
                 }
             });
 

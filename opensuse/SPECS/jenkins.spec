@@ -6,7 +6,7 @@
 
 Name:		jenkins
 Version:	%{ver}
-Release:	1.1
+Release:	1.2
 Summary:	Continous Build Server
 Source:		jenkins.war
 Source1:	jenkins.init.in
@@ -29,7 +29,7 @@ BuildRoot:	%{_tmppath}/build-%{name}-%{version}
 # provides >= 1.6.0 must specify the epoch, "java >= 1:1.6.0".
 #
 # java-1_6_0-sun provides this at least
-Requires:	java-sun >= 1.6.0
+Requires:	java >= 1.6
 Obsoletes:  hudson
 PreReq:		/usr/sbin/groupadd /usr/sbin/useradd
 #PreReq:		%{fillup_prereq}
@@ -75,7 +75,7 @@ rm -rf "%{buildroot}"
 %__install -d "%{buildroot}/usr/sbin"
 %__ln_s "../../etc/init.d/%{name}" "%{buildroot}/usr/sbin/rc%{name}"
 
-%__install -D -m0600 "%{SOURCE2}" "%{buildroot}/etc/sysconfig/%{name}"
+%__install -D -m0644 "%{SOURCE2}" "%{buildroot}/etc/sysconfig/%{name}"
 %__sed -i 's,@@HOME@@,%{workdir},g' "%{buildroot}/etc/sysconfig/%{name}"
 
 %__install -D -m0644 "%{SOURCE3}" "%{buildroot}/etc/logrotate.d/%{name}"
@@ -128,9 +128,9 @@ exit 0
 %{_prefix}/%{name}.war
 %attr(0755,jenkins,jenkins) %dir %{workdir}
 %attr(0750,jenkins,jenkins) /var/log/jenkins
-%config /etc/logrotate.d/%{name}
+%config(noreplace) /etc/logrotate.d/%{name}
 %config /etc/init.d/%{name}
-%config /etc/sysconfig/%{name}
+%config(noreplace) /etc/sysconfig/%{name}
 /etc/zypp/repos.d/jenkins.repo
 /usr/sbin/rc%{name}
 

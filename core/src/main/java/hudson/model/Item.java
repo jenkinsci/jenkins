@@ -60,6 +60,7 @@ import hudson.security.AccessControlled;
  *
  * @author Kohsuke Kawaguchi
  * @see Items
+ * @see ItemVisitor
  */
 public interface Item extends PersistenceRoot, SearchableModelObject, AccessControlled {
     /**

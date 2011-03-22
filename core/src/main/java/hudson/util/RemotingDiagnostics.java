@@ -27,8 +27,10 @@ import groovy.lang.GroovyShell;
 import hudson.FilePath;
 import hudson.Functions;
 import hudson.model.Hudson;
+import hudson.remoting.AsyncFutureImpl;
 import hudson.remoting.Callable;
 import hudson.remoting.DelegatingCallable;
+import hudson.remoting.Future;
 import hudson.remoting.VirtualChannel;
 import hudson.security.AccessControlled;
 import org.kohsuke.stapler.StaplerRequest;
@@ -76,6 +78,12 @@ public final class RemotingDiagnostics {
         if(channel==null)
             return Collections.singletonMap("N/A","N/A");
         return channel.call(new GetThreadDump());
+    }
+
+    public static Future<Map<String,String>> getThreadDumpAsync(VirtualChannel channel) throws IOException, InterruptedException {
+        if(channel==null)
+            return new AsyncFutureImpl<Map<String, String>>(Collections.singletonMap("N/A","offline"));
+        return channel.callAsync(new GetThreadDump());
     }
 
     private static final class GetThreadDump implements Callable<Map<String,String>,RuntimeException> {

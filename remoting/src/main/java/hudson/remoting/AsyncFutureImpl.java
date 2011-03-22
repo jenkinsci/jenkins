@@ -1,7 +1,7 @@
 /*
  * The MIT License
  * 
- * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi
+ * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, CloudBees, Inc.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -47,6 +47,14 @@ public class AsyncFutureImpl<V> implements Future<V> {
     private V value;
     private Throwable problem;
     private boolean cancelled;
+
+    public AsyncFutureImpl() {}
+    public AsyncFutureImpl(V value) {
+        set(value);
+    }
+    public AsyncFutureImpl(Throwable value) {
+        set(value);
+    }
 
     public boolean cancel(boolean mayInterruptIfRunning) {
         return false;

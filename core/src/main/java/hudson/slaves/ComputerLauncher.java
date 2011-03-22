@@ -67,6 +67,9 @@ public abstract class ComputerLauncher extends AbstractDescribableImpl<ComputerL
      * should be invoked in the end to notify Hudson of the established connection.
      * The operation could also fail, in which case there's no need to make any callback notification,
      * (except to notify the user of the failure through {@link StreamTaskListener}.)
+     * Also note that the normal return of this method call does not necessarily signify a successful launch.
+     * If someone programmatically calls this method and wants to find out if the launch was a success,
+     * use {@link SlaveComputer#isOnline()} at the end.
      *
      * <p>
      * This method must operate synchronously. Asynchrony is provided by {@link Computer#connect(boolean)} and

@@ -358,7 +358,7 @@ public class MailSender {
         return msg;
     }
 
-    private void includeCulpritsOf(AbstractProject upstreamProject, AbstractBuild<?, ?> currentBuild, BuildListener listener, Set<InternetAddress> recipientList) throws AddressException {
+    void includeCulpritsOf(AbstractProject upstreamProject, AbstractBuild<?, ?> currentBuild, BuildListener listener, Set<InternetAddress> recipientList) throws AddressException {
         AbstractBuild<?,?> upstreamBuild = currentBuild.getUpstreamRelationshipBuild(upstreamProject);
         AbstractBuild<?,?> previousBuild = currentBuild.getPreviousBuild();
         AbstractBuild<?,?> previousBuildUpstreamBuild = previousBuild!=null ? previousBuild.getUpstreamRelationshipBuild(upstreamProject) : null;
@@ -372,8 +372,10 @@ public class MailSender {
         }
         AbstractBuild<?,?> b=previousBuildUpstreamBuild;
         do {
-            recipientList.addAll(buildCulpritList(listener,b.getCulprits()));
             b = b.getNextBuild();
+            if (b != null) {
+                recipientList.addAll(buildCulpritList(listener,b.getCulprits()));
+            }
         } while ( b != upstreamBuild && b != null );
     }
 
@@ -412,4 +414,15 @@ public class MailSender {
      * Sometimes the outcome of the previous build affects the e-mail we send, hence this checkpoint.
      */
     private static final CheckPoint CHECKPOINT = new CheckPoint("mail sent");
+    
+    static {
+    	// Fix JENKINS-9006
+    	// When sending to multiple recipients, send to valid recipients even if some are
+    	// invalid, unless we have explicitly said otherwise.
+    	for (String property: Arrays.asList("mail.smtp.sendpartial", "mail.smtps.sendpartial")) {
+    		if (System.getProperty(property) == null) {
+    			System.setProperty(property, "true");
+        	}
+        }
+    }
 }

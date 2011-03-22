@@ -4,13 +4,13 @@
   <parent>
     <groupId>org.jenkins-ci</groupId>
     <artifactId>jenkins</artifactId>
-    <version>1.15</version>
+    <version>1.17</version>
   </parent>
 
   <groupId>org.jenkins-ci.plugins</groupId>
   <artifactId>plugin</artifactId>
   <name>Jenkins plugin POM</name>
-  <version>1.400-SNAPSHOT</version>
+  <version>1.405-SNAPSHOT</version>
   <packaging>pom</packaging>
 
   <properties>
@@ -38,7 +38,7 @@
       <dependency><!-- if a plugin wants to depend on the maven plugin, choose the right version automatically -->
         <groupId>org.jenkins-ci.main</groupId>
         <artifactId>maven-plugin</artifactId>
-        <version>1.400-SNAPSHOT</version>
+        <version>1.405-SNAPSHOT</version>
       </dependency>
     </dependencies>
   </dependencyManagement>
@@ -48,25 +48,25 @@
       <groupId>org.jenkins-ci.main</groupId>
       <artifactId>jenkins-war</artifactId>
       <type>war</type>
-      <version>1.400-SNAPSHOT</version>
+      <version>1.405-SNAPSHOT</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.jenkins-ci.main</groupId>
       <artifactId>jenkins-core</artifactId>
-      <version>1.400-SNAPSHOT</version>
+      <version>1.405-SNAPSHOT</version>
       <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>org.jenkins-ci.main</groupId>
       <artifactId>jenkins-test-harness</artifactId>
-      <version>1.400-SNAPSHOT</version>
+      <version>1.405-SNAPSHOT</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.jenkins-ci.main</groupId>
       <artifactId>ui-samples-plugin</artifactId>
-      <version>1.400-SNAPSHOT</version>
+      <version>1.405-SNAPSHOT</version>
       <scope>test</scope>
     </dependency>
     <dependency>
@@ -120,7 +120,7 @@
       <plugin>
         <groupId>org.jenkins-ci.tools</groupId>
         <artifactId>maven-hpi-plugin</artifactId>
-        <!-- version specified in parent pom -->
+        <version>1.67</version>
         <extensions>true</extensions>
         <configuration>
           <showDeprecation>true</showDeprecation>
@@ -129,7 +129,7 @@
       <plugin>
         <groupId>org.kohsuke.stapler</groupId>
         <artifactId>maven-stapler-plugin</artifactId>
-        <version>1.12</version>
+        <!-- version specified in parent pom -->
         <extensions>true</extensions>
       </plugin>
       <plugin>
@@ -142,7 +142,7 @@
       <plugin>
         <groupId>org.jvnet.localizer</groupId>
         <artifactId>maven-localizer-plugin</artifactId>
-        <version>1.8</version>
+        <!-- version specified in parent pom -->
         <executions>
           <execution>
             <goals>

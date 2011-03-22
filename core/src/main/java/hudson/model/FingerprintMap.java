@@ -1,7 +1,7 @@
 /*
  * The MIT License
  * 
- * Copyright (c) 2004-2010, Sun Microsystems, Inc., Kohsuke Kawaguchi
+ * Copyright (c) 2004-2011, Sun Microsystems, Inc., Kohsuke Kawaguchi
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,13 +24,11 @@
 package hudson.model;
 
 import hudson.Util;
-import hudson.diagnosis.OldDataMonitor;
 import hudson.util.KeyedDataStorage;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.Locale;
-import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Cache of {@link Fingerprint}s.
@@ -44,14 +42,6 @@ import java.util.concurrent.ConcurrentHashMap;
  * @see Hudson#getFingerprintMap() 
  */
 public final class FingerprintMap extends KeyedDataStorage<Fingerprint,FingerprintParams> {
-
-    /**
-     * @deprecated since 2007-03-26.
-     *      Some old version of Hudson incorrectly serialized this information to the disk.
-     *      So we need this field to be here for such configuration to be read correctly.
-     *      This field is otherwise no longer in use.
-     */
-    private transient ConcurrentHashMap<String,Object> core = new ConcurrentHashMap<String,Object>();
 
     /**
      * Returns true if there's some data in the fingerprint database.
@@ -101,11 +91,6 @@ public final class FingerprintMap extends KeyedDataStorage<Fingerprint,Fingerpri
 
     protected Fingerprint load(String key) throws IOException {
         return Fingerprint.load(toByteArray(key));
-    }
-
-    private Object readResolve() {
-        if (core != null) OldDataMonitor.report(Hudson.getInstance(), "1.91");
-        return this;
     }
 }
 

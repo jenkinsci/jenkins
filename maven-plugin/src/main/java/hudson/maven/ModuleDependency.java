@@ -51,8 +51,10 @@ public final class ModuleDependency implements Serializable {
     public ModuleDependency(String groupId, String artifactId, String version) {
         this.groupId = groupId.intern();
         this.artifactId = artifactId.intern();
-        if(version==null)   version=UNKNOWN;
-        this.version = version.intern();
+        if(version==null)
+            this.version = UNKNOWN;
+        else
+            this.version = version.intern();
     }
 
     public ModuleDependency(ModuleName name, String version) {
@@ -81,6 +83,15 @@ public final class ModuleDependency implements Serializable {
         this(ext.getGroupId(),ext.getArtifactId(),ext.getVersion());
     }
 
+    private ModuleDependency(String groupId, String artifactId) {
+        // to be used only by the withUnknownVersion() method
+        // where we know that groupId and artifactId are already interned
+        // and where we want an UNKNOWN version
+        this.groupId = groupId;
+        this.artifactId = artifactId;
+        this.version = UNKNOWN;
+    }
+    
     public ModuleName getName() {
         return new ModuleName(groupId,artifactId);
     }
@@ -89,7 +100,10 @@ public final class ModuleDependency implements Serializable {
      * Returns groupId+artifactId plus unknown version.
      */
     public ModuleDependency withUnknownVersion() {
-        return new ModuleDependency(groupId,artifactId,UNKNOWN);
+        if (UNKNOWN.equals(version))
+            return this;
+        else
+            return new ModuleDependency(groupId,artifactId);
     }
 
     public boolean equals(Object o) {

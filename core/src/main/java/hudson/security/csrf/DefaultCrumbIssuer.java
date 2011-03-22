@@ -11,6 +11,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import hudson.Extension;
+import hudson.Util;
 import hudson.model.Hudson;
 import hudson.model.ModelObject;
 
@@ -64,7 +65,7 @@ public class DefaultCrumbIssuer extends CrumbIssuer {
      * {@inheritDoc}
      */
     @Override
-    protected String issueCrumb(ServletRequest request, String salt) {
+    protected synchronized String issueCrumb(ServletRequest request, String salt) {
         if (request instanceof HttpServletRequest) {
             if (md != null) {
                 HttpServletRequest req = (HttpServletRequest) request;
@@ -79,17 +80,7 @@ public class DefaultCrumbIssuer extends CrumbIssuer {
                 }
 
                 md.update(buffer.toString().getBytes());
-                byte[] crumbBytes = md.digest(salt.getBytes());
-
-                StringBuilder hexString = new StringBuilder();
-                for (int i = 0; i < crumbBytes.length; i++) {
-                    String hex = Integer.toHexString(0xFF & crumbBytes[i]);
-                    if (hex.length() == 1) {
-                        hexString.append('0');
-                    }
-                    hexString.append(hex);
-                }
-                return hexString.toString();
+                return Util.toHexString(md.digest(salt.getBytes()));
             }
         }
         return null;

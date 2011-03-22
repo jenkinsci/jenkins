@@ -6,20 +6,22 @@ We record noteworthy changes in this file, which then become http://jenkins-ci.o
 
 Some tips:
 
-- record your changes between "TRUNK-BEGIN" and "TRUNK-END".
-  (unless you are making changes in the RC branch, in which case it goes
-  to the rc section.
+- Record your changes between "TRUNK-BEGIN" and "TRUNK-END".
+  (except in rare cases when you are making changes in the RC branch,
+   in which case it goes to the rc section)
 
-- there are four CSS classes to denote the kind of changes. "rfe" for enhancement and "bug" for bug fixes,
-  plus 'major' to indicate major RFE/bugfix.
+- There are four CSS classes to denote the kind of changes.
+  "rfe" for enhancement and "bug" for bug fixes,
+  plus "major" to indicate major RFE/bugfix.
 
-- link to bugs in the issue tracker, e-mail thread in the archive, and so on if you can.
+- Link to bugs in the issue tracker, e-mail thread in the archive, and so on if you can.
 
 -->
 <head>
   <meta http-equiv="Content-Type" content="text/html;charset=utf-8">
   <title>Changelog</title>
-  <link rel="alternate" title="Hudson announcements" href="https://hudson.dev.java.net/servlets/ProjectNewsRSS" type="application/rss+xml">
+  <!-- TODO replace with new link:
+   link rel="alternate" title="Hudson announcements" href="https://hudson.dev.java.net/servlets/ProjectNewsRSS" type="application/rss+xml" -->
   <link rel="stylesheet" TYPE="text/css" href="changelog.css">
 <!--[if IE]>
 <style type="text/css">div.rate-offset { bottom: 0.2em !important; left: 5em !important; }</style>
@@ -33,13 +35,13 @@ Some tips:
         <img src="images/bug2.gif" alt="major bug">major bug fix     <img src="images/bug.gif" alt="bug">bug fix
     </span><span style="visibility:hidden">xxxxx</span>
 </div>
-<div align=right>
+<!-- TODO replace with new link: div align=right>
   <a href="https://hudson.dev.java.net/servlets/ProjectNewsRSS"><img src=atom.gif border=0 alt="Atom"> Subscribe to RSS feed</a>
-</div>
+</div -->
 
 <div id="ratings" style="display:none; font-size:120%;
      border:1px solid black; background-color:#eee; padding:0.5em; margin-bottom:1em">
-Help other Hudson users by letting the community know which releases you've used,
+Help other Jenkins users by letting the community know which releases you've used,
 and whether they had any significant issues. <br>
 Legend: <br>
  <img src="http://ci.jenkins-ci.org/images/16x16/health-80plus.gif" width="16" height="16"
@@ -58,6 +60,147 @@ Upcoming changes</a>
 <!-- Record your changes in the trunk here. -->
 <div id="trunk" style="display:none"><!--=TRUNK-BEGIN=-->
 <ul class=image>
+  <li class=>
+</ul>
+</div><!--=TRUNK-END=-->
+
+<!-- these changes are controlled by the release process. DO NOT MODIFY -->
+<div id="rc" style="display:none;"><!--=BEGIN=-->
+<h3><a name=v1.404>What's new in 1.404</a> <!--=DATE=--></h3>
+<ul class=image>
+  <li class=bug>
+    Regression in jenkins .401 maven plugin - deploy to repository post-task
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-9084">issue 9084</a>)
+  <li class=bug>
+    Fixed a bug in persisting user configuration that causes NPE in some plugins
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-9062">issue 9062</a>)
+  <li class=bug>
+    Replacement of some maven properties is not working
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-8573">issue 8573</a>)
+  <li class=bug>
+    Fixed JDK1.6 dependency that has crept into the core in 1.400
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-8914">issue 8914</a>)
+  <li class=bug>
+    When both "block build when upstream/downstream is building" are checked, the upstream block check wasn't taking effect.
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-8968">issue 8968</a>)
+  <li class=bug>
+    A project aggregating tests without any tests itself should now link properly
+    to latest aggregated results, rather than broken link to non-existent test
+    results.
+  <li class=bug>
+    Initial position of the "build time" timeline was off by one day
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-8865">issue 8865</a>)
+  <li class=bug>
+    Build list tables had "Date" as column label, but actual content of the column was "Time Since".
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-9102">issue 9102</a>)
+  <li class=bug>
+    PAM authentication fails to restore group membership information on "remember me" tokens.
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-9094">issue 9094</a>)
+  <li class=bug>
+    Upstream culprits did include culprits of an old build.
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-8567">issue 8567</a>)
+  <li class=bug>
+    Shell Task on Windows Slave Uses Incorrect /bin/sh.
+    <a href="http://issues.jenkins-ci.org/browse/JENKINS-8449">issue 8449</a>)
+  <li class=bug>
+    NPE during run - fingerprint cleanup thread.
+    <a href="http://issues.jenkins-ci.org/browse/JENKINS-6128">issue 6128</a>)
+  <li class=bug>
+    Failed to instantiate class hudson.slaves.DumbSlave.
+    <a href="http://issues.jenkins-ci.org/browse/JENKINS-7174">issue 7174</a>)
+  <li class=rfe>
+    Added the <tt>--mimeTypes</tt> command line option to define additional MIME type mappings.
+  <li class=rfe>
+    Added a new axis type to the matrix project that lets you use boolean expressions
+    (<a href="https://github.com/jenkinsci/jenkins/pull/66">pull request #66</a>)
+  <li class=rfe>
+    Improved the error diagnostics when a remote method call fails to deserialize.
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-9050">issue 9050</a>)
+  <li class=rfe>
+    Added "Manage Jenkins" link to the left side panel.
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-7743">issue 7743</a>)
+  <li class=rfe>
+    LDAP group names are now available as-is for the use in authorization. No upper casing / no 'ROLE_' prefix.
+  <li class=rfe>
+    Added a new extension point to contribute build variables.
+</ul>
+</div><!--=END=-->
+<h3><a name=v1.403>What's new in 1.403</a> (2011/03/20)</h3>
+<ul class=image>
+  <li class='major bug'>
+    Fixed a race condition in the remote data transfer that results in silent file copy failures.
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-7871">issue 7871</a>)
+  <li class=bug>
+   Maven Plugin : Successful build ends with NPE 
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-8436">issue 8436</a>)
+  <li class=bug>
+    Fixed a deadlock when upstream and downstream jobs are blocked on each other
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-8929">issue 8929</a>)
+  <li class=bug>
+    Email fails when sending to multiple recipients if _any_ of them are in error
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-9006">issue 9006</a>)
+  <li class=bug>
+    Ant properties with Windows %VAR% type variables did not expand since 1.370.
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-7442">issue 7442</a>)
+  <li class=bug>
+    Fixed a concurrent data access corruption in crumb generation.
+  <li class=rfe>
+    Allow maven builds to (opionally) make use of the token-macro-plugin.
+  <li class=rfe>
+    Proactively watch out for incomplete extensions to avoid cryptic NPE.
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-8866">issue 8866</a>)
+  <li class=rfe>
+    Added more event callbacks on <tt>ComputerListener</tt>
+    (<a href="http://jenkins.361315.n4.nabble.com/Hooking-into-failed-slave-launches-td3339646.html">thread</a>)
+  <li class=rfe>
+    Improved the auto-completion for creating a job by copying.
+  <li class=rfe>
+    Improved the performance of the configuration page rendering by lazy-loading fragments.
+  <li class=rfe>
+    Introduced a behind-the-scene mechanism to lazy-load portions of HTML pages.
+  <li class=rfe>
+    Introduced a behind-the-scene mechanism to simplify server/client communication through JavaScript proxies.
+  <li class=rfe>
+    Added an option to aggregated test results to include failed builds as well as passing and unstable builds.
+  <li class=rfe>
+    Added autocompletion to "Build after other projects" textbox, with support for "autoCompleteField" on textboxes without a true field.
+  <li class=rfe>
+      Include OS type and version of slave in the system information page.
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-8996">issue 8996</a>)
+</ul>
+<h3><a name=v1.402>What's new in 1.402</a> (2011/03/20)</h3>
+<ul class=image>
+  <li class=bug>
+    Botched release. It doesn't exist.
+</ul>
+<h3><a name=v1.401>What's new in 1.401</a> (2011/03/13)</h3>
+<ul class=image>
+  <li class=bug>
+    Fix for JENKINS-8711 breaks deployments with credentials
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-8939">issue 8939</a>)
+  <li class=bug>
+    Environment variable not available for Maven build/POM parsing.
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-8865">issue 8865</a>)
+  <li class=bug>
+    Fixed a dead lock in concurrent builds of the same Maven projects.
+      (<a href="http://issues.jenkins-ci.org/browse/JENKINS-4220">issue 4220</a>)
+  <li class=bug>
+    Plugin Manager incorrectly displays "Changes will take effect when you restart Jenkins".
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-8917">issue 8917</a>)
+  <li class=rfe>
+    Added Manage Jenkins link in sidepanel of Plugin Manager and Update Center.
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-8780">issue 8780</a>)
+  <li class=rfe>
+    Thread dump now reports all the threads from all the slaves, not just the master.
+  <li class=rfe>
+    Made the extension point implementation discovery logic customizable by a plugin
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-8897">issue 8897</a>)
+  <li class=rfe>
+    Defined a mechanism to replace some of the key UI text.
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-8579">issue 8579</a>)
+</ul>
+<h3><a name=v1.400>What's new in 1.400</a> (2011/03/06)</h3>
+<ul class=image>
   <li class=bug>
     NPE during in parsing POMs for Multi Module Build
     (<a href="http://issues.jenkins-ci.org/browse/JENKINS-8525">issue 8525</a>)
@@ -69,12 +212,14 @@ Upcoming changes</a>
     (<a href="http://issues.jenkins-ci.org/browse/JENKINS-8892">issue 8892</a>)    
   <li class=rfe>
     Exposing more key variables to the Groovy CLI command.
+  <li class=rfe>
+    Allow classworlds.conf to be externally configured for M3 builds
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-8905">issue 8905</a>)    
+  <li class=bug>
+    Configure the environment for Maven job type builds
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-8092">issue 8902</a>)
 </ul>
-</div><!--=TRUNK-END=-->
-
-<!-- these changes are controlled by the release process. DO NOT MODIFY -->
-<div id="rc" style="display:none;"><!--=BEGIN=-->
-<h3><a name=v1.399>What's new in 1.399</a> <!--=DATE=--></h3>
+<h3><a name=v1.399>What's new in 1.399</a> (2011/02/27)</h3>
 <ul class=image>
   <li class='major bug'>
     On IBM JDKs, Jenkins incorrectly ended up closing stdout to read from forked processes.
@@ -114,7 +259,6 @@ Upcoming changes</a>
     Improved the process forking abstractions so that plugins can more easily read from child processes.
     (<a href="http://issues.jenkins-ci.org/browse/JENKINS-7809">issue 7809</a>)
 </ul>
-</div><!--=END=-->
 <h3><a name=v1.398>What's new in 1.398</a> (2011/02/20)</h3>
 <ul class=image>
   <li class=bug>

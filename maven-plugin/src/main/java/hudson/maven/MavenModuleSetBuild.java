@@ -35,6 +35,7 @@ import hudson.Util;
 import hudson.maven.MavenBuild.ProxyImpl2;
 import hudson.maven.reporters.MavenFingerprinter;
 import hudson.maven.reporters.MavenMailer;
+import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
 import hudson.model.Action;
 import hudson.model.Build;
@@ -60,6 +61,7 @@ import hudson.tasks.Maven.MavenInstallation;
 import hudson.util.ArgumentListBuilder;
 import hudson.util.IOUtils;
 import hudson.util.MaskingClassLoader;
+import hudson.util.ReflectionUtils;
 import hudson.util.StreamTaskListener;
 
 import java.io.File;
@@ -67,6 +69,7 @@ import java.io.IOException;
 import java.io.InterruptedIOException;
 import java.io.PrintStream;
 import java.io.Serializable;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -125,12 +128,20 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
 
     private String mavenVersionUsed;
 
+    private transient Object notifyModuleBuildLock = new Object();
+
     public MavenModuleSetBuild(MavenModuleSet job) throws IOException {
         super(job);
     }
 
     public MavenModuleSetBuild(MavenModuleSet project, File buildDir) throws IOException {
         super(project, buildDir);
+    }
+
+    @Override
+    protected void onLoad() {
+        super.onLoad();
+        notifyModuleBuildLock = new Object();
     }
 
     /**
@@ -144,9 +155,24 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
     @Override
     public EnvVars getEnvironment(TaskListener log) throws IOException, InterruptedException {
         EnvVars envs = super.getEnvironment(log);
-        String opts = project.getMavenOpts();
+        String opts = getMavenOpts(log);
+
         if(opts!=null)
             envs.put("MAVEN_OPTS", opts);
+        // We need to add M2_HOME and the mvn binary to the PATH so if Maven
+        // needs to run Maven it will pick the correct one.
+        // This can happen if maven calls ANT which itself calls Maven
+        // or if Maven calls itself e.g. maven-release-plugin
+        MavenInstallation mvn = project.getMaven();
+        if (mvn == null)
+            throw new AbortException(
+                    "A Maven installation needs to be available for this project to be built.\n"
+                    + "Either your server has no Maven installations defined, or the requested Maven version does not exist.");
+
+        mvn = mvn.forEnvironment(envs).forNode(
+                Computer.currentComputer().getNode(), log);
+        envs.put("M2_HOME", mvn.getHome());
+        envs.put("PATH+MAVEN", mvn.getHome() + "/bin");
         return envs;
     }
 
@@ -310,14 +336,24 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
     }
 
     private static String normalizePath(String relPath) {
-        // JENKINS-8525 FilenameUtils.normalize for ../foo returns null
-        if (StringUtils.isEmpty(relPath) || StringUtils.startsWith( relPath, "../" )) {
-            LOGGER.config("No need to normalize " + (StringUtils.isEmpty(relPath) ? "an empty path" : relPath));
+        relPath = StringUtils.trimToEmpty( relPath );
+        if (StringUtils.isEmpty( relPath )) {
+            LOGGER.config("No need to normalize an empty path.");
         } else {
-            String tmp = FilenameUtils.normalize( relPath );
-            LOGGER.config("Normalized path " + relPath + " to "+tmp);
-            relPath = tmp;
+            if(FilenameUtils.indexOfLastSeparator( relPath ) == -1) {
+                LOGGER.config("No need to normalize "+relPath);
+            } else {
+                String tmp = FilenameUtils.normalize( relPath );
+                if(tmp == null) {
+                    LOGGER.config("Path " + relPath + " can not be normalized (parent dir is unknown). Keeping as is.");
+                } else {
+                    LOGGER.config("Normalized path " + relPath + " to "+tmp);
+                    relPath = tmp;
+                }
+                relPath = FilenameUtils.separatorsToUnix( relPath );
+            }
         }
+        LOGGER.fine("Returning path " + relPath);
         return relPath;
     }
 
@@ -442,7 +478,9 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
 
             // actions need to be replaced atomically especially
             // given that two builds might complete simultaneously.
-            synchronized(this) {
+            // use a separate lock object since this synchronized block calls into plugins,
+            // which in turn can access other MavenModuleSetBuild instances, which will result in a dead lock.
+            synchronized(notifyModuleBuildLock) {
                 boolean modified = false;
 
                 List<Action> actions = getActions();
@@ -483,6 +521,28 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
         } catch (InterruptedException e) {
             LOGGER.log(Level.WARNING,"Failed to update "+this,e);
         }
+    }
+
+    public String getMavenOpts(TaskListener listener) {
+        String opts = project.getMavenOpts();
+        if (opts == null ) return null;
+        try {
+            Class<?> clazz = Class.forName( "org.jenkinsci.plugins.tokenmacro.TokenMacro" );
+            Method expandMethod =
+                ReflectionUtils.findMethod(clazz, "expand", new Class[]{ AbstractBuild.class, TaskListener.class, String.class} );
+            opts = (String) expandMethod.invoke( null, this, listener, opts );
+            //opts = TokenMacro.expand(this, listener, opts);
+        //} catch (MacroEvaluationException e) {
+        //    listener.error( "Ignore MacroEvaluationException " + e.getMessage() );            
+        }
+        catch(Exception tokenException) {
+            listener.error("Ignore Problem expanding maven opts macros " + tokenException.getMessage());
+        }
+        catch(LinkageError linkageError) {
+            // Token plugin not present. Ignore, this is OK.
+        }
+
+        return opts;
     }
 
     /**
@@ -590,14 +650,14 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
                             LOGGER.info( "using maven 3 " + mavenVersion );
                             process =
                                 MavenBuild.mavenProcessCache.get( launcher.getChannel(), slistener,
-                                                                  new Maven3ProcessFactory( project, launcher, envVars,
+                                                                  new Maven3ProcessFactory( project, launcher, envVars, getMavenOpts(listener),
                                                                                             pom.getParent() ) );
                         }
                         else
                         {
                             process =
                                 MavenBuild.mavenProcessCache.get( launcher.getChannel(), slistener,
-                                                                  new MavenProcessFactory( project, launcher, envVars,
+                                                                  new MavenProcessFactory( project, launcher, envVars,getMavenOpts(listener),
                                                                                            pom.getParent() ) );
                         }
                         ArgumentListBuilder margs = new ArgumentListBuilder().add("-B").add("-f", pom.getRemote());
@@ -711,7 +771,7 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
 
             List<PomInfo> poms;
             try {
-                poms = getModuleRoot().act(new PomParser(listener, mvn, project, mavenVersion));
+                poms = getModuleRoot().act(new PomParser(listener, mvn, project, mavenVersion, envVars));
             } catch (IOException e) {
                 if (e.getCause() instanceof AbortException)
                     throw (AbortException) e.getCause();
@@ -1032,7 +1092,7 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
         
         String rootPOMRelPrefix;
         
-        public PomParser(BuildListener listener, MavenInstallation mavenHome, MavenModuleSet project,String mavenVersion) {
+        public PomParser(BuildListener listener, MavenInstallation mavenHome, MavenModuleSet project,String mavenVersion,EnvVars envVars) {
             // project cannot be shipped to the remote JVM, so all the relevant properties need to be captured now.
             this.listener = listener;
             this.mavenHome = mavenHome;
@@ -1048,6 +1108,14 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
                     }
                 }
             }
+            if (envVars != null && !envVars.isEmpty()) {
+                for (Entry<String,String> entry : envVars.entrySet()) {
+                    if (entry.getKey() != null && entry.getValue() != null) {
+                        this.properties.put( "env." + entry.getKey(), entry.getValue() );
+                    }
+                }
+            }
+            
             this.nonRecursive = project.isNonRecursive();
             this.workspaceProper = project.getLastBuild().getWorkspace().getRemote();
             if (project.usesPrivateRepository()) {
@@ -1055,6 +1123,8 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
             } else {
                 this.privateRepository = null;
             }
+            // TODO maybe in goals with -s,--settings
+            // or -Dmaven.repo.local
             this.alternateSettings = project.getAlternateSettings();
             this.mavenVersion = mavenVersion;
             this.resolveDependencies = project.isResolveDependencies();
@@ -1295,7 +1365,7 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
      * Extra verbose debug switch.
      */
     public static boolean debug = Boolean.getBoolean( "hudson.maven.debug" );
-    
+
     @Override
     public MavenModuleSet getParent() {// don't know why, but javac wants this
         return super.getParent();

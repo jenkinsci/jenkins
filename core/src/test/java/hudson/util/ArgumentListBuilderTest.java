@@ -119,13 +119,22 @@ public class ArgumentListBuilderTest extends Assert {
                 "-Dfoo7=foo|bar\"baz", // add quotes and "" for "
                 "-Dfoo8=% %QED% %comspec% %-%(%.%", // add quotes, and extra quotes for %Q and %c
                 "-Dfoo9=%'''%%@%"); // no quotes as none of the % are followed by a letter
+        // By default, does not escape %VAR%
+        assertArrayEquals(new String[] { "cmd.exe", "/C",
+                "\"ant.bat -Dfoo1=abc \"-Dfoo2=foo bar\""
+                + " \"-Dfoo3=/u*r\" \"-Dfoo4=/us?\" \"-Dfoo10=bar,baz\" \"-Dfoo5=foo;bar^baz\""
+                + " \"-Dfoo6=<xml>&here;</xml>\" \"-Dfoo7=foo|bar\"\"baz\""
+                + " \"-Dfoo8=% %QED% %comspec% %-%(%.%\""
+                + " -Dfoo9=%'''%%@% && exit %%ERRORLEVEL%%\"" },
+                builder.toWindowsCommand().toCommandArray());
+        // Pass flag to escape %VAR%
         assertArrayEquals(new String[] { "cmd.exe", "/C",
                 "\"ant.bat -Dfoo1=abc \"-Dfoo2=foo bar\""
                 + " \"-Dfoo3=/u*r\" \"-Dfoo4=/us?\" \"-Dfoo10=bar,baz\" \"-Dfoo5=foo;bar^baz\""
                 + " \"-Dfoo6=<xml>&here;</xml>\" \"-Dfoo7=foo|bar\"\"baz\""
                 + " \"-Dfoo8=% %\"Q\"ED% %\"c\"omspec% %-%(%.%\""
                 + " -Dfoo9=%'''%%@% && exit %%ERRORLEVEL%%\"" },
-                builder.toWindowsCommand().toCommandArray());
+                builder.toWindowsCommand(true).toCommandArray());
     }
 
     @Test

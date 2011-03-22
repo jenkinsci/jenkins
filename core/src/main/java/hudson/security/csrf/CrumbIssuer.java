@@ -7,7 +7,10 @@ package hudson.security.csrf;
 
 import javax.servlet.ServletRequest;
 
+import hudson.init.Initializer;
 import org.kohsuke.stapler.Stapler;
+import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.WebApp;
 import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.export.ExportedBean;
 
@@ -151,5 +154,30 @@ public abstract class CrumbIssuer implements Describable<CrumbIssuer>, Extension
 
     public Api getApi() {
         return new Api(this);
+    }
+
+    /**
+     * Sets up Stapler to use our crumb issuer.
+     */
+    @Initializer
+    public static void initStaplerCrumbIssuer() {
+        WebApp.get(Hudson.getInstance().servletContext).setCrumbIssuer(new org.kohsuke.stapler.CrumbIssuer() {
+            @Override
+            public String issueCrumb(StaplerRequest request) {
+                CrumbIssuer ci = Hudson.getInstance().getCrumbIssuer();
+                return ci!=null ? ci.getCrumb(request) : DEFAULT.issueCrumb(request);
+            }
+
+            @Override
+            public void validateCrumb(StaplerRequest request, String submittedCrumb) {
+                CrumbIssuer ci = Hudson.getInstance().getCrumbIssuer();
+                if (ci==null) {
+                    DEFAULT.validateCrumb(request,submittedCrumb);
+                } else {
+                    if (!ci.validateCrumb(request, ci.getDescriptor().getCrumbSalt(), submittedCrumb))
+                        throw new SecurityException("Crumb didn't match");
+                }
+            }
+        });
     }
 }

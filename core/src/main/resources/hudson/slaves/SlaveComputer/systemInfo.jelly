@@ -33,6 +33,7 @@ THE SOFTWARE.
 
     <l:main-panel>
       <l:isAdmin>
+        <h1>${it.oSDescription} slave, version ${it.slaveVersion}</h1>
         <h1>${%System Properties}</h1>
         <t:propertyTable items="${it.systemProperties}" />
         <h1>${%Environment Variables}</h1>

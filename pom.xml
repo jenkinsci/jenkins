@@ -27,12 +27,12 @@ THE SOFTWARE.
   <parent>
     <groupId>org.jenkins-ci</groupId>
     <artifactId>jenkins</artifactId>
-    <version>1.15</version>
+    <version>1.17</version>
   </parent>
   
   <groupId>org.jenkins-ci.main</groupId>
   <artifactId>pom</artifactId>
-  <version>1.400-SNAPSHOT</version>
+  <version>1.405-SNAPSHOT</version>
   <packaging>pom</packaging>
   
   <name>Jenkins main module</name>
@@ -43,10 +43,6 @@ THE SOFTWARE.
     <module>core</module>
     <module>maven-plugin</module>
     <module>ui-samples-plugin</module>
-    <module>maven-agent</module>
-    <module>maven-interceptor</module>
-    <module>maven3-agent</module>
-    <module>maven3-interceptor</module>
     <module>war</module>
     <module>test</module>
     <module>cli</module>
@@ -113,7 +109,7 @@ THE SOFTWARE.
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-surefire-plugin</artifactId>
-          <version>2.7.2</version>
+          <version>2.8</version>
           <configuration>
             <systemPropertyVariables>
               <java.io.tmpdir>${project.build.directory}</java.io.tmpdir>
@@ -208,7 +204,7 @@ THE SOFTWARE.
 
       <plugin>
         <artifactId>maven-compiler-plugin</artifactId>
-        <version>2.3.1</version>
+        <version>2.3.2</version>
         <configuration><!-- we specify this in the parent POM, so this is redundant, but otherwise IntelliJ is unhappy -->
           <source>1.5</source>
           <target>1.5</target>
@@ -286,84 +282,7 @@ THE SOFTWARE.
   
   <dependencyManagement>
     <dependencies>
-      <dependency>
-        <groupId>org.apache.maven</groupId>
-        <artifactId>maven-core</artifactId>
-        <version>${mavenVersion}</version>
-      </dependency>    
-      <dependency>
-        <groupId>org.apache.maven</groupId>
-        <artifactId>maven-compat</artifactId>
-        <version>${mavenVersion}</version>
-      </dependency>      
-      <dependency>
-        <groupId>org.apache.maven</groupId>
-        <artifactId>maven-aether-provider</artifactId>
-        <version>${mavenVersion}</version>
-      </dependency>      
-      <dependency>
-        <groupId>org.apache.maven</groupId>
-        <artifactId>maven-embedder</artifactId>
-        <version>${mavenVersion}</version>
-      </dependency>   
-      <dependency>
-        <groupId>org.sonatype.aether</groupId>
-        <artifactId>aether-api</artifactId>
-        <version>${aetherVersion}</version>
-      </dependency>
-      <dependency>
-        <groupId>org.sonatype.aether</groupId>
-        <artifactId>aether-impl</artifactId>
-        <version>${aetherVersion}</version>
-      </dependency>
-      <dependency>
-        <groupId>org.sonatype.aether</groupId>
-        <artifactId>aether-spi</artifactId>
-        <version>${aetherVersion}</version>
-      </dependency>
-      <dependency>
-        <groupId>org.sonatype.aether</groupId>
-        <artifactId>aether-util</artifactId>
-        <version>${aetherVersion}</version>
-      </dependency>                                   
-      <dependency>
-        <groupId>org.sonatype.aether</groupId>
-        <artifactId>aether-connector-wagon</artifactId>
-        <version>${aetherVersion}</version>
-      </dependency>      
-      <dependency>
-        <groupId>org.apache.maven.wagon</groupId>
-        <artifactId>wagon-http-lightweight</artifactId>
-        <version>${wagonVersion}</version>
-      </dependency>
-      <dependency>
-        <groupId>org.apache.maven.wagon</groupId>
-        <artifactId>wagon-file</artifactId>
-        <version>${wagonVersion}</version>
-      </dependency>    
-  
-      <dependency>
-        <groupId>org.apache.maven.wagon</groupId>
-        <artifactId>wagon-provider-api</artifactId>
-        <version>${wagonVersion}</version>
-      </dependency>      
-      <dependency>
-        <groupId>org.sonatype.sisu</groupId>
-        <artifactId>sisu-inject-plexus</artifactId>
-        <version>${sisuInjectVersion}</version>
-      </dependency>  
       
-      <dependency>
-        <groupId>org.sonatype.sisu</groupId>
-        <artifactId>sisu-inject-bean</artifactId>
-        <version>${sisuInjectVersion}</version>
-      </dependency>      
-      
-      <dependency>
-        <groupId>org.codehaus.plexus</groupId>
-        <artifactId>plexus-classworlds</artifactId>
-        <version>2.3</version>
-      </dependency>
       <dependency>
         <groupId>org.apache.ant</groupId>
         <artifactId>ant</artifactId>
@@ -385,11 +304,6 @@ THE SOFTWARE.
   </dependencyManagement>
 
   <properties>
-    <mavenVersion>3.0.2</mavenVersion>
-    <maven.version>${mavenVersion}</maven.version>
-    <aetherVersion>1.9</aetherVersion>
-    <sisuInjectVersion>1.4.3.1</sisuInjectVersion>
-    <wagonVersion>1.0-beta-7</wagonVersion>
     <!-- *.html files are in UTF-8, and *.properties are in iso-8859-1, so this configuration is acturally incorrect,
     but this suppresses a warning from Maven, and as long as we don't do filtering we should be OK. -->
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>

@@ -1,11 +1,11 @@
 ﻿<div>
   ビルドシステムとしてMavenを使用するプロジェクト向けです。
-  Hudsonは、与えられたゴールとオプションとともにMavenを起動します。
-  Mavenが0でない終了コードを返すと、Hudsonはビルドが失敗したと判断します。
+  Jenkinsは、与えられたゴールとオプションとともにMavenを起動します。
+  Mavenが0でない終了コードを返すと、Jenkinsはビルドが失敗したと判断します。
   Mavenのあるバージョンは、終了コードを適切に返さないバグがあります。
 
   <p>
-  Hudsonは、<a href="../../env-vars.html" target="_new">
+  Jenkinsは、<a href="../../env-vars.html" target="_new">
   利用可能な環境変数</a> をMavenに渡します。Mavenでは"${env.VARIABLENAME}"として参照できます。
 
   <p>

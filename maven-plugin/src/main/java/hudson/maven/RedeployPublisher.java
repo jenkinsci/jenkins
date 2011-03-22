@@ -1,7 +1,7 @@
 /*
  * The MIT License
  * 
- * Copyright (c) 2004-2010, Sun Microsystems, Inc., Kohsuke Kawaguchi, id:cactusman, Seiji Sogabe
+ * Copyright (c) 2004-2010, Sun Microsystems, Inc., Kohsuke Kawaguchi, id:cactusman, Seiji Sogabe, Olivier Lamy
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,6 +24,7 @@
 package hudson.maven;
 
 import hudson.Extension;
+import hudson.FilePath;
 import hudson.Launcher;
 import hudson.Util;
 import hudson.maven.reporters.MavenAbstractArtifactRecord;
@@ -31,25 +32,28 @@ import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
 import hudson.model.BuildListener;
 import hudson.model.Hudson;
+import hudson.model.Node;
 import hudson.model.Result;
 import hudson.model.TaskListener;
+import hudson.remoting.Callable;
 import hudson.tasks.BuildStepDescriptor;
 import hudson.tasks.BuildStepMonitor;
+import hudson.tasks.Maven.MavenInstallation;
 import hudson.tasks.Publisher;
 import hudson.tasks.Recorder;
-import hudson.tasks.Maven.MavenInstallation;
-import hudson.tasks.Maven.ProjectWithMaven;
 import hudson.util.FormValidation;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
-import java.util.Properties;
 import java.util.Map.Entry;
+import java.util.Properties;
 
 import net.sf.json.JSONObject;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.deployer.ArtifactDeploymentException;
 import org.apache.maven.artifact.metadata.ArtifactMetadata;
@@ -121,6 +125,7 @@ public class RedeployPublisher extends Recorder {
         listener.getLogger().println("Deploying artifacts to "+url);
         try {
             
+            //MavenEmbedder embedder = MavenUtil.createEmbedder(listener,build);
             MavenEmbedder embedder = createEmbedder(listener,build);
             ArtifactRepositoryLayout layout =
                 (ArtifactRepositoryLayout) embedder.lookup( ArtifactRepositoryLayout.ROLE,"default");
@@ -159,22 +164,70 @@ public class RedeployPublisher extends Recorder {
         Properties systemProperties = null;
         String privateRepository = null;
         
-        AbstractProject project = build.getProject();
-        
-        if (project instanceof ProjectWithMaven) {
-            m = ((ProjectWithMaven) project).inferMavenInstallation().forNode(Hudson.getInstance(),listener);
+        File tmpSettings = File.createTempFile( "jenkins", "temp-settings.xml" );
+        try {
+            AbstractProject project = build.getProject();
+            
+            // don't care here as it's executed in the master
+            //if (project instanceof ProjectWithMaven) {
+            //    m = ((ProjectWithMaven) project).inferMavenInstallation().forNode(Hudson.getInstance(),listener);
+            //}
+            if (project instanceof MavenModuleSet) {
+                profiles = ((MavenModuleSet) project).getProfiles();
+                systemProperties = ((MavenModuleSet) project).getMavenProperties();
+                
+                // olamy see  
+                // we have to take about the settings use for the project
+                // order tru configuration 
+                // TODO maybe in goals with -s,--settings last wins but not done in during pom parsing
+                // or -Dmaven.repo.local
+                // if not we must get ~/.m2/settings.xml then $M2_HOME/conf/settings.xml
+                
+                // TODO check if the remoteSettings has a localRepository configured and disabled it
+                
+                String altSettingsPath = ((MavenModuleSet) project).getAlternateSettings();
+                
+                Node buildNode =  Hudson.getInstance().getNode( build.getBuiltOnStr() );
+                
+                if (StringUtils.isBlank( altSettingsPath ) ) {
+                    // get userHome from the node where job has been executed
+                    String remoteUserHome = build.getWorkspace().act( new GetUserHome() );
+                    altSettingsPath = remoteUserHome + "/.m2/settings.xml";
+                }
+                
+                // we copy this file in the master in a  temporary file 
+                FilePath filePath = new FilePath( tmpSettings );
+                FilePath remoteSettings = build.getWorkspace().child( altSettingsPath );
+                if (!remoteSettings.exists()) {
+                    // JENKINS-9084 we finally use $M2_HOME/conf/settings.xml as maven do
+                    
+                    String mavenHome = 
+                        ((MavenModuleSet) project).getMaven().forNode(buildNode, listener ).getHome();
+                    String settingsPath = mavenHome + "/conf/settings.xml";
+                    remoteSettings = build.getWorkspace().child( settingsPath);
+                }
+                listener.getLogger().println( "Maven RedeployPublished use remote " + (buildNode != null ? buildNode.getNodeName() : "local" )  
+                                              + " maven settings from : " + remoteSettings.getRemote() );
+                remoteSettings.copyTo( filePath );
+                settingsLoc = tmpSettings;
+                
+            }
+            
+            return MavenUtil.createEmbedder(new MavenEmbedderRequest(listener,
+                                  m!=null?m.getHomeDir():null,
+                                  profiles,
+                                  systemProperties,
+                                  privateRepository,
+                                  settingsLoc ));
+        } finally {
+            tmpSettings.delete();
         }
-        if (project instanceof MavenModuleSet) {
-                        profiles = ((MavenModuleSet) project).getProfiles();
-            systemProperties = ((MavenModuleSet) project).getMavenProperties();
+    }
+    
+    private static final class GetUserHome implements Callable<String,IOException> {
+        public String call() throws IOException {
+            return System.getProperty("user.home");
         }
-        
-        return MavenUtil.createEmbedder(new MavenEmbedderRequest(listener,
-                              m!=null?m.getHomeDir():null,
-                              profiles,
-                              systemProperties,
-                              privateRepository,
-                              settingsLoc ));
     }
     
     
@@ -374,6 +427,14 @@ public class RedeployPublisher extends Recorder {
         public Proxy getProxy()
         {
             return artifactRepository.getProxy();
+        }
+        public List<ArtifactRepository> getMirroredRepositories()
+        {
+            return Collections.emptyList();
+        }
+        public void setMirroredRepositories( List<ArtifactRepository> arg0 )
+        {
+            // noop            
         }
     }    
 }

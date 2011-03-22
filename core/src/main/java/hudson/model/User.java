@@ -455,7 +455,8 @@ public class User extends AbstractModelObject implements AccessControlled, Savea
                 p.setUser(this);
             }
 
-            props.add(p);
+            if (p!=null)
+                props.add(p);
         }
         this.properties = props;
 

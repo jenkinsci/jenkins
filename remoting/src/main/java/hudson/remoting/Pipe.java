@@ -23,7 +23,6 @@
  */
 package hudson.remoting;
 
-import java.io.FilterInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.ObjectInputStream;
@@ -70,6 +69,22 @@ import java.util.logging.Logger;
  *
  * OutputStream out = p.getOut();
  * ... write to out ...
+ * </pre>
+ *
+ * Similarly, for remote to local pipe,
+ *
+ * <pre>
+ * final Pipe p = Pipe.createRemoteToLocal();
+ *
+ * channel.callAsync(new Callable() {
+ *   public Object call() {
+ *     OutputStream out = p.getOut();
+ *     ... write to out ...
+ *   }
+ * });
+ *
+ * InputStream in = p.getIn();
+ * ... read from in ...
  * </pre>
  *
  * <h2>Implementation Note</h2>

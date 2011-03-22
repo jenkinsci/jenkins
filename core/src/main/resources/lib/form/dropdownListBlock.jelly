@@ -38,6 +38,10 @@ THE SOFTWARE.
       provide hint for stapler data binding.
       typically set to ${descriptor.clazz.name} if dropdownList is for a list of descriptors.
     </st:attribute>
+    <st:attribute name="lazy">
+      If specified, the content of the dropdownListBlock will be rendered lazily when it first becomes visible.
+      The attribute value must be the variables to be captured. See the @capture of &lt;renderOnDemand> tag.
+    </st:attribute>
   </st:documentation>
   <j:choose>
     <j:when test="${dropdownListMode=='createSelectField'}">
@@ -50,7 +54,16 @@ THE SOFTWARE.
           <td><input type="hidden" name="stapler-class" value="${attrs.staplerClass}"/></td>
         </j:if>
       </tr>
-      <d:invokeBody />
+      <j:choose>
+        <j:when test="${attrs.lazy!=null and !attrs.selected}">
+          <l:renderOnDemand capture="${attrs.lazy}" tag="tr">
+            <d:invokeBody />
+          </l:renderOnDemand>
+        </j:when>
+        <j:otherwise>
+          <d:invokeBody />
+        </j:otherwise>
+      </j:choose>
       <tr class="dropdownList-end" style="display:none" />
     </j:when>
   </j:choose>

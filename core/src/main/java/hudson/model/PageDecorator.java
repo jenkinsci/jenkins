@@ -62,6 +62,10 @@ import java.util.List;
  * This page is added right before the &lt;/head> tag. Convenient place for additional stylesheet,
  * &lt;meta> tags, etc.
  *
+ * <h4>httpHeaders.jelly</h4>
+ * <p>
+ * This is a generalization of the X-Jenkins header that aids auto-discovery.
+ * This fragment can write additional &lt;st:header name="..." value="..." /> tags that go along with it.
  *
  * @author Kohsuke Kawaguchi
  * @since 1.235

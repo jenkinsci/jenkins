@@ -28,7 +28,7 @@ THE SOFTWARE.
   <parent>
     <groupId>org.jenkins-ci.main</groupId>
     <artifactId>pom</artifactId>
-    <version>1.400-SNAPSHOT</version>
+    <version>1.405-SNAPSHOT</version>
     <relativePath>../pom.xml</relativePath>
   </parent>
 
@@ -198,7 +198,7 @@ THE SOFTWARE.
         -->
         <groupId>org.codehaus.mojo</groupId>
         <artifactId>apt-maven-plugin</artifactId>
-        <version>1.0-alpha-2</version>
+        <version>1.0-alpha-4</version>
         <configuration>
           <force>true</force><!-- disable staleness check -->
           <factory>org.jvnet.hudson.tools.ExtensionPointListerFactory</factory>
@@ -209,9 +209,9 @@ THE SOFTWARE.
         </configuration>
         <dependencies>
           <dependency>
-            <groupId>org.jvnet.hudson.tools</groupId>
+            <groupId>org.jenkins-ci.tools</groupId>
             <artifactId>extension-point-lister</artifactId>
-            <version>1.7</version>
+            <version>1.8</version>
             <exclusions>
                <exclusion>
                  <groupId>com.sun</groupId>
@@ -382,7 +382,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.kohsuke.stapler</groupId>
       <artifactId>stapler-jelly</artifactId>
-      <version>1.155</version>
+      <version>1.159</version>
       <exclusions>
         <exclusion>
           <groupId>commons-jelly</groupId>
@@ -738,9 +738,9 @@ THE SOFTWARE.
       <version>3.2.7</version>
     </dependency>
     <dependency>
-      <groupId>javax.jmdns</groupId>
+      <groupId>org.jenkins-ci</groupId>
       <artifactId>jmdns</artifactId>
-      <version>3.4.0</version>
+      <version>3.4.0-jenkins-1</version>
     </dependency>
     <dependency>
       <groupId>com.sun.winsw</groupId>
@@ -763,7 +763,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.jvnet.libpam4j</groupId>
       <artifactId>libpam4j</artifactId>
-      <version>1.2</version>
+      <version>1.4</version>
     </dependency>
     <dependency>
       <groupId>org.jvnet.libzfs</groupId>

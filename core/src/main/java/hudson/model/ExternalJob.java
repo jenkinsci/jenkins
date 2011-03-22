@@ -25,6 +25,7 @@ package hudson.model;
 
 import hudson.model.RunMap.Constructor;
 import hudson.Extension;
+import hudson.util.AlternativeUiTextProvider;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 
@@ -110,7 +111,7 @@ public class ExternalJob extends ViewJob<ExternalJob,ExternalRun> implements Top
 
     @Override
     public String getPronoun() {
-        return Messages.ExternalJob_Pronoun();
+        return AlternativeUiTextProvider.get(PRONOUN, this, Messages.ExternalJob_Pronoun());
     }
 
     public static final class DescriptorImpl extends TopLevelItemDescriptor {

@@ -24,6 +24,7 @@
 package hudson.matrix;
 
 import hudson.Util;
+import hudson.util.AlternativeUiTextProvider;
 import hudson.util.DescribableList;
 import hudson.model.AbstractBuild;
 import hudson.model.Cause;
@@ -194,13 +195,20 @@ public class MatrixConfiguration extends Project<MatrixConfiguration,MatrixRun> 
     @Override
     public Label getAssignedLabel() {
         // combine all the label axes by &&.
-        String expr = Util.join(combination.values(getParent().getAxes().subList(LabelAxis.class)), "&&");
+    	String expr;
+        String exprSlave = Util.join(combination.values(getParent().getAxes().subList(LabelAxis.class)), "&&");
+        String exprLabel = Util.join(combination.values(getParent().getAxes().subList(LabelExpAxis.class)), "&&");
+        if(!exprSlave.equals("") && !exprLabel.equals("")){
+        	expr = exprSlave + "&&" + exprLabel;
+        } else{
+        	expr = (exprSlave.equals("")) ? exprLabel : exprSlave;
+        }
         return Hudson.getInstance().getLabel(Util.fixEmpty(expr));
     }
 
     @Override
     public String getPronoun() {
-        return Messages.MatrixConfiguration_Pronoun();
+        return AlternativeUiTextProvider.get(PRONOUN, this, Messages.MatrixConfiguration_Pronoun());
     }
 
     @Override

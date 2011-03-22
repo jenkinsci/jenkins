@@ -39,6 +39,7 @@ import org.acegisecurity.AuthenticationManager;
 import org.acegisecurity.GrantedAuthority;
 import org.acegisecurity.AcegiSecurityException;
 import org.acegisecurity.AuthenticationException;
+import org.acegisecurity.GrantedAuthorityImpl;
 import org.acegisecurity.ldap.InitialDirContextFactory;
 import org.acegisecurity.ldap.LdapDataAccessException;
 import org.acegisecurity.ldap.LdapTemplate;
@@ -70,7 +71,9 @@ import java.net.InetAddress;
 import java.net.Socket;
 import java.net.UnknownHostException;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.Hashtable;
+import java.util.Iterator;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -367,29 +370,8 @@ public class LDAPSecurityRealm extends AbstractPasswordBasedSecurityRealm {
         return getSecurityComponents().userDetails.loadUserByUsername(username);
     }
 
-    /**
-     * Lookup a group; given input must match the configured syntax for group names
-     * in WEB-INF/security/LDAPBindSecurityRealm.groovy's authoritiesPopulator entry.
-     * The defaults are a prefix of "ROLE_" and using all uppercase.  This method will
-     * not return any data if the given name lacks the proper prefix and/or case. 
-     */
     @Override
     public GroupDetails loadGroupByGroupname(String groupname) throws UsernameNotFoundException, DataAccessException {
-        // Check proper syntax based on acegi configuration
-        String prefix = "";
-        boolean onlyUpperCase = false;
-        try {
-            AuthoritiesPopulatorImpl api = (AuthoritiesPopulatorImpl)
-              ((LDAPUserDetailsService)getSecurityComponents().userDetails).authoritiesPopulator;
-            prefix = api.rolePrefix;
-            onlyUpperCase = api.convertToUpperCase;
-        } catch (Exception ignore) { }
-        if (onlyUpperCase && !groupname.equals(groupname.toUpperCase()))
-            throw new UsernameNotFoundException(groupname + " should be all uppercase");
-        if (!groupname.startsWith(prefix))
-            throw new UsernameNotFoundException(groupname + " is missing prefix: " + prefix);
-        groupname = groupname.substring(prefix.length());
-
         // TODO: obtain a DN instead so that we can obtain multiple attributes later
         String searchBase = groupSearchBase != null ? groupSearchBase : "";
         final Set<String> groups = (Set<String>)ldapTemplate.searchForSingleAttributeValues(searchBase, GROUP_SEARCH,
@@ -493,13 +475,14 @@ public class LDAPSecurityRealm extends AbstractPasswordBasedSecurityRealm {
      */
     public static final class AuthoritiesPopulatorImpl extends DefaultLdapAuthoritiesPopulator {
         // Make these available (private in parent class and no get methods!)
-        String rolePrefix;
-        boolean convertToUpperCase;
+        String rolePrefix = "ROLE_";
+        boolean convertToUpperCase = true;
+
         public AuthoritiesPopulatorImpl(InitialDirContextFactory initialDirContextFactory, String groupSearchBase) {
             super(initialDirContextFactory, fixNull(groupSearchBase));
-            // These match the defaults in acegi 1.0.5; set again to store in non-private fields:
-            setRolePrefix("ROLE_");
-            setConvertToUpperCase(true);
+
+            super.setRolePrefix("");
+            super.setConvertToUpperCase(false);
         }
 
         @Override
@@ -509,14 +492,40 @@ public class LDAPSecurityRealm extends AbstractPasswordBasedSecurityRealm {
 
         @Override
         public void setRolePrefix(String rolePrefix) {
-            super.setRolePrefix(rolePrefix);
+//            super.setRolePrefix(rolePrefix);
             this.rolePrefix = rolePrefix;
         }
 
         @Override
         public void setConvertToUpperCase(boolean convertToUpperCase) {
-            super.setConvertToUpperCase(convertToUpperCase);
+//            super.setConvertToUpperCase(convertToUpperCase);
             this.convertToUpperCase = convertToUpperCase;
+        }
+
+        /**
+         * Retrieves the group membership in two ways.
+         *
+         * We'd like to retain the original name, but we historically used to do "ROLE_GROUPNAME".
+         * So to remain backward compatible, we make the super class pass the unmodified "groupName",
+         * then do the backward compatible translation here, so that the user gets both "ROLE_GROUPNAME" and "groupName".
+         */
+        @Override
+        public Set getGroupMembershipRoles(String userDn, String username) {
+            Set<GrantedAuthority> names = super.getGroupMembershipRoles(userDn,username);
+
+            Set<GrantedAuthority> r = new HashSet<GrantedAuthority>(names.size()*2);
+            r.addAll(names);
+
+            for (GrantedAuthority ga : names) {
+                String role = ga.getAuthority();
+
+                // backward compatible name mangling
+                if (convertToUpperCase)
+                    role = role.toUpperCase();
+                r.add(new GrantedAuthorityImpl(rolePrefix + role));
+            }
+
+            return r;
         }
     }
 

@@ -56,6 +56,14 @@ public class AutoCompletionCandidates implements HttpResponse {
         return this;
     }
 
+    /**
+     * Exposes the raw value, in case you want to modify {@link List} directly.
+     * @since 1.402
+     */
+    public List<String> getValues() {
+        return values;
+    }
+
     public void generateResponse(StaplerRequest req, StaplerResponse rsp, Object o) throws IOException, ServletException {
         Search.Result r = new Search.Result();
         for (String value : values) {

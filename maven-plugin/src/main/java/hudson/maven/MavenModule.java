@@ -44,6 +44,7 @@ import hudson.model.Saveable;
 import hudson.tasks.LogRotator;
 import hudson.tasks.Publisher;
 import hudson.tasks.Maven.MavenInstallation;
+import hudson.util.AlternativeUiTextProvider;
 import hudson.util.DescribableList;
 import org.apache.maven.project.MavenProject;
 import org.kohsuke.stapler.StaplerRequest;
@@ -314,7 +315,7 @@ public final class MavenModule extends AbstractMavenProject<MavenModule,MavenBui
 
     @Override
     public String getPronoun() {
-        return Messages.MavenModule_Pronoun();
+        return AlternativeUiTextProvider.get(PRONOUN, this, Messages.MavenModule_Pronoun());
     }
 
     @Override
@@ -391,8 +392,9 @@ public final class MavenModule extends AbstractMavenProject<MavenModule,MavenBui
 
         for (MavenModule m : Hudson.getInstance().getAllItems(MavenModule.class)) {
             if(m.isDisabled())  continue;
-            modules.put(m.asDependency(),m);
-            modules.put(m.asDependency().withUnknownVersion(),m);
+            ModuleDependency moduleDependency = m.asDependency();
+            modules.put(moduleDependency,m);
+            modules.put(moduleDependency.withUnknownVersion(),m);
         }
 
         // in case two modules with the same name is defined, modules in the same MavenModuleSet
@@ -400,8 +402,9 @@ public final class MavenModule extends AbstractMavenProject<MavenModule,MavenBui
 
         for (MavenModule m : getParent().getModules()) {
             if(m.isDisabled())  continue;
-            modules.put(m.asDependency(),m);
-            modules.put(m.asDependency().withUnknownVersion(),m);
+            ModuleDependency moduleDependency = m.asDependency();
+            modules.put(moduleDependency,m);
+            modules.put(moduleDependency.withUnknownVersion(),m);
         }
 
         // if the build style is the aggregator build, define dependencies against project,

@@ -23,7 +23,7 @@ THE SOFTWARE.
 -->
 
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
-  <l:layout permission="${app.ADMINISTER}">
+  <l:layout permission="${app.ADMINISTER}" title="${%Users}">
     <st:include page="sidepanel.jelly" />
     <l:main-panel>
       <h1>${%Users}</h1>

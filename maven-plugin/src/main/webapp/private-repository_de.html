@@ -1,5 +1,5 @@
 <div>
-  Normalerweise verwendet Hudson das lokale Maven-Repository so wie es von Maven
+  Normalerweise verwendet Jenkins das lokale Maven-Repository so wie es von Maven
   bestimmt wird &mdash; das exakte Verfahren dafür scheint undokumentiert, aber es ist typischerweise
   <tt>~/.m2/repository</tt> und kann durch &lt;localRepository> in <tt>~/.m2/settings.xml</tt>
   überschrieben werden (mehr dazu in der <a  href="http://maven.apache.org/settings.html">Maven Dokumentation</a>).
@@ -16,7 +16,7 @@
   dasselbe lokale Repository zu verwenden.
   
   <p>
-  Wenn diese Option angewählt ist, startet Hudson Maven mit <tt>$WORKSPACE/.repository</tt>
+  Wenn diese Option angewählt ist, startet Jenkins Maven mit <tt>$WORKSPACE/.repository</tt>
   als lokalem Maven-Repository. Dadurch verwendet jeder Job ein eigenes, isoliertes Maven-Repository.
   Dies löst die oben angesprochenen Probleme auf Kosten eines höheren Speicherplatzbedarfs auf der Festplatte.
   
@@ -25,6 +25,6 @@
   in Betracht: Dadurch vermeiden Sie zu häufige Zugriffe auf entfernte Maven-Repositories.
 
   <p>
-  Möchten Sie diese Option in allen Maven-Jobs aktivieren, die über Hudson ausgeführt
+  Möchten Sie diese Option in allen Maven-Jobs aktivieren, die über Jenkins ausgeführt
   werden, folgen Sie den Anweisungen <a href="http://n4.nabble.com/Hudson-on-2-4-8-16-core-boxes-td371215.html#a371217">hier</a>.
 </div>

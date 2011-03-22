@@ -78,8 +78,8 @@ import java.util.logging.Logger;
 final class MavenProcessFactory extends AbstractMavenProcessFactory implements ProcessCache.Factory {
 
 
-    MavenProcessFactory(MavenModuleSet mms, Launcher launcher, EnvVars envVars, FilePath workDir) {
-        super( mms, launcher, envVars, workDir );
+    MavenProcessFactory(MavenModuleSet mms, Launcher launcher, EnvVars envVars, String mavenOpts, FilePath workDir) {
+        super( mms, launcher, envVars, mavenOpts, workDir );
     }
 
     /**

@@ -70,6 +70,7 @@ import hudson.scm.SCMDescriptor;
 import hudson.util.Secret;
 import hudson.views.MyViewsTabBar;
 import hudson.views.ViewsTabBar;
+import hudson.widgets.RenderOnDemandClosure;
 import org.acegisecurity.providers.anonymous.AnonymousAuthenticationToken;
 import org.apache.commons.jelly.JellyContext;
 import org.apache.commons.jelly.JellyTagException;
@@ -113,6 +114,7 @@ import java.util.ConcurrentModificationException;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.SortedMap;
 import java.util.TreeMap;
@@ -1094,7 +1096,6 @@ public class Functions {
     public static String getActionUrl(String itUrl,Action action) {
         String urlName = action.getUrlName();
         if(urlName==null)   return null;    // to avoid NPE and fail to render the whole page
-
         if(SCHEME.matcher(urlName).matches())
             return urlName; // absolute URL
         if(urlName.startsWith("/"))
@@ -1225,6 +1226,16 @@ public class Functions {
         return new Date();
     }
 
+    public static Locale getCurrentLocale() {
+        Locale locale=null;
+        StaplerRequest req = Stapler.getCurrentRequest();
+        if(req!=null)
+            locale = req.getLocale();
+        if(locale==null)
+            locale = Locale.getDefault();
+        return locale;
+    }
+
     /**
      * Generate a series of &lt;script> tags to include <tt>script.js</tt>
      * from {@link ConsoleAnnotatorFactory}s and {@link ConsoleAnnotationDescriptor}s.
@@ -1303,4 +1314,22 @@ public class Functions {
         return Boolean.getBoolean("hudson.security.ArtifactsPermission");
     }
 
+    public static String createRenderOnDemandProxy(JellyContext context, String attributesToCapture) {
+        return Stapler.getCurrentRequest().createJavaScriptProxy(new RenderOnDemandClosure(context,attributesToCapture));
+    }
+
+    public static String getCurrentDescriptorByNameUrl() {
+        return Descriptor.getCurrentDescriptorByNameUrl();
+    }
+    
+    public static String setCurrentDescriptorByNameUrl(String value) {
+        String o = getCurrentDescriptorByNameUrl();
+        Stapler.getCurrentRequest().setAttribute("currentDescriptorByNameUrl", value);
+
+        return o;
+    }
+
+    public static void restoreCurrentDescriptorByNameUrl(String old) {
+        Stapler.getCurrentRequest().setAttribute("currentDescriptorByNameUrl", old);
+    }
 }

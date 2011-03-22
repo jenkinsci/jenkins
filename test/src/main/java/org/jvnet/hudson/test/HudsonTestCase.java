@@ -1,7 +1,8 @@
 /*
  * The MIT License
  * 
- * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, Erik Ramfelt, Yahoo! Inc., Tom Huybrechts
+ * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, Erik Ramfelt, 
+ * Yahoo! Inc., Tom Huybrechts, Olivier Lamy
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -406,6 +407,8 @@ public abstract class HudsonTestCase extends TestCase implements RootAction {
         context.setMimeTypes(MIME_TYPES);
 
         SocketConnector connector = new SocketConnector();
+        connector.setHeaderBufferSize(12*1024); // use a bigger buffer as Stapler traces can get pretty large on deeply nested URL
+
         server.addConnector(connector);
         server.addUserRealm(configureUserRealm());
         server.start();
@@ -785,6 +788,11 @@ public abstract class HudsonTestCase extends TestCase implements RootAction {
         computerConnectorTester.connector = before;
         submit(createWebClient().goTo("self/computerConnectorTester/configure").getFormByName("config"));
         return (C)computerConnectorTester.connector;
+    }
+
+    protected User configRoundtrip(User u) throws Exception {
+        submit(createWebClient().goTo(u.getUrl()+"/configure").getFormByName("config"));
+        return u;
     }
 
 

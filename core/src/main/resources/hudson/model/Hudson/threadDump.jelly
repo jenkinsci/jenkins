@@ -1,7 +1,7 @@
 <!--
 The MIT License
 
-Copyright (c) 2004-2010, Sun Microsystems, Inc., Kohsuke Kawaguchi, Tom Huybrechts
+Copyright (c) 2004-2010, Sun Microsystems, Inc., Kohsuke Kawaguchi, Tom Huybrechts, CloudBees, Inc.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -31,26 +31,16 @@ THE SOFTWARE.
 
     <l:main-panel>
       <h1>${%Thread Dump}</h1>
-      <j:choose>
-        <j:when test="${h.isMustangOrAbove()}">
-          <!-- use a new Mustang feature to get more detailed dump -->
-          <j:set var="data" value="${h.getThreadInfos()}"/>
-          <j:set var="map" value="${h.sortThreadsAndGetGroupMap(data)}"/>
-          <j:forEach var="t" items="${data}">
-            <h2>${t.threadName}</h2>
-            <pre>${h.dumpThreadInfo(t,map)}</pre>
-          </j:forEach>
-        </j:when>
-        <j:otherwise>
-          <!-- fall back --> 
-          <j:forEach var="e" items="${h.dumpAllThreads().entrySet()}">
-            <h2>${e.key} (${e.key.state})</h2>
-            <j:forEach var="f" items="${e.value}">
-              <div>${f}</div>
-            </j:forEach>
-          </j:forEach>
-        </j:otherwise>
-      </j:choose>
+      <j:forEach var="e" items="${it.getAllThreadDumps().entrySet()}" varStatus="loop">
+        <j:if test="${!loop.first}">
+          <hr style="margin-bottom:6em"/>
+        </j:if>
+        <h1>${e.key}</h1>
+        <j:forEach var="t" items="${e.value.entrySet()}">
+          <h2>${t.key}</h2>
+          <pre>${t.value}</pre>
+        </j:forEach>
+      </j:forEach>
     </l:main-panel>
   </l:layout>
 </j:jelly>

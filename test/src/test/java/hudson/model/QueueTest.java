@@ -26,18 +26,28 @@ package hudson.model;
 import com.gargoylesoftware.htmlunit.html.HtmlFileInput;
 import com.gargoylesoftware.htmlunit.html.HtmlForm;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
+import hudson.matrix.AxisList;
+import hudson.matrix.MatrixBuild;
+import hudson.matrix.MatrixProject;
+import hudson.matrix.MatrixRun;
+import hudson.matrix.TextAxis;
 import hudson.model.Cause.*;
+import hudson.tasks.Shell;
 import hudson.triggers.SCMTrigger.SCMTriggerCause;
 import hudson.triggers.TimerTrigger.TimerTriggerCause;
 import hudson.util.XStream2;
 import hudson.util.OneShotEvent;
 import hudson.Launcher;
+import net.sf.json.JSONObject;
 import org.apache.commons.fileupload.FileUploadException;
 import org.apache.commons.fileupload.disk.DiskFileItemFactory;
 import org.apache.commons.fileupload.servlet.ServletFileUpload;
 import org.apache.commons.io.FileUtils;
+import org.jvnet.hudson.test.Bug;
 import org.jvnet.hudson.test.HudsonTestCase;
+import org.jvnet.hudson.test.SleepBuilder;
 import org.jvnet.hudson.test.TestBuilder;
+import org.kohsuke.stapler.StaplerRequest;
 import org.mortbay.jetty.Server;
 import org.mortbay.jetty.bio.SocketConnector;
 import org.mortbay.jetty.servlet.ServletHandler;
@@ -49,6 +59,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Future;
 
@@ -226,5 +237,23 @@ public class QueueTest extends HudsonTestCase {
                         + "Started by remote host 1.2.3.4 with note: test (2 times) "
                         + "Started by remote host 4.3.2.1 with note: test "
                         + "Started by remote host 1.2.3.4 with note: foo"));
+    }
+
+    @Bug(8790)
+    public void testFlyweightTasks() throws Exception {
+        MatrixProject m = createMatrixProject();
+        m.addProperty(new ParametersDefinitionProperty(
+                new StringParameterDefinition("FOO","value")
+        ));
+        m.getBuildersList().add(new Shell("sleep 3"));
+        m.setAxes(new AxisList(new TextAxis("DoesntMatter", "aaa","bbb")));
+
+        List<Future<MatrixBuild>> r = new ArrayList<Future<MatrixBuild>>();
+
+        for (int i=0; i<3; i++)
+            r.add(m.scheduleBuild2(0,new LegacyCodeCause(),new ParametersAction(new StringParameterValue("FOO","value"+i))));
+
+        for (Future<MatrixBuild> f : r)
+            assertBuildStatusSuccess(f);
     }
 }

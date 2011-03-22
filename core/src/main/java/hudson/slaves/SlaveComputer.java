@@ -191,6 +191,9 @@ public class SlaveComputer extends Computer {
                 try {
                     log.rewind();
                     try {
+                        for (ComputerListener cl : ComputerListener.all())
+                            cl.preLaunch(SlaveComputer.this, taskListener);
+
                         launcher.launch(SlaveComputer.this, taskListener);
                         return null;
                     } catch (AbortException e) {
@@ -205,8 +208,11 @@ public class SlaveComputer extends Computer {
                         throw e;
                     }
                 } finally {
-                    if (channel==null)
+                    if (channel==null) {
                         offlineCause = new OfflineCause.LaunchFailed();
+                        for (ComputerListener cl : ComputerListener.all())
+                            cl.onLaunchFailure(SlaveComputer.this, taskListener);
+                    }
                 }
             }
         });
@@ -506,6 +512,20 @@ public class SlaveComputer extends Computer {
      */
     protected ComputerLauncher grabLauncher(Node node) {
         return ((Slave)node).getLauncher();
+    }
+
+    /**
+     * Get the slave version
+     */
+    public String getSlaveVersion() throws IOException, InterruptedException {
+        return channel.call(new SlaveVersion());
+    }
+
+    /**
+     * Get the OS description.
+     */
+    public String getOSDescription() throws IOException, InterruptedException {
+        return channel.call(new DetectOS()) ? "Unix" : "Windows";
     }
 
     private static final Logger logger = Logger.getLogger(SlaveComputer.class.getName());

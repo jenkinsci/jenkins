@@ -421,6 +421,46 @@ function isInsideRemovable(e) {
     return Element.ancestors(e).find(function(f){return f.hasClassName("to-be-removed");});
 }
 
+/**
+ * Render the template captured by &lt;l:renderOnDemand> at the element 'e' and replace 'e' by the content.
+ *
+ * @param {HTMLElement} e
+ *      The place holder element to be lazy-rendered.
+ * @param {boolean} noBehaviour
+ *      if specified, skip the application of behaviour rule.
+ */
+function renderOnDemand(e,callback,noBehaviour) {
+    if (!e || !Element.hasClassName(e,"render-on-demand")) return;
+    var proxy = eval(e.getAttribute("proxy"));
+    proxy.render(function (t) {
+        var contextTagName = e.parentNode.tagName;
+        var c;
+        if (contextTagName=="TBODY") {
+            c = document.createElement("DIV");
+            c.innerHTML = "<TABLE><TBODY>"+t.responseText+"</TBODY></TABLE>";
+            c = c.firstChild.firstChild;
+        } else {
+            c = document.createElement(contextTagName);
+            c.innerHTML = t.responseText;
+        }
+
+        var elements = [];
+        while (c.firstChild!=null) {
+            var n = c.firstChild;
+            e.parentNode.insertBefore(n,e);
+            if (n.nodeType==1 && !noBehaviour)
+                elements.push(n);
+        }
+        Element.remove(e);
+
+        t.responseText.evalScripts();
+        elements.each(function(n) { Behaviour.applySubtree(n,true); });
+
+        if (callback)   callback(t);
+    });
+}
+
+
 var hudsonRules = {
     "BODY" : function() {
         tooltip = new YAHOO.widget.Tooltip("tt", {context:[], zindex:999});
@@ -448,8 +488,9 @@ var hudsonRules = {
         for(var n=prototypes.firstChild;n!=null;n=n.nextSibling,i++) {
             var name = n.getAttribute("name");
             var tooltip = n.getAttribute("tooltip");
+            var descriptorId = n.getAttribute("descriptorId");
             menu.options[i] = new Option(n.getAttribute("title"),""+i);
-            templates.push({html:n.innerHTML, name:name, tooltip:tooltip});
+            templates.push({html:n.innerHTML, name:name, tooltip:tooltip,descriptorId:descriptorId});
         }
         Element.remove(prototypes);
 
@@ -463,11 +504,13 @@ var hudsonRules = {
             nc.className = "repeated-chunk";
             nc.setAttribute("name",t.name);
             nc.innerHTML = t.html;
-            insertionPoint.parentNode.insertBefore(nc, insertionPoint);
-            if(withDragDrop)    prepareDD(nc);
 
-            hudsonRules['DIV.repeated-chunk'](nc);  // applySubtree doesn't get nc itself
-            Behaviour.applySubtree(nc);
+            renderOnDemand(findElementsBySelector(nc,"TR.config-page")[0],function() {
+                insertionPoint.parentNode.insertBefore(nc, insertionPoint);
+                if(withDragDrop)    prepareDD(nc);
+
+                Behaviour.applySubtree(nc,true);
+            },true);
         });
 
         menuButton.getMenu().renderEvent.subscribe(function(type,args,value) {
@@ -1324,9 +1367,10 @@ function updateDropDownList(sel) {
         var tr = f.start;
         while (true) {
             tr.style.display = (show ? "" : "none");
-            if(show)
+            if(show) {
                 tr.removeAttribute("field-disabled");
-            else    // buildFormData uses this attribute and ignores the contents
+                renderOnDemand(tr);
+            } else    // buildFormData uses this attribute and ignores the contents
                 tr.setAttribute("field-disabled","true");
             if (tr == f.end) break;
             tr = tr.nextSibling;
@@ -1375,8 +1419,7 @@ var repeatableSupport = {
         this.insertionPoint.parentNode.insertBefore(nc, this.insertionPoint);
         if (this.withDragDrop) prepareDD(nc);
 
-        hudsonRules['DIV.repeated-chunk'](nc);  // applySubtree doesn't get nc itself
-        Behaviour.applySubtree(nc);
+        Behaviour.applySubtree(nc,true);
         this.update();
     },
 
@@ -1404,12 +1447,11 @@ var repeatableSupport = {
 
     // called when 'delete' button is clicked
     onDelete : function(n) {
-        while (!Element.hasClassName(n,"repeated-chunk"))
-            n = n.parentNode;
-
+        n = findAncestorClass(n,"repeated-chunk");
         var p = n.parentNode;
         p.removeChild(n);
-        p.tag.update();
+        if (p.tag)
+            p.tag.update();
     },
 
     // called when 'add' button is clicked
@@ -1630,7 +1672,7 @@ function findFormParent(e,form,static) {
             return null;  // this field shouldn't contribute to the final result
 
         var name = e.getAttribute("name");
-        if(name!=null) {
+        if(name!=null && name.length>0) {
             if(e.tagName=="INPUT" && !static && !xor(e.checked,Element.hasClassName(e,"negative")))
                 return null;  // field is not active
 
@@ -2120,9 +2162,9 @@ function createComboBox(idOrField,valueFunction) {
 }
 
 
-if (isRunAsTest) {
-    // during the unit test, make Ajax errors fatal
-    Ajax.Request.prototype.dispatchException = function(e) {
-        throw e;
-    }
+// Exception in code during the AJAX processing should be reported,
+// so that our users can find them more easily.
+Ajax.Request.prototype.dispatchException = function(e) {
+    throw e;
 }
+
