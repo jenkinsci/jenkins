@@ -118,7 +118,7 @@ public class Shell extends CommandInterpreter {
     }
 
     @Extension
-    public static final class DescriptorImpl extends BuildStepDescriptor<Builder> {
+    public static class DescriptorImpl extends BuildStepDescriptor<Builder> {
         /**
          * Shell executable, or null to default.
          */
