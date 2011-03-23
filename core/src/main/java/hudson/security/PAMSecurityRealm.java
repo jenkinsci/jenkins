@@ -88,11 +88,7 @@ public class PAMSecurityRealm extends SecurityRealm {
 
             try {
                 UnixUser u = new PAM(serviceName).authenticate(username, password);
-                Set<String> grps = u.getGroups();
-                GrantedAuthority[] groups = new GrantedAuthority[grps.size()];
-                int i=0;
-                for (String g : grps)
-                    groups[i++] = new GrantedAuthorityImpl(g);
+                GrantedAuthority[] groups = toAuthorities(u);
 
                 // I never understood why Acegi insists on keeping the password...
                 return new UsernamePasswordAuthenticationToken(username, password, groups);
@@ -119,12 +115,26 @@ public class PAMSecurityRealm extends SecurityRealm {
                 public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException, DataAccessException {
                     if(!UnixUser.exists(username))
                         throw new UsernameNotFoundException("No such Unix user: "+username);
-                    // return some dummy instance
-                    return new User(username,"",true,true,true,true,
-                            new GrantedAuthority[]{AUTHENTICATED_AUTHORITY});
+                    try {
+                        UnixUser uu = new UnixUser(username);
+                        // return some dummy instance
+                        return new User(username,"",true,true,true,true, toAuthorities(uu));
+                    } catch (PAMException e) {
+                        throw new UsernameNotFoundException("Failed to load information about Unix user "+username,e);
+                    }
                 }
             }
         );
+    }
+
+    private static GrantedAuthority[] toAuthorities(UnixUser u) {
+        Set<String> grps = u.getGroups();
+        GrantedAuthority[] groups = new GrantedAuthority[grps.size()+1];
+        int i=0;
+        for (String g : grps)
+            groups[i++] = new GrantedAuthorityImpl(g);
+        groups[i++] = AUTHENTICATED_AUTHORITY;
+        return groups;
     }
 
     @Override
