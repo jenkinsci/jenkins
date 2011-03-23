@@ -112,7 +112,9 @@ public abstract class ParameterDefinition implements
 
     /**
      * Create a new instance of this parameter definition and use the passed
-     * parameter value as the default value
+     * parameter value as the default value.
+     *
+     * @since 1.405
      */
     public ParameterDefinition copyWithDefaultValue(ParameterValue defaultValue) {
         // By default, just return this again
