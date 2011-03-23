@@ -255,7 +255,7 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
     }
 
     /**
-     * A pointless function to work around what appears to be a HotSpot problem. See HUDSON-5756 and bug 6933067
+     * A pointless function to work around what appears to be a HotSpot problem. See JENKINS-5756 and bug 6933067
      * on BugParade for more details.
      */
     private void callOnRenamed(String newName, ItemGroup parent, String oldName) throws IOException {
@@ -424,7 +424,7 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
     }
 
     /**
-     * A pointless function to work around what appears to be a HotSpot problem. See HUDSON-5756 and bug 6933067
+     * A pointless function to work around what appears to be a HotSpot problem. See JENKINS-5756 and bug 6933067
      * on BugParade for more details.
      */
     private void invokeOnDeleted() throws IOException {

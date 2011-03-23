@@ -297,7 +297,7 @@ public abstract class SCM implements Describable<SCM>, ExtensionPoint {
     public abstract SCMRevisionState calcRevisionsFromBuild(AbstractBuild<?,?> build, Launcher launcher, TaskListener listener) throws IOException, InterruptedException;
 
     /**
-     * A pointless function to work around what appears to be a HotSpot problem. See HUDSON-5756 and bug 6933067
+     * A pointless function to work around what appears to be a HotSpot problem. See JENKINS-5756 and bug 6933067
      * on BugParade for more details.
      */
     public SCMRevisionState _calcRevisionsFromBuild(AbstractBuild<?, ?> build, Launcher launcher, TaskListener listener) throws IOException, InterruptedException {
@@ -347,7 +347,7 @@ public abstract class SCM implements Describable<SCM>, ExtensionPoint {
     protected abstract PollingResult compareRemoteRevisionWith(AbstractProject<?,?> project, Launcher launcher, FilePath workspace, TaskListener listener, SCMRevisionState baseline) throws IOException, InterruptedException;
 
     /**
-     * A pointless function to work around what appears to be a HotSpot problem. See HUDSON-5756 and bug 6933067
+     * A pointless function to work around what appears to be a HotSpot problem. See JENKINS-5756 and bug 6933067
      * on BugParade for more details.
      */
     private PollingResult _compareRemoteRevisionWith(AbstractProject<?, ?> project, Launcher launcher, FilePath workspace, TaskListener listener, SCMRevisionState baseline2) throws IOException, InterruptedException {
