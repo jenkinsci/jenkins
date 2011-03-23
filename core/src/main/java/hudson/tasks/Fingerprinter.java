@@ -24,6 +24,7 @@
 package hudson.tasks;
 
 import com.google.common.collect.ImmutableMap;
+import hudson.EnvVars;
 import hudson.Extension;
 import hudson.FilePath;
 import hudson.FilePath.FileCallable;
@@ -102,10 +103,12 @@ public class Fingerprinter extends Recorder implements Serializable {
             listener.getLogger().println(Messages.Fingerprinter_Recording());
 
             Map<String,String> record = new HashMap<String,String>();
-
-
-            if(targets.length()!=0)
-                record(build, listener, record, targets);
+            
+            EnvVars environment = build.getEnvironment(listener);
+            if(targets.length()!=0) {
+                String expandedTargets = environment.expand(targets);
+                record(build, listener, record, expandedTargets);
+            }
 
             if(recordBuildArtifacts) {
                 ArtifactArchiver aa = build.getProject().getPublishersList().get(ArtifactArchiver.class);
@@ -115,7 +118,8 @@ public class Fingerprinter extends Recorder implements Serializable {
                     build.setResult(Result.FAILURE);
                     return true;
                 }
-                record(build, listener, record, aa.getArtifacts() );
+                String expandedArtifacts = environment.expand(aa.getArtifacts());
+                record(build, listener, record, expandedArtifacts);
             }
 
             build.getActions().add(new FingerprintAction(build,record));
