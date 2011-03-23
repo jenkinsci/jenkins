@@ -49,7 +49,7 @@ import java.util.logging.Logger;
 
 /**
  * Captures information about an artifact created by Maven and archived by
- * Hudson, so that we can later deploy it to repositories of our choice.
+ * Jenkins, so that we can later deploy it to repositories of our choice.
  *
  * <p>
  * This object is created within the Maven process and sent back to the master,
