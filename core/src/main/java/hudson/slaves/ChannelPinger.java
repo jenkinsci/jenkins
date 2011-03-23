@@ -34,7 +34,10 @@ import hudson.remoting.PingThread;
 
 import java.io.IOException;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import static java.util.logging.Level.SEVERE;
 
 /**
  * Establish a periodic ping to keep connections between {@link Slave slaves}
@@ -78,11 +81,9 @@ public class ChannelPinger extends ComputerListener {
             LOGGER.severe("Failed to set up a ping for " + c.getName());
         }
 
-        // TODO: Set up a local to remote ping too?
-        // If we just want to keep some activity on the channel this doesn't
-        // matter, but if we consider the ping a 'are you alive?' check it
-        // might be useful.
-        //setUpPingForChannel(channel, pingInterval);
+        // set up ping from both directions, so that in case of a router dropping a connection,
+        // both sides can notice it and take compensation actions.
+        setUpPingForChannel(channel, pingInterval);
     }
 
     private static class SetUpRemotePing implements Callable<Void, IOException> {
@@ -92,7 +93,6 @@ public class ChannelPinger extends ComputerListener {
             this.pingInterval = pingInterval;
         }
 
-        @Override
         public Void call() throws IOException {
             setUpPingForChannel(Channel.current(), pingInterval);
             return null;
@@ -105,14 +105,14 @@ public class ChannelPinger extends ComputerListener {
             protected void onDead() {
                 try {
                     if (isInClosed.get()) {
-                        LOGGER.fine("Ping failed after socket is already closed");
+                        LOGGER.fine("Ping failed after the channel is already partially closed");
                     }
                     else {
-                        LOGGER.info("Ping failed. Terminating the socket.");
+                        LOGGER.info("Ping failed. Terminating the channel.");
                         channel.close();
                     }
                 } catch (IOException e) {
-                    LOGGER.severe("Failed to terminate the socket: " + e);
+                    LOGGER.log(SEVERE,"Failed to terminate the channel: ",e);
                 }
             }
         };
