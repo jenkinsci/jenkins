@@ -33,11 +33,29 @@ import hudson.Extension;
 public class RunParameterDefinition extends SimpleParameterDefinition {
 
     private final String projectName;
+    private final String runId;
 
     @DataBoundConstructor
     public RunParameterDefinition(String name, String projectName, String description) {
         super(name, description);
         this.projectName = projectName;
+        this.runId = null;
+    }
+
+    private RunParameterDefinition(String name, String projectName, String runId, String description) {
+        super(name, description);
+        this.projectName = projectName;
+        this.runId = runId;
+    }
+
+    @Override
+    public ParameterDefinition copyWithDefaultValue(ParameterValue defaultValue) {
+        if (defaultValue instanceof RunParameterValue) {
+            RunParameterValue value = (RunParameterValue) defaultValue;
+            return new RunParameterDefinition(getName(), value.getRunId(), getDescription());
+        } else {
+            return this;
+        }
     }
 
     @Exported
@@ -69,6 +87,10 @@ public class RunParameterDefinition extends SimpleParameterDefinition {
 
     @Override
     public ParameterValue getDefaultParameterValue() {
+        if (runId != null) {
+            return createValue(runId);
+        }
+
         Run<?,?> lastBuild = getProject().getLastBuild();
         if (lastBuild != null) {
         	return createValue(lastBuild.getExternalizableId());

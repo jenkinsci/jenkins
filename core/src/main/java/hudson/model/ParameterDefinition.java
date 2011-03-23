@@ -110,6 +110,15 @@ public abstract class ParameterDefinition implements
         this.description = description;
     }
 
+    /**
+     * Create a new instance of this parameter definition and use the passed
+     * parameter value as the default value
+     */
+    public ParameterDefinition copyWithDefaultValue(ParameterValue defaultValue) {
+        // By default, just return this again
+        return this;
+    }
+
     @Exported
     public String getType() {
     	return this.getClass().getSimpleName();
