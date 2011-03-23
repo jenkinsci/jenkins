@@ -16,6 +16,7 @@ import java.util.Arrays;
  */
 public class ChoiceParameterDefinition extends SimpleParameterDefinition {
     private final List<String> choices;
+    private final String defaultValue;
 
     @DataBoundConstructor
     public ChoiceParameterDefinition(String name, String choices, String description) {
@@ -24,6 +25,7 @@ public class ChoiceParameterDefinition extends SimpleParameterDefinition {
         if (choices.length()==0) {
             throw new IllegalArgumentException("No choices found");
         }
+        defaultValue = null;
     }
 
     public ChoiceParameterDefinition(String name, String[] choices, String description) {
@@ -31,6 +33,23 @@ public class ChoiceParameterDefinition extends SimpleParameterDefinition {
         this.choices = new ArrayList<String>(Arrays.asList(choices));
         if (this.choices.isEmpty()) {
             throw new IllegalArgumentException("No choices found");
+        }
+        defaultValue = null;
+    }
+
+    private ChoiceParameterDefinition(String name, List<String> choices, String defaultValue, String description) {
+        super(name, description);
+        this.choices = choices;
+        this.defaultValue = defaultValue;
+    }
+
+    @Override
+    public ParameterDefinition copyWithDefaultValue(ParameterValue defaultValue) {
+        if (defaultValue instanceof StringParameterValue) {
+            StringParameterValue value = (StringParameterValue) defaultValue;
+            return new ChoiceParameterDefinition(getName(), choices, value.value, getDescription());
+        } else {
+            return this;
         }
     }
     
@@ -45,9 +64,8 @@ public class ChoiceParameterDefinition extends SimpleParameterDefinition {
 
     @Override
     public StringParameterValue getDefaultParameterValue() {
-        return new StringParameterValue(getName(), choices.get(0), getDescription());
+        return new StringParameterValue(getName(), defaultValue == null ? choices.get(0) : defaultValue, getDescription());
     }
-
 
     private StringParameterValue checkValue(StringParameterValue value) {
         if (!choices.contains(value.value))
