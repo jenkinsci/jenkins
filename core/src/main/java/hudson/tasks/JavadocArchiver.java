@@ -133,14 +133,16 @@ public class JavadocArchiver extends Recorder {
         }
 
         public String getDisplayName() {
-            if (new File(dir(), "help-doc.html").exists())
+            File dir = dir();
+            if (dir != null && new File(dir, "help-doc.html").exists())
                 return Messages.JavadocArchiver_DisplayName_Javadoc();
             else
                 return Messages.JavadocArchiver_DisplayName_Generic();
         }
 
         public String getIconFileName() {
-            if(dir().exists())
+            File dir = dir();
+            if(dir != null && dir.exists())
                 return "help.gif";
             else
                 // hide it since we don't have javadoc yet.

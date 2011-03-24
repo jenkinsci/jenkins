@@ -33,17 +33,17 @@ import hudson.maven.MavenReporterDescriptor;
 import hudson.maven.MojoInfo;
 import hudson.maven.MavenModuleSet;
 import hudson.maven.MavenReportInfo;
-import hudson.model.Action;
-import hudson.model.BuildListener;
-import hudson.model.Result;
+import hudson.model.*;
 import hudson.tasks.JavadocArchiver.JavadocAction;
 import org.apache.maven.project.MavenProject;
 import org.codehaus.plexus.component.configurator.ComponentConfigurationException;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
 
 /**
  * Records the javadoc and archives it.
@@ -51,13 +51,24 @@ import java.util.Collections;
  * @author Kohsuke Kawaguchi
  */
 public class MavenJavadocArchiver extends MavenReporter {
+
+
+    private boolean aggregated = false;
+
+    private boolean testJavadoc = false;
+
+    private FilePath target;
+
+    private FilePath targetTestJavadoc;
+
     public boolean postExecute(MavenBuildProxy build, MavenProject pom, MojoInfo mojo, BuildListener listener, Throwable error) throws InterruptedException, IOException {
         if(!mojo.is("org.apache.maven.plugins","maven-javadoc-plugin","javadoc")
-        && !mojo.is("org.apache.maven.plugins","maven-javadoc-plugin","aggregate"))
+        && !mojo.is("org.apache.maven.plugins","maven-javadoc-plugin","aggregate")
+        && !mojo.is("org.apache.maven.plugins","maven-javadoc-plugin","test-javadoc")
+        && !mojo.is("org.apache.maven.plugins","maven-javadoc-plugin","test-aggregate"))
             return true;
 
         File destDir;
-        boolean aggregated;
         try {
             aggregated = mojo.getConfigurationValue("aggregate",Boolean.class) || mojo.getGoal().equals("aggregate");
             if(aggregated && !pom.isExecutionRoot())
@@ -73,21 +84,25 @@ public class MavenJavadocArchiver extends MavenReporter {
         }
 
         if(destDir.exists()) {
+            testJavadoc = "test-javadoc".equals(mojo.getGoal());
             // javadoc:javadoc just skips itself when the current project is not a java project 
-            FilePath target;
+            ;
             if(aggregated) {
                 // store at MavenModuleSet level. 
                 listener.getLogger().println("[JENKINS] Archiving aggregated javadoc");
                 target = build.getModuleSetRootDir();
             } else {
-                listener.getLogger().println("[JENKINS] Archiving javadoc");
+
+                listener.getLogger().println("[JENKINS] Archiving "
+                        + (!testJavadoc? "javadoc" : "test-javadoc"));
                 target = build.getProjectRootDir();
             }
 
             target = target.child("javadoc");
+            if (testJavadoc) targetTestJavadoc = target.child("test-javadoc");
 
             try {
-                new FilePath(destDir).copyRecursiveTo("**/*",target);
+                new FilePath(destDir).copyRecursiveTo("**/*",testJavadoc ? targetTestJavadoc : target);
             } catch (IOException e) {
                 Util.displayIOException(e,listener);
                 e.printStackTrace(listener.fatalError(Messages.MavenJavadocArchiver_FailedToCopy(destDir,target)));
@@ -110,11 +125,49 @@ public class MavenJavadocArchiver extends MavenReporter {
     }
 
     public Collection<? extends Action> getProjectActions(MavenModule project) {
-        return Collections.singleton(new JavadocAction(project));
+        // TODO test javadoc too
+        List actions = new ArrayList();
+        actions.add((new MavenJavadocAction(project,this.testJavadoc,this.target,this.targetTestJavadoc)));
+        // adding action for test javadoc link display
+        if (testJavadoc) actions.add((new MavenJavadocAction(project,this.testJavadoc,this.target,this.targetTestJavadoc)));
+        return actions;
     }
 
     public Action getAggregatedProjectAction(MavenModuleSet project) {
-        return new JavadocAction(project);
+        // TODO javadoc test too
+        return new MavenJavadocAction(project,this.testJavadoc,this.target,this.targetTestJavadoc);
+    }
+
+    public static class MavenJavadocAction extends JavadocAction {
+        private final AbstractItem abstractItem;
+        private final boolean testJavadoc;
+        private final FilePath target;
+        private final FilePath targetTestJavadoc;
+
+        public MavenJavadocAction(AbstractItem project, boolean testJavadoc,FilePath target, FilePath targetTestJavadoc) {
+            super(project);
+            this.abstractItem = project;
+            this.testJavadoc = testJavadoc;
+            this.target = target;
+            this.targetTestJavadoc = targetTestJavadoc;
+        }
+
+
+        protected String getTitle() {
+            return abstractItem.getDisplayName()+ (!testJavadoc ? " javadoc": "test javadoc");
+        }
+
+        public String getUrlName() {
+            return !testJavadoc ? " javadoc": "test javadoc";
+        }
+
+        protected File dir() {
+            if (testJavadoc) {
+                return targetTestJavadoc == null ? null : new File(target.getRemote());
+            }
+            return target == null ? null : new File(target.getRemote());
+        }
+
     }
 
     @Extension
