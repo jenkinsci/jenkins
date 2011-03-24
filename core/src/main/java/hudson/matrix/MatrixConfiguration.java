@@ -48,6 +48,7 @@ import hudson.tasks.LogRotator;
 import hudson.tasks.Publisher;
 
 import java.io.IOException;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
@@ -194,16 +195,38 @@ public class MatrixConfiguration extends Project<MatrixConfiguration,MatrixRun> 
 
     @Override
     public Label getAssignedLabel() {
-        // combine all the label axes by &&.
-    	String expr;
-        String exprSlave = Util.join(combination.values(getParent().getAxes().subList(LabelAxis.class)), "&&");
-        String exprLabel = Util.join(combination.values(getParent().getAxes().subList(LabelExpAxis.class)), "&&");
-        if(!exprSlave.equals("") && !exprLabel.equals("")){
-        	expr = exprSlave + "&&" + exprLabel;
-        } else{
-        	expr = (exprSlave.equals("")) ? exprLabel : exprSlave;
+        // combine all the label axes by &&.  Group into binary with parenthesis
+
+        //Collect all the labels and expressions required for combination
+        List <String> labels = new LinkedList<String>();
+        labels.addAll(combination.values(getParent().getAxes().subList(LabelAxis.class)));
+        labels.addAll(combination.values(getParent().getAxes().subList(LabelExpAxis.class)));
+
+        //Build the label expression in a buffer
+        StringBuilder buffer = new StringBuilder();
+
+        int i = 0;
+        for(String label : labels){
+            switch(i){
+                case 0:
+                    //One label requires no && or ()
+                    buffer.append(label);
+                    break;
+                case 1:
+                    //A second label requires &&
+                    buffer.append("&&");
+                    buffer.append(label);
+                    break;
+                default:
+                    //All subsequent labels require () around everything prior and then && the label
+                    buffer.insert(0, "(");
+                    buffer.append(")&&");
+                    buffer.append(label);
+                    break;
+            }
+            i++;
         }
-        return Hudson.getInstance().getLabel(Util.fixEmpty(expr));
+        return Hudson.getInstance().getLabel(Util.fixEmpty(buffer.toString()));     
     }
 
     @Override
