@@ -604,11 +604,15 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
                         parsePoms(listener, logger, envVars, mvn, mavenVersion); // #5428 : do pre-build *before* parsing pom
                         SplittableBuildListener slistener = new SplittableBuildListener(listener);
                         proxies = new HashMap<ModuleName, ProxyImpl2>();
-                        List<String> changedModules = new ArrayList<String>();
+                        List<ModuleName> changedModules = new ArrayList<ModuleName>();
+                        
+                        if (project.isIncrementalBuild() && !getChangeSet().isEmptySet()) {
+                            changedModules.addAll(getUnbuildModulesSinceLastSuccessfulBuild());
+                        }
 
                         for (MavenModule m : project.sortedActiveModules) {
                             MavenBuild mb = m.newBuild();
-                            // HUDSON-8418
+                            // JENKINS-8418
                             mb.setBuiltOnStr( getBuiltOnStr() );
                             // Check if incrementalBuild is selected and that there are changes -
                             // we act as if incrementalBuild is not set if there are no changes.
@@ -620,7 +624,7 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
                                 if ((mb.getPreviousBuiltBuild() == null) ||
                                     (!getChangeSetFor(m).isEmpty()) 
                                     || (mb.getPreviousBuiltBuild().getResult().isWorseThan(Result.SUCCESS))) {
-                                    changedModules.add(m.getModuleName().toString());
+                                    changedModules.add(m.getModuleName());
                                 }
                             }
 
@@ -758,12 +762,38 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
                 return Result.FAILURE;
             } catch (RuntimeException e) {
                 // bug in the code.
-                e.printStackTrace(listener.error("Processing failed due to a bug in the code. Please report this to jenkins-users@googlegroups.com"));
+                e.printStackTrace(listener.error("Processing failed due to a bug in the code. Please report this to jenkinsci-users@googlegroups.com"));
                 logger.println("project="+project);
                 logger.println("project.getModules()="+project.getModules());
                 logger.println("project.getRootModule()="+project.getRootModule());
                 throw e;
             }
+        }
+
+        /**
+         * Returns the modules which have not been build since the last successful aggregator build
+         * though they should be because they had SCM changes.
+         * This can happen when the aggregator build fails before it reaches the module.
+         * 
+         * See JENKINS-5764
+         */
+        private Collection<ModuleName> getUnbuildModulesSinceLastSuccessfulBuild() {
+            Collection<ModuleName> unbuiltModules = new ArrayList<ModuleName>();
+            MavenModuleSetBuild previousSuccessfulBuild = getPreviousSuccessfulBuild();
+            if (previousSuccessfulBuild != null) {
+                MavenModuleSetBuild previousBuild = previousSuccessfulBuild;
+                do {
+                    UnbuiltModuleAction unbuiltModuleAction = previousBuild.getAction(UnbuiltModuleAction.class);
+                    if (unbuiltModuleAction != null) {
+                        for (ModuleName name : unbuiltModuleAction.getUnbuildModules()) {
+                            unbuiltModules.add(name);
+                        }
+                    }
+                    
+                    previousBuild = previousBuild.getNextBuild();
+                } while (previousBuild != null && previousBuild != MavenModuleSetBuild.this);
+            }
+            return unbuiltModules;
         }
 
         private void parsePoms(BuildListener listener, PrintStream logger, EnvVars envVars, MavenInstallation mvn, String mavenVersion) throws IOException, InterruptedException {
