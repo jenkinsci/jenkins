@@ -70,7 +70,7 @@ interface ChannelRunner {
             Thread t = new Thread("south bridge runner") {
                 public void run() {
                     try {
-                        Channel s = new Channel("south", executor, Mode.BINARY, in2, out1, null, false, createCapability());
+                        Channel s = new Channel("south", executor, Mode.BINARY, in2, out1, null, false, null, createCapability());
                         s.join();
                         System.out.println("south completed");
                     } catch (IOException e) {
@@ -84,7 +84,7 @@ interface ChannelRunner {
             };
             t.start();
 
-            return new Channel("north", executor, Mode.BINARY, in1, out2, null, false, createCapability());
+            return new Channel("north", executor, Mode.BINARY, in1, out2, null, false, null, createCapability());
         }
 
         public void stop(Channel channel) throws Exception {
