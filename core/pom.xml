@@ -28,7 +28,7 @@ THE SOFTWARE.
   <parent>
     <groupId>org.jenkins-ci.main</groupId>
     <artifactId>pom</artifactId>
-    <version>1.400-SNAPSHOT</version>
+    <version>1.400.0-SNAPSHOT</version>
     <relativePath>../pom.xml</relativePath>
   </parent>
 
@@ -763,7 +763,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.jvnet.libpam4j</groupId>
       <artifactId>libpam4j</artifactId>
-      <version>1.2</version>
+      <version>1.4</version>
     </dependency>
     <dependency>
       <groupId>org.jvnet.libzfs</groupId>
