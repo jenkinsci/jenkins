@@ -139,9 +139,26 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
 
     private final WorkspaceList workspaceList = new WorkspaceList();
 
+    protected transient List<Action> transientActions;
+
     public Computer(Node node) {
         assert node.getNumExecutors()!=0 : "Computer created with 0 executors";
         setNode(node);
+    }
+
+    /**
+     * Returns the transient {@link Action}s associated with the computer.
+     */
+    public List<Action> getActions() {
+    	List<Action> result = new ArrayList<Action>();
+    	result.addAll(super.getActions());
+    	synchronized (this) {
+    		if (transientActions == null) {
+    			transientActions = TransientComputerActionFactory.createAllFor(this);
+    		}
+    		result.addAll(transientActions);
+    	}
+    	return result;
     }
 
     /**
