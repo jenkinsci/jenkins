@@ -86,6 +86,8 @@ public final class DependencyGraph implements Comparator<AbstractProject> {
 
     private Map<AbstractProject, List<DependencyGroup>> forward = new HashMap<AbstractProject, List<DependencyGroup>>();
     private Map<AbstractProject, List<DependencyGroup>> backward = new HashMap<AbstractProject, List<DependencyGroup>>();
+    
+    private transient Map<Class<?>, Object> computationalData;
 
     private boolean built;
 
@@ -97,6 +99,7 @@ public final class DependencyGraph implements Comparator<AbstractProject> {
         // Use setContext (NOT getContext().setAuthentication()) so we don't affect concurrent threads for same HttpSession.
         SecurityContext saveCtx = SecurityContextHolder.getContext();
         try {
+            this.computationalData = new HashMap<Class<?>, Object>();
             NotSerilizableSecurityContext system = new NotSerilizableSecurityContext();
             system.setAuthentication(ACL.SYSTEM);
             SecurityContextHolder.setContext(system);
@@ -106,6 +109,7 @@ public final class DependencyGraph implements Comparator<AbstractProject> {
             forward = finalize(forward);
             backward = finalize(backward);
 
+            this.computationalData = null;
             built = true;
         } finally {
             SecurityContextHolder.setContext(saveCtx);
@@ -120,6 +124,23 @@ public final class DependencyGraph implements Comparator<AbstractProject> {
         built = true;
     }
 
+    /**
+     * Adds data which is useful for the time when the dependency graph is built up.
+     * All this data will be cleaned once the dependency graph creation has finished.
+     */
+    public <T> void putComputationalData(Class<T> key, T value) {
+        this.computationalData.put(key, value);
+    }
+    
+    /**
+     * Gets temporary data which is needed for building up the dependency graph.
+     */
+    public <T> T getComputationalData(Class<T> key) {
+        @SuppressWarnings("unchecked")
+        T result = (T) this.computationalData.get(key);
+        return result;
+    }
+    
     /**
      * Gets all the immediate downstream projects (IOW forward edges) of the given project.
      *
