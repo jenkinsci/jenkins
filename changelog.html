@@ -72,6 +72,12 @@ Upcoming changes</a>
   <li class=bug>
     Archive maven artifacts by their canonical names to avoid possible name conflicts
     (<a href="http://issues.jenkins-ci.org/browse/JENKINS-9122">issue 9122</a>)
+  <li class=bug>
+    Marking modules as 'not build' in maven incremental builds didn't work anymore in maven 3 jobs
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-9072">issue 9072</a>)
+  <li class=bug>
+    In incremental maven builds, modules could be left unbuilt, although they had SCM changes
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-5764">issue 5764</a>)
   <li class=rfe>
     Ping setup for detecting bad master/slave communication is done more consistently now
     (<a href="http://issues.jenkins-ci.org/browse/JENKINS-8990">issue 8990</a>)
