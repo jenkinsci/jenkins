@@ -24,63 +24,51 @@
  */
 package hudson.maven.reporters;
 
-import hudson.FilePath;
-import hudson.Util;
 import hudson.Extension;
-import hudson.maven.MavenBuildProxy;
 import hudson.maven.MavenModule;
-import hudson.maven.MavenReporter;
+import hudson.maven.MavenModuleSet;
 import hudson.maven.MavenReporterDescriptor;
 import hudson.maven.MojoInfo;
-import hudson.maven.MavenModuleSet;
-import hudson.maven.MavenReportInfo;
-import hudson.model.*;
-import hudson.tasks.JavadocArchiver.JavadocAction;
-import org.apache.maven.project.MavenProject;
-import org.codehaus.plexus.component.configurator.ComponentConfigurationException;
+import hudson.model.Action;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.List;
 
 /**
  * Records the javadoc and archives it.
  * 
  * @author Kohsuke Kawaguchi
  */
-public class MavenJavadocArchiver extends AbstractMavenJavadocArchiver {
+public class MavenTestJavadocArchiver extends AbstractMavenJavadocArchiver {
 
 
     public Collection<? extends Action> getProjectActions(MavenModule project) {
-        return Collections.singletonList(new MavenJavadocAction(project,getTarget(),"Javadoc","javadoc"));
+        return Collections.singletonList(new MavenJavadocAction(project,getTarget(),"Test Javadoc","test-javadoc"));
     }
 
     @Override
     public String getArchiveTargetPath() {
-        return "javadoc";
+        return "test-javadoc";
     }
 
     public Action getAggregatedProjectAction(MavenModuleSet project) {
-        return new MavenJavadocAction(project,getTarget(),"Javadoc","javadoc");
+        return new MavenJavadocAction(project,getTarget(),"Test Javadoc","test-javadoc");
     }
 
     @Override
     public boolean checkIsJavadocMojo(MojoInfo mojo) {
-        return mojo.is("org.apache.maven.plugins","maven-javadoc-plugin","javadoc")
-            || mojo.is("org.apache.maven.plugins","maven-javadoc-plugin","aggregate");
+        return mojo.is("org.apache.maven.plugins","maven-javadoc-plugin","test-javadoc")
+            || mojo.is("org.apache.maven.plugins","maven-javadoc-plugin","test-aggregate");
     }
 
     @Extension
     public static final class DescriptorImpl extends MavenReporterDescriptor {
         public String getDisplayName() {
-            return Messages.MavenJavadocArchiver_DisplayName();
+            return Messages.MavenTestJavadocArchiver_DisplayName();
         }
 
-        public MavenJavadocArchiver newAutoInstance(MavenModule module) {
-            return new MavenJavadocArchiver();
+        public MavenTestJavadocArchiver newAutoInstance(MavenModule module) {
+            return new MavenTestJavadocArchiver();
         }
     }
 
