@@ -403,12 +403,15 @@ public final class MavenModule extends AbstractMavenProject<MavenModule,MavenBui
             graph.putComputationalData(MavenDependencyComputationData.class, data);
         }
 
-        // in case two modules with the same name are defined, modules in the same MavenModuleSet
+        // In case two modules with the same name are defined, modules in the same MavenModuleSet
         // take precedence.
-        Map<ModuleDependency,MavenModule> myParentsModules = data.modulesPerParent.get(getParent());
         
-        if (myParentsModules == null) {
-            myParentsModules =new HashMap<ModuleDependency, MavenModule>();
+        // Can lead to OOME, if remembered in the computational data and there are lot big multi-module projects
+        // TODO: try to use soft references to clean the heap when needed
+        Map<ModuleDependency,MavenModule> myParentsModules; // = data.modulesPerParent.get(getParent());
+        
+        //if (myParentsModules == null) {
+            myParentsModules = new HashMap<ModuleDependency, MavenModule>();
             
             for (MavenModule m : getParent().getModules()) {
                 if(m.isDisabled())  continue;
@@ -417,8 +420,8 @@ public final class MavenModule extends AbstractMavenProject<MavenModule,MavenBui
                 myParentsModules.put(moduleDependency.withUnknownVersion(),m);
             }
             
-            data.modulesPerParent.put(getParent(), myParentsModules);
-        }
+            //data.modulesPerParent.put(getParent(), myParentsModules);
+        //}
 
         // if the build style is the aggregator build, define dependencies against project,
         // not module.
@@ -442,7 +445,7 @@ public final class MavenModule extends AbstractMavenProject<MavenModule,MavenBui
     private static class MavenDependencyComputationData {
         Map<ModuleDependency,MavenModule> allModules;
         
-        Map<MavenModuleSet, Map<ModuleDependency,MavenModule>> modulesPerParent = new HashMap<MavenModuleSet, Map<ModuleDependency,MavenModule>>();
+        //Map<MavenModuleSet, Map<ModuleDependency,MavenModule>> modulesPerParent = new HashMap<MavenModuleSet, Map<ModuleDependency,MavenModule>>();
         
         public MavenDependencyComputationData(
                 Map<ModuleDependency, MavenModule> modules) {
