@@ -28,6 +28,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.io.InputStream;
+import java.lang.reflect.InvocationTargetException;
 import java.net.URL;
 import java.net.MalformedURLException;
 import java.net.URLConnection;
@@ -130,7 +131,29 @@ public class Which {
             } finally {
                 is.close();
             }
+        }
 
+        if(resURL.startsWith("vfs:")) {
+            // JBoss6
+            String dotdot="";
+            for (int i=clazz.getName().split("\\.").length; i>1; i--)
+                dotdot+="../";
+
+            try {
+                URL jar = new URL(res,dotdot);
+                String path = jar.getPath();
+                if (path.endsWith("/")) path=path.substring(0,path.length()-1);
+                // obtain the file name portion
+                String fileName = path.substring(path.lastIndexOf('/')+1);
+
+                Object vfs = new URL(jar,"..").getContent(); // a VirtualFile object pointing to the parent of the jar
+                File dir = (File)vfs.getClass().getMethod("getPhysicalFile").invoke(vfs);
+
+                File jarFile = new File(dir,fileName);
+                if (jarFile.exists())   return jarFile;
+            } catch (Exception e) {
+                LOGGER.log(Level.FINE, "Failed to resolve vfs file into a location",e);
+            }
         }
 
         URLConnection con = res.openConnection();
