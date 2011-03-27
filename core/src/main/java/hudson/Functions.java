@@ -1332,4 +1332,13 @@ public class Functions {
     public static void restoreCurrentDescriptorByNameUrl(String old) {
         Stapler.getCurrentRequest().setAttribute("currentDescriptorByNameUrl", old);
     }
+
+    public static List<String> getRequestHeaders(String name) {
+        List<String> r = new ArrayList<String>();
+        Enumeration e = Stapler.getCurrentRequest().getHeaders(name);
+        while (e.hasMoreElements()) {
+            r.add(e.nextElement().toString());
+        }
+        return r;
+    }
 }
