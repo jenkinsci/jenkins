@@ -121,6 +121,9 @@ public class CLI {
         return Integer.parseInt(p);
     }
 
+    /**
+     * Shuts down the channel and closes the underlying connection.
+     */
     public void close() throws IOException, InterruptedException {
         channel.close();
         channel.join();
