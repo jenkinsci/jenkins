@@ -120,9 +120,11 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Enumeration;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
+import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CountDownLatch;
@@ -231,7 +233,7 @@ public abstract class HudsonTestCase extends TestCase implements RootAction {
     /**
      * Remember {@link WebClient}s that are created, to release them properly.
      */
-    private List<WeakReference<WebClient>> clients = new ArrayList<WeakReference<WebClient>>();
+    private List<WebClient> clients = new ArrayList<WebClient>();
 
     /**
      * JavaScript "debugger" that provides you information about the JavaScript call stack
@@ -338,11 +340,10 @@ public abstract class HudsonTestCase extends TestCase implements RootAction {
     protected void tearDown() throws Exception {
         try {
             // cancel pending asynchronous operations, although this doesn't really seem to be working
-            for (WeakReference<WebClient> client : clients) {
-                WebClient c = client.get();
-                if(c==null) continue;
+            for (WebClient client : clients) {
                 // unload the page to cancel asynchronous operations
-                c.getPage("about:blank");
+                client.getPage("about:blank");
+                client.closeAllWindows();
             }
             clients.clear();
         } finally {
@@ -1432,7 +1433,7 @@ public abstract class HudsonTestCase extends TestCase implements RootAction {
 
 //            setJavaScriptEnabled(false);
             setPageCreator(HudsonPageCreator.INSTANCE);
-            clients.add(new WeakReference<WebClient>(this));
+            clients.add(this);
             // make ajax calls run as post-action for predictable behaviors that simplify debugging
             setAjaxController(new AjaxController() {
                 public boolean processSynchron(HtmlPage page, WebRequestSettings settings, boolean async) {

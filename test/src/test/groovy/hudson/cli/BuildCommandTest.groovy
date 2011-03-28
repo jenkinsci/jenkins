@@ -54,10 +54,16 @@ public class BuildCommandTest extends HudsonTestCase {
         }] as TestBuilder);
 
         // this should be asynchronous
-        assertEquals(0,new CLI(getURL()).execute(["build", p.name]))
-        started.block();
-        assertTrue(p.getBuildByNumber(1).isBuilding())
-        completed.signal();
+        def cli = new CLI(getURL())
+        try {
+            assertEquals(0,cli.execute(["build", p.name]))
+            started.block()
+            assertTrue(p.getBuildByNumber(1).isBuilding())
+            completed.signal()
+        } finally {
+            cli.close();
+        }
+
     }
 
     /**
@@ -67,16 +73,28 @@ public class BuildCommandTest extends HudsonTestCase {
         def p = createFreeStyleProject();
         p.buildersList.add(new Shell("sleep 3"));
 
-        new CLI(getURL()).execute(["build","-s",p.name])
-        assertFalse(p.getBuildByNumber(1).isBuilding())
+        def cli = new CLI(getURL())
+        try {
+            cli.execute(["build","-s",p.name])
+            assertFalse(p.getBuildByNumber(1).isBuilding())
+        } finally {
+            cli.close();
+        }
+
     }
 
     void testParameters() {
         def p = createFreeStyleProject();
         p.addProperty(new ParametersDefinitionProperty([new StringParameterDefinition("key",null)]));
 
-        new CLI(getURL()).execute(["build","-s","-p","key=foobar",p.name]);
-        def b = assertBuildStatusSuccess(p.getBuildByNumber(1));
-        assertEquals("foobar",b.getAction(ParametersAction.class).getParameter("key").value);        
+        def cli = new CLI(getURL())
+        try {
+            cli.execute(["build","-s","-p","key=foobar",p.name])
+            def b = assertBuildStatusSuccess(p.getBuildByNumber(1))
+            assertEquals("foobar",b.getAction(ParametersAction.class).getParameter("key").value)
+        } finally {
+            cli.close();
+        };
+
     }
 }
