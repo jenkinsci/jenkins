@@ -60,8 +60,16 @@ Upcoming changes</a>
 <!-- Record your changes in the trunk here. -->
 <div id="trunk" style="display:none"><!--=TRUNK-BEGIN=-->
 <ul class=image>
+  <li class=>
+</ul>
+</div><!--=TRUNK-END=-->
+
+<!-- these changes are controlled by the release process. DO NOT MODIFY -->
+<div id="rc" style="display:none;"><!--=BEGIN=-->
+<h3><a name=v1.405>What's new in 1.405</a> <!--=DATE=--></h3>
+<ul class=image>
   <li class=bug>
-    Fixed link to javadoc in maven modules.
+    Fixed link to javadoc in maven modules and add link to generated test javadoc
   <li class=bug>
     Fixed an AbstractMethodError in ItemGroupMixin.create when using some older plugins.
   <li class=bug>
@@ -72,18 +80,28 @@ Upcoming changes</a>
   <li class=bug>
     Archive maven artifacts by their canonical names to avoid possible name conflicts
     (<a href="http://issues.jenkins-ci.org/browse/JENKINS-9122">issue 9122</a>)
+  <li class=bug>
+    Marking modules as 'not build' in maven incremental builds didn't work anymore in maven 3 jobs
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-9072">issue 9072</a>)
+  <li class=bug>
+    In incremental maven builds, modules could be left unbuilt, although they had SCM changes
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-5764">issue 5764</a>)
+  <li class=bug>
+    Rebuilding dependency graph was taking much too long for big maven projects
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-7535">issue 7535</a>)    
+  <li class=bug>
+    Maven builds didn't work in JBoss 6.
   <li class=rfe>
     Ping setup for detecting bad master/slave communication is done more consistently now
     (<a href="http://issues.jenkins-ci.org/browse/JENKINS-8990">issue 8990</a>)
   <li class=rfe>
     Expand environment variables in fingerprint targets
     (<a href="http://issues.jenkins-ci.org/browse/JENKINS-9138">issue 9138</a>)
+  <li class=rfe>
+    Added an extension point to allow adding transient actions to computers.
 </ul>
-</div><!--=TRUNK-END=-->
-
-<!-- these changes are controlled by the release process. DO NOT MODIFY -->
-<div id="rc" style="display:none;"><!--=BEGIN=-->
-<h3><a name=v1.404>What's new in 1.404</a> <!--=DATE=--></h3>
+</div><!--=END=-->
+<h3><a name=v1.404>What's new in 1.404</a> (2011/03/27)</h3>
 <ul class=image>
   <li class=bug>
     Regression in jenkins .401 maven plugin - deploy to repository post-task
@@ -125,6 +143,9 @@ Upcoming changes</a>
   <li class=bug>
     Failed to instantiate class hudson.slaves.DumbSlave.
     <a href="http://issues.jenkins-ci.org/browse/JENKINS-7174">issue 7174</a>)
+  <li class=bug>
+    "Last Duration" column was showing all N/A. Regression in 1.403
+    <a href="http://issues.jenkins-ci.org/browse/JENKINS-9134">issue 9134</a>)
   <li class=rfe>
     Added the <tt>--mimeTypes</tt> command line option to define additional MIME type mappings.
   <li class=rfe>
@@ -141,7 +162,6 @@ Upcoming changes</a>
   <li class=rfe>
     Added a new extension point to contribute build variables.
 </ul>
-</div><!--=END=-->
 <h3><a name=v1.403>What's new in 1.403</a> (2011/03/20)</h3>
 <ul class=image>
   <li class='major bug'>

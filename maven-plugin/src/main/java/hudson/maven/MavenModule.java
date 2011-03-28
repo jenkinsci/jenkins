@@ -384,41 +384,72 @@ public final class MavenModule extends AbstractMavenProject<MavenModule,MavenBui
     protected void buildDependencyGraph(DependencyGraph graph) {
         if(isDisabled() || getParent().ignoreUpstremChanges())        return;
 
-        Map<ModuleDependency,MavenModule> modules = new HashMap<ModuleDependency,MavenModule>();
-
-        // when we load old data that doesn't record version in dependency, we'd like
-        // to emulate the old behavior that it tries to identify the upstream by ignoring the version.
-        // do this by always putting groupId:artifactId:UNKNOWN to the modules list.
-
-        for (MavenModule m : Hudson.getInstance().getAllItems(MavenModule.class)) {
-            if(m.isDisabled())  continue;
-            ModuleDependency moduleDependency = m.asDependency();
-            modules.put(moduleDependency,m);
-            modules.put(moduleDependency.withUnknownVersion(),m);
+        MavenDependencyComputationData data = graph.getComputationalData(MavenDependencyComputationData.class);
+        
+        if (data == null) {
+            Map<ModuleDependency,MavenModule> modules = new HashMap<ModuleDependency,MavenModule>();
+    
+            // when we load old data that doesn't record version in dependency, we'd like
+            // to emulate the old behavior that it tries to identify the upstream by ignoring the version.
+            // do this by always putting groupId:artifactId:UNKNOWN to the modules list.
+    
+            for (MavenModule m : Hudson.getInstance().getAllItems(MavenModule.class)) {
+                if(m.isDisabled())  continue;
+                ModuleDependency moduleDependency = m.asDependency();
+                modules.put(moduleDependency,m);
+                modules.put(moduleDependency.withUnknownVersion(),m);
+            }
+            data = new MavenDependencyComputationData(modules);
+            graph.putComputationalData(MavenDependencyComputationData.class, data);
         }
 
-        // in case two modules with the same name is defined, modules in the same MavenModuleSet
-        // takes precedence.
-
-        for (MavenModule m : getParent().getModules()) {
-            if(m.isDisabled())  continue;
-            ModuleDependency moduleDependency = m.asDependency();
-            modules.put(moduleDependency,m);
-            modules.put(moduleDependency.withUnknownVersion(),m);
-        }
+        // In case two modules with the same name are defined, modules in the same MavenModuleSet
+        // take precedence.
+        
+        // Can lead to OOME, if remembered in the computational data and there are lot big multi-module projects
+        // TODO: try to use soft references to clean the heap when needed
+        Map<ModuleDependency,MavenModule> myParentsModules; // = data.modulesPerParent.get(getParent());
+        
+        //if (myParentsModules == null) {
+            myParentsModules = new HashMap<ModuleDependency, MavenModule>();
+            
+            for (MavenModule m : getParent().getModules()) {
+                if(m.isDisabled())  continue;
+                ModuleDependency moduleDependency = m.asDependency();
+                myParentsModules.put(moduleDependency,m);
+                myParentsModules.put(moduleDependency.withUnknownVersion(),m);
+            }
+            
+            //data.modulesPerParent.put(getParent(), myParentsModules);
+        //}
 
         // if the build style is the aggregator build, define dependencies against project,
         // not module.
-        AbstractProject dest = getParent().isAggregatorStyleBuild() ? getParent() : this;
+        AbstractProject<?, ?> dest = getParent().isAggregatorStyleBuild() ? getParent() : this;
 
         for (ModuleDependency d : dependencies) {
-            MavenModule src = modules.get(d);
+            MavenModule src = myParentsModules.get(d);
+            if (src==null) {
+                src = data.allModules.get(d);
+            }
+            
             if(src!=null) {
                 DependencyGraph.Dependency dep = new MavenModuleDependency(
                         src.getParent().isAggregatorStyleBuild() ? src.getParent() : src,dest);
                 if (!dep.pointsItself())
                     graph.addDependency(dep);
             }
+        }
+    }
+    
+    private static class MavenDependencyComputationData {
+        Map<ModuleDependency,MavenModule> allModules;
+        
+        //Map<MavenModuleSet, Map<ModuleDependency,MavenModule>> modulesPerParent = new HashMap<MavenModuleSet, Map<ModuleDependency,MavenModule>>();
+        
+        public MavenDependencyComputationData(
+                Map<ModuleDependency, MavenModule> modules) {
+            this.allModules = modules;
         }
     }
 

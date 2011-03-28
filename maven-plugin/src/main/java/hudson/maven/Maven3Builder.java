@@ -42,8 +42,10 @@ import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -314,6 +316,25 @@ public class Maven3Builder extends AbstractMavenBuilder implements DelegatingCal
          */
         public void sessionStarted( ExecutionEvent event ) {
             this.eventLogger.sessionStarted( event );
+            
+            // set all modules which are not actually being build (in incremental builds) to NOT_BUILD
+            // JENKINS-9072
+            List<MavenProject> projects = event.getSession().getProjects();
+            //maven3Builder.listener.getLogger().println("Projects to build: " + projects);
+            Set<ModuleName> buildingProjects = new HashSet<ModuleName>();
+            for (MavenProject p : projects) {
+                buildingProjects.add(new ModuleName(p));
+            }
+            
+            for (Entry<ModuleName,MavenBuildProxy2> e : this.proxies.entrySet()) {
+                if (! buildingProjects.contains(e.getKey())) {
+                    //maven3Builder.listener.getLogger().println("Project " + e.getKey() + " needs not be build");
+                    MavenBuildProxy2 proxy = e.getValue();
+                    proxy.start();
+                    proxy.setResult(Result.NOT_BUILT);
+                    proxy.end();
+                }
+            }
         }
 
         /**

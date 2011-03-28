@@ -525,8 +525,10 @@ public class MavenBuild extends AbstractMavenBuild<MavenModule,MavenBuild> {
             }
 
             if(hasntStartedYet()) {
-                // Mark the build as aborted. This method is used when the aggregated build
-                // failed before it didn't even get to this module.
+                // Mark the build as not_built. This method is used when the aggregated build
+                // failed before it didn't even get to this module
+                // OR if the aggregated build is an incremental one and this
+                // module needn't be build.
                 run(new Runner() {
                     public Result run(BuildListener listener) {
                         listener.getLogger().println(Messages.MavenBuild_FailedEarlier());
@@ -539,6 +541,34 @@ public class MavenBuild extends AbstractMavenBuild<MavenModule,MavenBuild> {
                     public void cleanUp(BuildListener listener) {
                     }
                 });
+                
+                
+                // record modules which have not been build though they should have - i.e. because they
+                // have SCM changes.
+                // see JENKINS-5764
+                if (getParentBuild().getParent().isIncrementalBuild() && getParentBuild().getResult() == Result.FAILURE) {
+                    UnbuiltModuleAction action = getParentBuild().getAction(UnbuiltModuleAction.class);
+                    if (action == null) {
+                        action = new UnbuiltModuleAction();
+                        getParentBuild().getActions().add(action);
+                    }
+                    action.addUnbuiltModule(getParent().getModuleName());
+                }
+            } else {
+                // mark that this module has been built now, if it has previously been remembered as unbuilt
+                // JENKINS-5764
+                MavenModuleSetBuild previousParentBuild = getParentBuild().getPreviousBuild();
+                if (previousParentBuild != null) {
+                    UnbuiltModuleAction unbuiltModuleAction = previousParentBuild.getAction(UnbuiltModuleAction.class);
+                    if (unbuiltModuleAction != null) {
+                        unbuiltModuleAction.removeUnbuildModule(getParent().getModuleName());
+                        try {
+                            previousParentBuild.save();
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                }
             }
         }
 

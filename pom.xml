@@ -32,7 +32,7 @@ THE SOFTWARE.
   
   <groupId>org.jenkins-ci.main</groupId>
   <artifactId>pom</artifactId>
-  <version>1.405-SNAPSHOT</version>
+  <version>1.406-SNAPSHOT</version>
   <packaging>pom</packaging>
   
   <name>Jenkins main module</name>
@@ -156,6 +156,11 @@ THE SOFTWARE.
               <version>1.4</version>
             </dependency>
           </dependencies>
+        </plugin>
+        <plugin>
+          <groupId>org.kohsuke</groupId>
+          <artifactId>access-modifier-checker</artifactId>
+          <version>1.0</version>
         </plugin>
       </plugins>
     </pluginManagement>

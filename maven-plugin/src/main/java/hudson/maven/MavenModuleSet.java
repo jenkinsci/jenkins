@@ -578,10 +578,12 @@ public final class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,Ma
     }
 
     protected void buildDependencyGraph(DependencyGraph graph) {
-    	Collection<MavenModule> modules = getModules();
-    	for (MavenModule m : modules) {
-    		m.buildDependencyGraph(graph);
-    	}
+        // the modules are already rebuild by DependencyGraph#init !
+//      Collection<MavenModule> modules = getModules();
+//      for (MavenModule m : modules) {
+//          m.buildDependencyGraph(graph);
+//      }
+        
         publishers.buildDependencyGraph(this,graph);
         buildWrappers.buildDependencyGraph(this,graph);
     }

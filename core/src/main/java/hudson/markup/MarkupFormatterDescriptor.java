@@ -38,6 +38,7 @@ public abstract class MarkupFormatterDescriptor extends Descriptor<MarkupFormatt
      * Returns all the registered {@link MarkupFormatterDescriptor}s.
      */
     public static DescriptorExtensionList<MarkupFormatter,MarkupFormatterDescriptor> all() {
-        return Hudson.getInstance().getDescriptorList(MarkupFormatter.class);
+        return Hudson.getInstance().<MarkupFormatter,MarkupFormatterDescriptor>
+                                    getDescriptorList(MarkupFormatter.class);
     }
 }
