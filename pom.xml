@@ -157,6 +157,11 @@ THE SOFTWARE.
             </dependency>
           </dependencies>
         </plugin>
+        <plugin>
+          <groupId>org.kohsuke</groupId>
+          <artifactId>access-modifier-checker</artifactId>
+          <version>1.0</version>
+        </plugin>
       </plugins>
     </pluginManagement>
     
