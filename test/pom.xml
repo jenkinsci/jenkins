@@ -176,9 +176,9 @@ THE SOFTWARE.
       <version>1.0-beta-1</version>
     </dependency-->
     <dependency>
-      <groupId>org.jvnet.hudson</groupId>
+      <groupId>org.jenkins-ci</groupId>
       <artifactId>htmlunit</artifactId>
-      <version>2.6-hudson-2</version>
+      <version>2.6-jenkins-3</version>
       <exclusions>
       	<exclusion>
 	      	<!--  hides JDK DOM classes in Eclipse -->
