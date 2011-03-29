@@ -43,7 +43,7 @@ THE SOFTWARE.
             </a>
           </j:otherwise>
         </j:choose>
-        <img src="${imagesURL}/${iconSize}/folder.gif" style="margin-left:4px" alt="" />
+        <img src="${imagesURL}/${iconSize}/folder.gif" style="margin-left:4px" alt="" class="icon${iconSize}" />
       </div>
     </td>
     <td colspan="5" style="${indenter.getCss(job)}">

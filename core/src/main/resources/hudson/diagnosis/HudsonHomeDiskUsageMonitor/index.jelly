@@ -26,7 +26,7 @@ THE SOFTWARE.
 	<l:layout title="${%JENKINS_HOME is almost full}">
 		<l:main-panel>
       <h1>
-        <img src="${imagesURL}/48x48/warning.gif" />
+        <img src="${imagesURL}/48x48/warning.gif" height="48" width="48" />
         ${%blurb}
       </h1>
 

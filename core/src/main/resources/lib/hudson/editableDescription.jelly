@@ -40,7 +40,7 @@ THE SOFTWARE.
 
     <l:hasPermission permission="${permission}">
       <div align="right"><a href="editDescription" onclick="${h.isAutoRefresh(request) ? null : 'return replaceDescription();'}">
-        <img src="${imagesURL}/16x16/notepad.gif" alt="" />
+        <img src="${imagesURL}/16x16/notepad.gif" alt="" height="16" width="16" />
         <j:choose>
           <j:when test="${empty(it.description)}">
             ${%add description}

@@ -40,7 +40,7 @@ THE SOFTWARE.
         <j:if test="${buildHealth!=null}">
             <a href="${empty(link)?'#':link}" style="${attrs.style}">
                 <img src="${rootURL}${buildHealth.getIconUrl(iconSize)}"
-                     alt="${buildHealth.score}%"/>
+                     alt="${buildHealth.score}%" class="icon${iconSize}"/>
             </a>
         </j:if>
         <j:set var="healthReports" value="${job.buildHealthReports}"/>

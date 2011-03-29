@@ -24,7 +24,7 @@ THE SOFTWARE.
 
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
   <div>
-    <img src="${imagesURL}/24x24/red.gif" alt=""/> ${%Failure}
+    <img src="${imagesURL}/24x24/red.gif" alt="" height="24" width="24"/> ${%Failure}
     -
     <a href="" onclick="var n=findNext(this,function(e){return e.tagName=='PRE'});
                n.style.display='block';this.style.display='none';return false">${%Details}</a>

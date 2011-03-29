@@ -68,7 +68,7 @@ THE SOFTWARE.
               <a href="${rootURL}/${c.url}configure">
                 <img src="${imagesURL}/32x32/setting.png"
                      title="${%Configure}" alt="${%Configure}"
-                     border="0"/>
+                     height="32" width="32" border="0"/>
               </a>
             </j:if>
           </td>

@@ -53,7 +53,8 @@ THE SOFTWARE.
         <j:if test="${attrs.help!=null}">
             <td class="setting-help">
                 <a href="#" class="help-button" helpURL="${rootURL}${attrs.help}"><img src="${imagesURL}/16x16/help.gif"
-                                                                                       alt="Help for feature: ${title}"/></a>
+                                                                                       alt="Help for feature: ${title}"
+                                                                                       height="16" width="16"/></a>
             </td>
         </j:if>
     </tr>

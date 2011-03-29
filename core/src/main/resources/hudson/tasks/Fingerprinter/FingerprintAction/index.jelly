@@ -32,7 +32,7 @@ THE SOFTWARE.
     <st:include it="${it.build}" page="sidepanel.jelly" />
     <l:main-panel>
       <h1>
-        <img src="${imagesURL}/48x48/fingerprint.gif" alt=""/>
+        <img src="${imagesURL}/48x48/fingerprint.gif" alt="" height="48" width="48"/>
         ${%Recorded Fingerprints}
       </h1>
       <table class="fingerprint-in-build sortable">
@@ -66,7 +66,7 @@ THE SOFTWARE.
             </td>
             <td>
               <a href="${rootURL}/fingerprint/${f.hashString}/">
-                <img src="${imagesURL}/16x16/fingerprint.gif" alt=""/> ${%more details}
+                <img src="${imagesURL}/16x16/fingerprint.gif" alt="" height="16" width="16"/> ${%more details}
               </a>
             </td>
           </tr>
