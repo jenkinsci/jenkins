@@ -1457,6 +1457,10 @@ public abstract class HudsonTestCase extends TestCase implements RootAction {
                 public void contextReleased(Context cx) {
                 }
             });
+
+            // avoid a hang by setting a time out. It should be long enough to prevent
+            // false-positive timeout on slow systems
+            setTimeout(60*1000);
         }
 
         /**
