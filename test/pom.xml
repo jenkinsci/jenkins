@@ -152,7 +152,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.mortbay.jetty</groupId>
       <artifactId>jetty</artifactId>
-      <version>6.1.11</version>
+      <version>6.1.26</version>
     </dependency>
     <dependency>
       <groupId>org.jvnet.hudson</groupId>

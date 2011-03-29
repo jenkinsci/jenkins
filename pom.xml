@@ -242,9 +242,9 @@ THE SOFTWARE.
           Since some developers try to run hudson-dev:run from main, define it here so that at least the plugin resolves.
           This enables us to report a better error message.
         -->
-        <groupId>org.jvnet.hudson.tools</groupId>
-        <artifactId>maven-hudson-dev-plugin</artifactId>
-        <version>6.1.7</version>
+        <groupId>org.jenkins-ci.tools</groupId>
+        <artifactId>maven-jenkins-dev-plugin</artifactId>
+        <version>6.1.26-jenkins-1</version>
       </plugin>
 
       <!--<plugin>

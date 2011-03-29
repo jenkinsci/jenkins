@@ -185,7 +185,7 @@ public class EnvVars extends TreeMap<String,String> {
      * when we later kill the processes.
      */
     public static EnvVars createCookie() {
-        return new EnvVars("HUDSON_COOKIE", UUID.randomUUID().toString());
+        return new EnvVars("JENKINS_COOKIE", UUID.randomUUID().toString());
     }
 
     /**
