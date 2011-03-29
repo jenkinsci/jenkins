@@ -34,6 +34,7 @@ import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import static hudson.init.InitMilestone.EXTENSIONS_AUGMENTED;
@@ -62,8 +63,17 @@ public class NullIdDescriptorMonitor extends AdministrativeMonitor {
     private void verify() {
         Hudson h = Hudson.getInstance();
         for (Descriptor d : h.getExtensionList(Descriptor.class)) {
-            if (d.getId()==null) {
-                PluginWrapper p = h.getPluginManager().whichPlugin(d.getClass());
+            PluginWrapper p = h.getPluginManager().whichPlugin(d.getClass());
+            String id;
+            try {
+                id = d.getId();
+            } catch (Throwable t) {
+                LOGGER.log(Level.SEVERE,MessageFormat.format("Descriptor {0} from plugin {1} with display name {2} reported an exception for ID",
+                        d, p == null ? "???" : p.getLongName(), d.getDisplayName()),t);
+                problems.add(d);
+                continue;
+            }
+            if (id==null) {
                 LOGGER.severe(MessageFormat.format("Descriptor {0} from plugin {1} with display name {2} has null ID",
                         d, p==null?"???":p.getLongName(), d.getDisplayName()));
                 problems.add(d);
