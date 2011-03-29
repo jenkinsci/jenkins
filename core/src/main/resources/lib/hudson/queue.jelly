@@ -67,7 +67,7 @@ THE SOFTWARE.
                   <j:if test="${stuck}">
                     &#160;
                     <a href="http://wiki.jenkins-ci.org/display/JENKINS/Executor+Starvation">
-                      <img src="${imagesURL}/16x16/hourglass.gif"  />
+                      <img src="${imagesURL}/16x16/hourglass.gif" height="16" width="16"/>
                     </a>
                   </j:if>
                 </j:when>
@@ -78,7 +78,7 @@ THE SOFTWARE.
             </td>
             <td class="pane" width="16" align="center" valign="middle">
               <j:if test="${item.hasCancelPermission()}">
-                <a href="${rootURL}/queue/item/${item.id}/cancelQueue"><img src="${imagesURL}/16x16/stop.gif" alt="cancel this build" /></a>
+                <a href="${rootURL}/queue/item/${item.id}/cancelQueue"><img src="${imagesURL}/16x16/stop.gif" alt="cancel this build" height="16" width="16"/></a>
               </j:if>
              </td>
           </tr>

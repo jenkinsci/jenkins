@@ -30,55 +30,55 @@ THE SOFTWARE.
     <l:main-panel>
       <table cellpadding="5">
         <tr><td>
-          <img src="images/48x48/grey.gif" alt=""/>
+          <img src="images/48x48/grey.gif" alt="" height="48" width="48"/>
           ${%grey}
         </td></tr>
         <tr><td>
-          <img src="images/48x48/grey_anime.gif" alt=""/>
+          <img src="images/48x48/grey_anime.gif" alt="" height="48" width="48"/>
           ${%grey_anime}
         </td></tr>
         <tr><td>
-          <img src="images/48x48/blue.gif" alt=""/>
+          <img src="images/48x48/blue.gif" alt="" height="48" width="48"/>
           ${%blue}
         </td></tr>
         <tr><td>
-          <img src="images/48x48/blue_anime.gif" alt=""/>
+          <img src="images/48x48/blue_anime.gif" alt="" height="48" width="48"/>
           ${%blue_anime}
         </td></tr>
         <tr><td>
-          <img src="images/48x48/yellow.gif" alt=""/>
+          <img src="images/48x48/yellow.gif" alt="" height="48" width="48"/>
           ${%yellow}
         </td></tr>
         <tr><td>
-          <img src="images/48x48/yellow_anime.gif" alt=""/>
+          <img src="images/48x48/yellow_anime.gif" alt="" height="48" width="48"/>
           ${%yellow_anime}
         </td></tr>
         <tr><td>
-          <img src="images/48x48/red.gif" alt=""/>
+          <img src="images/48x48/red.gif" alt="" height="48" width="48"/>
           ${%red}
         </td></tr>
         <tr><td>
-          <img src="images/48x48/red_anime.gif" alt=""/>
+          <img src="images/48x48/red_anime.gif" alt="" height="48" width="48"/>
           ${%red_anime}
         </td></tr>
         <tr><td>
-          <img src="images/48x48/health-80plus.gif" alt=""/>
+          <img src="images/48x48/health-80plus.gif" alt="" height="48" width="48"/>
           ${%health-81plus}
         </td></tr>
         <tr><td>
-          <img src="images/48x48/health-60to79.gif" alt=""/>
+          <img src="images/48x48/health-60to79.gif" alt="" height="48" width="48"/>
           ${%health-61to80}
         </td></tr>
         <tr><td>
-          <img src="images/48x48/health-40to59.gif" alt=""/>
+          <img src="images/48x48/health-40to59.gif" alt="" height="48" width="48"/>
           ${%health-41to60}
         </td></tr>
         <tr><td>
-          <img src="images/48x48/health-20to39.gif" alt=""/>
+          <img src="images/48x48/health-20to39.gif" alt="" height="48" width="48"/>
           ${%health-21to40}
         </td></tr>
         <tr><td>
-          <img src="images/48x48/health-00to19.gif" alt=""/>
+          <img src="images/48x48/health-00to19.gif" alt="" height="48" width="48"/>
           ${%health-00to20}
         </td></tr>
       </table>

@@ -48,7 +48,7 @@ THE SOFTWARE.
         <td data="${b.iconColor.ordinal()}">
           <a href="${jobBaseUrl}${b.url}">
             <img src="${imagesURL}/${iconSize}/${b.buildStatusUrl}"
-                 alt="${b.iconColor.description}"/>
+                 alt="${b.iconColor.description}" class="icon${iconSize}"/>
           </a>
         </td>
         <td>

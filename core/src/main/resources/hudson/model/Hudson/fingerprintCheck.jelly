@@ -30,7 +30,7 @@ THE SOFTWARE.
     <st:include page="sidepanel.jelly" />
     <l:main-panel>
       <h1>
-        <img src="${imagesURL}/48x48/fingerprint.gif" alt=""/>
+        <img src="${imagesURL}/48x48/fingerprint.gif" alt="" height="48" width="48"/>
         ${%Check File Fingerprint}
       </h1>
       <f:form method="post" action="doFingerprintCheck" enctype="multipart/form-data">

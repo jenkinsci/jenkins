@@ -37,12 +37,12 @@ THE SOFTWARE.
         </tr>
         <j:forEach var="user" items="${it.allUsers}">
           <tr>
-            <td><a href="${user.url}/"><img src="${imagesURL}/32x32/user.gif" alt=""/></a></td>
+            <td><a href="${user.url}/"><img src="${imagesURL}/32x32/user.gif" alt="" height="32" width="32"/></a></td>
             <td><a href="${user.url}/">${user}</a></td>
             <td>
-              <a href="${user.url}/configure"><img src="${imagesURL}/32x32/setting.gif" alt="Setting"/></a>
+              <a href="${user.url}/configure"><img src="${imagesURL}/32x32/setting.gif" alt="Setting" height="32" width="32"/></a>
               <j:if test="${user.canDelete()}">
-                <a href="${user.url}/delete"><img src="${imagesURL}/24x24/edit-delete.gif" alt="Delete"/></a>
+                <a href="${user.url}/delete"><img src="${imagesURL}/24x24/edit-delete.gif" alt="Delete" height="24" width="24"/></a>
               </j:if>
             </td>
           </tr>

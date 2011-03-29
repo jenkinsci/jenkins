@@ -36,7 +36,7 @@ THE SOFTWARE.
 	          <t:buildProgressBar build="${it}"/>
 	        </td><td>
             <j:if test="${it.parent.hasAbortPermission()}">
-              <a href="stop"><img src="${imagesURL}/16x16/stop.gif" alt="[${%cancel}]" /></a>
+              <a href="stop"><img src="${imagesURL}/16x16/stop.gif" alt="[${%cancel}]" height="16" width="16" /></a>
             </j:if>
 	        </td>
 	      </tr></table>
