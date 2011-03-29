@@ -2095,6 +2095,9 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
             if(!(item instanceof ItemGroup))
                 return null;    // this item can't have any children
 
+            if (!item.hasPermission(Item.READ))
+                return null;
+
             parent = (ItemGroup) item;
         }
     }
