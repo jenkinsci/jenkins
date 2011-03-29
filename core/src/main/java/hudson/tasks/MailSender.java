@@ -315,7 +315,7 @@ public class MailSender {
             if(address.startsWith("upstream-individuals:")) {
                 // people who made a change in the upstream
                 String projectName = address.substring("upstream-individuals:".length());
-                AbstractProject up = Hudson.getInstance().getItemByFullName(projectName,AbstractProject.class);
+                AbstractProject up = Hudson.getInstance().getItem(projectName,build.getProject(),AbstractProject.class);
                 if(up==null) {
                     listener.getLogger().println("No such project exist: "+projectName);
                     continue;
