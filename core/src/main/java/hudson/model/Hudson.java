@@ -2059,6 +2059,76 @@ public class Hudson extends Node implements ItemGroup<TopLevelItem>, StaplerProx
         return item;
     }
 
+    /**
+     * Gets the item by its relative name from the given context
+     *
+     * <h2>Relative Names</h2>
+     * <p>
+     * If the name starts from '/', like "/foo/bar/zot", then it's interpreted as absolute.
+     * Otherwise, the name should be something like "../foo/bar" and it's interpreted like
+     * relative path name is, against the given context.
+     *
+     * @param context
+     *      null is interpreted as {@link Hudson}. Base 'directory' of the interpretation.
+     * @since 1.406
+     */
+    public Item getItem(String relativeName, ItemGroup context) {
+        if (context==null)  context = this;
+
+        if (relativeName.startsWith("/"))   // absolute
+            return getItemByFullName(relativeName);
+
+        Object/*Item|ItemGroup*/ ctx = context;
+
+        StringTokenizer tokens = new StringTokenizer(relativeName,"/");
+        while (tokens.hasMoreTokens()) {
+            String s = tokens.nextToken();
+            if (s.equals("..")) {
+                if (ctx instanceof Item) {
+                    ctx = ((Item)ctx).getParent();
+                    continue;
+                }
+
+                ctx=null;    // can't go up further
+                break;
+            }
+            if (s.equals(".")) {
+                continue;
+            }
+
+            if (ctx instanceof ItemGroup) {
+                ItemGroup g = (ItemGroup) ctx;
+                Item i = g.getItem(s);
+                if (i==null || !i.hasPermission(Item.READ)) {
+                    ctx=null;    // can't go up further
+                    break;
+                }
+                ctx=i;
+            }
+        }
+
+        if (ctx instanceof Item)
+            return (Item)ctx;
+
+        // fall back to the classic interpretation
+        return getItemByFullName(relativeName);
+    }
+
+    public final Item getItem(String relativeName, Item context) {
+        return getItem(relativeName,context!=null?context.getParent():null);
+    }
+
+    public final <T extends Item> T getItem(String relativeName, ItemGroup context, Class<T> type) {
+        Item r = getItem(relativeName, context);
+        if (type.isInstance(r))
+            return type.cast(r);
+        return null;
+    }
+
+    public final <T extends Item> T getItem(String relativeName, Item context, Class<T> type) {
+        return getItem(relativeName,context!=null?context.getParent():null,type);
+    }
+
     public File getRootDirFor(TopLevelItem child) {
         return getRootDirFor(child.getName());
     }

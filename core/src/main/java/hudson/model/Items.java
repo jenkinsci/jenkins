@@ -79,16 +79,24 @@ public class Items {
     }
 
     /**
-     * Does the opposite of {@link #toNameList(Collection)}.
+     * @deprecated as of 1.406
+     *      Use {@link #fromNameList(ItemGroup, String, Class)}
      */
     public static <T extends Item> List<T> fromNameList(String list, Class<T> type) {
+        return fromNameList(null,list,type);
+    }
+
+    /**
+     * Does the opposite of {@link #toNameList(Collection)}.
+     */
+    public static <T extends Item> List<T> fromNameList(ItemGroup context, String list, Class<T> type) {
         Hudson hudson = Hudson.getInstance();
 
         List<T> r = new ArrayList<T>();
         StringTokenizer tokens = new StringTokenizer(list,",");
         while(tokens.hasMoreTokens()) {
             String fullName = tokens.nextToken().trim();
-            T item = hudson.getItemByFullName(fullName,type);
+            T item = hudson.getItem(fullName, context, type);
             if(item!=null)
                 r.add(item);
         }
