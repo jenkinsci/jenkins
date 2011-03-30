@@ -64,7 +64,7 @@ THE SOFTWARE.
             <configuration>
               <fork>true</fork>
               <concurrency>${concurrency}</concurrency>
-              <argLine>-XX:MaxPermSize=192m -Xmx256m -Dfile.encoding=UTF-8</argLine>
+              <argLine>-Dfile.encoding=UTF-8</argLine>
               <systemProperties>
                 <property>
                   <!-- use AntClassLoader that supports predictable file handle release -->
