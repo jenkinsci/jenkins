@@ -130,6 +130,13 @@ public abstract class View extends AbstractModelObject implements AccessControll
         this.owner = owner;
     }
 
+    private Object readResolve() {
+        if (properties == null) {
+            properties = new ArrayList<ViewProperty>();
+        }
+        return this;
+    }
+
     /**
      * Gets all the items in this collection in a read-only view.
      */
@@ -213,7 +220,15 @@ public abstract class View extends AbstractModelObject implements AccessControll
         ps.add(p);
         p.setView(this);
         properties = ps;
-        owner.save();
+        save();
+    }
+
+    public void save() throws IOException {
+        // persistence is a part of the owner
+        // due to initialization timing issue, it can be null when this method is called
+        if (owner != null) {
+            owner.save();
+        }
     }
 
     /**
@@ -615,7 +630,7 @@ public abstract class View extends AbstractModelObject implements AccessControll
         checkPermission(CONFIGURE);
 
         description = req.getParameter("description");
-        owner.save();
+        save();
         rsp.sendRedirect(".");  // go to the top page
     }
 
@@ -658,7 +673,7 @@ public abstract class View extends AbstractModelObject implements AccessControll
         }
         properties = props;
 
-        owner.save();
+        save();
 
         rsp.sendRedirect2("../"+name);
     }

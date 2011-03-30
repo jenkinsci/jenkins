@@ -148,10 +148,6 @@ public class TreeView extends View implements ViewGroup {
         // noop
     }
 
-    public void save() throws IOException {
-        owner.save();
-    }
-
     public void doCreateView( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException, FormException {
         checkPermission(View.CREATE);
         views.add(View.create(req,rsp,this));
