@@ -137,7 +137,7 @@ THE SOFTWARE.
           copy.firstChild.innerHTML = name;
           copy.setAttribute("name",'['+name+']');
           table.appendChild(copy);
-          Behaviour.applySubtree(findAncestor(table,"TABLE"));
+          Behaviour.applySubtree(findAncestor(table,"TABLE"),true);
         });
       })();
 
