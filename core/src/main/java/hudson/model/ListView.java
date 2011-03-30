@@ -91,13 +91,6 @@ public class ListView extends View implements Saveable {
         this.owner = owner;
     }
 
-    public void save() throws IOException {
-        // persistence is a part of the owner.
-        // due to the initialization timing issue, it can be null when this method is called.
-        if (owner!=null)
-            owner.save();
-    }
-
     private Object readResolve() {
         if(includeRegex!=null)
             includePattern = Pattern.compile(includeRegex);
