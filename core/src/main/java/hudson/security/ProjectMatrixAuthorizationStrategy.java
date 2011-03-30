@@ -23,8 +23,11 @@
  */
 package hudson.security;
 
+import hudson.model.AbstractItem;
 import hudson.model.Descriptor;
 import hudson.model.Hudson;
+import hudson.model.Item;
+import hudson.model.ItemGroup;
 import hudson.model.Job;
 import hudson.util.RobustReflectionConverter;
 import hudson.Extension;
@@ -49,10 +52,23 @@ public class ProjectMatrixAuthorizationStrategy extends GlobalMatrixAuthorizatio
     public ACL getACL(Job<?,?> project) {
         AuthorizationMatrixProperty amp = project.getProperty(AuthorizationMatrixProperty.class);
         if (amp != null) {
-            return amp.getACL().newInheritingACL(getRootACL());
+            return amp.getACL().newInheritingACL(getACL(project.getParent()));
         } else {
             return getRootACL();
         }
+    }
+
+    public SidACL getACL(ItemGroup g) {
+        if (g instanceof Item) {
+            Item item = (Item) g;
+            return (SidACL)item.getACL();
+        }
+        return getRootACL();
+    }
+
+    @Override
+    public SidACL getACL(AbstractItem item) {
+        return getACL(item.getParent());
     }
 
     @Override
