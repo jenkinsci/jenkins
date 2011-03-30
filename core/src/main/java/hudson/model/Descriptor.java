@@ -292,7 +292,18 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable {
         return "descriptorByName/"+getId();
     }
 
-    private String getCurrentDescriptorByNameUrl() {
+    /**
+     * Gets the URL that this Descriptor is bound to, relative to the context path.
+     * @since 1.406
+     */
+    public final String getDescriptorFullUrl() {
+        return getCurrentDescriptorByNameUrl()+'/'+getDescriptorUrl();
+    }
+
+    /**
+     * @since 1.402
+     */
+    public static String getCurrentDescriptorByNameUrl() {
         StaplerRequest req = Stapler.getCurrentRequest();
         Ancestor a = req.findAncestor(DescriptorByNameOwner.class);
         return a.getUrl();
