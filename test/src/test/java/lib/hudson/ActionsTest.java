@@ -1,7 +1,7 @@
 /*
  * The MIT License
  *
- * Copyright (c) 2004-2009, Sun Microsystems, Inc.
+ * Copyright (c) 2011, CloudBees, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -21,29 +21,22 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package hudson.cli
+package lib.hudson;
 
-import org.jvnet.hudson.test.HudsonTestCase
+import hudson.model.InvisibleAction;
+import hudson.model.RootAction;
+import org.jvnet.hudson.test.HudsonTestCase;
+import org.jvnet.hudson.test.TestExtension;
 
 /**
- *
- *
  * @author Kohsuke Kawaguchi
  */
-public class EnableJobCommandTest extends HudsonTestCase {
-    void test1() {
-        def p = createFreeStyleProject();
-
-        def cli = new CLI(getURL())
-
-        try {
-            cli.execute(["disable-job",p.name])
-            assertTrue(p.disabled)
-            cli.execute(["enable-job",p.name])
-            assertFalse(p.disabled)
-        } finally {
-            cli.close();
-        }
+public class ActionsTest extends HudsonTestCase {
+    public void testOverride() throws Exception {
+        assertNotNull(createWebClient().goTo("").getElementById("bravo"));
     }
 
+    @TestExtension
+    public static class RootActionImpl extends InvisibleAction implements RootAction {
+    }
 }

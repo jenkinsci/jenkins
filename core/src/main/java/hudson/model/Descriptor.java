@@ -282,6 +282,14 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable {
     }
 
     /**
+     * Gets the URL that this Descriptor is bound to, relative to the context path.
+     * @since 1.406
+     */
+    public final String getDescriptorFullUrl() {
+        return getCurrentDescriptorByNameUrl()+'/'+getDescriptorUrl();
+    }
+
+    /**
      * @since 1.402
      */
     public static String getCurrentDescriptorByNameUrl() {

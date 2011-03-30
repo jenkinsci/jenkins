@@ -305,6 +305,10 @@ public class Channel implements VirtualChannel, IChannel {
         this(name,exec,mode,is,os,header,false);
     }
 
+    public Channel(String name, ExecutorService exec, Mode mode, InputStream is, OutputStream os, OutputStream header, boolean restricted) throws IOException {
+        this(name,exec,mode,is,os,header,restricted,null);
+    }
+
     /**
      * Creates a new channel.
      *
@@ -325,6 +329,12 @@ public class Channel implements VirtualChannel, IChannel {
      *      the data goes into the "binary mode". This is useful
      *      when the established communication channel might include some data that might
      *      be useful for debugging/trouble-shooting.
+     * @param base
+     *      Specify the classloader used for deserializing remote commands.
+     *      This is primarily related to {@link #getRemoteProperty(Object)}. Sometimes two parties
+     *      communicate over a channel and pass objects around as properties, but those types might not be
+     *      visible from the classloader loading the {@link Channel} class. In such a case, specify a classloader
+     *      so that those classes resolve. If null, {@code Channel.class.getClassLoader()} is used.
      * @param restricted
      *      If true, this channel won't accept {@link Command}s that allow the remote end to execute arbitrary closures
      *      --- instead they can only call methods on objects that are exported by this channel.
@@ -334,14 +344,17 @@ public class Channel implements VirtualChannel, IChannel {
      *      (provided that all the classes are already available in this JVM), so exactly how
      *      safe the resulting behavior is is up to discussion.
      */
-    public Channel(String name, ExecutorService exec, Mode mode, InputStream is, OutputStream os, OutputStream header, boolean restricted) throws IOException {
-        this(name,exec,mode,is,os,header,restricted,new Capability());
+    public Channel(String name, ExecutorService exec, Mode mode, InputStream is, OutputStream os, OutputStream header, boolean restricted, ClassLoader base) throws IOException {
+        this(name,exec,mode,is,os,header,restricted,base,new Capability());
     }
 
-    /*package*/ Channel(String name, ExecutorService exec, Mode mode, InputStream is, OutputStream os, OutputStream header, boolean restricted, Capability capability) throws IOException {
+    /*package*/ Channel(String name, ExecutorService exec, Mode mode, InputStream is, OutputStream os, OutputStream header, boolean restricted, ClassLoader base, Capability capability) throws IOException {
         this.name = name;
         this.executor = exec;
         this.isRestricted = restricted;
+
+        if (base==null)
+            base = getClass().getClassLoader();
 
         if(export(this,false)!=1)
             throw new AssertionError(); // export number 1 is reserved for the channel itself
@@ -395,7 +408,7 @@ public class Channel implements VirtualChannel, IChannel {
                                 this.oos = oos;
                                 this.remoteCapability = cap;
                                 this.pipeWriter = createPipeWriter();
-                                this.ois = new ObjectInputStream(mode.wrap(is));
+                                this.ois = new ObjectInputStreamEx(mode.wrap(is),base);
                                 new ReaderThread(name).start();
 
                                 return;

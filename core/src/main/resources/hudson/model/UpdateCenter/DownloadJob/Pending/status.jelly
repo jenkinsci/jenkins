@@ -23,5 +23,5 @@ THE SOFTWARE.
 -->
 
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
-  <img src="${imagesURL}/24x24/grey.gif" alt=""/> ${%Pending}
+  <img src="${imagesURL}/24x24/grey.gif" alt="" height="24" width="24"/> ${%Pending}
 </j:jelly>

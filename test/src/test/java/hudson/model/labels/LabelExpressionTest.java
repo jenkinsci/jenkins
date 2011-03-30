@@ -34,6 +34,7 @@ import hudson.model.Label;
 import hudson.model.Node.Mode;
 import hudson.slaves.DumbSlave;
 import hudson.slaves.RetentionStrategy;
+import org.jvnet.hudson.test.Bug;
 import org.jvnet.hudson.test.HudsonTestCase;
 import org.jvnet.hudson.test.SequenceLock;
 import org.jvnet.hudson.test.TestBuilder;
@@ -133,6 +134,11 @@ public class LabelExpressionTest extends HudsonTestCase {
         parseAndVerify("(foo||bar)&&zot", "(foo||bar)&&zot");
         parseAndVerify("foo->bar", "foo ->\tbar");
         parseAndVerify("!foo<->bar", "!foo <-> bar");
+    }
+
+    @Bug(8537)
+    public void testParser2() throws Exception {
+        parseAndVerify("aaa&&bbb&&ccc","aaa&&bbb&&ccc");
     }
 
     private void parseAndVerify(String expected, String expr) throws ANTLRException {

@@ -308,7 +308,9 @@ public class JDKInstaller extends ToolInstaller {
                 IOUtils.copy(new RetryableHttpStream(src) {
                     @Override
                     protected HttpURLConnection connect() throws IOException {
-                        return (HttpURLConnection) ProxyConfiguration.open(url);
+                        HttpURLConnection con = (HttpURLConnection) ProxyConfiguration.open(url);
+                        con.setReadTimeout(60*1000);    // don't block forever, but don't let the slow client fail with false positives either
+                        return con;
                     }
                 }, out);
             } finally {

@@ -30,7 +30,7 @@ THE SOFTWARE.
         <j:choose>
           <j:when test="${m.value.size()==0}">
             <td class="no-wrap">
-              <img src="${imagesURL}/16x16/grey.gif" alt=""/>
+              <img src="${imagesURL}/16x16/grey.gif" alt="" height="16" width="16"/>
               <st:nbsp/>${m.key.displayName} (${%noRun})
             </td><td>
             </td>
@@ -40,7 +40,7 @@ THE SOFTWARE.
             <td class="no-wrap">
               <a href="${m.key.shortUrl}">
                 <img src="${imagesURL}/16x16/${mb.buildStatusUrl}"
-                     alt="${mb.iconColor.description}"/>
+                     alt="${mb.iconColor.description}" height="16" width="16"/>
               </a>
               <st:nbsp/>
               <a href="${m.key.shortUrl}">
@@ -53,7 +53,7 @@ THE SOFTWARE.
           <j:otherwise>
             <!-- there are multiple builds for this module, so use a different format -->
             <td class="no-wrap">
-              <img src="${imagesURL}/16x16/empty.gif" alt=""/>
+              <img src="${imagesURL}/16x16/empty.gif" alt="" height="16" width="16"/>
               <st:nbsp/>
               <a href="${rootURL}/${m.key.url}">${m.key.displayName}</a>
             </td><td>

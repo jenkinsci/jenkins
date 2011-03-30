@@ -24,7 +24,7 @@ THE SOFTWARE.
 
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
   <div>
-    <img src="${imagesURL}/24x24/grey_anime.gif" alt=""/> ${%Installing}
+    <img src="${imagesURL}/24x24/grey_anime.gif" alt="" height="24" width="24"/> ${%Installing}
   </div>
   <div style="padding-left: 32px">
     <t:progressBar pos="${it.percentage}" />

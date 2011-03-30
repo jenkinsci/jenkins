@@ -335,7 +335,7 @@ public class AggregatedTestResultPublisher extends Recorder {
 
             for (String name : Util.tokenize(fixNull(value), ",")) {
                 name = name.trim();
-                if(Hudson.getInstance().getItemByFullName(name)==null)
+                if(Hudson.getInstance().getItem(name,project)==null)
                     return FormValidation.error(hudson.tasks.Messages.BuildTrigger_NoSuchProject(name,AbstractProject.findNearest(name).getName()));
             }
             

@@ -27,9 +27,12 @@ THE SOFTWARE.
 -->
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
   <j:forEach var="action" items="${it.actions}">
-    <j:if test="${action.iconFileName!=null}">
-      <l:task icon="${h.getIconFilePath(action)}" title="${action.displayName}"
-              href="${h.getActionUrl(it.url,action)}" />
-    </j:if>
+    <!-- allow the action to take over the rendering, but otherwise fall back to the default -->
+    <st:include page="action.jelly" from="${action}" optional="true">
+      <j:if test="${action.iconFileName!=null}">
+        <l:task icon="${h.getIconFilePath(action)}" title="${action.displayName}"
+                href="${h.getActionUrl(it.url,action)}" />
+      </j:if>
+    </st:include>
   </j:forEach>
 </j:jelly>

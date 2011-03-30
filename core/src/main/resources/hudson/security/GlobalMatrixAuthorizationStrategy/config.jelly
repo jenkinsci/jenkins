@@ -41,7 +41,7 @@ THE SOFTWARE.
         <td class="stop">
           <j:if test="${attrs.sid!='anonymous'}">
             <a href="#">
-              <img alt="remove" src="${imagesURL}/16x16/stop.gif"/>
+              <img alt="remove" src="${imagesURL}/16x16/stop.gif" height="16" width="16"/>
             </a>
           </j:if>
         </td>
@@ -105,7 +105,7 @@ THE SOFTWARE.
       <input type="text" id="${id}text" />
       <input type="button" value="${%Add}" id="${id}button"/>
      </td><td align="right">
-      <a href="#" class="help-button" helpURL="${rootURL}${descriptor.find('hudson.security.GlobalMatrixAuthorizationStrategy$DescriptorImpl').getHelpFile('user-group')}"><img src="${imagesURL}/16x16/help.gif" alt="[help]"/></a>
+      <a href="#" class="help-button" helpURL="${rootURL}${descriptor.find('hudson.security.GlobalMatrixAuthorizationStrategy$DescriptorImpl').getHelpFile('user-group')}"><img src="${imagesURL}/16x16/help.gif" alt="[help]" height="16" width="16"/></a>
      </td></tr>
      <f:helpArea />
     </table>
@@ -137,7 +137,7 @@ THE SOFTWARE.
           copy.firstChild.innerHTML = name;
           copy.setAttribute("name",'['+name+']');
           table.appendChild(copy);
-          Behaviour.applySubtree(findAncestor(table,"TABLE"));
+          Behaviour.applySubtree(findAncestor(table,"TABLE"),true);
         });
       })();
 
@@ -151,7 +151,7 @@ THE SOFTWARE.
           e = null; <!-- avoid memory leak -->
         },
         <j:if test="${empty(descriptorPath)}">
-          <j:set var="descriptorPath" value="${rootURL}/descriptor/${descriptor.clazz.name}"/>
+          <j:set var="descriptorPath" value="${rootURL}${descriptor.descriptorFullUrl}"/>
         </j:if>
         <!-- validates the name -->
         "#${strategyid} TR.permission-row" : function(e) {

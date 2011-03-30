@@ -73,6 +73,8 @@ import hudson.model.TaskListener;
 import hudson.model.UpdateSite;
 import hudson.model.User;
 import hudson.model.View;
+import hudson.remoting.Channel;
+import hudson.remoting.VirtualChannel;
 import hudson.remoting.Which;
 import hudson.security.ACL;
 import hudson.security.AbstractPasswordBasedSecurityRealm;
@@ -120,9 +122,11 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Enumeration;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
+import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CountDownLatch;
@@ -231,7 +235,12 @@ public abstract class HudsonTestCase extends TestCase implements RootAction {
     /**
      * Remember {@link WebClient}s that are created, to release them properly.
      */
-    private List<WeakReference<WebClient>> clients = new ArrayList<WeakReference<WebClient>>();
+    private List<WebClient> clients = new ArrayList<WebClient>();
+
+    /**
+     * Remember channels that are created, to release them at the end.
+     */
+    private List<Channel> channels = new ArrayList<Channel>();
 
     /**
      * JavaScript "debugger" that provides you information about the JavaScript call stack
@@ -338,13 +347,19 @@ public abstract class HudsonTestCase extends TestCase implements RootAction {
     protected void tearDown() throws Exception {
         try {
             // cancel pending asynchronous operations, although this doesn't really seem to be working
-            for (WeakReference<WebClient> client : clients) {
-                WebClient c = client.get();
-                if(c==null) continue;
+            for (WebClient client : clients) {
                 // unload the page to cancel asynchronous operations
-                c.getPage("about:blank");
+                client.getPage("about:blank");
+                client.closeAllWindows();
             }
             clients.clear();
+
+            for (Channel c : channels)
+                c.close();
+            for (Channel c : channels)
+                c.join();
+            channels.clear();
+
         } finally {
             server.stop();
             for (LenientRunnable r : tearDowns)
@@ -435,6 +450,17 @@ public abstract class HudsonTestCase extends TestCase implements RootAction {
 
         return realm;
     }
+
+    @TestExtension
+    public static class ComputerListenerImpl extends ComputerListener {
+        @Override
+        public void onOnline(Computer c, TaskListener listener) throws IOException, InterruptedException {
+            VirtualChannel ch = c.getChannel();
+            if (ch instanceof Channel)
+            TestEnvironment.get().testCase.channels.add((Channel)ch);
+        }
+    }
+
 
 //    /**
 //     * Sets guest credentials to access java.net Subversion repo.
@@ -1432,7 +1458,7 @@ public abstract class HudsonTestCase extends TestCase implements RootAction {
 
 //            setJavaScriptEnabled(false);
             setPageCreator(HudsonPageCreator.INSTANCE);
-            clients.add(new WeakReference<WebClient>(this));
+            clients.add(this);
             // make ajax calls run as post-action for predictable behaviors that simplify debugging
             setAjaxController(new AjaxController() {
                 public boolean processSynchron(HtmlPage page, WebRequestSettings settings, boolean async) {
@@ -1474,6 +1500,10 @@ public abstract class HudsonTestCase extends TestCase implements RootAction {
                 public void contextReleased(Context cx) {
                 }
             });
+
+            // avoid a hang by setting a time out. It should be long enough to prevent
+            // false-positive timeout on slow systems
+            setTimeout(60*1000);
         }
 
         /**

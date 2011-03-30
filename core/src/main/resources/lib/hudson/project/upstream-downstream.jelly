@@ -31,7 +31,7 @@ THE SOFTWARE.
       <j:if test="${lhs.fingerprintConfigured and rhs.fingerprintConfigured}">
         <st:nbsp/>
         <a href="${rootURL}/projectRelationship?lhs=${lhs.name}&amp;rhs=${rhs.name}">
-          <img src="${imagesURL}/16x16/fingerprint.gif" alt="check relationship"/>
+          <img src="${imagesURL}/16x16/fingerprint.gif" alt="check relationship" height="16" width="16"/>
         </a>
       </j:if>
     </d:tag>

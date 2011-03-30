@@ -12,6 +12,7 @@ import hudson.model.Hudson;
  */
 public abstract class ComputerConnectorDescriptor extends Descriptor<ComputerConnector> {
     public static DescriptorExtensionList<ComputerConnector,ComputerConnectorDescriptor> all() {
-        return Hudson.getInstance().getDescriptorList(ComputerConnector.class);
+        return Hudson.getInstance().<ComputerConnector,ComputerConnectorDescriptor>
+                                    getDescriptorList(ComputerConnector.class);
     }
 }

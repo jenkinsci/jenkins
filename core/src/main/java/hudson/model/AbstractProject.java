@@ -627,7 +627,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
 
         Set<AbstractProject> upstream = Collections.emptySet();
         if(req.getParameter("pseudoUpstreamTrigger")!=null) {
-            upstream = new HashSet<AbstractProject>(Items.fromNameList(req.getParameter("upstreamProjects"),AbstractProject.class));
+            upstream = new HashSet<AbstractProject>(Items.fromNameList(getParent(),req.getParameter("upstreamProjects"),AbstractProject.class));
         }
 
         // dependency setting might have been changed by the user, so rebuild.
@@ -645,7 +645,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
                 // does 'p' include us in its BuildTrigger? 
                 DescribableList<Publisher,Descriptor<Publisher>> pl = p.getPublishersList();
                 BuildTrigger trigger = pl.get(BuildTrigger.class);
-                List<AbstractProject> newChildProjects = trigger == null ? new ArrayList<AbstractProject>():trigger.getChildProjects();
+                List<AbstractProject> newChildProjects = trigger == null ? new ArrayList<AbstractProject>():trigger.getChildProjects(p);
                 if(isUpstream) {
                     if(!newChildProjects.contains(this))
                         newChildProjects.add(this);
@@ -673,13 +673,13 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
                         pl.removeAll(BuildTrigger.class);
                         Set<AbstractProject> combinedChildren = new HashSet<AbstractProject>();
                         for (BuildTrigger bt : existingList)
-                            combinedChildren.addAll(bt.getChildProjects());
+                            combinedChildren.addAll(bt.getChildProjects(p));
                         existing = new BuildTrigger(new ArrayList<AbstractProject>(combinedChildren),existingList.get(0).getThreshold());
                         pl.add(existing);
                         break;
                     }
 
-                    if(existing!=null && existing.hasSame(newChildProjects))
+                    if(existing!=null && existing.hasSame(p,newChildProjects))
                         continue;   // no need to touch
                     pl.replace(new BuildTrigger(newChildProjects,
                         existing==null?Result.SUCCESS:existing.getThreshold()));
@@ -1432,7 +1432,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
         for (AbstractProject<?,?> ap : getUpstreamProjects()) {
             BuildTrigger buildTrigger = ap.getPublishersList().get(BuildTrigger.class);
             if (buildTrigger != null)
-                if (buildTrigger.getChildProjects().contains(this))
+                if (buildTrigger.getChildProjects(ap).contains(this))
                     result.add(ap);
         }        
         return result;

@@ -57,6 +57,7 @@ import org.jruby.ext.posix.Passwd;
 import org.jruby.ext.posix.Group;
 
 import java.util.Set;
+import java.util.logging.Logger;
 import java.io.File;
 
 /**
@@ -158,7 +159,7 @@ public class PAMSecurityRealm extends SecurityRealm {
             File s = new File("/etc/shadow");
             if(s.exists() && !s.canRead()) {
                 // it looks like shadow password is in use, but we don't have read access
-                System.out.println("Shadow in use");
+                LOGGER.fine("/etc/shadow exists but not readable");
                 POSIX api = PosixAPI.get();
                 FileStat st = api.stat("/etc/shadow");
                 if(st==null)
@@ -195,4 +196,6 @@ public class PAMSecurityRealm extends SecurityRealm {
         if(!Functions.isWindows()) return new DescriptorImpl();
         return null;
     }
+
+    private static final Logger LOGGER = Logger.getLogger(PAMSecurityRealm.class.getName());
 }

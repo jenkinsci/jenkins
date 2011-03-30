@@ -32,7 +32,7 @@ THE SOFTWARE.
   
   <groupId>org.jenkins-ci.main</groupId>
   <artifactId>pom</artifactId>
-  <version>1.405-SNAPSHOT</version>
+  <version>1.406-SNAPSHOT</version>
   <packaging>pom</packaging>
   
   <name>Jenkins main module</name>
@@ -157,6 +157,11 @@ THE SOFTWARE.
             </dependency>
           </dependencies>
         </plugin>
+        <plugin>
+          <groupId>org.kohsuke</groupId>
+          <artifactId>access-modifier-checker</artifactId>
+          <version>1.0</version>
+        </plugin>
       </plugins>
     </pluginManagement>
     
@@ -237,9 +242,9 @@ THE SOFTWARE.
           Since some developers try to run hudson-dev:run from main, define it here so that at least the plugin resolves.
           This enables us to report a better error message.
         -->
-        <groupId>org.jvnet.hudson.tools</groupId>
-        <artifactId>maven-hudson-dev-plugin</artifactId>
-        <version>6.1.7</version>
+        <groupId>org.jenkins-ci.tools</groupId>
+        <artifactId>maven-jenkins-dev-plugin</artifactId>
+        <version>6.1.26-jenkins-1</version>
       </plugin>
 
       <!--<plugin>
