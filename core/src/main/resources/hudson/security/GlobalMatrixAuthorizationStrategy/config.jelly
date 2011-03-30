@@ -151,7 +151,7 @@ THE SOFTWARE.
           e = null; <!-- avoid memory leak -->
         },
         <j:if test="${empty(descriptorPath)}">
-          <j:set var="descriptorPath" value="${rootURL}/descriptor/${descriptor.clazz.name}"/>
+          <j:set var="descriptorPath" value="${rootURL}${descriptor.descriptorFullUrl}"/>
         </j:if>
         <!-- validates the name -->
         "#${strategyid} TR.permission-row" : function(e) {
