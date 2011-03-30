@@ -23,9 +23,6 @@
  */
 package hudson.model;
 
-import static hudson.model.Hudson.checkGoodName;
-
-import hudson.CopyOnWrite;
 import hudson.DescriptorExtensionList;
 import hudson.Extension;
 import hudson.ExtensionPoint;
@@ -39,10 +36,17 @@ import hudson.security.ACL;
 import hudson.security.AccessControlled;
 import hudson.security.Permission;
 import hudson.security.PermissionGroup;
+import hudson.util.DescribableList;
 import hudson.util.DescriptorList;
 import hudson.util.RunList;
 import hudson.widgets.Widget;
+import net.sf.json.JSONObject;
+import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.StaplerResponse;
+import org.kohsuke.stapler.export.Exported;
+import org.kohsuke.stapler.export.ExportedBean;
 
+import javax.servlet.ServletException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -56,13 +60,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 
-import javax.servlet.ServletException;
-
-import net.sf.json.JSONObject;
-import org.kohsuke.stapler.StaplerRequest;
-import org.kohsuke.stapler.StaplerResponse;
-import org.kohsuke.stapler.export.Exported;
-import org.kohsuke.stapler.export.ExportedBean;
+import static hudson.model.Hudson.*;
 
 /**
  * Encapsulates the rendering of the list of {@link TopLevelItem}s
@@ -85,7 +83,7 @@ import org.kohsuke.stapler.export.ExportedBean;
  * @see ViewGroup
  */
 @ExportedBean
-public abstract class View extends AbstractModelObject implements AccessControlled, Describable<View>, ExtensionPoint {
+public abstract class View extends AbstractModelObject implements AccessControlled, Describable<View>, ExtensionPoint, Saveable {
     /**
      * Container of this view. Set right after the construction
      * and never change thereafter.
@@ -118,8 +116,7 @@ public abstract class View extends AbstractModelObject implements AccessControll
      * List of {@link ViewProperty}s configured for this view.
      * @since 1.406
      */
-    @CopyOnWrite
-    private volatile List<ViewProperty> properties = new ArrayList<ViewProperty>();
+    private volatile DescribableList<ViewProperty,ViewPropertyDescriptor> properties = new PropertyList();
 
     protected View(String name) {
         this.name = name;
@@ -132,7 +129,7 @@ public abstract class View extends AbstractModelObject implements AccessControll
 
     private Object readResolve() {
         if (properties == null) {
-            properties = new ArrayList<ViewProperty>();
+            properties = new PropertyList();
         }
         return this;
     }
@@ -204,23 +201,8 @@ public abstract class View extends AbstractModelObject implements AccessControll
      * Gets the view properties configured for this view.
      * @since 1.406
      */
-    public Map<Descriptor<ViewProperty>,ViewProperty> getProperties() {
-        return Descriptor.toMap(properties);
-    }
-
-    /**
-     * Updates the view object by adding a property.
-     * @since 1.406
-     */
-    public synchronized void addProperty(ViewProperty p) throws IOException {
-        ViewProperty old = getProperty(p.getClass());
-        List<ViewProperty> ps = new ArrayList<ViewProperty>(properties);
-        if(old!=null)
-            ps.remove(old);
-        ps.add(p);
-        p.setView(this);
-        properties = ps;
-        save();
+    public DescribableList<ViewProperty,ViewPropertyDescriptor> getProperties() {
+        return properties;
     }
 
     public void save() throws IOException {
@@ -237,22 +219,8 @@ public abstract class View extends AbstractModelObject implements AccessControll
      */
     @Exported(name="property",inline=true)
     public List<ViewProperty> getAllProperties() {
-        return Collections.unmodifiableList(properties);
+        return properties.toList();
     }
-
-    /**
-     * Gets the specific property, or null.
-     * @since 1.406
-     */
-    public <T extends ViewProperty> T getProperty(Class<T> clazz) {
-        for (ViewProperty p : properties) {
-            if(clazz.isInstance(p))
-                return clazz.cast(p);
-        }
-        return null;
-    }
-
-
 
     public ViewDescriptor getDescriptor() {
         return (ViewDescriptor)Hudson.getInstance().getDescriptorOrDie(getClass());
@@ -655,7 +623,7 @@ public abstract class View extends AbstractModelObject implements AccessControll
         List<ViewProperty> props = new ArrayList<ViewProperty>();
         int i = 0;
         for (ViewPropertyDescriptor d: ViewProperty.all()) {
-            ViewProperty p = getProperty(d.clazz);
+            ViewProperty p = properties.get(d.clazz);
 
             JSONObject o = json.optJSONObject("viewProperty" + (i++));
             if (o != null) {
@@ -664,14 +632,13 @@ public abstract class View extends AbstractModelObject implements AccessControll
                 } else {
                     p = d.newInstance(req, o);
                 }
-                p.setView(this);
             }
 
             if (p != null) {
                 props.add(p);
             }
         }
-        properties = props;
+        properties.replaceBy(props);
 
         save();
 
@@ -796,5 +763,17 @@ public abstract class View extends AbstractModelObject implements AccessControll
         rsp.sendRedirect2(req.getContextPath()+'/'+v.getUrl()+v.getPostConstructLandingPage());
 
         return v;
+    }
+
+    private class PropertyList extends DescribableList<ViewProperty,ViewPropertyDescriptor> {
+        private PropertyList() {
+            super(View.this);
+        }
+
+        @Override
+        protected void onModified() throws IOException {
+            for (ViewProperty p : this)
+                p.setView(View.this);
+        }
     }
 }
