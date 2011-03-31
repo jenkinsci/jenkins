@@ -67,8 +67,11 @@ public abstract class ViewPropertyDescriptor extends Descriptor<ViewProperty> {
      * <p>
      * This mechanism is useful if the availability of the property is
      * contingent of some other settings.
+     *
+     * @param view
+     *      View for which this property is considered. Never null.
      */
-    public boolean isEnabled() {
+    public boolean isEnabledFor(View view) {
         return true;
     }
 }
