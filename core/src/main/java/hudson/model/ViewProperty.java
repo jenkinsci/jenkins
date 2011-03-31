@@ -25,8 +25,13 @@ package hudson.model;
 
 import hudson.DescriptorExtensionList;
 import hudson.ExtensionPoint;
+import hudson.console.ConsoleAnnotator;
+import hudson.console.ConsoleAnnotatorFactory;
 import net.sf.json.JSONObject;
 import org.kohsuke.stapler.StaplerRequest;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Extensible property of {@link View}.
@@ -68,5 +73,4 @@ public class ViewProperty implements Describable<ViewProperty>, ExtensionPoint {
     public ViewProperty reconfigure(StaplerRequest req, JSONObject form) throws Descriptor.FormException {
     	return getDescriptor().newInstance(req, form);
     }
-
 }

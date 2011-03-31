@@ -29,6 +29,8 @@ import hudson.ExtensionPoint;
 import hudson.Util;
 import hudson.model.Descriptor.FormException;
 import hudson.model.Node.Mode;
+import hudson.model.labels.LabelAtomProperty;
+import hudson.model.labels.LabelAtomPropertyDescriptor;
 import hudson.scm.ChangeLogSet.Entry;
 import hudson.search.CollectionSearchIndex;
 import hudson.search.SearchIndexBuilder;
@@ -203,6 +205,19 @@ public abstract class View extends AbstractModelObject implements AccessControll
      */
     public DescribableList<ViewProperty,ViewPropertyDescriptor> getProperties() {
         return properties;
+    }
+
+    /**
+     * Returns all the {@link LabelAtomPropertyDescriptor}s that can be potentially configured
+     * on this label.
+     */
+    public List<ViewPropertyDescriptor> getApplicablePropertyDescriptors() {
+        List<ViewPropertyDescriptor> r = new ArrayList<ViewPropertyDescriptor>();
+        for (ViewPropertyDescriptor pd : ViewProperty.all()) {
+            if (pd.isEnabledFor(this))
+                r.add(pd);
+        }
+        return r;
     }
 
     public void save() throws IOException {
@@ -620,25 +635,7 @@ public abstract class View extends AbstractModelObject implements AccessControll
 
         JSONObject json = req.getSubmittedForm();
 
-        List<ViewProperty> props = new ArrayList<ViewProperty>();
-        int i = 0;
-        for (ViewPropertyDescriptor d: ViewProperty.all()) {
-            ViewProperty p = properties.get(d.clazz);
-
-            JSONObject o = json.optJSONObject("viewProperty" + (i++));
-            if (o != null) {
-                if (p != null) {
-                    p = p.reconfigure(req, o);
-                } else {
-                    p = d.newInstance(req, o);
-                }
-            }
-
-            if (p != null) {
-                props.add(p);
-            }
-        }
-        properties.replaceBy(props);
+        properties.rebuild(req, req.getSubmittedForm(), getApplicablePropertyDescriptors());
 
         save();
 
