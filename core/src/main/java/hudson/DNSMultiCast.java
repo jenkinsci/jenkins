@@ -40,6 +40,8 @@ public class DNSMultiCast implements Closeable {
                 props.put("slave-port",String.valueOf(tal.getPort()));
 
             jmdns.registerService(ServiceInfo.create("_hudson._tcp.local.","hudson",
+                    80,0,0,props));	// for backward compatibility
+            jmdns.registerService(ServiceInfo.create("_jenkins._tcp.local.","jenkins",
                     80,0,0,props));
         } catch (IOException e) {
             LOGGER.log(Level.WARNING,"Failed to advertise the service to DNS multi-cast",e);
