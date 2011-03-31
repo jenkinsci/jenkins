@@ -128,7 +128,11 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.util.concurrent.SynchronousQueue;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 import java.util.jar.Manifest;
 import java.util.logging.Filter;
 import java.util.logging.Level;
@@ -421,6 +425,7 @@ public abstract class HudsonTestCase extends TestCase implements RootAction {
         context.setMimeTypes(MIME_TYPES);
 
         SocketConnector connector = new SocketConnector();
+        server.setThreadPool(new ThreadPoolImpl(new ThreadPoolExecutor(1, 10, 10L, TimeUnit.SECONDS, new SynchronousQueue<Runnable>())));
         server.addConnector(connector);
         server.addUserRealm(configureUserRealm());
         server.start();
