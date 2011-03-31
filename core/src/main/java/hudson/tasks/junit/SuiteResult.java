@@ -101,16 +101,19 @@ public final class SuiteResult implements Serializable {
         Document result = saxReader.read(xmlReport);
         Element root = result.getRootElement();
 
-        if(root.getName().equals("testsuites")) {
-            // multi-suite file
-            for (Element suite : (List<Element>)root.elements("testsuite"))
-                r.add(new SuiteResult(xmlReport, suite, keepLongStdio));
-        } else {
-            // single suite file
-            r.add(new SuiteResult(xmlReport, root, keepLongStdio));
-        }
+        parseSuite(xmlReport,keepLongStdio,r,root);
 
         return r;
+    }
+
+    private static void parseSuite(File xmlReport, boolean keepLongStdio, List<SuiteResult> r, Element root) throws DocumentException, IOException {
+        // nested test suites
+        for (Element suite : (List<Element>)root.elements("testsuite"))
+            parseSuite(xmlReport, keepLongStdio, r, suite);
+
+        // child test cases
+        if (root.element("testcase")!=null)
+            r.add(new SuiteResult(xmlReport, root, keepLongStdio));
     }
 
     /**
