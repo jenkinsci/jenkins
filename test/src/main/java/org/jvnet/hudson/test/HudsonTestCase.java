@@ -32,6 +32,7 @@ import hudson.Extension;
 import hudson.ExtensionList;
 import hudson.FilePath;
 import hudson.Functions;
+import hudson.Functions.ThreadGroupMap;
 import hudson.Launcher;
 import hudson.Launcher.LocalLauncher;
 import hudson.Main;
@@ -107,6 +108,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.lang.annotation.Annotation;
+import java.lang.management.ThreadInfo;
 import java.lang.ref.WeakReference;
 import java.lang.reflect.Array;
 import java.lang.reflect.Constructor;
@@ -386,8 +388,27 @@ public abstract class HudsonTestCase extends TestCase implements RootAction {
         System.out.println("=== Starting "+ getClass().getSimpleName() + "." + getName());
         // so that test code has all the access to the system
         SecurityContextHolder.getContext().setAuthentication(ACL.SYSTEM);
-        super.runTest();
+
+        try {
+            super.runTest();
+        } catch (Throwable t) {
+            // allow the late attachment of a debugger in case of a failure. Useful
+            // for diagnosing a rare failure
+            try {
+                throw new BreakException();
+            } catch (BreakException e) {}
+
+            // dump threads
+            ThreadInfo[] threadInfos = Functions.getThreadInfos();
+            ThreadGroupMap m = Functions.sortThreadsAndGetGroupMap(threadInfos);
+            for (ThreadInfo ti : threadInfos) {
+                System.err.println(Functions.dumpThreadInfo(ti, m));
+            }
+            throw t;
+        }
     }
+
+    public static class BreakException extends Exception {}
 
     public String getIconFileName() {
         return null;
