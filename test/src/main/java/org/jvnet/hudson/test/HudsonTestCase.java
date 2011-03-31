@@ -131,6 +131,7 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.SynchronousQueue;
+import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.jar.Manifest;
@@ -425,7 +426,13 @@ public abstract class HudsonTestCase extends TestCase implements RootAction {
         context.setMimeTypes(MIME_TYPES);
 
         SocketConnector connector = new SocketConnector();
-        server.setThreadPool(new ThreadPoolImpl(new ThreadPoolExecutor(1, 10, 10L, TimeUnit.SECONDS, new SynchronousQueue<Runnable>())));
+        server.setThreadPool(new ThreadPoolImpl(new ThreadPoolExecutor(1, 10, 10L, TimeUnit.SECONDS, new SynchronousQueue<Runnable>(),new ThreadFactory() {
+            public Thread newThread(Runnable r) {
+                Thread t = new Thread(r);
+                t.setName("Jetty Thread Pool");
+                return t;
+            }
+        })));
         server.addConnector(connector);
         server.addUserRealm(configureUserRealm());
         server.start();
