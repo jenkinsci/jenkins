@@ -28,7 +28,12 @@ public class CliAuthenticationTest extends HudsonTestCase {
     }
 
     private int command(String... args) throws Exception {
-        return new CLI(getURL()).execute(args);
+        CLI cli = new CLI(getURL());
+        try {
+            return cli.execute(args);
+        } finally {
+            cli.close();
+        }
     }
 
     @TestExtension

@@ -134,11 +134,15 @@ THE SOFTWARE.
       </plugin>
       <plugin>
         <!-- this is really just a patched version of maven-jetty-plugin to workaround issue #932 -->
-        <groupId>org.jvnet.hudson.tools</groupId>
-        <artifactId>maven-hudson-dev-plugin</artifactId>
-        <version>6.1.7-hudson-1</version>
+        <groupId>org.jenkins-ci.tools</groupId>
+        <artifactId>maven-jenkins-dev-plugin</artifactId>
+        <version>6.1.26-jenkins-1</version>
         <configuration>
           <contextPath>${contextPath}</contextPath>
+          <!--
+            Reload webapp when you hit ENTER. (See JETTY-282 for more)
+          -->
+          <reload>manual</reload>
           <connectors>
             <connector implementation="org.mortbay.jetty.nio.SelectChannelConnector">
                 <port>${port}</port>
@@ -152,10 +156,6 @@ THE SOFTWARE.
           <!-- use the test classpath for loading resources, since this takes priority -->
           <testClassesDirectory>../core/src/main/resources</testClassesDirectory>
           <useTestClasspath>true</useTestClasspath>
-          <!--
-            Reload webapp when you hit ENTER. (See JETTY-282 for more)
-          -->
-          <consoleForceReload>true</consoleForceReload>
           <userRealms>
             <userRealm implementation="org.mortbay.jetty.security.HashUserRealm">
               <name>default</name>
