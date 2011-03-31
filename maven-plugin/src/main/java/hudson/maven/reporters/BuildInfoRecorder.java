@@ -65,9 +65,13 @@ public class BuildInfoRecorder extends MavenReporter {
             Map<String,String> props = build.execute(new BuildCallable<Map<String,String>,IOException>() {
                 public Map<String,String> call(MavenBuild build) throws IOException, InterruptedException {
                     Map<String,String> r = new HashMap<String, String>();
+                    // leave Hudson for backward comp
                     r.put("Hudson-Build-Number",String.valueOf(build.getNumber()));
                     r.put("Hudson-Project",build.getParent().getParent().getName());
                     r.put("Hudson-Version",Hudson.VERSION);
+                    r.put("Jenkins-Build-Number",String.valueOf(build.getNumber()));
+                    r.put("Jenkins-Project",build.getParent().getParent().getName());
+                    r.put("Jenkins-Version",Hudson.VERSION);
                     return r;
                 }
             });

@@ -52,6 +52,8 @@ public class TestExtensionLoader extends ExtensionFinder {
 
         List<ExtensionComponent<T>> result = new ArrayList<ExtensionComponent<T>>();
 
+        if (env==null)  return result;  // not in a test
+
         ClassLoader cl = hudson.getPluginManager().uberClassLoader;
         for (IndexItem<TestExtension,Object> item : Index.load(TestExtension.class, Object.class, cl)) {
             try {
@@ -93,6 +95,8 @@ public class TestExtensionLoader extends ExtensionFinder {
     }
 
     private boolean isActive(TestEnvironment env, Class<?> extType) {
+        if (env == null || env.testCase == null)
+            return false;
         for (Class<?> outer = extType; outer!=null; outer=outer.getEnclosingClass())
             if (outer.isInstance(env.testCase))
                 return true;      // enclosed
