@@ -30,6 +30,7 @@ import hudson.ExtensionPoint;
 import hudson.FilePath;
 import hudson.FileSystemProvisioner;
 import hudson.Launcher;
+import hudson.model.Descriptor.FormException;
 import hudson.model.Queue.Task;
 import hudson.model.labels.LabelAtom;
 import hudson.model.queue.CauseOfBlockage;
@@ -56,7 +57,9 @@ import java.util.Set;
 import java.util.List;
 import java.util.logging.Logger;
 
+import net.sf.json.JSONObject;
 import org.kohsuke.stapler.Stapler;
+import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.export.ExportedBean;
 import org.kohsuke.stapler.export.Exported;
 
@@ -71,7 +74,7 @@ import org.kohsuke.stapler.export.Exported;
  * @see NodeDescriptor
  */
 @ExportedBean
-public abstract class Node extends AbstractModelObject implements Describable<Node>, ExtensionPoint, AccessControlled {
+public abstract class Node extends AbstractModelObject implements ReconfigurableDescribable<Node>, ExtensionPoint, AccessControlled {
 
     private static final Logger LOGGER = Logger.getLogger(Node.class.getName());
 
@@ -360,6 +363,10 @@ public abstract class Node extends AbstractModelObject implements Describable<No
 
     public final boolean hasPermission(Permission permission) {
         return getACL().hasPermission(permission);
+    }
+
+    public Node reconfigure(StaplerRequest req, JSONObject form) throws FormException {
+        return form==null ? null : getDescriptor().newInstance(req, form);
     }
 
     public abstract NodeDescriptor getDescriptor();
