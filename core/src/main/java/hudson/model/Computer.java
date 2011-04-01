@@ -1029,7 +1029,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
         
         final Hudson app = Hudson.getInstance();
 
-        Node result = getNode().getDescriptor().newInstance(req, req.getSubmittedForm());
+        Node result = getNode().reconfigure(req, req.getSubmittedForm());
 
         // replace the old Node object by the new one
         synchronized (app) {
