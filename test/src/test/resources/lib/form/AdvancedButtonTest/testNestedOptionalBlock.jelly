@@ -36,7 +36,7 @@ THE SOFTWARE.
         <f:entry title="b">
           <f:textbox name="b" value="bvalue" />
         </f:entry>
-        <f:optionalBlock name="c">
+        <f:optionalBlock name="c" title="Some Title">
           <f:entry title="d">
             <f:textbox name="d" value="dvalue" />
           </f:entry>
