@@ -1026,6 +1026,9 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
      */
     public void doConfigSubmit( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException, FormException {
         checkPermission(CONFIGURE);
+
+        String name = Util.fixEmptyAndTrim(req.getSubmittedForm().getString("name"));
+        Hudson.checkGoodName(name);
         
         final Hudson app = Hudson.getInstance();
 
@@ -1047,7 +1050,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
         // take the user back to the slave top page.
         rsp.sendRedirect2("../"+result.getNodeName()+'/');
     }
-
+    
     /**
      * Really deletes the slave.
      */
