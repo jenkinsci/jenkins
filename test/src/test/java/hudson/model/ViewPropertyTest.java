@@ -25,9 +25,12 @@ package hudson.model;
 
 import com.gargoylesoftware.htmlunit.html.HtmlForm;
 import com.gargoylesoftware.htmlunit.html.HtmlLabel;
+import hudson.model.Descriptor.FormException;
+import net.sf.json.JSONObject;
 import org.jvnet.hudson.test.HudsonTestCase;
 import org.jvnet.hudson.test.TestExtension;
 import org.kohsuke.stapler.DataBoundConstructor;
+import org.kohsuke.stapler.StaplerRequest;
 
 /**
  * @author Kohsuke Kawaguchi
@@ -65,6 +68,39 @@ public class ViewPropertyTest extends HudsonTestCase {
             @Override
             public String getDisplayName() {
                 return "Debug Property";
+            }
+        }
+    }
+
+    public void testInvisibleProperty() throws Exception {
+        ListView foo = new ListView("foo");
+        hudson.addView(foo);
+
+        // test the rendering (or the lack thereof) of an invisible property
+        configRoundtrip(foo);
+        assertNull(foo.getProperties().get(InvisiblePropertyImpl.class));
+
+        // do the same but now with a configured instance
+        InvisiblePropertyImpl vp = new InvisiblePropertyImpl();
+        foo.getProperties().add(vp);
+        configRoundtrip(foo);
+        assertSame(vp,foo.getProperties().get(InvisiblePropertyImpl.class));
+    }
+
+    public static class InvisiblePropertyImpl extends ViewProperty {
+        InvisiblePropertyImpl() {
+        }
+
+        @Override
+        public ViewProperty reconfigure(StaplerRequest req, JSONObject form) throws FormException {
+            return this;
+        }
+
+        @TestExtension
+        public static class DescriptorImpl extends ViewPropertyDescriptor {
+            @Override
+            public String getDisplayName() {
+                return null;
             }
         }
     }
