@@ -52,7 +52,6 @@ THE SOFTWARE.
 	  <td colspan="3">
 	    <input type="radio" name="${name}" value="${value}"
              class="radio-block-control" checked="${checked?'true':null}" />
-      <st:nbsp/>
       <label class="attach-previous">${title}</label>
     </td>
     <j:if test="${attrs.help!=null}">

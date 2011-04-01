@@ -59,9 +59,6 @@ THE SOFTWARE.
          checkUrl="${attrs.checkUrl}" json="${attrs.json}"
          checked="${(attrs.checked ?: instance[attrs.field] ?: attrs.default) ? 'true' : null}"/>
   <j:if test="${attrs.title!=null}">
-    <label class="attach-previous">
-      <j:whitespace> </j:whitespace>
-      ${attrs.title}
-    </label>
+    <label class="attach-previous">${attrs.title}</label>
   </j:if>
 </j:jelly>
