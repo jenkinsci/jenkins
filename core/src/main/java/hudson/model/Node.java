@@ -367,7 +367,7 @@ public abstract class Node extends AbstractModelObject implements Reconfigurable
         return getACL().hasPermission(permission);
     }
 
-    public Node reconfigure(final StaplerRequest req, JSONObject form) throws FormException {
+    public Node reconfigure(StaplerRequest req, JSONObject form) throws FormException {
         if (form==null)     return null;
 
         final JSONObject jsonForProperties = form.optJSONObject("nodeProperties");
