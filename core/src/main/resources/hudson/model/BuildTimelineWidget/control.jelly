@@ -70,7 +70,7 @@ THE SOFTWARE.
         theme1.timeline_start = new Date(${it.firstBuild.timeInMillis-24*60*60*1000});
         theme1.timeline_stop  = new Date(${it.lastBuild.timeInMillis+24*60*60*1000});
 
-        var d = theme1.timeline_stop;
+        var d = new Date(${it.lastBuild.timeInMillis});
         var bandInfos = [
             // the bar that shows outline
             Timeline.createBandInfo({
