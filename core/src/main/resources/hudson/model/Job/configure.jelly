@@ -52,7 +52,7 @@ THE SOFTWARE.
           </f:optionalBlock>
         </j:if>
 
-        <!-- job property configurations -->
+        <!-- job property configurations. This should have been <f:descriptorList> -->
         <j:set var="instances" value="${it.properties}" />
         <j:forEach var="d" items="${h.getJobPropertyDescriptors(it.getClass())}" varStatus="loop">
           <j:scope>
