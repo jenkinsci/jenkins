@@ -381,6 +381,21 @@ THE SOFTWARE.
     </dependency>
     <dependency>
       <groupId>org.kohsuke.stapler</groupId>
+      <artifactId>stapler-jruby</artifactId>
+      <version>1.161-SNAPSHOT</version>
+      <exclusions>
+        <exclusion>
+          <groupId>commons-jelly</groupId>
+          <artifactId>commons-jelly</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>commons-jexl</groupId>
+          <artifactId>commons-jexl</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+    <dependency>
+      <groupId>org.kohsuke.stapler</groupId>
       <artifactId>stapler-jelly</artifactId>
       <version>1.160</version>
       <exclusions>
