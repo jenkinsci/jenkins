@@ -33,6 +33,7 @@ import hudson.Extension;
 import hudson.ExtensionList;
 import hudson.FilePath;
 import hudson.Functions;
+import hudson.Functions.ThreadGroupMap;
 import hudson.Launcher;
 import hudson.Launcher.LocalLauncher;
 import hudson.Main;
@@ -108,6 +109,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.lang.annotation.Annotation;
+import java.lang.management.ThreadInfo;
 import java.lang.ref.WeakReference;
 import java.lang.reflect.Array;
 import java.lang.reflect.Constructor;
@@ -130,7 +132,12 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.util.concurrent.SynchronousQueue;
+import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 import java.util.jar.Manifest;
 import java.util.logging.Filter;
 import java.util.logging.Level;
@@ -383,8 +390,27 @@ public abstract class HudsonTestCase extends TestCase implements RootAction {
         System.out.println("=== Starting "+ getClass().getSimpleName() + "." + getName());
         // so that test code has all the access to the system
         SecurityContextHolder.getContext().setAuthentication(ACL.SYSTEM);
-        super.runTest();
+
+        try {
+            super.runTest();
+        } catch (Throwable t) {
+            // allow the late attachment of a debugger in case of a failure. Useful
+            // for diagnosing a rare failure
+            try {
+                throw new BreakException();
+            } catch (BreakException e) {}
+
+            // dump threads
+            ThreadInfo[] threadInfos = Functions.getThreadInfos();
+            ThreadGroupMap m = Functions.sortThreadsAndGetGroupMap(threadInfos);
+            for (ThreadInfo ti : threadInfos) {
+                System.err.println(Functions.dumpThreadInfo(ti, m));
+            }
+            throw t;
+        }
     }
+
+    public static class BreakException extends Exception {}
 
     public String getIconFileName() {
         return null;
@@ -425,6 +451,13 @@ public abstract class HudsonTestCase extends TestCase implements RootAction {
         SocketConnector connector = new SocketConnector();
         connector.setHeaderBufferSize(12*1024); // use a bigger buffer as Stapler traces can get pretty large on deeply nested URL
 
+        server.setThreadPool(new ThreadPoolImpl(new ThreadPoolExecutor(1, 10, 10L, TimeUnit.SECONDS, new SynchronousQueue<Runnable>(),new ThreadFactory() {
+            public Thread newThread(Runnable r) {
+                Thread t = new Thread(r);
+                t.setName("Jetty Thread Pool");
+                return t;
+            }
+        })));
         server.addConnector(connector);
         server.addUserRealm(configureUserRealm());
         server.start();
