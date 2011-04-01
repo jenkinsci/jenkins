@@ -787,6 +787,16 @@ public abstract class HudsonTestCase extends TestCase implements RootAction {
         return (C)computerConnectorTester.connector;
     }
 
+    protected User configRoundtrip(User u) throws Exception {
+        submit(createWebClient().goTo(u.getUrl()+"/configure").getFormByName("config"));
+        return u;
+    }
+        
+    protected <N extends Node> N configRoundtrip(N node) throws Exception {
+        submit(createWebClient().goTo("/computer/"+node.getNodeName()+"/configure").getFormByName("config"));
+        return (N)hudson.getNode(node.getNodeName());
+    }
+
     protected <V extends View> V configRoundtrip(V view) throws Exception {
         submit(createWebClient().getPage(view, "configure").getFormByName("viewConfig"));
         return view;
