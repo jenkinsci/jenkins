@@ -456,6 +456,10 @@ div.behavior-loading {
     filter: alpha(opacity=50);
 }
 
+LABEL.attach-previous {
+    margin-left: 0.5em;
+}
+
 /* ======================== error/warning message (mainly in the form.) Use them on block elements ======================== */
 .error {
     color: #CC0000;
