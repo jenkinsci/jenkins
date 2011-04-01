@@ -26,6 +26,8 @@ package hudson.slaves;
 import hudson.ExtensionPoint;
 import hudson.Launcher;
 import hudson.DescriptorExtensionList;
+import hudson.model.Descriptor.FormException;
+import hudson.model.ReconfigurableDescribable;
 import hudson.model.queue.CauseOfBlockage;
 import hudson.scm.SCM;
 import hudson.model.AbstractBuild;
@@ -35,6 +37,8 @@ import hudson.model.Environment;
 import hudson.model.Hudson;
 import hudson.model.Node;
 import hudson.model.Queue.Task;
+import net.sf.json.JSONObject;
+import org.kohsuke.stapler.StaplerRequest;
 
 import java.io.IOException;
 import java.util.List;
@@ -63,7 +67,7 @@ import java.util.List;
  *
  * @since 1.286
  */
-public abstract class NodeProperty<N extends Node> implements Describable<NodeProperty<?>>, ExtensionPoint {
+public abstract class NodeProperty<N extends Node> implements ReconfigurableDescribable<NodeProperty<?>>, ExtensionPoint {
 
     protected transient N node;
 
@@ -107,6 +111,10 @@ public abstract class NodeProperty<N extends Node> implements Describable<NodePr
      */
     public Environment setUp( AbstractBuild build, Launcher launcher, BuildListener listener ) throws IOException, InterruptedException {
     	return new Environment() {};
+    }
+
+    public NodeProperty<?> reconfigure(StaplerRequest req, JSONObject form) throws FormException {
+        return form==null ? null : getDescriptor().newInstance(req, form);
     }
 
     /**

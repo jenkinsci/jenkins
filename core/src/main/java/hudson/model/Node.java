@@ -51,6 +51,7 @@ import hudson.util.TagCloud;
 import hudson.util.TagCloud.WeightFunction;
 
 import java.io.IOException;
+import java.lang.reflect.Type;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
@@ -58,6 +59,7 @@ import java.util.List;
 import java.util.logging.Logger;
 
 import net.sf.json.JSONObject;
+import org.kohsuke.stapler.BindInterceptor;
 import org.kohsuke.stapler.Stapler;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.export.ExportedBean;
@@ -365,8 +367,32 @@ public abstract class Node extends AbstractModelObject implements Reconfigurable
         return getACL().hasPermission(permission);
     }
 
-    public Node reconfigure(StaplerRequest req, JSONObject form) throws FormException {
-        return form==null ? null : getDescriptor().newInstance(req, form);
+    public Node reconfigure(final StaplerRequest req, JSONObject form) throws FormException {
+        if (form==null)     return null;
+
+        final JSONObject jsonForProperties = form.optJSONObject("nodeProperties");
+        BindInterceptor old = req.setBindListener(new BindInterceptor() {
+            @Override
+            public Object onConvert(Type targetType, Class targetTypeErasure, Object jsonSource) {
+                if (jsonForProperties!=jsonSource)  return DEFAULT;
+
+                try {
+                    DescribableList<NodeProperty<?>, NodePropertyDescriptor> tmp = new DescribableList<NodeProperty<?>, NodePropertyDescriptor>(Saveable.NOOP,getNodeProperties().toList());
+                    tmp.rebuild(req, jsonForProperties, NodeProperty.all());
+                    return tmp.toList();
+                } catch (FormException e) {
+                    throw new IllegalArgumentException(e);
+                } catch (IOException e) {
+                    throw new IllegalArgumentException(e);
+                }
+            }
+        });
+
+        try {
+            return getDescriptor().newInstance(req, form);
+        } finally {
+            req.setBindListener(old);
+        }
     }
 
     public abstract NodeDescriptor getDescriptor();
