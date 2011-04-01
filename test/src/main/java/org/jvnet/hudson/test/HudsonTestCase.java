@@ -769,7 +769,7 @@ public abstract class HudsonTestCase extends TestCase implements RootAction {
      * This is useful during debugging a test so that one can inspect the state of Hudson through the web browser.
      */
     public void interactiveBreak() throws Exception {
-        System.out.println("Hudson is running at http://localhost:"+localPort+"/");
+        System.out.println("Jenkins is running at http://localhost:"+localPort+"/");
         new BufferedReader(new InputStreamReader(System.in)).readLine();
     }
 
