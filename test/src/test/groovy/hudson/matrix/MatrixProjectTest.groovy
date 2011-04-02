@@ -282,7 +282,7 @@ public class MatrixProjectTest extends HudsonTestCase {
 
     @Bug(9009)
     void testTrickyNodeName() {
-        def names = [ createSlave("Sean's Workstation",null,null), createSlave("John\"s Workstation",null,null) ]*.nodeName;
+        def names = [ createSlave("Sean's Workstation",null), createSlave("John\"s Workstation",null) ]*.nodeName;
         def p = createMatrixProject();
         p.setAxes(new AxisList([new LabelAxis("label",names)]));
         configRoundtrip(p);
