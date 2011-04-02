@@ -685,11 +685,14 @@ public abstract class HudsonTestCase extends TestCase implements RootAction {
      */
     public DumbSlave createSlave(String labels, EnvVars env) throws Exception {
         synchronized (hudson) {
-            // this synchronization block is so that we don't end up adding the same slave name more than once.
-
             int sz = hudson.getNodes().size();
+            return createSlave("slave" + sz,labels,env);
+    	}
+    }
 
-            DumbSlave slave = new DumbSlave("slave" + sz, "dummy",
+    public DumbSlave createSlave(String nodeName, String labels, EnvVars env) throws Exception {
+        synchronized (hudson) {
+            DumbSlave slave = new DumbSlave(nodeName, "dummy",
     				createTmpDir().getPath(), "1", Mode.NORMAL, labels==null?"":labels, createComputerLauncher(env), RetentionStrategy.NOOP, Collections.EMPTY_LIST);
     		hudson.addNode(slave);
     		return slave;
