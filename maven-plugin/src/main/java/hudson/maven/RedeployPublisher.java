@@ -189,6 +189,11 @@ public class RedeployPublisher extends Recorder {
                 
                 Node buildNode = build.getBuiltOn();
                 
+                if(buildNode == null) {
+                    // assume that build was made on master
+                    buildNode = Hudson.getInstance();
+                }
+                
                 if (StringUtils.isBlank( altSettingsPath ) ) {
                     // get userHome from the node where job has been executed
                     String remoteUserHome = build.getWorkspace().act( new GetUserHome() );
