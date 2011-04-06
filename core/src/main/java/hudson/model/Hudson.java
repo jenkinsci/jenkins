@@ -637,7 +637,7 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
             }
 
             // get or create the secret
-            TextFile secretFile = new TextFile(new File(Hudson.getInstance().getRootDir(),"secret.key"));
+            TextFile secretFile = new TextFile(new File(getRootDir(),"secret.key"));
             if(secretFile.exists()) {
                 secretKey = secretFile.readTrim();
             } else {
@@ -2961,7 +2961,7 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
     public void doDoFingerprintCheck( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
         // Parse the request
         MultipartFormDataParser p = new MultipartFormDataParser(req);
-        if(Hudson.getInstance().isUseCrumbs() && !Hudson.getInstance().getCrumbIssuer().validateCrumb(req, p)) {
+        if(isUseCrumbs() && !getCrumbIssuer().validateCrumb(req, p)) {
             rsp.sendError(HttpServletResponse.SC_FORBIDDEN,"No crumb found");
         }
         try {
