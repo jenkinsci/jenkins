@@ -45,8 +45,10 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.ListIterator;
+import java.util.Map;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.maven.artifact.versioning.ComparableVersion;
@@ -64,6 +66,13 @@ import org.codehaus.plexus.util.xml.Xpp3Dom;
  */
 public class SurefireArchiver extends MavenReporter {
     private TestResult result;
+    
+    /**
+     * Store the filesets here as we want to track ignores between multiple runs of this class<br/>
+     * Note: Because this class can be run with different mojo goals with different path settings, 
+     * we track multiple {@link FileSet}s for each encountered <tt>reportsDir</tt>
+     */
+    private transient Map<File, FileSet> fileSets;
 
     public boolean preExecute(MavenBuildProxy build, MavenProject pom, MojoInfo mojo, BuildListener listener) throws InterruptedException, IOException {
         if (isSurefireTest(mojo)) {
@@ -115,12 +124,14 @@ public class SurefireArchiver extends MavenReporter {
         if(reportsDir.exists()) {
             // surefire:test just skips itself when the current project is not a java project
 
-            FileSet fs = Util.createFileSet(reportsDir,"*.xml","testng-results.xml,testng-failed.xml");
-            DirectoryScanner ds = fs.getDirectoryScanner();
+        	FileSet fileSet = getFileSet(reportsDir);
+            DirectoryScanner ds = fileSet.getDirectoryScanner();
 
             if(ds.getIncludedFiles().length==0)
                 // no test in this module
                 return true;
+            
+            rememberCheckedFiles(reportsDir, ds);
 
             if(result==null)    result = new TestResult();
             result.parse(System.currentTimeMillis() - build.getMilliSecsSinceBuildStart(), ds);
@@ -151,6 +162,37 @@ public class SurefireArchiver extends MavenReporter {
         }
 
         return true;
+    }
+    
+    /**
+     * Returns the appropriate FileSet for the selected baseDir
+     * @param baseDir
+     * @return
+     */
+    private synchronized FileSet getFileSet(File baseDir) {
+    	if (fileSets == null) {
+    		 fileSets = Collections.synchronizedMap(new HashMap<File, FileSet>());
+    	}
+    	
+    	FileSet fs = fileSets.get(baseDir);
+    	
+    	if (fs == null) {
+    		fs = Util.createFileSet(baseDir, "*.xml","testng-results.xml,testng-failed.xml");
+    		fileSets.put(baseDir, fs);
+    	}
+    	
+    	return fs;
+    }
+    
+    /**
+     * Add checked files to the exclude list of the fileSet
+     */
+    private void rememberCheckedFiles(File baseDir, DirectoryScanner ds) {
+    	FileSet fileSet = getFileSet(baseDir);
+    	
+    	for (String file : ds.getIncludedFiles()) {
+    		fileSet.setExcludes(file);
+    	}
     }
 
     /**
