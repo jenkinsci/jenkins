@@ -45,10 +45,13 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.maven.artifact.versioning.ComparableVersion;
@@ -72,7 +75,11 @@ public class SurefireArchiver extends MavenReporter {
      * Note: Because this class can be run with different mojo goals with different path settings, 
      * we track multiple {@link FileSet}s for each encountered <tt>reportsDir</tt>
      */
-    private transient Map<File, FileSet> fileSets;
+    private transient Map<File, FileSet> fileSets = new ConcurrentHashMap<File,FileSet>();// Collections.synchronizedMap(new HashMap<File, FileSet>());
+
+    private final ReadWriteLock fileSetsReadWriteLock = new ReentrantReadWriteLock();
+    private final Lock fileSetsReadLock = fileSetsReadWriteLock.readLock();
+    private Lock fileSetsWriteLock = fileSetsReadWriteLock.writeLock();
 
     public boolean preExecute(MavenBuildProxy build, MavenProject pom, MojoInfo mojo, BuildListener listener) throws InterruptedException, IOException {
         if (isSurefireTest(mojo)) {
@@ -169,16 +176,31 @@ public class SurefireArchiver extends MavenReporter {
      * @param baseDir
      * @return
      */
-    private synchronized FileSet getFileSet(File baseDir) {
-    	if (fileSets == null) {
-    		 fileSets = Collections.synchronizedMap(new HashMap<File, FileSet>());
-    	}
-    	
-    	FileSet fs = fileSets.get(baseDir);
-    	
+    private FileSet getFileSet(File baseDir) {
+    	FileSet fs = null;
+        if (fileSets == null) {
+            fileSetsWriteLock.lock();
+            try {
+                fileSets = new ConcurrentHashMap<File,FileSet>();
+            } finally {
+                fileSetsWriteLock.unlock();
+            }
+        }
+
+        fileSetsReadLock.lock();
+        try {
+            fs = fileSets.get(baseDir);
+        } finally {
+            fileSetsReadLock.unlock();
+        }
     	if (fs == null) {
     		fs = Util.createFileSet(baseDir, "*.xml","testng-results.xml,testng-failed.xml");
-    		fileSets.put(baseDir, fs);
+            fileSetsWriteLock.lock();
+            try {
+    		    fileSets.put(baseDir, fs);
+            } finally {
+                fileSetsWriteLock.unlock();
+            }
     	}
     	
     	return fs;
@@ -258,12 +280,11 @@ public class SurefireArchiver extends MavenReporter {
                 }
             }
             else if (mojo.is("org.sonatype.flexmojos", "flexmojos-maven-plugin", "test-run")) {
-		Boolean skipTests = mojo.getConfigurationValue("skipTest", Boolean.class);
-		
-		if (((skipTests != null) && (skipTests))) {
-		    return false;
-		}
-	    }
+                Boolean skipTests = mojo.getConfigurationValue("skipTest", Boolean.class);
+                if (((skipTests != null) && (skipTests))) {
+                    return false;
+                }
+	        }
 
         } catch (ComponentConfigurationException e) {
             return false;
