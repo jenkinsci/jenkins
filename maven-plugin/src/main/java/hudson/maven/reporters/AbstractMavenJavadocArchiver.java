@@ -110,6 +110,11 @@ public abstract class AbstractMavenJavadocArchiver extends MavenReporter {
             else
                 build.registerAsProjectAction(this);
 
+            // JENKINS-9202 if project without any module
+            if  (pom.getModules() != null &&  pom.getModules().isEmpty() && pom.isExecutionRoot() ) {
+                build.registerAsAggregatedProjectAction(this);
+            }
+
         }
 
         return true;
