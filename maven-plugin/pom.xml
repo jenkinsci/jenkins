@@ -252,7 +252,7 @@ THE SOFTWARE.
       <artifactId>lib-jenkins-maven-embedder</artifactId>
       <version>3.4</version>
       <exclusions>
-        <exclusion><!-- we'll add our own patched version. see http://www.nabble.com/Issue-1680-td18383889.html -->
+        <exclusion><!-- we'll add our own patched version. see https://issues.jenkins-ci.org/browse/JENKINS-1680 -->
           <groupId>jtidy</groupId>
           <artifactId>jtidy</artifactId>
         </exclusion>
