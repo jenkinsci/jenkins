@@ -23,7 +23,6 @@
  */
 package hudson;
 
-import hudson.remoting.Future;
 import hudson.remoting.VirtualChannel;
 import hudson.util.IOException2;
 import hudson.util.NullStream;
@@ -33,12 +32,15 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-import org.apache.commons.io.output.CountingOutputStream;
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.output.NullOutputStream;
 import org.jvnet.hudson.test.Bug;
 
@@ -255,4 +257,44 @@ public class FilePathTest extends ChannelTestCase {
         assertEquals("C:\\", (fp = fp.getParent()).getRemote());
         assertNull(fp.getParent());
     }
+
+    private FilePath createFilePath(final File base, final String... path) throws IOException {
+        File building = base;
+        for (final String component : path) {
+            building = new File(building, component);
+        }
+        FileUtils.touch(building);
+        return new FilePath(building);
+    }
+
+    public void testList() throws Exception {
+        File baseDir = Util.createTempDir();
+        try {
+            final Set<FilePath> expected = new HashSet<FilePath>();
+            expected.add(createFilePath(baseDir, "top", "sub", "app.log"));
+            expected.add(createFilePath(baseDir, "top", "sub", "trace.log"));
+            expected.add(createFilePath(baseDir, "top", "db", "db.log"));
+            expected.add(createFilePath(baseDir, "top", "db", "trace.log"));
+            final FilePath[] result = new FilePath(baseDir).list("**");
+            assertEquals(expected, new HashSet<FilePath>(Arrays.asList(result)));
+        } finally {
+            Util.deleteRecursive(baseDir);
+        }
+    }
+
+    public void testListWithExcludes() throws Exception {
+        File baseDir = Util.createTempDir();
+        try {
+            final Set<FilePath> expected = new HashSet<FilePath>();
+            expected.add(createFilePath(baseDir, "top", "sub", "app.log"));
+            createFilePath(baseDir, "top", "sub", "trace.log");
+            expected.add(createFilePath(baseDir, "top", "db", "db.log"));
+            createFilePath(baseDir, "top", "db", "trace.log");
+            final FilePath[] result = new FilePath(baseDir).list("**", "**/trace.log");
+            assertEquals(expected, new HashSet<FilePath>(Arrays.asList(result)));
+        } finally {
+            Util.deleteRecursive(baseDir);
+        }
+    }
+
 }
