@@ -22,6 +22,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 -->
 
+<?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
   <l:layout title="${it.displayName}">
     <st:include page="sidepanel.jelly" />
@@ -48,7 +49,7 @@ THE SOFTWARE.
         <img src="${imagesURL}/48x48/${it.icon}" width="48" height="48" alt=""/>
         ${it.caption}
         <j:if test="${!empty(it.node.nodeDescription)}">
-          <span style="font-size:smaller">(${it.node.nodeDescription})</span>
+          <span style="font-size:smaller">(<j:out value="${it.node.nodeDescription}"/>)</span>
         </j:if>
       </h1>
 

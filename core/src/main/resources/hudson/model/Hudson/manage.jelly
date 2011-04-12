@@ -25,6 +25,7 @@ THE SOFTWARE.
 <!--
   Entrance to the configuration page
 -->
+<?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
 <l:layout title="${%Manage Jenkins}" xmlns:local="local" permission="${app.ADMINISTER}">
   <d:taglib uri="local">
@@ -101,7 +102,7 @@ THE SOFTWARE.
       <j:forEach var="m" items="${it.managementLinks}">
         <j:if test="${m.iconFileName!=null}">
           <local:feature icon="${m.iconFileName}"      href="${m.urlName}"   title="${m.displayName}">
-            ${m.description}
+            <j:out value="${m.description}"/>
           </local:feature>
         </j:if>
       </j:forEach>

@@ -23,6 +23,7 @@ THE SOFTWARE.
 -->
 
 <!-- used when fingerprint had no match -->
+<?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
   <l:layout>
     <l:header title="${%No matching record found}" />
@@ -38,7 +39,7 @@ THE SOFTWARE.
       </h1>
 
       <p>
-        ${%description(h.escape(it.displayName))}
+        ${%description(it.displayName)}
       </p>
       <ol>
         <li>
