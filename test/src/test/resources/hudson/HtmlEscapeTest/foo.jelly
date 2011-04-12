@@ -1,0 +1,17 @@
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:i="jelly:fmt">
+  <st:contentType value="text/html;charset=UTF-8"/>
+  <html>
+    <body>
+      <div id="d1">
+        ${%msg}
+      </div>
+      <div id="d2">
+        ${%msg2(it.str)}
+      </div>
+      <div id="d3">
+        ${it.str}
+      </div>
+    </body>
+  </html>
+</j:jelly>
