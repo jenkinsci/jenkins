@@ -394,6 +394,11 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
          *      Passed in for the convenience. The returned path must be registered to this object.
          */
         protected Lease decideWorkspace(Node n, WorkspaceList wsl) throws InterruptedException, IOException {
+            String customWorkspace = getProject().getCustomWorkspace();
+            if (customWorkspace != null) {
+                // we allow custom workspaces to be concurrently used between jobs.
+                return Lease.createDummyLease(n.getRootPath().child(getEnvironment(listener).expand(customWorkspace)));
+            }
             // TODO: this cast is indicative of abstraction problem
             return wsl.allocate(n.getWorkspaceFor((TopLevelItem)getProject()));
         }
