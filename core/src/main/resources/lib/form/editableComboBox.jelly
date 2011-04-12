@@ -23,6 +23,7 @@ THE SOFTWARE.
 -->
 
 <!-- Tomcat doesn't like us using the attribute called 'class' -->
+<?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
   <st:documentation>
     Editable drop-down combo box. Deprecated as of 1.356. Use f:combobox and databinding instead.

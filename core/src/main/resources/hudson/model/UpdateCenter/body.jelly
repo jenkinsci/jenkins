@@ -26,6 +26,7 @@ THE SOFTWARE.
   Requested by the browser separately to partially update the page.
   Also used as a part of index.jelly rendering.
 -->
+<?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
   <l:ajax>
     <table id="log">

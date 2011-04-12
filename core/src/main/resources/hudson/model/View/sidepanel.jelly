@@ -26,6 +26,7 @@ THE SOFTWARE.
 <!--
   Side panel for the build view.
 -->
+<?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:s="/lib/form">
   <l:header title="Jenkins">
     <link rel="alternate" title="Jenkins:${it.viewName} (all builds)" href="${rootURL}/${it.url}rssAll" type="application/rss+xml" />
