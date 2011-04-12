@@ -539,6 +539,10 @@ public class Functions {
         return Util.xmlEscape(s);
     }
 
+    public static String xmlUnescape(String s) {
+        return s.replace("&lt;","<").replace("&gt;",">").replace("&amp;","&");
+    }
+
     public static String htmlAttributeEscape(String text) {
         StringBuilder buf = new StringBuilder(text.length()+64);
         for( int i=0; i<text.length(); i++ ) {
