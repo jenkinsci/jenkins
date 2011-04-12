@@ -323,17 +323,6 @@ public class MatrixBuild extends AbstractBuild<MatrixProject,MatrixBuild> {
             for (MatrixAggregator a : aggregators)
                 a.endBuild();
         }
-        
-        @Override
-        protected Lease decideWorkspace(Node n, WorkspaceList wsl) throws IOException, InterruptedException {
-            String customWorkspace = getProject().getCustomWorkspace();
-            if (customWorkspace != null) {
-                // we allow custom workspaces to be concurrently used between jobs.
-                return Lease.createDummyLease(n.getRootPath().child(getEnvironment(listener).expand(customWorkspace)));
-            }
-            return super.decideWorkspace(n,wsl);
-        }
-      
     }
 
     /**
