@@ -32,7 +32,7 @@ public interface IJobService {
     
     @POST
     @Path("/{jobName}")
-    void createJob(@PathParam("jobName") final Job job);
+    void createJob(@PathParam("jobName") final String job);
     
     @PUT
     @Path("/{jobName}")
@@ -61,7 +61,7 @@ public interface IJobService {
     
     @POST
     @Path("/{jobName}/builds/kickoff")
-    int kickoffBuild(@PathParam("name") final String jobName);
+    int kickoffBuild(@PathParam("jobName") final String jobName);
     
     @GET
     @Path("/{jobName}/builds/{buildNumber}")

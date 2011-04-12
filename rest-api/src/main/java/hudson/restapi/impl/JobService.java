@@ -44,7 +44,7 @@ public class JobService implements IJobService {
         return new Job(repo.getJob(jobName, Permission.READ));
     }
 
-    public void createJob(final Job job) {
+    public void createJob(final String job) {
         throw new WebApplicationException(Response.Status.INTERNAL_SERVER_ERROR);
     }
 

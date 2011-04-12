@@ -33,7 +33,7 @@ THE SOFTWARE.
   <!--  REST API -->
   <context-param>
     <param-name>resteasy.guice.modules</param-name>
-    <param-value>jenkins.restapi.guice.RestsAPIModule</param-value>
+    <param-value>hudson.restapi.guice.RestAPIModule</param-value>
   </context-param>
   
   <context-param>
