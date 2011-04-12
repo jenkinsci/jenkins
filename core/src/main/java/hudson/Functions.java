@@ -84,6 +84,7 @@ import org.kohsuke.stapler.Ancestor;
 import org.kohsuke.stapler.Stapler;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
+import org.kohsuke.stapler.jelly.InternationalizedStringExpression.RawHtmlArgument;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.Cookie;
@@ -1364,5 +1365,12 @@ public class Functions {
             r.add(e.nextElement().toString());
         }
         return r;
+    }
+
+    /**
+     * Used for arguments to internationalized expressions to avoid escape
+     */
+    public static Object rawHtml(Object o) {
+        return o==null ? null : new RawHtmlArgument(o);
     }
 }
