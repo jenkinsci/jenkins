@@ -259,6 +259,11 @@ THE SOFTWARE.
       <scope>provided</scope>
     </dependency>
     <dependency>
+        <groupId>${project.groupId}</groupId>
+        <artifactId>rest-api</artifactId>
+        <version>${project.version}</version>
+    </dependency>
+    <dependency>
       <!--
         not actually used by test but used by antrun plugin to include it inside the war.
       -->
