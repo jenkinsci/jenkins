@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?><!--ant-->
+<project name="Jenkins OSX Installer Package" basedir="." default="build">
+	<property file="build.properties" />
+	<!-- Created by Ingo Richter on 2011-04-08. -->
+	<!-- Copyright (c) 2011. All rights reserved. -->
+
+<!-- =================================
+      target: init
+     ================================= -->
+	<target name="init" description="--> Prepare the build process" depends="">
+		<!-- Check if we know which build to package. If not -> fail -->
+		<fail unless="jenkinsBuildNumber" message="Please provide -DjenkinsBuildNumber=1.xxx when calling this script" />
+
+		<mkdir dir="${builddir}" />
+	</target>
+
+<!-- =================================
+      target: clean
+     ================================= -->
+	<target name="clean" description="--> Remove the installer and intermediate files" depends="">
+		<delete dir="${builddir}" />
+	</target>
+
+<!-- =================================
+      target: package
+		Create a zip file which contains all the files and the git repository to rebuild everything
+     ================================= -->
+	<target name="package" description="--> Package the project folder and the build script and place it in ${basedir}/.." depends="">
+		<tstamp/>
+		<zip destfile="${basedir}/../${ant.project.name}-${DSTAMP}-${TSTAMP}.zip" >
+			<fileset dir="${basedir}/">
+				<include name="**/**" />
+			</fileset>
+		</zip>
+	</target>
+
+<!-- =================================
+      target: build
+     ================================= -->
+	<target name="build" description="--> Build the Installer" depends="init">
+		<exec executable="${packagemaker}" dir="${basedir}" os="Mac OS X" output="${builddir}/packagemaker-${jenkinsBuildNumber}.log">
+			<arg line="-v --doc JenkinsInstaller.pmdoc --out ${builddir}/${installer.file.name} --version ${jenkinsBuildNumber} --title '${installer.title}'" />
+		</exec>
+	</target>
+</project>
