@@ -1077,7 +1077,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
     public void waitUntilOnline() throws InterruptedException {
         synchronized (statusChangeLock) {
             while (!isOnline())
-                wait(1000);
+                statusChangeLock.wait(1000);
         }
     }
 
@@ -1085,7 +1085,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
     public void waitUntilOffline() throws InterruptedException {
         synchronized (statusChangeLock) {
             while (!isOffline())
-                wait(1000);
+                statusChangeLock.wait(1000);
         }
     }
 
