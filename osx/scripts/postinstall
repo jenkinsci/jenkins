@@ -1,0 +1,43 @@
+#!/bin/bash
+
+scriptPath=$0
+packagePath=$1
+targetLocation=$2
+targetVolume=$3
+
+JENKINS_HOME=/Users/Shared/Jenkins/Home
+JENKINS_PLIST=/Library/LaunchAgents/org.jenkins-ci.plist
+
+cat > ${JENKINS_PLIST} <<JENKINS-PLIST
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+	<dict>
+		<key>Label</key>
+		<string>org.jenkins-ci</string>
+		<key>UserName</key>
+		<string>daemon</string>
+		<key>GroupName</key>
+		<string>daemon</string>
+		<key>ProgramArguments</key>
+		<array>
+			<string>/usr/bin/java</string>
+			<string>-Xmx512m</string>
+			<string>-jar</string>
+			<string>${targetLocation}/jenkins.war</string>
+		</array>
+		<key>RunAtLoad</key>
+		<true/>
+		<key>KeepAlive</key>
+		<true/>
+		<key>EnvironmentVariables</key>
+		<dict>
+			<key>JENKINS_HOME</key>
+			<string>${JENKINS_HOME}</string>
+		</dict>
+	</dict>
+</plist>
+JENKINS-PLIST
+
+# this is the label
+/bin/launchctl load ${JENKINS_PLIST}
