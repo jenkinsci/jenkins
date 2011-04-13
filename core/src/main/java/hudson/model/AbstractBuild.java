@@ -269,7 +269,7 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
             R p = getPreviousCompletedBuild();
             if (p !=null && isBuilding()) {
                 Result pr = p.getResult();
-                if (pr!=null && pr.isWorseThan(Result.UNSTABLE)) {
+                if (pr!=null && pr.isWorseThan(Result.SUCCESS)) {
                     // we are still building, so this is just the current latest information,
                     // but we seems to be failing so far, so inherit culprits from the previous build.
                     // isBuilding() check is to avoid recursion when loading data from old Hudson, which doesn't record
