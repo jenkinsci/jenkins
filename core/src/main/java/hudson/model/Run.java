@@ -1358,8 +1358,45 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
 
                     // create a symlink from build number to ID.
                     Util.createSymlink(getParent().getBuildDir(),getId(),String.valueOf(getNumber()),listener);
+                    
+                    /* Rebuild */
+					if (this.reuse != null && this.reuse.number > 0) {
+						listener.getLogger().println("[JENKINS] Reusing build");
+						int rnumber = this.reuse.number;
+						System.out.println(getParent().getDisplayName() + ": "
+								+ rnumber);
 
-                    setResult(job.run(listener));
+						/* Find the oldest build on the path */
+						while (getParent().getBuildByNumber(rnumber).reuse != null) {
+							System.out.println(getParent().getDisplayName()
+									+ ":: " + rnumber);
+							rnumber = getParent().getBuildByNumber(
+									this.reuse.number).reuse.number;
+						}
+						RunT r = getParent().getBuildByNumber(rnumber);
+
+						/* Set the current run result the same as the reused */
+						if (r != null) {
+							setResult(r.getResult());
+
+							/* Copy artifacts */
+							if (this instanceof AbstractBuild
+									&& r instanceof AbstractBuild) {
+								listener.getLogger()
+										.println(
+												"Yes, this is an AbstractBuild instance");
+								((AbstractBuild<?, ?>) this).copyBuild(
+										(AbstractBuild<?, ?>) r, listener);
+							}
+						} else {
+							setResult(Result.FAILURE);
+						}
+
+						/* Alter the object, if necessary!? */
+
+					} else {
+						setResult(job.run(listener));
+					}
 
                     LOGGER.info(toString()+" main build action completed: "+result);
                     CheckPoint.MAIN_COMPLETED.report();
@@ -1967,4 +2004,21 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
             out.flush();
         }
     }
+    
+    
+    /* Reuse */
+    
+	private ReuseRun reuse = null;
+
+	public class ReuseRun {
+		public int number = 0;
+
+		public ReuseRun(int number) {
+			this.number = number;
+		}
+	}
+
+	public void setReuse(int number) {
+		this.reuse = new ReuseRun(number);
+	}
 }

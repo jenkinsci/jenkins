@@ -134,6 +134,12 @@ public class MatrixRun extends Build<MatrixConfiguration,MatrixRun> {
 
     @Override
     public void run() {
+    	boolean r = this.getParent().getDisplayName().matches( "android" ) || this.getParent().getDisplayName().matches( "cactus" );
+    	System.out.println( "DISPLAY=" + getDisplayName() + " + " + this.getParent().getDisplayName() );
+    	if( r )
+    	{
+    		this.setReuse( 42 );
+    	}
         run(new RunnerImpl());
     }
 
