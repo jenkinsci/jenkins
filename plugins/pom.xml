@@ -4,13 +4,13 @@
   <parent>
     <groupId>org.jenkins-ci</groupId>
     <artifactId>jenkins</artifactId>
-    <version>1.17</version>
+    <version>1.18</version>
   </parent>
 
   <groupId>org.jenkins-ci.plugins</groupId>
   <artifactId>plugin</artifactId>
   <name>Jenkins plugin POM</name>
-  <version>1.406-SNAPSHOT</version>
+  <version>1.408-SNAPSHOT</version>
   <packaging>pom</packaging>
 
   <properties>
@@ -38,7 +38,7 @@
       <dependency><!-- if a plugin wants to depend on the maven plugin, choose the right version automatically -->
         <groupId>org.jenkins-ci.main</groupId>
         <artifactId>maven-plugin</artifactId>
-        <version>1.406-SNAPSHOT</version>
+        <version>1.408-SNAPSHOT</version>
       </dependency>
     </dependencies>
   </dependencyManagement>
@@ -48,31 +48,31 @@
       <groupId>org.jenkins-ci.main</groupId>
       <artifactId>jenkins-war</artifactId>
       <type>war</type>
-      <version>1.406-SNAPSHOT</version>
+      <version>1.408-SNAPSHOT</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.jenkins-ci.main</groupId>
       <artifactId>jenkins-core</artifactId>
-      <version>1.406-SNAPSHOT</version>
+      <version>1.408-SNAPSHOT</version>
       <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>org.jenkins-ci.main</groupId>
       <artifactId>jenkins-test-harness</artifactId>
-      <version>1.406-SNAPSHOT</version>
+      <version>1.408-SNAPSHOT</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.jenkins-ci.main</groupId>
       <artifactId>ui-samples-plugin</artifactId>
-      <version>1.406-SNAPSHOT</version>
+      <version>1.408-SNAPSHOT</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
-      <version>4.3.1</version>
+      <version>4.8.2</version>
       <scope>test</scope>
     </dependency>
     <!--

@@ -53,7 +53,9 @@ public abstract class ViewPropertyDescriptor extends Descriptor<ViewProperty> {
      * @return null
      *      if the implementation choose not to add any property object for such view.
      */
-    public abstract ViewProperty newInstance(View view);
+    public ViewProperty newInstance(View view) {
+        return null;
+    }
 
     /**
      * Whether or not the described property is enabled in the current context.
@@ -67,8 +69,11 @@ public abstract class ViewPropertyDescriptor extends Descriptor<ViewProperty> {
      * <p>
      * This mechanism is useful if the availability of the property is
      * contingent of some other settings.
+     *
+     * @param view
+     *      View for which this property is considered. Never null.
      */
-    public boolean isEnabled() {
+    public boolean isEnabledFor(View view) {
         return true;
     }
 }

@@ -20,16 +20,16 @@ package hudson.maven;
  */
 
 import hudson.Launcher;
-import hudson.model.BuildListener;
-import hudson.model.ParametersDefinitionProperty;
-import hudson.model.Result;
-import hudson.model.StringParameterDefinition;
+import hudson.maven.reporters.SurefireReport;
+import hudson.model.*;
 import hudson.tasks.Maven.MavenInstallation;
 
 import java.io.File;
 import java.io.FilenameFilter;
 import java.io.IOException;
 
+import hudson.tasks.test.TestResult;
+import hudson.tasks.test.TestResultProjectAction;
 import org.apache.commons.io.FileUtils;
 import org.jvnet.hudson.test.Bug;
 import org.jvnet.hudson.test.Email;
@@ -177,6 +177,21 @@ public class Maven3BuildTest extends HudsonTestCase {
         String content = m.getLastBuild().getWorkspace().child( "target/classes/test.txt" ).readToString();
         assertFalse( content.contains( "${maven.build.timestamp}") );
         assertFalse( content.contains( "${maven.build.timestamp}") );
+    }
+
+    @Bug(1557)
+    public void testDuplicateTestResults() throws Exception {
+        MavenInstallation mavenInstallation = configureMaven3();
+        MavenModuleSet m = createMavenProject();
+        m.setMaven( mavenInstallation.getName() );
+        m.getReporters().add(new TestReporter());
+        m.setScm(new ExtractResourceSCM(getClass().getResource("JENKINS-1557.zip")));
+        m.setGoals("verify");
+        buildAndAssertSuccess(m);
+
+        int totalCount = m.getModules().iterator().next()
+                .getAction(TestResultProjectAction.class).getLastTestResultAction().getTotalCount();
+        assertEquals(4, totalCount);
     }
     
     private static class TestReporter extends MavenReporter {

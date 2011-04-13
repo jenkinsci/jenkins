@@ -47,6 +47,11 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.ListIterator;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.maven.artifact.versioning.ComparableVersion;
@@ -64,6 +69,17 @@ import org.codehaus.plexus.util.xml.Xpp3Dom;
  */
 public class SurefireArchiver extends MavenReporter {
     private TestResult result;
+    
+    /**
+     * Store the filesets here as we want to track ignores between multiple runs of this class<br/>
+     * Note: Because this class can be run with different mojo goals with different path settings, 
+     * we track multiple {@link FileSet}s for each encountered <tt>reportsDir</tt>
+     */
+    private transient Map<File, FileSet> fileSets = new ConcurrentHashMap<File,FileSet>();// Collections.synchronizedMap(new HashMap<File, FileSet>());
+
+    private final ReadWriteLock fileSetsReadWriteLock = new ReentrantReadWriteLock();
+    private final Lock fileSetsReadLock = fileSetsReadWriteLock.readLock();
+    private Lock fileSetsWriteLock = fileSetsReadWriteLock.writeLock();
 
     public boolean preExecute(MavenBuildProxy build, MavenProject pom, MojoInfo mojo, BuildListener listener) throws InterruptedException, IOException {
         if (isSurefireTest(mojo)) {
@@ -115,12 +131,14 @@ public class SurefireArchiver extends MavenReporter {
         if(reportsDir.exists()) {
             // surefire:test just skips itself when the current project is not a java project
 
-            FileSet fs = Util.createFileSet(reportsDir,"*.xml","testng-results.xml,testng-failed.xml");
-            DirectoryScanner ds = fs.getDirectoryScanner();
+        	FileSet fileSet = getFileSet(reportsDir);
+            DirectoryScanner ds = fileSet.getDirectoryScanner();
 
             if(ds.getIncludedFiles().length==0)
                 // no test in this module
                 return true;
+            
+            rememberCheckedFiles(reportsDir, ds);
 
             if(result==null)    result = new TestResult();
             result.parse(System.currentTimeMillis() - build.getMilliSecsSinceBuildStart(), ds);
@@ -151,6 +169,52 @@ public class SurefireArchiver extends MavenReporter {
         }
 
         return true;
+    }
+    
+    /**
+     * Returns the appropriate FileSet for the selected baseDir
+     * @param baseDir
+     * @return
+     */
+    private FileSet getFileSet(File baseDir) {
+    	FileSet fs = null;
+        if (fileSets == null) {
+            fileSetsWriteLock.lock();
+            try {
+                fileSets = new ConcurrentHashMap<File,FileSet>();
+            } finally {
+                fileSetsWriteLock.unlock();
+            }
+        }
+
+        fileSetsReadLock.lock();
+        try {
+            fs = fileSets.get(baseDir);
+        } finally {
+            fileSetsReadLock.unlock();
+        }
+    	if (fs == null) {
+    		fs = Util.createFileSet(baseDir, "*.xml","testng-results.xml,testng-failed.xml");
+            fileSetsWriteLock.lock();
+            try {
+    		    fileSets.put(baseDir, fs);
+            } finally {
+                fileSetsWriteLock.unlock();
+            }
+    	}
+    	
+    	return fs;
+    }
+    
+    /**
+     * Add checked files to the exclude list of the fileSet
+     */
+    private void rememberCheckedFiles(File baseDir, DirectoryScanner ds) {
+    	FileSet fileSet = getFileSet(baseDir);
+    	
+    	for (String file : ds.getIncludedFiles()) {
+    		fileSet.setExcludes(file);
+    	}
     }
 
     /**
@@ -216,12 +280,11 @@ public class SurefireArchiver extends MavenReporter {
                 }
             }
             else if (mojo.is("org.sonatype.flexmojos", "flexmojos-maven-plugin", "test-run")) {
-		Boolean skipTests = mojo.getConfigurationValue("skipTest", Boolean.class);
-		
-		if (((skipTests != null) && (skipTests))) {
-		    return false;
-		}
-	    }
+                Boolean skipTests = mojo.getConfigurationValue("skipTest", Boolean.class);
+                if (((skipTests != null) && (skipTests))) {
+                    return false;
+                }
+	        }
 
         } catch (ComponentConfigurationException e) {
             return false;

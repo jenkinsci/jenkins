@@ -279,4 +279,15 @@ public class MatrixProjectTest extends HudsonTestCase {
             // expected
         }        
     }
+
+    @Bug(9009)
+    void testTrickyNodeName() {
+        def names = [ createSlave("Sean's Workstation",null), createSlave("John\"s Workstation",null) ]*.nodeName;
+        def p = createMatrixProject();
+        p.setAxes(new AxisList([new LabelAxis("label",names)]));
+        configRoundtrip(p);
+
+        LabelAxis a = p.axes.find("label");
+        assertEquals(a.values as Set,names as Set);
+    }
 }

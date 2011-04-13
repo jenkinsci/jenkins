@@ -35,12 +35,12 @@ THE SOFTWARE.
         var labels = new YAHOO.widget.TextNode("${%Labels}", tree.getRoot(), false);
         var machines = new YAHOO.widget.TextNode("${%Individual nodes}", tree.getRoot(), false);
 
-        var values = (e.getAttribute("values") || "").split(/[ \n]/);
+        var values = (e.getAttribute("values") || "").split("/");
         function has(v) {
           return values.include(v) ? 'checked="checked" ' : "";
         }
         <j:forEach var="l" items="${app.labelAtoms}">
-          new YAHOO.widget.TextNode('&lt;input type="checkbox" name="values" json="${l.name}" '+has("${l.name}")+'/&gt;&lt;label class="attach-previous"&gt;${h.jsStringEscape(l.name)} (${h.jsStringEscape(l.description)})&lt;/label&gt;', ${l.isSelfLabel()?'machines':'labels'}, false);
+          new YAHOO.widget.TextNode(<j:out value="${descriptor.buildLabelCheckBox(l,instance)}"/>, ${l.isSelfLabel()?'machines':'labels'}, false);
         </j:forEach>
 
         tree.draw();

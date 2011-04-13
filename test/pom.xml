@@ -27,7 +27,7 @@ THE SOFTWARE.
   <parent>
     <artifactId>pom</artifactId>
     <groupId>org.jenkins-ci.main</groupId>
-    <version>1.406-SNAPSHOT</version>
+    <version>1.408-SNAPSHOT</version>
   </parent>
   <modelVersion>4.0.0</modelVersion>
   <groupId>org.jenkins-ci.main</groupId>
@@ -178,7 +178,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.jenkins-ci</groupId>
       <artifactId>htmlunit</artifactId>
-      <version>2.6-jenkins-3</version>
+      <version>2.6-jenkins-4</version>
       <exclusions>
       	<exclusion>
 	      	<!--  hides JDK DOM classes in Eclipse -->

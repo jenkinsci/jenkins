@@ -187,7 +187,12 @@ public class RedeployPublisher extends Recorder {
                 
                 String altSettingsPath = ((MavenModuleSet) project).getAlternateSettings();
                 
-                Node buildNode =  Hudson.getInstance().getNode( build.getBuiltOnStr() );
+                Node buildNode = build.getBuiltOn();
+                
+                if(buildNode == null) {
+                    // assume that build was made on master
+                    buildNode = Hudson.getInstance();
+                }
                 
                 if (StringUtils.isBlank( altSettingsPath ) ) {
                     // get userHome from the node where job has been executed

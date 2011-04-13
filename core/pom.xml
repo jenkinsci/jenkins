@@ -28,7 +28,7 @@ THE SOFTWARE.
   <parent>
     <groupId>org.jenkins-ci.main</groupId>
     <artifactId>pom</artifactId>
-    <version>1.406-SNAPSHOT</version>
+    <version>1.408-SNAPSHOT</version>
     <relativePath>../pom.xml</relativePath>
   </parent>
 
@@ -382,7 +382,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.kohsuke.stapler</groupId>
       <artifactId>stapler-jelly</artifactId>
-      <version>1.160</version>
+      <version>1.162</version>
       <exclusions>
         <exclusion>
           <groupId>commons-jelly</groupId>
@@ -740,7 +740,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.jenkins-ci</groupId>
       <artifactId>jmdns</artifactId>
-      <version>3.4.0-jenkins-1</version>
+      <version>3.4.0-jenkins-2</version>
     </dependency>
     <dependency>
       <groupId>com.sun.winsw</groupId>

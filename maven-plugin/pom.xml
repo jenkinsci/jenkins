@@ -28,7 +28,7 @@ THE SOFTWARE.
   <parent>
     <groupId>org.jenkins-ci.main</groupId>
     <artifactId>pom</artifactId>
-    <version>1.406-SNAPSHOT</version>
+    <version>1.408-SNAPSHOT</version>
   </parent>
 
   <artifactId>maven-plugin</artifactId>
@@ -43,7 +43,7 @@ THE SOFTWARE.
     <mavenVersion>3.0.3</mavenVersion>
     <maven.version>${mavenVersion}</maven.version>
     <aetherVersion>1.11</aetherVersion>
-    <sisuInjectVersion>1.4.3.1</sisuInjectVersion>
+    <sisuInjectVersion>2.2.0</sisuInjectVersion>
     <wagonVersion>1.0-beta-7</wagonVersion>    
   </properties>
     
@@ -167,11 +167,24 @@ THE SOFTWARE.
       <artifactId>sisu-inject-plexus</artifactId>
       <version>${sisuInjectVersion}</version>
     </dependency> 
-    
+
+    <dependency>
+      <groupId>org.sonatype.sisu</groupId>
+      <artifactId>sisu-guice</artifactId>
+      <version>3.0.1</version>
+    </dependency>
+
     <dependency>
       <groupId>org.sonatype.sisu</groupId>
       <artifactId>sisu-inject-bean</artifactId>
       <version>${sisuInjectVersion}</version>
+      <exclusions>
+        <!-- prevent inclusion of one with classfifier no_aop -->
+        <exclusion>
+          <groupId>org.sonatype.sisu</groupId>
+          <artifactId>sisu-guice</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency> 
     
     <dependency>
@@ -235,11 +248,11 @@ THE SOFTWARE.
       <artifactId>commons-io</artifactId>
     </dependency>            
     <dependency>
-      <groupId>org.jvnet.hudson</groupId>
-      <artifactId>hudson-maven-embedder</artifactId>
-      <version>3.2</version>
+      <groupId>org.jenkins-ci.lib</groupId>
+      <artifactId>lib-jenkins-maven-embedder</artifactId>
+      <version>3.4</version>
       <exclusions>
-        <exclusion><!-- we'll add our own patched version. see http://www.nabble.com/Issue-1680-td18383889.html -->
+        <exclusion><!-- we'll add our own patched version. see https://issues.jenkins-ci.org/browse/JENKINS-1680 -->
           <groupId>jtidy</groupId>
           <artifactId>jtidy</artifactId>
         </exclusion>

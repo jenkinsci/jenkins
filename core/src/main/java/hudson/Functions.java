@@ -538,6 +538,30 @@ public class Functions {
         return Util.xmlEscape(s);
     }
 
+    public static String htmlAttributeEscape(String text) {
+        StringBuilder buf = new StringBuilder(text.length()+64);
+        for( int i=0; i<text.length(); i++ ) {
+            char ch = text.charAt(i);
+            if(ch=='<')
+                buf.append("&lt;");
+            else
+            if(ch=='>')
+                buf.append("&gt;");
+            else
+            if(ch=='&')
+                buf.append("&amp;");
+            else
+            if(ch=='"')
+                buf.append("&quot;");
+            else
+            if(ch=='\'')
+                buf.append("&#39;");
+            else
+                buf.append(ch);
+        }
+        return buf.toString();
+    }
+
     public static void checkPermission(Permission permission) throws IOException, ServletException {
         checkPermission(Hudson.getInstance(),permission);
     }

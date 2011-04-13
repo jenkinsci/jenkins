@@ -283,6 +283,9 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
      * Returns the estimated duration for this builds.
      * Takes only the modules into account which are actually being build in
      * case of incremental builds.
+     * 
+     * @return the estimated duration in milliseconds
+     * @since 1.383
      */
     @Override
     public long getEstimatedDuration() {
@@ -294,13 +297,23 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
         long result = 0;
         
         Map<MavenModule, List<MavenBuild>> moduleBuilds = getModuleBuilds();
+        
+        boolean noModuleBuildsYet = true; 
+        
         for (List<MavenBuild> builds : moduleBuilds.values()) {
             if (!builds.isEmpty()) {
+                noModuleBuildsYet = false;
                 MavenBuild build = builds.get(0);
                 if (build.getResult() != Result.NOT_BUILT && build.getEstimatedDuration() != -1) {
                     result += build.getEstimatedDuration();
                 }
             }
+        }
+        
+        if (noModuleBuildsYet) {
+            // modules not determined, yet, i.e. POM not parsed.
+            // Use best estimation we have:
+            return super.getEstimatedDuration();
         }
         
         result += estimateModuleSetBuildDurationOverhead(3);
