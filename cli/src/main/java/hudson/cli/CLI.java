@@ -49,7 +49,7 @@ import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 
 /**
- * CLI entry point to Hudson.
+ * CLI entry point to Jenkins.
  * 
  * @author Kohsuke Kawaguchi
  */
@@ -59,12 +59,12 @@ public class CLI {
     private final CliEntryPoint entryPoint;
     private final boolean ownsPool;
 
-    public CLI(URL hudson) throws IOException, InterruptedException {
-        this(hudson,null);
+    public CLI(URL jenkins) throws IOException, InterruptedException {
+        this(jenkins,null);
     }
 
-    public CLI(URL hudson, ExecutorService exec) throws IOException, InterruptedException {
-        String url = hudson.toExternalForm();
+    public CLI(URL jenkins, ExecutorService exec) throws IOException, InterruptedException {
+        String url = jenkins.toExternalForm();
         if(!url.endsWith("/"))  url+='/';
 
         ownsPool = exec==null;
@@ -79,17 +79,17 @@ public class CLI {
             DataOutputStream dos = new DataOutputStream(s.getOutputStream());
             dos.writeUTF("Protocol:CLI-connect");
 
-            channel = new Channel("CLI connection to "+hudson, pool,
+            channel = new Channel("CLI connection to "+jenkins, pool,
                     new BufferedInputStream(new SocketInputStream(s)),
                     new BufferedOutputStream(new SocketOutputStream(s)));
         } else {
             // connect via HTTP
             LOGGER.fine("Trying to connect to "+url+" via HTTP");
             url+="cli";
-            hudson = new URL(url);
+            jenkins = new URL(url);
 
-            FullDuplexHttpStream con = new FullDuplexHttpStream(hudson);
-            channel = new Channel("Chunked connection to "+hudson,
+            FullDuplexHttpStream con = new FullDuplexHttpStream(jenkins);
+            channel = new Channel("Chunked connection to "+jenkins,
                     pool,con.getInputStream(),con.getOutputStream());
             new PingThread(channel,30*1000) {
                 protected void onDead() {

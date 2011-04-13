@@ -365,6 +365,10 @@ public class SlaveComputer extends Computer {
             numRetryAttempt = 0;
             this.channel = channel;
             defaultCharset = Charset.forName(defaultCharsetName);
+
+            synchronized (statusChangeLock) {
+                statusChangeLock.notifyAll();
+            }
         }
         for (ComputerListener cl : ComputerListener.all())
             cl.onOnline(this,taskListener);

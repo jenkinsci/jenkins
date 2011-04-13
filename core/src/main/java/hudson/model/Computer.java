@@ -1,19 +1,19 @@
 /*
  * The MIT License
- * 
+ *
  * Copyright (c) 2004-2010, Sun Microsystems, Inc., Kohsuke Kawaguchi,
  * Red Hat, Inc., Seiji Sogabe, Stephen Connolly, Thomas J. Black, Tom Huybrechts, CloudBees, Inc.
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -27,6 +27,7 @@ package hudson.model;
 import hudson.EnvVars;
 import hudson.Util;
 import hudson.cli.declarative.CLIMethod;
+import hudson.cli.declarative.CLIResolver;
 import hudson.console.AnnotatedLargeText;
 import hudson.model.Descriptor.FormException;
 import hudson.model.queue.WorkUnit;
@@ -46,11 +47,14 @@ import hudson.slaves.OfflineCause.ByCLI;
 import hudson.tasks.BuildWrapper;
 import hudson.tasks.Publisher;
 import hudson.util.DaemonThreadFactory;
+import hudson.util.EditDistance;
 import hudson.util.ExceptionCatchingThreadFactory;
 import hudson.util.RemotingDiagnostics;
 import hudson.util.RemotingDiagnostics.HeapDump;
 import hudson.util.RunList;
 import hudson.util.Futures;
+import org.kohsuke.args4j.Argument;
+import org.kohsuke.args4j.CmdLineException;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 import org.kohsuke.stapler.QueryParameter;
@@ -121,7 +125,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
     private long connectTime = 0;
 
     /**
-     * True if Hudson shouldn't start new builds on this node.
+     * True if Jenkins shouldn't start new builds on this node.
      */
     private boolean temporarilyOffline;
 
@@ -140,6 +144,8 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
     private final WorkspaceList workspaceList = new WorkspaceList();
 
     protected transient List<Action> transientActions;
+
+    protected final Object statusChangeLock = new Object();
 
     public Computer(Node node) {
         assert node.getNumExecutors()!=0 : "Computer created with 0 executors";
@@ -521,6 +527,9 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
         this.temporarilyOffline = temporarilyOffline;
         getNode().setTemporaryOfflineCause(offlineCause);
         Hudson.getInstance().getQueue().scheduleMaintenance();
+        synchronized (statusChangeLock) {
+            statusChangeLock.notifyAll();
+        }
     }
 
     @Exported
@@ -1062,6 +1071,25 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
     }
 
     /**
+     * Blocks until the node becomes online/offline.
+     */
+    @CLIMethod(name="wait-node-online")
+    public void waitUntilOnline() throws InterruptedException {
+        synchronized (statusChangeLock) {
+            while (!isOnline())
+                wait(1000);
+        }
+    }
+
+    @CLIMethod(name="wait-node-offline")
+    public void waitUntilOffline() throws InterruptedException {
+        synchronized (statusChangeLock) {
+            while (!isOffline())
+                wait(1000);
+        }
+    }
+
+    /**
      * Handles incremental log.
      */
     public void doProgressiveLog( StaplerRequest req, StaplerResponse rsp) throws IOException {
@@ -1087,6 +1115,24 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
      */
     public boolean isAcceptingTasks() {
         return true;
+    }
+
+    /**
+     * Used for CLI binding.
+     */
+    @CLIResolver
+    public static Computer resolveForCLI(
+            @Argument(required=true,metaVar="NAME",usage="Slave name, or empty string for master") String name) throws CmdLineException {
+        Hudson h = Hudson.getInstance();
+        Computer item = h.getComputer(name);
+        if (item==null) {
+            List<String> names = new ArrayList<String>();
+            for (Computer c : h.getComputers())
+                if (c.getName().length()>0)
+                    names.add(c.getName());
+            throw new CmdLineException(null,Messages.Computer_NoSuchSlaveExists(name,EditDistance.findNearest(name,names)));
+        }
+        return item;
     }
 
     public static final PermissionGroup PERMISSIONS = new PermissionGroup(Computer.class,Messages._Computer_Permissions_Title());
