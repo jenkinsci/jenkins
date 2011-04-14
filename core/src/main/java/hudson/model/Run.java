@@ -1366,13 +1366,11 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
 						System.out.println(getParent().getDisplayName() + ": "
 								+ rnumber);
 
-						/* Find the oldest build on the path */
-						while (getParent().getBuildByNumber(rnumber).reuse != null) {
-							System.out.println(getParent().getDisplayName()
-									+ ":: " + rnumber);
-							rnumber = getParent().getBuildByNumber(
-									this.reuse.number).reuse.number;
-						}
+						/* Use the reused build as basis.
+						 * We could have used the oldest build on the path,
+						 * but that build could've been deleted.
+						 * The build based directly on this, must in fact
+						 * exist. */
 						RunT r = getParent().getBuildByNumber(rnumber);
 
 						/* Set the current run result the same as the reused */
