@@ -1,7 +1,7 @@
 <!--
 The MIT License
 
-Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, Seiji Sogabe
+Copyright (c) 2004-2011, Sun Microsystems, Inc., Kohsuke Kawaguchi, Seiji Sogabe
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -21,7 +21,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 -->
-
+<?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
   <f:block xmlns:local="local">
     <j:set var="groups" value="${descriptor.allGroups}"/>
@@ -151,7 +151,7 @@ THE SOFTWARE.
           e = null; <!-- avoid memory leak -->
         },
         <j:if test="${empty(descriptorPath)}">
-          <j:set var="descriptorPath" value="${rootURL}${descriptor.descriptorFullUrl}"/>
+          <j:set var="descriptorPath" value="${descriptor.descriptorFullUrl}"/>
         </j:if>
         <!-- validates the name -->
         "#${strategyid} TR.permission-row" : function(e) {
