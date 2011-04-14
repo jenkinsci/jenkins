@@ -40,6 +40,6 @@ THE SOFTWARE.
     </table>
   </f:nested>
   <f:entry field="includeFailedBuilds" title="">
-    <f:checkbox name="includeFailedBuilds" checked="${instance.includeFailedBuilds}" title="${%Include failed bulds in results}" />
+    <f:checkbox name="includeFailedBuilds" checked="${instance.includeFailedBuilds}" title="${%Include failed builds in results}" />
   </f:entry>
 </j:jelly>
