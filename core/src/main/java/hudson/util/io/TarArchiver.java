@@ -64,6 +64,7 @@ final class TarArchiver extends Archiver {
     @Override
     public void visitSymlink(File link, String target, String relativePath) throws IOException {
         TarEntry e = new TarEntry(relativePath, LF_SYMLINK);
+        e.setMode(getPathMode(link.getPath()));
 
         try {
             StringBuffer linkName = (StringBuffer) LINKNAME_FIELD.get(e);
@@ -89,6 +90,7 @@ final class TarArchiver extends Archiver {
         if(file.isDirectory())
             relativePath+='/';
         TarEntry te = new TarEntry(relativePath);
+        te.setMode(getPathMode(file.getPath()));
         te.setModTime(file.lastModified());
         if(!file.isDirectory())
             te.setSize(file.length());
