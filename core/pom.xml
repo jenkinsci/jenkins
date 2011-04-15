@@ -439,11 +439,6 @@ THE SOFTWARE.
       <version>1.10</version>
     </dependency>
     <dependency>
-      <groupId>org.kohsuke</groupId>
-      <artifactId>graph-layouter</artifactId>
-      <version>1.0</version>
-    </dependency>
-    <dependency>
       <groupId>antlr</groupId>
       <artifactId>antlr</artifactId>
       <version>2.7.6</version>
