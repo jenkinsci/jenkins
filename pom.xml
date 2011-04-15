@@ -164,7 +164,7 @@ THE SOFTWARE.
         <plugin>
           <groupId>com.cloudbees</groupId>
           <artifactId>maven-license-plugin</artifactId>
-          <version>1.0</version>
+          <version>1.1</version>
           <executions>
             <execution>
               <goals>
@@ -173,7 +173,7 @@ THE SOFTWARE.
               <phase>compile</phase>
               <configuration>
                 <requireCompleteLicenseInfo>true</requireCompleteLicenseInfo>
-                <completer>../licenseCompleter.groovy</completer>
+                <script>../licenseCompleter.groovy</script>
               </configuration>
             </execution>
           </executions>
