@@ -67,7 +67,9 @@ THE SOFTWARE.
                   </div>
                 </td>
                 <td class="center pane" style="white-space:nowrap">
-                  ${p.version}
+                  <a href="plugin/${p.shortName}/3rdPartyLicenses">
+                    ${p.version}
+                  </a>
                 </td>
                 <td>
                   <j:if test="${p.downgradable}">

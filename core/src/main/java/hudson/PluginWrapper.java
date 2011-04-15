@@ -397,6 +397,15 @@ public class PluginWrapper implements Comparable<PluginWrapper> {
         return manifest.getMainAttributes().getValue("Plugin-Class");
     }
 
+    public boolean hasLicensesXml() {
+        try {
+            new URL(baseResourceURL,"WEB-INF/licenses.xml").openStream().close();
+            return true;
+        } catch (IOException e) {
+            return false;
+        }
+    }
+
     /**
      * Makes sure that all the dependencies exist, and then accept optional dependencies
      * as real dependencies.
