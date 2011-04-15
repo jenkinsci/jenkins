@@ -225,6 +225,13 @@ THE SOFTWARE.
           </dependency>
         </dependencies>
       </plugin>
+      <plugin><!-- generate licenses.xml -->
+        <groupId>com.cloudbees</groupId>
+        <artifactId>maven-license-plugin</artifactId>
+        <configuration>
+          <generateLicenseXml>target/classes/META-INF/licenses.xml</generateLicenseXml>
+        </configuration>
+      </plugin>
     </plugins>
   </build>
 
