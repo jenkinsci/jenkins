@@ -68,7 +68,7 @@ THE SOFTWARE.
                   </div>
                 </td>
                 <td class="center pane" style="white-space:nowrap">
-                  <a href="plugin/${p.shortName}/3rdPartyLicenses">
+                  <a href="plugin/${p.shortName}/thirdPartyLicenses">
                     ${p.version}
                   </a>
                 </td>
