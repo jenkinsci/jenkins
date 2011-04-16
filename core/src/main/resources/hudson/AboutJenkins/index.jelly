@@ -25,7 +25,6 @@ THE SOFTWARE.
 <!-- 3rd party license acknowledgements and  -->
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:s="/lib/form">
   <l:layout title="${%about(app.VERSION)}">
-    <st:include it="${app}" page="sidepanel.jelly" />
     <l:main-panel>
       <h1>${%about(app.VERSION)}</h1>
       <p>
