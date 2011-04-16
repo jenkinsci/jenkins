@@ -59,7 +59,7 @@ THE SOFTWARE.
             </manifest>
             <manifestEntries>
               <Implementation-Version>${project.version}</Implementation-Version>
-              <Hudson-Version>${project.version}</Hudson-Version>
+              <Hudson-Version>1.395</Hudson-Version>
               <Jenkins-Version>${project.version}</Jenkins-Version>
             </manifestEntries>
           </archive>
