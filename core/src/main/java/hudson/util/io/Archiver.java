@@ -24,12 +24,9 @@
 
 package hudson.util.io;
 
-import hudson.Functions;
-import hudson.os.PosixAPI;
 import hudson.util.FileVisitor;
 
 import java.io.Closeable;
-import java.io.File;
 
 /**
  * {@link FileVisitor} that creates archive files.
@@ -46,19 +43,4 @@ public abstract class Archiver extends FileVisitor implements Closeable {
     public int countEntries() {
         return entriesWritten;
     }
-
-    /**
-     * Gets the mode of a file/directory, if appropriate. Returns -1 if not on Unix.
-     */
-     public int getPathMode(String p) {
-        // If we're on Windows...
-        if (Functions.isWindows()) {
-            return -1;
-        }
-        // If we're on Unix...
-        else {
-            return PosixAPI.get().stat(p).mode();
-        }
-    }
-    
 }

@@ -25,6 +25,7 @@
 package hudson.util.io;
 
 import hudson.util.FileVisitor;
+import hudson.util.IOUtils;
 import org.apache.tools.zip.ZipEntry;
 import org.apache.tools.zip.ZipOutputStream;
 
@@ -48,16 +49,18 @@ final class ZipArchiver extends Archiver {
     }
 
     public void visit(File f, String relativePath) throws IOException {
+        int mode = IOUtils.mode(f);
+
         if(f.isDirectory()) {
             ZipEntry dirZipEntry = new ZipEntry(relativePath+'/');
-            dirZipEntry.setUnixMode(getPathMode(f.getPath()));
-            // Setting this bit explicitly is needed by some unzipping applications (see HUDSON-3294).
+            // Setting this bit explicitly is needed by some unzipping applications (see JENKINS-3294).
             dirZipEntry.setExternalAttributes(BITMASK_IS_DIRECTORY);
+            if (mode!=-1)   dirZipEntry.setUnixMode(mode);
             zip.putNextEntry(dirZipEntry);
             zip.closeEntry();
         } else {
             ZipEntry fileZipEntry = new ZipEntry(relativePath);
-            fileZipEntry.setUnixMode(getPathMode(f.getPath()));
+            if (mode!=-1)   fileZipEntry.setUnixMode(mode);
             zip.putNextEntry(fileZipEntry);
             FileInputStream in = new FileInputStream(f);
             int len;
