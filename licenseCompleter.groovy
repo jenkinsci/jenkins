@@ -42,7 +42,7 @@ complete {
         rewriteLicense([],license("BSD License","http://dom4j.sourceforge.net/dom4j-1.6.1/license.html"))
     }
 
-    match(["org.codehaus.groovy:*"]) {
+    match(["org.codehaus.groovy:*","*:jmdns"]) {
         // see http://groovy.codehaus.org/License+Information
         // see http://jmdns.sourceforge.net/license.html
         rewriteLicense([],apacheLicense)
@@ -63,7 +63,7 @@ complete {
 
     // these are our own modules that have license in the trunk but not in these released versions
     // as we upgrade them, we should just pick up the license info from POM
-    match(["org.jenkins-ci.modules:instance-identity","org.jvnet.hudson:task-reactor","org.jvnet.hudson:annotation-indexer","*:jinterop-wmi","*:maven2.1-interceptor","*:hudson-maven-embedder"]) {
+    match(["org.jenkins-ci.modules:instance-identity","org.jvnet.hudson:task-reactor","org.jvnet.hudson:annotation-indexer","*:jinterop-wmi","*:maven2.1-interceptor","*:lib-jenkins-maven-embedder"]) {
         rewriteLicense([],jenkinsLicense)
     }
 
