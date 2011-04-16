@@ -95,9 +95,13 @@ public class BuildTrigger extends Recorder implements DependecyDeclarer {
      */
     private final Result threshold;
 
-    @DataBoundConstructor
     public BuildTrigger(String childProjects, boolean evenIfUnstable) {
         this(childProjects,evenIfUnstable ? Result.UNSTABLE : Result.SUCCESS);
+    }
+
+    @DataBoundConstructor
+    public BuildTrigger(String childProjects, String threshold) {
+        this(childProjects, Result.fromString(StringUtils.defaultString(threshold, Result.SUCCESS.toString())));
     }
 
     public BuildTrigger(String childProjects, Result threshold) {
@@ -297,7 +301,7 @@ public class BuildTrigger extends Recorder implements DependecyDeclarer {
             }
             return new BuildTrigger(
                 childProjectsString,
-                formData.has("evenIfUnstable") && formData.getBoolean("evenIfUnstable"));
+                formData.getString("threshold"));
         }
 
         @Override
