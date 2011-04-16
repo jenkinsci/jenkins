@@ -29,7 +29,7 @@ THE SOFTWARE.
       <h1>${%about(it.longName+' '+it.version)}</h1>
 
       <h3>${%3rd Party Dependencies}</h3>
-      <t:3rdPartyLicenses>
+      <t:thirdPartyLicenses>
         <j:choose>
           <j:when test="${it.hasLicensesXml()}">
             <j:include uri="${it.baseResourceURL}/WEB-INF/licenses.xml" />
@@ -38,7 +38,7 @@ THE SOFTWARE.
             <p>${%No information recorded}</p>
           </j:otherwise>
         </j:choose>
-      </t:3rdPartyLicenses>
+      </t:thirdPartyLicenses>
     </l:main-panel>
   </l:layout>
 </j:jelly>
