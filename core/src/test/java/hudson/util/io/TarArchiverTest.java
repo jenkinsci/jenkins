@@ -44,8 +44,8 @@ public class TarArchiverTest extends TestCase {
     public void testPermission() throws Exception {
         if (Functions.isWindows())  return; // can't test on Windows
 
-        File tar = new File("test.tar");
-        File zip = new File("test.zip");
+        File tar = File.createTempFile("test","tar");
+        File zip = File.createTempFile("test","zip");
 
         FilePath dir = new FilePath(File.createTempFile("test","dir"));
 
@@ -88,7 +88,7 @@ public class TarArchiverTest extends TestCase {
         } finally {
             tar.delete();
             zip.delete();
-            dir.delete();
+            dir.deleteRecursive();
         }
     }
 }
