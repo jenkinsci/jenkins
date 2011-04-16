@@ -25,6 +25,7 @@ THE SOFTWARE.
 <!--
   Render a single build history entry indicated by ${build}
 -->
+<?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
   <j:set var="link" value="${it.baseUrl}/${build.number}/" />
   <j:set var="transitive" value="${(it.firstTransientBuildKey!=null and (it.adapter.compare(build,it.firstTransientBuildKey) ge 0)) ? 'transitive' : null}" />
@@ -67,7 +68,7 @@ THE SOFTWARE.
     <tr class="${transitive}">
       <td></td>
       <td colspan="2" class="desc">
-        ${build.truncatedDescription}
+        <j:out value="${build.truncatedDescription}"/>
       </td>
     </tr>
   </j:if>

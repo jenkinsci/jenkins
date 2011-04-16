@@ -26,6 +26,7 @@ THE SOFTWARE.
   Generate status XML compatible with CruiseControl.
   See http://confluence.public.thoughtworks.org/display/CI/Multiple+Project+Summary+Reporting+Standard
 -->
+<?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
   <st:contentType value="text/xml;charset=UTF-8" />
   <j:new var="h" className="hudson.Functions" />

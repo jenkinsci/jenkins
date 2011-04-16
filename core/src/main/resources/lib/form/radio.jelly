@@ -23,9 +23,10 @@ THE SOFTWARE.
 -->
 
 <!--
-	<input type="radio"> tag that takes true/false for @checked.
+    <input type="radio"> tag that takes true/false for @checked.
 
 	Note that safari doesn't support onchange.
 -->
+<?jelly escape-by-default='true'?>
 <input type="radio" name="${attrs.name}" onclick="${attrs.onclick}" id="${attrs.id}" value="${attrs.value}"
         checked="${attrs.checked?'true':null}"/>

@@ -25,6 +25,7 @@ THE SOFTWARE.
 <!--
   Render build histories. 
 -->
+<?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
   <j:set target="${it}" property="nextBuildNumberToFetch" value="${it.owner.nextBuildNumber}"/>
   <!-- build history -->

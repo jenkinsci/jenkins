@@ -26,6 +26,7 @@ THE SOFTWARE.
   This used to be where people configure executors before 1.271, so just in case people have bookmarked this page,
   explain what happened.
 -->
+<?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
 <l:layout title="This page has moved">
   <st:include page="sidepanel.jelly" />

@@ -25,6 +25,7 @@ THE SOFTWARE.
 <!--
   OpenSearch description for using search box from browsers
 -->
+<?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define"
 ><st:contentType value="application/xml;charset=UTF-8"
 /><OpenSearchDescription xmlns="http://a9.com/-/spec/opensearch/1.1/">
