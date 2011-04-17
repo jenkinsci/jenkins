@@ -301,7 +301,7 @@ public class BuildTrigger extends Recorder implements DependecyDeclarer {
             }
             return new BuildTrigger(
                 childProjectsString,
-                formData.getString("threshold"));
+                formData.optString("threshold", Result.SUCCESS.toString()));
         }
 
         @Override
