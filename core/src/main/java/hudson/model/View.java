@@ -129,15 +129,6 @@ public abstract class View extends AbstractModelObject implements AccessControll
         this.owner = owner;
     }
 
-    protected Object readResolve() {
-        if (properties == null) {
-            properties = new PropertyList(this);
-        } else {
-            properties.setOwner(this);
-        }
-        return this;
-    }
-
     /**
      * Gets all the items in this collection in a read-only view.
      */
