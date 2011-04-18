@@ -88,7 +88,7 @@ public class SurefireArchiver extends MavenReporter {
                 // so that we can record this as yellow.
                 // note that because of the way Maven works, just updating system property at this point is too late
                 XmlPlexusConfiguration c = (XmlPlexusConfiguration) mojo.configuration.getChild("testFailureIgnore");
-                if(c!=null && c.getValue().equals("${maven.test.failure.ignore}") && System.getProperty("maven.test.failure.ignore")==null) {
+                if(c!=null && c.getValue() != null && c.getValue().equals("${maven.test.failure.ignore}") && System.getProperty("maven.test.failure.ignore")==null) {
                     if (maven3orLater( build.getMavenBuildInformation().getMavenVersion() )) {
                         String fieldName = "testFailureIgnore";
                         if (mojo.mojoExecution.getConfiguration().getChild( fieldName ) != null) {
@@ -245,6 +245,7 @@ public class SurefireArchiver extends MavenReporter {
     private boolean isSurefireTest(MojoInfo mojo) {
         if ((!mojo.is("com.sun.maven", "maven-junit-plugin", "test"))
             && (!mojo.is("org.sonatype.flexmojos", "flexmojos-maven-plugin", "test-run"))
+            && (!mojo.is("org.sonatype.tycho", "maven-osgi-test-plugin", "test"))
             && (!mojo.is("org.apache.maven.plugins", "maven-surefire-plugin", "test"))
             && (!mojo.is("org.apache.maven.plugins", "maven-failsafe-plugin", "integration-test")))
             return false;
@@ -284,7 +285,12 @@ public class SurefireArchiver extends MavenReporter {
                 if (((skipTests != null) && (skipTests))) {
                     return false;
                 }
-	        }
+	        } else if (mojo.is("org.sonatype.tycho", "maven-osgi-test-plugin", "test")) {
+                Boolean skipTests = mojo.getConfigurationValue("skipTest", Boolean.class);
+                if (((skipTests != null) && (skipTests))) {
+                    return false;
+                }
+            }
 
         } catch (ComponentConfigurationException e) {
             return false;
