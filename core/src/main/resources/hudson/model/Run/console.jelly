@@ -31,7 +31,7 @@ THE SOFTWARE.
     <st:include page="sidepanel.jelly" />
     <l:main-panel>
       <t:buildCaption>
-        ${%Console Output}
+        <j:out value="${%Console Output}"/>
       </t:buildCaption>
       <l:rightspace>
         <a href="consoleText">
