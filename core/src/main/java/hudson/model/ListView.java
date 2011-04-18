@@ -91,7 +91,8 @@ public class ListView extends View implements Saveable {
         this.owner = owner;
     }
 
-    private Object readResolve() {
+    protected Object readResolve() {
+        super.readResolve();
         if(includeRegex!=null)
             includePattern = Pattern.compile(includeRegex);
         initColumns();
