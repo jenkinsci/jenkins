@@ -27,12 +27,22 @@ import hudson.ExtensionPoint;
 import hudson.ExtensionListView;
 import hudson.Extension;
 import hudson.ExtensionList;
+import hudson.FilePath;
+import hudson.Launcher;
+import hudson.model.AbstractBuild;
+import hudson.model.BuildListener;
+import hudson.model.Environment;
+import hudson.model.JobProperty;
 import hudson.model.Run;
 import hudson.model.TaskListener;
 import hudson.model.Hudson;
+import hudson.scm.SCM;
+import hudson.tasks.BuildWrapper;
 import hudson.util.CopyOnWriteList;
 import org.jvnet.tiger_types.Types;
 
+import java.io.File;
+import java.io.IOException;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 
@@ -98,6 +108,36 @@ public abstract class RunListener<R extends Run> implements ExtensionPoint {
     public void onStarted(R r, TaskListener listener) {}
 
     /**
+     * Runs before the {@link SCM#checkout(AbstractBuild, Launcher, FilePath, BuildListener, File)} runs, and performs a set up.
+     * Can contribute additional properties/env vars to the environment.
+     *
+     * <p>
+     * A typical strategy is for implementations to check {@link JobProperty}s and other configuration
+     * of the project to determine the environment to inject, which allows you to achieve the equivalent of
+     * {@link BuildWrapper}, but without UI.
+     *
+     * @param build
+     *      The build in progress for which an {@link Environment} object is created.
+     *      Never null.
+     * @param launcher
+     *      This launcher can be used to launch processes for this build.
+     *      If the build runs remotely, launcher will also run a job on that remote machine.
+     *      Never null.
+     * @param listener
+     *      Can be used to send any message.
+     * @return
+     *      non-null if the build can continue, null if there was an error
+     *      and the build needs to be aborted.
+     * @throws IOException
+     *      terminates the build abnormally. Hudson will handle the exception
+     *      and reports a nice error message.
+     * @since 1.409
+     */
+    public Environment setUpEnvironment( AbstractBuild build, Launcher launcher, BuildListener listener ) throws IOException, InterruptedException {
+    	return new Environment() {};
+    }
+
+    /**
      * Called right before a build is going to be deleted.
      *
      * @param r The build.
@@ -130,7 +170,7 @@ public abstract class RunListener<R extends Run> implements ExtensionPoint {
     public static final CopyOnWriteList<RunListener> LISTENERS = ExtensionListView.createCopyOnWriteList(RunListener.class);
 
     /**
-     * Fires the {@link #onCompleted} event.
+     * Fires the {@link #onCompleted(Run, TaskListener)} event.
      */
     public static void fireCompleted(Run r, TaskListener listener) {
         for (RunListener l : all()) {
@@ -140,7 +180,7 @@ public abstract class RunListener<R extends Run> implements ExtensionPoint {
     }
 
     /**
-     * Fires the {@link #onStarted} event.
+     * Fires the {@link #onStarted(Run, TaskListener)} event.
      */
     public static void fireStarted(Run r, TaskListener listener) {
         for (RunListener l : all()) {

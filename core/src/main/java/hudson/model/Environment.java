@@ -23,6 +23,10 @@
  */
 package hudson.model;
 
+import hudson.Launcher;
+import hudson.model.listeners.RunListener;
+import hudson.slaves.NodeProperty;
+import hudson.tasks.BuildWrapper;
 import hudson.tasks.Builder;
 import hudson.EnvVars;
 
@@ -44,6 +48,9 @@ import java.util.Map;
  * you guaranteed "tear down" phase, so that such resource won't keep running forever.
  *
  * @since 1.286
+ * @see BuildWrapper
+ * @see NodeProperty
+ * @see RunListener#setUpEnvironment(AbstractBuild, Launcher, BuildListener)
  */
 public abstract class Environment {
 	/**
