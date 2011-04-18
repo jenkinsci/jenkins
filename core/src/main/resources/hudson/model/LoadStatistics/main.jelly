@@ -61,6 +61,6 @@ THE SOFTWARE.
   </div>  
   <img src="${prefix?:'loadStatistics'}/graph?type=${type}&amp;width=500&amp;height=300" alt="[${%Load statistics graph}]" />
   <div style="margin-top: 2em;">
-    <j:core value="${%blurb}" />
+    ${%blurb}
   </div>
 </j:jelly>

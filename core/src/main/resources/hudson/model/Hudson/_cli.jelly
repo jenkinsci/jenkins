@@ -21,6 +21,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 -->
+
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
   <l:layout norefresh="true">
@@ -31,7 +32,7 @@ THE SOFTWARE.
         ${%Jenkins CLI}
       </h1>
       <p>
-        <j:out value="${%blurb(rootURL)}" />
+        ${%blurb(rootURL)}
       </p>
       <pre style="color: white; background-color:black; padding:1em; font-weight: bold">java -jar <a
               style="color: white"

@@ -34,7 +34,7 @@ THE SOFTWARE.
       <h1>${%Script Console}</h1>
 
       <p>
-        <j:out value="${%description}" />
+        ${%description}
       </p>
       <!-- this is where the example goes -->
       <d:invokeBody />
