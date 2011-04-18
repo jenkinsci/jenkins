@@ -129,15 +129,6 @@ public abstract class View extends AbstractModelObject implements AccessControll
         this.owner = owner;
     }
 
-    protected Object readResolve() {
-        if (properties == null) {
-            properties = new PropertyList(this);
-        } else {
-            properties.setOwner(this);
-        }
-        return this;
-    }
-
     /**
      * Gets all the items in this collection in a read-only view.
      */
@@ -206,6 +197,19 @@ public abstract class View extends AbstractModelObject implements AccessControll
      * @since 1.406
      */
     public DescribableList<ViewProperty,ViewPropertyDescriptor> getProperties() {
+        // readResolve was the best place to do this, but for compatibility reasons,
+        // this class can no longer have readResolve() (the mechanism itself isn't suitable for class hierarchy)
+        // see JENKINS-9431
+        //
+        // until we have that, putting this logic here.
+        synchronized (this) {
+            if (properties == null) {
+                properties = new PropertyList(this);
+            } else {
+                properties.setOwner(this);
+            }
+        }
+
         return properties;
     }
 
@@ -236,7 +240,7 @@ public abstract class View extends AbstractModelObject implements AccessControll
      */
     @Exported(name="property",inline=true)
     public List<ViewProperty> getAllProperties() {
-        return properties.toList();
+        return getProperties().toList();
     }
 
     public ViewDescriptor getDescriptor() {
@@ -637,7 +641,7 @@ public abstract class View extends AbstractModelObject implements AccessControll
 
         JSONObject json = req.getSubmittedForm();
 
-        properties.rebuild(req, req.getSubmittedForm(), getApplicablePropertyDescriptors());
+        getProperties().rebuild(req, req.getSubmittedForm(), getApplicablePropertyDescriptors());
 
         save();
 
