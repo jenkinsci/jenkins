@@ -53,7 +53,7 @@ THE SOFTWARE.
         </j:otherwise>
       </j:choose>
       <p>
-        ${%text(rootURL,it.url)}
+        <j:out value="${%text(rootURL,it.url)}" />
       </p>
     </l:main-panel>
   </l:layout>

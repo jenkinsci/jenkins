@@ -32,15 +32,15 @@ THE SOFTWARE.
     <!-- Only show the create new jobs link to those users that have permission to use it. -->
     <j:getStatic var="permission" className="hudson.model.Item" field="CREATE"/>
     <j:when test="${h.hasPermission(permission)}">
-      ${%newJob}
+      <j:out value="${%newJob}" />
     </j:when>
     <j:otherwise>
       <!-- Offer anonymous users the chance to login, then they can create jobs. -->
       <j:if test="${h.isAnonymous()}">
-        ${%login(rootURL, app.securityRealm.loginUrl, request.requestURI)}
+        <j:out value="${%login(rootURL, app.securityRealm.loginUrl, request.requestURI)}" />
         <!-- Also offer them the opportunity to sign-up for an account, if this facility is available. -->
         <j:if test="${app.securityRealm.allowsSignup()}">
-          ${%signup}
+          <j:out value="${%signup}" />
         </j:if>
       </j:if>
     </j:otherwise>

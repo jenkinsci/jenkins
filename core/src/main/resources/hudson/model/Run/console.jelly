@@ -43,7 +43,7 @@ THE SOFTWARE.
       <j:set var="offset" value="${empty(consoleFull) ? it.logFile.length()-threshold*1024 : 0}" />
       <j:choose>
         <j:when test="${offset > 0}">
-          ${%skipSome(offset/1024,"consoleFull")}
+          <j:out value='${%skipSome(offset/1024,"consoleFull")}' />
         </j:when>
         <j:otherwise>
           <j:set var="offset" value="${0}" />
