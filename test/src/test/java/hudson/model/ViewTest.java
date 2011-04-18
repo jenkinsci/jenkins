@@ -118,4 +118,14 @@ public class ViewTest extends HudsonTestCase {
     	assertNull(p.getView("list"));
     	
     }
+
+    @Bug(9367)
+    public void testPersistence() throws Exception {
+        ListView view = new ListView("foo", hudson);
+        hudson.addView(view);
+
+        ListView v = (ListView)Hudson.XSTREAM.fromXML(Hudson.XSTREAM.toXML(view));
+        System.out.println(v.getProperties());
+        assertNotNull(v.getProperties());
+    }
 }
