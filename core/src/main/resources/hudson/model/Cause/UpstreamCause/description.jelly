@@ -21,7 +21,8 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 -->
+<?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
     <!-- upstreamUrl added in 1.284, so handle missing value -->
-    <span>${it.upstreamUrl!=null ? "%started_by_project(it.upstreamProject,it.upstreamBuild.toString(),it.upstreamUrl,rootURL)" : it.shortDescription}</span>
+    <span><j:out value='${it.upstreamUrl!=null ? "%started_by_project(it.upstreamProject,it.upstreamBuild.toString(),it.upstreamUrl,rootURL)" : it.shortDescription}' /></span>
 </j:jelly>

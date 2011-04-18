@@ -21,13 +21,13 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 -->
-
+<?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
   <l:layout permission="${app.ADMINISTER}" title="${%Users}">
     <st:include page="sidepanel.jelly" />
     <l:main-panel>
       <h1>${%Users}</h1>
-      <p>${%blurb}</p>
+      <p><j:out value="${%blurb}" /></p>
       
       <table class="sortable pane bigtable" id="people">
         <tr>
