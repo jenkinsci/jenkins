@@ -46,12 +46,22 @@ public class ExtractResourceSCM extends NullSCM {
 
     private String parentFolder;
 
+    /**
+     *
+     * @param zip
+     */
     public ExtractResourceSCM(URL zip) {
         if(zip==null)
             throw new IllegalArgumentException();
         this.zip = zip;
     }
 
+    /**
+     * with this constructor your zip can contains a folder
+     * more usefull to create a project test zip foo.zip foo
+     * @param zip
+     * @param parentFolder
+     */
     public ExtractResourceSCM(URL zip, String parentFolder) {
         if(zip==null)
             throw new IllegalArgumentException();
@@ -68,10 +78,7 @@ public class ExtractResourceSCM extends NullSCM {
         listener.getLogger().println("Staging "+zip);
         workspace.unzipFrom(zip.openStream());
         if (parentFolder != null) {
-            System.out.println("workspace " + workspace.getRemote());
-            //Thread.sleep( 100000 );
             FileUtils.copyDirectory( new File(workspace.getRemote() + "/" + parentFolder), new File( workspace.getRemote()));
-            //FileUtils.moveDirectory( new File(workspace.getRemote() + "/" + parentFolder), new File( workspace.getRemote()));
         }
         return true;
     }
