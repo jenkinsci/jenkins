@@ -209,6 +209,9 @@ public abstract class AbstractMavenProcessFactory
 
             MavenConsoleAnnotator mca = new MavenConsoleAnnotator(out,charset);
 
+            if ( mavenRemoteUseInet ) {
+                envVars.put(MAVEN_REMOTE_USEINET_ENV_VAR_NAME , "true" );
+            }
             final ArgumentListBuilder cmdLine = buildMavenAgentCmdLine( listener,acceptor.getPort());
             String[] cmds = cmdLine.toCommandArray();
             final Proc proc = launcher.launch().cmds(cmds).envs(envVars).stdout(mca).pwd(workDir).start();
@@ -315,6 +318,10 @@ public abstract class AbstractMavenProcessFactory
     protected EnvVars getEnvVars() {
         return envVars;
     }
+
+    public static boolean mavenRemoteUseInet = Boolean.getBoolean("maven.remote.useinet");
+
+    public static final String MAVEN_REMOTE_USEINET_ENV_VAR_NAME = "MAVEN_REMOTE_USEINET";
     
     
 }
