@@ -22,8 +22,11 @@ complete {
 
     // GlassFish components are dual-licensed between CDDL and GPL+Classpath Exception
     // we elect to take them under CDDL.
+    // note that central has a different POM from m.g.o-public (http://repo2.maven.org/maven2/javax/mail/mail/1.4/mail-1.4.pom
+    // vs http://maven.glassfish.org/content/groups/public/javax/mail/mail/1.4/mail-1.4.pom), so we aren't using  rewriteLicense here
     match(["javax.mail:*","org.jvnet.hudson:activation","org.jvnet:tiger-types","javax.servlet:jstl"]) {
-        rewriteLicense([], cddl)
+        if (dependency.licenses.isEmpty())
+            dependency.licenses=[cddl]
     }
 
     match("antlr:*") {
