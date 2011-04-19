@@ -29,6 +29,8 @@ import hudson.model.AbstractBuild;
 import hudson.model.BuildListener;
 import hudson.scm.NullSCM;
 import hudson.scm.SCM;
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.IOUtils;
 
 import java.io.File;
 import java.io.IOException;
@@ -42,10 +44,29 @@ import java.net.URL;
 public class ExtractResourceSCM extends NullSCM {
     private final URL zip;
 
+    private String parentFolder;
+
+    /**
+     *
+     * @param zip
+     */
     public ExtractResourceSCM(URL zip) {
         if(zip==null)
             throw new IllegalArgumentException();
         this.zip = zip;
+    }
+
+    /**
+     * with this constructor your zip can contains a folder
+     * more usefull to create a project test zip foo.zip foo
+     * @param zip
+     * @param parentFolder
+     */
+    public ExtractResourceSCM(URL zip, String parentFolder) {
+        if(zip==null)
+            throw new IllegalArgumentException();
+        this.zip = zip;
+        this.parentFolder = parentFolder;
     }
 
     @Override
@@ -56,6 +77,9 @@ public class ExtractResourceSCM extends NullSCM {
     	}
         listener.getLogger().println("Staging "+zip);
         workspace.unzipFrom(zip.openStream());
+        if (parentFolder != null) {
+            FileUtils.copyDirectory( new File(workspace.getRemote() + "/" + parentFolder), new File( workspace.getRemote()));
+        }
         return true;
     }
 }

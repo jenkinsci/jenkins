@@ -78,8 +78,10 @@ public abstract class ViewDescriptor extends Descriptor<View> {
 
             @Override
             public void onItem(Item i) {
-                r.add(i.getFullName());
-                super.onItem(i);
+                if (i.getFullName().startsWith(value)) {
+                    r.add((i.getFullName()));
+                    super.onItem(i);
+                }
             }
         }.onItemGroup(Hudson.getInstance());
 

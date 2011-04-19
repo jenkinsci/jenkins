@@ -32,11 +32,15 @@ THE SOFTWARE.
   
   <groupId>org.jenkins-ci.main</groupId>
   <artifactId>pom</artifactId>
-  <version>1.408-SNAPSHOT</version>
+  <version>1.410-SNAPSHOT</version>
   <packaging>pom</packaging>
   
   <name>Jenkins main module</name>
   <description>The module that constitutes the main jenkins.war</description>
+
+  <prerequisites>
+    <maven>3.0</maven>
+  </prerequisites>
   
   <modules>
     <module>remoting</module>
@@ -161,6 +165,23 @@ THE SOFTWARE.
           <groupId>org.kohsuke</groupId>
           <artifactId>access-modifier-checker</artifactId>
           <version>1.0</version>
+        </plugin>
+        <plugin>
+          <groupId>com.cloudbees</groupId>
+          <artifactId>maven-license-plugin</artifactId>
+          <version>1.1</version>
+          <executions>
+            <execution>
+              <goals>
+                <goal>process</goal>
+              </goals>
+              <phase>compile</phase>
+              <configuration>
+                <requireCompleteLicenseInfo>true</requireCompleteLicenseInfo>
+                <script>../licenseCompleter.groovy</script>
+              </configuration>
+            </execution>
+          </executions>
         </plugin>
       </plugins>
     </pluginManagement>

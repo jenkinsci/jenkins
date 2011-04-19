@@ -31,6 +31,7 @@ import hudson.Util;
 import hudson.FilePath;
 import hudson.console.AnnotatedLargeText;
 import hudson.console.ExpandableDetailsNote;
+import hudson.model.listeners.RunListener;
 import hudson.slaves.WorkspaceList;
 import hudson.slaves.NodeProperty;
 import hudson.slaves.WorkspaceList.Lease;
@@ -393,6 +394,11 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
          *      Passed in for the convenience. The returned path must be registered to this object.
          */
         protected Lease decideWorkspace(Node n, WorkspaceList wsl) throws InterruptedException, IOException {
+            String customWorkspace = getProject().getCustomWorkspace();
+            if (customWorkspace != null) {
+                // we allow custom workspaces to be concurrently used between jobs.
+                return Lease.createDummyLease(n.getRootPath().child(getEnvironment(listener).expand(customWorkspace)));
+            }
             // TODO: this cast is indicative of abstraction problem
             return wsl.allocate(n.getWorkspaceFor((TopLevelItem)getProject()));
         }
@@ -474,6 +480,13 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
             }
 
             buildEnvironments = new ArrayList<Environment>();
+
+            for (RunListener rl: RunListener.all()) {
+                Environment environment = rl.setUpEnvironment(AbstractBuild.this, l, listener);
+                if (environment != null) {
+                    buildEnvironments.add(environment);
+                }
+            }
 
             for (NodeProperty nodeProperty: Hudson.getInstance().getGlobalNodeProperties()) {
                 Environment environment = nodeProperty.setUp(AbstractBuild.this, l, listener);

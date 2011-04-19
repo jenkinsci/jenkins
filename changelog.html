@@ -56,6 +56,27 @@ Upcoming changes</a>
 <div id="trunk" style="display:none"><!--=TRUNK-BEGIN=-->
 <ul class=image>
   <li class=bug>
+    Jenkins Maven build does not recognize Tycho surefire reports
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-9326">issue 9326</a>)
+  <li class=bug>
+    Fixed a persistence problem in <tt>View$PropertyList</tt>
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-9367">issue 9367</a>)
+  <li class=rfe>
+    Maven agent needs a fix for the 'hardcoded' socket connection to localhost
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-6795">issue 6795</a>)
+  <li class=rfe>
+    Support custom workspace for maven/ivy projects
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-8848">issue 8848</a>)
+  <li class=rfe>
+    Added a new extension point to execute background tasks more flexibly.
+</ul>
+</div><!--=TRUNK-END=-->
+
+<!-- these changes are controlled by the release process. DO NOT MODIFY -->
+<div id="rc" style="display:none;"><!--=BEGIN=-->
+<h3><a name=v1.409>What's new in 1.409</a> <!--=DATE=--></h3>
+<ul class=image>
+  <li class=bug>
     Some french strings are incorrect after renaming to Jenkins
     (<a href="http://issues.jenkins-ci.org/browse/JENKINS-9334">issue 9334</a>)
   <li class=bug>
@@ -64,6 +85,12 @@ Upcoming changes</a>
   <li class=bug>
     "include culprits" should treat unstable and failure as the same
     (<a href="http://issues.jenkins-ci.org/browse/JENKINS-4617">issue 4617</a>)
+  <li class=bug>
+    fixed "Copy existing job" autocompletion.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-9384">issue 9384</a>)
+  <li class=bug>
+    Zip/tar files created by Jenkins now properly retains Unix file modes.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-9397">issue 9397</a>)
   <li class=rfe>
     Added two new CLI commands "wait-node-online" and "wait-node-offline" to block until a slave becomes online/offline.
   <li class=rfe>
@@ -74,13 +101,24 @@ Upcoming changes</a>
   <li class=rfe>
     Support self restart on Mac OS X 10.6 and onward
     (<a href="http://issues.jenkins-ci.org/browse/JENKINS-7537">issue 7537</a>)
+  <li class=rfe>
+    Added "about Jenkins" screen that shows the 3rd party license acknowledgement.
 </ul>
-</div><!--=TRUNK-END=-->
-
-<!-- these changes are controlled by the release process. DO NOT MODIFY -->
-<div id="rc" style="display:none;"><!--=BEGIN=-->
-<h3><a name=v1.407>What's new in 1.407</a> <!--=DATE=--></h3>
+</div><!--=END=-->
+<h3><a name=v1.408>What's new in 1.408</a> (2011/04/18)</h3>
 <ul class=image>
+  <li class='major bug'>
+    Fixed a regression that resulted in too much escaping
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-9426">issue 9426</a>)
+  <li class='bug'>
+    Fixed a persistence problem in <tt>View$PropertyList</tt>
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-9367">issue 9367</a>)
+</ul>
+<h3><a name=v1.407>What's new in 1.407</a> (2011/04/15)</h3>
+<ul class=image>
+  <li class='major bug'>
+    Implemented comprehensive preventive measure against cross-site scripting. 
+    (SECURITY-14)
   <li class=bug>
     Javadoc links on maven job page with only one module
     (<a href="http://issues.jenkins-ci.org/browse/JENKINS-9202">issue 9202</a>)
@@ -99,8 +137,9 @@ Upcoming changes</a>
   <li class=bug>
     Fixed "AdjunctManager is not installed" error when Jenkins failed to startup.
     (<a href="http://issues.jenkins-ci.org/browse/JENKINS-9271">issue 9271</a>)
+  <li class=rfe>
+    Jenkins has a new logo, thanks to Charles Lowell at The Frontside
 </ul>
-</div><!--=END=-->
 <h3><a name=v1.406>What's new in 1.406</a> (2011/04/11)</h3>
 <ul class=image>
   <li class=bug>

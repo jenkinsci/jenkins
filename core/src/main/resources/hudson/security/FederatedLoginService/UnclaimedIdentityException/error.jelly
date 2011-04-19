@@ -25,6 +25,7 @@ THE SOFTWARE.
 <!--
   This is used to create the first user.
 -->
+<?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
   <st:statusCode value="403" />
   <l:layout title="${%loginError(it.identifier.pronoun)}">

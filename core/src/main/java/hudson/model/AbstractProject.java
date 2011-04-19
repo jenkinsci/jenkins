@@ -219,6 +219,13 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
 
     private boolean concurrentBuild;
 
+    /**
+     * See {@link #setCustomWorkspace(String)}.
+     *
+     * @since 1.410
+     */
+    private String customWorkspace;
+    
     protected AbstractProject(ItemGroup parent, String name) {
         super(parent,name);
 
@@ -1629,6 +1636,12 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
         blockBuildWhenDownstreamBuilding = req.getParameter("blockBuildWhenDownstreamBuilding")!=null;
         blockBuildWhenUpstreamBuilding = req.getParameter("blockBuildWhenUpstreamBuilding")!=null;
 
+        if(req.hasParameter("customWorkspace")) {
+            customWorkspace = req.getParameter("customWorkspace.directory");
+        } else {
+            customWorkspace = null;
+        }
+        
         if(req.getParameter("hasSlaveAffinity")!=null) {
             assignedNode = Util.fixEmptyAndTrim(req.getParameter("_.assignedLabelString"));
         } else {
@@ -1941,5 +1954,30 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
         if (item==null)
             throw new CmdLineException(null,Messages.AbstractItem_NoSuchJobExists(name,AbstractProject.findNearest(name).getFullName()));
         return item;
+    }
+
+    public String getCustomWorkspace() {
+        return customWorkspace;
+    }
+
+    /**
+     * User-specified workspace directory, or null if it's up to Jenkins.
+     *
+     * <p>
+     * Normally a project uses the workspace location assigned by its parent container,
+     * but sometimes people have builds that have hard-coded paths.
+     *
+     * <p>
+     * This is not {@link File} because it may have to hold a path representation on another OS.
+     *
+     * <p>
+     * If this path is relative, it's resolved against {@link Node#getRootPath()} on the node where this workspace
+     * is prepared. 
+     *
+     * @since 1.410
+     */
+    public void setCustomWorkspace(String customWorkspace) throws IOException {
+        this.customWorkspace= customWorkspace;
+        save();
     }
 }

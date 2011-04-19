@@ -10,7 +10,7 @@
   <groupId>org.jenkins-ci.plugins</groupId>
   <artifactId>plugin</artifactId>
   <name>Jenkins plugin POM</name>
-  <version>1.408-SNAPSHOT</version>
+  <version>1.410-SNAPSHOT</version>
   <packaging>pom</packaging>
 
   <properties>
@@ -38,7 +38,7 @@
       <dependency><!-- if a plugin wants to depend on the maven plugin, choose the right version automatically -->
         <groupId>org.jenkins-ci.main</groupId>
         <artifactId>maven-plugin</artifactId>
-        <version>1.408-SNAPSHOT</version>
+        <version>1.410-SNAPSHOT</version>
       </dependency>
     </dependencies>
   </dependencyManagement>
@@ -48,25 +48,25 @@
       <groupId>org.jenkins-ci.main</groupId>
       <artifactId>jenkins-war</artifactId>
       <type>war</type>
-      <version>1.408-SNAPSHOT</version>
+      <version>1.410-SNAPSHOT</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.jenkins-ci.main</groupId>
       <artifactId>jenkins-core</artifactId>
-      <version>1.408-SNAPSHOT</version>
+      <version>1.410-SNAPSHOT</version>
       <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>org.jenkins-ci.main</groupId>
       <artifactId>jenkins-test-harness</artifactId>
-      <version>1.408-SNAPSHOT</version>
+      <version>1.410-SNAPSHOT</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.jenkins-ci.main</groupId>
       <artifactId>ui-samples-plugin</artifactId>
-      <version>1.408-SNAPSHOT</version>
+      <version>1.410-SNAPSHOT</version>
       <scope>test</scope>
     </dependency>
     <dependency>
@@ -191,6 +191,50 @@
             </property>
           </systemProperties>
         </configuration>
+      </plugin>
+      <plugin>
+        <groupId>com.cloudbees</groupId>
+        <artifactId>maven-license-plugin</artifactId>
+        <version>1.1</version>
+        <executions>
+          <execution>
+            <goals>
+              <goal>process</goal>
+            </goals>
+            <phase>compile</phase>
+            <configuration>
+              <!--requireCompleteLicenseInfo>true</requireCompleteLicenseInfo-->
+              <generateLicenseXml>target/${project.artifactId}/WEB-INF/licenses.xml</generateLicenseXml>
+              <inlineScript><![CDATA[
+                filter {
+                    def plugins = [] as Set
+                    
+                    // collect all Jenkins plugins
+                    models.entrySet().each { e ->
+                        if (e.value.packaging=="hpi")
+                            plugins.add(e.key.id)
+                    }
+                    
+                    // filter out dependencies that don't belong to this plugin
+                    models.entrySet().removeAll(models.entrySet().findAll { e ->
+                        def a = e.key;
+                        
+                        if (a.dependencyTrail.size()>0 && plugins.contains(a.dependencyTrail[1]))
+                            return true; // ignore transitive dependencies through other plugins
+
+                        // if the dependency goes through jenkins core, we don't need to bundle it in the war
+                        // because jenkins-core comes in the <provided> scope, I think this is a bug in Maven that it puts such
+                        // dependencies into the artifact list.
+                        if (a.dependencyTrail.find { trail -> trail.contains(":hudson-core:") || trail.contains(":jenkins-core:") })
+                            return true;
+                            
+                        return false;
+                    })
+                }              
+              ]]></inlineScript>
+            </configuration>
+          </execution>
+        </executions>
       </plugin>
     </plugins>
   </build>

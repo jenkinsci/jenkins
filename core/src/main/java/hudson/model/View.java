@@ -118,7 +118,7 @@ public abstract class View extends AbstractModelObject implements AccessControll
      * List of {@link ViewProperty}s configured for this view.
      * @since 1.406
      */
-    private volatile DescribableList<ViewProperty,ViewPropertyDescriptor> properties = new PropertyList();
+    private volatile DescribableList<ViewProperty,ViewPropertyDescriptor> properties = new PropertyList(this);
 
     protected View(String name) {
         this.name = name;
@@ -127,13 +127,6 @@ public abstract class View extends AbstractModelObject implements AccessControll
     protected View(String name, ViewGroup owner) {
         this.name = name;
         this.owner = owner;
-    }
-
-    private Object readResolve() {
-        if (properties == null) {
-            properties = new PropertyList();
-        }
-        return this;
     }
 
     /**
@@ -204,6 +197,19 @@ public abstract class View extends AbstractModelObject implements AccessControll
      * @since 1.406
      */
     public DescribableList<ViewProperty,ViewPropertyDescriptor> getProperties() {
+        // readResolve was the best place to do this, but for compatibility reasons,
+        // this class can no longer have readResolve() (the mechanism itself isn't suitable for class hierarchy)
+        // see JENKINS-9431
+        //
+        // until we have that, putting this logic here.
+        synchronized (this) {
+            if (properties == null) {
+                properties = new PropertyList(this);
+            } else {
+                properties.setOwner(this);
+            }
+        }
+
         return properties;
     }
 
@@ -234,7 +240,7 @@ public abstract class View extends AbstractModelObject implements AccessControll
      */
     @Exported(name="property",inline=true)
     public List<ViewProperty> getAllProperties() {
-        return properties.toList();
+        return getProperties().toList();
     }
 
     public ViewDescriptor getDescriptor() {
@@ -635,7 +641,7 @@ public abstract class View extends AbstractModelObject implements AccessControll
 
         JSONObject json = req.getSubmittedForm();
 
-        properties.rebuild(req, req.getSubmittedForm(), getApplicablePropertyDescriptors());
+        getProperties().rebuild(req, req.getSubmittedForm(), getApplicablePropertyDescriptors());
 
         save();
 
@@ -762,15 +768,22 @@ public abstract class View extends AbstractModelObject implements AccessControll
         return v;
     }
 
-    private class PropertyList extends DescribableList<ViewProperty,ViewPropertyDescriptor> {
-        private PropertyList() {
-            super(View.this);
+    public static class PropertyList extends DescribableList<ViewProperty,ViewPropertyDescriptor> {
+        private PropertyList(View owner) {
+            super(owner);
+        }
+
+        public PropertyList() {// needed for XStream deserialization
+        }
+
+        public View getOwner() {
+            return (View)owner;
         }
 
         @Override
         protected void onModified() throws IOException {
             for (ViewProperty p : this)
-                p.setView(View.this);
+                p.setView(getOwner());
         }
     }
 }

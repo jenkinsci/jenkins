@@ -28,6 +28,7 @@ THE SOFTWARE.
 
   Used by Matrix* classes
 -->
+<?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt" xmlns:p="/lib/hudson/project">
   <st:documentation>
     Generate configuration matrix and invoke body with 'p' as the instance of T

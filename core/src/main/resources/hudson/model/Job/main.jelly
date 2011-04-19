@@ -23,4 +23,5 @@ THE SOFTWARE.
 -->
 
 <!-- place holder for the derived types to add more contents -->
+<?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" />
