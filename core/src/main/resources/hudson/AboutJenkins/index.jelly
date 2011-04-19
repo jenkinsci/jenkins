@@ -35,9 +35,9 @@ THE SOFTWARE.
       <p>
         ${%dependencies}
       </p>
-      <t:3rdPartyLicenses>
-        <st:include page="/META-INF/licenses.xml" />
-      </t:3rdPartyLicenses>
+      <t:thirdPartyLicenses>
+        <st:include page="/META-INF/licenses.xml" optional="true" />
+      </t:thirdPartyLicenses>
     </l:main-panel>
   </l:layout>
 </j:jelly>
