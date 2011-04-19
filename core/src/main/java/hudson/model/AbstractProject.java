@@ -222,7 +222,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
     /**
      * See {@link #setCustomWorkspace(String)}.
      *
-     * @since xxx
+     * @since 1.410
      */
     private String customWorkspace;
     
@@ -1974,7 +1974,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
      * If this path is relative, it's resolved against {@link Node#getRootPath()} on the node where this workspace
      * is prepared. 
      *
-     * @since XXX
+     * @since 1.410
      */
     public void setCustomWorkspace(String customWorkspace) throws IOException {
         this.customWorkspace= customWorkspace;
