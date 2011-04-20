@@ -25,6 +25,7 @@ THE SOFTWARE.
 <!--
 <%@ attribute name="test" required="true" type="java.lang.Boolean" %>
 -->
+<?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:d="jelly:define" xmlns:s="jelly:stapler">
     <j:choose>
         <j:when test="${!test &amp;&amp; app.useSecurity}">

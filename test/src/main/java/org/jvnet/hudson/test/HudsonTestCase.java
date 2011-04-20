@@ -130,14 +130,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Set;
 import java.util.UUID;
-import java.util.concurrent.Callable;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
-import java.util.concurrent.SynchronousQueue;
-import java.util.concurrent.ThreadFactory;
-import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 import java.util.jar.Manifest;
 import java.util.logging.Filter;
 import java.util.logging.Level;
@@ -451,7 +444,7 @@ public abstract class HudsonTestCase extends TestCase implements RootAction {
         SocketConnector connector = new SocketConnector();
         connector.setHeaderBufferSize(12*1024); // use a bigger buffer as Stapler traces can get pretty large on deeply nested URL
 
-        server.setThreadPool(new ThreadPoolImpl(new ThreadPoolExecutor(1, 10, 10L, TimeUnit.SECONDS, new SynchronousQueue<Runnable>(),new ThreadFactory() {
+        server.setThreadPool(new ThreadPoolImpl(new ThreadPoolExecutor(10, 10, 10L, TimeUnit.SECONDS, new LinkedBlockingQueue<Runnable>(),new ThreadFactory() {
             public Thread newThread(Runnable r) {
                 Thread t = new Thread(r);
                 t.setName("Jetty Thread Pool");
@@ -695,11 +688,14 @@ public abstract class HudsonTestCase extends TestCase implements RootAction {
      */
     public DumbSlave createSlave(String labels, EnvVars env) throws Exception {
         synchronized (hudson) {
-            // this synchronization block is so that we don't end up adding the same slave name more than once.
-
             int sz = hudson.getNodes().size();
+            return createSlave("slave" + sz,labels,env);
+    	}
+    }
 
-            DumbSlave slave = new DumbSlave("slave" + sz, "dummy",
+    public DumbSlave createSlave(String nodeName, String labels, EnvVars env) throws Exception {
+        synchronized (hudson) {
+            DumbSlave slave = new DumbSlave(nodeName, "dummy",
     				createTmpDir().getPath(), "1", Mode.NORMAL, labels==null?"":labels, createComputerLauncher(env), RetentionStrategy.NOOP, Collections.EMPTY_LIST);
     		hudson.addNode(slave);
     		return slave;

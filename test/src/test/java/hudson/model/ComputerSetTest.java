@@ -23,6 +23,8 @@
  */
 package hudson.model;
 
+import hudson.cli.CLI;
+import hudson.slaves.DumbSlave;
 import org.jvnet.hudson.test.HudsonTestCase;
 import org.jvnet.hudson.test.Bug;
 import com.gargoylesoftware.htmlunit.html.HtmlForm;
@@ -45,5 +47,21 @@ public class ComputerSetTest extends HudsonTestCase {
         HudsonTestCase.WebClient client = new WebClient();
         HtmlForm form = client.goTo("computer/configure").getFormByName("config");
         submit(form);
+    }
+
+    public void testNodeOfflineCli() throws Exception {
+        DumbSlave s = createSlave();
+
+        CLI cli = new CLI(getURL());
+        try {
+            assertTrue(cli.execute("wait-node-offline","xxx")!=0);
+            assertTrue(cli.execute("wait-node-online",s.getNodeName())==0);
+
+            s.toComputer().disconnect().get();
+
+            assertTrue(cli.execute("wait-node-offline",s.getNodeName())==0);
+        } finally {
+            cli.close();
+        }
     }
 }

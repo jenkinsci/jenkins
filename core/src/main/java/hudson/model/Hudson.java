@@ -40,6 +40,7 @@ import hudson.Launcher;
 import hudson.Launcher.LocalLauncher;
 import hudson.LocalPluginManager;
 import hudson.Lookup;
+import hudson.Platform;
 import hudson.markup.MarkupFormatter;
 import hudson.Plugin;
 import hudson.PluginManager;
@@ -239,7 +240,7 @@ import java.util.regex.Pattern;
  * @author Kohsuke Kawaguchi
  */
 @ExportedBean
-public final class Hudson extends Node implements ItemGroup<TopLevelItem>, StaplerProxy, StaplerFallback, ViewGroup, AccessControlled, DescriptorByNameOwner {
+public class Hudson extends Node implements ItemGroup<TopLevelItem>, StaplerProxy, StaplerFallback, ViewGroup, AccessControlled, DescriptorByNameOwner {
     private transient final Queue queue;
 
     /**
@@ -637,7 +638,7 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
             }
 
             // get or create the secret
-            TextFile secretFile = new TextFile(new File(Hudson.getInstance().getRootDir(),"secret.key"));
+            TextFile secretFile = new TextFile(new File(getRootDir(),"secret.key"));
             if(secretFile.exists()) {
                 secretKey = secretFile.readTrim();
             } else {
@@ -2961,7 +2962,7 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
     public void doDoFingerprintCheck( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
         // Parse the request
         MultipartFormDataParser p = new MultipartFormDataParser(req);
-        if(Hudson.getInstance().isUseCrumbs() && !Hudson.getInstance().getCrumbIssuer().validateCrumb(req, p)) {
+        if(isUseCrumbs() && !getCrumbIssuer().validateCrumb(req, p)) {
             rsp.sendError(HttpServletResponse.SC_FORBIDDEN,"No crumb found");
         }
         try {
@@ -3487,9 +3488,12 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
         return File.pathSeparatorChar==';';
     }
 
+    /**
+     * @deprecated
+     *      Use {@link Platform#isDarwin()}
+     */
     public static boolean isDarwin() {
-        // according to http://developer.apple.com/technotes/tn2002/tn2110.html
-        return System.getProperty("os.name").toLowerCase(Locale.ENGLISH).startsWith("mac");
+        return Platform.isDarwin();
     }
 
     /**

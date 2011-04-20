@@ -23,7 +23,10 @@
  */
 package hudson;
 
+import hudson.util.VersionNumber;
+
 import java.io.File;
+import java.util.Locale;
 
 /**
  * Strategy object that absorbs the platform differences.
@@ -51,5 +54,22 @@ public enum Platform {
     public static Platform current() {
         if(File.pathSeparatorChar==':') return UNIX;
         return WINDOWS;
+    }
+
+    public static boolean isDarwin() {
+        // according to http://developer.apple.com/technotes/tn2002/tn2110.html
+        return System.getProperty("os.name").toLowerCase(Locale.ENGLISH).startsWith("mac");
+    }
+
+    /**
+     * Returns true if we run on Mac OS X >= 10.6
+     */
+    public static boolean isSnowLeopardOrLater() {
+        try {
+            return isDarwin() && new VersionNumber(System.getProperty("os.version")).compareTo(new VersionNumber("10.6"))>=0;
+        } catch (IllegalArgumentException e) {
+            // failed to parse the version
+            return false;
+        }
     }
 }

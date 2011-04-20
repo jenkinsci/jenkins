@@ -48,7 +48,6 @@ import hudson.util.IOUtils;
 import static hudson.util.jna.GNUCLibrary.LIBC;
 import static hudson.Util.fixEmpty;
 import static hudson.FilePath.TarCompression.GZIP;
-import hudson.os.PosixAPI;
 import hudson.org.apache.tools.tar.TarInputStream;
 import hudson.util.io.Archiver;
 import hudson.util.io.ArchiverFactory;
@@ -1132,7 +1131,7 @@ public final class FilePath implements Serializable {
         if(!isUnix())   return -1;
         return act(new FileCallable<Integer>() {
             public Integer invoke(File f, VirtualChannel channel) throws IOException {
-                return PosixAPI.get().stat(f.getPath()).mode();
+                return IOUtils.mode(f);
             }
         });
     }
@@ -1199,9 +1198,22 @@ public final class FilePath implements Serializable {
      *      can be empty but always non-null.
      */
     public FilePath[] list(final String includes) throws IOException, InterruptedException {
+        return list(includes, null);
+    }
+
+    /**
+     * List up files in this directory that matches the given Ant-style filter.
+     *
+     * @param includes
+     * @param excludes
+     *      See {@link FileSet} for the syntax. String like "foo/*.zip" or "foo/*&#42;/*.xml"
+     * @return
+     *      can be empty but always non-null.
+     */
+    public FilePath[] list(final String includes, final String excludes) throws IOException, InterruptedException {
         return act(new FileCallable<FilePath[]>() {
             public FilePath[] invoke(File f, VirtualChannel channel) throws IOException {
-                String[] files = glob(f,includes);
+                String[] files = glob(f,includes,excludes);
 
                 FilePath[] r = new FilePath[files.length];
                 for( int i=0; i<r.length; i++ )
@@ -1218,10 +1230,10 @@ public final class FilePath implements Serializable {
      * @return
      *      A set of relative file names from the base directory.
      */
-    private static String[] glob(File dir, String includes) throws IOException {
+    private static String[] glob(File dir, String includes, String excludes) throws IOException {
         if(isAbsolute(includes))
             throw new IOException("Expecting Ant GLOB pattern, but saw '"+includes+"'. See http://ant.apache.org/manual/Types/fileset.html for syntax");
-        FileSet fs = Util.createFileSet(dir,includes);
+        FileSet fs = Util.createFileSet(dir,includes,excludes);
         DirectoryScanner ds = fs.getDirectoryScanner(new Project());
         String[] files = ds.getIncludedFiles();
         return files;

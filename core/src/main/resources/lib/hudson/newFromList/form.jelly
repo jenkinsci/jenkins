@@ -32,6 +32,7 @@ THE SOFTWARE.
     @copyNames   : options of names to choose from as the copy source. null to hide "copy" option
     @checkUrl    : form field validation url
 -->
+<?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:s="/lib/form">
   <j:set var="descriptors" value="${h.filterDescriptors(it,attrs.descriptors)}" />
 

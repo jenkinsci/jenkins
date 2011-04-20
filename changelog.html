@@ -2,7 +2,7 @@
 <html>
 <!--
 
-We record noteworthy changes in this file, which then become http://jenkins-ci.org/changelog
+We record noteworthy changes in this file, which then becomes http://jenkins-ci.org/changelog
 
 Some tips:
 
@@ -20,8 +20,6 @@ Some tips:
 <head>
   <meta http-equiv="Content-Type" content="text/html;charset=utf-8">
   <title>Changelog</title>
-  <!-- TODO replace with new link:
-   link rel="alternate" title="Hudson announcements" href="https://hudson.dev.java.net/servlets/ProjectNewsRSS" type="application/rss+xml" -->
   <link rel="stylesheet" TYPE="text/css" href="changelog.css">
 <!--[if IE]>
 <style type="text/css">div.rate-offset { bottom: 0.2em !important; left: 5em !important; }</style>
@@ -35,9 +33,6 @@ Some tips:
         <img src="images/bug2.gif" alt="major bug">major bug fix     <img src="images/bug.gif" alt="bug">bug fix
     </span><span style="visibility:hidden">xxxxx</span>
 </div>
-<!-- TODO replace with new link: div align=right>
-  <a href="https://hudson.dev.java.net/servlets/ProjectNewsRSS"><img src=atom.gif border=0 alt="Atom"> Subscribe to RSS feed</a>
-</div -->
 
 <div id="ratings" style="display:none; font-size:120%;
      border:1px solid black; background-color:#eee; padding:0.5em; margin-bottom:1em">
@@ -61,17 +56,95 @@ Upcoming changes</a>
 <div id="trunk" style="display:none"><!--=TRUNK-BEGIN=-->
 <ul class=image>
   <li class=bug>
-    eclipse-plugin packaging doesn't work with maven plugin support.
-    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-8348">issue 8438</a>)
+    Maven3 with multiple threads does not work in Jenkins.
+    Fix support of -Tx maven 3 option.
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-9183">issue 9183</a>)
   <li class=bug>
-    Failed to parse POMs for packaging swc.
-    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-8448">issue 8448</a>)
+    Jenkins Maven build does not recognize Tycho surefire reports
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-9326">issue 9326</a>)
+  <li class=bug>
+    Fixed a persistence problem in <tt>View$PropertyList</tt>
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-9367">issue 9367</a>)
+  <li class=rfe>
+    Maven agent needs a fix for the 'hardcoded' socket connection to localhost
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-6795">issue 6795</a>)
+  <li class=rfe>
+    Support custom workspace for maven/ivy projects
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-8848">issue 8848</a>)
+  <li class=rfe>
+    Added a new extension point to execute background tasks more flexibly.
 </ul>
 </div><!--=TRUNK-END=-->
 
 <!-- these changes are controlled by the release process. DO NOT MODIFY -->
 <div id="rc" style="display:none;"><!--=BEGIN=-->
-<h3><a name=v1.406>What's new in 1.406</a> <!--=DATE=--></h3>
+<h3><a name=v1.409>What's new in 1.409</a> <!--=DATE=--></h3>
+<ul class=image>
+  <li class=bug>
+    Some french strings are incorrect after renaming to Jenkins
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-9334">issue 9334</a>)
+  <li class=bug>
+    Debian init script gives false positives for port already in use
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-9281">issue 9281</a>)
+  <li class=bug>
+    "include culprits" should treat unstable and failure as the same
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-4617">issue 4617</a>)
+  <li class=bug>
+    fixed "Copy existing job" autocompletion.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-9384">issue 9384</a>)
+  <li class=bug>
+    Zip/tar files created by Jenkins now properly retains Unix file modes.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-9397">issue 9397</a>)
+  <li class=rfe>
+    Added two new CLI commands "wait-node-online" and "wait-node-offline" to block until a slave becomes online/offline.
+  <li class=rfe>
+    Move Jenkins URL setting from E-mail Notification to its own section in the main configuration.
+  <li class=rfe>
+    Add LOADING overlay when triggering a build with parameters
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-9343">issue 9343</a>)
+  <li class=rfe>
+    Support self restart on Mac OS X 10.6 and onward
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-7537">issue 7537</a>)
+  <li class=rfe>
+    Added "about Jenkins" screen that shows the 3rd party license acknowledgement.
+</ul>
+</div><!--=END=-->
+<h3><a name=v1.408>What's new in 1.408</a> (2011/04/18)</h3>
+<ul class=image>
+  <li class='major bug'>
+    Fixed a regression that resulted in too much escaping
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-9426">issue 9426</a>)
+  <li class='bug'>
+    Fixed a persistence problem in <tt>View$PropertyList</tt>
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-9367">issue 9367</a>)
+</ul>
+<h3><a name=v1.407>What's new in 1.407</a> (2011/04/15)</h3>
+<ul class=image>
+  <li class='major bug'>
+    Implemented comprehensive preventive measure against cross-site scripting. 
+    (SECURITY-14)
+  <li class=bug>
+    Javadoc links on maven job page with only one module
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-9202">issue 9202</a>)
+  <li class=bug>
+    Duplicate test results with Maven2 projects
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-1557">issue 1557</a>)
+  <li class=bug>
+    Re-fixed JDK1.6 dependency that has crept into the core in 1.400
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-8914">issue 8914</a>)
+  <li class=bug>
+    eclipse-plugin packaging doesn't work with maven plugin support.
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-8348">issue 8438</a>)
+  <li class=bug>
+    Failed to parse POMs for packaging swc.
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-8448">issue 8448</a>)
+  <li class=bug>
+    Fixed "AdjunctManager is not installed" error when Jenkins failed to startup.
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-9271">issue 9271</a>)
+  <li class=rfe>
+    Jenkins has a new logo, thanks to Charles Lowell at The Frontside
+</ul>
+<h3><a name=v1.406>What's new in 1.406</a> (2011/04/11)</h3>
 <ul class=image>
   <li class=bug>
     Default viewport of the Timeline widgets were off by one day.
@@ -108,7 +181,6 @@ Upcoming changes</a>
   <li class=rfe>
     Added a mechanism for plugins to write an invisible node property
 </ul>
-</div><!--=END=-->
 <h3><a name=v1.405>What's new in 1.405</a> (2011/04/04)</h3>
 <ul class=image>
   <li class=bug>

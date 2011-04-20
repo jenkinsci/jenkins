@@ -27,7 +27,7 @@ THE SOFTWARE.
   <parent>
     <groupId>org.jenkins-ci.main</groupId>
     <artifactId>pom</artifactId>
-    <version>1.407-SNAPSHOT</version>
+    <version>1.410-SNAPSHOT</version>
     <relativePath>../pom.xml</relativePath>
   </parent>
   
@@ -59,7 +59,7 @@ THE SOFTWARE.
             </manifest>
             <manifestEntries>
               <Implementation-Version>${project.version}</Implementation-Version>
-              <Hudson-Version>${project.version}</Hudson-Version>
+              <Hudson-Version>1.395</Hudson-Version>
               <Jenkins-Version>${project.version}</Jenkins-Version>
             </manifestEntries>
           </archive>
@@ -132,6 +132,22 @@ THE SOFTWARE.
           </execution>
         </executions>
       </plugin>
+      <plugin><!-- generate licenses.xml -->
+        <groupId>com.cloudbees</groupId>
+        <artifactId>maven-license-plugin</artifactId>
+        <configuration>
+          <generateLicenseXml>target/classes/META-INF/licenses.xml</generateLicenseXml>
+          <inlineScript>
+            filter {
+                // add Winstone since we are bundling it.
+                def d = project.dependencies.find { it.artifactId=="winstone" };
+                def a = mojo.artifactFactory.createProjectArtifact(d.groupId,d.artifactId,d.version);
+                def p = mojo.projectBuilder.buildFromRepository(a, project.getRemoteArtifactRepositories(), mojo.localRepository)
+                models.put(a,p);
+            }
+          </inlineScript>
+        </configuration>
+      </plugin>
       <plugin>
         <!-- this is really just a patched version of maven-jetty-plugin to workaround issue #932 -->
         <groupId>org.jenkins-ci.tools</groupId>
@@ -148,14 +164,16 @@ THE SOFTWARE.
                 <port>${port}</port>
             </connector>
           </connectors>
-          <!--
-            read directly from core module's output directory,
-            so that changes are picked up right away without running mvn.
-          -->
-          <classesDirectory>../core/target/classes</classesDirectory>
-          <!-- use the test classpath for loading resources, since this takes priority -->
-          <testClassesDirectory>../core/src/main/resources</testClassesDirectory>
-          <useTestClasspath>true</useTestClasspath>
+          <additionalClassesDirectories>
+            <!-- load resoures straight from source -->
+            <additionalClassesDirectory>../core/src/main/resources</additionalClassesDirectory>
+            
+            <!--
+              read directly from core module's output directory,
+              so that changes are picked up right away without running mvn.
+            -->
+            <additionalClassesDirectory>../core/target/classes</additionalClassesDirectory>
+          </additionalClassesDirectories>
           <userRealms>
             <userRealm implementation="org.mortbay.jetty.security.HashUserRealm">
               <name>default</name>

@@ -25,6 +25,7 @@ THE SOFTWARE.
 <!--
   This view is rendered as /hudson/job/XYZ/build
 -->
+<?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define"
 	xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form"
 	xmlns:i="jelly:fmt" xmlns:p="/lib/hudson/project">
@@ -36,6 +37,7 @@ THE SOFTWARE.
   <l:layout title="${it.displayName}">
     <st:include page="sidepanel.jelly" it="${it.project}" />
     <l:main-panel>
+      <div class="behavior-loading">${%LOADING}</div>
       <h1>${it.owner.pronoun} ${it.owner.displayName}</h1>
       <p>${%description}</p>
       <j:set var="delay" value="${request.getParameter('delay')}" />

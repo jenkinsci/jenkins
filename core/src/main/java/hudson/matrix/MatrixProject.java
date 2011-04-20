@@ -143,11 +143,6 @@ public class MatrixProject extends AbstractProject<MatrixProject,MatrixBuild> im
      */
     private Result touchStoneResultCondition;
 
-    /**
-     * See {@link #setCustomWorkspace(String)}.
-     */
-    private String customWorkspace;
-    
     public MatrixProject(String name) {
         this(Hudson.getInstance(), name);
     }
@@ -229,28 +224,6 @@ public class MatrixProject extends AbstractProject<MatrixProject,MatrixBuild> im
         this.touchStoneResultCondition = touchStoneResultCondition;
     }
 
-    public String getCustomWorkspace() {
-      return customWorkspace;
-    }
-    
-    /**
-     * User-specified workspace directory, or null if it's up to Hudson.
-     *
-     * <p>
-     * Normally a matrix project uses the workspace location assigned by its parent container,
-     * but sometimes people have builds that have hard-coded paths.
-     *
-     * <p>
-     * This is not {@link File} because it may have to hold a path representation on another OS.
-     *
-     * <p>
-     * If this path is relative, it's resolved against {@link Node#getRootPath()} on the node where this workspace
-     * is prepared.
-     */
-    public void setCustomWorkspace(String customWorkspace) throws IOException {
-        this.customWorkspace= customWorkspace;
-    }
-    
     @Override
     protected List<Action> createTransientActions() {
         List<Action> r = super.createTransientActions();
@@ -594,12 +567,6 @@ public class MatrixProject extends AbstractProject<MatrixProject,MatrixBuild> im
             this.touchStoneCombinationFilter = null;
         }
 
-        if(req.hasParameter("customWorkspace")) {
-            customWorkspace = req.getParameter("customWorkspace.directory");
-        } else {
-            customWorkspace = null;        
-        }
-        
         // parse system axes
         DescribableList<Axis,AxisDescriptor> newAxes = new DescribableList<Axis,AxisDescriptor>(this);
         newAxes.rebuildHetero(req, json, Axis.all(),"axis");

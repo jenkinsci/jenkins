@@ -140,7 +140,7 @@ THE SOFTWARE.
         <td id="top-panel" colspan="2">
           <table cellpadding="0" cellspacing="0" width="100%" border="0">
             <tr><td style="font-weight:bold; font-size: 2em;">
-              <a href="${rootURL}/"><img src="${imagesURL}/title.png" alt="title" height="34" width="139" /></a>
+              <a href="${rootURL}/"><img src="${imagesURL}/title.png" alt="title" /></a>
             </td><td style="vertical-align: middle; text-align: right; padding-right: 1em;">
 
               <!-- search box -->
@@ -214,7 +214,7 @@ THE SOFTWARE.
       </tr>
     </table>
     <table id="main-table" width="100%" height="70%" border="0"
-        style="background-image: url(${imagesURL}/hudson.png);
+        style="background-image: url(${imagesURL}/jenkins.png);
                background-repeat: no-repeat; background-position: bottom left;">
       <tr>
         <td id="side-panel" width="20%">

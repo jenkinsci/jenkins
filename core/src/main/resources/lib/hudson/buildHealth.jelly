@@ -28,6 +28,7 @@ THE SOFTWARE.
   <%@ attribute name="td" required="false" type="java.lang.String" %>
   <%@ attribute name="link" required="false" type="java.lang.String" %>
 -->
+<?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:x="jelly:xml" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
     <j:set var="buildHealth" value="${job.buildHealth}"/>
     <j:if test="${td}"><j:set var="useTdElement" value="x"/></j:if>
