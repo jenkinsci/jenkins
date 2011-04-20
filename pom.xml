@@ -38,10 +38,6 @@ THE SOFTWARE.
   <name>Jenkins main module</name>
   <description>The module that constitutes the main jenkins.war</description>
 
-  <prerequisites>
-    <maven>3.0</maven>
-  </prerequisites>
-  
   <modules>
     <module>remoting</module>
     <module>core</module>
@@ -169,7 +165,7 @@ THE SOFTWARE.
         <plugin>
           <groupId>com.cloudbees</groupId>
           <artifactId>maven-license-plugin</artifactId>
-          <version>1.1</version>
+          <version>1.2</version>
           <executions>
             <execution>
               <goals>
