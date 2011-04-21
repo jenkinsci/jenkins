@@ -117,6 +117,12 @@ public class Which {
                     Field f = is.getClass().getDeclaredField("delegate");
                     f.setAccessible(true);
                     delegate = f.get(is);
+		    //JENKINS-5922 - workaround for CertificateReaderInputStream; JBoss 5.0.0, EAP 5.0 and EAP 5.1
+                    if(delegate.getClass().getName().equals("java.util.jar.JarVerifier$VerifierStream")){
+			f = delegate.getClass().getDeclaredField("is");
+			f.setAccessible(true);
+			delegate = f.get(delegate);
+                    }
                 }
                 Field f = delegate.getClass().getDeclaredField("this$0");
                 f.setAccessible(true);
