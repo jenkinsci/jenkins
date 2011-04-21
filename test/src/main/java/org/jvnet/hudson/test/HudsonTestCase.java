@@ -1394,8 +1394,11 @@ public abstract class HudsonTestCase extends TestCase implements RootAction {
                                     }
                                 }
                             }
-                            if(dependencyJar==null)
+                            if(dependencyJar==null) {
+                                if (dep.contains("resolution:=optional"))
+                                    continue;   // optional dependency
                                 throw new Exception("Failed to resolve plugin: "+dep,resolutionError);
+                            }
 
                             File dst = new File(home, "plugins/" + artifactId + ".hpi");
                             if(!dst.exists() || dst.lastModified()!=dependencyJar.lastModified()) {
