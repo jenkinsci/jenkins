@@ -26,6 +26,7 @@ package hudson.scm;
 import hudson.model.Descriptor;
 import hudson.model.AbstractProject;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Collections;
 import java.util.logging.Logger;
@@ -129,6 +130,17 @@ public abstract class SCMDescriptor<T extends SCM> extends Descriptor<SCM> {
     public List<Descriptor<RepositoryBrowser<?>>> getBrowserDescriptors() {
         if(repositoryBrowser==null)     return Collections.emptyList();
         return RepositoryBrowsers.filter(repositoryBrowser);
+    }
+
+    /**
+     * Returns the list pf {@link WorkspaceCleanerDescriptor}s that can be used for this SCM.
+     */
+    public List<WorkspaceCleanerDescriptor> getWorkspaceCleanerDescriptors() {
+        List<WorkspaceCleanerDescriptor> r = new ArrayList<WorkspaceCleanerDescriptor>();
+        for (WorkspaceCleanerDescriptor d : WorkspaceCleanerDescriptor.all())
+            if (d.isApplicable(clazz))
+                r.add(d);
+        return r;
     }
 
     private static final Logger LOGGER = Logger.getLogger(SCMDescriptor.class.getName());

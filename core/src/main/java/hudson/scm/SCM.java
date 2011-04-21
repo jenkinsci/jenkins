@@ -83,6 +83,20 @@ public abstract class SCM implements Describable<SCM>, ExtensionPoint {
      */
     private transient AutoBrowserHolder autoBrowserHolder;
 
+    private volatile WorkspaceCleaner workspaceCleaner;
+
+    /**
+     * @deprecated as of 1.410
+     *      Use &lt;this:configure-workspaceCleaner xmlns:this='this:descriptor'/> in your config.jelly and call {@link #SCM(WorkspaceCleaner)} from
+     *      your data-bound constructor.
+     */
+    protected SCM() {
+    }
+
+    protected SCM(WorkspaceCleaner workspaceCleaner) {
+        this.workspaceCleaner = workspaceCleaner;
+    }
+
     /**
      * Expose {@link SCM} to the remote API.
      */
@@ -102,6 +116,20 @@ public abstract class SCM implements Describable<SCM>, ExtensionPoint {
      */
     public RepositoryBrowser<?> getBrowser() {
         return null;
+    }
+
+    /**
+     * Gets the {@link WorkspaceCleaner} configured for this SCM.
+     *
+     * @return can be null.
+     */
+    @Exported
+    public WorkspaceCleaner getWorkspaceCleaner() {
+        return workspaceCleaner;
+    }
+
+    public void setWorkspaceCleaner(WorkspaceCleaner workspaceCleaner) {
+        this.workspaceCleaner = workspaceCleaner;
     }
 
     /**

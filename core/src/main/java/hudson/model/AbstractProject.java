@@ -58,6 +58,7 @@ import hudson.scm.PollingResult;
 import hudson.scm.SCM;
 import hudson.scm.SCMRevisionState;
 import hudson.scm.SCMS;
+import hudson.scm.WorkspaceCleaner;
 import hudson.search.SearchIndexBuilder;
 import hudson.security.Permission;
 import hudson.slaves.WorkspaceList;
@@ -1176,8 +1177,13 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
             return true;    // no SCM
 
         FilePath workspace = build.getWorkspace();
-        workspace.mkdirs();
-        
+
+        WorkspaceCleaner wc = scm.getWorkspaceCleaner();
+        if (wc!=null)
+            wc.clean(build,launcher,workspace,listener);
+
+        workspace.mkdirs(); // make sure that the workspace at least exists
+
         boolean r = scm.checkout(build, launcher, workspace, listener, changelogFile);
         calcPollingBaseline(build, launcher, listener);
         return r;
