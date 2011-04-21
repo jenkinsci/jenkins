@@ -1209,7 +1209,7 @@ public abstract class HudsonTestCase extends TestCase implements RootAction {
                 }
                 assertFalse("collection size mismatch between "+lhs+" and "+rhs, ltr.hasNext() ^ rtr.hasNext());
             } else
-            if (findDataBoundConstructor(types[i])!=null) {
+            if (findDataBoundConstructor(types[i])!=null || (lv!=null && findDataBoundConstructor(lv.getClass())!=null) || (rv!=null && findDataBoundConstructor(rv.getClass())!=null)) {
                 // recurse into nested databound objects
                 assertEqualDataBoundBeans(lv,rv);
             } else {
