@@ -138,7 +138,7 @@ public class MatrixRun extends Build<MatrixConfiguration,MatrixRun> {
     	System.out.println( "DISPLAY=" + getDisplayName() + " + " + this.getParent().getDisplayName() );
     	if( r )
     	{
-    		this.setReuse( 42 );
+    		this.setReuse( 6 );
     	}
         run(new RunnerImpl());
     }

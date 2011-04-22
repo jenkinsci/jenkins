@@ -69,6 +69,7 @@ import java.io.PrintWriter;
 import java.io.Reader;
 import java.io.Writer;
 import java.nio.charset.Charset;
+import java.security.Policy.Parameters;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -1325,6 +1326,10 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
             // otherwise the queue state becomes inconsistent
 
             long start = System.currentTimeMillis();
+            
+            /* Boolean to determine whether the run was a reuse or not.
+             * By default a run is not reused. */
+            boolean reused = false;
 
             try {
                 try {
@@ -1359,7 +1364,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
                     // create a symlink from build number to ID.
                     Util.createSymlink(getParent().getBuildDir(),getId(),String.valueOf(getNumber()),listener);
                     
-                    /* Rebuild */
+                    /* Do the actual rebuild, if necessary */
 					if (this.reuse != null && this.reuse.number > 0) {
 						listener.getLogger().println("[JENKINS] Reusing build");
 						int rnumber = this.reuse.number;
@@ -1380,17 +1385,22 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
 							/* Copy artifacts */
 							if (this instanceof AbstractBuild
 									&& r instanceof AbstractBuild) {
-								listener.getLogger()
-										.println(
-												"Yes, this is an AbstractBuild instance");
 								((AbstractBuild<?, ?>) this).copyBuild(
 										(AbstractBuild<?, ?>) r, listener);
+							
+								reused = true;
 							}
 						} else {
-							setResult(Result.FAILURE);
+							if (reuse.rebuildIfMissing) {
+								setResult(job.run(listener));
+							} else {
+								setResult(Result.FAILURE);
+							}
 						}
 
-						/* Alter the object, if necessary!? */
+						
+						
+						
 
 					} else {
 						setResult(job.run(listener));
@@ -1418,7 +1428,10 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
                 }
 
                 // even if the main build fails fatally, try to run post build processing
-                job.post(listener);
+                if( !reused )
+                {
+                	job.post(listener);
+                }
 
             } catch (ThreadDeath t) {
                 throw t;
@@ -2010,13 +2023,28 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
 
 	public class ReuseRun {
 		public int number = 0;
-
+		public boolean rebuildIfMissing = true; /* or failIfMissing = false */
+		
 		public ReuseRun(int number) {
 			this.number = number;
+		}
+		
+		public ReuseRun(int number, boolean b) {
+			this.number = number;
+			this.rebuildIfMissing = b;
+		}
+		
+		public void setRebuildIfMissing( boolean b )
+		{
+			rebuildIfMissing = b;
 		}
 	}
 
 	public void setReuse(int number) {
 		this.reuse = new ReuseRun(number);
+	}
+	
+	public void setReuse(int number, boolean b) {
+		this.reuse = new ReuseRun(number, b);
 	}
 }

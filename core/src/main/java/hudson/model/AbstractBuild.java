@@ -1161,6 +1161,11 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
 
 		/* Copy files */
 		copyDir(srcRoot, dstRoot);
+		
+		/* Alter this to comply with other instance */
+		this.builtOn       = other.builtOn;
+		this.workspace     = other.workspace;
+		this.hudsonVersion = other.hudsonVersion;
 	}
 
 	private void copyDir(File srcDir, File dstDir) {
