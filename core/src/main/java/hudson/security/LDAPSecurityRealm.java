@@ -223,6 +223,12 @@ public class LDAPSecurityRealm extends AbstractPasswordBasedSecurityRealm {
     public final String rootDN;
 
     /**
+     * Allow the rootDN to be inferred? Default is false.
+     * If true, allow rootDN to be blank.
+     */
+    public final boolean inhibitInferRootDN;
+
+    /**
      * Specifies the relative DN from {@link #rootDN the root DN}.
      * This is used to narrow down the search space when doing user search.
      *
@@ -281,11 +287,12 @@ public class LDAPSecurityRealm extends AbstractPasswordBasedSecurityRealm {
     private transient LdapTemplate ldapTemplate;
 
     @DataBoundConstructor
-    public LDAPSecurityRealm(String server, String rootDN, String userSearchBase, String userSearch, String groupSearchBase, String managerDN, String managerPassword) {
+    public LDAPSecurityRealm(String server, String rootDN, String userSearchBase, String userSearch, String groupSearchBase, String managerDN, String managerPassword, boolean inhibitInferRootDN) {
         this.server = server.trim();
         this.managerDN = fixEmpty(managerDN);
         this.managerPassword = Scrambler.scramble(fixEmpty(managerPassword));
-        if(fixEmptyAndTrim(rootDN)==null)    rootDN= fixNull(inferRootDN(server));
+        this.inhibitInferRootDN = inhibitInferRootDN;
+        if(!inhibitInferRootDN && fixEmptyAndTrim(rootDN)==null) rootDN= fixNull(inferRootDN(server));
         this.rootDN = rootDN.trim();
         this.userSearchBase = fixNull(userSearchBase).trim();
         userSearch = fixEmptyAndTrim(userSearch);
