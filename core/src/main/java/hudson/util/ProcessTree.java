@@ -1053,10 +1053,14 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
                         */
 
                     int nargs = m.readInt();
-                    m.readString(); // exec path
-                    for( int i=0; i<nargs; i++) {
-                        m.skip0();
-                        arguments.add(m.readString());
+                    String args0 = m.readString(); // exec path
+                    try {
+                        for( int i=0; i<nargs; i++) {
+                            m.skip0();
+                            arguments.add(m.readString());
+                        }
+                    } catch (IndexOutOfBoundsException e) {
+                        throw new IllegalStateException("Failed to parse arguments: arg0="+args0+", arguments="+arguments+", nargs="+nargs,e);
                     }
 
                     // this is how you can read environment variables

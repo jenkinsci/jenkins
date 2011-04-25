@@ -13,11 +13,6 @@
   <version>1.410-SNAPSHOT</version>
   <packaging>pom</packaging>
 
-  <properties>
-    <!-- if your jenkins-ci.org user name is different from local user name, specify it here -->
-    <java.net.id>${user.name}</java.net.id>
-  </properties>
-
   <!--
     We need the following because the artifactId=plugin but directoryName=plugins, and
     Maven infers the wrong value if I don't specify it explicitly.
@@ -195,7 +190,7 @@
       <plugin>
         <groupId>com.cloudbees</groupId>
         <artifactId>maven-license-plugin</artifactId>
-        <version>1.1</version>
+        <version>1.3</version>
         <executions>
           <execution>
             <goals>
