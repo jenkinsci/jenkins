@@ -31,6 +31,8 @@ THE SOFTWARE.
   <f:advanced>
     <f:entry title="${%root DN}" help="/help/security/ldap/rootDN.html">
       <f:textbox name="ldap.rootDN" value="${instance.rootDN}" />
+      <f:checkbox name="ldap.inhibitInferRootDN" checked="${instance.inhibitInferRootDN}"
+        title="${%Allow blank rootDN}"/>
     </f:entry>
     <f:entry title="${%User search base}" help="/help/security/ldap/userSearchBase.html">
       <f:textbox name="ldap.userSearchBase" value="${instance.userSearchBase}" />
