@@ -1,0 +1,9 @@
+/var/log/jenkins/jenkins.log {
+        daily
+        copytruncate
+        missingok
+        rotate 8
+        compress
+        delaycompress
+        notifempty
+}
