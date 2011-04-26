@@ -957,6 +957,8 @@ var hudsonRules = {
             start = findFollowingTR(end, 'dropdownList-start');
         }
 
+        e.onchange = function () { updateDropDownList(e); };
+
         updateDropDownList(e);
     },
 
