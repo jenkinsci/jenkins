@@ -28,6 +28,7 @@ import hudson.security.AuthorizationMatrixProperty;
 import hudson.security.ProjectMatrixAuthorizationStrategy;
 import java.util.Collections;
 import org.acegisecurity.context.SecurityContextHolder;
+import com.gargoylesoftware.htmlunit.xml.XmlPage;
 import org.jvnet.hudson.test.HudsonTestCase;
 import org.jvnet.hudson.test.Bug;
 
@@ -64,5 +65,14 @@ public class MatrixTest extends HudsonTestCase {
                 Collections.singletonMap(Item.READ, Collections.singleton("anonymous"))));
         // Project-level permission should apply to single configuration too:
         assertTrue(mc.getACL().hasPermission(Item.READ));
+    }
+
+    public void testApi() throws Exception {
+        MatrixProject project = createMatrixProject();
+        project.setAxes(new AxisList(
+                new Axis("FOO", "abc", "def"),
+                new Axis("BAR", "uvw", "xyz")));
+        XmlPage xml = new WebClient().goToXml(project.getUrl() + "api/xml");
+        assertEquals(4, xml.getByXPath("//matrixProject/activeConfiguration").size());
     }
 }
