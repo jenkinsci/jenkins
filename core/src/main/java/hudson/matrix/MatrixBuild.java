@@ -202,8 +202,6 @@ public class MatrixBuild extends AbstractBuild<MatrixProject,MatrixBuild> {
                 }
             }
             
-
-
             for (MatrixAggregator a : aggregators)
                 if(!a.startBuild())
                     return Result.FAILURE;

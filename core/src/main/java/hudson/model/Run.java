@@ -1365,9 +1365,9 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
                     Util.createSymlink(getParent().getBuildDir(),getId(),String.valueOf(getNumber()),listener);
                     
                     /* Do the actual rebuild, if necessary */
-					if (this.reuse != null && this.reuse.number > 0) {
+					if (this.redoRun != null && !this.redoRun.rebuild) {
 						listener.getLogger().println("[JENKINS] Reusing build");
-						int rnumber = this.reuse.number;
+						int rnumber = this.redoRun.number;
 						System.out.println(getParent().getDisplayName() + ": "
 								+ rnumber);
 
@@ -1391,7 +1391,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
 								reused = true;
 							}
 						} else {
-							if (reuse.rebuildIfMissing) {
+							if (redoRun.rebuildIfMissing) {
 								setResult(job.run(listener));
 							} else {
 								setResult(Result.FAILURE);
@@ -2019,19 +2019,27 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
     
     /* Reuse */
     
-	private ReuseRun reuse = null;
+	private RedoRun redoRun = null;
 
-	public class ReuseRun {
-		public int number = 0;
+	public class RedoRun {
+		public int number               = 0;
 		public boolean rebuildIfMissing = true; /* or failIfMissing = false */
+		public boolean rebuild          = true;
 		
-		public ReuseRun(int number) {
-			this.number = number;
+		public RedoRun(int number) {
+			this.number           = number;
+			this.rebuild          = false;
 		}
 		
-		public ReuseRun(int number, boolean b) {
-			this.number = number;
-			this.rebuildIfMissing = b;
+		public RedoRun(int number, boolean rebuild) {
+			this.number           = number;
+			this.rebuild          = rebuild;
+		}
+		
+		public RedoRun(int number, boolean rebuild, boolean b) {
+			this.number           = number;
+			this.rebuild          = rebuild;
+			this.rebuildIfMissing = b;			
 		}
 		
 		public void setRebuildIfMissing( boolean b )
@@ -2040,11 +2048,19 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
 		}
 	}
 
-	public void setReuse(int number) {
-		this.reuse = new ReuseRun(number);
+	public void setRedoRun(int number) {
+		this.redoRun = new RedoRun(number);
 	}
 	
-	public void setReuse(int number, boolean b) {
-		this.reuse = new ReuseRun(number, b);
+	public void setRedoRun(int number, boolean reuse) {
+		this.redoRun = new RedoRun(number, reuse);
+	}
+	
+	public void setRedoRun(int number, boolean reuse, boolean b) {
+		this.redoRun = new RedoRun(number, reuse, b);
+	}
+	
+	public RedoRun getReuseRun() {
+		return redoRun;
 	}
 }
