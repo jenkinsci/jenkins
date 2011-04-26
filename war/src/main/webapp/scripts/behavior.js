@@ -58,7 +58,8 @@ var Behaviour = {
         Behaviour.list._each(function(sheet) {
             for (var selector in sheet){
                 var list = findElementsBySelector(startNode,selector,includeSelf);
-                list._each(sheet[selector]);
+                if (list.length>0)  // just to simplify setting of a breakpoint.
+                    list._each(sheet[selector]);
             }
         });
     },
