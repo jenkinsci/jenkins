@@ -45,7 +45,7 @@ THE SOFTWARE.
         </td>
         <td class="setting-main">
             <!-- create drop-down list -->
-            <select class="setting-input dropdownList" onchange="updateDropDownList(this)">
+            <select class="setting-input dropdownList">
                 <j:set var="dropdownListMode" value="createSelectField"/>
                 <d:invokeBody/>
             </select>
