@@ -24,6 +24,7 @@
  */
 package org.jvnet.hudson.test;
 
+import com.gargoylesoftware.htmlunit.html.HtmlImage;
 import hudson.ClassicPluginStrategy;
 import hudson.CloseProofOutputStream;
 import hudson.DNSMultiCast;
@@ -98,6 +99,7 @@ import hudson.tasks.Maven;
 import hudson.tasks.Maven.MavenInstallation;
 import hudson.tasks.Publisher;
 import hudson.tools.ToolProperty;
+import hudson.util.IOException2;
 import hudson.util.PersistedList;
 import hudson.util.ReflectionUtils;
 import hudson.util.StreamTaskListener;
@@ -1001,6 +1003,20 @@ public abstract class HudsonTestCase extends TestCase implements RootAction {
             }
         }
         assertTrue("needle found in haystack", found); 
+    }
+
+    /**
+     * Makes sure that all the images in the page loads successfully.
+     * (By default, HtmlUnit doesn't load images.)
+     */
+    public void assertAllImageLoadSuccessfully(HtmlPage p) {
+        for (HtmlImage img : p.<HtmlImage>selectNodes("//IMG")) {
+            try {
+                img.getHeight();
+            } catch (IOException e) {
+                throw new Error("Failed to load "+img.getSrcAttribute(),e);
+            }
+        }
     }
 
 
