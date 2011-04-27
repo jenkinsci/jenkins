@@ -21,23 +21,19 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 -->
-<?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:x="jelly:xml">
-  <st:documentation>
-    <st:attribute name="tag">
-      Place holder HTML tag. By default it's DIV, but depending on where this is used,
-      you might need other tags (e.g., inside a table.)
-    </st:attribute>
-    <st:attribute name="clazz">
-      Additional CSS class names, so that you can discover this tag more easily from your JavaScript.
-    </st:attribute>
-    <st:attribute name="capture">
-      ','-separated list of variables to capture and make available when later evaluating the body.
-    </st:attribute>
-  </st:documentation>
 
-  <x:element name="${attrs.tag?:'div'}">
-    <x:attribute name="class">render-on-demand ${attrs.clazz}</x:attribute>
-    <x:attribute name="proxy">${h.createRenderOnDemandProxy(context,attrs.capture)}</x:attribute>
-  </x:element>
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
+<l:layout title="Test collision between optionalBlocks">
+  <l:main-panel>
+    <j:set var="instance" value="${it}"/>
+    <j:set var="descriptor" value="${it.descriptor}"/>
+    <f:form method="post" name="config" action="submitTest2">
+      <f:dropdownDescriptorSelector field="drink" title="Drink" />
+      <f:block>
+        <f:submit value="submit"/>
+      </f:block>
+    </f:form>
+  </l:main-panel>
+</l:layout>
 </j:jelly>

@@ -1,7 +1,8 @@
 /*
  * The MIT License
  * 
- * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, Jorg Heymans, Red Hat, Inc., id:cactusman
+ * Copyright (c) 2004-2011, Sun Microsystems, Inc., Kohsuke Kawaguchi,
+ * Jorg Heymans, Red Hat, Inc., id:cactusman
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -40,7 +41,6 @@ import hudson.model.Items;
 import hudson.model.JDK;
 import hudson.model.Job;
 import hudson.model.Label;
-import hudson.model.Node;
 import hudson.model.Queue.FlyweightTask;
 import hudson.model.ResourceController;
 import hudson.model.Result;
@@ -63,6 +63,7 @@ import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 import org.kohsuke.stapler.TokenList;
+import org.kohsuke.stapler.export.Exported;
 
 import javax.servlet.ServletException;
 import java.io.File;
@@ -403,6 +404,7 @@ public class MatrixProject extends AbstractProject<MatrixProject,MatrixBuild> im
      * In contract, inactive configurations are those that are left for archival purpose
      * and no longer built when a new {@link MatrixBuild} is executed.
      */
+    @Exported
     public Collection<MatrixConfiguration> getActiveConfigurations() {
         return activeConfigurations;
     }
