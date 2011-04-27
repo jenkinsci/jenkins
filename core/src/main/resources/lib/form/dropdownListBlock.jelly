@@ -49,9 +49,9 @@ THE SOFTWARE.
     </j:when>
     <j:when test="${dropdownListMode=='generateEntries'}">
       <!-- sandwich them by markers so that we know what to show/hide -->
-      <tr class="dropdownList-start" style="display:none">
+      <tr class="dropdownList-start rowvg-start">
         <j:if test="${!empty(attrs.staplerClass)}">
-          <td><input type="hidden" name="stapler-class" value="${attrs.staplerClass}"/></td>
+          <td style="display:none"><input type="hidden" name="stapler-class" value="${attrs.staplerClass}"/></td>
         </j:if>
       </tr>
       <j:choose>
@@ -64,7 +64,7 @@ THE SOFTWARE.
           <d:invokeBody />
         </j:otherwise>
       </j:choose>
-      <tr class="dropdownList-end" style="display:none" />
+      <tr class="dropdownList-end rowvg-end" />
     </j:when>
   </j:choose>
 </j:jelly>
