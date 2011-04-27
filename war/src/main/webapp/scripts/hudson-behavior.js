@@ -240,7 +240,7 @@ function findFollowingTR(input, className) {
     // then next TR that matches the CSS
     do {
         tr = tr.nextSibling;
-    } while (tr != null && (tr.tagName != "TR" || tr.className != className));
+    } while (tr != null && (tr.tagName != "TR" || !Element.hasClassName(tr,className)));
 
     return tr;
 }
@@ -453,8 +453,7 @@ function renderOnDemand(e,callback,noBehaviour) {
         }
         Element.remove(e);
 
-        t.responseText.evalScripts();
-        elements.each(function(n) { Behaviour.applySubtree(n,true); });
+        Behaviour.applySubtree(elements,true);
 
         if (callback)   callback(t);
     });
@@ -805,6 +804,81 @@ var hudsonRules = {
         e.setAttribute("ref", checkbox.id = "cb"+(iota++));
     },
 
+    // see RowVisibilityGroupTest
+    "TR.rowvg-start" : function(e) {
+        // figure out the corresponding end marker
+        function findEnd(e) {
+            for( var depth=0; ; e=e.nextSibling) {
+                if(Element.hasClassName(e,"rowvg-start"))    depth++;
+                if(Element.hasClassName(e,"rowvg-end"))      depth--;
+                if(depth==0)    return e;
+            }
+        }
+
+        e.rowVisibilityGroup = {
+            outerVisible: true,
+            innerVisible: true,
+            /**
+             * TR that marks the beginning of this visibility group.
+             */
+            start: e,
+            /**
+             * TR that marks the end of this visibility group.
+             */
+            end: findEnd(e),
+
+            /**
+             * Considers the visibility of the row group from the point of view of outside.
+             * If you think of a row group like a logical DOM node, this is akin to its .style.display.
+             */
+            makeOuterVisisble : function(b) {
+                this.outerVisible = b;
+                this.updateVisibility();
+            },
+
+            /**
+             * Considers the visibility of the rows in this row group. Since all the rows in a rowvg
+             * shares the single visibility, this just needs to be one boolean, as opposed to many.
+             *
+             * If you think of a row group like a logical DOM node, this is akin to its children's .style.display.
+             */
+            makeInnerVisisble : function(b) {
+                this.innerVisible = b;
+                this.updateVisibility();
+            },
+
+            /**
+             * Based on innerVisible and outerVisible, update the relevant rows' actual CSS display attribute.
+             */
+            updateVisibility : function() {
+                var display = (this.outerVisible && this.innerVisible) ? "" : "none";
+                for (var e=this.start; e!=this.end; e=e.nextSibling) {
+                    if (e.rowVisibilityGroup && e!=this.start) {
+                        e.rowVisibilityGroup.makeOuterVisisble(this.innerVisible);
+                        e = e.rowVisibilityGroup.end; // the above call updates visibility up to e.rowVisibilityGroup.end inclusive
+                    } else {
+                        e.style.display = display;
+                    }
+                }
+            },
+
+            /**
+             * Enumerate each row and pass that to the given function.
+             *
+             * @param {boolean} recursive
+             *      If true, this visits all the rows from nested visibility groups.
+             */
+            eachRow : function(recursive,f) {
+                if (recursive) {
+                    for (var e=this.start; e!=this.end; e=e.nextSibling)
+                        f(e);
+                } else {
+                    throw "not implemented yet";
+                }
+            }
+        };
+    },
+
     "TR.row-set-end": function(e) { // see rowSet.jelly and optionalBlock.jelly
         // figure out the corresponding start block
         var end = e;
@@ -946,20 +1020,39 @@ var hudsonRules = {
     "SELECT.dropdownList" : function(e) {
         if(isInsideRemovable(e))    return;
 
-        e.subForms = [];
+        var subForms = [];
         var start = findFollowingTR(e, 'dropdownList-container').firstChild.nextSibling, end;
         do { start = start.firstChild; } while (start && start.tagName != 'TR');
-        if (start && start.className != 'dropdownList-start')
+
+        if (start && !Element.hasClassName(start,'dropdownList-start'))
             start = findFollowingTR(start, 'dropdownList-start');
         while (start != null) {
-            end = findFollowingTR(start, 'dropdownList-end');
-            e.subForms.push({ 'start': start, 'end': end });
-            start = findFollowingTR(end, 'dropdownList-start');
+            subForms.push(start);
+            start = findFollowingTR(start, 'dropdownList-start');
         }
 
-        e.onchange = function () { updateDropDownList(e); };
+        // control visibility
+        function updateDropDownList() {
+            for (var i = 0; i < subForms.length; i++) {
+                var show = e.selectedIndex == i;
+                var f = subForms[i];
 
-        updateDropDownList(e);
+                if (show)   renderOnDemand(f.nextSibling);
+                f.rowVisibilityGroup.makeInnerVisisble(show);
+
+                // TODO: this is actually incorrect in the general case if nested vg uses field-disabled
+                // so far dropdownList doesn't create such a situation.
+                f.rowVisibilityGroup.eachRow(true, show?function(e) {
+                    e.removeAttribute("field-disabled");
+                } : function(e) {
+                    e.setAttribute("field-disabled","true");
+                });
+            }
+        }
+
+        e.onchange = updateDropDownList;
+
+        updateDropDownList();
     },
 
     // select.jelly
@@ -1117,6 +1210,7 @@ function applyNameRef(s,e,id) {
     }
 }
 
+
 // used by optionalBlock.jelly to update the form status
 //   @param c     checkbox element
 function updateOptionalBlock(c,scroll) {
@@ -1124,39 +1218,21 @@ function updateOptionalBlock(c,scroll) {
     var s = c;
     while(!Element.hasClassName(s, "optional-block-start"))
         s = s.parentNode;
-    var tbl = s.parentNode;
-    var i = false;
-    var o = false;
+
+    // find the beginning of the rowvg
+    var vg = s;
+    while (!Element.hasClassName(vg,"rowvg-start"))
+        vg = vg.nextSibling;
 
     var checked = xor(c.checked,Element.hasClassName(c,"negative"));
-    var lastRow = null;
 
-    for (var j = 0; tbl.rows[j]; j++) {
-        var n = tbl.rows[j];
-
-        if (i && Element.hasClassName(n, "optional-block-end"))
-            o = true;
-
-        if (i && !o) {
-            if (checked) {
-                n.style.display = "";
-                lastRow = n;
-            } else
-                n.style.display = "none";
-        }
-
-        if (n==s) {
-            if (n.getAttribute('hasHelp') == 'true')
-                j++;
-            i = true;
-        }
-    }
+    vg.rowVisibilityGroup.makeInnerVisisble(checked);
 
     if(checked && scroll) {
         var D = YAHOO.util.Dom;
 
         var r = D.getRegion(s);
-        if(lastRow!=null)   r = r.union(D.getRegion(lastRow));
+        r = r.union(D.getRegion(vg.rowVisibilityGroup.end));
         scrollIntoView(r);
     }
 
@@ -1360,26 +1436,6 @@ Form.findMatchingInput = function(base, name) {
 
     return null;        // not found
 }
-
-// used witih <dropdownList> and <dropdownListBlock> to control visibility
-function updateDropDownList(sel) {
-    for (var i = 0; i < sel.subForms.length; i++) {
-        var show = sel.selectedIndex == i;
-        var f = sel.subForms[i];
-        var tr = f.start;
-        while (true) {
-            tr.style.display = (show ? "" : "none");
-            if(show) {
-                tr.removeAttribute("field-disabled");
-                renderOnDemand(tr);
-            } else    // buildFormData uses this attribute and ignores the contents
-                tr.setAttribute("field-disabled","true");
-            if (tr == f.end) break;
-            tr = tr.nextSibling;
-        }
-    }
-}
-
 
 // code for supporting repeatable.jelly
 var repeatableSupport = {

@@ -54,12 +54,30 @@ var Behaviour = {
         this.applySubtree(document);
     },
 
+    /**
+     * Applies behaviour rules to a subtree/subforest.
+     *
+     * @param {HTMLElement|HTMLElement[]} startNode
+     *      Subtree/forest to apply rules.
+     *
+     *      Within a single subtree, rules are the outer loop and the nodes in the tree are the inner loop,
+     *      and sometimes the behaviour rules rely on this ordering to work correctly. When you pass a forest,
+     *      this semantics is preserved.
+     */
     applySubtree : function(startNode,includeSelf) {
         Behaviour.list._each(function(sheet) {
             for (var selector in sheet){
-                var list = findElementsBySelector(startNode,selector,includeSelf);
-                if (list.length>0)  // just to simplify setting of a breakpoint.
-                    list._each(sheet[selector]);
+                function apply(n) {
+                    var list = findElementsBySelector(n,selector,includeSelf);
+                    if (list.length>0)  // just to simplify setting of a breakpoint.
+                        list._each(sheet[selector]);
+                }
+
+                if (startNode instanceof Array) {
+                    startNode._each(apply)
+                } else {
+                    apply(startNode);
+                }
             }
         });
     },
