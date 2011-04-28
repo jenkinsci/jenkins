@@ -1161,11 +1161,13 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
 
 		/* Copy files */
 		copyDir(srcRoot, dstRoot);
-		
+				
 		/* Alter this to comply with other instance */
+		/*
 		this.builtOn       = other.builtOn;
 		this.workspace     = other.workspace;
 		this.hudsonVersion = other.hudsonVersion;
+		*/
 	}
 
 	private void copyDir(File srcDir, File dstDir) {
@@ -1179,11 +1181,13 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
 		for (File f : files) {
 			if (f.isFile()) {
 				File dstFile = new File(dstDir, f.getName());
-				if (!dstFile.exists()
-						&& !f.getName().equalsIgnoreCase("build.xml")) {
+				if (!dstFile.exists()){
+					//	&& !f.getName().equalsIgnoreCase("build.xml")) {
 					try {
 						if (dstFile.createNewFile()) {
-							IOUtils.copy(f, new FileOutputStream(dstFile));
+							FileOutputStream fos = new FileOutputStream(dstFile);
+							IOUtils.copy(f, fos);
+							fos.close();
 						}
 					} catch (Exception e) {
 						LOGGER.warning("Copying of " + dstFile

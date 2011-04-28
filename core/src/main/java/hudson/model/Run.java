@@ -53,18 +53,23 @@ import hudson.tasks.Mailer;
 import hudson.tasks.BuildWrapper;
 import hudson.tasks.BuildStep;
 import hudson.tasks.test.AbstractTestResultAction;
+import hudson.util.AtomicFileWriter;
 import hudson.util.FlushProofOutputStream;
 import hudson.util.IOException2;
 import hudson.util.LogTaskListener;
+import hudson.util.XML;
 import hudson.util.XStream2;
 import hudson.util.ProcessTree;
 
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.io.Reader;
 import java.io.Writer;
@@ -99,6 +104,9 @@ import net.sf.json.JSONObject;
 import org.apache.commons.io.input.NullInputStream;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.jelly.XMLOutput;
+import org.dom4j.Document;
+import org.dom4j.Element;
+import org.dom4j.io.SAXReader;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.HttpResponses;
 import org.kohsuke.stapler.QueryParameter;
@@ -108,6 +116,8 @@ import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.export.ExportedBean;
 
 import com.thoughtworks.xstream.XStream;
+import com.thoughtworks.xstream.io.StreamException;
+
 import java.io.FileOutputStream;
 import java.io.OutputStream;
 
@@ -1397,10 +1407,42 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
 							/* Copy artifacts */
 							if (this instanceof AbstractBuild
 									&& r instanceof AbstractBuild) {
+								
+								reused = true;
+								
 								((AbstractBuild<?, ?>) this).copyBuild(
 										(AbstractBuild<?, ?>) r, listener);
+								
+								/* Get the new build.xml */
+								XmlFile f = this.getDataFile();
+								
+								SAXReader xmlReader = new SAXReader();
+								Document doc = xmlReader.read( f.getFile() );
+								Element root = doc.getRootElement();
+								
+								/* Find the number element and substitute it with the correct run number */
+								org.dom4j.Node node = root.selectSingleNode("number");
+								if (node != null) {
+									node.setText(this.number + "");
+								}
+								
+								String xml = doc.asXML();
+								
+								/* Commit the changes to build.xml */
+						        AtomicFileWriter w = new AtomicFileWriter(f.getFile());
+						        try {
+						            w.write(xml);
+						            w.commit();
+						        } catch(StreamException e) {
+						            throw new IOException2(e);
+						        } finally {
+						            w.abort();
+						        }
+						        
+						        /* Reload build.xml */
+								this.reload();
 							
-								reused = true;
+								
 							}
 						} else {
 							if (redoRun.rebuildIfMissing) {
@@ -1409,11 +1451,6 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
 								setResult(Result.FAILURE);
 							}
 						}
-
-						
-						
-						
-
 					} else {
 						setResult(job.run(listener));
 					}
@@ -1440,10 +1477,9 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
                 }
 
                 // even if the main build fails fatally, try to run post build processing
-                if( !reused )
-                {
-                	job.post(listener);
-                }
+				if (!reused) {
+					job.post(listener);
+				}
 
             } catch (ThreadDeath t) {
                 throw t;
@@ -1475,11 +1511,15 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
                 if(listener!=null)
                     listener.closeQuietly();
 
-                try {
-                    save();
-                } catch (IOException e) {
-                    LOGGER.log(Level.SEVERE, "Failed to save build record",e);
-                }
+                /* Only save if actually built */
+				if (!reused) {
+					try {
+						save();
+					} catch (IOException e) {
+						LOGGER.log(Level.SEVERE, "Failed to save build record",
+								e);
+					}
+				}
             }
 
             try {
