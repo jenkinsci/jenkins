@@ -31,7 +31,7 @@ THE SOFTWARE.
   <j:set var="transitive" value="${(it.firstTransientBuildKey!=null and (it.adapter.compare(build,it.firstTransientBuildKey) ge 0)) ? 'transitive' : null}" />
   <tr class="build-row no-wrap ${transitive}">
     <td>
-      <img width="16" height="16" src="${imagesURL}/16x16/${build.buildStatusUrl}" alt="${build.iconColor.description}" tooltip="${build.iconColor.description}" /><st:nbsp/>
+      <a href="${link}console"><img width="16" height="16" src="${imagesURL}/16x16/${build.buildStatusUrl}" alt="${build.iconColor.description} &gt; ${%Console Output}" tooltip="${build.iconColor.description} &gt; ${%Console Output}" /></a><st:nbsp/>
       ${build.displayName}
     </td>
     <td style="padding-right:0">
