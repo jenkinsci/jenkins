@@ -29,6 +29,7 @@ import hudson.DescriptorExtensionList;
 import hudson.LauncherDecorator;
 import hudson.model.*;
 import hudson.model.Run.RunnerAbortedException;
+import hudson.model.listeners.RunListener;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -52,6 +53,11 @@ import java.util.Set;
  *
  * <p>
  * The {@link #setUp(Build,Launcher,BuildListener)} method is invoked for each build.
+ *
+ * <p>
+ * {@link BuildWrapper} requires an user consent (in terms of a checkbox) to work.
+ * If this is not desirable, see {@link hudson.model.Environment} for other ways
+ * to inject Environments to builds.
  *
  * @author Kohsuke Kawaguchi
  */

@@ -1,5 +1,10 @@
 package hudson.util;
 
+import hudson.FilePath.FileCallable;
+import hudson.Functions;
+import hudson.os.PosixAPI;
+import hudson.remoting.VirtualChannel;
+
 import java.io.*;
 import java.util.regex.Pattern;
 
@@ -108,6 +113,15 @@ public class IOUtils extends org.apache.commons.io.IOUtils {
     public static boolean isAbsolute(String path) {
         Pattern DRIVE_PATTERN = Pattern.compile("[A-Za-z]:[\\\\/].*");
         return path.startsWith("/") || DRIVE_PATTERN.matcher(path).matches();
+    }
+
+
+    /**
+     * Gets the mode of a file/directory, if appropriate. Returns -1 if not on Unix.
+     */
+    public static int mode(File f) {
+        if(Functions.isWindows())   return -1;
+        return PosixAPI.get().stat(f.getPath()).mode();
     }
 
     private static final byte[] SKIP_BUFFER = new byte[8192];

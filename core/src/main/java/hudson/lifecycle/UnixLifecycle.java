@@ -31,6 +31,8 @@ import com.sun.jna.StringArray;
 import java.io.IOException;
 
 import static hudson.util.jna.GNUCLibrary.*;
+
+import hudson.Platform;
 import hudson.model.Hudson;
 
 /**
@@ -86,7 +88,9 @@ public class UnixLifecycle extends Lifecycle {
         // http://factor-language.blogspot.com/2007/07/execve-returning-enotsup-on-mac-os-x.html
         // on Mac, execv fails with ENOTSUP if the caller is multi-threaded, resulting in an error like
         // the one described in http://www.nabble.com/Restarting-hudson-not-working-on-MacOS--to24641779.html
-        if (Hudson.isDarwin())
+        //
+        // according to http://www.mail-archive.com/wine-devel@winehq.org/msg66797.html this now works on Snow Leopard
+        if (Platform.isDarwin() && !Platform.isSnowLeopardOrLater())
             throw new RestartNotSupportedException("Restart is not supported on Mac OS X");
         if (args==null)
             throw new RestartNotSupportedException("Failed to obtain the command line arguments of the process",failedToObtainArgs);

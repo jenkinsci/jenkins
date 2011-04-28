@@ -28,7 +28,7 @@ THE SOFTWARE.
   <parent>
     <groupId>org.jenkins-ci.main</groupId>
     <artifactId>pom</artifactId>
-    <version>1.408-SNAPSHOT</version>
+    <version>1.411-SNAPSHOT</version>
   </parent>
 
   <artifactId>maven-plugin</artifactId>
@@ -39,7 +39,7 @@ THE SOFTWARE.
   <url>http://wiki.jenkins-ci.org/display/JENKINS/Maven+2+Project+Plugin</url>
   
   <properties>
-    <mavenInterceptorsVersion>1.1</mavenInterceptorsVersion>
+    <mavenInterceptorsVersion>1.2</mavenInterceptorsVersion>
     <mavenVersion>3.0.3</mavenVersion>
     <maven.version>${mavenVersion}</maven.version>
     <aetherVersion>1.11</aetherVersion>
@@ -241,7 +241,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.jenkins-ci.lib</groupId>
       <artifactId>lib-jenkins-maven-artifact-manager</artifactId>
-      <version>1.1</version>
+      <version>1.2</version>
     </dependency>                
     <dependency>
       <groupId>commons-io</groupId>
@@ -343,12 +343,19 @@ THE SOFTWARE.
             <goals>
               <goal>generate</goal>
             </goals>
-            <configuration>
+              <configuration>
               <fileMask>Messages.properties</fileMask>
               <outputDirectory>target/generated-sources/localizer</outputDirectory>
             </configuration>
           </execution>
         </executions>
+      </plugin>
+      <plugin><!-- generate licenses.xml -->
+        <groupId>com.cloudbees</groupId>
+        <artifactId>maven-license-plugin</artifactId>
+        <configuration>
+          <generateLicenseXml>target/${project.artifactId}/WEB-INF/licenses.xml</generateLicenseXml>
+        </configuration>
       </plugin>
       <plugin>
         <groupId>org.jvnet.maven-antrun-extended-plugin</groupId>

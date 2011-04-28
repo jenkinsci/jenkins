@@ -25,6 +25,7 @@ THE SOFTWARE.
 <!--
   Trend of test execution over time.
 -->
+<?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define"
          xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
   <table class="pane sortable" id="testresult">
@@ -46,7 +47,7 @@ THE SOFTWARE.
               <st:include it="${badge}" page="badge.jelly" optional="true"/>
             </j:forEach>
             </td>
-            <td class="pane" style="text-align:left">${test.description}</td>
+            <td class="pane" style="text-align:left"><j:out value="${test.description}"/></td>
             <td class="pane" style="text-align:left" data="${test.duration}">${test.durationString}</td>
             <td class="pane">
               <j:set var="pst" value="${test.status}" />

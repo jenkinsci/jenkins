@@ -22,6 +22,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 -->
 
+<?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
   <st:documentation>
     An entry of the &lt;f:form>, which is one logical row (that consists of
@@ -81,7 +82,7 @@ THE SOFTWARE.
   <tr class="validation-error-area"><td colspan="2" /><td /></tr>
   <j:if test="${!empty(attrs.description)}">
     <f:description>
-      ${description}
+      <j:out value="${description}"/>
     </f:description>
   </j:if>
   <j:if test="${attrs.help!=null}">

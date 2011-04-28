@@ -48,7 +48,6 @@ import hudson.util.IOUtils;
 import static hudson.util.jna.GNUCLibrary.LIBC;
 import static hudson.Util.fixEmpty;
 import static hudson.FilePath.TarCompression.GZIP;
-import hudson.os.PosixAPI;
 import hudson.org.apache.tools.tar.TarInputStream;
 import hudson.util.io.Archiver;
 import hudson.util.io.ArchiverFactory;
@@ -1132,7 +1131,7 @@ public final class FilePath implements Serializable {
         if(!isUnix())   return -1;
         return act(new FileCallable<Integer>() {
             public Integer invoke(File f, VirtualChannel channel) throws IOException {
-                return PosixAPI.get().stat(f.getPath()).mode();
+                return IOUtils.mode(f);
             }
         });
     }

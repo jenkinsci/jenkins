@@ -1,6 +1,7 @@
 package hudson;
 
 import hudson.model.Hudson;
+import hudson.Util;
 
 import javax.jmdns.JmDNS;
 import javax.jmdns.ServiceInfo;
@@ -38,6 +39,8 @@ public class DNSMultiCast implements Closeable {
             TcpSlaveAgentListener tal = hudson.getTcpSlaveAgentListener();
             if (tal!=null)
                 props.put("slave-port",String.valueOf(tal.getPort()));
+
+            props.put("server-id", Util.getDigestOf(hudson.getSecretKey()));
 
             jmdns.registerService(ServiceInfo.create("_hudson._tcp.local.","hudson",
                     80,0,0,props));	// for backward compatibility

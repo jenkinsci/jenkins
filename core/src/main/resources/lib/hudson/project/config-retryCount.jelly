@@ -23,6 +23,7 @@ THE SOFTWARE.
 -->
 
 <!-- custom retry count -->
+<?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
   <f:optionalBlock name="hasCustomScmCheckoutRetryCount" title="${%Retry Count}" checked="${it.hasCustomScmCheckoutRetryCount()}"
       help="/help/project-config/scmCheckoutRetryCount.html">

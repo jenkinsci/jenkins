@@ -30,6 +30,7 @@ THE SOFTWARE.
     href : if set, the progress bar becomes a hyperlink
     red  : if set to non-null, the progress bar will be drawn in red, to indicate that the processing is likely stuck.
 -->
+<?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:x="jelly:xml" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
   <table class="progress-bar ${attrs.red?'red':null}" id="${attrs.id}" tooltip="${attrs.tooltip}" href="${attrs.href}" style="${attrs.href!=null ? 'cursor:pointer' : null}">
     <j:choose>
