@@ -2107,7 +2107,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
 		this.redoRun = new RedoRun(number, reuse, b);
 	}
 	
-	public RedoRun getReuseRun() {
+	public RedoRun getRedoRun() {
 		return redoRun;
 	}
 }
