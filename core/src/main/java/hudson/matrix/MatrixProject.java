@@ -1,7 +1,8 @@
 /*
  * The MIT License
  * 
- * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, Jorg Heymans, Red Hat, Inc., id:cactusman
+ * Copyright (c) 2004-2011, Sun Microsystems, Inc., Kohsuke Kawaguchi,
+ * Jorg Heymans, Red Hat, Inc., id:cactusman
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -40,7 +41,6 @@ import hudson.model.Items;
 import hudson.model.JDK;
 import hudson.model.Job;
 import hudson.model.Label;
-import hudson.model.Node;
 import hudson.model.Queue.FlyweightTask;
 import hudson.model.ResourceController;
 import hudson.model.Result;
@@ -63,6 +63,7 @@ import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 import org.kohsuke.stapler.TokenList;
+import org.kohsuke.stapler.export.Exported;
 
 import javax.servlet.ServletException;
 import java.io.File;
@@ -143,11 +144,6 @@ public class MatrixProject extends AbstractProject<MatrixProject,MatrixBuild> im
      */
     private Result touchStoneResultCondition;
 
-    /**
-     * See {@link #setCustomWorkspace(String)}.
-     */
-    private String customWorkspace;
-    
     public MatrixProject(String name) {
         this(Hudson.getInstance(), name);
     }
@@ -229,28 +225,6 @@ public class MatrixProject extends AbstractProject<MatrixProject,MatrixBuild> im
         this.touchStoneResultCondition = touchStoneResultCondition;
     }
 
-    public String getCustomWorkspace() {
-      return customWorkspace;
-    }
-    
-    /**
-     * User-specified workspace directory, or null if it's up to Hudson.
-     *
-     * <p>
-     * Normally a matrix project uses the workspace location assigned by its parent container,
-     * but sometimes people have builds that have hard-coded paths.
-     *
-     * <p>
-     * This is not {@link File} because it may have to hold a path representation on another OS.
-     *
-     * <p>
-     * If this path is relative, it's resolved against {@link Node#getRootPath()} on the node where this workspace
-     * is prepared.
-     */
-    public void setCustomWorkspace(String customWorkspace) throws IOException {
-        this.customWorkspace= customWorkspace;
-    }
-    
     @Override
     protected List<Action> createTransientActions() {
         List<Action> r = super.createTransientActions();
@@ -430,6 +404,7 @@ public class MatrixProject extends AbstractProject<MatrixProject,MatrixBuild> im
      * In contract, inactive configurations are those that are left for archival purpose
      * and no longer built when a new {@link MatrixBuild} is executed.
      */
+    @Exported
     public Collection<MatrixConfiguration> getActiveConfigurations() {
         return activeConfigurations;
     }
@@ -594,12 +569,6 @@ public class MatrixProject extends AbstractProject<MatrixProject,MatrixBuild> im
             this.touchStoneCombinationFilter = null;
         }
 
-        if(req.hasParameter("customWorkspace")) {
-            customWorkspace = req.getParameter("customWorkspace.directory");
-        } else {
-            customWorkspace = null;        
-        }
-        
         // parse system axes
         DescribableList<Axis,AxisDescriptor> newAxes = new DescribableList<Axis,AxisDescriptor>(this);
         newAxes.rebuildHetero(req, json, Axis.all(),"axis");

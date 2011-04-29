@@ -23,6 +23,7 @@
  */
 package hudson;
 
+import hudson.remoting.Future;
 import hudson.remoting.VirtualChannel;
 import hudson.util.IOException2;
 import hudson.util.NullStream;

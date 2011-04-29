@@ -49,6 +49,7 @@ import java.io.ByteArrayInputStream;
 import java.io.OutputStreamWriter;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
@@ -148,7 +149,7 @@ public class UpdateSite {
         if (signatureCheck)
             verifySignature(o);
 
-        LOGGER.info("Obtained the latest update center data file for UpdateSource "+ id);
+        LOGGER.info("Obtained the latest update center data file for UpdateSource " + id);
         getDataFile().write(json);
         rsp.setContentType("text/plain");  // So browser won't try to parse response
     }
@@ -167,20 +168,20 @@ public class UpdateSite {
         List<X509Certificate> certs = new ArrayList<X509Certificate>();
         {// load and verify certificates
             CertificateFactory cf = CertificateFactory.getInstance("X509");
-            for (Object cert : o.getJSONArray("certificates")) {
+            for (Object cert : signature.getJSONArray("certificates")) {
                 X509Certificate c = (X509Certificate) cf.generateCertificate(new ByteArrayInputStream(Base64.decode(cert.toString().toCharArray())));
                 c.checkValidity();
                 certs.add(c);
             }
 
             // all default root CAs in JVM are trusted, plus certs bundled in Jenkins
-            Set<TrustAnchor> anchors = CertificateUtil.getDefaultRootCAs();
+            Set<TrustAnchor> anchors = new HashSet<TrustAnchor>(); // CertificateUtil.getDefaultRootCAs();
             ServletContext context = Hudson.getInstance().servletContext;
             for (String cert : (Set<String>) context.getResourcePaths("/WEB-INF/update-center-rootCAs")) {
                 if (cert.endsWith(".txt"))  continue;       // skip text files that are meant to be documentation
                 anchors.add(new TrustAnchor((X509Certificate)cf.generateCertificate(context.getResourceAsStream(cert)),null));
             }
-            CertificateUtil.validatePath(certs);
+            CertificateUtil.validatePath(certs,anchors);
         }
 
         // this is for computing a digest to check sanity

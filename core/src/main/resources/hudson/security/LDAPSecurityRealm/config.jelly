@@ -22,6 +22,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 -->
 
+<?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
 	<f:entry title="${%Server}" help="/help/security/ldap/server.html">
 	  <f:textbox name="ldap.server" value="${instance.server}"
@@ -30,6 +31,8 @@ THE SOFTWARE.
   <f:advanced>
     <f:entry title="${%root DN}" help="/help/security/ldap/rootDN.html">
       <f:textbox name="ldap.rootDN" value="${instance.rootDN}" />
+      <f:checkbox name="ldap.inhibitInferRootDN" checked="${instance.inhibitInferRootDN}"
+        title="${%Allow blank rootDN}"/>
     </f:entry>
     <f:entry title="${%User search base}" help="/help/security/ldap/userSearchBase.html">
       <f:textbox name="ldap.userSearchBase" value="${instance.userSearchBase}" />

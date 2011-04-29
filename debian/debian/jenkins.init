@@ -68,7 +68,7 @@ check_tcp_port() {
         port=$default
     fi
     
-    count=`netstat --listen --numeric-ports | grep \:$port | grep -c . `
+    count=`netstat --listen --numeric-ports | grep \:$port[[:space:]] | grep -c . `
     
     if [ $count -ne 0 ]; then
         echo "The selected $service port ($port) seems to be in use by another program "

@@ -31,6 +31,7 @@ THE SOFTWARE.
       Title of the link
 -->
         <!-- TODO: delete once batch-task plugin is updated. -->
+<?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:p="/lib/hudson/project">
   <j:set var="b" value="${it[property]}"/>
   <j:if test="${b!=null}">

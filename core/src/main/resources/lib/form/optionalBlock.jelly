@@ -22,6 +22,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 -->
 
+<?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
   <st:documentation>
     Foldable block that can be expanded to show more controls by checking the checkbox.
@@ -79,9 +80,10 @@ THE SOFTWARE.
       <j:if test="${attrs.help!=null}">
         <f:helpArea />
       </j:if>
+      <tr class="rowvg-start" />
       <d:invokeBody />
       <!-- end marker -->
-      <tr class="${attrs.inline?'':'row-set-end'} optional-block-end" />
+      <tr class="${attrs.inline?'':'row-set-end'} rowvg-end optional-block-end" />
     </j:when>
 
     <j:otherwise>

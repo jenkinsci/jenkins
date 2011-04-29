@@ -1,6 +1,7 @@
 package hudson.maven;
 
 /*
+ * Olivier Lamy
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -28,6 +29,7 @@ import java.io.File;
 import java.io.FilenameFilter;
 import java.io.IOException;
 
+import hudson.tasks.test.AbstractTestResultAction;
 import hudson.tasks.test.TestResult;
 import hudson.tasks.test.TestResultProjectAction;
 import org.apache.commons.io.FileUtils;
@@ -192,6 +194,32 @@ public class Maven3BuildTest extends HudsonTestCase {
         int totalCount = m.getModules().iterator().next()
                 .getAction(TestResultProjectAction.class).getLastTestResultAction().getTotalCount();
         assertEquals(4, totalCount);
+    }
+
+    @Bug(9326)
+    public void testTychoTestResults() throws Exception {
+        MavenInstallation mavenInstallation = configureMaven3();
+        MavenModuleSet m = createMavenProject();
+        m.setRootPOM( "org.foobar.build/pom.xml" );
+        m.setMaven( mavenInstallation.getName() );
+        m.getReporters().add(new TestReporter());
+        m.setScm(new ExtractResourceSCM(getClass().getResource("JENKINS-9326.zip"),"foobar"));
+        m.setGoals("verify");
+        buildAndAssertSuccess(m);
+
+        System.out.println("modules size " + m.getModules());
+
+
+        MavenModule testModule = null;
+        for (MavenModule mavenModule : m.getModules()) {
+            System.out.println("module " + mavenModule.getName() + "/" + mavenModule.getDisplayName());
+            if ("org.foobar:org.foobar.test".equals( mavenModule.getName() )) testModule = mavenModule;
+        }
+
+        AbstractTestResultAction trpa = testModule.getLastBuild().getTestResultAction();
+
+        int totalCount = trpa.getTotalCount();
+        assertEquals(1, totalCount);
     }
     
     private static class TestReporter extends MavenReporter {

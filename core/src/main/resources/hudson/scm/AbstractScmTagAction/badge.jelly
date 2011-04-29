@@ -22,6 +22,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 -->
 
+<?jelly escape-by-default='true'?>
 <j:if test="${it.isTagged()}" xmlns:j="jelly:core">
   <a href="${rootURL}/${it.build.url}tagBuild/">
     <img width="16" height="16"
