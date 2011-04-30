@@ -28,7 +28,7 @@ THE SOFTWARE.
   <parent>
     <groupId>org.jenkins-ci.main</groupId>
     <artifactId>pom</artifactId>
-    <version>1.410-SNAPSHOT</version>
+    <version>1.411-SNAPSHOT</version>
     <relativePath>../pom.xml</relativePath>
   </parent>
 
@@ -677,7 +677,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.jenkins-ci</groupId>
       <artifactId>memory-monitor</artifactId>
-      <version>1.4</version>
+      <version>1.5</version>
     </dependency>
     <dependency>
       <groupId>com.octo.captcha</groupId>

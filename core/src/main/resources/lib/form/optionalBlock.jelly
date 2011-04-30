@@ -80,9 +80,10 @@ THE SOFTWARE.
       <j:if test="${attrs.help!=null}">
         <f:helpArea />
       </j:if>
+      <tr class="rowvg-start" />
       <d:invokeBody />
       <!-- end marker -->
-      <tr class="${attrs.inline?'':'row-set-end'} optional-block-end" />
+      <tr class="${attrs.inline?'':'row-set-end'} rowvg-end optional-block-end" />
     </j:when>
 
     <j:otherwise>

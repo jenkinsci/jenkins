@@ -25,6 +25,7 @@ package hudson;
 
 import hudson.model.Hudson;
 import hudson.util.OneShotEvent;
+import hudson.Util;
 
 import java.io.IOException;
 import java.net.BindException;
@@ -77,6 +78,7 @@ public class UDPBroadcastThread extends Thread {
                 StringBuilder rsp = new StringBuilder("<hudson>");
                 tag(rsp,"version",Hudson.VERSION);
                 tag(rsp,"url",hudson.getRootUrl());
+                tag(rsp,"server-id", Util.getDigestOf(hudson.getSecretKey()));
                 tag(rsp,"slave-port",tal==null?null:tal.getPort());
 
                 for (UDPBroadcastFragment f : UDPBroadcastFragment.all())

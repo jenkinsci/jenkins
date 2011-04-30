@@ -4,7 +4,7 @@
   <parent>
     <artifactId>pom</artifactId>
     <groupId>org.jenkins-ci.main</groupId>
-    <version>1.410-SNAPSHOT</version>
+    <version>1.411-SNAPSHOT</version>
   </parent>
   <artifactId>cli</artifactId>
   <name>Jenkins CLI</name>
@@ -50,6 +50,11 @@
   </build>
 
   <dependencies>
+    <dependency>
+      <groupId>commons-codec</groupId>
+      <artifactId>commons-codec</artifactId>
+      <version>1.4</version>
+    </dependency>
     <dependency>
       <groupId>${project.groupId}</groupId>
       <artifactId>remoting</artifactId>
