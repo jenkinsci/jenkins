@@ -31,8 +31,9 @@ THE SOFTWARE.
   <l:side-panel>
     <l:tasks>
       <j:set var="buildUrl" value="${h.decompose(request)}" />
+      <j:set var="baseUrl" value="${request.findAncestor(it).relativePath}"/>
       <st:include it="${it.owner}" page="tasks.jelly" optional="true"/>
-      <l:task icon="images/24x24/graph.gif" href="history" title="${%History}"/>
+      <l:task icon="images/24x24/graph.gif" href="${baseUrl}/history" title="${%History}"/>
       <st:include it="${it.owner}" page="actions.jelly" optional="true" />
       
 	  <j:forEach var="action" items="${it.testActions}">
