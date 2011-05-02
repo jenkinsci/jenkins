@@ -1381,9 +1381,9 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
                     // create a symlink from build number to ID.
                     Util.createSymlink(getParent().getBuildDir(),getId(),String.valueOf(getNumber()),listener);
                     
-                    /* Do the actual rebuild, if necessary */
+                    /* Reuse the object if set */
 					if (this.redoRun != null && !this.redoRun.rebuild) {
-						listener.getLogger().println("[JENKINS] Reusing build");
+						listener.getLogger().print("[jenkins] Reusing build ");
 						int rnumber = this.redoRun.number;
 						System.out.println(getParent().getDisplayName() + ": "
 								+ rnumber);
@@ -1395,8 +1395,9 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
 						 * exist. */
 						RunT r = getParent().getBuildByNumber(rnumber);
 
-						/* Set the current run result the same as the reused */
+						/* Replace the object if not missing */
 						if (r != null) {
+							listener.getLogger().println(r.number);
 							setResult(r.getResult());
 
 							/* Copy artifacts */
@@ -1419,6 +1420,8 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
 								org.dom4j.Node node = root.selectSingleNode("number");
 								if (node != null) {
 									node.setText(this.number + "");
+								} else {
+									throw new AbortException( "The number field in build.xml could not be found" );
 								}
 								
 								String xml = doc.asXML();
@@ -1429,15 +1432,13 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
 						            w.write(xml);
 						            w.commit();
 						        } catch(StreamException e) {
-						            throw new IOException2(e);
+						            throw new AbortException( "Could not write build.xml" );
 						        } finally {
 						            w.abort();
 						        }
 						        
 						        /* Reload build.xml */
 								this.reload();
-							
-								
 							}
 						} else {
 							if (redoRun.rebuildIfMissing) {
