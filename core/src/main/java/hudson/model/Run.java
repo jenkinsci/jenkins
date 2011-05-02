@@ -1443,6 +1443,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
 								this.save();
 							}
 						} else {
+							listener.getLogger().println("[missing]");
 							if (redoRun.rebuildIfMissing) {
 								setResult(job.run(listener));
 							} else {
