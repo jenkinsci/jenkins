@@ -60,15 +60,31 @@ Upcoming changes</a>
     (<a href="http://jenkins.361315.n4.nabble.com/LDAP-and-empty-root-DN-values-td2216124.html">thread</a>)
   <li class=bug>
     Fixed the UI rendering problem when certain controls are nested together.
+  <li class=bug>
+    Auto-refresh is now disabled when triggering a build with parameters
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-7342">issue 7342</a>)
+  <li class=bug>
+    404 when clicking in the weather report column of a build that hasn't yet been run.
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-9532">issue 9532</a>)
+  <li class=bug>
+    Manually uploading a bundled plugin should trigger pin-down.
   <li class=rfe>
     Add active configurations in remote API for matrix projects.
     (<a href="http://issues.jenkins-ci.org/browse/JENKINS-9248">issue 9248</a>)
+  <li class=rfe>
+    Link to the console output from the status icon of an entry in the HistoryWidget.
+  <li class=rfe>
+    Exploit commons-codec for Base64 encoding rather than proprietary sun.misc.BASE64Encoder
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-9521">issue 9521</a>)
 </ul>
 </div><!--=TRUNK-END=-->
 
 <!-- these changes are controlled by the release process. DO NOT MODIFY -->
 <div id="rc" style="display:none;"><!--=BEGIN=-->
-<h3><a name=v1.410>What's new in 1.410</a> <!--=DATE=--></h3>
+<h3><a name=v1.411>What's new in 1.411</a> <!--=DATE=--></h3>
+<!--=RC-CHANGES=-->
+</div><!--=END=-->
+<h3><a name=v1.410>What's new in 1.410</a> (2011/05/01)</h3>
 <ul class=image>
   <li class=bug>
     Maven3 with multiple threads does not work in Jenkins.
@@ -98,7 +114,6 @@ Upcoming changes</a>
     Memory space monitor now works for Mac OS X Snow Leopard
     (<a href="http://issues.jenkins-ci.org/browse/JENKINS-9374">issue 9374</a>)
 </ul>
-</div><!--=END=-->
 <h3><a name=v1.409>What's new in 1.409</a> (2011/04/25)</h3>
 <ul class=image>
   <li class=bug>

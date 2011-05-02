@@ -43,6 +43,7 @@ import org.apache.commons.fileupload.FileItem;
 import org.apache.commons.fileupload.disk.DiskFileItemFactory;
 import org.apache.commons.fileupload.servlet.ServletFileUpload;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.logging.LogFactory;
 import org.jvnet.hudson.reactor.Executable;
 import org.jvnet.hudson.reactor.Reactor;
@@ -583,6 +584,10 @@ public abstract class PluginManager extends AbstractModelObject {
                 throw new Failure(hudson.model.Messages.Hudson_NotAPlugin(fileName));
             fileItem.write(new File(rootDir, fileName));
             fileItem.delete();
+
+            PluginWrapper existing = getPlugin(FilenameUtils.getBaseName(fileName));
+            if (existing!=null && existing.isBundled)
+                existing.doPin();
 
             pluginUploaded = true;
 

@@ -71,6 +71,8 @@ import java.security.KeyManagementException;
 import java.security.SecureRandom;
 import java.util.Properties;
 
+import org.apache.commons.codec.binary.Base64;
+
 /**
  * Entry point for running a {@link Channel}. This is the main method of the slave JVM.
  *
@@ -216,7 +218,7 @@ public class Launcher {
                 if (con instanceof HttpURLConnection && slaveJnlpCredentials != null) {
                     HttpURLConnection http = (HttpURLConnection) con;
                     String userPassword = slaveJnlpCredentials;
-                    String encoding = new sun.misc.BASE64Encoder().encode(userPassword.getBytes());
+                    String encoding = new String(new Base64().encodeBase64(userPassword.getBytes()));
                     http.setRequestProperty("Authorization", "Basic " + encoding);
                 }
                 con.connect();

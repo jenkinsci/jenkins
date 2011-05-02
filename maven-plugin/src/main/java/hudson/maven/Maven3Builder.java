@@ -61,6 +61,7 @@ import org.apache.maven.plugin.Mojo;
 import org.apache.maven.plugin.MojoExecution;
 import org.apache.maven.plugin.PluginParameterExpressionEvaluator;
 import org.apache.maven.project.MavenProject;
+import org.codehaus.groovy.runtime.StackTraceUtils;
 import org.codehaus.plexus.component.configurator.expression.ExpressionEvaluator;
 import org.codehaus.plexus.configuration.xml.XmlPlexusConfiguration;
 import org.jvnet.hudson.maven3.agent.Maven3Main;
@@ -170,6 +171,11 @@ public class Maven3Builder extends AbstractMavenBuilder implements DelegatingCal
             if (!mavenExecutionResult.getThrowables().isEmpty()) {
                 logger.println( "mavenExecutionResult exceptions not empty");
                 for(Throwable throwable : mavenExecutionResult.getThrowables()) {
+                    logger.println("message : " + throwable.getMessage());
+                    if (throwable.getCause()!=null) {
+                        logger.println("cause : " + throwable.getCause().getMessage());
+                    }
+                    logger.println("Stack trace : ");
                     throwable.printStackTrace( logger );
                 }
                 
