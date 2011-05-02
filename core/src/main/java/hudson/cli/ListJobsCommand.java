@@ -32,8 +32,6 @@ public class ListJobsCommand extends CLICommand{
 	@Option(name="-v",usage="verbose output")
 	private boolean verbose;
 		
-	BuildJobService buildJobService = BuildJobService.getInstance();
-	
 	protected int run() {
 		
 		LastDurationColumn.DescriptorImpl lastDurColName = new LastDurationColumn.DescriptorImpl();
