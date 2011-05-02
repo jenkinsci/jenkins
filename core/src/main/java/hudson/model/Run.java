@@ -1388,11 +1388,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
 						System.out.println(getParent().getDisplayName() + ": "
 								+ rnumber);
 
-						/* Use the reused build as basis.
-						 * We could have used the oldest build on the path,
-						 * but that build could've been deleted.
-						 * The build based directly on this, must in fact
-						 * exist. */
+						/* Use the reused build as basis. */
 						RunT r = getParent().getBuildByNumber(rnumber);
 
 						/* Replace the object if not missing */
@@ -1438,7 +1434,13 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
 						        }
 						        
 						        /* Reload build.xml */
+						        boolean rb  = this.redoRun.rebuild;
+						        boolean rbm = this.redoRun.rebuildIfMissing;
 								this.reload();
+								
+								/* Re-establish the redo object */
+								this.setRedoRun(rnumber, rb, rbm);
+								this.save();
 							}
 						} else {
 							if (redoRun.rebuildIfMissing) {
