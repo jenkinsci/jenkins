@@ -1,12 +1,11 @@
 def ctx = context(scope:scriptScope()) // TODO: make this more restrictive
 
-// TODO: GDSL with generics in methods?
 // TODO: how to complete "it", "descriptor", "instance", and other interesting variables?
 contributor(ctx) {
-    method name:"i18n", type:"java.lang.String", params: [msg:"java.lang.String"]
-//    method name:"namespace", type:"T", params: [type:"java.lang.Class<T>"]
+//    method name:"i18n", type:"java.lang.String", params: [msg:"java.lang.String"]
 
     property name:"app", type:"hudson.model.Hudson"
 
     delegatesTo(findClass("org.kohsuke.stapler.jelly.groovy.JellyBuilder"))
+    delegatesTo(findClass("org.kohsuke.stapler.jelly.groovy.StaplerClosureScript"))
 }
