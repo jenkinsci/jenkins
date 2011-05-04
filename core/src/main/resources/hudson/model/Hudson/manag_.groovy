@@ -13,11 +13,11 @@ def feature(String icon, String href, String title, Closure body=null) {
     }
 }
 
-l.layout(title:i18n("Manage Jenkins"),permission:app.ADMINISTER) {
+l.layout(title:_("Manage Jenkins"),permission:app.ADMINISTER) {
 
     st.include(page:"sidepanel.jelly")
     l.main_panel {
-        h1(i18n("Manage Jenkins"))
+        h1(_("Manage Jenkins"))
 
         if (my.isCheckURIEncodingEnabled()) {
             script """
@@ -41,8 +41,8 @@ l.layout(title:i18n("Manage Jenkins"),permission:app.ADMINISTER) {
         st.include(page:"downgrade.jelly")
 
         table(style:"padding-left: 2em;",id:"management-links") {
-            feature("setting.gif", "configure", i18n("Configure System")) {
-               raw(i18n("Configure global settings and paths."))
+            feature("setting.gif", "configure", _("Configure System")) {
+               raw(_("Configure global settings and paths."))
             }
             // TODO: more features
 
@@ -54,10 +54,10 @@ l.layout(title:i18n("Manage Jenkins"),permission:app.ADMINISTER) {
             }
 
             if (app.quietingDown) {
-                feature("system-log-out.gif","cancelQuietDown",i18n("Cancel Shutdown"))
+                feature("system-log-out.gif","cancelQuietDown",_("Cancel Shutdown"))
             } else {
-                feature("system-log-out.gif","quietDown",i18n("Prepare for Shutdown")) {
-                    raw(i18n("Stops executing new builds, so that the system can be eventually shut down safely."))
+                feature("system-log-out.gif","quietDown",_("Prepare for Shutdown")) {
+                    raw(_("Stops executing new builds, so that the system can be eventually shut down safely."))
                 }
             }
         }
