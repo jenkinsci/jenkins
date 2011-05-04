@@ -232,6 +232,21 @@
         </executions>
       </plugin>
     </plugins>
+    <pluginManagement>
+      <plugins>
+        <plugin>
+          <!--
+            Because Eclipse lacks JSR-269 support, put the output
+            to a different directory
+          -->
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-eclipse-plugin</artifactId>
+          <configuration>
+            <buildOutputDirectory>target/eclipse-classes</buildOutputDirectory>
+          </configuration>
+        </plugin>
+      </plugins>
+    </pluginManagement>
   </build>
 
   <repositories>
