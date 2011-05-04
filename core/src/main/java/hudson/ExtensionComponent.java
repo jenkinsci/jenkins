@@ -77,7 +77,7 @@ public class ExtensionComponent<T> implements Comparable<ExtensionComponent<T>> 
 
         // make the order bit more deterministic among extensions of the same ordinal
         if (this.instance instanceof Descriptor) {
-            return ((Descriptor)this.instance).getDisplayName().compareTo(((Descriptor)that.instance).getDisplayName());
+            return Util.fixNull(((Descriptor)this.instance).getDisplayName()).compareTo(Util.fixNull((((Descriptor)that.instance).getDisplayName())));
         } else {
             return this.instance.getClass().getName().compareTo(that.instance.getClass().getName());
         }
