@@ -145,9 +145,9 @@ THE SOFTWARE.
       <version>${project.version}</version>
     </dependency>
     <dependency>
-      <groupId>org.jvnet.hudson.plugins</groupId>
+      <groupId>org.jenkins-ci.plugins</groupId>
       <artifactId>subversion</artifactId>
-      <version>1.11</version>
+      <version>1.25</version>
     </dependency>
     <dependency>
       <groupId>org.mortbay.jetty</groupId>
