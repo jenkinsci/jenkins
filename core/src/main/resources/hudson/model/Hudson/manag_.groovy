@@ -15,7 +15,7 @@ def feature(String icon, String href, String title, Closure body=null) {
 
 l.layout(title:_("Manage Jenkins"),permission:app.ADMINISTER) {
 
-    st.include(page:"sidepanel.jelly")
+    st.include(page:"sidepanel")
     l.main_panel {
         h1(_("Manage Jenkins"))
 
@@ -35,10 +35,10 @@ l.layout(title:_("Manage Jenkins"),permission:app.ADMINISTER) {
 
         app.administrativeMonitors.each { am ->
             if (am.isActivated() && am.isEnabled())
-                st.include(it:am, page:"message.jelly")
+                st.include(it:am, page:"message")
         }
 
-        st.include(page:"downgrade.jelly")
+        st.include(page:"downgrade")
 
         table(style:"padding-left: 2em;",id:"management-links") {
             feature("setting.gif", "configure", _("Configure System")) {
