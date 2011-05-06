@@ -26,6 +26,8 @@ THE SOFTWARE.
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
   <tr id="row${it.id}">
     <td style="vertical-align: top; padding-right:1em">${%Restarting Jenkins}</td>
-    <td ><img src="${imagesURL}/24x24/refresh.png" alt="" /></td>
+    <td id="status"><img src="${imagesURL}/24x24/refresh.png" alt="" />
+    ${%Pending}
+    </td>
   </tr>
 </j:jelly>
