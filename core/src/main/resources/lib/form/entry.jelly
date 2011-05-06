@@ -67,7 +67,7 @@ THE SOFTWARE.
   <tr>
     <td class="setting-leftspace"><st:nbsp/></td>
     <td class="setting-name">
-      ${attrs.title}
+      <j:out value="${attrs.title}" />
     </td>
     <td class="setting-main">
       <d:invokeBody />
