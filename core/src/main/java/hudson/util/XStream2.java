@@ -46,6 +46,7 @@ import hudson.model.Label;
 import hudson.model.Result;
 import hudson.model.Saveable;
 import hudson.util.xstream.ImmutableMapConverter;
+import hudson.util.xstream.MapperDelegate;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
@@ -58,6 +59,11 @@ import java.util.concurrent.ConcurrentHashMap;
 public class XStream2 extends XStream {
     private Converter reflectionConverter;
     private ThreadLocal<Boolean> oldData = new ThreadLocal<Boolean>();
+
+    /**
+     * Hook to insert {@link Mapper}s after they are created.
+     */
+    private MapperInjectionPoint mapperInjectionPoint;
 
     public XStream2() {
         init();
@@ -105,7 +111,7 @@ public class XStream2 extends XStream {
 
         // this should come after all the XStream's default simpler converters,
         // but before reflection-based one kicks in.
-        registerConverter(new AssociatedConverterImpl(this),-10);
+        registerConverter(new AssociatedConverterImpl(this), -10);
     }
 
     @Override
@@ -121,7 +127,42 @@ public class XStream2 extends XStream {
         });
         AnnotationMapper a = new AnnotationMapper(m, getConverterRegistry(), getClassLoader(), getReflectionProvider(), getJvm());
         a.autodetectAnnotations(true);
-        return a;
+
+        mapperInjectionPoint = new MapperInjectionPoint(a);
+
+        return mapperInjectionPoint;
+    }
+
+    public Mapper getMapperInjectionPoint() {
+        return mapperInjectionPoint.getDelegate();
+    }
+
+    /**
+     * This method allows one to insert additional mappers after {@link XStream2} was created,
+     * but because of the way XStream works internally, this needs to be done carefully.
+     * Namely,
+     *
+     * <ol>
+     * <li>You need to {@link #getMapperInjectionPoint()} wrap it, then put that back into {@link #setMapper(Mapper)}.
+     * <li>The whole sequence needs to be synchronized against this object to avoid a concurrency issue.
+     * </ol>
+     */
+    public void setMapper(Mapper m) {
+        mapperInjectionPoint.setDelegate(m);
+    }
+
+    final class MapperInjectionPoint extends MapperDelegate {
+        public MapperInjectionPoint(Mapper wrapped) {
+            super(wrapped);
+        }
+
+        public Mapper getDelegate() {
+            return delegate;
+        }
+
+        public void setDelegate(Mapper m) {
+            delegate = m;
+        }
     }
 
     /**
