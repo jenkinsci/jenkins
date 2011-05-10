@@ -201,15 +201,15 @@ public class Queue extends ResourceController implements Saveable {
         /**
          * Verifies that the {@link Executor} represented by this object is capable of executing the given task.
          */
-        public boolean canTake(Task task) {
+        public boolean canTake(BuildableItem item) {
             Node node = getNode();
             if (node==null)     return false;   // this executor is about to die
 
-            if(node.canTake(task)!=null)
+            if(node.canTake(item)!=null)
                 return false;   // this node is not able to take the task
 
             for (QueueTaskDispatcher d : QueueTaskDispatcher.all())
-                if (d.canTake(node,task)!=null)
+                if (d.canTake(node,item)!=null)
                     return false;
 
             return isAvailable();
@@ -614,7 +614,7 @@ public class Queue extends ResourceController implements Saveable {
     private void _getBuildableItems(Computer c, ItemList<BuildableItem> col, List<BuildableItem> result) {
         Node node = c.getNode();
         for (BuildableItem p : col.values()) {
-            if (node.canTake(p.task) == null)
+            if (node.canTake(p) == null)
                 result.add(p);
         }
     }
@@ -791,7 +791,7 @@ public class Queue extends ResourceController implements Saveable {
 
                     List<JobOffer> candidates = new ArrayList<JobOffer>(parked.size());
                     for (JobOffer j : parked.values())
-                        if(j.canTake(p.task))
+                        if(j.canTake(p))
                             candidates.add(j);
 
                     MappingWorksheet ws = new MappingWorksheet(p, candidates);
