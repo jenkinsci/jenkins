@@ -88,11 +88,11 @@ public class HudsonExceptionNote extends ConsoleNote<Object> {
     // TODO; separate out the annotations and mark up
 
     private String annotateMethodName(String className, String methodName, String sourceFileName, int lineNumber) {
-        return "http://stacktrace.hudson-labs.org/search/?query="+className+'.'+methodName+"&entity=method";
+        return "http://stacktrace.jenkins-ci.org/search/?query="+className+'.'+methodName+"&entity=method";
     }
 
     private String annotateClassName(String className) {
-        return "http://stacktrace.hudson-labs.org/search?query="+className;
+        return "http://stacktrace.jenkins-ci.org/search?query="+className;
     }
 
     @Extension
