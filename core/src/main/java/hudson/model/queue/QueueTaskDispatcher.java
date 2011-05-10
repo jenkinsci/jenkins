@@ -86,7 +86,7 @@ public abstract class QueueTaskDispatcher implements ExtensionPoint {
      * the task won't run on the given node if any one of them returns a non-null value.
      * (This relationship is also the same with built-in check logic.)
      *
-     * @sine 1.413
+     * @since 1.413
      */
     public CauseOfBlockage canTake(Node node, BuildableItem item) {
         return canTake(node,item.task); // backward compatible behaviour
