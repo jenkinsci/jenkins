@@ -471,6 +471,11 @@ final class RemoteClassLoader extends URLClassLoader {
             return cl.hashCode();
         }
 
+        @Override
+        public String toString() {
+            return super.toString()+'['+cl.toString()+']';
+        }
+
         /**
          * Since bootstrap classloader by itself doesn't have the {@link ClassLoader} object
          * representing it (a crazy design, really), accessing it is unnecessarily hard.
@@ -480,7 +485,12 @@ final class RemoteClassLoader extends URLClassLoader {
          * any new classpath. In this way, we can effectively use this classloader as a representation
          * of the bootstrap classloader.
          */
-        private static final ClassLoader PSEUDO_BOOTSTRAP = new URLClassLoader(new URL[0],null);
+        private static final ClassLoader PSEUDO_BOOTSTRAP = new URLClassLoader(new URL[0],null) {
+            @Override
+            public String toString() {
+                return "PSEUDO_BOOTSTRAP";
+            }
+        };
     }
 
     /**
