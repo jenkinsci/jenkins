@@ -284,10 +284,10 @@ public class GlobalMatrixAuthorizationStrategy extends AuthorizationStrategy {
         }
 
         public FormValidation doCheckName(@QueryParameter String value ) throws IOException, ServletException {
-            return doCheckName(value, Hudson.getInstance(), Hudson.ADMINISTER);
+            return doCheckName_(value, Hudson.getInstance(), Hudson.ADMINISTER);
         }
 
-        public FormValidation doCheckName(String value, AccessControlled subject, Permission permission) throws IOException, ServletException {
+        public FormValidation doCheckName_(String value, AccessControlled subject, Permission permission) throws IOException, ServletException {
             if(!subject.hasPermission(permission))  return FormValidation.ok(); // can't check
 
             final String v = value.substring(1,value.length()-1);
