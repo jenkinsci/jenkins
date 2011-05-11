@@ -61,6 +61,7 @@ class MultiClassLoaderSerializer {
                 }
 
                 // tell the receiving side that they need to import a new classloader
+                // this reference count is released when RemoteInvocationHandler backing IClassLoader is GCed on the remote node.
                 writeInt(TAG_EXPORTED_CLASSLOADER);
                 writeInt(RemoteClassLoader.exportId(cl,channel));
             } else {// reference to a classloader that's already written
