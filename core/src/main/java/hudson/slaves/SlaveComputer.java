@@ -342,6 +342,11 @@ public class SlaveComputer extends Computer {
             log.println("WARNING: "+remoteFs+" looks suspiciously like Windows path. Maybe you meant "+remoteFs.replace('\\','/')+"?");
         FilePath root = new FilePath(channel,getNode().getRemoteFS());
 
+        // reference counting problem is known to happen, such as JENKINS-9017, and so as a preventive measure
+        // we pin the base classloader so that it'll never get GCed. When this classloader gets released,
+        // it'll have a catastrophic impact on the communication.
+        channel.pinClassLoader(getClass().getClassLoader());
+
         channel.call(new SlaveInitializer());
         channel.call(new WindowsSlaveInstaller(remoteFs));
         for (ComputerListener cl : ComputerListener.all())

@@ -526,9 +526,9 @@ public class Channel implements VirtualChannel, IChannel {
                 logger.log(Level.WARNING, "Unable to send GC command",e);
             }
 
-        // proxy will unexport this instance when it's GC-ed on the remote machine.
-        final int id = export(instance);
-        return RemoteInvocationHandler.wrap(null,id,type,userProxy,exportedObjects.isRecording());
+        // proxy will unexport this instance when it's GC-ed on the remote machine, so don't unexport on our side automatically at the end of a call.
+        final int id = export(instance,false);
+        return RemoteInvocationHandler.wrap(null, id, type, userProxy, exportedObjects.isRecording());
     }
 
     /*package*/ int export(Object instance) {
@@ -545,6 +545,22 @@ public class Channel implements VirtualChannel, IChannel {
 
     /*package*/ void unexport(int id) {
         exportedObjects.unexportByOid(id);
+    }
+
+    /**
+     * Increase reference count so much to effectively prevent de-allocation.
+     *
+     * @see ExportTable.Entry#pin()
+     */
+    public void pin(Object instance) {
+        exportedObjects.pin(instance);
+    }
+
+    /**
+     * {@linkplain #pin(Object) Pin down} the exported classloader.
+     */
+    public void pinClassLoader(ClassLoader cl) {
+        RemoteClassLoader.pin(cl,this);
     }
 
     /**
