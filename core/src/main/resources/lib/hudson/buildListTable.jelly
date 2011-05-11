@@ -65,7 +65,7 @@ THE SOFTWARE.
         </td>
         <td>
           <a href="${jobBaseUrl}${b.url}console">
-            <img src="${imagesURL}/${subIconSize}/terminal.gif" title="${%Console output}" alt="${%Console output}" border="0" />
+            <img src="${imagesURL}/${subIconSize}/terminal.png" title="${%Console output}" alt="${%Console output}" border="0" />
           </a>
         </td>
       </tr>

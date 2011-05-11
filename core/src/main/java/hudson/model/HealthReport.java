@@ -46,12 +46,12 @@ import java.util.Locale;
 // this is always exported as a part of Job and never on its own, so start with 2.
 public class HealthReport implements Serializable, Comparable<HealthReport> {
     // These are now 0-20, 21-40, 41-60, 61-80, 81+ but filenames unchanged for compatibility
-    private static final String HEALTH_OVER_80 = "health-80plus.gif";
-    private static final String HEALTH_61_TO_80 = "health-60to79.gif";
-    private static final String HEALTH_41_TO_60 = "health-40to59.gif";
-    private static final String HEALTH_21_TO_40 = "health-20to39.gif";
-    private static final String HEALTH_0_TO_20 = "health-00to19.gif";
-    private static final String HEALTH_UNKNOWN = "empty.gif";
+    private static final String HEALTH_OVER_80 = "health-80plus.png";
+    private static final String HEALTH_61_TO_80 = "health-60to79.png";
+    private static final String HEALTH_41_TO_60 = "health-40to59.png";
+    private static final String HEALTH_21_TO_40 = "health-20to39.png";
+    private static final String HEALTH_0_TO_20 = "health-00to19.png";
+    private static final String HEALTH_UNKNOWN = "empty.png";
 
     /**
      * The percentage health score (from 0 to 100 inclusive).

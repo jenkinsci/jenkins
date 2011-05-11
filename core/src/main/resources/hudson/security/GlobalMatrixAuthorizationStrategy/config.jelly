@@ -41,7 +41,7 @@ THE SOFTWARE.
         <td class="stop">
           <j:if test="${attrs.sid!='anonymous'}">
             <a href="#">
-              <img alt="remove" src="${imagesURL}/16x16/stop.gif" height="16" width="16"/>
+              <img alt="remove" src="${imagesURL}/16x16/stop.png" height="16" width="16"/>
             </a>
           </j:if>
         </td>
@@ -105,7 +105,7 @@ THE SOFTWARE.
       <input type="text" id="${id}text" />
       <input type="button" value="${%Add}" id="${id}button"/>
      </td><td align="right">
-      <a href="#" class="help-button" helpURL="${rootURL}${descriptor.find('hudson.security.GlobalMatrixAuthorizationStrategy$DescriptorImpl').getHelpFile('user-group')}"><img src="${imagesURL}/16x16/help.gif" alt="[help]" height="16" width="16"/></a>
+      <a href="#" class="help-button" helpURL="${rootURL}${descriptor.find('hudson.security.GlobalMatrixAuthorizationStrategy$DescriptorImpl').getHelpFile('user-group')}"><img src="${imagesURL}/16x16/help.png" alt="[help]" height="16" width="16"/></a>
      </td></tr>
      <f:helpArea />
     </table>

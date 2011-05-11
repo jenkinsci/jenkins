@@ -81,7 +81,7 @@ public enum BallColor implements StatusIcon {
     }
 
     /**
-     * String like "red.gif" that represents the file name of the image.
+     * String like "red.png" that represents the file name of the image.
      */
     public String getImage() {
         return image;

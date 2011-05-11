@@ -30,7 +30,7 @@ THE SOFTWARE.
 <l:layout title="${%Log}">
   <st:include page="sidepanel.jelly" />
   <l:main-panel xmlns:local="local">
-    <h1><img src="${imagesURL}/48x48/clipboard.gif" alt="" height="48" width="48"/>
+    <h1><img src="${imagesURL}/48x48/clipboard.png" alt="" height="48" width="48"/>
       ${%Log Recorders}
       <t:help href="http://wiki.jenkins-ci.org/display/JENKINS/Log+Recorders" />
     </h1>
@@ -39,7 +39,7 @@ THE SOFTWARE.
       <d:tag name="row">
         <tr>
           <td width="32">
-            <img src="${imagesURL}/32x32/clipboard.gif" width="32" height="32" alt=""/>
+            <img src="${imagesURL}/32x32/clipboard.png" width="32" height="32" alt=""/>
           </td>
           <td style="padding-left:2em"><a href="${href}">${name}</a></td>
           <td width="32">
@@ -59,7 +59,7 @@ THE SOFTWARE.
       <j:forEach var="lr" items="${it.logRecorders.values()}">
         <local:row name="${lr.name}" href="${lr.name}/">
           <a href="${lr.name}/configure">
-            <img src="${imagesURL}/32x32/setting.gif" width="32" height="32" alt="[configure]" title="Configure"/>
+            <img src="${imagesURL}/32x32/setting.png" width="32" height="32" alt="[configure]" title="Configure"/>
           </a>
         </local:row>
       </j:forEach>

@@ -39,7 +39,7 @@ THE SOFTWARE.
   </script>
 
   <!-- summary -->
-  <t:summary icon="clipboard.gif">
+  <t:summary icon="clipboard.png">
     <a href="${it.urlName}/">${it.displayName}</a>
     <st:nbsp/>
     <t:test-result />

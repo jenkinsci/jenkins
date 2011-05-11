@@ -32,7 +32,7 @@ THE SOFTWARE.
       <j:set var="b" value="${p.run}" />
       <j:choose>
         <j:when test="${b==null}">
-          <img src="${imagesURL}/24x24/grey.gif" tooltip="${%Not run}" alt="${%Not run}" height="24" width="24"/>
+          <img src="${imagesURL}/24x24/grey.png" tooltip="${%Not run}" alt="${%Not run}" height="24" width="24"/>
         </j:when>
         <j:otherwise>
           <a href="${p.shortUrl}/">

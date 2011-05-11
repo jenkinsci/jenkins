@@ -38,7 +38,7 @@ THE SOFTWARE.
               /
             </j:forEach>
             <input type="text" name="pattern" value="${pattern}" />
-            <img src="${imagesURL}/16x16/go-next.gif" style="vertical-align:middle; cursor:pointer" alt="[submit]"
+            <img src="${imagesURL}/16x16/go-next.png" style="vertical-align:middle; cursor:pointer" alt="[submit]"
                 onclick="this.parentNode.submit()" height="16" width="16"/>
           </form>
         </div>
@@ -76,7 +76,7 @@ THE SOFTWARE.
                     <td>
                       <j:if test="${x.readable}">
                         <a href="${x.href}/*fingerprint*/">
-                          <img src="${imagesURL}/16x16/fingerprint.gif" alt="fingerprint" height="16" width="16" />
+                          <img src="${imagesURL}/16x16/fingerprint.png" alt="fingerprint" height="16" width="16" />
                         </a>
                         <st:nbsp/>
                         <a href="${x.href}/*view*/">${%view}</a>
@@ -89,7 +89,7 @@ THE SOFTWARE.
                 <td style="text-align:right;" colspan="3">
                   <div style="margin-top: 1em;">
                     <a href="${backPath}${pattern!=''?pattern+'/':''}*zip*/${dir.name}.zip">
-                      <img src="${imagesURL}/16x16/package.gif" height="16" width="16"/>
+                      <img src="${imagesURL}/16x16/package.png" height="16" width="16"/>
                       (${%all files in zip})
                     </a>
                   </div>

@@ -517,7 +517,7 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
     public static final class ManageUserLinks extends ManagementLink {
         public String getIconFileName() {
             if(Hudson.getInstance().getSecurityRealm() instanceof HudsonPrivateSecurityRealm)
-                return "user.gif";
+                return "user.png";
             else
                 return null;    // not applicable now
         }

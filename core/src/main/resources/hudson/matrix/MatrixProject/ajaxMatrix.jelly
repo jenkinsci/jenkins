@@ -31,7 +31,7 @@ THE SOFTWARE.
     <p:matrix autoRefresh="true">
       <j:choose>
         <j:when test="${p==null}">
-          <img src="${imagesURL}/24x24/grey.gif" tooltip="${%Not configured}" alt="${%Not configured}" height="24" width="24"/>
+          <img src="${imagesURL}/24x24/grey.png" tooltip="${%Not configured}" alt="${%Not configured}" height="24" width="24"/>
         </j:when>
         <j:otherwise>
           <a href="${p.shortUrl}">

@@ -285,7 +285,7 @@ public class SCMTrigger extends Trigger<SCMedItem> {
         }
 
         public String getIconFileName() {
-            return "clipboard.gif";
+            return "clipboard.png";
         }
 
         public String getDisplayName() {
@@ -329,7 +329,7 @@ public class SCMTrigger extends Trigger<SCMedItem> {
         }
 
         public String getIconFileName() {
-            return "clipboard.gif";
+            return "clipboard.png";
         }
 
         public String getDisplayName() {

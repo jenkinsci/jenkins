@@ -3046,7 +3046,7 @@ public class Hudson extends Node implements ItemGroup<TopLevelItem>, StaplerProx
      * Binds /userContent/... to $JENKINS_HOME/userContent.
      */
     public DirectoryBrowserSupport doUserContent() {
-        return new DirectoryBrowserSupport(this,getRootPath().child("userContent"),"User content","folder.gif",true);
+        return new DirectoryBrowserSupport(this,getRootPath().child("userContent"),"User content","folder.png",true);
     }
 
     /**

@@ -204,7 +204,7 @@ public class MyViewsProperty extends UserProperty implements ViewGroup, Action {
     }
 
     public String getIconFileName() {
-        return "user.gif";
+        return "user.png";
     }
 
     public String getUrlName() {
@@ -263,7 +263,7 @@ public class MyViewsProperty extends UserProperty implements ViewGroup, Action {
 				return null;
 			} 
 			
-			return "user.gif";
+			return "user.png";
 		}
 
 		public String getUrlName() {
