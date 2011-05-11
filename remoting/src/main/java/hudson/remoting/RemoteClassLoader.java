@@ -352,6 +352,16 @@ final class RemoteClassLoader extends URLClassLoader {
         return local.export(IClassLoader.class, new ClassLoaderProxy(cl,local), false);
     }
 
+    public static void pin(ClassLoader cl, Channel local) {
+        if (cl instanceof RemoteClassLoader) {
+            // check if this is a remote classloader from the channel
+            final RemoteClassLoader rcl = (RemoteClassLoader) cl;
+            int oid = RemoteInvocationHandler.unwrap(rcl.proxy, local);
+            if(oid!=-1) return;
+        }
+        local.pin(new ClassLoaderProxy(cl,local));
+    }
+
     /**
      * Exports and just returns the object ID, instead of obtaining the proxy.
      */
