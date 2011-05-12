@@ -54,6 +54,7 @@ import hudson.tasks.BuildTrigger;
 import hudson.tasks.test.AbstractTestResultAction;
 import hudson.tasks.test.AggregatedTestResultAction;
 import hudson.util.AdaptedIterator;
+import hudson.util.IOUtils;
 import hudson.util.Iterators;
 import hudson.util.LogTaskListener;
 import hudson.util.VariableResolver;
@@ -65,6 +66,7 @@ import org.xml.sax.SAXException;
 
 import javax.servlet.ServletException;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.text.MessageFormat;
@@ -1146,6 +1148,59 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
             // nothing is building
             rsp.forwardToPreviousPage(req);
     }
+    
+    /**/
+    
+	public void copyBuild(AbstractBuild<?, ?> other, BuildListener listener) {
+		File srcRoot = other.getRootDir();
+		File dstRoot = getRootDir();
+		listener.getLogger().println(
+				"[Jenkins] Source      " + srcRoot.getAbsolutePath());
+		listener.getLogger().println(
+				"[Jenkins] Destination " + dstRoot.getAbsolutePath());
+
+		/* Copy files */
+		copyDir(srcRoot, dstRoot);
+				
+		/* Alter this to comply with other instance */
+		/*
+		this.builtOn       = other.builtOn;
+		this.workspace     = other.workspace;
+		this.hudsonVersion = other.hudsonVersion;
+		*/
+	}
+
+	private void copyDir(File srcDir, File dstDir) {
+		/* Make sure the directory exists */
+		if (!dstDir.exists()) {
+			LOGGER.info("Creating directory " + dstDir);
+			dstDir.mkdir();
+		}
+
+		File[] files = srcDir.listFiles();
+		for (File f : files) {
+			if (f.isFile()) {
+				File dstFile = new File(dstDir, f.getName());
+				if (!dstFile.exists()){
+					//	&& !f.getName().equalsIgnoreCase("build.xml")) {
+					try {
+						if (dstFile.createNewFile()) {
+							FileOutputStream fos = new FileOutputStream(dstFile);
+							IOUtils.copy(f, fos);
+							fos.close();
+						}
+					} catch (Exception e) {
+						LOGGER.warning("Copying of " + dstFile
+								+ " went wrong.");
+					}
+				}
+			} else if (f.isDirectory()) {
+				copyDir(f, new File(dstDir, f.getName()));
+			}
+		}
+	}
+    
+    /**/
 
     private static final Logger LOGGER = Logger.getLogger(AbstractBuild.class.getName());
 }

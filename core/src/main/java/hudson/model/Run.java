@@ -53,6 +53,7 @@ import hudson.tasks.Mailer;
 import hudson.tasks.BuildWrapper;
 import hudson.tasks.BuildStep;
 import hudson.tasks.test.AbstractTestResultAction;
+import hudson.util.AtomicFileWriter;
 import hudson.util.FlushProofOutputStream;
 import hudson.util.IOException2;
 import hudson.util.LogTaskListener;
@@ -98,6 +99,9 @@ import net.sf.json.JSONObject;
 import org.apache.commons.io.input.NullInputStream;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.jelly.XMLOutput;
+import org.dom4j.Document;
+import org.dom4j.Element;
+import org.dom4j.io.SAXReader;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.HttpResponses;
 import org.kohsuke.stapler.QueryParameter;
@@ -107,6 +111,8 @@ import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.export.ExportedBean;
 
 import com.thoughtworks.xstream.XStream;
+import com.thoughtworks.xstream.io.StreamException;
+
 import java.io.FileOutputStream;
 import java.io.OutputStream;
 
@@ -1337,6 +1343,10 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
             // otherwise the queue state becomes inconsistent
 
             long start = System.currentTimeMillis();
+            
+            /* Boolean to determine whether the run was a reuse or not.
+             * By default a run is not reused. */
+            boolean reused = false;
 
             try {
                 try {
@@ -1370,8 +1380,79 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
 
                     // create a symlink from build number to ID.
                     Util.createSymlink(getParent().getBuildDir(),getId(),String.valueOf(getNumber()),listener);
+                    
+                    /* Reuse the object if set */
+					if (this.redoRun != null && !this.redoRun.rebuild) {
+						listener.getLogger().print("[jenkins] Reusing build ");
+						int rnumber = this.redoRun.number;
+						System.out.println(getParent().getDisplayName() + ": "
+								+ rnumber);
 
-                    setResult(job.run(listener));
+						/* Use the reused build as basis. */
+						RunT r = getParent().getBuildByNumber(rnumber);
+
+						/* Replace the object if not missing */
+						if (r != null) {
+							listener.getLogger().println(r.number);
+							setResult(r.getResult());
+
+							/* Copy artifacts */
+							if (this instanceof AbstractBuild
+									&& r instanceof AbstractBuild) {
+								
+								reused = true;
+								
+								((AbstractBuild<?, ?>) this).copyBuild(
+										(AbstractBuild<?, ?>) r, listener);
+								
+								/* Get the new build.xml */
+								XmlFile f = this.getDataFile();
+								
+								SAXReader xmlReader = new SAXReader();
+								Document doc = xmlReader.read( f.getFile() );
+								Element root = doc.getRootElement();
+								
+								/* Find the number element and substitute it with the correct run number */
+								org.dom4j.Node node = root.selectSingleNode("number");
+								if (node != null) {
+									node.setText(this.number + "");
+								} else {
+									throw new AbortException( "The number field in build.xml could not be found" );
+								}
+								
+								String xml = doc.asXML();
+								
+								/* Commit the changes to build.xml */
+						        AtomicFileWriter w = new AtomicFileWriter(f.getFile());
+						        try {
+						            w.write(xml);
+						            w.commit();
+						        } catch(StreamException e) {
+						            throw new AbortException( "Could not write build.xml" );
+						        } finally {
+						            w.abort();
+						        }
+						        
+						        /* Reload build.xml */
+						        boolean rb  = this.redoRun.rebuild;
+						        boolean rbm = this.redoRun.rebuildIfMissing;
+								this.reload();
+								
+								/* Re-establish the redo object */
+								this.setRedoRun(rnumber, rb, rbm);
+								this.save();
+							}
+						} else {
+							listener.getLogger().println("[missing]");
+							if (redoRun.rebuildIfMissing) {
+								setResult(job.run(listener));
+							} else {
+								setResult(Result.FAILURE);
+							}
+						}
+					} else {
+						setResult(job.run(listener));
+					}
 
                     LOGGER.info(toString()+" main build action completed: "+result);
                     CheckPoint.MAIN_COMPLETED.report();
@@ -1395,7 +1476,9 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
                 }
 
                 // even if the main build fails fatally, try to run post build processing
-                job.post(listener);
+				if (!reused) {
+					job.post(listener);
+				}
 
             } catch (ThreadDeath t) {
                 throw t;
@@ -1427,11 +1510,15 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
                 if(listener!=null)
                     listener.closeQuietly();
 
-                try {
-                    save();
-                } catch (IOException e) {
-                    LOGGER.log(Level.SEVERE, "Failed to save build record",e);
-                }
+                /* Only save if actually built */
+				if (!reused) {
+					try {
+						save();
+					} catch (IOException e) {
+						LOGGER.log(Level.SEVERE, "Failed to save build record",
+								e);
+					}
+				}
             }
 
             try {
@@ -1979,4 +2066,52 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
             out.flush();
         }
     }
+    
+    
+    /* Reuse */
+    
+	private RedoRun redoRun = null;
+
+	public class RedoRun {
+		public int number               = 0;
+		public boolean rebuildIfMissing = true; /* or failIfMissing = false */
+		public boolean rebuild          = true;
+		
+		public RedoRun(int number) {
+			this.number           = number;
+			this.rebuild          = false;
+		}
+		
+		public RedoRun(int number, boolean rebuild) {
+			this.number           = number;
+			this.rebuild          = rebuild;
+		}
+		
+		public RedoRun(int number, boolean rebuild, boolean b) {
+			this.number           = number;
+			this.rebuild          = rebuild;
+			this.rebuildIfMissing = b;			
+		}
+		
+		public void setRebuildIfMissing( boolean b )
+		{
+			rebuildIfMissing = b;
+		}
+	}
+
+	public void setRedoRun(int number) {
+		this.redoRun = new RedoRun(number);
+	}
+	
+	public void setRedoRun(int number, boolean reuse) {
+		this.redoRun = new RedoRun(number, reuse);
+	}
+	
+	public void setRedoRun(int number, boolean reuse, boolean b) {
+		this.redoRun = new RedoRun(number, reuse, b);
+	}
+	
+	public RedoRun getRedoRun() {
+		return redoRun;
+	}
 }

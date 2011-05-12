@@ -203,7 +203,7 @@ public class MatrixBuild extends AbstractBuild<MatrixProject,MatrixBuild> {
                     delayedConfigurations.add(c);
                 }
             }
-
+            
             for (MatrixAggregator a : aggregators)
                 if(!a.startBuild())
                     return Result.FAILURE;
