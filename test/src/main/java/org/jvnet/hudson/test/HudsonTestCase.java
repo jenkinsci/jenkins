@@ -1851,6 +1851,15 @@ public abstract class HudsonTestCase extends TestCase implements RootAction {
         // DNS multicast support takes up a lot of time during tests, so just disable it altogether
         // this also prevents tests from falsely advertising Hudson
         DNSMultiCast.disabled = true;
+
+        if (!Functions.isWindows()) {
+            try {
+                GNUCLibrary.LIBC.unsetenv("MAVEN_OPTS");
+                GNUCLibrary.LIBC.unsetenv("MAVEN_DEBUG_OPTS");
+            } catch (Exception e) {
+                LOGGER.log(Level.WARNING,"Failed to cancel out MAVEN_OPTS",e);
+            }
+        }
     }
 
     public static class TestBuildWrapper extends BuildWrapper {
