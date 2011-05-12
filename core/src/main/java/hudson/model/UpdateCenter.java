@@ -72,6 +72,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.jar.Attributes;
 import java.util.jar.JarFile;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -339,7 +340,10 @@ public class UpdateCenter extends AbstractModelObject implements Saveable {
     public String getBackupVersion() {
         try {
             JarFile backupWar = new JarFile(new File(Lifecycle.get().getHudsonWar() + ".bak"));
-            return backupWar.getManifest().getMainAttributes().getValue("Hudson-Version");
+            Attributes attrs = backupWar.getManifest().getMainAttributes();
+            String v = attrs.getValue("Jenkins-Version");
+            if (v==null)    v = attrs.getValue("Hudson-Version");
+            return v;
         } catch (IOException e) {
             LOGGER.log(Level.WARNING, "Failed to read backup version ", e);
             return null;}
