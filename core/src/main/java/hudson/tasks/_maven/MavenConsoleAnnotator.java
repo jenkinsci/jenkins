@@ -60,6 +60,10 @@ public class MavenConsoleAnnotator extends LineTransformationOutputStream {
         if (m.matches())
             new MavenMojoNote().encodeTo(out);
 
+        m = Maven3MojoNote.PATTERN.matcher(line);
+        if (m.matches())
+            new Maven3MojoNote().encodeTo(out);
+
         m = MavenWarningNote.PATTERN.matcher(line);
         if (m.find())
             new MavenWarningNote().encodeTo(out);
