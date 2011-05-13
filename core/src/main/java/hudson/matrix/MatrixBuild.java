@@ -218,7 +218,8 @@ public class MatrixBuild extends AbstractBuild<MatrixProject,MatrixBuild> {
             Collection<MatrixConfiguration> touchStoneConfigurations = new HashSet<MatrixConfiguration>();
             Collection<MatrixConfiguration> delayedConfigurations = new HashSet<MatrixConfiguration>();
             for (MatrixConfiguration c: activeConfigurations) {
-                if (!MatrixBuildListener.buildConfiguration(MatrixBuild.this, c))  continue;  
+                if (!MatrixBuildListener.buildConfiguration(MatrixBuild.this, c))
+                    continue; // skip rebuild
                 if (touchStoneFilter != null && c.getCombination().evalGroovyExpression(p.getAxes(), p.getTouchStoneCombinationFilter())) {
                     touchStoneConfigurations.add(c);
                 } else {
