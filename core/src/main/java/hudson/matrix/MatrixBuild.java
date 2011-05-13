@@ -24,6 +24,7 @@
 package hudson.matrix;
 
 import hudson.Util;
+import hudson.matrix.listeners.MatrixBuildListener;
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
 import hudson.model.BuildListener;
@@ -121,7 +122,7 @@ public class MatrixBuild extends AbstractBuild<MatrixProject,MatrixBuild> {
     public MatrixRun getRun(Combination c) {
         MatrixConfiguration config = getParent().getItem(c);
         if(config==null)    return null;
-        return config.getBuildByNumber(getNumber());
+        return config.getNearestOldBuild(getNumber());
     }
 
     /**
@@ -131,10 +132,30 @@ public class MatrixBuild extends AbstractBuild<MatrixProject,MatrixBuild> {
     public List<MatrixRun> getRuns() {
         List<MatrixRun> r = new ArrayList<MatrixRun>();
         for(MatrixConfiguration c : getParent().getItems()) {
-            MatrixRun b = c.getBuildByNumber(getNumber());
+            MatrixRun b = c.getNearestOldBuild(getNumber());
             if (b != null) r.add(b);
         }
         return r;
+    }
+
+    @Override
+    public String getWhyKeepLog() {
+        MatrixBuild b = getNextBuild();
+        if (b!=null && b.isPartial())
+            return b.getDisplayName()+" depends on this";
+        return super.getWhyKeepLog();
+    }
+
+    /**
+     * True if this build didn't do a full build and it is depending on the result of the previous build.
+     */
+    public boolean isPartial() {
+        for(MatrixConfiguration c : getParent().getItems()) {
+            MatrixRun b = c.getNearestOldBuild(getNumber());
+            if (b != null && b.getNumber()!=getNumber())
+                return true;
+        }
+        return false;
     }
 
     @Override
@@ -197,6 +218,7 @@ public class MatrixBuild extends AbstractBuild<MatrixProject,MatrixBuild> {
             Collection<MatrixConfiguration> touchStoneConfigurations = new HashSet<MatrixConfiguration>();
             Collection<MatrixConfiguration> delayedConfigurations = new HashSet<MatrixConfiguration>();
             for (MatrixConfiguration c: activeConfigurations) {
+                if (!MatrixBuildListener.buildConfiguration(MatrixBuild.this, c))  continue;  
                 if (touchStoneFilter != null && c.getCombination().evalGroovyExpression(p.getAxes(), p.getTouchStoneCombinationFilter())) {
                     touchStoneConfigurations.add(c);
                 } else {
