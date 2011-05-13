@@ -43,6 +43,7 @@ import hudson.matrix.MatrixRun;
 import hudson.model.Descriptor.FormException;
 import hudson.model.listeners.RunListener;
 import hudson.model.listeners.SaveableListener;
+import hudson.model.Hudson.MasterComputer;
 import hudson.search.SearchIndexBuilder;
 import hudson.security.ACL;
 import hudson.security.AccessControlled;
@@ -1791,7 +1792,11 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
         if (t instanceof Executor) {
             Executor e = (Executor) t;
             env.put("EXECUTOR_NUMBER",String.valueOf(e.getNumber()));
-            env.put("NODE_NAME",e.getOwner().getName());
+	    if(e.getOwner() instanceof MasterComputer) {
+		env.put("NODE_NAME", "master");
+	    } else {
+	    	env.put("NODE_NAME",e.getOwner().getName());
+	    }
             Node n = e.getOwner().getNode();
             if (n!=null)
                 env.put("NODE_LABELS",Util.join(n.getAssignedLabels()," "));
