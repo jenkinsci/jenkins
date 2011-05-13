@@ -27,5 +27,6 @@ if [ -z "$1" ]; then
 fi
 
 cp "$1" jenkins.war
+sed -e "s/@RELEASELINE@/${RELEASELINE}/g" < debian/jenkins.list.src > debian/jenkins.list
 
 exec debuild -us -uc -B
