@@ -19,6 +19,7 @@ package hudson.maven.util;
  * under the License.
  */
 
+import java.io.IOException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -261,13 +262,18 @@ public class ExecutionEventLogger
     {
         if ( logger.isInfoEnabled() )
         {
-            StringBuilder buffer = new StringBuilder( 128 );
-
+			final Maven3PluginMojoNote note = new Maven3PluginMojoNote();
+			final StringBuilder buffer = new StringBuilder( 128 );
+			try {
+				buffer.append( note.encode() );
+			} catch ( IOException e ) {
+				// As we use only memory buffers this should not happen, ever.
+				throw new RuntimeException( "Could not encode note?", e );
+			}
             buffer.append( "--- " );
             append( buffer, event.getMojoExecution() );
             append( buffer, event.getProject() );
             buffer.append( " ---" );
-
             logger.info( "" );
             logger.info( buffer.toString() );
         }
