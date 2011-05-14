@@ -60,9 +60,9 @@ public class Maven3MojoNote extends ConsoleNote {
     @Extension
     public static final class DescriptorImpl extends ConsoleAnnotationDescriptor {
         public String getDisplayName() {
-            return "Maven3 Mojos";
+            return "Maven 3 Mojos";
         }
     }
 
-    public static Pattern PATTERN = Pattern.compile("\\[INFO\\] --- (.*-plugin):([^:]*):([^ ]*) \\((.*)\\) (.*) ---");
+    public static Pattern PATTERN = Pattern.compile("\\[INFO\\] --- .+-plugin:[^:]+:[^ ]+ \\(.+\\) @ .+ ---");
 }
