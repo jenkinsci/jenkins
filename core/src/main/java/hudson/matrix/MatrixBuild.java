@@ -138,6 +138,21 @@ public class MatrixBuild extends AbstractBuild<MatrixProject,MatrixBuild> {
         return r;
     }
 
+    /**
+     * Returns all {@link MatrixRun}s for this {@link MatrixBuild}.
+     * <p>
+     * Unlike {@link #getExactRuns()}, this method excludes those runs
+     * that didn't run and got inherited.
+     */
+    public List<MatrixRun> getExactRuns() {
+        List<MatrixRun> r = new ArrayList<MatrixRun>();
+        for(MatrixConfiguration c : getParent().getItems()) {
+            MatrixRun b = c.getBuildByNumber(getNumber());
+            if (b != null) r.add(b);
+        }
+        return r;
+    }
+
     @Override
     public String getWhyKeepLog() {
         MatrixBuild b = getNextBuild();
