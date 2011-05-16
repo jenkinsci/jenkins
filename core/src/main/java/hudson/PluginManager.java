@@ -74,6 +74,7 @@ import java.util.Map;
 import java.util.HashMap;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -91,7 +92,7 @@ public abstract class PluginManager extends AbstractModelObject {
     /**
      * All active plugins.
      */
-    protected final List<PluginWrapper> activePlugins = new ArrayList<PluginWrapper>();
+    protected final List<PluginWrapper> activePlugins = new CopyOnWriteArrayList<PluginWrapper>();
 
     protected final List<FailedPlugin> failedPlugins = new ArrayList<FailedPlugin>();
 
