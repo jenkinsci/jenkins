@@ -27,6 +27,8 @@ import hudson.Util;
 import hudson.EnvVars;
 import hudson.diagnosis.OldDataMonitor;
 import hudson.model.Queue.QueueAction;
+import hudson.model.labels.LabelAssignmentAction;
+import hudson.model.queue.SubTask;
 import hudson.tasks.BuildStep;
 import hudson.tasks.BuildWrapper;
 import hudson.util.VariableResolver;
@@ -50,7 +52,7 @@ import java.util.Set;
  * that were specified when scheduling.
  */
 @ExportedBean
-public class ParametersAction implements Action, Iterable<ParameterValue>, QueueAction, EnvironmentContributingAction {
+public class ParametersAction implements Action, Iterable<ParameterValue>, QueueAction, EnvironmentContributingAction, LabelAssignmentAction {
 
     private final List<ParameterValue> parameters;
 
@@ -116,6 +118,14 @@ public class ParametersAction implements Action, Iterable<ParameterValue>, Queue
         for (ParameterValue p : parameters)
             if (p.getName().equals(name))
                 return p;
+        return null;
+    }
+
+    public Label getAssignedLabel(SubTask task) {
+        for (ParameterValue p : parameters) {
+            Label l = p.getAssignedLabel(task);
+            if (l!=null)    return l;
+        }
         return null;
     }
 
