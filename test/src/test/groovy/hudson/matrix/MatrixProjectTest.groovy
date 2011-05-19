@@ -122,7 +122,7 @@ public class MatrixProjectTest extends HudsonTestCase {
 
         p.getBuildersList().add(new UnstableBuilder());
         build = p.scheduleBuild2(0).get();
-        assertEquals(2, build.getRuns().size());
+        assertEquals(2, build.exactRuns.size());
     }
 
     @Override

@@ -56,6 +56,18 @@ Upcoming changes</a>
 <div id="trunk" style="display:none"><!--=TRUNK-BEGIN=-->
 <ul class=image>
   <li class=bug>
+    Fixed the concurrent modification exception in classloading during startup
+  <li class=bug>
+    Show an error message if no name is provided when creating a job (CLI)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-6958">issue 6958</a>)
+</ul>
+</div><!--=TRUNK-END=-->
+
+<!-- these changes are controlled by the release process. DO NOT MODIFY -->
+<div id="rc" style="display:none;"><!--=BEGIN=-->
+<h3><a name=v1.413>What's new in 1.413</a> <!--=DATE=--></h3>
+<ul class=image>
+  <li class=bug>
 	Fixed extra ' character in french translation.
 	(<a href="http://issues.jenkins-ci.org/browse/JENKINS-9197">issue 9197</a>)
   <li class=bug>
@@ -82,18 +94,17 @@ Upcoming changes</a>
   <li class=rfe>
     Replaced all gif images with png images (transparency support).
     (<a href="http://issues.jenkins-ci.org/browse/JENKINS-3969">issue 3969</a>)
+  <li class=rfe>
+    Boldify names of executed mojos for Freestyle and Maven2/3 jobs using Maven3 in console output.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-9691">issue 9691</a>)
 </ul>
-</div><!--=TRUNK-END=-->
-
-<!-- these changes are controlled by the release process. DO NOT MODIFY -->
-<div id="rc" style="display:none;"><!--=BEGIN=-->
-<h3><a name=v1.412>What's new in 1.412</a> <!--=DATE=--></h3>
+</div><!--=END=-->
+<h3><a name=v1.412>What's new in 1.412</a> (2011/05/16)</h3>
 <ul class=image>
   <li class=rfe>
     Wait until updates are successfully installed before restarting Jenkins
     (<a href="http://issues.jenkins-ci.org/browse/JENKINS-5047">issue 5047</a>)
 </ul>
-</div><!--=END=-->
 <h3><a name=v1.411>What's new in 1.411</a> (2011/05/09)</h3>
 <ul class=image>
   <li class=bug>

@@ -27,7 +27,7 @@ THE SOFTWARE.
   <parent>
     <artifactId>pom</artifactId>
     <groupId>org.jenkins-ci.main</groupId>
-    <version>1.413-SNAPSHOT</version>
+    <version>1.414-SNAPSHOT</version>
   </parent>
   <modelVersion>4.0.0</modelVersion>
   <groupId>org.jenkins-ci.main</groupId>
@@ -53,9 +53,9 @@ THE SOFTWARE.
       </plugin>
       <plugin>
         <!-- see http://maven-junit-plugin.kenai.com/ for more info -->
-        <groupId>com.sun.maven</groupId>
+        <groupId>org.kohsuke</groupId>
         <artifactId>maven-junit-plugin</artifactId>
-        <version>1.8</version>
+        <version>1.9</version>
         <executions>
           <execution>
             <goals>
@@ -65,6 +65,7 @@ THE SOFTWARE.
               <fork>true</fork>
               <concurrency>${concurrency}</concurrency>
               <argLine>-Dfile.encoding=UTF-8</argLine>
+              <timeout>300</timeout>
               <systemProperties>
                 <property>
                   <!-- use AntClassLoader that supports predictable file handle release -->

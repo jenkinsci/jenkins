@@ -40,7 +40,7 @@ public class CreateJobCommand extends CLICommand {
         return "Creates a new job by reading stdin as a configuration XML file";
     }
 
-    @Argument(metaVar="NAME",usage="Name of the job to create")
+    @Argument(metaVar="NAME",usage="Name of the job to create",required=true)
     public String name;
 
     protected int run() throws Exception {
