@@ -339,12 +339,13 @@ THE SOFTWARE.
       <plugin>
         <groupId>org.kohsuke.stapler</groupId>
         <artifactId>maven-stapler-plugin</artifactId>
+        <!-- version specified in grandparent pom -->
         <extensions>true</extensions>
       </plugin>
       <plugin>
         <groupId>org.jvnet.localizer</groupId>
         <artifactId>maven-localizer-plugin</artifactId>
-        <version>1.8</version>
+        <!-- version specified in grandparent pom -->
         <executions>
           <execution>
             <goals>
@@ -360,6 +361,7 @@ THE SOFTWARE.
       <plugin><!-- generate licenses.xml -->
         <groupId>com.cloudbees</groupId>
         <artifactId>maven-license-plugin</artifactId>
+        <!-- version specified in grandparent pom -->
         <configuration>
           <generateLicenseXml>target/${project.artifactId}/WEB-INF/licenses.xml</generateLicenseXml>
         </configuration>
@@ -367,6 +369,7 @@ THE SOFTWARE.
       <plugin>
         <groupId>org.jvnet.maven-antrun-extended-plugin</groupId>
         <artifactId>maven-antrun-extended-plugin</artifactId>
+        <!-- version specified in grandparent pom -->
         <executions>
           <execution>
             <id>resgen</id>
@@ -397,7 +400,7 @@ THE SOFTWARE.
         <plugin>
           <groupId>org.codehaus.mojo</groupId>
           <artifactId>cobertura-maven-plugin</artifactId>
-          <version>2.4-apb-SNAPSHOT</version>
+          <!-- version specified in grandparent pom -->
           <inherited>true</inherited>
           <configuration>
             <formats>

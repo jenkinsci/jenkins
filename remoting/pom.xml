@@ -44,7 +44,7 @@ THE SOFTWARE.
       <plugin>
         <groupId>org.codehaus.mojo</groupId>
         <artifactId>findbugs-maven-plugin</artifactId>
-        <version>2.1</version>
+        <!-- version specified in grandparent pom -->
         <configuration>
           <threshold>High</threshold>
         </configuration>
@@ -52,7 +52,7 @@ THE SOFTWARE.
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-pmd-plugin</artifactId>
-        <version>2.5</version>
+        <!-- version specified in grandparent pom -->
         <configuration>
           <!--rulesets>
             <ruleset>ruleset.xml</ruleset>
@@ -62,6 +62,7 @@ THE SOFTWARE.
       </plugin>
       <plugin>
         <artifactId>maven-jar-plugin</artifactId>
+        <!-- version specified in grandparent pom -->
         <configuration>
           <archive>
             <manifest>
@@ -91,6 +92,7 @@ THE SOFTWARE.
       <plugin>
         <groupId>org.jvnet.maven-antrun-extended-plugin</groupId>
         <artifactId>maven-antrun-extended-plugin</artifactId>
+        <!-- version specified in grandparent pom -->
         <executions>
           <execution>
             <id>generate-resources</id>
