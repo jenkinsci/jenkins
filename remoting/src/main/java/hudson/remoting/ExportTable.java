@@ -67,7 +67,6 @@ final class ExportTable<T> {
             // force the computation of the stack trace in a Java friendly data structure,
             // so that the call stack can be seen from the heap dump after the fact. 
             allocationTrace.getStackTrace();
-            addRef();
 
             table.put(id,this);
             reverse.put(object,this);
@@ -75,6 +74,16 @@ final class ExportTable<T> {
 
         void addRef() {
             referenceCount++;
+        }
+
+        /**
+         * Increase reference count so much to effectively prevent de-allocation.
+         * If the reference counting is correct, we just need to increment by one,
+         * but this makes it safer even in case of some reference counting errors
+         * (and we can still detect the problem by comparing the reference count with the magic value.
+         */
+        void pin() {
+            referenceCount += Integer.MAX_VALUE/2;
         }
 
         void release() {
@@ -155,8 +164,7 @@ final class ExportTable<T> {
         Entry e = reverse.get(t);
         if(e==null)
             e = new Entry(t);
-        else
-            e.addRef();
+        e.addRef();
 
         if(notifyListener) {
             ExportList l = lists.get();
@@ -164,6 +172,13 @@ final class ExportTable<T> {
         }
 
         return e.id;
+    }
+
+    /*package*/ synchronized void pin(T t) {
+        Entry e = reverse.get(t);
+        if(e==null)
+            e = new Entry(t);
+        e.pin();
     }
 
     public synchronized T get(int id) {
