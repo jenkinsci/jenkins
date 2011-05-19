@@ -44,7 +44,7 @@ THE SOFTWARE.
     <plugins>
       <plugin>
         <artifactId>maven-war-plugin</artifactId>
-        <version>2.1-beta-1</version>
+        <!-- version specified in grandparent pom -->
         <configuration>
           <filteringDeploymentDescriptors>true</filteringDeploymentDescriptors>
           <webResources>
@@ -68,6 +68,7 @@ THE SOFTWARE.
       </plugin>
       <plugin>
         <artifactId>maven-dependency-plugin</artifactId>
+        <!-- version specified in grandparent pom -->
         <executions>
           <execution>
             <phase>generate-resources</phase>
@@ -83,6 +84,7 @@ THE SOFTWARE.
       <plugin>
         <groupId>org.jvnet.maven-antrun-extended-plugin</groupId>
         <artifactId>maven-antrun-extended-plugin</artifactId>
+        <!-- version specified in grandparent pom -->
         <executions>
           <execution>
             <id>package</id>
@@ -135,6 +137,7 @@ THE SOFTWARE.
       <plugin><!-- generate licenses.xml -->
         <groupId>com.cloudbees</groupId>
         <artifactId>maven-license-plugin</artifactId>
+        <!-- version specified in grandparent pom -->
         <configuration>
           <generateLicenseXml>target/classes/META-INF/licenses.xml</generateLicenseXml>
           <inlineScript>
@@ -152,7 +155,7 @@ THE SOFTWARE.
         <!-- this is really just a patched version of maven-jetty-plugin to workaround issue #932 -->
         <groupId>org.jenkins-ci.tools</groupId>
         <artifactId>maven-jenkins-dev-plugin</artifactId>
-        <version>6.1.26-jenkins-1</version>
+        <!-- version specified in grandparent pom -->
         <configuration>
           <contextPath>${contextPath}</contextPath>
           <!--
@@ -316,7 +319,7 @@ THE SOFTWARE.
           <plugin>
             <groupId>org.jvnet.updatecenter2</groupId>
             <artifactId>maven-makepkgs-plugin</artifactId>
-            <version>0.3</version>
+            <!-- version specified in grandparent pom -->
             <executions>
               <execution>
                 <goals>
@@ -341,6 +344,7 @@ THE SOFTWARE.
           <plugin>
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-antrun-plugin</artifactId>
+            <!-- version specified in grandparent pom -->
             <executions>
               <!-- sign the war -->
               <execution>
