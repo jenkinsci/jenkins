@@ -478,7 +478,7 @@ public final class DependencyGraph implements Comparator<AbstractProject> {
     /**
      * Collect multiple dependencies between the same two projects.
      */
-    private static class DependencyGroup extends Dependency {
+    public static class DependencyGroup extends Dependency {
         private Set<Dependency> group = new LinkedHashSet<Dependency>();
 
         DependencyGroup(Dependency first) {
@@ -486,10 +486,14 @@ public final class DependencyGraph implements Comparator<AbstractProject> {
             group.add(first);
         }
 
-        void add(Dependency next) {
+        private void add(Dependency next) {
             group.add(next);
         }
 
+        public Set<Dependency> getGroup() {
+            return group;
+        }
+        
         @Override
         public boolean shouldTriggerBuild(AbstractBuild build, TaskListener listener,
                                           List<Action> actions) {
