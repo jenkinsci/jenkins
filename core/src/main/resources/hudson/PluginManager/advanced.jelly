@@ -48,7 +48,7 @@ THE SOFTWARE.
               <f:textbox name="proxy.userName" value="${app.proxy.userName}" />
             </f:entry>
             <f:entry title="${%Password}">
-              <f:password name="proxy.password" value="${app.proxy.password}" />
+              <f:password name="proxy.password" value="${app.proxy.encryptedPassword}" />
             </f:entry>
             <f:block>
               <f:submit value="${%Submit}" />
