@@ -250,6 +250,11 @@ THE SOFTWARE.
           <artifactId>maven-antrun-plugin</artifactId>
           <version>1.6</version>
         </plugin>
+        <plugin>
+          <groupId>org.jenkins-ci.tools</groupId>
+          <artifactId>maven-hpi-plugin</artifactId>
+          <version>1.69</version>
+        </plugin>
       </plugins>
     </pluginManagement>
     
