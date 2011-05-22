@@ -66,6 +66,9 @@ Upcoming changes</a>
   <li class=bug>
     Allow building multiple downstream dependencies on a single job via DependencyGraph and BuildTrigger.
     (<a href="http://issues.jenkins-ci.org/browse/JENKINS-8985">issue 8985</a>)
+  <li class=bug>
+    Catch FileNotFoundException in Maven builds if Mojos are executed from a classes directory.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-5044">issue 5044</a>)
   <li class=rfe>
     Set NODE_NAME for master node to "master"
     (<a href="http://issues.jenkins-ci.org/browse/JENKINS-9671">issue 9671</a>)
