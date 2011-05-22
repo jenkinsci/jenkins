@@ -218,7 +218,7 @@ THE SOFTWARE.
         <plugin>
           <groupId>org.codehaus.mojo</groupId>
           <artifactId>cobertura-maven-plugin</artifactId>
-          <version>2.4-apb-SNAPSHOT</version>
+          <version>2.5</version>
         </plugin>
         <plugin>
           <groupId>org.codehaus.mojo</groupId>
