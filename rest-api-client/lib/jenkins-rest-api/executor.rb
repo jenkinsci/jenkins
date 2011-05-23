@@ -5,7 +5,8 @@ module JenkinsRestAPI
     def execute!(args, options)
       configure(options)
       if args[0]
-        send(options[:action], args[0])
+        result = send(options[:action], args[0]).to_s
+        puts result if !result.nil? && !result.empty?
       else
         send(options[:action])
       end
@@ -23,33 +24,27 @@ module JenkinsRestAPI
     end
 
     def status(job)
-      response = RestClient.get "#{@job_url}/#{job}"
-      puts response.to_s
+      RestClient.get "#{@job_url}/#{job}"
     end
 
     def delete(job)
-      response = RestClient.delete "#{@job_url}/#{job}"
-      puts response.to_s
+      RestClient.delete "#{@job_url}/#{job}"
     end
 
     def disable(job)
-      response = RestClient.post "#{@job_url}/#{job}/disable", :accept => 'text/plain'
-      puts response.to_s
+      RestClient.post "#{@job_url}/#{job}/disable", :accept => 'text/plain'
     end
 
     def enable(job)
-      response = RestClient.post "#{@job_url}/#{job}/enable", :accept => 'text/plain'
-      puts response.to_s
+      RestClient.post "#{@job_url}/#{job}/enable", :accept => 'text/plain'
     end
 
     def build(job)
-      response = RestClient.post "#{@job_url}/#{job}/builds/kickoff", :accept => 'text/plain'
-      puts response.to_s
+      RestClient.post "#{@job_url}/#{job}/builds/kickoff", :accept => 'text/plain'
     end
 
     def list 
-      response = RestClient.get @job_url
-      puts response.to_s
+      RestClient.get @job_url
     end
   end
 
@@ -61,28 +56,23 @@ module JenkinsRestAPI
     end
 
     def status(build_number)
-      response = RestClient.get "#{@build_url}/#{build_number}"
-      puts response.to_s
+      RestClient.get "#{@build_url}/#{build_number}"
     end
 
     def retain(build_number)
-      response = RestClient.post "#{@build_url}/#{build_number}/retain", :accept => 'text/plain'
-      puts response.to_s
+      RestClient.post "#{@build_url}/#{build_number}/retain", :accept => 'text/plain'
     end
 
     def delete(build_number)
-      response = RestClient.delete "#{@build_url}/#{build_number}"
-      puts response.to_s
+      RestClient.delete "#{@build_url}/#{build_number}"
     end
 
     def logfile(build_number)
-      response = RestClient.get "#{@build_url}/#{build_number}/logfile"
-      puts response.to_s
+      RestClient.get "#{@build_url}/#{build_number}/logfile"
     end
 
     def list
-      response = RestClient.get @build_url
-      puts response.to_s
+      RestClient.get @build_url
     end
   end
 end
