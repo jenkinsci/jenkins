@@ -250,7 +250,7 @@ public abstract class ParameterValue implements Serializable {
      * provided by this object should be masked in output.
      *
      * <p>
-     * Subclasses can override this to control the returne value.
+     * Subclasses can override this to control the return value.
      *
      * @since 1.378
      */
