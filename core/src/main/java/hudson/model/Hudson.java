@@ -40,6 +40,7 @@ import hudson.Launcher;
 import hudson.Launcher.LocalLauncher;
 import hudson.LocalPluginManager;
 import hudson.Lookup;
+import hudson.Platform;
 import hudson.markup.MarkupFormatter;
 import hudson.Plugin;
 import hudson.PluginManager;
@@ -239,7 +240,7 @@ import java.util.regex.Pattern;
  * @author Kohsuke Kawaguchi
  */
 @ExportedBean
-public final class Hudson extends Node implements ItemGroup<TopLevelItem>, StaplerProxy, StaplerFallback, ViewGroup, AccessControlled, DescriptorByNameOwner {
+public class Hudson extends Node implements ItemGroup<TopLevelItem>, StaplerProxy, StaplerFallback, ViewGroup, AccessControlled, DescriptorByNameOwner {
     private transient final Queue queue;
 
     /**
@@ -3045,7 +3046,7 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
      * Binds /userContent/... to $JENKINS_HOME/userContent.
      */
     public DirectoryBrowserSupport doUserContent() {
-        return new DirectoryBrowserSupport(this,getRootPath().child("userContent"),"User content","folder.gif",true);
+        return new DirectoryBrowserSupport(this,getRootPath().child("userContent"),"User content","folder.png",true);
     }
 
     /**
@@ -3487,9 +3488,12 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
         return File.pathSeparatorChar==';';
     }
 
+    /**
+     * @deprecated
+     *      Use {@link Platform#isDarwin()}
+     */
     public static boolean isDarwin() {
-        // according to http://developer.apple.com/technotes/tn2002/tn2110.html
-        return System.getProperty("os.name").toLowerCase(Locale.ENGLISH).startsWith("mac");
+        return Platform.isDarwin();
     }
 
     /**

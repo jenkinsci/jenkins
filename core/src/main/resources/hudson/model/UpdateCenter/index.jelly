@@ -26,17 +26,18 @@ THE SOFTWARE.
 <!--
   This page shows the status of the plugin installation
 -->
+<?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
 <l:layout title="${%Update Center}" permission="${app.ADMINISTER}">
   <st:include page="sidepanel.jelly" />
   <l:main-panel>
     <h1>${%Installing Plugins/Upgrades}</h1>
 
-    <form method="post" action="${rootURL}/safeRestart">
+    <form method="post" action="safeRestart">
       <p class="warning">
         ${%warning}
         <j:if test="${app.lifecycle.canRestart()}">
-          <f:submit value="${%Restart When No Jobs Are Running}" />
+          <f:submit value="${%Schedule Restart}" />
         </j:if>
       </p>
     </form>
@@ -58,11 +59,13 @@ THE SOFTWARE.
                         if(target==null) {
                           document.getElementById("log").appendChild(row);
                         } else {
-                          var tcell = target.cells[1];
-                          var scell = row.cells[1];
-                          if(scell.id!=tcell.id) {
-                            tcell.innerHTML = scell.innerHTML;
-                            tcell.id = scell.id;
+                          if (row.id != 'restart') {
+                            var tcell = target.cells[1];
+                            var scell = row.cells[1];
+                            if(scell.id!=tcell.id) {
+                              tcell.innerHTML = scell.innerHTML;
+                              tcell.id = scell.id;
+                            }
                           }
                         }
                       }

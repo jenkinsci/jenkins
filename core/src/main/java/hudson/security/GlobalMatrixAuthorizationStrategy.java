@@ -284,10 +284,10 @@ public class GlobalMatrixAuthorizationStrategy extends AuthorizationStrategy {
         }
 
         public FormValidation doCheckName(@QueryParameter String value ) throws IOException, ServletException {
-            return doCheckName(value, Hudson.getInstance(), Hudson.ADMINISTER);
+            return doCheckName_(value, Hudson.getInstance(), Hudson.ADMINISTER);
         }
 
-        public FormValidation doCheckName(String value, AccessControlled subject, Permission permission) throws IOException, ServletException {
+        public FormValidation doCheckName_(String value, AccessControlled subject, Permission permission) throws IOException, ServletException {
             if(!subject.hasPermission(permission))  return FormValidation.ok(); // can't check
 
             final String v = value.substring(1,value.length()-1);
@@ -296,11 +296,11 @@ public class GlobalMatrixAuthorizationStrategy extends AuthorizationStrategy {
 
             if(v.equals("authenticated"))
                 // system reserved group
-                return FormValidation.respond(Kind.OK, makeImg("user.gif") +ev);
+                return FormValidation.respond(Kind.OK, makeImg("user.png") +ev);
 
             try {
                 sr.loadUserByUsername(v);
-                return FormValidation.respond(Kind.OK, makeImg("person.gif")+ev);
+                return FormValidation.respond(Kind.OK, makeImg("person.png")+ev);
             } catch (UserMayOrMayNotExistException e) {
                 // undecidable, meaning the user may exist
                 return FormValidation.respond(Kind.OK, ev);
@@ -312,7 +312,7 @@ public class GlobalMatrixAuthorizationStrategy extends AuthorizationStrategy {
 
             try {
                 sr.loadGroupByGroupname(v);
-                return FormValidation.respond(Kind.OK, makeImg("user.gif") +ev);
+                return FormValidation.respond(Kind.OK, makeImg("user.png") +ev);
             } catch (UserMayOrMayNotExistException e) {
                 // undecidable, meaning the group may exist
                 return FormValidation.respond(Kind.OK, ev);
@@ -323,7 +323,7 @@ public class GlobalMatrixAuthorizationStrategy extends AuthorizationStrategy {
             }
 
             // couldn't find it. it doesn't exist
-            return FormValidation.respond(Kind.ERROR, makeImg("error.gif") +ev);
+            return FormValidation.respond(Kind.ERROR, makeImg("error.png") +ev);
         }
 
         private String makeImg(String gif) {

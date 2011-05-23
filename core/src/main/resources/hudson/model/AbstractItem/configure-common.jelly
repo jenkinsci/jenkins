@@ -26,6 +26,7 @@ THE SOFTWARE.
 <!--
   Parts of the configuration that applies to Project and MavenModuleSet.
 -->
+<?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:p="/lib/hudson/project" xmlns:this="this">
   <p:config-disableBuild/>
   <j:if test="${app.CONCURRENT_BUILD}">

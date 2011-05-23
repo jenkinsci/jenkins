@@ -30,6 +30,7 @@ import hudson.remoting.Which;
 import hudson.util.ReflectionUtils;
 
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.Serializable;
 import java.lang.reflect.Method;
@@ -94,12 +95,15 @@ public final class ExecutedMojo implements Serializable {
         MojoDescriptor md = mojo.mojoExecution.getMojoDescriptor();
         PluginDescriptor pd = md.getPluginDescriptor();
         try {
-            Class clazz = getMojoClass( md, pd );// pd.getClassRealm().loadClass(md.getImplementation());
+            Class<?> clazz = getMojoClass( md, pd );
             digest = Util.getDigestOf(new FileInputStream(Which.jarFile(clazz)));
         } catch (IllegalArgumentException e) {
             LOGGER.log(Level.WARNING, "Failed to locate jar for "+md.getImplementation(),e);
         } catch (ClassNotFoundException e) {
             // perhaps the plugin has failed to load.
+        } catch (FileNotFoundException e) {
+            // Maybe mojo was loaded from a classes dir instead of from a jar (JENKINS-5044)
+            LOGGER.log(Level.WARNING, "Failed to caculate digest for "+md.getImplementation(),e);
         }
         this.digest = digest;
     }

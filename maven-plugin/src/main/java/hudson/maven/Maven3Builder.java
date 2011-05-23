@@ -32,6 +32,7 @@ import hudson.model.Result;
 import hudson.remoting.Channel;
 import hudson.remoting.DelegatingCallable;
 import hudson.remoting.Future;
+import hudson.util.CopyOnWriteList;
 import hudson.util.IOException2;
 
 import java.io.IOException;
@@ -60,6 +61,7 @@ import org.apache.maven.plugin.Mojo;
 import org.apache.maven.plugin.MojoExecution;
 import org.apache.maven.plugin.PluginParameterExpressionEvaluator;
 import org.apache.maven.project.MavenProject;
+import org.codehaus.groovy.runtime.StackTraceUtils;
 import org.codehaus.plexus.component.configurator.expression.ExpressionEvaluator;
 import org.codehaus.plexus.configuration.xml.XmlPlexusConfiguration;
 import org.jvnet.hudson.maven3.agent.Maven3Main;
@@ -98,7 +100,7 @@ public class Maven3Builder extends AbstractMavenBuilder implements DelegatingCal
         sourceProxies = new HashMap<ModuleName, ProxyImpl2>(proxies);
         this.proxies = new HashMap<ModuleName, MavenBuildProxy2>(proxies);
         for (Entry<ModuleName,MavenBuildProxy2> e : this.proxies.entrySet())
-            e.setValue(new FilterImpl(e.getValue(), this.mavenBuildInformation));
+            e.setValue(new FilterImpl(e.getValue(), this.mavenBuildInformation,Channel.current()));
 
         this.reporters.putAll( reporters );
     }    
@@ -107,7 +109,7 @@ public class Maven3Builder extends AbstractMavenBuilder implements DelegatingCal
 
         MavenExecutionListener mavenExecutionListener = new MavenExecutionListener( this );
         try {
-            futures = new ArrayList<Future<?>>();
+            futures = new CopyOnWriteArrayList<Future<?>>(  );
             
             Maven3Launcher.setMavenExecutionListener( mavenExecutionListener );
             
@@ -169,6 +171,11 @@ public class Maven3Builder extends AbstractMavenBuilder implements DelegatingCal
             if (!mavenExecutionResult.getThrowables().isEmpty()) {
                 logger.println( "mavenExecutionResult exceptions not empty");
                 for(Throwable throwable : mavenExecutionResult.getThrowables()) {
+                    logger.println("message : " + throwable.getMessage());
+                    if (throwable.getCause()!=null) {
+                        logger.println("cause : " + throwable.getCause().getMessage());
+                    }
+                    logger.println("Stack trace : ");
                     throwable.printStackTrace( logger );
                 }
                 
@@ -217,15 +224,18 @@ public class Maven3Builder extends AbstractMavenBuilder implements DelegatingCal
     private class FilterImpl extends MavenBuildProxy2.Filter<MavenBuildProxy2> implements Serializable {
         
         private MavenBuildInformation mavenBuildInformation;
+
+        private Channel channel;
         
-        public FilterImpl(MavenBuildProxy2 core, MavenBuildInformation mavenBuildInformation) {
+        public FilterImpl(MavenBuildProxy2 core, MavenBuildInformation mavenBuildInformation, Channel channel) {
             super(core);
             this.mavenBuildInformation = mavenBuildInformation;
+            this.channel = channel;
         }
 
         @Override
         public void executeAsync(final BuildCallable<?,?> program) throws IOException {
-            futures.add(Channel.current().callAsync(new AsyncInvoker(core,program)));
+            futures.add(channel.callAsync(new AsyncInvoker(core,program)));
         }
 
         private static final long serialVersionUID = 1L;
@@ -251,7 +261,7 @@ public class Maven3Builder extends AbstractMavenBuilder implements DelegatingCal
         
         private final Map<ModuleName,List<ExecutedMojo>> executedMojosPerModule = new ConcurrentHashMap<ModuleName, List<ExecutedMojo>>();
         
-        private final Map<ModuleName,List<MavenReporter>> reporters = new HashMap<ModuleName,List<MavenReporter>>();
+        private final Map<ModuleName,List<MavenReporter>> reporters = new ConcurrentHashMap<ModuleName,List<MavenReporter>>();
         
         private final Map<ModuleName, Long> currentMojoStartPerModuleName = new ConcurrentHashMap<ModuleName, Long>();
         
@@ -259,13 +269,13 @@ public class Maven3Builder extends AbstractMavenBuilder implements DelegatingCal
 
         public MavenExecutionListener(Maven3Builder maven3Builder) {
             this.maven3Builder = maven3Builder;
-            this.proxies = new HashMap<ModuleName, MavenBuildProxy2>(maven3Builder.proxies);
+            this.proxies = new ConcurrentHashMap<ModuleName, MavenBuildProxy2>(maven3Builder.proxies);
             for (Entry<ModuleName,MavenBuildProxy2> e : this.proxies.entrySet())
             {
-                e.setValue(maven3Builder.new FilterImpl(e.getValue(), maven3Builder.mavenBuildInformation));
+                e.setValue(maven3Builder.new FilterImpl(e.getValue(), maven3Builder.mavenBuildInformation, Channel.current()));
                 executedMojosPerModule.put( e.getKey(), new CopyOnWriteArrayList<ExecutedMojo>() );
             }
-            this.reporters.putAll( new HashMap<ModuleName, List<MavenReporter>>(maven3Builder.reporters) );
+            this.reporters.putAll( new ConcurrentHashMap<ModuleName, List<MavenReporter>>(maven3Builder.reporters) );
             this.eventLogger = new ExecutionEventLogger( new PrintStreamLogger( maven3Builder.listener.getLogger() ) );
         }
         

@@ -39,6 +39,12 @@ final class ImportedClassLoaderTable {
         this.channel = channel;
     }
 
+    /**
+     * Maps the exported object ID to the classloader.
+     *
+     * <p>
+     * This method "consumes" the given oid for the purpose of reference counting.
+     */
     public synchronized ClassLoader get(int oid) {
         return get(RemoteInvocationHandler.wrap(channel,oid,IClassLoader.class,false,false));
     }

@@ -22,6 +22,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 -->
 
+<?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
   <st:documentation> <![CDATA[]
     Data-bound only version of <f:repeatable> that assumes the type pointed by the property is data-bound as well.
@@ -29,6 +30,9 @@ THE SOFTWARE.
 
     <st:attribute name="field">
       Used for the data binding.
+    </st:attribute>
+    <st:attribute name="default">
+      The default value to use for this collection when 'instance[field]' is null.
     </st:attribute>
     <st:attribute name="noAddButton">
       true if the default 'add' button (that adds a new copy) shouldn't be displayed.
@@ -48,7 +52,7 @@ THE SOFTWARE.
   </st:documentation>
 
 
-  <f:repeatable field="${attrs.field}" noAddButton="${attrs.noAddButton}" header="${attrs.header}">
+  <f:repeatable field="${attrs.field}" default="${attrs.default}" noAddButton="${attrs.noAddButton}" header="${attrs.header}">
     <table style="width:100%">
       <st:include page="config.jelly" class="${descriptor.clazz}" />
     </table>

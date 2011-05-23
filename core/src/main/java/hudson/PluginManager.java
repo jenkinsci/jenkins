@@ -43,6 +43,7 @@ import org.apache.commons.fileupload.FileItem;
 import org.apache.commons.fileupload.disk.DiskFileItemFactory;
 import org.apache.commons.fileupload.servlet.ServletFileUpload;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.logging.LogFactory;
 import org.jvnet.hudson.reactor.Executable;
 import org.jvnet.hudson.reactor.Reactor;
@@ -73,6 +74,7 @@ import java.util.Map;
 import java.util.HashMap;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -90,7 +92,7 @@ public abstract class PluginManager extends AbstractModelObject {
     /**
      * All active plugins.
      */
-    protected final List<PluginWrapper> activePlugins = new ArrayList<PluginWrapper>();
+    protected final List<PluginWrapper> activePlugins = new CopyOnWriteArrayList<PluginWrapper>();
 
     protected final List<FailedPlugin> failedPlugins = new ArrayList<FailedPlugin>();
 
@@ -583,6 +585,10 @@ public abstract class PluginManager extends AbstractModelObject {
                 throw new Failure(hudson.model.Messages.Hudson_NotAPlugin(fileName));
             fileItem.write(new File(rootDir, fileName));
             fileItem.delete();
+
+            PluginWrapper existing = getPlugin(FilenameUtils.getBaseName(fileName));
+            if (existing!=null && existing.isBundled)
+                existing.doPin();
 
             pluginUploaded = true;
 

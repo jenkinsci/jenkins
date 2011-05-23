@@ -24,15 +24,16 @@
 package hudson.slaves;
 
 import hudson.ExtensionPoint;
+import hudson.FilePath;
 import hudson.Launcher;
 import hudson.DescriptorExtensionList;
 import hudson.model.Descriptor.FormException;
+import hudson.model.Queue.BuildableItem;
 import hudson.model.ReconfigurableDescribable;
 import hudson.model.queue.CauseOfBlockage;
 import hudson.scm.SCM;
 import hudson.model.AbstractBuild;
 import hudson.model.BuildListener;
-import hudson.model.Describable;
 import hudson.model.Environment;
 import hudson.model.Hudson;
 import hudson.model.Node;
@@ -40,6 +41,7 @@ import hudson.model.Queue.Task;
 import net.sf.json.JSONObject;
 import org.kohsuke.stapler.StaplerRequest;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.List;
 
@@ -84,9 +86,23 @@ public abstract class NodeProperty<N extends Node> implements ReconfigurableDesc
      * associated node. By default, this method returns <code>null</code>.
      *
      * @since 1.360
+     * @deprecated as of 1.413
+     *      Use {@link #canTake(BuildableItem)}
      */
     public CauseOfBlockage canTake(Task task) {
         return null;
+    }
+
+    /**
+     * Called by the {@link Node} to help determine whether or not it should
+     * take the given task. Individual properties can return a non-null value
+     * here if there is some reason the given task should not be run on its
+     * associated node. By default, this method returns <code>null</code>.
+     *
+     * @since 1.413
+     */
+    public CauseOfBlockage canTake(BuildableItem item) {
+        return canTake(item.task);  // backward compatible behaviour
     }
 
     /**

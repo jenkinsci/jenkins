@@ -105,7 +105,7 @@ public class LabelAtom extends Label implements Saveable {
             ta.add(new Action() {
                 public String getIconFileName() {
                     if (Hudson.getInstance().hasPermission(Hudson.ADMINISTER))
-                        return "setting.gif";
+                        return "setting.png";
                     else
                         return null;
                 }

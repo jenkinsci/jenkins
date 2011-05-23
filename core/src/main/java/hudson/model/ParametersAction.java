@@ -124,7 +124,7 @@ public class ParametersAction implements Action, Iterable<ParameterValue>, Queue
     }
 
     public String getIconFileName() {
-        return "document-properties.gif";
+        return "document-properties.png";
     }
 
     public String getUrlName() {

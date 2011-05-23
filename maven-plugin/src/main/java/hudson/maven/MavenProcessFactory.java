@@ -25,14 +25,9 @@ package hudson.maven;
 
 import hudson.FilePath;
 import hudson.Launcher;
-import hudson.Proc;
-import hudson.AbortException;
 import hudson.EnvVars;
-import hudson.slaves.Channels;
-import static hudson.Util.fixNull;
 import hudson.maven.agent.Main;
 import hudson.maven.agent.Maven21Interceptor;
-import hudson.maven.ProcessCache.NewProcess;
 import hudson.model.BuildListener;
 import hudson.model.Computer;
 import hudson.model.Executor;
@@ -42,31 +37,13 @@ import hudson.model.Node;
 import hudson.model.Run.RunnerAbortedException;
 import hudson.model.TaskListener;
 import hudson.remoting.Callable;
-import hudson.remoting.Channel;
-import hudson.remoting.RemoteInputStream;
-import hudson.remoting.RemoteOutputStream;
-import hudson.remoting.SocketInputStream;
-import hudson.remoting.SocketOutputStream;
 import hudson.remoting.Which;
 import hudson.tasks.Maven.MavenInstallation;
-import hudson.tasks._maven.MavenConsoleAnnotator;
 import hudson.util.ArgumentListBuilder;
-import hudson.util.IOException2;
 
-import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FilenameFilter;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.io.Serializable;
-import java.net.ServerSocket;
-import java.net.Socket;
-import java.net.SocketTimeoutException;
-import java.nio.charset.Charset;
-import java.nio.charset.UnsupportedCharsetException;
-import java.util.Arrays;
 import java.util.logging.Logger;
 
 
@@ -239,7 +216,6 @@ final class MavenProcessFactory extends AbstractMavenProcessFactory implements P
     }
     
     public static int socketTimeOut = Integer.parseInt( System.getProperty( "hudson.maven.socketTimeOut", Integer.toString( 30*1000 ) ) );
-       
 
     private static final Logger LOGGER = Logger.getLogger(MavenProcessFactory.class.getName());
 }

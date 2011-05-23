@@ -25,6 +25,7 @@ THE SOFTWARE.
 <!--
   Config page
 -->
+<?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:s="/lib/form">
   <l:layout title="${%Update Center}" permission="${app.ADMINISTER}" norefresh="true">
     <st:include page="sidepanel.jelly"/>
@@ -67,7 +68,9 @@ THE SOFTWARE.
                   </div>
                 </td>
                 <td class="center pane" style="white-space:nowrap">
-                  ${p.version}
+                  <a href="plugin/${p.shortName}/thirdPartyLicenses">
+                    ${p.version}
+                  </a>
                 </td>
                 <td>
                   <j:if test="${p.downgradable}">
@@ -79,7 +82,7 @@ THE SOFTWARE.
                 <td class="center pane" id='unpin-${p.shortName}'>
                   <j:if test="${p.isPinned()}">
                     <input type="button" onclick="unpin(this,'${p.shortName}')" value="${%Unpin}" class="yui-button" />
-                    <a href="${%wiki.url}"><img style="vertical-align:top" src="${imagesURL}/16x16/help.gif"/></a>
+                    <a href="${%wiki.url}"><img style="vertical-align:top" src="${imagesURL}/16x16/help.png"/></a>
                   </j:if>
                 </td>
               </tr>

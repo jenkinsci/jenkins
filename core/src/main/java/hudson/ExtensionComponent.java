@@ -24,6 +24,8 @@
 
 package hudson;
 
+import hudson.model.Descriptor;
+
 /**
  * Discovered {@link Extension} object with a bit of metadata for Hudson.
  * This is a plain value object.
@@ -72,6 +74,12 @@ public class ExtensionComponent<T> implements Comparable<ExtensionComponent<T>> 
         double b = that.ordinal();
         if (a>b)    return -1;
         if (a<b)    return 1;
-        return 0;
+
+        // make the order bit more deterministic among extensions of the same ordinal
+        if (this.instance instanceof Descriptor) {
+            return Util.fixNull(((Descriptor)this.instance).getDisplayName()).compareTo(Util.fixNull((((Descriptor)that.instance).getDisplayName())));
+        } else {
+            return this.instance.getClass().getName().compareTo(that.instance.getClass().getName());
+        }
     }
 }

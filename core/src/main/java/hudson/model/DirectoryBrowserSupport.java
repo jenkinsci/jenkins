@@ -376,9 +376,9 @@ public final class DirectoryBrowserSupport implements HttpResponse {
 
         public String getIconName() {
             if (isReadable)
-                return isFolder?"folder.gif":"text.gif";
+                return isFolder?"folder.png":"text.png";
             else
-                return isFolder?"folder-error.gif":"text-error.gif";
+                return isFolder?"folder-error.png":"text-error.png";
         }
 
         public long getSize() {

@@ -48,6 +48,7 @@ import hudson.maven.MavenEmbedder;
 import hudson.maven.MavenModule;
 import hudson.maven.MavenModuleSet;
 import hudson.maven.MavenModuleSetBuild;
+import hudson.maven.MavenUtil;
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
 import hudson.model.BuildListener;
@@ -110,7 +111,6 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.lang.annotation.Annotation;
 import java.lang.management.ThreadInfo;
-import java.lang.ref.WeakReference;
 import java.lang.reflect.Array;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
@@ -119,25 +119,16 @@ import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLClassLoader;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.Enumeration;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
-import java.util.Set;
 import java.util.UUID;
-import java.util.concurrent.Callable;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
-import java.util.concurrent.SynchronousQueue;
-import java.util.concurrent.ThreadFactory;
-import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 import java.util.jar.Manifest;
 import java.util.logging.Filter;
 import java.util.logging.Level;
@@ -444,14 +435,14 @@ public abstract class HudsonTestCase extends TestCase implements RootAction {
 
         WebAppContext context = new WebAppContext(WarExploder.getExplodedDir().getPath(), contextPath);
         context.setClassLoader(getClass().getClassLoader());
-        context.setConfigurations(new Configuration[]{new WebXmlConfiguration(),new NoListenerConfiguration()});
+        context.setConfigurations(new Configuration[]{new WebXmlConfiguration(), new NoListenerConfiguration()});
         server.setHandler(context);
         context.setMimeTypes(MIME_TYPES);
 
         SocketConnector connector = new SocketConnector();
         connector.setHeaderBufferSize(12*1024); // use a bigger buffer as Stapler traces can get pretty large on deeply nested URL
 
-        server.setThreadPool(new ThreadPoolImpl(new ThreadPoolExecutor(1, 10, 10L, TimeUnit.SECONDS, new SynchronousQueue<Runnable>(),new ThreadFactory() {
+        server.setThreadPool(new ThreadPoolImpl(new ThreadPoolExecutor(10, 10, 10L, TimeUnit.SECONDS, new LinkedBlockingQueue<Runnable>(),new ThreadFactory() {
             public Thread newThread(Runnable r) {
                 Thread t = new Thread(r);
                 t.setName("Jetty Thread Pool");
@@ -592,7 +583,7 @@ public abstract class HudsonTestCase extends TestCase implements RootAction {
     }
 
     protected FreeStyleProject createFreeStyleProject(String name) throws IOException {
-        return hudson.createProject(FreeStyleProject.class,name);
+        return hudson.createProject(FreeStyleProject.class, name);
     }
 
     protected MatrixProject createMatrixProject() throws IOException {
@@ -600,7 +591,7 @@ public abstract class HudsonTestCase extends TestCase implements RootAction {
     }
 
     protected MatrixProject createMatrixProject(String name) throws IOException {
-        return hudson.createProject(MatrixProject.class,name);
+        return hudson.createProject(MatrixProject.class, name);
     }
 
     /**
@@ -695,11 +686,14 @@ public abstract class HudsonTestCase extends TestCase implements RootAction {
      */
     public DumbSlave createSlave(String labels, EnvVars env) throws Exception {
         synchronized (hudson) {
-            // this synchronization block is so that we don't end up adding the same slave name more than once.
-
             int sz = hudson.getNodes().size();
+            return createSlave("slave" + sz,labels,env);
+    	}
+    }
 
-            DumbSlave slave = new DumbSlave("slave" + sz, "dummy",
+    public DumbSlave createSlave(String nodeName, String labels, EnvVars env) throws Exception {
+        synchronized (hudson) {
+            DumbSlave slave = new DumbSlave(nodeName, "dummy",
     				createTmpDir().getPath(), "1", Mode.NORMAL, labels==null?"":labels, createComputerLauncher(env), RetentionStrategy.NOOP, Collections.EMPTY_LIST);
     		hudson.addNode(slave);
     		return slave;
@@ -820,7 +814,7 @@ public abstract class HudsonTestCase extends TestCase implements RootAction {
     }
 
     protected <P extends Item> P configRoundtrip(P job) throws Exception {
-        submit(createWebClient().getPage(job,"configure").getFormByName("config"));
+        submit(createWebClient().getPage(job, "configure").getFormByName("config"));
         return job;
     }
 
@@ -840,7 +834,7 @@ public abstract class HudsonTestCase extends TestCase implements RootAction {
     protected <P extends Publisher> P configRoundtrip(P before) throws Exception {
         FreeStyleProject p = createFreeStyleProject();
         p.getPublishersList().add(before);
-        configRoundtrip((Item)p);
+        configRoundtrip((Item) p);
         return (P)p.getPublishersList().get(before.getClass());
     }
 
@@ -856,7 +850,7 @@ public abstract class HudsonTestCase extends TestCase implements RootAction {
     }
         
     protected <N extends Node> N configRoundtrip(N node) throws Exception {
-        submit(createWebClient().goTo("/computer/"+node.getNodeName()+"/configure").getFormByName("config"));
+        submit(createWebClient().goTo("/computer/" + node.getNodeName() + "/configure").getFormByName("config"));
         return (N)hudson.getNode(node.getNodeName());
     }
 
@@ -906,7 +900,7 @@ public abstract class HudsonTestCase extends TestCase implements RootAction {
 
 
     public <R extends Run> R assertBuildStatusSuccess(R r) throws Exception {
-        assertBuildStatus(Result.SUCCESS,r);
+        assertBuildStatus(Result.SUCCESS, r);
         return r;
     }
 
@@ -956,7 +950,7 @@ public abstract class HudsonTestCase extends TestCase implements RootAction {
      * Asserts that the XPath matches.
      */
     public void assertXPath(HtmlPage page, String xpath) {
-        assertNotNull("There should be an object that matches XPath:"+xpath,
+        assertNotNull("There should be an object that matches XPath:" + xpath,
                 page.getDocumentElement().selectSingleNode(xpath));
     }
 
@@ -968,7 +962,7 @@ public abstract class HudsonTestCase extends TestCase implements RootAction {
      */
     public void assertXPath(DomNode page, String xpath) {
         List< ? extends Object> nodes = page.getByXPath(xpath);
-        assertFalse("There should be an object that matches XPath:"+xpath, nodes.isEmpty());
+        assertFalse("There should be an object that matches XPath:" + xpath, nodes.isEmpty());
     }
 
     public void assertXPathValue(DomNode page, String xpath, String expectedValue) {
@@ -1214,7 +1208,7 @@ public abstract class HudsonTestCase extends TestCase implements RootAction {
                 }
                 assertFalse("collection size mismatch between "+lhs+" and "+rhs, ltr.hasNext() ^ rtr.hasNext());
             } else
-            if (findDataBoundConstructor(types[i])!=null) {
+            if (findDataBoundConstructor(types[i])!=null || (lv!=null && findDataBoundConstructor(lv.getClass())!=null) || (rv!=null && findDataBoundConstructor(rv.getClass())!=null)) {
                 // recurse into nested databound objects
                 assertEqualDataBoundBeans(lv,rv);
             } else {
@@ -1342,8 +1336,8 @@ public abstract class HudsonTestCase extends TestCase implements RootAction {
     }
 
     /**
-     * If this test harness is launched for a Hudson plugin, locate the <tt>target/test-classes/the.hpl</tt>
-     * and add a recipe to install that to the new Hudson.
+     * If this test harness is launched for a Jenkins plugin, locate the <tt>target/test-classes/the.hpl</tt>
+     * and add a recipe to install that to the new Jenkins.
      *
      * <p>
      * This file is created by <tt>maven-hpi-plugin</tt> at the testCompile phase when the current
@@ -1378,7 +1372,7 @@ public abstract class HudsonTestCase extends TestCase implements RootAction {
 
                     String dependencies = m.getMainAttributes().getValue("Plugin-Dependencies");
                     if(dependencies!=null) {
-                        MavenEmbedder embedder = new MavenEmbedder(getClass().getClassLoader(), null);
+                        MavenEmbedder embedder = MavenUtil.createEmbedder(new StreamTaskListener(System.out,Charset.defaultCharset()),(File)null,null);
                         for( String dep : dependencies.split(",")) {
                             String[] tokens = dep.split(":");
                             String artifactId = tokens[0];
@@ -1408,8 +1402,11 @@ public abstract class HudsonTestCase extends TestCase implements RootAction {
                                     }
                                 }
                             }
-                            if(dependencyJar==null)
+                            if(dependencyJar==null) {
+                                if (dep.contains("resolution:=optional"))
+                                    continue;   // optional dependency
                                 throw new Exception("Failed to resolve plugin: "+dep,resolutionError);
+                            }
 
                             File dst = new File(home, "plugins/" + artifactId + ".hpi");
                             if(!dst.exists() || dst.lastModified()!=dependencyJar.lastModified()) {
@@ -1850,6 +1847,15 @@ public abstract class HudsonTestCase extends TestCase implements RootAction {
         // DNS multicast support takes up a lot of time during tests, so just disable it altogether
         // this also prevents tests from falsely advertising Hudson
         DNSMultiCast.disabled = true;
+
+        if (!Functions.isWindows()) {
+            try {
+                GNUCLibrary.LIBC.unsetenv("MAVEN_OPTS");
+                GNUCLibrary.LIBC.unsetenv("MAVEN_DEBUG_OPTS");
+            } catch (Exception e) {
+                LOGGER.log(Level.WARNING,"Failed to cancel out MAVEN_OPTS",e);
+            }
+        }
     }
 
     public static class TestBuildWrapper extends BuildWrapper {

@@ -143,7 +143,7 @@ public class JavadocArchiver extends Recorder {
         public String getIconFileName() {
             File dir = dir();
             if(dir != null && dir.exists())
-                return "help.gif";
+                return "help.png";
             else
                 // hide it since we don't have javadoc yet.
                 return null;
@@ -153,7 +153,7 @@ public class JavadocArchiver extends Recorder {
          * Serves javadoc.
          */
         public void doDynamic(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
-            new DirectoryBrowserSupport(this, new FilePath(dir()), getTitle(), "help.gif", false).generateResponse(req,rsp,this);
+            new DirectoryBrowserSupport(this, new FilePath(dir()), getTitle(), "help.png", false).generateResponse(req,rsp,this);
         }
 
         protected abstract String getTitle();

@@ -27,7 +27,7 @@ THE SOFTWARE.
   <parent>
     <groupId>org.jenkins-ci.main</groupId>
     <artifactId>pom</artifactId>
-    <version>1.408-SNAPSHOT</version>
+    <version>1.415-SNAPSHOT</version>
     <relativePath>../pom.xml</relativePath>
   </parent>
   
@@ -162,8 +162,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>commons-codec</groupId>
       <artifactId>commons-codec</artifactId>
-      <version>1.3</version>
-      <scope>test</scope>
+      <version>1.4</version>
     </dependency>
     <dependency>
       <groupId>commons-io</groupId>

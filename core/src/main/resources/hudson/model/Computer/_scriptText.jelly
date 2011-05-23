@@ -25,5 +25,6 @@ THE SOFTWARE.
 <!--
   Called from doScriptText() to display the execution result.
 -->
+<?jelly escape-by-default='false'?>
 <st:compress xmlns:j="jelly:core" xmlns:st="jelly:stapler">
 <st:contentType value="text/plain;charset=UTF-8" />${output}</st:compress>

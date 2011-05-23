@@ -22,25 +22,26 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 -->
 
+<?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
   <l:layout title="${it.name}">
     <l:header />
     <l:side-panel>
       <l:tasks>
-        <l:task icon="images/24x24/up.gif" href="../.." title="${%Back}" />
+        <l:task icon="images/24x24/up.png" href="../.." title="${%Back}" />
       </l:tasks>
     </l:side-panel>
     <l:main-panel>
       <j:choose>
         <j:when test="${it.alive}">
           <h1>
-            <img src="${imagesURL}/48x48/blue.gif" width="48" height="48" alt=""/>
+            <img src="${imagesURL}/48x48/blue.png" width="48" height="48" alt=""/>
             ${%Thread is still alive}
           </h1>
         </j:when>
         <j:otherwise>
           <h1>
-            <img src="${imagesURL}/48x48/red.gif" width="48" height="48" alt=""/>            
+            <img src="${imagesURL}/48x48/red.png" width="48" height="48" alt=""/>
             ${%Thread has died}
           </h1>
           <pre>${h.printThrowable(it.causeOfDeath)}</pre>

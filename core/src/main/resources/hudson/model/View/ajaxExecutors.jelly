@@ -25,6 +25,7 @@ THE SOFTWARE.
 <!--
   Used to asynchronously update executor queue
 -->
+<?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:s="/lib/form">
   <l:ajax>
     <t:executors computers="${it.computers}"/>

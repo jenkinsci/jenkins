@@ -22,6 +22,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 -->
 
+<?jelly escape-by-default='true'?>
+<?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
   <st:documentation>
     Generates a listing of the build artifacts.
@@ -40,7 +42,7 @@ THE SOFTWARE.
   <j:if test="${!h.isArtifactsPermissionEnabled() or h.isArtifactsPermissionEnabled() and h.hasPermission(it,attrs.permission)}">
     <j:set var="artifacts" value="${build.getArtifactsUpTo(build.TREE_CUTOFF+1)}" />
     <j:if test="${!build.building and !empty(artifacts)}">
-      <t:summary icon="package.gif">
+      <t:summary icon="package.png">
         <a href="${baseURL}artifact/">${caption}</a>
         <j:choose>
           <j:when test="${size(artifacts) le build.LIST_CUTOFF}">
@@ -48,9 +50,9 @@ THE SOFTWARE.
             <ul>
               <j:forEach var="f" items="${artifacts}">
                 <li>
-                  <a href="${baseURL}artifact/${f.href}">${h.xmlEscape(f.displayPath)}</a>
+                  <a href="${baseURL}artifact/${f.href}">${f.displayPath}</a>
                   <st:nbsp/>
-                  <a href="${baseURL}artifact/${f.href}/*fingerprint*/"><img src="${imagesURL}/16x16/fingerprint.gif" alt="[fingerprint]" height="16" width="16" /></a>
+                  <a href="${baseURL}artifact/${f.href}/*fingerprint*/"><img src="${imagesURL}/16x16/fingerprint.png" alt="[fingerprint]" height="16" width="16" /></a>
                 </li>
               </j:forEach>
             </ul>

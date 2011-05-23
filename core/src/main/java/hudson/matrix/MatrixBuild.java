@@ -24,6 +24,7 @@
 package hudson.matrix;
 
 import hudson.Util;
+import hudson.matrix.listeners.MatrixBuildListener;
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
 import hudson.model.BuildListener;
@@ -51,6 +52,7 @@ import java.util.List;
 
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
+import org.kohsuke.stapler.export.Exported;
 
 /**
  * Build of {@link MatrixProject}.
@@ -120,19 +122,55 @@ public class MatrixBuild extends AbstractBuild<MatrixProject,MatrixBuild> {
     public MatrixRun getRun(Combination c) {
         MatrixConfiguration config = getParent().getItem(c);
         if(config==null)    return null;
-        return config.getBuildByNumber(getNumber());
+        return config.getNearestOldBuild(getNumber());
     }
 
     /**
      * Returns all {@link MatrixRun}s for this {@link MatrixBuild}.
      */
+    @Exported
     public List<MatrixRun> getRuns() {
+        List<MatrixRun> r = new ArrayList<MatrixRun>();
+        for(MatrixConfiguration c : getParent().getItems()) {
+            MatrixRun b = c.getNearestOldBuild(getNumber());
+            if (b != null) r.add(b);
+        }
+        return r;
+    }
+
+    /**
+     * Returns all {@link MatrixRun}s for this {@link MatrixBuild}.
+     * <p>
+     * Unlike {@link #getExactRuns()}, this method excludes those runs
+     * that didn't run and got inherited.
+     */
+    public List<MatrixRun> getExactRuns() {
         List<MatrixRun> r = new ArrayList<MatrixRun>();
         for(MatrixConfiguration c : getParent().getItems()) {
             MatrixRun b = c.getBuildByNumber(getNumber());
             if (b != null) r.add(b);
         }
         return r;
+    }
+
+    @Override
+    public String getWhyKeepLog() {
+        MatrixBuild b = getNextBuild();
+        if (b!=null && b.isPartial())
+            return b.getDisplayName()+" depends on this";
+        return super.getWhyKeepLog();
+    }
+
+    /**
+     * True if this build didn't do a full build and it is depending on the result of the previous build.
+     */
+    public boolean isPartial() {
+        for(MatrixConfiguration c : getParent().getItems()) {
+            MatrixRun b = c.getNearestOldBuild(getNumber());
+            if (b != null && b.getNumber()!=getNumber())
+                return true;
+        }
+        return false;
     }
 
     @Override
@@ -195,6 +233,8 @@ public class MatrixBuild extends AbstractBuild<MatrixProject,MatrixBuild> {
             Collection<MatrixConfiguration> touchStoneConfigurations = new HashSet<MatrixConfiguration>();
             Collection<MatrixConfiguration> delayedConfigurations = new HashSet<MatrixConfiguration>();
             for (MatrixConfiguration c: activeConfigurations) {
+                if (!MatrixBuildListener.buildConfiguration(MatrixBuild.this, c))
+                    continue; // skip rebuild
                 if (touchStoneFilter != null && c.getCombination().evalGroovyExpression(p.getAxes(), p.getTouchStoneCombinationFilter())) {
                     touchStoneConfigurations.add(c);
                 } else {
@@ -323,17 +363,6 @@ public class MatrixBuild extends AbstractBuild<MatrixProject,MatrixBuild> {
             for (MatrixAggregator a : aggregators)
                 a.endBuild();
         }
-        
-        @Override
-        protected Lease decideWorkspace(Node n, WorkspaceList wsl) throws IOException, InterruptedException {
-            String customWorkspace = getProject().getCustomWorkspace();
-            if (customWorkspace != null) {
-                // we allow custom workspaces to be concurrently used between jobs.
-                return Lease.createDummyLease(n.getRootPath().child(getEnvironment(listener).expand(customWorkspace)));
-            }
-            return super.decideWorkspace(n,wsl);
-        }
-      
     }
 
     /**

@@ -172,6 +172,7 @@ public class Channel implements VirtualChannel, IChannel {
      */
     private final Vector<Listener> listeners = new Vector<Listener>();
     private int gcCounter;
+    private int commandsSent;
 
     /**
      * Total number of nanoseconds spent for remote class loading.
@@ -485,6 +486,7 @@ public class Channel implements VirtualChannel, IChannel {
             oos.flush();        // make sure the command reaches the other end.
         } finally {
             Channel.setCurrent(old);
+            commandsSent++;
         }
         // unless this is the last command, have OOS and remote OIS forget all the objects we sent
         // in this command. Otherwise it'll keep objects in memory unnecessarily.
@@ -526,9 +528,9 @@ public class Channel implements VirtualChannel, IChannel {
                 logger.log(Level.WARNING, "Unable to send GC command",e);
             }
 
-        // proxy will unexport this instance when it's GC-ed on the remote machine.
-        final int id = export(instance);
-        return RemoteInvocationHandler.wrap(null,id,type,userProxy,exportedObjects.isRecording());
+        // proxy will unexport this instance when it's GC-ed on the remote machine, so don't unexport on our side automatically at the end of a call.
+        final int id = export(instance,false);
+        return RemoteInvocationHandler.wrap(null, id, type, userProxy, exportedObjects.isRecording());
     }
 
     /*package*/ int export(Object instance) {
@@ -545,6 +547,22 @@ public class Channel implements VirtualChannel, IChannel {
 
     /*package*/ void unexport(int id) {
         exportedObjects.unexportByOid(id);
+    }
+
+    /**
+     * Increase reference count so much to effectively prevent de-allocation.
+     *
+     * @see ExportTable.Entry#pin()
+     */
+    public void pin(Object instance) {
+        exportedObjects.pin(instance);
+    }
+
+    /**
+     * {@linkplain #pin(Object) Pin down} the exported classloader.
+     */
+    public void pinClassLoader(ClassLoader cl) {
+        RemoteClassLoader.pin(cl,this);
     }
 
     /**
@@ -977,15 +995,18 @@ public class Channel implements VirtualChannel, IChannel {
     }
 
     private final class ReaderThread extends Thread {
+        private int commandsReceived = 0;
+        private int commandsExecuted = 0;
+
         public ReaderThread(String name) {
             super("Channel reader thread: "+name);
         }
 
         @Override
         public void run() {
-            Command cmd = null;
             try {
                 while(inClosed==null) {
+                    Command cmd = null;
                     try {
                         Channel old = Channel.setCurrent(Channel.this);
                         try {
@@ -1000,7 +1021,10 @@ public class Channel implements VirtualChannel, IChannel {
                         throw ioe;
                     } catch (ClassNotFoundException e) {
                         logger.log(Level.SEVERE, "Unable to read a command (channel " + name + ")",e);
+                    } finally {
+                        commandsReceived++;
                     }
+
                     if(logger.isLoggable(Level.FINE))
                         logger.fine("Received "+cmd);
                     try {
@@ -1008,6 +1032,8 @@ public class Channel implements VirtualChannel, IChannel {
                     } catch (Throwable t) {
                         logger.log(Level.SEVERE, "Failed to execute command "+cmd+ " (channel " + name + ")",t);
                         logger.log(Level.SEVERE, "This command is created here",cmd.createdAt);
+                    } finally {
+                        commandsExecuted++;
                     }
                 }
                 ois.close();

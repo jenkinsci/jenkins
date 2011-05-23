@@ -23,6 +23,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 -->
 
+<?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
   <l:layout title="${it.fullDisplayName}">
     <st:include page="sidepanel.jelly" />
@@ -60,7 +61,7 @@ THE SOFTWARE.
           permission="${it.ARTIFACTS}" />
 
         <j:set var="set" value="${it.changeSet}" />
-        <t:summary icon="notepad.gif">
+        <t:summary icon="notepad.png">
           <j:choose>
             <j:when test="${it.hasChangeSetComputed()}">
               <st:include it="${set}" page="digest.jelly" />

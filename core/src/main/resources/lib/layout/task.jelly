@@ -22,6 +22,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 -->
 
+<?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define">
   <st:documentation>
     This tag inside &lt;l:tasks> tag renders the left navigation bar of Hudson.
@@ -41,6 +42,9 @@ THE SOFTWARE.
     </st:attribute>
     <st:attribute name="title" use="required">
       Human readable text that follows the icon.
+    </st:attribute>
+    <st:attribute name="enabled">
+      If specified, then this controls whether the task is enabled or not.
     </st:attribute>
     <st:attribute name="permission">
       If specified, the link will be only displayed when the current user
@@ -68,6 +72,25 @@ THE SOFTWARE.
         <j:if test="${match}">
           <j:set target="${taskMatching.variables}" property="match" value="true"/>
         </j:if>
+      </j:when>
+      <j:when test="${enabled==false}">
+        <div class="task disabled">
+          <span>
+            <img width="24" height="24" style="margin: 2px;" alt="" src="${rootURL}${icon.startsWith('images/') ? h.resourcePath : ''}/${icon}"/>
+          </span>
+          <st:nbsp />
+
+          <span>
+            <j:choose>
+              <j:when test="${match}">
+                <b>${title}</b>
+              </j:when>
+              <j:otherwise>
+                ${title}
+              </j:otherwise>
+            </j:choose>
+          </span>
+        </div>
       </j:when>
       <j:otherwise>
         <div class="task">

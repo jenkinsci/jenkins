@@ -285,9 +285,25 @@ public abstract class Node extends AbstractModelObject implements Reconfigurable
      * task cannot be run.
      *
      * @since 1.360
+     * @deprecated as of 1.413
+     *      Use {@link #canTake(Queue.BuildableItem)}
      */
     public CauseOfBlockage canTake(Task task) {
-        Label l = task.getAssignedLabel();
+        return null;
+    }
+
+    /**
+     * Called by the {@link Queue} to determine whether or not this node can
+     * take the given task. The default checks include whether or not this node
+     * is part of the task's assigned label, whether this node is in
+     * {@link Mode#EXCLUSIVE} mode if it is not in the task's assigned label,
+     * and whether or not any of this node's {@link NodeProperty}s say that the
+     * task cannot be run.
+     *
+     * @since 1.413
+     */
+    public CauseOfBlockage canTake(Queue.BuildableItem item) {
+        Label l = item.task.getAssignedLabel();
         if(l!=null && !l.contains(this))
             return CauseOfBlockage.fromMessage(Messages._Node_LabelMissing(getNodeName(),l));   // the task needs to be executed on label that this node doesn't have.
 
@@ -297,7 +313,7 @@ public abstract class Node extends AbstractModelObject implements Reconfigurable
         // Check each NodeProperty to see whether they object to this node
         // taking the task
         for (NodeProperty prop: getNodeProperties()) {
-            CauseOfBlockage c = prop.canTake(task);
+            CauseOfBlockage c = prop.canTake(item);
             if (c!=null)    return c;
         }
 

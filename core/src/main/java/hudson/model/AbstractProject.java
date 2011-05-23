@@ -219,6 +219,13 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
 
     private boolean concurrentBuild;
 
+    /**
+     * See {@link #setCustomWorkspace(String)}.
+     *
+     * @since 1.410
+     */
+    private String customWorkspace;
+    
     protected AbstractProject(ItemGroup parent, String name) {
         super(parent,name);
 
@@ -1256,7 +1263,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
                 // lock the workspace of the last build
                 FilePath ws=lb.getWorkspace();
 
-                if (ws==null || !ws.exists()) {
+                if (workspaceOffline(lb)) {
                     // workspace offline. build now, or nothing will ever be built
                     Label label = getAssignedLabel();
                     if (label != null && label.isSelfLabel()) {
@@ -1318,6 +1325,24 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
             e.printStackTrace(listener.fatalError(Messages.AbstractProject_PollingABorted()));
             return NO_CHANGES;
         }
+    }
+    
+    private boolean workspaceOffline(R build) throws IOException, InterruptedException {
+        FilePath ws = build.getWorkspace();
+        if (ws==null || !ws.exists()) {
+            return true;
+        }
+        
+        Node builtOn = build.getBuiltOn();
+        if (builtOn == null) { // node built-on doesn't exist anymore
+            return true;
+        }
+        
+        if (builtOn.toComputer() == null) { // node still exists, but has 0 executors - o.s.l.t.
+            return true;
+        }
+        
+        return false;
     }
 
     /**
@@ -1629,6 +1654,12 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
         blockBuildWhenDownstreamBuilding = req.getParameter("blockBuildWhenDownstreamBuilding")!=null;
         blockBuildWhenUpstreamBuilding = req.getParameter("blockBuildWhenUpstreamBuilding")!=null;
 
+        if(req.hasParameter("customWorkspace")) {
+            customWorkspace = req.getParameter("customWorkspace.directory");
+        } else {
+            customWorkspace = null;
+        }
+        
         if(req.getParameter("hasSlaveAffinity")!=null) {
             assignedNode = Util.fixEmptyAndTrim(req.getParameter("_.assignedLabelString"));
         } else {
@@ -1687,7 +1718,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
             req.getView(this,"noWorkspace.jelly").forward(req,rsp);
             return null;
         } else {
-            return new DirectoryBrowserSupport(this, ws, getDisplayName()+" workspace", "folder.gif", true);
+            return new DirectoryBrowserSupport(this, ws, getDisplayName()+" workspace", "folder.png", true);
         }
     }
 
@@ -1941,5 +1972,30 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
         if (item==null)
             throw new CmdLineException(null,Messages.AbstractItem_NoSuchJobExists(name,AbstractProject.findNearest(name).getFullName()));
         return item;
+    }
+
+    public String getCustomWorkspace() {
+        return customWorkspace;
+    }
+
+    /**
+     * User-specified workspace directory, or null if it's up to Jenkins.
+     *
+     * <p>
+     * Normally a project uses the workspace location assigned by its parent container,
+     * but sometimes people have builds that have hard-coded paths.
+     *
+     * <p>
+     * This is not {@link File} because it may have to hold a path representation on another OS.
+     *
+     * <p>
+     * If this path is relative, it's resolved against {@link Node#getRootPath()} on the node where this workspace
+     * is prepared. 
+     *
+     * @since 1.410
+     */
+    public void setCustomWorkspace(String customWorkspace) throws IOException {
+        this.customWorkspace= customWorkspace;
+        save();
     }
 }

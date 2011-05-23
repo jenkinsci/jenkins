@@ -1,18 +1,18 @@
 /*
  * The MIT License
- * 
+ *
  * Copyright (c) 2004-2010, Sun Microsystems, Inc., Kohsuke Kawaguchi, Yahoo! Inc., Seiji Sogabe
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -35,6 +35,7 @@ import hudson.XmlFile;
 import static hudson.init.InitMilestone.PLUGINS_STARTED;
 import hudson.init.Initializer;
 import hudson.lifecycle.Lifecycle;
+import hudson.lifecycle.RestartNotSupportedException;
 import hudson.model.UpdateSite.Data;
 import hudson.model.UpdateSite.Plugin;
 import hudson.model.listeners.SaveableListener;
@@ -46,6 +47,7 @@ import hudson.util.XStream2;
 import org.acegisecurity.Authentication;
 import org.apache.commons.io.input.CountingInputStream;
 import org.apache.commons.io.output.NullOutputStream;
+import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 
 import javax.net.ssl.SSLHandshakeException;
@@ -70,6 +72,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.jar.Attributes;
 import java.util.jar.JarFile;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -87,7 +90,7 @@ import org.acegisecurity.context.SecurityContextHolder;
  * and plugins, and to use alternate strategies for downloading, installing
  * and updating components. See the Javadocs for {@link UpdateCenterConfiguration}
  * for more information.
- * 
+ *
  * @author Kohsuke Kawaguchi
  * @since 1.220
  */
@@ -285,6 +288,16 @@ public class UpdateCenter extends AbstractModelObject implements Saveable {
     }
 
     /**
+     * Schedules a Jenkins restart.
+     */
+    public void doSafeRestart(StaplerRequest request, StaplerResponse response) throws IOException, ServletException {
+        Hudson.getInstance().checkPermission(Hudson.ADMINISTER);
+        addJob(new RestartJenkinsJob(getCoreSource()));
+        LOGGER.info("Scheduling Jenkings reboot");
+        response.sendRedirect2(".");
+    }
+
+    /**
      * Returns true if backup of jenkins.war exists on the hard drive
      */
     public boolean isDowngradable() {
@@ -309,13 +322,28 @@ public class UpdateCenter extends AbstractModelObject implements Saveable {
     }
 
     /**
+     * Performs hudson downgrade.
+     */
+    public void doRestart(StaplerResponse rsp) throws IOException, ServletException {
+        Hudson.getInstance().checkPermission(Hudson.ADMINISTER);
+        HudsonDowngradeJob job = new HudsonDowngradeJob(getCoreSource(), Hudson.getAuthentication());
+        LOGGER.info("Scheduling the core downgrade");
+
+        addJob(job);
+        rsp.sendRedirect2(".");
+    }
+
+    /**
      * Returns String with version of backup .war file,
      * if the file does not exists returns null
      */
     public String getBackupVersion() {
         try {
             JarFile backupWar = new JarFile(new File(Lifecycle.get().getHudsonWar() + ".bak"));
-            return backupWar.getManifest().getMainAttributes().getValue("Hudson-Version");
+            Attributes attrs = backupWar.getManifest().getMainAttributes();
+            String v = attrs.getValue("Jenkins-Version");
+            if (v==null)    v = attrs.getValue("Hudson-Version");
+            return v;
         } catch (IOException e) {
             LOGGER.log(Level.WARNING, "Failed to read backup version ", e);
             return null;}
@@ -681,6 +709,24 @@ public class UpdateCenter extends AbstractModelObject implements Saveable {
             LOGGER.fine("Scheduling "+this+" to installerService");
             jobs.add(this);
             return installerService.submit(this,this);
+        }
+    }
+
+    /**
+     * Restarts jenkins.
+     */
+    public class RestartJenkinsJob extends UpdateCenterJob {
+        public RestartJenkinsJob(UpdateSite site) {
+            super(site);
+        }
+
+        public void run() {
+            try {
+                Hudson.getInstance().safeRestart();
+            }
+            catch (RestartNotSupportedException exception) {
+                // ignore if restart is not allowed
+            }
         }
     }
 

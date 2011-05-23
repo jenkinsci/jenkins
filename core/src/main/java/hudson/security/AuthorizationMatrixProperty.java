@@ -178,7 +178,7 @@ public class AuthorizationMatrixProperty extends JobProperty<Job<?, ?>> {
         }
 
         public FormValidation doCheckName(@AncestorInPath Job project, @QueryParameter String value) throws IOException, ServletException {
-            return GlobalMatrixAuthorizationStrategy.DESCRIPTOR.doCheckName(value, project, AbstractProject.CONFIGURE);
+            return GlobalMatrixAuthorizationStrategy.DESCRIPTOR.doCheckName_(value, project, AbstractProject.CONFIGURE);
         }
     }
 
