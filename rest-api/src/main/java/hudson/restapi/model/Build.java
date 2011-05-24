@@ -2,33 +2,33 @@ package hudson.restapi.model;
 
 import java.util.Date;
 import hudson.model.Run;
-import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlRootElement;
 
-@XmlRootElement(name = "build")
 public class Build {
     private String jobName;
     private int buildNumber;
     private long duration;
     private boolean hasArtifacts;
     private long estimatedDuration;
-    private Date time;
-    private boolean building;
+    private Date startTime;
+    private boolean isBuilding;
     
     public Build() { }
     
     @SuppressWarnings("rawtypes")
     public Build(Run run) {
-        setJobName(run.getParent().getName());
-        setBuildNumber(run.getNumber());
-        setDuration(run.getDuration());
-        setHasArtifacts(run.getHasArtifacts());
-        setEstimatedDuration(run.getEstimatedDuration());
-        setTime(run.getTime());
-        setBuilding(run.isBuilding());
+        this(run.getParent().getName(), run.getNumber(), run.getDuration(), run.getHasArtifacts(), run.getEstimatedDuration(), run.getTime(), run.isBuilding());
+    }
+    
+    public Build(String jobName, int buildNumber, long duration, boolean hasArtifacts, long estimatedDuration, Date startTime, boolean isBuilding) {
+        this.jobName = jobName;
+        this.buildNumber = buildNumber;
+        this.duration = duration;
+        this.hasArtifacts = hasArtifacts;
+        this.estimatedDuration = estimatedDuration;
+        this.startTime = startTime;
+        this.isBuilding = isBuilding;
     }
 
-    @XmlElement
     public String getJobName() {
         return this.jobName;
     }
@@ -41,7 +41,6 @@ public class Build {
         this.buildNumber = buildNumber;
     }
 
-    @XmlElement
     public int getBuildNumber() {
         return buildNumber;
     }
@@ -50,7 +49,6 @@ public class Build {
         this.duration = duration;
     }
 
-    @XmlElement
     public long getDuration() {
         return duration;
     }
@@ -59,7 +57,6 @@ public class Build {
         this.hasArtifacts = hasArtifacts;
     }
 
-    @XmlElement
     public boolean getHasArtifacts() {
         return hasArtifacts;
     }
@@ -68,26 +65,23 @@ public class Build {
         this.estimatedDuration = estimatedDuration;
     }
 
-    @XmlElement
     public long getEstimatedDuration() {
         return estimatedDuration;
     }
 
-    public void setTime(Date time) {
-        this.time = time;
+    public void setStartTime(Date startTime) {
+        this.startTime = startTime;
     }
 
-    @XmlElement
-    public Date getTime() {
-        return time;
+    public Date getStartTime() {
+        return this.startTime;
     }
 
-    public void setBuilding(boolean building) {
-        this.building = building;
+    public void setBuilding(boolean isBuilding) {
+        this.isBuilding = isBuilding;
     }
 
-    @XmlElement
     public boolean isBuilding() {
-        return building;
+        return this.isBuilding;
     }
 }

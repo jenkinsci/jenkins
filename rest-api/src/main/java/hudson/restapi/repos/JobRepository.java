@@ -69,7 +69,12 @@ public class JobRepository {
     }
     
     @SuppressWarnings("rawtypes")
-    public hudson.model.Run getRun(String jobName, int buildNumber, Permission permission) {
+    public Run getRun(String jobName, int buildNumber) {
+        return this.getRun(jobName, buildNumber, Permission.READ);
+    }
+    
+    @SuppressWarnings("rawtypes")
+    private hudson.model.Run getRun(String jobName, int buildNumber, Permission permission) {
         Job job = getJob(jobName, permission);
         Run run = job.getBuildByNumber(buildNumber);
 
@@ -78,11 +83,6 @@ public class JobRepository {
         }
         
         return run;
-    }
-    
-    @SuppressWarnings("rawtypes")
-    public Run getRun(String jobName, int buildNumber) {
-        return this.getRun(jobName, buildNumber, Permission.READ);
     }
     
     private void checkACL(ACL acl, Permission goingToDo) {

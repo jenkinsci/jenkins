@@ -1,15 +1,12 @@
 package hudson.restapi.model;
 
 import hudson.model.Run;
-import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlRootElement;
 
-@XmlRootElement(name = "job")
 public class Job {
     private String name;
     private String description;
     private int lastBuildNumber;
-    private boolean building;
+    private boolean isBuilding;
     private boolean inQueue;
     
     public Job() { }
@@ -28,11 +25,18 @@ public class Job {
         setInQueue(job.isInQueue());
     }
     
+    public Job(String name, String description, int lastBuildNumber, boolean isBuilding, boolean inQueue) {
+        this.name = name;
+        this.description = description;
+        this.lastBuildNumber = lastBuildNumber;
+        this.isBuilding = isBuilding;
+        this.inQueue = inQueue;
+    }
+    
     public void setName(String name) {
         this.name = name;
     }
 
-    @XmlElement
     public String getName() {
         return name;
     }
@@ -41,7 +45,6 @@ public class Job {
         this.description = description;
     }
 
-    @XmlElement
     public String getDescription() {
         return description;
     }
@@ -50,25 +53,22 @@ public class Job {
         this.lastBuildNumber = lastBuildNumber;
     }
 
-    @XmlElement
     public int getLastBuildNumber() {
         return lastBuildNumber;
     }
 
     public void setBuilding(boolean building) {
-        this.building = building;
+        this.isBuilding = building;
     }
 
-    @XmlElement
     public boolean isBuilding() {
-        return building;
+        return isBuilding;
     }
 
     public void setInQueue(boolean inQueue) {
         this.inQueue = inQueue;
     }
 
-    @XmlElement
     public boolean isInQueue() {
         return inQueue;
     }

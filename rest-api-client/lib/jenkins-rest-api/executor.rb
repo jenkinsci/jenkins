@@ -40,7 +40,7 @@ module JenkinsRestAPI
     end
 
     def build(job)
-      RestClient.post "#{@job_url}/#{job}/builds/kickoff", :accept => 'text/plain'
+      RestClient.post "#{@job_url}/#{job}/builds/new", :accept => 'text/plain'
     end
 
     def list 
@@ -71,8 +71,27 @@ module JenkinsRestAPI
       RestClient.get "#{@build_url}/#{build_number}/logfile"
     end
 
+    def artifacts(build_number)
+      RestClient.get "#{@build_url}/#{build_number}/artifacts"
+    end
+
     def list
       RestClient.get @build_url
+    end
+  end
+
+  class ArtifactExecutor < BaseExecutor
+    def configure(options)
+      super
+      @build_url = "#{@server}/artifacts"
+    end
+
+    def list
+      RestClient.get @build_url
+    end
+
+    def latest
+      RestClient.get "#{@build_url}/latest"
     end
   end
 end

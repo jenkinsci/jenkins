@@ -42,7 +42,7 @@ THE SOFTWARE.
     <module>remoting</module>
     <module>core</module>
     <module>maven-plugin</module>
-    <module>ui-samples-plugin</module>
+    <!-- <module>ui-samples-plugin</module> -->
     <module>war</module>
     <module>test</module>
     <module>cli</module>
