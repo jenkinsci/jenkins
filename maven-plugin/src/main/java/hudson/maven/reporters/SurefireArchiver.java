@@ -245,6 +245,7 @@ public class SurefireArchiver extends MavenReporter {
     private boolean isSurefireTest(MojoInfo mojo) {
         if ((!mojo.is("com.sun.maven", "maven-junit-plugin", "test"))
             && (!mojo.is("org.sonatype.flexmojos", "flexmojos-maven-plugin", "test-run"))
+            && (!mojo.is("org.eclipse.tycho", "tycho-surefire-plugin", "test"))
             && (!mojo.is("org.sonatype.tycho", "maven-osgi-test-plugin", "test"))
             && (!mojo.is("org.apache.maven.plugins", "maven-surefire-plugin", "test"))
             && (!mojo.is("org.apache.maven.plugins", "maven-failsafe-plugin", "integration-test")))
@@ -286,6 +287,11 @@ public class SurefireArchiver extends MavenReporter {
                     return false;
                 }
 	        } else if (mojo.is("org.sonatype.tycho", "maven-osgi-test-plugin", "test")) {
+                Boolean skipTests = mojo.getConfigurationValue("skipTest", Boolean.class);
+                if (((skipTests != null) && (skipTests))) {
+                    return false;
+                }
+	        } else if (mojo.is("org.eclipse.tycho", "tycho-surefire-plugin", "test")) {
                 Boolean skipTests = mojo.getConfigurationValue("skipTest", Boolean.class);
                 if (((skipTests != null) && (skipTests))) {
                     return false;
