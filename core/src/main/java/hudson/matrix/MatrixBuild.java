@@ -116,15 +116,33 @@ public class MatrixBuild extends AbstractBuild<MatrixProject,MatrixBuild> {
     }
 
     /**
+     * If greater than zero, the {@link MatrixBuild} originates from the given build number.
+     */
+    public int linkedNumber = 0;
+    
+    /**
+     * Sets the linked number
+     * @param linkedNumber A given number indicating the origin
+     */
+    public void setLinkedNumber( int linkedNumber ) {
+    	this.linkedNumber = linkedNumber;
+    }
+
+
+    /**
      * Gets the {@link MatrixRun} in this build that corresponds
      * to the given combination.
      */
     public MatrixRun getRun(Combination c) {
         MatrixConfiguration config = getParent().getItem(c);
         if(config==null)    return null;
-        return config.getNearestOldBuild(getNumber());
+        MatrixRun b = config.getNearestOldBuild(getNumber());
+        if(b.getNumber()!=getNumber() && linkedNumber > 0) {
+        	b = config.getNearestOldBuild(linkedNumber);
+        }
+        return b;
     }
-
+    
     /**
      * Returns all {@link MatrixRun}s for this {@link MatrixBuild}.
      */
@@ -133,6 +151,9 @@ public class MatrixBuild extends AbstractBuild<MatrixProject,MatrixBuild> {
         List<MatrixRun> r = new ArrayList<MatrixRun>();
         for(MatrixConfiguration c : getParent().getItems()) {
             MatrixRun b = c.getNearestOldBuild(getNumber());
+            if(b.getNumber()!=getNumber() && linkedNumber > 0) {
+            	b = c.getNearestOldBuild(linkedNumber);
+            }
             if (b != null) r.add(b);
         }
         return r;
