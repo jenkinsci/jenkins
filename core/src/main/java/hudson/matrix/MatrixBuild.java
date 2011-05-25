@@ -152,8 +152,7 @@ public class MatrixBuild extends AbstractBuild<MatrixProject,MatrixBuild> {
         return r;
     }
     
-    private MatrixRun getRunForConfiguration( MatrixConfiguration c, int number )
-    {
+    private MatrixRun getRunForConfiguration( MatrixConfiguration c, int number ) {
         MatrixRun b = c.getNearestOldBuild(getNumber());
         if(b.getNumber()!=getNumber() && linkedNumber > 0) {
         	b = c.getNearestOldBuild(linkedNumber);
