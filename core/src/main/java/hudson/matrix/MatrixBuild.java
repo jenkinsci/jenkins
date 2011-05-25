@@ -136,11 +136,7 @@ public class MatrixBuild extends AbstractBuild<MatrixProject,MatrixBuild> {
     public MatrixRun getRun(Combination c) {
         MatrixConfiguration config = getParent().getItem(c);
         if(config==null)    return null;
-        MatrixRun b = config.getNearestOldBuild(getNumber());
-        if(b.getNumber()!=getNumber() && linkedNumber > 0) {
-        	b = config.getNearestOldBuild(linkedNumber);
-        }
-        return b;
+        return getRunForConfiguration( config, getNumber() );
     }
     
     /**
@@ -150,13 +146,20 @@ public class MatrixBuild extends AbstractBuild<MatrixProject,MatrixBuild> {
     public List<MatrixRun> getRuns() {
         List<MatrixRun> r = new ArrayList<MatrixRun>();
         for(MatrixConfiguration c : getParent().getItems()) {
-            MatrixRun b = c.getNearestOldBuild(getNumber());
-            if(b.getNumber()!=getNumber() && linkedNumber > 0) {
-            	b = c.getNearestOldBuild(linkedNumber);
-            }
+            MatrixRun b = getRunForConfiguration( c, getNumber() );
             if (b != null) r.add(b);
         }
         return r;
+    }
+    
+    private MatrixRun getRunForConfiguration( MatrixConfiguration c, int number )
+    {
+        MatrixRun b = c.getNearestOldBuild(getNumber());
+        if(b.getNumber()!=getNumber() && linkedNumber > 0) {
+        	b = c.getNearestOldBuild(linkedNumber);
+        }
+        
+        return b;
     }
 
     /**
