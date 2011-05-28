@@ -413,7 +413,7 @@ public class Jenkins extends Node implements ItemGroup<TopLevelItem>, StaplerPro
      * The field name should be really {@code nodes}, but again the backward compatibility
      * prevents us from renaming.
      */
-    private volatile NodeList slaves;
+    protected volatile NodeList slaves;
 
     /**
      * Quiet period.
@@ -454,21 +454,9 @@ public class Jenkins extends Node implements ItemGroup<TopLevelItem>, StaplerPro
     private transient DNSMultiCast dnsMultiCast;
 
     /**
-     * List of registered {@link ItemListener}s.
-     * @deprecated as of 1.286
-     */
-    private transient final CopyOnWriteList<ItemListener> itemListeners = ExtensionListView.createCopyOnWriteList(ItemListener.class);
-
-    /**
      * List of registered {@link SCMListener}s.
      */
     private transient final CopyOnWriteList<SCMListener> scmListeners = new CopyOnWriteList<SCMListener>();
-
-    /**
-     * List of registered {@link ComputerListener}s.
-     * @deprecated as of 1.286
-     */
-    private transient final CopyOnWriteList<ComputerListener> computerListeners = ExtensionListView.createCopyOnWriteList(ComputerListener.class);
 
     /**
      * TCP slave agent port.
@@ -602,7 +590,7 @@ public class Jenkins extends Node implements ItemGroup<TopLevelItem>, StaplerPro
      */
     private transient final LogRecorderManager log = new LogRecorderManager();
 
-    public Jenkins(File root, ServletContext context) throws IOException, InterruptedException, ReactorException {
+    protected Jenkins(File root, ServletContext context) throws IOException, InterruptedException, ReactorException {
         this(root,context,null);
     }
 
@@ -610,7 +598,7 @@ public class Jenkins extends Node implements ItemGroup<TopLevelItem>, StaplerPro
      * @param pluginManager
      *      If non-null, use existing plugin manager.  create a new one.
      */
-    public Jenkins(File root, ServletContext context, PluginManager pluginManager) throws IOException, InterruptedException, ReactorException {
+    protected Jenkins(File root, ServletContext context, PluginManager pluginManager) throws IOException, InterruptedException, ReactorException {
     	// As hudson is starting, grant this process full control
     	SecurityContextHolder.getContext().setAuthentication(ACL.SYSTEM);
         try {
@@ -1026,30 +1014,10 @@ public class Jenkins extends Node implements ItemGroup<TopLevelItem>, StaplerPro
     }
 
     /**
-     * Gets all the installed {@link ItemListener}s.
-     *
-     * @deprecated as of 1.286.
-     *      Use {@link ItemListener#all()}.
-     */
-    public CopyOnWriteList<ItemListener> getJobListeners() {
-        return itemListeners;
-    }
-
-    /**
      * Gets all the installed {@link SCMListener}s.
      */
     public CopyOnWriteList<SCMListener> getSCMListeners() {
         return scmListeners;
-    }
-
-    /**
-     * Gets all the installed {@link ComputerListener}s.
-     *
-     * @deprecated as of 1.286.
-     *      Use {@link ComputerListener#all()}.
-     */
-    public CopyOnWriteList<ComputerListener> getComputerListeners() {
-        return computerListeners;
     }
 
     /**
@@ -1153,7 +1121,7 @@ public class Jenkins extends Node implements ItemGroup<TopLevelItem>, StaplerPro
     private final transient Object updateComputerLock = new Object();
 
     /**
-     * Updates {@link #computers} by using {@link #getSlaves()}.
+     * Updates {@link #computers}.
      *
      * <p>
      * This method tries to reuse existing {@link Computer} objects
@@ -1457,15 +1425,6 @@ public class Jenkins extends Node implements ItemGroup<TopLevelItem>, StaplerPro
     }
 
     /**
-     * @deprecated
-     *      UI method. Not meant to be used programatically.
-     */
-    public ComputerSet getComputer() {
-        return new ComputerSet();
-    }
-
-
-    /**
      * Gets the label that exists on this system by the name.
      *
      * @return null if name is null.
@@ -1559,18 +1518,7 @@ public class Jenkins extends Node implements ItemGroup<TopLevelItem>, StaplerPro
         return null;
     }
 
-    /**
-     * Gets the slave node of the give name, hooked under this Hudson.
-     *
-     * @deprecated
-     *      Use {@link #getNode(String)}. Since 1.252.
-     */
-    public Slave getSlave(String name) {
-        Node n = getNode(name);
-        if (n instanceof Slave)
-            return (Slave)n;
-        return null;
-    }
+
 
     /**
      * Gets the slave node of the give name, hooked under this Hudson.
@@ -1591,29 +1539,11 @@ public class Jenkins extends Node implements ItemGroup<TopLevelItem>, StaplerPro
     }
 
     /**
-     * @deprecated
-     *      Use {@link #getNodes()}. Since 1.252.
-     */
-    public List<Slave> getSlaves() {
-        return (List)Collections.unmodifiableList(slaves);
-    }
-
-    /**
      * Returns all {@link Node}s in the system, excluding {@link Jenkins} instance itself which
      * represents the master.
      */
     public List<Node> getNodes() {
         return Collections.unmodifiableList(slaves);
-    }
-
-    /**
-     * Updates the slave list.
-     *
-     * @deprecated
-     *      Use {@link #setNodes(List)}. Since 1.252.
-     */
-    public void setSlaves(List<Slave> slaves) throws IOException {
-        setNodes(slaves);
     }
 
     /**
@@ -1722,8 +1652,6 @@ public class Jenkins extends Node implements ItemGroup<TopLevelItem>, StaplerPro
     public int getScmCheckoutRetryCount() {
         return scmCheckoutRetryCount;
     }
-
-
 
     /**
      * @deprecated
@@ -2024,29 +1952,7 @@ public class Jenkins extends Node implements ItemGroup<TopLevelItem>, StaplerPro
         save();
     }
 
-    /**
-     * @deprecated
-     *      Left only for the compatibility of URLs.
-     *      Should not be invoked for any other purpose.
-     */
-    public TopLevelItem getJob(String name) {
-        return getItem(name);
-    }
 
-    /**
-     * @deprecated
-     *      Used only for mapping jobs to URL in a case-insensitive fashion.
-     */
-    public TopLevelItem getJobCaseInsensitive(String name) {
-        String match = Functions.toEmailSafeString(name);
-        for (Entry<String, TopLevelItem> e : items.entrySet()) {
-            if(Functions.toEmailSafeString(e.getKey()).equalsIgnoreCase(match)) {
-                TopLevelItem item = e.getValue();
-                return item.hasPermission(Item.READ) ? item : null;
-            }
-        }
-        return null;
-    }
 
     /**
      * {@inheritDoc}.
@@ -2672,14 +2578,6 @@ public class Jenkins extends Node implements ItemGroup<TopLevelItem>, StaplerPro
         getPrimaryView().doSubmitDescription(req, rsp);
     }
 
-    /**
-     * @deprecated as of 1.317
-     *      Use {@link #doQuietDown()} instead.
-     */
-    public synchronized void doQuietDown(StaplerResponse rsp) throws IOException, ServletException {
-        doQuietDown().generateResponse(null, rsp, this);
-    }
-
     public synchronized HttpRedirect doQuietDown() throws IOException {
         try {
             return doQuietDown(false,0);
@@ -2904,17 +2802,6 @@ public class Jenkins extends Node implements ItemGroup<TopLevelItem>, StaplerPro
 
     public Slave.JnlpJar doJnlpJars(StaplerRequest req) {
         return new Slave.JnlpJar(req.getRestOfPath());
-    }
-
-    /**
-     * RSS feed for log entries.
-     *
-     * @deprecated
-     *   As on 1.267, moved to "/log/rss..."
-     */
-    public void doLogRss( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
-        String qs = req.getQueryString();
-        rsp.sendRedirect2("./log/rss"+(qs==null?"":'?'+qs));
     }
 
     /**
@@ -3368,62 +3255,6 @@ public class Jenkins extends Node implements ItemGroup<TopLevelItem>, StaplerPro
     }
 
     /**
-     * @deprecated as of 1.294
-     *      Define your own check method, instead of relying on this generic one.
-     */
-    public void doFieldCheck(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
-        doFieldCheck(
-                fixEmpty(req.getParameter("value")),
-                fixEmpty(req.getParameter("type")),
-                fixEmpty(req.getParameter("errorText")),
-                fixEmpty(req.getParameter("warningText"))).generateResponse(req,rsp,this);
-    }
-
-    /**
-     * Checks if the value for a field is set; if not an error or warning text is displayed.
-     * If the parameter "value" is not set then the parameter "errorText" is displayed
-     * as an error text. If the parameter "errorText" is not set, then the parameter "warningText"
-     * is displayed as a warning text.
-     * <p>
-     * If the text is set and the parameter "type" is set, it will validate that the value is of the
-     * correct type. Supported types are "number, "number-positive" and "number-negative".
-     *
-     * @deprecated as of 1.324
-     *      Either use client-side validation (e.g. class="required number")
-     *      or define your own check method, instead of relying on this generic one.
-     */
-    public FormValidation doFieldCheck(@QueryParameter(fixEmpty=true) String value,
-                                       @QueryParameter(fixEmpty=true) String type,
-                                       @QueryParameter(fixEmpty=true) String errorText,
-                                       @QueryParameter(fixEmpty=true) String warningText) {
-        if (value == null) {
-            if (errorText != null)
-                return FormValidation.error(errorText);
-            if (warningText != null)
-                return FormValidation.warning(warningText);
-            return FormValidation.error("No error or warning text was set for fieldCheck().");
-        }
-
-        if (type != null) {
-            try {
-                if (type.equalsIgnoreCase("number")) {
-                    NumberFormat.getInstance().parse(value);
-                } else if (type.equalsIgnoreCase("number-positive")) {
-                    if (NumberFormat.getInstance().parse(value).floatValue() <= 0)
-                        return FormValidation.error(Messages.Hudson_NotAPositiveNumber());
-                } else if (type.equalsIgnoreCase("number-negative")) {
-                    if (NumberFormat.getInstance().parse(value).floatValue() >= 0)
-                        return FormValidation.error(Messages.Hudson_NotANegativeNumber());
-                }
-            } catch (ParseException e) {
-                return FormValidation.error(Messages.Hudson_NotANumber());
-            }
-        }
-
-        return FormValidation.ok();
-    }
-
-    /**
      * Serves static resources placed along with Jelly view files.
      * <p>
      * This method can serve a lot of files, so care needs to be taken
@@ -3477,22 +3308,6 @@ public class Jenkins extends Node implements ItemGroup<TopLevelItem>, StaplerPro
      */
     public static boolean isCheckURIEncodingEnabled() {
         return !"ISO-8859-1".equalsIgnoreCase(System.getProperty("file.encoding"));
-    }
-
-    /**
-     * @deprecated
-     *      Use {@link Functions#isWindows()}.
-     */
-    public static boolean isWindows() {
-        return File.pathSeparatorChar==';';
-    }
-
-    /**
-     * @deprecated
-     *      Use {@link Platform#isDarwin()}
-     */
-    public static boolean isDarwin() {
-        return Platform.isDarwin();
     }
 
     /**
@@ -3672,56 +3487,6 @@ public class Jenkins extends Node implements ItemGroup<TopLevelItem>, StaplerPro
      */
     public static <T> T lookup(Class<T> type) {
         return Jenkins.getInstance().lookup.get(type);
-    }
-
-    /**
-     * @deprecated since 2007-12-18.
-     *      Use {@link #checkPermission(Permission)}
-     */
-    public static boolean adminCheck() throws IOException {
-        return adminCheck(Stapler.getCurrentRequest(), Stapler.getCurrentResponse());
-    }
-
-    /**
-     * @deprecated since 2007-12-18.
-     *      Use {@link #checkPermission(Permission)}
-     */
-    public static boolean adminCheck(StaplerRequest req,StaplerResponse rsp) throws IOException {
-        if (isAdmin(req)) return true;
-
-        rsp.sendError(StaplerResponse.SC_FORBIDDEN);
-        return false;
-    }
-
-    /**
-     * Checks if the current user (for which we are processing the current request)
-     * has the admin access.
-     *
-     * @deprecated since 2007-12-18.
-     *      This method is deprecated when Hudson moved from simple Unix root-like model
-     *      of "admin gets to do everything, and others don't have any privilege" to more
-     *      complex {@link ACL} and {@link Permission} based scheme.
-     *
-     *      <p>
-     *      For a quick migration, use {@code Hudson.getInstance().getACL().hasPermission(Hudson.ADMINISTER)}
-     *      To check if the user has the 'administer' role in Hudson.
-     *
-     *      <p>
-     *      But ideally, your plugin should first identify a suitable {@link Permission} (or create one,
-     *      if appropriate), then identify a suitable {@link AccessControlled} object to check its permission
-     *      against.
-     */
-    public static boolean isAdmin() {
-        return Jenkins.getInstance().getACL().hasPermission(ADMINISTER);
-    }
-
-    /**
-     * @deprecated since 2007-12-18.
-     *      Define a custom {@link Permission} and check against ACL.
-     *      See {@link #isAdmin()} for more instructions.
-     */
-    public static boolean isAdmin(StaplerRequest req) {
-        return isAdmin();
     }
 
     /**
