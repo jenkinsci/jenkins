@@ -91,7 +91,9 @@ THE SOFTWARE.
         checked="${it.usesPrivateRepository()}" />
       <f:optionalBlock name="maven.resolveDependencies" title="${%Resolve Dependencies during Pom parsing}" 
         checked="${it.isResolveDependencies()}" /> 
-      <f:optionalBlock name="maven.processPlugins" title="${%Process Plugins during Pom parsing}" 
+      <f:optionalBlock name="maven.requiresDesktop" title="${%Requires Desktop environment}" help="/plugin/maven-plugin/requires-desktop.html"
+        checked="${it.requiresDesktop()}" />
+      <f:optionalBlock name="maven.processPlugins" title="${%Process Plugins during Pom parsing}"
         checked="${it.isProcessPlugins()}" />
       <p:config-customWorkspace />
         
