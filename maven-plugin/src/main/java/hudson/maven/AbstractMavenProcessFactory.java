@@ -274,7 +274,7 @@ public abstract class AbstractMavenProcessFactory
             }
         }
 
-        if (!mms.requiresDesktop()) {
+        if (mms.runHeadless()) {
             // Configure headless process
             if (Platform.isDarwin())
                 mavenOpts += " -Djava.awt.headless=true";
@@ -282,6 +282,7 @@ public abstract class AbstractMavenProcessFactory
             if (Platform.isDarwin()) {
                 // Would be cool to replace the generic Java icon with jenkins logo, but requires
                 // the file absolute path to be available on slave *before* the process run on it :-/
+                // Maybe we could enforce this from the DMG installer on OSX
                 // TODO mavenOpts += " -Xdock:name=Jenkins -Xdock:icon=jenkins.png";
             }
         }

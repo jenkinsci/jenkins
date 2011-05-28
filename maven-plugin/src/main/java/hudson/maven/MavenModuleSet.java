@@ -205,11 +205,10 @@ public final class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,Ma
     private int mavenValidationLevel = -1;
 
     /**
-     * Inform jenkins this build is using some UI code and require access to graphical environment. Could be used later
-     * to select a slave from a pool, but first introduced for JENKINS-9785
+     * Inform jenkins this build don't use UI code and can run without access to graphical environment. Could be used
+     * later to select a headless-slave from a pool, but first introduced for JENKINS-9785
      */
-    // Use a java.lang.Boolean so that we don't break existing jobs
-    private Boolean requiresDesktop = false;
+    private boolean runHeadless = false;
 
     /**
      * Reporters configured at {@link MavenModuleSet} level. Applies to all {@link MavenModule} builds.
@@ -364,8 +363,8 @@ public final class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,Ma
         return ignoreUpstremChanges;
     }
 
-    public boolean requiresDesktop() {
-        return requiresDesktop == null || requiresDesktop;
+    public boolean runHeadless() {
+        return runHeadless;
     }
 
     public boolean isArchivingDisabled() {
@@ -388,8 +387,8 @@ public final class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,Ma
         this.ignoreUpstremChanges = ignoreUpstremChanges;
     }
 
-    public void setRequiresDesktop(boolean requiresDesktop) {
-        this.requiresDesktop = requiresDesktop;
+    public void setRunHeadless(boolean runHeadless) {
+        this.runHeadless = runHeadless;
     }
 
     public void setIsArchivingDisabled(boolean archivingDisabled) {
@@ -826,7 +825,7 @@ public final class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,Ma
         aggregatorStyleBuild = !req.hasParameter("maven.perModuleBuild");
         usePrivateRepository = req.hasParameter("maven.usePrivateRepository");
         ignoreUpstremChanges = !json.has("triggerByDependency");
-        requiresDesktop = req.hasParameter("requiresDesktop");
+        runHeadless = req.hasParameter("maven.runHeadless");
         incrementalBuild = req.hasParameter("maven.incrementalBuild");
         archivingDisabled = req.hasParameter("maven.archivingDisabled");
         resolveDependencies = req.hasParameter( "maven.resolveDependencies" );
