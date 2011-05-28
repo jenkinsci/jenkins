@@ -1,10 +1,12 @@
 package hudson.maven;
 
 import static hudson.Util.fixNull;
+
 import hudson.AbortException;
 import hudson.EnvVars;
 import hudson.FilePath;
 import hudson.Launcher;
+import hudson.Platform;
 import hudson.Proc;
 import hudson.maven.ProcessCache.NewProcess;
 import hudson.model.BuildListener;
@@ -24,7 +26,6 @@ import hudson.slaves.Channels;
 import hudson.tasks.Maven.MavenInstallation;
 import hudson.tasks._maven.MavenConsoleAnnotator;
 import hudson.util.ArgumentListBuilder;
-
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.IOException;
@@ -37,8 +38,6 @@ import java.net.SocketTimeoutException;
 import java.nio.charset.Charset;
 import java.nio.charset.UnsupportedCharsetException;
 import java.util.Arrays;
-
-import org.jenkinsci.plugins.tokenmacro.TokenMacro;
 import org.kohsuke.stapler.framework.io.IOException2;
 
 /*
@@ -274,7 +273,19 @@ public abstract class AbstractMavenProcessFactory
 
             }
         }
-        
+
+        if (!mms.requiresDesktop()) {
+            // Configure headless process
+            if (Platform.isDarwin())
+                mavenOpts += " -Djava.awt.headless=true";
+        } else {
+            if (Platform.isDarwin()) {
+                // Would be cool to replace the generic Java icon with jenkins logo, but requires
+                // the file absolute path to be available on slave *before* the process run on it :-/
+                // TODO mavenOpts += " -Xdock:name=Jenkins -Xdock:icon=jenkins.png";
+            }
+        }
+
         return envVars.expand(mavenOpts);
     }
 
