@@ -64,7 +64,7 @@ public class RunParameterDefinition extends SimpleParameterDefinition {
     }
 
     public Job getProject() {
-        return (Job) Hudson.getInstance().getItem(projectName);
+        return (Job) Jenkins.getInstance().getItem(projectName);
     }
 
     @Extension

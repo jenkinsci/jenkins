@@ -33,7 +33,7 @@ import java.security.Principal;
 import java.util.List;
 import java.util.ArrayList;
 
-import hudson.model.Hudson;
+import hudson.model.Jenkins;
 
 /**
  * {@link Authentication} implementation for {@link Principal}
@@ -62,7 +62,7 @@ public final class ContainerAuthentication implements Authentication {
         // Servlet API doesn't provide a way to list up all roles the current user
         // has, so we need to ask AuthorizationStrategy what roles it is going to check against.
         List<GrantedAuthority> l = new ArrayList<GrantedAuthority>();
-        for( String g : Hudson.getInstance().getAuthorizationStrategy().getGroups()) {
+        for( String g : Jenkins.getInstance().getAuthorizationStrategy().getGroups()) {
             if(request.isUserInRole(g))
                 l.add(new GrantedAuthorityImpl(g));
         }

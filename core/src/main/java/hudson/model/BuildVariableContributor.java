@@ -69,6 +69,6 @@ public abstract class BuildVariableContributor implements ExtensionPoint {
      * Returns all the registered {@link EnvironmentContributor}s.
      */
     public static ExtensionList<BuildVariableContributor> all() {
-        return Hudson.getInstance().getExtensionList(BuildVariableContributor.class);
+        return Jenkins.getInstance().getExtensionList(BuildVariableContributor.class);
     }
 }

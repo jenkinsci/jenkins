@@ -43,7 +43,7 @@ import java.io.IOException;
  */
 public class ExternalJob extends ViewJob<ExternalJob,ExternalRun> implements TopLevelItem {
     public ExternalJob(String name) {
-        this(Hudson.getInstance(),name);
+        this(Jenkins.getInstance(),name);
     }
 
     public ExternalJob(ItemGroup parent, String name) {

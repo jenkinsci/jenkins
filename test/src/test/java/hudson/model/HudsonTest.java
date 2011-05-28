@@ -178,7 +178,7 @@ public class HudsonTest extends HudsonTestCase {
      */
     @Bug(6938)
     public void testInvalidPrimaryView() throws Exception {
-        Field pv = Hudson.class.getDeclaredField("primaryView");
+        Field pv = Jenkins.class.getDeclaredField("primaryView");
         pv.setAccessible(true);
         String value = null;
         pv.set(hudson, value);

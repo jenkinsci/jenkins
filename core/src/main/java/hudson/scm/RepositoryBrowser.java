@@ -28,7 +28,7 @@ import hudson.DescriptorExtensionList;
 import hudson.Extension;
 import hudson.model.AbstractDescribableImpl;
 import hudson.model.Descriptor;
-import hudson.model.Hudson;
+import hudson.model.Jenkins;
 
 import java.io.IOException;
 import java.io.Serializable;
@@ -99,7 +99,7 @@ public abstract class RepositoryBrowser<E extends ChangeLogSet.Entry> extends Ab
      * Returns all the registered {@link RepositoryBrowser} descriptors.
      */
     public static DescriptorExtensionList<RepositoryBrowser<?>,Descriptor<RepositoryBrowser<?>>> all() {
-        return (DescriptorExtensionList)Hudson.getInstance().getDescriptorList(RepositoryBrowser.class);
+        return (DescriptorExtensionList) Jenkins.getInstance().getDescriptorList(RepositoryBrowser.class);
     }
 
     private static final long serialVersionUID = 1L;

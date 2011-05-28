@@ -63,7 +63,7 @@ public class DownloadService extends PageDecorator {
     	if (neverUpdate) return "";
     	
         StringBuilder buf = new StringBuilder();
-        if(Hudson.getInstance().hasPermission(Hudson.READ)) {
+        if(Jenkins.getInstance().hasPermission(Jenkins.READ)) {
             long now = System.currentTimeMillis();
             for (Downloadable d : Downloadable.all()) {
                 if(d.getDue()<now && d.lastAttempt+10*1000<now) {
@@ -74,7 +74,7 @@ public class DownloadService extends PageDecorator {
                        .append(',')
                        .append(QuotedStringTokenizer.quote(d.getUrl()))
                        .append(',')
-                       .append("{version:"+QuotedStringTokenizer.quote(Hudson.VERSION)+'}')
+                       .append("{version:"+QuotedStringTokenizer.quote(Jenkins.VERSION)+'}')
                        .append(',')
                        .append(QuotedStringTokenizer.quote(Stapler.getCurrentRequest().getContextPath()+'/'+getUrl()+"/byId/"+d.getId()+"/postBack"))
                        .append(',')
@@ -154,7 +154,7 @@ public class DownloadService extends PageDecorator {
          * URL to download.
          */
         public String getUrl() {
-            return Hudson.getInstance().getUpdateCenter().getDefaultBaseUrl()+"updates/"+url;
+            return Jenkins.getInstance().getUpdateCenter().getDefaultBaseUrl()+"updates/"+url;
         }
 
         /**
@@ -171,7 +171,7 @@ public class DownloadService extends PageDecorator {
          * This is where the retrieved file will be stored.
          */
         public TextFile getDataFile() {
-            return new TextFile(new File(Hudson.getInstance().getRootDir(),"updates/"+id));
+            return new TextFile(new File(Jenkins.getInstance().getRootDir(),"updates/"+id));
         }
 
         /**
@@ -214,7 +214,7 @@ public class DownloadService extends PageDecorator {
          * Returns all the registered {@link Downloadable}s.
          */
         public static ExtensionList<Downloadable> all() {
-            return Hudson.getInstance().getExtensionList(Downloadable.class);
+            return Jenkins.getInstance().getExtensionList(Downloadable.class);
         }
 
         /**

@@ -29,7 +29,7 @@ import static hudson.Util.fixNull;
 import static hudson.Util.fixEmptyAndTrim;
 import static hudson.Util.fixEmpty;
 import hudson.model.Descriptor;
-import hudson.model.Hudson;
+import hudson.model.Jenkins;
 import hudson.model.User;
 import hudson.tasks.MailAddressResolver;
 import hudson.util.FormValidation;
@@ -73,7 +73,6 @@ import java.net.UnknownHostException;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Hashtable;
-import java.util.Iterator;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -350,7 +349,7 @@ public class LDAPSecurityRealm extends AbstractPasswordBasedSecurityRealm {
         binding.setVariable("instance", this);
 
         BeanBuilder builder = new BeanBuilder();
-        builder.parse(Hudson.getInstance().servletContext.getResourceAsStream("/WEB-INF/security/LDAPBindSecurityRealm.groovy"),binding);
+        builder.parse(Jenkins.getInstance().servletContext.getResourceAsStream("/WEB-INF/security/LDAPBindSecurityRealm.groovy"),binding);
         WebApplicationContext appContext = builder.createApplicationContext();
 
         ldapTemplate = new LdapTemplate(findBean(InitialDirContextFactory.class, appContext));
@@ -453,7 +452,7 @@ public class LDAPSecurityRealm extends AbstractPasswordBasedSecurityRealm {
     public static final class MailAdressResolverImpl extends MailAddressResolver {
         public String findMailAddressFor(User u) {
             // LDAP not active
-            SecurityRealm realm = Hudson.getInstance().getSecurityRealm();
+            SecurityRealm realm = Jenkins.getInstance().getSecurityRealm();
             if(!(realm instanceof LDAPSecurityRealm))
                 return null;
             try {
@@ -547,7 +546,7 @@ public class LDAPSecurityRealm extends AbstractPasswordBasedSecurityRealm {
         		@QueryParameter final String managerDN,
         		@QueryParameter final String managerPassword) {
 
-            if(!Hudson.getInstance().hasPermission(Hudson.ADMINISTER))
+            if(!Jenkins.getInstance().hasPermission(Jenkins.ADMINISTER))
                 return FormValidation.ok();
 
             try {

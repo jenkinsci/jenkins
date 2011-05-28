@@ -177,7 +177,7 @@ public abstract class TestObject extends hudson.tasks.junit.TestObject {
             } else {
                 // We're not in a stapler request. Okay, give up.
                 LOGGER.info("trying to get relative path, but it is not my ancestor, and we're not in a stapler request. Trying absolute hudson url...");
-                String hudsonRootUrl = Hudson.getInstance().getRootUrl();
+                String hudsonRootUrl = Jenkins.getInstance().getRootUrl();
                 if (hudsonRootUrl==null||hudsonRootUrl.length()==0) {
                     LOGGER.warning("Can't find anything like a decent hudson url. Punting, returning empty string."); 
                     return "";

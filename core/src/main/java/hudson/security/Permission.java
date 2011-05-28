@@ -192,7 +192,7 @@ public final class Permission {
 
         try {
             // force the initialization so that it will put all its permissions into the list.
-            Class cl = Class.forName(id.substring(0,idx),true,Hudson.getInstance().getPluginManager().uberClassLoader);
+            Class cl = Class.forName(id.substring(0,idx),true, Jenkins.getInstance().getPluginManager().uberClassLoader);
             PermissionGroup g = PermissionGroup.get(cl);
             if(g ==null)  return null;
             return g.find(id.substring(idx+1));
@@ -237,12 +237,12 @@ public final class Permission {
 //
 
     /**
-     * {@link PermissionGroup} for {@link Hudson}.
+     * {@link PermissionGroup} for {@link hudson.model.Jenkins}.
      *
      * @deprecated since 2009-01-23.
-     *      Access {@link Hudson#PERMISSIONS} instead.
+     *      Access {@link hudson.model.Jenkins#PERMISSIONS} instead.
      */
-    public static final PermissionGroup HUDSON_PERMISSIONS = new PermissionGroup(Hudson.class, hudson.model.Messages._Hudson_Permissions_Title());
+    public static final PermissionGroup HUDSON_PERMISSIONS = new PermissionGroup(Jenkins.class, hudson.model.Messages._Hudson_Permissions_Title());
     /**
      * {@link Permission} that represents the God-like access. Equivalent of Unix root.
      *
@@ -250,7 +250,7 @@ public final class Permission {
      * All permissions are eventually {@linkplain Permission#impliedBy implied by} this permission.
      *
      * @deprecated since 2009-01-23.
-     *      Access {@link Hudson#ADMINISTER} instead.
+     *      Access {@link hudson.model.Jenkins#ADMINISTER} instead.
      */
     public static final Permission HUDSON_ADMINISTER = new Permission(HUDSON_PERMISSIONS,"Administer", hudson.model.Messages._Hudson_AdministerPermission_Description(),null);
 
@@ -269,7 +269,7 @@ public final class Permission {
      * any more, so deprecated.
      *
      * @deprecated since 2009-01-23.
-     *      Use {@link Hudson#ADMINISTER}.
+     *      Use {@link hudson.model.Jenkins#ADMINISTER}.
      */
     public static final Permission FULL_CONTROL = new Permission(GROUP,"FullControl",HUDSON_ADMINISTER);
 

@@ -46,7 +46,7 @@ public abstract class LabelFinder implements ExtensionPoint {
      * Returns all the registered {@link LabelFinder}s.
      */
     public static ExtensionList<LabelFinder> all() {
-        return Hudson.getInstance().getExtensionList(LabelFinder.class);
+        return Jenkins.getInstance().getExtensionList(LabelFinder.class);
     }
 
     /**

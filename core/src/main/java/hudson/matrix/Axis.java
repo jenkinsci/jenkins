@@ -27,7 +27,7 @@ import hudson.DescriptorExtensionList;
 import hudson.ExtensionPoint;
 import hudson.Util;
 import hudson.model.AbstractDescribableImpl;
-import hudson.model.Hudson;
+import hudson.model.Jenkins;
 import hudson.util.QuotedStringTokenizer;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.DataBoundConstructor;
@@ -214,7 +214,7 @@ public class Axis extends AbstractDescribableImpl<Axis> implements Comparable<Ax
      * Returns all the registered {@link AxisDescriptor}s.
      */
     public static DescriptorExtensionList<Axis,AxisDescriptor> all() {
-        return Hudson.getInstance().<Axis,AxisDescriptor>getDescriptorList(Axis.class);
+        return Jenkins.getInstance().<Axis,AxisDescriptor>getDescriptorList(Axis.class);
     }
 
     /**

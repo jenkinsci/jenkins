@@ -79,7 +79,7 @@ public abstract class AsyncPeriodicWork extends PeriodicWork {
      * Determines the log file that records the result of this task.
      */
     protected File getLogFile() {
-        return new File(Hudson.getInstance().getRootDir(),name+".log");
+        return new File(Jenkins.getInstance().getRootDir(),name+".log");
     }
 
     /**

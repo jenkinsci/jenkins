@@ -24,7 +24,7 @@
 package hudson.cli;
 
 import hudson.remoting.Channel;
-import hudson.model.Hudson;
+import hudson.model.Jenkins;
 import org.apache.commons.discovery.resource.ClassLoaders;
 import org.apache.commons.discovery.resource.classes.DiscoverClasses;
 import org.apache.commons.discovery.resource.names.DiscoverServiceNames;
@@ -91,7 +91,7 @@ public class CliManagerImpl implements CliEntryPoint, Serializable {
     static {
         // register option handlers that are defined
         ClassLoaders cls = new ClassLoaders();
-        cls.put(Hudson.getInstance().getPluginManager().uberClassLoader);
+        cls.put(Jenkins.getInstance().getPluginManager().uberClassLoader);
 
         ResourceNameIterator servicesIter =
             new DiscoverServiceNames(cls).findResourceNames(OptionHandler.class.getName());

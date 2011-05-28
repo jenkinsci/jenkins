@@ -26,7 +26,7 @@ package hudson.security;
 import groovy.lang.Binding;
 import hudson.Functions;
 import hudson.model.Descriptor;
-import hudson.model.Hudson;
+import hudson.model.Jenkins;
 import hudson.Util;
 import hudson.Extension;
 import hudson.os.PosixAPI;
@@ -108,7 +108,7 @@ public class PAMSecurityRealm extends SecurityRealm {
         binding.setVariable("instance", this);
 
         BeanBuilder builder = new BeanBuilder();
-        builder.parse(Hudson.getInstance().servletContext.getResourceAsStream("/WEB-INF/security/PAMSecurityRealm.groovy"),binding);
+        builder.parse(Jenkins.getInstance().servletContext.getResourceAsStream("/WEB-INF/security/PAMSecurityRealm.groovy"),binding);
         WebApplicationContext context = builder.createApplicationContext();
         return new SecurityComponents(
             findBean(AuthenticationManager.class, context),

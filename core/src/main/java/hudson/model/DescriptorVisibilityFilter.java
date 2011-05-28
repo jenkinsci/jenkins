@@ -34,7 +34,7 @@ public abstract class DescriptorVisibilityFilter implements ExtensionPoint {
     public abstract boolean filter(Object context, Descriptor descriptor);
 
     public static ExtensionList<DescriptorVisibilityFilter> all() {
-        return Hudson.getInstance().getExtensionList(DescriptorVisibilityFilter.class);
+        return Jenkins.getInstance().getExtensionList(DescriptorVisibilityFilter.class);
     }
 
     public static <T extends Descriptor> List<T> apply(Object context, Iterable<T> source) {

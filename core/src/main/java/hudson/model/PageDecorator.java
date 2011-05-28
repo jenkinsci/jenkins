@@ -100,7 +100,7 @@ public abstract class PageDecorator extends Descriptor<PageDecorator> implements
      * Obtains the URL of this object, excluding the context path.
      *
      * <p>
-     * Every {@link PageDecorator} is bound to URL via {@link Hudson#getDescriptor()}.
+     * Every {@link PageDecorator} is bound to URL via {@link Jenkins#getDescriptor()}.
      * This method returns such an URL.
      */
     public final String getUrl() {
@@ -118,6 +118,6 @@ public abstract class PageDecorator extends Descriptor<PageDecorator> implements
      * Returns all the registered {@link PageDecorator} descriptors.
      */
     public static ExtensionList<PageDecorator> all() {
-        return Hudson.getInstance().<PageDecorator,PageDecorator>getDescriptorList(PageDecorator.class);
+        return Jenkins.getInstance().<PageDecorator,PageDecorator>getDescriptorList(PageDecorator.class);
     }
 }

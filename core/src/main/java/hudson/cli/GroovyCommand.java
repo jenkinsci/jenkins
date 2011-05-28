@@ -26,7 +26,7 @@ package hudson.cli;
 import groovy.lang.GroovyShell;
 import groovy.lang.Binding;
 import hudson.model.AbstractProject;
-import hudson.model.Hudson;
+import hudson.model.Jenkins;
 import hudson.model.Item;
 import hudson.model.Run;
 import hudson.remoting.Callable;
@@ -70,7 +70,7 @@ public class GroovyCommand extends CLICommand implements Serializable {
 
     protected int run() throws Exception {
         // this allows the caller to manipulate the JVM state, so require the admin privilege.
-        Hudson.getInstance().checkPermission(Hudson.ADMINISTER);
+        Jenkins.getInstance().checkPermission(Jenkins.ADMINISTER);
 
         Binding binding = new Binding();
         binding.setProperty("out",new PrintWriter(stdout,true));
@@ -80,7 +80,7 @@ public class GroovyCommand extends CLICommand implements Serializable {
         binding.setProperty("channel",channel);
         String j = getClientEnvironmentVariable("JOB_NAME");
         if (j!=null) {
-            Item job = Hudson.getInstance().getItemByFullName(j);
+            Item job = Jenkins.getInstance().getItemByFullName(j);
             binding.setProperty("currentJob", job);
             String b = getClientEnvironmentVariable("BUILD_NUMBER");
             if (b!=null && job instanceof AbstractProject) {
@@ -89,7 +89,7 @@ public class GroovyCommand extends CLICommand implements Serializable {
             }
         }
 
-        GroovyShell groovy = new GroovyShell(Hudson.getInstance().getPluginManager().uberClassLoader, binding);
+        GroovyShell groovy = new GroovyShell(Jenkins.getInstance().getPluginManager().uberClassLoader, binding);
         groovy.run(loadScript(),"RemoteClass",remaining.toArray(new String[remaining.size()]));
         return 0;
     }

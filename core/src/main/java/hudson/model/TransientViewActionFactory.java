@@ -25,7 +25,7 @@ public abstract class TransientViewActionFactory implements ExtensionPoint {
      * Returns all the registered {@link TransientViewActionFactory}s.
      */
 	public static ExtensionList<TransientViewActionFactory> all() {
-		return Hudson.getInstance().getExtensionList(TransientViewActionFactory.class);
+		return Jenkins.getInstance().getExtensionList(TransientViewActionFactory.class);
 	}
 	
     /**

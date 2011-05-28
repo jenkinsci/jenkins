@@ -31,7 +31,7 @@ import hudson.model.Cause;
 import hudson.model.CauseAction;
 import hudson.model.DependencyGraph;
 import hudson.model.Descriptor;
-import hudson.model.Hudson;
+import hudson.model.Jenkins;
 import hudson.model.Item;
 import hudson.model.ItemGroup;
 import hudson.model.JDK;
@@ -203,7 +203,7 @@ public class MatrixConfiguration extends Project<MatrixConfiguration,MatrixRun> 
         } else{
         	expr = (exprSlave.equals("")) ? exprLabel : exprSlave;
         }
-        return Hudson.getInstance().getLabel(Util.fixEmpty(expr));
+        return Jenkins.getInstance().getLabel(Util.fixEmpty(expr));
     }
 
     @Override
@@ -213,7 +213,7 @@ public class MatrixConfiguration extends Project<MatrixConfiguration,MatrixRun> 
 
     @Override
     public JDK getJDK() {
-        return Hudson.getInstance().getJDK(combination.get("jdk"));
+        return Jenkins.getInstance().getJDK(combination.get("jdk"));
     }
 
 //
@@ -325,6 +325,6 @@ public class MatrixConfiguration extends Project<MatrixConfiguration,MatrixRun> 
      *      Can be null.
      */
     public boolean scheduleBuild(ParametersAction parameters, Cause c) {
-        return Hudson.getInstance().getQueue().schedule(this, getQuietPeriod(), parameters, new CauseAction(c))!=null;
+        return Jenkins.getInstance().getQueue().schedule(this, getQuietPeriod(), parameters, new CauseAction(c))!=null;
     }
 }

@@ -42,7 +42,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.logging.Logger;
 
-import hudson.model.Hudson;
+import hudson.model.Jenkins;
 
 import static java.util.logging.Level.WARNING;
 
@@ -119,8 +119,8 @@ public class InitializerFinder extends TaskBuilder {
      * Determines the parameter injection of the initialization method.
      */
     private Object lookUp(Class<?> type) {
-        if (type== Hudson.class)
-            return Hudson.getInstance();
+        if (type== Jenkins.class)
+            return Jenkins.getInstance();
         throw new IllegalArgumentException("Unable to inject "+type);
     }
 

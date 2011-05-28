@@ -83,7 +83,7 @@ public abstract class ViewDescriptor extends Descriptor<View> {
                     super.onItem(i);
                 }
             }
-        }.onItemGroup(Hudson.getInstance());
+        }.onItemGroup(Jenkins.getInstance());
 
         return r;
     }

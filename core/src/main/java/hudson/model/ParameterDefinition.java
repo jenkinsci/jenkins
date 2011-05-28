@@ -140,7 +140,7 @@ public abstract class ParameterDefinition implements
      * {@inheritDoc}
      */
     public ParameterDescriptor getDescriptor() {
-        return (ParameterDescriptor)Hudson.getInstance().getDescriptorOrDie(getClass());
+        return (ParameterDescriptor) Jenkins.getInstance().getDescriptorOrDie(getClass());
     }
 
     /**
@@ -201,7 +201,7 @@ public abstract class ParameterDefinition implements
      * Returns all the registered {@link ParameterDefinition} descriptors.
      */
     public static DescriptorExtensionList<ParameterDefinition,ParameterDescriptor> all() {
-        return Hudson.getInstance().<ParameterDefinition,ParameterDescriptor>getDescriptorList(ParameterDefinition.class);
+        return Jenkins.getInstance().<ParameterDefinition,ParameterDescriptor>getDescriptorList(ParameterDefinition.class);
     }
 
     /**

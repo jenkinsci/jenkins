@@ -27,7 +27,7 @@ import hudson.Extension;
 import hudson.lifecycle.WindowsSlaveInstaller;
 import hudson.model.Computer;
 import hudson.model.Descriptor;
-import hudson.model.Hudson;
+import hudson.model.Jenkins;
 import hudson.model.TaskListener;
 import hudson.remoting.Channel;
 import hudson.remoting.Channel.Listener;
@@ -290,7 +290,7 @@ public class ManagedWindowsServiceLauncher extends ComputerLauncher {
     private void copySlaveJar(PrintStream logger, SmbFile remoteRoot) throws IOException {
         // copy slave.jar
         logger.println("Copying slave.jar");
-        copyStreamAndClose(Hudson.getInstance().getJnlpJars("slave.jar").getURL().openStream(), new SmbFile(remoteRoot,"slave.jar").getOutputStream());
+        copyStreamAndClose(Jenkins.getInstance().getJnlpJars("slave.jar").getURL().openStream(), new SmbFile(remoteRoot,"slave.jar").getOutputStream());
     }
 
     private int readSmbFile(SmbFile f) throws IOException {

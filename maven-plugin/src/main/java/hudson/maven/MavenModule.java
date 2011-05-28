@@ -32,7 +32,7 @@ import hudson.model.Action;
 import hudson.model.DependencyGraph;
 import hudson.model.Descriptor;
 import hudson.model.Descriptor.FormException;
-import hudson.model.Hudson;
+import hudson.model.Jenkins;
 import hudson.model.Item;
 import hudson.model.ItemGroup;
 import hudson.model.JDK;
@@ -393,7 +393,7 @@ public final class MavenModule extends AbstractMavenProject<MavenModule,MavenBui
             // to emulate the old behavior that it tries to identify the upstream by ignoring the version.
             // do this by always putting groupId:artifactId:UNKNOWN to the modules list.
     
-            for (MavenModule m : Hudson.getInstance().getAllItems(MavenModule.class)) {
+            for (MavenModule m : Jenkins.getInstance().getAllItems(MavenModule.class)) {
                 if(m.isDisabled())  continue;
                 ModuleDependency moduleDependency = m.asDependency();
                 modules.put(moduleDependency,m);
@@ -490,7 +490,7 @@ public final class MavenModule extends AbstractMavenProject<MavenModule,MavenBui
         goals = Util.fixEmpty(req.getParameter("goals").trim());
 
         // dependency setting might have been changed by the user, so rebuild.
-        Hudson.getInstance().rebuildDependencyGraph();
+        Jenkins.getInstance().rebuildDependencyGraph();
     }
 
     @Override

@@ -26,6 +26,7 @@ package hudson;
 import com.thoughtworks.xstream.converters.reflection.PureJavaReflectionProvider;
 import com.thoughtworks.xstream.core.JVM;
 import hudson.model.Hudson;
+import hudson.model.Jenkins;
 import hudson.model.User;
 import hudson.triggers.SafeTimerTask;
 import hudson.triggers.Trigger;
@@ -41,8 +42,6 @@ import hudson.util.HudsonFailedToLoad;
 import hudson.util.ChartUtil;
 import hudson.util.AWTProblem;
 import org.jvnet.localizer.LocaleProvider;
-import org.kohsuke.stapler.Stapler;
-import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.jelly.JellyFacet;
 import org.apache.tools.ant.types.FileSet;
 
@@ -74,7 +73,7 @@ public final class WebAppMain implements ServletContextListener {
     private static final String APP = "app";
 
     /**
-     * Creates the sole instance of {@link Hudson} and register it to the {@link ServletContext}.
+     * Creates the sole instance of {@link hudson.model.Jenkins} and register it to the {@link ServletContext}.
      */
     public void contextInitialized(ServletContextEvent event) {
         try {
@@ -249,7 +248,7 @@ public final class WebAppMain implements ServletContextListener {
      * Installs log handler to monitor all Hudson logs.
      */
     private void installLogger() {
-        Hudson.logRecords = handler.getView();
+        Jenkins.logRecords = handler.getView();
         Logger.getLogger("hudson").addHandler(handler);
     }
 
@@ -330,7 +329,7 @@ public final class WebAppMain implements ServletContextListener {
     }
 
     public void contextDestroyed(ServletContextEvent event) {
-        Hudson instance = Hudson.getInstance();
+        Jenkins instance = Jenkins.getInstance();
         if(instance!=null)
             instance.cleanUp();
 

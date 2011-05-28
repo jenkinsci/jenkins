@@ -23,7 +23,7 @@
  */
 package hudson;
 
-import hudson.model.Hudson;
+import hudson.model.Jenkins;
 import hudson.model.Saveable;
 import hudson.model.listeners.SaveableListener;
 import hudson.util.Scrambler;
@@ -52,7 +52,7 @@ import com.thoughtworks.xstream.XStream;
  * <a href="http://java.sun.com/javase/6/docs/technotes/guides/net/http-auth.html">
  * Http Authentication</a>).
  * 
- * @see Hudson#proxy
+ * @see hudson.model.Jenkins#proxy
  */
 public final class ProxyConfiguration implements Saveable {
     public final String name;
@@ -95,7 +95,7 @@ public final class ProxyConfiguration implements Saveable {
     }
 
     public static XmlFile getXmlFile() {
-        return new XmlFile(XSTREAM, new File(Hudson.getInstance().getRootDir(), "proxy.xml"));
+        return new XmlFile(XSTREAM, new File(Jenkins.getInstance().getRootDir(), "proxy.xml"));
     }
 
     public static ProxyConfiguration load() throws IOException {
@@ -110,7 +110,7 @@ public final class ProxyConfiguration implements Saveable {
      * This method should be used wherever {@link URL#openConnection()} to internet URLs is invoked directly.
      */
     public static URLConnection open(URL url) throws IOException {
-        Hudson h = Hudson.getInstance(); // this code might run on slaves
+        Jenkins h = Jenkins.getInstance(); // this code might run on slaves
         ProxyConfiguration p = h!=null ? h.proxy : null;
         if(p==null)
             return url.openConnection();
@@ -122,7 +122,7 @@ public final class ProxyConfiguration implements Saveable {
                 @Override
                 public PasswordAuthentication getPasswordAuthentication() {
                     if (getRequestorType()!=RequestorType.PROXY)    return null;
-                    ProxyConfiguration p = Hudson.getInstance().proxy;
+                    ProxyConfiguration p = Jenkins.getInstance().proxy;
                     return new PasswordAuthentication(p.getUserName(),
                             p.getPassword().toCharArray());
                 }

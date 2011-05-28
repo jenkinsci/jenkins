@@ -97,7 +97,7 @@ public class Fingerprint implements ModelObject, Saveable {
          * or null if such a job no longer exists.
          */
         public AbstractProject getJob() {
-            return Hudson.getInstance().getItemByFullName(name,AbstractProject.class);
+            return Jenkins.getInstance().getItemByFullName(name,AbstractProject.class);
         }
 
         /**
@@ -148,7 +148,7 @@ public class Fingerprint implements ModelObject, Saveable {
          * belongs to MavenModuleSet. 
          */
         public boolean belongsTo(Job job) {
-            Item p = Hudson.getInstance().getItemByFullName(name);
+            Item p = Jenkins.getInstance().getItemByFullName(name);
             while(p!=null) {
                 if(p==job)
                     return true;
@@ -679,7 +679,7 @@ public class Fingerprint implements ModelObject, Saveable {
             return true;
 
         for (Entry<String,RangeSet> e : usages.entrySet()) {
-            Job j = Hudson.getInstance().getItemByFullName(e.getKey(),Job.class);
+            Job j = Jenkins.getInstance().getItemByFullName(e.getKey(),Job.class);
             if(j==null)
                 continue;
 
@@ -728,7 +728,7 @@ public class Fingerprint implements ModelObject, Saveable {
      */
     private static File getFingerprintFile(byte[] md5sum) {
         assert md5sum.length==16;
-        return new File( Hudson.getInstance().getRootDir(),
+        return new File( Jenkins.getInstance().getRootDir(),
             "fingerprints/"+ Util.toHexString(md5sum,0,1)+'/'+Util.toHexString(md5sum,1,1)+'/'+Util.toHexString(md5sum,2,md5sum.length-2)+".xml");
     }
 

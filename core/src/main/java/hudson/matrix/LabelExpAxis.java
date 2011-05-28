@@ -25,7 +25,7 @@ package hudson.matrix;
 
 import hudson.Extension;
 import hudson.Util;
-import hudson.model.Hudson;
+import hudson.model.Jenkins;
 
 import java.util.LinkedList;
 import java.util.List;
@@ -55,7 +55,7 @@ public class LabelExpAxis extends Axis {
 
     @Override
     public DescriptorImpl getDescriptor() {
-        return (DescriptorImpl)Hudson.getInstance().getDescriptorOrDie(getClass());
+        return (DescriptorImpl) Jenkins.getInstance().getDescriptorOrDie(getClass());
     }
 
     public String getValuesString(){
@@ -79,7 +79,7 @@ public class LabelExpAxis extends Axis {
          */
         @Override
         public boolean isInstantiable() {
-            Hudson h = Hudson.getInstance();
+            Jenkins h = Jenkins.getInstance();
             return !h.getNodes().isEmpty() || !h.clouds.isEmpty();
         }
     }

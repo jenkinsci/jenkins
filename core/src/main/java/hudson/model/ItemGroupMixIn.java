@@ -133,7 +133,7 @@ public abstract class ItemGroupMixIn {
             throw new Failure("Query parameter 'name' is required");
 
         {// check if the name looks good
-            Hudson.checkGoodName(name);
+            Jenkins.checkGoodName(name);
             name = name.trim();
             if(parent.getItem(name)!=null)
                 throw new Failure(Messages.Hudson_JobAlreadyExists(name));
@@ -148,7 +148,7 @@ public abstract class ItemGroupMixIn {
             if (!from.startsWith("/"))
                 src = parent.getItem(from);
             if (src==null)
-                src = Hudson.getInstance().getItemByFullName(from);
+                src = Jenkins.getInstance().getItemByFullName(from);
 
             if(src==null) {
                 if(Util.fixEmpty(from)==null)
@@ -224,7 +224,7 @@ public abstract class ItemGroupMixIn {
             add(result);
 
             ItemListener.fireOnCreated(result);
-            Hudson.getInstance().rebuildDependencyGraph();
+            Jenkins.getInstance().rebuildDependencyGraph();
 
             return result;
         } catch (IOException e) {

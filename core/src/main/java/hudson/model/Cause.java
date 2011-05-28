@@ -185,7 +185,7 @@ public abstract class Cause {
     public static class UserCause extends Cause {
         private String authenticationName;
         public UserCause() {
-            this.authenticationName = Hudson.getAuthentication().getName();
+            this.authenticationName = Jenkins.getAuthentication().getName();
         }
 
         @Exported(visibility=3)

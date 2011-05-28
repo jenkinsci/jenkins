@@ -32,7 +32,7 @@ import hudson.Util;
 import static hudson.Util.fixNull;
 import hudson.model.BuildListener;
 import hudson.model.Fingerprint.RangeSet;
-import hudson.model.Hudson;
+import hudson.model.Jenkins;
 import hudson.model.Item;
 import hudson.model.Job;
 import hudson.model.Result;
@@ -152,7 +152,7 @@ public class AggregatedTestResultPublisher extends Recorder {
         public Collection<AbstractProject> getJobs() {
             List<AbstractProject> r = new ArrayList<AbstractProject>();
             for (String job : Util.tokenize(jobs,",")) {
-                AbstractProject j = Hudson.getInstance().getItemByFullName(job.trim(), AbstractProject.class);
+                AbstractProject j = Jenkins.getInstance().getItemByFullName(job.trim(), AbstractProject.class);
                 if(j!=null)
                     r.add(j);
             }
@@ -335,7 +335,7 @@ public class AggregatedTestResultPublisher extends Recorder {
 
             for (String name : Util.tokenize(fixNull(value), ",")) {
                 name = name.trim();
-                if(Hudson.getInstance().getItem(name,project)==null)
+                if(Jenkins.getInstance().getItem(name,project)==null)
                     return FormValidation.error(hudson.tasks.Messages.BuildTrigger_NoSuchProject(name,AbstractProject.findNearest(name).getName()));
             }
             
@@ -353,7 +353,7 @@ public class AggregatedTestResultPublisher extends Recorder {
 
         public AutoCompletionCandidates doAutoCompleteJobs(@QueryParameter String value) {
             AutoCompletionCandidates candidates = new AutoCompletionCandidates();
-            List<Job> jobs = Hudson.getInstance().getItems(Job.class);
+            List<Job> jobs = Jenkins.getInstance().getItems(Job.class);
             for (Job job: jobs) {
                 if (job.getFullName().startsWith(value)) {
                     if (job.hasPermission(Item.READ)) {

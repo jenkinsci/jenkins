@@ -96,7 +96,7 @@ public abstract class JobProperty<J extends Job<?,?>> implements ReconfigurableD
      * {@inheritDoc}
      */
     public JobPropertyDescriptor getDescriptor() {
-        return (JobPropertyDescriptor)Hudson.getInstance().getDescriptorOrDie(getClass());
+        return (JobPropertyDescriptor) Jenkins.getInstance().getDescriptorOrDie(getClass());
     }
 
     /**

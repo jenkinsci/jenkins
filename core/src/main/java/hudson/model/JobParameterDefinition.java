@@ -55,6 +55,6 @@ public class JobParameterDefinition extends SimpleParameterDefinition {
     }
 
     public ParameterValue createValue(String value) {
-        return new JobParameterValue(getName(),Hudson.getInstance().getItemByFullName(value,Job.class));
+        return new JobParameterValue(getName(), Jenkins.getInstance().getItemByFullName(value,Job.class));
     }
 }

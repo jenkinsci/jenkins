@@ -9,7 +9,7 @@ import org.jvnet.hudson.test.HudsonTestCase;
  */
 public class ExecutorTest extends HudsonTestCase {
     public void testYank() throws Exception {
-        Computer c = Hudson.getInstance().toComputer();
+        Computer c = Jenkins.getInstance().toComputer();
         Executor e = c.getExecutors().get(0);
 
         // kill an executor

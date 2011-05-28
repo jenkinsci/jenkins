@@ -25,7 +25,7 @@ package hudson.slaves;
 
 import hudson.model.LoadStatistics;
 import hudson.model.Node;
-import hudson.model.Hudson;
+import hudson.model.Jenkins;
 import hudson.model.MultiStageTimeSeries;
 import hudson.model.Label;
 import hudson.model.PeriodicWork;
@@ -34,7 +34,6 @@ import hudson.model.MultiStageTimeSeries.TimeScale;
 import hudson.Extension;
 
 import java.awt.Color;
-import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.Future;
 import java.util.concurrent.ExecutionException;
 import java.util.List;
@@ -118,7 +117,7 @@ public class NodeProvisioner {
      * Launches additional nodes if necessary.
      */
     private synchronized void update() {
-        Hudson hudson = Hudson.getInstance();
+        Jenkins hudson = Jenkins.getInstance();
 
         // clean up the cancelled launch activity, then count the # of executors that we are about to bring up.
         float plannedCapacity = 0;
@@ -280,7 +279,7 @@ public class NodeProvisioner {
 
         @Override
         protected void doRun() {
-            Hudson h = Hudson.getInstance();
+            Jenkins h = Jenkins.getInstance();
             h.overallNodeProvisioner.update();
             for( Label l : h.getLabels() )
                 l.nodeProvisioner.update();

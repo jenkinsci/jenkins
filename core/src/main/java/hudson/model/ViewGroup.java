@@ -76,7 +76,7 @@ public interface ViewGroup extends Saveable, ModelObject, AccessControlled {
      *
      * <p>
      * It is the caller's responsibility to ensure that the new name is a
-     * {@linkplain Hudson#checkGoodName(String) legal view name}.
+     * {@linkplain Jenkins#checkGoodName(String) legal view name}.
      */
     void onViewRenamed(View view, String oldName, String newName);
 

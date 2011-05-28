@@ -100,7 +100,7 @@ public abstract class TopLevelItemDescriptor extends Descriptor<TopLevelItem> {
      *      Use {@link #newInstance(ItemGroup, String)}
      */
     public TopLevelItem newInstance(String name) {
-        return newInstance(Hudson.getInstance(), name);
+        return newInstance(Jenkins.getInstance(), name);
     }
 
     /**

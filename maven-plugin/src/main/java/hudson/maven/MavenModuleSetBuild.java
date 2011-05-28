@@ -44,7 +44,7 @@ import hudson.model.Cause.UpstreamCause;
 import hudson.model.Computer;
 import hudson.model.Environment;
 import hudson.model.Fingerprint;
-import hudson.model.Hudson;
+import hudson.model.Jenkins;
 import hudson.model.ParameterDefinition;
 import hudson.model.ParametersAction;
 import hudson.model.ParametersDefinitionProperty;
@@ -864,7 +864,7 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
             }
 
             // we might have added new modules
-            Hudson.getInstance().rebuildDependencyGraph();
+            Jenkins.getInstance().rebuildDependencyGraph();
 
             // module builds must start with this build's number
             for (MavenModule m : modules.values())

@@ -58,7 +58,7 @@ public class Items {
      * Returns all the registered {@link TopLevelItemDescriptor}s.
      */
     public static DescriptorExtensionList<TopLevelItem,TopLevelItemDescriptor> all() {
-        return Hudson.getInstance().<TopLevelItem,TopLevelItemDescriptor>getDescriptorList(TopLevelItem.class);
+        return Jenkins.getInstance().<TopLevelItem,TopLevelItemDescriptor>getDescriptorList(TopLevelItem.class);
     }
 
     public static TopLevelItemDescriptor getDescriptor(String fqcn) {
@@ -90,7 +90,7 @@ public class Items {
      * Does the opposite of {@link #toNameList(Collection)}.
      */
     public static <T extends Item> List<T> fromNameList(ItemGroup context, String list, Class<T> type) {
-        Hudson hudson = Hudson.getInstance();
+        Jenkins hudson = Jenkins.getInstance();
 
         List<T> r = new ArrayList<T>();
         StringTokenizer tokens = new StringTokenizer(list,",");

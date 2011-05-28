@@ -35,7 +35,7 @@ public class FreeStyleProject extends Project<FreeStyleProject,FreeStyleBuild> i
     /**
      * @deprecated as of 1.390
      */
-    public FreeStyleProject(Hudson parent, String name) {
+    public FreeStyleProject(Jenkins parent, String name) {
         super(parent, name);
     }
 

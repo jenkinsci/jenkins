@@ -26,11 +26,10 @@ package hudson.matrix;
 import hudson.Extension;
 import hudson.Functions;
 import hudson.Util;
-import hudson.model.Hudson;
+import hudson.model.Jenkins;
 import hudson.model.labels.LabelAtom;
 import org.kohsuke.stapler.DataBoundConstructor;
 
-import java.text.MessageFormat;
 import java.util.List;
 
 /**
@@ -66,7 +65,7 @@ public class LabelAxis extends Axis {
          */
         @Override
         public boolean isInstantiable() {
-            Hudson h = Hudson.getInstance();
+            Jenkins h = Jenkins.getInstance();
             return !h.getNodes().isEmpty() || !h.clouds.isEmpty();
         }
 

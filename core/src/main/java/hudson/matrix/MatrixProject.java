@@ -34,7 +34,7 @@ import hudson.model.BuildableItemWithBuildWrappers;
 import hudson.model.DependencyGraph;
 import hudson.model.Descriptor;
 import hudson.model.Descriptor.FormException;
-import hudson.model.Hudson;
+import hudson.model.Jenkins;
 import hudson.model.Item;
 import hudson.model.ItemGroup;
 import hudson.model.Items;
@@ -145,7 +145,7 @@ public class MatrixProject extends AbstractProject<MatrixProject,MatrixBuild> im
     private Result touchStoneResultCondition;
 
     public MatrixProject(String name) {
-        this(Hudson.getInstance(), name);
+        this(Jenkins.getInstance(), name);
     }
 
     public MatrixProject(ItemGroup parent, String name) {
@@ -469,7 +469,7 @@ public class MatrixProject extends AbstractProject<MatrixProject,MatrixBuild> im
         if(a==null)  return Collections.emptySet();
         Set<JDK> r = new HashSet<JDK>();
         for (String j : a) {
-            JDK jdk = Hudson.getInstance().getJDK(j);
+            JDK jdk = Jenkins.getInstance().getJDK(j);
             if(jdk!=null)
                 r.add(jdk);
         }
@@ -483,7 +483,7 @@ public class MatrixProject extends AbstractProject<MatrixProject,MatrixBuild> im
     public Set<Label> getLabels() {
         Set<Label> r = new HashSet<Label>();
         for (Combination c : axes.subList(LabelAxis.class).list())
-            r.add(Hudson.getInstance().getLabel(Util.join(c.values(),"&&")));
+            r.add(Jenkins.getInstance().getLabel(Util.join(c.values(),"&&")));
         return r;
     }
 

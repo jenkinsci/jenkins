@@ -24,7 +24,7 @@
 
 package hudson;
 
-import hudson.model.Hudson;
+import hudson.model.Jenkins;
 
 import java.io.File;
 import java.io.IOException;
@@ -42,8 +42,8 @@ import java.util.logging.Logger;
  * @author Kohsuke Kawaguchi
  */
 public class LocalPluginManager extends PluginManager {
-    private final Hudson hudson;
-    public LocalPluginManager(Hudson hudson) {
+    private final Jenkins hudson;
+    public LocalPluginManager(Jenkins hudson) {
         super(hudson.servletContext, new File(hudson.getRootDir(),"plugins"));
         this.hudson = hudson;
     }

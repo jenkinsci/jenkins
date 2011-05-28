@@ -81,7 +81,7 @@ public abstract class PeriodicWork extends SafeTimerTask implements ExtensionPoi
      * Returns all the registered {@link PeriodicWork}s.
      */
     public static ExtensionList<PeriodicWork> all() {
-        return Hudson.getInstance().getExtensionList(PeriodicWork.class);
+        return Jenkins.getInstance().getExtensionList(PeriodicWork.class);
     }
 
     // time constants

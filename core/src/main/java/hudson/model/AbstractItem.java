@@ -121,7 +121,7 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
     /**
      * This bridge method is to maintain binary compatibility with {@link TopLevelItem#getParent()}.
      */
-    @WithBridgeMethods(value=Hudson.class,castRequired=true)
+    @WithBridgeMethods(value=Jenkins.class,castRequired=true)
     public ItemGroup getParent() {
         assert parent!=null;
         return parent;
@@ -329,7 +329,7 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
         StaplerRequest request = Stapler.getCurrentRequest();
         if(request==null)
             throw new IllegalStateException("Not processing a HTTP request");
-        return Util.encode(Hudson.getInstance().getRootUrl()+getUrl());
+        return Util.encode(Jenkins.getInstance().getRootUrl()+getUrl());
     }
 
     /**
@@ -343,7 +343,7 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
      * Returns the {@link ACL} for this object.
      */
     public ACL getACL() {
-        return Hudson.getInstance().getAuthorizationStrategy().getACL(this);
+        return Jenkins.getInstance().getAuthorizationStrategy().getACL(this);
     }
 
     /**
@@ -374,7 +374,7 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
     }
 
     public Descriptor getDescriptorByName(String className) {
-        return Hudson.getInstance().getDescriptorByName(className);
+        return Jenkins.getInstance().getDescriptorByName(className);
     }
 
     /**
@@ -420,7 +420,7 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
             // ignore
         }
 
-        Hudson.getInstance().rebuildDependencyGraph();
+        Jenkins.getInstance().rebuildDependencyGraph();
     }
 
     /**
@@ -497,7 +497,7 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
     @CLIResolver
     public static AbstractItem resolveForCLI(
             @Argument(required=true,metaVar="NAME",usage="Job name") String name) throws CmdLineException {
-        AbstractItem item = Hudson.getInstance().getItemByFullName(name, AbstractItem.class);
+        AbstractItem item = Jenkins.getInstance().getItemByFullName(name, AbstractItem.class);
         if (item==null)
             throw new CmdLineException(null,Messages.AbstractItem_NoSuchJobExists(name,AbstractProject.findNearest(name).getFullName()));
         return item;

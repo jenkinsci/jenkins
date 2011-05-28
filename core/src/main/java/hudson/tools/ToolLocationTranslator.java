@@ -26,7 +26,7 @@ package hudson.tools;
 import hudson.ExtensionList;
 import hudson.ExtensionPoint;
 import hudson.slaves.NodeSpecific;
-import hudson.model.Hudson;
+import hudson.model.Jenkins;
 import hudson.model.Node;
 import hudson.model.TaskListener;
 import java.io.File;
@@ -69,6 +69,6 @@ public abstract class ToolLocationTranslator implements ExtensionPoint {
      * Returns all the registered {@link ToolLocationTranslator}s.
      */
     public static ExtensionList<ToolLocationTranslator> all() {
-        return Hudson.getInstance().getExtensionList(ToolLocationTranslator.class);
+        return Jenkins.getInstance().getExtensionList(ToolLocationTranslator.class);
     }
 }

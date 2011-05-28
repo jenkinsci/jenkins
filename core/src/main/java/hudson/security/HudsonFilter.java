@@ -23,7 +23,7 @@
  */
 package hudson.security;
 
-import hudson.model.Hudson;
+import hudson.model.Jenkins;
 
 import java.io.IOException;
 import java.util.logging.Logger;
@@ -100,7 +100,7 @@ public class HudsonFilter implements Filter {
         // this is how we make us available to the rest of Hudson.
         filterConfig.getServletContext().setAttribute(HudsonFilter.class.getName(),this);
         try {
-            Hudson hudson = Hudson.getInstance();
+            Jenkins hudson = Jenkins.getInstance();
             if (hudson != null) {
                 // looks like we are initialized after Hudson came into being. initialize it now. See #3069
                 LOGGER.fine("Security wasn't initialized; Initializing it...");

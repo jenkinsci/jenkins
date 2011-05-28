@@ -26,7 +26,7 @@ package hudson.tools;
 import hudson.DescriptorExtensionList;
 import hudson.Extension;
 import hudson.model.Descriptor;
-import hudson.model.Hudson;
+import hudson.model.Jenkins;
 import hudson.model.Node;
 import hudson.model.TaskListener;
 import hudson.slaves.NodeProperty;
@@ -130,7 +130,7 @@ public class ToolLocationNodeProperty extends NodeProperty<Node> {
 
         @Override
         public boolean isApplicable(Class<? extends Node> nodeType) {
-            return nodeType != Hudson.class;
+            return nodeType != Jenkins.class;
         }
     }
 

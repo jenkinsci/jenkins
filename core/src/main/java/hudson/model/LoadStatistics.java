@@ -58,7 +58,7 @@ import java.util.List;
  *
  * @author Kohsuke Kawaguchi
  * @see Label#loadStatistics
- * @see Hudson#overallLoad
+ * @see Jenkins#overallLoad
  */
 @ExportedBean
 public abstract class LoadStatistics {
@@ -194,7 +194,7 @@ public abstract class LoadStatistics {
         }
 
         protected void doRun() {
-            Hudson h = Hudson.getInstance();
+            Jenkins h = Jenkins.getInstance();
             List<hudson.model.Queue.BuildableItem> bis = h.getQueue().getBuildableItems();
 
             // update statistics on slaves

@@ -79,7 +79,7 @@ public abstract class ViewJob<JobT extends ViewJob<JobT,RunT>, RunT extends Run<
     /**
      * @deprecated as of 1.390
      */
-    protected ViewJob(Hudson parent, String name) {
+    protected ViewJob(Jenkins parent, String name) {
         super(parent,name);
     }
 
@@ -177,7 +177,7 @@ public abstract class ViewJob<JobT extends ViewJob<JobT,RunT>, RunT extends Run<
         }
 
         private boolean terminating() {
-            return Hudson.getInstance().isTerminating();
+            return Jenkins.getInstance().isTerminating();
         }
 
         @Override

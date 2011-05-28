@@ -29,9 +29,8 @@ import hudson.maven.MavenBuild;
 import hudson.maven.MavenBuildProxy;
 import hudson.model.BuildListener;
 import hudson.model.FingerprintMap;
-import hudson.model.Hudson;
+import hudson.model.Jenkins;
 
-import org.apache.maven.RepositoryUtils;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.factory.ArtifactFactory;
 import org.apache.maven.artifact.handler.ArtifactHandler;
@@ -257,7 +256,7 @@ public final class MavenArtifact implements Serializable {
      * Called from within the master to record fingerprint.
      */
     public void recordFingerprint(MavenBuild build) throws IOException {
-        FingerprintMap map = Hudson.getInstance().getFingerprintMap();
+        FingerprintMap map = Jenkins.getInstance().getFingerprintMap();
         map.getOrCreate(build,fileName,md5sum);
     }
 

@@ -178,18 +178,18 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable {
          * Returns {@link Descriptor} whose 'clazz' is the same as {@link #getItemType() the item type}.
          */
         public Descriptor getItemTypeDescriptor() {
-            return Hudson.getInstance().getDescriptor(getItemType());
+            return Jenkins.getInstance().getDescriptor(getItemType());
         }
 
         public Descriptor getItemTypeDescriptorOrDie() {
-            return Hudson.getInstance().getDescriptorOrDie(getItemType());
+            return Jenkins.getInstance().getDescriptorOrDie(getItemType());
         }
 
         /**
          * Returns all the descriptors that produce types assignable to the item type.
          */
         public List<? extends Descriptor> getApplicableDescriptors() {
-            return Hudson.getInstance().getDescriptorList(clazz);
+            return Jenkins.getInstance().getDescriptorList(clazz);
         }
     }
 
@@ -275,7 +275,7 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable {
 
     /**
      * Gets the URL that this Descriptor is bound to, relative to the nearest {@link DescriptorByNameOwner}.
-     * Since {@link Hudson} is a {@link DescriptorByNameOwner}, there's always one such ancestor to any request.
+     * Since {@link Jenkins} is a {@link DescriptorByNameOwner}, there's always one such ancestor to any request.
      */
     public String getDescriptorUrl() {
         return "descriptorByName/"+getId();
@@ -709,7 +709,7 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable {
     }
 
     private XmlFile getConfigFile() {
-        return new XmlFile(new File(Hudson.getInstance().getRootDir(),getId()+".xml"));
+        return new XmlFile(new File(Jenkins.getInstance().getRootDir(),getId()+".xml"));
     }
 
     /**
@@ -834,7 +834,7 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable {
     }
 
     public static Descriptor find(String className) {
-        return find(Hudson.getInstance().getExtensionList(Descriptor.class),className);
+        return find(Jenkins.getInstance().getExtensionList(Descriptor.class),className);
     }
 
     public static final class FormException extends Exception implements HttpResponse {

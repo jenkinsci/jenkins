@@ -49,32 +49,10 @@ import hudson.maven.MavenModule;
 import hudson.maven.MavenModuleSet;
 import hudson.maven.MavenModuleSetBuild;
 import hudson.maven.MavenUtil;
-import hudson.model.AbstractBuild;
-import hudson.model.AbstractProject;
-import hudson.model.BuildListener;
-import hudson.model.Computer;
-import hudson.model.Describable;
-import hudson.model.Descriptor;
-import hudson.model.DownloadService;
+import hudson.model.*;
 import hudson.model.Executor;
-import hudson.model.FreeStyleBuild;
-import hudson.model.FreeStyleProject;
-import hudson.model.Hudson;
-import hudson.model.Item;
-import hudson.model.JDK;
-import hudson.model.Job;
-import hudson.model.Label;
-import hudson.model.Node;
 import hudson.model.Node.Mode;
 import hudson.model.Queue.Executable;
-import hudson.model.Result;
-import hudson.model.RootAction;
-import hudson.model.Run;
-import hudson.model.Saveable;
-import hudson.model.TaskListener;
-import hudson.model.UpdateSite;
-import hudson.model.User;
-import hudson.model.View;
 import hudson.remoting.Channel;
 import hudson.remoting.VirtualChannel;
 import hudson.remoting.Which;
@@ -294,7 +272,7 @@ public abstract class HudsonTestCase extends TestCase implements RootAction {
             hudson = newHudson();
         } catch (Exception e) {
             // if Hudson instance fails to initialize, it leaves the instance field non-empty and break all the rest of the tests, so clean that up.
-            Field f = Hudson.class.getDeclaredField("theInstance");
+            Field f = Jenkins.class.getDeclaredField("theInstance");
             f.setAccessible(true);
             f.set(null,null);
             throw e;
@@ -416,7 +394,7 @@ public abstract class HudsonTestCase extends TestCase implements RootAction {
     }
 
     /**
-     * Creates a new instance of {@link Hudson}. If the derived class wants to create it in a different way,
+     * Creates a new instance of {@link hudson.model.Jenkins}. If the derived class wants to create it in a different way,
      * you can override it.
      */
     protected Hudson newHudson() throws Exception {
@@ -1458,7 +1436,7 @@ public abstract class HudsonTestCase extends TestCase implements RootAction {
      * <p>
      * This method allows you to do just that. It is useful for testing some methods that
      * require {@link StaplerRequest} and {@link StaplerResponse}, or getting the credential
-     * of the current user (via {@link Hudson#getAuthentication()}, and so on.
+     * of the current user (via {@link hudson.model.Jenkins#getAuthentication()}, and so on.
      *
      * @param c
      *      The closure to be executed on the server.
@@ -1584,7 +1562,7 @@ public abstract class HudsonTestCase extends TestCase implements RootAction {
          * <p>
          * This method allows you to do just that. It is useful for testing some methods that
          * require {@link StaplerRequest} and {@link StaplerResponse}, or getting the credential
-         * of the current user (via {@link Hudson#getAuthentication()}, and so on.
+         * of the current user (via {@link hudson.model.Jenkins#getAuthentication()}, and so on.
          *
          * @param c
          *      The closure to be executed on the server.

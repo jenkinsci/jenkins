@@ -81,7 +81,7 @@ public abstract class RetentionStrategy<T extends Computer> extends AbstractDesc
      * Returns all the registered {@link RetentionStrategy} descriptors.
      */
     public static DescriptorExtensionList<RetentionStrategy<?>,Descriptor<RetentionStrategy<?>>> all() {
-        return (DescriptorExtensionList)Hudson.getInstance().getDescriptorList(RetentionStrategy.class);
+        return (DescriptorExtensionList) Jenkins.getInstance().getDescriptorList(RetentionStrategy.class);
     }
 
     /**

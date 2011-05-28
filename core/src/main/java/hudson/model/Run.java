@@ -43,7 +43,7 @@ import hudson.matrix.MatrixRun;
 import hudson.model.Descriptor.FormException;
 import hudson.model.listeners.RunListener;
 import hudson.model.listeners.SaveableListener;
-import hudson.model.Hudson.MasterComputer;
+import hudson.model.Jenkins.MasterComputer;
 import hudson.search.SearchIndexBuilder;
 import hudson.security.ACL;
 import hudson.security.AccessControlled;
@@ -395,7 +395,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
      * Otherwise null.
      */
     public Executor getExecutor() {
-        for( Computer c : Hudson.getInstance().getComputers() ) {
+        for( Computer c : Jenkins.getInstance().getComputers() ) {
             for (Executor e : c.getExecutors()) {
                 if(e.getCurrentExecutable()==this)
                     return e;
@@ -818,7 +818,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
     }
 
     public Descriptor getDescriptorByName(String className) {
-        return Hudson.getInstance().getDescriptorByName(className);
+        return Jenkins.getInstance().getDescriptorByName(className);
     }
 
     /**
@@ -1777,7 +1777,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
         Computer c = Computer.currentComputer();
         if (c!=null)
             env = c.getEnvironment().overrideAll(env);
-        String rootUrl = Hudson.getInstance().getRootUrl();
+        String rootUrl = Jenkins.getInstance().getRootUrl();
         if(rootUrl!=null) {
             env.put("JENKINS_URL", rootUrl);
             env.put("HUDSON_URL", rootUrl); // Legacy compatibility
@@ -1785,8 +1785,8 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
             env.put("JOB_URL", rootUrl+getParent().getUrl());
         }
         
-        env.put("JENKINS_HOME", Hudson.getInstance().getRootDir().getPath() );
-        env.put("HUDSON_HOME", Hudson.getInstance().getRootDir().getPath() );   // legacy compatibility
+        env.put("JENKINS_HOME", Jenkins.getInstance().getRootDir().getPath() );
+        env.put("HUDSON_HOME", Jenkins.getInstance().getRootDir().getPath() );   // legacy compatibility
 
         Thread t = Thread.currentThread();
         if (t instanceof Executor) {
@@ -1814,8 +1814,8 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
      */
     public final EnvVars getCharacteristicEnvVars() {
         EnvVars env = new EnvVars();
-        env.put("JENKINS_SERVER_COOKIE",Util.getDigestOf("ServerID:"+Hudson.getInstance().getSecretKey()));
-        env.put("HUDSON_SERVER_COOKIE",Util.getDigestOf("ServerID:"+Hudson.getInstance().getSecretKey())); // Legacy compatibility
+        env.put("JENKINS_SERVER_COOKIE",Util.getDigestOf("ServerID:"+ Jenkins.getInstance().getSecretKey()));
+        env.put("HUDSON_SERVER_COOKIE",Util.getDigestOf("ServerID:"+ Jenkins.getInstance().getSecretKey())); // Legacy compatibility
         env.put("BUILD_NUMBER",String.valueOf(number));
         env.put("BUILD_ID",getId());
         env.put("BUILD_TAG","jenkins-"+getParent().getName()+"-"+number);
@@ -1835,7 +1835,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
         String jobName = id.substring(0, hash);
         int number = Integer.parseInt(id.substring(hash + 1));
 
-        Job<?,?> job = (Job<?,?>) Hudson.getInstance().getItem(jobName);
+        Job<?,?> job = (Job<?,?>) Jenkins.getInstance().getItem(jobName);
         return job.getBuildByNumber(number);
     }
 

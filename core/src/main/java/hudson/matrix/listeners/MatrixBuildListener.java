@@ -29,7 +29,7 @@ import hudson.matrix.MatrixConfiguration;
 import hudson.matrix.MatrixBuild;
 import hudson.matrix.MatrixRun;
 import hudson.model.Action;
-import hudson.model.Hudson;
+import hudson.model.Jenkins;
 import hudson.model.Queue;
 import hudson.model.Queue.Task;
 
@@ -79,6 +79,6 @@ public abstract class MatrixBuildListener implements ExtensionPoint {
 	 * Returns all the registered {@link MatrixBuildListener} descriptors.
 	 */
 	public static ExtensionList<MatrixBuildListener> all() {
-		return Hudson.getInstance().getExtensionList(MatrixBuildListener.class);
+		return Jenkins.getInstance().getExtensionList(MatrixBuildListener.class);
 	}
 }

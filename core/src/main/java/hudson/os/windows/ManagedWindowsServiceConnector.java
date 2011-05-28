@@ -3,7 +3,7 @@ package hudson.os.windows;
 import hudson.Extension;
 import hudson.model.Computer;
 import hudson.model.Descriptor;
-import hudson.model.Hudson;
+import hudson.model.Jenkins;
 import hudson.model.TaskListener;
 import hudson.slaves.ComputerConnector;
 import hudson.slaves.ComputerConnectorDescriptor;
@@ -41,7 +41,7 @@ public class ManagedWindowsServiceConnector extends ComputerConnector {
 
             @Override
             public Descriptor<ComputerLauncher> getDescriptor() {
-                return Hudson.getInstance().getDescriptor(ManagedWindowsServiceLauncher.class);
+                return Jenkins.getInstance().getDescriptor(ManagedWindowsServiceLauncher.class);
             }
         };
     }

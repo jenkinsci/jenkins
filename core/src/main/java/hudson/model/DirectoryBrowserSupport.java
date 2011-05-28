@@ -259,7 +259,7 @@ public final class DirectoryBrowserSupport implements HttpResponse {
         boolean view = rest.equals("*view*");
 
         if(rest.equals("*fingerprint*")) {
-            rsp.forward(Hudson.getInstance().getFingerprint(baseFile.digest()),"/",req);
+            rsp.forward(Jenkins.getInstance().getFingerprint(baseFile.digest()),"/",req);
             return;
         }
 
