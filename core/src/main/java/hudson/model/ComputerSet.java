@@ -44,7 +44,7 @@ import static javax.servlet.http.HttpServletResponse.SC_BAD_REQUEST;
 import java.io.File;
 import java.io.IOException;
 import java.util.AbstractList;
-import java.util.LinkedHashMap;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
@@ -105,7 +105,7 @@ public final class ComputerSet extends AbstractModelObject {
      * Returns a subset pf {@link #getMonitors()} that are {@linkplain NodeMonitor#isIgnored() not ignored}.
      */
     public static Map<Descriptor<NodeMonitor>,NodeMonitor> getNonIgnoredMonitors() {
-        Map<Descriptor<NodeMonitor>,NodeMonitor> r = new LinkedHashMap<Descriptor<NodeMonitor>, NodeMonitor>();
+        Map<Descriptor<NodeMonitor>,NodeMonitor> r = new HashMap<Descriptor<NodeMonitor>, NodeMonitor>();
         for (NodeMonitor m : monitors) {
             if(!m.isIgnored())
                 r.put(m.getDescriptor(),m);
