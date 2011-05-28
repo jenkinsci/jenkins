@@ -36,6 +36,7 @@ import hudson.views.ListViewColumn;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 import org.kohsuke.stapler.*;
+import org.kohsuke.stapler.jelly.JellyCompatibleFacet;
 import org.springframework.util.StringUtils;
 import org.jvnet.tiger_types.Types;
 import org.apache.commons.io.IOUtils;
@@ -648,7 +649,14 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable {
     }
 
     public String getConfigPage() {
-        return getViewPage(clazz, "config.jelly");
+        List<String> names = new ArrayList<String>();
+        for (Facet f : WebApp.get(Hudson.getInstance().servletContext).facets) {
+            if (f instanceof JellyCompatibleFacet) {
+                JellyCompatibleFacet jcf = (JellyCompatibleFacet) f;
+                names.add("config"+jcf.getDefaultScriptExtension());
+            }
+        }
+        return getViewPage(clazz,names,"config.jelly");
     }
 
     public String getGlobalConfigPage() {
@@ -656,10 +664,16 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable {
     }
 
     private String getViewPage(Class<?> clazz, String pageName, String defaultValue) {
+        return getViewPage(clazz,Collections.singleton(pageName),defaultValue);
+    }
+
+    private String getViewPage(Class<?> clazz, Collection<String> pageNames, String defaultValue) {
         while(clazz!=Object.class) {
-            String name = clazz.getName().replace('.', '/').replace('$', '/') + "/" + pageName;
-            if(clazz.getClassLoader().getResource(name)!=null)
-                return '/'+name;
+            for (String pageName : pageNames) {
+                String name = clazz.getName().replace('.', '/').replace('$', '/') + "/" + pageName;
+                if(clazz.getClassLoader().getResource(name)!=null)
+                    return '/'+name;
+            }
             clazz = clazz.getSuperclass();
         }
         return defaultValue;
