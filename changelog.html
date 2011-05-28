@@ -59,6 +59,11 @@ Upcoming changes</a>
     Output correct version from java -jar jenkins.war --version (broken since 1.410)
   <li class=bug>
     Correct usage text from java -jar jenkins.war --help
+  <li class=rfe>
+    Run maven jobs as headless process on OSX to avoid jumping Dock icon to take focus. Add option to run in
+    standard desktop mode to run ui-tests when needed.
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-9785">issue 9785</a>)
+
 </ul>
 </div><!--=TRUNK-END=-->
 
@@ -86,10 +91,6 @@ Upcoming changes</a>
   <li class=rfe>
     Set NODE_NAME for master node to "master"
     (<a href="http://issues.jenkins-ci.org/browse/JENKINS-9671">issue 9671</a>)
-  <li class=rfe>
-    Run maven jobs as headless process on OSX to avoid jumping Dock icon to take focus. Add option to run in
-    standard desktop mode to run ui-tests when needed.
-    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-9785">issue 9785</a>)
   <li class=rfe>
     Jenkins Maven build does not recognize Tycho surfire reports with new groupId org.eclipse.tycho
     (<a href="http://issues.jenkins-ci.org/browse/JENKINS-9326">issue 9326</a>)
