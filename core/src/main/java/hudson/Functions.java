@@ -1381,7 +1381,6 @@ public class Functions {
 
     public static ArrayList<CLICommand> getCLICommands() {
         ArrayList<CLICommand> all = new ArrayList<CLICommand>(CLICommand.all());
-        System.out.println("Hello");
         Collections.sort(all, new Comparator<CLICommand>() {
             public int compare(CLICommand cliCommand, CLICommand cliCommand1) {
                 return cliCommand.getName().compareTo(cliCommand1.getName());
