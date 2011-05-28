@@ -37,13 +37,14 @@ THE SOFTWARE.
     </style>
   </l:header>
   <l:main-panel>
-    <j:set var="monitors" value="${it._monitors}"/>
+    <j:set var="monitors" value="${it.nonIgnoredMonitors}"/>
     <j:set var="tableWidth" value="${3}"/>
     <table id="computers" class="sortable pane bigtable">
       <tr>
         <th width="32">S</th>
         <th initialSortDir="down">${%Name}</th>
-        <j:forEach var="m" items="${monitors}">
+        <j:forEach var="entry" items="${monitors}">
+          <j:set var="m" value="${entry.value}" />  
           <j:if test="${m.columnCaption!=null}">
             <j:set var="tableWidth" value="${tableWidth+1}"/>
             <th>${m.columnCaption}</th>
@@ -57,7 +58,8 @@ THE SOFTWARE.
             <img src="${imagesURL}/32x32/${c.icon}" width="32" height="32" alt="${c.iconAltText}"/>
           </td>
           <td><a href="${rootURL}/${c.url}">${c.displayName}</a></td>
-          <j:forEach var="m" items="${monitors}">
+          <j:forEach var="entry" items="${monitors}">
+            <j:set var="m" value="${entry.value}" />  
             <j:if test="${m.columnCaption!=null}">
               <j:set var="data" value="${m.data(c)}"/>
               <st:include page="column.jelly" from="${m}" />
