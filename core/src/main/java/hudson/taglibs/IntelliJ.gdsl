@@ -26,6 +26,8 @@ contributor(ctx) {
         def fqcn = contentPaths.reverse()[0..-2].join('.')
 
         property name:"my", type:fqcn // but this is still shadowed by JellyBuilder.getMy
+        property name:"instance", type:fqcn
+        property name:"descriptor", type:fqcn+".DescriptorImpl"
     }
 
     // normally, built-in delegateTo function would do, except in this case
