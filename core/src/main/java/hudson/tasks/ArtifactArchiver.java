@@ -175,7 +175,7 @@ public class ArtifactArchiver extends Recorder {
     /**
      * @deprecated as of 1.286
      *      Some plugin depends on this, so this field is left here and points to the last created instance.
-     *      Use {@link hudson.model.Jenkins#getDescriptorByType(Class)} instead.
+     *      Use {@link jenkins.model.Jenkins#getDescriptorByType(Class)} instead.
      */
     public static volatile DescriptorImpl DESCRIPTOR;
 

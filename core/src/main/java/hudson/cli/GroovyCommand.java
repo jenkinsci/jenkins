@@ -26,7 +26,7 @@ package hudson.cli;
 import groovy.lang.GroovyShell;
 import groovy.lang.Binding;
 import hudson.model.AbstractProject;
-import hudson.model.Jenkins;
+import jenkins.model.Jenkins;
 import hudson.model.Item;
 import hudson.model.Run;
 import hudson.remoting.Callable;

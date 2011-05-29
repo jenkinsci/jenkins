@@ -23,7 +23,7 @@
  */
 package hudson.util;
 
-import hudson.model.Jenkins;
+import jenkins.model.Jenkins;
 import hudson.triggers.SafeTimerTask;
 import hudson.triggers.Trigger;
 import org.apache.commons.io.FileUtils;

@@ -75,6 +75,7 @@ import java.util.LinkedList;
 
 import javax.servlet.ServletException;
 
+import jenkins.model.Jenkins;
 import net.sf.json.JSONObject;
 import net.sf.json.JSONException;
 

@@ -29,7 +29,7 @@ import hudson.FilePath;
 import hudson.ProxyConfiguration;
 import hudson.Util;
 import hudson.Launcher;
-import hudson.model.Jenkins;
+import jenkins.model.Jenkins;
 import hudson.util.FormValidation;
 import hudson.util.ArgumentListBuilder;
 import hudson.util.IOException2;

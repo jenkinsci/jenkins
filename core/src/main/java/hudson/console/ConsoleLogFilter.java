@@ -27,7 +27,7 @@ package hudson.console;
 import hudson.ExtensionList;
 import hudson.ExtensionPoint;
 import hudson.model.AbstractBuild;
-import hudson.model.Jenkins;
+import jenkins.model.Jenkins;
 
 import java.io.IOException;
 import java.io.OutputStream;

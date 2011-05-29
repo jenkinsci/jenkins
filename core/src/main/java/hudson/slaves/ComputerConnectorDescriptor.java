@@ -2,7 +2,7 @@ package hudson.slaves;
 
 import hudson.DescriptorExtensionList;
 import hudson.model.Descriptor;
-import hudson.model.Jenkins;
+import jenkins.model.Jenkins;
 
 /**
  * {@link Descriptor} for {@link ComputerConnector}.

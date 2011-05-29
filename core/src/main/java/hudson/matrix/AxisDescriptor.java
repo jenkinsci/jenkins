@@ -26,7 +26,7 @@ package hudson.matrix;
 import hudson.Util;
 import hudson.model.Descriptor;
 import hudson.model.Failure;
-import hudson.model.Jenkins;
+import jenkins.model.Jenkins;
 import hudson.util.FormValidation;
 import org.kohsuke.stapler.QueryParameter;
 

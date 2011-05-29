@@ -26,7 +26,7 @@ package hudson.lifecycle;
 import hudson.ExtensionPoint;
 import hudson.Functions;
 import hudson.Util;
-import hudson.model.Jenkins;
+import jenkins.model.Jenkins;
 
 import java.io.File;
 import java.io.IOException;

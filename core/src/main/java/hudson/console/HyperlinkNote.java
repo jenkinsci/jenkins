@@ -25,7 +25,7 @@ package hudson.console;
 
 import hudson.Extension;
 import hudson.MarkupText;
-import hudson.model.Jenkins;
+import jenkins.model.Jenkins;
 
 import java.io.IOException;
 import java.util.logging.Level;

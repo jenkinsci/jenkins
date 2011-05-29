@@ -23,7 +23,7 @@
  */
 package hudson;
 
-import hudson.model.Jenkins;
+import jenkins.model.Jenkins;
 import hudson.model.Saveable;
 import hudson.model.listeners.SaveableListener;
 import hudson.util.Scrambler;
@@ -52,7 +52,7 @@ import com.thoughtworks.xstream.XStream;
  * <a href="http://java.sun.com/javase/6/docs/technotes/guides/net/http-auth.html">
  * Http Authentication</a>).
  * 
- * @see hudson.model.Jenkins#proxy
+ * @see jenkins.model.Jenkins#proxy
  */
 public final class ProxyConfiguration implements Saveable {
     public final String name;

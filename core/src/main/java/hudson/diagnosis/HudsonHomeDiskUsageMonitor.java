@@ -24,7 +24,7 @@
 package hudson.diagnosis;
 
 import hudson.model.AdministrativeMonitor;
-import hudson.model.Jenkins;
+import jenkins.model.Jenkins;
 import hudson.model.AbstractModelObject;
 import hudson.Extension;
 import hudson.ExtensionPoint;

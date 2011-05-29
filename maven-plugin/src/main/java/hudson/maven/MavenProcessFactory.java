@@ -29,7 +29,7 @@ import hudson.EnvVars;
 import hudson.maven.agent.Main;
 import hudson.maven.agent.Maven21Interceptor;
 import hudson.model.BuildListener;
-import hudson.model.Jenkins;
+import jenkins.model.Jenkins;
 import hudson.model.JDK;
 import hudson.model.Run.RunnerAbortedException;
 import hudson.model.TaskListener;

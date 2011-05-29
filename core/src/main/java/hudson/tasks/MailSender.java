@@ -29,6 +29,7 @@ import hudson.Util;
 import hudson.Functions;
 import hudson.model.*;
 import hudson.scm.ChangeLogSet;
+import jenkins.model.Jenkins;
 
 import javax.mail.Address;
 import javax.mail.Message;

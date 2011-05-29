@@ -35,7 +35,7 @@ import hudson.maven.MojoInfo;
 import hudson.maven.MavenModuleSetBuild;
 import hudson.model.BuildListener;
 import hudson.model.FingerprintMap;
-import hudson.model.Jenkins;
+import jenkins.model.Jenkins;
 import hudson.tasks.Fingerprinter.FingerprintAction;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.project.MavenProject;

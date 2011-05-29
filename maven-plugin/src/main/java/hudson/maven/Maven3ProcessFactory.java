@@ -27,7 +27,7 @@ import hudson.EnvVars;
 import hudson.FilePath;
 import hudson.Launcher;
 import hudson.model.BuildListener;
-import hudson.model.Jenkins;
+import jenkins.model.Jenkins;
 import hudson.model.JDK;
 import hudson.model.Run.RunnerAbortedException;
 import hudson.model.TaskListener;

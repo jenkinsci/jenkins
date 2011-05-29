@@ -23,7 +23,7 @@
  */
 package hudson.cli;
 
-import hudson.model.Jenkins;
+import jenkins.model.Jenkins;
 import hudson.model.TopLevelItem;
 import hudson.Extension;
 import hudson.model.Item;

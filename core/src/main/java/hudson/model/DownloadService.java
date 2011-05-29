@@ -30,6 +30,7 @@ import hudson.util.IOUtils;
 import hudson.util.QuotedStringTokenizer;
 import hudson.util.TextFile;
 import hudson.util.TimeUnit2;
+import jenkins.model.Jenkins;
 import org.kohsuke.stapler.Stapler;
 
 import java.io.File;

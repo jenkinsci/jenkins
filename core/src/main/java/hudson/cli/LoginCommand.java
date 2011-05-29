@@ -1,7 +1,7 @@
 package hudson.cli;
 
 import hudson.Extension;
-import hudson.model.Jenkins;
+import jenkins.model.Jenkins;
 import org.acegisecurity.Authentication;
 import org.kohsuke.args4j.CmdLineException;
 

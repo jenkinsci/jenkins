@@ -37,7 +37,7 @@ import hudson.model.BuildListener;
 import hudson.model.Fingerprint;
 import hudson.model.Fingerprint.BuildPtr;
 import hudson.model.FingerprintMap;
-import hudson.model.Jenkins;
+import jenkins.model.Jenkins;
 import hudson.model.Result;
 import hudson.model.Run;
 import hudson.model.RunAction;

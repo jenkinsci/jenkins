@@ -26,7 +26,7 @@ package hudson.node_monitors;
 import hudson.Util;
 import hudson.Extension;
 import hudson.model.Computer;
-import hudson.model.Jenkins;
+import jenkins.model.Jenkins;
 import hudson.remoting.Callable;
 import net.sf.json.JSONObject;
 import org.jvnet.hudson.MemoryMonitor;

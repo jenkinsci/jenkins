@@ -29,7 +29,7 @@ import hudson.ExtensionFinder;
 import hudson.Util;
 import hudson.cli.CLICommand;
 import hudson.cli.CloneableCLICommand;
-import hudson.model.Jenkins;
+import jenkins.model.Jenkins;
 import hudson.remoting.Channel;
 import hudson.security.CliAuthenticator;
 import org.acegisecurity.Authentication;

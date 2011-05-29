@@ -24,7 +24,7 @@
 package hudson.tasks.junit;
 
 import hudson.model.AbstractBuild;
-import hudson.model.Jenkins;
+import jenkins.model.Jenkins;
 import hudson.tasks.test.TestObject;
 import hudson.tasks.test.TestResult;
 import hudson.util.ChartUtil;

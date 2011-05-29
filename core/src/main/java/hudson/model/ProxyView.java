@@ -30,6 +30,8 @@ import hudson.util.FormValidation;
 import java.io.IOException;
 import java.util.Collection;
 import javax.servlet.ServletException;
+
+import jenkins.model.Jenkins;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.Stapler;

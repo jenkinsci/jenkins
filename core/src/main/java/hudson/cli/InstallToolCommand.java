@@ -26,7 +26,7 @@ package hudson.cli;
 import hudson.Extension;
 import hudson.AbortException;
 import hudson.EnvVars;
-import hudson.model.Jenkins;
+import jenkins.model.Jenkins;
 import hudson.model.AbstractProject;
 import hudson.model.Run;
 import hudson.model.Executor;

@@ -24,7 +24,7 @@
 package hudson.security;
 
 import hudson.model.Descriptor;
-import hudson.model.Jenkins;
+import jenkins.model.Jenkins;
 import hudson.Extension;
 
 import java.util.Collections;

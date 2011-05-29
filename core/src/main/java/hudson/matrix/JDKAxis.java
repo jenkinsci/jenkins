@@ -24,7 +24,7 @@
 package hudson.matrix;
 
 import hudson.Extension;
-import hudson.model.Jenkins;
+import jenkins.model.Jenkins;
 import org.kohsuke.stapler.DataBoundConstructor;
 
 import java.util.Arrays;

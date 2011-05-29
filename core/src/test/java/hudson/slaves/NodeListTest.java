@@ -24,8 +24,8 @@
 package hudson.slaves;
 
 
+import jenkins.model.Jenkins;
 import junit.framework.TestCase;
-import hudson.model.Jenkins;
 import hudson.model.Node;
 import hudson.model.TaskListener;
 import hudson.model.Computer;

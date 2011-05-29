@@ -24,7 +24,7 @@
 package hudson.scm;
 
 import hudson.model.AbstractProject;
-import hudson.model.Jenkins;
+import jenkins.model.Jenkins;
 
 /**
  * Maintains the automatically inferred {@link RepositoryBrowser} instance.

@@ -24,7 +24,7 @@
 package hudson.slaves;
 
 import hudson.model.Descriptor.FormException;
-import hudson.model.Jenkins;
+import jenkins.model.Jenkins;
 import hudson.model.Slave;
 import hudson.model.TaskListener;
 import hudson.util.StreamTaskListener;

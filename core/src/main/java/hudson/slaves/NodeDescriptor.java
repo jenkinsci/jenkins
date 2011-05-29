@@ -28,7 +28,7 @@ import hudson.model.ComputerSet;
 import hudson.model.Descriptor;
 import hudson.model.Slave;
 import hudson.model.Node;
-import hudson.model.Jenkins;
+import jenkins.model.Jenkins;
 import hudson.util.DescriptorList;
 import hudson.util.FormValidation;
 import hudson.DescriptorExtensionList;

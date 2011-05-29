@@ -1,9 +1,9 @@
 package hudson;
 
+import jenkins.model.Jenkins;
 import org.jvnet.hudson.test.HudsonTestCase;
 import hudson.model.Descriptor;
 import hudson.model.Describable;
-import hudson.model.Jenkins;
 import hudson.util.DescriptorList;
 
 import java.util.List;

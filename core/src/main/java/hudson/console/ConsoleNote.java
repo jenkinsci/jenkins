@@ -26,7 +26,7 @@ package hudson.console;
 import hudson.Functions;
 import hudson.MarkupText;
 import hudson.model.Describable;
-import hudson.model.Jenkins;
+import jenkins.model.Jenkins;
 import hudson.model.Run;
 import hudson.remoting.ObjectInputStreamEx;
 import hudson.util.IOException2;

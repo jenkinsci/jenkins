@@ -27,7 +27,7 @@ import hudson.EnvVars;
 import hudson.Util;
 import hudson.Extension;
 import hudson.model.Descriptor;
-import hudson.model.Jenkins;
+import jenkins.model.Jenkins;
 import hudson.model.TaskListener;
 import hudson.remoting.Channel;
 import hudson.util.StreamCopyThread;

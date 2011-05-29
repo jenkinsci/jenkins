@@ -25,7 +25,7 @@ package hudson;
 
 import hudson.Proc.LocalProc;
 import hudson.model.Computer;
-import hudson.model.Jenkins;
+import jenkins.model.Jenkins;
 import hudson.model.TaskListener;
 import hudson.model.Node;
 import hudson.remoting.Callable;

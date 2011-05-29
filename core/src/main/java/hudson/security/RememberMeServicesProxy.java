@@ -33,8 +33,8 @@ import javax.servlet.http.HttpServletResponse;
  * {@link RememberMeServices} proxy.
  *
  * <p>
- * In Hudson, we need {@link hudson.model.Jenkins} instance to perform remember-me service,
- * because it relies on {@link hudson.model.Jenkins#getSecretKey()}. However, security
+ * In Hudson, we need {@link jenkins.model.Jenkins} instance to perform remember-me service,
+ * because it relies on {@link jenkins.model.Jenkins#getSecretKey()}. However, security
  * filters can be initialized before Hudson is initialized.
  * (See #1210 for example.)
  *

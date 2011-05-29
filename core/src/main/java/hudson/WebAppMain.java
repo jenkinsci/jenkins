@@ -26,7 +26,7 @@ package hudson;
 import com.thoughtworks.xstream.converters.reflection.PureJavaReflectionProvider;
 import com.thoughtworks.xstream.core.JVM;
 import hudson.model.Hudson;
-import hudson.model.Jenkins;
+import jenkins.model.Jenkins;
 import hudson.model.User;
 import hudson.triggers.SafeTimerTask;
 import hudson.triggers.Trigger;
@@ -73,7 +73,7 @@ public final class WebAppMain implements ServletContextListener {
     private static final String APP = "app";
 
     /**
-     * Creates the sole instance of {@link hudson.model.Jenkins} and register it to the {@link ServletContext}.
+     * Creates the sole instance of {@link jenkins.model.Jenkins} and register it to the {@link ServletContext}.
      */
     public void contextInitialized(ServletContextEvent event) {
         try {

@@ -31,7 +31,7 @@ import com.gargoylesoftware.htmlunit.html.HtmlTextInput;
 import hudson.Extension;
 import hudson.model.Describable;
 import hudson.model.Descriptor;
-import hudson.model.Jenkins;
+import jenkins.model.Jenkins;
 import org.jvnet.hudson.test.HudsonTestCase;
 import org.kohsuke.stapler.DataBoundConstructor;
 

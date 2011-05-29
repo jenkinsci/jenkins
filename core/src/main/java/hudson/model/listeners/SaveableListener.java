@@ -28,7 +28,7 @@ import hudson.ExtensionPoint;
 import hudson.Extension;
 import hudson.ExtensionList;
 import hudson.XmlFile;
-import hudson.model.Jenkins;
+import jenkins.model.Jenkins;
 import hudson.model.Saveable;
 
 /**

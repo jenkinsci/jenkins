@@ -24,7 +24,7 @@
 package hudson.cli.handlers;
 
 import hudson.model.AbstractProject;
-import hudson.model.Jenkins;
+import jenkins.model.Jenkins;
 import org.kohsuke.args4j.CmdLineException;
 import org.kohsuke.args4j.CmdLineParser;
 import org.kohsuke.args4j.OptionDef;

@@ -25,7 +25,7 @@ package hudson;
 
 import hudson.model.Descriptor;
 import hudson.model.Describable;
-import hudson.model.Jenkins;
+import jenkins.model.Jenkins;
 import hudson.model.ViewDescriptor;
 import hudson.model.Descriptor.FormException;
 import hudson.util.AdaptedIterator;
@@ -49,7 +49,7 @@ import net.sf.json.JSONObject;
  * {@link ExtensionList} for holding a set of {@link Descriptor}s, which is a group of descriptors for
  * the same extension point.
  *
- * Use {@link hudson.model.Jenkins#getDescriptorList(Class)} to obtain instances.
+ * Use {@link jenkins.model.Jenkins#getDescriptorList(Class)} to obtain instances.
  *
  * @param <D>
  *      Represents the descriptor type. This is {@code Descriptor<T>} normally but often there are subtypes

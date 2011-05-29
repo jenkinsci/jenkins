@@ -26,7 +26,7 @@ package hudson.model.listeners;
 import hudson.model.AbstractBuild;
 import hudson.model.Action;
 import hudson.model.BuildListener;
-import hudson.model.Jenkins;
+import jenkins.model.Jenkins;
 import hudson.scm.ChangeLogSet;
 import hudson.scm.SCM;
 import hudson.ExtensionPoint;
@@ -41,7 +41,7 @@ import hudson.ExtensionPoint;
  * Once instanciated, use the {@link #register()} method to start receiving events. 
  *
  * @author Kohsuke Kawaguchi
- * @see hudson.model.Jenkins#getSCMListeners()
+ * @see jenkins.model.Jenkins#getSCMListeners()
  * @since 1.70
  */
 public abstract class SCMListener implements ExtensionPoint {

@@ -33,6 +33,7 @@ import hudson.util.DescriptorList;
 import java.io.Serializable;
 import java.io.IOException;
 
+import jenkins.model.Jenkins;
 import net.sf.json.JSONObject;
 
 import org.kohsuke.stapler.StaplerRequest;

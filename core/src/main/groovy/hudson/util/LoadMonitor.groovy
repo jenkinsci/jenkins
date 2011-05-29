@@ -24,7 +24,7 @@
 package hudson.util
 
 import hudson.model.Computer
-import hudson.model.Jenkins
+import jenkins.model.Jenkins
 import hudson.model.Label
 import hudson.model.Queue.BlockedItem
 import hudson.model.Queue.BuildableItem

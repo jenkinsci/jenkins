@@ -23,9 +23,9 @@
  */
 package hudson.security;
 
+import jenkins.model.Jenkins;
 import org.jvnet.hudson.test.HudsonTestCase;
 import org.jvnet.hudson.test.Email;
-import hudson.model.Jenkins;
 
 /**
  * @author Kohsuke Kawaguchi

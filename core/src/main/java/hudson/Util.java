@@ -24,7 +24,7 @@
 package hudson;
 
 import hudson.model.TaskListener;
-import hudson.model.Jenkins;
+import jenkins.model.Jenkins;
 import static hudson.util.jna.GNUCLibrary.LIBC;
 
 import hudson.util.IOException2;

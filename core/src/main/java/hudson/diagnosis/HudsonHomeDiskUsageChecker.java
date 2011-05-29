@@ -24,7 +24,7 @@
 package hudson.diagnosis;
 
 import hudson.Extension;
-import hudson.model.Jenkins;
+import jenkins.model.Jenkins;
 import hudson.model.PeriodicWork;
 import org.jvnet.animal_sniffer.IgnoreJRERequirement;
 

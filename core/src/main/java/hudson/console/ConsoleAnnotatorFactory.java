@@ -26,7 +26,7 @@ package hudson.console;
 import hudson.Extension;
 import hudson.ExtensionList;
 import hudson.ExtensionPoint;
-import hudson.model.Jenkins;
+import jenkins.model.Jenkins;
 import hudson.model.Run;
 import hudson.util.TimeUnit2;
 import org.jvnet.tiger_types.Types;

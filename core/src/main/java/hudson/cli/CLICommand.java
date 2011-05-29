@@ -30,7 +30,7 @@ import hudson.ExtensionPoint;
 import hudson.cli.declarative.CLIMethod;
 import hudson.ExtensionPoint.LegacyInstancesAreScopedToHudson;
 import hudson.cli.declarative.OptionHandlerExtension;
-import hudson.model.Jenkins;
+import jenkins.model.Jenkins;
 import hudson.remoting.Callable;
 import hudson.remoting.Channel;
 import hudson.remoting.ChannelProperty;
@@ -225,7 +225,7 @@ public abstract class CLICommand implements ExtensionPoint, Cloneable {
      * @param auth
      *      Always non-null.
      *      If the underlying transport had already performed authentication, this object is something other than
-     *      {@link hudson.model.Jenkins#ANONYMOUS}.
+     *      {@link jenkins.model.Jenkins#ANONYMOUS}.
      */
     protected boolean shouldPerformAuthentication(Authentication auth) {
         return auth== Jenkins.ANONYMOUS;
@@ -245,7 +245,7 @@ public abstract class CLICommand implements ExtensionPoint, Cloneable {
      * then this method can return a valid identity of the client.
      *
      * <p>
-     * If the transport doesn't do authentication, this method returns {@link hudson.model.Jenkins#ANONYMOUS}.
+     * If the transport doesn't do authentication, this method returns {@link jenkins.model.Jenkins#ANONYMOUS}.
      */
     public Authentication getTransportAuthentication() {
         Authentication a = channel.getProperty(TRANSPORT_AUTHENTICATION);

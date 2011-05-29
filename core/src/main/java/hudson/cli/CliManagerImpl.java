@@ -24,7 +24,7 @@
 package hudson.cli;
 
 import hudson.remoting.Channel;
-import hudson.model.Jenkins;
+import jenkins.model.Jenkins;
 import org.apache.commons.discovery.resource.ClassLoaders;
 import org.apache.commons.discovery.resource.classes.DiscoverClasses;
 import org.apache.commons.discovery.resource.names.DiscoverServiceNames;

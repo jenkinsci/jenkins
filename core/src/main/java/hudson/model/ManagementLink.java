@@ -27,6 +27,7 @@ import hudson.ExtensionPoint;
 import hudson.ExtensionListView;
 import hudson.Extension;
 import hudson.ExtensionList;
+import jenkins.model.Jenkins;
 
 import java.util.List;
 

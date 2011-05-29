@@ -66,7 +66,7 @@ import java.io.IOException;
  * <p>
  * Many commands do not require any authentication (for example, the "help" command), and still more commands
  * can be run successfully with the anonymous permission. So the authenticator should normally allow unauthenticated
- * CLI command invocations. For those, return {@link hudson.model.Jenkins#ANONYMOUS} from the {@link #authenticate()} method.
+ * CLI command invocations. For those, return {@link jenkins.model.Jenkins#ANONYMOUS} from the {@link #authenticate()} method.
  *
  * <h2>Example</h2>
  * <p>

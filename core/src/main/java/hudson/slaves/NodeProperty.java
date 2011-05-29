@@ -35,7 +35,7 @@ import hudson.scm.SCM;
 import hudson.model.AbstractBuild;
 import hudson.model.BuildListener;
 import hudson.model.Environment;
-import hudson.model.Jenkins;
+import jenkins.model.Jenkins;
 import hudson.model.Node;
 import hudson.model.Queue.Task;
 import net.sf.json.JSONObject;

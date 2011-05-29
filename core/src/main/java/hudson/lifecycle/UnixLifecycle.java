@@ -33,7 +33,7 @@ import java.io.IOException;
 import static hudson.util.jna.GNUCLibrary.*;
 
 import hudson.Platform;
-import hudson.model.Jenkins;
+import jenkins.model.Jenkins;
 
 /**
  * {@link Lifecycle} implementation when Hudson runs on the embedded

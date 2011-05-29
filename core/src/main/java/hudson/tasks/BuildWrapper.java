@@ -29,6 +29,7 @@ import hudson.DescriptorExtensionList;
 import hudson.LauncherDecorator;
 import hudson.model.*;
 import hudson.model.Run.RunnerAbortedException;
+import jenkins.model.Jenkins;
 
 import java.io.IOException;
 import java.io.OutputStream;

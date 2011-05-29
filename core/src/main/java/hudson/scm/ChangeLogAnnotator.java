@@ -31,7 +31,7 @@ import hudson.ExtensionList;
 import hudson.util.CopyOnWriteList;
 import hudson.scm.ChangeLogSet.Entry;
 import hudson.model.AbstractBuild;
-import hudson.model.Jenkins;
+import jenkins.model.Jenkins;
 
 import java.util.logging.Logger;
 

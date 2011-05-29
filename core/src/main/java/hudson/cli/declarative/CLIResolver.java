@@ -47,7 +47,7 @@ import java.lang.annotation.Target;
  * <p>
  * If the chosen resolver method is an instance method on type <tt>S</tt>, the "parent resolver" is then
  * located to resolve an instance of type 'S'. This process repeats until a static resolver method is discovered
- * (since most of Hudson's model objects are anchored to the root {@link hudson.model.Jenkins} object, normally that would become
+ * (since most of Hudson's model objects are anchored to the root {@link jenkins.model.Jenkins} object, normally that would become
  * the top-most resolver method.)
  *
  * <p>

@@ -25,7 +25,7 @@ package hudson.matrix;
 
 import hudson.Extension;
 import hudson.Util;
-import hudson.model.Jenkins;
+import jenkins.model.Jenkins;
 
 import java.util.LinkedList;
 import java.util.List;

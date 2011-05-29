@@ -26,7 +26,7 @@ package hudson.maven;
 import hudson.EnvVars;
 import hudson.model.AbstractProject;
 import hudson.model.Action;
-import hudson.model.Jenkins;
+import jenkins.model.Jenkins;
 import hudson.remoting.Channel;
 import hudson.util.RemotingDiagnostics;
 import hudson.util.RemotingDiagnostics.HeapDump;

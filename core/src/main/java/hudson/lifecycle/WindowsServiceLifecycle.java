@@ -26,11 +26,12 @@ package hudson.lifecycle;
 import hudson.FilePath;
 import hudson.Launcher.LocalLauncher;
 import hudson.Util;
-import hudson.model.Jenkins;
+import jenkins.model.Jenkins;
 import hudson.util.StreamTaskListener;
 import hudson.util.jna.Kernel32;
 import static hudson.util.jna.Kernel32.MOVEFILE_DELAY_UNTIL_REBOOT;
 import static hudson.util.jna.Kernel32.MOVEFILE_REPLACE_EXISTING;
+
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.output.ByteArrayOutputStream;
 

@@ -92,6 +92,7 @@ import java.util.logging.Logger;
 import javax.management.timer.Timer;
 import javax.servlet.ServletException;
 
+import jenkins.model.Jenkins;
 import org.acegisecurity.AccessDeniedException;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.HttpResponses;

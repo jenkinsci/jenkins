@@ -26,6 +26,7 @@ package hudson.model;
 import hudson.FilePath;
 import hudson.Util;
 import hudson.Extension;
+import jenkins.model.Jenkins;
 
 import java.io.File;
 import java.io.FileFilter;

@@ -24,7 +24,7 @@
 package hudson.cli;
 
 import hudson.Extension;
-import hudson.model.Jenkins;
+import jenkins.model.Jenkins;
 
 /**
  * Shows the version.

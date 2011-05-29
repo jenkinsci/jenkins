@@ -26,7 +26,7 @@ package hudson.util;
 import groovy.lang.GroovyShell;
 import hudson.FilePath;
 import hudson.Functions;
-import hudson.model.Jenkins;
+import jenkins.model.Jenkins;
 import hudson.remoting.AsyncFutureImpl;
 import hudson.remoting.Callable;
 import hudson.remoting.DelegatingCallable;

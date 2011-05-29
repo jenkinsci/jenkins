@@ -24,7 +24,7 @@
 package hudson.slaves;
 
 import hudson.model.Computer;
-import hudson.model.Jenkins;
+import jenkins.model.Jenkins;
 import hudson.model.TaskListener;
 import hudson.model.Node;
 import hudson.ExtensionPoint;

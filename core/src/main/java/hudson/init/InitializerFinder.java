@@ -23,6 +23,7 @@
  */
 package hudson.init;
 
+import jenkins.model.Jenkins;
 import org.jvnet.hudson.annotation_indexer.Index;
 import org.jvnet.hudson.reactor.Milestone;
 import org.jvnet.hudson.reactor.Task;
@@ -41,8 +42,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.logging.Logger;
-
-import hudson.model.Jenkins;
 
 import static java.util.logging.Level.WARNING;
 

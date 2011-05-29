@@ -1,11 +1,11 @@
 package hudson.tools;
 
+import jenkins.model.Jenkins;
 import org.jvnet.hudson.test.HudsonTestCase;
 import org.jvnet.hudson.test.recipes.LocalData;
 import hudson.tasks.Maven;
 import hudson.tasks.Ant;
 import hudson.model.JDK;
-import hudson.model.Jenkins;
 
 import java.util.Arrays;
 

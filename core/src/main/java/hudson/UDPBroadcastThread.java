@@ -23,7 +23,7 @@
  */
 package hudson;
 
-import hudson.model.Jenkins;
+import jenkins.model.Jenkins;
 import hudson.util.OneShotEvent;
 
 import java.io.IOException;

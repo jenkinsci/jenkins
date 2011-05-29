@@ -23,6 +23,7 @@
  */
 package hudson.model;
 
+import jenkins.model.Jenkins;
 import org.kohsuke.stapler.StaplerRequest;
 import org.jvnet.tiger_types.Types;
 

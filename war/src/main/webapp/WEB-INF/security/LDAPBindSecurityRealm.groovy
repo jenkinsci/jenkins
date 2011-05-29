@@ -28,7 +28,7 @@ import org.acegisecurity.providers.ldap.authenticator.BindAuthenticator2
 import org.acegisecurity.ldap.DefaultInitialDirContextFactory
 import org.acegisecurity.ldap.search.FilterBasedLdapUserSearch
 import org.acegisecurity.providers.rememberme.RememberMeAuthenticationProvider
-import hudson.model.Jenkins
+import jenkins.model.Jenkins
 import hudson.security.LDAPSecurityRealm.AuthoritiesPopulatorImpl
 import hudson.Util
 import javax.naming.Context

@@ -32,7 +32,7 @@ import hudson.init.InitStrategy;
 import hudson.init.InitializerFinder;
 import hudson.model.AbstractModelObject;
 import hudson.model.Failure;
-import hudson.model.Jenkins;
+import jenkins.model.Jenkins;
 import hudson.model.UpdateCenter;
 import hudson.model.UpdateSite;
 import hudson.util.CyclicGraphDetector;
@@ -103,7 +103,7 @@ public abstract class PluginManager extends AbstractModelObject {
 
     /**
      * @deprecated as of 1.355
-     *      {@link PluginManager} can now live longer than {@link hudson.model.Jenkins} instance, so
+     *      {@link PluginManager} can now live longer than {@link jenkins.model.Jenkins} instance, so
      *      use {@code Hudson.getInstance().servletContext} instead.
      */
     public final ServletContext context;
@@ -150,7 +150,7 @@ public abstract class PluginManager extends AbstractModelObject {
     /**
      * Called immediately after the construction.
      * This is a separate method so that code executed from here will see a valid value in
-     * {@link hudson.model.Jenkins#pluginManager}.
+     * {@link jenkins.model.Jenkins#pluginManager}.
      */
     public TaskBuilder initTasks(final InitStrategy initStrategy) {
         TaskBuilder builder;

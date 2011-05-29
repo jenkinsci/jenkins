@@ -24,6 +24,7 @@
 package hudson.model;
 
 import hudson.Extension;
+import jenkins.model.Jenkins;
 
 /**
  * Free-style software project.

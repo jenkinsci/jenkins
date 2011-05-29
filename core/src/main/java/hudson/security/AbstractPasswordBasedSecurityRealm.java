@@ -3,7 +3,7 @@ package hudson.security;
 import groovy.lang.Binding;
 import hudson.FilePath;
 import hudson.cli.CLICommand;
-import hudson.model.Jenkins;
+import jenkins.model.Jenkins;
 import hudson.remoting.Callable;
 import hudson.tasks.MailAddressResolver;
 import hudson.util.spring.BeanBuilder;

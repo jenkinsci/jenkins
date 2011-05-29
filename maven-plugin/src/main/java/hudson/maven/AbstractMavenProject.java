@@ -28,7 +28,7 @@ import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
 import hudson.model.Action;
 import hudson.model.DependencyGraph;
-import hudson.model.Jenkins;
+import jenkins.model.Jenkins;
 import hudson.model.ItemGroup;
 import hudson.model.Result;
 import hudson.model.Run;

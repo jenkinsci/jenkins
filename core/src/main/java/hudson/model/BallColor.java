@@ -24,6 +24,7 @@
 package hudson.model;
 
 import hudson.util.ColorPalette;
+import jenkins.model.Jenkins;
 import org.jvnet.localizer.LocaleProvider;
 import org.jvnet.localizer.Localizable;
 import org.kohsuke.stapler.Stapler;

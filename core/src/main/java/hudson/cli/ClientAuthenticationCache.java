@@ -2,8 +2,8 @@ package hudson.cli;
 
 import hudson.FilePath;
 import hudson.FilePath.FileCallable;
-import hudson.model.Jenkins;
-import hudson.model.Jenkins.MasterComputer;
+import jenkins.model.Jenkins;
+import jenkins.model.Jenkins.MasterComputer;
 import hudson.os.PosixAPI;
 import hudson.remoting.Callable;
 import hudson.remoting.Channel;
@@ -58,7 +58,7 @@ public class ClientAuthenticationCache implements Serializable {
     /**
      * Gets the persisted authentication for this Hudson.
      *
-     * @return {@link hudson.model.Jenkins#ANONYMOUS} if no such credential is found, or if the stored credential is invalid.
+     * @return {@link jenkins.model.Jenkins#ANONYMOUS} if no such credential is found, or if the stored credential is invalid.
      */
     public Authentication get() {
         Jenkins h = Jenkins.getInstance();

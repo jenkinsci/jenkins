@@ -25,7 +25,7 @@ package hudson.init.impl;
 
 import static hudson.init.InitMilestone.JOB_LOADED;
 import hudson.init.Initializer;
-import hudson.model.Jenkins;
+import jenkins.model.Jenkins;
 import hudson.model.Messages;
 import org.apache.commons.io.FileUtils;
 

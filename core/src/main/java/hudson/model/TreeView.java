@@ -28,6 +28,7 @@ import hudson.util.CaseInsensitiveComparator;
 import hudson.Indenter;
 import hudson.Extension;
 import hudson.views.ViewsTabBar;
+import jenkins.model.Jenkins;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;

@@ -26,6 +26,7 @@ package hudson.model;
 import java.util.Locale;
 
 import hudson.EnvVars;
+import jenkins.model.Jenkins;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.export.Exported;
 

@@ -28,6 +28,7 @@ import hudson.model.MultiStageTimeSeries.TimeScale;
 import hudson.model.MultiStageTimeSeries.TrendChart;
 import hudson.util.ColorPalette;
 import hudson.util.NoOverlapCategoryAxis;
+import jenkins.model.Jenkins;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.JFreeChart;
 import org.jfree.chart.axis.CategoryAxis;

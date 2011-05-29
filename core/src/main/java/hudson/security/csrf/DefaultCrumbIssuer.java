@@ -12,7 +12,7 @@ import java.util.logging.Logger;
 
 import hudson.Extension;
 import hudson.Util;
-import hudson.model.Jenkins;
+import jenkins.model.Jenkins;
 import hudson.model.ModelObject;
 
 import javax.servlet.ServletRequest;

@@ -26,6 +26,7 @@ package hudson.model;
 import hudson.model.MultiStageTimeSeries.TimeScale;
 import hudson.model.MultiStageTimeSeries.TrendChart;
 import hudson.util.ColorPalette;
+import jenkins.model.Jenkins;
 import org.kohsuke.stapler.export.Exported;
 
 /**

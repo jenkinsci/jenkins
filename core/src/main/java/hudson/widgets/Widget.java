@@ -35,7 +35,7 @@ import hudson.ExtensionPoint;
  *
  * @author Kohsuke Kawaguchi
  * @since 1.146
- * @see hudson.model.Jenkins#getWidgets()
+ * @see jenkins.model.Jenkins#getWidgets()
  */
 public abstract class Widget implements ExtensionPoint {
     /**

@@ -31,7 +31,7 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.logging.Logger;
 
-import hudson.model.Jenkins;
+import jenkins.model.Jenkins;
 import static hudson.init.InitMilestone.JOB_LOADED;
 import hudson.init.Initializer;
 

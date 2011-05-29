@@ -3,7 +3,7 @@ package hudson.model.queue;
 import hudson.ExtensionList;
 import hudson.ExtensionPoint;
 import hudson.init.Initializer;
-import hudson.model.Jenkins;
+import jenkins.model.Jenkins;
 import hudson.model.LoadBalancer;
 import hudson.model.Queue;
 import hudson.model.Queue.BuildableItem;

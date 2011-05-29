@@ -23,12 +23,12 @@
  */
 package hudson.util;
 
+import jenkins.model.Jenkins;
 import junit.framework.TestCase;
 
 import java.security.SecureRandom;
 
 import hudson.Util;
-import hudson.model.Jenkins;
 
 /**
  * @author Kohsuke Kawaguchi

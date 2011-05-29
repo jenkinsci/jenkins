@@ -31,7 +31,7 @@ import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
 import hudson.model.Action;
 import hudson.model.Cause;
-import hudson.model.Jenkins;
+import jenkins.model.Jenkins;
 import hudson.model.Item;
 import hudson.model.Project;
 import hudson.model.SCMedItem;

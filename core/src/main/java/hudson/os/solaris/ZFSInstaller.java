@@ -30,13 +30,14 @@ import hudson.Util;
 import hudson.Extension;
 import hudson.os.SU;
 import hudson.model.AdministrativeMonitor;
-import hudson.model.Jenkins;
+import jenkins.model.Jenkins;
 import hudson.model.TaskListener;
 import hudson.remoting.Callable;
 import hudson.util.ForkOutputStream;
 import hudson.util.HudsonIsRestarting;
 import hudson.util.StreamTaskListener;
 import static hudson.util.jna.GNUCLibrary.*;
+
 import org.apache.commons.io.output.ByteArrayOutputStream;
 import org.jvnet.libpam.impl.CLibrary.passwd;
 import org.jvnet.solaris.libzfs.ACLBuilder;

@@ -24,7 +24,7 @@
 package hudson.util;
 
 import hudson.PluginManager.UberClassLoader;
-import hudson.model.Jenkins;
+import jenkins.model.Jenkins;
 import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Type;

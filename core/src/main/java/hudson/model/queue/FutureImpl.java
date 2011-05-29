@@ -24,7 +24,7 @@
 package hudson.model.queue;
 
 import hudson.model.Executor;
-import hudson.model.Jenkins;
+import jenkins.model.Jenkins;
 import hudson.model.Queue;
 import hudson.model.Queue.Executable;
 import hudson.model.Queue.Task;

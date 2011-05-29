@@ -31,7 +31,7 @@ import hudson.model.Computer;
 import hudson.model.ComputerSet;
 import hudson.model.Describable;
 import hudson.model.Node;
-import hudson.model.Jenkins;
+import jenkins.model.Jenkins;
 import hudson.model.Descriptor;
 import hudson.util.DescriptorList;
 

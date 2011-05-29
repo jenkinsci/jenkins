@@ -25,7 +25,7 @@ package hudson.diagnosis;
 
 import hudson.XmlFile;
 import hudson.model.AdministrativeMonitor;
-import hudson.model.Jenkins;
+import jenkins.model.Jenkins;
 import hudson.Extension;
 import hudson.model.Item;
 import hudson.model.Job;

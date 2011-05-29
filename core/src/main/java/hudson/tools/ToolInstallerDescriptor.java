@@ -26,7 +26,7 @@ package hudson.tools;
 
 import hudson.DescriptorExtensionList;
 import hudson.model.Descriptor;
-import hudson.model.Jenkins;
+import jenkins.model.Jenkins;
 
 import java.util.List;
 import java.util.ArrayList;

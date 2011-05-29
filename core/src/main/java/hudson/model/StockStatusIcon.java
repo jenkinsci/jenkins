@@ -1,5 +1,6 @@
 package hudson.model;
 
+import jenkins.model.Jenkins;
 import org.jvnet.localizer.LocaleProvider;
 import org.jvnet.localizer.Localizable;
 import org.kohsuke.stapler.Stapler;

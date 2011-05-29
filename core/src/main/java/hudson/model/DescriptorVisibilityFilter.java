@@ -3,6 +3,7 @@ package hudson.model;
 import hudson.ExtensionList;
 import hudson.ExtensionPoint;
 import hudson.scm.SCMDescriptor;
+import jenkins.model.Jenkins;
 
 import java.util.ArrayList;
 import java.util.List;

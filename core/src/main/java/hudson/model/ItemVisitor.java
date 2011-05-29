@@ -23,6 +23,8 @@
  */
 package hudson.model;
 
+import jenkins.model.Jenkins;
+
 /**
  * Walks the tree structure that consists of {@link ItemGroup} and {@link Item}.
  *

@@ -26,7 +26,7 @@ package hudson.matrix;
 import hudson.Extension;
 import hudson.Functions;
 import hudson.Util;
-import hudson.model.Jenkins;
+import jenkins.model.Jenkins;
 import hudson.model.labels.LabelAtom;
 import org.kohsuke.stapler.DataBoundConstructor;
 

@@ -26,6 +26,7 @@ package hudson.model;
 import hudson.EnvVars;
 import hudson.ExtensionList;
 import hudson.ExtensionPoint;
+import jenkins.model.Jenkins;
 
 import java.io.IOException;
 

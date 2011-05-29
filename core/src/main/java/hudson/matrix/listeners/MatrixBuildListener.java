@@ -29,7 +29,7 @@ import hudson.matrix.MatrixConfiguration;
 import hudson.matrix.MatrixBuild;
 import hudson.matrix.MatrixRun;
 import hudson.model.Action;
-import hudson.model.Jenkins;
+import jenkins.model.Jenkins;
 import hudson.model.Queue;
 import hudson.model.Queue.Task;
 

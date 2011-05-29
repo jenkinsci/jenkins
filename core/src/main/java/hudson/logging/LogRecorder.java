@@ -28,7 +28,7 @@ import hudson.BulkChange;
 import hudson.Util;
 import hudson.XmlFile;
 import hudson.model.AbstractModelObject;
-import hudson.model.Jenkins;
+import jenkins.model.Jenkins;
 import hudson.model.Saveable;
 import hudson.model.listeners.SaveableListener;
 import hudson.util.CopyOnWriteList;
@@ -57,7 +57,7 @@ import java.util.logging.Logger;
  *
  * <h3>Access Control</h3>
  * {@link LogRecorder} is only visible for administrators, and this access control happens at
- * {@link hudson.model.Jenkins#getLog()}, the sole entry point for binding {@link LogRecorder} to URL.
+ * {@link jenkins.model.Jenkins#getLog()}, the sole entry point for binding {@link LogRecorder} to URL.
  *
  * @author Kohsuke Kawaguchi
  * @see LogRecorderManager

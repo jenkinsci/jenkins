@@ -57,6 +57,7 @@ import java.util.Set;
 
 import javax.servlet.ServletException;
 
+import jenkins.model.Jenkins;
 import org.apache.commons.io.IOUtils;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.HttpResponse;

@@ -32,6 +32,7 @@ import hudson.XmlFile;
 import hudson.matrix.Axis;
 import hudson.util.DescriptorList;
 import hudson.util.XStream2;
+import jenkins.model.Jenkins;
 
 import java.io.File;
 import java.io.IOException;

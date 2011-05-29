@@ -28,7 +28,7 @@ import hudson.Functions;
 import hudson.init.Initializer;
 import static hudson.init.InitMilestone.PLUGINS_PREPARED;
 import hudson.model.AbstractModelObject;
-import hudson.model.Jenkins;
+import jenkins.model.Jenkins;
 import hudson.model.RSS;
 import hudson.tasks.Mailer;
 import hudson.util.CopyOnWriteMap;

@@ -5,7 +5,7 @@ import hudson.cli.CLICommand;
 import hudson.cli.ClientAuthenticationCache;
 import hudson.cli.LoginCommand;
 import hudson.cli.LogoutCommand;
-import hudson.model.Jenkins;
+import jenkins.model.Jenkins;
 import org.acegisecurity.Authentication;
 import org.jvnet.hudson.test.For;
 import org.jvnet.hudson.test.HudsonTestCase;

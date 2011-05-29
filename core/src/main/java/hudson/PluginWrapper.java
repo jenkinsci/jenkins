@@ -25,7 +25,7 @@
 package hudson;
 
 import hudson.PluginManager.PluginInstanceStore;
-import hudson.model.Jenkins;
+import jenkins.model.Jenkins;
 import hudson.model.UpdateCenter;
 import hudson.model.UpdateSite;
 import hudson.util.VersionNumber;

@@ -53,6 +53,7 @@ import hudson.util.Secret;
 import hudson.views.MyViewsTabBar;
 import hudson.views.ViewsTabBar;
 import hudson.widgets.RenderOnDemandClosure;
+import jenkins.model.Jenkins;
 import org.acegisecurity.providers.anonymous.AnonymousAuthenticationToken;
 import org.apache.commons.jelly.JellyContext;
 import org.apache.commons.jelly.JellyTagException;
@@ -272,7 +273,7 @@ public class Functions {
      * </pre>
      *
      * <p>
-     * The head portion is the part of the URL from the {@link hudson.model.Jenkins}
+     * The head portion is the part of the URL from the {@link jenkins.model.Jenkins}
      * object to the first {@link Run} subtype. When "next/prev build"
      * is chosen, this part remains intact.
      *

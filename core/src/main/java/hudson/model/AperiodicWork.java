@@ -27,6 +27,7 @@ import hudson.ExtensionList;
 import hudson.ExtensionPoint;
 import hudson.triggers.SafeTimerTask;
 import hudson.triggers.Trigger;
+import jenkins.model.Jenkins;
 
 import java.util.Random;
 import java.util.logging.Logger;

@@ -37,7 +37,7 @@ import hudson.model.BuildListener;
 import hudson.model.Computer;
 import hudson.model.EnvironmentSpecific;
 import hudson.model.Node;
-import hudson.model.Jenkins;
+import jenkins.model.Jenkins;
 import hudson.model.TaskListener;
 import hudson.remoting.Callable;
 import hudson.remoting.VirtualChannel;
@@ -309,7 +309,7 @@ public class Maven extends Builder {
 
     /**
      * @deprecated as of 1.286
-     *      Use {@link hudson.model.Jenkins#getDescriptorByType(Class)} to obtain the current instance.
+     *      Use {@link jenkins.model.Jenkins#getDescriptorByType(Class)} to obtain the current instance.
      *      For compatibility, this field retains the last created {@link DescriptorImpl}.
      *      TODO: fix sonar plugin that depends on this. That's the only plugin that depends on this field.
      */

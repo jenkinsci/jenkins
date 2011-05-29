@@ -26,7 +26,7 @@ package hudson.security;
 import groovy.lang.Binding;
 import hudson.Functions;
 import hudson.model.Descriptor;
-import hudson.model.Jenkins;
+import jenkins.model.Jenkins;
 import hudson.Util;
 import hudson.Extension;
 import hudson.os.PosixAPI;

@@ -24,7 +24,7 @@
 package hudson;
 
 import hudson.init.InitMilestone;
-import hudson.model.Jenkins;
+import jenkins.model.Jenkins;
 import hudson.util.AdaptedIterator;
 import hudson.util.DescriptorList;
 import hudson.util.Memoizer;
@@ -51,17 +51,17 @@ import java.util.logging.Logger;
  * manual registration,
  *
  * <p>
- * All {@link ExtensionList} instances should be owned by {@link hudson.model.Jenkins}, even though
- * extension points can be defined by anyone on any type. Use {@link hudson.model.Jenkins#getExtensionList(Class)}
- * and {@link hudson.model.Jenkins#getDescriptorList(Class)} to obtain the instances.
+ * All {@link ExtensionList} instances should be owned by {@link jenkins.model.Jenkins}, even though
+ * extension points can be defined by anyone on any type. Use {@link jenkins.model.Jenkins#getExtensionList(Class)}
+ * and {@link jenkins.model.Jenkins#getDescriptorList(Class)} to obtain the instances.
  *
  * @param <T>
  *      Type of the extension point. This class holds instances of the subtypes of 'T'. 
  *
  * @author Kohsuke Kawaguchi
  * @since 1.286
- * @see hudson.model.Jenkins#getExtensionList(Class)
- * @see hudson.model.Jenkins#getDescriptorList(Class)
+ * @see jenkins.model.Jenkins#getExtensionList(Class)
+ * @see jenkins.model.Jenkins#getDescriptorList(Class)
  */
 public class ExtensionList<T> extends AbstractList<T> {
     public final Jenkins hudson;

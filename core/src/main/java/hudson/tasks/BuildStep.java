@@ -227,7 +227,7 @@ public interface BuildStep {
     public static final class PublisherList extends AbstractList<Descriptor<Publisher>> {
         /**
          * {@link Descriptor}s are actually stored in here.
-         * Since {@link PublisherList} lives longer than {@link hudson.model.Jenkins} we cannot directly use {@link ExtensionList}.
+         * Since {@link PublisherList} lives longer than {@link jenkins.model.Jenkins} we cannot directly use {@link ExtensionList}.
          */
         private final DescriptorList<Publisher> core = new DescriptorList<Publisher>(Publisher.class);
 

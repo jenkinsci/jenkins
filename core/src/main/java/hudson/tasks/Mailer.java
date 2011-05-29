@@ -36,7 +36,7 @@ import hudson.model.AbstractProject;
 import hudson.model.BuildListener;
 import hudson.model.User;
 import hudson.model.UserPropertyDescriptor;
-import hudson.model.Jenkins;
+import jenkins.model.Jenkins;
 import hudson.util.FormValidation;
 import hudson.util.Secret;
 import org.apache.tools.ant.types.selectors.SelectorUtils;

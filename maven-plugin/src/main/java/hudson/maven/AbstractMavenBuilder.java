@@ -24,7 +24,7 @@
 package hudson.maven;
 
 import hudson.model.BuildListener;
-import hudson.model.Jenkins;
+import jenkins.model.Jenkins;
 import hudson.model.Result;
 import hudson.remoting.DelegatingCallable;
 

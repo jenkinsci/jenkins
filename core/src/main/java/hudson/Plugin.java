@@ -23,7 +23,7 @@
  */
 package hudson;
 
-import hudson.model.Jenkins;
+import jenkins.model.Jenkins;
 import hudson.model.Descriptor;
 import hudson.model.Saveable;
 import hudson.model.listeners.ItemListener;
@@ -100,7 +100,7 @@ public abstract class Plugin implements Saveable {
      *
      * <p>
      * This method is called after {@link #setServletContext(ServletContext)} is invoked.
-     * You can also use {@link hudson.model.Jenkins#getInstance()} to access the singleton hudson instance,
+     * You can also use {@link jenkins.model.Jenkins#getInstance()} to access the singleton hudson instance,
      * although the plugin start up happens relatively early in the initialization
      * stage and not all the data are loaded in Hudson.
      *

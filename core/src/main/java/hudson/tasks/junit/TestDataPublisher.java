@@ -28,6 +28,7 @@ import hudson.Extension;
 import hudson.ExtensionPoint;
 import hudson.Launcher;
 import hudson.model.*;
+import jenkins.model.Jenkins;
 
 import java.io.IOException;
 

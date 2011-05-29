@@ -28,11 +28,12 @@ import hudson.ExtensionPoint;
 import hudson.FilePath;
 import hudson.Util;
 import hudson.model.Describable;
-import hudson.model.Jenkins;
+import jenkins.model.Jenkins;
 import hudson.model.Label;
 import hudson.model.Node;
 import hudson.model.TaskListener;
 import java.io.IOException;
+
 import org.kohsuke.stapler.DataBoundConstructor;
 
 /**

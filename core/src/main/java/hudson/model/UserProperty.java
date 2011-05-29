@@ -27,6 +27,7 @@ import hudson.ExtensionPoint;
 import hudson.Plugin;
 import hudson.DescriptorExtensionList;
 import hudson.model.Descriptor.FormException;
+import jenkins.model.Jenkins;
 import net.sf.json.JSONObject;
 
 import org.kohsuke.stapler.StaplerRequest;

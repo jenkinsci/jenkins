@@ -28,7 +28,7 @@ import hudson.Extension;
 import hudson.Util;
 import hudson.diagnosis.OldDataMonitor;
 import hudson.model.Descriptor;
-import hudson.model.Jenkins;
+import jenkins.model.Jenkins;
 import hudson.model.ManagementLink;
 import hudson.model.ModelObject;
 import hudson.model.User;
@@ -80,7 +80,7 @@ import java.util.List;
  *
  * <p>
  * Implements {@link AccessControlled} to satisfy view rendering, but in reality the access control
- * is done against the {@link hudson.model.Jenkins} object.
+ * is done against the {@link jenkins.model.Jenkins} object.
  *
  * @author Kohsuke Kawaguchi
  */

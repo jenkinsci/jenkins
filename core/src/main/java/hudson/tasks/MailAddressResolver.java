@@ -27,7 +27,7 @@ import hudson.Extension;
 import hudson.ExtensionList;
 import hudson.ExtensionListView;
 import hudson.ExtensionPoint;
-import hudson.model.Jenkins;
+import jenkins.model.Jenkins;
 import hudson.model.User;
 import hudson.model.UserProperty;
 import hudson.scm.SCM;

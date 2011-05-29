@@ -43,6 +43,7 @@ import java.util.List;
 import java.util.Arrays;
 import java.util.Collections;
 
+import jenkins.model.Jenkins;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.QueryParameter;
 

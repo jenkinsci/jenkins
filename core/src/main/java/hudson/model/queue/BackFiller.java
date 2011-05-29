@@ -4,7 +4,7 @@ import com.google.common.collect.Iterables;
 import hudson.Extension;
 import hudson.model.Computer;
 import hudson.model.Executor;
-import hudson.model.Jenkins;
+import jenkins.model.Jenkins;
 import hudson.model.InvisibleAction;
 import hudson.model.Queue.BuildableItem;
 import hudson.model.queue.MappingWorksheet.ExecutorChunk;

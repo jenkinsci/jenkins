@@ -25,6 +25,7 @@ package hudson.model;
 
 import hudson.DescriptorExtensionList;
 import hudson.ExtensionPoint;
+import jenkins.model.Jenkins;
 import net.sf.json.JSONObject;
 import org.kohsuke.stapler.StaplerRequest;
 

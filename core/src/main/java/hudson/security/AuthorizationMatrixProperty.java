@@ -29,7 +29,7 @@ import hudson.model.Item;
 import hudson.model.Job;
 import hudson.model.JobProperty;
 import hudson.model.JobPropertyDescriptor;
-import hudson.model.Jenkins;
+import jenkins.model.Jenkins;
 import hudson.model.Run;
 import hudson.Extension;
 import hudson.util.FormValidation;

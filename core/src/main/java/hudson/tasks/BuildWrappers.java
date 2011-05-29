@@ -25,7 +25,7 @@ package hudson.tasks;
 
 import hudson.model.AbstractProject;
 import hudson.model.Descriptor;
-import hudson.model.Jenkins;
+import jenkins.model.Jenkins;
 import hudson.model.AbstractProject.AbstractProjectDescriptor;
 import hudson.Extension;
 import hudson.util.DescriptorList;

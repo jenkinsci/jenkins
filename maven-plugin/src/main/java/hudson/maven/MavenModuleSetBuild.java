@@ -44,7 +44,7 @@ import hudson.model.Cause.UpstreamCause;
 import hudson.model.Computer;
 import hudson.model.Environment;
 import hudson.model.Fingerprint;
-import hudson.model.Jenkins;
+import jenkins.model.Jenkins;
 import hudson.model.ParameterDefinition;
 import hudson.model.ParametersAction;
 import hudson.model.ParametersDefinitionProperty;

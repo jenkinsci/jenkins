@@ -29,7 +29,7 @@ import static hudson.Util.fixNull;
 import static hudson.Util.fixEmptyAndTrim;
 import static hudson.Util.fixEmpty;
 import hudson.model.Descriptor;
-import hudson.model.Jenkins;
+import jenkins.model.Jenkins;
 import hudson.model.User;
 import hudson.tasks.MailAddressResolver;
 import hudson.util.FormValidation;

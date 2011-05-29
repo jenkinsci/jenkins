@@ -23,7 +23,7 @@
  */
 package hudson;
 
-import hudson.model.Jenkins;
+import jenkins.model.Jenkins;
 import hudson.tasks.UserNameResolver;
 import hudson.util.CopyOnWriteList;
 
@@ -37,7 +37,7 @@ import java.util.Collection;
  *
  * <p>
  * Instances of this class can be created statically as a singleton, but it provides the view
- * to {@link ExtensionList} of the current {@link hudson.model.Jenkins}.
+ * to {@link ExtensionList} of the current {@link jenkins.model.Jenkins}.
  * Write operations to this list will update the legacy instances on {@link ExtensionList}.
  *
  * <p>

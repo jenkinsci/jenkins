@@ -35,7 +35,7 @@ import hudson.model.Environment;
 import hudson.model.JobProperty;
 import hudson.model.Run;
 import hudson.model.TaskListener;
-import hudson.model.Jenkins;
+import jenkins.model.Jenkins;
 import hudson.scm.SCM;
 import hudson.tasks.BuildWrapper;
 import hudson.util.CopyOnWriteList;

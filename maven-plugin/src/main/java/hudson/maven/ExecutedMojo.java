@@ -25,7 +25,7 @@ package hudson.maven;
 
 import static hudson.Util.intern;
 import hudson.Util;
-import hudson.model.Jenkins;
+import jenkins.model.Jenkins;
 import hudson.remoting.Which;
 import hudson.util.ReflectionUtils;
 

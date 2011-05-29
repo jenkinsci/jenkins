@@ -27,7 +27,7 @@
 import org.acegisecurity.providers.ProviderManager
 import org.acegisecurity.providers.anonymous.AnonymousAuthenticationProvider
 import org.acegisecurity.providers.rememberme.RememberMeAuthenticationProvider
-import hudson.model.Jenkins
+import jenkins.model.Jenkins
 
 authenticationManager(ProviderManager) {
     providers = [

@@ -8,6 +8,7 @@ package hudson.security.csrf;
 import javax.servlet.ServletRequest;
 
 import hudson.init.Initializer;
+import jenkins.model.Jenkins;
 import org.kohsuke.stapler.Stapler;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.WebApp;
@@ -19,7 +20,6 @@ import hudson.ExtensionPoint;
 import hudson.model.Api;
 import hudson.model.Describable;
 import hudson.model.Descriptor;
-import hudson.model.Jenkins;
 import hudson.util.MultipartFormDataParser;
 
 /**

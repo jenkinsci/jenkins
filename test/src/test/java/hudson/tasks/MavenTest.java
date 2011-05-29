@@ -25,7 +25,7 @@ package hudson.tasks;
 
 import hudson.model.Build;
 import hudson.model.FreeStyleProject;
-import hudson.model.Jenkins;
+import jenkins.model.Jenkins;
 import hudson.model.JDK;
 import hudson.model.ParametersDefinitionProperty;
 import hudson.model.Result;

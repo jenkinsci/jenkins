@@ -33,6 +33,7 @@ import hudson.triggers.TimerTrigger;
 import java.util.Set;
 import java.io.IOException;
 
+import jenkins.model.Jenkins;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 

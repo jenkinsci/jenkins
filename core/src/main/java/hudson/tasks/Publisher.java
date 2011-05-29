@@ -32,7 +32,7 @@ import hudson.model.BuildListener;
 import hudson.model.Describable;
 import hudson.model.Project;
 import hudson.model.Descriptor;
-import hudson.model.Jenkins;
+import jenkins.model.Jenkins;
 
 import java.util.List;
 import java.util.ArrayList;
@@ -126,7 +126,7 @@ public abstract class Publisher extends BuildStepCompatibilityLayer implements B
     /**
      * {@link Publisher} has a special sort semantics that requires a subtype.
      *
-     * @see DescriptorExtensionList#createDescriptorList(hudson.model.Jenkins, Class)
+     * @see DescriptorExtensionList#createDescriptorList(jenkins.model.Jenkins, Class)
      */
     public static final class DescriptorExtensionListImpl extends DescriptorExtensionList<Publisher,Descriptor<Publisher>>
             implements Comparator<ExtensionComponent<Descriptor<Publisher>>> {

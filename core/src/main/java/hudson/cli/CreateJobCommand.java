@@ -23,7 +23,7 @@
  */
 package hudson.cli;
 
-import hudson.model.Jenkins;
+import jenkins.model.Jenkins;
 import hudson.Extension;
 import hudson.model.Item;
 import org.kohsuke.args4j.Argument;

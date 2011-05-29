@@ -1,6 +1,6 @@
 package hudson;
 
-import hudson.model.Jenkins;
+import jenkins.model.Jenkins;
 
 import javax.jmdns.JmDNS;
 import javax.jmdns.ServiceInfo;

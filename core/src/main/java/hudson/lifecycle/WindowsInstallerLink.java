@@ -25,7 +25,7 @@ package hudson.lifecycle;
 
 import hudson.Functions;
 import hudson.model.ManagementLink;
-import hudson.model.Jenkins;
+import jenkins.model.Jenkins;
 import hudson.AbortException;
 import hudson.Extension;
 import hudson.util.StreamTaskListener;

@@ -28,7 +28,7 @@ import hudson.PluginWrapper;
 import hudson.init.Initializer;
 import hudson.model.AdministrativeMonitor;
 import hudson.model.Descriptor;
-import hudson.model.Jenkins;
+import jenkins.model.Jenkins;
 
 import java.text.MessageFormat;
 import java.util.ArrayList;

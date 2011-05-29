@@ -32,7 +32,7 @@ import hudson.model.BuildListener;
 import hudson.model.Computer;
 import hudson.model.Environment;
 import hudson.model.Executor;
-import hudson.model.Jenkins;
+import jenkins.model.Jenkins;
 import hudson.model.Node;
 import hudson.model.Result;
 import hudson.model.Run;

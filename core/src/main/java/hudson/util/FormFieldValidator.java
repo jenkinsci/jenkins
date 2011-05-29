@@ -30,7 +30,7 @@ import hudson.ProxyConfiguration;
 import hudson.Util;
 import hudson.tasks.JavadocArchiver;
 import hudson.model.AbstractProject;
-import hudson.model.Jenkins;
+import jenkins.model.Jenkins;
 import hudson.model.Item;
 import hudson.security.Permission;
 import hudson.security.AccessControlled;

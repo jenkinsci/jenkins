@@ -28,7 +28,7 @@ import hudson.FilePath;
 import hudson.FilePath.FileCallable;
 import hudson.Functions;
 import hudson.model.Computer;
-import hudson.model.Jenkins;
+import jenkins.model.Jenkins;
 import hudson.node_monitors.DiskSpaceMonitorDescriptor.DiskSpace;
 import hudson.remoting.VirtualChannel;
 import org.jvnet.animal_sniffer.IgnoreJRERequirement;

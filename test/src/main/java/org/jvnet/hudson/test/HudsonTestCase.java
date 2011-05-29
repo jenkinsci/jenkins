@@ -116,6 +116,8 @@ import java.util.logging.Logger;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletContextEvent;
 
+import jenkins.model.Jenkins;
+import jenkins.model.JenkinsAdaptor;
 import junit.framework.TestCase;
 import net.sf.json.JSONObject;
 import net.sourceforge.htmlunit.corejs.javascript.Context;
@@ -394,7 +396,7 @@ public abstract class HudsonTestCase extends TestCase implements RootAction {
     }
 
     /**
-     * Creates a new instance of {@link hudson.model.Jenkins}. If the derived class wants to create it in a different way,
+     * Creates a new instance of {@link jenkins.model.Jenkins}. If the derived class wants to create it in a different way,
      * you can override it.
      */
     protected Hudson newHudson() throws Exception {
@@ -1436,7 +1438,7 @@ public abstract class HudsonTestCase extends TestCase implements RootAction {
      * <p>
      * This method allows you to do just that. It is useful for testing some methods that
      * require {@link StaplerRequest} and {@link StaplerResponse}, or getting the credential
-     * of the current user (via {@link hudson.model.Jenkins#getAuthentication()}, and so on.
+     * of the current user (via {@link jenkins.model.Jenkins#getAuthentication()}, and so on.
      *
      * @param c
      *      The closure to be executed on the server.
@@ -1562,7 +1564,7 @@ public abstract class HudsonTestCase extends TestCase implements RootAction {
          * <p>
          * This method allows you to do just that. It is useful for testing some methods that
          * require {@link StaplerRequest} and {@link StaplerResponse}, or getting the credential
-         * of the current user (via {@link hudson.model.Jenkins#getAuthentication()}, and so on.
+         * of the current user (via {@link jenkins.model.Jenkins#getAuthentication()}, and so on.
          *
          * @param c
          *      The closure to be executed on the server.

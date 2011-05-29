@@ -26,7 +26,7 @@ package hudson.maven;
 import hudson.maven.reporters.MavenArtifactArchiver;
 import hudson.model.Descriptor;
 import hudson.model.Describable;
-import hudson.model.Jenkins;
+import jenkins.model.Jenkins;
 import org.apache.commons.jelly.JellyException;
 import org.kohsuke.stapler.MetaClass;
 import org.kohsuke.stapler.StaplerRequest;

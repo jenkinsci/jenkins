@@ -28,6 +28,7 @@ import hudson.triggers.Trigger;
 import hudson.ExtensionPoint;
 import hudson.Extension;
 import hudson.ExtensionList;
+import jenkins.model.Jenkins;
 
 import java.util.logging.Logger;
 import java.util.Random;

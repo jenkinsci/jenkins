@@ -23,7 +23,8 @@
  */
 package hudson.lifecycle;
 
-import hudson.model.Jenkins;
+import jenkins.model.Jenkins;
+
 import java.io.IOException;
 
 /**

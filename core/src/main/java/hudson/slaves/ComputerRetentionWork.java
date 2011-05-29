@@ -27,7 +27,7 @@ import java.util.Map;
 import java.util.WeakHashMap;
 
 import hudson.model.Computer;
-import hudson.model.Jenkins;
+import jenkins.model.Jenkins;
 import hudson.model.Node;
 import hudson.model.PeriodicWork;
 import hudson.Extension;

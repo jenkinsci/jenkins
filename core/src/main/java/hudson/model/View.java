@@ -41,6 +41,7 @@ import hudson.util.DescribableList;
 import hudson.util.DescriptorList;
 import hudson.util.RunList;
 import hudson.widgets.Widget;
+import jenkins.model.Jenkins;
 import net.sf.json.JSONObject;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
@@ -61,7 +62,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 
-import static hudson.model.Jenkins.*;
+import static jenkins.model.Jenkins.*;
 
 /**
  * Encapsulates the rendering of the list of {@link TopLevelItem}s

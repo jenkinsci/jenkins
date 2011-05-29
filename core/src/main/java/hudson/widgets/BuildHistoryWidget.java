@@ -23,7 +23,7 @@
  */
 package hudson.widgets;
 
-import hudson.model.Jenkins;
+import jenkins.model.Jenkins;
 import hudson.model.Queue.Item;
 import hudson.model.Queue.Task;
 

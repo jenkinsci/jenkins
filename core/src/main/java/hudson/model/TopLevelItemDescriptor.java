@@ -24,6 +24,7 @@
 package hudson.model;
 
 import hudson.ExtensionList;
+import jenkins.model.Jenkins;
 import org.kohsuke.stapler.StaplerRequest;
 
 /**

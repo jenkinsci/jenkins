@@ -28,7 +28,7 @@ import hudson.Launcher;
 import hudson.model.Action;
 import hudson.model.BuildListener;
 import hudson.model.Describable;
-import hudson.model.Jenkins;
+import jenkins.model.Jenkins;
 import hudson.tasks.BuildStep;
 import hudson.tasks.Publisher;
 import org.apache.maven.plugin.MojoExecutionException;

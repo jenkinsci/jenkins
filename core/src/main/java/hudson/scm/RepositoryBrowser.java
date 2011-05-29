@@ -28,12 +28,13 @@ import hudson.DescriptorExtensionList;
 import hudson.Extension;
 import hudson.model.AbstractDescribableImpl;
 import hudson.model.Descriptor;
-import hudson.model.Jenkins;
+import jenkins.model.Jenkins;
 
 import java.io.IOException;
 import java.io.Serializable;
 import java.net.URL;
 import java.net.MalformedURLException;
+
 import org.kohsuke.stapler.export.ExportedBean;
 
 /**

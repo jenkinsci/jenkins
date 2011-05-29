@@ -24,7 +24,7 @@
 
 package hudson.cli;
 
-import hudson.model.Jenkins;
+import jenkins.model.Jenkins;
 import hudson.model.Job;
 import hudson.model.Run;
 import hudson.remoting.Callable;

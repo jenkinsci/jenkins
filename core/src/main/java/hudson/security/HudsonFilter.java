@@ -23,7 +23,7 @@
  */
 package hudson.security;
 
-import hudson.model.Jenkins;
+import jenkins.model.Jenkins;
 
 import java.io.IOException;
 import java.util.logging.Logger;

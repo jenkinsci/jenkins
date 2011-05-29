@@ -41,7 +41,7 @@ import com.thoughtworks.xstream.io.HierarchicalStreamReader;
 import com.thoughtworks.xstream.io.HierarchicalStreamWriter;
 import com.thoughtworks.xstream.mapper.CannotResolveClassException;
 import hudson.diagnosis.OldDataMonitor;
-import hudson.model.Jenkins;
+import jenkins.model.Jenkins;
 import hudson.model.Label;
 import hudson.model.Result;
 import hudson.model.Saveable;

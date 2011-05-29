@@ -28,6 +28,7 @@ import hudson.Plugin;
 import hudson.Extension;
 import hudson.ExtensionList;
 import hudson.util.DescriptorList;
+import jenkins.model.Jenkins;
 
 import java.util.List;
 

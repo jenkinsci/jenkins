@@ -48,7 +48,7 @@ import java.lang.annotation.Target;
 public interface ExtensionPoint {
     /**
      * Used by designers of extension points (direct subtypes of {@link ExtensionPoint}) to indicate that
-     * the legacy instances are scoped to {@link hudson.model.Jenkins} instance. By default, legacy instances are
+     * the legacy instances are scoped to {@link jenkins.model.Jenkins} instance. By default, legacy instances are
      * static scope.  
      */
     @Target(TYPE)

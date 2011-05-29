@@ -23,7 +23,7 @@
  */
 package hudson;
 
-import hudson.model.Jenkins;
+import jenkins.model.Jenkins;
 import hudson.model.Computer;
 import hudson.slaves.OfflineCause;
 import hudson.slaves.SlaveComputer;
@@ -67,7 +67,7 @@ import java.util.logging.Logger;
  * unauthorized remote slaves.
  *
  * <p>
- * The approach here is to have {@link hudson.model.Jenkins#getSecretKey() a secret key} on the master.
+ * The approach here is to have {@link jenkins.model.Jenkins#getSecretKey() a secret key} on the master.
  * This key is sent to the slave inside the <tt>.jnlp</tt> file
  * (this file itself is protected by HTTP form-based authentication that
  * we use everywhere else in Hudson), and the slave sends this

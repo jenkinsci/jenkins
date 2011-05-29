@@ -40,6 +40,7 @@ import java.util.List;
 
 import com.thoughtworks.xstream.annotations.XStreamSerializable;
 import com.thoughtworks.xstream.converters.UnmarshallingContext;
+import jenkins.model.Jenkins;
 
 /**
  * Formalization of a tool installed in nodes used for builds

@@ -23,6 +23,7 @@
  */
 package hudson.model;
 
+import jenkins.model.Jenkins;
 import org.kohsuke.stapler.QueryParameter;
 
 /**

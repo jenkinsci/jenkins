@@ -25,7 +25,7 @@ package hudson.slaves;
 
 import hudson.model.AsyncPeriodicWork;
 import hudson.model.TaskListener;
-import hudson.model.Jenkins;
+import jenkins.model.Jenkins;
 import hudson.model.Computer;
 import hudson.util.TimeUnit2;
 import hudson.remoting.VirtualChannel;

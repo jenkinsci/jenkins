@@ -26,7 +26,7 @@ package hudson.maven;
 import hudson.ExtensionPoint;
 import hudson.ExtensionList;
 import hudson.Extension;
-import hudson.model.Jenkins;
+import jenkins.model.Jenkins;
 import org.apache.maven.project.MavenProject;
 
 import java.util.Collection;

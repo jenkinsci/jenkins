@@ -23,7 +23,7 @@
  */
 package hudson.security;
 
-import hudson.model.Jenkins;
+import jenkins.model.Jenkins;
 import org.acegisecurity.AccessDeniedException;
 import org.acegisecurity.ui.AccessDeniedHandler;
 import org.kohsuke.stapler.Stapler;

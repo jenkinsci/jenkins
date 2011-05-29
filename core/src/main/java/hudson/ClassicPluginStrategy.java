@@ -24,7 +24,7 @@
 package hudson;
 
 import hudson.PluginWrapper.Dependency;
-import hudson.model.Jenkins;
+import jenkins.model.Jenkins;
 import hudson.util.IOException2;
 import hudson.util.MaskingClassLoader;
 import hudson.util.VersionNumber;
@@ -269,7 +269,7 @@ public class ClassicPluginStrategy implements PluginStrategy {
         }
 
         /**
-         * See {@link ExtensionFinder#scout(Class, hudson.model.Jenkins)} for the dead lock issue and what this does.
+         * See {@link ExtensionFinder#scout(Class, jenkins.model.Jenkins)} for the dead lock issue and what this does.
          */
         if (LOGGER.isLoggable(Level.FINER))
             LOGGER.log(Level.FINER,"Scout-loading ExtensionList: "+type, new Throwable());

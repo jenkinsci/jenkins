@@ -24,7 +24,7 @@
 package hudson.security;
 
 import hudson.CopyOnWrite;
-import hudson.model.Jenkins;
+import jenkins.model.Jenkins;
 
 import java.util.List;
 import java.util.Collections;

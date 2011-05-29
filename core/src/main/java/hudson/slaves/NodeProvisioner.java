@@ -25,7 +25,7 @@ package hudson.slaves;
 
 import hudson.model.LoadStatistics;
 import hudson.model.Node;
-import hudson.model.Jenkins;
+import jenkins.model.Jenkins;
 import hudson.model.MultiStageTimeSeries;
 import hudson.model.Label;
 import hudson.model.PeriodicWork;

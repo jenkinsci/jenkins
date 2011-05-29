@@ -24,7 +24,7 @@
 package hudson.console;
 
 import com.trilead.ssh2.crypto.Base64;
-import hudson.model.Jenkins;
+import jenkins.model.Jenkins;
 import hudson.remoting.ObjectInputStreamEx;
 import hudson.util.IOException2;
 import hudson.util.Secret;

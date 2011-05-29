@@ -15,7 +15,7 @@ import org.kohsuke.MetaInfServices;
  * To register, put {@link MetaInfServices} on your implementation.
  *
  * @author Kohsuke Kawaguchi
- * @see hudson.model.Jenkins#buildReactorListener()
+ * @see jenkins.model.Jenkins#buildReactorListener()
  */
 public interface InitReactorListener extends ReactorListener {
 }

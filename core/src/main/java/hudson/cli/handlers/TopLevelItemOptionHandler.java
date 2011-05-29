@@ -1,7 +1,7 @@
 package hudson.cli.handlers;
 
 import hudson.model.AbstractProject;
-import hudson.model.Jenkins;
+import jenkins.model.Jenkins;
 import hudson.model.TopLevelItem;
 import org.kohsuke.MetaInfServices;
 import org.kohsuke.args4j.CmdLineException;

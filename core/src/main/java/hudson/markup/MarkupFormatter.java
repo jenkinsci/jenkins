@@ -48,7 +48,7 @@ import java.io.Writer;
  *
  * @author Kohsuke Kawaguchi
  * @since 1.391
- * @see hudson.model.Jenkins#getMarkupFormatter()
+ * @see jenkins.model.Jenkins#getMarkupFormatter()
  */
 public abstract class MarkupFormatter extends AbstractDescribableImpl<MarkupFormatter> implements ExtensionPoint {
     /**

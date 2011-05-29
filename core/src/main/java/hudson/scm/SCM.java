@@ -39,7 +39,7 @@ import hudson.model.Describable;
 import hudson.model.TaskListener;
 import hudson.model.Node;
 import hudson.model.WorkspaceCleanupThread;
-import hudson.model.Jenkins;
+import jenkins.model.Jenkins;
 import hudson.model.Descriptor;
 import hudson.model.Api;
 import hudson.model.Action;

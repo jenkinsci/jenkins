@@ -28,7 +28,7 @@ import hudson.ExtensionList;
 import hudson.ExtensionPoint;
 import hudson.model.Computer;
 import hudson.model.Executor;
-import hudson.model.Jenkins;
+import jenkins.model.Jenkins;
 
 import java.util.ArrayList;
 import java.util.Collections;

@@ -26,6 +26,7 @@ package hudson.model;
 
 import hudson.security.ACL;
 import hudson.security.NotSerilizableSecurityContext;
+import jenkins.model.Jenkins;
 import org.acegisecurity.context.SecurityContext;
 import org.acegisecurity.context.SecurityContextHolder;
 

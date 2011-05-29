@@ -23,7 +23,7 @@
  */
 package hudson.security;
 
-import hudson.model.Jenkins;
+import jenkins.model.Jenkins;
 import hudson.util.Scrambler;
 import org.acegisecurity.context.SecurityContextHolder;
 import org.kohsuke.stapler.StaplerRequest;
@@ -61,7 +61,7 @@ import java.net.URLEncoder;
  * This causes the container to perform authentication, but there's no way
  * to find out whether the user has been successfully authenticated or not.
  * So to find this out, we then redirect the user to
- * {@link hudson.model.Jenkins#doSecured(StaplerRequest, StaplerResponse) <tt>/secured/...</tt> page}.
+ * {@link jenkins.model.Jenkins#doSecured(StaplerRequest, StaplerResponse) <tt>/secured/...</tt> page}.
  *
  * <p>
  * The handler of the above URL checks if the user is authenticated,

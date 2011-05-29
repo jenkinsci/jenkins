@@ -29,6 +29,7 @@ import hudson.DescriptorExtensionList;
 import hudson.Extension;
 import hudson.model.*;
 import hudson.util.DescriptorList;
+import jenkins.model.Jenkins;
 import org.kohsuke.stapler.DataBoundConstructor;
 
 import java.util.logging.Level;

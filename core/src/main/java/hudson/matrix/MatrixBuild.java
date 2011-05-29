@@ -30,7 +30,7 @@ import hudson.model.AbstractProject;
 import hudson.model.BuildListener;
 import hudson.model.Executor;
 import hudson.model.Fingerprint;
-import hudson.model.Jenkins;
+import jenkins.model.Jenkins;
 import hudson.model.JobProperty;
 import hudson.model.ParametersAction;
 import hudson.model.Queue;

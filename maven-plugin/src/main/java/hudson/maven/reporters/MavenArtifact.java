@@ -29,7 +29,7 @@ import hudson.maven.MavenBuild;
 import hudson.maven.MavenBuildProxy;
 import hudson.model.BuildListener;
 import hudson.model.FingerprintMap;
-import hudson.model.Jenkins;
+import jenkins.model.Jenkins;
 
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.factory.ArtifactFactory;

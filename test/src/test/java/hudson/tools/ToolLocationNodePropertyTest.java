@@ -39,6 +39,7 @@ import hudson.maven.MavenModuleSet;
 
 import java.io.IOException;
 
+import jenkins.model.Jenkins;
 import junit.framework.Assert;
 
 import org.jvnet.hudson.test.HudsonTestCase;

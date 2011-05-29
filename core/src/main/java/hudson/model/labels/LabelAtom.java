@@ -33,7 +33,7 @@ import hudson.XmlFile;
 import hudson.model.Action;
 import hudson.model.Descriptor.FormException;
 import hudson.model.Failure;
-import hudson.model.Jenkins;
+import jenkins.model.Jenkins;
 import hudson.model.Label;
 import hudson.model.Saveable;
 import hudson.model.listeners.SaveableListener;

@@ -25,7 +25,7 @@ package hudson.security;
 
 import hudson.model.AbstractItem;
 import hudson.model.Descriptor;
-import hudson.model.Jenkins;
+import jenkins.model.Jenkins;
 import hudson.model.Item;
 import hudson.model.ItemGroup;
 import hudson.model.Job;

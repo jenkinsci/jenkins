@@ -23,6 +23,8 @@
  */
 package hudson.model;
 
+import jenkins.model.Jenkins;
+
 /**
  * Partial default implementation of {@link Describable}.
  *

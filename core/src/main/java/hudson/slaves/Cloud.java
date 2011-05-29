@@ -28,7 +28,7 @@ import hudson.Extension;
 import hudson.DescriptorExtensionList;
 import hudson.slaves.NodeProvisioner.PlannedNode;
 import hudson.model.Describable;
-import hudson.model.Jenkins;
+import jenkins.model.Jenkins;
 import hudson.model.Node;
 import hudson.model.AbstractModelObject;
 import hudson.model.Label;
@@ -54,7 +54,7 @@ import java.util.Collection;
 public abstract class Cloud extends AbstractModelObject implements ExtensionPoint, Describable<Cloud>, AccessControlled {
 
     /**
-     * Uniquely identifies this {@link Cloud} instance among other instances in {@link hudson.model.Jenkins#clouds}.
+     * Uniquely identifies this {@link Cloud} instance among other instances in {@link jenkins.model.Jenkins#clouds}.
      */
     public final String name;
 
@@ -111,7 +111,7 @@ public abstract class Cloud extends AbstractModelObject implements ExtensionPoin
      *      {@link PlannedNode}s that represent asynchronous {@link Node}
      *      provisioning operations. Can be empty but must not be null.
      *      {@link NodeProvisioner} will be responsible for adding the resulting {@link Node}
-     *      into Hudson via {@link hudson.model.Jenkins#addNode(Node)}, so a {@link Cloud} implementation
+     *      into Hudson via {@link jenkins.model.Jenkins#addNode(Node)}, so a {@link Cloud} implementation
      *      just needs to create a new node object.
      */
     public abstract Collection<PlannedNode> provision(Label label, int excessWorkload);

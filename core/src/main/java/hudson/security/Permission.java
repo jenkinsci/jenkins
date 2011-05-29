@@ -23,7 +23,7 @@
  */
 package hudson.security;
 
-import hudson.model.*;
+import jenkins.model.Jenkins;
 import net.sf.json.util.JSONUtils;
 
 import java.util.Collections;
@@ -237,10 +237,10 @@ public final class Permission {
 //
 
     /**
-     * {@link PermissionGroup} for {@link hudson.model.Jenkins}.
+     * {@link PermissionGroup} for {@link jenkins.model.Jenkins}.
      *
      * @deprecated since 2009-01-23.
-     *      Access {@link hudson.model.Jenkins#PERMISSIONS} instead.
+     *      Access {@link jenkins.model.Jenkins#PERMISSIONS} instead.
      */
     public static final PermissionGroup HUDSON_PERMISSIONS = new PermissionGroup(Jenkins.class, hudson.model.Messages._Hudson_Permissions_Title());
     /**
@@ -250,7 +250,7 @@ public final class Permission {
      * All permissions are eventually {@linkplain Permission#impliedBy implied by} this permission.
      *
      * @deprecated since 2009-01-23.
-     *      Access {@link hudson.model.Jenkins#ADMINISTER} instead.
+     *      Access {@link jenkins.model.Jenkins#ADMINISTER} instead.
      */
     public static final Permission HUDSON_ADMINISTER = new Permission(HUDSON_PERMISSIONS,"Administer", hudson.model.Messages._Hudson_AdministerPermission_Description(),null);
 
@@ -269,7 +269,7 @@ public final class Permission {
      * any more, so deprecated.
      *
      * @deprecated since 2009-01-23.
-     *      Use {@link hudson.model.Jenkins#ADMINISTER}.
+     *      Use {@link jenkins.model.Jenkins#ADMINISTER}.
      */
     public static final Permission FULL_CONTROL = new Permission(GROUP,"FullControl",HUDSON_ADMINISTER);
 

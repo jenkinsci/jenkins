@@ -22,7 +22,7 @@
  * THE SOFTWARE.
  */
 
-import hudson.model.Jenkins;
+import jenkins.model.Jenkins;
 import hudson.remoting.Which;
 import junit.framework.Test;
 import junit.framework.TestCase;

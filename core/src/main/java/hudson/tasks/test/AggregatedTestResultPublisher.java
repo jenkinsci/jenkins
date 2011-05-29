@@ -32,7 +32,7 @@ import hudson.Util;
 import static hudson.Util.fixNull;
 import hudson.model.BuildListener;
 import hudson.model.Fingerprint.RangeSet;
-import hudson.model.Jenkins;
+import jenkins.model.Jenkins;
 import hudson.model.Item;
 import hudson.model.Job;
 import hudson.model.Result;

@@ -25,6 +25,7 @@ package hudson.model;
 
 import hudson.Util;
 import hudson.util.KeyedDataStorage;
+import jenkins.model.Jenkins;
 
 import java.io.File;
 import java.io.IOException;

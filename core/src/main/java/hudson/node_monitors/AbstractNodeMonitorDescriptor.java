@@ -25,7 +25,7 @@ package hudson.node_monitors;
 
 import hudson.model.Computer;
 import hudson.model.Descriptor;
-import hudson.model.Jenkins;
+import jenkins.model.Jenkins;
 import hudson.model.ComputerSet;
 import hudson.model.AdministrativeMonitor;
 import hudson.triggers.Trigger;

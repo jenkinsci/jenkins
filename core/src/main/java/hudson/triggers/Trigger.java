@@ -36,7 +36,7 @@ import hudson.model.AperiodicWork;
 import hudson.model.Build;
 import hudson.model.ComputerSet;
 import hudson.model.Describable;
-import hudson.model.Jenkins;
+import jenkins.model.Jenkins;
 import hudson.model.Item;
 import hudson.model.PeriodicWork;
 import hudson.model.Project;
@@ -265,7 +265,7 @@ public abstract class Trigger<J extends Item> implements Describable<Trigger<?>>
      * This timer is available for all the components inside Hudson to schedule
      * some work.
      *
-     * Initialized and cleaned up by {@link hudson.model.Jenkins}, but value kept here for compatibility.
+     * Initialized and cleaned up by {@link jenkins.model.Jenkins}, but value kept here for compatibility.
      *
      * If plugins want to run periodic jobs, they should implement {@link PeriodicWork}.
      */

@@ -29,7 +29,7 @@ import com.thoughtworks.xstream.converters.UnmarshallingContext;
 import com.thoughtworks.xstream.io.HierarchicalStreamReader;
 import com.thoughtworks.xstream.io.HierarchicalStreamWriter;
 import com.trilead.ssh2.crypto.Base64;
-import hudson.model.Jenkins;
+import jenkins.model.Jenkins;
 import hudson.Util;
 import org.kohsuke.stapler.Stapler;
 
@@ -44,7 +44,7 @@ import java.security.GeneralSecurityException;
  * Glorified {@link String} that uses encryption in the persisted form, to avoid accidental exposure of a secret.
  *
  * <p>
- * Note that since the cryptography relies on {@link hudson.model.Jenkins#getSecretKey()}, this is not meant as a protection
+ * Note that since the cryptography relies on {@link jenkins.model.Jenkins#getSecretKey()}, this is not meant as a protection
  * against code running in the same VM, nor against an attacker who has local file system access. 
  *
  * <p>
@@ -96,7 +96,7 @@ public final class Secret implements Serializable {
     }
 
     /**
-     * Turns {@link hudson.model.Jenkins#getSecretKey()} into an AES key.
+     * Turns {@link jenkins.model.Jenkins#getSecretKey()} into an AES key.
      */
     private static SecretKey getKey() throws UnsupportedEncodingException, GeneralSecurityException {
         String secret = SECRET;
@@ -207,7 +207,7 @@ public final class Secret implements Serializable {
     private static final String PROVIDER = System.getProperty(Secret.class.getName()+".provider");
 
     /**
-     * For testing only. Override the secret key so that we can test this class without {@link hudson.model.Jenkins}.
+     * For testing only. Override the secret key so that we can test this class without {@link jenkins.model.Jenkins}.
      */
     /*package*/ static String SECRET = null;
 

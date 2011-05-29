@@ -28,7 +28,7 @@ import com.sun.jna.Native;
 import com.sun.jna.ptr.IntByReference;
 import hudson.EnvVars;
 import hudson.Util;
-import hudson.model.Jenkins;
+import jenkins.model.Jenkins;
 import hudson.remoting.Callable;
 import hudson.remoting.Channel;
 import hudson.remoting.VirtualChannel;

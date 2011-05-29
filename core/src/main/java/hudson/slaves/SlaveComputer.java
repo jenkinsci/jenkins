@@ -24,7 +24,7 @@
 package hudson.slaves;
 
 import hudson.model.*;
-import hudson.model.Jenkins.MasterComputer;
+import jenkins.model.Jenkins.MasterComputer;
 import hudson.remoting.Channel;
 import hudson.remoting.VirtualChannel;
 import hudson.remoting.Callable;
@@ -57,6 +57,7 @@ import java.util.concurrent.Future;
 import java.security.Security;
 
 import hudson.util.io.ReopenableFileOutputStream;
+import jenkins.model.Jenkins;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 import org.kohsuke.stapler.QueryParameter;
@@ -454,7 +455,7 @@ public class SlaveComputer extends Computer {
      * Serves jar files for JNLP slave agents.
      *
      * @deprecated since 2008-08-18.
-     *      This URL binding is no longer used and moved up directly under to {@link hudson.model.Jenkins},
+     *      This URL binding is no longer used and moved up directly under to {@link jenkins.model.Jenkins},
      *      but it's left here for now just in case some old JNLP slave agents request it.
      */
     public Slave.JnlpJar getJnlpJars(String fileName) {

@@ -26,7 +26,7 @@ package hudson.tools;
 import hudson.DescriptorExtensionList;
 import hudson.ExtensionPoint;
 import hudson.model.Describable;
-import hudson.model.Jenkins;
+import jenkins.model.Jenkins;
 
 /**
  * Extensible property of {@link ToolInstallation}.
