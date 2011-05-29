@@ -23,7 +23,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package hudson.model;
+package jenkins.model;
 
 import antlr.ANTLRException;
 import com.thoughtworks.xstream.XStream;
@@ -32,7 +32,6 @@ import hudson.DNSMultiCast;
 import hudson.DescriptorExtensionList;
 import hudson.Extension;
 import hudson.ExtensionList;
-import hudson.ExtensionListView;
 import hudson.ExtensionPoint;
 import hudson.FilePath;
 import hudson.Functions;
@@ -40,7 +39,6 @@ import hudson.Launcher;
 import hudson.Launcher.LocalLauncher;
 import hudson.LocalPluginManager;
 import hudson.Lookup;
-import hudson.Platform;
 import hudson.markup.MarkupFormatter;
 import hudson.Plugin;
 import hudson.PluginManager;
@@ -66,6 +64,7 @@ import hudson.lifecycle.Lifecycle;
 import hudson.logging.LogRecorderManager;
 import hudson.lifecycle.RestartNotSupportedException;
 import hudson.markup.RawHtmlMarkupFormatter;
+import hudson.model.*;
 import hudson.model.Descriptor.FormException;
 import hudson.model.labels.LabelAtom;
 import hudson.model.listeners.ItemListener;
@@ -196,7 +195,6 @@ import java.net.URL;
 import java.nio.charset.Charset;
 import java.security.SecureRandom;
 import java.text.Collator;
-import java.text.NumberFormat;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -239,18 +237,13 @@ import java.util.regex.Pattern;
  * @author Kohsuke Kawaguchi
  */
 @ExportedBean
-public class Jenkins extends Node implements ItemGroup<TopLevelItem>, StaplerProxy, StaplerFallback, ViewGroup, AccessControlled, DescriptorByNameOwner {
+public class Jenkins extends AbstractCIBase implements ItemGroup<TopLevelItem>, StaplerProxy, StaplerFallback, ViewGroup, AccessControlled, DescriptorByNameOwner {
     private transient final Queue queue;
 
     /**
      * Stores various objects scoped to {@link Jenkins}.
      */
     public transient final Lookup lookup = new Lookup();
-
-    /**
-     * {@link Computer}s in this Hudson system. Read-only.
-     */
-    private transient final Map<Node,Computer> computers = new CopyOnWriteMap.Hash<Node,Computer>();
 
     /**
      * We update this field to the current version of Hudson whenever we save {@code config.xml}.
@@ -374,6 +367,11 @@ public class Jenkins extends Node implements ItemGroup<TopLevelItem>, StaplerPro
             return DescriptorExtensionList.createDescriptorList(Jenkins.this,key);
         }
     };
+
+    /**
+     * {@link Computer}s in this Hudson system. Read-only.
+     */
+    protected transient final Map<Node,Computer> computers = new CopyOnWriteMap.Hash<Node,Computer>();
 
     /**
      * Active {@link Cloud}s.
@@ -515,8 +513,6 @@ public class Jenkins extends Node implements ItemGroup<TopLevelItem>, StaplerPro
      * @see AdministrativeMonitor
      */
     public transient final List<AdministrativeMonitor> administrativeMonitors = getExtensionList(AdministrativeMonitor.class);
-
-    /*package*/ final CopyOnWriteArraySet<String> disabledAdministrativeMonitors = new CopyOnWriteArraySet<String>();
 
     /**
      * Widgets on Hudson.
@@ -798,16 +794,6 @@ public class Jenkins extends Node implements ItemGroup<TopLevelItem>, StaplerPro
         return slaveAgentPort;
     }
 
-    /**
-     * If you are calling this on Hudson something is wrong.
-     *
-     * @deprecated
-     */
-    @Deprecated @Override
-    public String getNodeName() {
-        return "";
-    }
-
     public void setNodeName(String name) {
         throw new UnsupportedOperationException(); // not allowed
     }
@@ -1013,6 +999,10 @@ public class Jenkins extends Node implements ItemGroup<TopLevelItem>, StaplerPro
         return null;
     }
 
+    protected void updateComputerList() throws IOException {
+        updateComputerList(AUTOMATIC_SLAVE_LAUNCH);
+    }
+
     /**
      * Gets all the installed {@link SCMListener}s.
      */
@@ -1118,76 +1108,6 @@ public class Jenkins extends Node implements ItemGroup<TopLevelItem>, StaplerPro
         return new LocalLauncher(listener).decorateFor(this);
     }
 
-    private final transient Object updateComputerLock = new Object();
-
-    /**
-     * Updates {@link #computers}.
-     *
-     * <p>
-     * This method tries to reuse existing {@link Computer} objects
-     * so that we won't upset {@link Executor}s running in it.
-     */
-    private void updateComputerList() throws IOException {
-        synchronized(updateComputerLock) {// just so that we don't have two code updating computer list at the same time
-            Map<String,Computer> byName = new HashMap<String,Computer>();
-            for (Computer c : computers.values()) {
-                if(c.getNode()==null)
-                    continue;   // this computer is gone
-                byName.put(c.getNode().getNodeName(),c);
-            }
-
-            Set<Computer> old = new HashSet<Computer>(computers.values());
-            Set<Computer> used = new HashSet<Computer>();
-
-            updateComputer(this, byName, used);
-            for (Node s : getNodes())
-                updateComputer(s, byName, used);
-
-            // find out what computers are removed, and kill off all executors.
-            // when all executors exit, it will be removed from the computers map.
-            // so don't remove too quickly
-            old.removeAll(used);
-            for (Computer c : old) {
-                c.kill();
-            }
-        }
-        getQueue().scheduleMaintenance();
-        for (ComputerListener cl : ComputerListener.all())
-            cl.onConfigurationChange();
-    }
-
-    private void updateComputer(Node n, Map<String,Computer> byNameMap, Set<Computer> used) {
-        Computer c;
-        c = byNameMap.get(n.getNodeName());
-        if (c!=null) {
-            c.setNode(n); // reuse
-        } else {
-            if(n.getNumExecutors()>0) {
-                computers.put(n,c=n.createComputer());
-                if (!n.holdOffLaunchUntilSave && AUTOMATIC_SLAVE_LAUNCH) {
-                    RetentionStrategy retentionStrategy = c.getRetentionStrategy();
-                    if (retentionStrategy != null) {
-                        // if there is a retention strategy, it is responsible for deciding to start the computer
-                        retentionStrategy.start(c);
-                    } else {
-                        // we should never get here, but just in case, we'll fall back to the legacy behaviour
-                        c.connect(true);
-                    }
-                }
-            }
-        }
-        used.add(c);
-    }
-
-    /*package*/ void removeComputer(Computer computer) {
-        for (Entry<Node, Computer> e : computers.entrySet()) {
-            if (e.getValue() == computer) {
-                computers.remove(e.getKey());
-                return;
-            }
-        }
-        throw new IllegalStateException("Trying to remove unknown computer");
-    }
 
     public String getFullName() {
         return "";
@@ -1345,7 +1265,7 @@ public class Jenkins extends Node implements ItemGroup<TopLevelItem>, StaplerPro
     }
 
     public void addView(View v) throws IOException {
-        v.owner = this;
+        setViewOwner(v);
         views.add(v);
         save();
     }
@@ -1406,10 +1326,6 @@ public class Jenkins extends Node implements ItemGroup<TopLevelItem>, StaplerPro
             }
         });
         return r;
-    }
-
-    /*package*/ Computer getComputer(Node n) {
-        return computers.get(n);
     }
 
     @CLIResolver
@@ -1538,6 +1454,10 @@ public class Jenkins extends Node implements ItemGroup<TopLevelItem>, StaplerPro
         return clouds.getByName(name);
     }
 
+    protected Map<Node,Computer> getComputerMap() {
+        return computers;
+    }
+
     /**
      * Returns all {@link Node}s in the system, excluding {@link Jenkins} instance itself which
      * represents the master.
@@ -1596,7 +1516,7 @@ public class Jenkins extends Node implements ItemGroup<TopLevelItem>, StaplerPro
     private void trimLabels() {
         for (Iterator<Label> itr = labels.values().iterator(); itr.hasNext();) {
             Label l = itr.next();
-            l.reset();
+            resetLabel(l);
             if(l.isEmpty())
                 itr.remove();
         }
@@ -1651,15 +1571,6 @@ public class Jenkins extends Node implements ItemGroup<TopLevelItem>, StaplerPro
      */
     public int getScmCheckoutRetryCount() {
         return scmCheckoutRetryCount;
-    }
-
-    /**
-     * @deprecated
-     *      Why are you calling a method that always returns ""?
-     *      Perhaps you meant {@link #getRootUrl()}.
-     */
-    public String getUrl() {
-        return "";
     }
 
     @Override
@@ -2277,7 +2188,7 @@ public class Jenkins extends Node implements ItemGroup<TopLevelItem>, StaplerPro
                 // this is both for clean Hudson and for backward compatibility.
                 if(views.size()==0 || primaryView==null) {
                     View v = new AllView(Messages.Hudson_ViewName());
-                    v.owner = Jenkins.this;
+                    setViewOwner(v);
                     views.add(0,v);
                     primaryView = v.getViewName();
                 }
@@ -2336,14 +2247,14 @@ public class Jenkins extends Node implements ItemGroup<TopLevelItem>, StaplerPro
         terminating = true;
         for( Computer c : computers.values() ) {
             c.interrupt();
-            c.kill();
+            killComputer(c);
             pending.add(c.disconnect(null));
         }
         if(udpBroadcastThread!=null)
             udpBroadcastThread.shutdown();
         if(dnsMultiCast!=null)
             dnsMultiCast.close();
-        ExternalJob.reloadThread.interrupt();
+        interruptReloadThread();
         Trigger.timer.cancel();
         // TODO: how to wait for the completion of the last job?
         Trigger.timer = null;

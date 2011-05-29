@@ -34,6 +34,7 @@ import hudson.model.listeners.ItemListener;
 import hudson.slaves.ComputerListener;
 import hudson.util.CopyOnWriteList;
 import hudson.util.FormValidation;
+import jenkins.model.Jenkins;
 import org.jvnet.hudson.reactor.ReactorException;
 import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.Stapler;
@@ -154,10 +155,9 @@ public class Hudson extends Jenkins {
      */
     public TopLevelItem getJobCaseInsensitive(String name) {
         String match = Functions.toEmailSafeString(name);
-        for (Map.Entry<String, TopLevelItem> e : items.entrySet()) {
-            if(Functions.toEmailSafeString(e.getKey()).equalsIgnoreCase(match)) {
-                TopLevelItem item = e.getValue();
-                return item.hasPermission(Item.READ) ? item : null;
+        for(TopLevelItem item : getItems()) {
+            if(Functions.toEmailSafeString(item.getName()).equalsIgnoreCase(match)) {
+                return item;
             }
         }
         return null;
