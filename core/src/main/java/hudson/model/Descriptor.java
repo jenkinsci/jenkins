@@ -649,25 +649,11 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable {
     }
 
     public String getConfigPage() {
-        List<String> names = new ArrayList<String>();
-        for (Facet f : WebApp.get(Hudson.getInstance().servletContext).facets) {
-            if (f instanceof JellyCompatibleFacet) {
-                JellyCompatibleFacet jcf = (JellyCompatibleFacet) f;
-                names.add("config"+jcf.getDefaultScriptExtension());
-            }
-        }
-        return getViewPage(clazz,names,"config.jelly");
+        return getViewPage(clazz, getPossibleViewNames("config"), "config.jelly");
     }
 
     public String getGlobalConfigPage() {
-        List<String> names = new ArrayList<String>();
-        for (Facet f : WebApp.get(Hudson.getInstance().servletContext).facets) {
-            if (f instanceof JellyCompatibleFacet) {
-                JellyCompatibleFacet jcf = (JellyCompatibleFacet) f;
-                names.add("global"+jcf.getDefaultScriptExtension());
-            }
-        }
-        return getViewPage(clazz,names,null);
+        return getViewPage(clazz, getPossibleViewNames("global"), null);
     }
     
     private String getViewPage(Class<?> clazz, String pageName, String defaultValue) {
@@ -693,6 +679,17 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable {
         // Or this error is fatal, in which case we want the developer to see what page he's missing.
         // so we put the page name.
         return getViewPage(clazz,pageName,pageName);
+    }
+
+    private List<String> getPossibleViewNames(String baseName) {
+        List<String> names = new ArrayList<String>();
+        for (Facet f : WebApp.get(Hudson.getInstance().servletContext).facets) {
+            if (f instanceof JellyCompatibleFacet) {
+                JellyCompatibleFacet jcf = (JellyCompatibleFacet) f;
+                names.add(baseName +jcf.getDefaultScriptExtension());
+            }
+        }
+        return names;
     }
 
 
