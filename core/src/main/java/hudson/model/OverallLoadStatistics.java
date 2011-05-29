@@ -48,7 +48,7 @@ public class OverallLoadStatistics extends LoadStatistics {
     public final MultiStageTimeSeries totalQueueLength = new MultiStageTimeSeries(
             Messages._LoadStatistics_Legends_QueueLength(), ColorPalette.GREY, 0,DECAY);
 
-    /*package*/ OverallLoadStatistics() {
+    public OverallLoadStatistics() {
         super(0,0);
     }
 

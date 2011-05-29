@@ -112,7 +112,7 @@ public abstract class AdministrativeMonitor extends AbstractModelObject implemen
      * Mark this monitor as disabled, to prevent this from showing up in the UI.
      */
     public void disable(boolean value) throws IOException {
-        Jenkins hudson = Jenkins.getInstance();
+        AbstractCIBase hudson = Jenkins.getInstance();
         Set<String> set = hudson.disabledAdministrativeMonitors;
         if(value)   set.add(id);
         else        set.remove(id);
@@ -127,7 +127,7 @@ public abstract class AdministrativeMonitor extends AbstractModelObject implemen
      * he wants to ignore.
      */
     public boolean isEnabled() {
-        return !Jenkins.getInstance().disabledAdministrativeMonitors.contains(id);
+        return !((AbstractCIBase)Jenkins.getInstance()).disabledAdministrativeMonitors.contains(id);
     }
 
     /**

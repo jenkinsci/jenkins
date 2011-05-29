@@ -159,7 +159,8 @@ public abstract class Node extends AbstractModelObject implements Reconfigurable
      *      such as when this node has no executors at all.
      */
     public final Computer toComputer() {
-        return Jenkins.getInstance().getComputer(this);
+        AbstractCIBase ciBase = Jenkins.getInstance();
+        return ciBase.getComputer(this);
     }
 
     /**

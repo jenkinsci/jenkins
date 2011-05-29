@@ -733,7 +733,10 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
         executors.remove(e);
         addNewExecutorIfNecessary();
         if(!isAlive())
-            Jenkins.getInstance().removeComputer(this);
+        {
+            AbstractCIBase ciBase = Jenkins.getInstance();
+            ciBase.removeComputer(this);
+        }
     }
 
     /**

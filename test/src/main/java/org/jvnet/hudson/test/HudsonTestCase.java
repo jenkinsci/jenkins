@@ -1150,6 +1150,10 @@ public abstract class HudsonTestCase extends TestCase implements RootAction {
         }
     }
 
+    protected void setQuietPeriod(int qp) {
+        JenkinsAdaptor.setQuietPeriod(hudson, qp);
+    }
+
     /**
      * Works like {@link #assertEqualBeans(Object, Object, String)} but figure out the properties
      * via {@link DataBoundConstructor}
