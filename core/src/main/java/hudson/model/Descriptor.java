@@ -660,9 +660,16 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable {
     }
 
     public String getGlobalConfigPage() {
-        return getViewPage(clazz, "global.jelly",null);
+        List<String> names = new ArrayList<String>();
+        for (Facet f : WebApp.get(Hudson.getInstance().servletContext).facets) {
+            if (f instanceof JellyCompatibleFacet) {
+                JellyCompatibleFacet jcf = (JellyCompatibleFacet) f;
+                names.add("global"+jcf.getDefaultScriptExtension());
+            }
+        }
+        return getViewPage(clazz,names,null);
     }
-
+    
     private String getViewPage(Class<?> clazz, String pageName, String defaultValue) {
         return getViewPage(clazz,Collections.singleton(pageName),defaultValue);
     }
