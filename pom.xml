@@ -133,6 +133,11 @@ THE SOFTWARE.
           <version>2.4.3</version>
         </plugin>
         <plugin>
+          <groupId>org.jenkins-ci.tools</groupId>
+          <artifactId>maven-hpi-plugin</artifactId>
+          <version>1.70-SNAPSHOT</version>
+        </plugin>
+        <plugin>
           <!--
             Both test harness and core uses stapler as an extension,
             and apparently without having extension preloaded at the parent, the main artifact of the 'test' module
