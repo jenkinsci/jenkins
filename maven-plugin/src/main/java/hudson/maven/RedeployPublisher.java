@@ -122,6 +122,14 @@ public class RedeployPublisher extends Recorder {
             return true;
         }
 
+        if(build instanceof MavenModuleSetBuild && ((MavenModuleSetBuild)build).getParent().isArchivingDisabled()){
+          listener.getLogger().println("[ERROR] You cannot use the \"Deploy artifacts to Maven repository\" feature if you " +
+                                           "disabled " +
+                                           "automatic artifact archiving");
+          build.setResult(Result.FAILURE);
+          return true;
+        }
+
         listener.getLogger().println("Deploying artifacts to "+url);
         try {
             
