@@ -32,7 +32,7 @@ THE SOFTWARE.
       <f:textbox />
     </f:entry>
     <f:entry field="uniqueVersion">
-      <f:checkbox title="${%Assign unique versions to snapshots}"/>
+      <f:checkbox title="${%Assign unique versions to snapshots}" default="true"/>
     </f:entry>
     <j:if test="${descriptor.showEvenIfUnstableOption()}">
       <f:entry field="evenIfUnstable">
