@@ -181,6 +181,11 @@ THE SOFTWARE.
 
     <profile>
       <id>run-test-harness</id>
+      <activation>
+        <property>
+            <name>!skip-test-harness</name>
+        </property>
+      </activation>
       <build>
         <plugins>
           <plugin>
