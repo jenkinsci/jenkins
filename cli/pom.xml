@@ -13,6 +13,7 @@
     <plugins>
       <plugin>
         <artifactId>maven-assembly-plugin</artifactId>
+        <!-- version specified in grandparent pom -->
         <executions>
           <execution>
             <goals>
@@ -33,7 +34,7 @@
       <plugin>
         <groupId>org.jvnet.localizer</groupId>
         <artifactId>maven-localizer-plugin</artifactId>
-        <version>1.10</version>
+        <!-- version specified in grandparent pom -->
         <executions>
           <execution>
             <goals>
