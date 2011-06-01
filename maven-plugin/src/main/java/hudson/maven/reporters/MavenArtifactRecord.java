@@ -141,7 +141,7 @@ public class MavenArtifactRecord extends MavenAbstractArtifactRecord<MavenBuild>
 
         ArtifactDeployer deployer = embedder.lookup(ArtifactDeployer.class, uniqueVersion ? "default" : "maven2");
         logger.println(
-                "[INFO] Deployment in " + deploymentRepository.getUrl() + "(id=" + deploymentRepository.getId() + ", uniqueVersion=" + deploymentRepository.isUniqueVersion()+")");
+                "[INFO] Deployment in " + deploymentRepository.getUrl() + " (id=" + deploymentRepository.getId() + ",uniqueVersion=" + deploymentRepository.isUniqueVersion()+")");
 
         // deploy the main artifact. This also deploys the POM
         logger.println(Messages.MavenArtifact_DeployingMainArtifact(main.getFile().getName()));
