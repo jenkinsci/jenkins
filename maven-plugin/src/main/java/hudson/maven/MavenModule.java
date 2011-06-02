@@ -79,11 +79,13 @@ public final class MavenModule extends AbstractMavenProject<MavenModule,MavenBui
     private String displayName;
 
     /**
-     * Version number of this module as of fhe last build, taken from {@link MavenProject#getVersion()}.
+     * Version number of this module as of the last build, taken from {@link MavenProject#getVersion()}.
      *
-     * This field can be null if Hudson loaded old data
+     * This field can be null if Jenkins loaded old data
      * that didn't record this information, so that situation
      * needs to be handled gracefully.
+     * 
+     * @since 1.199
      */
     private String version;
 
@@ -110,7 +112,9 @@ public final class MavenModule extends AbstractMavenProject<MavenModule,MavenBui
      * List of child modules as defined by &lt;module> POM element.
      * Used to determine parent/child relationship of modules.
      * <p>
-     * For compatibility reason, this field may be null when loading data from old hudson. 
+     * For compatibility reason, this field may be null when loading data from old hudson.
+     * 
+     * @since 1.133
      */
     @CopyOnWrite
     private volatile List<ModuleName> children;
@@ -216,7 +220,7 @@ public final class MavenModule extends AbstractMavenProject<MavenModule,MavenBui
         else {
             // Until 1.207, we used to have ModuleName in dependencies. So convert.
             Set<ModuleDependency> deps = new HashSet<ModuleDependency>(dependencies.size());
-            for (Object d : (Set)dependencies) {
+            for (Object d : (Set<?>)dependencies) {
                 if (d instanceof ModuleDependency) {
                     deps.add((ModuleDependency) d);
                 } else {
@@ -241,9 +245,10 @@ public final class MavenModule extends AbstractMavenProject<MavenModule,MavenBui
      * Gets the version number in Maven POM as of the last build.
      *
      * @return
-     *      This method can return null if Hudson loaded old data
+     *      This method can return null if Jenkins loaded old data
      *      that didn't record this information, so that situation
      *      needs to be handled gracefully.
+     * @since 1.199
      */
     public String getVersion() {
         return version;
@@ -333,6 +338,8 @@ public final class MavenModule extends AbstractMavenProject<MavenModule,MavenBui
      * <p>
      * This method returns null if this information is not recorded. This happens
      * for compatibility reason.
+     * 
+     * @since 1.133
      */
     public List<MavenModule> getChildren() {
         List<ModuleName> l = children;    // take a snapshot
