@@ -27,6 +27,7 @@ import hudson.model.Hudson;
 import hudson.model.Saveable;
 import hudson.model.listeners.SaveableListener;
 import hudson.util.Scrambler;
+import hudson.util.Secret;
 import hudson.util.XStream2;
 
 import java.io.File;
@@ -59,10 +60,20 @@ public final class ProxyConfiguration implements Saveable {
     public final int port;
 
     /**
-     * Possibly null proxy user name and password.
-     * Password is base64 scrambled since this is persisted to disk.
+     * Possibly null proxy user name.
      */
-    private final String userName,password;
+    private final String userName;
+
+    /**
+     * null
+     */
+    @Deprecated
+    private String password;
+
+    /**
+     * encrypted password
+     */
+    private Secret secretPassword;
 
     public ProxyConfiguration(String name, int port) {
         this(name,port,null,null);
@@ -72,15 +83,24 @@ public final class ProxyConfiguration implements Saveable {
         this.name = name;
         this.port = port;
         this.userName = userName;
-        this.password = Scrambler.scramble(password);
+        this.secretPassword = Secret.fromString(password);
     }
 
     public String getUserName() {
         return userName;
     }
 
+//    This method is public, if it was public only for jelly, then should make it private (or inline contents)
+//    Have left public, as can't tell if anyone else is using from plugins
+    /**
+     * @return the password in plain text
+     */
     public String getPassword() {
-        return Scrambler.descramble(password);
+        return Secret.toString(secretPassword);
+    }
+
+    public String getEncryptedPassword() {
+        return (secretPassword == null) ? null : secretPassword.getEncryptedValue();
     }
 
     public Proxy createProxy() {
@@ -92,6 +112,14 @@ public final class ProxyConfiguration implements Saveable {
         XmlFile config = getXmlFile();
         config.write(this);
         SaveableListener.fireOnChange(this, config);
+    }
+
+    public Object readResolve() {
+        if (secretPassword == null)
+            // backward compatibility : get crambled password and store it encrypted
+            secretPassword = Secret.fromString(Scrambler.descramble(password));
+        password = null;
+        return this;
     }
 
     public static XmlFile getXmlFile() {
