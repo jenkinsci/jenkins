@@ -20,7 +20,7 @@
     <dd>Projektname des Builds, z.B. "foo".</dd>
 
     <dt>BUILD_TAG</dt>
-    <dd>Eine Zeichenkette in der Form "hudson-<i>${JOB_NAME}</i>-<i>${BUILD_NUMBER}</i>".
+    <dd>Eine Zeichenkette in der Form "jenkins-<i>${JOB_NAME}</i>-<i>${BUILD_NUMBER}</i>".
         Diese Variable läßt sich sehr bequem zur späteren Identifikation in eine
         Resource-Datei, JAR-Datei usw. ablegen.
 
@@ -43,11 +43,14 @@
     <dt>HUDSON_URL</dt>
     <dd>Die absolute URL der Hudson-Instanz, z.B. <tt>http://server:port/hudson/</tt>.</dd>
 
+    <dt>JENKINS_URL</dt>
+    <dd>Die absolute URL der Jenkins-Instanz, z.B. <tt>http://server:port/jenkins/</tt>.</dd>
+
     <dt>BUILD_URL</dt>
-    <dd>Die absolute URL dieses Builds, z.B. <tt>http://server:port/hudson/job/foo/15/</tt>.</dd>
+    <dd>Die absolute URL dieses Builds, z.B. <tt>http://server:port/jenkins/job/foo/15/</tt>.</dd>
 
     <dt>JOB_URL</dt>
-    <dd>Die absolute URL dieses Jobs, z.B. <tt>http://server:port/hudson/job/foo/</tt>.</dd>
+    <dd>Die absolute URL dieses Jobs, z.B. <tt>http://server:port/jenkins/job/foo/</tt>.</dd>
 
     <dt>SVN_REVISION</dt>
     <dd>Bei Subversion-basierten Projekten enthält diese Variable die Revisionsnummer
@@ -61,7 +64,7 @@
 
 
 <p>
-Das folgende Beispiel zeigt, wie von Hudson bereitgestellte Umgebungsvariablen
+Das folgende Beispiel zeigt, wie von Jenkins bereitgestellte Umgebungsvariablen
 in Ant-Skripten verwendet werden können: 
 
 <pre><xmp
