@@ -143,7 +143,7 @@ public class NodeProvisioner {
         Hudson hudson = Hudson.getInstance();
 
         // clean up the cancelled launch activity, then count the # of executors that we are about to bring up.
-        float plannedCapacity = 0;
+        int plannedCapacitySnapshot = 0;
         for (Iterator<PlannedNode> itr = pendingLaunches.iterator(); itr.hasNext();) {
             PlannedNode f = itr.next();
             if(f.future.isDone()) {
@@ -159,8 +159,9 @@ public class NodeProvisioner {
                 }
                 itr.remove();
             } else
-                plannedCapacity += f.numExecutors;
+                plannedCapacitySnapshot += f.numExecutors;
         }
+        float plannedCapacity = plannedCapacitySnapshot;
         plannedCapacitiesEMA.update(plannedCapacity);
 
         /*
@@ -197,8 +198,9 @@ public class NodeProvisioner {
 
         int idleSnapshot = stat.computeIdleExecutors();
         int totalSnapshot = stat.computeTotalExecutors();
+        boolean needSomeWhenNoneAtAll = ((totalSnapshot + plannedCapacity) == 0) && (stat.computeQueueLength() > 0);
         float idle = Math.max(stat.getLatestIdleExecutors(TIME_SCALE), idleSnapshot);
-        if(idle<MARGIN) {
+        if(idle<MARGIN || needSomeWhenNoneAtAll) {
             // make sure the system is fully utilized before attempting any new launch.
 
             // this is the amount of work left to be done
@@ -208,6 +210,11 @@ public class NodeProvisioner {
             plannedCapacity = Math.max(plannedCapacitiesEMA.getLatest(TIME_SCALE),plannedCapacity);
 
             float excessWorkload = qlen - plannedCapacity;
+            if (needSomeWhenNoneAtAll && excessWorkload < 1) {
+                // in this specific exceptional case we should just provision right now
+                // the exponential smoothing will delay the build unnecessarily
+                excessWorkload = 1;
+            }
             float m = calcThresholdMargin(totalSnapshot);
             if(excessWorkload>1-m) {// and there's more work to do...
                 LOGGER.fine("Excess workload "+excessWorkload+" detected. (planned capacity="+plannedCapacity+",Qlen="+qlen+",idle="+idle+"&"+idleSnapshot+",total="+totalSnapshot+"m,="+m+")");

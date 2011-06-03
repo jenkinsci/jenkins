@@ -81,7 +81,10 @@ Upcoming changes</a>
     Strongly encrypt proxy credentials
     (<a href="http://issues.jenkins-ci.org/browse/JENKINS-4002">issue 4002</a>)
   <li class=rfe>
-   Added an extension point to allow prodding the NodeProvisioner into taking action faster than it might usually.
+    Added an extension point to allow prodding the NodeProvisioner into taking action faster than it might usually.
+  <li class=bug>
+    When there are absolutely no executors for a specific label, there was an unnecessary delay in provisioning the
+    first node for that label.
 </ul>
 </div><!--=TRUNK-END=-->
 
