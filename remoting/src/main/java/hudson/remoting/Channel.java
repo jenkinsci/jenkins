@@ -172,6 +172,7 @@ public class Channel implements VirtualChannel, IChannel {
      */
     private final Vector<Listener> listeners = new Vector<Listener>();
     private int gcCounter;
+    private int commandsSent;
 
     /**
      * Total number of nanoseconds spent for remote class loading.
@@ -236,6 +237,11 @@ public class Channel implements VirtualChannel, IChannel {
     private volatile long lastHeard;
 
     /*package*/ final ExecutorService pipeWriter;
+
+    /**
+     * ClassLaoder that remote classloaders should use as the basis.
+     */
+    /*package*/ final ClassLoader baseClassLoader;
 
     /**
      * Communication mode.
@@ -355,6 +361,7 @@ public class Channel implements VirtualChannel, IChannel {
 
         if (base==null)
             base = getClass().getClassLoader();
+        this.baseClassLoader = base;
 
         if(export(this,false)!=1)
             throw new AssertionError(); // export number 1 is reserved for the channel itself
@@ -485,6 +492,7 @@ public class Channel implements VirtualChannel, IChannel {
             oos.flush();        // make sure the command reaches the other end.
         } finally {
             Channel.setCurrent(old);
+            commandsSent++;
         }
         // unless this is the last command, have OOS and remote OIS forget all the objects we sent
         // in this command. Otherwise it'll keep objects in memory unnecessarily.
@@ -993,15 +1001,18 @@ public class Channel implements VirtualChannel, IChannel {
     }
 
     private final class ReaderThread extends Thread {
+        private int commandsReceived = 0;
+        private int commandsExecuted = 0;
+
         public ReaderThread(String name) {
             super("Channel reader thread: "+name);
         }
 
         @Override
         public void run() {
-            Command cmd = null;
             try {
                 while(inClosed==null) {
+                    Command cmd = null;
                     try {
                         Channel old = Channel.setCurrent(Channel.this);
                         try {
@@ -1016,7 +1027,10 @@ public class Channel implements VirtualChannel, IChannel {
                         throw ioe;
                     } catch (ClassNotFoundException e) {
                         logger.log(Level.SEVERE, "Unable to read a command (channel " + name + ")",e);
+                    } finally {
+                        commandsReceived++;
                     }
+
                     if(logger.isLoggable(Level.FINE))
                         logger.fine("Received "+cmd);
                     try {
@@ -1024,6 +1038,8 @@ public class Channel implements VirtualChannel, IChannel {
                     } catch (Throwable t) {
                         logger.log(Level.SEVERE, "Failed to execute command "+cmd+ " (channel " + name + ")",t);
                         logger.log(Level.SEVERE, "This command is created here",cmd.createdAt);
+                    } finally {
+                        commandsExecuted++;
                     }
                 }
                 ois.close();

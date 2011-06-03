@@ -1263,7 +1263,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
                 // lock the workspace of the last build
                 FilePath ws=lb.getWorkspace();
 
-                if (ws==null || !ws.exists()) {
+                if (workspaceOffline(lb)) {
                     // workspace offline. build now, or nothing will ever be built
                     Label label = getAssignedLabel();
                     if (label != null && label.isSelfLabel()) {
@@ -1325,6 +1325,24 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
             e.printStackTrace(listener.fatalError(Messages.AbstractProject_PollingABorted()));
             return NO_CHANGES;
         }
+    }
+    
+    private boolean workspaceOffline(R build) throws IOException, InterruptedException {
+        FilePath ws = build.getWorkspace();
+        if (ws==null || !ws.exists()) {
+            return true;
+        }
+        
+        Node builtOn = build.getBuiltOn();
+        if (builtOn == null) { // node built-on doesn't exist anymore
+            return true;
+        }
+        
+        if (builtOn.toComputer() == null) { // node still exists, but has 0 executors - o.s.l.t.
+            return true;
+        }
+        
+        return false;
     }
 
     /**

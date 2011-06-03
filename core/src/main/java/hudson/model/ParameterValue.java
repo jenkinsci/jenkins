@@ -27,7 +27,6 @@ package hudson.model;
 import hudson.EnvVars;
 import hudson.Util;
 import hudson.scm.SCM;
-import hudson.slaves.OfflineCause;
 import hudson.tasks.BuildWrapper;
 import hudson.tasks.Builder;
 import hudson.util.VariableResolver;
@@ -250,7 +249,7 @@ public abstract class ParameterValue implements Serializable {
      * provided by this object should be masked in output.
      *
      * <p>
-     * Subclasses can override this to control the returne value.
+     * Subclasses can override this to control the return value.
      *
      * @since 1.378
      */

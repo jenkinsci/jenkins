@@ -201,7 +201,19 @@ public class BuildTrigger extends Recorder implements DependecyDeclarer {
             }
         });
 
+        List<Dependency> depsToBuild = new ArrayList<Dependency>();
         for (Dependency dep : downstreamProjects) {
+            if (dep instanceof DependencyGraph.DependencyGroup) {
+                for (Dependency d : ((DependencyGraph.DependencyGroup)dep).getGroup()) {
+                    depsToBuild.add(d);
+                }
+            }
+            else {
+                depsToBuild.add(dep);
+            }
+        }
+                    
+        for (Dependency dep : depsToBuild) {
             AbstractProject p = dep.getDownstreamProject();
             if (p.isDisabled()) {
                 logger.println(Messages.BuildTrigger_Disabled(p.getName()));

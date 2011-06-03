@@ -28,7 +28,7 @@ THE SOFTWARE.
   <parent>
     <groupId>org.jenkins-ci.main</groupId>
     <artifactId>pom</artifactId>
-    <version>1.413-SNAPSHOT</version>
+    <version>1.415-SNAPSHOT</version>
   </parent>
 
   <artifactId>ui-samples-plugin</artifactId>
@@ -92,13 +92,13 @@ THE SOFTWARE.
       <plugin>
         <groupId>org.kohsuke.stapler</groupId>
         <artifactId>maven-stapler-plugin</artifactId>
-        <version>1.15</version>
+        <!-- version specified in grandparent pom -->
         <extensions>true</extensions>
       </plugin>
       <plugin>
         <groupId>org.jvnet.localizer</groupId>
         <artifactId>maven-localizer-plugin</artifactId>
-        <version>1.8</version>
+        <!-- version specified in grandparent pom -->
         <executions>
           <execution>
             <goals>

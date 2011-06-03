@@ -25,14 +25,6 @@ package hudson.model;
 
 import hudson.Extension;
 
-import java.io.File;
-import java.io.IOException;
-
-import org.kohsuke.stapler.StaplerRequest;
-import org.kohsuke.stapler.StaplerResponse;
-
-import javax.servlet.ServletException;
-
 /**
  * Free-style software project.
  * 

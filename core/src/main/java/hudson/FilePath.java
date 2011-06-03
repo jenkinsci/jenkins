@@ -1211,6 +1211,7 @@ public final class FilePath implements Serializable {
      *      See {@link FileSet} for the syntax. String like "foo/*.zip" or "foo/*&#42;/*.xml"
      * @return
      *      can be empty but always non-null.
+     * @since 1.407
      */
     public FilePath[] list(final String includes, final String excludes) throws IOException, InterruptedException {
         return act(new FileCallable<FilePath[]>() {

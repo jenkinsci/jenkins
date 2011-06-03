@@ -79,11 +79,13 @@ public final class MavenModule extends AbstractMavenProject<MavenModule,MavenBui
     private String displayName;
 
     /**
-     * Version number of this module as of fhe last build, taken from {@link MavenProject#getVersion()}.
+     * Version number of this module as of the last build, taken from {@link MavenProject#getVersion()}.
      *
-     * This field can be null if Hudson loaded old data
+     * This field can be null if Jenkins loaded old data
      * that didn't record this information, so that situation
      * needs to be handled gracefully.
+     * 
+     * @since 1.199
      */
     private String version;
 
@@ -110,7 +112,9 @@ public final class MavenModule extends AbstractMavenProject<MavenModule,MavenBui
      * List of child modules as defined by &lt;module> POM element.
      * Used to determine parent/child relationship of modules.
      * <p>
-     * For compatibility reason, this field may be null when loading data from old hudson. 
+     * For compatibility reason, this field may be null when loading data from old hudson.
+     * 
+     * @since 1.133
      */
     @CopyOnWrite
     private volatile List<ModuleName> children;
@@ -216,7 +220,7 @@ public final class MavenModule extends AbstractMavenProject<MavenModule,MavenBui
         else {
             // Until 1.207, we used to have ModuleName in dependencies. So convert.
             Set<ModuleDependency> deps = new HashSet<ModuleDependency>(dependencies.size());
-            for (Object d : (Set)dependencies) {
+            for (Object d : (Set<?>)dependencies) {
                 if (d instanceof ModuleDependency) {
                     deps.add((ModuleDependency) d);
                 } else {
@@ -241,9 +245,10 @@ public final class MavenModule extends AbstractMavenProject<MavenModule,MavenBui
      * Gets the version number in Maven POM as of the last build.
      *
      * @return
-     *      This method can return null if Hudson loaded old data
+     *      This method can return null if Jenkins loaded old data
      *      that didn't record this information, so that situation
      *      needs to be handled gracefully.
+     * @since 1.199
      */
     public String getVersion() {
         return version;
@@ -333,6 +338,8 @@ public final class MavenModule extends AbstractMavenProject<MavenModule,MavenBui
      * <p>
      * This method returns null if this information is not recorded. This happens
      * for compatibility reason.
+     * 
+     * @since 1.133
      */
     public List<MavenModule> getChildren() {
         List<ModuleName> l = children;    // take a snapshot
@@ -385,22 +392,38 @@ public final class MavenModule extends AbstractMavenProject<MavenModule,MavenBui
         if(isDisabled() || getParent().ignoreUpstremChanges())        return;
 
         MavenDependencyComputationData data = graph.getComputationalData(MavenDependencyComputationData.class);
-        
+
+        // Build a map of all Maven modules in this Jenkins instance as dependencies.
+
+        // When we load old data that doesn't record version in dependency, we'd like
+        // to emulate the old behavior that tries to identify the upstream by ignoring the version.
+        // Do this by putting groupId:artifactId:UNKNOWN to the modules list, but
+        // ONLY if we find a such an old MavenModule in this Jenkins instance.
+        boolean hasDependenciesWithUnknownVersion = hasDependenciesWithUnknownVersion();
         if (data == null) {
             Map<ModuleDependency,MavenModule> modules = new HashMap<ModuleDependency,MavenModule>();
-    
-            // when we load old data that doesn't record version in dependency, we'd like
-            // to emulate the old behavior that it tries to identify the upstream by ignoring the version.
-            // do this by always putting groupId:artifactId:UNKNOWN to the modules list.
     
             for (MavenModule m : Hudson.getInstance().getAllItems(MavenModule.class)) {
                 if(m.isDisabled())  continue;
                 ModuleDependency moduleDependency = m.asDependency();
                 modules.put(moduleDependency,m);
-                modules.put(moduleDependency.withUnknownVersion(),m);
+                if (hasDependenciesWithUnknownVersion) {
+                    modules.put(moduleDependency.withUnknownVersion(),m);
+                }
             }
             data = new MavenDependencyComputationData(modules);
+            data.withUnknownVersions = hasDependenciesWithUnknownVersion;
             graph.putComputationalData(MavenDependencyComputationData.class, data);
+        } else {
+            if (hasDependenciesWithUnknownVersion && !data.withUnknownVersions) {
+                // found 'old' MavenModule: add dependencies with unknown versions now
+                for (MavenModule m : Hudson.getInstance().getAllItems(MavenModule.class)) {
+                    if(m.isDisabled())  continue;
+                    ModuleDependency moduleDependency = m.asDependency().withUnknownVersion();
+                    data.allModules.put(moduleDependency,m);
+                }
+                data.withUnknownVersions = true;
+            }
         }
 
         // In case two modules with the same name are defined, modules in the same MavenModuleSet
@@ -417,7 +440,9 @@ public final class MavenModule extends AbstractMavenProject<MavenModule,MavenBui
                 if(m.isDisabled())  continue;
                 ModuleDependency moduleDependency = m.asDependency();
                 myParentsModules.put(moduleDependency,m);
-                myParentsModules.put(moduleDependency.withUnknownVersion(),m);
+                if (hasDependenciesWithUnknownVersion) {
+                    myParentsModules.put(moduleDependency.withUnknownVersion(),m);
+                }
             }
             
             //data.modulesPerParent.put(getParent(), myParentsModules);
@@ -442,7 +467,21 @@ public final class MavenModule extends AbstractMavenProject<MavenModule,MavenBui
         }
     }
     
+    /**
+     * Check if this module has dependencies recorded without a concrete version -
+     * which shouldn't happen for any module which was at least build once with Jenkins >= 1.207. 
+     */
+    private boolean hasDependenciesWithUnknownVersion() {
+        for (ModuleDependency dep : dependencies) {
+            if (ModuleDependency.UNKNOWN.equals(dep.version)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     private static class MavenDependencyComputationData {
+        boolean withUnknownVersions = false;
         Map<ModuleDependency,MavenModule> allModules;
         
         //Map<MavenModuleSet, Map<ModuleDependency,MavenModule>> modulesPerParent = new HashMap<MavenModuleSet, Map<ModuleDependency,MavenModule>>();

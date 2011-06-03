@@ -267,6 +267,8 @@ public class ManagedWindowsServiceLauncher extends ComputerLauncher {
                         afterDisconnect(computer,listener);
                     }
                 });
+            //destroy session to free the socket	
+            JISession.destroySession(session);
         } catch (SmbException e) {
             e.printStackTrace(listener.error(e.getMessage()));
         } catch (JIException e) {
@@ -315,6 +317,8 @@ public class ManagedWindowsServiceLauncher extends ComputerLauncher {
                 listener.getLogger().println(Messages.ManagedWindowsServiceLauncher_StoppingService());
                 slaveService.StopService();
             }
+            //destroy session to free the socket	
+            JISession.destroySession(session);
         } catch (UnknownHostException e) {
             e.printStackTrace(listener.error(e.getMessage()));
         } catch (JIException e) {

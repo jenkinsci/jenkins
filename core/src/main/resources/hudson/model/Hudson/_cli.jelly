@@ -37,6 +37,12 @@ THE SOFTWARE.
       <pre style="color: white; background-color:black; padding:1em; font-weight: bold">java -jar <a
               style="color: white"
               href="jnlpJars/jenkins-cli.jar">jenkins-cli.jar</a> -s ${h.inferHudsonURL(request)} help</pre>
+        <h2>${%Available Commands}</h2>
+        <ul>
+          <j:forEach items="${h.getCLICommands()}" var="command">
+            <li><b>${command.getName()}</b>: ${command.getShortDescription()}</li>
+          </j:forEach>
+        </ul>
     </l:main-panel>
   </l:layout>
 </j:jelly>

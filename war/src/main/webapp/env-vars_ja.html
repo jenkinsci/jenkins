@@ -19,13 +19,12 @@
     <dd>ビルドのプロジェクト名。例 "foo"</dd>
 
     <dt>BUILD_TAG</dt>
-    <dd>文字列 "hudson-<i>${JOB_NAME}</i>-<i>${BUILD_NUMBER}</i>"。
+    <dd>文字列 "jenkins-<i>${JOB_NAME}</i>-<i>${BUILD_NUMBER}</i>"。
 	    簡易な識別子として、リソースファイルやjarファイルなどに付与するのに便利です。</dd>
 
     <dt>EXECUTOR_NUMBER</dt>
-    <dd>
-	    このビルドを実行している現在のエグゼキューターを識別する(同一マシンの中で)ユニークな番号。
-		"ビルド実行状態"に表示されている数字ですが、1ではなく0から始まる数字です。
+    <dd>このビルドを実行している現在のエグゼキューターを識別する(同一マシンの中で)ユニークな番号。
+            "ビルド実行状態"に表示されている数字ですが、1ではなく0から始まる数字です。
 
     <dt>JAVA_HOME</dt>
     <dd>特定のJDKを使用するようにジョブを設定する場合、そのJDKのJAVA_HOMEをこの変数に設定します。
@@ -37,11 +36,14 @@
     <dt>HUDSON_URL</dt>
     <dd>HudsonのURL。例 <tt>http://server:port/hudson/</tt></dd>
 
-    <dt>BUILD_URL</dt>
-    <dd>このビルドのURL。 例 <tt>http://server:port/hudson/job/foo/15/</tt></dd>
+    <dt>JENKINS_URL</dt>
+    <dd>JenkinsのURL。例 <tt>http://server:port/jenkins/</tt></dd>
+
+<dt>BUILD_URL</dt>
+    <dd>このビルドのURL。 例 <tt>http://server:port/jenkins/job/foo/15/</tt></dd>
 
     <dt>JOB_URL</dt>
-    <dd>このジョブのURL。 例 <tt>http://server:port/hudson/job/foo/</tt></dd>
+    <dd>このジョブのURL。 例 <tt>http://server:port/jenkins/job/foo/</tt></dd>
 
     <dt>SVN_REVISION</dt>
     <dd>Subversionを使用するプロジェクトにおける、モジュールのリビジョン番号。</dd>
@@ -53,7 +55,7 @@
 
 
 <p>
-Hudsonが提供する環境変数のAntでの利用方法については、
+Jenkinsが提供する環境変数のAntでの利用方法については、
 次のtargetを参考にしてください。
 
 <pre><xmp

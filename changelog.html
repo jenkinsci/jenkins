@@ -56,6 +56,75 @@ Upcoming changes</a>
 <div id="trunk" style="display:none"><!--=TRUNK-BEGIN=-->
 <ul class=image>
   <li class=bug>
+    Output correct version from java -jar jenkins.war --version (broken since 1.410)
+  <li class=bug>
+    Correct usage text from java -jar jenkins.war --help
+  <li class=bug>
+    Incremental maven jobs: if POM parsing failed, do a full build next time.
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-9848">issue 9848</a>)
+  <li class=rfe>
+    CLI command page now lists all the available commands
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-9789">issue 9789</a>)
+  <li class=rfe>
+    Improve the post deployment job to make a clear error if you disabled artifacts archives
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-9791">issue 9791</a>)
+  <li class=rfe>
+    Post-build deploy task for Maven jobs : Repositories definitions can now be read from the POMs.
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-9786">issue 9786</a>)
+  <li class=rfe>
+    Run maven jobs as headless process. on OSX this avoid jumping Dock icon to take focus.
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-9785">issue 9785</a>)
+  <li class=rfe>
+    Reduce memory consumption of dependency calculation in maven jobs.
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-9845">issue 9845</a>)
+  <li class=rfe>
+    Strongly encrypt proxy credentials
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-4002">issue 4002</a>)
+  <li class=rfe>
+    Added an extension point to allow prodding the NodeProvisioner into taking action faster than it might usually.
+  <li class=bug>
+    When there are absolutely no executors for a specific label, there was an unnecessary delay in provisioning the
+    first node for that label.
+</ul>
+</div><!--=TRUNK-END=-->
+
+<!-- these changes are controlled by the release process. DO NOT MODIFY -->
+<div id="rc" style="display:none;"><!--=BEGIN=-->
+<h3><a name=v1.414>What's new in 1.414</a> <!--=DATE=--></h3>
+<ul class=image>
+  <li class=bug>
+    Fixed the concurrent modification exception in classloading during startup
+  <li class=bug>
+    Show an error message if no name is provided when creating a job (CLI)
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-6958">issue 6958</a>)
+  <li class=bug>
+    Fix unescaped apostrophe in French translation.
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-9699">issue 9699</a>)
+  <li class=bug>
+    Allow building multiple downstream dependencies on a single job via DependencyGraph and BuildTrigger.
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-8985">issue 8985</a>)
+  <li class=bug>
+    Catch FileNotFoundException in Maven builds if Mojos are executed from a classes directory.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-5044">issue 5044</a>)
+  <li class=bug>
+    Fix NPE if node of last build isn't available anymore while polling for SCM changes.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-9003">issue 9003 </a>)
+  <li class=rfe>
+    Set NODE_NAME for master node to "master"
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-9671">issue 9671</a>)
+  <li class=rfe>
+    Jenkins Maven build does not recognize Tycho surfire reports with new groupId org.eclipse.tycho
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-9326">issue 9326</a>)
+  <li class=rfe>
+    Add a default attribute to repeatableProperty and repeatable jelly tags
+  <li class=rfe>
+    Log which build steps have changed the build result to build console.
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-9687">issue 9687</a>)
+</ul>
+</div><!--=END=-->
+<h3><a name=v1.413>What's new in 1.413</a> (2011/05/22)</h3>
+<ul class=image>
+  <li class=bug>
 	Fixed extra ' character in french translation.
 	(<a href="http://issues.jenkins-ci.org/browse/JENKINS-9197">issue 9197</a>)
   <li class=bug>
@@ -68,6 +137,9 @@ Upcoming changes</a>
     Fixed a <tt>ClassCastException</tt> caused by multiple loading of the same class in different classloaders.
     (<a href="http://issues.jenkins-ci.org/browse/JENKINS-9017">issue 9017</a>)
   <li class=rfe>
+    Support rebuilding a subset of matrix configurations
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-1613">issue 1613</a>)
+  <li class=rfe>
     Gracefully handle old slave.jar to avoid <tt>AbstractMethodError</tt>
     (<a href="https://groups.google.com/d/topic/jenkinsci-dev/KqFw4nfiQdE/discussion">thread</a>)
   <li class=rfe>
@@ -79,18 +151,16 @@ Upcoming changes</a>
   <li class=rfe>
     Replaced all gif images with png images (transparency support).
     (<a href="http://issues.jenkins-ci.org/browse/JENKINS-3969">issue 3969</a>)
+  <li class=rfe>
+    Boldify names of executed mojos for Freestyle and Maven2/3 jobs using Maven3 in console output.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-9691">issue 9691</a>)
 </ul>
-</div><!--=TRUNK-END=-->
-
-<!-- these changes are controlled by the release process. DO NOT MODIFY -->
-<div id="rc" style="display:none;"><!--=BEGIN=-->
-<h3><a name=v1.412>What's new in 1.412</a> <!--=DATE=--></h3>
+<h3><a name=v1.412>What's new in 1.412</a> (2011/05/16)</h3>
 <ul class=image>
   <li class=rfe>
     Wait until updates are successfully installed before restarting Jenkins
     (<a href="http://issues.jenkins-ci.org/browse/JENKINS-5047">issue 5047</a>)
 </ul>
-</div><!--=END=-->
 <h3><a name=v1.411>What's new in 1.411</a> (2011/05/09)</h3>
 <ul class=image>
   <li class=bug>

@@ -659,7 +659,26 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
             } catch (AbstractMethodError e) {
                 mon = BuildStepMonitor.BUILD;
             }
-            return mon.perform(bs, AbstractBuild.this, launcher, listener);
+            Result oldResult = AbstractBuild.this.getResult();
+            boolean canContinue = mon.perform(bs, AbstractBuild.this, launcher, listener);
+            Result newResult = AbstractBuild.this.getResult();
+            if (newResult != oldResult) {
+                String buildStepName = getBuildStepName(bs);
+                listener.getLogger().format("Build step '%s' changed build result to %s%n", buildStepName, newResult);
+            }
+            if (!canContinue) {
+                String buildStepName = getBuildStepName(bs);
+                listener.getLogger().format("Build step '%s' marked build as failure%n", buildStepName);
+            }
+            return canContinue;
+        }
+
+        private String getBuildStepName(BuildStep bs) {
+            if (bs instanceof Describable<?>) {
+                return ((Describable<?>) bs).getDescriptor().getDisplayName();
+            } else {
+                return bs.getClass().getSimpleName();
+            }
         }
 
         protected final boolean preBuild(BuildListener listener,Map<?,? extends BuildStep> steps) {

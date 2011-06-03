@@ -28,31 +28,15 @@ import hudson.FilePath;
 import hudson.Launcher;
 import hudson.Util;
 import hudson.maven.reporters.MavenAbstractArtifactRecord;
-import hudson.model.AbstractBuild;
-import hudson.model.AbstractProject;
-import hudson.model.BuildListener;
-import hudson.model.Hudson;
-import hudson.model.Node;
-import hudson.model.Result;
-import hudson.model.TaskListener;
+import hudson.maven.reporters.MavenArtifactRecord;
+import hudson.model.*;
 import hudson.remoting.Callable;
 import hudson.tasks.BuildStepDescriptor;
 import hudson.tasks.BuildStepMonitor;
 import hudson.tasks.Maven.MavenInstallation;
 import hudson.tasks.Publisher;
 import hudson.tasks.Recorder;
-import hudson.util.FormValidation;
-
-import java.io.File;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map.Entry;
-import java.util.Properties;
-
 import net.sf.json.JSONObject;
-
 import org.apache.commons.lang.StringUtils;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.deployer.ArtifactDeploymentException;
@@ -65,8 +49,12 @@ import org.apache.maven.artifact.repository.layout.ArtifactRepositoryLayout;
 import org.apache.maven.repository.Proxy;
 import org.codehaus.plexus.component.repository.exception.ComponentLookupException;
 import org.kohsuke.stapler.DataBoundConstructor;
-import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.StaplerRequest;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.*;
+import java.util.Map.Entry;
 
 /**
  * {@link Publisher} for {@link MavenModuleSetBuild} to deploy artifacts
@@ -90,6 +78,7 @@ public class RedeployPublisher extends Recorder {
     /**
      * For backward compatibility
      */
+    @Deprecated
     public RedeployPublisher(String id, String url, boolean uniqueVersion) {
     	this(id, url, uniqueVersion, false);
     }
@@ -105,39 +94,52 @@ public class RedeployPublisher extends Recorder {
         this.evenIfUnstable = evenIfUnstable;
     }
 
-    public boolean perform(AbstractBuild<?,?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
-        if(build.getResult().isWorseThan(getTreshold()))
+    public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
+        if (build.getResult().isWorseThan(getTreshold()))
             return true;    // build failed. Don't publish
 
-        if (url==null) {
-            listener.getLogger().println("No Repository URL is specified.");
+        List<MavenAbstractArtifactRecord> mavenAbstractArtifactRecords = getActions(build, listener);
+        if (mavenAbstractArtifactRecords == null || mavenAbstractArtifactRecords.isEmpty()) {
+            listener.getLogger().println("[ERROR] No artifacts are recorded. Is this a Maven project?");
             build.setResult(Result.FAILURE);
             return true;
         }
 
-        List<MavenAbstractArtifactRecord> mars = getActions( build, listener );
-        if(mars==null || mars.isEmpty()) {
-            listener.getLogger().println("No artifacts are recorded. Is this a Maven project?");
-            build.setResult(Result.FAILURE);
-            return true;
+
+        if(build instanceof MavenModuleSetBuild && ((MavenModuleSetBuild)build).getParent().isArchivingDisabled()){
+          listener.getLogger().println("[ERROR] You cannot use the \"Deploy artifacts to Maven repository\" feature if you " +
+                                           "disabled automatic artifact archiving");
+          build.setResult(Result.FAILURE);
+          return true;
         }
 
-        listener.getLogger().println("Deploying artifacts to "+url);
+        long startupTime = Calendar.getInstance().getTimeInMillis();
+
         try {
-            
-            //MavenEmbedder embedder = MavenUtil.createEmbedder(listener,build);
-            MavenEmbedder embedder = createEmbedder(listener,build);
+            MavenEmbedder embedder = createEmbedder(listener, build);
             ArtifactRepositoryLayout layout =
-                (ArtifactRepositoryLayout) embedder.lookup( ArtifactRepositoryLayout.ROLE,"default");
+                    (ArtifactRepositoryLayout) embedder.lookup(ArtifactRepositoryLayout.ROLE, "default");
             ArtifactRepositoryFactory factory =
-                (ArtifactRepositoryFactory) embedder.lookup(ArtifactRepositoryFactory.ROLE);
-
-            final ArtifactRepository repository = factory.createDeploymentArtifactRepository(
-                    id, url, layout, uniqueVersion);
-            WrappedArtifactRepository repo = new WrappedArtifactRepository(repository,uniqueVersion);
-            for (MavenAbstractArtifactRecord mar : mars)
-                mar.deploy(embedder,repo,listener);
-
+                    (ArtifactRepositoryFactory) embedder.lookup(ArtifactRepositoryFactory.ROLE);
+            ArtifactRepository artifactRepository = null;
+            if (url != null) {
+                // By default we try to get the repository definition from the job configuration
+                artifactRepository = getDeploymentRepository(factory, layout, id, url);
+            }
+            for (MavenAbstractArtifactRecord mavenAbstractArtifactRecord : mavenAbstractArtifactRecords) {
+                if (artifactRepository == null && mavenAbstractArtifactRecord instanceof MavenArtifactRecord) {
+                    // If no repository definition is set on the job level we try to take it from the POM
+                    MavenArtifactRecord mavenArtifactRecord = (MavenArtifactRecord) mavenAbstractArtifactRecord;
+                    artifactRepository = getDeploymentRepository(factory, layout, mavenArtifactRecord.repositoryId, mavenArtifactRecord.repositoryUrl);
+                }
+                if (artifactRepository == null) {
+                    listener.getLogger().println("[ERROR] No Repository settings defined in the job configuration or distributionManagement of the module.");
+                    build.setResult(Result.FAILURE);
+                    return true;
+                }
+                mavenAbstractArtifactRecord.deploy(embedder, artifactRepository, listener);
+            }
+            listener.getLogger().println("[INFO] Deployment done in " + Util.getTimeSpanString(Calendar.getInstance().getTimeInMillis() - startupTime));
             return true;
         } catch (MavenEmbedderException e) {
             e.printStackTrace(listener.error(e.getMessage()));
@@ -148,7 +150,15 @@ public class RedeployPublisher extends Recorder {
         }
         // failed
         build.setResult(Result.FAILURE);
+        listener.getLogger().println("[INFO] Deployment failed after " + Util.getTimeSpanString(Calendar.getInstance().getTimeInMillis() - startupTime));
         return true;
+    }
+
+    private ArtifactRepository getDeploymentRepository(ArtifactRepositoryFactory factory, ArtifactRepositoryLayout layout, String repositoryId, String repositoryUrl) throws ComponentLookupException {
+        if (repositoryUrl == null) return null;
+        final ArtifactRepository repository = factory.createDeploymentArtifactRepository(
+                repositoryId, repositoryUrl, layout, uniqueVersion);
+        return new WrappedArtifactRepository(repository, uniqueVersion);
     }
 
     /**
@@ -304,13 +314,6 @@ public class RedeployPublisher extends Recorder {
             return true;
         }
 
-        public FormValidation doCheckUrl(@QueryParameter String url) {
-            String fixedUrl = hudson.Util.fixEmptyAndTrim(url);
-            if (fixedUrl==null)
-                return FormValidation.error(Messages.RedeployPublisher_RepositoryURL_Mandatory());
-
-            return FormValidation.ok();
-        }
     }
     
     //---------------------------------------------
