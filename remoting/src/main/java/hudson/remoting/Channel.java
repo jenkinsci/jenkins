@@ -239,6 +239,11 @@ public class Channel implements VirtualChannel, IChannel {
     /*package*/ final ExecutorService pipeWriter;
 
     /**
+     * ClassLaoder that remote classloaders should use as the basis.
+     */
+    /*package*/ final ClassLoader baseClassLoader;
+
+    /**
      * Communication mode.
      * @since 1.161
      */
@@ -356,6 +361,7 @@ public class Channel implements VirtualChannel, IChannel {
 
         if (base==null)
             base = getClass().getClassLoader();
+        this.baseClassLoader = base;
 
         if(export(this,false)!=1)
             throw new AssertionError(); // export number 1 is reserved for the channel itself
