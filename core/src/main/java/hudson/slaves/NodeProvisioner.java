@@ -23,6 +23,7 @@
  */
 package hudson.slaves;
 
+import hudson.model.Computer;
 import hudson.model.LoadStatistics;
 import hudson.model.Node;
 import hudson.model.Hudson;
@@ -41,6 +42,7 @@ import java.util.List;
 import java.util.Collection;
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
 import java.util.logging.Level;
 import java.io.IOException;
@@ -87,6 +89,8 @@ public class NodeProvisioner {
 
     private List<PlannedNode> pendingLaunches = new ArrayList<PlannedNode>();
 
+    private transient volatile long lastSuggestedReview;
+
     /**
      * Exponential moving average of the "planned capacity" over time, which is the number of
      * additional executors being brought up.
@@ -114,10 +118,28 @@ public class NodeProvisioner {
     }
 
     /**
+     * Give the {@link NodeProvisioner} a hint that now would be a good time to think about provisioning some nodes.
+     * The hint will be ignored if subjected to excessive pestering by callers.
+     *
+     * @since 1.415
+     */
+    public void suggestReviewNow() {
+        if (System.currentTimeMillis() > lastSuggestedReview + TimeUnit.SECONDS.toMillis(1)) {
+            lastSuggestedReview = System.currentTimeMillis();
+            Computer.threadPoolForRemoting.submit(new Runnable() {
+                public void run() {
+                    update();
+                }
+            });
+        }
+    }
+
+    /**
      * Periodically invoked to keep track of the load.
      * Launches additional nodes if necessary.
      */
     private synchronized void update() {
+        lastSuggestedReview = System.currentTimeMillis();
         Hudson hudson = Hudson.getInstance();
 
         // clean up the cancelled launch activity, then count the # of executors that we are about to bring up.
