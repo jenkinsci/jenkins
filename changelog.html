@@ -55,6 +55,14 @@ Upcoming changes</a>
 <!-- Record your changes in the trunk here. -->
 <div id="trunk" style="display:none"><!--=TRUNK-BEGIN=-->
 <ul class=image>
+  <li class=>
+</ul>
+</div><!--=TRUNK-END=-->
+
+<!-- these changes are controlled by the release process. DO NOT MODIFY -->
+<div id="rc" style="display:none;"><!--=BEGIN=-->
+<h3><a name=v1.415>What's new in 1.415</a> <!--=DATE=--></h3>
+<ul class=image>
   <li class=bug>
     Output correct version from java -jar jenkins.war --version (broken since 1.410)
   <li class=bug>
@@ -62,6 +70,9 @@ Upcoming changes</a>
   <li class=bug>
     Incremental maven jobs: if POM parsing failed, do a full build next time.
     (<a href="http://issues.jenkins-ci.org/browse/JENKINS-9848">issue 9848</a>)
+  <li class=bug>
+    Do not expose the proxy password in the HTML for Update Center
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-4000">issue 4000</a>)
   <li class=rfe>
     CLI command page now lists all the available commands
     (<a href="http://issues.jenkins-ci.org/browse/JENKINS-9789">issue 9789</a>)
@@ -78,7 +89,7 @@ Upcoming changes</a>
     Reduce memory consumption of dependency calculation in maven jobs.
     (<a href="http://issues.jenkins-ci.org/browse/JENKINS-9845">issue 9845</a>)
   <li class=rfe>
-    Strongly encrypt proxy credentials
+    Strongly encrypt the proxy password
     (<a href="http://issues.jenkins-ci.org/browse/JENKINS-4002">issue 4002</a>)
   <li class=rfe>
     Added an extension point to allow prodding the NodeProvisioner into taking action faster than it might usually.
@@ -86,11 +97,8 @@ Upcoming changes</a>
     When there are absolutely no executors for a specific label, there was an unnecessary delay in provisioning the
     first node for that label.
 </ul>
-</div><!--=TRUNK-END=-->
-
-<!-- these changes are controlled by the release process. DO NOT MODIFY -->
-<div id="rc" style="display:none;"><!--=BEGIN=-->
-<h3><a name=v1.414>What's new in 1.414</a> <!--=DATE=--></h3>
+</div><!--=END=-->
+<h3><a name=v1.414>What's new in 1.414</a> (2011/06/04)</h3>
 <ul class=image>
   <li class=bug>
     Fixed the concurrent modification exception in classloading during startup
@@ -121,7 +129,6 @@ Upcoming changes</a>
     Log which build steps have changed the build result to build console.
     (<a href="http://issues.jenkins-ci.org/browse/JENKINS-9687">issue 9687</a>)
 </ul>
-</div><!--=END=-->
 <h3><a name=v1.413>What's new in 1.413</a> (2011/05/22)</h3>
 <ul class=image>
   <li class=bug>
