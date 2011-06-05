@@ -21,12 +21,9 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package hudson.notification;
+package hudson.model;
 
 import java.util.Locale;
-
-import hudson.model.AbstractBuild;
-import hudson.model.Result;
 
 /**
  * Describes an {@link Result} trend by taking the comparing the result of the current and the previous build.
