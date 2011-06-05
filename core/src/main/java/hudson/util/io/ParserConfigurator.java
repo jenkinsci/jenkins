@@ -26,7 +26,15 @@ package hudson.util.io;
 import hudson.ExtensionList;
 import hudson.ExtensionPoint;
 import hudson.model.Hudson;
+import hudson.remoting.Callable;
+import hudson.remoting.Channel;
 import org.dom4j.io.SAXReader;
+
+import java.io.IOException;
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 
 /**
  * Configures XML parsers to be used for various XML parsing activities inside Jenkins.
@@ -45,7 +53,7 @@ import org.dom4j.io.SAXReader;
  * @author Kohsuke Kawaguchi
  * @since 1.416
  */
-public abstract class ParserConfigurator implements ExtensionPoint {
+public abstract class ParserConfigurator implements ExtensionPoint, Serializable {
     /**
      * Configures the given {@link SAXReader}
      *
@@ -62,8 +70,20 @@ public abstract class ParserConfigurator implements ExtensionPoint {
         return Hudson.getInstance().getExtensionList(ParserConfigurator.class);
     }
 
-    public static void applyConfiguration(SAXReader reader, Object context) {
-        for (ParserConfigurator pc : all())
+    public static void applyConfiguration(SAXReader reader, Object context) throws IOException, InterruptedException {
+        Collection<ParserConfigurator> all = Collections.emptyList();
+
+        if (Hudson.getInstance()==null) {
+            Channel ch = Channel.current();
+            if (ch!=null)
+                all = ch.call(new Callable<Collection<ParserConfigurator>, IOException>() {
+                    public Collection<ParserConfigurator> call() throws IOException {
+                        return new ArrayList<ParserConfigurator>(all());
+                    }
+                });
+        } else
+            all = all();
+        for (ParserConfigurator pc : all)
             pc.configure(reader,context);
     }
 }
