@@ -1655,7 +1655,9 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
         blockBuildWhenUpstreamBuilding = req.getParameter("blockBuildWhenUpstreamBuilding")!=null;
 
         if(req.hasParameter("customWorkspace")) {
-            customWorkspace = fixEmpty(req.getParameter("customWorkspace.directory"));
+            customWorkspace = Util.fixEmptyAndTrim(req.getParameter("customWorkspace.directory"));
+            if(customWorkspace==null)
+            	throw new FormException("Custom workspace is empty", "customWorkspace");
         } else {
             customWorkspace = null;
         }
@@ -1860,6 +1862,13 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
             return FormValidation.ok();
         }
 
+        public FormValidation doCheckCustomWorkspace(@QueryParameter String customWorkspace){
+        	if(Util.fixEmptyAndTrim(customWorkspace)==null)
+        		return FormValidation.error("Custom workspace is empty");
+        	else
+        		return FormValidation.ok();
+        }
+        
         public AutoCompletionCandidates doAutoCompleteUpstreamProjects(@QueryParameter String value) {
             AutoCompletionCandidates candidates = new AutoCompletionCandidates();
             List<Job> jobs = Hudson.getInstance().getItems(Job.class);
@@ -1995,23 +2004,8 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
      * @since 1.410
      */
     public void setCustomWorkspace(String customWorkspace) throws IOException {
-        this.customWorkspace= fixEmpty(customWorkspace);
+        this.customWorkspace= Util.fixEmptyAndTrim(customWorkspace);
         save();
-    }
-    
-    /**
-     * Replace customWorkspace by null if customWorkspace is empty string. This should prevent user to 
-     * delete JENKIS_HOME accidentally, see JENKINS-9806 for details. If user wants to set up 
-     * JENKINS_HOME as a workspace for some reason, he can use "." to do so.
-     * 
-     * @param customWorkspace
-     * @return customWorkspace if it's not empty string, null otherwise
-     */
-    private String fixEmpty(String customWorkspace){
-    	if(customWorkspace!=null && customWorkspace.trim().equals("")){
-    		return null;
-    	}
-    	return customWorkspace;
     }
     
 }
