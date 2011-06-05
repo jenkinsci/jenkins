@@ -25,6 +25,8 @@ package hudson.tasks.junit;
 
 import hudson.tasks.test.TestObject;
 import hudson.util.IOException2;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.apache.commons.io.FileUtils;
 import org.dom4j.Document;
 import org.dom4j.DocumentException;
@@ -42,6 +44,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import org.xml.sax.SAXException;
 
 /**
  * Result of one test suite.
@@ -94,10 +97,15 @@ public final class SuiteResult implements Serializable {
 
         // parse into DOM
         SAXReader saxReader = new SAXReader();
+        try {
+            XMLTolerantErrorHandler.attach(saxReader, true);
+        } catch (SAXException ex) {
+            ex.printStackTrace();
+        }
         // install EntityResolver for resolving DTDs, which are in files created by TestNG.
         // (see https://hudson.dev.java.net/servlets/ReadMsg?listName=users&msgNo=5530)
         XMLEntityResolver resolver = new XMLEntityResolver();
-        saxReader.setEntityResolver(resolver);
+        saxReader.setEntityResolver(resolver);        
         Document result = saxReader.read(xmlReport);
         Element root = result.getRootElement();
 
