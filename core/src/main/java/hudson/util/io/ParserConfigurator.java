@@ -29,7 +29,18 @@ import hudson.model.Hudson;
 import org.dom4j.io.SAXReader;
 
 /**
- * Configures XML parsers to be used in various context of Jenkins.
+ * Configures XML parsers to be used for various XML parsing activities inside Jenkins.
+ *
+ * <p>
+ * XML parsing is a complex enough activity that often certain degree of customization of the
+ * parsing behaviour is desired. This extension point enables that. To avoid creating
+ * new extension point for each different parsing scene, this extension point takes the type-less
+ * "context" argument, which should identify the context of the parse by type.
+ *
+ * <p>
+ * This extension point is added late in the game, so existing XML parsing behaviour should
+ * be retrofitted to use this as we find them. Similarly, additional overloaded versions are likely
+ * needed to support SAX, JAXP, and other means of parsing.
  *
  * @author Kohsuke Kawaguchi
  * @since 1.416
