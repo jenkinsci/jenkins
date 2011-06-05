@@ -25,6 +25,7 @@ package hudson.tasks.junit;
 
 import hudson.tasks.test.TestObject;
 import hudson.util.IOException2;
+import hudson.util.io.ParserConfigurator;
 import org.apache.commons.io.FileUtils;
 import org.dom4j.Document;
 import org.dom4j.DocumentException;
@@ -85,6 +86,18 @@ public final class SuiteResult implements Serializable {
     }
 
     /**
+     * Passed to {@link ParserConfigurator}.
+     * @since 1.416
+     */
+    public static class SuiteResultParserConfigurationContext {
+        public final File xmlReport;
+
+        SuiteResultParserConfigurationContext(File xmlReport) {
+            this.xmlReport = xmlReport;
+        }
+    }
+
+    /**
      * Parses the JUnit XML file into {@link SuiteResult}s.
      * This method returns a collection, as a single XML may have multiple &lt;testsuite>
      * elements wrapped into the top-level &lt;testsuites>.
@@ -94,10 +107,8 @@ public final class SuiteResult implements Serializable {
 
         // parse into DOM
         SAXReader saxReader = new SAXReader();
-        // install EntityResolver for resolving DTDs, which are in files created by TestNG.
-        // (see https://hudson.dev.java.net/servlets/ReadMsg?listName=users&msgNo=5530)
-        XMLEntityResolver resolver = new XMLEntityResolver();
-        saxReader.setEntityResolver(resolver);
+        ParserConfigurator.applyConfiguration(saxReader,new SuiteResultParserConfigurationContext(xmlReport));
+
         Document result = saxReader.read(xmlReport);
         Element root = result.getRootElement();
 
