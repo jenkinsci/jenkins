@@ -23,6 +23,8 @@
  */
 package hudson.model;
 
+import org.jvnet.localizer.Localizable;
+
 import java.util.Locale;
 
 /**
@@ -36,60 +38,59 @@ public enum ResultTrend {
      * Previous build was {@link Result#FAILURE} or {@link Result#UNSTABLE}
      * and is now {@link Result#SUCCESS}.
      */
-    FIXED,
+    FIXED(Messages._ResultTrend_Fixed()),
     /**
      * Build as well as previous build (if it has a previous build) are {@link Result#SUCCESS}
      */
-    SUCCESS,
+    SUCCESS(Messages._ResultTrend_Success()),
     /**
      * Previous build was {@link Result#FAILURE} and is now 'only' {@link Result#UNSTABLE}.
      */
-    NOW_UNSTABLE("Now unstable"),
+    NOW_UNSTABLE(Messages._ResultTrend_NowUnstable()),
     /**
      * Build as well as previous build are {@link Result#UNSTABLE}.
      */
-    STILL_UNSTABLE("Still unstable"),
+    STILL_UNSTABLE(Messages._ResultTrend_StillUnstable()),
     /**
      * Previous build (if there is one) was {@link Result#SUCCESS} and current build is {@link Result#UNSTABLE}.
      */
-    UNSTABLE,
+    UNSTABLE(Messages._ResultTrend_Unstable()),
     /**
      * Build as well as previous build are {@link Result#FAILURE}.
      */
-    STILL_FAILING("Still failing"),
+    STILL_FAILING(Messages._ResultTrend_StillFailing()),
     /**
      * Previous build (if there is one) was {@link Result#SUCCESS} or {@link Result#UNSTABLE}
      * and current build is {@link Result#UNSTABLE}.
      */
-    FAILURE,
+    FAILURE(Messages._ResultTrend_Failure()),
     /**
      * Build was aborted.
      */
-    ABORTED,
+    ABORTED(Messages._ResultTrend_Aborted()),
     /**
      * Build didn't run (yet).
      */
-    NOT_BUILT("Not built");
+    NOT_BUILT(Messages._ResultTrend_NotBuilt());
     
-    private final String description;
+    private final Localizable description;
 
-    private ResultTrend() {
-        this.description = name().charAt(0) + name().substring(1).toLowerCase(Locale.ENGLISH);
-    }
-    
-    private ResultTrend(String description) {
+    private ResultTrend(Localizable description) {
         this.description = description;
     }
     
     /**
-     * Returns a short english description of the result.
+     * Returns a short human-readable description of the result.
      */
     public String getDescription() {
-        return this.description;
+        return this.description.toString();
     }
-    
-    public String getUpperCaseDescription() {
-        return this.description.toUpperCase(Locale.ENGLISH);
+
+    /**
+     * Gets all upper case ID like token of the build status.
+     */
+    public String getID() {
+        return this.description.toString(Locale.ENGLISH).toUpperCase(Locale.ENGLISH);
     }
     
     /**
