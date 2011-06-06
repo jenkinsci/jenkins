@@ -46,6 +46,17 @@ THE SOFTWARE.
   <build>
     <plugins>
       <plugin>
+        <groupId>org.jenkins-ci.tools</groupId>
+        <artifactId>maven-hpi-plugin</artifactId>
+        <executions>
+          <execution>
+            <goals>
+              <goal>generate-taglib-interface</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
         <groupId>org.jvnet.hudson.tools</groupId>
         <artifactId>maven-encoding-plugin</artifactId>
         <version>1.1</version>
