@@ -21,7 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-f=namespace("/lib/form")
+f=namespace(lib.FormTagLib)
 
 if (!descriptor.installations) {
     f.entry(title:_("Ant Version")) {
