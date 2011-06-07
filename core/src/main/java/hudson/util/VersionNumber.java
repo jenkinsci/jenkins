@@ -50,7 +50,7 @@ import java.util.Stack;
  * </pre>
  *
  * @author
- *     Stephen Connolly (kohsuke.kawaguchi@sun.com)
+ *     Stephen Connolly
  * @since 1.139
  */
 
