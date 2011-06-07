@@ -1,6 +1,6 @@
-import hudson.taglibs.LayoutTagLib
+package hudson.model.Hudson;
 
-l=namespace(LayoutTagLib)
+l=namespace(lib.LayoutTagLib)
 t=namespace("/lib/hudson")
 st=namespace("jelly:stapler")
 
