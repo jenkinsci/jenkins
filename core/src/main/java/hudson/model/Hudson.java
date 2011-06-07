@@ -3735,6 +3735,11 @@ public class Hudson extends Node implements ItemGroup<TopLevelItem>, StaplerProx
      */
     public static final XStream XSTREAM = new XStream2();
 
+    /**
+     * Alias to {@link #XSTREAM} so that one can access additional methods on {@link XStream2} more easily.
+     */
+    public static final XStream2 XSTREAM2 = (XStream2)XSTREAM;
+
     private static final int TWICE_CPU_NUM = Runtime.getRuntime().availableProcessors() * 2;
 
     /**
