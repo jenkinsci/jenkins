@@ -27,6 +27,7 @@ import com.google.common.collect.ImmutableMap;
 import junit.framework.TestCase;
 import hudson.model.Result;
 import hudson.model.Run;
+import org.jvnet.hudson.test.Bug;
 
 import java.util.Map;
 
@@ -165,9 +166,25 @@ public class XStream2Test extends TestCase {
         assertEquals(m,a.m);
     }
 
-    // @Bug(8006) -- Previously a null entry in an array caused NPE
+    @Bug(8006) // Previously a null entry in an array caused NPE
     public void testEmptyStack() {
         assertEquals("<object-array><null/><null/></object-array>",
                      Run.XSTREAM.toXML(new Object[2]).replaceAll("[ \n\r\t]+", ""));
+    }
+
+    @Bug(9843)
+    public void testCompatibilityAlias() {
+        XStream2 xs = new XStream2();
+        xs.addCompatibilityAlias("legacy.Point",Point.class);
+        Point pt = (Point)xs.fromXML("<legacy.Point><x>1</x><y>2</y></legacy.Point>");
+        assertEquals(1,pt.x);
+        assertEquals(2,pt.y);
+        String xml = xs.toXML(pt);
+        System.out.println(xml);
+        assertFalse("Shouldn't use the alias when writing back",xml.contains("legacy"));
+    }
+
+    public static class Point {
+        public int x,y;
     }
 }
