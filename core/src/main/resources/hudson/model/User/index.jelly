@@ -31,8 +31,10 @@ THE SOFTWARE.
         ${it.fullName}
       </h1>
       <t:editableDescription permission="${app.ADMINISTER}" />
+      <div>
+        ${%Jenkins User Id}: ${it.id}
+      </div>
       <!-- give properties a chance to contribute summary item -->
-      ${%Jenkins User Id}: ${it.id}
       <j:forEach var="p" items="${it.allProperties}">
         <st:include page="summary.jelly" from="${p}" optional="true" it="${p}" />
       </j:forEach>
