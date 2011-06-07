@@ -23,7 +23,7 @@
  */
 package hudson.cli;
 
-import hudson.model.Hudson;
+import jenkins.model.Jenkins;
 import hudson.Extension;
 import hudson.model.Item;
 import org.kohsuke.args4j.Argument;
@@ -44,7 +44,7 @@ public class CreateJobCommand extends CLICommand {
     public String name;
 
     protected int run() throws Exception {
-        Hudson h = Hudson.getInstance();
+        Jenkins h = Jenkins.getInstance();
         h.checkPermission(Item.CREATE);
 
         if (h.getItem(name)!=null) {

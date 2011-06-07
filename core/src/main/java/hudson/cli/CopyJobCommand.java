@@ -23,7 +23,7 @@
  */
 package hudson.cli;
 
-import hudson.model.Hudson;
+import jenkins.model.Jenkins;
 import hudson.model.TopLevelItem;
 import hudson.Extension;
 import hudson.model.Item;
@@ -49,7 +49,7 @@ public class CopyJobCommand extends CLICommand {
     public String dst;
 
     protected int run() throws Exception {
-        Hudson h = Hudson.getInstance();
+        Jenkins h = Jenkins.getInstance();
         h.checkPermission(Item.CREATE);
 
         if (h.getItem(dst)!=null) {

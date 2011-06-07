@@ -33,6 +33,7 @@ import hudson.model.queue.WorkUnit;
 import hudson.util.TimeUnit2;
 import hudson.util.InterceptingProxy;
 import hudson.security.ACL;
+import jenkins.model.Jenkins;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.HttpResponses;
 import org.kohsuke.stapler.StaplerRequest;
@@ -84,7 +85,7 @@ public class Executor extends Thread implements ModelObject {
     public Executor(Computer owner, int n) {
         super("Executor #"+n+" for "+owner.getDisplayName());
         this.owner = owner;
-        this.queue = Hudson.getInstance().getQueue();
+        this.queue = Jenkins.getInstance().getQueue();
         this.number = n;
     }
 
@@ -184,7 +185,7 @@ public class Executor extends Thread implements ModelObject {
      * Returns true if we should keep going.
      */
     protected boolean shouldRun() {
-        return Hudson.getInstance() != null && !Hudson.getInstance().isTerminating();
+        return Jenkins.getInstance() != null && !Jenkins.getInstance().isTerminating();
     }
 
     protected WorkUnit grabJob() throws InterruptedException {
@@ -378,7 +379,7 @@ public class Executor extends Thread implements ModelObject {
      * Throws away this executor and get a new one.
      */
     public HttpResponse doYank() {
-        Hudson.getInstance().checkPermission(Hudson.ADMINISTER);
+        Jenkins.getInstance().checkPermission(Jenkins.ADMINISTER);
         if (isAlive())
             throw new Failure("Can't yank a live executor");
         owner.removeExecutor(this);

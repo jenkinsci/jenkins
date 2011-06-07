@@ -33,7 +33,7 @@ import hudson.XmlFile;
 import hudson.model.Action;
 import hudson.model.Descriptor.FormException;
 import hudson.model.Failure;
-import hudson.model.Hudson;
+import jenkins.model.Jenkins;
 import hudson.model.Label;
 import hudson.model.Saveable;
 import hudson.model.listeners.SaveableListener;
@@ -104,7 +104,7 @@ public class LabelAtom extends Label implements Saveable {
             // if there's no property descriptor, there's nothing interesting to configure.
             ta.add(new Action() {
                 public String getIconFileName() {
-                    if (Hudson.getInstance().hasPermission(Hudson.ADMINISTER))
+                    if (Jenkins.getInstance().hasPermission(Jenkins.ADMINISTER))
                         return "setting.png";
                     else
                         return null;
@@ -149,7 +149,7 @@ public class LabelAtom extends Label implements Saveable {
     }
 
     /*package*/ XmlFile getConfigFile() {
-        return new XmlFile(XSTREAM, new File(Hudson.getInstance().root, "labels/"+name+".xml"));
+        return new XmlFile(XSTREAM, new File(Jenkins.getInstance().root, "labels/"+name+".xml"));
     }
 
     public void save() throws IOException {
@@ -187,9 +187,9 @@ public class LabelAtom extends Label implements Saveable {
      * Accepts the update to the node configuration.
      */
     public void doConfigSubmit( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException, FormException {
-        final Hudson app = Hudson.getInstance();
+        final Jenkins app = Jenkins.getInstance();
 
-        app.checkPermission(Hudson.ADMINISTER);
+        app.checkPermission(Jenkins.ADMINISTER);
 
         properties.rebuild(req, req.getSubmittedForm(), getApplicablePropertyDescriptors());
         updateTransientActions();
@@ -203,12 +203,12 @@ public class LabelAtom extends Label implements Saveable {
      * Obtains an atom by its {@linkplain #getName() name}.
      */
     public static LabelAtom get(String l) {
-        return Hudson.getInstance().getLabelAtom(l);
+        return Jenkins.getInstance().getLabelAtom(l);
     }
 
     public static boolean needsEscape(String name) {
         try {
-            Hudson.checkGoodName(name);
+            Jenkins.checkGoodName(name);
             // additional restricted chars
             for( int i=0; i<name.length(); i++ ) {
                 char ch = name.charAt(i);

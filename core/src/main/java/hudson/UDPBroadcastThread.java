@@ -23,9 +23,8 @@
  */
 package hudson;
 
-import hudson.model.Hudson;
+import jenkins.model.Jenkins;
 import hudson.util.OneShotEvent;
-import hudson.Util;
 
 import java.io.IOException;
 import java.net.BindException;
@@ -47,13 +46,13 @@ import java.util.logging.Logger;
  * @author Kohsuke Kawaguchi
  */
 public class UDPBroadcastThread extends Thread {
-    private final Hudson hudson;
+    private final Jenkins hudson;
 
     public final OneShotEvent ready = new OneShotEvent();
     private MulticastSocket mcs;
     private boolean shutdown;
 
-    public UDPBroadcastThread(Hudson hudson) throws IOException {
+    public UDPBroadcastThread(Jenkins hudson) throws IOException {
         super("Hudson UDP "+PORT+" monitoring thread");
         this.hudson = hudson;
         mcs = new MulticastSocket(PORT);
@@ -76,7 +75,7 @@ public class UDPBroadcastThread extends Thread {
                 TcpSlaveAgentListener tal = hudson.getTcpSlaveAgentListener();
 
                 StringBuilder rsp = new StringBuilder("<hudson>");
-                tag(rsp,"version",Hudson.VERSION);
+                tag(rsp,"version", Jenkins.VERSION);
                 tag(rsp,"url",hudson.getRootUrl());
                 tag(rsp,"server-id", Util.getDigestOf(hudson.getSecretKey()));
                 tag(rsp,"slave-port",tal==null?null:tal.getPort());

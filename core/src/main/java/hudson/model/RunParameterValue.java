@@ -26,6 +26,7 @@ package hudson.model;
 import java.util.Locale;
 
 import hudson.EnvVars;
+import jenkins.model.Jenkins;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.export.Exported;
 
@@ -68,7 +69,7 @@ public class RunParameterValue extends ParameterValue {
      */
     @Override
     public void buildEnvVars(AbstractBuild<?,?> build, EnvVars env) {
-        String value = Hudson.getInstance().getRootUrl() + getRun().getUrl();
+        String value = Jenkins.getInstance().getRootUrl() + getRun().getUrl();
         env.put(name, value);
         env.put(name + ".jobName", getJobName());
         env.put(name + ".number" , getNumber ());

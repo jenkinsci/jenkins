@@ -28,7 +28,7 @@ import hudson.ExtensionPoint;
 import hudson.matrix.MatrixConfiguration;
 
 /**
- * {@link Item} that can be directly displayed under {@link Hudson} or other containers.
+ * {@link Item} that can be directly displayed under {@link jenkins.model.Jenkins} or other containers.
  * Ones that don't need to be under specific parent (say, unlike {@link MatrixConfiguration}),
  * and thus can be freely moved, copied, etc.
  *

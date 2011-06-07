@@ -8,6 +8,7 @@ package hudson.security.csrf;
 import javax.servlet.ServletRequest;
 
 import hudson.init.Initializer;
+import jenkins.model.Jenkins;
 import org.kohsuke.stapler.Stapler;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.WebApp;
@@ -19,7 +20,6 @@ import hudson.ExtensionPoint;
 import hudson.model.Api;
 import hudson.model.Describable;
 import hudson.model.Descriptor;
-import hudson.model.Hudson;
 import hudson.util.MultipartFormDataParser;
 
 /**
@@ -142,14 +142,14 @@ public abstract class CrumbIssuer implements Describable<CrumbIssuer>, Extension
      * Access global configuration for the crumb issuer.
      */
     public CrumbIssuerDescriptor<CrumbIssuer> getDescriptor() {
-        return (CrumbIssuerDescriptor<CrumbIssuer>) Hudson.getInstance().getDescriptorOrDie(getClass());
+        return (CrumbIssuerDescriptor<CrumbIssuer>) Jenkins.getInstance().getDescriptorOrDie(getClass());
     }
 
     /**
      * Returns all the registered {@link CrumbIssuer} descriptors.
      */
     public static DescriptorExtensionList<CrumbIssuer, Descriptor<CrumbIssuer>> all() {
-        return Hudson.getInstance().<CrumbIssuer, Descriptor<CrumbIssuer>>getDescriptorList(CrumbIssuer.class);
+        return Jenkins.getInstance().<CrumbIssuer, Descriptor<CrumbIssuer>>getDescriptorList(CrumbIssuer.class);
     }
 
     public Api getApi() {
@@ -161,16 +161,16 @@ public abstract class CrumbIssuer implements Describable<CrumbIssuer>, Extension
      */
     @Initializer
     public static void initStaplerCrumbIssuer() {
-        WebApp.get(Hudson.getInstance().servletContext).setCrumbIssuer(new org.kohsuke.stapler.CrumbIssuer() {
+        WebApp.get(Jenkins.getInstance().servletContext).setCrumbIssuer(new org.kohsuke.stapler.CrumbIssuer() {
             @Override
             public String issueCrumb(StaplerRequest request) {
-                CrumbIssuer ci = Hudson.getInstance().getCrumbIssuer();
+                CrumbIssuer ci = Jenkins.getInstance().getCrumbIssuer();
                 return ci!=null ? ci.getCrumb(request) : DEFAULT.issueCrumb(request);
             }
 
             @Override
             public void validateCrumb(StaplerRequest request, String submittedCrumb) {
-                CrumbIssuer ci = Hudson.getInstance().getCrumbIssuer();
+                CrumbIssuer ci = Jenkins.getInstance().getCrumbIssuer();
                 if (ci==null) {
                     DEFAULT.validateCrumb(request,submittedCrumb);
                 } else {

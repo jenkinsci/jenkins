@@ -23,7 +23,7 @@
  */
 package hudson;
 
-import hudson.model.Hudson;
+import jenkins.model.Jenkins;
 import hudson.model.Computer;
 import hudson.slaves.OfflineCause;
 import hudson.slaves.SlaveComputer;
@@ -67,7 +67,7 @@ import java.util.logging.Logger;
  * unauthorized remote slaves.
  *
  * <p>
- * The approach here is to have {@link Hudson#getSecretKey() a secret key} on the master.
+ * The approach here is to have {@link jenkins.model.Jenkins#getSecretKey() a secret key} on the master.
  * This key is sent to the slave inside the <tt>.jnlp</tt> file
  * (this file itself is protected by HTTP form-based authentication that
  * we use everywhere else in Hudson), and the slave sends this
@@ -116,7 +116,7 @@ public final class TcpSlaveAgentListener extends Thread {
     }
 
     private String getSecretKey() {
-        return Hudson.getInstance().getSecretKey();
+        return Jenkins.getInstance().getSecretKey();
     }
 
     @Override
@@ -231,7 +231,7 @@ public final class TcpSlaveAgentListener extends Thread {
             }
 
             final String nodeName = in.readUTF();
-            SlaveComputer computer = (SlaveComputer) Hudson.getInstance().getComputer(nodeName);
+            SlaveComputer computer = (SlaveComputer) Jenkins.getInstance().getComputer(nodeName);
             if(computer==null) {
                 error(out, "No such slave: "+nodeName);
                 return;
@@ -260,7 +260,7 @@ public final class TcpSlaveAgentListener extends Thread {
             }
 
             final String nodeName = request.getProperty("Node-Name");
-            SlaveComputer computer = (SlaveComputer) Hudson.getInstance().getComputer(nodeName);
+            SlaveComputer computer = (SlaveComputer) Jenkins.getInstance().getComputer(nodeName);
             if(computer==null) {
                 error(out, "No such slave: "+nodeName);
                 return;

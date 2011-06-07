@@ -27,6 +27,7 @@ package hudson.model;
 import com.google.common.collect.ImmutableList;
 import hudson.security.ACL;
 import hudson.security.NotSerilizableSecurityContext;
+import jenkins.model.Jenkins;
 import org.acegisecurity.context.SecurityContext;
 import org.acegisecurity.context.SecurityContextHolder;
 
@@ -62,7 +63,7 @@ import java.util.Stack;
  * there's a change (which is relatively rare), a new instance
  * will be created. This eliminates the need of synchronization.
  *
- * @see Hudson#getDependencyGraph()
+ * @see Jenkins#getDependencyGraph()
  * @author Kohsuke Kawaguchi
  */
 public final class DependencyGraph implements Comparator<AbstractProject> {
@@ -86,7 +87,7 @@ public final class DependencyGraph implements Comparator<AbstractProject> {
             NotSerilizableSecurityContext system = new NotSerilizableSecurityContext();
             system.setAuthentication(ACL.SYSTEM);
             SecurityContextHolder.setContext(system);
-            for( AbstractProject p : Hudson.getInstance().getAllItems(AbstractProject.class) )
+            for( AbstractProject p : Jenkins.getInstance().getAllItems(AbstractProject.class) )
                 p.buildDependencyGraph(this);
 
             forward = finalize(forward);

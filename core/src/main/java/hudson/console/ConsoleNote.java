@@ -26,7 +26,7 @@ package hudson.console;
 import hudson.Functions;
 import hudson.MarkupText;
 import hudson.model.Describable;
-import hudson.model.Hudson;
+import jenkins.model.Jenkins;
 import hudson.model.Run;
 import hudson.remoting.ObjectInputStreamEx;
 import hudson.util.IOException2;
@@ -140,7 +140,7 @@ public abstract class ConsoleNote<T> implements Serializable, Describable<Consol
     public abstract ConsoleAnnotator annotate(T context, MarkupText text, int charPos);
 
     public ConsoleAnnotationDescriptor getDescriptor() {
-        return (ConsoleAnnotationDescriptor)Hudson.getInstance().getDescriptorOrDie(getClass());
+        return (ConsoleAnnotationDescriptor) Jenkins.getInstance().getDescriptorOrDie(getClass());
     }
 
     /**
@@ -221,7 +221,7 @@ public abstract class ConsoleNote<T> implements Serializable, Describable<Consol
                 return null;    // not a valid postamble
 
             ObjectInputStream ois = new ObjectInputStreamEx(
-                    new GZIPInputStream(new ByteArrayInputStream(buf)), Hudson.getInstance().pluginManager.uberClassLoader);
+                    new GZIPInputStream(new ByteArrayInputStream(buf)), Jenkins.getInstance().pluginManager.uberClassLoader);
             return (ConsoleNote) ois.readObject();
         } catch (Error e) {
             // for example, bogus 'sz' can result in OutOfMemoryError.

@@ -25,7 +25,6 @@ package hudson.markup;
 
 import hudson.ExtensionPoint;
 import hudson.model.AbstractDescribableImpl;
-import hudson.model.Hudson;
 
 import java.io.IOException;
 import java.io.StringWriter;
@@ -49,7 +48,7 @@ import java.io.Writer;
  *
  * @author Kohsuke Kawaguchi
  * @since 1.391
- * @see Hudson#getMarkupFormatter()
+ * @see jenkins.model.Jenkins#getMarkupFormatter()
  */
 public abstract class MarkupFormatter extends AbstractDescribableImpl<MarkupFormatter> implements ExtensionPoint {
     /**

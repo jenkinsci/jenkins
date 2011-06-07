@@ -27,7 +27,7 @@ import hudson.Extension;
 import hudson.ExtensionList;
 import hudson.ExtensionListView;
 import hudson.ExtensionPoint;
-import hudson.model.Hudson;
+import jenkins.model.Jenkins;
 import hudson.model.User;
 import hudson.model.UserProperty;
 import hudson.scm.SCM;
@@ -156,7 +156,7 @@ public abstract class MailAddressResolver implements ExtensionPoint {
      * Returns all the registered {@link MailAddressResolver} descriptors.
      */
     public static ExtensionList<MailAddressResolver> all() {
-        return Hudson.getInstance().getExtensionList(MailAddressResolver.class);
+        return Jenkins.getInstance().getExtensionList(MailAddressResolver.class);
     }
 
     private static final Logger LOGGER = Logger.getLogger(MailAddressResolver.class.getName());

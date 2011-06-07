@@ -29,7 +29,6 @@ import hudson.ExtensionPoint;
 import hudson.Util;
 import hudson.model.Descriptor.FormException;
 import hudson.model.Node.Mode;
-import hudson.model.labels.LabelAtomProperty;
 import hudson.model.labels.LabelAtomPropertyDescriptor;
 import hudson.scm.ChangeLogSet.Entry;
 import hudson.search.CollectionSearchIndex;
@@ -42,6 +41,7 @@ import hudson.util.DescribableList;
 import hudson.util.DescriptorList;
 import hudson.util.RunList;
 import hudson.widgets.Widget;
+import jenkins.model.Jenkins;
 import net.sf.json.JSONObject;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
@@ -62,11 +62,11 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 
-import static hudson.model.Hudson.*;
+import static jenkins.model.Jenkins.*;
 
 /**
  * Encapsulates the rendering of the list of {@link TopLevelItem}s
- * that {@link Hudson} owns.
+ * that {@link Jenkins} owns.
  *
  * <p>
  * This is an extension point in Hudson, allowing different kind of
@@ -139,7 +139,7 @@ public abstract class View extends AbstractModelObject implements AccessControll
      * Gets the {@link TopLevelItem} of the given name.
      */
     public TopLevelItem getItem(String name) {
-        return Hudson.getInstance().getItem(name);
+        return Jenkins.getInstance().getItem(name);
     }
 
     /**
@@ -244,7 +244,7 @@ public abstract class View extends AbstractModelObject implements AccessControll
     }
 
     public ViewDescriptor getDescriptor() {
-        return (ViewDescriptor)Hudson.getInstance().getDescriptorOrDie(getClass());
+        return (ViewDescriptor) Jenkins.getInstance().getDescriptorOrDie(getClass());
     }
 
     public String getDisplayName() {
@@ -283,18 +283,18 @@ public abstract class View extends AbstractModelObject implements AccessControll
      * For now, this just returns the widgets registered to Hudson.
      */
     public List<Widget> getWidgets() {
-        return Collections.unmodifiableList(Hudson.getInstance().getWidgets());
+        return Collections.unmodifiableList(Jenkins.getInstance().getWidgets());
     }
 
     /**
      * If true, this is a view that renders the top page of Hudson.
      */
     public boolean isDefault() {
-        return Hudson.getInstance().getPrimaryView()==this;
+        return Jenkins.getInstance().getPrimaryView()==this;
     }
     
     public List<Computer> getComputers() {
-    	Computer[] computers = Hudson.getInstance().getComputers();
+    	Computer[] computers = Jenkins.getInstance().getComputers();
     	
     	if (!isFilterExecutors()) {
     		return Arrays.asList(computers);
@@ -330,12 +330,12 @@ public abstract class View extends AbstractModelObject implements AccessControll
     
     public List<Queue.Item> getQueueItems() {
     	if (!isFilterQueue()) {
-    		return Arrays.asList(Hudson.getInstance().getQueue().getItems());
+    		return Arrays.asList(Jenkins.getInstance().getQueue().getItems());
     	}
     	
     	Collection<TopLevelItem> items = getItems(); 
     	List<Queue.Item> result = new ArrayList<Queue.Item>();
-    	for (Queue.Item qi: Hudson.getInstance().getQueue().getItems()) {
+    	for (Queue.Item qi: Jenkins.getInstance().getQueue().getItems()) {
     		if (items.contains(qi.task)) {
     			result.add(qi);
     		}
@@ -372,11 +372,11 @@ public abstract class View extends AbstractModelObject implements AccessControll
      * If views don't want to show top-level actions, this method
      * can be overridden to return different objects.
      *
-     * @see Hudson#getActions()
+     * @see Jenkins#getActions()
      */
     public List<Action> getActions() {
     	List<Action> result = new ArrayList<Action>();
-    	result.addAll(Hudson.getInstance().getActions());
+    	result.addAll(Jenkins.getInstance().getActions());
     	synchronized (this) {
     		if (transientActions == null) {
     			transientActions = TransientViewActionFactory.createAllFor(this); 
@@ -398,7 +398,7 @@ public abstract class View extends AbstractModelObject implements AccessControll
      */
     @Exported(visibility=2,name="url")
     public String getAbsoluteUrl() {
-        return Hudson.getInstance().getRootUrl()+getUrl();
+        return Jenkins.getInstance().getRootUrl()+getUrl();
     }
 
     public Api getApi() {
@@ -419,7 +419,7 @@ public abstract class View extends AbstractModelObject implements AccessControll
      * Returns the {@link ACL} for this object.
      */
     public ACL getACL() {
-        return Hudson.getInstance().getAuthorizationStrategy().getACL(this);
+        return Jenkins.getInstance().getAuthorizationStrategy().getACL(this);
     }
 
     public void checkPermission(Permission p) {
@@ -528,7 +528,7 @@ public abstract class View extends AbstractModelObject implements AccessControll
 
         public final Object parent;
 
-        public People(Hudson parent) {
+        public People(Jenkins parent) {
             this.parent = parent;
             // for Hudson, really load all users
             Map<User,UserInfo> users = getUserInfo(parent.getItems());
@@ -672,7 +672,7 @@ public abstract class View extends AbstractModelObject implements AccessControll
      * Creates a new {@link Item} in this collection.
      *
      * <p>
-     * This method should call {@link Hudson#doCreateItem(StaplerRequest, StaplerResponse)}
+     * This method should call {@link Jenkins#doCreateItem(StaplerRequest, StaplerResponse)}
      * and then add the newly created item to this view.
      * 
      * @return
@@ -725,7 +725,7 @@ public abstract class View extends AbstractModelObject implements AccessControll
      * Returns all the registered {@link ViewDescriptor}s.
      */
     public static DescriptorExtensionList<View,ViewDescriptor> all() {
-        return Hudson.getInstance().<View,ViewDescriptor>getDescriptorList(View.class);
+        return Jenkins.getInstance().<View,ViewDescriptor>getDescriptorList(View.class);
     }
 
     public static final Comparator<View> SORTER = new Comparator<View>() {

@@ -28,7 +28,7 @@ import hudson.PluginWrapper;
 import hudson.init.Initializer;
 import hudson.model.AdministrativeMonitor;
 import hudson.model.Descriptor;
-import hudson.model.Hudson;
+import jenkins.model.Jenkins;
 
 import java.text.MessageFormat;
 import java.util.ArrayList;
@@ -61,7 +61,7 @@ public class NullIdDescriptorMonitor extends AdministrativeMonitor {
     }
 
     private void verify() {
-        Hudson h = Hudson.getInstance();
+        Jenkins h = Jenkins.getInstance();
         for (Descriptor d : h.getExtensionList(Descriptor.class)) {
             PluginWrapper p = h.getPluginManager().whichPlugin(d.getClass());
             String id;

@@ -32,7 +32,7 @@ import hudson.model.BuildListener;
 import hudson.model.Computer;
 import hudson.model.Environment;
 import hudson.model.Executor;
-import hudson.model.Hudson;
+import jenkins.model.Jenkins;
 import hudson.model.Node;
 import hudson.model.Result;
 import hudson.model.Run;
@@ -280,9 +280,9 @@ public class MavenBuild extends AbstractMavenBuild<MavenModule,MavenBuild> {
      */
     public Node getBuiltOn() {
         if(builtOn==null || builtOn.equals(""))
-            return Hudson.getInstance();
+            return Jenkins.getInstance();
         else
-            return Hudson.getInstance().getNode(builtOn);
+            return Jenkins.getInstance().getNode(builtOn);
     }
 
     /**

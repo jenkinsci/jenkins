@@ -24,7 +24,7 @@
 package hudson.console;
 
 import com.trilead.ssh2.crypto.Base64;
-import hudson.model.Hudson;
+import jenkins.model.Jenkins;
 import hudson.remoting.ObjectInputStreamEx;
 import hudson.util.IOException2;
 import hudson.util.Secret;
@@ -116,11 +116,11 @@ public class AnnotatedLargeText<T> extends LargeText {
             String base64 = req!=null ? req.getHeader("X-ConsoleAnnotator") : null;
             if (base64!=null) {
                 Cipher sym = Secret.getCipher("AES");
-                sym.init(Cipher.DECRYPT_MODE, Hudson.getInstance().getSecretKeyAsAES128());
+                sym.init(Cipher.DECRYPT_MODE, Jenkins.getInstance().getSecretKeyAsAES128());
 
                 ObjectInputStream ois = new ObjectInputStreamEx(new GZIPInputStream(
                         new CipherInputStream(new ByteArrayInputStream(Base64.decode(base64.toCharArray())),sym)),
-                        Hudson.getInstance().pluginManager.uberClassLoader);
+                        Jenkins.getInstance().pluginManager.uberClassLoader);
                 long timestamp = ois.readLong();
                 if (TimeUnit2.HOURS.toMillis(1) > abs(System.currentTimeMillis()-timestamp))
                     // don't deserialize something too old to prevent a replay attack
@@ -156,7 +156,7 @@ public class AnnotatedLargeText<T> extends LargeText {
         try {
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
             Cipher sym = Secret.getCipher("AES");
-            sym.init(Cipher.ENCRYPT_MODE, Hudson.getInstance().getSecretKeyAsAES128());
+            sym.init(Cipher.ENCRYPT_MODE, Jenkins.getInstance().getSecretKeyAsAES128());
             ObjectOutputStream oos = new ObjectOutputStream(new GZIPOutputStream(new CipherOutputStream(baos,sym)));
             oos.writeLong(System.currentTimeMillis()); // send timestamp to prevent a replay attack
             oos.writeObject(caw.getConsoleAnnotator());

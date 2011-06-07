@@ -28,7 +28,7 @@ import org.acegisecurity.providers.ldap.authenticator.BindAuthenticator2
 import org.acegisecurity.ldap.DefaultInitialDirContextFactory
 import org.acegisecurity.ldap.search.FilterBasedLdapUserSearch
 import org.acegisecurity.providers.rememberme.RememberMeAuthenticationProvider
-import hudson.model.Hudson
+import jenkins.model.Jenkins
 import hudson.security.LDAPSecurityRealm.AuthoritiesPopulatorImpl
 import hudson.Util
 import javax.naming.Context
@@ -74,7 +74,7 @@ authenticationManager(ProviderManager) {
 
     // these providers apply everywhere
         bean(RememberMeAuthenticationProvider) {
-            key = Hudson.getInstance().getSecretKey();
+            key = Jenkins.getInstance().getSecretKey();
         },
         // this doesn't mean we allow anonymous access.
         // we just authenticate anonymous users as such,

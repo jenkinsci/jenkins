@@ -25,7 +25,7 @@ package hudson.diagnosis;
 
 import hudson.XmlFile;
 import hudson.model.AdministrativeMonitor;
-import hudson.model.Hudson;
+import jenkins.model.Jenkins;
 import hudson.Extension;
 import hudson.model.Item;
 import hudson.model.Job;
@@ -84,7 +84,7 @@ public class OldDataMonitor extends AdministrativeMonitor {
     }
 
     private static void remove(Saveable obj, boolean isDelete) {
-        OldDataMonitor odm = (OldDataMonitor)Hudson.getInstance().getAdministrativeMonitor("OldData");
+        OldDataMonitor odm = (OldDataMonitor) Jenkins.getInstance().getAdministrativeMonitor("OldData");
         synchronized (odm) {
             if (odm.updating) return; // Skip during doUpgrade or doDiscard
             odm.data.remove(obj);
@@ -128,7 +128,7 @@ public class OldDataMonitor extends AdministrativeMonitor {
      * @param version Hudson release when the data structure changed.
      */
     public static void report(Saveable obj, String version) {
-        OldDataMonitor odm = (OldDataMonitor)Hudson.getInstance().getAdministrativeMonitor("OldData");
+        OldDataMonitor odm = (OldDataMonitor) Jenkins.getInstance().getAdministrativeMonitor("OldData");
         synchronized (odm) {
             try {
                 VersionRange vr = odm.data.get(obj);
@@ -174,7 +174,7 @@ public class OldDataMonitor extends AdministrativeMonitor {
             }
         }
         if (buf.length() == 0) return;
-        OldDataMonitor odm = (OldDataMonitor)Hudson.getInstance().getAdministrativeMonitor("OldData");
+        OldDataMonitor odm = (OldDataMonitor) Jenkins.getInstance().getAdministrativeMonitor("OldData");
         synchronized (odm) {
             VersionRange vr = odm.data.get(obj);
             if (vr != null) vr.extra = buf.toString();
@@ -183,7 +183,7 @@ public class OldDataMonitor extends AdministrativeMonitor {
     }
 
     public static class VersionRange {
-        private static VersionNumber currentVersion = Hudson.getVersion();
+        private static VersionNumber currentVersion = Jenkins.getVersion();
 
         VersionNumber min, max;
         boolean single = true;

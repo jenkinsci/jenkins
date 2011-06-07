@@ -39,7 +39,7 @@ import hudson.Extension;
 import hudson.ExtensionPoint;
 import hudson.model.Describable;
 import hudson.model.Descriptor;
-import hudson.model.Hudson;
+import jenkins.model.Jenkins;
 import net.sf.json.JSONObject;
 import org.jvnet.hudson.test.HudsonTestCase;
 import org.kohsuke.stapler.DataBoundConstructor;
@@ -259,7 +259,7 @@ public class RepeatableTest extends HudsonTestCase {
         private Fruit(String name) { this.name = name; }
 
         public Descriptor<Fruit> getDescriptor() {
-            return Hudson.getInstance().getDescriptor(getClass());
+            return Jenkins.getInstance().getDescriptor(getClass());
         }
     }
 

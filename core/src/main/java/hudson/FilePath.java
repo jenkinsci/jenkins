@@ -27,7 +27,7 @@ package hudson;
 
 import hudson.Launcher.LocalLauncher;
 import hudson.Launcher.RemoteLauncher;
-import hudson.model.Hudson;
+import jenkins.model.Jenkins;
 import hudson.model.TaskListener;
 import hudson.model.AbstractProject;
 import hudson.model.Item;
@@ -755,7 +755,7 @@ public final class FilePath implements Serializable {
             }
         } else {
             // the file is on the local machine.
-            return callable.invoke(new File(remote), Hudson.MasterComputer.localChannel);
+            return callable.invoke(new File(remote), Jenkins.MasterComputer.localChannel);
         }
     }
 
@@ -765,7 +765,7 @@ public final class FilePath implements Serializable {
      */
     public <T> Future<T> actAsync(final FileCallable<T> callable) throws IOException, InterruptedException {
         try {
-            return (channel!=null ? channel : Hudson.MasterComputer.localChannel)
+            return (channel!=null ? channel : Jenkins.MasterComputer.localChannel)
                 .callAsync(new FileCallableWrapper<T>(callable));
         } catch (IOException e) {
             // wrap it into a new IOException so that we get the caller's stack trace as well.
@@ -1896,7 +1896,7 @@ public final class FilePath implements Serializable {
     private static void checkPermissionForValidate() {
         AccessControlled subject = Stapler.getCurrentRequest().findAncestorObject(AbstractProject.class);
         if (subject == null)
-            Hudson.getInstance().checkPermission(Hudson.ADMINISTER);
+            Jenkins.getInstance().checkPermission(Jenkins.ADMINISTER);
         else
             subject.checkPermission(Item.CONFIGURE);
     }
@@ -1920,7 +1920,7 @@ public final class FilePath implements Serializable {
 
     public VirtualChannel getChannel() {
         if(channel!=null)   return channel;
-        else                return Hudson.MasterComputer.localChannel;
+        else                return Jenkins.MasterComputer.localChannel;
     }
 
     /**

@@ -23,6 +23,8 @@
  */
 package hudson.model;
 
+import jenkins.model.Jenkins;
+
 /**
  * Partial default implementation of {@link Describable}.
  *
@@ -30,6 +32,6 @@ package hudson.model;
  */
 public abstract class AbstractDescribableImpl<T extends AbstractDescribableImpl<T>> implements Describable<T> {
     public Descriptor<T> getDescriptor() {
-        return Hudson.getInstance().getDescriptorOrDie(getClass());
+        return Jenkins.getInstance().getDescriptorOrDie(getClass());
     }
 }

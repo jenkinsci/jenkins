@@ -28,7 +28,7 @@ import hudson.ExtensionList;
 import hudson.ExtensionPoint;
 import hudson.Launcher;
 import hudson.model.AbstractBuild;
-import hudson.model.Hudson;
+import jenkins.model.Jenkins;
 import hudson.model.TaskListener;
 import hudson.tasks.Publisher;
 
@@ -74,7 +74,7 @@ public abstract class TestResultParser implements ExtensionPoint {
      * All registered {@link TestResultParser}s
      */
     public static ExtensionList<TestResultParser> all() {
-        return Hudson.getInstance().getExtensionList(TestResultParser.class);
+        return Jenkins.getInstance().getExtensionList(TestResultParser.class);
     }
 
     /**

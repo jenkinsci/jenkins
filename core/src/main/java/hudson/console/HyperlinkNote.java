@@ -25,7 +25,7 @@ package hudson.console;
 
 import hudson.Extension;
 import hudson.MarkupText;
-import hudson.model.Hudson;
+import jenkins.model.Jenkins;
 
 import java.io.IOException;
 import java.util.logging.Level;
@@ -53,7 +53,7 @@ public class HyperlinkNote extends ConsoleNote {
     public ConsoleAnnotator annotate(Object context, MarkupText text, int charPos) {
         String url = this.url;
         if (url.startsWith("/"))
-            url = Hudson.getInstance().getRootUrl()+url.substring(1);
+            url = Jenkins.getInstance().getRootUrl()+url.substring(1);
         text.addHyperlink(charPos,charPos+length,url);
         return null;
     }

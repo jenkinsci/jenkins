@@ -24,7 +24,7 @@
 package hudson.cli;
 
 import hudson.Extension;
-import hudson.model.Hudson;
+import jenkins.model.Jenkins;
 
 /**
  * Shows the version.
@@ -40,7 +40,7 @@ public class VersionCommand extends CLICommand {
 
     protected int run() {
         // CLICommand.main checks Hudson.READ permission.. no other check needed.
-        stdout.println(Hudson.VERSION);
+        stdout.println(Jenkins.VERSION);
         return 0;
     }
 }

@@ -25,7 +25,7 @@ package hudson.maven;
 
 import static hudson.Util.intern;
 import hudson.Util;
-import hudson.model.Hudson;
+import jenkins.model.Jenkins;
 import hudson.remoting.Which;
 import hudson.util.ReflectionUtils;
 
@@ -194,7 +194,7 @@ public final class ExecutedMojo implements Serializable {
         public final Map<ModuleName,MavenModule> modules = new HashMap<ModuleName,MavenModule>();
 
         public Cache() {
-            for( MavenModule m : Hudson.getInstance().getAllItems(MavenModule.class))
+            for( MavenModule m : Jenkins.getInstance().getAllItems(MavenModule.class))
                 modules.put(m.getModuleName(),m);
         }
 

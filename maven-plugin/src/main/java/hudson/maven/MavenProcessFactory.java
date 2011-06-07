@@ -29,11 +29,8 @@ import hudson.EnvVars;
 import hudson.maven.agent.Main;
 import hudson.maven.agent.Maven21Interceptor;
 import hudson.model.BuildListener;
-import hudson.model.Computer;
-import hudson.model.Executor;
-import hudson.model.Hudson;
+import jenkins.model.Jenkins;
 import hudson.model.JDK;
-import hudson.model.Node;
 import hudson.model.Run.RunnerAbortedException;
 import hudson.model.TaskListener;
 import hudson.remoting.Callable;
@@ -78,7 +75,7 @@ final class MavenProcessFactory extends AbstractMavenProcessFactory implements P
         // find classworlds.jar
         String classWorldsJar = getLauncher().getChannel().call(new GetClassWorldsJar(mvn.getHome(),listener));
 
-        boolean isMaster = getCurrentNode()== Hudson.getInstance();
+        boolean isMaster = getCurrentNode()== Jenkins.getInstance();
         FilePath slaveRoot=null;
         if(!isMaster)
             slaveRoot = getCurrentNode().getRootPath();

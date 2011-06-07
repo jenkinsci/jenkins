@@ -26,6 +26,7 @@ package hudson.model;
 import hudson.FilePath;
 import hudson.Util;
 import hudson.Extension;
+import jenkins.model.Jenkins;
 
 import java.io.File;
 import java.io.FileFilter;
@@ -69,7 +70,7 @@ public class WorkspaceCleanupThread extends AsyncPeriodicWork {
             
             this.listener = listener;
 
-            Hudson h = Hudson.getInstance();
+            Jenkins h = Jenkins.getInstance();
             for (Node n : h.getNodes())
                 if (n instanceof Slave) process((Slave)n);
 
@@ -79,7 +80,7 @@ public class WorkspaceCleanupThread extends AsyncPeriodicWork {
         }
     }
 
-    private void process(Hudson h) throws IOException, InterruptedException {
+    private void process(Jenkins h) throws IOException, InterruptedException {
         File jobs = new File(h.getRootDir(), "jobs");
         File[] dirs = jobs.listFiles(DIR_FILTER);
         if(dirs==null)      return;
@@ -94,7 +95,7 @@ public class WorkspaceCleanupThread extends AsyncPeriodicWork {
     private boolean shouldBeDeleted(String jobName, FilePath dir, Node n) throws IOException, InterruptedException {
         // TODO: the use of remoting is not optimal.
         // One remoting can execute "exists", "lastModified", and "delete" all at once.
-        TopLevelItem item = Hudson.getInstance().getItem(jobName);
+        TopLevelItem item = Jenkins.getInstance().getItem(jobName);
         if(item==null) {
             // no such project anymore
             LOGGER.fine("Directory "+dir+" is not owned by any project");

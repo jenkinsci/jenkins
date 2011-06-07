@@ -26,7 +26,7 @@ package hudson.lifecycle;
 import hudson.ExtensionPoint;
 import hudson.Functions;
 import hudson.Util;
-import hudson.model.Hudson;
+import jenkins.model.Jenkins;
 
 import java.io.File;
 import java.io.IOException;
@@ -60,7 +60,7 @@ public abstract class Lifecycle implements ExtensionPoint {
             String p = System.getProperty("hudson.lifecycle");
             if(p!=null) {
                 try {
-                    ClassLoader cl = Hudson.getInstance().getPluginManager().uberClassLoader;
+                    ClassLoader cl = Jenkins.getInstance().getPluginManager().uberClassLoader;
                     instance = (Lifecycle)cl.loadClass(p).newInstance();
                 } catch (InstantiationException e) {
                     InstantiationError x = new InstantiationError(e.getMessage());

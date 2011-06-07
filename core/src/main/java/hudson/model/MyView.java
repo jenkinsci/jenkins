@@ -31,6 +31,7 @@ import java.util.List;
 
 import javax.servlet.ServletException;
 
+import jenkins.model.Jenkins;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 import org.kohsuke.stapler.DataBoundConstructor;
@@ -62,13 +63,13 @@ public class MyView extends View {
     @Override
     public Item doCreateItem(StaplerRequest req, StaplerResponse rsp)
             throws IOException, ServletException {
-        return Hudson.getInstance().doCreateItem(req, rsp);
+        return Jenkins.getInstance().doCreateItem(req, rsp);
     }
 
     @Override
     public Collection<TopLevelItem> getItems() {
         List<TopLevelItem> items = new ArrayList<TopLevelItem>();
-        for (TopLevelItem item : Hudson.getInstance().getItems()) {
+        for (TopLevelItem item : Jenkins.getInstance().getItems()) {
             if (item.hasPermission(Job.CONFIGURE)) {
                 items.add(item);
             }
@@ -99,7 +100,7 @@ public class MyView extends View {
          */
         @Override
         public boolean isInstantiable() {
-            return Hudson.getInstance().isUseSecurity();
+            return Jenkins.getInstance().isUseSecurity();
         }
 
         public String getDisplayName() {

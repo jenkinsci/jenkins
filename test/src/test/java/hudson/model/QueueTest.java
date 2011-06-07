@@ -178,7 +178,7 @@ public class QueueTest extends HudsonTestCase {
         final OneShotEvent buildStarted = new OneShotEvent();
         final OneShotEvent buildShouldComplete = new OneShotEvent();
 
-        hudson.quietPeriod = 0;
+        setQuietPeriod(0);
         FreeStyleProject project = createFreeStyleProject();
         // Make build sleep a while so it blocks new builds
         project.getBuildersList().add(new TestBuilder() {
