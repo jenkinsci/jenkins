@@ -2988,16 +2988,11 @@ public class Jenkins extends AbstractCIBase implements ItemGroup<TopLevelItem>, 
      * Shutdown the system safely.
      * @since 1.332
      */
-    public void doSafeExit( StaplerRequest req, StaplerResponse rsp ) throws IOException {
+    public HttpResponse doSafeExit(StaplerRequest req) throws IOException {
         checkPermission(ADMINISTER);
-        rsp.setStatus(HttpServletResponse.SC_OK);
-        rsp.setContentType("text/plain");
-        PrintWriter w = rsp.getWriter();
-        w.println("Shutting down as soon as all jobs are complete");
-        w.close();
         isQuietingDown = true;
         final String exitUser = getAuthentication().getName();
-        final String exitAddr = req.getRemoteAddr().toString();
+        final String exitAddr = req!=null ? req.getRemoteAddr() : "unknown";
         new Thread("safe-exit thread") {
             @Override
             public void run() {
@@ -3020,6 +3015,8 @@ public class Jenkins extends AbstractCIBase implements ItemGroup<TopLevelItem>, 
                 }
             }
         }.start();
+
+        return HttpResponses.plainText("Shutting down as soon as all jobs are complete");
     }
 
     /**
