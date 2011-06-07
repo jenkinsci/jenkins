@@ -14,7 +14,10 @@ import hudson.model.queue.SubTask;
  */
 public interface LabelAssignmentAction extends Action {
     /**
+     * Reassigns where the task gets run.
      *
+     * @param task
+     *      Never null.
      * @return
      *      null to let other {@link LabelAssignmentAction}s take control, eventually to {@code SubTask#getAssignedLabel()}.
      *      If non-null value is returned, that label will be authoritative.
