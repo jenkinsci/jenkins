@@ -21,7 +21,8 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-f=namespace("/lib/form")
+package hudson.tasks.Shell;
+f=namespace(lib.FormTagLib)
 
 f.entry(title:_("Command"),description:_("description",rootURL)) {
     f.textarea(name:"command",value:instance?.command,class:"fixed-width")
