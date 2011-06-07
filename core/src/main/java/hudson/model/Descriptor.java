@@ -36,6 +36,7 @@ import hudson.views.ListViewColumn;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 import org.kohsuke.stapler.*;
+import org.kohsuke.stapler.jelly.JellyCompatibleFacet;
 import org.springframework.util.StringUtils;
 import org.jvnet.tiger_types.Types;
 import org.apache.commons.io.IOUtils;
@@ -648,18 +649,24 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable {
     }
 
     public String getConfigPage() {
-        return getViewPage(clazz, "config.jelly");
+        return getViewPage(clazz, getPossibleViewNames("config"), "config.jelly");
     }
 
     public String getGlobalConfigPage() {
-        return getViewPage(clazz, "global.jelly",null);
+        return getViewPage(clazz, getPossibleViewNames("global"), null);
+    }
+    
+    private String getViewPage(Class<?> clazz, String pageName, String defaultValue) {
+        return getViewPage(clazz,Collections.singleton(pageName),defaultValue);
     }
 
-    private String getViewPage(Class<?> clazz, String pageName, String defaultValue) {
+    private String getViewPage(Class<?> clazz, Collection<String> pageNames, String defaultValue) {
         while(clazz!=Object.class) {
-            String name = clazz.getName().replace('.', '/').replace('$', '/') + "/" + pageName;
-            if(clazz.getClassLoader().getResource(name)!=null)
-                return '/'+name;
+            for (String pageName : pageNames) {
+                String name = clazz.getName().replace('.', '/').replace('$', '/') + "/" + pageName;
+                if(clazz.getClassLoader().getResource(name)!=null)
+                    return '/'+name;
+            }
             clazz = clazz.getSuperclass();
         }
         return defaultValue;
@@ -672,6 +679,17 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable {
         // Or this error is fatal, in which case we want the developer to see what page he's missing.
         // so we put the page name.
         return getViewPage(clazz,pageName,pageName);
+    }
+
+    private List<String> getPossibleViewNames(String baseName) {
+        List<String> names = new ArrayList<String>();
+        for (Facet f : WebApp.get(Hudson.getInstance().servletContext).facets) {
+            if (f instanceof JellyCompatibleFacet) {
+                JellyCompatibleFacet jcf = (JellyCompatibleFacet) f;
+                names.add(baseName +jcf.getDefaultScriptExtension());
+            }
+        }
+        return names;
     }
 
 

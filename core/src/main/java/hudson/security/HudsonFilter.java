@@ -42,7 +42,7 @@ import org.acegisecurity.ui.rememberme.RememberMeServices;
 import org.acegisecurity.userdetails.UserDetailsService;
 
 /**
- * {@link Filter} that Hudson uses to implement security support.
+ * {@link Filter} that Jenkins uses to implement security support.
  *
  * <p>
  * This is the instance the servlet container creates, but
@@ -59,7 +59,7 @@ public class HudsonFilter implements Filter {
     private volatile Filter filter;
     
     /**
-     * The {@link #init(FilterConfig)} may be called before the Hudson instance is up (which is
+     * The {@link #init(FilterConfig)} may be called before the Jenkins instance is up (which is
      * required for initialization of the filter).  So we store the
      * filterConfig for later lazy-initialization of the filter.
      */
@@ -115,7 +115,7 @@ public class HudsonFilter implements Filter {
             // the whole thing fail hard before a nicer error check
             // in WebAppMain.contextInitialized. So for now,
             // just report it here, and let the WebAppMain handle the failure gracefully.
-            LOGGER.log(SEVERE, "Failed to initialize Hudson",e);
+            LOGGER.log(SEVERE, "Failed to initialize Jenkins",e);
         }
     }
 
