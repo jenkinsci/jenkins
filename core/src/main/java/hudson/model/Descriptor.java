@@ -684,7 +684,7 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable {
 
     private List<String> getPossibleViewNames(String baseName) {
         List<String> names = new ArrayList<String>();
-        for (Facet f : WebApp.get(Hudson.getInstance().servletContext).facets) {
+        for (Facet f : WebApp.get(Jenkins.getInstance().servletContext).facets) {
             if (f instanceof JellyCompatibleFacet) {
                 JellyCompatibleFacet jcf = (JellyCompatibleFacet) f;
                 names.add(baseName +jcf.getDefaultScriptExtension());

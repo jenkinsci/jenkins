@@ -79,7 +79,7 @@ public class Hudson extends Jenkins {
 
     public Hudson(File root, ServletContext context, PluginManager pluginManager) throws IOException, InterruptedException, ReactorException {
         super(root, context, pluginManager);
-                }
+    }
 
     /**
      * Gets all the installed {@link ItemListener}s.
