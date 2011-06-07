@@ -1,7 +1,7 @@
-package hudson.model.Hudson;
+package hudson.model.Hudson
 
 l=namespace(lib.LayoutTagLib)
-t=namespace("/lib/hudson")
+t=namespace(lib.JenkinsTagLib)
 st=namespace("jelly:stapler")
 
 def feature(String icon, String href, String title, Closure body=null) {
