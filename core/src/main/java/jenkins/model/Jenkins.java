@@ -749,7 +749,7 @@ public class Jenkins extends AbstractCIBase implements ItemGroup<TopLevelItem>, 
     private ReactorListener buildReactorListener() throws IOException {
         List<ReactorListener> r = (List) Service.loadInstances(Thread.currentThread().getContextClassLoader(), InitReactorListener.class);
         r.add(new ReactorListener() {
-            final Level level = Level.parse(System.getProperty(Jenkins.class.getName()+".initLogLevel","FINE"));
+            final Level level = Level.parse( Configuration.getStringConfigParameter("initLogLevel", "FINE") );
             public void onTaskStarted(Task t) {
                 LOGGER.log(level,"Started "+t.getDisplayName());
             }
@@ -3499,14 +3499,14 @@ public class Jenkins extends AbstractCIBase implements ItemGroup<TopLevelItem>, 
      */
     public static String VIEW_RESOURCE_PATH = "/resources/TBD";
 
-    public static boolean PARALLEL_LOAD = !"false".equals(System.getProperty(Jenkins.class.getName()+".parallelLoad"));
-    public static boolean KILL_AFTER_LOAD = Boolean.getBoolean(Jenkins.class.getName()+".killAfterLoad");
-    public static boolean LOG_STARTUP_PERFORMANCE = Boolean.getBoolean(Jenkins.class.getName()+".logStartupPerformance");
+    public static boolean PARALLEL_LOAD = Configuration.getBooleanConfigParameter("parallelLoad", true);
+    public static boolean KILL_AFTER_LOAD = Configuration.getBooleanConfigParameter("killAfterLoad", false);
+    public static boolean LOG_STARTUP_PERFORMANCE = Configuration.getBooleanConfigParameter("logStartupPerformance", false);
     private static final boolean CONSISTENT_HASH = true; // Boolean.getBoolean(Hudson.class.getName()+".consistentHash");
     /**
      * Enabled by default as of 1.337. Will keep it for a while just in case we have some serious problems.
      */
-    public static boolean FLYWEIGHT_SUPPORT = !"false".equals(System.getProperty(Jenkins.class.getName()+".flyweightSupport"));
+    public static boolean FLYWEIGHT_SUPPORT = Configuration.getBooleanConfigParameter("flyweightSupport", true);
 
     /**
      * Tentative switch to activate the concurrent build behavior.
@@ -3519,7 +3519,7 @@ public class Jenkins extends AbstractCIBase implements ItemGroup<TopLevelItem>, 
     /**
      * Switch to enable people to use a shorter workspace name.
      */
-    private static final String WORKSPACE_DIRNAME = System.getProperty(Jenkins.class.getName()+".workspaceDirName","workspace");
+    private static final String WORKSPACE_DIRNAME = Configuration.getStringConfigParameter("workspaceDirName", "workspace");
 
     /**
      * Automatically try to launch a slave when Hudson is initialized or a new slave is created.
