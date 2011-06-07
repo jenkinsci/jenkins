@@ -2881,17 +2881,14 @@ public class Jenkins extends AbstractCIBase implements ItemGroup<TopLevelItem>, 
      * @since 1.332
      */
     @CLIMethod(name="safe-restart")
-    public void doSafeRestart(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException, RestartNotSupportedException {
+    public HttpResponse doSafeRestart(StaplerRequest req) throws IOException, ServletException, RestartNotSupportedException {
         checkPermission(ADMINISTER);
-        if (req != null && req.getMethod().equals("GET")) {
-            req.getView(this,"_safeRestart.jelly").forward(req,rsp);
-            return;
-        }
+        if (req != null && req.getMethod().equals("GET"))
+            return HttpResponses.forwardToView(this,"_safeRestart.jelly");
 
         safeRestart();
 
-        if (rsp != null) // null for CLI
-            rsp.sendRedirect2(".");
+        return HttpResponses.redirectToDot();
     }
 
     /**
