@@ -23,6 +23,7 @@
  */
 package hudson.security;
 
+import hudson.model.Hudson;
 import jenkins.model.Jenkins;
 import net.sf.json.util.JSONUtils;
 
@@ -242,7 +243,7 @@ public final class Permission {
      * @deprecated since 2009-01-23.
      *      Access {@link jenkins.model.Jenkins#PERMISSIONS} instead.
      */
-    public static final PermissionGroup HUDSON_PERMISSIONS = new PermissionGroup(Jenkins.class, hudson.model.Messages._Hudson_Permissions_Title());
+    public static final PermissionGroup HUDSON_PERMISSIONS = new PermissionGroup(Hudson.class, hudson.model.Messages._Hudson_Permissions_Title());
     /**
      * {@link Permission} that represents the God-like access. Equivalent of Unix root.
      *

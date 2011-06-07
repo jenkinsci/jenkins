@@ -24,7 +24,7 @@
 package hudson.security;
 
 import hudson.CopyOnWrite;
-import jenkins.model.Jenkins;
+import hudson.model.Hudson;
 
 import java.util.List;
 import java.util.Collections;
@@ -104,7 +104,7 @@ public final class PermissionGroup implements Iterable<Permission>, Comparable<P
     }
 
     private int compareOrder() {
-        if(owner== Jenkins.class)    return 0;
+        if(owner==Hudson.class)    return 0;
         return 1;
     }
 
