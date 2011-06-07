@@ -36,6 +36,7 @@ import static hudson.util.Iterators.reverse;
 
 import hudson.cli.declarative.CLIMethod;
 import hudson.cli.declarative.CLIResolver;
+import hudson.model.labels.LabelAssignmentAction;
 import hudson.model.queue.AbstractQueueTask;
 import hudson.model.queue.Executables;
 import hudson.model.queue.SubTask;
@@ -678,10 +679,10 @@ public class Queue extends ResourceController implements Saveable {
     public synchronized int countBuildableItemsFor(Label l) {
         int r = 0;
         for (BuildableItem bi : buildables.values())
-            if(bi.task.getAssignedLabel()==l)
+            if(bi.getAssignedLabel()==l)
                 r++;
         for (BuildableItem bi : pendings.values())
-            if(bi.task.getAssignedLabel()==l)
+            if(bi.getAssignedLabel()==l)
                 r++;
         return r;
     }
@@ -960,7 +961,7 @@ public class Queue extends ResourceController implements Saveable {
             for (Node n : h.getNodes())
                 hash.add(n,n.getNumExecutors()*100);
 
-            Label lbl = p.task.getAssignedLabel();
+            Label lbl = p.getAssignedLabel();
             for (Node n : hash.list(p.task.getFullDisplayName())) {
                 Computer c = n.toComputer();
                 if (c==null || c.isOffline())    continue;
@@ -1215,6 +1216,14 @@ public class Queue extends ResourceController implements Saveable {
          */
         public Future<Executable> getFuture() { return future; }
 
+        public Label getAssignedLabel() {
+            for (LabelAssignmentAction laa : getActions(LabelAssignmentAction.class)) {
+                Label l = laa.getAssignedLabel(task);
+                if (l!=null)    return l;
+            }
+            return task.getAssignedLabel();
+        }
+
         /**
          * Convenience method that returns a read only view of the {@link Cause}s associated with this item in the queue.
          *
@@ -1448,7 +1457,7 @@ public class Queue extends ResourceController implements Saveable {
             if(ifBlockedByHudsonShutdown(task))
                 return CauseOfBlockage.fromMessage(Messages._Queue_HudsonIsAboutToShutDown());
 
-            Label label = task.getAssignedLabel();
+            Label label = getAssignedLabel();
             if (hudson.getNodes().isEmpty())
                 label = null;    // no master/slave. pointless to talk about nodes
 
@@ -1470,7 +1479,7 @@ public class Queue extends ResourceController implements Saveable {
 
         @Override
         public boolean isStuck() {
-            Label label = task.getAssignedLabel();
+            Label label = getAssignedLabel();
             if(label!=null && label.isOffline())
                 // no executor online to process this job. definitely stuck.
                 return true;

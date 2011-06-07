@@ -305,7 +305,7 @@ public abstract class Node extends AbstractModelObject implements Reconfigurable
      * @since 1.413
      */
     public CauseOfBlockage canTake(Queue.BuildableItem item) {
-        Label l = item.task.getAssignedLabel();
+        Label l = item.getAssignedLabel();
         if(l!=null && !l.contains(this))
             return CauseOfBlockage.fromMessage(Messages._Node_LabelMissing(getNodeName(),l));   // the task needs to be executed on label that this node doesn't have.
 
