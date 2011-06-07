@@ -222,20 +222,20 @@ public final class WebAppMain implements ServletContextListener {
                             }
                         }, 1000*10);
                     } catch (Error e) {
-                        LOGGER.log(Level.SEVERE, "Failed to initialize Hudson",e);
+                        LOGGER.log(Level.SEVERE, "Failed to initialize Jenkins",e);
                         context.setAttribute(APP,new HudsonFailedToLoad(e));
                         throw e;
                     } catch (Exception e) {
-                        LOGGER.log(Level.SEVERE, "Failed to initialize Hudson",e);
+                        LOGGER.log(Level.SEVERE, "Failed to initialize Jenkins",e);
                         context.setAttribute(APP,new HudsonFailedToLoad(e));
                     }
                 }
             }.start();
         } catch (Error e) {
-            LOGGER.log(Level.SEVERE, "Failed to initialize Hudson",e);
+            LOGGER.log(Level.SEVERE, "Failed to initialize Jenkins",e);
             throw e;
         } catch (RuntimeException e) {
-            LOGGER.log(Level.SEVERE, "Failed to initialize Hudson",e);
+            LOGGER.log(Level.SEVERE, "Failed to initialize Jenkins",e);
             throw e;
         }
     }

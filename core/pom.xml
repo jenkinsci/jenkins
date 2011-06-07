@@ -46,6 +46,17 @@ THE SOFTWARE.
   <build>
     <plugins>
       <plugin>
+        <groupId>org.jenkins-ci.tools</groupId>
+        <artifactId>maven-hpi-plugin</artifactId>
+        <executions>
+          <execution>
+            <goals>
+              <goal>generate-taglib-interface</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
         <groupId>org.jvnet.hudson.tools</groupId>
         <artifactId>maven-encoding-plugin</artifactId>
         <!-- version specified in grandparent pom -->
@@ -387,8 +398,8 @@ THE SOFTWARE.
     </dependency>
     <dependency>
       <groupId>org.kohsuke.stapler</groupId>
-      <artifactId>stapler-jelly</artifactId>
-      <version>1.164</version>
+      <artifactId>stapler-groovy</artifactId>
+      <version>1.167</version>
       <exclusions>
         <exclusion>
           <groupId>commons-jelly</groupId>
@@ -397,6 +408,11 @@ THE SOFTWARE.
         <exclusion>
           <groupId>commons-jexl</groupId>
           <artifactId>commons-jexl</artifactId>
+        </exclusion>
+        <exclusion>
+          <!-- we bundle groovy-all -->
+          <groupId>org.codehaus.groovy</groupId>
+          <artifactId>groovy</artifactId>
         </exclusion>
       </exclusions>
     </dependency>

@@ -138,6 +138,11 @@ public class Items {
      */
     public static final XStream XSTREAM = new XStream2();
 
+    /**
+     * Alias to {@link #XSTREAM} so that one can access additional methods on {@link XStream2} more easily.
+     */
+    public static final XStream2 XSTREAM2 = (XStream2)XSTREAM;
+
     static {
         XSTREAM.alias("project",FreeStyleProject.class);
         XSTREAM.alias("matrix-project",MatrixProject.class);

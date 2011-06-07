@@ -110,7 +110,7 @@ THE SOFTWARE.
       <j:forEach var="descriptor" items="${attrs.descriptors}" varStatus="loop">
         <div name="${attrs.name}" title="${descriptor.displayName}" tooltip="${descriptor.tooltip}" descriptorId="${descriptor.id}">
           <local:body deleteCaption="${attrs.deleteCaption}">
-            <l:renderOnDemand tag="tr" clazz="config-page" capture="descriptor,it">
+            <l:renderOnDemand tag="tr" clazz="config-page" capture="descriptor,it,instance">
               <l:ajax>
                 <st:include from="${descriptor}" page="${descriptor.configPage}" optional="true" />
               </l:ajax>

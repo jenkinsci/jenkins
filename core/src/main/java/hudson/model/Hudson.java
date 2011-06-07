@@ -63,9 +63,9 @@ public class Hudson extends Jenkins {
 
     /**
     * List of registered {@link hudson.slaves.ComputerListener}s.
-    * @deprecated as of 1.286
-    */
-   private transient final CopyOnWriteList<ComputerListener> computerListeners = ExtensionListView.createCopyOnWriteList(ComputerListener.class);
+     * @deprecated as of 1.286
+     */
+    private transient final CopyOnWriteList<ComputerListener> computerListeners = ExtensionListView.createCopyOnWriteList(ComputerListener.class);
 
 
     @CLIResolver
@@ -79,7 +79,7 @@ public class Hudson extends Jenkins {
 
     public Hudson(File root, ServletContext context, PluginManager pluginManager) throws IOException, InterruptedException, ReactorException {
         super(root, context, pluginManager);
-    }
+                }
 
     /**
      * Gets all the installed {@link ItemListener}s.
@@ -127,7 +127,7 @@ public class Hudson extends Jenkins {
      *      Use {@link #getNodes()}. Since 1.252.
      */
     public List<Slave> getSlaves() {
-        return (List) Collections.unmodifiableList(slaves);
+        return (List)Collections.unmodifiableList(slaves);
     }
 
     /**
@@ -140,7 +140,7 @@ public class Hudson extends Jenkins {
         setNodes(slaves);
     }
 
-     /**
+    /**
      * @deprecated
      *      Left only for the compatibility of URLs.
      *      Should not be invoked for any other purpose.
@@ -157,9 +157,9 @@ public class Hudson extends Jenkins {
         String match = Functions.toEmailSafeString(name);
         for(TopLevelItem item : getItems()) {
             if(Functions.toEmailSafeString(item.getName()).equalsIgnoreCase(match)) {
-                return item;
-            }
-        }
+        return item;
+    }
+                }
         return null;
     }
 

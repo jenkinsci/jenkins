@@ -142,6 +142,11 @@ THE SOFTWARE.
           <version>2.5</version>
         </plugin>
         <plugin>
+          <groupId>org.jenkins-ci.tools</groupId>
+          <artifactId>maven-hpi-plugin</artifactId>
+          <version>1.70</version>
+        </plugin>
+        <plugin>
           <!--
             Both test harness and core uses stapler as an extension,
             and apparently without having extension preloaded at the parent, the main artifact of the 'test' module
@@ -265,6 +270,8 @@ THE SOFTWARE.
         <configuration>
           <!-- enable release profile during the release, create IPS package, and sign bits. -->
           <prepareVerifyArgs>-P release,sign</prepareVerifyArgs>
+          <!-- work around for a bug in javadoc plugin that causes the release to fail. see MRELEASE-271 -->
+          <preparationGoals>clean install</preparationGoals>
           <goals>-DskipTests javadoc:javadoc animal-sniffer:check deploy javadoc:aggregate</goals>
           <pushChanges>false</pushChanges>
           <localCheckout>true</localCheckout>
