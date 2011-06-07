@@ -915,6 +915,14 @@ public class Jenkins extends AbstractCIBase implements ItemGroup<TopLevelItem>, 
     }
 
     /**
+     * @deprecated
+     *      UI method. Not meant to be used programatically.
+     */
+    public ComputerSet getComputer() {
+        return new ComputerSet();
+    }
+
+    /**
      * Exposes {@link Descriptor} by its name to URL.
      *
      * After doing all the {@code getXXX(shortClassName)} methods, I finally realized that

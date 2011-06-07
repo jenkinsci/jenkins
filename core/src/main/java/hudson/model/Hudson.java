@@ -102,14 +102,6 @@ public class Hudson extends Jenkins {
     }
 
     /**
-     * @deprecated
-     *      UI method. Not meant to be used programatically.
-     */
-    public ComputerSet getComputer() {
-        return new ComputerSet();
-    }
-
-    /**
      * Gets the slave node of the give name, hooked under this Hudson.
      *
      * @deprecated
