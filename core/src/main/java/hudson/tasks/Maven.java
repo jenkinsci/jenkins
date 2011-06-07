@@ -381,7 +381,7 @@ public class Maven extends Builder {
 
         @DataBoundConstructor
         public MavenInstallation(String name, String home, List<? extends ToolProperty<?>> properties) {
-            super(name, home, properties);
+            super(Util.fixEmptyAndTrim(name), Util.fixEmptyAndTrim(home), properties);
         }
 
         /**

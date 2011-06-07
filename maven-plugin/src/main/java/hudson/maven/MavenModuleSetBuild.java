@@ -374,7 +374,7 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
      * Gets the version of Maven used for build.
      *
      * @return
-     *      null if this build is done by earlier version of Hudson that didn't record this information
+     *      null if this build is done by earlier version of Jenkins that didn't record this information
      *      (this means the build was done by Maven2.x)
      */
     public String getMavenVersionUsed() {
@@ -407,7 +407,7 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
 
     /**
      * Computes the latest module builds that correspond to this build.
-     * (when indivudual modules are built, a new ModuleSetBuild is not created,
+     * (when individual modules are built, a new ModuleSetBuild is not created,
      *  but rather the new module build falls under the previous ModuleSetBuild)
      */
     public Map<MavenModule,MavenBuild> getModuleLastBuilds() {
@@ -672,6 +672,7 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
                         }
                         else
                         {
+                            LOGGER.info( "using maven 2 " + mavenVersion );
                             process =
                                 MavenBuild.mavenProcessCache.get( launcher.getChannel(), slistener,
                                                                   new MavenProcessFactory( project, launcher, envVars,getMavenOpts(listener),
@@ -680,11 +681,17 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
                         ArgumentListBuilder margs = new ArgumentListBuilder().add("-B").add("-f", pom.getRemote());
                         if(project.usesPrivateRepository())
                             margs.add("-Dmaven.repo.local="+getWorkspace().child(".repository"));
-                        // If incrementalBuild is set, and we're on Maven 2.1 or later, *and* there's at least one module
-                        // listed in changedModules, do the Maven incremental build commands - if there are no changed modules,
-                        // We're building everything anyway.
+                        
+                        // If incrementalBuild is set
+                        // and the previous build didn't specify that we need a full build
+                        // and we're on Maven 2.1 or later
+                        // and there's at least one module listed in changedModules,
+                        // then do the Maven incremental build commands.
+                        // If there are no changed modules, we're building everything anyway.
                         boolean maven2_1orLater = new ComparableVersion (mavenVersion).compareTo( new ComparableVersion ("2.1") ) >= 0;
-                        if (project.isIncrementalBuild() && maven2_1orLater && !changedModules.isEmpty()) {
+                        boolean needsFullBuild = getPreviousCompletedBuild() != null &&
+                            getPreviousCompletedBuild().getAction(NeedsFullBuildAction.class) != null;
+                        if (project.isIncrementalBuild() && !needsFullBuild && maven2_1orLater && !changedModules.isEmpty()) {
                             margs.add("-amd");
                             margs.add("-pl", Util.join(changedModules, ","));
                         }
@@ -816,12 +823,22 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
             try {
                 poms = getModuleRoot().act(new PomParser(listener, mvn, project, mavenVersion, envVars));
             } catch (IOException e) {
+                if (project.isIncrementalBuild()) {
+                    // If POM parsing failed we should do a full build next time.
+                    // Otherwise only the modules which have a SCM change for the next build might
+                    // be build next time.
+                    getActions().add(new NeedsFullBuildAction());
+                }
+                
                 if (e.getCause() instanceof AbortException)
                     throw (AbortException) e.getCause();
                 throw e;
             } catch (MavenExecutionException e) {
                 // Maven failed to parse POM
                 e.getCause().printStackTrace(listener.error(Messages.MavenModuleSetBuild_FailedToParsePom()));
+                if (project.isIncrementalBuild()) {
+                    getActions().add(new NeedsFullBuildAction());
+                }
                 throw new AbortException();
             }
 

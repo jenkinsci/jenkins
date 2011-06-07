@@ -23,12 +23,9 @@
  */
 package hudson.slaves;
 
-import hudson.model.LoadStatistics;
-import hudson.model.Node;
+import hudson.model.*;
 import jenkins.model.Jenkins;
-import hudson.model.MultiStageTimeSeries;
-import hudson.model.Label;
-import hudson.model.PeriodicWork;
+
 import static hudson.model.LoadStatistics.DECAY;
 import hudson.model.MultiStageTimeSeries.TimeScale;
 import hudson.Extension;
@@ -40,6 +37,7 @@ import java.util.List;
 import java.util.Collection;
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
 import java.util.logging.Level;
 import java.io.IOException;
@@ -86,6 +84,8 @@ public class NodeProvisioner {
 
     private List<PlannedNode> pendingLaunches = new ArrayList<PlannedNode>();
 
+    private transient volatile long lastSuggestedReview;
+
     /**
      * Exponential moving average of the "planned capacity" over time, which is the number of
      * additional executors being brought up.
@@ -113,14 +113,32 @@ public class NodeProvisioner {
     }
 
     /**
+     * Give the {@link NodeProvisioner} a hint that now would be a good time to think about provisioning some nodes.
+     * The hint will be ignored if subjected to excessive pestering by callers.
+     *
+     * @since 1.415
+     */
+    public void suggestReviewNow() {
+        if (System.currentTimeMillis() > lastSuggestedReview + TimeUnit.SECONDS.toMillis(1)) {
+            lastSuggestedReview = System.currentTimeMillis();
+            Computer.threadPoolForRemoting.submit(new Runnable() {
+                public void run() {
+                    update();
+                }
+            });
+        }
+    }
+
+    /**
      * Periodically invoked to keep track of the load.
      * Launches additional nodes if necessary.
      */
     private synchronized void update() {
         Jenkins hudson = Jenkins.getInstance();
+        lastSuggestedReview = System.currentTimeMillis();
 
         // clean up the cancelled launch activity, then count the # of executors that we are about to bring up.
-        float plannedCapacity = 0;
+        int plannedCapacitySnapshot = 0;
         for (Iterator<PlannedNode> itr = pendingLaunches.iterator(); itr.hasNext();) {
             PlannedNode f = itr.next();
             if(f.future.isDone()) {
@@ -136,8 +154,9 @@ public class NodeProvisioner {
                 }
                 itr.remove();
             } else
-                plannedCapacity += f.numExecutors;
+                plannedCapacitySnapshot += f.numExecutors;
         }
+        float plannedCapacity = plannedCapacitySnapshot;
         plannedCapacitiesEMA.update(plannedCapacity);
 
         /*
@@ -174,8 +193,9 @@ public class NodeProvisioner {
 
         int idleSnapshot = stat.computeIdleExecutors();
         int totalSnapshot = stat.computeTotalExecutors();
+        boolean needSomeWhenNoneAtAll = ((totalSnapshot + plannedCapacity) == 0) && (stat.computeQueueLength() > 0);
         float idle = Math.max(stat.getLatestIdleExecutors(TIME_SCALE), idleSnapshot);
-        if(idle<MARGIN) {
+        if(idle<MARGIN || needSomeWhenNoneAtAll) {
             // make sure the system is fully utilized before attempting any new launch.
 
             // this is the amount of work left to be done
@@ -185,6 +205,11 @@ public class NodeProvisioner {
             plannedCapacity = Math.max(plannedCapacitiesEMA.getLatest(TIME_SCALE),plannedCapacity);
 
             float excessWorkload = qlen - plannedCapacity;
+            if (needSomeWhenNoneAtAll && excessWorkload < 1) {
+                // in this specific exceptional case we should just provision right now
+                // the exponential smoothing will delay the build unnecessarily
+                excessWorkload = 1;
+            }
             float m = calcThresholdMargin(totalSnapshot);
             if(excessWorkload>1-m) {// and there's more work to do...
                 LOGGER.fine("Excess workload "+excessWorkload+" detected. (planned capacity="+plannedCapacity+",Qlen="+qlen+",idle="+idle+"&"+idleSnapshot+",total="+totalSnapshot+"m,="+m+")");

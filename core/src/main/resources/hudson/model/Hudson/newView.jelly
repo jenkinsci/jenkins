@@ -33,7 +33,7 @@ THE SOFTWARE.
     <l:main-panel>
       <f:form method="post" action="createView" name="createView">
         <f:entry title="${%View name}">
-          <f:textbox id="name" name="name" checkUrl="'${rootURL}/viewExistsCheck?value='+encodeURIComponent(this.value)"
+          <f:textbox id="name" name="name" checkUrl="'viewExistsCheck?value='+encodeURIComponent(this.value)"
                      onchange="updateOk(this.form)" onkeyup="updateOk(this.form)" />
           <script>
             $('name').focus();
