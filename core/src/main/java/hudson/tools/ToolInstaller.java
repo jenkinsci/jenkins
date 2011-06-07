@@ -28,11 +28,12 @@ import hudson.ExtensionPoint;
 import hudson.FilePath;
 import hudson.Util;
 import hudson.model.Describable;
-import hudson.model.Hudson;
+import jenkins.model.Jenkins;
 import hudson.model.Label;
 import hudson.model.Node;
 import hudson.model.TaskListener;
 import java.io.IOException;
+
 import org.kohsuke.stapler.DataBoundConstructor;
 
 /**
@@ -78,7 +79,7 @@ public abstract class ToolInstaller implements Describable<ToolInstaller>, Exten
      * (By default, just checks the label.)
      */
     public boolean appliesTo(Node node) {
-        Label l = Hudson.getInstance().getLabel(label);
+        Label l = Jenkins.getInstance().getLabel(label);
         return l == null || l.contains(node);
     }
 
@@ -121,6 +122,6 @@ public abstract class ToolInstaller implements Describable<ToolInstaller>, Exten
     }
 
     public ToolInstallerDescriptor<?> getDescriptor() {
-        return (ToolInstallerDescriptor) Hudson.getInstance().getDescriptorOrDie(getClass());
+        return (ToolInstallerDescriptor) Jenkins.getInstance().getDescriptorOrDie(getClass());
     }
 }

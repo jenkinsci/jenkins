@@ -57,6 +57,7 @@ import hudson.util.AdaptedIterator;
 import hudson.util.Iterators;
 import hudson.util.LogTaskListener;
 import hudson.util.VariableResolver;
+import jenkins.model.Jenkins;
 import org.kohsuke.stapler.Stapler;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
@@ -170,9 +171,9 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
      */
     public Node getBuiltOn() {
         if (builtOn==null || builtOn.equals(""))
-            return Hudson.getInstance();
+            return Jenkins.getInstance();
         else
-            return Hudson.getInstance().getNode(builtOn);
+            return Jenkins.getInstance().getNode(builtOn);
     }
 
     /**
@@ -407,12 +408,12 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
             Node node = getCurrentNode();
             assert builtOn==null;
             builtOn = node.getNodeName();
-            hudsonVersion = Hudson.VERSION;
+            hudsonVersion = Jenkins.VERSION;
             this.listener = listener;
 
             launcher = createLauncher(listener);
-            if (!Hudson.getInstance().getNodes().isEmpty())
-                listener.getLogger().println(node instanceof Hudson ? Messages.AbstractBuild_BuildingOnMaster() : Messages.AbstractBuild_BuildingRemotely(builtOn));
+            if (!Jenkins.getInstance().getNodes().isEmpty())
+                listener.getLogger().println(node instanceof Jenkins ? Messages.AbstractBuild_BuildingOnMaster() : Messages.AbstractBuild_BuildingRemotely(builtOn));
 
             final Lease lease = decideWorkspace(node,Computer.currentComputer().getWorkspaceList());
 
@@ -488,7 +489,7 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
                 }
             }
 
-            for (NodeProperty nodeProperty: Hudson.getInstance().getGlobalNodeProperties()) {
+            for (NodeProperty nodeProperty: Jenkins.getInstance().getGlobalNodeProperties()) {
                 Environment environment = nodeProperty.setUp(AbstractBuild.this, l, listener);
                 if (environment != null) {
                     buildEnvironments.add(environment);
@@ -540,7 +541,7 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
                             AbstractBuild.this.scm = scm.createChangeLogParser();
                             AbstractBuild.this.changeSet = AbstractBuild.this.calcChangeSet();
 
-                            for (SCMListener l : Hudson.getInstance().getSCMListeners())
+                            for (SCMListener l : Jenkins.getInstance().getSCMListeners())
                                 l.onChangeLogParsed(AbstractBuild.this,listener,changeSet);
                             return;
                         }
@@ -709,7 +710,7 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
         if (scm==null) {
             // for historical reason, null means CVS.
             try {
-                Class<?> c = Hudson.getInstance().getPluginManager().uberClassLoader.loadClass("hudson.scm.CVSChangeLogParser");
+                Class<?> c = Jenkins.getInstance().getPluginManager().uberClassLoader.loadClass("hudson.scm.CVSChangeLogParser");
                 scm = (ChangeLogParser)c.newInstance();
             } catch (ClassNotFoundException e) {
                 // if CVS isn't available, fall back to something non-null.

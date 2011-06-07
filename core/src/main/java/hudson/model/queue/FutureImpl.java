@@ -24,7 +24,7 @@
 package hudson.model.queue;
 
 import hudson.model.Executor;
-import hudson.model.Hudson;
+import jenkins.model.Jenkins;
 import hudson.model.Queue;
 import hudson.model.Queue.Executable;
 import hudson.model.Queue.Task;
@@ -52,7 +52,7 @@ public final class FutureImpl extends AsyncFutureImpl<Executable> {
 
     @Override
     public boolean cancel(boolean mayInterruptIfRunning) {
-        Queue q = Hudson.getInstance().getQueue();
+        Queue q = Jenkins.getInstance().getQueue();
         synchronized (q) {
             synchronized (this) {
                 if(!executors.isEmpty()) {

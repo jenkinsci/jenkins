@@ -28,7 +28,7 @@ import hudson.Util;
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
 import hudson.model.BuildListener;
-import hudson.model.Hudson;
+import jenkins.model.Jenkins;
 import hudson.model.TaskListener;
 import hudson.tasks.Maven.MavenInstallation;
 import hudson.tasks.Maven.ProjectWithMaven;
@@ -44,7 +44,6 @@ import java.util.Enumeration;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.apache.commons.io.IOUtils;
@@ -52,8 +51,6 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.maven.artifact.versioning.ComparableVersion;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.project.ProjectBuildingException;
-
-import static java.util.logging.Level.FINE;
 
 /**
  * @author Kohsuke Kawaguchi
@@ -76,7 +73,7 @@ public class MavenUtil {
     public static MavenEmbedder createEmbedder(TaskListener listener, AbstractProject<?,?> project, String profiles) throws MavenEmbedderException, IOException, InterruptedException {
         MavenInstallation m=null;
         if (project instanceof ProjectWithMaven)
-            m = ((ProjectWithMaven) project).inferMavenInstallation().forNode(Hudson.getInstance(),listener);
+            m = ((ProjectWithMaven) project).inferMavenInstallation().forNode(Jenkins.getInstance(),listener);
 
         return createEmbedder(listener,m!=null?m.getHomeDir():null,profiles);
     }
@@ -96,7 +93,7 @@ public class MavenUtil {
         AbstractProject project = build.getProject();
         
         if (project instanceof ProjectWithMaven) {
-            m = ((ProjectWithMaven) project).inferMavenInstallation().forNode(Hudson.getInstance(),listener);
+            m = ((ProjectWithMaven) project).inferMavenInstallation().forNode(Jenkins.getInstance(),listener);
         }
         if (project instanceof MavenModuleSet) {
             String altSet = ((MavenModuleSet) project).getAlternateSettings();

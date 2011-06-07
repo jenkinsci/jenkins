@@ -28,7 +28,7 @@ import hudson.Functions;
 import hudson.init.Initializer;
 import static hudson.init.InitMilestone.PLUGINS_PREPARED;
 import hudson.model.AbstractModelObject;
-import hudson.model.Hudson;
+import jenkins.model.Jenkins;
 import hudson.model.RSS;
 import hudson.tasks.Mailer;
 import hudson.util.CopyOnWriteMap;
@@ -85,7 +85,7 @@ public class LogRecorderManager extends AbstractModelObject {
      */
     public void load() throws IOException {
         logRecorders.clear();
-        File dir = new File(Hudson.getInstance().getRootDir(), "log");
+        File dir = new File(Jenkins.getInstance().getRootDir(), "log");
         File[] files = dir.listFiles((FileFilter)new WildcardFileFilter("*.xml"));
         if(files==null)     return;
         for (File child : files) {
@@ -101,7 +101,7 @@ public class LogRecorderManager extends AbstractModelObject {
      * Creates a new log recorder.
      */
     public HttpResponse doNewLogRecorder(@QueryParameter String name) {
-        Hudson.checkGoodName(name);
+        Jenkins.checkGoodName(name);
         
         logRecorders.put(name,new LogRecorder(name));
 
@@ -113,7 +113,7 @@ public class LogRecorderManager extends AbstractModelObject {
      * Configure the logging level.
      */
     public HttpResponse doConfigLogger(@QueryParameter String name, @QueryParameter String level) {
-        Hudson.getInstance().checkPermission(Hudson.ADMINISTER);
+        Jenkins.getInstance().checkPermission(Jenkins.ADMINISTER);
         Level lv;
         if(level.equals("inherit"))
             lv = null;
@@ -127,7 +127,7 @@ public class LogRecorderManager extends AbstractModelObject {
      * RSS feed for log entries.
      */
     public void doRss( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
-        doRss(req, rsp, Hudson.logRecords);
+        doRss(req, rsp, Jenkins.logRecords);
     }
 
     /**
@@ -176,7 +176,7 @@ public class LogRecorderManager extends AbstractModelObject {
     }
 
     @Initializer(before=PLUGINS_PREPARED)
-    public static void init(Hudson h) throws IOException {
+    public static void init(Jenkins h) throws IOException {
         h.getLog().load();
     }
 }

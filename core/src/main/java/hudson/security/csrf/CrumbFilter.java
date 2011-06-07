@@ -5,7 +5,7 @@
  */
 package hudson.security.csrf;
 
-import hudson.model.Hudson;
+import jenkins.model.Jenkins;
 
 import java.io.IOException;
 import java.util.Enumeration;
@@ -33,7 +33,7 @@ public class CrumbFilter implements Filter {
      * we cannot use Hudson to the CrumbIssuer into CrumbFilter eagerly.
      */
     public CrumbIssuer getCrumbIssuer() {
-        Hudson h = Hudson.getInstance();
+        Jenkins h = Jenkins.getInstance();
         if(h==null)     return null;    // before Hudson is initialized?
         return h.getCrumbIssuer();
     }

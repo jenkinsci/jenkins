@@ -25,7 +25,7 @@ package hudson;
 
 import hudson.Proc.LocalProc;
 import hudson.model.Computer;
-import hudson.model.Hudson;
+import jenkins.model.Jenkins;
 import hudson.model.TaskListener;
 import hudson.model.Node;
 import hudson.remoting.Callable;
@@ -130,7 +130,7 @@ public abstract class Launcher {
      *      {@link Computer#currentComputer()}  
      */
     public Computer getComputer() {
-        for( Computer c : Hudson.getInstance().getComputers() )
+        for( Computer c : Jenkins.getInstance().getComputers() )
             if(c.getChannel()==channel)
                 return c;
         return null;
@@ -677,7 +677,7 @@ public abstract class Launcher {
      */
     public static class LocalLauncher extends Launcher {
         public LocalLauncher(TaskListener listener) {
-            this(listener,Hudson.MasterComputer.localChannel);
+            this(listener, Jenkins.MasterComputer.localChannel);
         }
 
         public LocalLauncher(TaskListener listener, VirtualChannel channel) {

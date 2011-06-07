@@ -27,7 +27,7 @@ import hudson.Extension;
 import hudson.ExtensionList;
 import hudson.ExtensionPoint;
 import hudson.model.AbstractProject;
-import hudson.model.Hudson;
+import jenkins.model.Jenkins;
 
 /**
  * Provides the alternative text to be rendered in the UI.
@@ -70,7 +70,7 @@ public abstract class AlternativeUiTextProvider implements ExtensionPoint {
      * All the registered extension point instances.
      */
     public static ExtensionList<AlternativeUiTextProvider> all() {
-        return Hudson.getInstance().getExtensionList(AlternativeUiTextProvider.class);
+        return Jenkins.getInstance().getExtensionList(AlternativeUiTextProvider.class);
     }
 
     public static <T> String get(Message<T> text, T context, String defaultValue) {

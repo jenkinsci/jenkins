@@ -36,7 +36,7 @@ import hudson.model.AbstractProject;
 import hudson.model.BuildListener;
 import hudson.model.User;
 import hudson.model.UserPropertyDescriptor;
-import hudson.model.Hudson;
+import jenkins.model.Jenkins;
 import hudson.util.FormValidation;
 import hudson.util.Secret;
 import org.apache.tools.ant.types.selectors.SelectorUtils;
@@ -140,7 +140,7 @@ public class Mailer extends Notifier {
     public static DescriptorImpl DESCRIPTOR;
 
     public static DescriptorImpl descriptor() {
-        return Hudson.getInstance().getDescriptorByType(Mailer.DescriptorImpl.class);
+        return Jenkins.getInstance().getDescriptorByType(Mailer.DescriptorImpl.class);
     }
 
     @Extension
@@ -445,7 +445,7 @@ public class Mailer extends Notifier {
                 
                 MimeMessage msg = new MimeMessage(createSession(smtpServer,smtpPort,useSsl,smtpAuthUserName,Secret.fromString(smtpAuthPassword)));
                 msg.setSubject("Test email #" + ++testEmailCount);
-                msg.setContent("This is test email #" + testEmailCount + " sent from " + Hudson.getInstance().getDisplayName(), "text/plain");
+                msg.setContent("This is test email #" + testEmailCount + " sent from " + Jenkins.getInstance().getDisplayName(), "text/plain");
                 msg.setFrom(new InternetAddress(adminAddress));
                 msg.setSentDate(new Date());
                 msg.setRecipient(Message.RecipientType.TO, new InternetAddress(adminAddress));

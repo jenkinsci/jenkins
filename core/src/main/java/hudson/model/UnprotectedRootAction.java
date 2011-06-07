@@ -26,7 +26,7 @@ package hudson.model;
 import hudson.ExtensionPoint;
 
 /**
- * {@link RootAction}s that are accessible to requests that do not have the READ permission on {@link Hudson}.
+ * {@link RootAction}s that are accessible to requests that do not have the READ permission on {@link jenkins.model.Jenkins}.
  *
  * @author Kohsuke Kawaguchi
  * @since 1.398

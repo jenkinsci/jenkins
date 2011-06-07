@@ -25,7 +25,7 @@ package hudson.node_monitors;
 
 import hudson.model.Computer;
 import hudson.model.Descriptor;
-import hudson.model.Hudson;
+import jenkins.model.Jenkins;
 import hudson.model.ComputerSet;
 import hudson.model.AdministrativeMonitor;
 import hudson.triggers.Trigger;
@@ -192,7 +192,7 @@ public abstract class   AbstractNodeMonitorDescriptor<T> extends Descriptor<Node
             long startTime = System.currentTimeMillis();
             String oldName = getName();
 
-            for( Computer c : Hudson.getInstance().getComputers() ) {
+            for( Computer c : Jenkins.getInstance().getComputers() ) {
                 try {
                     setName("Monitoring "+c.getDisplayName()+" for "+getDisplayName());
 

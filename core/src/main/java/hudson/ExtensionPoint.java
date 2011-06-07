@@ -23,8 +23,6 @@
  */
 package hudson;
 
-import hudson.model.Hudson;
-
 import static java.lang.annotation.ElementType.TYPE;
 import java.lang.annotation.Retention;
 import static java.lang.annotation.RetentionPolicy.RUNTIME;
@@ -50,7 +48,7 @@ import java.lang.annotation.Target;
 public interface ExtensionPoint {
     /**
      * Used by designers of extension points (direct subtypes of {@link ExtensionPoint}) to indicate that
-     * the legacy instances are scoped to {@link Hudson} instance. By default, legacy instances are
+     * the legacy instances are scoped to {@link jenkins.model.Jenkins} instance. By default, legacy instances are
      * static scope.  
      */
     @Target(TYPE)

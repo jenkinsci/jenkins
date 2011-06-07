@@ -3,7 +3,7 @@ package hudson.model.queue;
 import hudson.ExtensionList;
 import hudson.ExtensionPoint;
 import hudson.init.Initializer;
-import hudson.model.Hudson;
+import jenkins.model.Jenkins;
 import hudson.model.LoadBalancer;
 import hudson.model.Queue;
 import hudson.model.Queue.BuildableItem;
@@ -33,7 +33,7 @@ public abstract class QueueSorter implements ExtensionPoint {
      * unless explicitly overridden by {@link Queue#setSorter(QueueSorter)}.
      */
     public static ExtensionList<QueueSorter> all() {
-        return Hudson.getInstance().getExtensionList(QueueSorter.class);
+        return Jenkins.getInstance().getExtensionList(QueueSorter.class);
     }
 
     /**
@@ -46,7 +46,7 @@ public abstract class QueueSorter implements ExtensionPoint {
         ExtensionList<QueueSorter> all = all();
         if (all.isEmpty())  return;
 
-        Queue q = Hudson.getInstance().getQueue();
+        Queue q = Jenkins.getInstance().getQueue();
         if (q.getSorter()!=null)        return; // someone has already installed something. leave that alone.
 
         q.setSorter(all.get(0));

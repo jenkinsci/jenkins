@@ -1,6 +1,6 @@
 package hudson;
 
-import hudson.model.Hudson;
+import jenkins.model.Jenkins;
 import hudson.model.Node;
 import hudson.model.Executor;
 import hudson.tasks.BuildWrapper;
@@ -45,6 +45,6 @@ public abstract class LauncherDecorator implements ExtensionPoint {
      * Returns all the registered {@link LauncherDecorator}s.
      */
     public static ExtensionList<LauncherDecorator> all() {
-        return Hudson.getInstance().getExtensionList(LauncherDecorator.class);
+        return Jenkins.getInstance().getExtensionList(LauncherDecorator.class);
     }
 }

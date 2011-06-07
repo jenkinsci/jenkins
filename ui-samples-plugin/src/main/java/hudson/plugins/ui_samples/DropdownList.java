@@ -5,11 +5,12 @@ import hudson.Extension;
 import hudson.ExtensionPoint;
 import hudson.model.Describable;
 import hudson.model.Descriptor;
-import hudson.model.Hudson;
+import jenkins.model.Jenkins;
 import hudson.util.XStream2;
 import java.io.IOException;
 import java.util.List;
 import javax.servlet.ServletException;
+
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
@@ -31,7 +32,7 @@ public class DropdownList extends UISample {
     }
 
     public DescriptorExtensionList<Fruit,Descriptor<Fruit>> getFruitDescriptors() {
-        return Hudson.getInstance().<Fruit,Descriptor<Fruit>>getDescriptorList(Fruit.class);
+        return Jenkins.getInstance().<Fruit,Descriptor<Fruit>>getDescriptorList(Fruit.class);
     }
 
     // Process form data and show it as serialized XML
@@ -59,7 +60,7 @@ public class DropdownList extends UISample {
         private Fruit(String name) { this.name = name; }
 
         public Descriptor<Fruit> getDescriptor() {
-            return Hudson.getInstance().getDescriptor(getClass());
+            return Jenkins.getInstance().getDescriptor(getClass());
         }
     }
 

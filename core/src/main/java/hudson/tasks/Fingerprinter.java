@@ -37,7 +37,7 @@ import hudson.model.BuildListener;
 import hudson.model.Fingerprint;
 import hudson.model.Fingerprint.BuildPtr;
 import hudson.model.FingerprintMap;
-import hudson.model.Hudson;
+import jenkins.model.Jenkins;
 import hudson.model.Result;
 import hudson.model.Run;
 import hudson.model.RunAction;
@@ -152,7 +152,7 @@ public class Fingerprinter extends Recorder implements Serializable {
             }
 
             Fingerprint addRecord(AbstractBuild build) throws IOException {
-                FingerprintMap map = Hudson.getInstance().getFingerprintMap();
+                FingerprintMap map = Jenkins.getInstance().getFingerprintMap();
                 return map.getOrCreate(produced?build:null, fileName, md5sum);
             }
 
@@ -334,7 +334,7 @@ public class Fingerprinter extends Recorder implements Serializable {
                     return m;
             }
 
-            Hudson h = Hudson.getInstance();
+            Jenkins h = Jenkins.getInstance();
 
             Map<String,Fingerprint> m = new TreeMap<String,Fingerprint>();
             for (Entry<String, String> r : record.entrySet()) {

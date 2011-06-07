@@ -27,9 +27,8 @@ import hudson.EnvVars;
 import hudson.FilePath;
 import hudson.Launcher;
 import hudson.model.BuildListener;
-import hudson.model.Hudson;
+import jenkins.model.Jenkins;
 import hudson.model.JDK;
-import hudson.model.Node;
 import hudson.model.Run.RunnerAbortedException;
 import hudson.model.TaskListener;
 import hudson.remoting.Callable;
@@ -72,7 +71,7 @@ public class Maven3ProcessFactory extends AbstractMavenProcessFactory implements
         // find classworlds.jar
         String classWorldsJar = getLauncher().getChannel().call(new GetClassWorldsJar(mvn.getHome(),listener));
 
-        boolean isMaster = getCurrentNode()== Hudson.getInstance();
+        boolean isMaster = getCurrentNode()== Jenkins.getInstance();
         FilePath slaveRoot=null;
         if(!isMaster)
             slaveRoot = getCurrentNode().getRootPath();

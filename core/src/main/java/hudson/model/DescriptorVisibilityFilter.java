@@ -3,6 +3,7 @@ package hudson.model;
 import hudson.ExtensionList;
 import hudson.ExtensionPoint;
 import hudson.scm.SCMDescriptor;
+import jenkins.model.Jenkins;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -34,7 +35,7 @@ public abstract class DescriptorVisibilityFilter implements ExtensionPoint {
     public abstract boolean filter(Object context, Descriptor descriptor);
 
     public static ExtensionList<DescriptorVisibilityFilter> all() {
-        return Hudson.getInstance().getExtensionList(DescriptorVisibilityFilter.class);
+        return Jenkins.getInstance().getExtensionList(DescriptorVisibilityFilter.class);
     }
 
     public static <T extends Descriptor> List<T> apply(Object context, Iterable<T> source) {

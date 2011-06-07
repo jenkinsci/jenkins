@@ -28,7 +28,7 @@ import hudson.ExtensionList;
 import hudson.ExtensionPoint;
 import hudson.model.Computer;
 import hudson.model.Executor;
-import hudson.model.Hudson;
+import jenkins.model.Jenkins;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -81,7 +81,7 @@ public abstract class LoadPredictor implements ExtensionPoint {
      * All the registered instances.
      */
     public static ExtensionList<LoadPredictor> all() {
-        return Hudson.getInstance().getExtensionList(LoadPredictor.class);
+        return Jenkins.getInstance().getExtensionList(LoadPredictor.class);
     }
 
     /**

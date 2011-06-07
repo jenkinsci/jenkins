@@ -25,7 +25,7 @@ package hudson.lifecycle;
 
 import hudson.Functions;
 import hudson.model.ManagementLink;
-import hudson.model.Hudson;
+import jenkins.model.Jenkins;
 import hudson.AbortException;
 import hudson.Extension;
 import hudson.util.StreamTaskListener;
@@ -106,7 +106,7 @@ public class WindowsInstallerLink extends ManagementLink {
             return;
         }
         
-        Hudson.getInstance().checkPermission(Hudson.ADMINISTER);
+        Jenkins.getInstance().checkPermission(Jenkins.ADMINISTER);
 
         File dir = new File(_dir).getAbsoluteFile();
         dir.mkdirs();
@@ -164,10 +164,10 @@ public class WindowsInstallerLink extends ManagementLink {
             rsp.sendRedirect(req.getContextPath()+"/");
             return;
         }
-        Hudson.getInstance().checkPermission(Hudson.ADMINISTER);
+        Jenkins.getInstance().checkPermission(Jenkins.ADMINISTER);
 
         rsp.forward(this,"_restart",req);
-        final File oldRoot = Hudson.getInstance().getRootDir();
+        final File oldRoot = Jenkins.getInstance().getRootDir();
 
         // initiate an orderly shutdown after we finished serving this request
         new Thread("terminator") {
@@ -231,7 +231,7 @@ public class WindowsInstallerLink extends ManagementLink {
     protected final void sendError(String message, StaplerRequest req, StaplerResponse rsp) throws ServletException, IOException {
         req.setAttribute("message",message);
         req.setAttribute("pre",true);
-        rsp.forward(Hudson.getInstance(),"error",req);
+        rsp.forward(Jenkins.getInstance(),"error",req);
     }
 
     /**
@@ -255,7 +255,7 @@ public class WindowsInstallerLink extends ManagementLink {
             // from JNLP from https://hudson.dev.java.net/), also put this link on the navigation bar to increase
             // visibility
             if(System.getProperty(WindowsInstallerLink.class.getName()+".prominent")!=null)
-                Hudson.getInstance().getActions().add(link);
+                Jenkins.getInstance().getActions().add(link);
 
             return link;
         }

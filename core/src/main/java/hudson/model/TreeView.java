@@ -28,6 +28,7 @@ import hudson.util.CaseInsensitiveComparator;
 import hudson.Indenter;
 import hudson.Extension;
 import hudson.views.ViewsTabBar;
+import jenkins.model.Jenkins;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
@@ -89,7 +90,7 @@ public class TreeView extends View implements ViewGroup {
      * concurrent modification issue.
      */
     public synchronized List<TopLevelItem> getItems() {
-        return Hudson.getInstance().getItems();
+        return Jenkins.getInstance().getItems();
 //        List<TopLevelItem> items = new ArrayList<TopLevelItem>(jobNames.size());
 //        for (String name : jobNames) {
 //            TopLevelItem item = Hudson.getInstance().getItem(name);
@@ -105,7 +106,7 @@ public class TreeView extends View implements ViewGroup {
     }
 
     public Item doCreateItem(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
-        Item item = Hudson.getInstance().doCreateItem(req, rsp);
+        Item item = Jenkins.getInstance().doCreateItem(req, rsp);
         if(item!=null) {
             jobNames.add(item.getName());
             owner.save();
@@ -170,6 +171,6 @@ public class TreeView extends View implements ViewGroup {
     }
 
     public ViewsTabBar getViewsTabBar() {
-        return Hudson.getInstance().getViewsTabBar();
+        return Jenkins.getInstance().getViewsTabBar();
     }
 }

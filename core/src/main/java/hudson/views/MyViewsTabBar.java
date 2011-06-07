@@ -27,7 +27,7 @@ import hudson.DescriptorExtensionList;
 import hudson.ExtensionPoint;
 import hudson.model.AbstractDescribableImpl;
 import hudson.model.Descriptor;
-import hudson.model.Hudson;
+import jenkins.model.Jenkins;
 import hudson.model.MyViewsProperty;
 
 /**
@@ -51,7 +51,7 @@ public abstract class MyViewsTabBar extends AbstractDescribableImpl<MyViewsTabBa
      * Returns all the registered {@link ListViewColumn} descriptors.
      */
     public static DescriptorExtensionList<MyViewsTabBar, Descriptor<MyViewsTabBar>> all() {
-        return Hudson.getInstance().<MyViewsTabBar, Descriptor<MyViewsTabBar>>getDescriptorList(MyViewsTabBar.class);
+        return Jenkins.getInstance().<MyViewsTabBar, Descriptor<MyViewsTabBar>>getDescriptorList(MyViewsTabBar.class);
     }
 
     public MyViewsTabBarDescriptor getDescriptor() {

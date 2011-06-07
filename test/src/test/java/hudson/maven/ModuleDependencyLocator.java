@@ -26,7 +26,7 @@ package hudson.maven;
 import hudson.ExtensionPoint;
 import hudson.ExtensionList;
 import hudson.Extension;
-import hudson.model.Hudson;
+import jenkins.model.Jenkins;
 import org.apache.maven.project.MavenProject;
 
 import java.util.Collection;
@@ -65,7 +65,7 @@ public abstract class ModuleDependencyLocator implements ExtensionPoint {
      * Returns all the registered {@link ModuleDependencyLocator} descriptors.
      */
     public static ExtensionList<ModuleDependencyLocator> all() {
-        return Hudson.getInstance().getExtensionList(ModuleDependencyLocator.class);
+        return Jenkins.getInstance().getExtensionList(ModuleDependencyLocator.class);
     }
 
     /**

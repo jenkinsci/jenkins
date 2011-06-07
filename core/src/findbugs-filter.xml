@@ -126,7 +126,7 @@ THE SOFTWARE.
 
   <Match>
     <!-- just a diagnostics method -->
-    <Class name="hudson.model.Hudson" />
+    <Class name="jenkins.model.Jenkins" />
     <Bug pattern="DM_GC" />
   </Match>
 

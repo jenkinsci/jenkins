@@ -23,7 +23,7 @@
  */
 package hudson;
 
-import hudson.model.Hudson;
+import jenkins.model.Jenkins;
 import hudson.tasks.UserNameResolver;
 import hudson.util.CopyOnWriteList;
 
@@ -37,7 +37,7 @@ import java.util.Collection;
  *
  * <p>
  * Instances of this class can be created statically as a singleton, but it provides the view
- * to {@link ExtensionList} of the current {@link Hudson}.
+ * to {@link ExtensionList} of the current {@link jenkins.model.Jenkins}.
  * Write operations to this list will update the legacy instances on {@link ExtensionList}.
  *
  * <p>
@@ -58,7 +58,7 @@ public class ExtensionListView {
     public static <T> List<T> createList(final Class<T> type) {
         return new AbstractList<T>() {
             private ExtensionList<T> storage() {
-                return Hudson.getInstance().getExtensionList(type);
+                return Jenkins.getInstance().getExtensionList(type);
             }
 
             @Override
@@ -103,7 +103,7 @@ public class ExtensionListView {
     public static <T> CopyOnWriteList<T> createCopyOnWriteList(final Class<T> type) {
         return new CopyOnWriteList<T>() {
             private ExtensionList<T> storage() {
-                return Hudson.getInstance().getExtensionList(type);
+                return Jenkins.getInstance().getExtensionList(type);
             }
 
             @Override

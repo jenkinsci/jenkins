@@ -24,7 +24,6 @@
 package org.jvnet.hudson.test;
 
 import hudson.model.Computer;
-import hudson.model.Hudson;
 
 import java.io.IOException;
 
@@ -61,7 +60,7 @@ public class TestEnvironment {
      * the wrong test environment depending on when it's created.
      *
      * <p>
-     * Since the rest of Hudson still relies on static {@link Hudson#theInstance}, changing this
+     * Since the rest of Hudson still relies on static {@link jenkins.model.Jenkins#theInstance}, changing this
      * to a static field for now shouldn't cause any problem. 
      */
     private static TestEnvironment CURRENT;

@@ -26,7 +26,7 @@ package hudson.node_monitors;
 import hudson.Util;
 import hudson.Extension;
 import hudson.model.Computer;
-import hudson.model.Hudson;
+import jenkins.model.Jenkins;
 import hudson.remoting.Callable;
 import net.sf.json.JSONObject;
 import org.jvnet.hudson.MemoryMonitor;
@@ -74,7 +74,7 @@ public class SwapSpaceMonitor extends NodeMonitor {
     @Override
     public String getColumnCaption() {
         // Hide this column from non-admins
-        return Hudson.getInstance().hasPermission(Hudson.ADMINISTER) ? super.getColumnCaption() : null;
+        return Jenkins.getInstance().hasPermission(Jenkins.ADMINISTER) ? super.getColumnCaption() : null;
     }
 
     @Extension

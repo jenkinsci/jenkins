@@ -24,7 +24,7 @@
 package hudson.slaves;
 
 import hudson.model.Descriptor.FormException;
-import hudson.model.Hudson;
+import jenkins.model.Jenkins;
 import hudson.model.Slave;
 import hudson.model.TaskListener;
 import hudson.util.StreamTaskListener;
@@ -62,7 +62,7 @@ public abstract class AbstractCloudSlave extends Slave {
             _terminate(new StreamTaskListener(System.out, Charset.defaultCharset()));
         } finally {
             try {
-                Hudson.getInstance().removeNode(this);
+                Jenkins.getInstance().removeNode(this);
             } catch (IOException e) {
                 LOGGER.log(Level.WARNING, "Failed to remove "+name,e);
             }

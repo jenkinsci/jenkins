@@ -28,6 +28,7 @@ import hudson.triggers.Trigger;
 import hudson.ExtensionPoint;
 import hudson.Extension;
 import hudson.ExtensionList;
+import jenkins.model.Jenkins;
 
 import java.util.logging.Logger;
 import java.util.Random;
@@ -81,7 +82,7 @@ public abstract class PeriodicWork extends SafeTimerTask implements ExtensionPoi
      * Returns all the registered {@link PeriodicWork}s.
      */
     public static ExtensionList<PeriodicWork> all() {
-        return Hudson.getInstance().getExtensionList(PeriodicWork.class);
+        return Jenkins.getInstance().getExtensionList(PeriodicWork.class);
     }
 
     // time constants

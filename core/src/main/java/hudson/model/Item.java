@@ -39,7 +39,7 @@ import hudson.security.AccessControlled;
  * <p>
  * Every {@link Item} is hosted in an {@link ItemGroup} called "parent",
  * and some {@link Item}s are {@link ItemGroup}s. This form a tree
- * structure, which is rooted at {@link Hudson}.
+ * structure, which is rooted at {@link jenkins.model.Jenkins}.
  *
  * <p>
  * Unlike file systems, where a file can be moved from one directory
@@ -56,7 +56,7 @@ import hudson.security.AccessControlled;
  * <p>
  * {@link Item}s have unique {@link #getName() name}s that distinguish themselves
  * among their siblings uniquely. The names can be combined by '/' to form an
- * item full name, which uniquely identifies an {@link Item} inside the whole {@link Hudson}.
+ * item full name, which uniquely identifies an {@link Item} inside the whole {@link jenkins.model.Jenkins}.
  *
  * @author Kohsuke Kawaguchi
  * @see Items
@@ -93,11 +93,11 @@ public interface Item extends PersistenceRoot, SearchableModelObject, AccessCont
      *
      * <p>
      * Full name consists of {@link #getName() name}s of {@link Item}s
-     * that lead from the root {@link Hudson} to this {@link Item},
+     * that lead from the root {@link jenkins.model.Jenkins} to this {@link Item},
      * separated by '/'. This is the unique name that identifies this
-     * {@link Item} inside the whole {@link Hudson}.
+     * {@link Item} inside the whole {@link jenkins.model.Jenkins}.
      *
-     * @see Hudson#getItemByFullName(String,Class)
+     * @see jenkins.model.Jenkins#getItemByFullName(String,Class)
      */
     String getFullName();
 

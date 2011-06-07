@@ -26,7 +26,7 @@ package hudson.matrix;
 import hudson.Util;
 import hudson.model.Descriptor;
 import hudson.model.Failure;
-import hudson.model.Hudson;
+import jenkins.model.Jenkins;
 import hudson.util.FormValidation;
 import org.kohsuke.stapler.QueryParameter;
 
@@ -58,7 +58,7 @@ public abstract class AxisDescriptor extends Descriptor<Axis> {
             return FormValidation.ok();
 
         try {
-            Hudson.checkGoodName(value);
+            Jenkins.checkGoodName(value);
             return FormValidation.ok();
         } catch (Failure e) {
             return FormValidation.error(e.getMessage());

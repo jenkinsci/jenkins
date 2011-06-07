@@ -23,6 +23,7 @@
  */
 package hudson.model;
 
+import jenkins.model.Jenkins;
 import org.jvnet.hudson.test.Bug;
 import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
 import com.gargoylesoftware.htmlunit.html.HtmlAnchor;
@@ -124,7 +125,7 @@ public class ViewTest extends HudsonTestCase {
         ListView view = new ListView("foo", hudson);
         hudson.addView(view);
 
-        ListView v = (ListView)Hudson.XSTREAM.fromXML(Hudson.XSTREAM.toXML(view));
+        ListView v = (ListView) Jenkins.XSTREAM.fromXML(Jenkins.XSTREAM.toXML(view));
         System.out.println(v.getProperties());
         assertNotNull(v.getProperties());
     }

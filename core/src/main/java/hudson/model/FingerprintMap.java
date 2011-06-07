@@ -25,6 +25,7 @@ package hudson.model;
 
 import hudson.Util;
 import hudson.util.KeyedDataStorage;
+import jenkins.model.Jenkins;
 
 import java.io.File;
 import java.io.IOException;
@@ -39,7 +40,7 @@ import java.util.Locale;
  * will be adequately GC-ed to prevent memory leak.
  *
  * @author Kohsuke Kawaguchi
- * @see Hudson#getFingerprintMap() 
+ * @see Jenkins#getFingerprintMap()
  */
 public final class FingerprintMap extends KeyedDataStorage<Fingerprint,FingerprintParams> {
 
@@ -47,7 +48,7 @@ public final class FingerprintMap extends KeyedDataStorage<Fingerprint,Fingerpri
      * Returns true if there's some data in the fingerprint database.
      */
     public boolean isReady() {
-        return new File(Hudson.getInstance().getRootDir(),"fingerprints").exists();
+        return new File(Jenkins.getInstance().getRootDir(),"fingerprints").exists();
     }
 
     /**

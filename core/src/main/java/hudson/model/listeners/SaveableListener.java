@@ -28,7 +28,7 @@ import hudson.ExtensionPoint;
 import hudson.Extension;
 import hudson.ExtensionList;
 import hudson.XmlFile;
-import hudson.model.Hudson;
+import jenkins.model.Jenkins;
 import hudson.model.Saveable;
 
 /**
@@ -83,6 +83,6 @@ public abstract class SaveableListener implements ExtensionPoint {
      * Returns all the registered {@link SaveableListener} descriptors.
      */
     public static ExtensionList<SaveableListener> all() {
-        return Hudson.getInstance().getExtensionList(SaveableListener.class);
+        return Jenkins.getInstance().getExtensionList(SaveableListener.class);
     }
 }

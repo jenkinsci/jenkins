@@ -23,6 +23,8 @@
  */
 package hudson.model;
 
+import jenkins.model.Jenkins;
+
 /**
  * Walks the tree structure that consists of {@link ItemGroup} and {@link Item}.
  *
@@ -54,6 +56,6 @@ public abstract class ItemVisitor {
      * To walk a subtree, call {@link #onItemGroup(ItemGroup)} or {@link #onItem(Item)}
      */
     public final void walk() {
-        onItemGroup(Hudson.getInstance());
+        onItemGroup(Jenkins.getInstance());
     }
 }

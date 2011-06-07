@@ -24,7 +24,7 @@
 package hudson.security;
 
 import hudson.model.Descriptor;
-import hudson.model.Hudson;
+import jenkins.model.Jenkins;
 import hudson.Extension;
 import org.acegisecurity.acls.sid.GrantedAuthoritySid;
 import org.kohsuke.stapler.StaplerRequest;
@@ -40,7 +40,7 @@ import java.util.Collections;
 public final class LegacyAuthorizationStrategy extends AuthorizationStrategy {
     private static final ACL LEGACY_ACL = new SparseACL(null) {{
         add(EVERYONE,Permission.READ,true);
-        add(new GrantedAuthoritySid("admin"), Hudson.ADMINISTER,true);
+        add(new GrantedAuthoritySid("admin"), Jenkins.ADMINISTER,true);
     }};
 
     public ACL getRootACL() {

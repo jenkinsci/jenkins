@@ -24,8 +24,8 @@
 package hudson.slaves;
 
 
+import jenkins.model.Jenkins;
 import junit.framework.TestCase;
-import hudson.model.Hudson;
 import hudson.model.Node;
 import hudson.model.TaskListener;
 import hudson.model.Computer;
@@ -118,7 +118,7 @@ public class NodeListTest extends TestCase {
 
         File tmp = File.createTempFile("test","test");
         try {
-            XmlFile x = new XmlFile(Hudson.XSTREAM, tmp);
+            XmlFile x = new XmlFile(Jenkins.XSTREAM, tmp);
             x.write(nl);
 
             String xml = FileUtils.readFileToString(tmp);

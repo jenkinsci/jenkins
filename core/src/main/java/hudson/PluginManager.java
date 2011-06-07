@@ -32,7 +32,7 @@ import hudson.init.InitStrategy;
 import hudson.init.InitializerFinder;
 import hudson.model.AbstractModelObject;
 import hudson.model.Failure;
-import hudson.model.Hudson;
+import jenkins.model.Jenkins;
 import hudson.model.UpdateCenter;
 import hudson.model.UpdateSite;
 import hudson.util.CyclicGraphDetector;
@@ -103,7 +103,7 @@ public abstract class PluginManager extends AbstractModelObject {
 
     /**
      * @deprecated as of 1.355
-     *      {@link PluginManager} can now live longer than {@link Hudson} instance, so
+     *      {@link PluginManager} can now live longer than {@link jenkins.model.Jenkins} instance, so
      *      use {@code Hudson.getInstance().servletContext} instead.
      */
     public final ServletContext context;
@@ -150,7 +150,7 @@ public abstract class PluginManager extends AbstractModelObject {
     /**
      * Called immediately after the construction.
      * This is a separate method so that code executed from here will see a valid value in
-     * {@link Hudson#pluginManager}. 
+     * {@link jenkins.model.Jenkins#pluginManager}.
      */
     public TaskBuilder initTasks(final InitStrategy initStrategy) {
         TaskBuilder builder;
@@ -265,7 +265,7 @@ public abstract class PluginManager extends AbstractModelObject {
                  * Once the plugins are listed, schedule their initialization.
                  */
                 public void run(Reactor session) throws Exception {
-                    Hudson.getInstance().lookup.set(PluginInstanceStore.class,new PluginInstanceStore());
+                    Jenkins.getInstance().lookup.set(PluginInstanceStore.class,new PluginInstanceStore());
                     TaskGraphBuilder g = new TaskGraphBuilder();
 
                     // schedule execution of loading plugins
@@ -486,10 +486,10 @@ public abstract class PluginManager extends AbstractModelObject {
     }
 
     public HttpResponse doUpdateSources(StaplerRequest req) throws IOException {
-        Hudson.getInstance().checkPermission(Hudson.ADMINISTER);
+        Jenkins.getInstance().checkPermission(Jenkins.ADMINISTER);
 
         if (req.hasParameter("remove")) {
-            UpdateCenter uc = Hudson.getInstance().getUpdateCenter();
+            UpdateCenter uc = Jenkins.getInstance().getUpdateCenter();
             BulkChange bc = new BulkChange(uc);
             try {
                 for (String id : req.getParameterValues("sources"))
@@ -515,7 +515,7 @@ public abstract class PluginManager extends AbstractModelObject {
                 n = n.substring(7);
                 if (n.indexOf(".") > 0) {
                     String[] pluginInfo = n.split("\\.");
-                    UpdateSite.Plugin p = Hudson.getInstance().getUpdateCenter().getById(pluginInfo[1]).getPlugin(pluginInfo[0]);
+                    UpdateSite.Plugin p = Jenkins.getInstance().getUpdateCenter().getById(pluginInfo[1]).getPlugin(pluginInfo[0]);
                     if(p==null)
                         throw new Failure("No such plugin: "+n);
                     p.deploy();
@@ -530,8 +530,8 @@ public abstract class PluginManager extends AbstractModelObject {
      * Bare-minimum configuration mechanism to change the update center.
      */
     public HttpResponse doSiteConfigure(@QueryParameter String site) throws IOException {
-        Hudson hudson = Hudson.getInstance();
-        hudson.checkPermission(Hudson.ADMINISTER);
+        Jenkins hudson = Jenkins.getInstance();
+        hudson.checkPermission(Jenkins.ADMINISTER);
         UpdateCenter uc = hudson.getUpdateCenter();
         PersistedList<UpdateSite> sites = uc.getSites();
         for (UpdateSite s : sites) {
@@ -549,8 +549,8 @@ public abstract class PluginManager extends AbstractModelObject {
             @QueryParameter("proxy.port") String port,
             @QueryParameter("proxy.userName") String userName,
             @QueryParameter("proxy.password") String password) throws IOException {
-        Hudson hudson = Hudson.getInstance();
-        hudson.checkPermission(Hudson.ADMINISTER);
+        Jenkins hudson = Jenkins.getInstance();
+        hudson.checkPermission(Jenkins.ADMINISTER);
 
         server = Util.fixEmptyAndTrim(server);
         if(server==null) {
@@ -572,7 +572,7 @@ public abstract class PluginManager extends AbstractModelObject {
      */
     public HttpResponse doUploadPlugin(StaplerRequest req) throws IOException, ServletException {
         try {
-            Hudson.getInstance().checkPermission(Hudson.ADMINISTER);
+            Jenkins.getInstance().checkPermission(Jenkins.ADMINISTER);
 
             ServletFileUpload upload = new ServletFileUpload(new DiskFileItemFactory());
 

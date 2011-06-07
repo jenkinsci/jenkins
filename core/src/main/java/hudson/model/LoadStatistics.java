@@ -28,6 +28,7 @@ import hudson.model.MultiStageTimeSeries.TimeScale;
 import hudson.model.MultiStageTimeSeries.TrendChart;
 import hudson.util.ColorPalette;
 import hudson.util.NoOverlapCategoryAxis;
+import jenkins.model.Jenkins;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.JFreeChart;
 import org.jfree.chart.axis.CategoryAxis;
@@ -58,7 +59,7 @@ import java.util.List;
  *
  * @author Kohsuke Kawaguchi
  * @see Label#loadStatistics
- * @see Hudson#overallLoad
+ * @see Jenkins#overallLoad
  */
 @ExportedBean
 public abstract class LoadStatistics {
@@ -194,7 +195,7 @@ public abstract class LoadStatistics {
         }
 
         protected void doRun() {
-            Hudson h = Hudson.getInstance();
+            Jenkins h = Jenkins.getInstance();
             List<hudson.model.Queue.BuildableItem> bis = h.getQueue().getBuildableItems();
 
             // update statistics on slaves

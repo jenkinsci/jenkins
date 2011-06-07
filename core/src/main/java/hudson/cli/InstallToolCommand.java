@@ -26,7 +26,7 @@ package hudson.cli;
 import hudson.Extension;
 import hudson.AbortException;
 import hudson.EnvVars;
-import hudson.model.Hudson;
+import jenkins.model.Jenkins;
 import hudson.model.AbstractProject;
 import hudson.model.Run;
 import hudson.model.Executor;
@@ -64,8 +64,8 @@ public class InstallToolCommand extends CLICommand {
     }
 
     protected int run() throws Exception {
-        Hudson h = Hudson.getInstance();
-        h.checkPermission(Hudson.READ);
+        Jenkins h = Jenkins.getInstance();
+        h.checkPermission(Jenkins.READ);
 
         // where is this build running?
         BuildIDs id = channel.call(new BuildIDs());
@@ -73,7 +73,7 @@ public class InstallToolCommand extends CLICommand {
         if (!id.isComplete())
             throw new AbortException("This command can be only invoked from a build executing inside Hudson");
 
-        AbstractProject p = Hudson.getInstance().getItemByFullName(id.job, AbstractProject.class);
+        AbstractProject p = Jenkins.getInstance().getItemByFullName(id.job, AbstractProject.class);
         if (p==null)
             throw new AbortException("No such job found: "+id.job);
         p.checkPermission(Item.CONFIGURE);

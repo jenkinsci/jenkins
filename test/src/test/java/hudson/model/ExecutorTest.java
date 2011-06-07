@@ -1,6 +1,7 @@
 package hudson.model;
 
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
+import jenkins.model.Jenkins;
 import org.jvnet.hudson.test.Bug;
 import org.jvnet.hudson.test.HudsonTestCase;
 
@@ -9,7 +10,7 @@ import org.jvnet.hudson.test.HudsonTestCase;
  */
 public class ExecutorTest extends HudsonTestCase {
     public void testYank() throws Exception {
-        Computer c = Hudson.getInstance().toComputer();
+        Computer c = Jenkins.getInstance().toComputer();
         Executor e = c.getExecutors().get(0);
 
         // kill an executor
