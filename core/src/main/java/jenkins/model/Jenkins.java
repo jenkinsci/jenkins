@@ -3297,8 +3297,8 @@ public class Jenkins extends AbstractCIBase implements ItemGroup<TopLevelItem>, 
         return getPrimaryView();
     }
 
-    public static final class MasterComputer extends Computer {
-        private MasterComputer() {
+    public static class MasterComputer extends Computer {
+        protected MasterComputer() {
             super(Jenkins.getInstance());
         }
 

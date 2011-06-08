@@ -299,4 +299,18 @@ public class Hudson extends Jenkins {
     static {
         XSTREAM.alias("hudson",Hudson.class);
     }
+
+    /**
+     * @deprecated  only here for backward comp
+     */
+    public static final class MasterComputer extends Jenkins.MasterComputer {
+        // no op
+    }
+
+    /**
+     * @deprecated  only here for backward comp
+     */
+    public static class CloudList extends Jenkins.CloudList {
+        // no op
+    }
 }
