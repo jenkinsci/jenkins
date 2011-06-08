@@ -119,6 +119,7 @@ THE SOFTWARE.
                 <mkdir dir="target/classes/hudson/remoting" />
                 <echo file="target/classes/hudson/remoting/hudson-version.properties">version=${build.version}
                 </echo>
+                <mkdir dir="target/classes/jenkins/remoting"/>
                 <echo file="target/classes/jenkins/remoting/jenkins-version.properties">version=${build.version}
                 </echo>
               </tasks>
