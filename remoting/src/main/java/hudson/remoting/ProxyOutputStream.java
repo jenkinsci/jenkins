@@ -27,6 +27,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InterruptedIOException;
 import java.io.OutputStream;
+import java.util.concurrent.ExecutionException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -140,6 +141,7 @@ final class ProxyOutputStream extends OutputStream {
     }
 
     private void doClose() throws IOException {
+        channel.send(new Flush(oid));
         channel.send(new EOF(oid));
         channel = null;
         oid = -1;
@@ -231,15 +233,19 @@ final class ProxyOutputStream extends OutputStream {
 
         protected void execute(Channel channel) {
             final OutputStream os = (OutputStream) channel.getExportedObject(oid);
-            channel.pipeWriter.submit(new Runnable() {
-                public void run() {
-                    try {
-                        os.flush();
-                    } catch (IOException e) {
-                        // ignore errors
+            try {
+                channel.pipeWriter.submit(new Runnable() {
+                    public void run() {
+                        try {
+                            os.flush();
+                        } catch (IOException e) {
+                            // ignore errors
+                        }
                     }
-                }
-            });
+                }).get();
+            } catch (InterruptedException e) {
+            } catch (ExecutionException e) {
+            }
         }
 
         public String toString() {
