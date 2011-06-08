@@ -123,8 +123,8 @@ public class NodeProvisioner {
             lastSuggestedReview = System.currentTimeMillis();
             Computer.threadPoolForRemoting.submit(new Runnable() {
                 public void run() {
-                        update();
-                    }
+                    update();
+                }
             });
         }
     }
