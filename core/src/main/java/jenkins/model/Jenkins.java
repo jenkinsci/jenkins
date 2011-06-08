@@ -3433,7 +3433,7 @@ public class Jenkins extends AbstractCIBase implements ItemGroup<TopLevelItem>, 
         // set the version
         Properties props = new Properties();
         try {
-            InputStream is = Jenkins.class.getResourceAsStream("hudson-version.properties");
+            InputStream is = Jenkins.class.getResourceAsStream("jenkins-version.properties");
             if(is!=null)
                 props.load(is);
         } catch (IOException e) {
