@@ -703,49 +703,6 @@ THE SOFTWARE.
       <artifactId>memory-monitor</artifactId>
       <version>1.5</version>
     </dependency>
-    <dependency>
-      <groupId>com.octo.captcha</groupId>
-      <artifactId>jcaptcha-all</artifactId>
-      <version>1.0-RC6</version>
-      <exclusions>
-        <exclusion>
-          <groupId>hsqldb</groupId>
-          <artifactId>hsqldb</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>hsqldb</groupId>
-          <artifactId>hsqldb</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>net.sf.ehcache</groupId>
-          <artifactId>ehcache</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>quartz</groupId>
-          <artifactId>quartz</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>xerces</groupId>
-          <artifactId>xercesImpl</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>xerces</groupId>
-          <artifactId>xmlParserAPIs</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>org.springframework</groupId>
-          <artifactId>spring</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>commons-dbcp</groupId>
-          <artifactId>commons-dbcp</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>concurrent</groupId>
-          <artifactId>concurrent</artifactId>
-        </exclusion>
-      </exclusions>
-    </dependency>
     <dependency><!-- StAX implementation. See HUDSON-2547. -->
       <groupId>org.codehaus.woodstox</groupId>
       <artifactId>wstx-asl</artifactId>
