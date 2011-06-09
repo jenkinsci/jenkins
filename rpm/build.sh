@@ -16,6 +16,10 @@ else
 fi
 echo Version is $version
 
+pushd $(dirname $0)/SOURCES
+  sed -e "s/@RELEASELINE@/${RELEASELINE}/g" < jenkins.repo.in > jenkins.repo
+popd
+
 # prepare fresh directories
 rm -rf BUILD RPMS SRPMS tmp || true
 mkdir -p BUILD RPMS SRPMS
