@@ -107,7 +107,7 @@ public final class WebAppMain implements ServletContextListener {
             final FileAndDescription describedHomeDir = getHomeDir(event);
             final File home = describedHomeDir.file.getAbsoluteFile();
             home.mkdirs();
-            System.out.println("hudson home directory: "+home+" found at: "+describedHomeDir.description);
+            System.out.println("Jenkins home directory: "+home+" found at: "+describedHomeDir.description);
 
             // check that home exists (as mkdirs could have failed silently), otherwise throw a meaningful error
             if (! home.exists()) {
