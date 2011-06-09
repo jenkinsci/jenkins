@@ -72,6 +72,11 @@ abstract class Request<RSP extends Serializable,EXC extends Throwable> extends C
      */
     protected volatile transient Future<?> future;
 
+    /**
+     * If this request performed some I/O back in the caller side during the remote call execution, set to last such
+     * operation, so that we can block until its completion.
+     */
+    /*package*/ volatile transient Future<?> lastIo;
 
     protected Request() {
         synchronized(Request.class) {
@@ -127,6 +132,13 @@ abstract class Request<RSP extends Serializable,EXC extends Throwable> extends C
                 } finally {
                     t.setName(name);
                 }
+
+                if (lastIo!=null)
+                    try {
+                        lastIo.get();
+                    } catch (ExecutionException e) {
+                        // ignore the I/O error
+                    }
 
                 Object exc = response.exception;
 
@@ -266,6 +278,7 @@ abstract class Request<RSP extends Serializable,EXC extends Throwable> extends C
             public void run() {
                 try {
                     Command rsp;
+                    CURRENT.set(Request.this);
                     try {
                         RSP r = Request.this.perform(channel);
                         // normal completion
@@ -273,6 +286,8 @@ abstract class Request<RSP extends Serializable,EXC extends Throwable> extends C
                     } catch (Throwable t) {
                         // error return
                         rsp = new Response<RSP,Throwable>(id,t);
+                    } finally {
+                        CURRENT.set(null);
                     }
                     if(chainCause)
                         rsp.createdAt.initCause(createdAt);
@@ -307,19 +322,15 @@ abstract class Request<RSP extends Serializable,EXC extends Throwable> extends C
      */
     public static boolean chainCause = Boolean.getBoolean(Request.class.getName()+".chainCause");
 
-    //private static final Unsafe unsafe = getUnsafe();
+    /**
+     * Set to the {@link Request} object during {@linkplain #perform(Channel) the execution of the call}.
+     */
+    /*package*/ static ThreadLocal<Request> CURRENT = new ThreadLocal<Request>();
 
-    //private static Unsafe getUnsafe() {
-    //    try {
-    //        Field f = Unsafe.class.getDeclaredField("theUnsafe");
-    //        f.setAccessible(true);
-    //        return (Unsafe)f.get(null);
-    //    } catch (NoSuchFieldException e) {
-    //        throw new Error(e);
-    //    } catch (IllegalAccessException e) {
-    //        throw new Error(e);
-    //    }
-    //}
+    /*package*/ static int getCurrentRequestId() {
+        Request r = CURRENT.get();
+        return r!=null ? r.id : 0;
+    }
 
     /**
      * Interrupts the execution of the remote computation.
