@@ -24,6 +24,7 @@
 package hudson.slaves;
 
 import hudson.model.*;
+import hudson.util.io.ReopenableRotatingFileOutputStream;
 import jenkins.model.Jenkins.MasterComputer;
 import hudson.remoting.Channel;
 import hudson.remoting.VirtualChannel;
@@ -115,7 +116,7 @@ public class SlaveComputer extends Computer {
 
     public SlaveComputer(Slave slave) {
         super(slave);
-        this.log = new ReopenableFileOutputStream(getLogFile());
+        this.log = new ReopenableRotatingFileOutputStream(getLogFile(),10);
         this.taskListener = new StreamTaskListener(log);
     }
 
