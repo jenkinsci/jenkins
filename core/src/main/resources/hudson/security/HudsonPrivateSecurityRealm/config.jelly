@@ -31,7 +31,7 @@ THE SOFTWARE.
   <j:if test="${size(h.captchaSupportDescriptors) gt 0}">
     <f:entry>
       <f:checkbox name="privateRealm.enableCaptcha" checked="${h.defaultToTrue(instance.isEnableCaptcha())}"
-        title="${%Enable captcha on sing up}" />
+        title="${%Enable captcha on sign up}" />
     </f:entry>
     <f:dropdownList name="privateRealm.captchaSupport" title="${%Captcha Support}">
       <!-- Loop through available Captcha Support Descriptors -->
