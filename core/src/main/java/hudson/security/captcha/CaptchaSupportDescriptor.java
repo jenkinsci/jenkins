@@ -29,7 +29,7 @@ import hudson.model.Descriptor;
  * {@link Descriptor} for {@link CaptchaSupport}.
  *
  * @author Winston Prakash
- * @since 2.0.1
+ * @since 1.416
  */
 public abstract class CaptchaSupportDescriptor extends Descriptor<CaptchaSupport> {
     // so far nothing different from plain Descriptor
