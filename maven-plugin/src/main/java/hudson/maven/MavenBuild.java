@@ -274,7 +274,11 @@ public class MavenBuild extends AbstractMavenBuild<MavenModule,MavenBuild> {
         super.setWorkspace(path);
     }
     
-    
+    @Override
+    public MavenModule getParent() {// don't know why, but javac wants this
+        return super.getParent();
+    }
+
     /**
      * @see hudson.model.AbstractBuild#getBuiltOn()
      * @since 1.394
@@ -742,12 +746,4 @@ public class MavenBuild extends AbstractMavenBuild<MavenModule,MavenBuild> {
     public static boolean debug = false;
 
     private static final Logger LOGGER = Logger.getLogger(MavenBuild.class.getName());
-
-    @Override
-    public MavenModule getParent() {// don't know why, but javac wants this
-        return super.getParent();
-    }
-
-    
-
 }
