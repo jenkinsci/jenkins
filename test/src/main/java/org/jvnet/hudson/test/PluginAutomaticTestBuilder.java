@@ -51,10 +51,16 @@ public class PluginAutomaticTestBuilder {
         if (params.containsKey("outputDirectory") // shouldn't happen, but be defensive
         ||  notSkipTests("JellyTest")) {
             File outputDirectory = new File((String)params.get("outputDirectory"));
-            suite.addTest(JellyTestSuiteBuilder.build(outputDirectory));
+            suite.addTest(JellyTestSuiteBuilder.build(outputDirectory,toBoolean(params.get("requirePI"))));
         }
         
         return suite;
+    }
+
+    private static boolean toBoolean(Object requirePI) {
+        if (requirePI==null)    return false;
+        if (requirePI instanceof Boolean)   return (Boolean)requirePI;
+        return Boolean.parseBoolean(requirePI.toString());
     }
 
     /**
