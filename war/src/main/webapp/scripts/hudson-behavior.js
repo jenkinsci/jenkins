@@ -453,7 +453,7 @@ function renderOnDemand(e,callback,noBehaviour) {
         }
         Element.remove(e);
 
-	t.responseText.evalScripts();
+        t.responseText.evalScripts();
         Behaviour.applySubtree(elements,true);
 
         if (callback)   callback(t);
