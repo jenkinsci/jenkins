@@ -575,7 +575,7 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
                 if(mvn==null)
                     throw new AbortException("A Maven installation needs to be available for this project to be built.\n"+
                                              "Either your server has no Maven installations defined, or the requested Maven version does not exist.");
-                
+
                 mvn = mvn.forEnvironment(envVars).forNode(Computer.currentComputer().getNode(), listener);
                 
                 MavenInformation mavenInformation = getModuleRoot().act( new MavenVersionCallable( mvn.getHome() ));
