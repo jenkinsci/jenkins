@@ -61,6 +61,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Logger;
 
 import org.apache.maven.BuildFailureException;
 import org.apache.maven.artifact.versioning.ComparableVersion;
@@ -620,8 +621,8 @@ public class MavenBuild extends AbstractMavenBuild<MavenModule,MavenBuild> {
             MavenInformation mavenInformation = getModuleRoot().act( new MavenVersionCallable( mvn.getHome() ));
             
             String mavenVersion = mavenInformation.getVersion();
-            
-            listener.getLogger().println("Found mavenVersion " + mavenVersion + " from file " + mavenInformation.getVersionResourcePath());
+
+            LOGGER.fine(getFullDisplayName()+" is building with mavenVersion " + mavenVersion + " from file " + mavenInformation.getVersionResourcePath());
             
             ProcessCache.MavenProcess process = null;
             
@@ -739,7 +740,9 @@ public class MavenBuild extends AbstractMavenBuild<MavenModule,MavenBuild> {
      * Set true to produce debug output.
      */
     public static boolean debug = false;
-    
+
+    private static final Logger LOGGER = Logger.getLogger(MavenBuild.class.getName());
+
     @Override
     public MavenModule getParent() {// don't know why, but javac wants this
         return super.getParent();
