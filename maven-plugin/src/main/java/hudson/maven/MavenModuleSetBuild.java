@@ -165,9 +165,7 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
         // or if Maven calls itself e.g. maven-release-plugin
         MavenInstallation mvn = project.getMaven();
         if (mvn == null)
-            throw new AbortException(
-                    "A Maven installation needs to be available for this project to be built.\n"
-                    + "Either your server has no Maven installations defined, or the requested Maven version does not exist.");
+            throw new AbortException(Messages.MavenModuleSetBuild_NoMavenConfigured());
 
         mvn = mvn.forEnvironment(envs).forNode(
                 Computer.currentComputer().getNode(), log);
@@ -573,8 +571,7 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
                 EnvVars envVars = getEnvironment(listener);
                 MavenInstallation mvn = project.getMaven();
                 if(mvn==null)
-                    throw new AbortException("A Maven installation needs to be available for this project to be built.\n"+
-                                             "Either your server has no Maven installations defined, or the requested Maven version does not exist.");
+                    throw new AbortException(Messages.MavenModuleSetBuild_NoMavenConfigured());
 
                 mvn = mvn.forEnvironment(envVars).forNode(Computer.currentComputer().getNode(), listener);
                 
@@ -664,7 +661,7 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
                        
                         if ( maven3orLater )
                         {
-                            LOGGER.info( "using maven 3 " + mavenVersion );
+                            LOGGER.fine( "using maven 3 " + mavenVersion );
                             process =
                                 MavenBuild.mavenProcessCache.get( launcher.getChannel(), slistener,
                                                                   new Maven3ProcessFactory( project, launcher, envVars, getMavenOpts(listener),
@@ -672,7 +669,7 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
                         }
                         else
                         {
-                            LOGGER.info( "using maven 2 " + mavenVersion );
+                            LOGGER.fine( "using maven 2 " + mavenVersion );
                             process =
                                 MavenBuild.mavenProcessCache.get( launcher.getChannel(), slistener,
                                                                   new MavenProcessFactory( project, launcher, envVars,getMavenOpts(listener),
@@ -1252,7 +1249,7 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
             }
             if (debug)
             {
-                logger.println("use settingsLoc " + settingsLoc + " , privateRepository " + privateRepository);
+                logger.println(Messages.MavenModuleSetBuild_SettinsgXmlAndPrivateRepository(settingsLoc,privateRepository));
             }
             if ((settingsLoc != null) && (!settingsLoc.exists())) {
                 throw new AbortException(Messages.MavenModuleSetBuild_NoSuchAlternateSettings(settingsLoc.getAbsolutePath()));
@@ -1374,7 +1371,7 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
                       path = new File(mp.getBasedir(), modulePath+"/pom.xml");
                     MavenProject child = abslPath.get( path.getCanonicalPath());
                     if (child == null) {
-                        listener.getLogger().printf("Found a module with path " + modulePath + " but no associated project");
+                        listener.getLogger().printf(Messages.MavenModuleSetBuild_FoundModuleWithoutProject(modulePath));
                         continue;
                     }
                     toPomInfo(child,pi,abslPath,infos);
@@ -1452,7 +1449,7 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
 
         public void transferFailed( TransferEvent transferEvent )
         {
-            taskListener.getLogger().println("failed to transfer " + transferEvent.getException().getMessage());
+            taskListener.getLogger().println(Messages.MavenModuleSetBuild_FailedToTransfer(transferEvent.getException().getMessage()));
         }
 
         public void transferInitiated( TransferEvent arg0 )
@@ -1475,8 +1472,9 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
 
         public void transferSucceeded( TransferEvent transferEvent )
         {
-            taskListener.getLogger().println( "downloaded artifact " + transferEvent.getResource().getRepositoryUrl()
-                                                  + "/" + transferEvent.getResource().getResourceName() );
+            taskListener.getLogger().println( Messages.MavenModuleSetBuild_DownloadedArtifact(
+                    transferEvent.getResource().getRepositoryUrl(),
+                    transferEvent.getResource().getResourceName()) );
         }
         
     }

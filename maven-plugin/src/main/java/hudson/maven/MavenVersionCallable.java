@@ -58,9 +58,9 @@ public class MavenVersionCallable
             if(!home.isDirectory())
             {
                 if (home.exists())
-                    throw new AbortException("Maven Home "+home+" is not a directory");
+                    throw new AbortException(Messages.MavenVersionCallable_MavenHomeIsNotDirectory(home));
                 else
-                    throw new AbortException("Maven Home "+home+" doesn't exist");
+                    throw new AbortException(Messages.MavenVersionCallable_MavenHomeDoesntExist(home));
             }
             return MavenEmbedderUtils.getMavenVersion(home);
         }

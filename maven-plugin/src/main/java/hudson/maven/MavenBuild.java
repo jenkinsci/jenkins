@@ -204,9 +204,7 @@ public class MavenBuild extends AbstractMavenBuild<MavenModule,MavenBuild> {
         // or if Maven calls itself e.g. maven-release-plugin
         MavenInstallation mvn = project.getParent().getMaven();
         if (mvn == null)
-            throw new AbortException(
-                    "A Maven installation needs to be available for this project to be built.\n"
-                    + "Either your server has no Maven installations defined, or the requested Maven version does not exist.");
+            throw new hudson.AbortException(Messages.MavenModuleSetBuild_NoMavenConfigured());
         mvn = mvn.forEnvironment(envs).forNode(Computer.currentComputer().getNode(), log);
         envs.put("M2_HOME", mvn.getHome());
         envs.put("PATH+MAVEN", mvn.getHome() + "/bin");
