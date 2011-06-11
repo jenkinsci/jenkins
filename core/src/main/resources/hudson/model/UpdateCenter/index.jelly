@@ -56,13 +56,11 @@ THE SOFTWARE.
                         if(target==null) {
                           document.getElementById("log").appendChild(row);
                         } else {
-                          if (row.id != 'restart') {
-                            var tcell = target.cells[1];
-                            var scell = row.cells[1];
-                            if(scell.id!=tcell.id) {
-                              tcell.innerHTML = scell.innerHTML;
-                              tcell.id = scell.id;
-                            }
+                          var tcell = target.cells[1];
+                          var scell = row.cells[1];
+                          if(scell.id!=tcell.id) {
+                            tcell.innerHTML = scell.innerHTML;
+                            tcell.id = scell.id;
                           }
                         }
                       }

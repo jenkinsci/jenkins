@@ -754,6 +754,10 @@ public class UpdateCenter extends AbstractModelObject implements Saveable {
      * Restarts jenkins.
      */
     public class RestartJenkinsJob extends UpdateCenterJob {
+        /**
+         * Unique ID that identifies this job.
+         */
+        public final int id = iota.incrementAndGet();
                
          /**
          * Immutable state of this job.
@@ -791,6 +795,8 @@ public class UpdateCenter extends AbstractModelObject implements Saveable {
         
         public abstract class RestartJenkinsJobStatus {
             
+            public final int id = iota.incrementAndGet();
+   
         }
         
         public class Pending extends RestartJenkinsJobStatus {
