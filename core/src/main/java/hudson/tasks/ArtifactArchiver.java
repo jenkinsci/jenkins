@@ -76,6 +76,10 @@ public class ArtifactArchiver extends Recorder {
         this.latestOnly = latestOnly;
         this.allowEmptyArchive = allowEmptyArchive;
     }
+    
+    public ArtifactArchiver(String artifacts, String excludes, boolean latestOnly) {
+        this(artifacts, excludes, latestOnly, false);
+    }
 
     public String getArtifacts() {
         return artifacts;
