@@ -1,7 +1,7 @@
 <!--
 The MIT License
 
-Copyright (c) 2004-2010, Sun Microsystems, Inc., Kohsuke Kawaguchi, Ulli Hafner
+Copyright (c) 2004-2010, Sun Microsystems, Inc., Kohsuke Kawaguchi, Alan Harder
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -24,11 +24,5 @@ THE SOFTWARE.
 
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
-  <tr id="row${it.id}">
-    <td style="vertical-align: top; padding-right:1em">${%Restarting Jenkins}</td>
-    <j:set var="status" value="${it.status}" />
-    <td id="status${status.id}">
-      <st:include it="${status}" page="status.jelly" />
-    </td>
-  </tr>
+    <img src="${imagesURL}/24x24/red.png" alt="" height="24" width="24"/> ${%Failure}
 </j:jelly>
