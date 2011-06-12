@@ -64,6 +64,8 @@ THE SOFTWARE.
                           }
                         }
                       }
+                      var scheduleDiv = document.getElementById('scheduleRestartBlock');
+                      scheduleDiv.innerHTML = div.lastChild.innerHTML;
                       refresh();
                   }
               });
