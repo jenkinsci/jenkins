@@ -69,6 +69,7 @@ import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.List;
+import java.util.ListIterator;
 import java.util.Set;
 import java.util.Map;
 import java.util.HashMap;
@@ -188,8 +189,6 @@ public abstract class PluginManager extends AbstractModelObject {
 
                                             p.isBundled = bundledPlugins.contains(arc.getName());
                                             plugins.add(p);
-                                            if(p.isActive())
-                                                activePlugins.add(p);
                                         } catch (IOException e) {
                                             failedPlugins.add(new FailedPlugin(arc.getName(),e));
                                             throw e;
@@ -213,34 +212,43 @@ public abstract class PluginManager extends AbstractModelObject {
                                 });
                             }
 
-                            g.requires(PLUGINS_PREPARED).add("Checking cyclic dependencies",new Executable() {
+                            g.followedBy().attains(PLUGINS_LISTED).add("Checking cyclic dependencies", new Executable() {
                                 /**
                                  * Makes sure there's no cycle in dependencies.
                                  */
                                 public void run(Reactor reactor) throws Exception {
                                     try {
-                                        new CyclicGraphDetector<PluginWrapper>() {
+                                        CyclicGraphDetector<PluginWrapper> cgd = new CyclicGraphDetector<PluginWrapper>() {
                                             @Override
                                             protected List<PluginWrapper> getEdges(PluginWrapper p) {
                                                 List<PluginWrapper> next = new ArrayList<PluginWrapper>();
-                                                addTo(p.getDependencies(),next);
-                                                addTo(p.getOptionalDependencies(),next);
+                                                addTo(p.getDependencies(), next);
+                                                addTo(p.getOptionalDependencies(), next);
                                                 return next;
                                             }
 
                                             private void addTo(List<Dependency> dependencies, List<PluginWrapper> r) {
                                                 for (Dependency d : dependencies) {
                                                     PluginWrapper p = getPlugin(d.shortName);
-                                                    if (p!=null)
+                                                    if (p != null)
                                                         r.add(p);
                                                 }
                                             }
-                                        }.run(getPlugins());
+                                        };
+                                        cgd.run(getPlugins());
+
+                                        // obtain topologically sorted list and overwrite the list
+                                        ListIterator<PluginWrapper> litr = plugins.listIterator();
+                                        for (PluginWrapper p : cgd.getSorted()) {
+                                            litr.next();
+                                            litr.set(p);
+                                            if(p.isActive())
+                                                activePlugins.add(p);
+                                        }
                                     } catch (CycleDetectedException e) {
                                         stop(); // disable all plugins since classloading from them can lead to StackOverflow
                                         throw e;    // let Hudson fail
                                     }
-                                    Collections.sort(plugins);
                                 }
                             });
 

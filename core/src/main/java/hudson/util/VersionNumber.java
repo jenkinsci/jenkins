@@ -49,18 +49,12 @@ import java.util.Stack;
  * 2.0.* > 2.0.1 > 2.0.1-SNAPSHOT > 2.0.0.99 > 2.0.0 > 2.0.ea > 2.0
  * </pre>
  *
- * @author
- *     Stephen Connolly
- * @since 1.139
- */
-
-/**
- * Generic implementation of version comparison. (Replacing previous implementation since 1.139)
+ * This class is re-implemented in 1.415. The class was originally introduced in 1.139
  *
+ * @since 1.139
  * @author Stephen Connolly (stephenc@apache.org)
  * @author Kenney Westerhof (kenney@apache.org)
  * @author Hervé Boutemy (hboutemy@apache.org)
- * @since 1.415
  */
 public class VersionNumber implements Comparable<VersionNumber> {
     private String value;
