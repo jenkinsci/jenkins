@@ -64,14 +64,17 @@ public class ArtifactArchiver extends Recorder {
      */
     private final boolean latestOnly;
     
-    private static final Boolean allowEmptyArchive = 
-    	Boolean.getBoolean(ArtifactArchiver.class.getName()+".warnOnEmpty");
+    /**
+     * Allow empty archive or not.
+     */
+    private final boolean allowEmptyArchive;
 
     @DataBoundConstructor
-    public ArtifactArchiver(String artifacts, String excludes, boolean latestOnly) {
+    public ArtifactArchiver(String artifacts, String excludes, boolean latestOnly, boolean allowEmptyArchive) {
         this.artifacts = artifacts.trim();
         this.excludes = Util.fixEmptyAndTrim(excludes);
         this.latestOnly = latestOnly;
+        this.allowEmptyArchive = allowEmptyArchive;
     }
 
     public String getArtifacts() {
@@ -84,6 +87,10 @@ public class ArtifactArchiver extends Recorder {
 
     public boolean isLatestOnly() {
         return latestOnly;
+    }
+    
+    public boolean isAllowEmptyArchive() {
+        return allowEmptyArchive;
     }
     
     private void listenerWarnOrError(BuildListener listener, String message) {
