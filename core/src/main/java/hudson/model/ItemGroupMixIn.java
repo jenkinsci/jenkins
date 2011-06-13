@@ -45,6 +45,7 @@ import java.util.Map;
  * implementations. Not meant for a consumption from outside {@link ItemGroup}s.
  *
  * @author Kohsuke Kawaguchi
+ * @see ViewGroupMixIn
  */
 public abstract class ItemGroupMixIn {
     /**

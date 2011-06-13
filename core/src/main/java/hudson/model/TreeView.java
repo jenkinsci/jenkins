@@ -50,6 +50,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
  *
  * <p>
  * Until this class is sufficiently stable, there's no need for l10n.
+ * TODO: use ViewGroupMixIn
  *
  * @author Kohsuke Kawaguchi
  */
