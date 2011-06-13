@@ -292,10 +292,47 @@ public class UpdateCenter extends AbstractModelObject implements Saveable {
      * Schedules a Jenkins restart.
      */
     public void doSafeRestart(StaplerRequest request, StaplerResponse response) throws IOException, ServletException {
-        Jenkins.getInstance().checkPermission(Jenkins.ADMINISTER);
-        addJob(new RestartJenkinsJob(getCoreSource()));
-        LOGGER.info("Scheduling Jenkings reboot");
+        synchronized (jobs) {
+            if (!isRestartScheduled()) {
+                Jenkins.getInstance().checkPermission(Jenkins.ADMINISTER);
+                addJob(new RestartJenkinsJob(getCoreSource()));
+                LOGGER.info("Scheduling Jenkins reboot");
+            }
+        }
         response.sendRedirect2(".");
+    }
+    
+    /**
+     * Cancel all scheduled jenkins restarts
+     */
+    public void doCancelRestart(StaplerResponse response) throws IOException, ServletException {
+        synchronized (jobs) {
+            for (UpdateCenterJob job : jobs) {
+                if (job instanceof RestartJenkinsJob) {
+                    if (((RestartJenkinsJob) job).cancel()) {
+                        LOGGER.info("Scheduled Jenkins reboot unscheduled");
+                    }
+                }
+            }
+        }
+        response.sendRedirect2(".");
+    }
+    
+    /**
+     * Checks if restart is scheduled
+     * 
+     */
+    public boolean isRestartScheduled() {
+        for (UpdateCenterJob job : getJobs()) {
+            if (job instanceof RestartJenkinsJob) {
+                RestartJenkinsJob.RestartJenkinsJobStatus status = ((RestartJenkinsJob) job).status;
+                if (status instanceof RestartJenkinsJob.Pending
+                        || status instanceof RestartJenkinsJob.Running) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
     /**
@@ -717,17 +754,65 @@ public class UpdateCenter extends AbstractModelObject implements Saveable {
      * Restarts jenkins.
      */
     public class RestartJenkinsJob extends UpdateCenterJob {
+        /**
+         * Unique ID that identifies this job.
+         */
+        public final int id = iota.incrementAndGet();
+               
+         /**
+         * Immutable state of this job.
+         */
+        public volatile RestartJenkinsJobStatus status = new Pending();
+        
+        /**
+         * Cancel job
+         */     
+        public synchronized boolean cancel() {
+            if (status instanceof Pending) {
+                status = new Canceled();
+                return true;
+            }
+            return false;
+        }
+        
         public RestartJenkinsJob(UpdateSite site) {
             super(site);
         }
 
-        public void run() {
+        public synchronized void run() {
+            if (!(status instanceof Pending)) {
+                return;
+            }
+            status = new Running();
             try {
                 Jenkins.getInstance().safeRestart();
             }
             catch (RestartNotSupportedException exception) {
                 // ignore if restart is not allowed
+                status = new Failure();
             }
+        }
+        
+        public abstract class RestartJenkinsJobStatus {
+            
+            public final int id = iota.incrementAndGet();
+   
+        }
+        
+        public class Pending extends RestartJenkinsJobStatus {
+            
+        }
+        
+        public class Running extends RestartJenkinsJobStatus {
+            
+        }
+        
+        public class Failure extends RestartJenkinsJobStatus {
+            
+        }
+        
+        public class Canceled extends RestartJenkinsJobStatus {
+            
         }
     }
 
