@@ -194,40 +194,6 @@ THE SOFTWARE.
           </archive>
         </configuration>
       </plugin>
-      <plugin>
-        <!--
-          Configuration for generating Wiki page.
-          This kicks in with the release profile, or by manually running "mvn apt:process"
-        -->
-        <groupId>org.codehaus.mojo</groupId>
-        <artifactId>apt-maven-plugin</artifactId>
-        <!-- version specified in grandparent pom -->
-        <configuration>
-          <force>true</force><!-- disable staleness check -->
-          <factory>org.jvnet.hudson.tools.ExtensionPointListerFactory</factory>
-          <options>
-            <option>page=Extension points</option>
-            <option>target=${project.basedir}/target/extension-points.wiki</option>
-          </options>
-        </configuration>
-        <dependencies>
-          <dependency>
-            <groupId>org.jenkins-ci.tools</groupId>
-            <artifactId>extension-point-lister</artifactId>
-            <version>1.8</version>
-            <exclusions>
-               <exclusion>
-                 <groupId>com.sun</groupId>
-                 <artifactId>tools</artifactId>
-               </exclusion>
-              <exclusion>
-                <groupId>commons-logging</groupId>
-                <artifactId>commons-logging</artifactId>
-              </exclusion>
-             </exclusions>
-          </dependency>
-        </dependencies>
-      </plugin>
     </plugins>
   </build>
 
