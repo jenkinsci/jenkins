@@ -30,6 +30,8 @@ import java.net.URISyntaxException;
 import junit.framework.TestCase;
 
 import hudson.XmlFile;
+import org.jvnet.hudson.test.HudsonTestCase;
+
 import java.io.FileWriter;
 import java.io.PrintWriter;
 import java.io.Writer;
@@ -41,7 +43,7 @@ import java.io.Writer;
  * 
  * @author Erik Ramfelt
  */
-public class SuiteResultTest extends TestCase {
+public class SuiteResultTest extends HudsonTestCase {
 
     private File getDataFile(String name) throws URISyntaxException {
         return new File(SuiteResultTest.class.getResource(name).toURI());

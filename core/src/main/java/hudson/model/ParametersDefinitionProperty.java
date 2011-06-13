@@ -34,6 +34,7 @@ import java.util.AbstractList;
 
 import javax.servlet.ServletException;
 
+import jenkins.model.Jenkins;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
@@ -127,7 +128,7 @@ public class ParametersDefinitionProperty extends JobProperty<AbstractProject<?,
             values.add(parameterValue);
         }
 
-    	Hudson.getInstance().getQueue().schedule(
+    	Jenkins.getInstance().getQueue().schedule(
                 owner, owner.getDelay(req), new ParametersAction(values), new CauseAction(new Cause.UserCause()));
 
         // send the user back to the job top page.
@@ -145,7 +146,7 @@ public class ParametersDefinitionProperty extends JobProperty<AbstractProject<?,
         	}
         }
 
-    	Hudson.getInstance().getQueue().schedule(
+    	Jenkins.getInstance().getQueue().schedule(
                 owner, owner.getDelay(req), new ParametersAction(values), owner.getBuildCause(req));
 
         // send the user back to the job top page.

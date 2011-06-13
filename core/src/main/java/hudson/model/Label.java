@@ -36,6 +36,7 @@ import hudson.slaves.NodeProvisioner;
 import hudson.slaves.Cloud;
 import hudson.util.QuotedStringTokenizer;
 import hudson.util.VariableResolver;
+import jenkins.model.Jenkins;
 import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.export.ExportedBean;
 
@@ -58,8 +59,8 @@ import com.thoughtworks.xstream.io.HierarchicalStreamReader;
  * Group of {@link Node}s.
  * 
  * @author Kohsuke Kawaguchi
- * @see Hudson#getLabels()
- * @see Hudson#getLabel(String) 
+ * @see Jenkins#getLabels()
+ * @see Jenkins#getLabel(String)
  */
 @ExportedBean
 public abstract class Label extends Actionable implements Comparable<Label>, ModelObject {
@@ -90,7 +91,7 @@ public abstract class Label extends Actionable implements Comparable<Label>, Mod
 
             @Override
             public int computeQueueLength() {
-                return Hudson.getInstance().getQueue().countBuildableItemsFor(Label.this);
+                return Jenkins.getInstance().getQueue().countBuildableItemsFor(Label.this);
             }
         };
         this.nodeProvisioner = new NodeProvisioner(this, loadStatistics);
@@ -170,7 +171,7 @@ public abstract class Label extends Actionable implements Comparable<Label>, Mod
         if(nodes!=null) return nodes;
 
         Set<Node> r = new HashSet<Node>();
-        Hudson h = Hudson.getInstance();
+        Jenkins h = Jenkins.getInstance();
         if(this.matches(h))
             r.add(h);
         for (Node n : h.getNodes()) {
@@ -187,7 +188,7 @@ public abstract class Label extends Actionable implements Comparable<Label>, Mod
     public Set<Cloud> getClouds() {
         if(clouds==null) {
             Set<Cloud> r = new HashSet<Cloud>();
-            Hudson h = Hudson.getInstance();
+            Jenkins h = Jenkins.getInstance();
             for (Cloud c : h.clouds) {
                 if(c.canProvision(this))
                     r.add(c);
@@ -326,7 +327,7 @@ public abstract class Label extends Actionable implements Comparable<Label>, Mod
     @Exported
     public List<AbstractProject> getTiedJobs() {
         List<AbstractProject> r = new ArrayList<AbstractProject>();
-        for( AbstractProject p : Util.filter(Hudson.getInstance().getItems(),AbstractProject.class) ) {
+        for( AbstractProject p : Util.filter(Jenkins.getInstance().getItems(),AbstractProject.class) ) {
             if(this.equals(p.getAssignedLabel()))
                 r.add(p);
         }
@@ -444,7 +445,7 @@ public abstract class Label extends Actionable implements Comparable<Label>, Mod
         }
 
         public Object unmarshal(HierarchicalStreamReader reader, final UnmarshallingContext context) {
-            return Hudson.getInstance().getLabel(reader.getValue());
+            return Jenkins.getInstance().getLabel(reader.getValue());
         }
     }
 
@@ -463,7 +464,7 @@ public abstract class Label extends Actionable implements Comparable<Label>, Mod
         labels = fixNull(labels);
         if(labels.length()>0)
             for( String l : new QuotedStringTokenizer(labels).toArray())
-                r.add(Hudson.getInstance().getLabelAtom(l));
+                r.add(Jenkins.getInstance().getLabelAtom(l));
         return r;
     }
 
@@ -471,7 +472,7 @@ public abstract class Label extends Actionable implements Comparable<Label>, Mod
      * Obtains a label by its {@linkplain #getName() name}.
      */
     public static Label get(String l) {
-        return Hudson.getInstance().getLabel(l);
+        return Jenkins.getInstance().getLabel(l);
     }
 
     /**

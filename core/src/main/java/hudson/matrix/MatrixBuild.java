@@ -30,15 +30,12 @@ import hudson.model.AbstractProject;
 import hudson.model.BuildListener;
 import hudson.model.Executor;
 import hudson.model.Fingerprint;
-import hudson.model.Hudson;
+import jenkins.model.Jenkins;
 import hudson.model.JobProperty;
-import hudson.model.Node;
 import hudson.model.ParametersAction;
 import hudson.model.Queue;
 import hudson.model.Result;
 import hudson.model.Cause.UpstreamCause;
-import hudson.slaves.WorkspaceList;
-import hudson.slaves.WorkspaceList.Lease;
 import hudson.tasks.Publisher;
 
 import java.io.File;
@@ -61,6 +58,12 @@ import org.kohsuke.stapler.export.Exported;
  */
 public class MatrixBuild extends AbstractBuild<MatrixProject,MatrixBuild> {
     private AxisList axes;
+
+    /**
+     * If non-null, the {@link MatrixBuild} originates from the given build number.
+     */
+    private Integer baseBuild;
+
 
     public MatrixBuild(MatrixProject job) throws IOException {
         super(job);
@@ -99,7 +102,7 @@ public class MatrixBuild extends AbstractBuild<MatrixProject,MatrixBuild> {
         public String getTooltip() {
             MatrixRun r = getRun();
             if(r!=null) return r.getIconColor().getDescription();
-            Queue.Item item = Hudson.getInstance().getQueue().getItem(getParent().getItem(combination));
+            Queue.Item item = Jenkins.getInstance().getQueue().getItem(getParent().getItem(combination));
             if(item!=null)
                 return item.getWhy();
             return null;    // fall back
@@ -116,15 +119,32 @@ public class MatrixBuild extends AbstractBuild<MatrixProject,MatrixBuild> {
     }
 
     /**
+     * Sets the base build from which this build is derived.
+     * @since 1.416
+     */
+    public void setBaseBuild(MatrixBuild baseBuild) {
+    	this.baseBuild = (baseBuild==null || baseBuild==getPreviousBuild()) ? null : baseBuild.getNumber();
+    }
+
+    /**
+     * Returns the base {@link MatrixBuild} that this build originates from.
+     * <p>
+     * If this build is a partial build, unexecuted {@link MatrixRun}s are delegated to this build number.
+     */
+    public MatrixBuild getBaseBuild() {
+        return baseBuild==null ? getPreviousBuild() : getParent().getBuildByNumber(baseBuild);
+    }
+
+    /**
      * Gets the {@link MatrixRun} in this build that corresponds
      * to the given combination.
      */
     public MatrixRun getRun(Combination c) {
         MatrixConfiguration config = getParent().getItem(c);
         if(config==null)    return null;
-        return config.getNearestOldBuild(getNumber());
+        return getRunForConfiguration(config);
     }
-
+    
     /**
      * Returns all {@link MatrixRun}s for this {@link MatrixBuild}.
      */
@@ -132,10 +152,18 @@ public class MatrixBuild extends AbstractBuild<MatrixProject,MatrixBuild> {
     public List<MatrixRun> getRuns() {
         List<MatrixRun> r = new ArrayList<MatrixRun>();
         for(MatrixConfiguration c : getParent().getItems()) {
-            MatrixRun b = c.getNearestOldBuild(getNumber());
+            MatrixRun b = getRunForConfiguration(c);
             if (b != null) r.add(b);
         }
         return r;
+    }
+    
+    private MatrixRun getRunForConfiguration(MatrixConfiguration c) {
+        for (MatrixBuild b=this; b!=null; b=b.getBaseBuild()) {
+            MatrixRun r = c.getBuildByNumber(b.getNumber());
+            if (r!=null)    return r;
+        }
+        return null;
     }
 
     /**
@@ -284,7 +312,7 @@ public class MatrixBuild extends AbstractBuild<MatrixProject,MatrixBuild> {
             }
             finally {
                 // if the build was aborted in the middle. Cancel all the configuration builds.
-                Queue q = Hudson.getInstance().getQueue();
+                Queue q = Jenkins.getInstance().getQueue();
                 synchronized(q) {// avoid micro-locking in q.cancel.
                     for (MatrixConfiguration c : activeConfigurations) {
                         if(q.cancel(c))

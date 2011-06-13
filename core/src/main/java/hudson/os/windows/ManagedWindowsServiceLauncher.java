@@ -27,7 +27,7 @@ import hudson.Extension;
 import hudson.lifecycle.WindowsSlaveInstaller;
 import hudson.model.Computer;
 import hudson.model.Descriptor;
-import hudson.model.Hudson;
+import jenkins.model.Jenkins;
 import hudson.model.TaskListener;
 import hudson.remoting.Channel;
 import hudson.remoting.Channel.Listener;
@@ -267,6 +267,8 @@ public class ManagedWindowsServiceLauncher extends ComputerLauncher {
                         afterDisconnect(computer,listener);
                     }
                 });
+            //destroy session to free the socket	
+            JISession.destroySession(session);
         } catch (SmbException e) {
             e.printStackTrace(listener.error(e.getMessage()));
         } catch (JIException e) {
@@ -290,7 +292,7 @@ public class ManagedWindowsServiceLauncher extends ComputerLauncher {
     private void copySlaveJar(PrintStream logger, SmbFile remoteRoot) throws IOException {
         // copy slave.jar
         logger.println("Copying slave.jar");
-        copyStreamAndClose(Hudson.getInstance().getJnlpJars("slave.jar").getURL().openStream(), new SmbFile(remoteRoot,"slave.jar").getOutputStream());
+        copyStreamAndClose(Jenkins.getInstance().getJnlpJars("slave.jar").getURL().openStream(), new SmbFile(remoteRoot,"slave.jar").getOutputStream());
     }
 
     private int readSmbFile(SmbFile f) throws IOException {
@@ -315,6 +317,8 @@ public class ManagedWindowsServiceLauncher extends ComputerLauncher {
                 listener.getLogger().println(Messages.ManagedWindowsServiceLauncher_StoppingService());
                 slaveService.StopService();
             }
+            //destroy session to free the socket	
+            JISession.destroySession(session);
         } catch (UnknownHostException e) {
             e.printStackTrace(listener.error(e.getMessage()));
         } catch (JIException e) {

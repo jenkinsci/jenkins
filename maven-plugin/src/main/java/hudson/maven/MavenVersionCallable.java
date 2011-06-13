@@ -24,6 +24,7 @@ package hudson.maven;
  * THE SOFTWARE.
  */
 
+import hudson.AbortException;
 import hudson.remoting.Callable;
 
 import java.io.File;
@@ -53,7 +54,15 @@ public class MavenVersionCallable
     {
         try
         {
-            return MavenEmbedderUtils.getMavenVersion( new File(mavenHome) );
+            File home = new File(mavenHome);
+            if(!home.isDirectory())
+            {
+                if (home.exists())
+                    throw new AbortException(Messages.MavenVersionCallable_MavenHomeIsNotDirectory(home));
+                else
+                    throw new AbortException(Messages.MavenVersionCallable_MavenHomeDoesntExist(home));
+            }
+            return MavenEmbedderUtils.getMavenVersion(home);
         }
         catch ( MavenEmbedderException e )
         {

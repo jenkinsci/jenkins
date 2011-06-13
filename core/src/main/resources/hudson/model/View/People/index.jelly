@@ -38,6 +38,7 @@ THE SOFTWARE.
       <table class="sortable pane bigtable" id="people">
         <tr>
           <th />
+          <th>${%User Id}</th>
           <th>${%Name}</th>
           <th initialSortDir="up">${%Last Active}</th>
           <th>${%On}</th>
@@ -46,6 +47,7 @@ THE SOFTWARE.
           <tr>
             <td><a href="${rootURL}/${p.user.url}/"><img src="${imagesURL}/${iconSize}/user.png"
                  alt="" class="icon${iconSize}"/></a></td>
+            <td><a href="${rootURL}/${p.user.url}/">${p.user.id}</a></td>
             <td><a href="${rootURL}/${p.user.url}/">${p.user}</a></td>
             <td data="${p.timeSortKey}">${p.lastChangeTimeString}</td>
             <td><a href="${rootURL}/${p.project.url}">${p.project.fullDisplayName}</a></td>

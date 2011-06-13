@@ -32,7 +32,7 @@ import hudson.init.InitStrategy;
 import hudson.init.InitializerFinder;
 import hudson.model.AbstractModelObject;
 import hudson.model.Failure;
-import hudson.model.Hudson;
+import jenkins.model.Jenkins;
 import hudson.model.UpdateCenter;
 import hudson.model.UpdateSite;
 import hudson.util.CyclicGraphDetector;
@@ -69,6 +69,7 @@ import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.List;
+import java.util.ListIterator;
 import java.util.Set;
 import java.util.Map;
 import java.util.HashMap;
@@ -103,7 +104,7 @@ public abstract class PluginManager extends AbstractModelObject {
 
     /**
      * @deprecated as of 1.355
-     *      {@link PluginManager} can now live longer than {@link Hudson} instance, so
+     *      {@link PluginManager} can now live longer than {@link jenkins.model.Jenkins} instance, so
      *      use {@code Hudson.getInstance().servletContext} instead.
      */
     public final ServletContext context;
@@ -150,7 +151,7 @@ public abstract class PluginManager extends AbstractModelObject {
     /**
      * Called immediately after the construction.
      * This is a separate method so that code executed from here will see a valid value in
-     * {@link Hudson#pluginManager}. 
+     * {@link jenkins.model.Jenkins#pluginManager}.
      */
     public TaskBuilder initTasks(final InitStrategy initStrategy) {
         TaskBuilder builder;
@@ -188,8 +189,6 @@ public abstract class PluginManager extends AbstractModelObject {
 
                                             p.isBundled = bundledPlugins.contains(arc.getName());
                                             plugins.add(p);
-                                            if(p.isActive())
-                                                activePlugins.add(p);
                                         } catch (IOException e) {
                                             failedPlugins.add(new FailedPlugin(arc.getName(),e));
                                             throw e;
@@ -213,34 +212,43 @@ public abstract class PluginManager extends AbstractModelObject {
                                 });
                             }
 
-                            g.requires(PLUGINS_PREPARED).add("Checking cyclic dependencies",new Executable() {
+                            g.followedBy().attains(PLUGINS_LISTED).add("Checking cyclic dependencies", new Executable() {
                                 /**
                                  * Makes sure there's no cycle in dependencies.
                                  */
                                 public void run(Reactor reactor) throws Exception {
                                     try {
-                                        new CyclicGraphDetector<PluginWrapper>() {
+                                        CyclicGraphDetector<PluginWrapper> cgd = new CyclicGraphDetector<PluginWrapper>() {
                                             @Override
                                             protected List<PluginWrapper> getEdges(PluginWrapper p) {
                                                 List<PluginWrapper> next = new ArrayList<PluginWrapper>();
-                                                addTo(p.getDependencies(),next);
-                                                addTo(p.getOptionalDependencies(),next);
+                                                addTo(p.getDependencies(), next);
+                                                addTo(p.getOptionalDependencies(), next);
                                                 return next;
                                             }
 
                                             private void addTo(List<Dependency> dependencies, List<PluginWrapper> r) {
                                                 for (Dependency d : dependencies) {
                                                     PluginWrapper p = getPlugin(d.shortName);
-                                                    if (p!=null)
+                                                    if (p != null)
                                                         r.add(p);
                                                 }
                                             }
-                                        }.run(getPlugins());
+                                        };
+                                        cgd.run(getPlugins());
+
+                                        // obtain topologically sorted list and overwrite the list
+                                        ListIterator<PluginWrapper> litr = plugins.listIterator();
+                                        for (PluginWrapper p : cgd.getSorted()) {
+                                            litr.next();
+                                            litr.set(p);
+                                            if(p.isActive())
+                                                activePlugins.add(p);
+                                        }
                                     } catch (CycleDetectedException e) {
                                         stop(); // disable all plugins since classloading from them can lead to StackOverflow
                                         throw e;    // let Hudson fail
                                     }
-                                    Collections.sort(plugins);
                                 }
                             });
 
@@ -265,7 +273,7 @@ public abstract class PluginManager extends AbstractModelObject {
                  * Once the plugins are listed, schedule their initialization.
                  */
                 public void run(Reactor session) throws Exception {
-                    Hudson.getInstance().lookup.set(PluginInstanceStore.class,new PluginInstanceStore());
+                    Jenkins.getInstance().lookup.set(PluginInstanceStore.class,new PluginInstanceStore());
                     TaskGraphBuilder g = new TaskGraphBuilder();
 
                     // schedule execution of loading plugins
@@ -486,10 +494,10 @@ public abstract class PluginManager extends AbstractModelObject {
     }
 
     public HttpResponse doUpdateSources(StaplerRequest req) throws IOException {
-        Hudson.getInstance().checkPermission(Hudson.ADMINISTER);
+        Jenkins.getInstance().checkPermission(Jenkins.ADMINISTER);
 
         if (req.hasParameter("remove")) {
-            UpdateCenter uc = Hudson.getInstance().getUpdateCenter();
+            UpdateCenter uc = Jenkins.getInstance().getUpdateCenter();
             BulkChange bc = new BulkChange(uc);
             try {
                 for (String id : req.getParameterValues("sources"))
@@ -515,7 +523,7 @@ public abstract class PluginManager extends AbstractModelObject {
                 n = n.substring(7);
                 if (n.indexOf(".") > 0) {
                     String[] pluginInfo = n.split("\\.");
-                    UpdateSite.Plugin p = Hudson.getInstance().getUpdateCenter().getById(pluginInfo[1]).getPlugin(pluginInfo[0]);
+                    UpdateSite.Plugin p = Jenkins.getInstance().getUpdateCenter().getById(pluginInfo[1]).getPlugin(pluginInfo[0]);
                     if(p==null)
                         throw new Failure("No such plugin: "+n);
                     p.deploy();
@@ -530,8 +538,8 @@ public abstract class PluginManager extends AbstractModelObject {
      * Bare-minimum configuration mechanism to change the update center.
      */
     public HttpResponse doSiteConfigure(@QueryParameter String site) throws IOException {
-        Hudson hudson = Hudson.getInstance();
-        hudson.checkPermission(Hudson.ADMINISTER);
+        Jenkins hudson = Jenkins.getInstance();
+        hudson.checkPermission(Jenkins.ADMINISTER);
         UpdateCenter uc = hudson.getUpdateCenter();
         PersistedList<UpdateSite> sites = uc.getSites();
         for (UpdateSite s : sites) {
@@ -549,8 +557,8 @@ public abstract class PluginManager extends AbstractModelObject {
             @QueryParameter("proxy.port") String port,
             @QueryParameter("proxy.userName") String userName,
             @QueryParameter("proxy.password") String password) throws IOException {
-        Hudson hudson = Hudson.getInstance();
-        hudson.checkPermission(Hudson.ADMINISTER);
+        Jenkins hudson = Jenkins.getInstance();
+        hudson.checkPermission(Jenkins.ADMINISTER);
 
         server = Util.fixEmptyAndTrim(server);
         if(server==null) {
@@ -572,7 +580,7 @@ public abstract class PluginManager extends AbstractModelObject {
      */
     public HttpResponse doUploadPlugin(StaplerRequest req) throws IOException, ServletException {
         try {
-            Hudson.getInstance().checkPermission(Hudson.ADMINISTER);
+            Jenkins.getInstance().checkPermission(Jenkins.ADMINISTER);
 
             ServletFileUpload upload = new ServletFileUpload(new DiskFileItemFactory());
 

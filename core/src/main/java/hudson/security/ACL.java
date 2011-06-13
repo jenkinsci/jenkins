@@ -23,12 +23,12 @@
  */
 package hudson.security;
 
+import jenkins.model.Jenkins;
 import org.acegisecurity.AccessDeniedException;
 import org.acegisecurity.Authentication;
 import org.acegisecurity.providers.UsernamePasswordAuthenticationToken;
 import org.acegisecurity.acls.sid.PrincipalSid;
 import org.acegisecurity.acls.sid.Sid;
-import hudson.model.Hudson;
 import hudson.model.Executor;
 
 /**
@@ -48,7 +48,7 @@ public abstract class ACL {
      *      if the user doesn't have the permission.
      */
     public final void checkPermission(Permission p) {
-        Authentication a = Hudson.getAuthentication();
+        Authentication a = Jenkins.getAuthentication();
         if(!hasPermission(a,p))
             throw new AccessDeniedException2(a,p);
     }
@@ -60,7 +60,7 @@ public abstract class ACL {
      *      if the user doesn't have the permission.
      */
     public final boolean hasPermission(Permission p) {
-        return hasPermission(Hudson.getAuthentication(),p);
+        return hasPermission(Jenkins.getAuthentication(),p);
     }
 
     /**

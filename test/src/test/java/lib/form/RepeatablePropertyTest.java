@@ -31,7 +31,7 @@ import com.gargoylesoftware.htmlunit.html.HtmlTextInput;
 import hudson.Extension;
 import hudson.model.Describable;
 import hudson.model.Descriptor;
-import hudson.model.Hudson;
+import jenkins.model.Jenkins;
 import org.jvnet.hudson.test.HudsonTestCase;
 import org.kohsuke.stapler.DataBoundConstructor;
 
@@ -124,7 +124,7 @@ public class RepeatablePropertyTest extends HudsonTestCase implements Describabl
             return greatProperty;
         }
         public Descriptor<ExcitingObject> getDescriptor() {
-            return Hudson.getInstance().getDescriptor(ExcitingObject.class);
+            return Jenkins.getInstance().getDescriptor(ExcitingObject.class);
         }
         @Override
         public boolean equals(Object o) {

@@ -36,7 +36,7 @@ import hudson.model.AperiodicWork;
 import hudson.model.Build;
 import hudson.model.ComputerSet;
 import hudson.model.Describable;
-import hudson.model.Hudson;
+import jenkins.model.Jenkins;
 import hudson.model.Item;
 import hudson.model.PeriodicWork;
 import hudson.model.Project;
@@ -131,7 +131,7 @@ public abstract class Trigger<J extends Item> implements Describable<Trigger<?>>
     }
 
     public TriggerDescriptor getDescriptor() {
-        return (TriggerDescriptor)Hudson.getInstance().getDescriptorOrDie(getClass());
+        return (TriggerDescriptor) Jenkins.getInstance().getDescriptorOrDie(getClass());
     }
 
 
@@ -210,7 +210,7 @@ public abstract class Trigger<J extends Item> implements Describable<Trigger<?>>
     private static Future previousSynchronousPolling;
 
     public static void checkTriggers(final Calendar cal) {
-        Hudson inst = Hudson.getInstance();
+        Jenkins inst = Jenkins.getInstance();
 
         // Are we using synchronous polling?
         SCMTrigger.DescriptorImpl scmd = inst.getDescriptorByType(SCMTrigger.DescriptorImpl.class);
@@ -265,7 +265,7 @@ public abstract class Trigger<J extends Item> implements Describable<Trigger<?>>
      * This timer is available for all the components inside Hudson to schedule
      * some work.
      *
-     * Initialized and cleaned up by {@link Hudson}, but value kept here for compatibility.
+     * Initialized and cleaned up by {@link jenkins.model.Jenkins}, but value kept here for compatibility.
      *
      * If plugins want to run periodic jobs, they should implement {@link PeriodicWork}.
      */
@@ -295,7 +295,7 @@ public abstract class Trigger<J extends Item> implements Describable<Trigger<?>>
      * Returns all the registered {@link Trigger} descriptors.
      */
     public static DescriptorExtensionList<Trigger<?>,TriggerDescriptor> all() {
-        return (DescriptorExtensionList)Hudson.getInstance().getDescriptorList(Trigger.class);
+        return (DescriptorExtensionList) Jenkins.getInstance().getDescriptorList(Trigger.class);
     }
 
     /**

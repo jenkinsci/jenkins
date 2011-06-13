@@ -28,7 +28,7 @@ import hudson.BulkChange;
 import hudson.Util;
 import hudson.XmlFile;
 import hudson.model.AbstractModelObject;
-import hudson.model.Hudson;
+import jenkins.model.Jenkins;
 import hudson.model.Saveable;
 import hudson.model.listeners.SaveableListener;
 import hudson.util.CopyOnWriteList;
@@ -57,7 +57,7 @@ import java.util.logging.Logger;
  *
  * <h3>Access Control</h3>
  * {@link LogRecorder} is only visible for administrators, and this access control happens at
- * {@link Hudson#getLog()}, the sole entry point for binding {@link LogRecorder} to URL.
+ * {@link jenkins.model.Jenkins#getLog()}, the sole entry point for binding {@link LogRecorder} to URL.
  *
  * @author Kohsuke Kawaguchi
  * @see LogRecorderManager
@@ -150,7 +150,7 @@ public class LogRecorder extends AbstractModelObject implements Saveable {
     }
 
     public LogRecorderManager getParent() {
-        return Hudson.getInstance().getLog();
+        return Jenkins.getInstance().getLog();
     }
 
     /**
@@ -162,7 +162,7 @@ public class LogRecorder extends AbstractModelObject implements Saveable {
         String newName = src.getString("name"), redirect = ".";
         XmlFile oldFile = null;
         if(!name.equals(newName)) {
-            Hudson.checkGoodName(newName);
+            Jenkins.checkGoodName(newName);
             oldFile = getConfigFile();
             // rename
             getParent().logRecorders.remove(name);
@@ -227,7 +227,7 @@ public class LogRecorder extends AbstractModelObject implements Saveable {
      * The file we save our configuration.
      */
     private XmlFile getConfigFile() {
-        return new XmlFile(XSTREAM, new File(Hudson.getInstance().getRootDir(),"log/"+name+".xml"));
+        return new XmlFile(XSTREAM, new File(Jenkins.getInstance().getRootDir(),"log/"+name+".xml"));
     }
 
     /**

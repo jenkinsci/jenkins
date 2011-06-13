@@ -28,7 +28,7 @@ import org.acegisecurity.providers.ldap.authenticator.BindAuthenticator2
 import org.acegisecurity.ldap.DefaultInitialDirContextFactory
 import org.acegisecurity.ldap.search.FilterBasedLdapUserSearch
 import org.acegisecurity.providers.rememberme.RememberMeAuthenticationProvider
-import hudson.model.Hudson
+import jenkins.model.Jenkins
 import hudson.security.LDAPSecurityRealm.AuthoritiesPopulatorImpl
 import hudson.Util
 import javax.naming.Context
@@ -64,7 +64,7 @@ bindAuthenticator(BindAuthenticator2,initialDirContextFactory) {
 authoritiesPopulator(AuthoritiesPopulatorImpl, initialDirContextFactory, instance.groupSearchBase) {
     // see DefaultLdapAuthoritiesPopulator for other possible configurations
     searchSubtree = true;
-    groupSearchFilter = "(| (member={0}) (uniqueMember={0}) (memberUid={1}))";
+    groupSearchFilter = "(| (member={0}) (uniqueMember={0}) (memberUid={0}))";
 }
 
 authenticationManager(ProviderManager) {
@@ -74,7 +74,7 @@ authenticationManager(ProviderManager) {
 
     // these providers apply everywhere
         bean(RememberMeAuthenticationProvider) {
-            key = Hudson.getInstance().getSecretKey();
+            key = Jenkins.getInstance().getSecretKey();
         },
         // this doesn't mean we allow anonymous access.
         // we just authenticate anonymous users as such,

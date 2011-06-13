@@ -1,7 +1,6 @@
 package hudson;
 
-import hudson.model.Hudson;
-import hudson.Util;
+import jenkins.model.Jenkins;
 
 import javax.jmdns.JmDNS;
 import javax.jmdns.ServiceInfo;
@@ -20,7 +19,7 @@ import java.util.logging.Logger;
 public class DNSMultiCast implements Closeable {
     private JmDNS jmdns;
 
-    public DNSMultiCast(Hudson hudson) {
+    public DNSMultiCast(Jenkins hudson) {
         if (disabled)   return; // escape hatch
         
         try {
@@ -31,7 +30,7 @@ public class DNSMultiCast implements Closeable {
             if (rootURL!=null)
                 props.put("url", rootURL);
             try {
-                props.put("version",String.valueOf(Hudson.getVersion()));
+                props.put("version",String.valueOf(Jenkins.getVersion()));
             } catch (IllegalArgumentException e) {
                 // failed to parse the version number
             }

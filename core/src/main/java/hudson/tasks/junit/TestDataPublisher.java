@@ -28,6 +28,7 @@ import hudson.Extension;
 import hudson.ExtensionPoint;
 import hudson.Launcher;
 import hudson.model.*;
+import jenkins.model.Jenkins;
 
 import java.io.IOException;
 
@@ -55,7 +56,7 @@ public abstract class TestDataPublisher extends AbstractDescribableImpl<TestData
 			BuildListener listener, TestResult testResult) throws IOException, InterruptedException;
 
 	public static DescriptorExtensionList<TestDataPublisher, Descriptor<TestDataPublisher>> all() {
-		return Hudson.getInstance().<TestDataPublisher, Descriptor<TestDataPublisher>>getDescriptorList(TestDataPublisher.class);
+		return Jenkins.getInstance().<TestDataPublisher, Descriptor<TestDataPublisher>>getDescriptorList(TestDataPublisher.class);
 	}
 
 }

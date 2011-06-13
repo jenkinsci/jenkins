@@ -54,7 +54,7 @@ final class ImportedClassLoaderTable {
         if(r==null) {
             // we need to be able to use the same hudson.remoting classes, hence delegate
             // to this class loader.
-            r = RemoteClassLoader.create(getClass().getClassLoader(),classLoaderProxy);
+            r = RemoteClassLoader.create(channel.baseClassLoader,classLoaderProxy);
             classLoaders.put(classLoaderProxy,r);
         }
         return r;

@@ -23,10 +23,11 @@
  */
 package hudson;
 
-import hudson.model.Hudson;
+import jenkins.model.Jenkins;
 import hudson.model.Saveable;
 import hudson.model.listeners.SaveableListener;
 import hudson.util.Scrambler;
+import hudson.util.Secret;
 import hudson.util.XStream2;
 
 import java.io.File;
@@ -52,17 +53,27 @@ import com.thoughtworks.xstream.XStream;
  * <a href="http://java.sun.com/javase/6/docs/technotes/guides/net/http-auth.html">
  * Http Authentication</a>).
  * 
- * @see Hudson#proxy
+ * @see jenkins.model.Jenkins#proxy
  */
 public final class ProxyConfiguration implements Saveable {
     public final String name;
     public final int port;
 
     /**
-     * Possibly null proxy user name and password.
-     * Password is base64 scrambled since this is persisted to disk.
+     * Possibly null proxy user name.
      */
-    private final String userName,password;
+    private final String userName;
+
+    /**
+     * null
+     */
+    @Deprecated
+    private String password;
+
+    /**
+     * encrypted password
+     */
+    private Secret secretPassword;
 
     public ProxyConfiguration(String name, int port) {
         this(name,port,null,null);
@@ -72,15 +83,24 @@ public final class ProxyConfiguration implements Saveable {
         this.name = name;
         this.port = port;
         this.userName = userName;
-        this.password = Scrambler.scramble(password);
+        this.secretPassword = Secret.fromString(password);
     }
 
     public String getUserName() {
         return userName;
     }
 
+//    This method is public, if it was public only for jelly, then should make it private (or inline contents)
+//    Have left public, as can't tell if anyone else is using from plugins
+    /**
+     * @return the password in plain text
+     */
     public String getPassword() {
-        return Scrambler.descramble(password);
+        return Secret.toString(secretPassword);
+    }
+
+    public String getEncryptedPassword() {
+        return (secretPassword == null) ? null : secretPassword.getEncryptedValue();
     }
 
     public Proxy createProxy() {
@@ -94,8 +114,16 @@ public final class ProxyConfiguration implements Saveable {
         SaveableListener.fireOnChange(this, config);
     }
 
+    public Object readResolve() {
+        if (secretPassword == null)
+            // backward compatibility : get crambled password and store it encrypted
+            secretPassword = Secret.fromString(Scrambler.descramble(password));
+        password = null;
+        return this;
+    }
+
     public static XmlFile getXmlFile() {
-        return new XmlFile(XSTREAM, new File(Hudson.getInstance().getRootDir(), "proxy.xml"));
+        return new XmlFile(XSTREAM, new File(Jenkins.getInstance().getRootDir(), "proxy.xml"));
     }
 
     public static ProxyConfiguration load() throws IOException {
@@ -110,7 +138,7 @@ public final class ProxyConfiguration implements Saveable {
      * This method should be used wherever {@link URL#openConnection()} to internet URLs is invoked directly.
      */
     public static URLConnection open(URL url) throws IOException {
-        Hudson h = Hudson.getInstance(); // this code might run on slaves
+        Jenkins h = Jenkins.getInstance(); // this code might run on slaves
         ProxyConfiguration p = h!=null ? h.proxy : null;
         if(p==null)
             return url.openConnection();
@@ -122,7 +150,7 @@ public final class ProxyConfiguration implements Saveable {
                 @Override
                 public PasswordAuthentication getPasswordAuthentication() {
                     if (getRequestorType()!=RequestorType.PROXY)    return null;
-                    ProxyConfiguration p = Hudson.getInstance().proxy;
+                    ProxyConfiguration p = Jenkins.getInstance().proxy;
                     return new PasswordAuthentication(p.getUserName(),
                             p.getPassword().toCharArray());
                 }

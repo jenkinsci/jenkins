@@ -61,7 +61,92 @@ Upcoming changes</a>
 
 <!-- these changes are controlled by the release process. DO NOT MODIFY -->
 <div id="rc" style="display:none;"><!--=BEGIN=-->
-<h3><a name=v1.414>What's new in 1.414</a> <!--=DATE=--></h3>
+<h3><a name=v1.416>What's new in 1.416</a> <!--=DATE=--></h3>
+<ul class=image>
+  <li class=rfe>
+    Make captcha support optional; remove LGPL jcaptcha
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-9915">issue 9915</a>)
+  <li class=bug>
+  	Validate new view name relative to current context
+  <li class=bug>
+    Unfilled custom workspace textbox shouldn't be allowed.
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-9806">issue 9806</a>)
+  <li class=bug>
+    Fixed a bug in LDAP group search based on memberUid
+    (<a href="https://github.com/jenkinsci/jenkins/pull/151">pull request #151</a>)
+  <li class=bug>
+    If the user tries to run Jenkins on Java 1.4 and earlier, detect that more gracefully.
+  <li class=bug>
+    Fixed NPE in site generation when building a single Maven module
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-7577">issue 7577</a>)
+  <li class=bug>
+    Fixed timeline on build trend page.
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-6439">issue 6439</a>)
+  <li class=bug>
+    Fixed the initialization order of plugins
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-9960">issue 9960</a>)
+  <li class=rfe>
+    <tt>LDAPBindSecurityRealm.groovy</tt> can be now overridden in <tt>$JENKINS_HOME</tt> if it exists.
+  <li class=rfe>
+    AJP port is customizable in RPM/OpenSUSE packages
+    (<a href="https://github.com/jenkinsci/jenkins/pull/149">pull request #149</a>)
+  <li class=rfe>
+    "Deploy to Maven repository" post build task should default to unique version, as per Maven3 default.
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-9807">issue 9807</a>)
+  <li class=rfe>
+    Improved the URL hyperlinking behavior in the console output
+    (<a href="https://github.com/jenkinsci/jenkins/pull/119">pull request #119</a>)
+  <li class=rfe>
+    Plugins can now override where jobs are executed.
+  <li class=rfe>
+    Rotate the slave log files instead of deleting them.
+  <li class=rfe>
+    Added a mechanism to control the XML parser behaviour
+    (<a href="https://github.com/jenkinsci/jenkins/pull/67">pull request #67</a>)
+  <li class=rfe>
+    Minor UI improvements for Jenkins update center.
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-9212">issue 9212</a>)
+  <li class='major rfe'>
+    Added a mechanism to write views in Groovy. The interface isn't committed yet. We are looking for feedback.
+</ul>
+</div><!--=END=-->
+<h3><a name=v1.415>What's new in 1.415</a> (2011/06/12)</h3>
+<ul class=image>
+  <li class=bug>
+    Output correct version from java -jar jenkins.war --version (broken since 1.410)
+  <li class=bug>
+    Correct usage text from java -jar jenkins.war --help
+  <li class=bug>
+    Incremental maven jobs: if POM parsing failed, do a full build next time.
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-9848">issue 9848</a>)
+  <li class=bug>
+    Do not expose the proxy password in the HTML for Update Center
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-4000">issue 4000</a>)
+  <li class=rfe>
+    CLI command page now lists all the available commands
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-9789">issue 9789</a>)
+  <li class=rfe>
+    Improve the post deployment job to make a clear error if you disabled artifacts archives
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-9791">issue 9791</a>)
+  <li class=rfe>
+    Post-build deploy task for Maven jobs : Repositories definitions can now be read from the POMs.
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-9786">issue 9786</a>)
+  <li class=rfe>
+    Run maven jobs as headless process. on OSX this avoid jumping Dock icon to take focus.
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-9785">issue 9785</a>)
+  <li class=rfe>
+    Reduce memory consumption of dependency calculation in maven jobs.
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-9845">issue 9845</a>)
+  <li class=rfe>
+    Strongly encrypt the proxy password
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-4002">issue 4002</a>)
+  <li class=rfe>
+    Added an extension point to allow prodding the NodeProvisioner into taking action faster than it might usually.
+  <li class=bug>
+    When there are absolutely no executors for a specific label, there was an unnecessary delay in provisioning the
+    first node for that label.
+</ul>
+<h3><a name=v1.414>What's new in 1.414</a> (2011/06/04)</h3>
 <ul class=image>
   <li class=bug>
     Fixed the concurrent modification exception in classloading during startup
@@ -84,12 +169,14 @@ Upcoming changes</a>
     Set NODE_NAME for master node to "master"
     (<a href="http://issues.jenkins-ci.org/browse/JENKINS-9671">issue 9671</a>)
   <li class=rfe>
+    Jenkins Maven build does not recognize Tycho surfire reports with new groupId org.eclipse.tycho
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-9326">issue 9326</a>)
+  <li class=rfe>
     Add a default attribute to repeatableProperty and repeatable jelly tags
   <li class=rfe>
     Log which build steps have changed the build result to build console.
     (<a href="http://issues.jenkins-ci.org/browse/JENKINS-9687">issue 9687</a>)
 </ul>
-</div><!--=END=-->
 <h3><a name=v1.413>What's new in 1.413</a> (2011/05/22)</h3>
 <ul class=image>
   <li class=bug>

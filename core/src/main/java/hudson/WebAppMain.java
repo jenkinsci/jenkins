@@ -26,6 +26,7 @@ package hudson;
 import com.thoughtworks.xstream.converters.reflection.PureJavaReflectionProvider;
 import com.thoughtworks.xstream.core.JVM;
 import hudson.model.Hudson;
+import jenkins.model.Jenkins;
 import hudson.model.User;
 import hudson.triggers.SafeTimerTask;
 import hudson.triggers.Trigger;
@@ -41,8 +42,6 @@ import hudson.util.HudsonFailedToLoad;
 import hudson.util.ChartUtil;
 import hudson.util.AWTProblem;
 import org.jvnet.localizer.LocaleProvider;
-import org.kohsuke.stapler.Stapler;
-import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.jelly.JellyFacet;
 import org.apache.tools.ant.types.FileSet;
 
@@ -74,7 +73,7 @@ public final class WebAppMain implements ServletContextListener {
     private static final String APP = "app";
 
     /**
-     * Creates the sole instance of {@link Hudson} and register it to the {@link ServletContext}.
+     * Creates the sole instance of {@link jenkins.model.Jenkins} and register it to the {@link ServletContext}.
      */
     public void contextInitialized(ServletContextEvent event) {
         try {
@@ -108,7 +107,7 @@ public final class WebAppMain implements ServletContextListener {
             final FileAndDescription describedHomeDir = getHomeDir(event);
             final File home = describedHomeDir.file.getAbsoluteFile();
             home.mkdirs();
-            System.out.println("hudson home directory: "+home+" found at: "+describedHomeDir.description);
+            System.out.println("Jenkins home directory: "+home+" found at: "+describedHomeDir.description);
 
             // check that home exists (as mkdirs could have failed silently), otherwise throw a meaningful error
             if (! home.exists()) {
@@ -223,20 +222,20 @@ public final class WebAppMain implements ServletContextListener {
                             }
                         }, 1000*10);
                     } catch (Error e) {
-                        LOGGER.log(Level.SEVERE, "Failed to initialize Hudson",e);
+                        LOGGER.log(Level.SEVERE, "Failed to initialize Jenkins",e);
                         context.setAttribute(APP,new HudsonFailedToLoad(e));
                         throw e;
                     } catch (Exception e) {
-                        LOGGER.log(Level.SEVERE, "Failed to initialize Hudson",e);
+                        LOGGER.log(Level.SEVERE, "Failed to initialize Jenkins",e);
                         context.setAttribute(APP,new HudsonFailedToLoad(e));
                     }
                 }
             }.start();
         } catch (Error e) {
-            LOGGER.log(Level.SEVERE, "Failed to initialize Hudson",e);
+            LOGGER.log(Level.SEVERE, "Failed to initialize Jenkins",e);
             throw e;
         } catch (RuntimeException e) {
-            LOGGER.log(Level.SEVERE, "Failed to initialize Hudson",e);
+            LOGGER.log(Level.SEVERE, "Failed to initialize Jenkins",e);
             throw e;
         }
     }
@@ -249,7 +248,7 @@ public final class WebAppMain implements ServletContextListener {
      * Installs log handler to monitor all Hudson logs.
      */
     private void installLogger() {
-        Hudson.logRecords = handler.getView();
+        Jenkins.logRecords = handler.getView();
         Logger.getLogger("hudson").addHandler(handler);
     }
 
@@ -330,7 +329,7 @@ public final class WebAppMain implements ServletContextListener {
     }
 
     public void contextDestroyed(ServletContextEvent event) {
-        Hudson instance = Hudson.getInstance();
+        Jenkins instance = Jenkins.getInstance();
         if(instance!=null)
             instance.cleanUp();
 

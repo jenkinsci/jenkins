@@ -199,6 +199,8 @@ public final class TestResult extends MetaTabulatedResult {
         try {
             for (SuiteResult suiteResult : SuiteResult.parse(reportFile, keepLongStdio))
                 add(suiteResult);
+        } catch (InterruptedException e) {
+            throw new IOException2("Failed to read "+reportFile,e);
         } catch (RuntimeException e) {
             throw new IOException2("Failed to read "+reportFile,e);
         } catch (DocumentException e) {

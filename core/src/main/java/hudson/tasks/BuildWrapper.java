@@ -29,7 +29,7 @@ import hudson.DescriptorExtensionList;
 import hudson.LauncherDecorator;
 import hudson.model.*;
 import hudson.model.Run.RunnerAbortedException;
-import hudson.model.listeners.RunListener;
+import jenkins.model.Jenkins;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -302,6 +302,6 @@ public abstract class BuildWrapper extends AbstractDescribableImpl<BuildWrapper>
     // for compatibility we can't use BuildWrapperDescriptor
     public static DescriptorExtensionList<BuildWrapper,Descriptor<BuildWrapper>> all() {
         // use getDescriptorList and not getExtensionList to pick up legacy instances
-        return Hudson.getInstance().<BuildWrapper,Descriptor<BuildWrapper>>getDescriptorList(BuildWrapper.class);
+        return Jenkins.getInstance().<BuildWrapper,Descriptor<BuildWrapper>>getDescriptorList(BuildWrapper.class);
     }
 }

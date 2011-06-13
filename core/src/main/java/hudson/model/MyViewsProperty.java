@@ -44,6 +44,7 @@ import java.util.logging.Logger;
 
 import javax.servlet.ServletException;
 
+import jenkins.model.Jenkins;
 import net.sf.json.JSONObject;
 
 import org.acegisecurity.AccessDeniedException;
@@ -243,11 +244,11 @@ public class MyViewsProperty extends UserProperty implements ViewGroup, Action {
     }
 
     public ViewsTabBar getViewsTabBar() {
-        return Hudson.getInstance().getViewsTabBar();
+        return Jenkins.getInstance().getViewsTabBar();
     }
 
     public MyViewsTabBar getMyViewsTabBar() {
-        return Hudson.getInstance().getMyViewsTabBar();
+        return Jenkins.getInstance().getMyViewsTabBar();
     }
     
     @Extension

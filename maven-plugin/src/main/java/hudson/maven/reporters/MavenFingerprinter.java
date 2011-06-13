@@ -35,7 +35,7 @@ import hudson.maven.MojoInfo;
 import hudson.maven.MavenModuleSetBuild;
 import hudson.model.BuildListener;
 import hudson.model.FingerprintMap;
-import hudson.model.Hudson;
+import jenkins.model.Jenkins;
 import hudson.tasks.Fingerprinter.FingerprintAction;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.project.MavenProject;
@@ -99,7 +99,7 @@ public class MavenFingerprinter extends MavenReporter {
             private final Map<String,String> p = produced;
 
             public Void call(MavenBuild build) throws IOException, InterruptedException {
-                FingerprintMap map = Hudson.getInstance().getFingerprintMap();
+                FingerprintMap map = Jenkins.getInstance().getFingerprintMap();
 
                 for (Entry<String, String> e : p.entrySet())
                     map.getOrCreate(build, e.getKey(), e.getValue()).add(build);
@@ -172,7 +172,7 @@ public class MavenFingerprinter extends MavenReporter {
             }
         }
         if(!records.isEmpty()) {
-            FingerprintMap map = Hudson.getInstance().getFingerprintMap();
+            FingerprintMap map = Jenkins.getInstance().getFingerprintMap();
             for (Entry<String, String> e : records.entrySet())
                 map.getOrCreate(null, e.getKey(), e.getValue()).add(mmsb);
             mmsb.addAction(new FingerprintAction(mmsb,records));

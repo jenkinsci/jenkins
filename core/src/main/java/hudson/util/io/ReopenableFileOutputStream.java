@@ -41,7 +41,7 @@ import java.io.OutputStream;
  * @author Kohsuke Kawaguchi
  */
 public class ReopenableFileOutputStream extends OutputStream {
-    private final File out;
+    protected final File out;
 
     private OutputStream current;
     private boolean appendOnNextOpen = false;

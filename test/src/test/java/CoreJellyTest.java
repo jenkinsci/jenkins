@@ -22,7 +22,7 @@
  * THE SOFTWARE.
  */
 
-import hudson.model.Hudson;
+import jenkins.model.Jenkins;
 import hudson.remoting.Which;
 import junit.framework.Test;
 import junit.framework.TestCase;
@@ -35,6 +35,6 @@ import org.jvnet.hudson.test.JellyTestSuiteBuilder;
  */
 public class CoreJellyTest extends TestCase {
     public static Test suite() throws Exception {
-        return JellyTestSuiteBuilder.build(Which.jarFile(Hudson.class));
+        return JellyTestSuiteBuilder.build(Which.jarFile(Jenkins.class),true);
     }
 }

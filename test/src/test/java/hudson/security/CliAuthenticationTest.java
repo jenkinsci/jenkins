@@ -5,7 +5,7 @@ import hudson.cli.CLICommand;
 import hudson.cli.ClientAuthenticationCache;
 import hudson.cli.LoginCommand;
 import hudson.cli.LogoutCommand;
-import hudson.model.Hudson;
+import jenkins.model.Jenkins;
 import org.acegisecurity.Authentication;
 import org.jvnet.hudson.test.For;
 import org.jvnet.hudson.test.HudsonTestCase;
@@ -45,8 +45,8 @@ public class CliAuthenticationTest extends HudsonTestCase {
 
         @Override
         protected int run() throws Exception {
-            Authentication auth = Hudson.getAuthentication();
-            Assert.assertNotSame(Hudson.ANONYMOUS,auth);
+            Authentication auth = Jenkins.getAuthentication();
+            Assert.assertNotSame(Jenkins.ANONYMOUS,auth);
             Assert.assertEquals("abc", auth.getName());
             return 0;
         }
@@ -61,8 +61,8 @@ public class CliAuthenticationTest extends HudsonTestCase {
 
         @Override
         protected int run() throws Exception {
-            Authentication auth = Hudson.getAuthentication();
-            Assert.assertSame(Hudson.ANONYMOUS,auth);
+            Authentication auth = Jenkins.getAuthentication();
+            Assert.assertSame(Jenkins.ANONYMOUS,auth);
             return 0;
         }
     }

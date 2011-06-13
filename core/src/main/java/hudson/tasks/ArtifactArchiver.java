@@ -31,7 +31,6 @@ import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
 import hudson.model.BuildListener;
 import hudson.model.Result;
-import hudson.model.Hudson;
 import hudson.util.FormValidation;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.DataBoundConstructor;
@@ -176,7 +175,7 @@ public class ArtifactArchiver extends Recorder {
     /**
      * @deprecated as of 1.286
      *      Some plugin depends on this, so this field is left here and points to the last created instance.
-     *      Use {@link Hudson#getDescriptorByType(Class)} instead.
+     *      Use {@link jenkins.model.Jenkins#getDescriptorByType(Class)} instead.
      */
     public static volatile DescriptorImpl DESCRIPTOR;
 

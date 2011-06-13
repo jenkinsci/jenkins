@@ -23,7 +23,7 @@
  */
 package hudson.widgets;
 
-import hudson.model.Hudson;
+import jenkins.model.Jenkins;
 import hudson.model.Queue.Item;
 import hudson.model.Queue.Task;
 
@@ -53,14 +53,14 @@ public class BuildHistoryWidget<T> extends HistoryWidget<Task,T> {
      * Returns the first queue item if the owner is scheduled for execution in the queue.
      */
     public Item getQueuedItem() {
-        return Hudson.getInstance().getQueue().getItem(owner);
+        return Jenkins.getInstance().getQueue().getItem(owner);
     }
 
     /**
      * Returns the queue item if the owner is scheduled for execution in the queue, in REVERSE ORDER
      */
     public List<Item> getQueuedItems() {
-    	List<Item> list = new ArrayList<Item>(Hudson.getInstance().getQueue().getItems(owner));
+    	List<Item> list = new ArrayList<Item>(Jenkins.getInstance().getQueue().getItems(owner));
     	Collections.reverse(list);
     	return list;
     }

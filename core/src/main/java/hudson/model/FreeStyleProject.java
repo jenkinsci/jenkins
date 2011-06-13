@@ -24,6 +24,7 @@
 package hudson.model;
 
 import hudson.Extension;
+import jenkins.model.Jenkins;
 
 /**
  * Free-style software project.
@@ -35,7 +36,7 @@ public class FreeStyleProject extends Project<FreeStyleProject,FreeStyleBuild> i
     /**
      * @deprecated as of 1.390
      */
-    public FreeStyleProject(Hudson parent, String name) {
+    public FreeStyleProject(Jenkins parent, String name) {
         super(parent, name);
     }
 

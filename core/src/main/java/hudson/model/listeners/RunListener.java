@@ -35,7 +35,7 @@ import hudson.model.Environment;
 import hudson.model.JobProperty;
 import hudson.model.Run;
 import hudson.model.TaskListener;
-import hudson.model.Hudson;
+import jenkins.model.Jenkins;
 import hudson.scm.SCM;
 import hudson.tasks.BuildWrapper;
 import hudson.util.CopyOnWriteList;
@@ -213,6 +213,6 @@ public abstract class RunListener<R extends Run> implements ExtensionPoint {
      * Returns all the registered {@link RunListener} descriptors.
      */
     public static ExtensionList<RunListener> all() {
-        return Hudson.getInstance().getExtensionList(RunListener.class);
+        return Jenkins.getInstance().getExtensionList(RunListener.class);
     }
 }

@@ -35,7 +35,7 @@ import hudson.model.AbstractProject;
 import hudson.model.BuildListener;
 import hudson.model.Computer;
 import hudson.model.EnvironmentSpecific;
-import hudson.model.Hudson;
+import jenkins.model.Jenkins;
 import hudson.model.Node;
 import hudson.model.TaskListener;
 import hudson.remoting.Callable;
@@ -391,12 +391,12 @@ public class Ant extends Builder {
             // for compatibility reasons, the persistence is done by Ant.DescriptorImpl  
             @Override
             public AntInstallation[] getInstallations() {
-                return Hudson.getInstance().getDescriptorByType(Ant.DescriptorImpl.class).getInstallations();
+                return Jenkins.getInstance().getDescriptorByType(Ant.DescriptorImpl.class).getInstallations();
             }
 
             @Override
             public void setInstallations(AntInstallation... installations) {
-                Hudson.getInstance().getDescriptorByType(Ant.DescriptorImpl.class).setInstallations(installations);
+                Jenkins.getInstance().getDescriptorByType(Ant.DescriptorImpl.class).setInstallations(installations);
             }
 
             @Override
@@ -409,7 +409,7 @@ public class Ant extends Builder {
              */
             public FormValidation doCheckHome(@QueryParameter File value) {
                 // this can be used to check the existence of a file on the server, so needs to be protected
-                if(!Hudson.getInstance().hasPermission(Hudson.ADMINISTER))
+                if(!Jenkins.getInstance().hasPermission(Jenkins.ADMINISTER))
                     return FormValidation.ok();
 
                 if(value.getPath().equals(""))

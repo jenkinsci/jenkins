@@ -28,7 +28,7 @@ import com.sun.jna.Native;
 import com.sun.jna.ptr.IntByReference;
 import hudson.EnvVars;
 import hudson.Util;
-import hudson.model.Hudson;
+import jenkins.model.Jenkins;
 import hudson.remoting.Callable;
 import hudson.remoting.Channel;
 import hudson.remoting.VirtualChannel;
@@ -277,7 +277,7 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
          * Executes a chunk of code at the same machine where this process resides.
          */
         public <T> T act(ProcessCallable<T> callable) throws IOException, InterruptedException {
-            return callable.invoke(this,Hudson.MasterComputer.localChannel);
+            return callable.invoke(this, Jenkins.MasterComputer.localChannel);
         }
 
         Object writeReplace() {

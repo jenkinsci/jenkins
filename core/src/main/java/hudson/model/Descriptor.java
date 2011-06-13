@@ -33,9 +33,11 @@ import hudson.model.listeners.SaveableListener;
 import hudson.util.ReflectionUtils;
 import hudson.util.ReflectionUtils.Parameter;
 import hudson.views.ListViewColumn;
+import jenkins.model.Jenkins;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 import org.kohsuke.stapler.*;
+import org.kohsuke.stapler.jelly.JellyCompatibleFacet;
 import org.springframework.util.StringUtils;
 import org.jvnet.tiger_types.Types;
 import org.apache.commons.io.IOUtils;
@@ -178,18 +180,18 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable {
          * Returns {@link Descriptor} whose 'clazz' is the same as {@link #getItemType() the item type}.
          */
         public Descriptor getItemTypeDescriptor() {
-            return Hudson.getInstance().getDescriptor(getItemType());
+            return Jenkins.getInstance().getDescriptor(getItemType());
         }
 
         public Descriptor getItemTypeDescriptorOrDie() {
-            return Hudson.getInstance().getDescriptorOrDie(getItemType());
+            return Jenkins.getInstance().getDescriptorOrDie(getItemType());
         }
 
         /**
          * Returns all the descriptors that produce types assignable to the item type.
          */
         public List<? extends Descriptor> getApplicableDescriptors() {
-            return Hudson.getInstance().getDescriptorList(clazz);
+            return Jenkins.getInstance().getDescriptorList(clazz);
         }
     }
 
@@ -275,7 +277,7 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable {
 
     /**
      * Gets the URL that this Descriptor is bound to, relative to the nearest {@link DescriptorByNameOwner}.
-     * Since {@link Hudson} is a {@link DescriptorByNameOwner}, there's always one such ancestor to any request.
+     * Since {@link Jenkins} is a {@link DescriptorByNameOwner}, there's always one such ancestor to any request.
      */
     public String getDescriptorUrl() {
         return "descriptorByName/"+getId();
@@ -648,18 +650,24 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable {
     }
 
     public String getConfigPage() {
-        return getViewPage(clazz, "config.jelly");
+        return getViewPage(clazz, getPossibleViewNames("config"), "config.jelly");
     }
 
     public String getGlobalConfigPage() {
-        return getViewPage(clazz, "global.jelly",null);
+        return getViewPage(clazz, getPossibleViewNames("global"), null);
+    }
+    
+    private String getViewPage(Class<?> clazz, String pageName, String defaultValue) {
+        return getViewPage(clazz,Collections.singleton(pageName),defaultValue);
     }
 
-    private String getViewPage(Class<?> clazz, String pageName, String defaultValue) {
+    private String getViewPage(Class<?> clazz, Collection<String> pageNames, String defaultValue) {
         while(clazz!=Object.class) {
-            String name = clazz.getName().replace('.', '/').replace('$', '/') + "/" + pageName;
-            if(clazz.getClassLoader().getResource(name)!=null)
-                return '/'+name;
+            for (String pageName : pageNames) {
+                String name = clazz.getName().replace('.', '/').replace('$', '/') + "/" + pageName;
+                if(clazz.getClassLoader().getResource(name)!=null)
+                    return '/'+name;
+            }
             clazz = clazz.getSuperclass();
         }
         return defaultValue;
@@ -672,6 +680,17 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable {
         // Or this error is fatal, in which case we want the developer to see what page he's missing.
         // so we put the page name.
         return getViewPage(clazz,pageName,pageName);
+    }
+
+    private List<String> getPossibleViewNames(String baseName) {
+        List<String> names = new ArrayList<String>();
+        for (Facet f : WebApp.get(Jenkins.getInstance().servletContext).facets) {
+            if (f instanceof JellyCompatibleFacet) {
+                JellyCompatibleFacet jcf = (JellyCompatibleFacet) f;
+                names.add(baseName +jcf.getDefaultScriptExtension());
+            }
+        }
+        return names;
     }
 
 
@@ -709,7 +728,7 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable {
     }
 
     private XmlFile getConfigFile() {
-        return new XmlFile(new File(Hudson.getInstance().getRootDir(),getId()+".xml"));
+        return new XmlFile(new File(Jenkins.getInstance().getRootDir(),getId()+".xml"));
     }
 
     /**
@@ -834,7 +853,7 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable {
     }
 
     public static Descriptor find(String className) {
-        return find(Hudson.getInstance().getExtensionList(Descriptor.class),className);
+        return find(Jenkins.getInstance().getExtensionList(Descriptor.class),className);
     }
 
     public static final class FormException extends Exception implements HttpResponse {

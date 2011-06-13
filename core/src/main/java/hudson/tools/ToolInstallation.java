@@ -40,6 +40,7 @@ import java.util.List;
 
 import com.thoughtworks.xstream.annotations.XStreamSerializable;
 import com.thoughtworks.xstream.converters.UnmarshallingContext;
+import jenkins.model.Jenkins;
 
 /**
  * Formalization of a tool installed in nodes used for builds
@@ -180,7 +181,7 @@ public abstract class ToolInstallation extends AbstractDescribableImpl<ToolInsta
      */
     public static DescriptorExtensionList<ToolInstallation,ToolDescriptor<?>> all() {
         // use getDescriptorList and not getExtensionList to pick up legacy instances
-        return Hudson.getInstance().<ToolInstallation,ToolDescriptor<?>>getDescriptorList(ToolInstallation.class);
+        return Jenkins.getInstance().<ToolInstallation,ToolDescriptor<?>>getDescriptorList(ToolInstallation.class);
     }
 
     private static final long serialVersionUID = 1L;

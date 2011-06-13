@@ -4,13 +4,13 @@
   <parent>
     <groupId>org.jenkins-ci</groupId>
     <artifactId>jenkins</artifactId>
-    <version>1.18</version>
+    <version>1.21</version>
   </parent>
 
   <groupId>org.jenkins-ci.plugins</groupId>
   <artifactId>plugin</artifactId>
   <name>Jenkins plugin POM</name>
-  <version>1.415-SNAPSHOT</version>
+  <version>1.417-SNAPSHOT</version>
   <packaging>pom</packaging>
 
   <!--
@@ -33,7 +33,7 @@
       <dependency><!-- if a plugin wants to depend on the maven plugin, choose the right version automatically -->
         <groupId>org.jenkins-ci.main</groupId>
         <artifactId>maven-plugin</artifactId>
-        <version>1.415-SNAPSHOT</version>
+        <version>1.417-SNAPSHOT</version>
       </dependency>
     </dependencies>
   </dependencyManagement>
@@ -43,25 +43,25 @@
       <groupId>org.jenkins-ci.main</groupId>
       <artifactId>jenkins-war</artifactId>
       <type>war</type>
-      <version>1.415-SNAPSHOT</version>
+      <version>1.417-SNAPSHOT</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.jenkins-ci.main</groupId>
       <artifactId>jenkins-core</artifactId>
-      <version>1.415-SNAPSHOT</version>
+      <version>1.417-SNAPSHOT</version>
       <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>org.jenkins-ci.main</groupId>
       <artifactId>jenkins-test-harness</artifactId>
-      <version>1.415-SNAPSHOT</version>
+      <version>1.417-SNAPSHOT</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.jenkins-ci.main</groupId>
       <artifactId>ui-samples-plugin</artifactId>
-      <version>1.415-SNAPSHOT</version>
+      <version>1.417-SNAPSHOT</version>
       <scope>test</scope>
     </dependency>
     <dependency>
@@ -155,9 +155,9 @@
         <!-- version specified in parent pom -->
       </plugin>
       <plugin>
-        <groupId>org.codehaus.groovy.maven</groupId>
+        <groupId>org.codehaus.gmaven</groupId>
         <artifactId>gmaven-plugin</artifactId>
-        <version>1.0-rc-5</version>
+        <!-- version specified in grandparent pom -->
         <executions>
           <execution>
             <id>test-in-groovy</id>
@@ -178,6 +178,7 @@
       </plugin>
       <plugin>
         <artifactId>maven-surefire-plugin</artifactId>
+        <!-- version specified in grandparent pom -->
         <configuration>
           <systemProperties>
             <property>
@@ -190,7 +191,7 @@
       <plugin>
         <groupId>com.cloudbees</groupId>
         <artifactId>maven-license-plugin</artifactId>
-        <version>1.3</version>
+        <!-- version specified in grandparent pom -->
         <executions>
           <execution>
             <goals>

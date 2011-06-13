@@ -32,6 +32,7 @@ import hudson.XmlFile;
 import hudson.matrix.Axis;
 import hudson.util.DescriptorList;
 import hudson.util.XStream2;
+import jenkins.model.Jenkins;
 
 import java.io.File;
 import java.io.IOException;
@@ -58,7 +59,7 @@ public class Items {
      * Returns all the registered {@link TopLevelItemDescriptor}s.
      */
     public static DescriptorExtensionList<TopLevelItem,TopLevelItemDescriptor> all() {
-        return Hudson.getInstance().<TopLevelItem,TopLevelItemDescriptor>getDescriptorList(TopLevelItem.class);
+        return Jenkins.getInstance().<TopLevelItem,TopLevelItemDescriptor>getDescriptorList(TopLevelItem.class);
     }
 
     public static TopLevelItemDescriptor getDescriptor(String fqcn) {
@@ -90,7 +91,7 @@ public class Items {
      * Does the opposite of {@link #toNameList(Collection)}.
      */
     public static <T extends Item> List<T> fromNameList(ItemGroup context, String list, Class<T> type) {
-        Hudson hudson = Hudson.getInstance();
+        Jenkins hudson = Jenkins.getInstance();
 
         List<T> r = new ArrayList<T>();
         StringTokenizer tokens = new StringTokenizer(list,",");
@@ -136,6 +137,11 @@ public class Items {
      * that it produces a reasonable XML.
      */
     public static final XStream XSTREAM = new XStream2();
+
+    /**
+     * Alias to {@link #XSTREAM} so that one can access additional methods on {@link XStream2} more easily.
+     */
+    public static final XStream2 XSTREAM2 = (XStream2)XSTREAM;
 
     static {
         XSTREAM.alias("project",FreeStyleProject.class);

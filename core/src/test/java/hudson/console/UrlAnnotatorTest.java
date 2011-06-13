@@ -53,5 +53,8 @@ public class UrlAnnotatorTest extends TestCase {
                 + "ftp://bar</a> or &lt;<a href='https://baz/'>https://baz/</a> or (<a "
                 + "href='http://a.b.c/x.y'>http://a.b.c/x.y</a> Bye",
                 text.toString(true));
+        text = new MarkupText("Punctuation: http://foo/.");
+        ca.annotate(null, text);
+        assertEquals("Punctuation: <a href='http://foo/'>http://foo/</a>.", text.toString(true));
     }
 }

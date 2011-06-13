@@ -26,6 +26,7 @@ package hudson.model;
 
 import hudson.EnvVars;
 import hudson.Util;
+import hudson.model.queue.SubTask;
 import hudson.scm.SCM;
 import hudson.tasks.BuildWrapper;
 import hudson.tasks.Builder;
@@ -255,5 +256,12 @@ public abstract class ParameterValue implements Serializable {
      */
     public boolean isSensitive() {
         return false;
-}
+    }
+
+    /**
+     * @since 1.414
+     */
+    public Label getAssignedLabel(SubTask task) {
+        return null;
+    }
 }

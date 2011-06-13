@@ -25,13 +25,9 @@ package hudson.model;
 
 import hudson.DescriptorExtensionList;
 import hudson.ExtensionPoint;
-import hudson.console.ConsoleAnnotator;
-import hudson.console.ConsoleAnnotatorFactory;
+import jenkins.model.Jenkins;
 import net.sf.json.JSONObject;
 import org.kohsuke.stapler.StaplerRequest;
-
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * Extensible property of {@link View}.
@@ -63,11 +59,11 @@ public class ViewProperty implements ReconfigurableDescribable<ViewProperty>, Ex
     }
 
     public ViewPropertyDescriptor getDescriptor() {
-        return (ViewPropertyDescriptor)Hudson.getInstance().getDescriptorOrDie(getClass());
+        return (ViewPropertyDescriptor) Jenkins.getInstance().getDescriptorOrDie(getClass());
     }
 
     public static DescriptorExtensionList<ViewProperty,ViewPropertyDescriptor> all() {
-        return Hudson.getInstance().<ViewProperty,ViewPropertyDescriptor>getDescriptorList(ViewProperty.class);
+        return Jenkins.getInstance().<ViewProperty,ViewPropertyDescriptor>getDescriptorList(ViewProperty.class);
     }
 
     public ViewProperty reconfigure(StaplerRequest req, JSONObject form) throws Descriptor.FormException {

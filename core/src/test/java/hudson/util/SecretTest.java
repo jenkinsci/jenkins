@@ -23,12 +23,12 @@
  */
 package hudson.util;
 
+import jenkins.model.Jenkins;
 import junit.framework.TestCase;
 
 import java.security.SecureRandom;
 
 import hudson.Util;
-import hudson.model.Hudson;
 
 /**
  * @author Kohsuke Kawaguchi
@@ -64,10 +64,10 @@ public class SecretTest extends TestCase {
 
     public void testSerialization() {
         Secret s = Secret.fromString("Mr.Hudson");
-        String xml = Hudson.XSTREAM.toXML(s);
+        String xml = Jenkins.XSTREAM.toXML(s);
         assertTrue(xml, !xml.contains(s.getPlainText()));
         assertTrue(xml, xml.contains(s.getEncryptedValue()));
-        Object o = Hudson.XSTREAM.fromXML(xml);
+        Object o = Jenkins.XSTREAM.fromXML(xml);
         assertEquals(xml, o, s);
     }
 
@@ -82,7 +82,7 @@ public class SecretTest extends TestCase {
         String tagName = Foo.class.getName().replace("$","_-");
         String xml = "<"+tagName+"><password>secret</password></"+tagName+">";
         Foo foo = new Foo();
-        Hudson.XSTREAM.fromXML(xml, foo);
+        Jenkins.XSTREAM.fromXML(xml, foo);
         assertEquals("secret",Secret.toString(foo.password));
     }
 }
