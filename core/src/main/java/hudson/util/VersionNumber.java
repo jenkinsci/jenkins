@@ -56,6 +56,15 @@ import java.util.Stack;
  * @author Kenney Westerhof (kenney@apache.org)
  * @author Hervé Boutemy (hboutemy@apache.org)
  */
+
+/**
+ * Generic implementation of version comparison. (Replacing previous implementation since 1.139)
+ *
+ * @author Stephen Connolly (stephenc@apache.org)
+ * @author Kenney Westerhof (kenney@apache.org)
+ * @author Hervé Boutemy (hboutemy@apache.org)
+ * @since 1.415
+ */
 public class VersionNumber implements Comparable<VersionNumber> {
     private String value;
 
