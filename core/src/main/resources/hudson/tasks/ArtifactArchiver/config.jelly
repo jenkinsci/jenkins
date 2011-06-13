@@ -34,9 +34,12 @@ THE SOFTWARE.
     <f:entry title="" field="latestOnly" >
       <f:checkbox title="${%lastBuildOnly}"/>
     </f:entry>
-    <f:entry title="" field="allowEmptyArchive" >
-      <f:checkbox title="${%allowEmptyArchive}"/>
+    <f:entry title="${%If nothing found to archive}" field="allowEmptyArchive" >
+      <select name="allowEmptyArchive" class="setting-input">
+        <f:option value="2" selected="${instance.getAllowEmptyArchive()==false}">${%fail build}</f:option>
+        <f:option value="1" selected="${instance.getAllowEmptyArchive()==true}">${%create empty archive}</f:option>
+        <f:option value="" selected="${instance.getAllowEmptyArchive()==null}">${%use system-wide behavior} (${instance.isDefaultAllowEmptyArchive() ? "%create empty archive" : "%fail build"})</f:option>
+      </select>
     </f:entry>
-    
   </f:advanced>
 </j:jelly>

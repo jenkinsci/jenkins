@@ -62,23 +62,26 @@ public class ArtifactArchiver extends Recorder {
     /**
      * Just keep the last successful artifact set, no more.
      */
-    private final boolean latestOnly;
+    private final boolean latestOnly;        
     
     /**
      * Allow empty archive or not.
      */
-    private final boolean allowEmptyArchive;
+    private final Boolean allowEmptyArchive;
+    
+    private static final boolean defaultAllowEmptyArchive =  	
+       Boolean.getBoolean(ArtifactArchiver.class.getName()+".warnOnEmpty");
 
     @DataBoundConstructor
-    public ArtifactArchiver(String artifacts, String excludes, boolean latestOnly, boolean allowEmptyArchive) {
+    public ArtifactArchiver(String artifacts, String excludes, boolean latestOnly, String allowEmptyArchive) {
         this.artifacts = artifacts.trim();
         this.excludes = Util.fixEmptyAndTrim(excludes);
         this.latestOnly = latestOnly;
-        this.allowEmptyArchive = allowEmptyArchive;
+        this.allowEmptyArchive = "1".equals(allowEmptyArchive) ? Boolean.TRUE : ("2".equals(allowEmptyArchive) ? Boolean.FALSE : null);
     }
     
     public ArtifactArchiver(String artifacts, String excludes, boolean latestOnly) {
-        this(artifacts, excludes, latestOnly, false);
+        this(artifacts, excludes, latestOnly, "");
     }
 
     public String getArtifacts() {
@@ -93,12 +96,20 @@ public class ArtifactArchiver extends Recorder {
         return latestOnly;
     }
     
-    public boolean isAllowEmptyArchive() {
+    public Boolean getAllowEmptyArchive() {
         return allowEmptyArchive;
     }
     
+    public boolean isAllowEmptyArchive() {
+        return allowEmptyArchive == null ? defaultAllowEmptyArchive : allowEmptyArchive;
+    }
+    
+    public Boolean isDefaultAllowEmptyArchive() {
+        return defaultAllowEmptyArchive;
+    }
+    
     private void listenerWarnOrError(BuildListener listener, String message) {
-    	if (allowEmptyArchive) {
+    	if (isAllowEmptyArchive()) {
     		listener.getLogger().println(String.format("WARN: %s", message));
     	} else {
     		listener.error(message);
@@ -138,7 +149,7 @@ public class ArtifactArchiver extends Recorder {
                     if(msg!=null)
                         listenerWarnOrError(listener, msg);
                 }
-                if (!allowEmptyArchive) {
+                if (!isAllowEmptyArchive()) {
                 	build.setResult(Result.FAILURE);
                 }
                 return true;
