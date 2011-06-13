@@ -35,6 +35,7 @@ import hudson.model.User;
 import hudson.model.UserProperty;
 import hudson.model.UserPropertyDescriptor;
 import hudson.security.FederatedLoginService.FederatedIdentity;
+import hudson.security.captcha.CaptchaSupport;
 import hudson.tasks.Mailer;
 import hudson.util.PluginServletFilter;
 import hudson.util.Protector;
@@ -92,9 +93,21 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
      */
     private final boolean disableSignup;
 
-    @DataBoundConstructor
+    /**
+     * If true, captcha will be enabled.
+     */
+    private final boolean enableCaptcha;
+
+    @Deprecated
     public HudsonPrivateSecurityRealm(boolean allowsSignup) {
+        this(allowsSignup, false, (CaptchaSupport) null);
+    }
+
+    @DataBoundConstructor
+    public HudsonPrivateSecurityRealm(boolean allowsSignup, boolean enableCaptcha, CaptchaSupport captchaSupport) {
         this.disableSignup = !allowsSignup;
+        this.enableCaptcha = enableCaptcha;
+        setCaptchaSupport(captchaSupport);
         if(!allowsSignup && !hasSomeUser()) {
             // if Hudson is newly set up with the security realm and there's no user account created yet,
             // insert a filter that asks the user to create one
@@ -109,6 +122,15 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
     @Override
     public boolean allowsSignup() {
         return !disableSignup;
+    }
+
+    /**
+     * Checks if captcha is enabled on user signup.
+     *
+     * @return true if captcha is enabled on signup.
+     */
+    public boolean isEnableCaptcha() {
+        return enableCaptcha;
     }
 
     /**
@@ -194,7 +216,7 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
             throw HttpResponses.error(SC_UNAUTHORIZED,new Exception("User sign up is prohibited"));
 
         boolean firstUser = !hasSomeUser();
-        User u = createAccount(req, rsp, true, formView);
+        User u = createAccount(req, rsp, enableCaptcha, formView);
         if(u!=null) {
             if(firstUser)
                 tryToMakeAdmin(u);  // the first user should be admin, or else there's a risk of lock out

@@ -23,9 +23,6 @@
  */
 package hudson.security;
 
-import com.octo.captcha.service.CaptchaServiceException;
-import com.octo.captcha.service.image.DefaultManageableImageCaptchaService;
-import com.octo.captcha.service.image.ImageCaptchaService;
 import groovy.lang.Binding;
 import hudson.ExtensionPoint;
 import hudson.DescriptorExtensionList;
@@ -35,6 +32,7 @@ import hudson.model.AbstractDescribableImpl;
 import hudson.model.Descriptor;
 import jenkins.model.Jenkins;
 import hudson.security.FederatedLoginService.FederatedIdentity;
+import hudson.security.captcha.CaptchaSupport;
 import hudson.util.DescriptorList;
 import hudson.util.PluginServletFilter;
 import hudson.util.spring.BeanBuilder;
@@ -57,13 +55,13 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.web.context.WebApplicationContext;
 import org.springframework.dao.DataAccessException;
 
-import javax.imageio.ImageIO;
 import javax.servlet.Filter;
 import javax.servlet.FilterConfig;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpSession;
 import javax.servlet.http.Cookie;
 import java.io.IOException;
+import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -127,6 +125,11 @@ import java.util.logging.Logger;
  * @see PluginServletFilter
  */
 public abstract class SecurityRealm extends AbstractDescribableImpl<SecurityRealm> implements ExtensionPoint {
+    /**
+     * Captcha Support to be used with this SecurityRealm for User Signup
+     */
+    private CaptchaSupport captchaSupport;
+
     /**
      * Creates fully-configured {@link AuthenticationManager} that performs authentication
      * against the user realm. The implementation hides how such authentication manager
@@ -236,6 +239,18 @@ public abstract class SecurityRealm extends AbstractDescribableImpl<SecurityReal
         return req.getContextPath()+"/";
     }
 
+    public CaptchaSupport getCaptchaSupport() {
+        return captchaSupport;
+    }
+
+    public void setCaptchaSupport(CaptchaSupport captchaSupport) {
+        this.captchaSupport = captchaSupport;
+    }
+
+    public List<Descriptor<CaptchaSupport>> getCaptchaSupportDescriptors() {
+        return CaptchaSupport.all();
+    }
+
     /**
      * Handles the logout processing.
      *
@@ -325,34 +340,28 @@ public abstract class SecurityRealm extends AbstractDescribableImpl<SecurityReal
     }
 
     /**
-     * {@link DefaultManageableImageCaptchaService} holder to defer initialization.
-     */
-    public static final class CaptchaService {
-        public static ImageCaptchaService INSTANCE = new DefaultManageableImageCaptchaService();
-    }
-
-    /**
      * Generates a captcha image.
      */
     public final void doCaptcha(StaplerRequest req, StaplerResponse rsp) throws IOException {
-        String id = req.getSession().getId();
-        rsp.setContentType("image/png");
-        rsp.addHeader("Cache-Control","no-cache");
-        ImageIO.write( CaptchaService.INSTANCE.getImageChallengeForID(id), "PNG", rsp.getOutputStream() );
+        if (captchaSupport != null) {
+            String id = req.getSession().getId();
+            rsp.setContentType("image/png");
+            rsp.addHeader("Cache-Control", "no-cache");
+            captchaSupport.generateImage(id, rsp.getOutputStream());
+        }
     }
 
     /**
      * Validates the captcha.
      */
     protected final boolean validateCaptcha(String text) {
-        try {
+        if (captchaSupport != null) {
             String id = Stapler.getCurrentRequest().getSession().getId();
-            Boolean b = CaptchaService.INSTANCE.validateResponseForID(id, text);
-            return b!=null && b;
-        } catch (CaptchaServiceException e) {
-            LOGGER.log(Level.INFO, "Captcha validation had a problem",e);
-            return false;
+            return captchaSupport.validateCaptcha(id, text);
         }
+
+        // If no Captcha Support then bogus validation always returns true
+        return true;
     }
 
     /**
