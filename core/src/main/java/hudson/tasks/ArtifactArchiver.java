@@ -62,7 +62,7 @@ public class ArtifactArchiver extends Recorder {
     /**
      * Just keep the last successful artifact set, no more.
      */
-    private final boolean latestOnly;        
+    private final boolean latestOnly;
     
     /**
      * Allow empty archive or not.
