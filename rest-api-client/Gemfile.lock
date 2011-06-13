@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    jenkins-rest-api (0)
+    jenkins-rest-api (1.409.0)
       choosy (>= 0.4.8)
       rest-client (>= 1.6.1)
 
@@ -15,7 +15,10 @@ GEM
       autotest (~> 4.3)
     choosy (0.4.9)
     diff-lcs (1.1.2)
+    mechanize (1.0.0)
+      nokogiri (>= 1.2.1)
     mime-types (1.16)
+    nokogiri (1.4.4)
     rest-client (1.6.1)
       mime-types (>= 1.16)
     rspec (2.5.0)
@@ -35,4 +38,5 @@ DEPENDENCIES
   autotest
   autotest-notification
   jenkins-rest-api!
+  mechanize
   rspec

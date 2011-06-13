@@ -2,17 +2,17 @@ package hudson.restapi.model;
 
 import hudson.model.Run;
 
-public class Job {
+public class JobStatus {
     private String name;
     private String description;
     private int lastBuildNumber;
     private boolean isBuilding;
     private boolean inQueue;
     
-    public Job() { }
+    public JobStatus() { }
     
     @SuppressWarnings("rawtypes") 
-    public Job(hudson.model.Job job) {
+    public JobStatus(hudson.model.Job job) {
         this.setName(job.getName());
         this.setDescription(job.getDescription());
         
@@ -25,7 +25,7 @@ public class Job {
         setInQueue(job.isInQueue());
     }
     
-    public Job(String name, String description, int lastBuildNumber, boolean isBuilding, boolean inQueue) {
+    public JobStatus(String name, String description, int lastBuildNumber, boolean isBuilding, boolean inQueue) {
         this.name = name;
         this.description = description;
         this.lastBuildNumber = lastBuildNumber;

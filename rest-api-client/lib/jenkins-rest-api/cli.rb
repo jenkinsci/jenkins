@@ -9,7 +9,7 @@ module JenkinsRestAPI
 
     def command
       version_info = Choosy::Version.load_from_parent
-      commands = [job_command, build_command, artifact_command, :help]
+      commands = [job_command, build_command, :help]
 
       Choosy::SuperCommand.new :jenkins do
         printer :manpage, :version => version_info.to_s,
@@ -64,7 +64,7 @@ module JenkinsRestAPI
         summary "Interacts with the builds on the server."
         section "OPTIONS" do
           string :job, "The name of the associated job. This is required.", :required => true
-          enum :action, [:status, :retain, :delete, :logfile, :list, :artifacts], "The action to to perform on the remote server. The 'list' option is the default and the only action that doesn't require an additional argument. Other actions include: status, retain, delete, and logfile." do
+          enum :action, [:status, :retain, :delete, :logfile, :list], "The action to to perform on the remote server. The 'list' option is the default and the only action that doesn't require an additional argument. Other actions include: status, retain, delete, and logfile." do
             default :list
           end
         end
@@ -80,18 +80,5 @@ module JenkinsRestAPI
         end
       end
     end#build_command
-
-    def artifact_command
-      Choosy::Command.new :artifact do
-        executor ArtifactExecutor.new
-        summary "Interacts with artifacts on the server."
-
-        section "OPTIONS" do
-          enum :action, [:list, :latest], "The action to perform on the remote server. The 'list' option is the default. The 'latest' argument returns all of the latest artifacts." do
-            default :list
-          end
-        end
-      end
-    end#artifact_command
   end
 end

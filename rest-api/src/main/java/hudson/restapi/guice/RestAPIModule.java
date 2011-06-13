@@ -1,7 +1,6 @@
 package hudson.restapi.guice;
 
 import hudson.model.Hudson;
-import hudson.restapi.impl.ArtifactService;
 import hudson.restapi.impl.BuildService;
 import hudson.restapi.impl.JobService;
 import hudson.restapi.repos.JobRepository;
@@ -19,6 +18,5 @@ public class RestAPIModule implements Module {
         // Services
         binder.bind(JobService.class);
         binder.bind(BuildService.class);
-        binder.bind(ArtifactService.class);
     }
 }

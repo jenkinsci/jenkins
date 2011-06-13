@@ -13,6 +13,7 @@ import org.apache.commons.io.output.ByteArrayOutputStream;
 import com.google.inject.Inject;
 import hudson.model.AbstractProject;
 import hudson.model.Hudson;
+import hudson.model.Job;
 import hudson.model.Run;
 import hudson.model.Queue.WaitingItem;
 import hudson.restapi.IBuildService;
@@ -53,7 +54,9 @@ public class BuildService implements IBuildService {
         return project.getNextBuildNumber();
     }
 
-    public Build getBuild(final String jobName, final int buildNumber) {
+    public Build getBuild(final String jobName, int buildNumber) {
+        buildNumber = determineBuildNumber(jobName, buildNumber);
+        
         @SuppressWarnings("rawtypes")
         Run run = repo.getRun(jobName, buildNumber);
         
@@ -64,17 +67,31 @@ public class BuildService implements IBuildService {
         return new Build(run);
     }
 
-    public StreamingOutput getBuildLog(final String jobName, final int buildNumber) {
+    private int determineBuildNumber(String jobName, int buildNumber) {
+        if (buildNumber > 0)
+            return buildNumber;
+        else {
+            @SuppressWarnings("rawtypes")
+            Job job = repo.getJob(jobName, Permission.READ);
+            return job.getLastSuccessfulBuild().getNumber();
+        }
+    }
+
+    public StreamingOutput getBuildLog(final String jobName, int buildNumber) {
+        final int nbuildNumber = determineBuildNumber(jobName, buildNumber);
+
         return new StreamingOutput() {
             public void write(OutputStream output) throws IOException, WebApplicationException {
                 @SuppressWarnings("rawtypes")
-                Run run = repo.getRun(jobName, buildNumber);
+                Run run = repo.getRun(jobName, nbuildNumber);
                 IOUtils.copy(run.getLogInputStream(), output);
             }
         };
     }
 
-    public LogPart getBuildLog(final String jobName, final int buildNumber, final long offset) {
+    public LogPart getBuildLog(final String jobName, int buildNumber, final long offset) {
+        buildNumber = determineBuildNumber(jobName, buildNumber);
+
         @SuppressWarnings("rawtypes")
         Run run = repo.getRun(jobName, buildNumber);
         if (run.hasntStartedYet())
@@ -114,6 +131,8 @@ public class BuildService implements IBuildService {
     }
 
     public void retainBuild(String jobName, int buildNumber) {
+        buildNumber = determineBuildNumber(jobName, buildNumber);
+
         @SuppressWarnings("rawtypes")
         Run run = repo.getRun(jobName, buildNumber);
         try {
@@ -125,6 +144,8 @@ public class BuildService implements IBuildService {
     }
 
     public void deleteBuild(String jobName, int buildNumber) {
+        buildNumber = determineBuildNumber(jobName, buildNumber);
+
         @SuppressWarnings("rawtypes")
         Run run = repo.getRun(jobName, buildNumber);
         try {

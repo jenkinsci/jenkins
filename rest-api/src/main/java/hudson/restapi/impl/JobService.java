@@ -8,7 +8,8 @@ import javax.ws.rs.core.Response;
 import com.google.inject.Inject;
 import hudson.model.Hudson;
 import hudson.restapi.IJobService;
-import hudson.restapi.model.Job;
+import hudson.restapi.model.JobInfo;
+import hudson.restapi.model.JobStatus;
 import hudson.restapi.repos.JobRepository;
 import hudson.security.Permission;
 
@@ -23,23 +24,23 @@ public class JobService implements IJobService {
     }
     
     @SuppressWarnings("rawtypes")
-    public List<Job> getAllJobs() {
-        List<Job> jobs = new ArrayList<Job>();
+    public List<JobStatus> getAllJobs() {
+        List<JobStatus> jobs = new ArrayList<JobStatus>();
         for (hudson.model.Job job : repo.getJobs(Permission.READ)) {
-            jobs.add(new Job(job));
+            jobs.add(new JobStatus(job));
         }
         return jobs;
     }
 
-    public Job getJob(final String jobName) {
-        return new Job(repo.getJob(jobName, Permission.READ));
+    public JobInfo getJob(final String jobName) {
+        return new JobInfo(repo.getJob(jobName, Permission.READ));
     }
-
-    public void createJob(final String job) {
+    
+    public void createJob(JobInfo jobInfo) {
         throw new WebApplicationException(Response.Status.INTERNAL_SERVER_ERROR);
     }
-
-    public void updateJob(final String jobName) {
+    
+    public void updateJob(String jobName, JobInfo jobInfo) {
         throw new WebApplicationException(Response.Status.INTERNAL_SERVER_ERROR);
     }
 

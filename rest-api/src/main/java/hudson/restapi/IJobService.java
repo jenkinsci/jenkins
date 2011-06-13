@@ -1,7 +1,9 @@
 package hudson.restapi;
 
 import java.util.List;
-import hudson.restapi.model.Job;
+import hudson.restapi.model.JobInfo;
+import hudson.restapi.model.JobStatus;
+import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
@@ -20,20 +22,22 @@ public interface IJobService {
     @GET
     @Path("/")
     @Produces("application/vnd.jobs+json")
-    List<Job> getAllJobs();
+    List<JobStatus> getAllJobs();
+    
+    @POST
+    @Path("/")
+    @Consumes("application/vnd.job+json")
+    void createJob(final JobInfo jobInfo);
     
     @GET
     @Path("/{jobName}")
     @Produces("application/vnd.job+json")
-    Job getJob(@PathParam("jobName") final String jobName);
-    
-    @POST
-    @Path("/{jobName}")
-    void createJob(@PathParam("jobName") final String job);
+    JobInfo getJob(@PathParam("jobName") final String jobName);
     
     @PUT
     @Path("/{jobName}")
-    void updateJob(@PathParam("jobName") final String jobName);
+    @Consumes("application/vnd.job+json")
+    void updateJob(@PathParam("jobName") final String jobName, final JobInfo jobInfo);
     
     @DELETE
     @Path("/{jobName}")

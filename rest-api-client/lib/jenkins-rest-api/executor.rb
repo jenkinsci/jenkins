@@ -4,11 +4,12 @@ module JenkinsRestAPI
   class BaseExecutor
     def execute!(args, options)
       configure(options)
-      if args[0]
+      if options[:action] != :list
         result = send(options[:action], args[0]).to_s
-        puts result if !result.nil? && !result.empty?
+        puts result if !result.empty?
       else
-        send(options[:action])
+        result = send(options[:action])
+        puts result if !result.empty?
       end
     end
 
@@ -32,11 +33,11 @@ module JenkinsRestAPI
     end
 
     def disable(job)
-      RestClient.post "#{@job_url}/#{job}/disable", :accept => 'text/plain'
+      RestClient.put "#{@job_url}/#{job}/disable", :accept => 'text/plain'
     end
 
     def enable(job)
-      RestClient.post "#{@job_url}/#{job}/enable", :accept => 'text/plain'
+      RestClient.put "#{@job_url}/#{job}/enable", :accept => 'text/plain'
     end
 
     def build(job)
@@ -60,7 +61,7 @@ module JenkinsRestAPI
     end
 
     def retain(build_number)
-      RestClient.post "#{@build_url}/#{build_number}/retain", :accept => 'text/plain'
+      RestClient.put "#{@build_url}/#{build_number}/retain", :accept => 'text/plain'
     end
 
     def delete(build_number)
@@ -68,30 +69,11 @@ module JenkinsRestAPI
     end
 
     def logfile(build_number)
-      RestClient.get "#{@build_url}/#{build_number}/logfile"
-    end
-
-    def artifacts(build_number)
-      RestClient.get "#{@build_url}/#{build_number}/artifacts"
+      RestClient.get "#{@build_url}/#{build_number}/logfile", :accept => 'text/plain'
     end
 
     def list
       RestClient.get @build_url
-    end
-  end
-
-  class ArtifactExecutor < BaseExecutor
-    def configure(options)
-      super
-      @build_url = "#{@server}/artifacts"
-    end
-
-    def list
-      RestClient.get @build_url
-    end
-
-    def latest
-      RestClient.get "#{@build_url}/latest"
     end
   end
 end

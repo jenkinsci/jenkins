@@ -1,17 +1,15 @@
 package hudson.restapi.model;
 
 public class Artifact {
-    private String jobName;
     private String fileName;
     private String href;
     
     public Artifact() {}
 
     @SuppressWarnings("rawtypes")
-    public Artifact(String jobName, hudson.model.Run.Artifact artifact) {
-        this.jobName = jobName;
-        this.setFileName(artifact.getFileName());
-        this.setHref(artifact.getHref());
+    public Artifact(hudson.model.Run.Artifact artifact) {
+        this.fileName = artifact.getFileName();
+        this.href = artifact.getHref();
     }
 
     public void setFileName(String fileName) {
@@ -28,13 +26,5 @@ public class Artifact {
 
     public String getHref() {
         return href;
-    }
-
-    public void setJobName(String jobName) {
-        this.jobName = jobName;
-    }
-
-    public String getJobName() {
-        return jobName;
     }
 }

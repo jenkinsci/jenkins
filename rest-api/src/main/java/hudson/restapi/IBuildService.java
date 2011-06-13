@@ -25,28 +25,28 @@ public interface IBuildService {
     List<Build> getAllBuilds(@PathParam("jobName") final String jobName);
     
     @POST
-    @Path("/new")
+    @Path("/")
     int newBuild(@PathParam("jobName") final String jobName);
     
     @GET
     @Path("/{buildNumber}")
     @Produces("application/vnd.build+json")
-    Build getBuild(@PathParam("jobName") final String jobName, @PathParam("buildNumber") final int buildNumber);
+    Build getBuild(@PathParam("jobName") final String jobName, @PathParam("buildNumber") int buildNumber);
     
     @GET
     @Path("/{buildNumber}/logfile")
     StreamingOutput getBuildLog(final String jobName, final int buildNumber);
     
     @GET
-    @Path("/{buildNumber}/logfile/{offset}")
+    @Path("/{buildNumber}/logpart/{offset}")
     @Produces("application/vnd.logpart+json")
-    LogPart getBuildLog(@PathParam("jobName") final String jobName, @PathParam("buildNumber") final int buildNumber, @PathParam("offset") final long offset);
+    LogPart getBuildLog(@PathParam("jobName") final String jobName, @PathParam("buildNumber") int buildNumber, @PathParam("offset") final long offset);
     
     @PUT
     @Path("/{buildNumber}/retain")
-    void retainBuild(@PathParam("jobName") final String jobName, @PathParam("buildNumber") final int buildNumber);
+    void retainBuild(@PathParam("jobName") final String jobName, @PathParam("buildNumber") int buildNumber);
     
     @DELETE
     @Path("/{buildNumber}")
-    void deleteBuild(@PathParam("jobName") final String jobName, @PathParam("buildNumber") final int buildNumber);
+    void deleteBuild(@PathParam("jobName") final String jobName, @PathParam("buildNumber") int buildNumber);
 }

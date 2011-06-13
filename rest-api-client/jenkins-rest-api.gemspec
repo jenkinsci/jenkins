@@ -24,6 +24,7 @@ Gem::Specification.new do |gem|
   gem.add_dependency    'rest-client', '>= 1.6.1'
 
   gem.add_development_dependency 'rspec'
+  gem.add_development_dependency 'mechanize'
   gem.add_development_dependency 'autotest'
   gem.add_development_dependency 'autotest-notification'
   gem.add_development_dependency 'ZenTest'

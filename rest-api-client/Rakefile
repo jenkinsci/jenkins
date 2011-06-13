@@ -14,3 +14,49 @@ RSpec::Core::RakeTask.new :spec
 
 desc "Cleans the gem files up."
 task :clean => ['gem:clean']
+
+desc "Maven related tests."
+namespace :mvn do
+  def attempt(dir='..', &block)
+    root = Dir.pwd
+    begin
+      Dir.chdir(dir)
+      yield
+    ensure
+      Dir.chdir root
+    end
+  end
+
+  desc "Clean the system"
+  task :clean do
+    attempt do
+      sh "mvn clean -DskipTests=true -Dlicense.disableCheck"
+    end
+  end
+
+  desc "Build the system"
+  task :build do
+    attempt do
+      sh "mvn install -DskipTests=true -Dlicense.disableCheck"
+    end
+  end
+
+  desc "Run the WAR"
+  task :run do
+    attempt '../war' do
+      ENV['HUDSON_HOME'] = "/tmp/hudson"
+      ENV['MAVEN_OPTS'] = "-Xdebug -Xrunjdwp:transport=dt_socket,server=y,address=8000,suspend=n"
+      rm_rf '/tmp/hudson'
+      # rm_rf 'work'
+      sh "mvn hudson-dev:run -e -DskipTests=true -Dlicense.disableCheck"
+    end
+  end
+
+  desc "Kill the maven process"
+  task :kill do
+    sh "nkill mvn"
+  end
+
+  desc "Run the integration tests"
+  task :test => [:spec] # [:run, :spec]
+end
