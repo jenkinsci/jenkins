@@ -728,6 +728,14 @@ public abstract class View extends AbstractModelObject implements AccessControll
         return Hudson.getInstance().<View,ViewDescriptor>getDescriptorList(View.class);
     }
 
+    public static List<ViewDescriptor> allInstantiable() {
+        List<ViewDescriptor> r = new ArrayList<ViewDescriptor>();
+        for (ViewDescriptor d : all())
+            if(d.isInstantiable())
+                r.add(d);
+        return r;
+    }
+
     public static final Comparator<View> SORTER = new Comparator<View>() {
         public int compare(View lhs, View rhs) {
             return lhs.getViewName().compareTo(rhs.getViewName());
