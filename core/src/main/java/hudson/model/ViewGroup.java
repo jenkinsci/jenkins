@@ -89,4 +89,18 @@ public interface ViewGroup extends Saveable, ModelObject, AccessControlled {
      * @since 1.381
      */
     ViewsTabBar getViewsTabBar();
+
+    /**
+     * Returns the {@link ItemGroup} from which the views in this group should render items.
+     *
+     * <p>
+     * Generally speaking, Views render a subset of {@link TopLevelItem}s that belong to this item group.
+     * This method was added later to {@link ViewGroup}, so old plugins might not be implementing this.
+     * To work around this, {@link View}s can use {@link View#getOwnerItemGroup()}.
+     *
+     * @return
+     *      Never null. Sometimes this is {@link ModifiableItemGroup} (if the container allows arbitrary addition)
+     * @since 1.417
+     */
+    ItemGroup<? extends TopLevelItem> getItemGroup();
 }

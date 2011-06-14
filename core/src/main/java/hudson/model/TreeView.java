@@ -105,13 +105,17 @@ public class TreeView extends View implements ViewGroup {
 //        return jobNames.contains(item.getName());
     }
 
-    public Item doCreateItem(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
-        Item item = Hudson.getInstance().doCreateItem(req, rsp);
-        if(item!=null) {
-            jobNames.add(item.getName());
-            owner.save();
+    public TopLevelItem doCreateItem(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
+        ItemGroup<? extends TopLevelItem> ig = getOwnerItemGroup();
+        if (ig instanceof ModifiableItemGroup) {
+            TopLevelItem item = ((ModifiableItemGroup<? extends TopLevelItem>)ig).doCreateItem(req, rsp);
+            if(item!=null) {
+                jobNames.add(item.getName());
+                owner.save();
+            }
+            return item;
         }
-        return item;
+        return null;
     }
 
     @Override
@@ -172,5 +176,9 @@ public class TreeView extends View implements ViewGroup {
 
     public ViewsTabBar getViewsTabBar() {
         return Hudson.getInstance().getViewsTabBar();
+    }
+
+    public ItemGroup<? extends TopLevelItem> getItemGroup() {
+        return getOwnerItemGroup();
     }
 }

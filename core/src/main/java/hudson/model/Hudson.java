@@ -238,7 +238,7 @@ import java.util.regex.Pattern;
  * @author Kohsuke Kawaguchi
  */
 @ExportedBean
-public class Hudson extends Node implements ItemGroup<TopLevelItem>, StaplerProxy, StaplerFallback, ViewGroup, AccessControlled, DescriptorByNameOwner {
+public class Hudson extends Node implements ModifiableItemGroup<TopLevelItem>, StaplerProxy, StaplerFallback, ViewGroup, AccessControlled, DescriptorByNameOwner {
     private transient final Queue queue;
 
     /**
@@ -1396,6 +1396,10 @@ public class Hudson extends Node implements ItemGroup<TopLevelItem>, StaplerProx
 
     public ViewsTabBar getViewsTabBar() {
         return viewsTabBar;
+    }
+
+    public Hudson getItemGroup() {
+        return this;
     }
 
     public MyViewsTabBar getMyViewsTabBar() {
@@ -2702,7 +2706,7 @@ public class Hudson extends Node implements ItemGroup<TopLevelItem>, StaplerProx
         rsp.sendRedirect2("threadDump");
     }
 
-    public synchronized Item doCreateItem( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
+    public synchronized TopLevelItem doCreateItem( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
         return itemGroupMixIn.createTopLevelItem(req, rsp);
     }
 

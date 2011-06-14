@@ -185,6 +185,25 @@ public abstract class View extends AbstractModelObject implements AccessControll
     }
 
     /**
+     * Backward-compatible way of getting {@code getOwner().getItemGroup()}
+     */
+    public ItemGroup<? extends TopLevelItem> getOwnerItemGroup() {
+        try {
+            return _getOwnerItemGroup();
+        } catch (AbstractMethodError e) {
+            return Hudson.getInstance();
+        }
+    }
+
+    /**
+     * A pointless function to work around what appears to be a HotSpot problem. See JENKINS-5756 and bug 6933067
+     * on BugParade for more details.
+     */
+    private ItemGroup<? extends TopLevelItem> _getOwnerItemGroup() {
+        return owner.getItemGroup();
+    }
+
+    /**
      * Message displayed in the top page. Can be null. Includes HTML.
      */
     @Exported
@@ -672,7 +691,7 @@ public abstract class View extends AbstractModelObject implements AccessControll
      * Creates a new {@link Item} in this collection.
      *
      * <p>
-     * This method should call {@link Hudson#doCreateItem(StaplerRequest, StaplerResponse)}
+     * This method should call {@link ModifiableItemGroup#doCreateItem(StaplerRequest, StaplerResponse)}
      * and then add the newly created item to this view.
      * 
      * @return

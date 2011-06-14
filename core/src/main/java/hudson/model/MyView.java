@@ -60,15 +60,19 @@ public class MyView extends View {
     }
 
     @Override
-    public Item doCreateItem(StaplerRequest req, StaplerResponse rsp)
+    public TopLevelItem doCreateItem(StaplerRequest req, StaplerResponse rsp)
             throws IOException, ServletException {
-        return Hudson.getInstance().doCreateItem(req, rsp);
+        ItemGroup<? extends TopLevelItem> ig = getOwnerItemGroup();
+        if (ig instanceof ModifiableItemGroup) {
+            return ((ModifiableItemGroup<? extends TopLevelItem>)ig).doCreateItem(req, rsp);
+        }
+        return null;
     }
 
     @Override
     public Collection<TopLevelItem> getItems() {
         List<TopLevelItem> items = new ArrayList<TopLevelItem>();
-        for (TopLevelItem item : Hudson.getInstance().getItems()) {
+        for (TopLevelItem item : getOwnerItemGroup().getItems()) {
             if (item.hasPermission(Job.CONFIGURE)) {
                 items.add(item);
             }
