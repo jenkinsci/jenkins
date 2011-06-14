@@ -149,6 +149,10 @@ public class TreeView extends View implements ViewGroup {
         return null;
     }
 
+    public View getPrimaryView() {
+        return null;
+    }
+
     public void onViewRenamed(View view, String oldName, String newName) {
         // noop
     }

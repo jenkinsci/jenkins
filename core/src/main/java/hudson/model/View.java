@@ -139,7 +139,7 @@ public abstract class View extends AbstractModelObject implements AccessControll
      * Gets the {@link TopLevelItem} of the given name.
      */
     public TopLevelItem getItem(String name) {
-        return Hudson.getInstance().getItem(name);
+        return getOwnerItemGroup().getItem(name);
     }
 
     /**
@@ -201,6 +201,18 @@ public abstract class View extends AbstractModelObject implements AccessControll
      */
     private ItemGroup<? extends TopLevelItem> _getOwnerItemGroup() {
         return owner.getItemGroup();
+    }
+
+    public View getOwnerPrimaryView() {
+        try {
+            return _getOwnerPrimaryView();
+        } catch (AbstractMethodError e) {
+            return null;
+        }
+    }
+
+    private View _getOwnerPrimaryView() {
+        return owner.getPrimaryView();
     }
 
     /**
@@ -309,7 +321,7 @@ public abstract class View extends AbstractModelObject implements AccessControll
      * If true, this is a view that renders the top page of Hudson.
      */
     public boolean isDefault() {
-        return Hudson.getInstance().getPrimaryView()==this;
+        return getOwnerPrimaryView()==this;
     }
     
     public List<Computer> getComputers() {
@@ -369,7 +381,7 @@ public abstract class View extends AbstractModelObject implements AccessControll
      * empty string when this is the default view).
      */
     public String getUrl() {
-        return isDefault() ? "" : getViewUrl();
+        return isDefault() ? (owner!=null ? owner.getUrl() : "") : getViewUrl();
     }
 
     /**

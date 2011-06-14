@@ -64,6 +64,20 @@ public interface ViewGroup extends Saveable, ModelObject, AccessControlled {
     View getView(String name);
 
     /**
+     * If the view group renders one view in {@linkplain #getUrl() its own URL} (like Jenkins top page does),
+     * then that view is called the primary view. In this case, the hyperlink to the primary view points to
+     * the view group itself.
+     * <p>
+     * If the view group doesn't do such rendering, this method can always return null.
+     * <p>
+     * This method was added later to {@link ViewGroup}, so old plugins might not be implementing this.
+     * To work around this, {@link View}s can use {@link View#getOwnerPrimaryView()}.
+     *
+     * @since 1.417
+     */
+    View getPrimaryView();
+
+    /**
      * Returns the path of this group, relative to the context root,
      * like "foo/bar/zot/". Note no leading slash but trailing slash.
      */
