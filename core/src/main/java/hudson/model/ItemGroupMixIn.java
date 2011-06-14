@@ -171,7 +171,7 @@ public abstract class ItemGroupMixIn {
                     throw new Failure("No mode given");
 
                 // create empty job and redirect to the project config screen
-                result = createProject(Items.getDescriptor(mode), name, true);
+                result = createProject(Items.all().findByName(mode), name, true);
             }
         }
 

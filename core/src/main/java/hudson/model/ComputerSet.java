@@ -241,7 +241,7 @@ public final class ComputerSet extends AbstractModelObject {
                 return;
             }
 
-            NodeDescriptor d = NodeDescriptor.all().find(mode);
+            NodeDescriptor d = NodeDescriptor.all().findByName(mode);
             d.handleNewNodePage(this,name,req,rsp);
         }
     }
