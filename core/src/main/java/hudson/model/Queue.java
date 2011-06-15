@@ -966,6 +966,7 @@ public class Queue extends ResourceController implements Saveable {
                 Computer c = n.toComputer();
                 if (c==null || c.isOffline())    continue;
                 if (lbl!=null && !lbl.contains(n))  continue;
+                if (n.canTake(p) != null) continue;
                 c.startFlyWeightTask(new WorkUnitContext(p).createWorkUnit(p.task));
                 pendings.add(p);
                 return;
