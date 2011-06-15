@@ -25,6 +25,7 @@
 package hudson.model;
 
 import com.infradna.tool.bridge_method_injector.WithBridgeMethods;
+import hudson.AbortException;
 import hudson.XmlFile;
 import hudson.Util;
 import hudson.Functions;
@@ -298,6 +299,12 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
      * the files are first copied on the file system,
      * then it will be loaded, then this method will be invoked
      * to perform any implementation-specific work.
+     *
+     * <p>
+     * 
+     *
+     * @param src
+     *      Item from which it's copied from. The same type as {@code this}. Never null.
      */
     public void onCopiedFrom(Item src) {
     }
@@ -410,6 +417,10 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
 
     /**
      * Deletes this item.
+     *
+     * <p>
+     * Any exception indicates the deletion has failed, but {@link AbortException} would prevent the caller
+     * from showing the stack trace. This
      */
     public synchronized void delete() throws IOException, InterruptedException {
         checkPermission(DELETE);
