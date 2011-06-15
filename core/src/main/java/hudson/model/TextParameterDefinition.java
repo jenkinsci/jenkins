@@ -29,44 +29,12 @@ import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.StaplerRequest;
 
 /**
- * Parameter whose value is a string value.
+ * {@link StringParameterDefinition} that uses textarea, instead of text box.
  */
-public class TextParameterDefinition extends SimpleParameterDefinition {
-
-    private String defaultValue;
-
+public class TextParameterDefinition extends StringParameterDefinition {
     @DataBoundConstructor
     public TextParameterDefinition(String name, String defaultValue, String description) {
-        super(name, description);
-        this.defaultValue = defaultValue;
-    }
-
-    public TextParameterDefinition(String name, String defaultValue) {
-        this(name, defaultValue, null);
-    }
-
-    @Override
-    public ParameterDefinition copyWithDefaultValue(ParameterValue defaultValue) {
-        if (defaultValue instanceof StringParameterValue) {
-            StringParameterValue value = (StringParameterValue) defaultValue;
-            return new TextParameterDefinition(getName(), value.value, getDescription());
-        } else {
-            return this;
-        }
-    }
-
-    public String getDefaultValue() {
-        return defaultValue;
-    }
-
-    public void setDefaultValue(String defaultValue) {
-        this.defaultValue = defaultValue;
-    }
-    
-    @Override
-    public StringParameterValue getDefaultParameterValue() {
-        StringParameterValue v = new StringParameterValue(getName(), defaultValue, getDescription());
-        return v;
+        super(name, defaultValue, description);
     }
 
     @Extension
@@ -75,21 +43,5 @@ public class TextParameterDefinition extends SimpleParameterDefinition {
         public String getDisplayName() {
             return Messages.TextParameterDefinition_DisplayName();
         }
-
-        @Override
-        public String getHelpFile() {
-            return "/help/parameter/string.html";
-        }
-    }
-
-    @Override
-    public ParameterValue createValue(StaplerRequest req, JSONObject jo) {
-        StringParameterValue value = req.bindJSON(StringParameterValue.class, jo);
-        value.setDescription(getDescription());
-        return value;
-    }
-
-    public ParameterValue createValue(String value) {
-        return new StringParameterValue(getName(), value, getDescription());
     }
 }
