@@ -1,1 +1,1 @@
-<pkg-contents spec="1.12"><f n="jenkins.war" o="daemon" g="daemon" p="33188" pt="/Users/irichter/Documents/develop/JenkinsInstaller/jenkins.war" m="false" t="file"><mod>group</mod><mod>owner</mod></f></pkg-contents>
+<pkg-contents spec="1.12"><f n="jenkins.war" o="daemon" g="daemon" p="33188" pt="/Users/paxswill/Developer/jenkins/war/target/jenkins.war" m="true" t="file"><mod>mode</mod><mod>group</mod><mod>owner</mod></f></pkg-contents>
