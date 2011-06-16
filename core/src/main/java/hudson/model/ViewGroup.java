@@ -26,9 +26,11 @@ package hudson.model;
 
 import hudson.security.AccessControlled;
 import hudson.views.ViewsTabBar;
+import org.kohsuke.stapler.export.Exported;
 
 import java.io.IOException;
 import java.util.Collection;
+import java.util.List;
 
 /**
  * Container of {@link View}s.
@@ -117,4 +119,22 @@ public interface ViewGroup extends Saveable, ModelObject, AccessControlled {
      * @since 1.417
      */
     ItemGroup<? extends TopLevelItem> getItemGroup();
+
+    /**
+     * Returns actions that should be displayed in views.
+     *
+     * <p>
+     * In this interface, the return value is used read-only. This doesn't prevent subtypes
+     * from returning modifiable actions, however.
+     *
+     * <p>
+     * This method was added later to {@link ViewGroup}, so old plugins might not be implementing this.
+     * To work around this, {@link View}s can use {@link View#getOwnerViewActions()}.
+     *
+     * @return
+     *      may be empty but never null.
+     * @see Actionable#getActions()
+     * @since 1.417
+     */
+    public List<Action> getViewActions();
 }

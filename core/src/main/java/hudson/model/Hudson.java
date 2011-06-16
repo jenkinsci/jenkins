@@ -1255,6 +1255,10 @@ public class Hudson extends Node implements ModifiableItemGroup<TopLevelItem>, S
         return actions;
     }
 
+    public List<Action> getViewActions() {
+        return getActions();
+    }
+
     /**
      * Gets just the immediate children of {@link Hudson}.
      *

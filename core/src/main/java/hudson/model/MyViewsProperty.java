@@ -225,6 +225,10 @@ public class MyViewsProperty extends UserProperty implements ViewGroup, Action {
         return Hudson.getInstance();
     }
 
+    public List<Action> getViewActions() {
+        return Hudson.getInstance().getActions();
+    }
+
     public MyViewsTabBar getMyViewsTabBar() {
         return Hudson.getInstance().getMyViewsTabBar();
     }

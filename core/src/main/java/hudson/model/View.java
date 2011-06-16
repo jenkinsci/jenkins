@@ -215,6 +215,18 @@ public abstract class View extends AbstractModelObject implements AccessControll
         return owner.getPrimaryView();
     }
 
+    public List<Action> getOwnerViewActions() {
+        try {
+            return _getOwnerViewActions();
+        } catch (AbstractMethodError e) {
+            return Hudson.getInstance().getActions();
+        }
+    }
+
+    private List<Action> _getOwnerViewActions() {
+        return owner.getViewActions();
+    }
+
     /**
      * Message displayed in the top page. Can be null. Includes HTML.
      */
@@ -407,7 +419,7 @@ public abstract class View extends AbstractModelObject implements AccessControll
      */
     public List<Action> getActions() {
     	List<Action> result = new ArrayList<Action>();
-    	result.addAll(Hudson.getInstance().getActions());
+    	result.addAll(getOwnerViewActions());
     	synchronized (this) {
     		if (transientActions == null) {
     			transientActions = TransientViewActionFactory.createAllFor(this); 

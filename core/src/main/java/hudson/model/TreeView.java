@@ -185,4 +185,8 @@ public class TreeView extends View implements ViewGroup {
     public ItemGroup<? extends TopLevelItem> getItemGroup() {
         return getOwnerItemGroup();
     }
+
+    public List<Action> getViewActions() {
+        return owner.getViewActions();
+    }
 }
