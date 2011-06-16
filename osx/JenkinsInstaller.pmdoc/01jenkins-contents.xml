@@ -1,1 +1,1 @@
-<pkg-contents spec="1.12"><f n="jenkins.war" o="root" g="admin" p="33188" pt="/Users/paxswill/Developer/jenkins/war/target/jenkins.war" m="true" t="file"><mod>mode</mod><mod>group</mod><mod>owner</mod></f></pkg-contents>
+<pkg-contents spec="1.12"><f n="jenkins.war" o="root" g="admin" p="33188" pt="/path/to/jenkins.war" m="false" t="file"/></pkg-contents>
