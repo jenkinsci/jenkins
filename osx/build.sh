@@ -8,7 +8,6 @@ fi
 
 # Set up build tools
 DEV_DIR=`xcode-select -print-path`
-echo $DEV_DIR
 PACKAGEMAKER="$DEV_DIR/Applications/Utilities/PackageMaker.app/Contents/MacOS/PackageMaker"
 
 # Get the Jenkins version number
@@ -32,8 +31,6 @@ sed s,"<installFrom mod=\"true\">.*</installFrom>","<installFrom mod=\"true\">${
 mv -f $PACKAGEMAKER_DOC/01jenkins.xml.tmp $PACKAGEMAKER_DOC/01jenkins.xml
 
 # Build the package
-echo -n "document: "
-echo $PACKAGEMAKER_DOC
 ${PACKAGEMAKER} \
 	-v \
 	--doc ${PACKAGEMAKER_DOC} \
