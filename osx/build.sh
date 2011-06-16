@@ -28,7 +28,7 @@ rm $(dirname $0)/jenkins.war.tmp
 PACKAGEMAKER_DOC="$(dirname $0)/JenkinsInstaller.pmdoc"
 sed s,"pt=\".*\" m=","pt=\"${1}\" m=",g $PACKAGEMAKER_DOC/01jenkins-contents.xml > $PACKAGEMAKER_DOC/01jenkins-contents.xml.tmp
 mv -f $PACKAGEMAKER_DOC/01jenkins-contents.xml.tmp $PACKAGEMAKER_DOC/01jenkins-contents.xml
-sed s,"<installFrom mod=\"true\">/Volumes/scratch/wross/src/jenkins/war/target/jenkins.war</installFrom>","<installFrom mod=\"true\">${1}</installFrom>",g $PACKAGEMAKER_DOC/01jenkins.xml > $PACKAGEMAKER_DOC/01jenkins.xml.tmp
+sed s,"<installFrom mod=\"true\">.*</installFrom>","<installFrom mod=\"true\">${1}</installFrom>",g $PACKAGEMAKER_DOC/01jenkins.xml > $PACKAGEMAKER_DOC/01jenkins.xml.tmp
 mv -f $PACKAGEMAKER_DOC/01jenkins.xml.tmp $PACKAGEMAKER_DOC/01jenkins.xml
 
 # Build the package
