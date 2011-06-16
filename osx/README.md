@@ -9,7 +9,7 @@ To build the installer package you will need a copy of the jenkins.war file. You
 [Jenkins home page](http://mirrors.jenkins-ci.org/war/latest/). Then open a terminal, navigate to this
 directory, and run the build script
 
-    ./build.sh /path/to.jenkins.war
+    ./build.sh /path/to/jenkins.war
 
 ## Some Links
 
@@ -19,7 +19,7 @@ directory, and run the build script
 ## License
 
     Original Copyright (C) 2011 by Ingo Richter
-    Additions Copyright (C) 2011 by Will ROss
+    Additions Copyright (C) 2011 by Will Ross
     
     Permission is hereby granted, free of charge, to any person obtaining a copy
     of this software and associated documentation files (the "Software"), to deal
