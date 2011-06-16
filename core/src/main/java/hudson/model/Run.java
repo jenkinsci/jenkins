@@ -1615,18 +1615,21 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
                 if(trP==null) {
                     if(trN!=null && trN.getFailCount()>0)
                         return new Summary(false, Messages.Run_Summary_TestFailures(trN.getFailCount()));
-                    else // ???
-                        return new Summary(false, Messages.Run_Summary_Unstable());
+                } else {
+                    if(trN.getFailCount()!= 0) {
+                        if(trP.getFailCount()==0)
+                            return new Summary(true, Messages.Run_Summary_TestsStartedToFail(trN.getFailCount()));
+                        if(trP.getFailCount() < trN.getFailCount())
+                            return new Summary(true, Messages.Run_Summary_MoreTestsFailing(trN.getFailCount()-trP.getFailCount(), trN.getFailCount()));
+                        if(trP.getFailCount() > trN.getFailCount())
+                            return new Summary(false, Messages.Run_Summary_LessTestsFailing(trP.getFailCount()-trN.getFailCount(), trN.getFailCount()));
+                        
+                        return new Summary(false, Messages.Run_Summary_TestsStillFailing(trN.getFailCount()));
+                    }
                 }
-                if(trP.getFailCount()==0)
-                    return new Summary(true, Messages.Run_Summary_TestsStartedToFail(trN.getFailCount()));
-                if(trP.getFailCount() < trN.getFailCount())
-                    return new Summary(true, Messages.Run_Summary_MoreTestsFailing(trN.getFailCount()-trP.getFailCount(), trN.getFailCount()));
-                if(trP.getFailCount() > trN.getFailCount())
-                    return new Summary(false, Messages.Run_Summary_LessTestsFailing(trP.getFailCount()-trN.getFailCount(), trN.getFailCount()));
-
-                return new Summary(false, Messages.Run_Summary_TestsStillFailing(trN.getFailCount()));
             }
+            
+            return new Summary(false, Messages.Run_Summary_Unstable());
         }
 
         return new Summary(false, Messages.Run_Summary_Unknown());
