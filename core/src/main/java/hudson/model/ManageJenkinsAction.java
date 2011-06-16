@@ -40,7 +40,7 @@ public class ManageJenkinsAction implements RootAction {
     }
 
     public String getDisplayName() {
-        return "Manage Jenkins";
+        return Messages.ManageJenkinsAction_DisplayName();
     }
 
     public String getUrlName() {
