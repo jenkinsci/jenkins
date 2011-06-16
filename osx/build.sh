@@ -1,6 +1,6 @@
 #!/bin/bash
 
-#Usage
+# Usage
 if [ -z "$1" ]; then
 	echo "Usage: build.sh path/to/jenkins.war"
 	exit 1
@@ -26,9 +26,11 @@ rm $(dirname $0)/jenkins.war.tmp
 # Fiddle with the package document so it points to the jenkins.war file provided
 PACKAGEMAKER_DOC="$(dirname $0)/JenkinsInstaller.pmdoc"
 sed s,"pt=\".*\" m=","pt=\"${1}\" m=",g $PACKAGEMAKER_DOC/01jenkins-contents.xml > $PACKAGEMAKER_DOC/01jenkins-contents.xml.tmp
-mv -f $PACKAGEMAKER_DOC/01jenkins-contents.xml.tmp $PACKAGEMAKER_DOC/01jenkins-contents.xml
+mv $PACKAGEMAKER_DOC/01jenkins-contents.xml $PACKAGEMAKER_DOC/01jenkins-contents.xml.orig
+mv $PACKAGEMAKER_DOC/01jenkins-contents.xml.tmp $PACKAGEMAKER_DOC/01jenkins-contents.xml
 sed s,"<installFrom mod=\"true\">.*</installFrom>","<installFrom mod=\"true\">${1}</installFrom>",g $PACKAGEMAKER_DOC/01jenkins.xml > $PACKAGEMAKER_DOC/01jenkins.xml.tmp
-mv -f $PACKAGEMAKER_DOC/01jenkins.xml.tmp $PACKAGEMAKER_DOC/01jenkins.xml
+mv $PACKAGEMAKER_DOC/01jenkins.xml $PACKAGEMAKER_DOC/01jenkins.xml.orig
+mv $PACKAGEMAKER_DOC/01jenkins.xml.tmp $PACKAGEMAKER_DOC/01jenkins.xml
 
 # Build the package
 ${PACKAGEMAKER} \
@@ -38,3 +40,6 @@ ${PACKAGEMAKER} \
 	--version "${version}" \
 	--title ${PKG_TITLE}
 
+# Reset the fiddling so git doesn't get confused
+mv $PACKAGEMAKER_DOC/01jenkins.xml.orig $PACKAGEMAKER_DOC/01jenkins.xml
+mv $PACKAGEMAKER_DOC/01jenkins-contents.xml.orig $PACKAGEMAKER_DOC/01jenkins-contents.xml
