@@ -8,9 +8,6 @@
       target: init
      ================================= -->
 	<target name="init" description="--> Prepare the build process" depends="">
-		<!-- Check if we know which build to package. If not -> fail -->
-		<fail unless="jenkinsBuildNumber" message="Please provide -DjenkinsBuildNumber=1.xxx when calling this script" />
-
 		<mkdir dir="${builddir}" />
 	</target>
 
@@ -38,8 +35,13 @@
       target: build
      ================================= -->
 	<target name="build" description="--> Build the Installer" depends="init">
+		<property name="basePOMFile" location="../pom.xml" />
+		<exec executable="/bin/sh" outputproperty="jenkinsBuildNumber" errorproperty="jenkinsVersionError">
+			<arg value="-c" />
+			<arg value="/usr/bin/xpath ../pom.xml &quot;/project/version&quot; | sed s,'&lt;/*version>','',g" />
+		</exec>
 		<exec executable="${packagemaker}" dir="${basedir}" os="Mac OS X" output="${builddir}/packagemaker-${jenkinsBuildNumber}.log">
-			<arg line="-v --doc JenkinsInstaller.pmdoc --out ${builddir}/${installer.file.name} --version ${jenkinsBuildNumber} --title '${installer.title}'" />
+			<arg line="-v --doc JenkinsInstaller.pmdoc --out ${builddir}/JenkinsInstaller-${jenkinsBuildNumber}.pkg --version ${jenkinsBuildNumber} --title 'Jenkins ${jenkinsBuildNumber}'" />
 		</exec>
 	</target>
 </project>
