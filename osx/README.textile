@@ -1,19 +1,12 @@
 h1. Jenkins OSX Installer Project
 
-To create the Jenkins Installer for OSX you need an OSX machine with Developer
-Tools installed. You can download the Developer Tools from Apple's Developer
-Connection website (http://developer.apple.com)
+To create the Jenkins Installer for OSX you need an OSX machine with Developer Tools installed. You can download the Developer Tools from Apple's Developer Connection website (http://developer.apple.com)
 
 h3. Build the installer
 
-To build the installer you need to acquire a copy of the jenkins.war. You can
-either build it from source using the standard build process, or you can
-download a copy from http://mirrors.jenkins-ci.org/war/latest/. If you download
-a pre-made jenkins.war, place it in the *war/target* directory in the jenkins
-source tree. Otherwise the installer creation process will fail.
+To build the installer you need to acquire a copy of the jenkins.war. You can either build it from source using the standard build process, or you can download a copy from http://mirrors.jenkins-ci.org/war/latest/. If you download a pre-made jenkins.war, place it in the *war/target* directory in the jenkins source tree. Otherwise the installer creation process will fail.
 
-Open a terminal, navigate to the *osx* directory in the jenkins source tree and
-enter the following commands:
+Open a terminal, navigate to the *osx* directory in the jenkins source tree and enter the following commands:
 <pre><code>ant build</code></pre>
 
 h3. Some Links
