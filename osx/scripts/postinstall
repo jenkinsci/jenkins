@@ -6,7 +6,7 @@ targetLocation=$2
 targetVolume=$3
 
 JENKINS_HOME=/Users/Shared/Jenkins/Home
-JENKINS_PLIST=/Library/LaunchAgents/org.jenkins-ci.plist
+JENKINS_PLIST=/Library/LaunchDaemons/org.jenkins-ci.plist
 
 cat > ${JENKINS_PLIST} <<JENKINS-PLIST
 <?xml version="1.0" encoding="UTF-8"?>
