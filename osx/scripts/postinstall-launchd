@@ -1,0 +1,7 @@
+#!/bin/bash
+
+JENKINS_HOME="/Users/Shared/Jenkins/Home"
+JENKINS_PLIST="/Library/LaunchDaemons/org.jenkins-ci.plist"
+
+# this is the label
+/bin/launchctl load ${JENKINS_PLIST}
