@@ -1,6 +1,6 @@
 #!/bin/bash -e
 if [ -z "$1" ]; then
-  echo "Usage: build.sh path/to/jenkins.war [version string]"
+  echo "Usage: build.sh path/to/jenkins.war"
   exit 1
 fi
 
