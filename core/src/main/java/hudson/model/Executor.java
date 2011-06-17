@@ -82,11 +82,39 @@ public class Executor extends Thread implements ModelObject {
 
     private boolean induceDeath;
 
+    /**
+     * When the executor is interrupted, we allow the code that interrupted the thread to override the
+     * result code it prefers.
+     */
+    private Result interruptStatus;
+
     public Executor(Computer owner, int n) {
         super("Executor #"+n+" for "+owner.getDisplayName());
         this.owner = owner;
         this.queue = Jenkins.getInstance().getQueue();
         this.number = n;
+    }
+
+    @Override
+    public void interrupt() {
+        interrupt(Result.ABORTED);
+    }
+
+    /**
+     * Interrupt the execution,
+     * but instead of marking the build as aborted, mark it as specified result.
+     *
+     * @since 1.417
+     */
+    public void interrupt(Result result) {
+        interruptStatus = result;
+        super.interrupt();
+    }
+
+    public Result abortResult() {
+        Result r = interruptStatus;
+        if (r==null)    r = Result.ABORTED; // this is when we programmatically throw InterruptedException instead of calling the interrupt method.
+        return r;
     }
 
     @Override
@@ -99,6 +127,7 @@ public class Executor extends Thread implements ModelObject {
             while(shouldRun()) {
                 executable = null;
                 workUnit = null;
+                interruptStatus = null;
 
                 synchronized(owner) {
                     if(owner.getNumExecutors()<owner.getExecutors().size()) {

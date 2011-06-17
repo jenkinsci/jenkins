@@ -306,7 +306,7 @@ public class MatrixBuild extends AbstractBuild<MatrixProject,MatrixBuild> {
                 return r;
             } catch( InterruptedException e ) {
                 logger.println("Aborted");
-                return Result.ABORTED;
+                return Executor.currentExecutor().abortResult();
             } catch (AggregatorFailureException e) {
                 return Result.FAILURE;
             }
