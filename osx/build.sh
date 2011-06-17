@@ -35,10 +35,10 @@ mv $PACKAGEMAKER_DOC/01jenkins.xml.tmp $PACKAGEMAKER_DOC/01jenkins.xml
 
 # Build the package
 ${PACKAGEMAKER} \
-	--doc ${PACKAGEMAKER_DOC} \
-	--out ${PKG_NAME} \
+	--doc "${PACKAGEMAKER_DOC}" \
+	--out "${PKG_NAME}" \
 	--version "${version}" \
-	--title ${PKG_TITLE}
+	--title "${PKG_TITLE}"
 
 # Reset the fiddling so git doesn't get confused
 mv $PACKAGEMAKER_DOC/01jenkins.xml.orig $PACKAGEMAKER_DOC/01jenkins.xml
