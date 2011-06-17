@@ -26,7 +26,7 @@ THE SOFTWARE.
 <!--
   Side panel for the build view.
 -->
-<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:s="/lib/form">
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:s="/lib/form" xmlns:this="this">
   <l:header title="Jenkins">
     <link rel="alternate" title="Jenkins:${it.viewName} (all builds)" href="${rootURL}/${it.url}rssAll" type="application/rss+xml" />
     <link rel="alternate" title="Jenkins:${it.viewName} (all builds) (RSS 2.0)" href="${rootURL}/${it.url}rssAll?flavor=rss20" type="application/rss+xml" />
@@ -35,9 +35,13 @@ THE SOFTWARE.
   </l:header>
   <l:side-panel>
     <l:tasks>
-      <st:include page="tasks-top.jelly" from="${it.owner}" optional="true" />
+      <st:include page="tasks-top.jelly" it="${it.owner}" optional="true" />
 
-      <l:task icon="images/24x24/new-package.gif" href="${rootURL}/${it.viewUrl}newJob" title="${%New Job}" permission="${it.itemCreatePermission}" it="${app}" />
+      <st:include page="tasks-new.jelly" it="${it.owner}" optional="true">
+        <!-- made overridable for ViewGroup that doesn't allow modifications -->
+        <l:task icon="images/24x24/new-package.gif" href="${rootURL}/${it.viewUrl}newJob" title="${%New Job}" permission="${it.itemCreatePermission}" it="${app}" />
+      </st:include>
+
       <j:choose>
         <j:when test="${it.class.name=='hudson.model.AllView'}">
           <l:task icon="images/24x24/user.gif" href="${rootURL}/people/" title="${%People}" />
