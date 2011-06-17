@@ -11,7 +11,8 @@ complete {
 
 
     match("asm:*") {
-        rewriteLicense([], license("BSD License","http://asm.ow2.org/license.html"))
+        if (dependency.licenses.isEmpty())
+            rewriteLicense([], license("BSD License","http://asm.ow2.org/license.html"))
     }
 
     // Apache components

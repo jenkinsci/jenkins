@@ -71,12 +71,15 @@ public class AllView extends View {
     @Override
     public Item doCreateItem(StaplerRequest req, StaplerResponse rsp)
             throws IOException, ServletException {
-        return Jenkins.getInstance().doCreateItem(req, rsp);
+        ItemGroup<? extends TopLevelItem> ig = getOwnerItemGroup();
+        if (ig instanceof ModifiableItemGroup)
+            return ((ModifiableItemGroup<? extends TopLevelItem>)ig).doCreateItem(req, rsp);
+        return null;
     }
 
     @Override
     public Collection<TopLevelItem> getItems() {
-        return Jenkins.getInstance().getItems();
+        return (Collection)getOwnerItemGroup().getItems();
     }
 
     @Override

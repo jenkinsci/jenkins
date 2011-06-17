@@ -139,7 +139,7 @@ public abstract class View extends AbstractModelObject implements AccessControll
      * Gets the {@link TopLevelItem} of the given name.
      */
     public TopLevelItem getItem(String name) {
-        return Jenkins.getInstance().getItem(name);
+        return getOwnerItemGroup().getItem(name);
     }
 
     /**
@@ -182,6 +182,49 @@ public abstract class View extends AbstractModelObject implements AccessControll
      */
     public ViewGroup getOwner() {
         return owner;
+    }
+
+    /**
+     * Backward-compatible way of getting {@code getOwner().getItemGroup()}
+     */
+    public ItemGroup<? extends TopLevelItem> getOwnerItemGroup() {
+        try {
+            return _getOwnerItemGroup();
+        } catch (AbstractMethodError e) {
+            return Hudson.getInstance();
+        }
+    }
+
+    /**
+     * A pointless function to work around what appears to be a HotSpot problem. See JENKINS-5756 and bug 6933067
+     * on BugParade for more details.
+     */
+    private ItemGroup<? extends TopLevelItem> _getOwnerItemGroup() {
+        return owner.getItemGroup();
+    }
+
+    public View getOwnerPrimaryView() {
+        try {
+            return _getOwnerPrimaryView();
+        } catch (AbstractMethodError e) {
+            return null;
+        }
+    }
+
+    private View _getOwnerPrimaryView() {
+        return owner.getPrimaryView();
+    }
+
+    public List<Action> getOwnerViewActions() {
+        try {
+            return _getOwnerViewActions();
+        } catch (AbstractMethodError e) {
+            return Hudson.getInstance().getActions();
+        }
+    }
+
+    private List<Action> _getOwnerViewActions() {
+        return owner.getViewActions();
     }
 
     /**
@@ -290,7 +333,7 @@ public abstract class View extends AbstractModelObject implements AccessControll
      * If true, this is a view that renders the top page of Hudson.
      */
     public boolean isDefault() {
-        return Jenkins.getInstance().getPrimaryView()==this;
+        return getOwnerPrimaryView()==this;
     }
     
     public List<Computer> getComputers() {
@@ -350,7 +393,7 @@ public abstract class View extends AbstractModelObject implements AccessControll
      * empty string when this is the default view).
      */
     public String getUrl() {
-        return isDefault() ? "" : getViewUrl();
+        return isDefault() ? (owner!=null ? owner.getUrl() : "") : getViewUrl();
     }
 
     /**
@@ -376,7 +419,7 @@ public abstract class View extends AbstractModelObject implements AccessControll
      */
     public List<Action> getActions() {
     	List<Action> result = new ArrayList<Action>();
-    	result.addAll(Jenkins.getInstance().getActions());
+    	result.addAll(getOwnerViewActions());
     	synchronized (this) {
     		if (transientActions == null) {
     			transientActions = TransientViewActionFactory.createAllFor(this); 
@@ -672,7 +715,7 @@ public abstract class View extends AbstractModelObject implements AccessControll
      * Creates a new {@link Item} in this collection.
      *
      * <p>
-     * This method should call {@link Jenkins#doCreateItem(StaplerRequest, StaplerResponse)}
+     * This method should call {@link ModifiableItemGroup#doCreateItem(StaplerRequest, StaplerResponse)}
      * and then add the newly created item to this view.
      * 
      * @return
@@ -726,6 +769,14 @@ public abstract class View extends AbstractModelObject implements AccessControll
      */
     public static DescriptorExtensionList<View,ViewDescriptor> all() {
         return Jenkins.getInstance().<View,ViewDescriptor>getDescriptorList(View.class);
+    }
+
+    public static List<ViewDescriptor> allInstantiable() {
+        List<ViewDescriptor> r = new ArrayList<ViewDescriptor>();
+        for (ViewDescriptor d : all())
+            if(d.isInstantiable())
+                r.add(d);
+        return r;
     }
 
     public static final Comparator<View> SORTER = new Comparator<View>() {

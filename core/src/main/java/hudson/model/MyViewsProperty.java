@@ -34,13 +34,9 @@ import hudson.views.ViewsTabBar;
 
 import java.io.IOException;
 import java.text.ParseException;
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import javax.servlet.ServletException;
 
@@ -61,14 +57,14 @@ import org.kohsuke.stapler.StaplerResponse;
  * @author Tom Huybrechts
  */
 public class MyViewsProperty extends UserProperty implements ViewGroup, Action {
-
-    private static final Logger log = Logger.getLogger(MyViewsProperty.class.getName());
-
     private String primaryViewName;
+
     /**
      * Always hold at least one view.
      */
     private CopyOnWriteArrayList<View> views = new CopyOnWriteArrayList<View>();
+
+    private transient ViewGroupMixIn viewGroupMixIn;
 
     @DataBoundConstructor
     public MyViewsProperty(String primaryViewName) {
@@ -76,8 +72,25 @@ public class MyViewsProperty extends UserProperty implements ViewGroup, Action {
     }
 
     private MyViewsProperty() {
-		views.add(new AllView(Messages.Hudson_ViewName(), this));
-        primaryViewName = views.get(0).getViewName();
+        readResolve();
+    }
+
+    public Object readResolve() {
+        if (views == null)
+            // this shouldn't happen, but an error in 1.319 meant the last view could be deleted
+            views = new CopyOnWriteArrayList<View>();
+
+        if (views.isEmpty())
+            // preserve the non-empty invariant
+            views.add(new AllView(Messages.Hudson_ViewName(), this));
+
+        viewGroupMixIn = new ViewGroupMixIn(this) {
+            protected List<View> views() { return views; }
+            protected String primaryView() { return primaryViewName; }
+            protected void primaryView(String name) { primaryViewName=name; }
+        };
+
+        return this;
     }
 
     public String getPrimaryViewName() {
@@ -102,58 +115,31 @@ public class MyViewsProperty extends UserProperty implements ViewGroup, Action {
     }
 
     public Collection<View> getViews() {
-        List<View> copy = new ArrayList<View>(views);
-        Collections.sort(copy, View.SORTER);
-        return copy;
+        return viewGroupMixIn.getViews();
     }
 
     public View getView(String name) {
-        for (View v : views) {
-            if (v.getViewName().equals(name)) {
-                return v;
-            }
-        }
-        return null;
+        return viewGroupMixIn.getView(name);
     }
 
     public boolean canDelete(View view) {
-        return views.size() > 1;  // Cannot delete last view
+        return viewGroupMixIn.canDelete(view);
     }
 
     public void deleteView(View view) throws IOException {
-        if (views.size() <= 1) {
-            throw new IllegalStateException("Cannot delete last view");
-        }
-        views.remove(view);
-        if (view.getViewName().equals(primaryViewName)) {
-            primaryViewName = views.get(0).getViewName();
-        }
-        save();
+        viewGroupMixIn.deleteView(view);
     }
 
     public void onViewRenamed(View view, String oldName, String newName) {
-        if (primaryViewName.equals(oldName)) {
-            primaryViewName = newName;
-            try {
-                save();
-            } catch (IOException ex) {
-                log.log(Level.SEVERE, "error while saving user " + user.getId(), ex);
-            }
-        }
+        viewGroupMixIn.onViewRenamed(view,oldName,newName);
     }
 
     public void addView(View view) throws IOException {
-        views.add(view);
-        save();
+        viewGroupMixIn.addView(view);
     }
 
     public View getPrimaryView() {
-        if (primaryViewName != null) {
-            View view = getView(primaryViewName);
-            if (view != null) return view;
-        } 
-
-        return views.get(0);
+        return viewGroupMixIn.getPrimaryView();
     }
 
     public HttpResponse doIndex() {
@@ -231,20 +217,17 @@ public class MyViewsProperty extends UserProperty implements ViewGroup, Action {
     	req.bindJSON(this, form);
     	return this;
     }
-    
-    public Object readResolve() {
-        if (views == null)
-            // this shouldn't happen, but an error in 1.319 meant the last view could be deleted
-            views = new CopyOnWriteArrayList<View>();
-
-        if (views.isEmpty())
-            // preserve the non-empty invariant
-            views.add(new AllView(Messages.Hudson_ViewName(), this));
-        return this;
-    }
 
     public ViewsTabBar getViewsTabBar() {
         return Jenkins.getInstance().getViewsTabBar();
+    }
+
+    public ItemGroup<? extends TopLevelItem> getItemGroup() {
+        return Hudson.getInstance();
+    }
+
+    public List<Action> getViewActions() {
+        return Hudson.getInstance().getActions();
     }
 
     public MyViewsTabBar getMyViewsTabBar() {

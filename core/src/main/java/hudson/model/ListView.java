@@ -136,7 +136,7 @@ public class ListView extends View implements Saveable {
         SortedSet<String> names = new TreeSet<String>(jobNames);
 
         if (includePattern != null) {
-            for (TopLevelItem item : Jenkins.getInstance().getItems()) {
+            for (Item item : getOwnerItemGroup().getItems()) {
                 String itemName = item.getName();
                 if (includePattern.matcher(itemName).matches()) {
                     names.add(itemName);
@@ -146,7 +146,7 @@ public class ListView extends View implements Saveable {
 
         List<TopLevelItem> items = new ArrayList<TopLevelItem>(names.size());
         for (String n : names) {
-            TopLevelItem item = Jenkins.getInstance().getItem(n);
+            TopLevelItem item = getOwnerItemGroup().getItem(n);
             // Add if no status filter or filter matches enabled/disabled status:
             if(item!=null && (statusFilter == null || !(item instanceof AbstractProject)
                               || ((AbstractProject)item).isDisabled() ^ statusFilter))
@@ -155,7 +155,7 @@ public class ListView extends View implements Saveable {
 
         // check the filters
         Iterable<ViewJobFilter> jobFilters = getJobFilters();
-        List<TopLevelItem> allItems = Jenkins.getInstance().getItems();
+        List<TopLevelItem> allItems = new ArrayList<TopLevelItem>(getOwnerItemGroup().getItems());
     	for (ViewJobFilter jobFilter: jobFilters) {
     		items = jobFilter.filter(items, allItems, this);
     	}
@@ -192,12 +192,16 @@ public class ListView extends View implements Saveable {
     }
 
     public synchronized Item doCreateItem(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
-        Item item = Jenkins.getInstance().doCreateItem(req, rsp);
-        if(item!=null) {
-            jobNames.add(item.getName());
-            owner.save();
+        ItemGroup<? extends TopLevelItem> ig = getOwnerItemGroup();
+        if (ig instanceof ModifiableItemGroup) {
+            TopLevelItem item = ((ModifiableItemGroup<? extends TopLevelItem>)ig).doCreateItem(req, rsp);
+            if(item!=null) {
+                jobNames.add(item.getName());
+                owner.save();
+            }
+            return item;
         }
-        return item;
+        return null;
     }
 
     @Override
@@ -214,7 +218,7 @@ public class ListView extends View implements Saveable {
     @Override
     protected void submit(StaplerRequest req) throws ServletException, FormException, IOException {
         jobNames.clear();
-        for (TopLevelItem item : Jenkins.getInstance().getItems()) {
+        for (TopLevelItem item : getOwnerItemGroup().getItems()) {
             if(req.getParameter(item.getName())!=null)
                 jobNames.add(item.getName());
         }
