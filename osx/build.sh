@@ -15,7 +15,7 @@ PACKAGEMAKER="$DEV_DIR/Applications/Utilities/PackageMaker.app/Contents/MacOS/Pa
 cp "$1" $(dirname $0)/jenkins.war.tmp
 pushd $(dirname $0)
 if [ -z "$2" ]; then
-  version=$(unzip -p $(dirname $0)/jenkins.war.tmp META-INF/MANIFEST.MF | grep Implementation-Version | cut -d ' ' -f2 | tr - .)
+  version=$(unzip -p $(dirname $0)/jenkins.war.tmp META-INF/MANIFEST.MF | grep Implementation-Version | cut -d ' ' -f2 | tr - . | tr -d '\r')
 else
   version="$2"
 fi
