@@ -336,6 +336,11 @@ public class MappingWorksheet {
                     }
 
                     int minIdle = max-peak; // minimum number of idle nodes during this time period
+                    // total predicted load could exceed available executors [JENKINS-8882]
+                    if (minIdle<0) {
+                        // Should we toss a warning/info message?
+                        minIdle = 0;
+                    }
                     if (minIdle<list.size())
                         e.setValue(list.subList(0,minIdle));
                 }
