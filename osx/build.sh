@@ -35,7 +35,6 @@ mv $PACKAGEMAKER_DOC/01jenkins.xml.tmp $PACKAGEMAKER_DOC/01jenkins.xml
 
 # Build the package
 ${PACKAGEMAKER} \
-	-v \
 	--doc ${PACKAGEMAKER_DOC} \
 	--out ${PKG_NAME} \
 	--version "${version}" \
