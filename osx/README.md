@@ -1,6 +1,6 @@
 # Jenkins OS X Installer Project
 
-To create the Jenkins Installer for OSX you need an OSX machine with Developer Tools installed. 
+To create the Jenkins Installer for OS X you need an OS X machine with Developer Tools installed. 
 You can download the Developer Tools from [Apple's Developer Connection website](http://developer.apple.com)
 
 ## Build the Installer
@@ -19,7 +19,7 @@ directory, and run the build script
 ## License
 
     Original Copyright (C) 2011 by Ingo Richter
-    Additions Copyright (C) 2011 by Will Ross
+    Portions Copyright (C) 2011 by Will Ross
     
     Permission is hereby granted, free of charge, to any person obtaining a copy
     of this software and associated documentation files (the "Software"), to deal
