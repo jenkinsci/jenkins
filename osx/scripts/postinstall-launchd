@@ -1,4 +1,13 @@
 #!/bin/bash
+
+JENKINS_PLIST="/Library/LaunchDaemons/org.jenkins-ci.plist"
+
+# Because PackageMaker just copies the components, it grabs their permissions as well
+chown -R root:admin /Applications/Jenkins
+chmod -R 755 /Applications/Jenkins
+chown root:admin ${JENKINS_PLIST}
+chmod 644 ${JENKINS_PLIST}
+
 # Load and start the launch daemon
-/bin/launchctl load /Library/LaunchDaemons/org.jenkins-ci.plist
+/bin/launchctl load ${JENKINS_PLIST}
 /bin/launchctl start org.jenkins-ci
