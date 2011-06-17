@@ -7,7 +7,8 @@ if [ -z "$1" ]; then
 fi
 
 # Set up build tools
-DEV_DIR=`xcode-select -print-path`
+DEV_DIR=`xcode-select \
+-print-path`
 PACKAGEMAKER="$DEV_DIR/Applications/Utilities/PackageMaker.app/Contents/MacOS/PackageMaker"
 
 # Get the Jenkins version number
