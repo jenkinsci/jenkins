@@ -37,6 +37,7 @@ import static hudson.util.TimeUnit2.DAYS;
 import jenkins.model.Jenkins;
 import net.sf.json.JSONObject;
 import org.kohsuke.stapler.DataBoundConstructor;
+import org.kohsuke.stapler.Stapler;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 import org.jvnet.hudson.crypto.CertificateUtil;
@@ -334,6 +335,28 @@ public class UpdateSite {
      * in Javascript.
      */
     public String getUrl() {
+        return url;
+    }
+
+    /**
+     * Where to actually download the update center?
+     *
+     * @deprecated
+     *      Exposed only for UI.
+     */
+    public String getDownloadUrl() {
+        /*
+            HACKISH:
+
+            Loading scripts in HTTP from HTTPS pages cause browsers to issue a warning dialog.
+            The elegant way to solve the problem is to always load update center from HTTPS,
+            but our backend mirroring scheme isn't ready for that. So this hack serves regular
+            traffic in HTTP server, and only use HTTPS update center for Jenkins in HTTPS.
+
+            We'll monitor the traffic to see if we can sustain this added traffic.
+         */
+        if (url.equals("http://updates.jenkins-ci.org/update-center.json") && Jenkins.getInstance().isRootUrlSecure())
+            return "https"+url.substring(4);
         return url;
     }
 

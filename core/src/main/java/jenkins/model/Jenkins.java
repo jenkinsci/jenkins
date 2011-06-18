@@ -1622,8 +1622,8 @@ public class Jenkins extends AbstractCIBase implements ModifiableItemGroup<TopLe
     }
 
     /**
-     * Gets the absolute URL of Hudson,
-     * such as "http://localhost/hudson/".
+     * Gets the absolute URL of Jenkins,
+     * such as "http://localhost/jenkins/".
      *
      * <p>
      * This method first tries to use the manually configured value, then
@@ -1648,6 +1648,17 @@ public class Jenkins extends AbstractCIBase implements ModifiableItemGroup<TopLe
         if(req!=null)
             return getRootUrlFromRequest();
         return null;
+    }
+
+    /**
+     * Is Jenkins running in HTTPS?
+     *
+     * Note that we can't really trust {@link StaplerRequest#isSecure()} because HTTPS might be terminated
+     * in the reverse proxy.
+     */
+    public boolean isRootUrlSecure() {
+        String url = getRootUrl();
+        return url!=null && url.startsWith("https");
     }
 
     /**
