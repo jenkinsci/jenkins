@@ -3,8 +3,6 @@
 JENKINS_PLIST="/Library/LaunchDaemons/org.jenkins-ci.plist"
 
 # Because PackageMaker just copies the components, we need to fix the permissions
-chown -R root:admin /Applications/Jenkins
-chmod -R 755 /Applications/Jenkins
 chown root:admin ${JENKINS_PLIST}
 chmod 644 ${JENKINS_PLIST}
 chown -R daemon:daemon /Users/Shared/Jenkins
