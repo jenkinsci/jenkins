@@ -28,7 +28,7 @@ THE SOFTWARE.
   <parent>
     <groupId>org.jenkins-ci.main</groupId>
     <artifactId>pom</artifactId>
-    <version>1.416-SNAPSHOT</version>
+    <version>1.416</version>
     <relativePath>../pom.xml</relativePath>
   </parent>
 
@@ -180,7 +180,7 @@ THE SOFTWARE.
                 <mkdir dir="target/classes/hudson/model" />
                 <echo file="target/classes/hudson/model/hudson-version.properties">version=${build.version}
                 </echo>
-                <mkdir dir="target/classes/jenkins/model"/>
+                <mkdir dir="target/classes/jenkins/model" />
                 <echo file="target/classes/jenkins/model/jenkins-version.properties">version=${build.version}
                 </echo>
                 <!-- download winsw.exe -->
