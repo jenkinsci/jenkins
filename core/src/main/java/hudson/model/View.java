@@ -38,6 +38,8 @@ import hudson.security.ACL;
 import hudson.security.AccessControlled;
 import hudson.security.Permission;
 import hudson.security.PermissionGroup;
+import hudson.util.AlternativeUiTextProvider;
+import hudson.util.AlternativeUiTextProvider.Message;
 import hudson.util.DescribableList;
 import hudson.util.DescriptorList;
 import hudson.util.RunList;
@@ -292,6 +294,10 @@ public abstract class View extends AbstractModelObject implements AccessControll
 
     public String getDisplayName() {
         return getViewName();
+    }
+
+    public String getNewPronoun() {
+        return AlternativeUiTextProvider.get(NEW_PRONOUN, this, Messages.AbstractItem_Pronoun());
     }
 
     /**
@@ -837,4 +843,10 @@ public abstract class View extends AbstractModelObject implements AccessControll
                 p.setView(getOwner());
         }
     }
+
+    /**
+     * "Job" in "New Job". When a view is used in a context that restricts the child type,
+     * It might be useful to override this.
+     */
+    public static final Message<View> NEW_PRONOUN = new Message<View>();
 }
