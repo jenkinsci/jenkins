@@ -1,0 +1,7 @@
+#!/bin/bash
+
+# Remove the old launchd plist if needed
+JENKINS_PLIST="/Library/LaunchAgents/org.jenkins-ci.plist"
+if [ -f ${JENKINS_PLIST} ]; then
+	rm ${JENKINS_PLIST}
+fi
