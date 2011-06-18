@@ -25,6 +25,7 @@ package hudson;
 
 import hudson.model.Descriptor;
 import hudson.model.Describable;
+import hudson.model.Hudson;
 import jenkins.model.Jenkins;
 import hudson.model.ViewDescriptor;
 import hudson.model.Descriptor.FormException;
@@ -67,11 +68,20 @@ public class DescriptorExtensionList<T extends Describable<T>, D extends Descrip
      */
     @SuppressWarnings({"unchecked", "rawtypes"})
     public static <T extends Describable<T>,D extends Descriptor<T>>
-    DescriptorExtensionList<T,D> createDescriptorList(Jenkins hudson, Class<T> describableType) {
+    DescriptorExtensionList<T,D> createDescriptorList(Jenkins jenkins, Class<T> describableType) {
         if (describableType == (Class) Publisher.class) {
-            return (DescriptorExtensionList) new DescriptorExtensionListImpl(hudson);
+            return (DescriptorExtensionList) new DescriptorExtensionListImpl(jenkins);
         }
-        return new DescriptorExtensionList<T,D>(hudson,describableType);
+        return new DescriptorExtensionList<T,D>(jenkins,describableType);
+    }
+
+    /**
+     * @deprecated as of 1.416
+     *      Use {@link #create(Jenkins, Class)}
+     */
+    public static <T extends Describable<T>,D extends Descriptor<T>>
+    DescriptorExtensionList<T,D> createDescriptorList(Hudson hudson, Class<T> describableType) {
+        return createDescriptorList((Jenkins)hudson,describableType);
     }
 
     /**
@@ -79,8 +89,16 @@ public class DescriptorExtensionList<T extends Describable<T>, D extends Descrip
      */
     private final Class<T> describableType;
 
-    protected DescriptorExtensionList(Jenkins hudson, Class<T> describableType) {
-        super(hudson, (Class)Descriptor.class, (CopyOnWriteArrayList)getLegacyDescriptors(describableType));
+    /**
+     * @deprecated as of 1.416
+     *      Use {@link #DescriptorExtensionList(Jenkins, Class)}
+     */
+    protected DescriptorExtensionList(Hudson hudson, Class<T> describableType) {
+        this((Jenkins)hudson,describableType);
+    }
+
+    protected DescriptorExtensionList(Jenkins jenkins, Class<T> describableType) {
+        super(jenkins, (Class)Descriptor.class, (CopyOnWriteArrayList)getLegacyDescriptors(describableType));
         this.describableType = describableType;
     }
 
