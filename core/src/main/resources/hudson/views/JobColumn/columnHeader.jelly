@@ -23,5 +23,5 @@ THE SOFTWARE.
 -->
 
 <j:jelly xmlns:j="jelly:core">
-    <th initialSortDir="down">${%Job}</th>
+    <th initialSortDir="down">${it.descriptor.displayName}</th>
 </j:jelly>

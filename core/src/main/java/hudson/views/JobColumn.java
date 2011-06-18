@@ -24,8 +24,12 @@
 package hudson.views;
 
 import hudson.Extension;
+import hudson.model.Item;
 import org.kohsuke.stapler.DataBoundConstructor;
 
+/**
+ * Renders {@link Item#getName()}
+ */
 public class JobColumn extends ListViewColumn {
     @DataBoundConstructor
     public JobColumn() {
