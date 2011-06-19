@@ -41,8 +41,6 @@ public class DNSMultiCast implements Closeable {
 
             props.put("server-id", Util.getDigestOf(hudson.getSecretKey()));
 
-            jmdns.registerService(ServiceInfo.create("_hudson._tcp.local.","hudson",
-                    80,0,0,props));	// for backward compatibility
             jmdns.registerService(ServiceInfo.create("_jenkins._tcp.local.","jenkins",
                     80,0,0,props));
         } catch (IOException e) {
