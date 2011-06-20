@@ -1,7 +1,9 @@
 <!--
 The MIT License
 
-Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, Erik Ramfelt, Tom Huybrechts, id:cactusman, Yahoo! Inc.
+Copyright (c) 2004-2011, Sun Microsystems, Inc., Kohsuke Kawaguchi, Erik Ramfelt,
+Tom Huybrechts, id:cactusman, Yahoo! Inc., Manufacture Francaise des Pneumatiques
+Michelin, Romain seguy
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -39,7 +41,7 @@ THE SOFTWARE.
       <l:task icon="images/24x24/search.png"  href="${url}/" title="${%Status}" />
       <l:task icon="images/24x24/notepad.png" href="${url}/changes" title="${%Changes}" />
       <l:task icon="images/24x24/folder.png"  href="${url}/ws/" title="${%Workspace}" permission="${it.WORKSPACE}">
-        <l:task icon="images/24x24/folder-delete.png"  href="${url}/wipeOutWorkspace" title="${%Wipe Out Workspace}" permission="${it.BUILD}" />
+        <l:task icon="images/24x24/folder-delete.png"  href="${url}/wipeOutWorkspace" title="${%Wipe Out Workspace}" permission="${h.isWipeOutPermissionEnabled() ? it.WIPEOUT : it.BUILD}" />
       </l:task>
       <j:if test="${it.configurable}">
         <j:if test="${it.buildable}">
