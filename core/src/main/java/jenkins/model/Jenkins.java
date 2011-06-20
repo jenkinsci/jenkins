@@ -375,7 +375,7 @@ public class Jenkins extends AbstractCIBase implements ItemGroup<TopLevelItem>, 
     /**
      * Active {@link Cloud}s.
      */
-    public final CloudList clouds = new CloudList(this);
+    public final Hudson.CloudList clouds = new Hudson.CloudList(this);
 
     public static class CloudList extends DescribableList<Cloud,Descriptor<Cloud>> {
         public CloudList(Jenkins h) {
@@ -2133,7 +2133,7 @@ public class Jenkins extends AbstractCIBase implements ItemGroup<TopLevelItem>, 
     }
 
     public Computer createComputer() {
-        return new MasterComputer();
+        return new Hudson.MasterComputer();
     }
 
     private synchronized TaskBuilder loadTasks() throws IOException {
