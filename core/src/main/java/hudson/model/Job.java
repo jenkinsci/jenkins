@@ -26,7 +26,6 @@ package hudson.model;
 import static javax.servlet.http.HttpServletResponse.SC_BAD_REQUEST;
 import static javax.servlet.http.HttpServletResponse.SC_NO_CONTENT;
 
-import com.google.common.collect.Iterables;
 import com.infradna.tool.bridge_method_injector.WithBridgeMethods;
 import hudson.ExtensionPoint;
 import hudson.PermalinkList;
@@ -44,7 +43,6 @@ import hudson.search.SearchItems;
 import hudson.security.ACL;
 import hudson.tasks.LogRotator;
 import hudson.util.AlternativeUiTextProvider;
-import hudson.util.AlternativeUiTextProvider.Message;
 import hudson.util.ChartUtil;
 import hudson.util.ColorPalette;
 import hudson.util.CopyOnWriteList;
@@ -77,6 +75,7 @@ import java.util.LinkedList;
 
 import javax.servlet.ServletException;
 
+import jenkins.model.Jenkins;
 import net.sf.json.JSONObject;
 import net.sf.json.JSONException;
 
@@ -974,7 +973,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
             String newName = req.getParameter("name");
             if (newName != null && !newName.equals(name)) {
                 // check this error early to avoid HTTP response splitting.
-                Hudson.checkGoodName(newName);
+                Jenkins.checkGoodName(newName);
                 rsp.sendRedirect("rename?newName=" + URLEncoder.encode(newName, "UTF-8"));
             } else {
                 rsp.sendRedirect(".");
@@ -1185,7 +1184,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
         checkPermission(DELETE);
 
         String newName = req.getParameter("newName");
-        Hudson.checkGoodName(newName);
+        Jenkins.checkGoodName(newName);
 
         if (isBuilding()) {
             // redirect to page explaining that we can't rename now
@@ -1224,7 +1223,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
      */
     @Override
     public ACL getACL() {
-        return Hudson.getInstance().getAuthorizationStrategy().getACL(this);
+        return Jenkins.getInstance().getAuthorizationStrategy().getACL(this);
     }
 
     public BuildTimelineWidget getTimeline() {

@@ -24,6 +24,7 @@
 package hudson.model;
 
 import hudson.Extension;
+import jenkins.model.Jenkins;
 
 import java.io.File;
 import java.io.FileFilter;
@@ -62,7 +63,7 @@ public final class FingerprintCleanupThread extends AsyncPeriodicWork {
     protected void execute(TaskListener listener) {
         int numFiles = 0;
 
-        File root = new File(Hudson.getInstance().getRootDir(),"fingerprints");
+        File root = new File(Jenkins.getInstance().getRootDir(),"fingerprints");
         File[] files1 = root.listFiles(LENGTH2DIR_FILTER);
         if(files1!=null) {
             for (File file1 : files1) {

@@ -28,6 +28,7 @@ import hudson.Util;
 import hudson.util.IOException2;
 import hudson.FilePath.FileCallable;
 import hudson.remoting.VirtualChannel;
+import jenkins.model.Jenkins;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 import org.kohsuke.stapler.HttpResponse;
@@ -259,7 +260,7 @@ public final class DirectoryBrowserSupport implements HttpResponse {
         boolean view = rest.equals("*view*");
 
         if(rest.equals("*fingerprint*")) {
-            rsp.forward(Hudson.getInstance().getFingerprint(baseFile.digest()),"/",req);
+            rsp.forward(Jenkins.getInstance().getFingerprint(baseFile.digest()),"/",req);
             return;
         }
 

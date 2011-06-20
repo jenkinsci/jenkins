@@ -28,6 +28,7 @@ import hudson.ExtensionPoint;
 import hudson.model.Hudson;
 import hudson.remoting.Callable;
 import hudson.remoting.Channel;
+import jenkins.model.Jenkins;
 import org.dom4j.io.SAXReader;
 
 import java.io.IOException;
@@ -67,13 +68,13 @@ public abstract class ParserConfigurator implements ExtensionPoint, Serializable
      * Returns all the registered {@link ParserConfigurator}s.
      */
     public static ExtensionList<ParserConfigurator> all() {
-        return Hudson.getInstance().getExtensionList(ParserConfigurator.class);
+        return Jenkins.getInstance().getExtensionList(ParserConfigurator.class);
     }
 
     public static void applyConfiguration(SAXReader reader, Object context) throws IOException, InterruptedException {
         Collection<ParserConfigurator> all = Collections.emptyList();
 
-        if (Hudson.getInstance()==null) {
+        if (Jenkins.getInstance()==null) {
             Channel ch = Channel.current();
             if (ch!=null)
                 all = ch.call(new Callable<Collection<ParserConfigurator>, IOException>() {

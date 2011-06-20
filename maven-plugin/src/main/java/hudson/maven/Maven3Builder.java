@@ -27,12 +27,12 @@ import hudson.Launcher;
 import hudson.maven.MavenBuild.ProxyImpl2;
 import hudson.maven.util.ExecutionEventLogger;
 import hudson.model.BuildListener;
-import hudson.model.Hudson;
+import hudson.model.Executor;
+import jenkins.model.Jenkins;
 import hudson.model.Result;
 import hudson.remoting.Channel;
 import hudson.remoting.DelegatingCallable;
 import hudson.remoting.Future;
-import hudson.util.CopyOnWriteList;
 import hudson.util.IOException2;
 
 import java.io.IOException;
@@ -40,7 +40,6 @@ import java.io.PrintStream;
 import java.io.Serializable;
 import java.lang.reflect.InvocationTargetException;
 import java.text.NumberFormat;
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -61,7 +60,6 @@ import org.apache.maven.plugin.Mojo;
 import org.apache.maven.plugin.MojoExecution;
 import org.apache.maven.plugin.PluginParameterExpressionEvaluator;
 import org.apache.maven.project.MavenProject;
-import org.codehaus.groovy.runtime.StackTraceUtils;
 import org.codehaus.plexus.component.configurator.expression.ExpressionEvaluator;
 import org.codehaus.plexus.configuration.xml.XmlPlexusConfiguration;
 import org.jvnet.hudson.maven3.agent.Maven3Main;
@@ -144,7 +142,7 @@ public class Maven3Builder extends AbstractMavenBuilder implements DelegatingCal
                         g.cancel(true);
                     // FIXME messages
                     listener.getLogger().println("build aborted");
-                    return Result.ABORTED;
+                    return Executor.currentExecutor().abortResult();
                 } catch (ExecutionException e) {
                     // FIXME messages
                     e.printStackTrace(listener.error("async build failed"));
@@ -201,7 +199,7 @@ public class Maven3Builder extends AbstractMavenBuilder implements DelegatingCal
 
     // since reporters might be from plugins, use the uberjar to resolve them.
     public ClassLoader getClassLoader() {
-        return Hudson.getInstance().getPluginManager().uberClassLoader;
+        return Jenkins.getInstance().getPluginManager().uberClassLoader;
     }
     
     

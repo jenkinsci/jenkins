@@ -21,9 +21,8 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-import hudson.taglibs.LayoutTagLib
-
-l=namespace(LayoutTagLib)
+package hudson.PluginManager;
+l=namespace(lib.LayoutTagLib)
 
 l.header()
 l.side_panel {

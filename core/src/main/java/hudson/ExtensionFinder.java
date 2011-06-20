@@ -25,10 +25,10 @@ package hudson;
 
 import com.google.common.collect.ImmutableList;
 import hudson.init.InitMilestone;
+import hudson.model.Hudson;
+import jenkins.model.Jenkins;
 import net.java.sezpoz.Index;
 import net.java.sezpoz.IndexItem;
-import hudson.model.Hudson;
-import hudson.model.Descriptor;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 
@@ -59,7 +59,7 @@ import java.lang.reflect.Method;
 public abstract class ExtensionFinder implements ExtensionPoint {
     /**
      * @deprecated as of 1.356
-     *      Use and implement {@link #find(Class, Hudson)} that allows us to put some metadata.
+     *      Use and implement {@link #find(Class,Hudson)} that allows us to put some metadata.
      */
     @Restricted(NoExternalUse.class)
     public <T> Collection<T> findExtensions(Class<T> type, Hudson hudson) {
@@ -82,7 +82,7 @@ public abstract class ExtensionFinder implements ExtensionPoint {
      * @return
      *      Can be empty but never null.
      * @since 1.356
-     *      Older implementations provide {@link #findExtensions(Class, Hudson)}
+     *      Older implementations provide {@link #findExtensions(Class,Hudson)}
      */
     public abstract <T> Collection<ExtensionComponent<T>> find(Class<T> type, Hudson hudson);
 
@@ -115,7 +115,7 @@ public abstract class ExtensionFinder implements ExtensionPoint {
      * This inconsistent locking order results in a dead lock, you see.
      *
      * <p>
-     * So to reduce the likelihood, this method is called in prior to {@link #find(Class, Hudson)} invocation,
+     * So to reduce the likelihood, this method is called in prior to {@link #find(Class,Hudson)} invocation,
      * but from outside the lock. The implementation is expected to perform all the class initialization activities
      * from here.
      *
@@ -152,7 +152,7 @@ public abstract class ExtensionFinder implements ExtensionPoint {
             // 4. thread Y decides to load extensions, now blocked on SZ.
             // 5. dead lock
             if (indices==null) {
-                ClassLoader cl = Hudson.getInstance().getPluginManager().uberClassLoader;
+                ClassLoader cl = Jenkins.getInstance().getPluginManager().uberClassLoader;
                 indices = ImmutableList.copyOf(Index.load(Extension.class, Object.class, cl));
             }
             return indices;

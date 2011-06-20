@@ -44,7 +44,7 @@ public class DependencyGraphTest extends HudsonTestCase {
      * Tests triggering downstream projects with DependencyGraph.Dependency
      */
     public void testTriggerJob() throws Exception {
-        hudson.quietPeriod = 3;
+        setQuietPeriod(3);
         Project p = createFreeStyleProject(),
             down1 = createFreeStyleProject(), down2 = createFreeStyleProject();
         // Add one standard downstream job:

@@ -2,7 +2,8 @@
 The MIT License
 
 Copyright (c) 2004-2010, Sun Microsystems, Inc., Kohsuke Kawaguchi,
-Daniel Dyer, Seiji Sogabe, Tom Huybrechts
+Daniel Dyer, Seiji Sogabe, Tom Huybrechts, Manufacture Francaise des Pneumatiques
+Michelin, Romain Seguy
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -69,7 +70,19 @@ THE SOFTWARE.
 -->
 <j:set var="resURL"  value="${rootURL}${h.resourcePath}" />
 <j:set var="imagesURL"  value="${rootURL}${h.resourcePath}/images" />
-<html>
+  <j:if test="${request.servletPath=='/' || request.servletPath==''}">
+    <st:header name="X-Hudson" value="1.395"/>
+    <st:header name="X-Jenkins" value="${servletContext.getAttribute('version')}"/>
+    <j:if test="${app.tcpSlaveAgentListener!=null}">
+      <!-- advertise the CLI TCP port -->
+      <st:header name="X-Hudson-CLI-Port" value="${app.tcpSlaveAgentListener.port}"/>
+      <st:header name="X-Jenkins-CLI-Port" value="${app.tcpSlaveAgentListener.port}"/>
+    </j:if>
+    <j:forEach var="pd" items="${h.pageDecorators}">
+      <st:include it="${pd}" page="httpHeaders.jelly" optional="true"/>
+    </j:forEach>
+  </j:if>
+  <html>
   <head>
     ${h.checkPermission(it,permission)}
 
@@ -247,7 +260,7 @@ THE SOFTWARE.
           ${%Page generated}:
           <i:formatDate value="${h.getCurrentTime()}" type="both" dateStyle="medium" timeStyle="medium"/>
         </span>
-        <a href="http://jenkins-ci.org/">Jenkins ver. ${h.version}</a>
+        <a href="${h.getFooterURL()}">Jenkins ver. ${h.version}</a>
       </td></tr>
     </table>
     <j:forEach var="pd" items="${h.pageDecorators}">

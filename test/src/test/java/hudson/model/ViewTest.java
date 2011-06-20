@@ -23,6 +23,7 @@
  */
 package hudson.model;
 
+import jenkins.model.Jenkins;
 import org.jvnet.hudson.test.Bug;
 import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
 import com.gargoylesoftware.htmlunit.html.HtmlAnchor;
@@ -52,7 +53,7 @@ public class ViewTest extends HudsonTestCase {
     public void testConflictingName() throws Exception {
         assertNull(hudson.getView("foo"));
 
-        HtmlForm form = new WebClient().goTo("newView").getFormByName("createView");
+        HtmlForm form = new WebClient().goTo("newView").getFormByName("createItem");
         form.getInputByName("name").setValueAttribute("foo");
         form.getRadioButtonsByName("mode").get(0).setChecked(true);
         submit(form);
@@ -85,7 +86,7 @@ public class ViewTest extends HudsonTestCase {
         hudson.addView(listView);
 
         HtmlPage newViewPage = wc.goTo("/user/me/my-views/newView");
-        HtmlForm form = newViewPage.getFormByName("createView");
+        HtmlForm form = newViewPage.getFormByName("createItem");
         form.getInputByName("name").setValueAttribute("proxy-view");
         ((HtmlRadioButtonInput) form.getInputByValue("hudson.model.ProxyView")).setChecked(true);
         HtmlPage proxyViewConfigurePage = submit(form);
@@ -124,7 +125,7 @@ public class ViewTest extends HudsonTestCase {
         ListView view = new ListView("foo", hudson);
         hudson.addView(view);
 
-        ListView v = (ListView)Hudson.XSTREAM.fromXML(Hudson.XSTREAM.toXML(view));
+        ListView v = (ListView) Jenkins.XSTREAM.fromXML(Jenkins.XSTREAM.toXML(view));
         System.out.println(v.getProperties());
         assertNotNull(v.getProperties());
     }

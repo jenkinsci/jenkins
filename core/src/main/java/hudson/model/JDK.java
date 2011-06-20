@@ -43,6 +43,7 @@ import java.util.List;
 import java.util.Arrays;
 import java.util.Collections;
 
+import jenkins.model.Jenkins;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.QueryParameter;
 
@@ -142,12 +143,12 @@ public final class JDK extends ToolInstallation implements NodeSpecific<JDK>, En
         }
 
         public @Override JDK[] getInstallations() {
-            return Hudson.getInstance().getJDKs().toArray(new JDK[0]);
+            return Jenkins.getInstance().getJDKs().toArray(new JDK[0]);
         }
 
         // this isn't really synchronized well since the list is Hudson.jdks :(
         public @Override synchronized void setInstallations(JDK... jdks) {
-            List<JDK> list = Hudson.getInstance().getJDKs();
+            List<JDK> list = Jenkins.getInstance().getJDKs();
             list.clear();
             list.addAll(Arrays.asList(jdks));
         }
@@ -162,7 +163,7 @@ public final class JDK extends ToolInstallation implements NodeSpecific<JDK>, En
          */
         public FormValidation doCheckHome(@QueryParameter File value) {
             // this can be used to check the existence of a file on the server, so needs to be protected
-            Hudson.getInstance().checkPermission(Hudson.ADMINISTER);
+            Jenkins.getInstance().checkPermission(Jenkins.ADMINISTER);
 
             if(value.getPath().equals(""))
                 return FormValidation.ok();

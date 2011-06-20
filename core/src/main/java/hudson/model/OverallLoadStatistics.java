@@ -26,6 +26,7 @@ package hudson.model;
 import hudson.model.MultiStageTimeSeries.TimeScale;
 import hudson.model.MultiStageTimeSeries.TrendChart;
 import hudson.util.ColorPalette;
+import jenkins.model.Jenkins;
 import org.kohsuke.stapler.export.Exported;
 
 /**
@@ -37,7 +38,7 @@ import org.kohsuke.stapler.export.Exported;
  * tracks the queue length including tasks that are assigned to a specific node.
  *
  * @author Kohsuke Kawaguchi
- * @see Hudson#overallLoad
+ * @see Jenkins#overallLoad
  */
 public class OverallLoadStatistics extends LoadStatistics {
     /**
@@ -47,7 +48,7 @@ public class OverallLoadStatistics extends LoadStatistics {
     public final MultiStageTimeSeries totalQueueLength = new MultiStageTimeSeries(
             Messages._LoadStatistics_Legends_QueueLength(), ColorPalette.GREY, 0,DECAY);
 
-    /*package*/ OverallLoadStatistics() {
+    public OverallLoadStatistics() {
         super(0,0);
     }
 
@@ -63,7 +64,7 @@ public class OverallLoadStatistics extends LoadStatistics {
 
     @Override
     public int computeQueueLength() {
-        return Hudson.getInstance().getQueue().countBuildableItemsFor(null);
+        return Jenkins.getInstance().getQueue().countBuildableItemsFor(null);
     }
 
     /**

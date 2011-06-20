@@ -156,7 +156,7 @@ public abstract class ComputerLauncher extends AbstractDescribableImpl<ComputerL
      *
      * @deprecated as of 1.281
      *      Use {@link Extension} for registration, and use
-     *      {@link Hudson#getDescriptorList(Class)} for read access.
+     *      {@link jenkins.model.Jenkins#getDescriptorList(Class)} for read access.
      */
     public static final DescriptorList<ComputerLauncher> LIST = new DescriptorList<ComputerLauncher>(ComputerLauncher.class);
 }

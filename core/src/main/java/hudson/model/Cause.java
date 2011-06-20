@@ -30,6 +30,7 @@ import java.util.List;
 import hudson.console.HyperlinkNote;
 import hudson.diagnosis.OldDataMonitor;
 import hudson.util.XStream2;
+import jenkins.model.Jenkins;
 import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.export.ExportedBean;
 import com.thoughtworks.xstream.converters.UnmarshallingContext;
@@ -185,7 +186,7 @@ public abstract class Cause {
     public static class UserCause extends Cause {
         private String authenticationName;
         public UserCause() {
-            this.authenticationName = Hudson.getAuthentication().getName();
+            this.authenticationName = Jenkins.getAuthentication().getName();
         }
 
         @Exported(visibility=3)

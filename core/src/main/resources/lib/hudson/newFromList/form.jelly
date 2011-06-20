@@ -34,18 +34,37 @@ THE SOFTWARE.
 -->
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:s="/lib/form">
+  <st:documentation>
+    Generates a form for creating something out of descriptors by (1) selecting a descriptor and specifying a name.
+    This also presents a copy option. This should be placed inside &lt;l:main-panel>.
+
+    <st:attribute name="action">
+      Specify where the form will be submitted to. Defaults to 'createItem'.
+    </st:attribute>
+    <st:attribute name="descriptors" use="required">
+      Collection of Descriptors to be rendered.
+    </st:attribute>
+    <st:attribute name="nameTitle" use="required">
+      Caption of the text box to receive the name of the newly created item. Something like "Job name"
+    </st:attribute>
+    <st:attribute name="checkUrl" use="required">
+      relative URL that point to the check method that validates the new name.
+    </st:attribute>
+  </st:documentation>
+
+
   <j:set var="descriptors" value="${h.filterDescriptors(it,attrs.descriptors)}" />
 
-  <s:form method="post" action="createItem" name="createItem">
+  <s:form method="post" action="${attrs.action?:'createItem'}" name="createItem">
     <s:entry title="${attrs.nameTitle}">
-      <s:textbox id="name" name="name" checkUrl="'${rootURL}/${attrs.checkUrl}?value='+encodeURIComponent(this.value)"
+      <s:textbox id="name" name="name" checkUrl="'${h.jsStringEscape(attrs.checkUrl)}?value='+encodeURIComponent(this.value)"
                  onchange="updateOk(this.form)" onkeyup="updateOk(this.form)" />
       <script>$('name').focus();</script>
     </s:entry>
 
     <j:forEach var="descriptor" items="${descriptors}">
       <s:block>
-        <input type="radio" name="mode" value="${descriptor.class.name}" onchange="updateOk(this.form)" onclick="updateOk(this.form)" />
+        <input type="radio" name="mode" value="${descriptor.id}" onchange="updateOk(this.form)" onclick="updateOk(this.form)" />
         <label class="attach-previous"><b>${descriptor.displayName}</b></label>
       </s:block>
       <s:entry>

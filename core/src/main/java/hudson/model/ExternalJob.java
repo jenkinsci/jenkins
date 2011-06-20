@@ -26,6 +26,7 @@ package hudson.model;
 import hudson.model.RunMap.Constructor;
 import hudson.Extension;
 import hudson.util.AlternativeUiTextProvider;
+import jenkins.model.Jenkins;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 
@@ -43,7 +44,7 @@ import java.io.IOException;
  */
 public class ExternalJob extends ViewJob<ExternalJob,ExternalRun> implements TopLevelItem {
     public ExternalJob(String name) {
-        this(Hudson.getInstance(),name);
+        this(Jenkins.getInstance(),name);
     }
 
     public ExternalJob(ItemGroup parent, String name) {

@@ -25,7 +25,7 @@ package hudson.tasks;
 
 import hudson.model.Build;
 import hudson.model.FreeStyleProject;
-import hudson.model.Hudson;
+import jenkins.model.Jenkins;
 import hudson.model.JDK;
 import hudson.model.ParametersDefinitionProperty;
 import hudson.model.Result;
@@ -99,7 +99,7 @@ public class MavenTest extends HudsonTestCase {
         String javaVar = javaHome.substring(0, 3);
         JDK varJDK = new JDK("varJDK", javaHomeVar);
         hudson.getJDKs().add(varJDK);
-        Hudson.getInstance().getNodeProperties().replaceBy(
+        Jenkins.getInstance().getNodeProperties().replaceBy(
                 Collections.singleton(new EnvironmentVariablesNodeProperty(
                         new Entry("VAR_MAVEN", mavenVar), new Entry("VAR_JAVA",
                                 javaVar))));

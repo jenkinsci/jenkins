@@ -28,13 +28,14 @@ import hudson.Extension;
 import hudson.Util;
 import hudson.diagnosis.OldDataMonitor;
 import hudson.model.Descriptor;
-import hudson.model.Hudson;
+import jenkins.model.Jenkins;
 import hudson.model.ManagementLink;
 import hudson.model.ModelObject;
 import hudson.model.User;
 import hudson.model.UserProperty;
 import hudson.model.UserPropertyDescriptor;
 import hudson.security.FederatedLoginService.FederatedIdentity;
+import hudson.security.captcha.CaptchaSupport;
 import hudson.tasks.Mailer;
 import hudson.util.PluginServletFilter;
 import hudson.util.Protector;
@@ -80,7 +81,7 @@ import java.util.List;
  *
  * <p>
  * Implements {@link AccessControlled} to satisfy view rendering, but in reality the access control
- * is done against the {@link Hudson} object.
+ * is done against the {@link jenkins.model.Jenkins} object.
  *
  * @author Kohsuke Kawaguchi
  */
@@ -92,9 +93,21 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
      */
     private final boolean disableSignup;
 
-    @DataBoundConstructor
+    /**
+     * If true, captcha will be enabled.
+     */
+    private final boolean enableCaptcha;
+
+    @Deprecated
     public HudsonPrivateSecurityRealm(boolean allowsSignup) {
+        this(allowsSignup, false, (CaptchaSupport) null);
+    }
+
+    @DataBoundConstructor
+    public HudsonPrivateSecurityRealm(boolean allowsSignup, boolean enableCaptcha, CaptchaSupport captchaSupport) {
         this.disableSignup = !allowsSignup;
+        this.enableCaptcha = enableCaptcha;
+        setCaptchaSupport(captchaSupport);
         if(!allowsSignup && !hasSomeUser()) {
             // if Hudson is newly set up with the security realm and there's no user account created yet,
             // insert a filter that asks the user to create one
@@ -109,6 +122,15 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
     @Override
     public boolean allowsSignup() {
         return !disableSignup;
+    }
+
+    /**
+     * Checks if captcha is enabled on user signup.
+     *
+     * @return true if captcha is enabled on signup.
+     */
+    public boolean isEnableCaptcha() {
+        return enableCaptcha;
     }
 
     /**
@@ -194,7 +216,7 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
             throw HttpResponses.error(SC_UNAUTHORIZED,new Exception("User sign up is prohibited"));
 
         boolean firstUser = !hasSomeUser();
-        User u = createAccount(req, rsp, true, formView);
+        User u = createAccount(req, rsp, enableCaptcha, formView);
         if(u!=null) {
             if(firstUser)
                 tryToMakeAdmin(u);  // the first user should be admin, or else there's a risk of lock out
@@ -223,7 +245,7 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
      * this is someone creating another user.
      */
     public void doCreateAccountByAdmin(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
-        checkPermission(Hudson.ADMINISTER);
+        checkPermission(Jenkins.ADMINISTER);
         if(createAccount(req, rsp, false, "addUser.jelly")!=null) {
             rsp.sendRedirect(".");  // send the user back to the listing page
         }
@@ -251,10 +273,10 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
      * Try to make this user a super-user
      */
     private void tryToMakeAdmin(User u) {
-        AuthorizationStrategy as = Hudson.getInstance().getAuthorizationStrategy();
+        AuthorizationStrategy as = Jenkins.getInstance().getAuthorizationStrategy();
         if (as instanceof GlobalMatrixAuthorizationStrategy) {
             GlobalMatrixAuthorizationStrategy ma = (GlobalMatrixAuthorizationStrategy) as;
-            ma.add(Hudson.ADMINISTER,u.getId());
+            ma.add(Jenkins.ADMINISTER,u.getId());
         }
     }
 
@@ -323,15 +345,15 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
     }
 
     public ACL getACL() {
-        return Hudson.getInstance().getACL();
+        return Jenkins.getInstance().getACL();
     }
 
     public void checkPermission(Permission permission) {
-        Hudson.getInstance().checkPermission(permission);
+        Jenkins.getInstance().checkPermission(permission);
     }
 
     public boolean hasPermission(Permission permission) {
-        return Hudson.getInstance().hasPermission(permission);
+        return Jenkins.getInstance().hasPermission(permission);
     }
 
 
@@ -500,7 +522,7 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
 
             @Override
             public boolean isEnabled() {
-                return Hudson.getInstance().getSecurityRealm() instanceof HudsonPrivateSecurityRealm;
+                return Jenkins.getInstance().getSecurityRealm() instanceof HudsonPrivateSecurityRealm;
             }
 
             public UserProperty newInstance(User user) {
@@ -516,7 +538,7 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
     @Extension
     public static final class ManageUserLinks extends ManagementLink {
         public String getIconFileName() {
-            if(Hudson.getInstance().getSecurityRealm() instanceof HudsonPrivateSecurityRealm)
+            if(Jenkins.getInstance().getSecurityRealm() instanceof HudsonPrivateSecurityRealm)
                 return "user.png";
             else
                 return null;    // not applicable now
@@ -618,7 +640,7 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
 
         private boolean needsToCreateFirstUser() {
             return !hasSomeUser()
-                && Hudson.getInstance().getSecurityRealm() instanceof HudsonPrivateSecurityRealm;
+                && Jenkins.getInstance().getSecurityRealm() instanceof HudsonPrivateSecurityRealm;
         }
 
         public void destroy() {

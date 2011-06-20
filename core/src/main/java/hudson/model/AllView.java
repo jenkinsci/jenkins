@@ -23,6 +23,7 @@
  */
 package hudson.model;
 
+import jenkins.model.Jenkins;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.Stapler;
 import org.kohsuke.stapler.StaplerRequest;
@@ -54,7 +55,7 @@ public class AllView extends View {
     
     @Override
     public String getDescription() {
-        return Hudson.getInstance().getDescription();
+        return Jenkins.getInstance().getDescription();
     }
 
     @Override
@@ -70,19 +71,22 @@ public class AllView extends View {
     @Override
     public Item doCreateItem(StaplerRequest req, StaplerResponse rsp)
             throws IOException, ServletException {
-        return Hudson.getInstance().doCreateItem(req, rsp);
+        ItemGroup<? extends TopLevelItem> ig = getOwnerItemGroup();
+        if (ig instanceof ModifiableItemGroup)
+            return ((ModifiableItemGroup<? extends TopLevelItem>)ig).doCreateItem(req, rsp);
+        return null;
     }
 
     @Override
     public Collection<TopLevelItem> getItems() {
-        return Hudson.getInstance().getItems();
+        return (Collection)getOwnerItemGroup().getItems();
     }
 
     @Override
     public synchronized void doSubmitDescription( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
-        checkPermission(Hudson.ADMINISTER);
+        checkPermission(Jenkins.ADMINISTER);
 
-        Hudson.getInstance().setSystemMessage(req.getParameter("description"));
+        Jenkins.getInstance().setSystemMessage(req.getParameter("description"));
         rsp.sendRedirect(".");
     }
 

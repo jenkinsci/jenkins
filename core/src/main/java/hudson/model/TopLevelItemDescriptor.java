@@ -24,6 +24,7 @@
 package hudson.model;
 
 import hudson.ExtensionList;
+import jenkins.model.Jenkins;
 import org.kohsuke.stapler.StaplerRequest;
 
 /**
@@ -100,7 +101,7 @@ public abstract class TopLevelItemDescriptor extends Descriptor<TopLevelItem> {
      *      Use {@link #newInstance(ItemGroup, String)}
      */
     public TopLevelItem newInstance(String name) {
-        return newInstance(Hudson.getInstance(), name);
+        return newInstance(Jenkins.getInstance(), name);
     }
 
     /**

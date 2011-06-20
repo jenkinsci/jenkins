@@ -37,7 +37,7 @@ THE SOFTWARE.
         Behaviour.addLoadEvent(function() {
             downloadService.download(
                 "${site.id}",
-                "${site.url}",
+                "${site.downloadUrl}",
                 {version:"${h.version}"},
                 "${rootURL}/updateCenter/byId/${site.id}/postBack",
                 null);

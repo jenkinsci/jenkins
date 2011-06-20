@@ -23,6 +23,7 @@
  */
 package hudson.model;
 
+import jenkins.model.Jenkins;
 import org.kohsuke.stapler.QueryParameter;
 
 /**
@@ -83,7 +84,7 @@ public abstract class ViewDescriptor extends Descriptor<View> {
                     super.onItem(i);
                 }
             }
-        }.onItemGroup(Hudson.getInstance());
+        }.onItemGroup(Jenkins.getInstance());
 
         return r;
     }

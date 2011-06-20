@@ -26,6 +26,7 @@ package hudson.model;
 import hudson.EnvVars;
 import hudson.ExtensionList;
 import hudson.ExtensionPoint;
+import jenkins.model.Jenkins;
 
 import java.io.IOException;
 
@@ -69,6 +70,6 @@ public abstract class EnvironmentContributor implements ExtensionPoint {
      * Returns all the registered {@link EnvironmentContributor}s.
      */
     public static ExtensionList<EnvironmentContributor> all() {
-        return Hudson.getInstance().getExtensionList(EnvironmentContributor.class);
+        return Jenkins.getInstance().getExtensionList(EnvironmentContributor.class);
     }
 }

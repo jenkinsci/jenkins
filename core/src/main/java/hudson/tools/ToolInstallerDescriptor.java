@@ -26,7 +26,7 @@ package hudson.tools;
 
 import hudson.DescriptorExtensionList;
 import hudson.model.Descriptor;
-import hudson.model.Hudson;
+import jenkins.model.Jenkins;
 
 import java.util.List;
 import java.util.ArrayList;
@@ -48,7 +48,7 @@ public abstract class ToolInstallerDescriptor<T extends ToolInstaller> extends D
     }
 
     public static DescriptorExtensionList<ToolInstaller,ToolInstallerDescriptor<?>> all() {
-        return Hudson.getInstance().<ToolInstaller,ToolInstallerDescriptor<?>>getDescriptorList(ToolInstaller.class);
+        return Jenkins.getInstance().<ToolInstaller,ToolInstallerDescriptor<?>>getDescriptorList(ToolInstaller.class);
     }
 
     /**

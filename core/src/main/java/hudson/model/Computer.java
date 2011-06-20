@@ -53,6 +53,7 @@ import hudson.util.RemotingDiagnostics;
 import hudson.util.RemotingDiagnostics.HeapDump;
 import hudson.util.RunList;
 import hudson.util.Futures;
+import jenkins.model.Jenkins;
 import org.kohsuke.args4j.Argument;
 import org.kohsuke.args4j.CmdLineException;
 import org.kohsuke.stapler.StaplerRequest;
@@ -171,7 +172,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
      * This is where the log from the remote agent goes.
      */
     protected File getLogFile() {
-        return new File(Hudson.getInstance().getRootDir(),"slave-"+nodeName+".log");
+        return new File(Jenkins.getInstance().getRootDir(),"slave-"+nodeName+".log");
     }
 
     /**
@@ -196,7 +197,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
     }
 
     public ACL getACL() {
-        return Hudson.getInstance().getAuthorizationStrategy().getACL(this);
+        return Jenkins.getInstance().getAuthorizationStrategy().getACL(this);
     }
 
     public void checkPermission(Permission permission) {
@@ -303,7 +304,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
      */
     @CLIMethod(name="connect-node")
     public void cliConnect(@Option(name="-f",usage="Cancel any currently pending connect operation and retry from scratch") boolean force) throws ExecutionException, InterruptedException {
-        checkPermission(Hudson.ADMINISTER);
+        checkPermission(Jenkins.ADMINISTER);
         connect(force).get();
     }
 
@@ -359,7 +360,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
      */
     @CLIMethod(name="disconnect-node")
     public void cliDisconnect(@Option(name="-m",usage="Record the note about why you are disconnecting this node") String cause) throws ExecutionException, InterruptedException {
-        checkPermission(Hudson.ADMINISTER);
+        checkPermission(Jenkins.ADMINISTER);
         disconnect(new ByCLI(cause)).get();
     }
 
@@ -368,13 +369,13 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
      */
     @CLIMethod(name="offline-node")
     public void cliOffline(@Option(name="-m",usage="Record the note about why you are disconnecting this node") String cause) throws ExecutionException, InterruptedException {
-        checkPermission(Hudson.ADMINISTER);
+        checkPermission(Jenkins.ADMINISTER);
         setTemporarilyOffline(true,new ByCLI(cause));
     }
 
     @CLIMethod(name="online-node")
     public void cliOnline() throws ExecutionException, InterruptedException {
-        checkPermission(Hudson.ADMINISTER);
+        checkPermission(Jenkins.ADMINISTER);
         setTemporarilyOffline(false,null);
     }
 
@@ -407,8 +408,8 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
      */
     public Node getNode() {
         if(nodeName==null)
-            return Hudson.getInstance();
-        return Hudson.getInstance().getNode(nodeName);
+            return Jenkins.getInstance();
+        return Jenkins.getInstance().getNode(nodeName);
     }
 
     @Exported
@@ -526,7 +527,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
         offlineCause = temporarilyOffline ? cause : null;
         this.temporarilyOffline = temporarilyOffline;
         getNode().setTemporaryOfflineCause(offlineCause);
-        Hudson.getInstance().getQueue().scheduleMaintenance();
+        Jenkins.getInstance().getQueue().scheduleMaintenance();
         synchronized (statusChangeLock) {
             statusChangeLock.notifyAll();
         }
@@ -568,7 +569,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
     }
 
     public RunList getBuilds() {
-    	return new RunList(Hudson.getInstance().getAllItems(Job.class)).node(getNode());
+    	return new RunList(Jenkins.getInstance().getAllItems(Job.class)).node(getNode());
     }
 
     /**
@@ -596,7 +597,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
     }
 
     /**
-     * Called by {@link Hudson#updateComputerList()} to notify {@link Computer} that it will be discarded.
+     * Called by {@link Jenkins#updateComputerList()} to notify {@link Computer} that it will be discarded.
      */
     protected void kill() {
         setNumExecutors(0);
@@ -719,7 +720,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
      */
     public final long getDemandStartMilliseconds() {
         long firstDemand = Long.MAX_VALUE;
-        for (Queue.BuildableItem item : Hudson.getInstance().getQueue().getBuildableItems(this)) {
+        for (Queue.BuildableItem item : Jenkins.getInstance().getQueue().getBuildableItems(this)) {
             firstDemand = Math.min(item.buildableStartMilliseconds, firstDemand);
         }
         return firstDemand;
@@ -732,7 +733,10 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
         executors.remove(e);
         addNewExecutorIfNecessary();
         if(!isAlive())
-            Hudson.getInstance().removeComputer(this);
+        {
+            AbstractCIBase ciBase = Jenkins.getInstance();
+            ciBase.removeComputer(this);
+        }
     }
 
     /**
@@ -947,12 +951,12 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
     }
 
     public HttpResponse doToggleOffline(@QueryParameter String offlineMessage) throws IOException, ServletException {
-        checkPermission(Hudson.ADMINISTER);
+        checkPermission(Jenkins.ADMINISTER);
         if(!temporarilyOffline) {
             offlineMessage = Util.fixEmptyAndTrim(offlineMessage);
             setTemporarilyOffline(!temporarilyOffline,
                     OfflineCause.create(hudson.slaves.Messages._SlaveComputer_DisconnectedBy(
-                        Hudson.getAuthentication().getName(),
+                        Jenkins.getAuthentication().getName(),
                         offlineMessage!=null ? " : " + offlineMessage : "")));
         } else {
             setTemporarilyOffline(!temporarilyOffline,null);
@@ -969,7 +973,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
      */
     public void doDumpExportTable( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException, InterruptedException {
         // this is a debug probe and may expose sensitive information
-        checkPermission(Hudson.ADMINISTER);
+        checkPermission(Jenkins.ADMINISTER);
 
         rsp.setContentType("text/plain");
         PrintWriter w = new PrintWriter(rsp.getCompressedWriter(req));
@@ -1015,7 +1019,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
     protected void _doScript( StaplerRequest req, StaplerResponse rsp, String view) throws IOException, ServletException {
         // ability to run arbitrary script is dangerous,
         // so tie it to the admin access
-        checkPermission(Hudson.ADMINISTER);
+        checkPermission(Jenkins.ADMINISTER);
 
         String text = req.getParameter("script");
         if(text!=null) {
@@ -1037,9 +1041,9 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
         checkPermission(CONFIGURE);
 
         String name = Util.fixEmptyAndTrim(req.getSubmittedForm().getString("name"));
-        Hudson.checkGoodName(name);
+        Jenkins.checkGoodName(name);
         
-        final Hudson app = Hudson.getInstance();
+        final Jenkins app = Jenkins.getInstance();
 
         Node result = getNode().reconfigure(req, req.getSubmittedForm());
 
@@ -1066,7 +1070,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
     @CLIMethod(name="delete-node")
     public HttpResponse doDoDelete() throws IOException {
         checkPermission(DELETE);
-        Hudson.getInstance().removeNode(getNode());
+        Jenkins.getInstance().removeNode(getNode());
         return new HttpRedirect("..");
     }
 
@@ -1104,7 +1108,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
     public static Computer currentComputer() {
         Executor e = Executor.currentExecutor();
         // If no executor then must be on master node
-        return e != null ? e.getOwner() : Hudson.getInstance().toComputer();
+        return e != null ? e.getOwner() : Jenkins.getInstance().toComputer();
     }
 
     /**
@@ -1123,7 +1127,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
     @CLIResolver
     public static Computer resolveForCLI(
             @Argument(required=true,metaVar="NAME",usage="Slave name, or empty string for master") String name) throws CmdLineException {
-        Hudson h = Hudson.getInstance();
+        Jenkins h = Jenkins.getInstance();
         Computer item = h.getComputer(name);
         if (item==null) {
             List<String> names = new ArrayList<String>();

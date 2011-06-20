@@ -27,20 +27,9 @@ import hudson.CopyOnWrite;
 import hudson.Util;
 import hudson.Functions;
 import hudson.maven.reporters.MavenMailer;
-import hudson.model.AbstractProject;
-import hudson.model.Action;
-import hudson.model.DependencyGraph;
-import hudson.model.Descriptor;
+import hudson.model.*;
 import hudson.model.Descriptor.FormException;
-import hudson.model.Hudson;
-import hudson.model.Item;
-import hudson.model.ItemGroup;
-import hudson.model.JDK;
-import hudson.model.Job;
-import hudson.model.Label;
-import hudson.model.Node;
-import hudson.model.Resource;
-import hudson.model.Saveable;
+import jenkins.model.Jenkins;
 import hudson.tasks.LogRotator;
 import hudson.tasks.Publisher;
 import hudson.tasks.Maven.MavenInstallation;
@@ -403,7 +392,7 @@ public final class MavenModule extends AbstractMavenProject<MavenModule,MavenBui
         if (data == null) {
             Map<ModuleDependency,MavenModule> modules = new HashMap<ModuleDependency,MavenModule>();
     
-            for (MavenModule m : Hudson.getInstance().getAllItems(MavenModule.class)) {
+            for (MavenModule m : Jenkins.getInstance().getAllItems(MavenModule.class)) {
                 if(m.isDisabled())  continue;
                 ModuleDependency moduleDependency = m.asDependency();
                 modules.put(moduleDependency,m);
@@ -417,7 +406,7 @@ public final class MavenModule extends AbstractMavenProject<MavenModule,MavenBui
         } else {
             if (hasDependenciesWithUnknownVersion && !data.withUnknownVersions) {
                 // found 'old' MavenModule: add dependencies with unknown versions now
-                for (MavenModule m : Hudson.getInstance().getAllItems(MavenModule.class)) {
+                for (MavenModule m : Jenkins.getInstance().getAllItems(MavenModule.class)) {
                     if(m.isDisabled())  continue;
                     ModuleDependency moduleDependency = m.asDependency().withUnknownVersion();
                     data.allModules.put(moduleDependency,m);
@@ -529,7 +518,7 @@ public final class MavenModule extends AbstractMavenProject<MavenModule,MavenBui
         goals = Util.fixEmpty(req.getParameter("goals").trim());
 
         // dependency setting might have been changed by the user, so rebuild.
-        Hudson.getInstance().rebuildDependencyGraph();
+        Jenkins.getInstance().rebuildDependencyGraph();
     }
 
     @Override

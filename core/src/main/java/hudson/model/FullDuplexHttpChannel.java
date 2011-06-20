@@ -43,7 +43,7 @@ import java.util.logging.Logger;
  *
  * @author Kohsuke Kawaguchi
  */
-abstract class FullDuplexHttpChannel {
+abstract public class FullDuplexHttpChannel {
     private Channel channel;
 
     private InputStream upload;

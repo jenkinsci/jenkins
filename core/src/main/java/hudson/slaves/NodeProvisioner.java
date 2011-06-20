@@ -23,19 +23,14 @@
  */
 package hudson.slaves;
 
-import hudson.model.Computer;
-import hudson.model.LoadStatistics;
-import hudson.model.Node;
-import hudson.model.Hudson;
-import hudson.model.MultiStageTimeSeries;
-import hudson.model.Label;
-import hudson.model.PeriodicWork;
+import hudson.model.*;
+import jenkins.model.Jenkins;
+
 import static hudson.model.LoadStatistics.DECAY;
 import hudson.model.MultiStageTimeSeries.TimeScale;
 import hudson.Extension;
 
 import java.awt.Color;
-import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.Future;
 import java.util.concurrent.ExecutionException;
 import java.util.List;
@@ -139,8 +134,8 @@ public class NodeProvisioner {
      * Launches additional nodes if necessary.
      */
     private synchronized void update() {
+        Jenkins hudson = Jenkins.getInstance();
         lastSuggestedReview = System.currentTimeMillis();
-        Hudson hudson = Hudson.getInstance();
 
         // clean up the cancelled launch activity, then count the # of executors that we are about to bring up.
         int plannedCapacitySnapshot = 0;
@@ -198,7 +193,7 @@ public class NodeProvisioner {
 
         int idleSnapshot = stat.computeIdleExecutors();
         int totalSnapshot = stat.computeTotalExecutors();
-        boolean needSomeWhenNoneAtAll = ((totalSnapshot + plannedCapacity) == 0) && (stat.computeQueueLength() > 0);
+        boolean needSomeWhenNoneAtAll = ((totalSnapshot + plannedCapacitySnapshot) == 0) && (stat.computeQueueLength() > 0);
         float idle = Math.max(stat.getLatestIdleExecutors(TIME_SCALE), idleSnapshot);
         if(idle<MARGIN || needSomeWhenNoneAtAll) {
             // make sure the system is fully utilized before attempting any new launch.
@@ -309,7 +304,7 @@ public class NodeProvisioner {
 
         @Override
         protected void doRun() {
-            Hudson h = Hudson.getInstance();
+            Jenkins h = Jenkins.getInstance();
             h.overallNodeProvisioner.update();
             for( Label l : h.getLabels() )
                 l.nodeProvisioner.update();

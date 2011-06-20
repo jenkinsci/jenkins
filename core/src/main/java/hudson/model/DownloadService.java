@@ -30,6 +30,7 @@ import hudson.util.IOUtils;
 import hudson.util.QuotedStringTokenizer;
 import hudson.util.TextFile;
 import hudson.util.TimeUnit2;
+import jenkins.model.Jenkins;
 import org.kohsuke.stapler.Stapler;
 
 import java.io.File;
@@ -63,7 +64,7 @@ public class DownloadService extends PageDecorator {
     	if (neverUpdate) return "";
     	
         StringBuilder buf = new StringBuilder();
-        if(Hudson.getInstance().hasPermission(Hudson.READ)) {
+        if(Jenkins.getInstance().hasPermission(Jenkins.READ)) {
             long now = System.currentTimeMillis();
             for (Downloadable d : Downloadable.all()) {
                 if(d.getDue()<now && d.lastAttempt+10*1000<now) {
@@ -72,9 +73,9 @@ public class DownloadService extends PageDecorator {
                        .append("  downloadService.download(")
                        .append(QuotedStringTokenizer.quote(d.getId()))
                        .append(',')
-                       .append(QuotedStringTokenizer.quote(d.getUrl()))
+                       .append(QuotedStringTokenizer.quote(mapHttps(d.getUrl())))
                        .append(',')
-                       .append("{version:"+QuotedStringTokenizer.quote(Hudson.VERSION)+'}')
+                       .append("{version:"+QuotedStringTokenizer.quote(Jenkins.VERSION)+'}')
                        .append(',')
                        .append(QuotedStringTokenizer.quote(Stapler.getCurrentRequest().getContextPath()+'/'+getUrl()+"/byId/"+d.getId()+"/postBack"))
                        .append(',')
@@ -86,6 +87,22 @@ public class DownloadService extends PageDecorator {
             }
         }
         return buf.toString();
+    }
+
+    private String mapHttps(String url) {
+        /*
+            HACKISH:
+
+            Loading scripts in HTTP from HTTPS pages cause browsers to issue a warning dialog.
+            The elegant way to solve the problem is to always load update center from HTTPS,
+            but our backend mirroring scheme isn't ready for that. So this hack serves regular
+            traffic in HTTP server, and only use HTTPS update center for Jenkins in HTTPS.
+
+            We'll monitor the traffic to see if we can sustain this added traffic.
+         */
+        if (url.startsWith("http://updates.jenkins-ci.org/") && Jenkins.getInstance().isRootUrlSecure())
+            return "https"+url.substring(4);
+        return url;
     }
 
     /**
@@ -118,9 +135,9 @@ public class DownloadService extends PageDecorator {
         /**
          *
          * @param url
-         *      URL relative to {@link UpdateCenter#getUrl()}.
+         *      URL relative to {@link UpdateCenter#getDefaultBaseUrl()}.
          *      So if this string is "foo.json", the ultimate URL will be
-         *      something like "https://hudson.dev.java.net/foo.json"
+         *      something like "http://updates.jenkins-ci.org/updates/foo.json"
          *
          *      For security and privacy reasons, we don't allow the retrieval
          *      from random locations.
@@ -154,7 +171,7 @@ public class DownloadService extends PageDecorator {
          * URL to download.
          */
         public String getUrl() {
-            return Hudson.getInstance().getUpdateCenter().getDefaultBaseUrl()+"updates/"+url;
+            return Jenkins.getInstance().getUpdateCenter().getDefaultBaseUrl()+"updates/"+url;
         }
 
         /**
@@ -171,7 +188,7 @@ public class DownloadService extends PageDecorator {
          * This is where the retrieved file will be stored.
          */
         public TextFile getDataFile() {
-            return new TextFile(new File(Hudson.getInstance().getRootDir(),"updates/"+id));
+            return new TextFile(new File(Jenkins.getInstance().getRootDir(),"updates/"+id));
         }
 
         /**
@@ -214,7 +231,7 @@ public class DownloadService extends PageDecorator {
          * Returns all the registered {@link Downloadable}s.
          */
         public static ExtensionList<Downloadable> all() {
-            return Hudson.getInstance().getExtensionList(Downloadable.class);
+            return Jenkins.getInstance().getExtensionList(Downloadable.class);
         }
 
         /**

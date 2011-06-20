@@ -33,9 +33,11 @@ import hudson.util.IOUtils;
 import hudson.util.TextFile;
 import hudson.util.VersionNumber;
 import static hudson.util.TimeUnit2.DAYS;
+
+import jenkins.model.Jenkins;
 import net.sf.json.JSONObject;
-import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.DataBoundConstructor;
+import org.kohsuke.stapler.Stapler;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 import org.jvnet.hudson.crypto.CertificateUtil;
@@ -176,7 +178,7 @@ public class UpdateSite {
 
             // all default root CAs in JVM are trusted, plus certs bundled in Jenkins
             Set<TrustAnchor> anchors = new HashSet<TrustAnchor>(); // CertificateUtil.getDefaultRootCAs();
-            ServletContext context = Hudson.getInstance().servletContext;
+            ServletContext context = Jenkins.getInstance().servletContext;
             for (String cert : (Set<String>) context.getResourcePaths("/WEB-INF/update-center-rootCAs")) {
                 if (cert.endsWith(".txt"))  continue;       // skip text files that are meant to be documentation
                 anchors.add(new TrustAnchor((X509Certificate)cf.generateCertificate(context.getResourceAsStream(cert)),null));
@@ -288,7 +290,7 @@ public class UpdateSite {
      * This is where we store the update center data.
      */
     private TextFile getDataFile() {
-        return new TextFile(new File(Hudson.getInstance().getRootDir(),
+        return new TextFile(new File(Jenkins.getInstance().getRootDir(),
                                      "updates/" + getId()+".json"));
     }
     
@@ -303,7 +305,7 @@ public class UpdateSite {
         if(data==null)      return Collections.emptyList(); // fail to determine
         
         List<Plugin> r = new ArrayList<Plugin>();
-        for (PluginWrapper pw : Hudson.getInstance().getPluginManager().getPlugins()) {
+        for (PluginWrapper pw : Jenkins.getInstance().getPluginManager().getPlugins()) {
             Plugin p = pw.getUpdateInfo();
             if(p!=null) r.add(p);
         }
@@ -318,7 +320,7 @@ public class UpdateSite {
         Data data = getData();
         if(data==null)      return false;
         
-        for (PluginWrapper pw : Hudson.getInstance().getPluginManager().getPlugins()) {
+        for (PluginWrapper pw : Jenkins.getInstance().getPluginManager().getPlugins()) {
             if(!pw.isBundled() && pw.getUpdateInfo()!=null)
                 // do not advertize updates to bundled plugins, since we generally want users to get them
                 // as a part of jenkins.war updates. This also avoids unnecessary pinning of plugins. 
@@ -333,6 +335,28 @@ public class UpdateSite {
      * in Javascript.
      */
     public String getUrl() {
+        return url;
+    }
+
+    /**
+     * Where to actually download the update center?
+     *
+     * @deprecated
+     *      Exposed only for UI.
+     */
+    public String getDownloadUrl() {
+        /*
+            HACKISH:
+
+            Loading scripts in HTTP from HTTPS pages cause browsers to issue a warning dialog.
+            The elegant way to solve the problem is to always load update center from HTTPS,
+            but our backend mirroring scheme isn't ready for that. So this hack serves regular
+            traffic in HTTP server, and only use HTTPS update center for Jenkins in HTTPS.
+
+            We'll monitor the traffic to see if we can sustain this added traffic.
+         */
+        if (url.equals("http://updates.jenkins-ci.org/update-center.json") && Jenkins.getInstance().isRootUrlSecure())
+            return "https"+url.substring(4);
         return url;
     }
 
@@ -386,7 +410,7 @@ public class UpdateSite {
          * Is there a new version of the core?
          */
         public boolean hasCoreUpdates() {
-            return core != null && core.isNewerThan(Hudson.VERSION);
+            return core != null && core.isNewerThan(Jenkins.VERSION);
         }
 
         /**
@@ -519,7 +543,7 @@ public class UpdateSite {
          * Otherwise null.
          */
         public PluginWrapper getInstalled() {
-            PluginManager pm = Hudson.getInstance().getPluginManager();
+            PluginManager pm = Jenkins.getInstance().getPluginManager();
             return pm.getPlugin(name);
         }
 
@@ -550,7 +574,7 @@ public class UpdateSite {
             List<Plugin> deps = new ArrayList<Plugin>();
 
             for(Map.Entry<String,String> e : dependencies.entrySet()) {
-                Plugin depPlugin = Hudson.getInstance().getUpdateCenter().getPlugin(e.getKey());
+                Plugin depPlugin = Jenkins.getInstance().getUpdateCenter().getPlugin(e.getKey());
                 VersionNumber requiredVersion = new VersionNumber(e.getValue());
                 
                 // Is the plugin installed already? If not, add it.
@@ -572,7 +596,7 @@ public class UpdateSite {
         public boolean isForNewerHudson() {
             try {
                 return requiredCore!=null && new VersionNumber(requiredCore).isNewerThan(
-                  new VersionNumber(Hudson.VERSION.replaceFirst("SHOT *\\(private.*\\)", "SHOT")));
+                  new VersionNumber(Jenkins.VERSION.replaceFirst("SHOT *\\(private.*\\)", "SHOT")));
             } catch (NumberFormatException nfe) {
                 return true;  // If unable to parse version
             }
@@ -594,22 +618,22 @@ public class UpdateSite {
          * asynchronously in another thread.
          */
         public Future<UpdateCenterJob> deploy() {
-            Hudson.getInstance().checkPermission(Hudson.ADMINISTER);
-            UpdateCenter uc = Hudson.getInstance().getUpdateCenter();
+            Jenkins.getInstance().checkPermission(Jenkins.ADMINISTER);
+            UpdateCenter uc = Jenkins.getInstance().getUpdateCenter();
             for (Plugin dep : getNeededDependencies()) {
                 LOGGER.log(Level.WARNING, "Adding dependent install of " + dep.name + " for plugin " + name);
                 dep.deploy();
             }
-            return uc.addJob(uc.new InstallationJob(this, UpdateSite.this, Hudson.getAuthentication()));
+            return uc.addJob(uc.new InstallationJob(this, UpdateSite.this, Jenkins.getAuthentication()));
         }
 
         /**
          * Schedules the downgrade of this plugin.
          */
         public Future<UpdateCenterJob> deployBackup() {
-            Hudson.getInstance().checkPermission(Hudson.ADMINISTER);
-            UpdateCenter uc = Hudson.getInstance().getUpdateCenter();
-            return uc.addJob(uc.new PluginDowngradeJob(this, UpdateSite.this, Hudson.getAuthentication()));
+            Jenkins.getInstance().checkPermission(Jenkins.ADMINISTER);
+            UpdateCenter uc = Jenkins.getInstance().getUpdateCenter();
+            return uc.addJob(uc.new PluginDowngradeJob(this, UpdateSite.this, Jenkins.getAuthentication()));
         }
         /**
          * Making the installation web bound.

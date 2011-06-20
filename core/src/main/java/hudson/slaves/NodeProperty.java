@@ -35,7 +35,7 @@ import hudson.scm.SCM;
 import hudson.model.AbstractBuild;
 import hudson.model.BuildListener;
 import hudson.model.Environment;
-import hudson.model.Hudson;
+import jenkins.model.Jenkins;
 import hudson.model.Node;
 import hudson.model.Queue.Task;
 import net.sf.json.JSONObject;
@@ -76,7 +76,7 @@ public abstract class NodeProperty<N extends Node> implements ReconfigurableDesc
     protected void setNode(N node) { this.node = node; }
 
     public NodePropertyDescriptor getDescriptor() {
-        return (NodePropertyDescriptor)Hudson.getInstance().getDescriptorOrDie(getClass());
+        return (NodePropertyDescriptor) Jenkins.getInstance().getDescriptorOrDie(getClass());
     }
 
     /**
@@ -137,7 +137,7 @@ public abstract class NodeProperty<N extends Node> implements ReconfigurableDesc
      * Lists up all the registered {@link NodeDescriptor}s in the system.
      */
     public static DescriptorExtensionList<NodeProperty<?>,NodePropertyDescriptor> all() {
-        return (DescriptorExtensionList)Hudson.getInstance().getDescriptorList(NodeProperty.class);
+        return (DescriptorExtensionList) Jenkins.getInstance().getDescriptorList(NodeProperty.class);
     }
 
     /**

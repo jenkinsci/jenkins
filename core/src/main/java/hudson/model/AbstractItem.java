@@ -25,6 +25,7 @@
 package hudson.model;
 
 import com.infradna.tool.bridge_method_injector.WithBridgeMethods;
+import hudson.AbortException;
 import hudson.XmlFile;
 import hudson.Util;
 import hudson.Functions;
@@ -40,6 +41,7 @@ import hudson.util.AlternativeUiTextProvider;
 import hudson.util.AlternativeUiTextProvider.Message;
 import hudson.util.AtomicFileWriter;
 import hudson.util.IOException2;
+import jenkins.model.Jenkins;
 import org.apache.tools.ant.taskdefs.Copy;
 import org.apache.tools.ant.types.FileSet;
 import org.kohsuke.stapler.WebMethod;
@@ -121,7 +123,7 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
     /**
      * This bridge method is to maintain binary compatibility with {@link TopLevelItem#getParent()}.
      */
-    @WithBridgeMethods(value=Hudson.class,castRequired=true)
+    @WithBridgeMethods(value=Jenkins.class,castRequired=true)
     public ItemGroup getParent() {
         assert parent!=null;
         return parent;
@@ -297,6 +299,12 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
      * the files are first copied on the file system,
      * then it will be loaded, then this method will be invoked
      * to perform any implementation-specific work.
+     *
+     * <p>
+     * 
+     *
+     * @param src
+     *      Item from which it's copied from. The same type as {@code this}. Never null.
      */
     public void onCopiedFrom(Item src) {
     }
@@ -329,7 +337,7 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
         StaplerRequest request = Stapler.getCurrentRequest();
         if(request==null)
             throw new IllegalStateException("Not processing a HTTP request");
-        return Util.encode(Hudson.getInstance().getRootUrl()+getUrl());
+        return Util.encode(Jenkins.getInstance().getRootUrl()+getUrl());
     }
 
     /**
@@ -343,7 +351,7 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
      * Returns the {@link ACL} for this object.
      */
     public ACL getACL() {
-        return Hudson.getInstance().getAuthorizationStrategy().getACL(this);
+        return Jenkins.getInstance().getAuthorizationStrategy().getACL(this);
     }
 
     /**
@@ -374,7 +382,7 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
     }
 
     public Descriptor getDescriptorByName(String className) {
-        return Hudson.getInstance().getDescriptorByName(className);
+        return Jenkins.getInstance().getDescriptorByName(className);
     }
 
     /**
@@ -409,6 +417,10 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
 
     /**
      * Deletes this item.
+     *
+     * <p>
+     * Any exception indicates the deletion has failed, but {@link AbortException} would prevent the caller
+     * from showing the stack trace. This
      */
     public synchronized void delete() throws IOException, InterruptedException {
         checkPermission(DELETE);
@@ -420,7 +432,7 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
             // ignore
         }
 
-        Hudson.getInstance().rebuildDependencyGraph();
+        Jenkins.getInstance().rebuildDependencyGraph();
     }
 
     /**
@@ -497,7 +509,7 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
     @CLIResolver
     public static AbstractItem resolveForCLI(
             @Argument(required=true,metaVar="NAME",usage="Job name") String name) throws CmdLineException {
-        AbstractItem item = Hudson.getInstance().getItemByFullName(name, AbstractItem.class);
+        AbstractItem item = Jenkins.getInstance().getItemByFullName(name, AbstractItem.class);
         if (item==null)
             throw new CmdLineException(null,Messages.AbstractItem_NoSuchJobExists(name,AbstractProject.findNearest(name).getFullName()));
         return item;

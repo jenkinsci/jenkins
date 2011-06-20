@@ -28,7 +28,7 @@ THE SOFTWARE.
   <parent>
     <groupId>org.jenkins-ci.main</groupId>
     <artifactId>pom</artifactId>
-    <version>1.416-SNAPSHOT</version>
+    <version>1.418-SNAPSHOT</version>
     <relativePath>../pom.xml</relativePath>
   </parent>
 
@@ -90,7 +90,7 @@ THE SOFTWARE.
           <dependency>
             <groupId>org.jvnet.maven-jellydoc-plugin</groupId>
             <artifactId>maven-jellydoc-plugin</artifactId>
-            <version>1.4</version>
+            <version>1.5</version>
           </dependency>
         </dependencies>
         <configuration>
@@ -180,7 +180,9 @@ THE SOFTWARE.
                 <mkdir dir="target/classes/hudson/model" />
                 <echo file="target/classes/hudson/model/hudson-version.properties">version=${build.version}
                 </echo>
-
+                <mkdir dir="target/classes/jenkins/model" />
+                <echo file="target/classes/jenkins/model/jenkins-version.properties">version=${build.version}
+                </echo>
                 <!-- download winsw.exe -->
                 <mkdir dir="target/classes/windows-service" />
                 <resolveArtifact artifactId="winsw" tofile="target/classes/windows-service/jenkins.exe" />
@@ -204,40 +206,6 @@ THE SOFTWARE.
             </manifest>
           </archive>
         </configuration>
-      </plugin>
-      <plugin>
-        <!--
-          Configuration for generating Wiki page.
-          This kicks in with the release profile, or by manually running "mvn apt:process"
-        -->
-        <groupId>org.codehaus.mojo</groupId>
-        <artifactId>apt-maven-plugin</artifactId>
-        <!-- version specified in grandparent pom -->
-        <configuration>
-          <force>true</force><!-- disable staleness check -->
-          <factory>org.jvnet.hudson.tools.ExtensionPointListerFactory</factory>
-          <options>
-            <option>page=Extension points</option>
-            <option>target=${project.basedir}/target/extension-points.wiki</option>
-          </options>
-        </configuration>
-        <dependencies>
-          <dependency>
-            <groupId>org.jenkins-ci.tools</groupId>
-            <artifactId>extension-point-lister</artifactId>
-            <version>1.8</version>
-            <exclusions>
-               <exclusion>
-                 <groupId>com.sun</groupId>
-                 <artifactId>tools</artifactId>
-               </exclusion>
-              <exclusion>
-                <groupId>commons-logging</groupId>
-                <artifactId>commons-logging</artifactId>
-              </exclusion>
-             </exclusions>
-          </dependency>
-        </dependencies>
       </plugin>
     </plugins>
   </build>
@@ -419,7 +387,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.kohsuke.stapler</groupId>
       <artifactId>stapler-adjunct-timeline</artifactId>
-      <version>1.2</version>
+      <version>1.3</version>
     </dependency>
     <dependency><!-- this helps us see the source code of the control while we edit Jenkins. -->
       <groupId>org.kohsuke.stapler</groupId>
@@ -701,49 +669,6 @@ THE SOFTWARE.
       <artifactId>memory-monitor</artifactId>
       <version>1.5</version>
     </dependency>
-    <dependency>
-      <groupId>com.octo.captcha</groupId>
-      <artifactId>jcaptcha-all</artifactId>
-      <version>1.0-RC6</version>
-      <exclusions>
-        <exclusion>
-          <groupId>hsqldb</groupId>
-          <artifactId>hsqldb</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>hsqldb</groupId>
-          <artifactId>hsqldb</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>net.sf.ehcache</groupId>
-          <artifactId>ehcache</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>quartz</groupId>
-          <artifactId>quartz</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>xerces</groupId>
-          <artifactId>xercesImpl</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>xerces</groupId>
-          <artifactId>xmlParserAPIs</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>org.springframework</groupId>
-          <artifactId>spring</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>commons-dbcp</groupId>
-          <artifactId>commons-dbcp</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>concurrent</groupId>
-          <artifactId>concurrent</artifactId>
-        </exclusion>
-      </exclusions>
-    </dependency>
     <dependency><!-- StAX implementation. See HUDSON-2547. -->
       <groupId>org.codehaus.woodstox</groupId>
       <artifactId>wstx-asl</artifactId>
@@ -811,7 +736,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.jvnet.robust-http-client</groupId>
       <artifactId>robust-http-client</artifactId>
-      <version>1.1</version>
+      <version>1.2</version>
     </dependency>
 
     <dependency><!-- Jenkins doesn't depend on it but some plugin wants the latest version. Bundling 1.4 until we figure out a mechanism to let plugins load its own -->

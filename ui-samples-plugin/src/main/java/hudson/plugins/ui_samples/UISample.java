@@ -4,7 +4,7 @@ import hudson.ExtensionList;
 import hudson.ExtensionPoint;
 import hudson.model.Action;
 import hudson.model.Describable;
-import hudson.model.Hudson;
+import jenkins.model.Jenkins;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 
@@ -62,14 +62,14 @@ public abstract class UISample implements ExtensionPoint, Action, Describable<UI
     public abstract String getDescription();
 
     public UISampleDescriptor getDescriptor() {
-        return (UISampleDescriptor)Hudson.getInstance().getDescriptorOrDie(getClass());
+        return (UISampleDescriptor) Jenkins.getInstance().getDescriptorOrDie(getClass());
     }
 
     /**
      * Returns all the registered {@link UISample}s.
      */
     public static ExtensionList<UISample> all() {
-        return Hudson.getInstance().getExtensionList(UISample.class);
+        return Jenkins.getInstance().getExtensionList(UISample.class);
     }
 
     /**

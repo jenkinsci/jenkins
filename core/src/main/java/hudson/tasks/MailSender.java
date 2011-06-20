@@ -29,6 +29,7 @@ import hudson.Util;
 import hudson.Functions;
 import hudson.model.*;
 import hudson.scm.ChangeLogSet;
+import jenkins.model.Jenkins;
 
 import javax.mail.Address;
 import javax.mail.Message;
@@ -315,7 +316,7 @@ public class MailSender {
             if(address.startsWith("upstream-individuals:")) {
                 // people who made a change in the upstream
                 String projectName = address.substring("upstream-individuals:".length());
-                AbstractProject up = Hudson.getInstance().getItem(projectName,build.getProject(),AbstractProject.class);
+                AbstractProject up = Jenkins.getInstance().getItem(projectName,build.getProject(),AbstractProject.class);
                 if(up==null) {
                     listener.getLogger().println("No such project exist: "+projectName);
                     continue;

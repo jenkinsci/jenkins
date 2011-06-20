@@ -21,7 +21,8 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-f=namespace("/lib/form")
+package hudson.tasks.Shell;
+f=namespace(lib.FormTagLib)
 
 f.section(title:_("Shell")) {
     f.entry(title:_("Shell executable"),help:"/help/shell/shellexe.html") {

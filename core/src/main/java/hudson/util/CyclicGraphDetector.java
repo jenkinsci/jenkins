@@ -2,7 +2,10 @@ package hudson.util;
 
 import hudson.Util;
 
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.Stack;
@@ -17,9 +20,19 @@ public abstract class CyclicGraphDetector<N> {
     private final Set<N> visiting = new HashSet<N>();
     private final Stack<N> path = new Stack<N>();
 
+    private final List<N> topologicalOrder = new ArrayList<N>();
+
     public void run(Iterable<? extends N> allNodes) throws CycleDetectedException {
         for (N n : allNodes)
             visit(n);
+    }
+
+    /**
+     * Returns all the nodes in the topologically sorted order.
+     * That is, if there's an edge a->b, b always come earlier than a.
+     */
+    public List<N> getSorted() {
+        return topologicalOrder;
     }
 
     /**
@@ -43,6 +56,7 @@ public abstract class CyclicGraphDetector<N> {
         }
         visiting.remove(p);
         path.pop();
+        topologicalOrder.add(p);
     }
 
     private void detectedCycle(N q) throws CycleDetectedException {

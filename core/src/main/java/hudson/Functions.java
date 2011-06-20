@@ -2,7 +2,8 @@
  * The MIT License
  * 
  * Copyright (c) 2004-2010, Sun Microsystems, Inc., Kohsuke Kawaguchi,
- * Yahoo! Inc., Stephen Connolly, Tom Huybrechts, Alan Harder, Romain Seguy
+ * Yahoo! Inc., Stephen Connolly, Tom Huybrechts, Alan Harder, Manufacture
+ * Francaise des Pneumatiques Michelin, Romain Seguy
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -27,32 +28,14 @@ package hudson;
 import hudson.cli.CLICommand;
 import hudson.console.ConsoleAnnotationDescriptor;
 import hudson.console.ConsoleAnnotatorFactory;
-import hudson.model.AbstractProject;
-import hudson.model.Action;
-import hudson.model.Describable;
-import hudson.model.Descriptor;
-import hudson.model.DescriptorVisibilityFilter;
-import hudson.model.Hudson;
-import hudson.model.Item;
-import hudson.model.ItemGroup;
-import hudson.model.Items;
-import hudson.model.Job;
-import hudson.model.JobPropertyDescriptor;
-import hudson.model.ModelObject;
-import hudson.model.Node;
-import hudson.model.PageDecorator;
-import hudson.model.ParameterDefinition;
+import hudson.model.*;
 import hudson.model.ParameterDefinition.ParameterDescriptor;
-import hudson.model.Project;
-import hudson.model.Run;
-import hudson.model.TopLevelItem;
-import hudson.model.View;
-import hudson.model.JDK;
 import hudson.search.SearchableModelObject;
 import hudson.security.AccessControlled;
 import hudson.security.AuthorizationStrategy;
 import hudson.security.Permission;
 import hudson.security.SecurityRealm;
+import hudson.security.captcha.CaptchaSupport;
 import hudson.security.csrf.CrumbIssuer;
 import hudson.slaves.Cloud;
 import hudson.slaves.ComputerLauncher;
@@ -72,6 +55,7 @@ import hudson.util.Secret;
 import hudson.views.MyViewsTabBar;
 import hudson.views.ViewsTabBar;
 import hudson.widgets.RenderOnDemandClosure;
+import jenkins.model.Jenkins;
 import org.acegisecurity.providers.anonymous.AnonymousAuthenticationToken;
 import org.apache.commons.jelly.JellyContext;
 import org.apache.commons.jelly.JellyTagException;
@@ -125,6 +109,7 @@ import java.util.logging.LogManager;
 import java.util.logging.LogRecord;
 import java.util.logging.SimpleFormatter;
 import java.util.regex.Pattern;
+import org.apache.commons.lang.StringUtils;
 
 /**
  * Utility functions used in views.
@@ -187,7 +172,7 @@ public class Functions {
     }
 
     public JDK.DescriptorImpl getJDKDescriptor() {
-        return Hudson.getInstance().getDescriptorByType(JDK.DescriptorImpl.class);
+        return Jenkins.getInstance().getDescriptorByType(JDK.DescriptorImpl.class);
     }
 
     /**
@@ -291,7 +276,7 @@ public class Functions {
      * </pre>
      *
      * <p>
-     * The head portion is the part of the URL from the {@link Hudson}
+     * The head portion is the part of the URL from the {@link jenkins.model.Jenkins}
      * object to the first {@link Run} subtype. When "next/prev build"
      * is chosen, this part remains intact.
      *
@@ -376,7 +361,7 @@ public class Functions {
     }
 
     public static List<LogRecord> getLogRecords() {
-        return Hudson.logRecords;
+        return Jenkins.logRecords;
     }
 
     public static String printLogRecord(LogRecord r) {
@@ -569,7 +554,7 @@ public class Functions {
     }
 
     public static void checkPermission(Permission permission) throws IOException, ServletException {
-        checkPermission(Hudson.getInstance(),permission);
+        checkPermission(Jenkins.getInstance(),permission);
     }
 
     public static void checkPermission(AccessControlled object, Permission permission) throws IOException, ServletException {
@@ -598,7 +583,7 @@ public class Functions {
                     return;
                 }
             }
-            checkPermission(Hudson.getInstance(),permission);
+            checkPermission(Jenkins.getInstance(),permission);
         }
     }
 
@@ -609,7 +594,7 @@ public class Functions {
      *      If null, returns true. This defaulting is convenient in making the use of this method terse.
      */
     public static boolean hasPermission(Permission permission) throws IOException, ServletException {
-        return hasPermission(Hudson.getInstance(),permission);
+        return hasPermission(Jenkins.getInstance(),permission);
     }
 
     /**
@@ -629,14 +614,14 @@ public class Functions {
                     return ((AccessControlled)o).hasPermission(permission);
                 }
             }
-            return Hudson.getInstance().hasPermission(permission);
+            return Jenkins.getInstance().hasPermission(permission);
         }
     }
 
     public static void adminCheck(StaplerRequest req, StaplerResponse rsp, Object required, Permission permission) throws IOException, ServletException {
         // this is legacy --- all views should be eventually converted to
         // the permission based model.
-        if(required!=null && !Hudson.adminCheck(req,rsp)) {
+        if(required!=null && !Hudson.adminCheck(req, rsp)) {
             // check failed. commit the FORBIDDEN response, then abort.
             rsp.setStatus(HttpServletResponse.SC_FORBIDDEN);
             rsp.getOutputStream().close();
@@ -652,7 +637,7 @@ public class Functions {
      * Infers the hudson installation URL from the given request.
      */
     public static String inferHudsonURL(StaplerRequest req) {
-        String rootUrl = Hudson.getInstance().getRootUrl();
+        String rootUrl = Jenkins.getInstance().getRootUrl();
         if(rootUrl !=null)
             // prefer the one explicitly configured, to work with load-balancer, frontend, etc.
             return rootUrl;
@@ -664,6 +649,20 @@ public class Functions {
         buf.append(req.getContextPath()).append('/');
         return buf.toString();
     }
+
+    /**
+     * Returns the link to be displayed in the footer of the UI.
+     */
+    public static String getFooterURL() {
+        if(footerURL == null) {
+            footerURL = System.getProperty("hudson.footerURL");
+            if(StringUtils.isBlank(footerURL)) {
+                footerURL = "http://jenkins-ci.org/";
+            }
+        }
+        return footerURL;
+    }
+    private static String footerURL = null;
 
     public static List<JobPropertyDescriptor> getJobPropertyDescriptors(Class<? extends Job> clazz) {
         return JobPropertyDescriptor.getPropertyDescriptors(clazz);
@@ -694,7 +693,7 @@ public class Functions {
     }
 
     public static List<Descriptor<ComputerLauncher>> getComputerLauncherDescriptors() {
-        return Hudson.getInstance().<ComputerLauncher,Descriptor<ComputerLauncher>>getDescriptorList(ComputerLauncher.class);
+        return Jenkins.getInstance().<ComputerLauncher,Descriptor<ComputerLauncher>>getDescriptorList(ComputerLauncher.class);
     }
 
     public static List<Descriptor<RetentionStrategy<?>>> getRetentionStrategyDescriptors() {
@@ -703,6 +702,10 @@ public class Functions {
 
     public static List<ParameterDescriptor> getParameterDescriptors() {
         return ParameterDefinition.all();
+    }
+
+    public static List<Descriptor<CaptchaSupport>> getCaptchaSupportDescriptors() {
+        return CaptchaSupport.all();
     }
 
     public static List<Descriptor<ViewsTabBar>> getViewsTabBarDescriptors() {
@@ -715,7 +718,7 @@ public class Functions {
 
     public static List<NodePropertyDescriptor> getNodePropertyDescriptors(Class<? extends Node> clazz) {
         List<NodePropertyDescriptor> result = new ArrayList<NodePropertyDescriptor>();
-        Collection<NodePropertyDescriptor> list = (Collection) Hudson.getInstance().getDescriptorList(NodeProperty.class);
+        Collection<NodePropertyDescriptor> list = (Collection) Jenkins.getInstance().getDescriptorList(NodeProperty.class);
         for (NodePropertyDescriptor npd : list) {
             if (npd.isApplicable(clazz)) {
                 result.add(npd);
@@ -730,7 +733,7 @@ public class Functions {
      */
     public static Collection<Descriptor> getSortedDescriptorsForGlobalConfig() {
         Map<String,Descriptor> r = new TreeMap<String, Descriptor>();
-        for (Descriptor<?> d : Hudson.getInstance().getExtensionList(Descriptor.class)) {
+        for (Descriptor<?> d : Jenkins.getInstance().getExtensionList(Descriptor.class)) {
             if (d.getGlobalConfigPage()==null)  continue;
             r.put(buildSuperclassHierarchy(d.clazz, new StringBuilder()).toString(),d);
         }
@@ -787,7 +790,7 @@ public class Functions {
             ItemGroup ig = i.getParent();
             url = i.getShortUrl()+url;
 
-            if(ig==Hudson.getInstance()) {
+            if(ig== Jenkins.getInstance()) {
                 assert i instanceof TopLevelItem;
                 if(view!=null && view.contains((TopLevelItem)i)) {
                     // if p and the current page belongs to the same view, then return a relative path
@@ -987,14 +990,14 @@ public class Functions {
     }
 
     public static String getVersion() {
-        return Hudson.VERSION;
+        return Jenkins.VERSION;
     }
 
     /**
      * Resoruce path prefix.
      */
     public static String getResourcePath() {
-        return Hudson.RESOURCE_PATH;
+        return Jenkins.RESOURCE_PATH;
     }
 
     public static String getViewResource(Object it, String path) {
@@ -1006,7 +1009,7 @@ public class Functions {
             clazz = ((Descriptor)it).clazz;
 
         StringBuilder buf = new StringBuilder(Stapler.getCurrentRequest().getContextPath());
-        buf.append(Hudson.VIEW_RESOURCE_PATH).append('/');
+        buf.append(Jenkins.VIEW_RESOURCE_PATH).append('/');
         buf.append(clazz.getName().replace('.','/').replace('$','/'));
         buf.append('/').append(path);
 
@@ -1082,7 +1085,7 @@ public class Functions {
      * Checks if the current user is anonymous.
      */
     public static boolean isAnonymous() {
-        return Hudson.getAuthentication() instanceof AnonymousAuthenticationToken;
+        return Jenkins.getAuthentication() instanceof AnonymousAuthenticationToken;
     }
 
     /**
@@ -1169,7 +1172,7 @@ public class Functions {
     public String getServerName() {
         // Try to infer this from the configured root URL.
         // This makes it work correctly when Hudson runs behind a reverse proxy.
-        String url = Hudson.getInstance().getRootUrl();
+        String url = Jenkins.getInstance().getRootUrl();
         try {
             if(url!=null) {
                 String host = new URL(url).getHost();
@@ -1219,7 +1222,7 @@ public class Functions {
      */
     public static List<PageDecorator> getPageDecorators() {
         // this method may be called to render start up errors, at which point Hudson doesn't exist yet. see HUDSON-3608 
-        if(Hudson.getInstance()==null)  return Collections.emptyList();
+        if(Jenkins.getInstance()==null)  return Collections.emptyList();
         return PageDecorator.all();
     }
     
@@ -1241,13 +1244,13 @@ public class Functions {
     }
 
     public static String getCrumb(StaplerRequest req) {
-        Hudson h = Hudson.getInstance();
+        Jenkins h = Jenkins.getInstance();
         CrumbIssuer issuer = h != null ? h.getCrumbIssuer() : null;
         return issuer != null ? issuer.getCrumb(req) : "";
     }
 
     public static String getCrumbRequestField() {
-        Hudson h = Hudson.getInstance();
+        Jenkins h = Jenkins.getInstance();
         CrumbIssuer issuer = h != null ? h.getCrumbIssuer() : null;
         return issuer != null ? issuer.getDescriptor().getCrumbRequestField() : "";
     }
@@ -1334,14 +1337,29 @@ public class Functions {
      * {@code false} otherwise.
      *
      * <p>When the {@link Run#ARTIFACTS} permission is not turned on using the
-     * {@code hudson.security.ArtifactsPermission}, this permission must not be
-     * considered to be set to {@code false} for every user. It must rather be
-     * like if the permission doesn't exist at all (which means that every user
-     * has to have an access to the artifacts but the permission can't be
-     * configured in the security screen). Got it?</p>
+     * {@code hudson.security.ArtifactsPermission} system property, this
+     * permission must not be considered to be set to {@code false} for every
+     * user. It must rather be like if the permission doesn't exist at all
+     * (which means that every user has to have an access to the artifacts but
+     * the permission can't be configured in the security screen). Got it?</p>
      */
     public static boolean isArtifactsPermissionEnabled() {
         return Boolean.getBoolean("hudson.security.ArtifactsPermission");
+    }
+
+    /**
+     * Returns {@code true} if the {@link Item#WIPEOUT} permission is enabled,
+     * {@code false} otherwise.
+     *
+     * <p>The "Wipe Out Workspace" action available on jobs is controlled by the
+     * {@link Item#BUILD} permission. For some specific projects, however, it is
+     * not acceptable to let users have this possibility, even it they can
+     * trigger builds. As such, when enabling the {@code hudson.security.WipeOutPermission}
+     * system property, a new "WipeOut" permission will allow to have greater
+     * control on the "Wipe Out Workspace" action.</p>
+     */
+    public static boolean isWipeOutPermissionEnabled() {
+        return Boolean.getBoolean("hudson.security.WipeOutPermission");
     }
 
     public static String createRenderOnDemandProxy(JellyContext context, String attributesToCapture) {

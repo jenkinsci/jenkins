@@ -29,6 +29,7 @@ import hudson.maven.agent.Main;
 import hudson.maven.agent.PluginManagerListener;
 import hudson.maven.reporters.SurefireArchiver;
 import hudson.model.BuildListener;
+import hudson.model.Executor;
 import hudson.model.Result;
 import hudson.remoting.Callable;
 import hudson.remoting.Channel;
@@ -178,7 +179,7 @@ public abstract class MavenBuilder extends AbstractMavenBuilder implements Deleg
                     for (Future<?> g : futures)
                         g.cancel(true);
                     listener.getLogger().println(Messages.MavenBuilder_Aborted());
-                    return Result.ABORTED;
+                    return Executor.currentExecutor().abortResult();
                 } catch (ExecutionException e) {
                     e.printStackTrace(listener.error(Messages.MavenBuilder_AsyncFailed()));
                 }

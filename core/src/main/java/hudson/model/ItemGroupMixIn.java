@@ -29,6 +29,7 @@ import hudson.security.AccessControlled;
 import hudson.util.CopyOnWriteMap;
 import hudson.util.Function1;
 import hudson.util.IOUtils;
+import jenkins.model.Jenkins;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 
@@ -45,6 +46,7 @@ import java.util.Map;
  * implementations. Not meant for a consumption from outside {@link ItemGroup}s.
  *
  * @author Kohsuke Kawaguchi
+ * @see ViewGroupMixIn
  */
 public abstract class ItemGroupMixIn {
     /**
@@ -133,7 +135,7 @@ public abstract class ItemGroupMixIn {
             throw new Failure("Query parameter 'name' is required");
 
         {// check if the name looks good
-            Hudson.checkGoodName(name);
+            Jenkins.checkGoodName(name);
             name = name.trim();
             if(parent.getItem(name)!=null)
                 throw new Failure(Messages.Hudson_JobAlreadyExists(name));
@@ -148,7 +150,7 @@ public abstract class ItemGroupMixIn {
             if (!from.startsWith("/"))
                 src = parent.getItem(from);
             if (src==null)
-                src = Hudson.getInstance().getItemByFullName(from);
+                src = Jenkins.getInstance().getItemByFullName(from);
 
             if(src==null) {
                 if(Util.fixEmpty(from)==null)
@@ -170,7 +172,7 @@ public abstract class ItemGroupMixIn {
                     throw new Failure("No mode given");
 
                 // create empty job and redirect to the project config screen
-                result = createProject(Items.getDescriptor(mode), name, true);
+                result = createProject(Items.all().findByName(mode), name, true);
             }
         }
 
@@ -224,7 +226,7 @@ public abstract class ItemGroupMixIn {
             add(result);
 
             ItemListener.fireOnCreated(result);
-            Hudson.getInstance().rebuildDependencyGraph();
+            Jenkins.getInstance().rebuildDependencyGraph();
 
             return result;
         } catch (IOException e) {

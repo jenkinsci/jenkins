@@ -24,7 +24,7 @@
 package hudson.slaves;
 
 import hudson.model.Computer;
-import hudson.model.Hudson;
+import jenkins.model.Jenkins;
 import hudson.model.TaskListener;
 import hudson.model.Node;
 import hudson.ExtensionPoint;
@@ -194,6 +194,6 @@ public abstract class ComputerListener implements ExtensionPoint {
      * All the registered {@link ComputerListener}s.
      */
     public static ExtensionList<ComputerListener> all() {
-        return Hudson.getInstance().getExtensionList(ComputerListener.class);
+        return Jenkins.getInstance().getExtensionList(ComputerListener.class);
     }
 }

@@ -24,7 +24,7 @@
 package hudson.maven;
 
 import hudson.model.BuildListener;
-import hudson.model.Hudson;
+import jenkins.model.Jenkins;
 import hudson.model.Result;
 import hudson.remoting.DelegatingCallable;
 
@@ -82,7 +82,7 @@ public abstract class AbstractMavenBuilder implements DelegatingCallable<Result,
 
     // since reporters might be from plugins, use the uberjar to resolve them.
     public ClassLoader getClassLoader() {
-        return Hudson.getInstance().getPluginManager().uberClassLoader;
+        return Jenkins.getInstance().getPluginManager().uberClassLoader;
     }    
     
 }

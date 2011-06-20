@@ -37,6 +37,7 @@ import java.io.IOException;
 import java.util.Collection;
 import java.util.Collections;
 
+import jenkins.model.Jenkins;
 import net.sf.json.JSONObject;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.export.ExportedBean;
@@ -96,7 +97,7 @@ public abstract class JobProperty<J extends Job<?,?>> implements ReconfigurableD
      * {@inheritDoc}
      */
     public JobPropertyDescriptor getDescriptor() {
-        return (JobPropertyDescriptor)Hudson.getInstance().getDescriptorOrDie(getClass());
+        return (JobPropertyDescriptor) Jenkins.getInstance().getDescriptorOrDie(getClass());
     }
 
     /**

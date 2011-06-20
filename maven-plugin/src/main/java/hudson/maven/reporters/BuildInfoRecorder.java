@@ -31,7 +31,7 @@ import hudson.maven.MojoInfo;
 import hudson.maven.MavenBuild;
 import hudson.maven.MavenBuildProxy.BuildCallable;
 import hudson.model.BuildListener;
-import hudson.model.Hudson;
+import jenkins.model.Jenkins;
 import hudson.Extension;
 import org.apache.maven.project.MavenProject;
 import org.codehaus.plexus.configuration.PlexusConfiguration;
@@ -68,10 +68,10 @@ public class BuildInfoRecorder extends MavenReporter {
                     // leave Hudson for backward comp
                     r.put("Hudson-Build-Number",String.valueOf(build.getNumber()));
                     r.put("Hudson-Project",build.getParent().getParent().getName());
-                    r.put("Hudson-Version",Hudson.VERSION);
+                    r.put("Hudson-Version", Jenkins.VERSION);
                     r.put("Jenkins-Build-Number",String.valueOf(build.getNumber()));
                     r.put("Jenkins-Project",build.getParent().getParent().getName());
-                    r.put("Jenkins-Version",Hudson.VERSION);
+                    r.put("Jenkins-Version", Jenkins.VERSION);
                     return r;
                 }
             });

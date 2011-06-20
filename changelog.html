@@ -56,19 +56,90 @@ Upcoming changes</a>
 <div id="trunk" style="display:none"><!--=TRUNK-BEGIN=-->
 <ul class=image>
   <li class=bug>
-  	Validate new view name relative to current context
+    "0 tests started to fail" makes no sense
+    (<a href="https://github.com/jenkinsci/jenkins/pull/165">pull request #165</a>)
+  <li class=bug>
+    Defined a proper way to interrupt the build and mark it as a failure.
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-9203">issue 9203</a>)
   <li class=rfe>
-    Improved the URL hyperlinking behavior in the console output
-    (<a href="https://github.com/jenkinsci/jenkins/pull/119">pull request #119</a>)
+    Prevent a occasional JavaScript safety warning message when running in HTTPS
   <li class=rfe>
-    Added a mechanism to control the XML parser behaviour
-    (<a href="https://github.com/jenkinsci/jenkins/pull/67">pull request #67</a>)
+    About page should not autorefresh
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-9967">issue 9967</a>)
+  <li class=rfe>
+    Added a new build parameter type that shows a text area
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-5577">issue 5577</a>)
+  <li class=rfe>
+    Making views more reusable outside the root object.
+  <li class=ref>
+    Added a new hudson.footerURL system property to tweak the link displayed at
+    the bottom of the UI
+  <li class=ref>
+    Added a new hudson.security.WipeOutPermission system property to enable a
+    new WipeOut permission controlling the "Wipe Out Workspace" action.
 </ul>
 </div><!--=TRUNK-END=-->
 
 <!-- these changes are controlled by the release process. DO NOT MODIFY -->
 <div id="rc" style="display:none;"><!--=BEGIN=-->
-<h3><a name=v1.415>What's new in 1.415</a> <!--=DATE=--></h3>
+<h3><a name=v1.417>What's new in 1.417</a> <!--=DATE=--></h3>
+<ul class=image>
+  <li class='major bug'>
+    Fixed a regression in 1.416 that broke cloud plugins like libvirt and EC2.
+</ul>
+</div><!--=END=-->
+<h3><a name=v1.416>What's new in 1.416</a> (2011/06/18)</h3>
+<ul class=image>
+  <li class=rfe>
+    Make captcha support optional; remove LGPL jcaptcha
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-9915">issue 9915</a>)
+  <li class=bug>
+  	Validate new view name relative to current context
+  <li class=bug>
+    Unfilled custom workspace textbox shouldn't be allowed.
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-9806">issue 9806</a>)
+  <li class=bug>
+    Fixed a bug in LDAP group search based on memberUid
+    (<a href="https://github.com/jenkinsci/jenkins/pull/151">pull request #151</a>)
+  <li class=bug>
+    If the user tries to run Jenkins on Java 1.4 and earlier, detect that more gracefully.
+  <li class=bug>
+    Fixed NPE in site generation when building a single Maven module
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-7577">issue 7577</a>)
+  <li class=bug>
+    Fixed timeline on build trend page.
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-6439">issue 6439</a>)
+  <li class=bug>
+    Fixed the initialization order of plugins
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-9960">issue 9960</a>)
+  <li class=bug>
+    Label/node tree is not visible in multi-configuration project config page
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-9689">issue 9689</a>)
+  <li class=rfe>
+    <tt>LDAPBindSecurityRealm.groovy</tt> can be now overridden in <tt>$JENKINS_HOME</tt> if it exists.
+  <li class=rfe>
+    AJP port is customizable in RPM/OpenSUSE packages
+    (<a href="https://github.com/jenkinsci/jenkins/pull/149">pull request #149</a>)
+  <li class=rfe>
+    "Deploy to Maven repository" post build task should default to unique version, as per Maven3 default.
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-9807">issue 9807</a>)
+  <li class=rfe>
+    Improved the URL hyperlinking behavior in the console output
+    (<a href="https://github.com/jenkinsci/jenkins/pull/119">pull request #119</a>)
+  <li class=rfe>
+    Plugins can now override where jobs are executed.
+  <li class=rfe>
+    Rotate the slave log files instead of deleting them.
+  <li class=rfe>
+    Added a mechanism to control the XML parser behaviour
+    (<a href="https://github.com/jenkinsci/jenkins/pull/67">pull request #67</a>)
+  <li class=rfe>
+    Minor UI improvements for Jenkins update center.
+    (<a href="http://issues.jenkins-ci.org/browse/JENKINS-9212">issue 9212</a>)
+  <li class='major rfe'>
+    Added a mechanism to write views in Groovy. The interface isn't committed yet. We are looking for feedback.
+</ul>
+<h3><a name=v1.415>What's new in 1.415</a> (2011/06/12)</h3>
 <ul class=image>
   <li class=bug>
     Output correct version from java -jar jenkins.war --version (broken since 1.410)
@@ -104,7 +175,6 @@ Upcoming changes</a>
     When there are absolutely no executors for a specific label, there was an unnecessary delay in provisioning the
     first node for that label.
 </ul>
-</div><!--=END=-->
 <h3><a name=v1.414>What's new in 1.414</a> (2011/06/04)</h3>
 <ul class=image>
   <li class=bug>

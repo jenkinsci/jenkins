@@ -27,7 +27,7 @@ THE SOFTWARE.
   <parent>
     <artifactId>pom</artifactId>
     <groupId>org.jenkins-ci.main</groupId>
-    <version>1.416-SNAPSHOT</version>
+    <version>1.418-SNAPSHOT</version>
   </parent>
   <modelVersion>4.0.0</modelVersion>
   <groupId>org.jenkins-ci.main</groupId>
@@ -39,7 +39,7 @@ THE SOFTWARE.
   </description>
 
   <properties>
-    <concurrency>1</concurrency> <!-- -1 means # of processors in the system -->
+    <concurrency>2</concurrency> <!-- -1 means # of processors in the system -->
     <mavenDebug>false</mavenDebug>
   </properties>
 

@@ -30,7 +30,7 @@ import hudson.model.AbstractProject;
 import hudson.model.BuildListener;
 import hudson.model.Executor;
 import hudson.model.Fingerprint;
-import hudson.model.Hudson;
+import jenkins.model.Jenkins;
 import hudson.model.JobProperty;
 import hudson.model.ParametersAction;
 import hudson.model.Queue;
@@ -102,7 +102,7 @@ public class MatrixBuild extends AbstractBuild<MatrixProject,MatrixBuild> {
         public String getTooltip() {
             MatrixRun r = getRun();
             if(r!=null) return r.getIconColor().getDescription();
-            Queue.Item item = Hudson.getInstance().getQueue().getItem(getParent().getItem(combination));
+            Queue.Item item = Jenkins.getInstance().getQueue().getItem(getParent().getItem(combination));
             if(item!=null)
                 return item.getWhy();
             return null;    // fall back
@@ -306,13 +306,13 @@ public class MatrixBuild extends AbstractBuild<MatrixProject,MatrixBuild> {
                 return r;
             } catch( InterruptedException e ) {
                 logger.println("Aborted");
-                return Result.ABORTED;
+                return Executor.currentExecutor().abortResult();
             } catch (AggregatorFailureException e) {
                 return Result.FAILURE;
             }
             finally {
                 // if the build was aborted in the middle. Cancel all the configuration builds.
-                Queue q = Hudson.getInstance().getQueue();
+                Queue q = Jenkins.getInstance().getQueue();
                 synchronized(q) {// avoid micro-locking in q.cancel.
                     for (MatrixConfiguration c : activeConfigurations) {
                         if(q.cancel(c))

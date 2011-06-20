@@ -33,12 +33,14 @@ THE SOFTWARE.
       <table class="sortable pane bigtable" id="people">
         <tr>
           <th style="width:32px"/>
+          <th>${%User Id}</th>
           <th>${%Name}</th>
           <th style="width:32px"/>
         </tr>
         <j:forEach var="user" items="${it.allUsers}">
           <tr>
             <td><a href="${user.url}/"><img src="${imagesURL}/32x32/user.png" alt="" height="32" width="32"/></a></td>
+            <td><a href="${user.url}/">${user.id}</a></td>
             <td><a href="${user.url}/">${user}</a></td>
             <td>
               <a href="${user.url}/configure"><img src="${imagesURL}/32x32/setting.png" alt="Setting" height="32" width="32"/></a>

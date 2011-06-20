@@ -25,7 +25,7 @@
 package hudson;
 
 import hudson.PluginManager.PluginInstanceStore;
-import hudson.model.Hudson;
+import jenkins.model.Jenkins;
 import hudson.model.UpdateCenter;
 import hudson.model.UpdateSite;
 import hudson.util.VersionNumber;
@@ -255,7 +255,7 @@ public class PluginWrapper implements Comparable<PluginWrapper> {
      * Gets the instance of {@link Plugin} contributed by this plugin.
      */
     public Plugin getPlugin() {
-        return Hudson.lookup(PluginInstanceStore.class).store.get(this);
+        return Jenkins.lookup(PluginInstanceStore.class).store.get(this);
     }
 
     /**
@@ -389,7 +389,7 @@ public class PluginWrapper implements Comparable<PluginWrapper> {
     }
 
     public void setPlugin(Plugin plugin) {
-        Hudson.lookup(PluginInstanceStore.class).store.put(this,plugin);
+        Jenkins.lookup(PluginInstanceStore.class).store.put(this,plugin);
         plugin.wrapper = this;
     }
 
@@ -439,7 +439,7 @@ public class PluginWrapper implements Comparable<PluginWrapper> {
      *      the user may have installed a plugin locally developed.
      */
     public UpdateSite.Plugin getUpdateInfo() {
-        UpdateCenter uc = Hudson.getInstance().getUpdateCenter();
+        UpdateCenter uc = Jenkins.getInstance().getUpdateCenter();
         UpdateSite.Plugin p = uc.getPlugin(getShortName());
         if(p!=null && p.isNewerThan(getVersion())) return p;
         return null;
@@ -449,7 +449,7 @@ public class PluginWrapper implements Comparable<PluginWrapper> {
      * returns the {@link UpdateSite.Plugin} object, or null.
      */
     public UpdateSite.Plugin getInfo() {
-        UpdateCenter uc = Hudson.getInstance().getUpdateCenter();
+        UpdateCenter uc = Jenkins.getInstance().getUpdateCenter();
         return uc.getPlugin(getShortName());
     }
 
@@ -486,7 +486,7 @@ public class PluginWrapper implements Comparable<PluginWrapper> {
      * Where is the backup file?
      */
     public File getBackupFile() {
-        return new File(Hudson.getInstance().getRootDir(),"plugins/"+getShortName() + ".bak");
+        return new File(Jenkins.getInstance().getRootDir(),"plugins/"+getShortName() + ".bak");
     }
 
     /**
@@ -513,25 +513,25 @@ public class PluginWrapper implements Comparable<PluginWrapper> {
 //
 //
     public HttpResponse doMakeEnabled() throws IOException {
-        Hudson.getInstance().checkPermission(Hudson.ADMINISTER);
+        Jenkins.getInstance().checkPermission(Jenkins.ADMINISTER);
         enable();
         return HttpResponses.ok();
     }
 
     public HttpResponse doMakeDisabled() throws IOException {
-        Hudson.getInstance().checkPermission(Hudson.ADMINISTER);
+        Jenkins.getInstance().checkPermission(Jenkins.ADMINISTER);
         disable();
         return HttpResponses.ok();
     }
 
     public HttpResponse doPin() throws IOException {
-        Hudson.getInstance().checkPermission(Hudson.ADMINISTER);
+        Jenkins.getInstance().checkPermission(Jenkins.ADMINISTER);
         new FileOutputStream(pinFile).close();
         return HttpResponses.ok();
     }
 
     public HttpResponse doUnpin() throws IOException {
-        Hudson.getInstance().checkPermission(Hudson.ADMINISTER);
+        Jenkins.getInstance().checkPermission(Jenkins.ADMINISTER);
         pinFile.delete();
         return HttpResponses.ok();
     }

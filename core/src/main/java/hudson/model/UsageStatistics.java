@@ -30,6 +30,8 @@ import hudson.Extension;
 import hudson.node_monitors.ArchitectureMonitor.DescriptorImpl;
 import hudson.util.Secret;
 import static hudson.util.TimeUnit2.DAYS;
+
+import jenkins.model.Jenkins;
 import net.sf.json.JSONObject;
 import org.apache.commons.io.output.ByteArrayOutputStream;
 
@@ -93,7 +95,7 @@ public class UsageStatistics extends PageDecorator {
      */
     public boolean isDue() {
         // user opted out. no data collection.
-        if(!Hudson.getInstance().isUsageStatisticsCollected() || DISABLED)     return false;
+        if(!Jenkins.getInstance().isUsageStatisticsCollected() || DISABLED)     return false;
         
         long now = System.currentTimeMillis();
         if(now - lastAttempt > DAY) {
@@ -119,12 +121,12 @@ public class UsageStatistics extends PageDecorator {
      * Gets the encrypted usage stat data to be sent to the Hudson server.
      */
     public String getStatData() throws IOException {
-        Hudson h = Hudson.getInstance();
+        Jenkins h = Jenkins.getInstance();
 
         JSONObject o = new JSONObject();
         o.put("stat",1);
         o.put("install", Util.getDigestOf(h.getSecretKey()));
-        o.put("version",Hudson.VERSION);
+        o.put("version", Jenkins.VERSION);
 
         List<JSONObject> nodes = new ArrayList<JSONObject>();
         for( Computer c : h.getComputers() ) {

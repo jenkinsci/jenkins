@@ -24,7 +24,8 @@
 package hudson.slaves;
 
 import hudson.model.*;
-import hudson.model.Hudson.MasterComputer;
+import hudson.util.io.ReopenableRotatingFileOutputStream;
+import jenkins.model.Jenkins.MasterComputer;
 import hudson.remoting.Channel;
 import hudson.remoting.VirtualChannel;
 import hudson.remoting.Callable;
@@ -57,6 +58,7 @@ import java.util.concurrent.Future;
 import java.security.Security;
 
 import hudson.util.io.ReopenableFileOutputStream;
+import jenkins.model.Jenkins;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 import org.kohsuke.stapler.QueryParameter;
@@ -114,7 +116,7 @@ public class SlaveComputer extends Computer {
 
     public SlaveComputer(Slave slave) {
         super(slave);
-        this.log = new ReopenableFileOutputStream(getLogFile());
+        this.log = new ReopenableRotatingFileOutputStream(getLogFile(),10);
         this.taskListener = new StreamTaskListener(log);
     }
 
@@ -378,7 +380,7 @@ public class SlaveComputer extends Computer {
         for (ComputerListener cl : ComputerListener.all())
             cl.onOnline(this,taskListener);
         log.println("Slave successfully connected and online");
-        Hudson.getInstance().getQueue().scheduleMaintenance();
+        Jenkins.getInstance().getQueue().scheduleMaintenance();
     }
 
     @Override
@@ -404,10 +406,10 @@ public class SlaveComputer extends Computer {
     public HttpResponse doDoDisconnect(@QueryParameter String offlineMessage) throws IOException, ServletException {
         if (channel!=null) {
             //does nothing in case computer is already disconnected
-            checkPermission(Hudson.ADMINISTER);
+            checkPermission(Jenkins.ADMINISTER);
             offlineMessage = Util.fixEmptyAndTrim(offlineMessage);
             disconnect(OfflineCause.create(Messages._SlaveComputer_DisconnectedBy(
-                    Hudson.getAuthentication().getName(),
+                    Jenkins.getAuthentication().getName(),
                     offlineMessage!=null ? " : " + offlineMessage : "")
             ));
         }
@@ -454,7 +456,7 @@ public class SlaveComputer extends Computer {
      * Serves jar files for JNLP slave agents.
      *
      * @deprecated since 2008-08-18.
-     *      This URL binding is no longer used and moved up directly under to {@link Hudson},
+     *      This URL binding is no longer used and moved up directly under to {@link jenkins.model.Jenkins},
      *      but it's left here for now just in case some old JNLP slave agents request it.
      */
     public Slave.JnlpJar getJnlpJars(String fileName) {
@@ -604,7 +606,7 @@ public class SlaveComputer extends Computer {
      * @since 1.362
      */
     public static VirtualChannel getChannelToMaster() {
-        if (Hudson.getInstance()!=null)
+        if (Jenkins.getInstance()!=null)
             return MasterComputer.localChannel;
 
         // if this method is called from within the slave computation thread, this should work

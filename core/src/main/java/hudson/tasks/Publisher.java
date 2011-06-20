@@ -32,7 +32,7 @@ import hudson.model.BuildListener;
 import hudson.model.Describable;
 import hudson.model.Project;
 import hudson.model.Descriptor;
-import hudson.model.Hudson;
+import jenkins.model.Jenkins;
 
 import java.util.List;
 import java.util.ArrayList;
@@ -120,17 +120,17 @@ public abstract class Publisher extends BuildStepCompatibilityLayer implements B
     }
 
     public Descriptor<Publisher> getDescriptor() {
-        return Hudson.getInstance().getDescriptorOrDie(getClass());
+        return Jenkins.getInstance().getDescriptorOrDie(getClass());
     }
 
     /**
      * {@link Publisher} has a special sort semantics that requires a subtype.
      *
-     * @see DescriptorExtensionList#createDescriptorList(Hudson, Class) 
+     * @see DescriptorExtensionList#createDescriptorList(hudson.model.Hudson, Class
      */
     public static final class DescriptorExtensionListImpl extends DescriptorExtensionList<Publisher,Descriptor<Publisher>>
             implements Comparator<ExtensionComponent<Descriptor<Publisher>>> {
-        public DescriptorExtensionListImpl(Hudson hudson) {
+        public DescriptorExtensionListImpl(Jenkins hudson) {
             super(hudson,Publisher.class);
         }
 
@@ -169,6 +169,6 @@ public abstract class Publisher extends BuildStepCompatibilityLayer implements B
      */
     // for backward compatibility, the signature is not BuildStepDescriptor
     public static DescriptorExtensionList<Publisher,Descriptor<Publisher>> all() {
-        return Hudson.getInstance().<Publisher,Descriptor<Publisher>>getDescriptorList(Publisher.class);
+        return Jenkins.getInstance().<Publisher,Descriptor<Publisher>>getDescriptorList(Publisher.class);
     }
 }

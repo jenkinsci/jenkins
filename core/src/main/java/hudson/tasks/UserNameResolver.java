@@ -27,7 +27,7 @@ import hudson.Extension;
 import hudson.ExtensionList;
 import hudson.ExtensionListView;
 import hudson.ExtensionPoint;
-import hudson.model.Hudson;
+import jenkins.model.Jenkins;
 import hudson.model.User;
 
 import java.util.List;
@@ -83,7 +83,7 @@ public abstract class UserNameResolver implements ExtensionPoint {
      * Returns all the registered {@link UserNameResolver} descriptors.
      */
     public static ExtensionList<UserNameResolver> all() {
-        return Hudson.getInstance().getExtensionList(UserNameResolver.class);
+        return Jenkins.getInstance().getExtensionList(UserNameResolver.class);
     }
 
     /**

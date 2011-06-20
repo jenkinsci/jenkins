@@ -58,6 +58,7 @@ import java.util.Set;
 import java.util.List;
 import java.util.logging.Logger;
 
+import jenkins.model.Jenkins;
 import net.sf.json.JSONObject;
 import org.kohsuke.stapler.BindInterceptor;
 import org.kohsuke.stapler.Stapler;
@@ -69,7 +70,7 @@ import org.kohsuke.stapler.export.Exported;
  * Base type of Hudson slaves (although in practice, you probably extend {@link Slave} to define a new slave type.)
  *
  * <p>
- * As a special case, {@link Hudson} extends from here.
+ * As a special case, {@link Jenkins} extends from here.
  *
  * @author Kohsuke Kawaguchi
  * @see NodeMonitor
@@ -158,7 +159,8 @@ public abstract class Node extends AbstractModelObject implements Reconfigurable
      *      such as when this node has no executors at all.
      */
     public final Computer toComputer() {
-        return Hudson.getInstance().getComputer(this);
+        AbstractCIBase ciBase = Jenkins.getInstance();
+        return ciBase.getComputer(this);
     }
 
     /**
@@ -173,7 +175,7 @@ public abstract class Node extends AbstractModelObject implements Reconfigurable
 
     /**
      * Creates a new {@link Computer} object that acts as the UI peer of this {@link Node}.
-     * Nobody but {@link Hudson#updateComputerList()} should call this method.
+     * Nobody but {@link Jenkins#updateComputerList()} should call this method.
      */
     protected abstract Computer createComputer();
 
@@ -205,7 +207,7 @@ public abstract class Node extends AbstractModelObject implements Reconfigurable
         try {
             if (temporaryOfflineCause != cause) {
                 temporaryOfflineCause = cause;
-                Hudson.getInstance().save(); // Gotta be a better way to do this
+                Jenkins.getInstance().save(); // Gotta be a better way to do this
             }
         } catch (java.io.IOException e) {
             LOGGER.warning("Unable to complete save, temporary offline status will not be persisted: " + e.getMessage());
@@ -303,7 +305,7 @@ public abstract class Node extends AbstractModelObject implements Reconfigurable
      * @since 1.413
      */
     public CauseOfBlockage canTake(Queue.BuildableItem item) {
-        Label l = item.task.getAssignedLabel();
+        Label l = item.getAssignedLabel();
         if(l!=null && !l.contains(this))
             return CauseOfBlockage.fromMessage(Messages._Node_LabelMissing(getNodeName(),l));   // the task needs to be executed on label that this node doesn't have.
 
@@ -372,7 +374,7 @@ public abstract class Node extends AbstractModelObject implements Reconfigurable
     }
     
     public ACL getACL() {
-        return Hudson.getInstance().getAuthorizationStrategy().getACL(this);
+        return Jenkins.getInstance().getAuthorizationStrategy().getACL(this);
     }
     
     public final void checkPermission(Permission permission) {

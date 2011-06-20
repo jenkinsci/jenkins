@@ -29,7 +29,7 @@ import hudson.model.Item;
 import hudson.model.Job;
 import hudson.model.JobProperty;
 import hudson.model.JobPropertyDescriptor;
-import hudson.model.Hudson;
+import jenkins.model.Jenkins;
 import hudson.model.Run;
 import hudson.Extension;
 import hudson.util.FormValidation;
@@ -161,7 +161,7 @@ public class AuthorizationMatrixProperty extends JobProperty<Job<?, ?>> {
 		@Override
 		public boolean isApplicable(Class<? extends Job> jobType) {
             // only applicable when ProjectMatrixAuthorizationStrategy is in charge
-            return Hudson.getInstance().getAuthorizationStrategy() instanceof ProjectMatrixAuthorizationStrategy;
+            return Jenkins.getInstance().getAuthorizationStrategy() instanceof ProjectMatrixAuthorizationStrategy;
 		}
 
 		@Override

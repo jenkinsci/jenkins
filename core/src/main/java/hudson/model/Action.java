@@ -87,7 +87,7 @@ public interface Action extends ModelObject {
      *      but this can be used for actions that only contribute <tt>floatBox.jelly</tt>
      *      and no task list item. The other case where this is useful is
      *      to avoid showing links that require a privilege when the user is anonymous.
-     * @see Hudson#isAdmin()
+     * @see jenkins.model.Jenkins#isAdmin()
      */
     String getIconFileName();
 

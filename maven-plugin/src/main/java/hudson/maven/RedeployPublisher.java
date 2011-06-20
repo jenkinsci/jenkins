@@ -28,8 +28,14 @@ import hudson.FilePath;
 import hudson.Launcher;
 import hudson.Util;
 import hudson.maven.reporters.MavenAbstractArtifactRecord;
+import hudson.model.AbstractBuild;
+import hudson.model.AbstractProject;
+import hudson.model.BuildListener;
+import jenkins.model.Jenkins;
+import hudson.model.Node;
+import hudson.model.Result;
+import hudson.model.TaskListener;
 import hudson.maven.reporters.MavenArtifactRecord;
-import hudson.model.*;
 import hudson.remoting.Callable;
 import hudson.tasks.BuildStepDescriptor;
 import hudson.tasks.BuildStepMonitor;
@@ -201,7 +207,7 @@ public class RedeployPublisher extends Recorder {
                 
                 if(buildNode == null) {
                     // assume that build was made on master
-                    buildNode = Hudson.getInstance();
+                    buildNode = Jenkins.getInstance();
                 }
                 
                 if (StringUtils.isBlank( altSettingsPath ) ) {

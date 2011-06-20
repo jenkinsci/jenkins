@@ -30,6 +30,7 @@ import hudson.Util;
 import hudson.cli.CLICommand;
 import hudson.cli.CloneableCLICommand;
 import hudson.model.Hudson;
+import jenkins.model.Jenkins;
 import hudson.remoting.Channel;
 import hudson.security.CliAuthenticator;
 import org.acegisecurity.Authentication;
@@ -74,7 +75,7 @@ public class CLIRegisterer extends ExtensionFinder {
      * Finds a resolved method annotated with {@link CLIResolver}.
      */
     private Method findResolver(Class type) throws IOException {
-        List<Method> resolvers = Util.filter(Index.list(CLIResolver.class, Hudson.getInstance().getPluginManager().uberClassLoader), Method.class);
+        List<Method> resolvers = Util.filter(Index.list(CLIResolver.class, Jenkins.getInstance().getPluginManager().uberClassLoader), Method.class);
         for ( ; type!=null; type=type.getSuperclass())
             for (Method m : resolvers)
                 if (m.getReturnType()==type)
@@ -82,7 +83,7 @@ public class CLIRegisterer extends ExtensionFinder {
         return null;
     }
 
-    private List<ExtensionComponent<CLICommand>> discover(final Hudson hudson) {
+    private List<ExtensionComponent<CLICommand>> discover(final Jenkins hudson) {
         LOGGER.fine("Listing up @CLIMethod");
         List<ExtensionComponent<CLICommand>> r = new ArrayList<ExtensionComponent<CLICommand>>();
 
@@ -142,17 +143,17 @@ public class CLIRegisterer extends ExtensionFinder {
                                         binders.add(new MethodBinder(chains.pop(),parser));
 
                                     // authentication
-                                    CliAuthenticator authenticator = Hudson.getInstance().getSecurityRealm().createCliAuthenticator(this);
+                                    CliAuthenticator authenticator = Jenkins.getInstance().getSecurityRealm().createCliAuthenticator(this);
                                     new ClassParser().parse(authenticator,parser);
 
                                     // fill up all the binders
                                     parser.parseArgument(args);
 
                                     Authentication auth = authenticator.authenticate();
-                                    if (auth==Hudson.ANONYMOUS)
+                                    if (auth== Jenkins.ANONYMOUS)
                                         auth = loadStoredAuthentication();
                                     sc.setAuthentication(auth); // run the CLI with the right credential
-                                    hudson.checkPermission(Hudson.READ);
+                                    hudson.checkPermission(Jenkins.READ);
 
                                     // resolve them
                                     Object instance = null;

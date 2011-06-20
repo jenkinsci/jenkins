@@ -27,7 +27,7 @@ THE SOFTWARE.
   <parent>
     <groupId>org.jenkins-ci.main</groupId>
     <artifactId>pom</artifactId>
-    <version>1.416-SNAPSHOT</version>
+    <version>1.418-SNAPSHOT</version>
     <relativePath>../pom.xml</relativePath>
   </parent>
   
@@ -111,7 +111,7 @@ THE SOFTWARE.
                 <mkdir dir="target/generated-resources" />
 
                 <!-- put executable war header -->
-                <resolveArtifact groupId="org.jenkins-ci" artifactId="executable-war" version="1.20" type="jar" property="executable-war.jar" />
+                <resolveArtifact groupId="org.jenkins-ci" artifactId="executable-war" version="1.22" type="jar" property="executable-war.jar" />
                 <unjar src="${executable-war.jar}" dest="target/generated-resources">
                   <patternset>
                     <include name="**/*.class" />
@@ -126,8 +126,8 @@ THE SOFTWARE.
                 
                 <!-- bundled plugins -->
                 <resolveArtifact type="hpi" groupId="${project.groupId}" artifactId="maven-plugin" version="${project.version}" tofile="${basedir}/target/generated-resources/WEB-INF/plugins/maven-plugin.hpi" />
-                <resolveArtifact type="hpi" groupId="org.jenkins-ci.plugins" artifactId="ssh-slaves" version="0.15" tofile="${basedir}/target/generated-resources/WEB-INF/plugins/ssh-slaves.hpi" />
-                <resolveArtifact type="hpi" groupId="org.jenkins-ci.plugins" artifactId="subversion" version="1.25" tofile="${basedir}/target/generated-resources/WEB-INF/plugins/subversion.hpi" />
+                <resolveArtifact type="hpi" groupId="org.jenkins-ci.plugins" artifactId="ssh-slaves" version="0.17" tofile="${basedir}/target/generated-resources/WEB-INF/plugins/ssh-slaves.hpi" />
+                <resolveArtifact type="hpi" groupId="org.jenkins-ci.plugins" artifactId="subversion" version="1.28" tofile="${basedir}/target/generated-resources/WEB-INF/plugins/subversion.hpi" />
                 <resolveArtifact type="hpi" groupId="org.jvnet.hudson.plugins" artifactId="cvs" version="1.2" tofile="${basedir}/target/generated-resources/WEB-INF/plugins/cvs.hpi" />
               </tasks>
             </configuration>
