@@ -141,10 +141,10 @@ function ts_resortTable(lnk) {
 
     var dir = span.sortdir;
     if (arrowTable.lnkRef != lnk) {
-		dir = arrowTable.up;
-	} else {
-		dir = dir.next; // new sort direction
-	}
+        if (dir == null) dir = arrowTable.up;
+    } else {
+        dir = dir.next; // new sort direction
+    }
 		
     arrowTable.lnkRef = lnk; // make column sort down only if column selected is same as last
     dir.reorder(newRows);
