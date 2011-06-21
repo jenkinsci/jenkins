@@ -64,7 +64,7 @@ bindAuthenticator(BindAuthenticator2,initialDirContextFactory) {
 authoritiesPopulator(AuthoritiesPopulatorImpl, initialDirContextFactory, instance.groupSearchBase) {
     // see DefaultLdapAuthoritiesPopulator for other possible configurations
     searchSubtree = true;
-    groupSearchFilter = "(| (member={0}) (uniqueMember={0}) (memberUid={0}))";
+    groupSearchFilter = "(| (member={0}) (uniqueMember={0}) (memberUid={1}))";
 }
 
 authenticationManager(ProviderManager) {

@@ -543,12 +543,10 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
             Method expandMethod =
                 ReflectionUtils.findMethod(clazz, "expand", new Class[]{ AbstractBuild.class, TaskListener.class, String.class} );
             opts = (String) expandMethod.invoke( null, this, listener, opts );
-            //opts = TokenMacro.expand(this, listener, opts);
-        //} catch (MacroEvaluationException e) {
-        //    listener.error( "Ignore MacroEvaluationException " + e.getMessage() );            
         }
         catch(Exception tokenException) {
-            listener.error("Ignore Problem expanding maven opts macros " + tokenException.getMessage());
+            //Token plugin not present. Ignore, this is OK.
+            //listener.error("Ignore Problem expanding maven opts macros " + tokenException.getMessage());
         }
         catch(LinkageError linkageError) {
             // Token plugin not present. Ignore, this is OK.

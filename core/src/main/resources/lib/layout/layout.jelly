@@ -2,7 +2,8 @@
 The MIT License
 
 Copyright (c) 2004-2010, Sun Microsystems, Inc., Kohsuke Kawaguchi,
-Daniel Dyer, Seiji Sogabe, Tom Huybrechts
+Daniel Dyer, Seiji Sogabe, Tom Huybrechts, Manufacture Francaise des Pneumatiques
+Michelin, Romain Seguy
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -259,7 +260,7 @@ THE SOFTWARE.
           ${%Page generated}:
           <i:formatDate value="${h.getCurrentTime()}" type="both" dateStyle="medium" timeStyle="medium"/>
         </span>
-        <a href="http://jenkins-ci.org/">Jenkins ver. ${h.version}</a>
+        <a href="${h.getFooterURL()}">Jenkins ver. ${h.version}</a>
       </td></tr>
     </table>
     <j:forEach var="pd" items="${h.pageDecorators}">
