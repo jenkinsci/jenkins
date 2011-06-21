@@ -86,6 +86,8 @@ import net.sf.json.JSONObject;
 
 import org.apache.commons.lang.math.NumberUtils;
 import org.apache.maven.model.building.ModelBuildingRequest;
+import org.kohsuke.stapler.HttpResponse;
+import org.kohsuke.stapler.HttpResponses;
 import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
@@ -839,11 +841,11 @@ public final class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,Ma
     /**
      * Delete all disabled modules.
      */
-    public void doDoDeleteAllDisabledModules(StaplerResponse rsp) throws IOException, InterruptedException {
+    public HttpResponse doDoDeleteAllDisabledModules() throws IOException, InterruptedException {
         checkPermission(DELETE);
         for( MavenModule m : getDisabledModules(true))
             m.delete();
-        rsp.sendRedirect2(".");
+        return HttpResponses.redirectToDot();
     }
     
     /**

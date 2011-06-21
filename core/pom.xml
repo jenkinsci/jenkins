@@ -28,7 +28,7 @@ THE SOFTWARE.
   <parent>
     <groupId>org.jenkins-ci.main</groupId>
     <artifactId>pom</artifactId>
-    <version>1.417-SNAPSHOT</version>
+    <version>1.419-SNAPSHOT</version>
     <relativePath>../pom.xml</relativePath>
   </parent>
 
@@ -90,7 +90,7 @@ THE SOFTWARE.
           <dependency>
             <groupId>org.jvnet.maven-jellydoc-plugin</groupId>
             <artifactId>maven-jellydoc-plugin</artifactId>
-            <version>1.4</version>
+            <version>1.5</version>
           </dependency>
         </dependencies>
         <configuration>
@@ -736,7 +736,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.jvnet.robust-http-client</groupId>
       <artifactId>robust-http-client</artifactId>
-      <version>1.1</version>
+      <version>1.2</version>
     </dependency>
 
     <dependency><!-- Jenkins doesn't depend on it but some plugin wants the latest version. Bundling 1.4 until we figure out a mechanism to let plugins load its own -->

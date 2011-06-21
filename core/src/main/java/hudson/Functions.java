@@ -2,7 +2,8 @@
  * The MIT License
  * 
  * Copyright (c) 2004-2010, Sun Microsystems, Inc., Kohsuke Kawaguchi,
- * Yahoo! Inc., Stephen Connolly, Tom Huybrechts, Alan Harder, Romain Seguy
+ * Yahoo! Inc., Stephen Connolly, Tom Huybrechts, Alan Harder, Manufacture
+ * Francaise des Pneumatiques Michelin, Romain Seguy
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -108,6 +109,7 @@ import java.util.logging.LogManager;
 import java.util.logging.LogRecord;
 import java.util.logging.SimpleFormatter;
 import java.util.regex.Pattern;
+import org.apache.commons.lang.StringUtils;
 
 /**
  * Utility functions used in views.
@@ -647,6 +649,20 @@ public class Functions {
         buf.append(req.getContextPath()).append('/');
         return buf.toString();
     }
+
+    /**
+     * Returns the link to be displayed in the footer of the UI.
+     */
+    public static String getFooterURL() {
+        if(footerURL == null) {
+            footerURL = System.getProperty("hudson.footerURL");
+            if(StringUtils.isBlank(footerURL)) {
+                footerURL = "http://jenkins-ci.org/";
+            }
+        }
+        return footerURL;
+    }
+    private static String footerURL = null;
 
     public static List<JobPropertyDescriptor> getJobPropertyDescriptors(Class<? extends Job> clazz) {
         return JobPropertyDescriptor.getPropertyDescriptors(clazz);
@@ -1321,14 +1337,29 @@ public class Functions {
      * {@code false} otherwise.
      *
      * <p>When the {@link Run#ARTIFACTS} permission is not turned on using the
-     * {@code hudson.security.ArtifactsPermission}, this permission must not be
-     * considered to be set to {@code false} for every user. It must rather be
-     * like if the permission doesn't exist at all (which means that every user
-     * has to have an access to the artifacts but the permission can't be
-     * configured in the security screen). Got it?</p>
+     * {@code hudson.security.ArtifactsPermission} system property, this
+     * permission must not be considered to be set to {@code false} for every
+     * user. It must rather be like if the permission doesn't exist at all
+     * (which means that every user has to have an access to the artifacts but
+     * the permission can't be configured in the security screen). Got it?</p>
      */
     public static boolean isArtifactsPermissionEnabled() {
         return Boolean.getBoolean("hudson.security.ArtifactsPermission");
+    }
+
+    /**
+     * Returns {@code true} if the {@link Item#WIPEOUT} permission is enabled,
+     * {@code false} otherwise.
+     *
+     * <p>The "Wipe Out Workspace" action available on jobs is controlled by the
+     * {@link Item#BUILD} permission. For some specific projects, however, it is
+     * not acceptable to let users have this possibility, even it they can
+     * trigger builds. As such, when enabling the {@code hudson.security.WipeOutPermission}
+     * system property, a new "WipeOut" permission will allow to have greater
+     * control on the "Wipe Out Workspace" action.</p>
+     */
+    public static boolean isWipeOutPermissionEnabled() {
+        return Boolean.getBoolean("hudson.security.WipeOutPermission");
     }
 
     public static String createRenderOnDemandProxy(JellyContext context, String attributesToCapture) {

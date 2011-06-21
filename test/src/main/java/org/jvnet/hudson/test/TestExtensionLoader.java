@@ -26,7 +26,7 @@ package org.jvnet.hudson.test;
 import hudson.Extension;
 import hudson.ExtensionComponent;
 import hudson.ExtensionFinder;
-import jenkins.model.Jenkins;
+import hudson.model.Hudson;
 import net.java.sezpoz.Index;
 import net.java.sezpoz.IndexItem;
 
@@ -47,7 +47,7 @@ import java.util.logging.Logger;
 @Extension
 public class TestExtensionLoader extends ExtensionFinder {
     @Override
-    public <T> Collection<ExtensionComponent<T>> find(Class<T> type, Jenkins hudson) {
+    public <T> Collection<ExtensionComponent<T>> find(Class<T> type, Hudson hudson) {
         TestEnvironment env = TestEnvironment.get();
 
         List<ExtensionComponent<T>> result = new ArrayList<ExtensionComponent<T>>();

@@ -27,6 +27,7 @@ import hudson.Launcher;
 import hudson.maven.MavenBuild.ProxyImpl2;
 import hudson.maven.util.ExecutionEventLogger;
 import hudson.model.BuildListener;
+import hudson.model.Executor;
 import jenkins.model.Jenkins;
 import hudson.model.Result;
 import hudson.remoting.Channel;
@@ -141,7 +142,7 @@ public class Maven3Builder extends AbstractMavenBuilder implements DelegatingCal
                         g.cancel(true);
                     // FIXME messages
                     listener.getLogger().println("build aborted");
-                    return Result.ABORTED;
+                    return Executor.currentExecutor().abortResult();
                 } catch (ExecutionException e) {
                     // FIXME messages
                     e.printStackTrace(listener.error("async build failed"));

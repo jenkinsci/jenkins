@@ -311,6 +311,12 @@ public class Hudson extends Jenkins {
      * @deprecated  only here for backward comp
      */
     public static class CloudList extends Jenkins.CloudList {
-        // no op
+        public CloudList(Jenkins h) {
+            super(h);
+        }
+
+        public CloudList() {// needed for XStream deserialization
+            super();
+        }
     }
 }

@@ -23,6 +23,7 @@
  */
 package hudson.init;
 
+import hudson.model.Hudson;
 import jenkins.model.Jenkins;
 import org.jvnet.hudson.annotation_indexer.Index;
 import org.jvnet.hudson.reactor.Milestone;
@@ -118,7 +119,7 @@ public class InitializerFinder extends TaskBuilder {
      * Determines the parameter injection of the initialization method.
      */
     private Object lookUp(Class<?> type) {
-        if (type== Jenkins.class)
+        if (type==Jenkins.class || type==Hudson.class)
             return Jenkins.getInstance();
         throw new IllegalArgumentException("Unable to inject "+type);
     }

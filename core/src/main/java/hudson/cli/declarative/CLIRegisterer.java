@@ -29,6 +29,7 @@ import hudson.ExtensionFinder;
 import hudson.Util;
 import hudson.cli.CLICommand;
 import hudson.cli.CloneableCLICommand;
+import hudson.model.Hudson;
 import jenkins.model.Jenkins;
 import hudson.remoting.Channel;
 import hudson.security.CliAuthenticator;
@@ -63,7 +64,7 @@ import java.util.logging.Logger;
  */
 @Extension
 public class CLIRegisterer extends ExtensionFinder {
-    public <T> Collection<ExtensionComponent<T>> find(Class<T> type, Jenkins hudson) {
+    public <T> Collection<ExtensionComponent<T>> find(Class<T> type, Hudson hudson) {
         if (type==CLICommand.class)
             return (List)discover(hudson);
         else

@@ -216,7 +216,6 @@ import java.util.TreeSet;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -237,7 +236,7 @@ import java.util.regex.Pattern;
  * @author Kohsuke Kawaguchi
  */
 @ExportedBean
-public class Jenkins extends AbstractCIBase implements ItemGroup<TopLevelItem>, StaplerProxy, StaplerFallback, ViewGroup, AccessControlled, DescriptorByNameOwner {
+public class Jenkins extends AbstractCIBase implements ModifiableItemGroup<TopLevelItem>, StaplerProxy, StaplerFallback, ViewGroup, AccessControlled, DescriptorByNameOwner {
     private transient final Queue queue;
 
     /**
@@ -376,7 +375,7 @@ public class Jenkins extends AbstractCIBase implements ItemGroup<TopLevelItem>, 
     /**
      * Active {@link Cloud}s.
      */
-    public final CloudList clouds = new CloudList(this);
+    public final Hudson.CloudList clouds = new Hudson.CloudList(this);
 
     public static class CloudList extends DescribableList<Cloud,Descriptor<Cloud>> {
         public CloudList(Jenkins h) {
@@ -437,6 +436,13 @@ public class Jenkins extends AbstractCIBase implements ItemGroup<TopLevelItem>, 
      * @since 1.269
      */
     private volatile String primaryView;
+
+    private transient final ViewGroupMixIn viewGroupMixIn = new ViewGroupMixIn(this) {
+        protected List<View> views() { return views; }
+        protected String primaryView() { return primaryView; }
+        protected void primaryView(String name) { primaryView=name; }
+    };
+
 
     private transient final FingerprintMap fingerprintMap = new FingerprintMap();
 
@@ -1238,6 +1244,10 @@ public class Jenkins extends AbstractCIBase implements ItemGroup<TopLevelItem>, 
         return names;
     }
 
+    public List<Action> getViewActions() {
+        return getActions();
+    }
+
     /**
      * Gets the names of all the {@link TopLevelItem}s.
      */
@@ -1249,17 +1259,7 @@ public class Jenkins extends AbstractCIBase implements ItemGroup<TopLevelItem>, 
     }
 
     public synchronized View getView(String name) {
-        for (View v : views) {
-            if(v.getViewName().equals(name))
-                return v;
-        }
-        if (name != null && !name.equals(primaryView)) {
-            // Fallback to subview of primary view if it is a ViewGroup
-            View pv = getPrimaryView();
-            if (pv instanceof ViewGroup)
-                return ((ViewGroup)pv).getView(name);
-        }
-        return null;
+        return viewGroupMixIn.getView(name);
     }
 
     /**
@@ -1267,31 +1267,40 @@ public class Jenkins extends AbstractCIBase implements ItemGroup<TopLevelItem>, 
      */
     @Exported
     public synchronized Collection<View> getViews() {
-        List<View> copy = new ArrayList<View>(views);
-        Collections.sort(copy, View.SORTER);
-        return copy;
+        return viewGroupMixIn.getViews();
     }
 
     public void addView(View v) throws IOException {
-        setViewOwner(v);
-        views.add(v);
-        save();
+        viewGroupMixIn.addView(v);
     }
 
     public boolean canDelete(View view) {
-        return !view.isDefault();  // Cannot delete primary view
+        return viewGroupMixIn.canDelete(view);
     }
 
     public synchronized void deleteView(View view) throws IOException {
-        if (views.size() <= 1)
-            throw new IllegalStateException("Cannot delete last view");
-        views.remove(view);
-        save();
+        viewGroupMixIn.deleteView(view);
     }
+
+    public void onViewRenamed(View view, String oldName, String newName) {
+        viewGroupMixIn.onViewRenamed(view,oldName,newName);
+    }
+
+    /**
+     * Returns the primary {@link View} that renders the top-page of Hudson.
+     */
+    @Exported
+    public View getPrimaryView() {
+        return viewGroupMixIn.getPrimaryView();
+     }
 
     public ViewsTabBar getViewsTabBar() {
         return viewsTabBar;
     }
+
+    public Jenkins getItemGroup() {
+        return this;
+   }
 
     public MyViewsTabBar getMyViewsTabBar() {
         return myViewsTabBar;
@@ -1586,13 +1595,6 @@ public class Jenkins extends AbstractCIBase implements ItemGroup<TopLevelItem>, 
         return "";
     }
 
-    public void onViewRenamed(View view, String oldName, String newName) {
-        // If this view was the default view, change reference
-        if (oldName.equals(primaryView)) {
-            primaryView = newName;
-        }
-    }
-
     @Override
     public SearchIndexBuilder makeSearchIndex() {
         return super.makeSearchIndex()
@@ -1614,24 +1616,13 @@ public class Jenkins extends AbstractCIBase implements ItemGroup<TopLevelItem>, 
             });
     }
 
-    /**
-     * Returns the primary {@link View} that renders the top-page of Hudson.
-     */
-    @Exported
-    public View getPrimaryView() {
-        View v = getView(primaryView);
-        if(v==null) // fallback
-            v = views.get(0);
-        return v;
-    }
-
     public String getUrlChildPrefix() {
         return "job";
     }
 
     /**
-     * Gets the absolute URL of Hudson,
-     * such as "http://localhost/hudson/".
+     * Gets the absolute URL of Jenkins,
+     * such as "http://localhost/jenkins/".
      *
      * <p>
      * This method first tries to use the manually configured value, then
@@ -1656,6 +1647,17 @@ public class Jenkins extends AbstractCIBase implements ItemGroup<TopLevelItem>, 
         if(req!=null)
             return getRootUrlFromRequest();
         return null;
+    }
+
+    /**
+     * Is Jenkins running in HTTPS?
+     *
+     * Note that we can't really trust {@link StaplerRequest#isSecure()} because HTTPS might be terminated
+     * in the reverse proxy.
+     */
+    public boolean isRootUrlSecure() {
+        String url = getRootUrl();
+        return url!=null && url.startsWith("https");
     }
 
     /**
@@ -2134,7 +2136,7 @@ public class Jenkins extends AbstractCIBase implements ItemGroup<TopLevelItem>, 
     }
 
     public Computer createComputer() {
-        return new MasterComputer();
+        return new Hudson.MasterComputer();
     }
 
     private synchronized TaskBuilder loadTasks() throws IOException {
@@ -2424,7 +2426,7 @@ public class Jenkins extends AbstractCIBase implements ItemGroup<TopLevelItem>, 
             clouds.rebuildHetero(req,json, Cloud.all(), "cloud");
 
             JSONObject np = json.getJSONObject("globalNodeProperties");
-            if (np != null) {
+            if (!np.isNullObject()) {
                 globalNodeProperties.rebuild(req, np, NodeProperty.for_(this));
             }
 
@@ -2571,7 +2573,7 @@ public class Jenkins extends AbstractCIBase implements ItemGroup<TopLevelItem>, 
         return r;
     }
 
-    public synchronized Item doCreateItem( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
+    public synchronized TopLevelItem doCreateItem( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
         return itemGroupMixIn.createTopLevelItem(req, rsp);
     }
 

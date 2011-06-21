@@ -1388,7 +1388,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
                     LOGGER.log(FINE, "Build "+this+" aborted",e);
                 } catch( InterruptedException e) {
                     // aborted
-                    result = Result.ABORTED;
+                    result = Executor.currentExecutor().abortResult();
                     listener.getLogger().println(Messages.Run_BuildAborted());
                     LOGGER.log(Level.INFO,toString()+" aborted",e);
                 } catch( Throwable e ) {

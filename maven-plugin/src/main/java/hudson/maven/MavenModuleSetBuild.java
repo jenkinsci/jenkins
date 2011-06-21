@@ -43,6 +43,7 @@ import hudson.model.BuildListener;
 import hudson.model.Cause.UpstreamCause;
 import hudson.model.Computer;
 import hudson.model.Environment;
+import hudson.model.Executor;
 import hudson.model.Fingerprint;
 import jenkins.model.Jenkins;
 import hudson.model.ParameterDefinition;
@@ -542,12 +543,10 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
             Method expandMethod =
                 ReflectionUtils.findMethod(clazz, "expand", new Class[]{ AbstractBuild.class, TaskListener.class, String.class} );
             opts = (String) expandMethod.invoke( null, this, listener, opts );
-            //opts = TokenMacro.expand(this, listener, opts);
-        //} catch (MacroEvaluationException e) {
-        //    listener.error( "Ignore MacroEvaluationException " + e.getMessage() );            
         }
         catch(Exception tokenException) {
-            listener.error("Ignore Problem expanding maven opts macros " + tokenException.getMessage());
+            //Token plugin not present. Ignore, this is OK.
+            //listener.error("Ignore Problem expanding maven opts macros " + tokenException.getMessage());
         }
         catch(LinkageError linkageError) {
             // Token plugin not present. Ignore, this is OK.
@@ -746,7 +745,7 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
                             }
                         }
                     } catch (InterruptedException e) {
-                        r = ABORTED;
+                        r = Executor.currentExecutor().abortResult();
                         throw e;
                     } finally {
                         if (r != null) {
@@ -771,7 +770,7 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
                 return Result.FAILURE;
             } catch (InterruptedIOException e) {
                 e.printStackTrace(listener.error("Aborted Maven execution for InterruptedIOException"));
-                return Result.ABORTED;
+                return Executor.currentExecutor().abortResult();
             } catch (IOException e) {
                 e.printStackTrace(listener.error(Messages.MavenModuleSetBuild_FailedToParsePom()));
                 return Result.FAILURE;

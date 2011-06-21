@@ -23,7 +23,17 @@
  */
 package hudson.search;
 
+import static javax.servlet.http.HttpServletResponse.SC_NOT_FOUND;
+
 import hudson.util.EditDistance;
+import java.io.IOException;
+import java.util.AbstractList;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import javax.servlet.ServletException;
 import org.kohsuke.stapler.Ancestor;
 import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.StaplerRequest;
@@ -32,16 +42,6 @@ import org.kohsuke.stapler.export.DataWriter;
 import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.export.ExportedBean;
 import org.kohsuke.stapler.export.Flavor;
-
-import javax.servlet.ServletException;
-import static javax.servlet.http.HttpServletResponse.SC_NOT_FOUND;
-import java.io.IOException;
-import java.util.AbstractList;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
 
 /**
  * Web-bound object that serves QuickSilver-like search requests.
@@ -217,8 +217,10 @@ public class Search {
     static final class TokenList {
         private final String[] tokens;
 
+        private final static String[] EMPTY = new String[0];
+
         public TokenList(String tokenList) {
-            tokens = tokenList.split("(?<=\\s)(?=\\S)");
+            tokens = tokenList!=null ? tokenList.split("(?<=\\s)(?=\\S)") : EMPTY;
         }
 
         public int length() { return tokens.length; }

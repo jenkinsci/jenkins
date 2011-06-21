@@ -65,6 +65,9 @@ public final class Result implements Serializable, CustomExportedBean {
     public static final Result NOT_BUILT = new Result("NOT_BUILT",BallColor.GREY,3);
     /**
      * The build was manually aborted.
+     *
+     * If you are catching {@link InterruptedException} and interpreting it as {@link #ABORTED},
+     * you should check {@link Executor#abortResult()} instead (starting 1.417.)
      */
     public static final Result ABORTED = new Result("ABORTED",BallColor.ABORTED,4);
 

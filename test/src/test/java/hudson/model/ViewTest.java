@@ -53,7 +53,7 @@ public class ViewTest extends HudsonTestCase {
     public void testConflictingName() throws Exception {
         assertNull(hudson.getView("foo"));
 
-        HtmlForm form = new WebClient().goTo("newView").getFormByName("createView");
+        HtmlForm form = new WebClient().goTo("newView").getFormByName("createItem");
         form.getInputByName("name").setValueAttribute("foo");
         form.getRadioButtonsByName("mode").get(0).setChecked(true);
         submit(form);
@@ -86,7 +86,7 @@ public class ViewTest extends HudsonTestCase {
         hudson.addView(listView);
 
         HtmlPage newViewPage = wc.goTo("/user/me/my-views/newView");
-        HtmlForm form = newViewPage.getFormByName("createView");
+        HtmlForm form = newViewPage.getFormByName("createItem");
         form.getInputByName("name").setValueAttribute("proxy-view");
         ((HtmlRadioButtonInput) form.getInputByValue("hudson.model.ProxyView")).setChecked(true);
         HtmlPage proxyViewConfigurePage = submit(form);
