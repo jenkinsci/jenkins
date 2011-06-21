@@ -24,7 +24,7 @@
 package hudson.tasks.Ant;
 f=namespace(lib.FormTagLib)
 
-if (!descriptor.installations) {
+if (descriptor.installations.length != 0) {
     f.entry(title:_("Ant Version")) {
         select(class:"setting-input",name:"ant.antName") {
             option(value:"(Default)", _("Default"))
