@@ -548,7 +548,8 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
         //    listener.error( "Ignore MacroEvaluationException " + e.getMessage() );            
         }
         catch(Exception tokenException) {
-            listener.error("Ignore Problem expanding maven opts macros " + tokenException.getMessage());
+            //Token plugin not present. Ignore, this is OK.
+            //listener.error("Ignore Problem expanding maven opts macros " + tokenException.getMessage());
         }
         catch(LinkageError linkageError) {
             // Token plugin not present. Ignore, this is OK.
