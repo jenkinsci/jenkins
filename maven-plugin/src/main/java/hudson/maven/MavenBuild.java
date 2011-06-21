@@ -721,8 +721,6 @@ public class MavenBuild extends AbstractMavenBuild<MavenModule,MavenBuild> {
                 ReflectionUtils.findMethod(clazz, "expand", new Class[]{ AbstractBuild.class, TaskListener.class, String.class} );
             opts = (String) expandMethod.invoke( null, this, listener, opts );
             //opts = TokenMacro.expand(this, listener, opts);
-        //} catch (MacroEvaluationException e) {
-        //    listener.error( "Ignore MacroEvaluationException " + e.getMessage() );            
         }
         catch(Exception tokenException) {
             //Token plugin not present. Ignore, this is OK.
