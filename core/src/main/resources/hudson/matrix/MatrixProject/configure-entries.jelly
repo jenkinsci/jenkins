@@ -35,6 +35,7 @@ THE SOFTWARE.
       <p:config-quietPeriod />
       <p:config-retryCount />
       <p:config-blockWhenUpstreamBuilding />
+      <p:config-blockWhenDownstreamBuilding />
       <p:config-customWorkspace />
     </f:advanced>
   </f:section>
