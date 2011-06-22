@@ -235,11 +235,12 @@ abstract class Request<RSP extends Serializable,EXC extends Throwable> extends C
 
             public RSP get(long timeout, TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException {
                 synchronized(Request.this) {
-                    if(response==null) {
+			long end = System.currentTimeMillis() + unit.toMillis(timeout);
+                    while(response==null && System.currentTimeMillis()<end) {
                         if (isCancelled()) {
                             throw new CancellationException();
                         }
-                        Request.this.wait(unit.toMillis(timeout)); // wait until the response arrives
+                        Request.this.wait(end-System.currentTimeMillis()); // wait until the response arrives
                     }
                     if(response==null)
                         throw new TimeoutException();
