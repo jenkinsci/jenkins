@@ -19,7 +19,7 @@ public class ChannelTest extends RmiTestBase {
             channel.call(new CallableImpl());
             fail();
         } catch (IOException e) {
-            e.printStackTrace();
+//            e.printStackTrace();
             assertEquals("foobar",e.getCause().getCause().getMessage());
             assertTrue(e.getCause().getCause() instanceof ClassCastException);
         }
