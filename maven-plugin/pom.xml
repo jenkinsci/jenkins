@@ -284,6 +284,11 @@ THE SOFTWARE.
     </dependency>
 
     <dependency>
+      <groupId>commons-httpclient</groupId>
+      <artifactId>commons-httpclient</artifactId>
+    </dependency>
+
+    <dependency>
       <!-- commonly used wagon provider -->
       <groupId>org.jvnet.hudson</groupId>
       <artifactId>wagon-webdav</artifactId>
