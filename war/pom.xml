@@ -293,6 +293,11 @@ THE SOFTWARE.
       <artifactId>instance-identity</artifactId>
       <version>1.1</version>
     </dependency>
+    <dependency>
+      <groupId>org.jenkins-ci.modules</groupId>
+      <artifactId>ssh-cli-auth</artifactId>
+      <version>1.1</version>
+    </dependency>
 
     <!-- offline profiler API when we need it -->
     <!--dependency>
