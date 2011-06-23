@@ -46,6 +46,23 @@ THE SOFTWARE.
     <sisuInjectVersion>2.2.0</sisuInjectVersion>
     <wagonVersion>1.0-beta-7</wagonVersion>    
   </properties>
+
+  <dependencyManagement>
+    <dependencies>
+      <!-- < 1.6.x version didn't specify the license (MIT) -->
+      <!-- SLF4J is used by wagon-webdav-jackrabbit dep --> 
+      <dependency>
+        <groupId>org.slf4j</groupId>
+        <artifactId>slf4j-api</artifactId>
+        <version>1.6.1</version>
+      </dependency>
+      <dependency>
+        <groupId>org.slf4j</groupId>
+        <artifactId>slf4j-nop</artifactId>
+        <version>1.6.1</version>
+      </dependency>
+    </dependencies>
+  </dependencyManagement>
     
   <dependencies>
     <dependency>
@@ -288,20 +305,14 @@ THE SOFTWARE.
       <artifactId>commons-httpclient</artifactId>
     </dependency>
 
+    <!-- JENKINS-10076 : This wagon is better to provide webdav support -->
     <dependency>
-      <!-- commonly used wagon provider -->
-      <groupId>org.jvnet.hudson</groupId>
-      <artifactId>wagon-webdav</artifactId>
-      <version>1.0-beta-2-hudson-1</version>
-      <exclusions>
-        <exclusion>
-          <groupId>jdom</groupId>
-          <artifactId>jdom</artifactId>
-        </exclusion>
-      </exclusions>
+      <groupId>org.apache.maven.wagon</groupId>
+      <artifactId>wagon-webdav-jackrabbit</artifactId>
+      <version>${wagonVersion}</version>
     </dependency>
 
-    <dependency>
+      <dependency>
       <groupId>net.sourceforge.nekohtml</groupId>
       <artifactId>nekohtml</artifactId>
       <version>1.9.13</version>
