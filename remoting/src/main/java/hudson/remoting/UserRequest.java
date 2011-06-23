@@ -105,7 +105,7 @@ final class UserRequest<RSP,EXC extends Throwable> extends Request<UserResponse<
                 }
 
                 Callable<RSP,EXC> callable = (Callable<RSP,EXC>)o;
-                if(channel.isRestricted && !(callable instanceof RPCRequest))
+                if(channel.isRestricted() && !(callable instanceof RPCRequest))
                     // if we allow restricted channel to execute arbitrary Callable, the remote JVM can pick up many existing
                     // Callable implementations (such as ones in Hudson's FilePath) and do quite a lot. So restrict that.
                     // OTOH, we need to allow RPCRequest so that method invocations on exported objects will go through.

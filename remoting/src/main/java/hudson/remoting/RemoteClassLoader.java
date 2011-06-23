@@ -45,7 +45,7 @@ import java.util.HashSet;
  * Loads class files from the other peer through {@link Channel}.
  *
  * <p>
- * If the {@linkplain Channel#isRestricted channel is restricted}, this classloader will be
+ * If the {@linkplain Channel#isRestricted() channel is restricted}, this classloader will be
  * created by will not attempt to load anything from the remote classloader. The reason we
  * create such a useless instance is so that when such classloader is sent back to the remote side again,
  * the remoting system can re-discover what {@link ClassLoader} this was tied to.
@@ -103,7 +103,7 @@ final class RemoteClassLoader extends URLClassLoader {
             // first attempt to load from locally fetched jars
             return super.findClass(name);
         } catch (ClassNotFoundException e) {
-            if(channel.isRestricted)
+            if(channel.isRestricted())
                 throw e;
             // delegate to remote
             if (channel.remoteCapability.supportsMultiClassLoaderRPC()) {
@@ -170,7 +170,7 @@ final class RemoteClassLoader extends URLClassLoader {
     public URL findResource(String name) {
         // first attempt to load from locally fetched jars
         URL url = super.findResource(name);
-        if(url!=null || channel.isRestricted)   return url;
+        if(url!=null || channel.isRestricted())   return url;
 
         try {
             if(resourceMap.containsKey(name)) {
@@ -209,7 +209,7 @@ final class RemoteClassLoader extends URLClassLoader {
     }
 
     public Enumeration<URL> findResources(String name) throws IOException {
-        if(channel.isRestricted)
+        if(channel.isRestricted())
             return new Vector<URL>().elements();
 
         // TODO: use the locally fetched jars to speed up the look up

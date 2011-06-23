@@ -114,7 +114,7 @@ public class Channel implements VirtualChannel, IChannel {
      * and error reports.
      */
     private final String name;
-    /*package*/ final boolean isRestricted;
+    private volatile boolean isRestricted;
     /*package*/ final ExecutorService executor;
 
     /**
@@ -772,6 +772,17 @@ public class Channel implements VirtualChannel, IChannel {
      */
     /*package*/ boolean isInClosed() {
         return inClosed!=null;
+    }
+
+    /**
+     * Returns true if this channel is currently does not load classes from the remote peer.
+     */
+    public boolean isRestricted() {
+        return isRestricted;
+    }
+
+    public void setRestricted(boolean b) {
+        isRestricted = b;
     }
 
     /**
