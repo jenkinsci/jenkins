@@ -38,6 +38,8 @@ import hudson.remoting.SocketOutputStream;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.File;
@@ -175,6 +177,21 @@ public class CLI {
      */
     public Channel getChannel() {
         return channel;
+    }
+
+    /**
+     * Attempts to lift the security restriction on the underlying channel.
+     * This requires the administer privilege on the server.
+     *
+     * @throws SecurityException
+     *      If we fail to upgrade the connection.
+     */
+    public void upgrade() {
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        if (execute(Arrays.asList("groovy", "="),
+                new ByteArrayInputStream("hudson.remoting.Channel.current().setRestricted(false)".getBytes()),
+                out,out)!=0)
+            throw new SecurityException(out.toString()); // failed to upgrade
     }
 
     public static void main(final String[] _args) throws Exception {
