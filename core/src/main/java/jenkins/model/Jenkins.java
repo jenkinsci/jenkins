@@ -2836,7 +2836,7 @@ public class Jenkins extends AbstractCIBase implements ModifiableItemGroup<TopLe
                 protected void main(Channel channel) throws IOException, InterruptedException {
                     // capture the identity given by the transport, since this can be useful for SecurityRealm.createCliAuthenticator()
                     channel.setProperty(CLICommand.TRANSPORT_AUTHENTICATION,getAuthentication());
-                    channel.setProperty(CliEntryPoint.class.getName(),new CliManagerImpl());
+                    channel.setProperty(CliEntryPoint.class.getName(),new CliManagerImpl(channel));
                 }
             });
             try {

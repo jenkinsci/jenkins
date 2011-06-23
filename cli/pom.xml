@@ -72,5 +72,10 @@
       <artifactId>localizer</artifactId>
       <version>1.10</version>
     </dependency>
+    <dependency>
+      <groupId>org.jvnet.hudson</groupId>
+      <artifactId>trilead-ssh2</artifactId>
+      <version>build212-hudson-5</version>
+    </dependency>
   </dependencies>
 </project>

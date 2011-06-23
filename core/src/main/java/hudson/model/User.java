@@ -36,13 +36,18 @@ import hudson.model.listeners.SaveableListener;
 import hudson.security.ACL;
 import hudson.security.AccessControlled;
 import hudson.security.Permission;
+import hudson.security.SecurityRealm;
 import hudson.util.RunList;
 import hudson.util.XStream2;
 import jenkins.model.Jenkins;
 import net.sf.json.JSONObject;
 
 import org.acegisecurity.Authentication;
+import org.acegisecurity.AuthenticationException;
+import org.acegisecurity.GrantedAuthority;
+import org.acegisecurity.providers.UsernamePasswordAuthenticationToken;
 import org.acegisecurity.providers.anonymous.AnonymousAuthenticationToken;
+import org.acegisecurity.userdetails.UserDetails;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 import org.kohsuke.stapler.export.Exported;
@@ -234,6 +239,20 @@ public class User extends AbstractModelObject implements AccessControlled, Savea
                 return clazz.cast(p);
         }
         return null;
+    }
+
+    /**
+     * Creates an {@link Authentication} object that represents this user.
+     */
+    public Authentication impersonate() {
+        try {
+            UserDetails u = Jenkins.getInstance().getSecurityRealm().loadUserByUsername(id);
+            return new UsernamePasswordAuthenticationToken(u.getUsername(), u.getPassword(), u.getAuthorities());
+        } catch (AuthenticationException e) {
+            // TODO: use the stored GrantedAuthorities
+            return new UsernamePasswordAuthenticationToken(id, "",
+                new GrantedAuthority[]{SecurityRealm.AUTHENTICATED_AUTHORITY});
+        }
     }
 
     /**
