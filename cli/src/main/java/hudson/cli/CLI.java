@@ -252,6 +252,11 @@ public class CLI {
                 try {
                     // TODO: server verification
                     cli.authenticate(candidateKeys);
+                } catch (IllegalStateException e) {
+                    if (sshAuthRequestedExplicitly) {
+                        System.err.println("The server doesn't support public key authentication");
+                        return -1;
+                    }
                 } catch (UnsupportedOperationException e) {
                     if (sshAuthRequestedExplicitly) {
                         System.err.println("The server doesn't support public key authentication");
@@ -284,16 +289,14 @@ public class CLI {
         Object key = PEMDecoder.decode(pemString.toCharArray(), null);
         if (key instanceof com.trilead.ssh2.signature.RSAPrivateKey) {
             com.trilead.ssh2.signature.RSAPrivateKey x = (com.trilead.ssh2.signature.RSAPrivateKey)key;
-            System.out.println("ssh-rsa " + new String(Base64.encode(RSASHA1Verify.encodeSSHRSAPublicKey(x.getPublicKey()))));
-            // this doesn't work
-            // System.out.println("ssh-rsa " + new String(Base64.encode(x.toJCEKeyPair().getPublic().getEncoded())));
+//            System.out.println("ssh-rsa " + new String(Base64.encode(RSASHA1Verify.encodeSSHRSAPublicKey(x.getPublicKey()))));
 
             return x.toJCEKeyPair();
         }
         if (key instanceof com.trilead.ssh2.signature.DSAPrivateKey) {
             com.trilead.ssh2.signature.DSAPrivateKey x = (com.trilead.ssh2.signature.DSAPrivateKey)key;
             KeyFactory kf = KeyFactory.getInstance("DSA");
-            System.out.println("ssh-dsa " + new String(Base64.encode(DSASHA1Verify.encodeSSHDSAPublicKey(x.getPublicKey()))));
+//            System.out.println("ssh-dsa " + new String(Base64.encode(DSASHA1Verify.encodeSSHDSAPublicKey(x.getPublicKey()))));
 
             return new KeyPair(
                     kf.generatePublic(new DSAPublicKeySpec(x.getY(), x.getP(), x.getQ(), x.getG())),
@@ -352,27 +355,6 @@ public class CLI {
         } finally {
             c.close();
         }
-    }
-
-    private static KeyPair readKeyFile(File f) throws IOException, GeneralSecurityException {
-        DataInputStream dis = new DataInputStream(new FileInputStream(f));
-        byte[] b = new byte[(int) f.length()];
-        dis.readFully(b);
-        dis.close();
-
-        Object key = PEMDecoder.decode(new String(b).toCharArray(), null);
-        if (key instanceof com.trilead.ssh2.signature.RSAPrivateKey) {
-            return ((com.trilead.ssh2.signature.RSAPrivateKey)key).toJCEKeyPair();
-        }
-        if (key instanceof com.trilead.ssh2.signature.DSAPrivateKey) {
-            com.trilead.ssh2.signature.DSAPrivateKey x = (com.trilead.ssh2.signature.DSAPrivateKey)key;
-            KeyFactory kf = KeyFactory.getInstance("DSA");
-            return new KeyPair(
-                    kf.generatePublic(new DSAPublicKeySpec(x.getY(), x.getP(), x.getQ(), x.getG())),
-                    kf.generatePrivate(new DSAPrivateKeySpec(x.getX(), x.getP(), x.getQ(), x.getG())));
-        }
-
-        throw new UnsupportedOperationException("Unrecognizable key format: "+key);
     }
 
     private static void printUsage(String msg) {
