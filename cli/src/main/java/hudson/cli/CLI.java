@@ -263,6 +263,11 @@ public class CLI {
                         return -1;
                     }
                 } catch (GeneralSecurityException e) {
+                    if (sshAuthRequestedExplicitly) {
+                        System.err.println(e.getMessage());
+                        LOGGER.log(FINE,e.getMessage(),e);
+                        return -1;
+                    }
                     System.err.println("Failed to authenticate with your SSH keys. Proceeding with anonymous access");
                     LOGGER.log(FINE,"Failed to authenticate with your SSH keys. Proceeding with anonymous access",e);
                 }
