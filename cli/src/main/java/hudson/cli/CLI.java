@@ -169,6 +169,14 @@ public class CLI {
         return entryPoint.hasCommand(name);
     }
 
+    /**
+     * Accesses the underlying communication channel.
+     * @since 1.419
+     */
+    public Channel getChannel() {
+        return channel;
+    }
+
     public static void main(final String[] _args) throws Exception {
         System.exit(_main(_args));
     }
