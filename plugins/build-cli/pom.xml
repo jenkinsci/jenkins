@@ -8,11 +8,11 @@
 
   <groupId>org.jenkins-ci.plugins</groupId>
   <artifactId>build-cli</artifactId>
-  <version>1.0-SNAPSHOT</version>
+  <version>1.0</version>
   <packaging>hpi</packaging>
   <name>Build CLI - (list-builds)</name>
   <description></description>
-  <!-- get every artifact through maven.glassfish.org, which proxies all the artifacts that we need -->
+  
   <repositories>
     <repository>
       <id>m.g.o-public</id>
