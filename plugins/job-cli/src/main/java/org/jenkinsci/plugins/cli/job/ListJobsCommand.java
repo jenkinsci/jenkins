@@ -64,7 +64,6 @@ public class ListJobsCommand extends CLICommand{
 		String lastFailure = "N/A";
 		String lastDuration = "N/A";
 		
-		
 		String status = "PENDING",upStreamProject = "",downStreamProject = "";
 		String whether = "",lastSuccessBuildNo="",lastFailureBuildNo="";
 		String disabled = "",assignedNode = "";
@@ -126,7 +125,6 @@ public class ListJobsCommand extends CLICommand{
 				continue;
 			}
 			
-			
 			Job jj = Hudson.getInstance().getItemByFullName(jobFullName,Job.class);
 			Run r1 = jj.getLastBuild();//get the status and duration
 			Run r2 = jj.getLastSuccessfulBuild();
@@ -165,8 +163,6 @@ public class ListJobsCommand extends CLICommand{
 				
 				lastSuccess = (r2==null?"N/A":r2.getTimestampString()+"(#"+r2.getNumber()+")");
 				lastFailure = (r3==null?"N/A":r3.getTimestampString()+"(#"+r3.getNumber()+")");
-				
-				
 				
 			}
 			else

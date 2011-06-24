@@ -49,7 +49,7 @@ public class GetJobCommand extends CLICommand{
 		if(config)
 		{
 			try{
-				File jobCofig = new File(new File(System.getProperty("user.home")),".hudson\\jobs\\"+jobName+"\\config.xml");
+				File jobCofig = new File(Hudson.getInstance().getRootDirFor(Hudson.getInstance().getItem(jobName)),"config.xml");
 		    	IOUtils.copy(jobCofig, stdout);
 			}catch (Exception e) {
 				
@@ -80,9 +80,14 @@ public class GetJobCommand extends CLICommand{
 			String disabled = "",assignedNode = "Master";
 			
 			Job jj = Hudson.getInstance().getItemByFullName(jobName,Job.class);
-			//Run r = jj.getFirstBuild();
-			
-			Run r1 = jj.getLastBuild();//get the status and duration
+			Run r1 = null;
+			try
+			{
+			r1 = jj.getLastBuild();//get the status and duration
+			}catch (NullPointerException e) {
+				stdout.println("Error :- Invalid Job Name : "+jobName);
+				return 0;
+			}
 			if(r1 != null)
 			{
 				status = r1.getResult().toString();

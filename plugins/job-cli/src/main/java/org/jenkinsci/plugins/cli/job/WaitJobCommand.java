@@ -27,6 +27,13 @@ public class WaitJobCommand  extends CLICommand{
 		String build = "";
 		boolean flag = true;
 		Job job = Hudson.getInstance().getItemByFullName(jobName,Job.class);
+		try
+		{
+			job.getFirstBuild();
+		}catch (NullPointerException e) {
+			stdout.print("Error :- Invalid Job Name : "+jobName);
+			return 0;
+		}
 		do
 		{
 //			stdout.print(".");
