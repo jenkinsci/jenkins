@@ -12,12 +12,11 @@
   <packaging>hpi</packaging>
   <name>Node CLI - (list-nodes,get-node and create-node)</name>
   <dependencies>
-    <dependency>
-      <groupId>org.jvnet.hudson.plugins</groupId>
-      <artifactId>ssh-slaves</artifactId>
-      <version>0.14</version>
-      
-    </dependency>
+     <dependency>
+    	<groupId>org.jvnet.hudson.plugins</groupId>
+   	 	<artifactId>ssh-slaves</artifactId>
+    	<version>2.0.0</version>
+	</dependency>
   </dependencies>
   <!-- get every artifact through maven.glassfish.org, which proxies all the artifacts that we need -->
   <repositories>
@@ -25,12 +24,16 @@
       <id>m.g.o-public</id>
       <url>http://maven.glassfish.org/content/groups/public/</url>
     </repository>
+    <repository>
+      <id>ssh-slaves-plugin</id>
+      <url>https://github.com/hudson-plugins/ssh-slaves-plugin</url>
+    </repository>
   </repositories>
 
   <pluginRepositories>
     <pluginRepository>
       <id>m.g.o-public</id>
-      <url>http://maven.glassfish.org/content/groups/public/,http://wiki.hudson-ci.org/display/HUDSON/SSH+Slaves+plugin</url>
+      <url>http://maven.glassfish.org/content/groups/public/</url>
     </pluginRepository>
   </pluginRepositories>
 </project>
