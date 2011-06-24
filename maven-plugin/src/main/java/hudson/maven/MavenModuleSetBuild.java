@@ -796,6 +796,11 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
         private Collection<ModuleName> getUnbuildModulesSinceLastSuccessfulBuild() {
             Collection<ModuleName> unbuiltModules = new ArrayList<ModuleName>();
             MavenModuleSetBuild previousSuccessfulBuild = getPreviousSuccessfulBuild();
+            if (previousSuccessfulBuild == null) {
+                // no successful build, yet. Just take the 1st build
+                previousSuccessfulBuild = getParent().getFirstBuild();
+            }
+            
             if (previousSuccessfulBuild != null) {
                 MavenModuleSetBuild previousBuild = previousSuccessfulBuild;
                 do {

@@ -30,6 +30,7 @@ import hudson.maven.reporters.SurefireArchiver;
 import hudson.model.AbstractBuild;
 import hudson.model.BuildListener;
 import hudson.model.Computer;
+import hudson.model.Descriptor;
 import hudson.model.Environment;
 import hudson.model.Executor;
 import jenkins.model.Jenkins;
@@ -44,7 +45,9 @@ import hudson.slaves.WorkspaceList;
 import hudson.slaves.WorkspaceList.Lease;
 import hudson.tasks.BuildWrapper;
 import hudson.tasks.Maven.MavenInstallation;
+import hudson.tasks.Publisher;
 import hudson.util.ArgumentListBuilder;
+import hudson.util.DescribableList;
 import hudson.util.IOUtils;
 import hudson.util.ReflectionUtils;
 
@@ -544,23 +547,32 @@ public class MavenBuild extends AbstractMavenBuild<MavenModule,MavenBuild> {
                     public void cleanUp(BuildListener listener) {
                     }
                 });
-                
-                
+            }
+            
+            rememberModulesToBuildAgainNextTime();
+        }
+
+        private void rememberModulesToBuildAgainNextTime() {
+            MavenModuleSetBuild moduleSetBuild = getModuleSetBuild();
+            
+            if(hasntStartedYet()) {
                 // record modules which have not been build though they should have - i.e. because they
                 // have SCM changes.
                 // see JENKINS-5764
-                if (getParentBuild().getParent().isIncrementalBuild() && getParentBuild().getResult() == Result.FAILURE) {
-                    UnbuiltModuleAction action = getParentBuild().getAction(UnbuiltModuleAction.class);
+                if (moduleSetBuild.getParent().isIncrementalBuild()
+                    && moduleSetBuild.getResult() != Result.SUCCESS
+                    && moduleSetBuild.getResult() != Result.UNSTABLE) {
+                    UnbuiltModuleAction action = moduleSetBuild.getAction(UnbuiltModuleAction.class);
                     if (action == null) {
                         action = new UnbuiltModuleAction();
-                        getParentBuild().getActions().add(action);
+                        moduleSetBuild.getActions().add(action);
                     }
                     action.addUnbuiltModule(getParent().getModuleName());
                 }
             } else {
                 // mark that this module has been built now, if it has previously been remembered as unbuilt
                 // JENKINS-5764
-                MavenModuleSetBuild previousParentBuild = getParentBuild().getPreviousBuild();
+                MavenModuleSetBuild previousParentBuild = moduleSetBuild.getPreviousBuild();
                 if (previousParentBuild != null) {
                     UnbuiltModuleAction unbuiltModuleAction = previousParentBuild.getAction(UnbuiltModuleAction.class);
                     if (unbuiltModuleAction != null) {
@@ -570,6 +582,32 @@ public class MavenBuild extends AbstractMavenBuild<MavenModule,MavenBuild> {
                         } catch (IOException e) {
                             e.printStackTrace();
                         }
+                    }
+                }
+                
+                if (moduleSetBuild.getParent().isIncrementalBuild() &&
+                        (moduleSetBuild.getResult() != Result.SUCCESS)) {
+                
+                    // JENKINS-5121: maybe module needs to be deployed on next build over the deployment threshold
+                    MavenModuleSet mavenModuleSet = moduleSetBuild.getParent();
+                    boolean isDeploying = false;
+                    Result deploymentThreshold = Result.SUCCESS;
+                    DescribableList<Publisher,Descriptor<Publisher>> publishers = mavenModuleSet.getPublishersList();
+                    for (Publisher publisher : publishers) {
+                        if (publisher instanceof RedeployPublisher) {
+                            isDeploying = true;
+                            deploymentThreshold = ((RedeployPublisher)publisher).getTreshold();
+                            break;
+                        }
+                    }
+                    
+                    if (isDeploying && moduleSetBuild.getResult().isWorseThan(deploymentThreshold)) {
+                        UnbuiltModuleAction action = moduleSetBuild.getAction(UnbuiltModuleAction.class);
+                        if (action == null) {
+                            action = new UnbuiltModuleAction();
+                            moduleSetBuild.getActions().add(action);
+                        }
+                        action.addUnbuiltModule(getParent().getModuleName());
                     }
                 }
             }
