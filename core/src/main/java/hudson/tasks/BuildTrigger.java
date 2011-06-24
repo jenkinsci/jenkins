@@ -46,6 +46,7 @@ import hudson.model.Run;
 import hudson.model.TaskListener;
 import hudson.model.listeners.ItemListener;
 import hudson.security.AccessControlled;
+import hudson.tasks.BuildTrigger.DescriptorImpl.ItemListenerImpl;
 import hudson.util.FormValidation;
 import net.sf.json.JSONObject;
 import org.apache.commons.lang.StringUtils;
@@ -324,7 +325,8 @@ public class BuildTrigger extends Recorder implements DependecyDeclarer {
                 if (StringUtils.isNotBlank(projectName)) {
                     Item item = Hudson.getInstance().getItem(projectName,project,Item.class);
                     if(item==null)
-                        return FormValidation.error(Messages.BuildTrigger_NoSuchProject(projectName,AbstractProject.findNearest(projectName).getName()));
+                        return FormValidation.error(Messages.BuildTrigger_NoSuchProject(projectName,
+                                AbstractProject.findNearest(projectName,project.getParent()).getRelativeNameFrom(project)));
                     if(!(item instanceof AbstractProject))
                         return FormValidation.error(Messages.BuildTrigger_NotBuildable(projectName));
                     hasProjects = true;
