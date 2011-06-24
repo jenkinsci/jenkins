@@ -100,11 +100,11 @@ public class GroovyCommand extends CLICommand implements Serializable {
     private String loadScript() throws CmdLineException, IOException, InterruptedException {
         if(script==null)
             throw new CmdLineException(null, "No script is specified");
+        if (script.equals("="))
+            return IOUtils.toString(stdin);
+
         return channel.call(new Callable<String,IOException>() {
             public String call() throws IOException {
-                if(script.equals("="))
-                    return IOUtils.toString(System.in);
-
                 File f = new File(script);
                 if(f.exists())
                     return FileUtils.readFileToString(f);
