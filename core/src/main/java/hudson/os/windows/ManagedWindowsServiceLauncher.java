@@ -24,6 +24,7 @@
 package hudson.os.windows;
 
 import hudson.Extension;
+import hudson.Util;
 import hudson.lifecycle.WindowsSlaveInstaller;
 import hudson.model.Computer;
 import hudson.model.Descriptor;
@@ -44,6 +45,7 @@ import hudson.util.jna.DotNet;
 import jcifs.smb.NtlmPasswordAuthentication;
 import jcifs.smb.SmbException;
 import jcifs.smb.SmbFile;
+import org.apache.commons.lang.StringUtils;
 import org.dom4j.Document;
 import org.dom4j.DocumentException;
 import org.dom4j.io.SAXReader;
@@ -87,6 +89,10 @@ public class ManagedWindowsServiceLauncher extends ComputerLauncher {
     
     public final Secret password;
 
+    /**
+     * Host name to connect to. For compatibility reasons, null if the same with the slave name.
+     * @since 1.419
+     */
     public final String host;
     
     public ManagedWindowsServiceLauncher(String userName, String password) {
@@ -97,7 +103,7 @@ public class ManagedWindowsServiceLauncher extends ComputerLauncher {
     public ManagedWindowsServiceLauncher(String userName, String password, String host) {
         this.userName = userName;
         this.password = Secret.fromString(password);
-        this.host = host;
+        this.host = Util.fixEmptyAndTrim(host);
     }
 
     private JIDefaultAuthInfoImpl createAuth() {
@@ -294,7 +300,7 @@ public class ManagedWindowsServiceLauncher extends ComputerLauncher {
      */
     protected String determineHost(Computer c) throws IOException, InterruptedException {
         // If host not provided, default to the slave name
-        if (host==null || host.equals("")) {
+        if (StringUtils.isBlank(host)) {
             return c.getName();
         } else {
             return host;

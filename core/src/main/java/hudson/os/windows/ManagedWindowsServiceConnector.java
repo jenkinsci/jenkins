@@ -32,11 +32,11 @@ public class ManagedWindowsServiceConnector extends ComputerConnector {
     }
 
     @Override
-    public ManagedWindowsServiceLauncher launch(final String host, TaskListener listener) throws IOException, InterruptedException {
+    public ManagedWindowsServiceLauncher launch(final String hostName, TaskListener listener) throws IOException, InterruptedException {
         return new ManagedWindowsServiceLauncher(userName,Secret.toString(password)) {
             @Override
             protected String determineHost(Computer c) throws IOException, InterruptedException {
-                return host;
+                return hostName;
             }
 
             @Override
