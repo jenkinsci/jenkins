@@ -2045,6 +2045,7 @@ public class Hudson extends Node implements ModifiableItemGroup<TopLevelItem>, S
      * Note that the look up is case-insensitive.
      */
     public TopLevelItem getItem(String name) {
+        if (name==null)     return null;
     	TopLevelItem item = items.get(name);
         if (item==null || !item.hasPermission(Item.READ))
             return null;
