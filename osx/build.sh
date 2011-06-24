@@ -14,12 +14,12 @@ PACKAGEMAKER="$DEV_DIR/Applications/Utilities/PackageMaker.app/Contents/MacOS/Pa
 # Get the Jenkins version number
 cp "$1" $(dirname $0)/jenkins.war.tmp
 if [ -z "$2" ]; then
-  version=$(unzip -p $(dirname $0)/jenkins.war.tmp META-INF/MANIFEST.MF | grep Implementation-Version | cut -d ' ' -f2 | tr - . | tr -d '\r')
+  version=$(unzip -p $(dirname $0)/jenkins.war.tmp META-INF/MANIFEST.MF | grep Implementation-Version | cut -d ' ' -f2 | tr - . | tr -d '\r' | sed -e "s/-SNAPSHOT//")
 else
   version="$2"
 fi
 echo Version is $version
-PKG_NAME="JenkinsInstaller-${version}.mpkg"
+PKG_NAME="jenkins-${version}.pkg"
 PKG_TITLE="Jenkins ${version}"
 rm $(dirname $0)/jenkins.war.tmp
 
