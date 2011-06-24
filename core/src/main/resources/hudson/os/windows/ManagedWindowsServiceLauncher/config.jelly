@@ -30,4 +30,7 @@ THE SOFTWARE.
   <f:entry title="${%Password}" field="password">
     <f:password />
   </f:entry>
+  <f:entry title="${%Host}" field="host">
+    <f:textbox/>
+  </f:entry>
 </j:jelly>

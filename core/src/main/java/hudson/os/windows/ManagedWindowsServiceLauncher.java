@@ -87,10 +87,17 @@ public class ManagedWindowsServiceLauncher extends ComputerLauncher {
     
     public final Secret password;
 
-    @DataBoundConstructor
+    public final String host;
+    
     public ManagedWindowsServiceLauncher(String userName, String password) {
+        this (userName, password, null);
+    }
+    
+    @DataBoundConstructor
+    public ManagedWindowsServiceLauncher(String userName, String password, String host) {
         this.userName = userName;
         this.password = Secret.fromString(password);
+        this.host = host;
     }
 
     private JIDefaultAuthInfoImpl createAuth() {
@@ -286,7 +293,12 @@ public class ManagedWindowsServiceLauncher extends ComputerLauncher {
      * Determines the host name (or the IP address) to connect to.
      */
     protected String determineHost(Computer c) throws IOException, InterruptedException {
-        return c.getName();
+        // If host not provided, default to the slave name
+        if (host==null || host.equals("")) {
+            return c.getName();
+        } else {
+            return host;
+        }
     }
 
     private void copySlaveJar(PrintStream logger, SmbFile remoteRoot) throws IOException {
