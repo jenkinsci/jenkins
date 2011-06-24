@@ -58,6 +58,7 @@ import java.security.spec.DSAPrivateKeySpec;
 import java.security.spec.DSAPublicKeySpec;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 import java.util.concurrent.ExecutorService;
@@ -150,7 +151,7 @@ public class CLI {
     }
 
     public int execute(List<String> args, InputStream stdin, OutputStream stdout, OutputStream stderr) {
-        return entryPoint.main(args,Locale.getDefault(),
+        return entryPoint.main(args, Locale.getDefault(),
                 new RemoteInputStream(stdin),
                 new RemoteOutputStream(stdout),
                 new RemoteOutputStream(stderr));
@@ -282,7 +283,10 @@ public class CLI {
         }
     }
 
-    private static KeyPair loadKey(File f) throws IOException, GeneralSecurityException {
+    /**
+     * Loads RSA/DSA private key in a PEM format into {@link KeyPair}.
+     */
+    public static KeyPair loadKey(File f) throws IOException, GeneralSecurityException {
         DataInputStream dis = new DataInputStream(new FileInputStream(f));
         byte[] bytes = new byte[(int) f.length()];
         dis.readFully(bytes);
@@ -290,6 +294,9 @@ public class CLI {
         return loadKey(new String(bytes));
     }
 
+    /**
+     * Loads RSA/DSA private key in a PEM format into {@link KeyPair}.
+     */
     public static KeyPair loadKey(String pemString) throws IOException, GeneralSecurityException {
         Object key = PEMDecoder.decode(pemString.toCharArray(), null);
         if (key instanceof com.trilead.ssh2.signature.RSAPrivateKey) {
@@ -360,6 +367,10 @@ public class CLI {
         } finally {
             c.close();
         }
+    }
+
+    public PublicKey authenticate(KeyPair key) throws IOException, GeneralSecurityException {
+        return authenticate(Collections.singleton(key));
     }
 
     private static void printUsage(String msg) {
