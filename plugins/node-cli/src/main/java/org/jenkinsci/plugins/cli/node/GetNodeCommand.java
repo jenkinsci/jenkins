@@ -81,7 +81,7 @@ public class GetNodeCommand extends CLICommand{
 		if(config)
 		{
 			try{
-				File xml = new File(new File(System.getProperty("user.home")),".hudson\\config.xml");
+				File xml = new File(Hudson.getInstance().getRootDir(),"config.xml");
 				DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
 		    	DocumentBuilder db = dbf.newDocumentBuilder();
 				Document doc = db.parse(xml);

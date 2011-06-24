@@ -166,6 +166,7 @@ public class CreateNodeCommand extends CLICommand{
     	    	    			  String password = "";
     	    	    			  String privateKey = "";
     	    	    			  String jvmOptions = "";
+    	    	    			  String javaPath = "";
     	    	    			  NodeList fstNm = fstNmElmnt.getChildNodes();
     	    	    			  for(int l = 0; l < fstNm.getLength(); l++)
     	    	    			  {
@@ -194,9 +195,13 @@ public class CreateNodeCommand extends CLICommand{
     	    	    				  {
     	    	    					  jvmOptions = ((Node) fstNm.item(l)).getTextContent();
     	    	    				  }
-    	    	    				  
+    	    	    				  else if(((Node) fstNm.item(l)).getNodeName().equalsIgnoreCase("javaPath"))
+    	    	    				  {
+    	    	    					  javaPath = ((Node) fstNm.item(l)).getTextContent();
+    	    	    				  }
     	    	    			  }
-    	    	    			  computerLauncher = new SSHLauncher(host,port,userName,password,privateKey,jvmOptions);
+//    	    	    			  computerLauncher = new SSHLauncher(host,port,userName,password,privateKey,jvmOptions);
+    	    	    			  computerLauncher = new SSHLauncher(host,port,userName,password,privateKey,jvmOptions,javaPath);
     	    	    		  }
     	    	    		  else if(outList[4].endsWith("ManagedWindowsServiceLauncher"))
     	    	    		  {
