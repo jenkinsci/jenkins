@@ -123,6 +123,22 @@ public interface Item extends PersistenceRoot, SearchableModelObject, AccessCont
     String getFullDisplayName();
 
     /**
+     * Gets the relative name to this item from the specified group.
+     *
+     * @since 1.419
+     * @return
+     *      String like "../foo/bar"
+     */
+    String getRelativeNameFrom(ItemGroup g);
+
+    /**
+     * Short for {@code getRelativeNameFrom(item.getParent())}
+     *
+     * @since 1.419
+     */
+    String getRelativeNameFrom(Item item);
+
+    /**
      * Returns the URL of this item relative to the context root of the application.
      *
      * @see AbstractItem#getUrl() for how to implement this.
