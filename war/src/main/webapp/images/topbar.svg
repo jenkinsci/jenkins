@@ -9,7 +9,7 @@
    xmlns:xlink="http://www.w3.org/1999/xlink"
    xmlns:sodipodi="http://inkscape.sourceforge.net/DTD/sodipodi-0.dtd"
    xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
-   width="110"
+   width="8"
    height="35"
    id="svg2"
    sodipodi:version="0.32"
@@ -79,7 +79,7 @@
     <rect
        style="opacity:1;fill:#000000;fill-opacity:1;fill-rule:nonzero;stroke:none;stroke-width:28.51399994;stroke-miterlimit:10;stroke-dasharray:none;stroke-opacity:1"
        id="rect1307"
-       width="110"
+       width="8"
        height="31"
        x="0"
        y="-2.2735736e-015"
@@ -88,22 +88,11 @@
     <rect
        style="opacity:1;fill:#ff0000;fill-opacity:1;fill-rule:nonzero;stroke:none;stroke-width:28.51399994;stroke-miterlimit:10;stroke-dasharray:none;stroke-opacity:1"
        id="rect2182"
-       width="110"
+       width="8"
        height="4"
        x="0"
        y="31"
        rx="0"
        ry="1.5352814" />
-    <text
-       xml:space="preserve"
-       style="font-size:24px;font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;text-align:start;line-height:100%;writing-mode:lr-tb;text-anchor:start;fill:#ffffff;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Georgia"
-       x="7.1015625"
-       y="25"
-       id="text2184"
-       sodipodi:linespacing="100%"><tspan
-         sodipodi:role="line"
-         id="tspan2186"
-         x="7.1015625"
-         y="25">Jenkins</tspan></text>
   </g>
 </svg>
