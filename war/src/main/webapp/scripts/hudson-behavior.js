@@ -453,13 +453,52 @@ function renderOnDemand(e,callback,noBehaviour) {
         }
         Element.remove(e);
 
-        t.responseText.evalScripts();
-        Behaviour.applySubtree(elements,true);
-
-        if (callback)   callback(t);
+        evalInnerHtmlScripts(t.responseText,function() {
+            Behaviour.applySubtree(elements,true);
+            if (callback)   callback(t);
+        });
     });
 }
 
+/**
+ * Finds all the script tags 
+ */
+function evalInnerHtmlScripts(text,callback) {
+    var q = [];
+    var matchAll = new RegExp('<script([^>]*)>([\\S\\s]*?)<\/script>', 'img');
+    var matchOne = new RegExp('<script([^>]*)>([\\S\\s]*?)<\/script>', 'im');
+    var srcAttr  = new RegExp('src=[\'\"]([^\'\"]+)[\'\"]','i');
+    (text.match(matchAll)||[]).map(function(s) {
+        var m = s.match(srcAttr);
+        if (m) {
+            q.push(function(cont) {
+                loadScript(m[1],cont);
+            });
+        } else {
+            q.push(function(cont) {
+                eval(s.match(matchOne)[2]);
+                cont();
+            });
+        }
+    });
+    q.push(callback);
+    sequencer(q);
+}
+
+/**
+ * Take an array of (typically async) functions and run them in a sequence.
+ * Each of the function in the array takes one 'continuation' parameter, and upon the completion
+ * of the function it needs to invoke "continuation()" to signal the execution of the next function.
+ */
+function sequencer(fs) {
+    var nullFunction = function() {}
+    function next() {
+        if (fs.length>0) {
+            (fs.shift()||nullFunction)(next);
+        }
+    }
+    return next();
+}
 
 var hudsonRules = {
     "BODY" : function() {
