@@ -76,7 +76,7 @@ complete {
         rewriteLicense([],lgpl)
     }
 
-    match(["org.jvnet.localizer:localizer"]) {
+    match(["org.jvnet.localizer:localizer","*:trilead-putty-extension"]) {
         // see http://java.net/projects/localizer
         // see http://java.net/projects/trilead-putty-extension/
         rewriteLicense([],mitLicense);

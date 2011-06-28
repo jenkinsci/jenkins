@@ -357,7 +357,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.kohsuke</groupId>
       <artifactId>trilead-putty-extension</artifactId>
-      <version>1.1</version>
+      <version>1.0</version>
     </dependency>
     <dependency>
       <groupId>org.jvnet.hudson</groupId>
@@ -419,9 +419,9 @@ THE SOFTWARE.
       <version>1.2</version>
     </dependency>
     <dependency>
-      <groupId>org.jenkins-ci</groupId>
+      <groupId>org.jvnet.hudson</groupId>
       <artifactId>task-reactor</artifactId>
-      <version>1.3</version>
+      <version>1.2</version>
     </dependency>
     <dependency>
       <groupId>org.jvnet.localizer</groupId>
@@ -667,7 +667,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.jenkins-ci</groupId>
       <artifactId>memory-monitor</artifactId>
-      <version>1.6</version>
+      <version>1.5</version>
     </dependency>
     <dependency><!-- StAX implementation. See HUDSON-2547. -->
       <groupId>org.codehaus.woodstox</groupId>
@@ -730,7 +730,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.kohsuke.metainf-services</groupId>
       <artifactId>metainf-services</artifactId>
-      <version>1.2</version>
+      <version>1.1</version>
       <optional>true</optional>
     </dependency>
     <dependency>

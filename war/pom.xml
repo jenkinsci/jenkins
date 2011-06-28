@@ -111,7 +111,7 @@ THE SOFTWARE.
                 <mkdir dir="target/generated-resources" />
 
                 <!-- put executable war header -->
-                <resolveArtifact groupId="org.jenkins-ci" artifactId="executable-war" version="1.23" type="jar" property="executable-war.jar" />
+                <resolveArtifact groupId="org.jenkins-ci" artifactId="executable-war" version="1.22" type="jar" property="executable-war.jar" />
                 <unjar src="${executable-war.jar}" dest="target/generated-resources">
                   <patternset>
                     <include name="**/*.class" />
@@ -285,7 +285,7 @@ THE SOFTWARE.
       -->
       <groupId>org.jenkins-ci</groupId>
       <artifactId>winstone</artifactId>
-      <version>0.9.10-jenkins-26</version>
+      <version>0.9.10-jenkins-25</version>
       <scope>test</scope>
     </dependency>
     <dependency>
