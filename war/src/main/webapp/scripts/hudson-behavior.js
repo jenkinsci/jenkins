@@ -723,6 +723,15 @@ var hudsonRules = {
         e = null; // avoid memory leak
     },
 
+    "TEXTAREA.codemirror" : function(e) {
+        var h = e.clientHeight;
+        var config = e.getAttribute("codemirror-config") || "";
+        config = eval('({'+config+'})');
+        var w = CodeMirror.fromTextArea(e,config).getWrapperElement();
+        w.setAttribute("style","border:1px solid black;");
+        w.style.height = h+"px";
+    },
+
 // deferred client-side clickable map.
 // this is useful where the generation of <map> element is time consuming
     "IMG[lazymap]" : function(e) {
@@ -1232,8 +1241,10 @@ function replaceDescription() {
         {
           onComplete : function(x) {
             d.innerHTML = x.responseText;
-            Behaviour.applySubtree(d);
-            d.getElementsByTagName("TEXTAREA")[0].focus();
+            evalInnerHtmlScripts(x.responseText,function() {
+                Behaviour.applySubtree(d);
+                d.getElementsByTagName("TEXTAREA")[0].focus();
+            });
           }
         }
     );

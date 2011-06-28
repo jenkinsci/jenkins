@@ -39,7 +39,8 @@ THE SOFTWARE.
         ${it.rootDir}
       </f:entry>
       <f:entry title="${%System Message}" help="/help/system-config/systemMessage.html">
-        <f:textarea name="system_message" value="${it.systemMessage}" />
+        <f:textarea name="system_message" value="${it.systemMessage}"
+                    codemirror-mode="htmlmixed" codemirror-config="mode:'text/html'" />
       </f:entry>
       <f:entry title="${%# of executors}" field="numExecutors">
         <f:textbox />

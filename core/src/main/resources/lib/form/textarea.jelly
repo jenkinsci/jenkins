@@ -51,15 +51,31 @@ THE SOFTWARE.
       If @field is specified, this will be inferred automatically,
       which is the recommended approach.
     </st:attribute>
+    <st:attribute name="codemirror-mode">
+      Turns this text area into CodeMirror-assisted code editing text area.
+      This attribute specifies the mode of CodeMirror, such as "text/x-java".
+      See http://codemirror.net/ for more details.
+    </st:attribute>
+    <st:attribute name="codemirror-config">
+      Specifies additional key/value pairs in the JSON format (except the start and end bracket)
+      to be passed as CodeMirror option object.
+    </st:attribute>
   </st:documentation>
 
   <f:prepareDatabinding />
   <j:set var="value" value="${attrs.value ?: instance[attrs.field] ?: attrs.default}" />
+  <j:if test="${attrs['codemirror-mode']!=null}">
+    <st:adjunct includes="
+        org.kohsuke.stapler.codemirror.mode.${attrs['codemirror-mode']}.${attrs['codemirror-mode']},
+        org.kohsuke.stapler.codemirror.theme.default"/>
+  </j:if>
   <textarea id="${attrs.id}" style="${attrs.style}"
             name ="${attrs.name ?: '_.'+attrs.field}"
-            class="setting-input ${attrs.checkUrl!=null?'validated':''} ${attrs.class}"
+            class="setting-input ${attrs.checkUrl!=null?'validated':''} ${attrs['codemirror-mode']!=null?'codemirror':''} ${attrs.class}"
             checkUrl="${attrs.checkUrl}"
-            rows="${h.determineRows(value)}">
+            rows="${h.determineRows(value)}"
+            codemirror-mode="${attrs['codemirror-mode']}"
+            codemirror-config="${attrs['codemirror-config']}">
     <st:out value="${value}" />
   </textarea>
   <!-- resize handle -->
