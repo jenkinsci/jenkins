@@ -24,7 +24,7 @@
  */
 //
 //
-// JavaScript for Hudson
+// JavaScript for Jenkins
 //     See http://www.ibm.com/developerworks/web/library/wa-memleak/?ca=dgr-lnxw97JavascriptLeaks
 //     for memory leak patterns and how to prevent them.
 //
