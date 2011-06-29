@@ -41,6 +41,7 @@ import hudson.util.AlternativeUiTextProvider;
 import hudson.util.AlternativeUiTextProvider.Message;
 import hudson.util.AtomicFileWriter;
 import hudson.util.IOException2;
+import hudson.util.IOUtils;
 import jenkins.model.Jenkins;
 import org.apache.tools.ant.taskdefs.Copy;
 import org.apache.tools.ant.types.FileSet;
@@ -460,8 +461,8 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
         if (req.getMethod().equals("GET")) {
             // read
             checkPermission(EXTENDED_READ);
-            rsp.setContentType("application/xml;charset=UTF-8");
-            getConfigFile().writeRawTo(rsp.getWriter());
+            rsp.setContentType("application/xml");
+            IOUtils.copy(getConfigFile().getFile(),rsp.getOutputStream());
             return;
         }
         if (req.getMethod().equals("POST")) {
