@@ -30,7 +30,7 @@ THE SOFTWARE.
     <td id="prepStatus${size(statuses)}">
       <ul>
         <j:forEach var="s" items="${statuses}">
-          <li>${s}</li>
+          <li><j:out value="${s}"/></li>
         </j:forEach>
       </ul>
     </td>
