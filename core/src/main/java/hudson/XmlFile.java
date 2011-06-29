@@ -31,8 +31,10 @@ import com.thoughtworks.xstream.io.xml.XppReader;
 import hudson.model.Descriptor;
 import hudson.util.AtomicFileWriter;
 import hudson.util.IOException2;
+import hudson.util.IOUtils;
 import hudson.util.XStream2;
 import org.xml.sax.Attributes;
+import org.xml.sax.InputSource;
 import org.xml.sax.Locator;
 import org.xml.sax.SAXException;
 import org.xml.sax.ext.Locator2;
@@ -234,8 +236,11 @@ public final class XmlFile {
                 this.encoding = encoding;
             }
         }
+        InputSource input = new InputSource(file.toURI().toASCIIString());
+        input.setByteStream(new FileInputStream(file));
+
         try {
-            JAXP.newSAXParser().parse(file,new DefaultHandler() {
+            JAXP.newSAXParser().parse(input,new DefaultHandler() {
                 private Locator loc;
                 @Override
                 public void setDocumentLocator(Locator locator) {
@@ -275,6 +280,9 @@ public final class XmlFile {
             throw new IOException2("Failed to detect encoding of "+file,e);
         } catch (ParserConfigurationException e) {
             throw new AssertionError(e);    // impossible
+        } finally {
+            // some JAXP implementations appear to leak the file handle if we just call parse(File,DefaultHandler)
+            input.getByteStream().close();
         }
     }
 
