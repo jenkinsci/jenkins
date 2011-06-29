@@ -27,7 +27,7 @@ import hudson.Extension;
 import jenkins.model.Jenkins;
 
 /**
- * Shows the version.
+ * Retrieves the current version.
  *
  * @author Kohsuke Kawaguchi
  */
