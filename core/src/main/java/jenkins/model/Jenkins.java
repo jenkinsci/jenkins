@@ -1733,15 +1733,13 @@ public class Jenkins extends AbstractCIBase implements ItemGroup<TopLevelItem>, 
         }
         return configuredWorkspaceRoot;
     }
-    
-    
 
     public FilePath getWorkspaceFor(TopLevelItem item) {
         if(getConfiguredWorkspaceRoot().equals("")) {
             return new FilePath(new File(item.getRootDir(), WORKSPACE_DIRNAME));
         } else {
-        return new FilePath(new File(getConfiguredWorkspaceRoot() + "/" + item.getName(), WORKSPACE_DIRNAME));
-    }
+            return new FilePath(new File(getConfiguredWorkspaceRoot() + "/" + item.getName(), WORKSPACE_DIRNAME));
+        }
     }
 
     public FilePath getRootPath() {

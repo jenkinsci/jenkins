@@ -639,7 +639,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
      * @see RunMap
      */
     protected File getBuildDir() {
-		// check JNDI for the home directory first
+        // check JNDI for the home directory first
         try {
             InitialContext iniCtxt = new InitialContext();
             Context env = (Context) iniCtxt.lookup("java:comp/env");
@@ -658,7 +658,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
         String sysProp = System.getProperty("JENKINS_BUILDS");
         if(sysProp!=null)
             return new File(sysProp.trim() + "/" + getSearchName());
-        
+
         // look at the env var next
         String env = EnvVars.masterEnvVars.get("JENKINS_BUILDS");
         if(env!=null)
