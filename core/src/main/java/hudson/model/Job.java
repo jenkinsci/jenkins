@@ -27,6 +27,7 @@ import static javax.servlet.http.HttpServletResponse.SC_BAD_REQUEST;
 import static javax.servlet.http.HttpServletResponse.SC_NO_CONTENT;
 
 import com.infradna.tool.bridge_method_injector.WithBridgeMethods;
+import hudson.EnvVars;
 import hudson.ExtensionPoint;
 import hudson.PermalinkList;
 import hudson.Extension;
@@ -73,6 +74,9 @@ import java.util.Map;
 import java.util.SortedMap;
 import java.util.LinkedList;
 
+import javax.naming.Context;
+import javax.naming.InitialContext;
+import javax.naming.NamingException;
 import javax.servlet.ServletException;
 
 import jenkins.model.Jenkins;
@@ -635,6 +639,31 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
      * @see RunMap
      */
     protected File getBuildDir() {
+        // check JNDI for the home directory first
+        try {
+            InitialContext iniCtxt = new InitialContext();
+            Context env = (Context) iniCtxt.lookup("java:comp/env");
+            String value = (String) env.lookup("JENKINS_BUILDS");
+            if(value!=null && value.trim().length()>0)
+                return new File(value.trim());
+            // look at one more place. See issue #1314 
+            value = (String) iniCtxt.lookup("JENKINS_BUILDS");
+            if(value!=null && value.trim().length()>0)
+                return new File(value.trim() + "/" + getSearchName());
+        } catch (NamingException e) {
+            // ignore
+        }
+
+        // finally check the system property
+        String sysProp = System.getProperty("JENKINS_BUILDS");
+        if(sysProp!=null)
+            return new File(sysProp.trim() + "/" + getSearchName());
+
+        // look at the env var next
+        String env = EnvVars.masterEnvVars.get("JENKINS_BUILDS");
+        if(env!=null)
+            return new File(env.trim() + "/" + getSearchName()).getAbsoluteFile();
+
         return new File(getRootDir(), "builds");
     }
 
