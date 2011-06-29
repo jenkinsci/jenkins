@@ -35,7 +35,7 @@ import jenkins.model.Jenkins;
 public class VersionCommand extends CLICommand {
     @Override
     public String getShortDescription() {
-        return "Shows the Hudson version";
+        return "Outputs the current version";
     }
 
     protected int run() {
