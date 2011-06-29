@@ -29,7 +29,7 @@ THE SOFTWARE.
     <j:set var="upJob" value="${app.updateCenter.hudsonJob}" />
     <j:choose>
       <j:when test="${upJob.status.success}">
-        ${%UpgradeComplete(ucData.core.version)}
+        ${%UpgradeComplete(ucData.core.version,rootURL)}
       </j:when>
       <j:when test="${upJob!=null}">
         ${%UpgradeProgress(ucData.core.version,rootURL+'/updateCenter/')}
