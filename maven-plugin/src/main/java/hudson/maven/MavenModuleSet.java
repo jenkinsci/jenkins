@@ -237,7 +237,7 @@ public final class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,Ma
     }
 
     public MavenModuleSet(ItemGroup parent, String name) {
-        super(Jenkins.getInstance(),name);
+        super(parent,name);
     }
 
     public String getUrlChildPrefix() {
