@@ -30,6 +30,7 @@ import com.thoughtworks.xstream.XStream;
 import hudson.BulkChange;
 import hudson.DNSMultiCast;
 import hudson.DescriptorExtensionList;
+import hudson.EnvVars;
 import hudson.Extension;
 import hudson.ExtensionList;
 import hudson.ExtensionPoint;
@@ -175,6 +176,9 @@ import org.kohsuke.stapler.jelly.JellyRequestDispatcher;
 import org.xml.sax.InputSource;
 
 import javax.crypto.SecretKey;
+import javax.naming.Context;
+import javax.naming.InitialContext;
+import javax.naming.NamingException;
 import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
@@ -305,6 +309,11 @@ public class Jenkins extends AbstractCIBase implements ItemGroup<TopLevelItem>, 
      * @see #setSecurityRealm(SecurityRealm)
      */
     private volatile SecurityRealm securityRealm = SecurityRealm.NO_AUTHENTICATION;
+
+    /**
+     * Root directory for the workspaces.
+     */
+    private String configuredWorkspaceRoot = null;
 
     /**
      * Message displayed in the top page.
@@ -1685,8 +1694,54 @@ public class Jenkins extends AbstractCIBase implements ItemGroup<TopLevelItem>, 
         return root;
     }
 
+    private String getConfiguredWorkspaceRoot() {
+        if (configuredWorkspaceRoot == null) {
+            try {
+                InitialContext iniCtxt = new InitialContext();
+                Context env = (Context) iniCtxt.lookup("java:comp/env");
+                String value = (String) env.lookup("JENKINS_WORKSPACES");
+                if(value!=null && value.trim().length()>0) {
+                    configuredWorkspaceRoot = value.trim();
+                    return configuredWorkspaceRoot;
+                }
+                // look at one more place. See issue #1314 
+                value = (String) iniCtxt.lookup("JENKINS_WORKSPACES");
+                if(value!=null && value.trim().length()>0) {
+                    configuredWorkspaceRoot = value.trim();
+                    return configuredWorkspaceRoot;
+                }
+            } catch (NamingException e) {
+                // ignore
+            }
+
+            // finally check the system property
+            String sysProp = System.getProperty("JENKINS_WORKSPACES");
+            if(sysProp!=null) {
+                configuredWorkspaceRoot = sysProp.trim();
+                return configuredWorkspaceRoot;
+            }
+            
+            // look at the env var next
+            String env = EnvVars.masterEnvVars.get("JENKINS_WORKSPACES");
+            if(env!=null) {
+                configuredWorkspaceRoot = env.trim();
+                return configuredWorkspaceRoot;
+            }
+            
+            //not set
+            configuredWorkspaceRoot = "";
+        }
+        return configuredWorkspaceRoot;
+    }
+    
+    
+
     public FilePath getWorkspaceFor(TopLevelItem item) {
-        return new FilePath(new File(item.getRootDir(), WORKSPACE_DIRNAME));
+        if(getConfiguredWorkspaceRoot().equals("")) {
+            return new FilePath(new File(item.getRootDir(), WORKSPACE_DIRNAME));
+        } else {
+        return new FilePath(new File(getConfiguredWorkspaceRoot() + "/" + item.getName(), WORKSPACE_DIRNAME));
+    }
     }
 
     public FilePath getRootPath() {
