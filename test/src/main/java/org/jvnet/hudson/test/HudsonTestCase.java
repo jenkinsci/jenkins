@@ -186,7 +186,12 @@ import com.gargoylesoftware.htmlunit.xml.XmlPage;
  * @author Kohsuke Kawaguchi
  */
 public abstract class HudsonTestCase extends TestCase implements RootAction {
+    /**
+     * Points to the same object as {@link #jenkins} does.
+     */
     public Hudson hudson;
+
+    public Jenkins jenkins;
 
     protected final TestEnvironment env = new TestEnvironment(this);
     protected HudsonHomeLoader homeLoader = HudsonHomeLoader.NEW;
@@ -271,7 +276,7 @@ public abstract class HudsonTestCase extends TestCase implements RootAction {
 
 
         try {
-            hudson = newHudson();
+            jenkins = hudson = newHudson();
         } catch (Exception e) {
             // if Hudson instance fails to initialize, it leaves the instance field non-empty and break all the rest of the tests, so clean that up.
             Field f = Jenkins.class.getDeclaredField("theInstance");
