@@ -1859,9 +1859,16 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
                 return FormValidation.error(e,
                         Messages.AbstractProject_AssignedLabelString_InvalidBooleanExpression(e.getMessage()));
             }
-            // TODO: if there's an atom in the expression that is empty, report it
-            if (Jenkins.getInstance().getLabel(value).isEmpty())
+            Label l = Jenkins.getInstance().getLabel(value);
+            if (l.isEmpty()) {
+                for (LabelAtom a : l.listAtoms()) {
+                    if (a.isEmpty()) {
+                        LabelAtom nearest = LabelAtom.findNearest(a.getName());
+                        return FormValidation.warning(Messages.AbstractProject_AssignedLabelString_NoMatch_DidYouMean(a.getName(),nearest.getDisplayName()));
+                    }
+                }
                 return FormValidation.warning(Messages.AbstractProject_AssignedLabelString_NoMatch());
+            }
             return FormValidation.ok();
         }
 

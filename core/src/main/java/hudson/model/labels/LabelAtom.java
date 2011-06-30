@@ -33,6 +33,7 @@ import hudson.XmlFile;
 import hudson.model.Action;
 import hudson.model.Descriptor.FormException;
 import hudson.model.Failure;
+import hudson.util.EditDistance;
 import jenkins.model.Jenkins;
 import hudson.model.Label;
 import hudson.model.Saveable;
@@ -48,8 +49,10 @@ import org.kohsuke.stapler.export.Exported;
 import javax.servlet.ServletException;
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 import java.util.Vector;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -144,6 +147,16 @@ public class LabelAtom extends Label implements Saveable {
     }
 
     @Override
+    public <V, P> V accept(LabelVisitor<V, P> visitor, P param) {
+        return visitor.onAtom(this,param);
+    }
+
+    @Override
+    public Set<LabelAtom> listAtoms() {
+        return Collections.singleton(this);
+    }
+
+    @Override
     public LabelOperatorPrecedence precedence() {
         return LabelOperatorPrecedence.ATOM;
     }
@@ -204,6 +217,14 @@ public class LabelAtom extends Label implements Saveable {
      */
     public static LabelAtom get(String l) {
         return Jenkins.getInstance().getLabelAtom(l);
+    }
+
+    public static LabelAtom findNearest(String name) {
+        List<String> candidates = new ArrayList<String>();
+        for (LabelAtom a : Jenkins.getInstance().getLabelAtoms()) {
+            candidates.add(a.getName());
+        }
+        return get(EditDistance.findNearest(name, candidates));
     }
 
     public static boolean needsEscape(String name) {
