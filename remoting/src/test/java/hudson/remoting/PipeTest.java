@@ -154,6 +154,7 @@ public class PipeTest extends RmiTestBase implements Serializable {
         final Pipe p = Pipe.createLocalToRemote();
 
         Thread writer = new Thread() {
+            final Thread mainThread = Thread.currentThread(); // this makes it easy to see the relationship between the thread pair in the debugger
             @Override
             public void run() {
                 OutputStream os = p.getOut();
@@ -199,7 +200,6 @@ public class PipeTest extends RmiTestBase implements Serializable {
                 private InputStream in;
                 public void ensureConnected() throws IOException {
                     in = pipe.getIn();
-                    in.available();
                 }
 
                 public int readFirst() throws IOException {
