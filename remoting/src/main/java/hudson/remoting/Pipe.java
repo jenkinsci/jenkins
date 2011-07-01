@@ -169,7 +169,7 @@ public final class Pipe implements Serializable {
             // we want 'oidRos' to send data to this PipedOutputStream
             FastPipedOutputStream pos = new FastPipedOutputStream();
             FastPipedInputStream pis = new FastPipedInputStream(pos);
-            final int oidPos = channel.export(pos);
+            final int oidPos = channel.export(pos,false); // this gets unexported when the remote ProxyOutputStream closes.
 
             // tell 'ros' to connect to our 'pos'.
             channel.send(new ConnectCommand(oidRos, oidPos));

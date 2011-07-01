@@ -36,6 +36,7 @@ import java.io.OutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Serializable;
+import java.lang.Thread.UncaughtExceptionHandler;
 import java.util.Arrays;
 import java.util.concurrent.ExecutionException;
 
@@ -175,6 +176,8 @@ public class PipeTest extends RmiTestBase implements Serializable {
 
         // make sure the pipe is connected
         target.ensureConnected();
+        channel.syncLocalIO();
+        // then let the writer commence
         writer.start();
 
         // make sure that some data arrived to the receiver

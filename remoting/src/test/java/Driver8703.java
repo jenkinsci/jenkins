@@ -32,8 +32,10 @@ public class Driver8703 {
                         foo();
                         return null;
                     } catch (Exception e) {
+                        e.printStackTrace();
                         throw e;
                     } catch (Throwable t) {
+                        t.printStackTrace();
                         throw new Exception(t);
                     } finally {
                         Thread.currentThread().setName("done");

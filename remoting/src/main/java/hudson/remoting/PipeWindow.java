@@ -126,7 +126,13 @@ abstract class PipeWindow {
 
     static class Real extends PipeWindow {
         private int available;
+        /**
+         * Total bytes that left our side of the channel.
+         */
         private long written;
+        /**
+         * Total bytes that the remote side acked.
+         */
         private long acked;
         private final int oid;
         /**
