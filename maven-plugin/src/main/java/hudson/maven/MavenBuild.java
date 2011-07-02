@@ -25,6 +25,8 @@ package hudson.maven;
 
 import hudson.FilePath;
 import hudson.EnvVars;
+import hudson.maven.reporters.MavenArtifact;
+import hudson.maven.reporters.MavenArtifactRecord;
 import hudson.maven.reporters.SurefireArchiver;
 import hudson.slaves.WorkspaceList;
 import hudson.slaves.WorkspaceList.Lease;
@@ -55,6 +57,7 @@ import org.apache.maven.project.MavenProject;
 import org.kohsuke.stapler.Ancestor;
 import org.kohsuke.stapler.Stapler;
 import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.export.Exported;
 
 import java.io.File;
 import java.io.FileNotFoundException;

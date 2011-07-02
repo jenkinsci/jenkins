@@ -1,8 +1,8 @@
 /*
  * The MIT License
  * 
- * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi
- * 
+ * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, CloudBees, Inc.
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
@@ -33,6 +33,7 @@ import hudson.maven.MavenModuleSetBuild;
 import hudson.maven.MavenUtil;
 import hudson.maven.RedeployPublisher.WrappedArtifactRepository;
 import hudson.model.Action;
+import hudson.model.Api;
 import hudson.model.TaskListener;
 
 import java.io.IOException;
@@ -50,6 +51,8 @@ import org.apache.maven.artifact.installer.ArtifactInstaller;
 import org.apache.maven.artifact.repository.ArtifactRepository;
 import org.apache.maven.project.artifact.ProjectArtifactMetadata;
 import org.codehaus.plexus.component.repository.exception.ComponentLookupException;
+import org.kohsuke.stapler.export.Exported;
+import org.kohsuke.stapler.export.ExportedBean;
 
 /**
  * {@link Action} that remembers {@link MavenArtifact artifact}s that are built.
@@ -59,15 +62,18 @@ import org.codehaus.plexus.component.repository.exception.ComponentLookupExcepti
  * @author Kohsuke Kawaguchi
  * @see MavenArtifactArchiver
  */
+@ExportedBean
 public class MavenArtifactRecord extends MavenAbstractArtifactRecord<MavenBuild> implements AggregatableAction {
     /**
      * The build to which this record belongs.
      */
+    @Exported
     public final MavenBuild parent;
 
     /**
      * POM artifact.
      */
+    @Exported(inline=true)
     public final MavenArtifact pomArtifact;
 
     /**
@@ -75,11 +81,13 @@ public class MavenArtifactRecord extends MavenAbstractArtifactRecord<MavenBuild>
      *
      * If this is a POM module, the main artifact contains the same value as {@link #pomArtifact}.
      */
+    @Exported(inline=true)
     public final MavenArtifact mainArtifact;
 
     /**
      * Attached artifacts. Can be empty but never null.
      */
+    @Exported(inline=true)
     public final List<MavenArtifact> attachedArtifacts;
 
     public MavenArtifactRecord(MavenBuild parent, MavenArtifact pomArtifact, MavenArtifact mainArtifact, List<MavenArtifact> attachedArtifacts) {
@@ -102,7 +110,7 @@ public class MavenArtifactRecord extends MavenAbstractArtifactRecord<MavenBuild>
         return mainArtifact.isPOM();
     }
 
-    public MavenAggregatedReport createAggregatedAction(MavenModuleSetBuild build, Map<MavenModule, List<MavenBuild>> moduleBuilds) {
+    public MavenAggregatedArtifactRecord createAggregatedAction(MavenModuleSetBuild build, Map<MavenModule, List<MavenBuild>> moduleBuilds) {
         return new MavenAggregatedArtifactRecord(build);
     }
 
@@ -143,8 +151,6 @@ public class MavenArtifactRecord extends MavenAbstractArtifactRecord<MavenBuild>
             deployer.deploy( a.getFile(), a, deploymentRepository, embedder.getLocalRepository() );
         }
     }
-    
-    
     
     /**
      * Installs the artifact to the local Maven repository.

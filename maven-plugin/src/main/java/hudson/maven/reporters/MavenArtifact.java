@@ -1,7 +1,7 @@
 /*
  * The MIT License
  * 
- * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi
+ * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, CloudBees, Inc.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -39,6 +39,8 @@ import org.apache.maven.artifact.handler.DefaultArtifactHandler;
 import org.apache.maven.artifact.handler.manager.ArtifactHandlerManager;
 
 import com.google.common.collect.Maps;
+import org.kohsuke.stapler.export.Exported;
+import org.kohsuke.stapler.export.ExportedBean;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -61,10 +63,12 @@ import java.util.logging.Logger;
  * @author Kohsuke Kawaguchi
  * @since 1.189
  */
+@ExportedBean
 public final class MavenArtifact implements Serializable {
     /**
      * Basic parameters of a Maven artifact.
      */
+    @Exported
     public final String groupId, artifactId, version, classifier, type;
 
     /**
@@ -78,6 +82,7 @@ public final class MavenArtifact implements Serializable {
      * use their <tt>finalName</tt> if one is configured.) This is often
      * different from {@link #canonicalName}.
      */
+    @Exported
     public final String fileName;
 
     /**
@@ -88,11 +93,13 @@ public final class MavenArtifact implements Serializable {
      * The reason we persist this is that the extension is only available
      * through {@link ArtifactHandler}. 
      */
+    @Exported
     public final String canonicalName;
 
     /**
      * The md5sum for this artifact.
      */
+    @Exported
     public final String md5sum;
     
     public MavenArtifact(Artifact a) throws IOException {
