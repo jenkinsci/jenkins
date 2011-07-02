@@ -375,6 +375,14 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
     }
 
     /**
+     * Information about artifacts produced by Maven.
+     */
+    @Exported
+    public MavenAggregatedArtifactRecord getMavenArtifacts() {
+        return getAction(MavenAggregatedArtifactRecord.class);
+    }
+
+    /**
      * Computes the latest module builds that correspond to this build.
      * (when indivudual modules are built, a new ModuleSetBuild is not created,
      *  but rather the new module build falls under the previous ModuleSetBuild)

@@ -31,7 +31,7 @@ import hudson.model.BuildListener;
 import hudson.model.FingerprintMap;
 import hudson.model.Hudson;
 
-import org.apache.maven.RepositoryUtils;
+import hudson.util.HttpResponses;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.factory.ArtifactFactory;
 import org.apache.maven.artifact.handler.ArtifactHandler;
@@ -39,6 +39,8 @@ import org.apache.maven.artifact.handler.DefaultArtifactHandler;
 import org.apache.maven.artifact.handler.manager.ArtifactHandlerManager;
 
 import com.google.common.collect.Maps;
+import org.kohsuke.stapler.AncestorInPath;
+import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.export.ExportedBean;
 
@@ -46,6 +48,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.Serializable;
+import java.net.URL;
 import java.util.Map;
 import java.util.logging.Logger;
 
@@ -101,7 +104,7 @@ public final class MavenArtifact implements Serializable {
      */
     @Exported
     public final String md5sum;
-    
+
     public MavenArtifact(Artifact a) throws IOException {
         this.groupId = a.getGroupId();
         this.artifactId = a.getArtifactId();
@@ -192,6 +195,15 @@ public final class MavenArtifact implements Serializable {
         if(!f.exists())
             throw new IOException("Archived artifact is missing: "+f);
         return f;
+    }
+
+    /**
+     * Serve the file.
+     *
+     * TODO: figure out how to make this URL more discoverable to the remote API.
+     */
+    public HttpResponse doFile(@AncestorInPath MavenArtifactRecord parent) throws IOException {
+        return HttpResponses.staticResource(getFile(parent.parent));
     }
 
     private FilePath getArtifactArchivePath(MavenBuildProxy build, String groupId, String artifactId, String version) {

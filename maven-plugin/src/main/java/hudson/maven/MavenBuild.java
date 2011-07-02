@@ -25,7 +25,6 @@ package hudson.maven;
 
 import hudson.FilePath;
 import hudson.EnvVars;
-import hudson.maven.reporters.MavenArtifact;
 import hudson.maven.reporters.MavenArtifactRecord;
 import hudson.maven.reporters.SurefireArchiver;
 import hudson.slaves.WorkspaceList;
@@ -182,6 +181,14 @@ public class MavenBuild extends AbstractMavenBuild<MavenModule,MavenBuild> {
     @Override
     public boolean hasChangeSetComputed() {
         return true;
+    }
+
+    /**
+     * Information about artifacts produced by Maven.
+     */
+    @Exported
+    public MavenArtifactRecord getMavenArtifacts() {
+        return getAction(MavenArtifactRecord.class);
     }
 
     /**
