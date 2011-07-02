@@ -687,7 +687,8 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable {
         for (Facet f : WebApp.get(Jenkins.getInstance().servletContext).facets) {
             if (f instanceof JellyCompatibleFacet) {
                 JellyCompatibleFacet jcf = (JellyCompatibleFacet) f;
-                names.add(baseName +jcf.getDefaultScriptExtension());
+                for (String ext : jcf.getScriptExtensions())
+                    names.add(baseName +ext);
             }
         }
         return names;

@@ -33,7 +33,6 @@ THE SOFTWARE.
   </parent>
 
   <artifactId>jenkins-core</artifactId>
-  <packaging>stapler-jar</packaging>
   <name>Jenkins core</name>
   <description>
     Contains the core Jenkins code and view files to render HTML.
@@ -84,15 +83,8 @@ THE SOFTWARE.
       <plugin>
         <groupId>org.kohsuke.stapler</groupId>
         <artifactId>maven-stapler-plugin</artifactId>
+        <version>1.16</version>
         <!-- version specified in grandparent pom -->
-        <extensions>true</extensions>
-        <dependencies>
-          <dependency>
-            <groupId>org.jvnet.maven-jellydoc-plugin</groupId>
-            <artifactId>maven-jellydoc-plugin</artifactId>
-            <version>1.5</version>
-          </dependency>
-        </dependencies>
         <configuration>
           <fork>${staplerFork}</fork><!-- the source code is big enough now that otherwise it fails with OutOfMemoryError -->
           <maxmem>128m</maxmem>
@@ -367,7 +359,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.kohsuke.stapler</groupId>
       <artifactId>stapler-groovy</artifactId>
-      <version>1.167</version>
+      <version>1.169</version>
       <exclusions>
         <exclusion>
           <groupId>commons-jelly</groupId>
