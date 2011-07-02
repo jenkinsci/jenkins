@@ -39,6 +39,7 @@ import org.acegisecurity.ui.basicauth.BasicProcessingFilterEntryPoint
 import org.acegisecurity.ui.rememberme.RememberMeProcessingFilter
 import hudson.security.HttpSessionContextIntegrationFilter2
 import hudson.security.SecurityRealm
+import hudson.security.NoopFilter
 
 // providers that apply to both patterns
 def commonProviders() {
@@ -63,6 +64,8 @@ filter(ChainedServletFilter) {
         bean(HttpSessionContextIntegrationFilter2) {
         },
         // allow clients to submit basic authentication credential
+        // but allow that to be skipped since it can interfere with reverse proxy setup
+        Boolean.getBoolean("jenkins.security.ignoreBasicAuth") ? bean(NoopFilter) :
         bean(BasicProcessingFilter) {
             authenticationManager = securityComponents.manager
             // if basic authentication fails (which only happens incorrect basic auth credential is sent),
