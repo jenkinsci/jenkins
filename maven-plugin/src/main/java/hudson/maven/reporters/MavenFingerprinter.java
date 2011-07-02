@@ -126,23 +126,25 @@ public class MavenFingerprinter extends MavenReporter {
 
     /**
      * Records the fingerprint of the given {@link Artifact}.
+     */
+    private void record(Artifact a, Map<String,String> record) throws IOException, InterruptedException {
+        File f = a.getFile();
+        record(a.getGroupId(), f, record);
+    }
+
+    /**
+     * Records the fingerprint of the given file.
      *
      * <p>
      * This method contains the logic to avoid doubly recording the fingerprint
      * of the same file.
      */
-    private void record(Artifact a, Map<String,String> record) throws IOException, InterruptedException {
-        File f = a.getFile();
-        if(files==null)
-            throw new InternalError();
-        record(a.getGroupId(), f, record);
-    }
-
     private void record(String groupId, File f, Map<String, String> record) throws IOException, InterruptedException {
-        if(f==null || !f.exists() || f.isDirectory() || !files.add(f))
+        if(f==null || files.contains(f) || !f.isFile())
             return;
 
         // new file
+        files.add(f);
         String digest = new FilePath(f).digest();
         record.put(groupId+':'+f.getName(),digest);
     }
