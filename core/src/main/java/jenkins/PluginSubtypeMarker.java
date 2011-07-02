@@ -60,30 +60,39 @@ import java.util.Set;
 public class PluginSubtypeMarker extends AbstractProcessor {
     @Override
     public boolean process(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) {
-        ElementScanner6<Void,Void> scanner = new ElementScanner6<Void, Void>() {
-            @Override
-            public Void visitType(TypeElement e, Void aVoid) {
-                if(!e.getModifiers().contains(Modifier.ABSTRACT)) {
-                    Element sc = asElement(e.getSuperclass());
-                    if (sc!=null && ((TypeElement)sc).getQualifiedName().contentEquals("hudson.Plugin")) {
-                        try {
-                            write(e);
-                        } catch (IOException x) {
-                            StringWriter sw = new StringWriter();
-                            x.printStackTrace(new PrintWriter(sw));
-                            processingEnv.getMessager().printMessage(Kind.ERROR,sw.toString(),e);
+        try {
+            ElementScanner6<Void,Void> scanner = new ElementScanner6<Void, Void>() {
+                @Override
+                public Void visitType(TypeElement e, Void aVoid) {
+                    if(!e.getModifiers().contains(Modifier.ABSTRACT)) {
+                        Element sc = asElement(e.getSuperclass());
+                        if (sc!=null && ((TypeElement)sc).getQualifiedName().contentEquals("hudson.Plugin")) {
+                            try {
+                                write(e);
+                            } catch (IOException x) {
+                                StringWriter sw = new StringWriter();
+                                x.printStackTrace(new PrintWriter(sw));
+                                processingEnv.getMessager().printMessage(Kind.ERROR,sw.toString(),e);
+                            }
                         }
                     }
+
+                    return super.visitType(e, aVoid);
                 }
+            };
 
-                return super.visitType(e, aVoid);
-            }
-        };
+            for( Element e : roundEnv.getRootElements() )
+                scanner.scan(e,null);
 
-        for( Element e : roundEnv.getRootElements() )
-            scanner.scan(e,null);
-
-        return false;
+            return false;
+        } catch (RuntimeException e) {
+            // javac sucks at reporting errors in annotation processors
+            e.printStackTrace();
+            throw e;
+        } catch (Error e) {
+            e.printStackTrace();
+            throw e;
+        }
     }
 
     private void write(TypeElement c) throws IOException {
