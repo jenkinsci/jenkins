@@ -27,6 +27,7 @@ import hudson.FilePath;
 import hudson.Util;
 import hudson.maven.MavenBuild;
 import hudson.maven.MavenBuildProxy;
+import hudson.model.Api;
 import hudson.model.BuildListener;
 import hudson.model.FingerprintMap;
 import hudson.model.Hudson;
@@ -48,7 +49,6 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.Serializable;
-import java.net.URL;
 import java.util.Map;
 import java.util.logging.Logger;
 
@@ -279,6 +279,10 @@ public final class MavenArtifact implements Serializable {
     public void recordFingerprint(MavenBuild build) throws IOException {
         FingerprintMap map = Hudson.getInstance().getFingerprintMap();
         map.getOrCreate(build,fileName,md5sum);
+    }
+
+    public Api getApi() {
+        return new Api(this);
     }
 
     private static final Logger LOGGER = Logger.getLogger(MavenArtifact.class.getName());
