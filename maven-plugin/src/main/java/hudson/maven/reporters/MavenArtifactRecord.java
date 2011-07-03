@@ -32,12 +32,14 @@ import hudson.maven.MavenModule;
 import hudson.maven.MavenModuleSetBuild;
 import hudson.maven.MavenUtil;
 import hudson.maven.RedeployPublisher.WrappedArtifactRepository;
+import hudson.model.AbstractItem;
 import hudson.model.Action;
 import hudson.model.Api;
 import hudson.model.TaskListener;
 
 import java.io.IOException;
 import java.io.PrintStream;
+import java.net.URL;
 import java.util.List;
 import java.util.Map;
 
@@ -106,6 +108,31 @@ public class MavenArtifactRecord extends MavenAbstractArtifactRecord<MavenBuild>
         return parent;
     }
 
+    /**
+     * Returns the URL of this record relative to the context root of the application.
+     *
+     * @see AbstractItem#getUrl() for how to implement this.
+     *
+     * @return
+     *      URL that ends with '/'.
+     */
+    public String getUrl() {
+        return parent.getUrl()+"mavenArtifacts/";
+    }
+
+    /**
+     * Obtains the absolute URL to this build.
+     *
+     * @deprecated
+     *      This method shall <b>NEVER</b> be used during HTML page rendering, as it's too easy for
+     *      misconfiguration to break this value, with network set up like Apache reverse proxy.
+     *      This method is only intended for the remote API clients who cannot resolve relative references.
+     */
+    @Exported(visibility=2,name="url")
+    public String getAbsoluteUrl() {
+        return parent.getAbsoluteUrl()+"mavenArtifacts/";
+    }
+
     public boolean isPOM() {
         return mainArtifact.isPOM();
     }
@@ -166,7 +193,7 @@ public class MavenArtifactRecord extends MavenAbstractArtifactRecord<MavenBuild>
         installer.install(mainArtifact.getFile(parent),main,embedder.getLocalRepository());
 
         for (MavenArtifact aa : attachedArtifacts)
-            installer.install(aa.getFile(parent),aa.toArtifact(handlerManager,factory,parent),embedder.getLocalRepository());
+            installer.install(aa.getFile(parent), aa.toArtifact(handlerManager, factory, parent), embedder.getLocalRepository());
     }
 
     public void recordFingerprints() throws IOException {
