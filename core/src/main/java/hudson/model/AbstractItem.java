@@ -368,10 +368,10 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
 
     @Exported(visibility=999,name="url")
     public final String getAbsoluteUrl() {
-        StaplerRequest request = Stapler.getCurrentRequest();
-        if(request==null)
-            throw new IllegalStateException("Not processing a HTTP request");
-        return Util.encode(Hudson.getInstance().getRootUrl()+getUrl());
+        String r = Hudson.getInstance().getRootUrl();
+        if(r==null)
+            throw new IllegalStateException("Root URL isn't configured yet. Cannot compute absolute URL.");
+        return Util.encode(r +getUrl());
     }
 
     /**
