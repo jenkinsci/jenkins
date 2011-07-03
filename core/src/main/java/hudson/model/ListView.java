@@ -24,6 +24,8 @@
  */
 package hudson.model;
 
+import com.infradna.tool.bridge_method_injector.BridgeMethodsAdded;
+import com.infradna.tool.bridge_method_injector.WithBridgeMethods;
 import hudson.Extension;
 import hudson.Util;
 import hudson.model.Descriptor.FormException;
@@ -119,8 +121,9 @@ public class ListView extends View implements Saveable {
     public DescribableList<ViewJobFilter, Descriptor<ViewJobFilter>> getJobFilters() {
     	return jobFilters;
     }
-    
-    public Iterable<ListViewColumn> getColumns() {
+
+    @WithBridgeMethods(Iterable.class)
+    public DescribableList<ListViewColumn, Descriptor<ListViewColumn>> getColumns() {
         return columns;
     }
     
