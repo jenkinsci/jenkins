@@ -155,7 +155,7 @@ final class PomInfo implements Serializable {
         this.groupId = project.getGroupId();
         this.artifactId = project.getArtifactId();
     }
-
+    
     /**
      * Creates {@link ModuleDependency} that represents this {@link PomInfo}.
      */
@@ -227,6 +227,15 @@ final class PomInfo implements Serializable {
         PomInfo pomInfo = (PomInfo) obj;
         return StringUtils.equals( pomInfo.groupId, this.groupId ) 
             && StringUtils.equals( pomInfo.artifactId, this.artifactId ); 
+    }
+    
+    /**
+     * Returns if groupId, artifactId and dependencies are the same.
+     */
+    public boolean isSimilar(ModuleName moduleName, Set<ModuleDependency> dependencies) {
+        return StringUtils.equals(this.groupId, moduleName.groupId)
+            && StringUtils.equals(this.artifactId, moduleName.artifactId)
+            && this.dependencies.equals(dependencies);
     }
     
     /**

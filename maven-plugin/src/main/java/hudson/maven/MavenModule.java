@@ -191,6 +191,15 @@ public final class MavenModule extends AbstractMavenProject<MavenModule,MavenBui
             }
         }
     }
+    
+    /**
+     * Returns if the given POM likely describes the same module with the same dependencies.
+     * Implementation needs not be 100% accurate in the true case, but it MUST return false
+     * if is not the same.
+     */
+    public boolean isSameModule(PomInfo pom) {
+        return pom.isSimilar(this.moduleName, this.dependencies);
+    }
 
     @Override
     protected void doSetName(String name) {
