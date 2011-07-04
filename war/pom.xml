@@ -49,6 +49,13 @@ THE SOFTWARE.
 
   <dependencies>
     <dependency>
+      <groupId>org.jenkins-ci</groupId>
+      <artifactId>executable-war</artifactId>
+      <version>1.20</version>
+      <scope>provided</scope>
+    </dependency>
+
+    <dependency>
       <groupId>org.jenkins-ci.main</groupId>
       <artifactId>jenkins-core</artifactId>
       <version>${project.version}</version>
@@ -148,12 +155,28 @@ THE SOFTWARE.
         <!-- version specified in grandparent pom -->
         <executions>
           <execution>
+            <id>list-dependencies</id>
             <phase>generate-resources</phase>
             <goals>
               <goal>list</goal>
             </goals>
             <configuration>
               <outputFile>${basedir}/target/classes/dependencies.txt</outputFile>
+            </configuration>
+          </execution>
+          <execution>
+            <!-- put executable war header -->
+            <id>executable-war-header</id>
+            <phase>generate-resources</phase>
+            <goals>
+              <goal>unpack-dependencies</goal>
+            </goals>
+            <configuration>
+              <includeGroupIds>org.jenkins-ci</includeGroupIds>
+              <includeArtifactIds>executable-war</includeArtifactIds>
+              <includeScope>provided</includeScope>
+              <includes>**/*.class</includes>
+              <outputDirectory>target/generated-resources</outputDirectory>
             </configuration>
           </execution>
         </executions>
@@ -196,14 +219,6 @@ THE SOFTWARE.
               <verifyArtifact>false</verifyArtifact>
               <tasks>
                 <mkdir dir="target/generated-resources" />
-
-                <!-- put executable war header -->
-                <resolveArtifact groupId="org.jenkins-ci" artifactId="executable-war" version="1.22" type="jar" property="executable-war.jar" />
-                <unjar src="${executable-war.jar}" dest="target/generated-resources">
-                  <patternset>
-                    <include name="**/*.class" />
-                  </patternset>
-                </unjar>
 
                 <!-- dependencies that goes to unusual locations -->
                 <resolveArtifact artifactId="remoting" tofile="${basedir}/target/generated-resources/WEB-INF/remoting.jar" />
