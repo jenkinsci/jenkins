@@ -25,6 +25,7 @@ THE SOFTWARE.
 
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
   <modelVersion>4.0.0</modelVersion>
+
   <parent>
     <groupId>org.jenkins-ci.main</groupId>
     <artifactId>pom</artifactId>
@@ -33,11 +34,12 @@ THE SOFTWARE.
 
   <artifactId>maven-plugin</artifactId>
   <packaging>hpi</packaging>
+
   <name>Maven Integration plugin</name>
   <description>This plug-in provides deep integration of Jenkins and Maven. This functionality used to be part of the Jenkins core.
   Now it is a plug-in that is installed by default, but can be disabled.</description>
   <url>http://wiki.jenkins-ci.org/display/JENKINS/Maven+2+Project+Plugin</url>
-  
+
   <properties>
     <mavenInterceptorsVersion>1.2</mavenInterceptorsVersion>
     <mavenVersion>3.0.3</mavenVersion>
@@ -63,7 +65,6 @@ THE SOFTWARE.
       </dependency>
     </dependencies>
   </dependencyManagement>
-    
   <dependencies>
     <dependency>
       <groupId>org.jenkins-ci.main</groupId>
@@ -407,6 +408,7 @@ THE SOFTWARE.
       </plugin>
     </plugins>
   </build>
+
   <profiles>
     
   <profile>
