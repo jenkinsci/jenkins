@@ -159,23 +159,33 @@ THE SOFTWARE.
         </executions>
       </plugin>
       <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>build-helper-maven-plugin</artifactId>
+        <executions>
+          <execution>
+            <!-- deploy the war as a jar, so that the tests can pull this into the classpath -->
+            <id>deploy-war-for-test</id>
+            <phase>package</phase>
+            <goals>
+              <goal>attach-artifact</goal>
+            </goals>
+            <configuration>
+              <artifacts>
+                <artifact>
+                  <file>${basedir}/target/${project.build.finalName}.war</file>
+                  <type>jar</type>
+                  <classifier>war-for-test</classifier>
+                </artifact>
+              </artifacts>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
         <groupId>org.jvnet.maven-antrun-extended-plugin</groupId>
         <artifactId>maven-antrun-extended-plugin</artifactId>
         <!-- version specified in grandparent pom -->
         <executions>
-          <execution>
-            <id>package</id>
-            <phase>package</phase>
-            <goals>
-              <goal>run</goal>
-            </goals>
-            <configuration>
-              <tasks>
-                <!-- deploy the war as a jar, so that the tests can pull this into the classpath -->
-                <attachArtifact file="target/jenkins.war" classifier="war-for-test" type="jar" />
-              </tasks>
-            </configuration>
-          </execution>
           <execution>
             <id>resgen</id>
             <phase>generate-resources</phase>
