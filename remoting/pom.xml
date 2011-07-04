@@ -75,24 +75,6 @@ THE SOFTWARE.
   </dependencies>
 
   <build>
-    <resources>
-      <resource>
-        <directory>${basedir}/src/main/resources</directory>
-        <filtering>false</filtering>
-        <excludes>
-          <exclude>hudson/remoting/hudson-version.properties</exclude>
-          <exclude>jenkins/remoting/jenkins-version.properties</exclude>
-        </excludes>
-      </resource>
-      <resource>
-        <directory>${basedir}/src/main/resources</directory>
-        <filtering>true</filtering>
-        <includes>
-          <include>hudson/remoting/hudson-version.properties</include>
-          <include>jenkins/remoting/jenkins-version.properties</include>
-        </includes>
-      </resource>
-    </resources>
     <plugins>
       <plugin>
         <groupId>org.codehaus.mojo</groupId>
