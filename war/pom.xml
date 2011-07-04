@@ -24,21 +24,98 @@ THE SOFTWARE.
 
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
   <modelVersion>4.0.0</modelVersion>
+
   <parent>
     <groupId>org.jenkins-ci.main</groupId>
     <artifactId>pom</artifactId>
     <version>1.422-SNAPSHOT</version>
     <relativePath>../pom.xml</relativePath>
   </parent>
-  
+
   <artifactId>jenkins-war</artifactId>
   <packaging>war</packaging>
+
   <name>Jenkins war</name>
   <description>
     Creates a war file. Also includes additional static web resources, such as images, CSS, JavaScript, and
     some HTML files.
   </description>
-  
+
+  <properties>
+    <JENKINS_HOME>${basedir}/work</JENKINS_HOME>
+    <contextPath>/</contextPath><!-- context path during test -->
+    <port>8080</port><!-- HTTP listener port -->
+  </properties>
+
+  <dependencies>
+    <dependency>
+      <groupId>org.jenkins-ci.main</groupId>
+      <artifactId>jenkins-core</artifactId>
+      <version>${project.version}</version>
+      <exclusions>
+        <!--
+          jars that are not needed in war. most of the exclusions should happen in the core, to make IDEs happy, not here.
+        -->
+        <exclusion>
+          <groupId>javax.servlet</groupId>
+          <artifactId>servlet-api</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>javax.servlet</groupId>
+          <artifactId>jsp-api</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+    <!-- declare this in reactors, so i can use now directly : mvn install -pl war -am to get the war  -->
+    <!-- TO REMOVE when maven-plugin won't be anymore a bundle plugin -->
+    <dependency>
+      <groupId>${project.groupId}</groupId>
+      <artifactId>maven-plugin</artifactId>
+      <version>${project.version}</version>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>${project.groupId}</groupId>
+      <artifactId>remoting</artifactId>
+      <version>${project.version}</version>
+    </dependency>    
+    <dependency>
+      <groupId>${project.groupId}</groupId>
+      <artifactId>cli</artifactId>
+      <classifier>jar-with-dependencies</classifier>
+      <version>${project.version}</version>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <!--
+        not actually used by test but used by antrun plugin to include it inside the war.
+      -->
+      <groupId>org.jenkins-ci</groupId>
+      <artifactId>winstone</artifactId>
+      <version>0.9.10-jenkins-25</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.jenkins-ci.modules</groupId>
+      <artifactId>instance-identity</artifactId>
+      <version>1.1</version>
+    </dependency>
+    <dependency>
+      <groupId>org.jenkins-ci.modules</groupId>
+      <artifactId>ssh-cli-auth</artifactId>
+      <version>1.1</version>
+    </dependency>
+
+    <!-- offline profiler API when we need it -->
+    <!--dependency>
+      <groupId>com.yourkit.api</groupId>
+      <artifactId>yjp</artifactId>
+      <version>dontcare</version>
+      <scope>system</scope>
+      <systemPath>/usr/local/yjp/lib/yjp.jar</systemPath>
+    </dependency-->
+  </dependencies>
+
   <build>
     <finalName>jenkins</finalName>
     <plugins>
@@ -239,81 +316,6 @@ THE SOFTWARE.
       </plugin>
     </plugins>
   </build>
-
-  <dependencies>
-    <dependency>
-      <groupId>org.jenkins-ci.main</groupId>
-      <artifactId>jenkins-core</artifactId>
-      <version>${project.version}</version>
-      <exclusions>
-        <!--
-          jars that are not needed in war. most of the exclusions should happen in the core, to make IDEs happy, not here.
-        -->
-        <exclusion>
-          <groupId>javax.servlet</groupId>
-          <artifactId>servlet-api</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>javax.servlet</groupId>
-          <artifactId>jsp-api</artifactId>
-        </exclusion>
-      </exclusions>
-    </dependency>
-    <!-- declare this in reactors, so i can use now directly : mvn install -pl war -am to get the war  -->
-    <!-- TO REMOVE when maven-plugin won't be anymore a bundle plugin -->
-    <dependency>
-      <groupId>${project.groupId}</groupId>
-      <artifactId>maven-plugin</artifactId>
-      <version>${project.version}</version>
-      <scope>provided</scope>
-    </dependency>
-    <dependency>
-      <groupId>${project.groupId}</groupId>
-      <artifactId>remoting</artifactId>
-      <version>${project.version}</version>
-    </dependency>    
-    <dependency>
-      <groupId>${project.groupId}</groupId>
-      <artifactId>cli</artifactId>
-      <classifier>jar-with-dependencies</classifier>
-      <version>${project.version}</version>
-      <scope>provided</scope>
-    </dependency>
-    <dependency>
-      <!--
-        not actually used by test but used by antrun plugin to include it inside the war.
-      -->
-      <groupId>org.jenkins-ci</groupId>
-      <artifactId>winstone</artifactId>
-      <version>0.9.10-jenkins-25</version>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.jenkins-ci.modules</groupId>
-      <artifactId>instance-identity</artifactId>
-      <version>1.1</version>
-    </dependency>
-    <dependency>
-      <groupId>org.jenkins-ci.modules</groupId>
-      <artifactId>ssh-cli-auth</artifactId>
-      <version>1.1</version>
-    </dependency>
-
-    <!-- offline profiler API when we need it -->
-    <!--dependency>
-      <groupId>com.yourkit.api</groupId>
-      <artifactId>yjp</artifactId>
-      <version>dontcare</version>
-      <scope>system</scope>
-      <systemPath>/usr/local/yjp/lib/yjp.jar</systemPath>
-    </dependency-->
-  </dependencies>
-  
-  <properties>
-    <JENKINS_HOME>${basedir}/work</JENKINS_HOME>
-    <contextPath>/</contextPath><!-- context path during test -->
-    <port>8080</port><!-- HTTP listener port -->
-  </properties>
 
   <profiles>
     <profile>
