@@ -842,6 +842,8 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
                 }
                 throw new AbortException();
             }
+            
+            boolean needsDependencyGraphRecalculation = false;
 
             // update the module list
             Map<ModuleName,MavenModule> modules = project.modules;
@@ -858,12 +860,16 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
                     if(mm!=null) {// found an existing matching module
                         if(debug)
                             logger.println("Reconfiguring "+mm);
+                        if (!mm.isSameModule(pom)) {
+                            needsDependencyGraphRecalculation = true;
+                        }
                         mm.reconfigure(pom);
                         modules.put(pom.name,mm);
                     } else {// this looks like a new module
                         logger.println(Messages.MavenModuleSetBuild_DiscoveredModule(pom.name,pom.displayName));
                         mm = new MavenModule(project,pom,getNumber());
                         modules.put(mm.getModuleName(),mm);
+                        needsDependencyGraphRecalculation = true;
                     }
                     sortedModules.add(mm);
                     mm.save();
@@ -877,12 +883,16 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
                     if(debug)
                         logger.println("Disabling "+om);
                     om.makeDisabled(true);
+                    needsDependencyGraphRecalculation = true;
                 }
                 modules.putAll(old);
             }
 
             // we might have added new modules
-            Jenkins.getInstance().rebuildDependencyGraph();
+            if (needsDependencyGraphRecalculation) {
+                logger.println("Modules changed, recalculating dependency graph");
+                Jenkins.getInstance().rebuildDependencyGraph();
+            }
 
             // module builds must start with this build's number
             for (MavenModule m : modules.values())
