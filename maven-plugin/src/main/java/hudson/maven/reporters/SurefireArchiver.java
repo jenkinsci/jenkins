@@ -247,6 +247,7 @@ public class SurefireArchiver extends MavenReporter {
             && (!mojo.is("org.sonatype.flexmojos", "flexmojos-maven-plugin", "test-run"))
             && (!mojo.is("org.eclipse.tycho", "tycho-surefire-plugin", "test"))
             && (!mojo.is("org.sonatype.tycho", "maven-osgi-test-plugin", "test"))
+            && (!mojo.is("org.codehaus.mojo", "gwt-maven-plugin", "test"))
             && (!mojo.is("org.apache.maven.plugins", "maven-surefire-plugin", "test"))
             && (!mojo.is("org.apache.maven.plugins", "maven-failsafe-plugin", "integration-test")))
             return false;
