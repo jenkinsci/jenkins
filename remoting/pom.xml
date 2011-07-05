@@ -105,22 +105,15 @@ THE SOFTWARE.
             </manifest>
           </archive>
         </configuration>
+      </plugin>
+      <plugin>
+        <artifactId>maven-jarsigner-plugin</artifactId>
+        <version>1.2</version>
         <executions>
           <execution>
             <goals>
               <goal>sign</goal>
             </goals>
-            <configuration>
-              <!--
-                during the development, debug profile defined in ../pom.xml will cause
-                the jars to be signed by a self-certified dummy public key.
-                
-                For release, you should define the real values in ~/.m2/settings.xml
-              -->
-              <alias>${hudson.sign.alias}</alias>
-              <storepass>${hudson.sign.storepass}</storepass>
-              <keystore>${hudson.sign.keystore}</keystore>
-            </configuration>
           </execution>
         </executions>
       </plugin>

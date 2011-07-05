@@ -271,6 +271,21 @@ THE SOFTWARE.
           <version>2.2.1</version>
         </plugin>
         <plugin>
+          <artifactId>maven-jarsigner-plugin</artifactId>
+          <version>1.2</version>
+          <configuration>
+            <!--
+              during the development, debug profile will cause
+              the jars to be signed by a self-certified dummy public key.
+
+              For release, you should define the real values in ~/.m2/settings.xml
+            -->
+            <alias>${hudson.sign.alias}</alias>
+            <storepass>${hudson.sign.storepass}</storepass>
+            <keystore>${hudson.sign.keystore}</keystore>
+          </configuration>
+        </plugin>
+        <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-resources-plugin</artifactId>
           <version>2.5</version>

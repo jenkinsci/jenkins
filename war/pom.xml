@@ -161,7 +161,7 @@ THE SOFTWARE.
               <goal>list</goal>
             </goals>
             <configuration>
-              <outputFile>${basedir}/target/classes/dependencies.txt</outputFile>
+              <outputFile>${project.build.outputDirectory}/dependencies.txt</outputFile>
             </configuration>
           </execution>
           <execution>
@@ -176,7 +176,70 @@ THE SOFTWARE.
               <includeArtifactIds>executable-war</includeArtifactIds>
               <includeScope>provided</includeScope>
               <includes>**/*.class</includes>
-              <outputDirectory>target/generated-resources</outputDirectory>
+              <outputDirectory>${project.build.directory}/generated-resources</outputDirectory>
+            </configuration>
+          </execution>
+          <execution>
+            <id>resgen</id>
+            <phase>generate-resources</phase>
+            <goals>
+              <goal>copy</goal>
+            </goals>
+            <configuration>
+              <artifactItems>
+                <!-- dependencies that goes to unusual locations -->
+                <artifactItem>
+                  <groupId>${project.groupId}</groupId>
+                  <artifactId>remoting</artifactId>
+                  <outputDirectory>${project.build.directory}/generated-resources/WEB-INF</outputDirectory>
+                  <destFileName>remoting.jar</destFileName>
+                </artifactItem>
+                <artifactItem>
+                  <groupId>${project.groupId}</groupId>
+                  <artifactId>remoting</artifactId>
+                  <outputDirectory>${project.build.directory}/generated-resources/WEB-INF</outputDirectory>
+                  <destFileName>slave.jar</destFileName>
+                </artifactItem>
+                <artifactItem>
+                  <groupId>${project.groupId}</groupId>
+                  <artifactId>cli</artifactId>
+                  <classifier>jar-with-dependencies</classifier>
+                  <outputDirectory>${project.build.directory}/generated-resources/WEB-INF</outputDirectory>
+                  <destFileName>jenkins-cli.jar</destFileName>
+                </artifactItem>
+                <artifactItem>
+                  <groupId>org.jenkins-ci</groupId>
+                  <artifactId>winstone</artifactId>
+                  <outputDirectory>${project.build.directory}/generated-resources</outputDirectory>
+                  <destFileName>winstone.jar</destFileName>
+                </artifactItem>
+                <!-- bundled plugins -->
+                <artifactItem>
+                  <groupId>${project.groupId}</groupId>
+                  <artifactId>maven-plugin</artifactId>
+                  <type>hpi</type>
+                </artifactItem>
+                <artifactItem>
+                  <groupId>org.jenkins-ci.plugins</groupId>
+                  <artifactId>ssh-slaves</artifactId>
+                  <version>0.17</version>
+                  <type>hpi</type>
+                </artifactItem>
+                <artifactItem>
+                  <groupId>org.jenkins-ci.plugins</groupId>
+                  <artifactId>subversion</artifactId>
+                  <version>1.28</version>
+                  <type>hpi</type>
+                </artifactItem>
+                <artifactItem>
+                  <groupId>org.jvnet.hudson.plugins</groupId>
+                  <artifactId>cvs</artifactId>
+                  <version>1.2</version>
+                  <type>hpi</type>
+                </artifactItem>
+              </artifactItems>
+              <outputDirectory>${project.build.directory}/generated-resources/WEB-INF/plugins</outputDirectory>
+              <stripVersion>true</stripVersion>
             </configuration>
           </execution>
         </executions>
@@ -195,43 +258,11 @@ THE SOFTWARE.
             <configuration>
               <artifacts>
                 <artifact>
-                  <file>${basedir}/target/${project.build.finalName}.war</file>
+                  <file>${project.build.directory}/${project.build.finalName}.war</file>
                   <type>jar</type>
                   <classifier>war-for-test</classifier>
                 </artifact>
               </artifacts>
-            </configuration>
-          </execution>
-        </executions>
-      </plugin>
-      <plugin>
-        <groupId>org.jvnet.maven-antrun-extended-plugin</groupId>
-        <artifactId>maven-antrun-extended-plugin</artifactId>
-        <!-- version specified in grandparent pom -->
-        <executions>
-          <execution>
-            <id>resgen</id>
-            <phase>generate-resources</phase>
-            <goals>
-              <goal>run</goal>
-            </goals>
-            <configuration>
-              <verifyArtifact>false</verifyArtifact>
-              <tasks>
-                <mkdir dir="target/generated-resources" />
-
-                <!-- dependencies that goes to unusual locations -->
-                <resolveArtifact artifactId="remoting" tofile="${basedir}/target/generated-resources/WEB-INF/remoting.jar" />
-                <resolveArtifact artifactId="remoting" tofile="${basedir}/target/generated-resources/WEB-INF/slave.jar" />
-                <resolveArtifact groupId="${project.groupId}" artifactId="cli" classifier="jar-with-dependencies" version="${project.version}" type="jar" tofile="${basedir}/target/generated-resources/WEB-INF/jenkins-cli.jar" />
-                <resolveArtifact artifactId="winstone" tofile="${basedir}/target/generated-resources/winstone.jar" />
-                
-                <!-- bundled plugins -->
-                <resolveArtifact type="hpi" groupId="${project.groupId}" artifactId="maven-plugin" version="${project.version}" tofile="${basedir}/target/generated-resources/WEB-INF/plugins/maven-plugin.hpi" />
-                <resolveArtifact type="hpi" groupId="org.jenkins-ci.plugins" artifactId="ssh-slaves" version="0.17" tofile="${basedir}/target/generated-resources/WEB-INF/plugins/ssh-slaves.hpi" />
-                <resolveArtifact type="hpi" groupId="org.jenkins-ci.plugins" artifactId="subversion" version="1.28" tofile="${basedir}/target/generated-resources/WEB-INF/plugins/subversion.hpi" />
-                <resolveArtifact type="hpi" groupId="org.jvnet.hudson.plugins" artifactId="cvs" version="1.2" tofile="${basedir}/target/generated-resources/WEB-INF/plugins/cvs.hpi" />
-              </tasks>
             </configuration>
           </execution>
         </executions>
@@ -241,7 +272,7 @@ THE SOFTWARE.
         <artifactId>maven-license-plugin</artifactId>
         <!-- version specified in grandparent pom -->
         <configuration>
-          <generateLicenseXml>target/classes/META-INF/licenses.xml</generateLicenseXml>
+          <generateLicenseXml>${project.build.outputDirectory}/META-INF/licenses.xml</generateLicenseXml>
           <inlineScript>
             filter {
                 // add Winstone since we are bundling it.
@@ -374,27 +405,17 @@ THE SOFTWARE.
       <build>
         <plugins>
           <plugin>
-            <groupId>org.apache.maven.plugins</groupId>
-            <artifactId>maven-antrun-plugin</artifactId>
-            <!-- version specified in grandparent pom -->
+            <artifactId>maven-jarsigner-plugin</artifactId>
+            <version>1.2</version>
             <executions>
-              <!-- sign the war -->
               <execution>
                 <id>signWar</id>
                 <phase>verify</phase>
                 <goals>
-                  <goal>run</goal>
+                  <goal>sign</goal>
                 </goals>
                 <configuration>
-                  <tasks>
-                    <!--
-                      during the development, debug profile defined in ../pom.xml will cause
-                      the jars to be signed by a self-certified dummy public key.
-
-                      For release, you should define the real values in ~/.m2/settings.xml
-                    -->
-                    <signjar jar="target/jenkins.war" alias="${hudson.sign.alias}" keystore="${hudson.sign.keystore}" storepass="${hudson.sign.storepass}" />
-                  </tasks>
+                  <archive>${project.build.directory}/${project.build.finalName}.${project.packaging}</archive>
                 </configuration>
               </execution>
             </executions>
