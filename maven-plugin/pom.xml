@@ -384,24 +384,27 @@ THE SOFTWARE.
         </configuration>
       </plugin>
       <plugin>
-        <groupId>org.jvnet.maven-antrun-extended-plugin</groupId>
-        <artifactId>maven-antrun-extended-plugin</artifactId>
-        <!-- version specified in grandparent pom -->
+        <artifactId>maven-dependency-plugin</artifactId>
         <executions>
           <execution>
             <id>resgen</id>
             <phase>generate-resources</phase>
             <goals>
-              <goal>run</goal>
+              <!-- we use copy as this is a dependency from outside the reactor -->
+              <goal>copy</goal>
             </goals>
             <configuration>
-              <verifyArtifact>false</verifyArtifact>
-              <tasks>
-                <mkdir dir="target/classes" />
-
+              <artifactItems>
                 <!--  classworld 1.1 for maven 2 builds -->
-                <resolveArtifact groupId="classworlds" artifactId="classworlds" version="1.1" type="jar" tofile="target/classes/classworlds.jar" />
-              </tasks>
+                <artifactItem>
+                  <groupId>classworlds</groupId>
+                  <artifactId>classworlds</artifactId>
+                  <version>1.1</version>
+                  <type>jar</type>
+                  <outputDirectory>${project.build.outputDirectory}</outputDirectory>
+                  <destFileName>classworlds.jar</destFileName>
+                </artifactItem>
+              </artifactItems>
             </configuration>
           </execution>
         </executions>
