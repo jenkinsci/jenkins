@@ -95,7 +95,7 @@ THE SOFTWARE.
     </dependency>
     <dependency>
       <!--
-        not actually used by test but used by antrun plugin to include it inside the war.
+        not actually used by test but used by dependency plugin to include it inside the war.
       -->
       <groupId>org.jenkins-ci</groupId>
       <artifactId>winstone</artifactId>
