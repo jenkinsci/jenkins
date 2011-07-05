@@ -404,7 +404,6 @@ THE SOFTWARE.
         <plugins>
           <plugin>
             <artifactId>maven-jarsigner-plugin</artifactId>
-            <version>1.2</version>
             <executions>
               <execution>
                 <id>signWar</id>

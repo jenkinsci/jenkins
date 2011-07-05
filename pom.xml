@@ -602,7 +602,7 @@ THE SOFTWARE.
                 </goals>
                 <phase>package</phase>
                 <configuration>
-                  <finalName>hudson-${project.version}</finalName>
+                  <finalName>jenkins-${project.version}</finalName>
                   <descriptors>
                     <descriptor>assembly-src.xml</descriptor>
                   </descriptors>
