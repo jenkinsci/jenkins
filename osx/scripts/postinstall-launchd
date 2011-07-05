@@ -10,4 +10,3 @@ chown -R daemon:daemon /Users/Shared/Jenkins
 
 # Load and start the launch daemon
 /bin/launchctl load ${JENKINS_PLIST}
-/bin/launchctl start org.jenkins-ci
