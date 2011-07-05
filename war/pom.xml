@@ -131,11 +131,6 @@ THE SOFTWARE.
         <!-- version specified in grandparent pom -->
         <configuration>
           <filteringDeploymentDescriptors>true</filteringDeploymentDescriptors>
-          <webResources>
-            <resource>
-              <directory>${project.build.directory}/generated-resources</directory>
-            </resource>
-          </webResources>
           <!-- for putting Main-Class into war -->
           <archive>
             <manifest>
@@ -176,7 +171,7 @@ THE SOFTWARE.
               <includeArtifactIds>executable-war</includeArtifactIds>
               <includeScope>provided</includeScope>
               <includes>**/*.class</includes>
-              <outputDirectory>${project.build.directory}/generated-resources</outputDirectory>
+              <outputDirectory>${project.build.directory}/${project.build.finalName}</outputDirectory>
             </configuration>
           </execution>
           <execution>
@@ -191,26 +186,26 @@ THE SOFTWARE.
                 <artifactItem>
                   <groupId>${project.groupId}</groupId>
                   <artifactId>remoting</artifactId>
-                  <outputDirectory>${project.build.directory}/generated-resources/WEB-INF</outputDirectory>
+                  <outputDirectory>${project.build.directory}/${project.build.finalName}/WEB-INF</outputDirectory>
                   <destFileName>remoting.jar</destFileName>
                 </artifactItem>
                 <artifactItem>
                   <groupId>${project.groupId}</groupId>
                   <artifactId>remoting</artifactId>
-                  <outputDirectory>${project.build.directory}/generated-resources/WEB-INF</outputDirectory>
+                  <outputDirectory>${project.build.directory}/${project.build.finalName}/WEB-INF</outputDirectory>
                   <destFileName>slave.jar</destFileName>
                 </artifactItem>
                 <artifactItem>
                   <groupId>${project.groupId}</groupId>
                   <artifactId>cli</artifactId>
                   <classifier>jar-with-dependencies</classifier>
-                  <outputDirectory>${project.build.directory}/generated-resources/WEB-INF</outputDirectory>
+                  <outputDirectory>${project.build.directory}/${project.build.finalName}/WEB-INF</outputDirectory>
                   <destFileName>jenkins-cli.jar</destFileName>
                 </artifactItem>
                 <artifactItem>
                   <groupId>org.jenkins-ci</groupId>
                   <artifactId>winstone</artifactId>
-                  <outputDirectory>${project.build.directory}/generated-resources</outputDirectory>
+                  <outputDirectory>${project.build.directory}/${project.build.finalName}</outputDirectory>
                   <destFileName>winstone.jar</destFileName>
                 </artifactItem>
                 <!-- bundled plugins -->
@@ -238,8 +233,11 @@ THE SOFTWARE.
                   <type>hpi</type>
                 </artifactItem>
               </artifactItems>
-              <outputDirectory>${project.build.directory}/generated-resources/WEB-INF/plugins</outputDirectory>
+              <outputDirectory>${project.build.directory}/${project.build.finalName}/WEB-INF/plugins</outputDirectory>
               <stripVersion>true</stripVersion>
+              <overWriteIfNewer>true</overWriteIfNewer>
+              <overWriteReleases>false</overWriteReleases>
+              <overWriteSnapshots>true</overWriteSnapshots>
             </configuration>
           </execution>
         </executions>
@@ -415,7 +413,7 @@ THE SOFTWARE.
                   <goal>sign</goal>
                 </goals>
                 <configuration>
-                  <archive>${project.build.directory}/${project.build.finalName}.${project.packaging}</archive>
+                  <archive>${project.build.directory}/${project.build.finalName}.war</archive>
                 </configuration>
               </execution>
             </executions>
