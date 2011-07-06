@@ -1,0 +1,5 @@
+require 'rubygems'
+require 'rspec'
+require 'autotest/discover'
+require 'autotest/rspec2'
+

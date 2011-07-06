@@ -1,0 +1,4 @@
+rvm use 1.9.2
+rvm gemset create jenkins-rest-api
+rvm use 1.9.2@jenkins-rest-api
+

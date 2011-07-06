@@ -42,10 +42,11 @@ THE SOFTWARE.
     <module>remoting</module>
     <module>core</module>
     <module>maven-plugin</module>
-    <module>ui-samples-plugin</module>
+    <!-- <module>ui-samples-plugin</module> -->
     <module>war</module>
     <module>test</module>
     <module>cli</module>
+    <module>rest-api</module>
   </modules>
   
   <scm>
@@ -375,7 +376,38 @@ THE SOFTWARE.
   
   <dependencyManagement>
     <dependencies>
-      
+      <!-- JAX-RS Specific Jars -->
+      <dependency>
+        <groupId>org.jboss.resteasy</groupId>
+        <artifactId>resteasy-jaxrs</artifactId>
+        <version>${resteasyVersion}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.jboss.resteasy</groupId>
+        <artifactId>resteasy-jaxb-provider</artifactId>
+        <version>${resteasyVersion}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.jboss.resteasy</groupId>
+        <artifactId>resteasy-jackson-provider</artifactId>
+        <version>${resteasyVersion}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.jboss.resteasy</groupId>
+        <artifactId>resteasy-guice</artifactId>
+        <version>${resteasyVersion}</version>
+        <exclusions>
+            <exclusion>
+                <groupId>com.google.code.guice</groupId>
+                <artifactId>guice</artifactId>
+            </exclusion>
+        </exclusions>
+      </dependency>
+      <dependency>
+        <groupId>com.google.inject</groupId>
+        <artifactId>guice</artifactId>
+        <version>3.0-rc2</version>
+      </dependency>
       <dependency>
         <groupId>org.apache.ant</groupId>
         <artifactId>ant</artifactId>
@@ -403,6 +435,7 @@ THE SOFTWARE.
   </dependencyManagement>
 
   <properties>
+    <resteasyVersion>2.1.0.GA</resteasyVersion>
     <!-- *.html files are in UTF-8, and *.properties are in iso-8859-1, so this configuration is acturally incorrect,
     but this suppresses a warning from Maven, and as long as we don't do filtering we should be OK. -->
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -546,6 +579,16 @@ THE SOFTWARE.
     <repository>
       <id>m.g.o-public</id>
       <url>http://maven.glassfish.org/content/groups/public/</url>
+      <releases>
+        <enabled>true</enabled>
+      </releases>
+      <snapshots>
+        <enabled>false</enabled>
+      </snapshots>
+    </repository>
+    <repository>
+      <id>jboss-public</id>
+      <url>http://repository.jboss.org/nexus/content/groups/public-jboss/</url>
       <releases>
         <enabled>true</enabled>
       </releases>

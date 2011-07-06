@@ -1,0 +1,10 @@
+#!/usr/bin/env ruby
+
+begin
+  require 'jenkins-rest-api/cli'
+rescue LoadError => e
+  $LOAD_PATH.unshift File.join(File.dirname(__FILE__), '..', 'lib')
+  require 'jenkins-rest-api/cli'
+end
+
+JenkinsRestAPI::CLI.new.execute!(ARGV)

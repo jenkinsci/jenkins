@@ -793,10 +793,12 @@ public abstract class HudsonTestCase extends TestCase implements RootAction {
      * <p>
      * See http://wiki.jenkins-ci.org/display/JENKINS/Unit+Test#UnitTest-Configurationroundtriptesting
      */
+    /*
     protected <P extends Job> P configRoundtrip(P job) throws Exception {
         submit(createWebClient().getPage(job,"configure").getFormByName("config"));
         return job;
     }
+    */
 
     protected <P extends Item> P configRoundtrip(P job) throws Exception {
         submit(createWebClient().getPage(job, "configure").getFormByName("config"));
