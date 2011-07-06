@@ -628,6 +628,11 @@ public class Jenkins extends AbstractCIBase implements ModifiableItemGroup<TopLe
                 throw new IllegalStateException("second instance");
             theInstance = this;
 
+            if (!new File(root,"jobs").exists()) {
+                // if this is a fresh install, use more modern default layout that's consistent with slaves
+                workspaceDir = "${JENKINS_HOME}/workspace/${ITEM_FULLNAME}";
+            }
+
             // doing this early allows InitStrategy to set environment upfront
             final InitStrategy is = InitStrategy.get(Thread.currentThread().getContextClassLoader());
 

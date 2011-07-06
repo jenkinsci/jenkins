@@ -236,7 +236,7 @@ public abstract class Slave extends Node implements Serializable {
     public FilePath getWorkspaceFor(TopLevelItem item) {
         FilePath r = getWorkspaceRoot();
         if(r==null)     return null;    // offline
-        return r.child(item.getName());
+        return r.child(item.getFullName());
     }
 
     public FilePath getRootPath() {
