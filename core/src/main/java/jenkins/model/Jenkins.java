@@ -26,11 +26,11 @@
 package jenkins.model;
 
 import antlr.ANTLRException;
+import com.google.common.collect.ImmutableMap;
 import com.thoughtworks.xstream.XStream;
 import hudson.BulkChange;
 import hudson.DNSMultiCast;
 import hudson.DescriptorExtensionList;
-import hudson.EnvVars;
 import hudson.Extension;
 import hudson.ExtensionList;
 import hudson.ExtensionPoint;
@@ -176,9 +176,6 @@ import org.kohsuke.stapler.jelly.JellyRequestDispatcher;
 import org.xml.sax.InputSource;
 
 import javax.crypto.SecretKey;
-import javax.naming.Context;
-import javax.naming.InitialContext;
-import javax.naming.NamingException;
 import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
@@ -310,9 +307,20 @@ public class Jenkins extends AbstractCIBase implements ModifiableItemGroup<TopLe
     private volatile SecurityRealm securityRealm = SecurityRealm.NO_AUTHENTICATION;
 
     /**
-     * Root directory for the workspaces.
+     * Root directory for the workspaces. This value will be variable-expanded against
+     * job name and JENKINS_HOME.
+     *
+     * @see #getWorkspaceFor(TopLevelItem)
      */
-    private String configuredWorkspaceRoot = null;
+    private String workspaceDir = "${ITEM_ROOTDIR}/"+WORKSPACE_DIRNAME;
+
+    /**
+     * Root directory for the workspaces. This value will be variable-expanded against
+     * job name and JENKINS_HOME.
+     *
+     * @see #getBuildDirFor(Job)
+     */
+    private String buildsDir = "${ITEM_ROOTDIR}/builds";
 
     /**
      * Message displayed in the top page.
@@ -1696,52 +1704,27 @@ public class Jenkins extends AbstractCIBase implements ModifiableItemGroup<TopLe
         return root;
     }
 
-    private String getConfiguredWorkspaceRoot() {
-        if (configuredWorkspaceRoot == null) {
-            try {
-                InitialContext iniCtxt = new InitialContext();
-                Context env = (Context) iniCtxt.lookup("java:comp/env");
-                String value = (String) env.lookup("JENKINS_WORKSPACES");
-                if(value!=null && value.trim().length()>0) {
-                    configuredWorkspaceRoot = value.trim();
-                    return configuredWorkspaceRoot;
-                }
-                // look at one more place. See issue #1314 
-                value = (String) iniCtxt.lookup("JENKINS_WORKSPACES");
-                if(value!=null && value.trim().length()>0) {
-                    configuredWorkspaceRoot = value.trim();
-                    return configuredWorkspaceRoot;
-                }
-            } catch (NamingException e) {
-                // ignore
-            }
-
-            // finally check the system property
-            String sysProp = System.getProperty("JENKINS_WORKSPACES");
-            if(sysProp!=null) {
-                configuredWorkspaceRoot = sysProp.trim();
-                return configuredWorkspaceRoot;
-            }
-            
-            // look at the env var next
-            String env = EnvVars.masterEnvVars.get("JENKINS_WORKSPACES");
-            if(env!=null) {
-                configuredWorkspaceRoot = env.trim();
-                return configuredWorkspaceRoot;
-            }
-            
-            //not set
-            configuredWorkspaceRoot = "";
-        }
-        return configuredWorkspaceRoot;
+    public FilePath getWorkspaceFor(TopLevelItem item) {
+        return new FilePath(expandVariablesForDirectory(workspaceDir, item));
     }
 
-    public FilePath getWorkspaceFor(TopLevelItem item) {
-        if(getConfiguredWorkspaceRoot().equals("")) {
-            return new FilePath(new File(item.getRootDir(), WORKSPACE_DIRNAME));
-        } else {
-            return new FilePath(new File(getConfiguredWorkspaceRoot() + "/" + item.getName(), WORKSPACE_DIRNAME));
-        }
+    public File getBuildDirFor(Job job) {
+        return expandVariablesForDirectory(buildsDir, job);
+    }
+
+    private File expandVariablesForDirectory(String base, Item item) {
+        return new File(Util.replaceMacro(base, ImmutableMap.of(
+                "JENKINS_HOME", getRootDir().getPath(),
+                "ITEM_ROOTDIR", item.getRootDir().getPath(),
+                "ITEM_FULLNAME", item.getFullName())));
+    }
+    
+    public String getRawWorkspaceDir() {
+        return workspaceDir;
+    }
+
+    public String getRawBuildsDir() {
+        return buildsDir;
     }
 
     public FilePath getRootPath() {
@@ -2378,6 +2361,9 @@ public class Jenkins extends AbstractCIBase implements ModifiableItemGroup<TopLe
             checkPermission(ADMINISTER);
 
             JSONObject json = req.getSubmittedForm();
+
+            workspaceDir = json.getString("rawWorkspaceDir");
+            buildsDir = json.getString("rawBuildsDir");
 
             // keep using 'useSecurity' field as the main configuration setting
             // until we get the new security implementation working
