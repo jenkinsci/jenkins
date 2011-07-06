@@ -662,7 +662,7 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable {
     }
 
     private String getViewPage(Class<?> clazz, Collection<String> pageNames, String defaultValue) {
-        while(clazz!=Object.class) {
+        while(clazz!=Object.class && clazz!=null) {
             for (String pageName : pageNames) {
                 String name = clazz.getName().replace('.', '/').replace('$', '/') + "/" + pageName;
                 if(clazz.getClassLoader().getResource(name)!=null)

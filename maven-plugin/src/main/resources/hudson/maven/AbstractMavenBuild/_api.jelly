@@ -1,7 +1,7 @@
 <!--
 The MIT License
 
-Copyright (c) 2004-2010, Sun Microsystems, Inc., Kohsuke Kawaguchi, id:cactusman
+Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, Simon Wiest
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -22,18 +22,11 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 -->
 
-<!--
-  "New Project" page.
--->
-<?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:s="/lib/form">
-  <j:getStatic var="permission" className="hudson.model.Item" field="CREATE"/>
-  <l:layout norefresh="true" permission="${permission}" title="${%NewJob(it.newPronoun)}">
-    <st:include page="sidepanel.jelly" />
-    <l:main-panel>
-      <j:invokeStatic var="jobs" className="hudson.model.Items" method="all" />
-      <n:form nameTitle="${%JobName(it.newPronoun)}" copyTitle="${%CopyExisting(it.newPronoun)}" showCopyOption="${!empty(app.itemMap)}"
-              descriptors="${jobs}" checkUrl="${rootURL}/checkJobName" xmlns:n="/lib/hudson/newFromList" />
-    </l:main-panel>
-  </l:layout>
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
+  <st:include page="/hudson/model/Run/_api.jelly" />
+  <h2>Artifact Information</h2>
+  <p>
+    <a href="../mavenArtifacts/api">Information about Maven artifacts produced by this</a> are exposed
+    in a machine readable form. This allows programmatic retrieval of the artifacts.
+  </p>
 </j:jelly>

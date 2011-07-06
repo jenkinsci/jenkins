@@ -1954,13 +1954,22 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
      * Finds a {@link AbstractProject} that has the name closest to the given name.
      */
     public static AbstractProject findNearest(String name) {
-        List<AbstractProject> projects = Jenkins.getInstance().getItems(AbstractProject.class);
+        return findNearest(name,Hudson.getInstance());
+    }
+
+    /**
+     * Finds a {@link AbstractProject} whose name (when referenced from the specified context) is closest to the given name.
+     *
+     * @since 1.419
+     */
+    public static AbstractProject findNearest(String name, ItemGroup context) {
+        List<AbstractProject> projects = Hudson.getInstance().getAllItems(AbstractProject.class);
         String[] names = new String[projects.size()];
         for( int i=0; i<projects.size(); i++ )
-            names[i] = projects.get(i).getName();
+            names[i] = projects.get(i).getRelativeNameFrom(context);
 
         String nearest = EditDistance.findNearest(name, names);
-        return (AbstractProject) Jenkins.getInstance().getItem(nearest);
+        return (AbstractProject)Jenkins.getInstance().getItem(nearest,context);
     }
 
     private static final Comparator<Integer> REVERSE_INTEGER_COMPARATOR = new Comparator<Integer>() {

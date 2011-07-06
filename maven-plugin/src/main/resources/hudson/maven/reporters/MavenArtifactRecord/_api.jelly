@@ -1,7 +1,7 @@
 <!--
 The MIT License
 
-Copyright (c) 2004-2010, Sun Microsystems, Inc., Kohsuke Kawaguchi, id:cactusman
+Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, Simon Wiest
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -22,18 +22,16 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 -->
 
-<!--
-  "New Project" page.
--->
-<?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:s="/lib/form">
-  <j:getStatic var="permission" className="hudson.model.Item" field="CREATE"/>
-  <l:layout norefresh="true" permission="${permission}" title="${%NewJob(it.newPronoun)}">
-    <st:include page="sidepanel.jelly" />
-    <l:main-panel>
-      <j:invokeStatic var="jobs" className="hudson.model.Items" method="all" />
-      <n:form nameTitle="${%JobName(it.newPronoun)}" copyTitle="${%CopyExisting(it.newPronoun)}" showCopyOption="${!empty(app.itemMap)}"
-              descriptors="${jobs}" checkUrl="${rootURL}/checkJobName" xmlns:n="/lib/hudson/newFromList" />
-    </l:main-panel>
-  </l:layout>
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
+  <h2>Artifact Download</h2>
+  <p>
+    <a href="../mainArtifact/file">primary artifact</a>,
+    <a href="../pomArtifact/file">primary artifact</a>,
+    <a href="../attachedArtifacts/0/file">attached artifact #1</a>,
+    <a href="../attachedArtifacts/1/file">attached artifact #2</a>, etc., all have
+    stable URLs that's not affected by their GAV IDs (if you want to access them through GAV IDs,
+    you can do so through the artifacts link.) Swap the last <tt>file</tt> with <tt>api</tt>
+    and you can retrieve their GAV IDs and other information, such as
+    <a href="../mainArtifact/api/">this</a>.
+  </p>
 </j:jelly>

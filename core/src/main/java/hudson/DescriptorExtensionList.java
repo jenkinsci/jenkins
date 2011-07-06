@@ -190,6 +190,12 @@ public class DescriptorExtensionList<T extends Describable<T>, D extends Descrip
         return r;
     }
 
+    @Override
+    public boolean add(D d) {
+        hudson.getExtensionList(Descriptor.class).add(d); // add it to the master descriptor list as well
+        return super.add(d);
+    }
+
     /**
      * Stores manually registered Descriptor instances. Keyed by the {@link Describable} type.
      */

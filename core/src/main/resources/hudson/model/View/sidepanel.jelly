@@ -41,6 +41,7 @@ THE SOFTWARE.
       <st:include page="tasks-new.jelly" it="${it.owner}" optional="true">
         <!-- made overridable for ViewGroup that doesn't allow modifications -->
         <l:task icon="images/24x24/new-package.png" href="${rootURL}/${it.viewUrl}newJob" title="${%New Job}" permission="${it.itemCreatePermission}" it="${app}" />
+        <l:task icon="images/24x24/new-package.png" href="${rootURL}/${it.viewUrl}newJob" title="${%NewJob(it.newPronoun)}" permission="${it.itemCreatePermission}" it="${app}" />
       </st:include>
 
       <j:choose>

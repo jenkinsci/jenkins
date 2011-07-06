@@ -422,7 +422,6 @@ public class Maven3Builder extends AbstractMavenBuilder implements DelegatingCal
         
         public void reccordProjectSucceeded( ExecutionEvent event ) {
             MavenBuildProxy2 mavenBuildProxy2 = getMavenBuildProxy2( event.getProject() );
-            mavenBuildProxy2.end();
             mavenBuildProxy2.setResult( Result.SUCCESS );
             
             
@@ -452,7 +451,8 @@ public class Maven3Builder extends AbstractMavenBuilder implements DelegatingCal
                 }
             }
            
-        }        
+            mavenBuildProxy2.end();
+        }
 
         /**
          * @see org.apache.maven.execution.ExecutionListener#projectFailed(org.apache.maven.execution.ExecutionEvent)
@@ -467,7 +467,6 @@ public class Maven3Builder extends AbstractMavenBuilder implements DelegatingCal
         
         public void reccordProjectFailed( ExecutionEvent event ) {
             MavenBuildProxy2 mavenBuildProxy2 = getMavenBuildProxy2( event.getProject() );
-            mavenBuildProxy2.end();
             mavenBuildProxy2.setResult( Result.FAILURE );
             MavenProject mavenProject = event.getProject();
             List<MavenReporter> mavenReporters = getMavenReporters( mavenProject );
@@ -495,7 +494,9 @@ public class Maven3Builder extends AbstractMavenBuilder implements DelegatingCal
                     }
                 }
             }
-        }        
+
+            mavenBuildProxy2.end();
+        }
 
         /**
          * @see org.apache.maven.execution.ExecutionListener#mojoSkipped(org.apache.maven.execution.ExecutionEvent)

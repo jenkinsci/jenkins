@@ -232,6 +232,10 @@ public final class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,Ma
     private DescribableList<BuildWrapper,Descriptor<BuildWrapper>> buildWrappers =
         new DescribableList<BuildWrapper, Descriptor<BuildWrapper>>(this);
 
+    /**
+     * @deprecated
+     *      Use {@link #MavenModuleSet(ItemGroup, String)}
+     */
     public MavenModuleSet(String name) {
         this(Jenkins.getInstance(),name);
     }

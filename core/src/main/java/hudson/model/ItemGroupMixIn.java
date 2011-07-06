@@ -208,6 +208,7 @@ public abstract class ItemGroupMixIn {
 
         add(result);
         ItemListener.fireOnCopied(src,result);
+        Hudson.getInstance().rebuildDependencyGraph();
 
         return result;
     }
