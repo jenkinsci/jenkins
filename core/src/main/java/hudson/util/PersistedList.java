@@ -174,6 +174,10 @@ public class PersistedList<T> implements Iterable<T> {
         return data.isEmpty();
     }
 
+    public boolean contains(Object item) {
+        return data.contains(item);
+    }
+
     /**
      * {@link Converter} implementation for XStream.
      *
