@@ -23,6 +23,8 @@
  */
 package hudson.model;
 
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableListMultimap;
 import com.thoughtworks.xstream.XStream;
 import com.thoughtworks.xstream.converters.Converter;
 import com.thoughtworks.xstream.converters.MarshallingContext;
@@ -36,15 +38,21 @@ import hudson.BulkChange;
 import hudson.model.listeners.SaveableListener;
 import hudson.util.HexBinaryConverter;
 import hudson.util.Iterators;
+import hudson.util.PersistedList;
 import hudson.util.XStream2;
+import jenkins.model.FingerprintFacet;
 import jenkins.model.Jenkins;
+import jenkins.model.TransientFingerprintFacetFactory;
 import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.export.ExportedBean;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.AbstractCollection;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.Hashtable;
 import java.util.Iterator;
@@ -54,7 +62,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- * A file being tracked by Hudson.
+ * A file being tracked by Jenkins.
  *
  * <p>
  * Lifecycle is managed by {@link FingerprintMap}.
@@ -533,6 +541,13 @@ public class Fingerprint implements ModelObject, Saveable {
      */
     private final Hashtable<String,RangeSet> usages = new Hashtable<String,RangeSet>();
 
+    private PersistedList<FingerprintFacet> facets = new PersistedList<FingerprintFacet>(this);
+
+    /**
+     * Lazily computed immutable {@link FingerprintFacet}s created from {@link TransientFingerprintFacetFactory}.
+     */
+    private transient volatile List<FingerprintFacet> transientFacets = null;
+
     public Fingerprint(Run build, String fileName, byte[] md5sum) throws IOException {
         this.original = build==null ? null : new BuildPtr(build);
         this.md5sum = md5sum;
@@ -696,6 +711,91 @@ public class Fingerprint implements ModelObject, Saveable {
     }
 
     /**
+     * Gets the associated {@link FingerprintFacet}s.
+     *
+     * <p>
+     * This method always return a non-empty collection, which is a synthetic collection.
+     * It contains persisted {@link FingerprintFacet}s (those that are added explicitly, like
+     * {@code fingerprint.getFacets().add(x)}), as well those {@linkplain TransientFingerprintFacetFactory that are transient}.
+     *
+     * <p>
+     * Mutation to this collection will manipulate persisted set of {@link FingerprintFacet}s, and therefore regardless
+     * of what you do, this collection will always contain a set of {@link FingerprintFacet}s that are added
+     * by {@link TransientFingerprintFacetFactory}s.
+     *
+     * @since 1.421
+     */
+    public Collection<FingerprintFacet> getFacets() {
+        if (transientFacets==null) {
+            List<FingerprintFacet> transientFacets = new ArrayList<FingerprintFacet>();
+            for (TransientFingerprintFacetFactory fff : TransientFingerprintFacetFactory.all()) {
+                fff.createFor(this,transientFacets);
+            }
+            this.transientFacets = ImmutableList.copyOf(transientFacets);
+        }
+
+        return new AbstractCollection<FingerprintFacet>() {
+            @Override
+            public Iterator<FingerprintFacet> iterator() {
+                return Iterators.sequence(facets.iterator(), transientFacets.iterator());
+            }
+
+            @Override
+            public boolean add(FingerprintFacet e) {
+                try {
+                    facets.add(e);
+                    return true;
+                } catch (IOException x) {
+                    throw new Error(x);
+                }
+            }
+
+            @Override
+            public boolean remove(Object o) {
+                try {
+                    return facets.remove((FingerprintFacet)o);
+                } catch (IOException x) {
+                    throw new Error(x);
+                }
+            }
+
+            @Override
+            public boolean contains(Object o) {
+                return facets.contains(o) || transientFacets.contains(o);
+            }
+
+            @Override
+            public int size() {
+                return facets.size()+transientFacets.size();
+            }
+        };
+    }
+
+    public Collection<FingerprintFacet> getSortedFacets() {
+        List<FingerprintFacet> r = new ArrayList<FingerprintFacet>(getFacets());
+        Collections.sort(r,new Comparator<FingerprintFacet>() {
+            public int compare(FingerprintFacet o1, FingerprintFacet o2) {
+                long a = o1.getTimestamp();
+                long b = o2.getTimestamp();
+                if (a<b)    return -1;
+                if (a==b)   return 0;
+                return 1;
+            }
+        });
+        return r;
+    }
+
+    /**
+     * Returns the actions contributed from {@link #getFacets()}
+     */
+    public List<Action> getActions() {
+        List<Action> r = new ArrayList<Action>();
+        for (FingerprintFacet ff : getFacets())
+            ff.createActions(r);
+        return Collections.unmodifiableList(r);
+    }
+
+    /**
      * Save the settings to a file.
      */
     public synchronized void save() throws IOException {
@@ -752,6 +852,10 @@ public class Fingerprint implements ModelObject, Saveable {
             Fingerprint f = (Fingerprint) configFile.read();
             if(logger.isLoggable(Level.FINE))
                 logger.fine("Loading fingerprint "+file+" took "+(System.currentTimeMillis()-start)+"ms");
+            if (f.facets==null)
+                f.facets = new PersistedList<FingerprintFacet>(f);
+            for (FingerprintFacet facet : f.facets)
+                facet._setOwner(f);
             return f;
         } catch (IOException e) {
             if(file.exists() && file.length()==0) {

@@ -24,13 +24,14 @@ THE SOFTWARE.
 
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
-  <l:layout>
-    <l:header title="${it.fileName}">
+  <l:layout title="${it.fileName}">
+    <l:header>
       <!-- RSS? -->
     </l:header>
     <l:side-panel>
       <l:tasks>
         <l:task icon="images/24x24/up.png" href="${rootURL}/" title="${%Back to Dashboard}" />
+        <t:actions/>
       </l:tasks>
     </l:side-panel>
     <l:main-panel>
@@ -87,6 +88,9 @@ THE SOFTWARE.
           </table>
         </j:otherwise>
       </j:choose>
+      <j:forEach var="ff" items="${it.sortedFacets}">
+        <st:include page="main.jelly" optional="true" it="${ff}"/>
+      </j:forEach>
     </l:main-panel>
   </l:layout>
 </j:jelly>

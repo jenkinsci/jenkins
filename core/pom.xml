@@ -341,6 +341,13 @@ THE SOFTWARE.
       </exclusions>
     </dependency>
 
+    <dependency><!-- working around MCOMPILER-97 -->
+      <groupId>org.jenkins-ci</groupId>
+      <artifactId>core-annotation-processors</artifactId>
+      <version>1.0</version>
+      <optional>true</optional>
+    </dependency>
+
     <dependency>
       <groupId>org.jruby.ext.posix</groupId>
       <artifactId>jna-posix</artifactId>
@@ -359,7 +366,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.kohsuke.stapler</groupId>
       <artifactId>stapler-groovy</artifactId>
-      <version>1.169</version>
+      <version>1.170</version>
       <exclusions>
         <exclusion>
           <groupId>commons-jelly</groupId>
