@@ -413,6 +413,7 @@ THE SOFTWARE.
           <goals>-DskipTests javadoc:javadoc animal-sniffer:check deploy javadoc:aggregate</goals>
           <pushChanges>false</pushChanges>
           <localCheckout>true</localCheckout>
+          <tagNameFormat>jenkins-@{project.version}</tagNameFormat>
         </configuration>
       </plugin>
       <plugin>
