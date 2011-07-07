@@ -165,7 +165,7 @@ THE SOFTWARE.
         <plugin>
           <groupId>org.codehaus.mojo</groupId>
           <artifactId>build-helper-maven-plugin</artifactId>
-          <version>1.7-SNAPSHOT</version>
+          <version>1.7</version>
           <executions>
             <execution>
               <id>timestamp-property</id>
@@ -258,7 +258,7 @@ THE SOFTWARE.
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-dependency-plugin</artifactId>
-          <version>2.2</version>
+          <version>2.3</version>
         </plugin>
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
@@ -433,13 +433,13 @@ THE SOFTWARE.
       </plugin>
       <plugin>
         <!-- make sure our code doesn't have 1.6 dependencies except where we know it -->
-        <groupId>org.jvnet</groupId>
-        <artifactId>animal-sniffer</artifactId>
-        <version>1.2</version>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>animal-sniffer-maven-plugin</artifactId>
+        <version>1.7</version>
         <configuration>
           <signature>
-            <groupId>org.jvnet.animal-sniffer</groupId>
-            <artifactId>java1.5</artifactId>
+            <groupId>org.codehaus.mojo.signature</groupId>
+            <artifactId>java15</artifactId>
             <version>1.0</version>
           </signature>
         </configuration>
