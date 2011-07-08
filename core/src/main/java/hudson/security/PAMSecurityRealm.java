@@ -66,7 +66,7 @@ import java.io.File;
  * @author Kohsuke Kawaguchi
  * @since 1.282
  */
-public class PAMSecurityRealm extends SecurityRealm {
+public class PAMSecurityRealm extends AbstractPasswordBasedSecurityRealm {
     public final String serviceName;
 
     @DataBoundConstructor
@@ -74,6 +74,24 @@ public class PAMSecurityRealm extends SecurityRealm {
         serviceName = Util.fixEmptyAndTrim(serviceName);
         if(serviceName==null)   serviceName="sshd"; // use sshd as the default
         this.serviceName = serviceName;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    protected UserDetails authenticate(String username, String password) throws AuthenticationException {   
+      String userName =(String)getSecurityComponents().manager.authenticate(
+      new UsernamePasswordAuthenticationToken(username, password)).getPrincipal();
+      return loadUserByUsername(userName);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException, DataAccessException {
+        return getSecurityComponents().userDetails.loadUserByUsername(username);
     }
 
     public static class PAMAuthenticationProvider implements AuthenticationProvider {
