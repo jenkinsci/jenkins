@@ -35,6 +35,7 @@ import hudson.Extension;
 import hudson.util.FormValidation;
 import hudson.util.RobustReflectionConverter;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -170,11 +171,16 @@ public class AuthorizationMatrixProperty extends JobProperty<Job<?, ?>> {
 		}
 
 		public List<PermissionGroup> getAllGroups() {
-			return Arrays.asList(PermissionGroup.get(Item.class),PermissionGroup.get(Run.class));
+            List<PermissionGroup> r = new ArrayList<PermissionGroup>();
+            for (PermissionGroup pg : PermissionGroup.getAll()) {
+                if (pg.hasPermissionContainedBy(PermissionScope.ITEM))
+                    r.add(pg);
+            }
+            return r;
 		}
 
         public boolean showPermission(Permission p) {
-            return p.getEnabled() && p!=Item.CREATE;
+            return p.getEnabled() && p.isContainedBy(PermissionScope.ITEM);
         }
 
         public FormValidation doCheckName(@AncestorInPath Job project, @QueryParameter String value) throws IOException, ServletException {

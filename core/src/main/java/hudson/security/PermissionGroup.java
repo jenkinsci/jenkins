@@ -81,6 +81,13 @@ public final class PermissionGroup implements Iterable<Permission>, Comparable<P
         return permisisonsView;
     }
 
+    public boolean hasPermissionContainedBy(PermissionScope scope) {
+        for (Permission p : permisisons)
+            if (p.isContainedBy(scope))
+                return true;
+        return false;
+    }
+
     /**
      * Finds a permission that has the given name.
      */

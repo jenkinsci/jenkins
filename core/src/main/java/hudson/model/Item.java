@@ -25,6 +25,7 @@
 package hudson.model;
 
 import hudson.Functions;
+import hudson.security.PermissionScope;
 import org.kohsuke.stapler.StaplerRequest;
 
 import java.io.IOException;
@@ -219,12 +220,12 @@ public interface Item extends PersistenceRoot, SearchableModelObject, AccessCont
     public void delete() throws IOException, InterruptedException;
 
     public static final PermissionGroup PERMISSIONS = new PermissionGroup(Item.class,Messages._Item_Permissions_Title());
-    public static final Permission CREATE = new Permission(PERMISSIONS, "Create", null, Permission.CREATE);
-    public static final Permission DELETE = new Permission(PERMISSIONS, "Delete", null, Permission.DELETE);
-    public static final Permission CONFIGURE = new Permission(PERMISSIONS, "Configure", null, Permission.CONFIGURE);
-    public static final Permission READ = new Permission(PERMISSIONS, "Read", null, Permission.READ);
-    public static final Permission EXTENDED_READ = new Permission(PERMISSIONS,"ExtendedRead", Messages._AbstractProject_ExtendedReadPermission_Description(), CONFIGURE, Boolean.getBoolean("hudson.security.ExtendedReadPermission"));
-    public static final Permission BUILD = new Permission(PERMISSIONS, "Build", Messages._AbstractProject_BuildPermission_Description(),  Permission.UPDATE);
-    public static final Permission WORKSPACE = new Permission(PERMISSIONS, "Workspace", Messages._AbstractProject_WorkspacePermission_Description(), Permission.READ);
-    public static final Permission WIPEOUT = new Permission(PERMISSIONS, "WipeOut", Messages._AbstractProject_WipeOutPermission_Description(), null, Functions.isWipeOutPermissionEnabled());
+    public static final Permission CREATE = new Permission(PERMISSIONS, "Create", null, Permission.CREATE, PermissionScope.ITEM_GROUP);
+    public static final Permission DELETE = new Permission(PERMISSIONS, "Delete", null, Permission.DELETE, PermissionScope.ITEM);
+    public static final Permission CONFIGURE = new Permission(PERMISSIONS, "Configure", null, Permission.CONFIGURE, PermissionScope.ITEM);
+    public static final Permission READ = new Permission(PERMISSIONS, "Read", null, Permission.READ, PermissionScope.ITEM);
+    public static final Permission EXTENDED_READ = new Permission(PERMISSIONS,"ExtendedRead", Messages._AbstractProject_ExtendedReadPermission_Description(), CONFIGURE, Boolean.getBoolean("hudson.security.ExtendedReadPermission"), new PermissionScope[]{PermissionScope.ITEM});
+    public static final Permission BUILD = new Permission(PERMISSIONS, "Build", Messages._AbstractProject_BuildPermission_Description(),  Permission.UPDATE, PermissionScope.ITEM);
+    public static final Permission WORKSPACE = new Permission(PERMISSIONS, "Workspace", Messages._AbstractProject_WorkspacePermission_Description(), Permission.READ, PermissionScope.ITEM);
+    public static final Permission WIPEOUT = new Permission(PERMISSIONS, "WipeOut", Messages._AbstractProject_WipeOutPermission_Description(), null, Functions.isWipeOutPermissionEnabled(), new PermissionScope[]{PermissionScope.ITEM});
 }
