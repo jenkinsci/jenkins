@@ -179,6 +179,14 @@ public class MavenBuild extends AbstractMavenBuild<MavenModule,MavenBuild> {
     }
 
     /**
+     * The same as {@link #getParentBuild()}.
+     */
+    @Override
+    public AbstractBuild<?, ?> getRootBuild() {
+        return getParentBuild();
+    }
+
+    /**
      * Gets the "governing" {@link MavenModuleSet} that has set
      * the workspace for this build.
      *

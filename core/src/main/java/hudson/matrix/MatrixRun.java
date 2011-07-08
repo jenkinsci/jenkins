@@ -24,6 +24,7 @@
 package hudson.matrix;
 
 import hudson.FilePath;
+import hudson.model.AbstractBuild;
 import hudson.slaves.WorkspaceList;
 import hudson.slaves.WorkspaceList.Lease;
 import static hudson.matrix.MatrixConfiguration.useShortWorkspaceName;
@@ -83,6 +84,14 @@ public class MatrixRun extends Build<MatrixConfiguration,MatrixRun> {
      */
     public MatrixBuild getParentBuild() {
         return getParent().getParent().getBuildByNumber(getNumber());
+    }
+
+    /**
+     * The same as {@link #getParentBuild()}.
+     */
+    @Override
+    public AbstractBuild<?, ?> getRootBuild() {
+        return getParentBuild();
     }
 
     @Override

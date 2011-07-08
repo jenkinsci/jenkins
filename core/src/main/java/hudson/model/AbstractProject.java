@@ -368,15 +368,24 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
     }
 
     /**
-     * Returns the root project value.
+     * Gets the nearest ancestor {@link TopLevelItem} that's also an {@link AbstractProject}.
      *
-     * @return the root project value.
+     * <p>
+     * Some projects (such as matrix projects, Maven projects, or promotion processes) form a tree of jobs
+     * that acts as a single unit. This method can be used to find the top most dominating job that
+     * covers such a tree.
+     *
+     * @return never null.
+     * @see AbstractBuild#getRootBuild()
      */
-    public AbstractProject getRootProject() {
-        if (this.getParent() instanceof Jenkins) {
+    public AbstractProject<?,?> getRootProject() {
+        if (this instanceof TopLevelItem) {
             return this;
         } else {
-            return ((AbstractProject) this.getParent()).getRootProject();
+            ItemGroup p = this.getParent();
+            if (p instanceof AbstractProject)
+                return ((AbstractProject) p).getRootProject();
+            return this;
         }
     }
 
