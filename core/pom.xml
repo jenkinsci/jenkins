@@ -40,6 +40,7 @@ THE SOFTWARE.
   
   <properties>
     <staplerFork>true</staplerFork>
+    <stapler.version>1.171</stapler.version>
   </properties>
 
   <build>
@@ -366,7 +367,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.kohsuke.stapler</groupId>
       <artifactId>stapler-groovy</artifactId>
-      <version>1.170</version>
+      <version>${stapler.version}</version>
       <exclusions>
         <exclusion>
           <groupId>commons-jelly</groupId>
@@ -382,6 +383,11 @@ THE SOFTWARE.
           <artifactId>groovy</artifactId>
         </exclusion>
       </exclusions>
+    </dependency>
+    <dependency>
+      <groupId>org.kohsuke.stapler</groupId>
+      <artifactId>stapler-jrebel</artifactId>
+      <version>${stapler.version}</version>
     </dependency>
     <dependency>
       <groupId>org.kohsuke.stapler</groupId>
