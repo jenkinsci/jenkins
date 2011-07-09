@@ -40,6 +40,8 @@ import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 import org.kohsuke.stapler.export.Exported;
 
+import com.google.common.util.concurrent.MoreExecutors;
+
 import javax.servlet.ServletException;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -405,7 +407,7 @@ public final class MavenModule extends AbstractMavenProject<MavenModule,MavenBui
                 if(m.isDisabled())  continue;
                 ModuleDependency moduleDependency = m.asDependency();
                 MavenModule old = modules.get(moduleDependency);
-                MavenModule relevant = chooseMoreRelevantModule(old, m);
+                MavenModule relevant = chooseMoreRelevantModule(old, m, moduleDependency);
                 modules.put(moduleDependency, relevant);
                 if (hasDependenciesWithUnknownVersion) {
                     modules.put(moduleDependency.withUnknownVersion(),relevant);
@@ -480,7 +482,8 @@ public final class MavenModule extends AbstractMavenProject<MavenModule,MavenBui
         return false;
     }
     
-    private MavenModule chooseMoreRelevantModule(MavenModule mm1, MavenModule mm2) {
+    private MavenModule chooseMoreRelevantModule(MavenModule mm1, MavenModule mm2, ModuleDependency moduleDependency) {
+        
         if (mm1 == null) {
             return mm2;
         }
@@ -488,21 +491,33 @@ public final class MavenModule extends AbstractMavenProject<MavenModule,MavenBui
             return mm1;
         }
         
+        final MavenModule moreRelevant;
+        final MavenModule lessRelevant;
         int relevancy1 = getDependencyRelevancy(mm1);
         int relevancy2 = getDependencyRelevancy(mm2);
         
         if (relevancy1 > relevancy2) {
-            return mm1;
+            moreRelevant = mm1;
+            lessRelevant = mm2;
         } else if (relevancy2 > relevancy1) {
-            return mm2;
+            moreRelevant = mm2;
+            lessRelevant = mm1;
+        } else {
+            // arbitrary, but reproduceable
+            if (mm1.getParent().getName().compareTo(mm2.getParent().getName()) < 0) {
+                moreRelevant = mm2;
+                lessRelevant = mm1;
+            } else { // should always mean > 0 as name is unique
+                moreRelevant = mm1;
+                lessRelevant = mm2;
+            }
         }
         
-        // arbitrary, but reproduceable
-        if (mm1.getParent().getName().compareTo(mm2.getParent().getName()) < 0) {
-            return mm2;
-        } else { // should always mean > 0 as name is unique
-            return mm1;
+        if (LOGGER.isLoggable(Level.FINER)) {
+            LOGGER.finer("Choosing " + moreRelevant.getParent().getName() + " over " + lessRelevant.getParent().getName()
+                    + " for module " + moduleDependency.getName() + ". Relevancies: " + relevancy1 + ", " + relevancy2); 
         }
+        return moreRelevant;
     }
 
     private int getDependencyRelevancy(MavenModule mm) {
