@@ -700,7 +700,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>net.java.dev.jna</groupId>
       <artifactId>jna</artifactId>
-      <version>3.2.4</version>
+      <version>3.3.0-jenkins-1</version>
     </dependency>
     <dependency>
       <groupId>com.sun.akuma</groupId>
