@@ -66,7 +66,7 @@ import java.io.File;
  * @author Kohsuke Kawaguchi
  * @since 1.282
  */
-public class PAMSecurityRealm extends SecurityRealm {
+public class PAMSecurityRealm extends AbstractPasswordBasedSecurityRealm {
     public final String serviceName;
 
     @DataBoundConstructor
@@ -76,56 +76,29 @@ public class PAMSecurityRealm extends SecurityRealm {
         this.serviceName = serviceName;
     }
 
-    public static class PAMAuthenticationProvider implements AuthenticationProvider {
-        private String serviceName;
+    @Override
+    protected UserDetails authenticate(String username, String password) throws AuthenticationException {
+        try {
+            UnixUser uu = new PAM(serviceName).authenticate(username, password);
 
-        public PAMAuthenticationProvider(String serviceName) {
-            this.serviceName = serviceName;
-        }
-
-        public Authentication authenticate(Authentication authentication) throws AuthenticationException {
-            String username = authentication.getPrincipal().toString();
-            String password = authentication.getCredentials().toString();
-
-            try {
-                UnixUser u = new PAM(serviceName).authenticate(username, password);
-                GrantedAuthority[] groups = toAuthorities(u);
-
-                // I never understood why Acegi insists on keeping the password...
-                return new UsernamePasswordAuthenticationToken(username, password, groups);
-            } catch (PAMException e) {
-                throw new BadCredentialsException(e.getMessage(),e);
-            }
-        }
-
-        public boolean supports(Class clazz) {
-            return true;
+            // I never understood why Acegi insists on keeping the password...
+            return new User(username,"",true,true,true,true, toAuthorities(uu));
+        } catch (PAMException e) {
+            throw new BadCredentialsException(e.getMessage(),e);
         }
     }
 
-    public SecurityComponents createSecurityComponents() {
-        Binding binding = new Binding();
-        binding.setVariable("instance", this);
-
-        BeanBuilder builder = new BeanBuilder();
-        builder.parse(Jenkins.getInstance().servletContext.getResourceAsStream("/WEB-INF/security/PAMSecurityRealm.groovy"),binding);
-        WebApplicationContext context = builder.createApplicationContext();
-        return new SecurityComponents(
-            findBean(AuthenticationManager.class, context),
-            new UserDetailsService() {
-                public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException, DataAccessException {
-                    if(!UnixUser.exists(username))
-                        throw new UsernameNotFoundException("No such Unix user: "+username);
-                    try {
-                        UnixUser uu = new UnixUser(username);
-                        // return some dummy instance
-                        return new User(username,"",true,true,true,true, toAuthorities(uu));
-                    } catch (PAMException e) {
-                        throw new UsernameNotFoundException("Failed to load information about Unix user "+username,e);
-                    }
-                }
-            }
-        );
+    @Override
+    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException, DataAccessException {
+        if(!UnixUser.exists(username))
+            throw new UsernameNotFoundException("No such Unix user: "+username);
+        try {
+            UnixUser uu = new UnixUser(username);
+            // return some dummy instance
+            return new User(username,"",true,true,true,true, toAuthorities(uu));
+        } catch (PAMException e) {
+            throw new UsernameNotFoundException("Failed to load information about Unix user "+username,e);
+        }
     }
 
     private static GrantedAuthority[] toAuthorities(UnixUser u) {
