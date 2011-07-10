@@ -213,6 +213,18 @@ public final class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,Ma
     private boolean runHeadless = false;
 
     /**
+     * If true, send mail to addresses given in the modules developer section
+     * @since 1.397
+     */
+    private boolean mailToDevelopers = false;
+
+    /**
+     * If true, send mail to addresses given in the modules notifier section
+     * @since 1.397
+     */
+    private boolean mailToNotifiers = false;
+
+    /**
      * Reporters configured at {@link MavenModuleSet} level. Applies to all {@link MavenModule} builds.
      */
     private DescribableList<MavenReporter,Descriptor<MavenReporter>> reporters =
@@ -421,7 +433,23 @@ public final class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,Ma
     public int getMavenValidationLevel() {
         return mavenValidationLevel;
     }    
-    
+
+    public boolean isMailToDevelopers() {
+    	return mailToDevelopers;
+    }
+
+    public void setIsMailToDevelopers(boolean mailToDevelopers) {
+    	this.mailToDevelopers = mailToDevelopers;
+    }
+
+    public boolean isMailToNotfiers() {
+    	return mailToNotifiers;
+    }
+
+    public void setIsMailToNotfiers(boolean mailToNotifiers) {
+    	this.mailToNotifiers = mailToNotifiers;
+    }
+
     /**
      * List of active {@link MavenReporter}s that should be applied to all module builds.
      */
@@ -837,9 +865,12 @@ public final class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,Ma
         resolveDependencies = req.hasParameter( "maven.resolveDependencies" );
         processPlugins = req.hasParameter( "maven.processPlugins" );
         mavenValidationLevel = NumberUtils.toInt( req.getParameter( "maven.validationLevel" ), -1 );
+        mailToDevelopers = req.hasParameter( "maven.mailToDevelopers" );
+        mailToNotifiers = req.hasParameter( "maven.mailToNotifiers" );
         reporters.rebuild(req,json,MavenReporters.getConfigurableList());
         publishers.rebuild(req,json,BuildStepDescriptor.filter(Publisher.all(),this.getClass()));
         buildWrappers.rebuild(req,json,BuildWrappers.getFor(this));
+        
     }
 
     /**

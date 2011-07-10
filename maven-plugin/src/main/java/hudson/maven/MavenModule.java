@@ -109,6 +109,11 @@ public final class MavenModule extends AbstractMavenProject<MavenModule,MavenBui
     private volatile List<ModuleName> children;
 
     /**
+     * Addresses used for mail notification
+     */
+    private String mailNotifiers;
+
+    /**
      * Nest level used to display this module in the module list.
      * The root module and orphaned module gets 0.
      */
@@ -542,13 +547,20 @@ public final class MavenModule extends AbstractMavenProject<MavenModule,MavenBui
     protected List<MavenReporter> createReporters() {
         List<MavenReporter> reporterList = new ArrayList<MavenReporter>();
 
-        getReporters().addAllTo(reporterList);
-        getParent().getReporters().addAllTo(reporterList);
-
         for (MavenReporterDescriptor d : MavenReporterDescriptor.all()) {
             if(getReporters().contains(d))
                 continue;   // already configured
             MavenReporter auto = d.newAutoInstance(this);
+            
+			if (auto instanceof MavenMailer) {
+				MavenMailer mailer = (MavenMailer) auto;
+
+				if (mailNotifiers != null) {
+					mailer.recipients = mailNotifiers;
+					mailer.dontNotifyEveryUnstableBuild = dontNotifyEveryUnstableBuild;
+				}
+			}
+            
             if(auto!=null)
                 reporterList.add(auto);
         }
@@ -564,5 +576,8 @@ public final class MavenModule extends AbstractMavenProject<MavenModule,MavenBui
     }
 
     private static final Logger LOGGER = Logger.getLogger(MavenModule.class.getName());
+
+
+	private boolean dontNotifyEveryUnstableBuild;
     
 }
