@@ -28,12 +28,11 @@ THE SOFTWARE.
   <parent>
     <groupId>org.jenkins-ci.main</groupId>
     <artifactId>pom</artifactId>
-    <version>1.419-SNAPSHOT</version>
+    <version>1.421-SNAPSHOT</version>
     <relativePath>../pom.xml</relativePath>
   </parent>
 
   <artifactId>jenkins-core</artifactId>
-  <packaging>stapler-jar</packaging>
   <name>Jenkins core</name>
   <description>
     Contains the core Jenkins code and view files to render HTML.
@@ -41,6 +40,7 @@ THE SOFTWARE.
   
   <properties>
     <staplerFork>true</staplerFork>
+    <stapler.version>1.171</stapler.version>
   </properties>
 
   <build>
@@ -84,15 +84,8 @@ THE SOFTWARE.
       <plugin>
         <groupId>org.kohsuke.stapler</groupId>
         <artifactId>maven-stapler-plugin</artifactId>
+        <version>1.16</version>
         <!-- version specified in grandparent pom -->
-        <extensions>true</extensions>
-        <dependencies>
-          <dependency>
-            <groupId>org.jvnet.maven-jellydoc-plugin</groupId>
-            <artifactId>maven-jellydoc-plugin</artifactId>
-            <version>1.5</version>
-          </dependency>
-        </dependencies>
         <configuration>
           <fork>${staplerFork}</fork><!-- the source code is big enough now that otherwise it fails with OutOfMemoryError -->
           <maxmem>128m</maxmem>
@@ -349,6 +342,13 @@ THE SOFTWARE.
       </exclusions>
     </dependency>
 
+    <dependency><!-- working around MCOMPILER-97 -->
+      <groupId>org.jenkins-ci</groupId>
+      <artifactId>core-annotation-processors</artifactId>
+      <version>1.0</version>
+      <optional>true</optional>
+    </dependency>
+
     <dependency>
       <groupId>org.jruby.ext.posix</groupId>
       <artifactId>jna-posix</artifactId>
@@ -367,7 +367,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.kohsuke.stapler</groupId>
       <artifactId>stapler-groovy</artifactId>
-      <version>1.167</version>
+      <version>${stapler.version}</version>
       <exclusions>
         <exclusion>
           <groupId>commons-jelly</groupId>
@@ -386,8 +386,18 @@ THE SOFTWARE.
     </dependency>
     <dependency>
       <groupId>org.kohsuke.stapler</groupId>
+      <artifactId>stapler-jrebel</artifactId>
+      <version>${stapler.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.kohsuke.stapler</groupId>
       <artifactId>stapler-adjunct-timeline</artifactId>
       <version>1.3</version>
+    </dependency>
+    <dependency>
+      <groupId>org.kohsuke.stapler</groupId>
+      <artifactId>stapler-adjunct-codemirror</artifactId>
+      <version>1.1</version>
     </dependency>
     <dependency><!-- this helps us see the source code of the control while we edit Jenkins. -->
       <groupId>org.kohsuke.stapler</groupId>

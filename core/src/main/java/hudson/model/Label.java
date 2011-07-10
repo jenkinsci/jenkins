@@ -29,9 +29,17 @@ import static hudson.Util.fixNull;
 
 import hudson.model.labels.LabelAtom;
 import hudson.model.labels.LabelExpression;
+import hudson.model.labels.LabelExpression.And;
+import hudson.model.labels.LabelExpression.Binary;
+import hudson.model.labels.LabelExpression.Iff;
+import hudson.model.labels.LabelExpression.Implies;
+import hudson.model.labels.LabelExpression.Not;
+import hudson.model.labels.LabelExpression.Or;
+import hudson.model.labels.LabelExpression.Paren;
 import hudson.model.labels.LabelExpressionLexer;
 import hudson.model.labels.LabelExpressionParser;
 import hudson.model.labels.LabelOperatorPrecedence;
+import hudson.model.labels.LabelVisitor;
 import hudson.slaves.NodeProvisioner;
 import hudson.slaves.Cloud;
 import hudson.util.QuotedStringTokenizer;
@@ -359,6 +367,22 @@ public abstract class Label extends Actionable implements Comparable<Label>, Mod
     }
 
     /**
+     * Accepts a visitor and call its respective "onXYZ" method based no the actual type of 'this'.
+     */
+    public abstract <V,P> V accept(LabelVisitor<V,P> visitor, P param);
+
+    /**
+     * Lists up all the atoms contained in in this label.
+     *
+     * @since 1.420
+     */
+    public Set<LabelAtom> listAtoms() {
+        Set<LabelAtom> r = new HashSet<LabelAtom>();
+        accept(ATOM_COLLECTOR,r);
+        return r;
+    }
+
+    /**
      * Returns the label that represents "this&amp;rhs"
      */
     public Label and(Label rhs) {
@@ -484,4 +508,51 @@ public abstract class Label extends Actionable implements Comparable<Label>, Mod
         LabelExpressionLexer lexer = new LabelExpressionLexer(new StringReader(labelExpression));
         return new LabelExpressionParser(lexer).expr();
     }
+
+    /**
+     * Collects all the atoms in the expression.
+     */
+    private static final LabelVisitor<Void,Set<LabelAtom>> ATOM_COLLECTOR = new LabelVisitor<Void,Set<LabelAtom>>() {
+        @Override
+        public Void onAtom(LabelAtom a, Set<LabelAtom> param) {
+            param.add(a);
+            return null;
+        }
+
+        @Override
+        public Void onParen(Paren p, Set<LabelAtom> param) {
+            return p.base.accept(this,param);
+        }
+
+        @Override
+        public Void onNot(Not p, Set<LabelAtom> param) {
+            return p.base.accept(this,param);
+        }
+
+        @Override
+        public Void onAnd(And p, Set<LabelAtom> param) {
+            return onBinary(p,param);
+        }
+
+        @Override
+        public Void onOr(Or p, Set<LabelAtom> param) {
+            return onBinary(p,param);
+        }
+
+        @Override
+        public Void onIff(Iff p, Set<LabelAtom> param) {
+            return onBinary(p,param);
+        }
+
+        @Override
+        public Void onImplies(Implies p, Set<LabelAtom> param) {
+            return onBinary(p,param);
+        }
+
+        private Void onBinary(Binary b, Set<LabelAtom> param) {
+            b.lhs.accept(this,param);
+            b.rhs.accept(this,param);
+            return null;
+        }
+    };
 }

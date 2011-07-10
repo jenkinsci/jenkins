@@ -1,5 +1,6 @@
 package hudson.maven;
 
+import org.junit.Assert;
 import org.jvnet.hudson.test.HudsonTestCase;
 import org.jvnet.hudson.test.Bug;
 import org.jvnet.hudson.test.ExtractResourceSCM;
@@ -7,12 +8,14 @@ import org.jvnet.hudson.test.ExtractResourceWithChangesSCM;
 import org.jvnet.hudson.test.ExtractChangeLogSet;
 
 import hudson.Launcher;
+import hudson.maven.reporters.MavenArtifact;
+import hudson.maven.reporters.MavenArtifactRecord;
+import hudson.maven.reporters.MavenFingerprinter;
 import hudson.model.AbstractBuild;
 import hudson.model.BuildListener;
 import hudson.model.Result;
-import hudson.scm.ChangeLogSet;
-import hudson.scm.ChangeLogSet.Entry;
-import hudson.scm.NullSCM;
+import hudson.model.Run.Artifact;
+import hudson.tasks.Fingerprinter.FingerprintAction;
 import hudson.tasks.Maven.MavenInstallation;
 
 import java.io.IOException;
@@ -38,6 +41,7 @@ public class MavenMultiModuleTest extends HudsonTestCase {
         configureDefaultMaven("apache-maven-2.2.1", MavenInstallation.MAVEN_21);
         MavenModuleSet m = createMavenProject();
         m.getReporters().add(new TestReporter());
+        m.getReporters().add(new MavenFingerprinter());
     	m.setScm(new ExtractResourceWithChangesSCM(getClass().getResource("maven-multimod.zip"),
     						   getClass().getResource("maven-multimod-changes.zip")));
     
@@ -71,6 +75,40 @@ public class MavenMultiModuleTest extends HudsonTestCase {
 	    }
 	    assertTrue("duration of moduleset build should be greater-equal than sum of the module builds",
 	            pBuild.getDuration() >= summedModuleDuration);
+	    
+	    assertFingerprintWereRecorded(pBuild);
+    }
+
+    private void assertFingerprintWereRecorded(MavenModuleSetBuild modulesetBuild) {
+        boolean mustHaveFingerprints = false;
+        for (MavenBuild moduleBuild : modulesetBuild.getModuleLastBuilds().values()) {
+            if (moduleBuild.getResult() != Result.NOT_BUILT && moduleBuild.getResult() != Result.ABORTED) {
+                assertFingerprintWereRecorded(moduleBuild);
+                mustHaveFingerprints = true;
+            }
+        }
+        
+        if (mustHaveFingerprints) {
+            FingerprintAction action = modulesetBuild.getAction(FingerprintAction.class);
+            Assert.assertNotNull(action);
+            Assert.assertFalse(action.getFingerprints().isEmpty());
+        }
+    }
+
+    private void assertFingerprintWereRecorded(MavenBuild moduleBuild) {
+        FingerprintAction action = moduleBuild.getAction(FingerprintAction.class);
+        Assert.assertNotNull(action);
+        Assert.assertFalse(action.getFingerprints().isEmpty());
+        
+        MavenArtifactRecord artifactRecord = moduleBuild.getAction(MavenArtifactRecord.class);
+        Assert.assertNotNull(artifactRecord);
+        String fingerprintName = artifactRecord.mainArtifact.groupId + ":" + artifactRecord.mainArtifact.fileName;
+        
+        Assert.assertTrue("Expected fingerprint " + fingerprintName + " in module build " + moduleBuild,
+              action.getFingerprints().containsKey(fingerprintName));
+        
+        // we should assert more - i.e. that all dependencies are fingerprinted, too,
+        // but it's complicated to find out the dependencies of the build
     }
 
     @Bug(5357)

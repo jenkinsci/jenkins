@@ -368,15 +368,24 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
     }
 
     /**
-     * Returns the root project value.
+     * Gets the nearest ancestor {@link TopLevelItem} that's also an {@link AbstractProject}.
      *
-     * @return the root project value.
+     * <p>
+     * Some projects (such as matrix projects, Maven projects, or promotion processes) form a tree of jobs
+     * that acts as a single unit. This method can be used to find the top most dominating job that
+     * covers such a tree.
+     *
+     * @return never null.
+     * @see AbstractBuild#getRootBuild()
      */
-    public AbstractProject getRootProject() {
-        if (this.getParent() instanceof Jenkins) {
+    public AbstractProject<?,?> getRootProject() {
+        if (this instanceof TopLevelItem) {
             return this;
         } else {
-            return ((AbstractProject) this.getParent()).getRootProject();
+            ItemGroup p = this.getParent();
+            if (p instanceof AbstractProject)
+                return ((AbstractProject) p).getRootProject();
+            return this;
         }
     }
 
@@ -1859,9 +1868,16 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
                 return FormValidation.error(e,
                         Messages.AbstractProject_AssignedLabelString_InvalidBooleanExpression(e.getMessage()));
             }
-            // TODO: if there's an atom in the expression that is empty, report it
-            if (Jenkins.getInstance().getLabel(value).isEmpty())
+            Label l = Jenkins.getInstance().getLabel(value);
+            if (l.isEmpty()) {
+                for (LabelAtom a : l.listAtoms()) {
+                    if (a.isEmpty()) {
+                        LabelAtom nearest = LabelAtom.findNearest(a.getName());
+                        return FormValidation.warning(Messages.AbstractProject_AssignedLabelString_NoMatch_DidYouMean(a.getName(),nearest.getDisplayName()));
+                    }
+                }
                 return FormValidation.warning(Messages.AbstractProject_AssignedLabelString_NoMatch());
+            }
             return FormValidation.ok();
         }
 
@@ -1947,13 +1963,22 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
      * Finds a {@link AbstractProject} that has the name closest to the given name.
      */
     public static AbstractProject findNearest(String name) {
-        List<AbstractProject> projects = Jenkins.getInstance().getItems(AbstractProject.class);
+        return findNearest(name,Hudson.getInstance());
+    }
+
+    /**
+     * Finds a {@link AbstractProject} whose name (when referenced from the specified context) is closest to the given name.
+     *
+     * @since 1.419
+     */
+    public static AbstractProject findNearest(String name, ItemGroup context) {
+        List<AbstractProject> projects = Hudson.getInstance().getAllItems(AbstractProject.class);
         String[] names = new String[projects.size()];
         for( int i=0; i<projects.size(); i++ )
-            names[i] = projects.get(i).getName();
+            names[i] = projects.get(i).getRelativeNameFrom(context);
 
         String nearest = EditDistance.findNearest(name, names);
-        return (AbstractProject) Jenkins.getInstance().getItem(nearest);
+        return (AbstractProject)Jenkins.getInstance().getItem(nearest,context);
     }
 
     private static final Comparator<Integer> REVERSE_INTEGER_COMPARATOR = new Comparator<Integer>() {

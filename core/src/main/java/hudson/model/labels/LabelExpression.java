@@ -43,7 +43,7 @@ public abstract class LabelExpression extends Label {
     }
 
     public static class Not extends LabelExpression {
-        private final Label base;
+        public final Label base;
 
         public Not(Label base) {
             super('!'+paren(LabelOperatorPrecedence.NOT,base));
@@ -56,6 +56,11 @@ public abstract class LabelExpression extends Label {
         }
 
         @Override
+        public <V, P> V accept(LabelVisitor<V, P> visitor, P param) {
+            return visitor.onNot(this, param);
+        }
+
+        @Override
         public LabelOperatorPrecedence precedence() {
             return LabelOperatorPrecedence.NOT;
         }
@@ -65,7 +70,7 @@ public abstract class LabelExpression extends Label {
      * No-op but useful for preserving the parenthesis in the user input.
      */
     public static class Paren extends LabelExpression {
-        private final Label base;
+        public final Label base;
 
         public Paren(Label base) {
             super('('+base.getExpression()+')');
@@ -75,6 +80,11 @@ public abstract class LabelExpression extends Label {
         @Override
         public boolean matches(VariableResolver<Boolean> resolver) {
             return base.matches(resolver);
+        }
+
+        @Override
+        public <V, P> V accept(LabelVisitor<V, P> visitor, P param) {
+            return visitor.onParen(this, param);
         }
 
         @Override
@@ -93,7 +103,7 @@ public abstract class LabelExpression extends Label {
     }
 
     public static abstract class Binary extends LabelExpression {
-        private final Label lhs,rhs;
+        public final Label lhs,rhs;
 
         public Binary(Label lhs, Label rhs, LabelOperatorPrecedence op) {
             super(combine(lhs, rhs, op));
@@ -128,6 +138,11 @@ public abstract class LabelExpression extends Label {
         }
 
         @Override
+        public <V, P> V accept(LabelVisitor<V, P> visitor, P param) {
+            return visitor.onAnd(this, param);
+        }
+
+        @Override
         public LabelOperatorPrecedence precedence() {
             return LabelOperatorPrecedence.AND;
         }
@@ -141,6 +156,11 @@ public abstract class LabelExpression extends Label {
         @Override
         protected boolean op(boolean a, boolean b) {
             return a || b;
+        }
+
+        @Override
+        public <V, P> V accept(LabelVisitor<V, P> visitor, P param) {
+            return visitor.onOr(this, param);
         }
 
         @Override
@@ -160,6 +180,11 @@ public abstract class LabelExpression extends Label {
         }
 
         @Override
+        public <V, P> V accept(LabelVisitor<V, P> visitor, P param) {
+            return visitor.onIff(this, param);
+        }
+
+        @Override
         public LabelOperatorPrecedence precedence() {
             return LabelOperatorPrecedence.IFF;
         }
@@ -173,6 +198,11 @@ public abstract class LabelExpression extends Label {
         @Override
         protected boolean op(boolean a, boolean b) {
             return !a || b;
+        }
+
+        @Override
+        public <V, P> V accept(LabelVisitor<V, P> visitor, P param) {
+            return visitor.onImplies(this, param);
         }
 
         @Override

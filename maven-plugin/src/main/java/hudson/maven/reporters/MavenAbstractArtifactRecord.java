@@ -30,6 +30,7 @@ import hudson.maven.MavenUtil;
 import hudson.maven.RedeployPublisher.WrappedArtifactRepository;
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
+import hudson.model.Api;
 import hudson.model.BallColor;
 import hudson.model.BuildBadgeAction;
 import hudson.model.Result;
@@ -62,6 +63,8 @@ import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
+import org.kohsuke.stapler.export.Exported;
+import org.kohsuke.stapler.export.ExportedBean;
 
 /**
  * UI to redeploy artifacts after the fact.
@@ -73,10 +76,12 @@ import org.kohsuke.stapler.StaplerResponse;
  * @author Kohsuke Kawaguchi
  */
 public abstract class MavenAbstractArtifactRecord<T extends AbstractBuild<?,?>> extends TaskAction implements BuildBadgeAction {
+    @ExportedBean
     public final class Record {
         /**
          * Repository URL that artifacts were deployed.
          */
+        @Exported
         public final String url;
 
         /**
@@ -107,26 +112,32 @@ public abstract class MavenAbstractArtifactRecord<T extends AbstractBuild<?,?>> 
         /**
          * Result of the deployment. During the build, this value is null.
          */
+        @Exported
         public Result getResult() {
             return result;
         }
 
+        @Exported
         public int getNumber() {
             return records.indexOf(this);
         }
 
+        @Exported
         public boolean isBuilding() {
             return result==null;
         }
 
+        @Exported
         public Calendar getTimestamp() {
             return (Calendar) timeStamp.clone();
         }
 
+        @Exported
         public String getBuildStatusUrl() {
             return getIconColor().getImage();
         }
 
+        @Exported
         public BallColor getIconColor() {
             if(result==null)
                 return BallColor.GREY_ANIME;
@@ -144,6 +155,7 @@ public abstract class MavenAbstractArtifactRecord<T extends AbstractBuild<?,?>> 
     /**
      * Records of a deployment.
      */
+    @Exported
     public final CopyOnWriteArrayList<Record> records = new CopyOnWriteArrayList<Record>();
 
     /**
@@ -169,6 +181,10 @@ public abstract class MavenAbstractArtifactRecord<T extends AbstractBuild<?,?>> 
 
     protected Permission getPermission() {
         return REDEPLOY;
+    }
+
+    public Api getApi() {
+        return new Api(this);
     }
 
     public boolean hasBadge() {

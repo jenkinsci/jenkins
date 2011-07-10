@@ -302,7 +302,16 @@ public class Util {
     public static void deleteRecursive(File dir) throws IOException {
         if(!isSymlink(dir))
             deleteContentsRecursive(dir);
-        deleteFile(dir);
+        try {
+            deleteFile(dir);
+        } catch (IOException e) {
+            // if some of the child directories are big, it might take long enough to delete that
+            // it allows others to create new files, causing problemsl ike JENKINS-10113
+            // so give it one more attempt before we give up.
+            if(!isSymlink(dir))
+                deleteContentsRecursive(dir);
+            deleteFile(dir);
+        }
     }
 
     /*

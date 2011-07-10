@@ -47,7 +47,7 @@ import java.util.Set;
  *
  * <p>
  * Archive will be created in two places. One is inside the build directory,
- * to be served from Hudson. The other is to the local repository of the master,
+ * to be served from Jenkins. The other is to the local repository of the master,
  * so that artifacts can be shared in maven builds happening in other slaves.
  *
  * @author Kohsuke Kawaguchi
@@ -128,7 +128,7 @@ public class MavenArtifactArchiver extends MavenReporter {
             build.executeAsync(new MavenBuildProxy.BuildCallable<Void, IOException>() {
                 public Void call(MavenBuild build) throws IOException, InterruptedException {
                     // if a build forks lifecycles, this method can be called multiple times
-                    List<MavenArtifactRecord> old = Util.filter(build.getActions(), MavenArtifactRecord.class);
+                    List<MavenArtifactRecord> old = build.getActions(MavenArtifactRecord.class);
                     if (!old.isEmpty())
                         build.getActions().removeAll(old);
 
@@ -137,6 +137,8 @@ public class MavenArtifactArchiver extends MavenReporter {
                             repositoryId);
                     build.addAction(mar);
 
+                    // TODO kutzi: why are the fingerprints recorded here?
+                    // I thought that is the job of MavenFingerprinter
                     mar.recordFingerprints();
 
                     return null;

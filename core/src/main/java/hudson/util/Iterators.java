@@ -301,4 +301,9 @@ public class Iterators {
             }
         };
     }
+
+    public static <T> Iterator<T> sequence(Iterator<? extends T>... iterators) {
+        return com.google.common.collect.Iterators.concat(iterators);
+    }
+
 }

@@ -186,6 +186,24 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
     }
 
     /**
+     * Gets the nearest ancestor {@link AbstractBuild} that belongs to
+     * {@linkplain AbstractProject#getRootProject() the root project of getProject()} that
+     * dominates/governs/encompasses this build.
+     *
+     * <p>
+     * Some projects (such as matrix projects, Maven projects, or promotion processes) form a tree of jobs,
+     * and still in some of them, builds of child projects are related/tied to that of the parent project.
+     * In such a case, this method returns the governing build.
+     *
+     * @return never null. In the worst case the build dominates itself.
+     * @since 1.421
+     * @see AbstractProject#getRootProject()
+     */
+    public AbstractBuild<?,?> getRootBuild() {
+        return this;
+    }
+
+    /**
      * Used to render the side panel "Back to project" link.
      *
      * <p>

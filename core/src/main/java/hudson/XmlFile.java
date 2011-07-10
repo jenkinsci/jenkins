@@ -27,12 +27,15 @@ import com.thoughtworks.xstream.XStream;
 import com.thoughtworks.xstream.converters.ConversionException;
 import com.thoughtworks.xstream.converters.Converter;
 import com.thoughtworks.xstream.io.StreamException;
+import com.thoughtworks.xstream.io.xml.XppDriver;
 import com.thoughtworks.xstream.io.xml.XppReader;
 import hudson.model.Descriptor;
 import hudson.util.AtomicFileWriter;
 import hudson.util.IOException2;
+import hudson.util.IOUtils;
 import hudson.util.XStream2;
 import org.xml.sax.Attributes;
+import org.xml.sax.InputSource;
 import org.xml.sax.Locator;
 import org.xml.sax.SAXException;
 import org.xml.sax.ext.Locator2;
@@ -40,10 +43,12 @@ import org.xml.sax.helpers.DefaultHandler;
 
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParserFactory;
+import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.io.Writer;
@@ -121,9 +126,9 @@ public final class XmlFile {
      */
     public Object read() throws IOException {
         LOGGER.fine("Reading "+file);
-        Reader r = new BufferedReader(new InputStreamReader(new FileInputStream(file), "UTF-8"));
+        InputStream in = new BufferedInputStream(new FileInputStream(file));
         try {
-            return xs.fromXML(r);
+            return xs.fromXML(in);
         } catch(StreamException e) {
             throw new IOException2("Unable to read "+file,e);
         } catch(ConversionException e) {
@@ -131,7 +136,7 @@ public final class XmlFile {
         } catch(Error e) {// mostly reflection errors
             throw new IOException2("Unable to read "+file,e);
         } finally {
-            r.close();
+            in.close();
         }
     }
 
@@ -143,9 +148,10 @@ public final class XmlFile {
      *      if the XML representation is completely new.
      */
     public Object unmarshal( Object o ) throws IOException {
-        Reader r = new BufferedReader(new InputStreamReader(new FileInputStream(file),"UTF-8"));
+        InputStream in = new BufferedInputStream(new FileInputStream(file));
         try {
-            return xs.unmarshal(new XppReader(r),o);
+            // TODO: expose XStream the driver from XStream
+            return xs.unmarshal(DEFAULT_DRIVER.createReader(in), o);
         } catch (StreamException e) {
             throw new IOException2("Unable to read "+file,e);
         } catch(ConversionException e) {
@@ -153,7 +159,7 @@ public final class XmlFile {
         } catch(Error e) {// mostly reflection errors
             throw new IOException2("Unable to read "+file,e);
         } finally {
-            r.close();
+            in.close();
         }
     }
 
@@ -234,8 +240,11 @@ public final class XmlFile {
                 this.encoding = encoding;
             }
         }
+        InputSource input = new InputSource(file.toURI().toASCIIString());
+        input.setByteStream(new FileInputStream(file));
+
         try {
-            JAXP.newSAXParser().parse(file,new DefaultHandler() {
+            JAXP.newSAXParser().parse(input,new DefaultHandler() {
                 private Locator loc;
                 @Override
                 public void setDocumentLocator(Locator locator) {
@@ -275,6 +284,9 @@ public final class XmlFile {
             throw new IOException2("Failed to detect encoding of "+file,e);
         } catch (ParserConfigurationException e) {
             throw new AssertionError(e);    // impossible
+        } finally {
+            // some JAXP implementations appear to leak the file handle if we just call parse(File,DefaultHandler)
+            input.getByteStream().close();
         }
     }
 
@@ -286,6 +298,8 @@ public final class XmlFile {
     private static final Logger LOGGER = Logger.getLogger(XmlFile.class.getName());
 
     private static final SAXParserFactory JAXP = SAXParserFactory.newInstance();
+
+    private static final XppDriver DEFAULT_DRIVER = new XppDriver();
 
     static {
         JAXP.setNamespaceAware(true);

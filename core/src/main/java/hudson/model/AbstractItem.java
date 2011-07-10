@@ -41,6 +41,7 @@ import hudson.util.AlternativeUiTextProvider;
 import hudson.util.AlternativeUiTextProvider.Message;
 import hudson.util.AtomicFileWriter;
 import hudson.util.IOException2;
+import hudson.util.IOUtils;
 import jenkins.model.Jenkins;
 import org.apache.tools.ant.taskdefs.Copy;
 import org.apache.tools.ant.types.FileSet;
@@ -50,7 +51,11 @@ import org.kohsuke.stapler.export.ExportedBean;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
@@ -285,6 +290,44 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
         else                return n+" \u00BB "+getDisplayName();
     }
 
+    public String getRelativeNameFrom(ItemGroup p) {
+        // first list up all the parents
+        Map<ItemGroup,Integer> parents = new HashMap<ItemGroup,Integer>();
+        int depth=0;
+        while (p!=null) {
+            parents.put(p, depth++);
+            if (p instanceof Item)
+                p = ((Item)p).getParent();
+            else
+                p = null;
+        }
+
+        StringBuilder buf = new StringBuilder();
+        Item i=this;
+        while (true) {
+            if (buf.length()>0) buf.insert(0,'/');
+            buf.insert(0,i.getName());
+            ItemGroup g = i.getParent();
+
+            Integer d = parents.get(g);
+            if (d!=null) {
+                String s="";
+                for (int j=d; j>0; j--)
+                    s+="../";
+                return s+buf;
+            }
+
+            if (g instanceof Item)
+                i = (Item)g;
+            else
+                return null;
+        }
+    }
+
+    public String getRelativeNameFrom(Item item) {
+        return getRelativeNameFrom(item.getParent());
+    }
+
     /**
      * Called right after when a {@link Item} is loaded from disk.
      * This is an opporunity to do a post load processing.
@@ -334,10 +377,10 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
 
     @Exported(visibility=999,name="url")
     public final String getAbsoluteUrl() {
-        StaplerRequest request = Stapler.getCurrentRequest();
-        if(request==null)
-            throw new IllegalStateException("Not processing a HTTP request");
-        return Util.encode(Jenkins.getInstance().getRootUrl()+getUrl());
+        String r = Jenkins.getInstance().getRootUrl();
+        if(r==null)
+            throw new IllegalStateException("Root URL isn't configured yet. Cannot compute absolute URL.");
+        return Util.encode(r+getUrl());
     }
 
     /**
@@ -460,8 +503,8 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
         if (req.getMethod().equals("GET")) {
             // read
             checkPermission(EXTENDED_READ);
-            rsp.setContentType("application/xml;charset=UTF-8");
-            getConfigFile().writeRawTo(rsp.getWriter());
+            rsp.setContentType("application/xml");
+            IOUtils.copy(getConfigFile().getFile(),rsp.getOutputStream());
             return;
         }
         if (req.getMethod().equals("POST")) {

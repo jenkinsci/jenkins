@@ -24,7 +24,7 @@
  */
 //
 //
-// JavaScript for Hudson
+// JavaScript for Jenkins
 //     See http://www.ibm.com/developerworks/web/library/wa-memleak/?ca=dgr-lnxw97JavascriptLeaks
 //     for memory leak patterns and how to prevent them.
 //
@@ -453,13 +453,52 @@ function renderOnDemand(e,callback,noBehaviour) {
         }
         Element.remove(e);
 
-        t.responseText.evalScripts();
-        Behaviour.applySubtree(elements,true);
-
-        if (callback)   callback(t);
+        evalInnerHtmlScripts(t.responseText,function() {
+            Behaviour.applySubtree(elements,true);
+            if (callback)   callback(t);
+        });
     });
 }
 
+/**
+ * Finds all the script tags 
+ */
+function evalInnerHtmlScripts(text,callback) {
+    var q = [];
+    var matchAll = new RegExp('<script([^>]*)>([\\S\\s]*?)<\/script>', 'img');
+    var matchOne = new RegExp('<script([^>]*)>([\\S\\s]*?)<\/script>', 'im');
+    var srcAttr  = new RegExp('src=[\'\"]([^\'\"]+)[\'\"]','i');
+    (text.match(matchAll)||[]).map(function(s) {
+        var m = s.match(srcAttr);
+        if (m) {
+            q.push(function(cont) {
+                loadScript(m[1],cont);
+            });
+        } else {
+            q.push(function(cont) {
+                eval(s.match(matchOne)[2]);
+                cont();
+            });
+        }
+    });
+    q.push(callback);
+    sequencer(q);
+}
+
+/**
+ * Take an array of (typically async) functions and run them in a sequence.
+ * Each of the function in the array takes one 'continuation' parameter, and upon the completion
+ * of the function it needs to invoke "continuation()" to signal the execution of the next function.
+ */
+function sequencer(fs) {
+    var nullFunction = function() {}
+    function next() {
+        if (fs.length>0) {
+            (fs.shift()||nullFunction)(next);
+        }
+    }
+    return next();
+}
 
 var hudsonRules = {
     "BODY" : function() {
@@ -682,6 +721,15 @@ var hudsonRules = {
         };
         e.tabIndex = 9999; // make help link unnavigable from keyboard
         e = null; // avoid memory leak
+    },
+
+    "TEXTAREA.codemirror" : function(e) {
+        var h = e.clientHeight;
+        var config = e.getAttribute("codemirror-config") || "";
+        config = eval('({'+config+'})');
+        var w = CodeMirror.fromTextArea(e,config).getWrapperElement();
+        w.setAttribute("style","border:1px solid black;");
+        w.style.height = h+"px";
     },
 
 // deferred client-side clickable map.
@@ -1193,8 +1241,10 @@ function replaceDescription() {
         {
           onComplete : function(x) {
             d.innerHTML = x.responseText;
-            Behaviour.applySubtree(d);
-            d.getElementsByTagName("TEXTAREA")[0].focus();
+            evalInnerHtmlScripts(x.responseText,function() {
+                Behaviour.applySubtree(d);
+                d.getElementsByTagName("TEXTAREA")[0].focus();
+            });
           }
         }
     );
@@ -2064,10 +2114,43 @@ var DragDrop = function(id, sGroup, config) {
     });
 })();
 
-function loadScript(href) {
-    var s = document.createElement("script");
-    s.setAttribute("src",href);
-    document.getElementsByTagName("HEAD")[0].appendChild(s);
+/**
+ * Loads the script specified by the URL.
+ *
+ * @param href
+ *      The URL of the script to load.
+ * @param callback
+ *      If specified, this function will be invoked after the script is loaded.
+ * @see http://stackoverflow.com/questions/4845762/onload-handler-for-script-tag-in-internet-explorer
+ */
+function loadScript(href,callback) {
+    var head = document.getElementsByTagName("head")[0] || document.documentElement;
+    var script = document.createElement("script");
+    script.src = href;
+
+    if (callback) {
+        // Handle Script loading
+        var done = false;
+
+        // Attach handlers for all browsers
+        script.onload = script.onreadystatechange = function() {
+            if ( !done && (!this.readyState ||
+                    this.readyState === "loaded" || this.readyState === "complete") ) {
+                done = true;
+                callback();
+
+                // Handle memory leak in IE
+                script.onload = script.onreadystatechange = null;
+                if ( head && script.parentNode ) {
+                    head.removeChild( script );
+                }
+            }
+        };
+    }
+
+    // Use insertBefore instead of appendChild  to circumvent an IE6 bug.
+    // This arises when a base node is used (#2709 and #4378).
+    head.insertBefore( script, head.firstChild );
 }
 
 var downloadService = {

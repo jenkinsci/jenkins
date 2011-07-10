@@ -134,11 +134,12 @@ public class JUnitResultArchiverTest extends HudsonTestCase {
 	}
 
 	private void testSetDescription(String url, TestObject object) throws Exception {
-		HtmlPage page = new WebClient().goTo(url);
-		
+        object.doSubmitDescription("description");
+
+        // test the roundtrip
+        HtmlPage page = new WebClient().goTo(url);
 		page.getAnchorByHref("editDescription").click();
 		HtmlForm form = findForm(page, "submitDescription");
-		form.getTextAreaByName("description").setText("description");
 		submit(form);
 		
 		assertEquals("description", object.getDescription());

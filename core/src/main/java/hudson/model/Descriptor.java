@@ -662,7 +662,7 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable {
     }
 
     private String getViewPage(Class<?> clazz, Collection<String> pageNames, String defaultValue) {
-        while(clazz!=Object.class) {
+        while(clazz!=Object.class && clazz!=null) {
             for (String pageName : pageNames) {
                 String name = clazz.getName().replace('.', '/').replace('$', '/') + "/" + pageName;
                 if(clazz.getClassLoader().getResource(name)!=null)
@@ -687,7 +687,8 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable {
         for (Facet f : WebApp.get(Jenkins.getInstance().servletContext).facets) {
             if (f instanceof JellyCompatibleFacet) {
                 JellyCompatibleFacet jcf = (JellyCompatibleFacet) f;
-                names.add(baseName +jcf.getDefaultScriptExtension());
+                for (String ext : jcf.getScriptExtensions())
+                    names.add(baseName +ext);
             }
         }
         return names;

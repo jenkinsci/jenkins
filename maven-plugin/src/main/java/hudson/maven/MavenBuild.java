@@ -25,6 +25,10 @@ package hudson.maven;
 
 import hudson.EnvVars;
 import hudson.FilePath;
+import hudson.maven.reporters.MavenArtifactRecord;
+import hudson.maven.reporters.SurefireArchiver;
+import hudson.slaves.WorkspaceList;
+import hudson.slaves.WorkspaceList.Lease;
 import hudson.maven.agent.AbortException;
 import hudson.maven.reporters.SurefireArchiver;
 import hudson.model.AbstractBuild;
@@ -50,6 +54,17 @@ import hudson.util.ArgumentListBuilder;
 import hudson.util.DescribableList;
 import hudson.util.IOUtils;
 import hudson.util.ReflectionUtils;
+import org.apache.maven.BuildFailureException;
+import org.apache.maven.artifact.versioning.ComparableVersion;
+import org.apache.maven.execution.MavenSession;
+import org.apache.maven.execution.ReactorManager;
+import org.apache.maven.lifecycle.LifecycleExecutionException;
+import org.apache.maven.monitor.event.EventDispatcher;
+import org.apache.maven.project.MavenProject;
+import org.kohsuke.stapler.Ancestor;
+import org.kohsuke.stapler.Stapler;
+import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.export.Exported;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -164,6 +179,14 @@ public class MavenBuild extends AbstractMavenBuild<MavenModule,MavenBuild> {
     }
 
     /**
+     * The same as {@link #getParentBuild()}.
+     */
+    @Override
+    public AbstractBuild<?, ?> getRootBuild() {
+        return getParentBuild();
+    }
+
+    /**
      * Gets the "governing" {@link MavenModuleSet} that has set
      * the workspace for this build.
      *
@@ -187,6 +210,14 @@ public class MavenBuild extends AbstractMavenBuild<MavenModule,MavenBuild> {
     @Override
     public boolean hasChangeSetComputed() {
         return true;
+    }
+
+    /**
+     * Information about artifacts produced by Maven.
+     */
+    @Exported
+    public MavenArtifactRecord getMavenArtifacts() {
+        return getAction(MavenArtifactRecord.class);
     }
 
     /**

@@ -33,6 +33,8 @@ import hudson.FilePath.FileCallable;
 import hudson.Launcher;
 import hudson.Util;
 import hudson.maven.MavenBuild.ProxyImpl2;
+import hudson.maven.reporters.MavenAggregatedArtifactRecord;
+import hudson.maven.reporters.MavenArtifactRecord;
 import hudson.maven.reporters.MavenFingerprinter;
 import hudson.maven.reporters.MavenMailer;
 import hudson.model.AbstractBuild;
@@ -99,6 +101,7 @@ import org.apache.maven.project.ProjectBuildingException;
 import org.codehaus.plexus.util.PathTool;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
+import org.kohsuke.stapler.export.Exported;
 import org.sonatype.aether.transfer.TransferCancelledException;
 import org.sonatype.aether.transfer.TransferEvent;
 import org.sonatype.aether.transfer.TransferListener;
@@ -376,6 +379,7 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
      *      null if this build is done by earlier version of Jenkins that didn't record this information
      *      (this means the build was done by Maven2.x)
      */
+    @Exported
     public String getMavenVersionUsed() {
         return mavenVersionUsed;
     }
@@ -402,6 +406,14 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
             if(m!=null) return m.getBuildByNumber(getNumber());
         }
         return super.getDynamic(token,req,rsp);
+    }
+
+    /**
+     * Information about artifacts produced by Maven.
+     */
+    @Exported
+    public MavenAggregatedArtifactRecord getMavenArtifacts() {
+        return getAction(MavenAggregatedArtifactRecord.class);
     }
 
     /**
@@ -512,7 +524,7 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
                         // new AggregatableAction
                         MavenAggregatedReport mar = aa.createAggregatedAction(this, moduleBuilds);
                         mar.update(moduleBuilds,newBuild);
-                        actions.add(mar);
+                        addAction(mar);
                         modified = true;
                     }
                 }
@@ -842,6 +854,8 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
                 }
                 throw new AbortException();
             }
+            
+            boolean needsDependencyGraphRecalculation = false;
 
             // update the module list
             Map<ModuleName,MavenModule> modules = project.modules;
@@ -858,12 +872,16 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
                     if(mm!=null) {// found an existing matching module
                         if(debug)
                             logger.println("Reconfiguring "+mm);
+                        if (!mm.isSameModule(pom)) {
+                            needsDependencyGraphRecalculation = true;
+                        }
                         mm.reconfigure(pom);
                         modules.put(pom.name,mm);
                     } else {// this looks like a new module
                         logger.println(Messages.MavenModuleSetBuild_DiscoveredModule(pom.name,pom.displayName));
                         mm = new MavenModule(project,pom,getNumber());
                         modules.put(mm.getModuleName(),mm);
+                        needsDependencyGraphRecalculation = true;
                     }
                     sortedModules.add(mm);
                     mm.save();
@@ -877,12 +895,16 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
                     if(debug)
                         logger.println("Disabling "+om);
                     om.makeDisabled(true);
+                    needsDependencyGraphRecalculation = true;
                 }
                 modules.putAll(old);
             }
 
             // we might have added new modules
-            Jenkins.getInstance().rebuildDependencyGraph();
+            if (needsDependencyGraphRecalculation) {
+                logger.println("Modules changed, recalculating dependency graph");
+                Jenkins.getInstance().rebuildDependencyGraph();
+            }
 
             // module builds must start with this build's number
             for (MavenModule m : modules.values())

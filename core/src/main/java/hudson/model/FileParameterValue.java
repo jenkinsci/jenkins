@@ -57,7 +57,7 @@ import javax.servlet.ServletException;
  * @author Kohsuke Kawaguchi
  */
 public class FileParameterValue extends ParameterValue {
-    private FileItem file;
+    private final FileItem file;
 
     /**
      * The name of the originally uploaded file.
@@ -107,7 +107,6 @@ public class FileParameterValue extends ParameterValue {
                     FilePath locationFilePath = build.getWorkspace().child(location);
                     locationFilePath.getParent().mkdirs();
             	    locationFilePath.copyFrom(file);
-            	    file = null;
                     locationFilePath.copyTo(new FilePath(getLocationUnderBuild(build)));
             	}
                 return new Environment() {};

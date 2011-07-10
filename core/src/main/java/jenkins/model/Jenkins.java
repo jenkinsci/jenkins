@@ -26,6 +26,7 @@
 package jenkins.model;
 
 import antlr.ANTLRException;
+import com.google.common.collect.ImmutableMap;
 import com.thoughtworks.xstream.XStream;
 import hudson.BulkChange;
 import hudson.DNSMultiCast;
@@ -304,6 +305,22 @@ public class Jenkins extends AbstractCIBase implements ModifiableItemGroup<TopLe
      * @see #setSecurityRealm(SecurityRealm)
      */
     private volatile SecurityRealm securityRealm = SecurityRealm.NO_AUTHENTICATION;
+
+    /**
+     * Root directory for the workspaces. This value will be variable-expanded against
+     * job name and JENKINS_HOME.
+     *
+     * @see #getWorkspaceFor(TopLevelItem)
+     */
+    private String workspaceDir = "${ITEM_ROOTDIR}/"+WORKSPACE_DIRNAME;
+
+    /**
+     * Root directory for the workspaces. This value will be variable-expanded against
+     * job name and JENKINS_HOME.
+     *
+     * @see #getBuildDirFor(Job)
+     */
+    private String buildsDir = "${ITEM_ROOTDIR}/builds";
 
     /**
      * Message displayed in the top page.
@@ -610,6 +627,11 @@ public class Jenkins extends AbstractCIBase implements ModifiableItemGroup<TopLe
             if(theInstance!=null)
                 throw new IllegalStateException("second instance");
             theInstance = this;
+
+            if (!new File(root,"jobs").exists()) {
+                // if this is a fresh install, use more modern default layout that's consistent with slaves
+                workspaceDir = "${JENKINS_HOME}/workspace/${ITEM_FULLNAME}";
+            }
 
             // doing this early allows InitStrategy to set environment upfront
             final InitStrategy is = InitStrategy.get(Thread.currentThread().getContextClassLoader());
@@ -1688,7 +1710,26 @@ public class Jenkins extends AbstractCIBase implements ModifiableItemGroup<TopLe
     }
 
     public FilePath getWorkspaceFor(TopLevelItem item) {
-        return new FilePath(new File(item.getRootDir(), WORKSPACE_DIRNAME));
+        return new FilePath(expandVariablesForDirectory(workspaceDir, item));
+    }
+
+    public File getBuildDirFor(Job job) {
+        return expandVariablesForDirectory(buildsDir, job);
+    }
+
+    private File expandVariablesForDirectory(String base, Item item) {
+        return new File(Util.replaceMacro(base, ImmutableMap.of(
+                "JENKINS_HOME", getRootDir().getPath(),
+                "ITEM_ROOTDIR", item.getRootDir().getPath(),
+                "ITEM_FULLNAME", item.getFullName())));
+    }
+    
+    public String getRawWorkspaceDir() {
+        return workspaceDir;
+    }
+
+    public String getRawBuildsDir() {
+        return buildsDir;
     }
 
     public FilePath getRootPath() {
@@ -1881,6 +1922,7 @@ public class Jenkins extends AbstractCIBase implements ModifiableItemGroup<TopLe
      * Note that the look up is case-insensitive.
      */
     public TopLevelItem getItem(String name) {
+        if (name==null)    return null;
     	TopLevelItem item = items.get(name);
         if (item==null || !item.hasPermission(Item.READ))
             return null;
@@ -2325,6 +2367,9 @@ public class Jenkins extends AbstractCIBase implements ModifiableItemGroup<TopLe
             checkPermission(ADMINISTER);
 
             JSONObject json = req.getSubmittedForm();
+
+            workspaceDir = json.getString("rawWorkspaceDir");
+            buildsDir = json.getString("rawBuildsDir");
 
             // keep using 'useSecurity' field as the main configuration setting
             // until we get the new security implementation working
