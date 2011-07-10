@@ -26,7 +26,9 @@ package hudson.model;
 import hudson.DescriptorExtensionList;
 import hudson.Extension;
 import hudson.ExtensionPoint;
+import hudson.Indenter;
 import hudson.Util;
+import hudson.matrix.Layouter.Column;
 import hudson.model.Descriptor.FormException;
 import hudson.model.Node.Mode;
 import hudson.model.labels.LabelAtomPropertyDescriptor;
@@ -42,6 +44,7 @@ import hudson.util.AlternativeUiTextProvider.Message;
 import hudson.util.DescribableList;
 import hudson.util.DescriptorList;
 import hudson.util.RunList;
+import hudson.views.ListViewColumn;
 import hudson.widgets.Widget;
 import jenkins.model.Jenkins;
 import net.sf.json.JSONObject;
@@ -333,6 +336,21 @@ public abstract class View extends AbstractModelObject implements AccessControll
      */
     public List<Widget> getWidgets() {
         return Collections.unmodifiableList(Jenkins.getInstance().getWidgets());
+    }
+
+    /**
+     * If this view uses &lt;t:projectView> for rendering, this method returns columns to be displayed.
+     */
+    public Iterable<? extends ListViewColumn> getColumns() {
+        return ListViewColumn.createDefaultInitialColumnList();
+    }
+
+    /**
+     * If this view uses &lt;t:projectView> for rendering, this method returns the indenter used
+     * to indent each row.
+     */
+    public Indenter getIndenter() {
+        return null;
     }
 
     /**

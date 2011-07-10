@@ -54,7 +54,7 @@ THE SOFTWARE.
     <j:if test="${columnExtensions==null}">
         <j:invokeStatic var="columnExtensions" className="hudson.model.ListView" method="getDefaultColumns"/>
     </j:if>
-    
+
     <j:if test="${!empty(jobs) or !empty(attrs.views)}">
       <!-- the caller can inject a tab bar here -->
       <d:invokeBody/>

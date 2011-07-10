@@ -123,7 +123,6 @@ public class ListView extends View implements Saveable {
     	return jobFilters;
     }
 
-    @WithBridgeMethods(Iterable.class)
     public DescribableList<ListViewColumn, Descriptor<ListViewColumn>> getColumns() {
         return columns;
     }
