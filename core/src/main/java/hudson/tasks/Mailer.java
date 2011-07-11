@@ -478,7 +478,7 @@ public class Mailer extends Notifier {
 
         @Exported
         public String getAddress() {
-            if(emailAddress!=null)
+            if(Util.fixEmptyAndTrim(emailAddress)!=null)
                 return emailAddress;
 
             // try the inference logic
