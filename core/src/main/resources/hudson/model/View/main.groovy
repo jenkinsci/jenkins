@@ -5,19 +5,19 @@ st=namespace("jelly:stapler")
 
 if (items.isEmpty()) {
     if (app.items.size() != 0) {
-        context.variables["views"] = my.owner.views;
-        context.variables["currentView"] = my;
-        st.include(page: "viewTabs.jelly", it: my.owner.viewsTabBar);
+        set("views",my.owner.views);
+        set("currentView",my);
+        include(my.owner.viewsTabBar, "viewTabs");
     }
-    st.include(page: "noJob.jelly");
+    include(my,"noJob.jelly");
 } else {
     t.projectView(jobs: items, jobBaseUrl: "", showViewTabs: true, columnExtensions: my.columns, indenter: my.indenter) {
-        context.variables["currentView"] = my;
-        context.variables["views"] = my.owner.views;
+        set("views",my.owner.views);
+        set("currentView",my);
         if (my.owner.class == hudson.model.MyViewsProperty.class) {
-            st.include(page: "myViewTabs.jelly", 'it': my.owner?.myViewsTabBar);
+            include(my.owner?.myViewsTabBar, "myViewTabs");
         } else {
-            st.include(page: "viewTabs.jelly", 'it': my.owner.viewsTabBar);
+            include(my.owner.viewsTabBar,"viewTabs");
         }
     }
 }
