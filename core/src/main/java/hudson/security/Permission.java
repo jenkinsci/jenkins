@@ -163,17 +163,25 @@ public final class Permission {
         assert scope!=null;
     }
 
+    /**
+     * @deprecated as of 1.421
+     *      Use {@link #Permission(PermissionGroup, String, Localizable, Permission, boolean, PermissionScope[])}
+     */
     public Permission(PermissionGroup group, String name, Localizable description, Permission impliedBy, boolean enable) {
         this(group,name,description,impliedBy,enable,new PermissionScope[]{PermissionScope.JENKINS});
     }
 
+    /**
+     * @deprecated as of 1.421
+     *      Use {@link #Permission(PermissionGroup, String, Localizable, Permission, PermissionScope)}
+     */
     public Permission(PermissionGroup group, String name, Localizable description, Permission impliedBy) {
-        this(group, name, description, impliedBy, true);
+        this(group, name, description, impliedBy, PermissionScope.JENKINS);
     }
-    
+
     /**
      * @deprecated since 1.257.
-     *      Use {@link #Permission(PermissionGroup, String, Localizable, Permission)} 
+     *      Use {@link #Permission(PermissionGroup, String, Localizable, Permission)}
      */
     public Permission(PermissionGroup group, String name, Permission impliedBy) {
         this(group,name,null,impliedBy);
@@ -300,7 +308,7 @@ public final class Permission {
      * @deprecated since 2009-01-23.
      *      Use {@link jenkins.model.Jenkins#ADMINISTER}.
      */
-    public static final Permission FULL_CONTROL = new Permission(GROUP,"FullControl",HUDSON_ADMINISTER);
+    public static final Permission FULL_CONTROL = new Permission(GROUP, "FullControl",null, HUDSON_ADMINISTER);
 
     /**
      * Generic read access.

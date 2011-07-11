@@ -25,6 +25,7 @@ package hudson.security;
 
 import com.google.common.collect.ImmutableSet;
 import hudson.model.Build;
+import hudson.model.Computer;
 import hudson.model.Item;
 import hudson.model.ItemGroup;
 import hudson.model.Job;
@@ -107,4 +108,9 @@ public final class PermissionScope {
      * Permissions scoped to {@link Run}s (including {@link Build}s and other subtypes)
      */
     public static final PermissionScope RUN = new PermissionScope(Run.class,ITEM);
+
+    /**
+     * Permissions scoped to current instances of {@link Computer}s.
+     */
+    public static final PermissionScope COMPUTER = new PermissionScope(Computer.class,JENKINS);
 }

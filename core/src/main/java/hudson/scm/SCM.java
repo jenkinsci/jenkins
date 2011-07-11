@@ -31,6 +31,7 @@ import hudson.Extension;
 import hudson.Util;
 import hudson.security.PermissionGroup;
 import hudson.security.Permission;
+import hudson.security.PermissionScope;
 import hudson.tasks.Builder;
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
@@ -586,7 +587,7 @@ public abstract class SCM implements Describable<SCM>, ExtensionPoint {
      * Permission to create new tags.
      * @since 1.171
      */
-    public static final Permission TAG = new Permission(PERMISSIONS,"Tag",Messages._SCM_TagPermission_Description(),Permission.CREATE);
+    public static final Permission TAG = new Permission(PERMISSIONS,"Tag",Messages._SCM_TagPermission_Description(),Permission.CREATE, PermissionScope.ITEM);
 
     /**
      * Returns all the registered {@link SCMDescriptor}s.
