@@ -16,8 +16,9 @@ complete {
 
     // Apache components
     //   logkit is a part of Avalon
-    match(["org.apache.ant:*","commons-jelly:*","log4j:*","avalon-framework:*","logkit:logkit","oro:oro","*:commons-jelly","org.jvnet.hudson:commons-jelly-tags-define","slide:slide-webdavlib"]) {
-        rewriteLicense([], apacheLicense)
+    match(["org.apache.ant:*","commons-jelly:*","log4j:*","avalon-framework:*","logkit:logkit","oro:oro","commons-codec:*","*:commons-jelly","org.jvnet.hudson:commons-jelly-tags-define","slide:slide-webdavlib"]) {
+        if (dependency.licenses.isEmpty())
+            rewriteLicense([], apacheLicense)
     }
 
     // GlassFish components are dual-licensed between CDDL and GPL+Classpath Exception
