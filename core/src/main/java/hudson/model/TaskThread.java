@@ -56,7 +56,7 @@ public abstract class TaskThread extends Thread {
     /**
      * Represents the output from this task thread.
      */
-    private final AnnotatedLargeText<TaskThread> log;
+    private final AnnotatedLargeText<TaskAction> log;
 
     /**
      * Represents the interface to produce output.
@@ -151,9 +151,9 @@ public abstract class TaskThread extends Thread {
      */
     public static final class ListenerAndText {
         final TaskListener listener;
-        final AnnotatedLargeText<TaskThread> text;
+        final AnnotatedLargeText<TaskAction> text;
 
-        public ListenerAndText(TaskListener listener, AnnotatedLargeText<TaskThread> text) {
+        public ListenerAndText(TaskListener listener, AnnotatedLargeText<TaskAction> text) {
             this.listener = listener;
             this.text = text;
         }
@@ -177,23 +177,23 @@ public abstract class TaskThread extends Thread {
         /**
          * Creates one that's backed by memory.
          */
-        public static ListenerAndText forMemory(TaskThread context) {
+        public static ListenerAndText forMemory(TaskAction context) {
             // StringWriter is synchronized
             ByteBuffer log = new ByteBuffer();
 
             return new ListenerAndText(
                 new StreamTaskListener(log),
-                new AnnotatedLargeText<TaskThread>(log,Charset.defaultCharset(),false,context)
+                new AnnotatedLargeText<TaskAction>(log,Charset.defaultCharset(),false,context)
             );
         }
 
         /**
          * Creates one that's backed by a file. 
          */
-        public static ListenerAndText forFile(File f, TaskThread context) throws IOException {
+        public static ListenerAndText forFile(File f, TaskAction context) throws IOException {
             return new ListenerAndText(
                 new StreamTaskListener(f),
-                new AnnotatedLargeText<TaskThread>(f,Charset.defaultCharset(),false,context)
+                new AnnotatedLargeText<TaskAction>(f,Charset.defaultCharset(),false,context)
             );
         }
     }
