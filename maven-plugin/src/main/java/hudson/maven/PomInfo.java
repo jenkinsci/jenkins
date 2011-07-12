@@ -26,7 +26,6 @@ package hudson.maven;
 import org.apache.commons.lang.StringUtils;
 import org.apache.maven.model.CiManagement;
 import org.apache.maven.model.Dependency;
-import org.apache.maven.model.Developer;
 import org.apache.maven.model.Extension;
 import org.apache.maven.model.Notifier;
 import org.apache.maven.model.Plugin;
@@ -108,8 +107,6 @@ final class PomInfo implements Serializable {
     private final String artifactId;
 
     public final Notifier mailNotifier;
-    
-    public final List<String> developerMailAdr = new ArrayList<String>();
 
     public PomInfo(MavenProject project, PomInfo parent, String relPath) {
         this.name = new ModuleName(project);
@@ -155,13 +152,6 @@ final class PomInfo implements Serializable {
         } else
             this.mailNotifier = null;
         
-        List<Developer> developers = project.getDevelopers();
-        for (Developer developer : developers) {
-			String eMail = developer.getEmail();
-			if ( eMail != null && ! eMail.isEmpty() ) {
-				developerMailAdr.add(eMail);
-			}
-		}
         this.groupId = project.getGroupId();
         this.artifactId = project.getArtifactId();
     }

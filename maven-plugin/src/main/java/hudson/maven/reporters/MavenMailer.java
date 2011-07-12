@@ -26,13 +26,11 @@ package hudson.maven.reporters;
 import hudson.Launcher;
 import hudson.Extension;
 import hudson.maven.MavenBuild;
-import hudson.maven.MavenModule;
 import hudson.maven.MavenReporter;
 import hudson.maven.MavenReporterDescriptor;
 import hudson.model.BuildListener;
 import hudson.tasks.MailSender;
 import hudson.tasks.Mailer;
-
 import org.kohsuke.stapler.StaplerRequest;
 
 import java.io.IOException;
@@ -78,11 +76,6 @@ public class MavenMailer extends MavenReporter {
             m.dontNotifyEveryUnstableBuild = req.getParameter("mailer_notifyEveryUnstableBuild")==null;
             return m;
         }
-        
-        public MavenReporter newAutoInstance(MavenModule module) {
-            return new MavenMailer();
-        }
-        
     }
 
     private static final long serialVersionUID = 1L;

@@ -106,18 +106,8 @@ THE SOFTWARE.
         </select>
       </f:entry>                 
     </f:advanced>
-    <f:section title="${%Maven Mail Reporting}">
-      <f:optionalBlock name="maven.mailToDevelopers"
-                       title="${%Send Mails to Developers}"
-                       help="/plugin/maven-plugin/mailToDevelopers.html"
-                       checked="${it.isMailToDevelopers()}" />
-      <f:optionalBlock name="maven.mailToNotifiers"
-                       title="${%Send Mails to Notifiers}"
-                       help="/plugin/maven-plugin/mailToNotifiers.html"
-                       checked="${it.isMailToNotifiers()}" />
-	</f:section>
   </f:section>
-  
+
   <j:invokeStatic var="reporters" className="hudson.maven.MavenReporters" method="getConfigurableList" />
   <j:if test="${!empty(reporters)}">
     <f:descriptorList title="${%Build Settings}"
