@@ -84,7 +84,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>${project.groupId}</groupId>
       <artifactId>remoting</artifactId>
-      <version>${project.version}</version>
+      <!-- specified in the parent -->
     </dependency>    
     <dependency>
       <groupId>${project.groupId}</groupId>
