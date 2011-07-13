@@ -15,7 +15,7 @@ defaults="defaults read /Library/Preferences/org.jenkins-ci"
 war=`$defaults war` || war="/Applications/Jenkins/jenkins.war"
 
 javaArgs=""
-heapSize=`$defaults heapSize` && javaArgs="$javaArgs -Xmx=$heapSize"
+heapSize=`$defaults heapSize` && javaArgs="$javaArgs -Xmx${heapSize}"
 
 home=`$defaults JENKINS_HOME` && export JENKINS_HOME="$home"
 
