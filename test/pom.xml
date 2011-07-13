@@ -24,15 +24,17 @@ THE SOFTWARE.
 -->
 
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
   <parent>
     <artifactId>pom</artifactId>
     <groupId>org.jenkins-ci.main</groupId>
     <version>1.422-SNAPSHOT</version>
   </parent>
-  <modelVersion>4.0.0</modelVersion>
   <groupId>org.jenkins-ci.main</groupId>
   <artifactId>jenkins-test-harness</artifactId>
   <packaging>stapler-jar</packaging>
+
   <name>Test harness for Jenkins and plugins</name>
   <description>
     Unit test harness (src/main) and Unit tests for Jenkins core (src/test)
@@ -42,56 +44,6 @@ THE SOFTWARE.
     <concurrency>2</concurrency> <!-- -1 means # of processors in the system -->
     <mavenDebug>false</mavenDebug>
   </properties>
-
-  <build>
-    <plugins>
-      <plugin>
-        <groupId>org.kohsuke.stapler</groupId>
-        <artifactId>maven-stapler-plugin</artifactId>
-        <!-- version specified in grandparent pom -->
-        <extensions>true</extensions>
-      </plugin>
-      <plugin>
-        <artifactId>maven-surefire-plugin</artifactId>
-        <!-- version specified in grandparent pom -->
-        <configuration>
-          <skip>true</skip>
-          <!-- tests now run by maven-junit-plugin -->
-        </configuration>
-      </plugin>
-      <plugin>
-        <groupId>org.kohsuke.gmaven</groupId>
-        <artifactId>gmaven-plugin</artifactId>
-        <!-- version specified in grandparent pom -->
-        <executions>
-          <execution>
-            <id>preset-packager</id>
-            <phase>process-resources</phase>
-            <goals>
-              <goal>execute</goal>
-            </goals>
-            <configuration>
-              <source>${pom.basedir}/src/main/preset-data/package.groovy</source>
-            </configuration>
-          </execution>
-          <execution>
-            <id>test-in-groovy</id>
-            <!-- allow tests written in Groovy -->
-            <goals>
-              <goal>testCompile</goal>
-            </goals>
-          </execution>
-        </executions>
-        <dependencies>
-          <dependency>
-            <groupId>org.apache.ant</groupId>
-            <artifactId>ant</artifactId>
-            <version>1.8.0</version>
-          </dependency>
-        </dependencies>
-      </plugin>
-    </plugins>
-  </build>
 
   <dependencies>
     <dependency>
@@ -177,6 +129,56 @@ THE SOFTWARE.
       <scope>test</scope>
     </dependency>
   </dependencies>
+
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.kohsuke.stapler</groupId>
+        <artifactId>maven-stapler-plugin</artifactId>
+        <!-- version specified in grandparent pom -->
+        <extensions>true</extensions>
+      </plugin>
+      <plugin>
+        <artifactId>maven-surefire-plugin</artifactId>
+        <!-- version specified in grandparent pom -->
+        <configuration>
+          <skip>true</skip>
+          <!-- tests now run by maven-junit-plugin -->
+        </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.kohsuke.gmaven</groupId>
+        <artifactId>gmaven-plugin</artifactId>
+        <!-- version specified in grandparent pom -->
+        <executions>
+          <execution>
+            <id>preset-packager</id>
+            <phase>process-resources</phase>
+            <goals>
+              <goal>execute</goal>
+            </goals>
+            <configuration>
+              <source>${pom.basedir}/src/main/preset-data/package.groovy</source>
+            </configuration>
+          </execution>
+          <execution>
+            <id>test-in-groovy</id>
+            <!-- allow tests written in Groovy -->
+            <goals>
+              <goal>testCompile</goal>
+            </goals>
+          </execution>
+        </executions>
+        <dependencies>
+          <dependency>
+            <groupId>org.apache.ant</groupId>
+            <artifactId>ant</artifactId>
+            <version>1.8.0</version>
+          </dependency>
+        </dependencies>
+      </plugin>
+    </plugins>
+  </build>
 
   <profiles>
 

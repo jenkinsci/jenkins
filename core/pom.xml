@@ -25,6 +25,7 @@ THE SOFTWARE.
 
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
   <modelVersion>4.0.0</modelVersion>
+
   <parent>
     <groupId>org.jenkins-ci.main</groupId>
     <artifactId>pom</artifactId>
@@ -33,286 +34,16 @@ THE SOFTWARE.
   </parent>
 
   <artifactId>jenkins-core</artifactId>
+
   <name>Jenkins core</name>
   <description>
     Contains the core Jenkins code and view files to render HTML.
   </description>
-  
+
   <properties>
     <staplerFork>true</staplerFork>
     <stapler.version>1.171</stapler.version>
   </properties>
-
-  <build>
-    <plugins>
-      <plugin>
-        <groupId>org.jenkins-ci.tools</groupId>
-        <artifactId>maven-hpi-plugin</artifactId>
-        <executions>
-          <execution>
-            <goals>
-              <goal>generate-taglib-interface</goal>
-            </goals>
-          </execution>
-        </executions>
-      </plugin>
-      <plugin>
-        <groupId>org.jvnet.hudson.tools</groupId>
-        <artifactId>maven-encoding-plugin</artifactId>
-        <!-- version specified in grandparent pom -->
-        <executions>
-          <execution>
-            <goals>
-              <goal>check-encoding</goal>
-            </goals>
-            <phase>compile</phase>
-          </execution>
-        </executions>
-      </plugin>
-      <plugin>
-        <groupId>com.infradna.tool</groupId>
-        <artifactId>bridge-method-injector</artifactId>
-        <!-- version specified in grandparent pom -->
-        <executions>
-          <execution>
-            <goals>
-              <goal>process</goal>
-            </goals>
-          </execution>
-        </executions>
-      </plugin>
-      <plugin>
-        <groupId>org.kohsuke.stapler</groupId>
-        <artifactId>maven-stapler-plugin</artifactId>
-        <version>1.16</version>
-        <!-- version specified in grandparent pom -->
-        <configuration>
-          <fork>${staplerFork}</fork><!-- the source code is big enough now that otherwise it fails with OutOfMemoryError -->
-          <maxmem>128m</maxmem>
-        </configuration>
-      </plugin>
-      <plugin>
-        <groupId>org.jvnet.localizer</groupId>
-        <artifactId>maven-localizer-plugin</artifactId>
-        <!-- version specified in grandparent pom -->
-        <executions>
-          <execution>
-            <goals>
-              <goal>generate</goal>
-            </goals>
-            <configuration>
-              <fileMask>Messages.properties</fileMask>
-              <outputDirectory>target/generated-sources/localizer</outputDirectory>
-            </configuration>
-          </execution>
-        </executions>
-      </plugin>
-      <plugin>
-        <groupId>org.kohsuke</groupId>
-        <artifactId>access-modifier-checker</artifactId>
-        <!-- version specified in grandparent pom -->
-        <executions>
-          <execution>
-            <goals>
-              <goal>enforce</goal>
-            </goals>
-          </execution>
-        </executions>
-      </plugin>
-      <plugin>
-        <groupId>org.codehaus.mojo</groupId>
-        <artifactId>antlr-maven-plugin</artifactId>
-        <!-- version specified in grandparent pom -->
-        <executions>
-          <execution>
-            <id>cron</id>
-            <goals>
-              <goal>generate</goal>
-            </goals>
-            <configuration>
-              <sourceDirectory>${basedir}/src/main/grammar</sourceDirectory>
-              <grammars>crontab.g</grammars>
-            </configuration>
-          </execution>
-          <execution>
-            <id>labelExpr</id>
-            <goals>
-              <goal>generate</goal>
-            </goals>
-            <configuration>
-              <sourceDirectory>${basedir}/src/main/grammar</sourceDirectory>
-              <grammars>labelExpr.g</grammars>
-            </configuration>
-          </execution>
-        </executions>
-      </plugin>
-      <plugin>
-        <groupId>org.jvnet.maven-antrun-extended-plugin</groupId>
-        <artifactId>maven-antrun-extended-plugin</artifactId>
-        <!-- version specified in grandparent pom -->
-        <executions>
-          <execution>
-            <phase>generate-resources</phase>
-            <configuration>
-              <tasks>
-                <tstamp>
-                  <format property="now" pattern="MM/dd/yyyy HH:mm" unit="hour" />
-                </tstamp>
-                <property name="build.type" value="private" /> <!-- override for "rc" build -->
-                <pathconvert property="version.rc">
-                  <path path="${project.version}" />
-                  <chainedmapper><flattenmapper /><globmapper from="*-SNAPSHOT" to="*-RC" /></chainedmapper>
-                </pathconvert>
-                <condition property="build.version" value="${version.rc} (${now})">
-                  <equals arg1="${build.type}" arg2="rc" />
-                </condition>
-                <property name="build.version" value="${project.version} (${build.type}-${now}-${user.name})" />
-                <!-- default to release version -->
-                <!-- put the version file -->
-                <echo message="The build id is: ${build.version}" />
-                <mkdir dir="target/classes/hudson/model" />
-                <echo file="target/classes/hudson/model/hudson-version.properties">version=${build.version}
-                </echo>
-                <mkdir dir="target/classes/jenkins/model" />
-                <echo file="target/classes/jenkins/model/jenkins-version.properties">version=${build.version}
-                </echo>
-                <!-- download winsw.exe -->
-                <mkdir dir="target/classes/windows-service" />
-                <resolveArtifact artifactId="winsw" tofile="target/classes/windows-service/jenkins.exe" />
-              </tasks>
-            </configuration>
-            <goals>
-              <goal>run</goal>
-            </goals>
-          </execution>
-        </executions>
-      </plugin>
-      <plugin><!-- set main class -->
-        <artifactId>maven-jar-plugin</artifactId>
-        <!-- version specified in grandparent pom -->
-        <configuration>
-          <archive>
-            <manifest>
-              <mainClass>hudson.Main</mainClass>
-              <addClasspath>true</addClasspath>
-              <classpathPrefix />
-            </manifest>
-          </archive>
-        </configuration>
-      </plugin>
-    </plugins>
-  </build>
-
-  <profiles>
-    <profile>
-      <id>debug</id>
-      <activation>
-        <activeByDefault>true</activeByDefault>
-      </activation>
-    </profile>
-    <profile>
-      <id>release</id>
-      <properties>
-        <!-- for releases, just use the POM version. See above ant-run plugin for how this gets used. -->
-        <build.version>${project.version}</build.version>
-      </properties>
-      <build>
-        <plugins>
-          <plugin><!-- execute apt:process for "Extension points" Wiki page generation -->
-            <groupId>org.codehaus.mojo</groupId>
-            <artifactId>apt-maven-plugin</artifactId>
-            <!-- version specified in grandparent pom -->
-            <executions>
-              <execution>
-                <goals>
-                  <goal>process</goal>
-                </goals>
-              </execution>
-            </executions>
-          </plugin>
-          <plugin>
-            <!--
-              generate jelly taglib docs from src/main/resoruces.
-              this is necessary in addition to the <reporting> configuration
-              to get the results deployed.
-            -->
-            <groupId>org.kohsuke.stapler</groupId>
-            <artifactId>maven-stapler-plugin</artifactId>
-            <!-- version specified in grandparent pom -->
-            <executions>
-              <execution>
-                <goals>
-                  <goal>jelly-taglibdoc</goal>
-                </goals>
-                <configuration>
-                  <patterns>
-                    <pattern>/lib/.*</pattern>
-                  </patterns>
-                </configuration>
-              </execution>
-            </executions>
-          </plugin>
-        </plugins>
-      </build>
-    </profile>
-    <profile>
-      <!-- run FindBugs for better error detection -->
-      <id>findbugs</id>
-      <reporting>
-        <plugins>
-          <plugin>
-            <groupId>org.codehaus.mojo</groupId>
-            <artifactId>findbugs-maven-plugin</artifactId>
-            <version>2.3.2</version>
-            <configuration>
-              <effort>Max</effort>
-              <threshold>Normal</threshold>
-              <onlyAnalyze>hudson.-</onlyAnalyze>
-              <excludeFilterFile>src/findbugs-filter.xml</excludeFilterFile>
-            </configuration>
-          </plugin>
-        </plugins>
-      </reporting>
-    </profile>
-    <profile>
-      <!--
-        Obtain code coverage report. This is done by running Unit tests on our own and suppressing surefire.
-      -->
-      <id>cobertura</id>
-      <build>
-        <plugins>
-          <plugin>
-            <groupId>org.kohsuke.gmaven</groupId>
-            <artifactId>gmaven-plugin</artifactId>
-            <!-- version specified in grandparent pom -->
-            <executions>
-              <!-- run unit test -->
-              <execution>
-                <phase>test</phase>
-                <goals>
-                  <goal>execute</goal>
-                </goals>
-                <configuration>
-                  <scriptpath>
-                    <element>${project.basedir}/src/build-script</element>
-                  </scriptpath>
-                  <source>${project.basedir}/src/build-script/unitTest.groovy</source>
-                </configuration>
-              </execution>
-            </executions>
-          </plugin>
-          <plugin>
-            <!-- unit tests are run by GMaven through Ant. -->
-            <artifactId>maven-surefire-plugin</artifactId>
-            <!-- version specified in grandparent pom -->
-            <configuration>
-              <skipTests>true</skipTests>
-            </configuration>
-          </plugin>
-        </plugins>
-      </build>
-    </profile>
-  </profiles>
 
   <dependencies>
     <dependency>
@@ -778,6 +509,151 @@ THE SOFTWARE.
     </dependency-->
   </dependencies>
 
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.jenkins-ci.tools</groupId>
+        <artifactId>maven-hpi-plugin</artifactId>
+        <executions>
+          <execution>
+            <goals>
+              <goal>generate-taglib-interface</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <groupId>org.jvnet.hudson.tools</groupId>
+        <artifactId>maven-encoding-plugin</artifactId>
+        <!-- version specified in grandparent pom -->
+        <executions>
+          <execution>
+            <goals>
+              <goal>check-encoding</goal>
+            </goals>
+            <phase>compile</phase>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <groupId>com.infradna.tool</groupId>
+        <artifactId>bridge-method-injector</artifactId>
+        <!-- version specified in grandparent pom -->
+        <executions>
+          <execution>
+            <goals>
+              <goal>process</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <groupId>org.kohsuke.stapler</groupId>
+        <artifactId>maven-stapler-plugin</artifactId>
+        <version>1.16</version>
+        <!-- version specified in grandparent pom -->
+        <configuration>
+          <fork>${staplerFork}</fork><!-- the source code is big enough now that otherwise it fails with OutOfMemoryError -->
+          <maxmem>128m</maxmem>
+        </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.jvnet.localizer</groupId>
+        <artifactId>maven-localizer-plugin</artifactId>
+        <!-- version specified in grandparent pom -->
+        <executions>
+          <execution>
+            <goals>
+              <goal>generate</goal>
+            </goals>
+            <configuration>
+              <fileMask>Messages.properties</fileMask>
+              <outputDirectory>target/generated-sources/localizer</outputDirectory>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <groupId>org.kohsuke</groupId>
+        <artifactId>access-modifier-checker</artifactId>
+        <!-- version specified in grandparent pom -->
+        <executions>
+          <execution>
+            <goals>
+              <goal>enforce</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>antlr-maven-plugin</artifactId>
+        <!-- version specified in grandparent pom -->
+        <executions>
+          <execution>
+            <id>cron</id>
+            <goals>
+              <goal>generate</goal>
+            </goals>
+            <configuration>
+              <sourceDirectory>${basedir}/src/main/grammar</sourceDirectory>
+              <grammars>crontab.g</grammars>
+            </configuration>
+          </execution>
+          <execution>
+            <id>labelExpr</id>
+            <goals>
+              <goal>generate</goal>
+            </goals>
+            <configuration>
+              <sourceDirectory>${basedir}/src/main/grammar</sourceDirectory>
+              <grammars>labelExpr.g</grammars>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <artifactId>maven-dependency-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>winsw</id>
+            <phase>generate-resources</phase>
+            <goals>
+              <!-- we use copy as this is a dependency from outside the reactor -->
+              <goal>copy</goal>
+            </goals>
+            <configuration>
+              <artifactItems>
+                <artifactItem>
+                  <groupId>com.sun.winsw</groupId>
+                  <artifactId>winsw</artifactId>
+                  <version>1.10</version>
+                  <classifier>bin</classifier>
+                  <type>exe</type>
+                  <outputDirectory>${project.build.outputDirectory}/windows-service</outputDirectory>
+                  <destFileName>jenkins.exe</destFileName>
+                </artifactItem>
+              </artifactItems>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin><!-- set main class -->
+        <artifactId>maven-jar-plugin</artifactId>
+        <!-- version specified in grandparent pom -->
+        <configuration>
+          <archive>
+            <manifest>
+              <mainClass>hudson.Main</mainClass>
+              <addClasspath>true</addClasspath>
+              <classpathPrefix />
+            </manifest>
+          </archive>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
+
   <reporting>
     <plugins>
       <plugin><!-- generate Jelly tag lib documentation -->
@@ -799,4 +675,111 @@ THE SOFTWARE.
       </plugin> 
     </plugins>
   </reporting>
+
+  <profiles>
+    <profile>
+      <id>debug</id>
+      <activation>
+        <activeByDefault>true</activeByDefault>
+      </activation>
+    </profile>
+    <profile>
+      <id>release</id>
+      <build>
+        <plugins>
+          <plugin><!-- execute apt:process for "Extension points" Wiki page generation -->
+            <groupId>org.codehaus.mojo</groupId>
+            <artifactId>apt-maven-plugin</artifactId>
+            <!-- version specified in grandparent pom -->
+            <executions>
+              <execution>
+                <goals>
+                  <goal>process</goal>
+                </goals>
+              </execution>
+            </executions>
+          </plugin>
+          <plugin>
+            <!--
+              generate jelly taglib docs from src/main/resoruces.
+              this is necessary in addition to the <reporting> configuration
+              to get the results deployed.
+            -->
+            <groupId>org.kohsuke.stapler</groupId>
+            <artifactId>maven-stapler-plugin</artifactId>
+            <!-- version specified in grandparent pom -->
+            <executions>
+              <execution>
+                <goals>
+                  <goal>jelly-taglibdoc</goal>
+                </goals>
+                <configuration>
+                  <patterns>
+                    <pattern>/lib/.*</pattern>
+                  </patterns>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+    <profile>
+      <!-- run FindBugs for better error detection -->
+      <id>findbugs</id>
+      <reporting>
+        <plugins>
+          <plugin>
+            <groupId>org.codehaus.mojo</groupId>
+            <artifactId>findbugs-maven-plugin</artifactId>
+            <version>2.3.2</version>
+            <configuration>
+              <effort>Max</effort>
+              <threshold>Normal</threshold>
+              <onlyAnalyze>hudson.-</onlyAnalyze>
+              <excludeFilterFile>src/findbugs-filter.xml</excludeFilterFile>
+            </configuration>
+          </plugin>
+        </plugins>
+      </reporting>
+    </profile>
+    <profile>
+      <!--
+        Obtain code coverage report. This is done by running Unit tests on our own and suppressing surefire.
+      -->
+      <id>cobertura</id>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.kohsuke.gmaven</groupId>
+            <artifactId>gmaven-plugin</artifactId>
+            <!-- version specified in grandparent pom -->
+            <executions>
+              <!-- run unit test -->
+              <execution>
+                <phase>test</phase>
+                <goals>
+                  <goal>execute</goal>
+                </goals>
+                <configuration>
+                  <scriptpath>
+                    <element>${project.basedir}/src/build-script</element>
+                  </scriptpath>
+                  <source>${project.basedir}/src/build-script/unitTest.groovy</source>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+          <plugin>
+            <!-- unit tests are run by GMaven through Ant. -->
+            <artifactId>maven-surefire-plugin</artifactId>
+            <!-- version specified in grandparent pom -->
+            <configuration>
+              <skipTests>true</skipTests>
+            </configuration>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+  </profiles>
 </project>
