@@ -84,7 +84,7 @@ public abstract class UISample implements ExtensionPoint, Action, Describable<UI
 
         public URL resolve() {
             return UISample.this.getClass().getResource(
-                name.endsWith(".jelly") ? UISample.this.getClass().getSimpleName()+"/"+name : name);
+                (name.endsWith(".jelly") || name.endsWith(".groovy")) ? UISample.this.getClass().getSimpleName()+"/"+name : name);
         }
 
         /**
