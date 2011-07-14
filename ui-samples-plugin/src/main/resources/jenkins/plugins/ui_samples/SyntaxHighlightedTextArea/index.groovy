@@ -15,7 +15,8 @@ l.layout(title:_("Syntax Highlighted Text Area")) {
         st.adjunct(includes:"org.kohsuke.stapler.codemirror.mode.clike.clike")
         st.adjunct(includes:"org.kohsuke.stapler.codemirror.theme.default")
 
-        // adjunct tag doesn't work because 'wroteHEAD' is not set correctly
+        // TODO: adjunct tag doesn't work because 'wroteHEAD' is not set correctly
+        // TODO: provide abstraction that hides CSS hookup
 
         // this text area is what we convert to the super text area
         // we use CSS class to hook up the initialization script. In this particular demo,
