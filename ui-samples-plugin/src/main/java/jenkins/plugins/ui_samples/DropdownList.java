@@ -1,4 +1,4 @@
-package hudson.plugins.ui_samples;
+package jenkins.plugins.ui_samples;
 
 import hudson.DescriptorExtensionList;
 import hudson.Extension;
