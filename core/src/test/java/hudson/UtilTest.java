@@ -32,6 +32,8 @@ import java.util.Locale;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 
+import org.jvnet.hudson.test.Bug;
+
 import hudson.util.StreamTaskListener;
 
 /**
@@ -176,5 +178,56 @@ public class UtilTest extends TestCase {
         assertEquals("&lt;a>", Util.escape("<a>"));
         assertEquals("&quot;&#039;", Util.escape("'\""));
         assertEquals("&nbsp; ", Util.escape("  "));
+    }
+    
+    /**
+     * Compute 'known-correct' digests and see if I still get them when computed concurrently
+     * to another digest.
+     */
+    @Bug(10346)
+    public void testDigestThreadSafety() throws InterruptedException {
+    	String a = "abcdefgh";
+    	String b = "123456789";
+    	
+    	String digestA = Util.getDigestOf(a);
+    	String digestB = Util.getDigestOf(b);
+    	
+    	DigesterThread t1 = new DigesterThread(a, digestA);
+    	DigesterThread t2 = new DigesterThread(b, digestB);
+    	
+    	t1.start();
+    	t2.start();
+    	
+    	t1.join();
+    	t2.join();
+    	
+    	if (t1.error != null) {
+    		fail(t1.error);
+    	}
+    	if (t2.error != null) {
+    		fail(t2.error);
+    	}
+    }
+    
+    private static class DigesterThread extends Thread {
+    	private String string;
+		private String expectedDigest;
+		
+		private String error;
+
+		public DigesterThread(String string, String expectedDigest) {
+    		this.string = string;
+    		this.expectedDigest = expectedDigest;
+    	}
+		
+		public void run() {
+			for (int i=0; i < 1000; i++) {
+				String digest = Util.getDigestOf(this.string);
+				if (!this.expectedDigest.equals(digest)) {
+					this.error = "Expected " + this.expectedDigest + ", but got " + digest;
+					break;
+				}
+			}
+		}
     }
 }
