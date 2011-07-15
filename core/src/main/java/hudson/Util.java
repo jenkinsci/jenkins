@@ -501,11 +501,6 @@ public class Util {
     }
 
     /**
-     * Write-only buffer.
-     */
-    private static final byte[] garbage = new byte[8192];
-
-    /**
      * Computes MD5 digest of the given input stream.
      *
      * @param source
@@ -519,7 +514,7 @@ public class Util {
 
             DigestInputStream in =new DigestInputStream(source,md5);
             try {
-                while(in.read(garbage)>0)
+                while(in.read(new byte[1024])>0)
                     ; // simply discard the input
             } finally {
                 in.close();
@@ -699,7 +694,7 @@ public class Util {
             OutputStreamWriter w = new OutputStreamWriter(buf,"UTF-8");
 
             for (int i = 0; i < s.length(); i++) {
-                int c = (int) s.charAt(i);
+                int c = s.charAt(i);
                 if (c<128 && c!=' ') {
                     out.append((char) c);
                 } else {
