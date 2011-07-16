@@ -250,6 +250,7 @@ public final class WebAppMain implements ServletContextListener {
     private void installLogger() {
         Jenkins.logRecords = handler.getView();
         Logger.getLogger("hudson").addHandler(handler);
+        Logger.getLogger("jenkins").addHandler(handler);
     }
 
     /** Add some metadata to a File, allowing to trace setup issues */
@@ -336,6 +337,7 @@ public final class WebAppMain implements ServletContextListener {
         // Logger is in the system classloader, so if we don't do this
         // the whole web app will never be undepoyed.
         Logger.getLogger("hudson").removeHandler(handler);
+        Logger.getLogger("jenkins").removeHandler(handler);
     }
 
     private static final Logger LOGGER = Logger.getLogger(WebAppMain.class.getName());
