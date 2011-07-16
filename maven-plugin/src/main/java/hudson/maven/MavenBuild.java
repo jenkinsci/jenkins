@@ -540,7 +540,7 @@ public class MavenBuild extends AbstractMavenBuild<MavenModule,MavenBuild> {
         }
 
         /**
-         * Sends the accumuldated log in {@link SplittableBuildListener} to the log of this build.
+         * Sends the accumulated log in {@link SplittableBuildListener} to the log of this build.
          */
         public void appendLastLog() {
             try {
@@ -585,6 +585,11 @@ public class MavenBuild extends AbstractMavenBuild<MavenModule,MavenBuild> {
 
         private void rememberModulesToBuildAgainNextTime() {
             MavenModuleSetBuild moduleSetBuild = getModuleSetBuild();
+            
+            if (moduleSetBuild == null) {
+                // ModuleSetBuild is gone, for whatever reason JENKINS-9822
+                return;
+            }
             
             if(hasntStartedYet()) {
                 // record modules which have not been build though they should have - i.e. because they
