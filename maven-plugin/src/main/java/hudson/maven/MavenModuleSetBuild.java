@@ -1155,6 +1155,10 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
             this.listener = listener;
             this.mavenHome = mavenHome;
             this.rootPOM = project.getRootPOM();
+            if (envVars != null)
+            {
+            	this.rootPOM = envVars.expand(this.rootPOM);
+            }
             this.profiles = project.getProfiles();
             this.properties = project.getMavenProperties();
             ParametersDefinitionProperty parametersDefinitionProperty = project.getProperty( ParametersDefinitionProperty.class );
