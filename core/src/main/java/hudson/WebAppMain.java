@@ -71,6 +71,8 @@ import java.security.Security;
 public final class WebAppMain implements ServletContextListener {
     private final RingBufferLogHandler handler = new RingBufferLogHandler();
     private static final String APP = "app";
+    private boolean terminated;
+    private Thread initThread;
 
     /**
      * Creates the sole instance of {@link jenkins.model.Jenkins} and register it to the {@link ServletContext}.
@@ -207,11 +209,12 @@ public final class WebAppMain implements ServletContextListener {
 
             context.setAttribute(APP,new HudsonIsLoading());
 
-            new Thread("hudson initialization thread") {
+            initThread = new Thread("hudson initialization thread") {
                 @Override
                 public void run() {
                     try {
-                        context.setAttribute(APP,new Hudson(home,context));
+                        Jenkins instance = new Hudson(home, context);
+                        context.setAttribute(APP, instance);
 
                         // trigger the loading of changelogs in the background,
                         // but give the system 10 seconds so that the first page
@@ -228,9 +231,14 @@ public final class WebAppMain implements ServletContextListener {
                     } catch (Exception e) {
                         LOGGER.log(Level.SEVERE, "Failed to initialize Jenkins",e);
                         context.setAttribute(APP,new HudsonFailedToLoad(e));
+                    } finally {
+                        Jenkins instance = Jenkins.getInstance();
+                        if(instance!=null)
+                            instance.cleanUp();
                     }
                 }
-            }.start();
+            };
+            initThread.start();
         } catch (Error e) {
             LOGGER.log(Level.SEVERE, "Failed to initialize Jenkins",e);
             throw e;
@@ -330,9 +338,13 @@ public final class WebAppMain implements ServletContextListener {
     }
 
     public void contextDestroyed(ServletContextEvent event) {
+        terminated = true;
         Jenkins instance = Jenkins.getInstance();
         if(instance!=null)
             instance.cleanUp();
+        Thread t = initThread;
+        if (t!=null)
+            t.interrupt();
 
         // Logger is in the system classloader, so if we don't do this
         // the whole web app will never be undepoyed.

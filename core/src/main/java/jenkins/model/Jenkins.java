@@ -636,7 +636,7 @@ public class Jenkins extends AbstractCIBase implements ModifiableItemGroup<TopLe
             // doing this early allows InitStrategy to set environment upfront
             final InitStrategy is = InitStrategy.get(Thread.currentThread().getContextClassLoader());
 
-            Trigger.timer = new Timer("Hudson cron thread");
+            Trigger.timer = new Timer("Jenkins cron thread");
             queue = new Queue(CONSISTENT_HASH?LoadBalancer.CONSISTENT_HASH:LoadBalancer.DEFAULT);
 
             try {
