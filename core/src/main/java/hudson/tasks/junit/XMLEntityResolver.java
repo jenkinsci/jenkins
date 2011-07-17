@@ -33,6 +33,7 @@ import org.xml.sax.SAXException;
 
 import java.io.IOException;
 import java.net.URL;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
@@ -57,7 +58,9 @@ public class XMLEntityResolver extends ParserConfigurator implements EntityResol
      */
     public InputSource resolveEntity(String publicId, String systemId) throws SAXException, IOException {
         if (systemId != null) {
-            LOGGER.fine("Will try to resolve systemId [" + systemId + "]");
+            if (LOGGER.isLoggable(Level.FINE)) {
+                LOGGER.fine("Will try to resolve systemId [" + systemId + "]");
+            }
             // TestNG system-ids
             if (systemId.startsWith(TESTNG_NAMESPACE)) {
                 LOGGER.fine("It's a TestNG document, will try to lookup DTD in classpath");
