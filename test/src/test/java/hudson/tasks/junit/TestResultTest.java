@@ -25,13 +25,12 @@ package hudson.tasks.junit;
 
 import com.thoughtworks.xstream.XStream;
 import hudson.XmlFile;
-import hudson.util.StringConverter2;
+import hudson.util.HeapSpaceStringConverter;
 import hudson.util.XStream2;
 import java.io.File;
 import java.net.URISyntaxException;
 import java.util.Collection;
 import java.util.List;
-import junit.framework.TestCase;
 import org.jvnet.hudson.test.HudsonTestCase;
 
 /**
@@ -100,6 +99,6 @@ public class TestResultTest extends HudsonTestCase {
         XSTREAM.alias("result",TestResult.class);
         XSTREAM.alias("suite",SuiteResult.class);
         XSTREAM.alias("case",CaseResult.class);
-        XSTREAM.registerConverter(new StringConverter2(),100);
+        XSTREAM.registerConverter(new HeapSpaceStringConverter(),100);
     }
 }

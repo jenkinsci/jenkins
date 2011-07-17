@@ -49,7 +49,6 @@ import hudson.util.xstream.ImmutableMapConverter;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -59,9 +58,9 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public class XStream2 extends XStream {
     private Converter reflectionConverter;
-    private ThreadLocal<Boolean> oldData = new ThreadLocal<Boolean>();
+    private final ThreadLocal<Boolean> oldData = new ThreadLocal<Boolean>();
 
-    private final Map<String,Class> compatibilityAliases = new ConcurrentHashMap<String, Class>();
+    private final Map<String,Class<?>> compatibilityAliases = new ConcurrentHashMap<String, Class<?>>();
 
     public XStream2() {
         init();
@@ -97,7 +96,7 @@ public class XStream2 extends XStream {
     }
 
     private void init() {
-        // list up types that should be marshalled out like a value, without referencial integrity tracking.
+        // list up types that should be marshalled out like a value, without referential integrity tracking.
         addImmutableType(Result.class);
 
         registerConverter(new RobustCollectionConverter(getMapper(),getReflectionProvider()),10);
@@ -183,14 +182,14 @@ public class XStream2 extends XStream {
      */
     private static final class AssociatedConverterImpl implements Converter {
         private final XStream xstream;
-        private final ConcurrentHashMap<Class,Converter> cache =
-                new ConcurrentHashMap<Class,Converter>();
+        private final ConcurrentHashMap<Class<?>,Converter> cache =
+                new ConcurrentHashMap<Class<?>,Converter>();
 
         private AssociatedConverterImpl(XStream xstream) {
             this.xstream = xstream;
         }
 
-        private Converter findConverter(Class t) {
+        private Converter findConverter(Class<?> t) {
             Converter result = cache.get(t);
             if (result != null)
                 // ConcurrentHashMap does not allow null, so use this object to represent null
