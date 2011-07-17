@@ -48,7 +48,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
-import java.util.logging.Logger;
 
 /**
  * Root of all the test results for one build.
@@ -56,7 +55,6 @@ import java.util.logging.Logger;
  * @author Kohsuke Kawaguchi
  */
 public final class TestResult extends MetaTabulatedResult {
-    private static final Logger LOGGER = Logger.getLogger(TestResult.class.getName());
 
     /**
      * List of all {@link SuiteResult}s in this test.
