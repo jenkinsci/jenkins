@@ -33,6 +33,7 @@ import hudson.model.UserProperty;
 import hudson.scm.SCM;
 
 import java.util.List;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -41,7 +42,7 @@ import java.util.regex.Pattern;
  * Infers e-mail addresses for the user when none is specified.
  *
  * <p>
- * This is an extension point of Hudson. Plugins tha contribute new implementation
+ * This is an extension point of Jenkins. Plugins that contribute a new implementation
  * of this class should put {@link Extension} on your implementation class, like this:
  *
  * <pre>
@@ -53,7 +54,7 @@ import java.util.regex.Pattern;
  *
  * <h2>Techniques</h2>
  * <p>
- * User identity in Hudson is global, and not specific to a particular job. As a result, mail address resolution
+ * User identity in Jenkins is global, and not specific to a particular job. As a result, mail address resolution
  * only receives {@link User}, which by itself doesn't really have that much information in it.
  *
  * <p>
@@ -91,12 +92,16 @@ public abstract class MailAddressResolver implements ExtensionPoint {
     public abstract String findMailAddressFor(User u);
     
     public static String resolve(User u) {
-        LOGGER.fine("Resolving e-mail address for \""+u+"\" ID="+u.getId());
+        if (LOGGER.isLoggable(Level.FINE)) {
+            LOGGER.fine("Resolving e-mail address for \""+u+"\" ID="+u.getId());
+        }
 
         for (MailAddressResolver r : all()) {
             String email = r.findMailAddressFor(u);
             if(email!=null) {
-                LOGGER.fine(r+" resolved "+u.getId()+" to "+email);
+                if (LOGGER.isLoggable(Level.FINE)) {
+                    LOGGER.fine(r+" resolved "+u.getId()+" to "+email);
+                }
                 return email;
             }
         }
