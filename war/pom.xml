@@ -99,7 +99,7 @@ THE SOFTWARE.
       -->
       <groupId>org.jenkins-ci</groupId>
       <artifactId>winstone</artifactId>
-      <version>0.9.10-jenkins-25</version>
+      <version>0.9.10-jenkins-26</version>
       <scope>test</scope>
     </dependency>
     <dependency>
