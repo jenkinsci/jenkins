@@ -212,6 +212,7 @@ public final class WebAppMain implements ServletContextListener {
             initThread = new Thread("hudson initialization thread") {
                 @Override
                 public void run() {
+                    boolean success = false;
                     try {
                         Jenkins instance = new Hudson(home, context);
                         context.setAttribute(APP, instance);
@@ -224,6 +225,7 @@ public final class WebAppMain implements ServletContextListener {
                                 User.getUnknown().getBuilds();
                             }
                         }, 1000*10);
+                        success = true;
                     } catch (Error e) {
                         LOGGER.log(Level.SEVERE, "Failed to initialize Jenkins",e);
                         context.setAttribute(APP,new HudsonFailedToLoad(e));
@@ -233,7 +235,7 @@ public final class WebAppMain implements ServletContextListener {
                         context.setAttribute(APP,new HudsonFailedToLoad(e));
                     } finally {
                         Jenkins instance = Jenkins.getInstance();
-                        if(instance!=null)
+                        if(!success && instance!=null)
                             instance.cleanUp();
                     }
                 }
