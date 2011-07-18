@@ -23,20 +23,20 @@
  */
 package hudson;
 
+import hudson.Plugin.DummyImpl;
 import hudson.PluginWrapper.Dependency;
 import hudson.model.Hudson;
 import hudson.util.IOException2;
 import hudson.util.MaskingClassLoader;
 import hudson.util.VersionNumber;
-import hudson.Plugin.DummyImpl;
 
 import java.io.BufferedReader;
+import java.io.Closeable;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileReader;
 import java.io.FilenameFilter;
 import java.io.IOException;
-import java.io.Closeable;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.ArrayList;
@@ -46,14 +46,14 @@ import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.List;
-import java.util.jar.Manifest;
 import java.util.jar.Attributes;
+import java.util.jar.Manifest;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import org.apache.tools.ant.AntClassLoader;
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.Project;
-import org.apache.tools.ant.AntClassLoader;
 import org.apache.tools.ant.taskdefs.Expand;
 import org.apache.tools.ant.types.FileSet;
 
@@ -86,8 +86,13 @@ public class ClassicPluginStrategy implements PluginStrategy {
         boolean isLinked = archive.getName().endsWith(".hpl");
         if (isLinked) {
             // resolve the .hpl file to the location of the manifest file
-            String firstLine = new BufferedReader(new FileReader(archive))
-                    .readLine();
+            final String firstLine;
+            BufferedReader reader = new BufferedReader(new FileReader(archive));
+            try {
+                firstLine = reader.readLine();
+            } finally {
+                reader.close();
+            }
             if (firstLine.startsWith("Manifest-Version:")) {
                 // this is the manifest already
             } else {
@@ -302,7 +307,7 @@ public class ClassicPluginStrategy implements PluginStrategy {
                 wrapper.setPlugin(new DummyImpl());
             } else {
                 try {
-                    Class clazz = wrapper.classLoader.loadClass(className);
+                    Class<?> clazz = wrapper.classLoader.loadClass(className);
                     Object o = clazz.newInstance();
                     if(!(o instanceof Plugin)) {
                         throw new IOException(className+" doesn't extend from hudson.Plugin");
