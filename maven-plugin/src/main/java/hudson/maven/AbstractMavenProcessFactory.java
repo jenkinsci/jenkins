@@ -276,7 +276,11 @@ public abstract class AbstractMavenProcessFactory
 
         if (mms.runHeadless()) {
             // Configure headless process
-            mavenOpts += " -Djava.awt.headless=true";
+            if (mavenOpts == null) {
+                mavenOpts = "-Djava.awt.headless=true";
+            } else {
+                mavenOpts += " -Djava.awt.headless=true";
+            }
         } else {
             if (Platform.isDarwin()) {
                 // Would be cool to replace the generic Java icon with jenkins logo, but requires
