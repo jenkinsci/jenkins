@@ -32,6 +32,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
@@ -123,9 +124,7 @@ public class Main {
             HttpURLConnection con = open(new URL(home +
                     "crumbIssuer/api/xml?xpath=concat(//crumbRequestField,\":\",//crumb)'"));
             if (auth != null) con.setRequestProperty("Authorization", auth);
-            BufferedReader in = new BufferedReader(new InputStreamReader(con.getInputStream()));
-            String line = in.readLine();
-            in.close();
+            String line = readFirstLine(con.getInputStream());
             String[] components = line.split(":");
             if (components.length == 2) {
                 crumbField = components[0];
@@ -194,6 +193,15 @@ public class Main {
             }
         } finally {
             tmpFile.delete();
+        }
+    }
+
+    private static String readFirstLine(InputStream is) throws IOException {
+        BufferedReader reader = new BufferedReader(new InputStreamReader(is));
+        try {
+            return reader.readLine();
+        } finally {
+            reader.close();
         }
     }
 

@@ -88,9 +88,13 @@ public class TestPluginManager extends PluginManager {
         URL index = getClass().getResource("/test-dependencies/index");
         if (index!=null) {// if built with maven-hpi-plugin < 1.52 this file won't exist.
             BufferedReader r = new BufferedReader(new InputStreamReader(index.openStream(),"UTF-8"));
-            String line;
-            while ((line=r.readLine())!=null) {
-                copyBundledPlugin(new URL(index, line + ".hpi"), line + ".hpi");
+            try {
+                String line;
+                while ((line=r.readLine())!=null) {
+                    copyBundledPlugin(new URL(index, line + ".hpi"), line + ".hpi");
+                }
+            } finally {
+                r.close();
             }
         }
 
