@@ -124,5 +124,21 @@ public class IOUtils extends org.apache.commons.io.IOUtils {
         return PosixAPI.get().stat(f.getPath()).mode();
     }
 
+    /**
+     * Read the first line of a file
+     * @param file
+     * @return the first line of a file
+     * @throws IOException
+     * @since 1.422
+     */
+    public static String readFirstLine(File file) throws IOException {
+        BufferedReader reader = new BufferedReader(new FileReader(file));
+        try {
+            return reader.readLine();
+        } finally {
+            reader.close();
+        }
+    }
+
     private static final byte[] SKIP_BUFFER = new byte[8192];
 }
