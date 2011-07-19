@@ -154,7 +154,7 @@ public abstract class MavenBuilder extends AbstractMavenBuilder implements Deleg
             
             markAsSuccess = false;
 
-            // working around NPE when someone puts a null value or empty keys into systemProps.
+            // working around NPE when someone puts a null value or empty key into systemProps.
             for (Map.Entry<String,String> e : systemProps.entrySet()) {
                 if ("".equals(e.getKey()))
                     throw new IllegalArgumentException("System property has an empty key");
