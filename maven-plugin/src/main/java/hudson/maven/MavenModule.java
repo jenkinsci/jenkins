@@ -389,7 +389,7 @@ public final class MavenModule extends AbstractMavenProject<MavenModule,MavenBui
     }
 
     protected void buildDependencyGraph(DependencyGraph graph) {
-        if(isDisabled() || getParent().ignoreUpstremChanges())        return;
+        if(!isBuildable() || getParent().ignoreUpstremChanges())        return;
 
         MavenDependencyComputationData data = graph.getComputationalData(MavenDependencyComputationData.class);
 
@@ -404,7 +404,7 @@ public final class MavenModule extends AbstractMavenProject<MavenModule,MavenBui
             Map<ModuleDependency,MavenModule> modules = new HashMap<ModuleDependency,MavenModule>();
     
             for (MavenModule m : Jenkins.getInstance().getAllItems(MavenModule.class)) {
-                if(m.isDisabled())  continue;
+                if(!m.isBuildable())  continue;
                 ModuleDependency moduleDependency = m.asDependency();
                 MavenModule old = modules.get(moduleDependency);
                 MavenModule relevant = chooseMoreRelevantModule(old, m, moduleDependency);
