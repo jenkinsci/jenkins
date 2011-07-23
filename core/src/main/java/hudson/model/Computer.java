@@ -1145,6 +1145,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
      */
     public static final Permission CONFIGURE = new Permission(PERMISSIONS,"Configure", Messages._Computer_ConfigurePermission_Description(), Permission.CONFIGURE);
     public static final Permission DELETE = new Permission(PERMISSIONS,"Delete", Messages._Computer_DeletePermission_Description(), Permission.DELETE);
+    public static final Permission CREATE = new Permission(PERMISSIONS,"Create", Messages._Computer_CreatePermission_Description(), Permission.CREATE);
 
     private static final Logger LOGGER = Logger.getLogger(Computer.class.getName());
 }
