@@ -34,10 +34,17 @@ import java.util.concurrent.ConcurrentHashMap;
  * @author Kohsuke Kawaguchi
  */
 public class XStreamTest extends TestCase {
+    
+    private XStream2 xstream = new XStream2();
+    
     public static class Foo {
-        ConcurrentHashMap m = new ConcurrentHashMap();
+        ConcurrentHashMap<String,String> m = new ConcurrentHashMap<String,String>();
     }
 
+    /**
+     * Tests that ConcurrentHashMap is serialized into a more compact format,
+     * but still can deserialize to older, verbose format.
+     */
     public void testConcurrentHashMapSerialization() throws Exception {
         Foo foo = new Foo();
         foo.m.put("abc","def");
@@ -49,13 +56,18 @@ public class XStreamTest extends TestCase {
             // should serialize like map
             String xml = FileUtils.readFileToString(v);
             assertFalse(xml.contains("java.util.concurrent"));
-            System.out.println(xml);
+            //System.out.println(xml);
+            Foo deserialized = (Foo)xstream.fromXML(xml);
+            assertEquals(2,deserialized.m.size());
+            assertEquals("def", deserialized.m.get("abc"));
+            assertEquals("jkl", deserialized.m.get("ghi"));
         } finally {
             v.delete();
         }
 
         // should be able to read in old data just fine
         Foo map = (Foo)new XStream2().fromXML(getClass().getResourceAsStream("old-concurrentHashMap.xml"));
+        assertEquals(1,map.m.size());
         assertEquals("def",map.m.get("abc"));
     }
 }

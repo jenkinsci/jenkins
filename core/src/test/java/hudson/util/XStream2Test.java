@@ -118,11 +118,11 @@ public class XStream2Test extends TestCase {
     }
 
     private static class ImmutableMapHolder {
-        ImmutableMap m;
+        ImmutableMap<?,?> m;
     }
 
     private static class MapHolder {
-        Map m;
+        Map<?,?> m;
     }
 
 
@@ -145,7 +145,7 @@ public class XStream2Test extends TestCase {
         ImmutableMapHolder a = new ImmutableMapHolder();
         a.m = m;
         String xml = xs.toXML(a);
-        System.out.println(xml);
+        //System.out.println(xml);
         assertFalse("shouldn't contain the class name",xml.contains("google"));
         assertFalse("shouldn't contain the class name",xml.contains("class"));
         a = (ImmutableMapHolder)xs.fromXML(xml);
@@ -158,7 +158,7 @@ public class XStream2Test extends TestCase {
         MapHolder a = new MapHolder();
         a.m = m;
         String xml = xs.toXML(a);
-        System.out.println(xml);
+        //System.out.println(xml);
         assertTrue("XML should mention the class name",xml.contains('\"'+ImmutableMap.class.getName()+'\"'));
         a = (MapHolder)xs.fromXML(xml);
 
@@ -180,7 +180,7 @@ public class XStream2Test extends TestCase {
         assertEquals(1,pt.x);
         assertEquals(2,pt.y);
         String xml = xs.toXML(pt);
-        System.out.println(xml);
+        //System.out.println(xml);
         assertFalse("Shouldn't use the alias when writing back",xml.contains("legacy"));
     }
 
