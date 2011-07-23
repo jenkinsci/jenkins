@@ -570,6 +570,14 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
             try {
                 
                 EnvVars envVars = getEnvironment(listener);
+
+                /*
+                 * Expand the path to the rootPOM once and set the
+                 * projects rootPOM property to the expanded value
+                 * Fixes issue JENKINS-5885
+                 */
+                project.setRootPOM(envVars.expand(project.getRootPOM()));
+
                 MavenInstallation mvn = project.getMaven();
                 if(mvn==null)
                     throw new AbortException(Messages.MavenModuleSetBuild_NoMavenConfigured());
@@ -1154,11 +1162,7 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
             // project cannot be shipped to the remote JVM, so all the relevant properties need to be captured now.
             this.listener = listener;
             this.mavenHome = mavenHome;
-            this.rootPOM = project.getRootPOM();
-            if (envVars != null)
-            {
-            	this.rootPOM = envVars.expand(this.rootPOM);
-            }
+           	this.rootPOM = project.getRootPOM();
             this.profiles = project.getProfiles();
             this.properties = project.getMavenProperties();
             ParametersDefinitionProperty parametersDefinitionProperty = project.getProperty( ParametersDefinitionProperty.class );
