@@ -274,13 +274,16 @@ public class Queue extends ResourceController implements Saveable {
             File queueFile = getQueueFile();
             if (queueFile.exists()) {
                 BufferedReader in = new BufferedReader(new InputStreamReader(new FileInputStream(queueFile)));
-                String line;
-                while ((line = in.readLine()) != null) {
-                    AbstractProject j = Jenkins.getInstance().getItemByFullName(line, AbstractProject.class);
-                    if (j != null)
-                        j.scheduleBuild();
+                try {
+                    String line;
+                    while ((line = in.readLine()) != null) {
+                        AbstractProject j = Jenkins.getInstance().getItemByFullName(line, AbstractProject.class);
+                        if (j != null)
+                            j.scheduleBuild();
+                    }
+                } finally {
+                    in.close();
                 }
-                in.close();
                 // discard the queue file now that we are done
                 queueFile.delete();
             } else {

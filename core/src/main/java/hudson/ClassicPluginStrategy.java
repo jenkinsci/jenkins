@@ -27,14 +27,13 @@ import hudson.Plugin.DummyImpl;
 import hudson.PluginWrapper.Dependency;
 import hudson.model.Hudson;
 import hudson.util.IOException2;
+import hudson.util.IOUtils;
 import hudson.util.MaskingClassLoader;
 import hudson.util.VersionNumber;
 
-import java.io.BufferedReader;
 import java.io.Closeable;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileReader;
 import java.io.FilenameFilter;
 import java.io.IOException;
 import java.net.URL;
@@ -86,13 +85,7 @@ public class ClassicPluginStrategy implements PluginStrategy {
         boolean isLinked = archive.getName().endsWith(".hpl");
         if (isLinked) {
             // resolve the .hpl file to the location of the manifest file
-            final String firstLine;
-            BufferedReader reader = new BufferedReader(new FileReader(archive));
-            try {
-                firstLine = reader.readLine();
-            } finally {
-                reader.close();
-            }
+            final String firstLine = IOUtils.readFirstLine(archive);
             if (firstLine.startsWith("Manifest-Version:")) {
                 // this is the manifest already
             } else {
@@ -179,7 +172,7 @@ public class ClassicPluginStrategy implements PluginStrategy {
         return new PluginWrapper(pluginManager, archive, manifest, baseResourceURL,
                 createClassLoader(paths, dependencyLoader, atts), disableFile, dependencies, optionalDependencies);
     }
-    
+
     @Deprecated
     protected ClassLoader createClassLoader(List<File> paths, ClassLoader parent) throws IOException {
         return createClassLoader( paths, parent, null );
