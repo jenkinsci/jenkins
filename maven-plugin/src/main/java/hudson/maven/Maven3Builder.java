@@ -113,12 +113,7 @@ public class Maven3Builder extends AbstractMavenBuilder implements DelegatingCal
             
             markAsSuccess = false;
 
-            // working around NPE when someone puts a null value into systemProps.
-            for (Map.Entry<String,String> e : systemProps.entrySet()) {
-                if (e.getValue()==null)
-                    throw new IllegalArgumentException("System property "+e.getKey()+" has a null value");
-                System.getProperties().put(e.getKey(), e.getValue());
-            }
+            registerSystemProperties();
 
             listener.getLogger().println(formatArgs(goals));
             

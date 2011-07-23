@@ -71,10 +71,21 @@ public abstract class AbstractMavenBuilder implements DelegatingCallable<Result,
             buf.append(' ').append(filteredArg);
         }
         return buf.toString();
-    }    
-    
-    
+    }
 
+    /**
+     * Add all the {@link #systemProps hudson defined system properties} into the {@link System#getProperties() system properties}
+     * @throws IllegalArgumentException if a {@link #systemProps hudson system property} has an empty key or null value
+     */
+    protected void registerSystemProperties() {
+        for (Map.Entry<String,String> e : systemProps.entrySet()) {
+            if ("".equals(e.getKey()))
+                throw new IllegalArgumentException("System property has an empty key");
+            if (e.getValue()==null)
+                throw new IllegalArgumentException("System property "+e.getKey()+" has a null value");
+            System.getProperties().put(e.getKey(), e.getValue());
+        }
+    }
 
     protected String format(NumberFormat n, long nanoTime) {
         return n.format(nanoTime/1000000);
