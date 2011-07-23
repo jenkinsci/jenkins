@@ -72,6 +72,7 @@ public class JobPropertyTest extends HudsonTestCase {
 
         @TestExtension
         public static class DescriptorImpl extends JobPropertyDescriptor {
+            @SuppressWarnings("rawtypes")
             @Override
             public boolean isApplicable(Class<? extends Job> jobType) {
                 return false;
@@ -91,7 +92,7 @@ public class JobPropertyTest extends HudsonTestCase {
         FreeStyleProject p = createFreeStyleProject();
         JobPropertyWithConfigImpl before = new JobPropertyWithConfigImpl("Duke");
         p.addProperty(before);
-        configRoundtrip(p);
+        configRoundtrip((Item)p);
         JobPropertyWithConfigImpl after = p.getProperty(JobPropertyWithConfigImpl.class);
         assertNotSame(after,before);
         assertEqualDataBoundBeans(before, after);
@@ -118,7 +119,7 @@ public class JobPropertyTest extends HudsonTestCase {
         FreeStyleProject p = createFreeStyleProject();
         InvisibleImpl before = new InvisibleImpl();
         p.addProperty(before);
-        configRoundtrip(p);
+        configRoundtrip((Item)p);
         InvisibleImpl after = p.getProperty(InvisibleImpl.class);
         assertSame(after,before);
     }
