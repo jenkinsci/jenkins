@@ -122,7 +122,7 @@ public final class WorkspaceList {
      */
     public synchronized Lease allocate(FilePath base) throws InterruptedException {
         for (int i=1; ; i++) {
-            FilePath candidate = i==1 ? base : base.withSuffix("@"+i);
+            FilePath candidate = i==1 ? base : base.withSuffix(COMBINATOR+i);
             Entry e = inUse.get(candidate);
             if(e!=null && !e.quick)
                 continue;
@@ -193,4 +193,9 @@ public final class WorkspaceList {
     }
 
     private static final Logger LOGGER = Logger.getLogger(WorkspaceList.class.getName());
+
+    /**
+     * The token that combines the project name and unique number to create unique workspace directory.
+     */
+    private static final String COMBINATOR = System.getProperty(WorkspaceList.class.getName(),"@");
 }
