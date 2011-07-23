@@ -85,7 +85,7 @@ public class ClassicPluginStrategy implements PluginStrategy {
         boolean isLinked = archive.getName().endsWith(".hpl");
         if (isLinked) {
             // resolve the .hpl file to the location of the manifest file
-            final String firstLine = IOUtils.readFirstLine(archive);
+            final String firstLine = IOUtils.readFirstLine(new FileInputStream(archive), "UTF-8");
             if (firstLine.startsWith("Manifest-Version:")) {
                 // this is the manifest already
             } else {
