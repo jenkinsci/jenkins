@@ -56,6 +56,10 @@ public class SuiteResultTest extends TestCase {
         assertEquals(1,results.size());
         return results.get(0);
     }
+    
+    private List<SuiteResult> parseSuites(File file) throws Exception {
+        return SuiteResult.parse(file, false);
+    }
 
     /**
      * Verifying fix for issue #1233.
@@ -195,5 +199,17 @@ public class SuiteResultTest extends TestCase {
         CaseResult result = suiteResult.getCases().get(0);
         assertEquals(1, result.getFailCount());
         assertTrue(result.getErrorStackTrace() != null);
+    }
+    
+    @Bug(6454)
+    public void testParseNestedTestSuites() throws Exception {
+        // A report with several nested suites
+        // 3 of them have actual some tests - each exactly one
+        List<SuiteResult> results = parseSuites(getDataFile("junit-report-nested-testsuites.xml"));
+        assertEquals(3, results.size());
+        
+        for (SuiteResult result : results) {
+            assertEquals(1, result.getCases().size());
+        }
     }
 }
