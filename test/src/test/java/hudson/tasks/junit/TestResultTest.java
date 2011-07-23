@@ -31,13 +31,14 @@ import java.io.File;
 import java.net.URISyntaxException;
 import java.util.Collection;
 import java.util.List;
-import org.jvnet.hudson.test.HudsonTestCase;
+
+import junit.framework.TestCase;
 
 /**
  *
  * @author dty
  */
-public class TestResultTest extends HudsonTestCase {
+public class TestResultTest extends TestCase {
     private File getDataFile(String name) throws URISyntaxException {
         return new File(TestResultTest.class.getResource(name).toURI());
     }
