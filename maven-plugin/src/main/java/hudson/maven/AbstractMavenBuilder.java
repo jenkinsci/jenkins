@@ -76,6 +76,8 @@ public abstract class AbstractMavenBuilder implements DelegatingCallable<Result,
     /**
      * Add all the {@link #systemProps hudson defined system properties} into the {@link System#getProperties() system properties}
      * @throws IllegalArgumentException if a {@link #systemProps hudson system property} has an empty key or null value
+     *      as it blows up Maven.
+     * @see https://groups.google.com/forum/#!topic/jenkinsci-dev/hoxoNi7sNtk/discussion
      */
     protected void registerSystemProperties() {
         for (Map.Entry<String,String> e : systemProps.entrySet()) {
