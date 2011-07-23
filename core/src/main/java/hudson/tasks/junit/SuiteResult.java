@@ -123,7 +123,8 @@ public final class SuiteResult implements Serializable {
             parseSuite(xmlReport, keepLongStdio, r, suite);
 
         // child test cases
-        if (root.element("testcase")!=null)
+        // FIXME: do this also if no testcases!
+        if (root.element("testcase")!=null || root.element("error")!=null)
             r.add(new SuiteResult(xmlReport, root, keepLongStdio));
     }
 
@@ -155,11 +156,11 @@ public final class SuiteResult implements Serializable {
         }
 
         for (Element e : (List<Element>)suite.elements("testcase")) {
-            // https://hudson.dev.java.net/issues/show_bug.cgi?id=1233 indicates that
+            // https://issues.jenkins-ci.org/browse/JENKINS-1233 indicates that
             // when <testsuites> is present, we are better off using @classname on the
             // individual testcase class.
 
-            // https://hudson.dev.java.net/issues/show_bug.cgi?id=1463 indicates that
+            // https://issues.jenkins-ci.org/browse/JENKINS-1463 indicates that
             // @classname may not exist in individual testcase elements. We now
             // also test if the testsuite element has a package name that can be used
             // as the class name instead of the file name which is default.
@@ -168,7 +169,7 @@ public final class SuiteResult implements Serializable {
                 classname = suite.attributeValue("name");
             }
 
-            // https://hudson.dev.java.net/issues/show_bug.cgi?id=1233 and
+            // https://issues.jenkins-ci.org/browse/JENKINS-1233 and
             // http://www.nabble.com/difference-in-junit-publisher-and-ant-junitreport-tf4308604.html#a12265700
             // are at odds with each other --- when both are present,
             // one wants to use @name from <testsuite>,
