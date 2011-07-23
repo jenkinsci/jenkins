@@ -31,7 +31,8 @@ THE SOFTWARE.
 -->
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:s="/lib/form">
-  <l:layout norefresh="true" permission="${app.ADMINISTER}">
+  <j:getStatic var="createPermission" className="hudson.model.Computer" field="CREATE"/>
+  <l:layout norefresh="true" permission="${createPermission}">
     <st:include page="sidepanel.jelly" />
     <l:main-panel>
       <j:invokeStatic var="slaves" className="hudson.slaves.NodeDescriptor" method="allInstantiable" />
