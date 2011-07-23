@@ -29,10 +29,11 @@ THE SOFTWARE.
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:s="/lib/form">
   <l:header />
   <l:side-panel>
+    <j:getStatic var="createPermission" className="hudson.model.Computer" field="CREATE"/>
     <l:tasks>
       <l:task icon="images/24x24/up.png" href="${rootURL}/" title="${%Back to Dashboard}" />
       <l:task icon="images/24x24/setting.png" href="${rootURL}/manage" title="${%Manage Jenkins}" permission="${app.ADMINISTER}" />
-      <l:task icon="images/24x24/new-computer.png" href="new" title="${%New Node}" permission="${app.ADMINISTER}" />
+      <l:task icon="images/24x24/new-computer.png" href="new" title="${%New Node}" permission="${createPermission}" />
       <l:task icon="images/24x24/setting.png" href="configure" title="${%Configure}" permission="${app.ADMINISTER}" />
     </l:tasks>
     <t:queue items="${app.queue.items}" />
