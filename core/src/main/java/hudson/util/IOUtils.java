@@ -1,9 +1,7 @@
 package hudson.util;
 
-import hudson.FilePath.FileCallable;
 import hudson.Functions;
 import hudson.os.PosixAPI;
-import hudson.remoting.VirtualChannel;
 
 import java.io.*;
 import java.util.regex.Pattern;
@@ -132,7 +130,19 @@ public class IOUtils extends org.apache.commons.io.IOUtils {
      * @since 1.422
      */
     public static String readFirstLine(File file) throws IOException {
-        BufferedReader reader = new BufferedReader(new FileReader(file));
+        return readFirstLine(new FileInputStream(file),null);
+    }
+
+    /**
+     * Read the first line of the given stream, close it, and return that line.
+     *
+     * @param encoding
+     *      If null, use the platform default encoding.
+     * @since 1.422
+     */
+    public static String readFirstLine(InputStream is, String encoding) throws IOException {
+        BufferedReader reader = new BufferedReader(
+                encoding==null ? new InputStreamReader(is) : new InputStreamReader(is,encoding));
         try {
             return reader.readLine();
         } finally {

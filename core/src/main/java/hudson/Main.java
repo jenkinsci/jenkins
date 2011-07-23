@@ -26,14 +26,12 @@ package hudson;
 import hudson.util.DualOutputStream;
 import hudson.util.EncodingStream;
 import com.thoughtworks.xstream.core.util.Base64Encoder;
+import hudson.util.IOUtils;
 
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.net.HttpRetryException;
@@ -124,7 +122,7 @@ public class Main {
             HttpURLConnection con = open(new URL(home +
                     "crumbIssuer/api/xml?xpath=concat(//crumbRequestField,\":\",//crumb)'"));
             if (auth != null) con.setRequestProperty("Authorization", auth);
-            String line = readFirstLine(con.getInputStream());
+            String line = IOUtils.readFirstLine(con.getInputStream(),"UTF-8");
             String[] components = line.split(":");
             if (components.length == 2) {
                 crumbField = components[0];
@@ -193,15 +191,6 @@ public class Main {
             }
         } finally {
             tmpFile.delete();
-        }
-    }
-
-    private static String readFirstLine(InputStream is) throws IOException {
-        BufferedReader reader = new BufferedReader(new InputStreamReader(is));
-        try {
-            return reader.readLine();
-        } finally {
-            reader.close();
         }
     }
 
