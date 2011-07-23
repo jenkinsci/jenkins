@@ -55,23 +55,15 @@ Upcoming changes</a>
 <!-- Record your changes in the trunk here. -->
 <div id="trunk" style="display:none"><!--=TRUNK-BEGIN=-->
 <ul class=image>
-  <li class=rfe>
-    Support for gzipped log in consoleText
-    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-10400">issue 10400</a>)
-  <li class=bug>
-    When run as "java -jar jenkins.war", failing to listen on HTTP ports should be fatal.
-  <li class=bug>
-    Fixed a race condition in the fingerprint computation 
-    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-10346">issue 10346</a>)
-  <li class=bug>
-    Fixed an occasional NPE when running Maven jobs 
-    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-9822">issue 9822</a>)
   <li class=bug>
     Fixed Maven build error if headless option is set and MAVEN_OPTS empty
     (<a href="https://issues.jenkins-ci.org/browse/JENKINS-10375">issue 10375</a>)
   <li class=bug>
     Tests not recognized as failed if test initialization failed
     (<a href="https://issues.jenkins-ci.org/browse/JENKINS-6700">issue 6700</a>)
+  <li class=rfe>
+    Support for gzipped log in consoleText
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-10400">issue 10400</a>)
   <li class=rfe>
     Expand variables in the Maven POM definition in Maven projects.
     (<a href="https://issues.jenkins-ci.org/browse/JENKINS-5885">issue 5885</a>)
@@ -81,7 +73,16 @@ Upcoming changes</a>
 <!-- these changes are controlled by the release process. DO NOT MODIFY -->
 <div id="rc" style="display:none;"><!--=BEGIN=-->
 <h3><a name=v1.422>What's new in 1.422</a> <!--=DATE=--></h3>
-<!--=RC-CHANGES=-->
+<ul class=image>
+  <li class=bug>
+    When run as "java -jar jenkins.war", failing to listen on HTTP ports should be fatal.
+  <li class=bug>
+    Fixed a race condition in the fingerprint computation 
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-10346">issue 10346</a>)
+  <li class=bug>
+    Fixed an occasional NPE when running Maven jobs 
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-9822">issue 9822</a>)
+</ul>
 </div><!--=END=-->
 <h3><a name=v1.421>What's new in 1.421</a> (2011/07/17)</h3>
 <ul class=image>
