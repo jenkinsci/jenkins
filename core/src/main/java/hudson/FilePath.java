@@ -1464,12 +1464,26 @@ public final class FilePath implements Serializable {
 
     /**
      * Copies the contents of this directory recursively into the specified target directory.
+     * 
+     * @return
+     *      the number of files copied.
      * @since 1.312 
      */
     public int copyRecursiveTo(FilePath target) throws IOException, InterruptedException {
         return copyRecursiveTo("**/*",target);
     }
 
+    /**
+     * Copies the files that match the given file mask to the specified target node.
+     *
+     * @param fileMask
+     *      Ant GLOB pattern.
+     *      String like "foo/bar/*.xml" Multiple patterns can be separated
+     *      by ',', and whitespace can surround ',' (so that you can write
+     *      "abc, def" and "abc,def" to mean the same thing.
+     * @return
+     *      the number of files copied.
+     */
     public int copyRecursiveTo(String fileMask, FilePath target) throws IOException, InterruptedException {
         return copyRecursiveTo(fileMask,null,target);
     }
