@@ -24,7 +24,6 @@
  */
 package hudson.maven;
 
-import static hudson.model.Result.ABORTED;
 import static hudson.model.Result.FAILURE;
 import hudson.AbortException;
 import hudson.EnvVars;
@@ -34,7 +33,6 @@ import hudson.Launcher;
 import hudson.Util;
 import hudson.maven.MavenBuild.ProxyImpl2;
 import hudson.maven.reporters.MavenAggregatedArtifactRecord;
-import hudson.maven.reporters.MavenArtifactRecord;
 import hudson.maven.reporters.MavenFingerprinter;
 import hudson.maven.reporters.MavenMailer;
 import hudson.model.AbstractBuild;
@@ -325,7 +323,7 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
 
     /**
      * Estimates the duration overhead the {@link MavenModuleSetBuild} itself adds
-     * to the sum of duration of the module builds.
+     * to the sum of durations of the module builds.
      */
     private long estimateModuleSetBuildDurationOverhead(int numberOfBuilds) {
         List<MavenModuleSetBuild> moduleSetBuilds = getPreviousBuildsOverThreshold(numberOfBuilds, Result.UNSTABLE);
@@ -1415,7 +1413,7 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
                     File pomFile = new File(mp.getFile().getParent(), module);
                     MavenProject mavenProject2 = null;
                     // take care of HUDSON-8445
-                    if (pomFile.isFile() && pomFile.exists())
+                    if (pomFile.isFile())
                         mavenProject2 = mavenEmbedder.readProject( pomFile );
                     else
                         mavenProject2 = mavenEmbedder.readProject( new File(mp.getFile().getParent(), module + "/pom.xml") );
