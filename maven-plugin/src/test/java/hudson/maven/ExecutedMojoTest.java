@@ -1,11 +1,14 @@
 package hudson.maven;
 
 import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import org.apache.maven.plugin.MojoExecution;
 import org.apache.maven.plugin.descriptor.MojoDescriptor;
 import org.apache.maven.plugin.descriptor.PluginDescriptor;
 import org.codehaus.plexus.classworlds.realm.ClassRealm;
+import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -19,6 +22,7 @@ import org.jvnet.hudson.test.Bug;
 public class ExecutedMojoTest {
     
     private MojoDescriptor mojoDescriptor;
+    private Level oldLevel;
     
     @Before
     public void before() {
@@ -33,6 +37,14 @@ public class ExecutedMojoTest {
         MojoDescriptor descriptor = new MojoDescriptor();
         descriptor.setPluginDescriptor(pluginDescriptor);
         this.mojoDescriptor = descriptor;
+        
+        this.oldLevel = Logger.getLogger(ExecutedMojo.class.getName()).getLevel();
+        Logger.getLogger(ExecutedMojo.class.getName()).setLevel(Level.SEVERE);
+    }
+    
+    @After
+    public void after() {
+        Logger.getLogger(ExecutedMojo.class.getName()).setLevel(oldLevel);
     }
     
     @Test
