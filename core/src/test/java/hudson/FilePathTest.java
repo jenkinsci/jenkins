@@ -23,7 +23,6 @@
  */
 package hudson;
 
-import hudson.remoting.Future;
 import hudson.remoting.VirtualChannel;
 import hudson.util.IOException2;
 import hudson.util.NullStream;
@@ -102,7 +101,7 @@ public class FilePathTest extends ChannelTestCase {
 
         ExecutorService es = Executors.newFixedThreadPool(100);
         try {
-            List<java.util.concurrent.Future> r = new ArrayList<java.util.concurrent.Future>();
+            List<java.util.concurrent.Future<Object>> r = new ArrayList<java.util.concurrent.Future<Object>>();
             for (int i=0; i<100; i++) {
                 r.add(es.submit(new Callable<Object>() {
                     public Object call() throws Exception {
@@ -150,7 +149,7 @@ public class FilePathTest extends ChannelTestCase {
                 }));
             }
 
-            for (java.util.concurrent.Future f : r)
+            for (java.util.concurrent.Future<Object> f : r)
                 f.get();
         } finally {
             es.shutdown();
@@ -166,7 +165,7 @@ public class FilePathTest extends ChannelTestCase {
         try {
             assertTrue(src.mkdir());
             assertTrue(dst.mkdir());
-            File f = File.createTempFile("foo", ".tmp", src);
+            File.createTempFile("foo", ".tmp", src);
             FilePath fp = new FilePath(src);
             assertEquals(1, fp.copyRecursiveTo(new FilePath(dst)));
             // copy again should still report 1

@@ -70,8 +70,8 @@ public class LauncherTest extends ChannelTestCase {
         }
     }
 
-    private static final Callable<Object,RuntimeException> NOOP = new Callable() {
-        public Object call() throws Exception {
+    private static final Callable<Object,RuntimeException> NOOP = new Callable<Object,RuntimeException>() {
+        public Object call() throws RuntimeException {
             return null;
         }
     };

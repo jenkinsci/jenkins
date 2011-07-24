@@ -41,6 +41,7 @@ public class BulkChangeTest extends TestCase {
          */
         int saveCount = 0;
 
+        @SuppressWarnings("unused")
         int x,y;
 
         public void setX(int x) throws IOException {
