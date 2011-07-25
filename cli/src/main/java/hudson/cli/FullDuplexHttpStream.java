@@ -61,7 +61,7 @@ public class FullDuplexHttpStream {
         input = con.getInputStream();
         // make sure we hit the right URL
         if(con.getHeaderField("Hudson-Duplex")==null)
-            throw new IOException(target+" doesn't look like Hudson");
+            throw new IOException(target+" doesn't look like Jenkins");
 
         // client->server uses chunked encoded POST for unlimited capacity. 
         con = (HttpURLConnection) target.openConnection();
