@@ -193,6 +193,7 @@ THE SOFTWARE.
                 <value>${project.version}</value>
                 <regex>-SNAPSHOT</regex>
                 <replacement>-SNAPSHOT (${build.type}-${now}-${user.name})</replacement>
+                <failIfNoMatch>false</failIfNoMatch>
               </configuration>
             </execution>
           </executions>
