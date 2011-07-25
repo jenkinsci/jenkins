@@ -149,9 +149,10 @@ public class UpdateSite {
 
         if (signatureCheck) {
             FormValidation e = verifySignature(o);
-            if (e.kind!=Kind.OK)
+            if (e.kind!=Kind.OK) {
                 LOGGER.severe(e.renderHtml());
-            return e;
+                return e;
+            }
         }
 
         LOGGER.info("Obtained the latest update center data file for UpdateSource " + id);
