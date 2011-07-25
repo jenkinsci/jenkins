@@ -247,7 +247,7 @@ public class User extends AbstractModelObject implements AccessControlled, Savea
     public Authentication impersonate() {
         try {
             UserDetails u = Jenkins.getInstance().getSecurityRealm().loadUserByUsername(id);
-            return new UsernamePasswordAuthenticationToken(u.getUsername(), u.getPassword(), u.getAuthorities());
+            return new UsernamePasswordAuthenticationToken(u.getUsername(), "", u.getAuthorities());
         } catch (AuthenticationException e) {
             // TODO: use the stored GrantedAuthorities
             return new UsernamePasswordAuthenticationToken(id, "",
