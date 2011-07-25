@@ -65,7 +65,7 @@ public class ClientAuthenticationCache implements Serializable {
         Secret userName = Secret.decrypt(props.getProperty(getPropertyKey()));
         if (userName==null) return Jenkins.ANONYMOUS; // failed to decrypt
         try {
-            UserDetails u = h.getSecurityRealm().loadUserByUsername(userName.toString());
+            UserDetails u = h.getSecurityRealm().loadUserByUsername(userName.getPlainText());
             return new UsernamePasswordAuthenticationToken(u.getUsername(), "", u.getAuthorities());
         } catch (AuthenticationException e) {
             return Jenkins.ANONYMOUS;
