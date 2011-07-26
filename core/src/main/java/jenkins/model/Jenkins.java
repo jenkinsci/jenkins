@@ -2443,13 +2443,6 @@ public class Jenkins extends AbstractCIBase implements ModifiableItemGroup<TopLe
                 markupFormatter = null;
             }
 
-            if (json.has("csrf")) {
-            	JSONObject csrf = json.getJSONObject("csrf");
-                setCrumbIssuer(CrumbIssuer.all().newInstanceFromRadioList(csrf, "issuer"));
-            } else {
-            	setCrumbIssuer(null);
-            }
-
             if (json.has("viewsTabBar")) {
                 viewsTabBar = req.bindJSON(ViewsTabBar.class,json.getJSONObject("viewsTabBar"));
             } else {

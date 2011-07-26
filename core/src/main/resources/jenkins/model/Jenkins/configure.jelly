@@ -144,19 +144,6 @@ THE SOFTWARE.
         </f:entry>
       </f:optionalBlock>
 
-      <j:if test="${!empty(h.crumbIssuerDescriptors)}">
-	    <f:optionalBlock name="csrf" title="${%Prevent Cross Site Request Forgery exploits}"
-	                     checked="${it.useCrumbs}" help="/help/system-config/csrf.html">
-	      <f:entry title="${%Crumbs}">
-	        <table style="width:100%">
-	          <f:descriptorRadioList title="${%Crumb Algorithm}" varName="issuer"
-	                                 instance="${it.crumbIssuer}"
-	                                 descriptors="${h.crumbIssuerDescriptors}"/>
-	        </table>
-	      </f:entry>
-	    </f:optionalBlock>
-      </j:if>
-
       <!-- global configuration from everyone -->
       <j:forEach var="descriptor" items="${h.getSortedDescriptorsForGlobalConfig()}">
         <j:set var="instance" value="${descriptor}" /><!-- this makes the <f:textbox field=.../> work -->
