@@ -2464,8 +2464,6 @@ public class Jenkins extends AbstractCIBase implements ModifiableItemGroup<TopLe
 
             primaryView = json.has("primaryView") ? json.getString("primaryView") : getViews().iterator().next().getViewName();
 
-            noUsageStatistics = json.has("usageStatisticsCollected") ? null : true;
-
             {
                 String v = req.getParameter("slaveAgentPortType");
                 if(!isUseSecurity() || v==null || v.equals("random"))

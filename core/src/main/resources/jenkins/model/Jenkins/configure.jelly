@@ -157,10 +157,6 @@ THE SOFTWARE.
 	    </f:optionalBlock>
       </j:if>
 
-      <f:optionalBlock name="usageStatisticsCollected" checked="${it.usageStatisticsCollected}"
-                       title="${%statsBlurb}"
-                       help="/help/system-config/usage-statistics.html" />
-
       <!-- global configuration from everyone -->
       <j:forEach var="descriptor" items="${h.getSortedDescriptorsForGlobalConfig()}">
         <j:set var="instance" value="${descriptor}" /><!-- this makes the <f:textbox field=.../> work -->
