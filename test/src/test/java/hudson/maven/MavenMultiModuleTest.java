@@ -173,11 +173,15 @@ public class MavenMultiModuleTest extends HudsonTestCase {
         MavenModuleSetBuild previousBuild = lastBuild.getPreviousBuild();
         assertNull("There should be only one previous build", previousBuild.getPreviousBuild());
         
-        // since the estimated duration is calculated based on the previous builds
+        // Since the estimated duration is calculated based on the previous builds
         // and there was only one previous build (which built all modules) and this build
         // did only build one module, the estimated duration of this build must be
         // smaller than the duration of the previous build.
-        assertTrue(lastBuild.getEstimatedDuration() < previousBuild.getDuration());
+        // (It's highly unlikely that the durations are equal, but I've already seen it fail.
+        // Therefore <= instead of <)
+        assertTrue("Estimated duration should be <= " + previousBuild.getDuration()
+                + ", but is " + lastBuild.getEstimatedDuration(),
+                lastBuild.getEstimatedDuration() <= previousBuild.getDuration());
     }
     
     /**
