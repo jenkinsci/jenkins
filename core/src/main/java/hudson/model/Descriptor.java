@@ -195,7 +195,15 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable {
         }
     }
 
+    /**
+     *
+     * @param clazz
+     *      Pass in {@link #self()} to have the descriptor describe itself,
+     *      (this hack is needed since derived types can't call "getClass()" to refer to itself.
+     */
     protected Descriptor(Class<? extends T> clazz) {
+        if (clazz==self())
+            clazz = (Class)getClass();
         this.clazz = clazz;
         // doing this turns out to be very error prone,
         // as field initializers in derived types will override values.
@@ -900,4 +908,12 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable {
      * Used in {@link #checkMethods} to indicate that there's no check method.
      */
     private static final String NONE = "\u0000";
+
+    /**
+     * Special type indicating that {@link Descriptor} describes itself.
+     * @see Descriptor#Descriptor(Class)
+     */
+    public static final class Self {}
+
+    protected static Class self() { return Self.class; }
 }
