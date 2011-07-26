@@ -58,7 +58,6 @@ import hudson.model.LoadBalancer;
 import hudson.model.ManagementLink;
 import hudson.model.ModifiableItemGroup;
 import hudson.model.NoFingerprintMatch;
-import hudson.model.Node.Mode;
 import hudson.model.OverallLoadStatistics;
 import hudson.model.Project;
 import hudson.model.RestartListener;
@@ -101,7 +100,6 @@ import hudson.Plugin;
 import hudson.PluginManager;
 import hudson.PluginWrapper;
 import hudson.ProxyConfiguration;
-import hudson.StructuredForm;
 import hudson.TcpSlaveAgentListener;
 import hudson.UDPBroadcastThread;
 import hudson.Util;
@@ -1849,6 +1847,7 @@ public class Jenkins extends AbstractCIBase implements ModifiableItemGroup<TopLe
     public void setSecurityRealm(SecurityRealm securityRealm) {
         if(securityRealm==null)
             securityRealm= SecurityRealm.NO_AUTHENTICATION;
+        this.useSecurity = true;
         this.securityRealm = securityRealm;
         // reset the filters and proxies for the new SecurityRealm
         try {
@@ -1871,7 +1870,15 @@ public class Jenkins extends AbstractCIBase implements ModifiableItemGroup<TopLe
     public void setAuthorizationStrategy(AuthorizationStrategy a) {
         if (a == null)
             a = AuthorizationStrategy.UNSECURED;
+        useSecurity = true;
         authorizationStrategy = a;
+    }
+
+    public void disableSecurity() {
+        useSecurity = null;
+        setSecurityRealm(SecurityRealm.NO_AUTHENTICATION);
+        authorizationStrategy = AuthorizationStrategy.UNSECURED;
+        markupFormatter = null;
     }
 
     public Lifecycle getLifecycle() {
@@ -2421,27 +2428,6 @@ public class Jenkins extends AbstractCIBase implements ModifiableItemGroup<TopLe
 
             workspaceDir = json.getString("rawWorkspaceDir");
             buildsDir = json.getString("rawBuildsDir");
-
-            // keep using 'useSecurity' field as the main configuration setting
-            // until we get the new security implementation working
-            // useSecurity = null;
-            if (json.has("use_security")) {
-                useSecurity = true;
-                JSONObject security = json.getJSONObject("use_security");
-                setSecurityRealm(SecurityRealm.all().newInstanceFromRadioList(security,"realm"));
-                setAuthorizationStrategy(AuthorizationStrategy.all().newInstanceFromRadioList(security, "authorization"));
-
-                if (security.has("markupFormatter")) {
-                    markupFormatter = req.bindJSON(MarkupFormatter.class,security.getJSONObject("markupFormatter"));
-                } else {
-                    markupFormatter = null;
-                }
-            } else {
-                useSecurity = null;
-                setSecurityRealm(SecurityRealm.NO_AUTHENTICATION);
-                authorizationStrategy = AuthorizationStrategy.UNSECURED;
-                markupFormatter = null;
-            }
 
             if (json.has("viewsTabBar")) {
                 viewsTabBar = req.bindJSON(ViewsTabBar.class,json.getJSONObject("viewsTabBar"));
