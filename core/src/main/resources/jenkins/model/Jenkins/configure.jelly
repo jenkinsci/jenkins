@@ -166,18 +166,6 @@ THE SOFTWARE.
                           descriptors="${h.getNodePropertyDescriptors(it.class)}"
                           instances="${it.globalNodeProperties}" />
 
-      <!-- list config pages from plugins, if any -->
-      <j:forEach var="p" items="${it.pluginManager.plugins}">
-        <j:if test="${h.hasView(p.plugin,'config.jelly')}">
-          <f:rowSet name="plugin">
-            <f:invisibleEntry>
-              <input type="hidden" name="name" value="${p.shortName}"/>
-            </f:invisibleEntry>
-            <st:include page="config.jelly" it="${p.plugin}" optional="true"/>
-          </f:rowSet>
-        </j:if>
-      </j:forEach>
-
       <!-- global configuration from everyone -->
       <j:forEach var="descriptor" items="${h.getSortedDescriptorsForGlobalConfig()}">
         <j:set var="instance" value="${descriptor}" /><!-- this makes the <f:textbox field=.../> work -->
