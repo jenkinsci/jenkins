@@ -161,11 +161,6 @@ THE SOFTWARE.
                        title="${%statsBlurb}"
                        help="/help/system-config/usage-statistics.html" />
 
-        <f:descriptorList title="${%Global properties}"
-                          name="globalNodeProperties"
-                          descriptors="${h.getNodePropertyDescriptors(it.class)}"
-                          instances="${it.globalNodeProperties}" />
-
       <!-- global configuration from everyone -->
       <j:forEach var="descriptor" items="${h.getSortedDescriptorsForGlobalConfig()}">
         <j:set var="instance" value="${descriptor}" /><!-- this makes the <f:textbox field=.../> work -->

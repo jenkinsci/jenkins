@@ -2516,11 +2516,6 @@ public class Jenkins extends AbstractCIBase implements ModifiableItemGroup<TopLe
             for( Descriptor<?> d : Functions.getSortedDescriptorsForGlobalConfig() )
                 result &= configureDescriptor(req,json,d);
 
-            JSONObject np = json.getJSONObject("globalNodeProperties");
-            if (!np.isNullObject()) {
-                globalNodeProperties.rebuild(req, np, NodeProperty.for_(this));
-            }
-
             version = VERSION;
 
             save();
