@@ -11,6 +11,13 @@ import hudson.model.Descriptor;
  * <p>
  * All {@link Descriptor}s are capable of contributing fragment to the system config page, so
  * this extension point is is really only for those who don't want to contribute anything else.
+ * If you are implementing other extension points and that would like to expose some global configuration,
+ * you can do so with <tt>global.groovy</tt> from your {@link Descriptor} instance.
+ *
+ * <h2>Views</h2>
+ * <p>
+ * Subtypes of this class should define <tt>config.groovy</tt> that gets pulled into the system configuration page.
+ * 
  *
  * @author Kohsuke Kawaguchi
  * @since 1.425
