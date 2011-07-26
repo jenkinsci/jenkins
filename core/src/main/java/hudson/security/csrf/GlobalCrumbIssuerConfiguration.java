@@ -38,6 +38,7 @@ import org.kohsuke.stapler.StaplerRequest;
 public class GlobalCrumbIssuerConfiguration extends GlobalConfiguration {
     @Override
     public boolean configure(StaplerRequest req, JSONObject json) throws FormException {
+        // for compatibility reasons, the actual value is stored in Jenkins
         Jenkins j = Jenkins.getInstance();
         if (json.has("csrf")) {
             JSONObject csrf = json.getJSONObject("csrf");
