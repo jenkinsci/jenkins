@@ -2519,8 +2519,6 @@ public class Jenkins extends AbstractCIBase implements ModifiableItemGroup<TopLe
             for( JSONObject o : StructuredForm.toList(json,"plugin"))
                 pluginManager.getPlugin(o.getString("name")).getPlugin().configure(req, o);
 
-            clouds.rebuildHetero(req,json, Cloud.all(), "cloud");
-
             JSONObject np = json.getJSONObject("globalNodeProperties");
             if (!np.isNullObject()) {
                 globalNodeProperties.rebuild(req, np, NodeProperty.for_(this));
