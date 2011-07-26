@@ -1240,9 +1240,6 @@ public class UpdateCenter extends AbstractModelObject implements Saveable {
      */
     @Extension
     public static class PageDecoratorImpl extends PageDecorator {
-        public PageDecoratorImpl() {
-            super(PageDecoratorImpl.class);
-        }
     }
 
     /**

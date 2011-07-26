@@ -53,10 +53,6 @@ import org.kohsuke.stapler.StaplerResponse;
  */
 @Extension
 public class DownloadService extends PageDecorator {
-    public DownloadService() {
-        super(DownloadService.class);
-    }
-
     /**
      * Builds up an HTML fragment that starts all the download jobs.
      */

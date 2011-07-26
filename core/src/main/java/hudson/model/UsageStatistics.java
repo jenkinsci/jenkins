@@ -85,7 +85,6 @@ public class UsageStatistics extends PageDecorator {
      * Creates an instance with a specific public key image.
      */
     public UsageStatistics(String keyImage) {
-        super(UsageStatistics.class);
         this.keyImage = keyImage;
         load();
     }

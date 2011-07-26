@@ -76,12 +76,18 @@ public abstract class PageDecorator extends Descriptor<PageDecorator> implements
      * @param yourClass
      *      pass-in "this.getClass()" (except that the constructor parameters cannot use 'this',
      *      so you'd have to hard-code the class name.
+     * @deprecated as of 1.425
+     *      Use the default constructor that's less error prone
      */
     protected PageDecorator(Class<? extends PageDecorator> yourClass) {
         super(yourClass);
     }
 
-// this will never work because Descriptor and Describable are the same thing.
+    protected PageDecorator() {
+        super(self());
+    }
+
+    // this will never work because Descriptor and Describable are the same thing.
 //    protected PageDecorator() {
 //    }
 
