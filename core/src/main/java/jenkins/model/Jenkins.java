@@ -1386,6 +1386,10 @@ public class Jenkins extends AbstractCIBase implements ModifiableItemGroup<TopLe
         return viewGroupMixIn.getPrimaryView();
      }
 
+    public void setPrimaryView(View v) {
+        this.primaryView = v.getViewName();
+    }
+
     public ViewsTabBar getViewsTabBar() {
         return viewsTabBar;
     }
@@ -2461,8 +2465,6 @@ public class Jenkins extends AbstractCIBase implements ModifiableItemGroup<TopLe
             } else {
                 myViewsTabBar = new DefaultMyViewsTabBar();
             }
-
-            primaryView = json.has("primaryView") ? json.getString("primaryView") : getViews().iterator().next().getViewName();
 
             numExecutors = json.getInt("numExecutors");
             if(req.hasParameter("master.mode"))
