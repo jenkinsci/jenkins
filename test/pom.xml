@@ -33,7 +33,6 @@ THE SOFTWARE.
   </parent>
   <groupId>org.jenkins-ci.main</groupId>
   <artifactId>jenkins-test-harness</artifactId>
-  <packaging>stapler-jar</packaging>
 
   <name>Test harness for Jenkins and plugins</name>
   <description>
