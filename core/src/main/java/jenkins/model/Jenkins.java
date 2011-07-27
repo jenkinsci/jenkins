@@ -1394,12 +1394,20 @@ public class Jenkins extends AbstractCIBase implements ModifiableItemGroup<TopLe
         return viewsTabBar;
     }
 
+    public void setViewsTabBar(ViewsTabBar viewsTabBar) {
+        this.viewsTabBar = viewsTabBar;
+    }
+
     public Jenkins getItemGroup() {
         return this;
    }
 
     public MyViewsTabBar getMyViewsTabBar() {
         return myViewsTabBar;
+    }
+
+    public void setMyViewsTabBar(MyViewsTabBar myViewsTabBar) {
+        this.myViewsTabBar = myViewsTabBar;
     }
 
     /**
@@ -2453,12 +2461,6 @@ public class Jenkins extends AbstractCIBase implements ModifiableItemGroup<TopLe
 
             workspaceDir = json.getString("rawWorkspaceDir");
             buildsDir = json.getString("rawBuildsDir");
-
-            if (json.has("viewsTabBar")) {
-                viewsTabBar = req.bindJSON(ViewsTabBar.class,json.getJSONObject("viewsTabBar"));
-            } else {
-                viewsTabBar = new DefaultViewsTabBar();
-            }
 
             if (json.has("myViewsTabBar")) {
                 myViewsTabBar = req.bindJSON(MyViewsTabBar.class,json.getJSONObject("myViewsTabBar"));
