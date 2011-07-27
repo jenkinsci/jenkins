@@ -39,6 +39,10 @@ import java.io.IOException;
  */
 @Extension(ordinal=200)
 public class GlobalSecurityConfiguration extends GlobalConfiguration {
+    public MarkupFormatter getMarkupFormatter() {
+        return Jenkins.getInstance().getMarkupFormatter();
+    }
+    
     @Override
     public boolean configure(StaplerRequest req, JSONObject json) throws FormException {
         // for compatibility reasons, the actual value is stored in Jenkins
