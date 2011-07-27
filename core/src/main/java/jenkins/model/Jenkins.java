@@ -871,6 +871,27 @@ public class Jenkins extends AbstractCIBase implements ModifiableItemGroup<TopLe
         return slaveAgentPort;
     }
 
+    /**
+     * @param port
+     *      0 to indicate random available TCP port. -1 to disable this service.
+     */
+    public void setSlaveAgentPort(int port) throws IOException {
+        this.slaveAgentPort = port;
+
+        // relaunch the agent
+        if(tcpSlaveAgentListener==null) {
+            if(slaveAgentPort!=-1)
+                tcpSlaveAgentListener = new TcpSlaveAgentListener(slaveAgentPort);
+        } else {
+            if(tcpSlaveAgentListener.configuredPort!=slaveAgentPort) {
+                tcpSlaveAgentListener.shutdown();
+                tcpSlaveAgentListener = null;
+                if(slaveAgentPort!=-1)
+                    tcpSlaveAgentListener = new TcpSlaveAgentListener(slaveAgentPort);
+            }
+        }
+    }
+
     public void setNodeName(String name) {
         throw new UnsupportedOperationException(); // not allowed
     }
@@ -2442,35 +2463,6 @@ public class Jenkins extends AbstractCIBase implements ModifiableItemGroup<TopLe
             }
 
             primaryView = json.has("primaryView") ? json.getString("primaryView") : getViews().iterator().next().getViewName();
-
-            {
-                String v = req.getParameter("slaveAgentPortType");
-                if(!isUseSecurity() || v==null || v.equals("random"))
-                    slaveAgentPort = 0;
-                else
-                if(v.equals("disable"))
-                    slaveAgentPort = -1;
-                else {
-                    try {
-                        slaveAgentPort = Integer.parseInt(req.getParameter("slaveAgentPort"));
-                    } catch (NumberFormatException e) {
-                        throw new FormException(Messages.Hudson_BadPortNumber(req.getParameter("slaveAgentPort")),"slaveAgentPort");
-                    }
-                }
-
-                // relaunch the agent
-                if(tcpSlaveAgentListener==null) {
-                    if(slaveAgentPort!=-1)
-                        tcpSlaveAgentListener = new TcpSlaveAgentListener(slaveAgentPort);
-                } else {
-                    if(tcpSlaveAgentListener.configuredPort!=slaveAgentPort) {
-                        tcpSlaveAgentListener.shutdown();
-                        tcpSlaveAgentListener = null;
-                        if(slaveAgentPort!=-1)
-                            tcpSlaveAgentListener = new TcpSlaveAgentListener(slaveAgentPort);
-                    }
-                }
-            }
 
             numExecutors = json.getInt("numExecutors");
             if(req.hasParameter("master.mode"))

@@ -30,6 +30,8 @@ import jenkins.model.Jenkins;
 import net.sf.json.JSONObject;
 import org.kohsuke.stapler.StaplerRequest;
 
+import java.io.IOException;
+
 /**
  * Security configuration.
  *
@@ -41,6 +43,24 @@ public class GlobalSecurityConfiguration extends GlobalConfiguration {
     public boolean configure(StaplerRequest req, JSONObject json) throws FormException {
         // for compatibility reasons, the actual value is stored in Jenkins
         Jenkins j = Jenkins.getInstance();
+
+        try {
+            String v = req.getParameter("slaveAgentPortType");
+            if(!j.isUseSecurity() || v==null || v.equals("random"))
+                j.setSlaveAgentPort(0);
+            else
+            if(v.equals("disable"))
+                j.setSlaveAgentPort(-1);
+            else {
+                try {
+                    j.setSlaveAgentPort(Integer.parseInt(req.getParameter("slaveAgentPort")));
+                } catch (NumberFormatException e) {
+                    throw new FormException(jenkins.model.Messages.Hudson_BadPortNumber(req.getParameter("slaveAgentPort")),"slaveAgentPort");
+                }
+            }
+        } catch (IOException e) {
+            throw new FormException(e,"slaveAgentPortType");
+        }
 
         if (json.has("useSecurity")) {
             JSONObject security = json.getJSONObject("useSecurity");
