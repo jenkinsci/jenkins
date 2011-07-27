@@ -15,7 +15,7 @@ import org.kohsuke.args4j.CmdLineException;
 public class LoginCommand extends CLICommand {
     @Override
     public String getShortDescription() {
-        return "Saves the current credential to allow future commands to run without explicit credential information";
+        return Messages.LoginCommand_ShortDescription();
     }
 
     /**

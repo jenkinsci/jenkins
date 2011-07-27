@@ -54,7 +54,7 @@ import java.io.PrintStream;
 public class BuildCommand extends CLICommand {
     @Override
     public String getShortDescription() {
-        return "Builds a job, and optionally waits until its completion.";
+        return Messages.BuildCommand_ShortDescription();
     }
 
     @Argument(metaVar="JOB",usage="Name of the job to build",required=true)

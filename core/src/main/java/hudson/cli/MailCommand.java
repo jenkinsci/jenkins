@@ -42,7 +42,7 @@ import javax.mail.Transport;
 @Extension
 public class MailCommand extends CLICommand {
     public String getShortDescription() {
-        return "Reads stdin and sends that out as an e-mail.";
+        return Messages.MailCommand_ShortDescription();
     }
 
     protected int run() throws Exception {

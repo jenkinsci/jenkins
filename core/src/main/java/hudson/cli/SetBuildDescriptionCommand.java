@@ -16,8 +16,8 @@ public class SetBuildDescriptionCommand extends CLICommand implements Serializab
 
     @Override
     public String getShortDescription() {
-        return "Sets the description of a build";
-    }
+        return Messages.SetBuildDescriptionCommand_ShortDescription();
+     }
 
     @Argument(metaVar="JOB",usage="Name of the job to build",required=true,index=0)
     public transient AbstractProject<?,?> job;

@@ -37,7 +37,7 @@ import org.kohsuke.args4j.Argument;
 public class CreateJobCommand extends CLICommand {
     @Override
     public String getShortDescription() {
-        return "Creates a new job by reading stdin as a configuration XML file";
+        return Messages.CreateJobCommand_ShortDescription();
     }
 
     @Argument(metaVar="NAME",usage="Name of the job to create",required=true)

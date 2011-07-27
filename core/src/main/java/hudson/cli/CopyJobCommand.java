@@ -39,7 +39,7 @@ import org.kohsuke.args4j.Argument;
 public class CopyJobCommand extends CLICommand {
     @Override
     public String getShortDescription() {
-        return "Copies a job";
+        return Messages.CopyJobCommand_ShortDescription();
     }
 
     @Argument(metaVar="SRC",usage="Name of the job to copy",required=true)

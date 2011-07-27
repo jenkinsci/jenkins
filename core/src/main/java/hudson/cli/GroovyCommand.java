@@ -56,7 +56,7 @@ import java.net.MalformedURLException;
 public class GroovyCommand extends CLICommand implements Serializable {
     @Override
     public String getShortDescription() {
-        return "Executes the specified Groovy script";
+        return Messages.GroovyCommand_ShortDescription();
     }
 
     @Argument(metaVar="SCRIPT",usage="Script to be executed. File, URL or '=' to represent stdin.")

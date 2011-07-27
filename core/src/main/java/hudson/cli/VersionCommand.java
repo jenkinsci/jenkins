@@ -35,7 +35,7 @@ import jenkins.model.Jenkins;
 public class VersionCommand extends CLICommand {
     @Override
     public String getShortDescription() {
-        return "Outputs the current version";
+        return Messages.VersionCommand_ShortDescription();
     }
 
     protected int run() {
