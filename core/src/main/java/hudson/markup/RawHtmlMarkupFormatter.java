@@ -22,6 +22,14 @@ public class RawHtmlMarkupFormatter extends MarkupFormatter {
         output.write(markup);
     }
 
+    public String getCodeMirrorMode() {
+        return "htmlmixed";
+    }
+
+    public String getCodeMirrorConfig() {
+        return "mode:'text/html'";
+    }
+
     @Extension
     public static class DescriptorImpl extends MarkupFormatterDescriptor {
         @Override

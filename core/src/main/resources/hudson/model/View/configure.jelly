@@ -39,7 +39,7 @@ THE SOFTWARE.
           <f:textbox name="name" value="${it.viewName}" />
         </f:entry>
         <f:entry title="${%Description}" help="/help/view-config/description.html">
-          <f:textarea name="description" field="description" />
+          <f:textarea name="description" field="description" codemirror-mode="${app.markupFormatter.codeMirrorMode}" codemirror-config="${app.markupFormatter.codeMirrorConfig}"/>
         </f:entry>
         <f:entry title="${%Filter build queue}" help="/help/view-config/filter-queue.html">
         	<f:checkbox name="filterQueue" field="filterQueue"/>
