@@ -12,7 +12,7 @@ f.optionalBlock( field:"useSecurity", title:_("Enable security"), checked:app.us
 
         f.radio(name:"slaveAgentPortType", value:"fixed", id:"sat.fixed",
                 chcked:port>0, onclick:"\$('sat.port').disabled=false")
-        label("for":"sat.fixed", _$("Fixed"))
+        label("for":"sat.fixed", _("Fixed"))
         text(" : ")
         input(type:"text", "class":"number", name:"slaveAgentPort", id:"sat.port",
                 value: port>0 ? port : null, disabled: port>0 ? null : "true" )
@@ -21,13 +21,13 @@ f.optionalBlock( field:"useSecurity", title:_("Enable security"), checked:app.us
 
         f.radio(name:"slaveAgentPortType", value:"random", id:"sat.random",
                 checked:port==0, onclick:"\$('sat.port').disabled=true")
-        label("for":"sat.random", _$("Random"))
+        label("for":"sat.random", _("Random"))
 
         raw("&nbsp;") ////////////////////////////
 
         f.radio(name:"slaveAgentPortType", value:"disable", id:"sat.disabled",
                 checked:port==-1, onclick:"\$('sat.port').disabled=true")
-        label("for":"sat.random", _$("Random"))
+        label("for":"sat.disabled", _("Disable"))
     }
 
     f.dropdownDescriptorSelector(title:_("Markup Formatter"),field:"markupFormatter")
