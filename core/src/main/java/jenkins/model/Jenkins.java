@@ -2462,12 +2462,6 @@ public class Jenkins extends AbstractCIBase implements ModifiableItemGroup<TopLe
             workspaceDir = json.getString("rawWorkspaceDir");
             buildsDir = json.getString("rawBuildsDir");
 
-            if (json.has("myViewsTabBar")) {
-                myViewsTabBar = req.bindJSON(MyViewsTabBar.class,json.getJSONObject("myViewsTabBar"));
-            } else {
-                myViewsTabBar = new DefaultMyViewsTabBar();
-            }
-
             numExecutors = json.getInt("numExecutors");
             if(req.hasParameter("master.mode"))
                 mode = Mode.valueOf(req.getParameter("master.mode"));

@@ -66,20 +66,6 @@ THE SOFTWARE.
         <f:textbox clazz="number" name="retry_count" value="${it.scmCheckoutRetryCount}"/>
       </f:entry>
 
-      <j:if test="${size(h.myViewsTabBarDescriptors) gt 1}">
-        <f:dropdownList name="myViewsTabBar" title="${%My Views Tab Bar}" help="/help/project-config/myViewsTabBar.html">
-          <!-- Loop through available My Views TabBar Descriptors -->
-          <j:forEach var="descriptor" items="${h.myViewsTabBarDescriptors}" varStatus="loop">
-            <f:dropdownListBlock title="${descriptor.displayName}" value="${loop.index}"
-                                 selected="${descriptor==it.myViewsTabBar.descriptor}"
-                                 staplerClass="${descriptor.clazz.name}">
-              <!-- Include config.jelly for this Views TabBar type -->
-              <st:include page="${descriptor.configPage}" from="${descriptor}" optional="true"/>
-            </f:dropdownListBlock>
-          </j:forEach>
-        </f:dropdownList>
-      </j:if>
-
       <!-- global configuration from everyone -->
       <j:forEach var="descriptor" items="${h.getSortedDescriptorsForGlobalConfig()}">
         <j:set var="instance" value="${descriptor}" /><!-- this makes the <f:textbox field=.../> work -->

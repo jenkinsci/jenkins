@@ -1,7 +1,7 @@
 /*
  * The MIT License
  * 
- * Copyright (c) 2010, Winston.Prakash@oracle.com
+ * Copyright (c) 2010, Winston.Prakash@oracle.com, CloudBees, Inc.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -69,7 +69,7 @@ public abstract class ViewsTabBar extends AbstractDescribableImpl<ViewsTabBar> i
      *
      * @author Kohsuke Kawaguchi
      */
-    @Extension(ordinal=305)
+    @Extension(ordinal=310)
     public static class GlobalConfigurationImpl extends GlobalConfiguration {
         public ViewsTabBar getViewsTabBar() {
             return Jenkins.getInstance().getViewsTabBar();
