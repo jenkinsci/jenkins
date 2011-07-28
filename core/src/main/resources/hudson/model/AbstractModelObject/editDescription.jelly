@@ -34,7 +34,7 @@ THE SOFTWARE.
         <table>
           <f:entry help="${app.markupFormatter.helpUrl}">
             <f:textarea name="description" value="${it.description}"
-                        codemirror-mode="htmlmixed" codemirror-config="mode:'text/html'"/>
+                        codemirror-mode="${app.markupFormatter.codeMirrorMode}" codemirror-config="${app.markupFormatter.codeMirrorConfig}"/>
           </f:entry>
         </table>
         <f:submit value="${%Submit}" />
