@@ -196,6 +196,13 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable {
     }
 
     /**
+     * Help file redirect, keyed by the field name to the path.
+     *
+     * @see #getHelpFile(String) 
+     */
+    private final Map<String,String> helpRedirect = new HashMap<String, String>();
+
+    /**
      *
      * @param clazz
      *      Pass in {@link #self()} to have the descriptor describe itself,
@@ -595,6 +602,9 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable {
      * locale variations.
      */
     public String getHelpFile(final String fieldName) {
+        String v = helpRedirect.get(fieldName);
+        if (v!=null)    return v;
+
         for(Class c=clazz; c!=null; c=c.getSuperclass()) {
             String page = "/descriptor/" + getId() + "/help";
             String suffix;
@@ -617,6 +627,15 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable {
             if(in!=null)    return page;
         }
         return null;
+    }
+
+    /**
+     * Tells Jenkins that the help file for the field 'fieldName' is defined in the help file for
+     * the 'fieldNameToRedirectTo' in the 'owner' class.
+     */
+    protected void addHelpFileRedirect(String fieldName, Class<? extends Describable> owner, String fieldNameToRedirectTo) {
+        helpRedirect.put(fieldName,
+            Jenkins.getInstance().getDescriptor(owner).getHelpFile(fieldNameToRedirectTo));
     }
 
     /**
