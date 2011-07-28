@@ -50,21 +50,6 @@ THE SOFTWARE.
         <f:textarea name="system_message" value="${it.systemMessage}"
                     codemirror-mode="htmlmixed" codemirror-config="mode:'text/html'" />
       </f:entry>
-      <f:entry title="${%# of executors}" field="numExecutors">
-        <f:textbox />
-      </f:entry>
-      <j:if test="${!empty(it.slaves)}">
-        <f:entry title="${%Labels}" field="labelString">
-          <f:textbox />
-        </f:entry>
-        <f:slave-mode name="master.mode" node="${it}" />
-      </j:if>
-      <f:entry title="${%Quiet period}" help="/help/project-config/quietPeriod.html">
-        <f:textbox clazz="number" name="quiet_period" value="${it.quietPeriod}"/>
-      </f:entry>
-      <f:entry title="${%SCM checkout retry count}" help="/help/project-config/scmCheckoutRetryCount.html">
-        <f:textbox clazz="number" name="retry_count" value="${it.scmCheckoutRetryCount}"/>
-      </f:entry>
 
       <!-- global configuration from everyone -->
       <j:forEach var="descriptor" items="${h.getSortedDescriptorsForGlobalConfig()}">

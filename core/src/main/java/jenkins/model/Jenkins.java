@@ -1688,10 +1688,26 @@ public class Jenkins extends AbstractCIBase implements ModifiableItemGroup<TopLe
     }
 
     /**
+     * Sets the global quiet period.
+     *
+     * @param quietPeriod
+     *      null to the default value.
+     */
+    public void setQuietPeriod(Integer quietPeriod) throws IOException {
+        this.quietPeriod = quietPeriod;
+        save();
+    }
+
+    /**
      * Gets the global SCM check out retry count.
      */
     public int getScmCheckoutRetryCount() {
         return scmCheckoutRetryCount;
+    }
+
+    public void setScmCheckoutRetryCount(int scmCheckoutRetryCount) throws IOException {
+        this.scmCheckoutRetryCount = scmCheckoutRetryCount;
+        save();
     }
 
     @Override
@@ -2259,8 +2275,18 @@ public class Jenkins extends AbstractCIBase implements ModifiableItemGroup<TopLe
         return mode;
     }
 
+    public void setMode(Mode m) throws IOException {
+        this.mode = m;
+        save();
+    }
+
     public String getLabelString() {
         return fixNull(label).trim();
+    }
+
+    public void setLabelString(String label) throws IOException {
+        this.label = label;
+        save();
     }
 
     @Override
@@ -2461,18 +2487,6 @@ public class Jenkins extends AbstractCIBase implements ModifiableItemGroup<TopLe
 
             workspaceDir = json.getString("rawWorkspaceDir");
             buildsDir = json.getString("rawBuildsDir");
-
-            numExecutors = json.getInt("numExecutors");
-            if(req.hasParameter("master.mode"))
-                mode = Mode.valueOf(req.getParameter("master.mode"));
-            else
-                mode = Mode.NORMAL;
-
-            label = json.optString("labelString","");
-
-            quietPeriod = json.getInt("quiet_period");
-
-            scmCheckoutRetryCount = json.getInt("retry_count");
 
             systemMessage = Util.nullify(req.getParameter("system_message"));
 
