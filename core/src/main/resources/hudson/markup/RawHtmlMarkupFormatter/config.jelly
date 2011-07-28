@@ -4,4 +4,7 @@
   <f:description>
     ${%blurb}
   </f:description>
+  <f:entry field="disableSyntaxHighlighting">
+      <f:checkbox title="${%disableSyntaxHighlighting}"/>
+  </f:entry>
 </j:jelly>

@@ -13,8 +13,16 @@ import java.io.Writer;
  * @author Kohsuke Kawaguchi
  */
 public class RawHtmlMarkupFormatter extends MarkupFormatter {
+
+    final boolean disableSyntaxHighlighting;
+
     @DataBoundConstructor
-    public RawHtmlMarkupFormatter() {
+    public RawHtmlMarkupFormatter(final boolean disableSyntaxHighlighting) {
+        this.disableSyntaxHighlighting = disableSyntaxHighlighting;
+    }
+
+    public boolean isDisableSyntaxHighlighting() {
+        return disableSyntaxHighlighting;
     }
 
     @Override
@@ -23,7 +31,7 @@ public class RawHtmlMarkupFormatter extends MarkupFormatter {
     }
 
     public String getCodeMirrorMode() {
-        return "htmlmixed";
+        return disableSyntaxHighlighting ? null : "htmlmixed";
     }
 
     public String getCodeMirrorConfig() {
@@ -38,5 +46,5 @@ public class RawHtmlMarkupFormatter extends MarkupFormatter {
         }
     }
 
-    public static MarkupFormatter INSTANCE = new RawHtmlMarkupFormatter();
+    public static MarkupFormatter INSTANCE = new RawHtmlMarkupFormatter(false);
 }
