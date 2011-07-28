@@ -1,7 +1,7 @@
 /*
  * The MIT License
  * 
- * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, Yahoo! Inc.
+ * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, Yahoo! Inc., CloudBees, Inc.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -57,7 +57,13 @@ public class HudsonTest extends HudsonTestCase {
      * Tests the basic UI sanity and HtmlUnit set up.
      */
     public void testGlobalConfigRoundtrip() throws Exception {
-        submit(createWebClient().goTo("configure").getFormByName("config"));
+        jenkins.setQuietPeriod(10);
+        jenkins.setScmCheckoutRetryCount(9);
+        jenkins.setNumExecutors(8);
+        configRoundtrip();
+        assertEquals(10,jenkins.getQuietPeriod());
+        assertEquals(9,jenkins.getScmCheckoutRetryCount());
+        assertEquals(8,jenkins.getNumExecutors());
     }
 
     /**
