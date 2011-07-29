@@ -1,6 +1,7 @@
 package jenkins.plugins.ui_samples.ModularizeViewScript
+
 import org.kohsuke.stapler.jelly.groovy.JellyBuilder
-import lib.FormTagLib
+import jenkins.util.groovy.AbstractGroovyViewModule
 
 namespace("/lib/samples").sample(title:_("Define View Fragments Elsewhere")) {
 
@@ -19,18 +20,14 @@ namespace("/lib/samples").sample(title:_("Define View Fragments Elsewhere")) {
 
 // I defined this class here just to make the sample concise.
 // this class can be defined anywhere, and typically you'd do this somewhere in your src/main/groovy
-static class SomeGenerator {
-    JellyBuilder b;
-    FormTagLib f;
-
+static class SomeGenerator extends AbstractGroovyViewModule {
     SomeGenerator(JellyBuilder builder) {
-        this.b = builder
-        f = builder.namespace(FormTagLib.class)
+      super(builder)
     }
 
     def generateSomeFragment() {
-        b.h2("Two")
-        b.div(style:"background-color:gray; padding:2em") {
+        h2("Two")
+        div(style:"background-color:gray; padding:2em") {
             p("Hello")  // once inside a closure, no explicit 'b.' reference is needed. this is just like other Groovy builders
 
             // calling other methods
@@ -39,7 +36,7 @@ static class SomeGenerator {
     }
 
     def generateMoreFragment(String msg) {
-        b.h2(msg);
+        h2(msg);
         f.textarea();
     }
 }
