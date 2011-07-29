@@ -781,7 +781,7 @@ public class Functions {
         List<Descriptor> answer = new ArrayList<Descriptor>(r.size());
         for (Tag d : r) answer.add(d.d);
 
-        return answer;
+        return DescriptorVisibilityFilter.apply(Jenkins.getInstance(),answer);
     }
 
 
