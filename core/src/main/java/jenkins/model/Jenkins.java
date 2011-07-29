@@ -1994,6 +1994,7 @@ public class Jenkins extends AbstractCIBase implements ModifiableItemGroup<TopLe
      * can be finished while other current pending builds
      * are still in progress.
      */
+    @Exported
     public boolean isQuietingDown() {
         return isQuietingDown;
     }
