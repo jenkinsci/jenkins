@@ -5,7 +5,7 @@ import lib.FormTagLib
 namespace("/lib/samples").sample(title:_("Define View Fragments Elsewhere")) {
 
     // normally this is how you generate tags,
-    // but these are actually just a syntax sugar for method calls to the "delegate" object.
+    // but these are actually just a syntax sugar for method calls to the "builder" object (which is set as the delegate of the script for you)
     h2("One")
     div (style:"border:1px solid blue") {
         p("some pointless text")
