@@ -20,39 +20,27 @@ namespace("/lib/samples").sample(title:_("Define View Fragments Elsewhere")) {
 // I defined this class here just to make the sample concise.
 // this class can be defined anywhere, and typically you'd do this somewhere in your src/main/groovy
 static class SomeGenerator {
-    JellyBuilder builder;
+    JellyBuilder b;
     FormTagLib f;
 
     SomeGenerator(JellyBuilder builder) {
-        this.builder = builder
+        this.b = builder
         f = builder.namespace(FormTagLib.class)
     }
 
-    // this wrapper makes it so that we don't have to explicitly call with "builder."
-    // the 'with' method in GDK doesn't work nicely because it does DELEGATE_FIRST resolution,
-    // and you can accidentally pick up variables defined in the ancestor JellyContexts.
-    def generate(Closure closure) {
-        closure = closure.clone();
-        closure.delegate = builder;
-        return closure.call();
-    }
-
     def generateSomeFragment() {
-        generate {
-            h2("Two")   // this call is a shorthand for builder.h2("Two")
+        b.h2("Two")
+        b.div(style:"background-color:gray; padding:2em") {
+            p("Hello")  // once inside a closure, no explicit 'b.' reference is needed. this is just like other Groovy builders
 
-            div(style:"background-color:gray; padding:2em") {
-                // calling other methods
-                generateMoreFragment("Testing generation");
-            }
+            // calling other methods
+            generateMoreFragment("Testing generation");
         }
     }
 
     def generateMoreFragment(String msg) {
-        generate {
-            h2(msg);
-            f.textarea();
-        }
+        b.h2(msg);
+        f.textarea();
     }
 }
 
