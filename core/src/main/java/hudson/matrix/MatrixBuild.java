@@ -195,7 +195,7 @@ public class MatrixBuild extends AbstractBuild<MatrixProject,MatrixBuild> {
      * True if this build didn't do a full build and it is depending on the result of the previous build.
      */
     public boolean isPartial() {
-        for(MatrixConfiguration c : getParent().getItems()) {
+        for(MatrixConfiguration c : getParent().getActiveConfigurations()) {
             MatrixRun b = c.getNearestOldBuild(getNumber());
             if (b != null && b.getNumber()!=getNumber())
                 return true;
