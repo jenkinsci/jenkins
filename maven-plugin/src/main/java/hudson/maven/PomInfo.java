@@ -48,6 +48,8 @@ import java.util.ArrayList;
  * @author Kohsuke Kawaguchi
  */
 final class PomInfo implements Serializable {
+    
+    public static final String PACKAGING_TYPE_PLUGIN = "maven-plugin";
 
     public final ModuleName name;
 
@@ -107,6 +109,8 @@ final class PomInfo implements Serializable {
     private final String artifactId;
 
     public final Notifier mailNotifier;
+    
+    public final String packaging;
 
     public PomInfo(MavenProject project, PomInfo parent, String relPath) {
         this.name = new ModuleName(project);
@@ -154,13 +158,14 @@ final class PomInfo implements Serializable {
         
         this.groupId = project.getGroupId();
         this.artifactId = project.getArtifactId();
+        this.packaging = project.getPackaging();
     }
     
     /**
      * Creates {@link ModuleDependency} that represents this {@link PomInfo}.
      */
     private ModuleDependency asDependency() {
-        return new ModuleDependency(name,version);
+        return new ModuleDependency(name,version,PACKAGING_TYPE_PLUGIN.equals(this.packaging));
     }
 
     private void addPluginsAsDependencies(List<Plugin> plugins, Set<ModuleDependency> dependencies) {
