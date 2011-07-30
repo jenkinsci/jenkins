@@ -477,15 +477,15 @@ public class JDKInstaller extends ToolInstaller {
             switch (this) {
             // these two guys are totally incompatible with everything else, so no fallback
             case Sparc:     return must(line.contains("SPARC"));
-            case Itanium:   return must(line.contains("ITANIUM"));
+            case Itanium:   return must(line.contains("IA64"));
 
             // 64bit Solaris, Linux, and Windows can all run 32bit executable, so fall back to 32bit if 64bit bundle is not found
             case amd64:
+                if(line.contains("SPARC") || line.contains("IA64"))  return UNACCEPTABLE;
                 if(line.contains("64"))     return PRIMARY;
-                if(line.contains("SPARC") || line.contains("ITANIUM"))  return UNACCEPTABLE;
                 return SECONDARY;
             case i386:
-                if(line.contains("64") || line.contains("SPARC") || line.contains("ITANIUM"))     return UNACCEPTABLE;
+                if(line.contains("64") || line.contains("SPARC") || line.contains("IA64"))     return UNACCEPTABLE;
                 return PRIMARY;
             }
             return UNACCEPTABLE;
