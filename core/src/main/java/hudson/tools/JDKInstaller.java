@@ -540,7 +540,7 @@ public class JDKInstaller extends ToolInstaller {
          * This method matches if the specified string matches the name, and it accepts both the old and the new format.
          */
         public boolean matchesId(String rhs) {
-            return rhs.equals(name) || rhs.startsWith(name+"@");
+            return rhs!=null && (rhs.equals(name) || rhs.startsWith(name+"@"));
         }
     }
 
