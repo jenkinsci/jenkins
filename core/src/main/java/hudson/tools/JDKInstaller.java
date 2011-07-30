@@ -345,28 +345,24 @@ public class JDKInstaller extends ToolInstaller {
                 // JavaScript check page. Just submit and move on
                 HtmlForm loginForm = html.getFormByName("myForm");
                 loginForm.getInputByName("ssousername").setValueAttribute(u);
-//                // loginForm.getInputByName("password").setValueAttribute(p.getPlainText());
-//                // create a password form
-//                HtmlTextInput pwd = (HtmlTextInput)html.createElement("INPUT");
-//                pwd.setValueAttribute(p.getPlainText());
-//                pwd.setAttribute("name","password");
-//                loginForm.appendChild(pwd);
                 page = loginForm.submit(null);
                 continue;
             } catch (ElementNotFoundException e) {
-                // throw new IOException2("Unable to find the login form",e);
+                // fall through
             }
 
             try {
-                // JavaScript check page. Just submit and move on
+                // real authentication page
                 HtmlForm loginForm = html.getFormByName("LoginForm");
                 loginForm.getInputByName("ssousername").setValueAttribute(u);
                 loginForm.getInputByName("password").setValueAttribute(p.getPlainText());
                 page = loginForm.submit(null);
                 continue;
             } catch (ElementNotFoundException e) {
-                throw new IOException2("Unable to find the login form",e);
+                // fall through
             }
+
+            throw new IOException("Unable to find the login form in "+html.asXml());
         }
 
         // TODO: there's awful inefficiency in htmlunit where it loads the whole binary into one big byte array.
