@@ -1,5 +1,7 @@
 package hudson.tools;
 
+import com.gargoylesoftware.htmlunit.html.HtmlForm;
+import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import hudson.model.Descriptor;
 import hudson.model.DownloadService;
 import hudson.tools.JDKInstaller.DescriptorImpl;
@@ -64,6 +66,18 @@ public class JDKInstallerTest extends HudsonTestCase {
     protected void tearDown() throws Exception {
         DownloadService.neverUpdate = old;
         super.tearDown();
+    }
+
+    public void testEnterCredential() throws Exception {
+        HtmlPage p = createWebClient().goTo("/descriptorByName/hudson.tools.JDKInstaller/enterCredential");
+        HtmlForm form = p.getFormByName("postCredential");
+        form.getInputByName("username").setValueAttribute("foo");
+        form.getInputByName("password").setValueAttribute("bar");
+        form.submit(null);
+
+        DescriptorImpl d = jenkins.getDescriptorByType(DescriptorImpl.class);
+        assertEquals("foo",d.getUsername());
+        assertEquals("bar",d.getPassword().getPlainText());
     }
 
     /**
