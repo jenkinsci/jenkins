@@ -32,6 +32,7 @@ import hudson.AbortException;
 import hudson.Extension;
 import hudson.FilePath;
 import hudson.Launcher;
+import hudson.Launcher.ProcStarter;
 import hudson.Util;
 import hudson.model.DownloadService.Downloadable;
 import hudson.model.JDK;
@@ -53,6 +54,7 @@ import org.kohsuke.stapler.Stapler;
 
 import javax.servlet.ServletException;
 import java.io.ByteArrayInputStream;
+import java.io.DataInputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -118,7 +120,7 @@ public class JDKInstaller extends ToolInstaller {
             Platform p = Platform.of(node);
             URL url = locate(log, p, CPU.of(node));
 
-            out.println("Downloading "+url);
+//            out.println("Downloading "+url);
             FilePath file = expectedLocation.child(p.bundleFileName);
             file.copyFrom(url);
 
@@ -159,8 +161,24 @@ public class JDKInstaller extends ToolInstaller {
         switch (p) {
         case LINUX:
         case SOLARIS:
-            fs.chmod(jdkBundle,0755);
-            int exit = launcher.launch().cmds(jdkBundle, "-noregister")
+            // JDK on Unix up to 6 was distributed as shell script installer, but in JDK7 it switched to a plain tgz.
+            // so check if the file is gzipped, and if so, treat it accordingly
+            byte[] header = new byte[2];
+            {
+                DataInputStream in = new DataInputStream(fs.read(jdkBundle));
+                in.readFully(header);
+                in.close();
+            }
+
+            ProcStarter starter;
+            if (header[0]==0x1F && header[1]==(byte)0x8B) {// gzip
+                starter = launcher.launch().cmds("tar", "xvzf", jdkBundle);
+            } else {
+                fs.chmod(jdkBundle,0755);
+                starter = launcher.launch().cmds(jdkBundle, "-noregister");
+            }
+
+            int exit = starter
                     .stdin(new ByteArrayInputStream("yes".getBytes())).stdout(out)
                     .pwd(new FilePath(launcher.getChannel(), expectedLocation)).join();
             if (exit != 0)
