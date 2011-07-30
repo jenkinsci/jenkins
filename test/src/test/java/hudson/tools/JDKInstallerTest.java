@@ -113,6 +113,13 @@ public class JDKInstallerTest extends HudsonTestCase {
         doTestAutoInstallation("jdk-6u13-oth-JPR@CDS-CDS_Developer", "1.6.0_13-b03");
     }
 
+    /**
+     * JDK7 is distributed as a gzip file
+     */
+    public void testAutoInstallation7() throws Exception {
+        doTestAutoInstallation("jdk-7-oth-JPR", "1.7.0-b147");
+    }
+
     @Bug(3989)
     public void testAutoInstallation142_17() throws Exception {
         doTestAutoInstallation("j2sdk-1.4.2_17-oth-JPR@CDS-CDS_Developer", "1.4.2_17-b06");
