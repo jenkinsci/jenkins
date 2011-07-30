@@ -49,6 +49,7 @@ import org.apache.commons.io.IOUtils;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.QueryParameter;
+import org.kohsuke.stapler.Stapler;
 
 import javax.servlet.ServletException;
 import java.io.ByteArrayInputStream;
@@ -582,12 +583,11 @@ public class JDKInstaller extends ToolInstaller {
         }
 
         public FormValidation doCheckId(@QueryParameter String value) {
-            if (Util.fixEmpty(value) == null) {
+            if (Util.fixEmpty(value) == null)
                 return FormValidation.error(Messages.JDKInstaller_DescriptorImpl_doCheckId()); // improve message
-            } else {
-                // XXX further checks? 
-                return FormValidation.ok();
-            }
+            if (username==null || password==null)
+                return FormValidation.errorWithMarkup(Messages.JDKInstaller_RequireOracleAccount(Stapler.getCurrentRequest().getContextPath()+getDescriptorUrl()));
+            return FormValidation.ok();
         }
 
         /**
