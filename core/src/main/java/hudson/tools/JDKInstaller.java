@@ -328,6 +328,8 @@ public class JDKInstaller extends ToolInstaller {
         wc.setJavaScriptEnabled(false);
         wc.setCssEnabled(false);
         Page page = wc.getPage(src);
+        int authCount=0;
+        int totalPageCount=0;
         while (page instanceof HtmlPage) {
             // some times we are redirected to the SSO login page.
             HtmlPage html = (HtmlPage) page;
@@ -338,9 +340,12 @@ public class JDKInstaller extends ToolInstaller {
             String u = getDescriptor().getUsername();
             Secret p = getDescriptor().getPassword();
             if (u==null || p==null) {
-                log.hyperlink("/"+getDescriptor().getDescriptorUrl(),"Oracle now requires Oracle account to download previous versions of JDK. Please specify your Oracle account username/password.");
+                log.hyperlink(getCredentialPageUrl(),"Oracle now requires Oracle account to download previous versions of JDK. Please specify your Oracle account username/password.");
                 throw new AbortException("Unable to install JDK unless a valid username/password is provided.");
             }
+
+            if (totalPageCount>16) // looping too much
+                throw new IOException("Unable to find the login form in "+html.asXml());
 
             try {
                 // JavaScript check page. Just submit and move on
@@ -354,6 +359,10 @@ public class JDKInstaller extends ToolInstaller {
 
             try {
                 // real authentication page
+                if (authCount++ > 3) {
+                    log.hyperlink(getCredentialPageUrl(),"Your Oracle account doesn't appear valid. Please specify a valid username/password");
+                    throw new AbortException("Unable to install JDK unless a valid username/password is provided.");
+                }
                 HtmlForm loginForm = html.getFormByName("LoginForm");
                 loginForm.getInputByName("ssousername").setValueAttribute(u);
                 loginForm.getInputByName("password").setValueAttribute(p.getPlainText());
@@ -385,6 +394,10 @@ public class JDKInstaller extends ToolInstaller {
         } finally {
             tmp.delete();
         }
+    }
+
+    private String getCredentialPageUrl() {
+        return "/"+getDescriptor().getDescriptorUrl()+"/enterCredential";
     }
 
     public enum Preference {
