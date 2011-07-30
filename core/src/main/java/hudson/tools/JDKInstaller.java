@@ -646,7 +646,7 @@ public class JDKInstaller extends ToolInstaller {
             this.username = username;
             this.password = Secret.fromString(password);
             save();
-            return HttpResponses.redirectViaContextPath("configure");
+            return HttpResponses.redirectTo("credentialOK");
         }
     }
 
