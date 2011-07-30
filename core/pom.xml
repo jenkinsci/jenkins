@@ -423,7 +423,30 @@ THE SOFTWARE.
     <dependency><!-- until we get this version through Stapler -->
       <groupId>org.kohsuke.stapler</groupId>
       <artifactId>json-lib</artifactId>
-      <version>2.1-rev6</version>
+      <version>2.1-rev7</version>
+    </dependency>
+    <dependency>
+      <groupId>org.jenkins-ci</groupId>
+      <artifactId>htmlunit</artifactId>
+      <version>2.6-jenkins-4</version>
+      <exclusions>
+        <exclusion>
+          <groupId>xml-apis</groupId>
+          <artifactId>xml-apis</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>xalan</groupId>
+          <artifactId>xalan</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>org.jvnet.hudson</groupId>
+          <artifactId>htmlunit-core-js</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>net.sourceforge.cssparser</groupId>
+          <artifactId>cssparser</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
     <dependency>
       <groupId>args4j</groupId>
