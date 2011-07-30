@@ -293,6 +293,7 @@ public class JDKInstaller extends ToolInstaller {
         File cache = getLocalCacheFile(platform, cpu);
         if (cache.exists()) return cache.toURL();
 
+        log.getLogger().println("Installing JDK "+id);
         JDKFamilyList families = JDKList.all().get(JDKList.class).toList();
         if (families.isEmpty())
             throw new IOException("JDK data is empty.");
@@ -322,6 +323,7 @@ public class JDKInstaller extends ToolInstaller {
             throw new AbortException("Couldn't find the right download for "+platform+" and "+ cpu +" combination");
         LOGGER.fine("Platform choice:"+primary);
 
+        log.getLogger().println("Downloading JDK from "+primary.filepath);
         URL src = new URL(primary.filepath);
 
         WebClient wc = new WebClient();
@@ -598,8 +600,6 @@ public class JDKInstaller extends ToolInstaller {
         public FormValidation doCheckId(@QueryParameter String value) {
             if (Util.fixEmpty(value) == null)
                 return FormValidation.error(Messages.JDKInstaller_DescriptorImpl_doCheckId()); // improve message
-            if (username==null || password==null)
-                return FormValidation.errorWithMarkup(Messages.JDKInstaller_RequireOracleAccount(Stapler.getCurrentRequest().getContextPath()+getDescriptorUrl()));
             return FormValidation.ok();
         }
 
@@ -612,6 +612,8 @@ public class JDKInstaller extends ToolInstaller {
         }
 
         public FormValidation doCheckAcceptLicense(@QueryParameter boolean value) {
+            if (username==null || password==null)
+                return FormValidation.errorWithMarkup(Messages.JDKInstaller_RequireOracleAccount(Stapler.getCurrentRequest().getContextPath()+getDescriptorUrl()+"/enterCredential"));
             if (value) {
                 return FormValidation.ok();
             } else {
