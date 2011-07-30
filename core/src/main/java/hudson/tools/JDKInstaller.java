@@ -364,7 +364,7 @@ public class JDKInstaller extends ToolInstaller {
                 throw new AbortException("Unable to install JDK unless a valid username/password is provided.");
             }
 
-            if (totalPageCount>16) // looping too much
+            if (totalPageCount++>16) // looping too much
                 throw new IOException("Unable to find the login form in "+html.asXml());
 
             try {
