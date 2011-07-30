@@ -370,7 +370,6 @@ public class JDKInstaller extends ToolInstaller {
             try {
                 // JavaScript check page. Just submit and move on
                 HtmlForm loginForm = html.getFormByName("myForm");
-                loginForm.getInputByName("ssousername").setValueAttribute(u);
                 page = loginForm.submit(null);
                 continue;
             } catch (ElementNotFoundException e) {
