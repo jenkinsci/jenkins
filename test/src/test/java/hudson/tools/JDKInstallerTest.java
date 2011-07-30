@@ -119,8 +119,8 @@ public class JDKInstallerTest extends HudsonTestCase {
      */
     private void doTestAutoInstallation(String id, String fullversion) throws Exception {
         // this is a really time consuming test, so only run it when we really want
-//        if(!Boolean.getBoolean("hudson.sunTests"))
-//            return;
+        if(!Boolean.getBoolean("hudson.sunTests"))
+            return;
 
         retrieveUpdateCenterData();
 
