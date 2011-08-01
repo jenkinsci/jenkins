@@ -1,5 +1,10 @@
 package hudson.tools;
 
+import com.gargoylesoftware.htmlunit.html.HtmlForm;
+import com.gargoylesoftware.htmlunit.html.HtmlPage;
+import hudson.model.Descriptor;
+import hudson.model.DownloadService;
+import hudson.tools.JDKInstaller.DescriptorImpl;
 import org.jvnet.hudson.test.HudsonTestCase;
 import hudson.model.JDK;
 import hudson.model.FreeStyleProject;
@@ -14,13 +19,67 @@ import hudson.Functions;
 import hudson.Launcher.LocalLauncher;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
 import java.util.Arrays;
+import java.util.Properties;
+import java.util.logging.Logger;
+
 import org.jvnet.hudson.test.Bug;
+import org.xml.sax.SAXException;
 
 /**
  * @author Kohsuke Kawaguchi
  */
 public class JDKInstallerTest extends HudsonTestCase {
+    boolean old;
+
+    @Override
+    protected void setUp() throws Exception {
+        super.setUp();
+        old = DownloadService.neverUpdate;
+        DownloadService.neverUpdate = false;
+
+        File f = new File(new File(System.getProperty("user.home")),".jenkins-ci.org");
+        if (!f.exists()) {
+            LOGGER.warning(f+" doesn't exist. Skipping JDK installation tests");
+        } else {
+            Properties prop = new Properties();
+            FileInputStream in = new FileInputStream(f);
+            try {
+                prop.load(in);
+                String u = prop.getProperty("oracle.userName");
+                String p = prop.getProperty("oracle.password");
+                if (u==null || p==null) {
+                    LOGGER.warning(f+" doesn't contain oracle.userName and oracle.password. Skipping JDK installation tests.");
+                } else {
+                    DescriptorImpl d = jenkins.getDescriptorByType(DescriptorImpl.class);
+                    d.doPostCredential(u,p);
+                }
+            } finally {
+                in.close();
+            }
+        }
+    }
+
+    @Override
+    protected void tearDown() throws Exception {
+        DownloadService.neverUpdate = old;
+        super.tearDown();
+    }
+
+    public void testEnterCredential() throws Exception {
+        HtmlPage p = createWebClient().goTo("/descriptorByName/hudson.tools.JDKInstaller/enterCredential");
+        HtmlForm form = p.getFormByName("postCredential");
+        form.getInputByName("username").setValueAttribute("foo");
+        form.getInputByName("password").setValueAttribute("bar");
+        form.submit(null);
+
+        DescriptorImpl d = jenkins.getDescriptorByType(DescriptorImpl.class);
+        assertEquals("foo",d.getUsername());
+        assertEquals("bar",d.getPassword().getPlainText());
+    }
+
     /**
      * Tests the configuration round trip.
      */
@@ -43,6 +102,8 @@ public class JDKInstallerTest extends HudsonTestCase {
      * Can we locate the bundles?
      */
     public void testLocate() throws Exception {
+        retrieveUpdateCenterData();
+
         JDKInstaller i = new JDKInstaller("jdk-6u13-oth-JPR@CDS-CDS_Developer", true);
         StreamTaskListener listener = StreamTaskListener.fromStdout();
         i.locate(listener, Platform.LINUX, CPU.i386);
@@ -50,11 +111,22 @@ public class JDKInstallerTest extends HudsonTestCase {
         i.locate(listener, Platform.SOLARIS, CPU.Sparc);
     }
 
+    private void retrieveUpdateCenterData() throws IOException, SAXException {
+        new WebClient().goTo("/"); // make sure data is loaded
+    }
+
     /**
      * Tests the auto installation.
      */
     public void testAutoInstallation6u13() throws Exception {
         doTestAutoInstallation("jdk-6u13-oth-JPR@CDS-CDS_Developer", "1.6.0_13-b03");
+    }
+
+    /**
+     * JDK7 is distributed as a gzip file
+     */
+    public void testAutoInstallation7() throws Exception {
+        doTestAutoInstallation("jdk-7-oth-JPR", "1.7.0-b147");
     }
 
     @Bug(3989)
@@ -69,6 +141,8 @@ public class JDKInstallerTest extends HudsonTestCase {
         // this is a really time consuming test, so only run it when we really want
         if(!Boolean.getBoolean("hudson.sunTests"))
             return;
+
+        retrieveUpdateCenterData();
 
         File tmp = env.temporaryDirectoryAllocator.allocate();
         JDKInstaller installer = new JDKInstaller(id, true);
@@ -115,4 +189,6 @@ public class JDKInstallerTest extends HudsonTestCase {
             bundle.delete();
         }
     }
+
+    private static final Logger LOGGER = Logger.getLogger(JDKInstallerTest.class.getName());
 }
