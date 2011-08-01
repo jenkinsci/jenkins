@@ -66,7 +66,7 @@ import java.util.Stack;
  * @see Jenkins#getDependencyGraph()
  * @author Kohsuke Kawaguchi
  */
-public final class DependencyGraph implements Comparator<AbstractProject> {
+public class DependencyGraph implements Comparator<AbstractProject> {
 
     private Map<AbstractProject, List<DependencyGroup>> forward = new HashMap<AbstractProject, List<DependencyGroup>>();
     private Map<AbstractProject, List<DependencyGroup>> backward = new HashMap<AbstractProject, List<DependencyGroup>>();
@@ -79,6 +79,9 @@ public final class DependencyGraph implements Comparator<AbstractProject> {
      * Builds the dependency graph.
      */
     public DependencyGraph() {
+    }
+    
+    public void build() {
         // Set full privileges while computing to avoid missing any projects the current user cannot see.
         // Use setContext (NOT getContext().setAuthentication()) so we don't affect concurrent threads for same HttpSession.
         SecurityContext saveCtx = SecurityContextHolder.getContext();
@@ -87,7 +90,7 @@ public final class DependencyGraph implements Comparator<AbstractProject> {
             NotSerilizableSecurityContext system = new NotSerilizableSecurityContext();
             system.setAuthentication(ACL.SYSTEM);
             SecurityContextHolder.setContext(system);
-            for( AbstractProject p : Jenkins.getInstance().getAllItems(AbstractProject.class) )
+            for( AbstractProject p : getAllProjects() )
                 p.buildDependencyGraph(this);
 
             forward = finalize(forward);
@@ -98,6 +101,10 @@ public final class DependencyGraph implements Comparator<AbstractProject> {
         } finally {
             SecurityContextHolder.setContext(saveCtx);
         }
+    }
+    
+    Collection<AbstractProject> getAllProjects() {
+        return Jenkins.getInstance().getAllItems(AbstractProject.class);
     }
 
     /**
