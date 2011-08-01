@@ -110,6 +110,11 @@ final class PomInfo implements Serializable {
 
     public final Notifier mailNotifier;
     
+    /**
+     * Packaging type taken from the POM.
+     * 
+     * @since 1.425
+     */
     public final String packaging;
 
     public PomInfo(MavenProject project, PomInfo parent, String relPath) {

@@ -97,6 +97,8 @@ public class MavenModule extends AbstractMavenProject<MavenModule,MavenBuild> im
      * Packaging type of the module.
      * 
      * pom, jar, maven-plugin, ejb, war, ear, rar, par or other custom types.
+     * 
+     * @since 1.425
      */
     private String packaging;
 
