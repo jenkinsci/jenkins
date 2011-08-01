@@ -156,6 +156,10 @@ public final class ProxyConfiguration implements Saveable {
                 }
             });
         }
+
+        for (URLConnectionDecorator d : URLConnectionDecorator.all())
+            d.decorate(con);
+
         return con;
     }
 
