@@ -3297,7 +3297,11 @@ public class Jenkins extends AbstractCIBase implements ModifiableItemGroup<TopLe
      * Rebuilds the dependency map.
      */
     public void rebuildDependencyGraph() {
-        dependencyGraph = new DependencyGraph();
+        DependencyGraph graph = new DependencyGraph();
+        graph.build();
+        // volatile acts a as a memory barrier here and therefore guarantees 
+        // that graph is fully build, before it's visible to other threads
+        dependencyGraph = graph;
     }
 
     public DependencyGraph getDependencyGraph() {
