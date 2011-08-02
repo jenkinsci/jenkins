@@ -630,7 +630,7 @@ public class JDKInstaller extends ToolInstaller {
 
         public FormValidation doCheckAcceptLicense(@QueryParameter boolean value) {
             if (username==null || password==null)
-                return FormValidation.errorWithMarkup(Messages.JDKInstaller_RequireOracleAccount(Stapler.getCurrentRequest().getContextPath()+getDescriptorUrl()+"/enterCredential"));
+                return FormValidation.errorWithMarkup(Messages.JDKInstaller_RequireOracleAccount(Stapler.getCurrentRequest().getContextPath()+'/'+getDescriptorUrl()+"/enterCredential"));
             if (value) {
                 return FormValidation.ok();
             } else {
