@@ -632,6 +632,7 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable {
     /**
      * Tells Jenkins that the help file for the field 'fieldName' is defined in the help file for
      * the 'fieldNameToRedirectTo' in the 'owner' class.
+     * @since 1.425
      */
     protected void addHelpFileRedirect(String fieldName, Class<? extends Describable> owner, String fieldNameToRedirectTo) {
         helpRedirect.put(fieldName,
