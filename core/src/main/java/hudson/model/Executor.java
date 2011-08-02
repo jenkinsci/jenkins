@@ -26,6 +26,8 @@ package hudson.model;
 import hudson.model.Queue.Executable;
 import hudson.Util;
 import hudson.FilePath;
+import jenkins.model.CauseOfInterruption;
+import jenkins.model.CauseOfInterruption.UserInterruption;
 import hudson.model.queue.Executables;
 import hudson.model.queue.SubTask;
 import hudson.model.queue.Tasks;
@@ -33,7 +35,10 @@ import hudson.model.queue.WorkUnit;
 import hudson.util.TimeUnit2;
 import hudson.util.InterceptingProxy;
 import hudson.security.ACL;
+import jenkins.model.InterruptedBuildAction;
 import jenkins.model.Jenkins;
+import org.acegisecurity.Authentication;
+import org.acegisecurity.providers.anonymous.AnonymousAuthenticationToken;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.HttpResponses;
 import org.kohsuke.stapler.StaplerRequest;
@@ -44,11 +49,15 @@ import org.acegisecurity.context.SecurityContextHolder;
 
 import javax.servlet.ServletException;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Vector;
 import java.util.logging.Logger;
 import java.util.logging.Level;
 import java.lang.reflect.Method;
 
 import static hudson.model.queue.Executables.*;
+import static java.util.Arrays.asList;
 
 
 /**
@@ -88,6 +97,11 @@ public class Executor extends Thread implements ModelObject {
      */
     private Result interruptStatus;
 
+    /**
+     * Cause of interruption. Access needs to be synchronized.
+     */
+    private final List<CauseOfInterruption> causes = new Vector<CauseOfInterruption>();
+
     public Executor(Computer owner, int n) {
         super("Executor #"+n+" for "+owner.getDisplayName());
         this.owner = owner;
@@ -107,7 +121,24 @@ public class Executor extends Thread implements ModelObject {
      * @since 1.417
      */
     public void interrupt(Result result) {
+        Authentication a = Jenkins.getAuthentication();
+        if (a!=ACL.SYSTEM)
+            interrupt(result, new UserInterruption(User.current()));    // worth recording who did it
+        else
+            interrupt(result, new CauseOfInterruption[0]);
+    }
+
+    /**
+     * Interrupt the execution. Mark the cause and the status accordingly.
+     */
+    public void interrupt(Result result, CauseOfInterruption... causes) {
         interruptStatus = result;
+        synchronized (this.causes) {
+            for (CauseOfInterruption c : causes) {
+                if (!this.causes.contains(c))
+                    this.causes.add(c);
+            }
+        }
         super.interrupt();
     }
 
@@ -115,6 +146,26 @@ public class Executor extends Thread implements ModelObject {
         Result r = interruptStatus;
         if (r==null)    r = Result.ABORTED; // this is when we programmatically throw InterruptedException instead of calling the interrupt method.
         return r;
+    }
+
+    /**
+     * report cause of interruption and record it to the build, if available.
+     *
+     * @since 1.425
+     */
+    public void recordCauseOfInterruption(Run<?,?> build, TaskListener listener) {
+        List<CauseOfInterruption> r;
+
+        // atomically get&clear causes, and minimize the lock.
+        synchronized (causes) {
+            if (causes.isEmpty())   return;
+            r = new ArrayList<CauseOfInterruption>(causes);
+            causes.clear();
+        }
+
+        build.addAction(new InterruptedBuildAction(r));
+        for (CauseOfInterruption c : r)
+            c.print(listener);
     }
 
     @Override
@@ -128,6 +179,7 @@ public class Executor extends Thread implements ModelObject {
                 executable = null;
                 workUnit = null;
                 interruptStatus = null;
+                causes.clear();
 
                 synchronized(owner) {
                     if(owner.getNumExecutors()<owner.getExecutors().size()) {
