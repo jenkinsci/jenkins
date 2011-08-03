@@ -77,7 +77,7 @@
      inkscape:groupmode="layer"
      id="layer1">
     <rect
-       style="opacity:1;fill:#333333;fill-opacity:1;fill-rule:nonzero;stroke:none;stroke-width:28.51399994;stroke-miterlimit:10;stroke-dasharray:none;stroke-opacity:1"
+       style="fill:url(#linearGradient3060);fill-opacity:1;fill-rule:nonzero;stroke:none;stroke-width:28.51399994;stroke-miterlimit:10;stroke-dasharray:none;stroke-opacity:1"
        id="rect1307"
        width="110"
        height="31"
@@ -86,7 +86,7 @@
        rx="0"
        ry="11.898433" />
     <rect
-       style="opacity:1;fill:#d24939;fill-opacity:1;fill-rule:nonzero;stroke:none;stroke-width:28.51399994;stroke-miterlimit:10;stroke-dasharray:none;stroke-opacity:1"
+       style="opacity:1;fill:#fbad3e;fill-opacity:1;fill-rule:nonzero;stroke:none;stroke-width:28.51399994;stroke-miterlimit:10;stroke-dasharray:none;stroke-opacity:1"
        id="rect2182"
        width="110"
        height="4"
