@@ -236,24 +236,9 @@ public class MatrixBuild extends AbstractBuild<MatrixProject,MatrixBuild> {
             PrintStream logger = listener.getLogger();
 
             // list up aggregators
-            for (Publisher pub : p.getPublishers().values()) {
-                if (pub instanceof MatrixAggregatable) {
-                    MatrixAggregatable ma = (MatrixAggregatable) pub;
-                    MatrixAggregator a = ma.createAggregator(MatrixBuild.this, launcher, listener);
-                    if(a!=null)
-                        aggregators.add(a);
-                }
-            }
-
-            //let properties do their job
-            for (JobProperty prop : p.getProperties().values()) {
-                if (prop instanceof MatrixAggregatable) {
-                    MatrixAggregatable ma = (MatrixAggregatable) prop;
-                    MatrixAggregator a = ma.createAggregator(MatrixBuild.this, launcher, listener);
-                    if(a!=null)
-                        aggregators.add(a);
-                }
-            }
+            listUpAggregators(listener, p.getPublishers().values());
+            listUpAggregators(listener, p.getProperties().values());
+            listUpAggregators(listener, p.getBuildWrappers().values());
 
             axes = p.getAxes();
             Collection<MatrixConfiguration> activeConfigurations = p.getActiveConfigurations();
@@ -333,7 +318,18 @@ public class MatrixBuild extends AbstractBuild<MatrixProject,MatrixBuild> {
                 }
             }
         }
-        
+
+        private void listUpAggregators(BuildListener listener, Collection<?> values) {
+            for (Object v : values) {
+                if (v instanceof MatrixAggregatable) {
+                    MatrixAggregatable ma = (MatrixAggregatable) v;
+                    MatrixAggregator a = ma.createAggregator(MatrixBuild.this, launcher, listener);
+                    if(a!=null)
+                        aggregators.add(a);
+                }
+            }
+        }
+
         private Result waitForCompletion(BuildListener listener, MatrixConfiguration c) throws InterruptedException, IOException, AggregatorFailureException {
             String whyInQueue = "";
             long startTime = System.currentTimeMillis();
