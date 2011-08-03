@@ -11,7 +11,7 @@ f.optionalBlock( field:"useSecurity", title:_("Enable security"), checked:app.us
         int port = app.slaveAgentPort
 
         f.radio(name:"slaveAgentPortType", value:"fixed", id:"sat.fixed",
-                chcked:port>0, onclick:"\$('sat.port').disabled=false")
+                checked:port>0, onclick:"\$('sat.port').disabled=false")
         label("for":"sat.fixed", _("Fixed"))
         text(" : ")
         input(type:"text", "class":"number", name:"slaveAgentPort", id:"sat.port",
