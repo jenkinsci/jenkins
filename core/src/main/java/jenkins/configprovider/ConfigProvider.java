@@ -28,10 +28,9 @@ import hudson.ExtensionPoint;
 
 import java.util.Collection;
 
-import javax.mail.internet.ContentType;
-
 import jenkins.configprovider.model.Config;
 import jenkins.configprovider.model.ConfigDescription;
+import jenkins.configprovider.model.ContentType;
 import jenkins.model.Jenkins;
 
 /**

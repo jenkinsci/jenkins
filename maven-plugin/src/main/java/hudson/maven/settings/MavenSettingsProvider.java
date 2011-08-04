@@ -37,7 +37,8 @@ public class MavenSettingsProvider extends AbstractConfigProvider {
 
 	@Override
 	public ConfigDescription getConfigDescription() {
-		return new ConfigDescription(Messages.mvn_settings_provider_name(), Messages.mvn_settings_provider_description());
+		return new ConfigDescription(Messages.mvn_settings_provider_name(),
+				Messages.mvn_settings_provider_description());
 	}
 
 	@Override
