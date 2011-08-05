@@ -631,6 +631,8 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
                                     FilePath target = new FilePath(getWorkspace(), tmpSettingsFile.getName());
                                     ByteArrayInputStream bs = new ByteArrayInputStream(settingsContent.getBytes());
                                     target.copyFrom(bs);
+                                    // FIXME don't store that here as it's saved for next build !!
+                                    // FIXME ensure we delete this file in the workspace
                                     project.setAlternateSettings( target.getRemote() );
                                 }
                             }
