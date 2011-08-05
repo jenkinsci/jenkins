@@ -104,7 +104,17 @@ THE SOFTWARE.
             <f:option selected="${it.mavenValidationLevel == level.value}" value="${level.value}">${level.key}</f:option>
           </j:forEach>
         </select>
-      </f:entry>                 
+      </f:entry>
+
+      <j:set var="mavenSettingsConfigs" value="${it.allMavenSettingsConfigs}" />
+      <f:entry title="${%Maven Settings Configs}">
+        <select class="setting-input" name="maven.mavenSettingsConfigId">
+          <j:forEach var="settingConfig" items="${mavenSettingsConfigs}">
+            <f:option selected="${it.settingConfigId == settingConfig.id}" value="${settingConfig.id}">${settingConfig.name}</f:option>
+          </j:forEach>
+        </select>
+      </f:entry>
+
     </f:advanced>
   </f:section>
 

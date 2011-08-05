@@ -29,9 +29,11 @@ import static hudson.model.ItemGroupMixIn.loadChildren;
 import hudson.CopyOnWrite;
 import hudson.EnvVars;
 import hudson.Extension;
+import hudson.ExtensionList;
 import hudson.FilePath;
 import hudson.Indenter;
 import hudson.Util;
+import hudson.maven.settings.MavenSettingsProvider;
 import hudson.model.AbstractProject;
 import hudson.model.Action;
 import hudson.model.BuildableItemWithBuildWrappers;
@@ -40,6 +42,8 @@ import hudson.model.Descriptor;
 import hudson.model.Descriptor.FormException;
 import hudson.model.Executor;
 import hudson.model.TaskListener;
+import jenkins.configprovider.ConfigProvider;
+import jenkins.configprovider.model.Config;
 import jenkins.model.Jenkins;
 import hudson.model.Item;
 import hudson.model.ItemGroup;
@@ -213,6 +217,11 @@ public class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,MavenMod
      * later to select a headless-slave from a pool, but first introduced for JENKINS-9785
      */
     private boolean runHeadless = false;
+
+    /**
+     * @since 1.426
+     */
+    private String settingConfigId;
 
     /**
      * Reporters configured at {@link MavenModuleSet} level. Applies to all {@link MavenModule} builds.
@@ -422,8 +431,24 @@ public class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,MavenMod
 
     public int getMavenValidationLevel() {
         return mavenValidationLevel;
-    }    
-    
+    }
+
+    /**
+     * @since 1.426
+     * @return
+     */
+    public String getSettingConfigId() {
+        return settingConfigId;
+    }
+
+    /**
+     * @since 1.426
+     * @param settingConfigId
+     */
+    public void setSettingConfigId( String settingConfigId ) {
+        this.settingConfigId = settingConfigId;
+    }
+
     /**
      * List of active {@link MavenReporter}s that should be applied to all module builds.
      */
@@ -762,6 +787,23 @@ public class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,MavenMod
     }
 
     /**
+     * @since 1.426
+     * @return
+     */
+    public List<Config> getAllMavenSettingsConfigs() {
+        List<Config> mavenSettingsConfigs = new ArrayList<Config>();
+        ExtensionList<ConfigProvider> configProviders = ConfigProvider.all();
+        if (configProviders != null && configProviders.size() > 0) {
+            for (ConfigProvider configProvider : configProviders) {
+                if (configProvider instanceof MavenSettingsProvider) {
+                    mavenSettingsConfigs.addAll( configProvider.getAllConfigs() );
+                }
+            }
+        }
+        return mavenSettingsConfigs;
+    }
+
+    /**
      * Set mavenOpts.
      */
     public void setMavenOpts(String mavenOpts) {
@@ -847,6 +889,7 @@ public class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,MavenMod
         reporters.rebuild(req,json,MavenReporters.getConfigurableList());
         publishers.rebuild(req,json,BuildStepDescriptor.filter(Publisher.all(),this.getClass()));
         buildWrappers.rebuild(req,json,BuildWrappers.getFor(this));
+        settingConfigId = req.getParameter( "maven.mavenSettingsConfigId" );
     }
 
     /**

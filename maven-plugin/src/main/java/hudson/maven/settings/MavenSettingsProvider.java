@@ -1,7 +1,7 @@
 /*
  The MIT License
 
- Copyright (c) 2011, Dominik Bartholdi
+ Copyright (c) 2011, Dominik Bartholdi, Olivier Lamy
 
  Permission is hereby granted, free of charge, to any person obtaining a copy
  of this software and associated documentation files (the "Software"), to deal
@@ -23,37 +23,7 @@
  */
 package hudson.maven.settings;
 
-import hudson.Extension;
-
-import jenkins.configprovider.AbstractConfigProvider;
-import hudson.maven.settings.Messages;
-import jenkins.configprovider.model.Config;
-import jenkins.configprovider.model.ConfigDescription;
-import jenkins.configprovider.model.ContentType;
-import jenkins.configprovider.model.ContentType.DefinedType;
-
-@Extension
-public class MavenSettingsProvider extends AbstractConfigProvider {
-
-	@Override
-	public ConfigDescription getConfigDescription() {
-		return new ConfigDescription(Messages.mvn_settings_provider_name(),
-				Messages.mvn_settings_provider_description());
-	}
-
-	@Override
-	public Config newConfig() {
-		String id = this.getProviderId() + System.currentTimeMillis();
-		return new Config(id, "MySettings", "", "<settings></settings>");
-	}
-
-	@Override
-	protected String getXmlFileName() {
-		return "maven-settings-files.xml";
-	}
-
-	@Override
-	public ContentType getContentType() {
-		return DefinedType.HTML;
-	}
+public interface MavenSettingsProvider
+{
+    // no op only a marker interface
 }

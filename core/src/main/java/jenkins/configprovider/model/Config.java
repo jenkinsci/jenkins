@@ -27,6 +27,8 @@ import jenkins.configprovider.ConfigProvider;
 
 import org.kohsuke.stapler.DataBoundConstructor;
 
+import java.io.Serializable;
+
 /**
  * Represents a configuration file. A Config object is always managed by one
  * specifig {@link ConfigProvider}
@@ -34,7 +36,7 @@ import org.kohsuke.stapler.DataBoundConstructor;
  * @author domi
  * 
  */
-public class Config {
+public class Config implements Serializable {
 
 	/**
 	 * a unique id along all providers!
