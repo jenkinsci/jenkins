@@ -127,7 +127,7 @@ public class BasicAuthenticationFilter implements Filter {
 
         if(username==null) {
             rsp.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-            rsp.setHeader("WWW-Authenticate","Basic realm=\"Hudson administrator\"");
+            rsp.setHeader("WWW-Authenticate","Basic realm=\"Jenkins user\"");
             return;
         }
 
