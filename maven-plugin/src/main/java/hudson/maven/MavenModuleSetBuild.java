@@ -35,7 +35,6 @@ import hudson.maven.MavenBuild.ProxyImpl2;
 import hudson.maven.reporters.MavenAggregatedArtifactRecord;
 import hudson.maven.reporters.MavenFingerprinter;
 import hudson.maven.reporters.MavenMailer;
-import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
 import hudson.model.Action;
 import hudson.model.Build;
@@ -62,7 +61,6 @@ import hudson.tasks.Maven.MavenInstallation;
 import hudson.util.ArgumentListBuilder;
 import hudson.util.IOUtils;
 import hudson.util.MaskingClassLoader;
-import hudson.util.ReflectionUtils;
 import hudson.util.StreamTaskListener;
 
 import java.io.File;
@@ -70,7 +68,6 @@ import java.io.IOException;
 import java.io.InterruptedIOException;
 import java.io.PrintStream;
 import java.io.Serializable;
-import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -157,10 +154,7 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
     @Override
     public EnvVars getEnvironment(TaskListener log) throws IOException, InterruptedException {
         EnvVars envs = super.getEnvironment(log);
-        String opts = getMavenOpts(log);
 
-        if(opts!=null)
-            envs.put("MAVEN_OPTS", opts);
         // We need to add M2_HOME and the mvn binary to the PATH so if Maven
         // needs to run Maven it will pick the correct one.
         // This can happen if maven calls ANT which itself calls Maven
@@ -545,24 +539,8 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
         }
     }
 
-    public String getMavenOpts(TaskListener listener) {
-        String opts = project.getMavenOpts();
-        if (opts == null ) return null;
-        try {
-            Class<?> clazz = Class.forName( "org.jenkinsci.plugins.tokenmacro.TokenMacro" );
-            Method expandMethod =
-                ReflectionUtils.findMethod(clazz, "expand", new Class[]{ AbstractBuild.class, TaskListener.class, String.class} );
-            opts = (String) expandMethod.invoke( null, this, listener, opts );
-        }
-        catch(Exception tokenException) {
-            //Token plugin not present. Ignore, this is OK.
-            //listener.error("Ignore Problem expanding maven opts macros " + tokenException.getMessage());
-        }
-        catch(LinkageError linkageError) {
-            // Token plugin not present. Ignore, this is OK.
-        }
-
-        return opts;
+    public String getMavenOpts(TaskListener listener, EnvVars envVars) {
+        return envVars.expand(expandTokens(listener, project.getMavenOpts()));
     }
 
     /**
@@ -673,7 +651,7 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
                             LOGGER.fine( "using maven 3 " + mavenVersion );
                             process =
                                 MavenBuild.mavenProcessCache.get( launcher.getChannel(), slistener,
-                                                                  new Maven3ProcessFactory( project, launcher, envVars, getMavenOpts(listener),
+                                                                  new Maven3ProcessFactory( project, launcher, envVars, getMavenOpts(listener, envVars),
                                                                                             pom.getParent() ) );
                         }
                         else
@@ -681,7 +659,7 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
                             LOGGER.fine( "using maven 2 " + mavenVersion );
                             process =
                                 MavenBuild.mavenProcessCache.get( launcher.getChannel(), slistener,
-                                                                  new MavenProcessFactory( project, launcher, envVars,getMavenOpts(listener),
+                                                                  new MavenProcessFactory( project, launcher, envVars,getMavenOpts(listener, envVars),
                                                                                            pom.getParent() ) );
                         }
                         ArgumentListBuilder margs = new ArgumentListBuilder().add("-B").add("-f", pom.getRemote());
