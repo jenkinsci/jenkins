@@ -28,11 +28,13 @@ import com.sun.akuma.Daemon;
 import com.sun.jna.Native;
 import com.sun.jna.StringArray;
 
+import java.io.File;
 import java.io.IOException;
 
 import static hudson.util.jna.GNUCLibrary.*;
 
 import hudson.Platform;
+import hudson.Util;
 import jenkins.model.Jenkins;
 
 /**
@@ -74,10 +76,18 @@ public class UnixLifecycle extends Lifecycle {
             if(flags<0) continue;
             LIBC.fcntl(i, F_SETFD,flags| FD_CLOEXEC);
         }
+        String exe = Daemon.getCurrentExecutable();
+        // The executable is generally /proc/<pid>/exe so resolve it to
+        // the original name. This way the process name gets set to the
+        // same value as the original caller and not "exe".
+        String thisExe = Util.resolveSymlink(new File(exe), null /* no listener */);
+        if (thisExe != null) {
+        	exe = thisExe;
+        }
 
         // exec to self
         LIBC.execv(
-            Daemon.getCurrentExecutable(),
+            exe,
             new StringArray(args.toArray(new String[args.size()])));
         throw new IOException("Failed to exec "+LIBC.strerror(Native.getLastError()));
     }
