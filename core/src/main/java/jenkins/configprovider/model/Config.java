@@ -31,7 +31,7 @@ import java.io.Serializable;
 
 /**
  * Represents a configuration file. A Config object is always managed by one
- * specifig {@link ConfigProvider}
+ * specific {@link ConfigProvider}
  * 
  * @author domi
  * 

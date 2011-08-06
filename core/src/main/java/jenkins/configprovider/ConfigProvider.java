@@ -65,15 +65,16 @@ public abstract class ConfigProvider implements ExtensionPoint {
 	public abstract ConfigDescription getConfigDescription();
 
 	/**
-	 * the content type of the configs this provider manages. e.g. can be used
-	 * to display the content in the UI (editor)
+	 * The content type of the configs this provider manages. e.g. can be used
+	 * to display the content in the UI (editor).
 	 * 
-	 * @return the type
+	 * @return the type. <code>null</code> if no specific formating should be
+	 *         supported.
 	 */
 	public abstract ContentType getContentType();
 
 	/**
-	 * retuns the config item identified by this id.
+	 * Returns the config item identified by this id.
 	 * 
 	 * @param configId
 	 *            the id

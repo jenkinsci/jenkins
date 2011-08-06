@@ -33,12 +33,44 @@ package jenkins.configprovider.model;
  */
 public interface ContentType {
 
+	/**
+	 * The CodeMirror mode as defined in Stapler (
+	 * <code>org.kohsuke.stapler.codemirror.mode.*</code>). <br>
+	 * Currently Supported:
+	 * <ul>
+	 * <li>clike</li>
+	 * <li>css</li>
+	 * <li>diff</li>
+	 * <li>haskell</li>
+	 * <li>htmlmixed</li>
+	 * <li>javascript</li>
+	 * <li>lua</li>
+	 * <li>php</li>
+	 * <li>plsql</li>
+	 * <li>python</li>
+	 * <li>rst</li>
+	 * <li>smaltalk</li>
+	 * <li>stex</li>
+	 * <li>xml</li>
+	 * </ul>
+	 * e.g. used in 
+	 * <code>&lt;textarea name="config.content" codemirror-mode="${contentType.cmMode}" ... /&gt;</code>
+	 * 
+	 * @return the CodeMirror mode
+	 */
 	public String getCmMode();
 
+	/**
+	 * Actually the 'mode' attribute for the CodeMirror editor. As in:
+	 * <code>&lt;textarea name="config.content" codemirror-config="mode:'${contentType.mime}',lineNumbers: true" ... /&gt;</code>
+	 * 
+	 * @return the mime.
+	 */
 	public String getMime();
 
 	public enum DefinedType implements ContentType {
-		XML("xml", "application/xml"), HTML("htmlmixed", "text/html");
+		XML("xml", "application/xml"), HTML("htmlmixed", "text/html"), GROOVY(
+				"clike", "text/x-groovy");
 
 		public final String cmMode;
 		public final String mime;
