@@ -24,7 +24,6 @@
  */
 package hudson.model;
 
-import com.google.common.collect.Collections2;
 import hudson.EnvVars;
 import hudson.Util;
 import hudson.cli.declarative.CLIMethod;
@@ -46,6 +45,8 @@ import hudson.slaves.RetentionStrategy;
 import hudson.slaves.WorkspaceList;
 import hudson.slaves.OfflineCause;
 import hudson.slaves.OfflineCause.ByCLI;
+import hudson.tasks.BuildWrapper;
+import hudson.tasks.Publisher;
 import hudson.util.DaemonThreadFactory;
 import hudson.util.EditDistance;
 import hudson.util.ExceptionCatchingThreadFactory;
