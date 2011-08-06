@@ -122,8 +122,10 @@ public class Executor extends Thread implements ModelObject {
      */
     public void interrupt(Result result) {
         Authentication a = Jenkins.getAuthentication();
-        if (a!=ACL.SYSTEM)
-            interrupt(result, new UserInterruption(User.current()));    // worth recording who did it
+        User u = User.current();
+        
+        if (a!=ACL.SYSTEM && u!=null)
+            interrupt(result, new UserInterruption(u));    // worth recording who did it
         else
             interrupt(result, new CauseOfInterruption[0]);
     }
