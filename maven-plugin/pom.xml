@@ -124,7 +124,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.jenkins-ci.lib</groupId>
       <artifactId>config-provider-model</artifactId>
-      <version>1.0-SNAPSHOT</version>
+      <version>1.0</version>
     </dependency>
     
     <dependency>
