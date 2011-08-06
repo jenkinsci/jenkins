@@ -47,11 +47,8 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.ListIterator;
-import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReadWriteLock;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
+import java.util.concurrent.ConcurrentMap;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.maven.artifact.versioning.ComparableVersion;
@@ -75,11 +72,7 @@ public class SurefireArchiver extends MavenReporter {
      * Note: Because this class can be run with different mojo goals with different path settings, 
      * we track multiple {@link FileSet}s for each encountered <tt>reportsDir</tt>
      */
-    private transient Map<File, FileSet> fileSets = new ConcurrentHashMap<File,FileSet>();// Collections.synchronizedMap(new HashMap<File, FileSet>());
-
-    private final ReadWriteLock fileSetsReadWriteLock = new ReentrantReadWriteLock();
-    private final Lock fileSetsReadLock = fileSetsReadWriteLock.readLock();
-    private Lock fileSetsWriteLock = fileSetsReadWriteLock.writeLock();
+    private transient ConcurrentMap<File, FileSet> fileSets = new ConcurrentHashMap<File,FileSet>();
 
     public boolean preExecute(MavenBuildProxy build, MavenProject pom, MojoInfo mojo, BuildListener listener) throws InterruptedException, IOException {
         if (isSurefireTest(mojo)) {
@@ -132,7 +125,11 @@ public class SurefireArchiver extends MavenReporter {
             // surefire:test just skips itself when the current project is not a java project
 
         	FileSet fileSet = getFileSet(reportsDir);
-            DirectoryScanner ds = fileSet.getDirectoryScanner();
+        	
+        	DirectoryScanner ds;
+        	synchronized (fileSet) {
+                ds = fileSet.getDirectoryScanner();
+            }
 
             if(ds.getIncludedFilesCount()==0)
                 // no test in this module
@@ -144,20 +141,23 @@ public class SurefireArchiver extends MavenReporter {
             if(result==null)    result = new TestResult();
             result.parse(System.currentTimeMillis() - build.getMilliSecsSinceBuildStart(), reportsDir, reportFiles);
 
-            int failCount = build.execute(new BuildCallable<Integer, IOException>() {
-                public Integer call(MavenBuild build) throws IOException, InterruptedException {
-                    SurefireReport sr = build.getAction(SurefireReport.class);
-                    if(sr==null)
-                        build.getActions().add(new SurefireReport(build, result, listener));
-                    else
-                        sr.setResult(result,listener);
-                    if(result.getFailCount()>0)
-                        build.setResult(Result.UNSTABLE);
-                    build.registerAsProjectAction(new FactoryImpl());
-                    return result.getFailCount();
-                }
-            });
-
+            int failCount;
+            synchronized (build) {
+                failCount = build.execute(new BuildCallable<Integer, IOException>() {
+                    public Integer call(MavenBuild build) throws IOException, InterruptedException {
+                        SurefireReport sr = build.getAction(SurefireReport.class);
+                        if(sr==null)
+                            build.getActions().add(new SurefireReport(build, result, listener));
+                        else
+                            sr.setResult(result,listener);
+                        if(result.getFailCount()>0)
+                            build.setResult(Result.UNSTABLE);
+                        build.registerAsProjectAction(new FactoryImpl());
+                        return result.getFailCount();
+                    }
+                });
+            }
+            
             // if surefire plugin is going to kill maven because of a test failure,
             // intercept that (or otherwise build will be marked as failure)
             if(failCount>0 && error instanceof MojoFailureException) {
@@ -177,31 +177,14 @@ public class SurefireArchiver extends MavenReporter {
      * @param baseDir
      * @return
      */
-    private FileSet getFileSet(File baseDir) {
-    	FileSet fs = null;
-        if (fileSets == null) {
-            fileSetsWriteLock.lock();
-            try {
-                fileSets = new ConcurrentHashMap<File,FileSet>();
-            } finally {
-                fileSetsWriteLock.unlock();
-            }
-        }
-
-        fileSetsReadLock.lock();
-        try {
-            fs = fileSets.get(baseDir);
-        } finally {
-            fileSetsReadLock.unlock();
-        }
+    FileSet getFileSet(File baseDir) {
+    	FileSet fs = fileSets.get(baseDir);
     	if (fs == null) {
     		fs = Util.createFileSet(baseDir, "*.xml","testng-results.xml,testng-failed.xml");
-            fileSetsWriteLock.lock();
-            try {
-    		    fileSets.put(baseDir, fs);
-            } finally {
-                fileSetsWriteLock.unlock();
-            }
+    		FileSet previous = fileSets.putIfAbsent(baseDir, fs);
+    		if (previous != null) {
+    		    return previous;
+    		}
     	}
     	
     	return fs;
@@ -214,7 +197,7 @@ public class SurefireArchiver extends MavenReporter {
     	FileSet fileSet = getFileSet(baseDir);
     	
     	for (String file : reportFiles) {
-    		fileSet.setExcludes(file);
+    		fileSet.createExclude().setName(file);
     	}
     }
 
@@ -313,7 +296,14 @@ public class SurefireArchiver extends MavenReporter {
             return false;
         }
         return new ComparableVersion (mavenVersion).compareTo( new ComparableVersion ("3.0") ) >= 0;
-    }       
+    }
+    
+    // I'm not sure if SurefireArchiver is actually ever (de-)serialized,
+    // but just to be sure, set fileSets here
+    protected Object readResolve() {
+        fileSets = new ConcurrentHashMap<File,FileSet>();
+        return this;
+    }
 
     @Extension
     public static final class DescriptorImpl extends MavenReporterDescriptor {
