@@ -561,6 +561,7 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
             PrintStream logger = listener.getLogger();
             Result r = null;
             File tmpSettingsFile = null;
+            FilePath remoteSettings = null;
             try {
                 
                 EnvVars envVars = getEnvironment(listener);
@@ -628,12 +629,10 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
                                 String settingsContent = config.content;
                                 if (settingsContent != null ) {
                                     tmpSettingsFile = File.createTempFile( "maven-settings", "xml" );
-                                    FilePath target = new FilePath(getWorkspace(), tmpSettingsFile.getName());
+                                    remoteSettings = new FilePath(getWorkspace(), tmpSettingsFile.getName());
                                     ByteArrayInputStream bs = new ByteArrayInputStream(settingsContent.getBytes());
-                                    target.copyFrom(bs);
-                                    // FIXME don't store that here as it's saved for next build !!
-                                    // FIXME ensure we delete this file in the workspace
-                                    project.setAlternateSettings( target.getRemote() );
+                                    remoteSettings.copyFrom(bs);
+                                    project.setAlternateSettings( remoteSettings.getRemote() );
                                 }
                             }
                         }
@@ -814,7 +813,16 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
                 logger.println("project.getRootModule()="+project.getRootModule());
                 throw e;
             } finally {
+                if (project.getSettingConfigId() != null) {
+                    // restore to null if as was modified
+                    project.setAlternateSettings( null );
+                    project.save();
+                }
+                // delete tmp files used for MavenSettingsProvider
                 FileUtils.deleteQuietly( tmpSettingsFile );
+                if (remoteSettings != null) {
+                    remoteSettings.delete();
+                }
             }
         }
 
