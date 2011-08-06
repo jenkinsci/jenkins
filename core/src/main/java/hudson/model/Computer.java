@@ -24,6 +24,7 @@
  */
 package hudson.model;
 
+import com.google.common.collect.Collections2;
 import hudson.EnvVars;
 import hudson.Util;
 import hudson.cli.declarative.CLIMethod;
@@ -45,8 +46,6 @@ import hudson.slaves.RetentionStrategy;
 import hudson.slaves.WorkspaceList;
 import hudson.slaves.OfflineCause;
 import hudson.slaves.OfflineCause.ByCLI;
-import hudson.tasks.BuildWrapper;
-import hudson.tasks.Publisher;
 import hudson.util.DaemonThreadFactory;
 import hudson.util.EditDistance;
 import hudson.util.ExceptionCatchingThreadFactory;
@@ -566,7 +565,8 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
      * Returns projects that are tied on this node.
      */
     public List<AbstractProject> getTiedJobs() {
-        return getNode().getSelfLabel().getTiedJobs();
+        Node node = getNode();
+        return (node != null) ? node.getSelfLabel().getTiedJobs() : Collections.EMPTY_LIST;
     }
 
     public RunList getBuilds() {
