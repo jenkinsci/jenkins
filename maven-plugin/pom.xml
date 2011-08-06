@@ -119,7 +119,13 @@ THE SOFTWARE.
       <groupId>org.jenkins-ci.main.maven</groupId>
       <artifactId>maven3-interceptor</artifactId>
       <version>${mavenInterceptorsVersion}</version>
-    </dependency>    
+    </dependency>
+
+    <dependency>
+      <groupId>org.jenkins-ci.lib</groupId>
+      <artifactId>config-provider-model</artifactId>
+      <version>1.0-SNAPSHOT</version>
+    </dependency>
     
     <dependency>
       <groupId>org.apache.ant</groupId>
