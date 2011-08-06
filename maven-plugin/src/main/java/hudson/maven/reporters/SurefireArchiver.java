@@ -134,14 +134,15 @@ public class SurefireArchiver extends MavenReporter {
         	FileSet fileSet = getFileSet(reportsDir);
             DirectoryScanner ds = fileSet.getDirectoryScanner();
 
-            if(ds.getIncludedFiles().length==0)
+            if(ds.getIncludedFilesCount()==0)
                 // no test in this module
                 return true;
             
-            rememberCheckedFiles(reportsDir, ds);
+            String[] reportFiles = ds.getIncludedFiles();
+            rememberCheckedFiles(reportsDir, reportFiles);
 
             if(result==null)    result = new TestResult();
-            result.parse(System.currentTimeMillis() - build.getMilliSecsSinceBuildStart(), ds);
+            result.parse(System.currentTimeMillis() - build.getMilliSecsSinceBuildStart(), reportsDir, reportFiles);
 
             int failCount = build.execute(new BuildCallable<Integer, IOException>() {
                 public Integer call(MavenBuild build) throws IOException, InterruptedException {
@@ -209,10 +210,10 @@ public class SurefireArchiver extends MavenReporter {
     /**
      * Add checked files to the exclude list of the fileSet
      */
-    private void rememberCheckedFiles(File baseDir, DirectoryScanner ds) {
+    private void rememberCheckedFiles(File baseDir, String[] reportFiles) {
     	FileSet fileSet = getFileSet(baseDir);
     	
-    	for (String file : ds.getIncludedFiles()) {
+    	for (String file : reportFiles) {
     		fileSet.setExcludes(file);
     	}
     }
