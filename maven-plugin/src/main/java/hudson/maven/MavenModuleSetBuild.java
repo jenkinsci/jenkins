@@ -656,7 +656,7 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
                                 logger.println(" your Apache Maven build is setup to use a global settings config with id " + globalSettingsConfigId
                                                    + " but cannot find the config");
                             } else {
-                                logger.println("using settings config with name " + config.name);
+                                logger.println("using global settings config with name " + config.name);
                                 String globalSettingsContent = config.content;
                                 if (globalSettingsContent != null ) {
                                     tmpGlobalSettingsFile = File.createTempFile( "global-maven-settings", "xml" );
