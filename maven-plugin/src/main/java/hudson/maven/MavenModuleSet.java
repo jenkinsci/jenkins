@@ -33,6 +33,7 @@ import hudson.ExtensionList;
 import hudson.FilePath;
 import hudson.Indenter;
 import hudson.Util;
+import hudson.maven.settings.GlobalMavenSettingsProvider;
 import hudson.maven.settings.MavenSettingsProvider;
 import hudson.model.AbstractProject;
 import hudson.model.Action;
@@ -223,6 +224,16 @@ public class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,MavenMod
      */
     private String settingConfigId;
 
+    /**
+     * @since 1.426
+     */
+    private String globalSettingConfigId;
+
+    /**
+     * used temporary during maven build to store file path
+     * @since 1.426
+     */
+    protected transient String globalSettingConfigPath;
     /**
      * Reporters configured at {@link MavenModuleSet} level. Applies to all {@link MavenModule} builds.
      */
@@ -447,6 +458,22 @@ public class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,MavenMod
      */
     public void setSettingConfigId( String settingConfigId ) {
         this.settingConfigId = settingConfigId;
+    }
+
+    /**
+     * @since 1.426
+     * @return
+     */
+    public String getGlobalSettingConfigId() {
+        return globalSettingConfigId;
+    }
+
+    /**
+     * @since 1.426
+     * @param globalSettingConfigId
+     */
+    public void setGlobalSettingConfigId( String globalSettingConfigId ) {
+        this.globalSettingConfigId = globalSettingConfigId;
     }
 
     /**
@@ -804,6 +831,23 @@ public class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,MavenMod
     }
 
     /**
+     * @since 1.426
+     * @return
+     */
+    public List<Config> getAllGlobalMavenSettingsConfigs() {
+        List<Config> globalMavenSettingsConfigs = new ArrayList<Config>();
+        ExtensionList<ConfigProvider> configProviders = ConfigProvider.all();
+        if (configProviders != null && configProviders.size() > 0) {
+            for (ConfigProvider configProvider : configProviders) {
+                if (configProvider instanceof GlobalMavenSettingsProvider) {
+                    globalMavenSettingsConfigs.addAll( configProvider.getAllConfigs() );
+                }
+            }
+        }
+        return globalMavenSettingsConfigs;
+    }
+
+    /**
      * Set mavenOpts.
      */
     public void setMavenOpts(String mavenOpts) {
@@ -890,6 +934,7 @@ public class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,MavenMod
         publishers.rebuild(req,json,BuildStepDescriptor.filter(Publisher.all(),this.getClass()));
         buildWrappers.rebuild(req,json,BuildWrappers.getFor(this));
         settingConfigId = req.getParameter( "maven.mavenSettingsConfigId" );
+        globalSettingConfigId = req.getParameter( "maven.mavenGlobalSettingConfigId" );
     }
 
     /**

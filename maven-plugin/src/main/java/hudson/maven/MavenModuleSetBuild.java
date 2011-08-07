@@ -36,6 +36,7 @@ import hudson.maven.MavenBuild.ProxyImpl2;
 import hudson.maven.reporters.MavenAggregatedArtifactRecord;
 import hudson.maven.reporters.MavenFingerprinter;
 import hudson.maven.reporters.MavenMailer;
+import hudson.maven.settings.GlobalMavenSettingsProvider;
 import hudson.maven.settings.MavenSettingsProvider;
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
@@ -560,8 +561,9 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
         protected Result doRun(final BuildListener listener) throws Exception {
             PrintStream logger = listener.getLogger();
             Result r = null;
-            File tmpSettingsFile = null;
-            FilePath remoteSettings = null;
+            File tmpSettingsFile = null, tmpGlobalSettingsFile = null;
+            FilePath remoteSettings = null, remoteGlobalSettings = null;
+
             try {
                 
                 EnvVars envVars = getEnvironment(listener);
@@ -637,6 +639,35 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
                             }
                         }
 
+                        String globalSettingsConfigId = project.getGlobalSettingConfigId();
+                        if (globalSettingsConfigId != null) {
+                            Config config = null;
+                            ExtensionList<ConfigProvider> configProviders = ConfigProvider.all();
+                            if (configProviders != null && configProviders.size() > 0) {
+                                for (ConfigProvider configProvider : configProviders) {
+                                    if (configProvider instanceof GlobalMavenSettingsProvider ) {
+                                        if ( configProvider.isResponsibleFor( settingsConfigId ) ) {
+                                            config = configProvider.getConfigById( settingsConfigId );
+                                        }
+                                    }
+                                }
+                            }
+                            if (config == null) {
+                                logger.println(" your Apache Maven build is setup to use a config with id " + globalSettingsConfigId
+                                                   + " but cannot find the config");
+                            } else {
+                                logger.println("using settings config with name " + config.name);
+                                String globalSettingsContent = config.content;
+                                if (globalSettingsContent != null ) {
+                                    tmpGlobalSettingsFile = File.createTempFile( "global-maven-settings", "xml" );
+                                    remoteGlobalSettings = new FilePath(getWorkspace(), tmpGlobalSettingsFile.getName());
+                                    ByteArrayInputStream bs = new ByteArrayInputStream(globalSettingsContent.getBytes());
+                                    remoteGlobalSettings.copyFrom(bs);
+                                    project.globalSettingConfigPath = remoteGlobalSettings.getRemote();
+                                }
+                            }
+                        }
+
                         parsePoms(listener, logger, envVars, mvn, mavenVersion); // #5428 : do pre-build *before* parsing pom
                         SplittableBuildListener slistener = new SplittableBuildListener(listener);
                         proxies = new HashMap<ModuleName, ProxyImpl2>();
@@ -704,6 +735,9 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
                         ArgumentListBuilder margs = new ArgumentListBuilder().add("-B").add("-f", pom.getRemote());
                         if(project.usesPrivateRepository())
                             margs.add("-Dmaven.repo.local="+getWorkspace().child(".repository"));
+
+                        if (project.globalSettingConfigPath != null)
+                            margs.add("-gs " + project.globalSettingConfigPath);
 
 
                         
@@ -822,6 +856,10 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
                 FileUtils.deleteQuietly( tmpSettingsFile );
                 if (remoteSettings != null) {
                     remoteSettings.delete();
+                }
+                FileUtils.deleteQuietly( tmpGlobalSettingsFile );
+                if (project.getGlobalSettingConfigId() != null ) {
+                    remoteGlobalSettings.delete();
                 }
             }
         }
@@ -1188,6 +1226,7 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
         private final Properties properties;
         private final String privateRepository;
         private final String alternateSettings;
+        private final String globalSetings;
         private final boolean nonRecursive;
         // We're called against the module root, not the workspace, which can cause a lot of confusion.
         private final String workspaceProper;
@@ -1245,7 +1284,7 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
                 project.getScm().getModuleRoot( project.getLastBuild().getWorkspace(), project.getLastBuild() ).getRemote();            
             
             this.mavenValidationLevel = project.getMavenValidationLevel();
-
+            this.globalSetings = project.globalSettingConfigPath;
         }
 
         
@@ -1317,6 +1356,9 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
                 
                 mavenEmbedderRequest.setProcessPlugins( this.processPlugins );
                 mavenEmbedderRequest.setResolveDependencies( this.resolveDependencies );
+                if (globalSetings != null) {
+                    mavenEmbedderRequest.setGlobalSettings( new File(globalSetings) );
+                }
                 
                 // FIXME handle 3.1 level when version will be here : no rush :-)
                 // or made something configurable tru the ui ?

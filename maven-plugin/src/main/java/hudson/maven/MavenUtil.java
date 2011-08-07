@@ -161,6 +161,10 @@ public class MavenUtil {
         } else {
             mavenRequest.setUserSettingsFile( new File( m2Home, "settings.xml" ).getAbsolutePath() );
         }
+
+        if ( mavenEmbedderRequest.getGlobalSettings() != null) {
+            mavenRequest.setGlobalSettingsFile( mavenEmbedderRequest.getGlobalSettings().getAbsolutePath() );
+        }
         
 
         // FIXME configure those !!
