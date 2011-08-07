@@ -737,7 +737,7 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
                             margs.add("-Dmaven.repo.local="+getWorkspace().child(".repository"));
 
                         if (project.globalSettingConfigPath != null)
-                            margs.add("-gs " + project.globalSettingConfigPath);
+                            margs.add("-gs" , project.globalSettingConfigPath);
 
 
                         
