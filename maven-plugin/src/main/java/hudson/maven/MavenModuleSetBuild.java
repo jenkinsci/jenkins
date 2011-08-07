@@ -646,14 +646,14 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
                             if (configProviders != null && configProviders.size() > 0) {
                                 for (ConfigProvider configProvider : configProviders) {
                                     if (configProvider instanceof GlobalMavenSettingsProvider ) {
-                                        if ( configProvider.isResponsibleFor( settingsConfigId ) ) {
-                                            config = configProvider.getConfigById( settingsConfigId );
+                                        if ( configProvider.isResponsibleFor( globalSettingsConfigId ) ) {
+                                            config = configProvider.getConfigById( globalSettingsConfigId );
                                         }
                                     }
                                 }
                             }
                             if (config == null) {
-                                logger.println(" your Apache Maven build is setup to use a config with id " + globalSettingsConfigId
+                                logger.println(" your Apache Maven build is setup to use a global settings config with id " + globalSettingsConfigId
                                                    + " but cannot find the config");
                             } else {
                                 logger.println("using settings config with name " + config.name);
