@@ -124,49 +124,45 @@ public class SurefireArchiver extends MavenReporter {
         if(reportsDir.exists()) {
             // surefire:test just skips itself when the current project is not a java project
 
-        	FileSet fileSet = getFileSet(reportsDir);
-        	
-        	DirectoryScanner ds;
-        	synchronized (fileSet) {
-                ds = fileSet.getDirectoryScanner();
-            }
-
-            if(ds.getIncludedFilesCount()==0)
-                // no test in this module
-                return true;
-            
-            String[] reportFiles = ds.getIncludedFiles();
-            rememberCheckedFiles(reportsDir, reportFiles);
-
-            if(result==null)    result = new TestResult();
-            result.parse(System.currentTimeMillis() - build.getMilliSecsSinceBuildStart(), reportsDir, reportFiles);
-
-            int failCount;
             synchronized (build) {
-                failCount = build.execute(new BuildCallable<Integer, IOException>() {
-                    public Integer call(MavenBuild build) throws IOException, InterruptedException {
-                        SurefireReport sr = build.getAction(SurefireReport.class);
-                        if(sr==null)
-                            build.getActions().add(new SurefireReport(build, result, listener));
-                        else
-                            sr.setResult(result,listener);
-                        if(result.getFailCount()>0)
-                            build.setResult(Result.UNSTABLE);
-                        build.registerAsProjectAction(new FactoryImpl());
-                        return result.getFailCount();
-                    }
-                });
+            	FileSet fileSet = getFileSet(reportsDir);
+            	
+                DirectoryScanner ds = fileSet.getDirectoryScanner();
+                
+                if(ds.getIncludedFilesCount()==0)
+                    // no test in this module
+                    return true;
+                
+                String[] reportFiles = ds.getIncludedFiles();
+                rememberCheckedFiles(reportsDir, reportFiles);
+    
+                if(result==null)    result = new TestResult();
+                result.parse(System.currentTimeMillis() - build.getMilliSecsSinceBuildStart(), reportsDir, reportFiles);
+    
+                int failCount = build.execute(new BuildCallable<Integer, IOException>() {
+                        public Integer call(MavenBuild build) throws IOException, InterruptedException {
+                            SurefireReport sr = build.getAction(SurefireReport.class);
+                            if(sr==null)
+                                build.getActions().add(new SurefireReport(build, result, listener));
+                            else
+                                sr.setResult(result,listener);
+                            if(result.getFailCount()>0)
+                                build.setResult(Result.UNSTABLE);
+                            build.registerAsProjectAction(new FactoryImpl());
+                            return result.getFailCount();
+                        }
+                    });
+                
+                // if surefire plugin is going to kill maven because of a test failure,
+                // intercept that (or otherwise build will be marked as failure)
+                if(failCount>0 && error instanceof MojoFailureException) {
+                    MavenBuilder.markAsSuccess = true;
+                }
+                // TODO currenlty error is empty : will be here with maven 3.0.2+
+                if(failCount>0) {
+                    Maven3Builder.markAsSuccess = true;
+                }
             }
-            
-            // if surefire plugin is going to kill maven because of a test failure,
-            // intercept that (or otherwise build will be marked as failure)
-            if(failCount>0 && error instanceof MojoFailureException) {
-                MavenBuilder.markAsSuccess = true;
-            }
-            // TODO currenlty error is empty : will be here with maven 3.0.2+
-            if(failCount>0) {
-                Maven3Builder.markAsSuccess = true;
-            }            
         }
 
         return true;

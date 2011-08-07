@@ -38,6 +38,11 @@ import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Matchers;
 
+/**
+ * Unit test for the JUnit result parsing in {@link SurefireArchiver}.
+ * 
+ * @author kutzi
+ */
 public class SurefireArchiverUnitTest {
 
     private SurefireArchiver archiver;
@@ -87,7 +92,6 @@ public class SurefireArchiverUnitTest {
         URL resource = SurefireArchiverUnitTest.class.getResource("/surefire-archiver-test1");
         File reportsDir = new File(resource.toURI().getPath());
         doReturn(reportsDir).when(this.mojoInfo).getConfigurationValue("reportsDirectory", File.class);
-        System.out.println("Using reports directory: " + reportsDir.getAbsolutePath());
         
         this.archiver.postExecute(buildProxy, null, this.mojoInfo, new NullBuildListener(), null);
         
@@ -100,7 +104,6 @@ public class SurefireArchiverUnitTest {
         URL resource = SurefireArchiverUnitTest.class.getResource("/surefire-archiver-test2");
         File reportsDir = new File(resource.toURI().getPath());
         doReturn(reportsDir).when(this.mojoInfo).getConfigurationValue("reportsDirectory", File.class);
-        System.out.println("Using reports directory: " + reportsDir.getAbsolutePath());
         touchReportFiles(reportsDir);
         
         this.archiver.postExecute(buildProxy, null, this.mojoInfo, new NullBuildListener(), null);
@@ -115,7 +118,6 @@ public class SurefireArchiverUnitTest {
         resource = SurefireArchiverUnitTest.class.getResource("/surefire-archiver-test3");
         reportsDir = new File(resource.toURI().getPath());
         doReturn(reportsDir).when(this.mojoInfo).getConfigurationValue("reportsDirectory", File.class);
-        System.out.println("Using reports directory: " + reportsDir.getAbsolutePath());
         touchReportFiles(reportsDir);
         
         this.archiver.postExecute(buildProxy, null, this.mojoInfo, new NullBuildListener(), null);
@@ -132,7 +134,6 @@ public class SurefireArchiverUnitTest {
         URL resource = SurefireArchiverUnitTest.class.getResource("/surefire-archiver-test2");
         File reportsDir = new File(resource.toURI().getPath());
         doReturn(reportsDir).when(this.mojoInfo).getConfigurationValue("reportsDirectory", File.class);
-        System.out.println("Using reports directory: " + reportsDir.getAbsolutePath());
         touchReportFiles(reportsDir);
         
         FileSet fileSet = this.archiver.getFileSet(reportsDir);
