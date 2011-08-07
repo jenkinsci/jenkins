@@ -23,6 +23,9 @@
  */
 package hudson.maven.settings;
 
+/**
+ * @since 1.426
+ */
 public interface MavenSettingsProvider
 {
     // no op only a marker interface
