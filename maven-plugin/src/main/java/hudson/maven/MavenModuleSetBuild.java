@@ -38,6 +38,7 @@ import hudson.maven.reporters.MavenFingerprinter;
 import hudson.maven.reporters.MavenMailer;
 import hudson.maven.settings.GlobalMavenSettingsProvider;
 import hudson.maven.settings.MavenSettingsProvider;
+import hudson.maven.settings.SettingsProviderUtils;
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
 import hudson.model.Action;
@@ -561,7 +562,6 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
         protected Result doRun(final BuildListener listener) throws Exception {
             PrintStream logger = listener.getLogger();
             Result r = null;
-            File tmpSettingsFile = null, tmpGlobalSettingsFile = null;
             FilePath remoteSettings = null, remoteGlobalSettings = null;
 
             try {
@@ -612,28 +612,15 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
 
                         String settingsConfigId = project.getSettingConfigId();
                         if (settingsConfigId != null) {
-                            Config config = null;
-                            ExtensionList<ConfigProvider> configProviders = ConfigProvider.all();
-                            if (configProviders != null && configProviders.size() > 0) {
-                                for (ConfigProvider configProvider : configProviders) {
-                                    if (configProvider instanceof MavenSettingsProvider ) {
-                                        if ( configProvider.isResponsibleFor( settingsConfigId ) ) {
-                                            config = configProvider.getConfigById( settingsConfigId );
-                                        }
-                                    }
-                                }
-                            }
+                            Config config = SettingsProviderUtils.findConfig( settingsConfigId, MavenSettingsProvider.class );
                             if (config == null) {
                                 logger.println(" your Apache Maven build is setup to use a config with id " + settingsConfigId
                                                    + " but cannot find the config");
                             } else {
                                 logger.println("using settings config with name " + config.name);
                                 String settingsContent = config.content;
-                                if (settingsContent != null ) {
-                                    tmpSettingsFile = File.createTempFile( "maven-settings", "xml" );
-                                    remoteSettings = new FilePath(getWorkspace(), tmpSettingsFile.getName());
-                                    ByteArrayInputStream bs = new ByteArrayInputStream(settingsContent.getBytes());
-                                    remoteSettings.copyFrom(bs);
+                                if (config.content != null ) {
+                                    remoteSettings = SettingsProviderUtils.copyConfigContentToFilePath( config, getWorkspace() );
                                     project.setAlternateSettings( remoteSettings.getRemote() );
                                 }
                             }
@@ -641,28 +628,14 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
 
                         String globalSettingsConfigId = project.getGlobalSettingConfigId();
                         if (globalSettingsConfigId != null) {
-                            Config config = null;
-                            ExtensionList<ConfigProvider> configProviders = ConfigProvider.all();
-                            if (configProviders != null && configProviders.size() > 0) {
-                                for (ConfigProvider configProvider : configProviders) {
-                                    if (configProvider instanceof GlobalMavenSettingsProvider ) {
-                                        if ( configProvider.isResponsibleFor( globalSettingsConfigId ) ) {
-                                            config = configProvider.getConfigById( globalSettingsConfigId );
-                                        }
-                                    }
-                                }
-                            }
+                            Config config = SettingsProviderUtils.findConfig( globalSettingsConfigId, GlobalMavenSettingsProvider.class );
                             if (config == null) {
                                 logger.println(" your Apache Maven build is setup to use a global settings config with id " + globalSettingsConfigId
                                                    + " but cannot find the config");
                             } else {
                                 logger.println("using global settings config with name " + config.name);
-                                String globalSettingsContent = config.content;
-                                if (globalSettingsContent != null ) {
-                                    tmpGlobalSettingsFile = File.createTempFile( "global-maven-settings", "xml" );
-                                    remoteGlobalSettings = new FilePath(getWorkspace(), tmpGlobalSettingsFile.getName());
-                                    ByteArrayInputStream bs = new ByteArrayInputStream(globalSettingsContent.getBytes());
-                                    remoteGlobalSettings.copyFrom(bs);
+                                if (config.content != null ) {
+                                    remoteGlobalSettings = SettingsProviderUtils.copyConfigContentToFilePath( config, getWorkspace() );
                                     project.globalSettingConfigPath = remoteGlobalSettings.getRemote();
                                 }
                             }
@@ -853,11 +826,9 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
                     project.save();
                 }
                 // delete tmp files used for MavenSettingsProvider
-                FileUtils.deleteQuietly( tmpSettingsFile );
                 if (remoteSettings != null) {
                     remoteSettings.delete();
                 }
-                FileUtils.deleteQuietly( tmpGlobalSettingsFile );
                 if (project.getGlobalSettingConfigId() != null ) {
                     remoteGlobalSettings.delete();
                 }
