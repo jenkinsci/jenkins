@@ -28,6 +28,9 @@ import hudson.FilePath;
 import hudson.Launcher;
 import hudson.Util;
 import hudson.maven.reporters.MavenAbstractArtifactRecord;
+import hudson.maven.settings.GlobalMavenSettingsProvider;
+import hudson.maven.settings.MavenSettingsProvider;
+import hudson.maven.settings.SettingsProviderUtils;
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
 import hudson.model.BuildListener;
@@ -43,6 +46,7 @@ import hudson.tasks.Maven.MavenInstallation;
 import hudson.tasks.Publisher;
 import hudson.tasks.Recorder;
 import net.sf.json.JSONObject;
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.deployer.ArtifactDeploymentException;
@@ -54,6 +58,7 @@ import org.apache.maven.artifact.repository.Authentication;
 import org.apache.maven.artifact.repository.layout.ArtifactRepositoryLayout;
 import org.apache.maven.repository.Proxy;
 import org.codehaus.plexus.component.repository.exception.ComponentLookupException;
+import org.jenkinsci.lib.configprovider.model.Config;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.StaplerRequest;
 
@@ -175,22 +180,20 @@ public class RedeployPublisher extends Recorder {
      */
     private MavenEmbedder createEmbedder(TaskListener listener, AbstractBuild<?,?> build) throws MavenEmbedderException, IOException, InterruptedException {
         MavenInstallation m=null;
-        File settingsLoc = null;
+        File settingsLoc = null, remoteGlobalSettingsFromConfig = null;
         String profiles = null;
         Properties systemProperties = null;
         String privateRepository = null;
+        FilePath remoteSettingsFromConfig = null;
         
         File tmpSettings = File.createTempFile( "jenkins", "temp-settings.xml" );
         try {
             AbstractProject project = build.getProject();
             
-            // don't care here as it's executed in the master
-            //if (project instanceof ProjectWithMaven) {
-            //    m = ((ProjectWithMaven) project).inferMavenInstallation().forNode(Hudson.getInstance(),listener);
-            //}
             if (project instanceof MavenModuleSet) {
-                profiles = ((MavenModuleSet) project).getProfiles();
-                systemProperties = ((MavenModuleSet) project).getMavenProperties();
+                MavenModuleSet mavenModuleSet = ((MavenModuleSet) project);
+                profiles = mavenModuleSet.getProfiles();
+                systemProperties = mavenModuleSet.getMavenProperties();
                 
                 // olamy see  
                 // we have to take about the settings use for the project
@@ -200,16 +203,52 @@ public class RedeployPublisher extends Recorder {
                 // if not we must get ~/.m2/settings.xml then $M2_HOME/conf/settings.xml
                 
                 // TODO check if the remoteSettings has a localRepository configured and disabled it
-                
-                String altSettingsPath = ((MavenModuleSet) project).getAlternateSettings();
-                
+
+                String settingsConfigId = mavenModuleSet.getSettingConfigId();
+                String altSettingsPath = null;
+
+                if (settingsConfigId != null) {
+                    Config config = SettingsProviderUtils.findConfig( settingsConfigId,
+                                                                      MavenSettingsProvider.class );
+                    if (config == null) {
+                        listener.getLogger().println(
+                            " your Apache Maven build is setup to use a config with id " + settingsConfigId
+                                + " but cannot find the config" );
+                    } else {
+                        listener.getLogger().println( "redeploy publisher using settings config with name " + config.name );
+                        String settingsContent = config.content;
+                        if (config.content != null ) {
+                            remoteSettingsFromConfig = SettingsProviderUtils.copyConfigContentToFilePath( config, build.getWorkspace() );
+                            altSettingsPath = remoteSettingsFromConfig.getRemote();
+                        }
+                    }
+                }
+
+                if (mavenModuleSet.getAlternateSettings() != null ) {
+                    altSettingsPath = mavenModuleSet.getAlternateSettings();
+                }
+
+                String globalSettingsConfigId = mavenModuleSet.getGlobalSettingConfigId();
+                if (globalSettingsConfigId != null) {
+                    Config config = SettingsProviderUtils.findConfig( globalSettingsConfigId, GlobalMavenSettingsProvider.class );
+                    if (config == null) {
+                        listener.getLogger().println(
+                            " your Apache Maven build is setup to use a global settings config with id "
+                                + globalSettingsConfigId + " but cannot find the config" );
+                    } else {
+                        listener.getLogger().println( "redeploy publisher using global settings config with name " + config.name );
+                        if (config.content != null ) {
+                            remoteGlobalSettingsFromConfig = SettingsProviderUtils.copyConfigContentToFile( config );
+                        }
+                    }
+                }
                 Node buildNode = build.getBuiltOn();
                 
                 if(buildNode == null) {
                     // assume that build was made on master
                     buildNode = Jenkins.getInstance();
                 }
-                
+
                 if (StringUtils.isBlank( altSettingsPath ) ) {
                     // get userHome from the node where job has been executed
                     String remoteUserHome = build.getWorkspace().act( new GetUserHome() );
@@ -233,15 +272,23 @@ public class RedeployPublisher extends Recorder {
                 settingsLoc = tmpSettings;
                 
             }
-            
-            return MavenUtil.createEmbedder(new MavenEmbedderRequest(listener,
+
+            MavenEmbedderRequest mavenEmbedderRequest = new MavenEmbedderRequest(listener,
                                   m!=null?m.getHomeDir():null,
                                   profiles,
                                   systemProperties,
                                   privateRepository,
-                                  settingsLoc ));
+                                  settingsLoc );
+
+            if (remoteGlobalSettingsFromConfig != null) {
+                mavenEmbedderRequest.setGlobalSettings( remoteGlobalSettingsFromConfig );
+            }
+
+            return MavenUtil.createEmbedder(mavenEmbedderRequest);
         } finally {
             tmpSettings.delete();
+            remoteSettingsFromConfig.delete();
+            FileUtils.deleteQuietly( remoteGlobalSettingsFromConfig );
         }
     }
     
