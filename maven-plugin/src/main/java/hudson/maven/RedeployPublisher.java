@@ -286,8 +286,12 @@ public class RedeployPublisher extends Recorder {
 
             return MavenUtil.createEmbedder(mavenEmbedderRequest);
         } finally {
-            tmpSettings.delete();
-            remoteSettingsFromConfig.delete();
+            if (tmpSettings != null) {
+                tmpSettings.delete();
+            }
+            if (remoteSettingsFromConfig != null) {
+                remoteSettingsFromConfig.delete();
+            }
             FileUtils.deleteQuietly( remoteGlobalSettingsFromConfig );
         }
     }
