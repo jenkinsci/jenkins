@@ -92,7 +92,7 @@ public class PluginWrapper implements Comparable<PluginWrapper> {
     /**
      * Base URL for loading static resources from this plugin.
      * Null if disabled. The static resources are mapped under
-     * <tt>hudson/plugin/SHORTNAME/</tt>.
+     * <tt>CONTEXTPATH/plugin/SHORTNAME/</tt>.
      */
     public final URL baseResourceURL;
 
