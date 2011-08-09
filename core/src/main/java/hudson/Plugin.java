@@ -74,7 +74,7 @@ import com.thoughtworks.xstream.XStream;
 public abstract class Plugin implements Saveable {
 
     /**
-     * Set by the {@link PluginManager}.
+     * Set by the {@link PluginManager}, before the {@link #start()} method is called.
      * This points to the {@link PluginWrapper} that wraps
      * this {@link Plugin} object.
      */
