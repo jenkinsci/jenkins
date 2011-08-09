@@ -64,7 +64,7 @@ public abstract class AbstractPasswordBasedSecurityRealm extends SecurityRealm i
 
             public Authentication authenticate() throws AuthenticationException, IOException, InterruptedException {
                 if (userName==null)
-                    return Jenkins.ANONYMOUS;    // no authentication parameter. run as anonymous
+                    return command.getTransportAuthentication();    // no authentication parameter. fallback to the transport
 
                 if (passwordFile!=null)
                     try {
