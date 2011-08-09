@@ -225,6 +225,9 @@ public final class WebAppMain implements ServletContextListener {
                                 User.getUnknown().getBuilds();
                             }
                         }, 1000*10);
+
+                        // at this point we are open for business and serving requests normally
+                        LOGGER.info("Jenkins is fully up and running");
                         success = true;
                     } catch (Error e) {
                         LOGGER.log(Level.SEVERE, "Failed to initialize Jenkins",e);
