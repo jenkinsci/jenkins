@@ -96,6 +96,15 @@ public abstract class Plugin implements Saveable {
     }
 
     /**
+     * Gets the paired {@link PluginWrapper}.
+     *
+     * @since 1.426
+     */
+    public PluginWrapper getWrapper() {
+        return wrapper;
+    }
+
+    /**
      * Called to allow plugins to initialize themselves.
      *
      * <p>
