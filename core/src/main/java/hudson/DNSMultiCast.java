@@ -52,12 +52,12 @@ public class DNSMultiCast implements Closeable {
 
     public void close() {
         if (jmdns!=null) {
-            try {
-                jmdns.close();
+//            try {
+                jmdns.abort();
                 jmdns = null;
-            } catch (final IOException e) {
-                LOGGER.log(Level.WARNING,"Failed to close down JmDNS instance!",e);
-            }
+//            } catch (final IOException e) {
+//                LOGGER.log(Level.WARNING,"Failed to close down JmDNS instance!",e);
+//            }
         }
     }
 

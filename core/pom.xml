@@ -429,7 +429,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.jenkins-ci</groupId>
       <artifactId>jmdns</artifactId>
-      <version>3.4.0-jenkins-2</version>
+      <version>3.4.0-jenkins-3</version>
     </dependency>
     <dependency>
       <groupId>com.sun.winsw</groupId>
