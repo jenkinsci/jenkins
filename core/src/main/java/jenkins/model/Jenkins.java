@@ -3038,15 +3038,18 @@ public class Jenkins extends AbstractCIBase implements ModifiableItemGroup<TopLe
      * Shutdown the system.
      * @since 1.161
      */
+    @CLIMethod(name="shutdown")
     public void doExit( StaplerRequest req, StaplerResponse rsp ) throws IOException {
         checkPermission(ADMINISTER);
         LOGGER.severe(String.format("Shutting down VM as requested by %s from %s",
-                getAuthentication().getName(), req.getRemoteAddr()));
-        rsp.setStatus(HttpServletResponse.SC_OK);
-        rsp.setContentType("text/plain");
-        PrintWriter w = rsp.getWriter();
-        w.println("Shutting down");
-        w.close();
+                getAuthentication().getName(), req!=null?req.getRemoteAddr():"???"));
+        if (rsp!=null) {
+            rsp.setStatus(HttpServletResponse.SC_OK);
+            rsp.setContentType("text/plain");
+            PrintWriter w = rsp.getWriter();
+            w.println("Shutting down");
+            w.close();
+        }
 
         System.exit(0);
     }
@@ -3056,6 +3059,7 @@ public class Jenkins extends AbstractCIBase implements ModifiableItemGroup<TopLe
      * Shutdown the system safely.
      * @since 1.332
      */
+    @CLIMethod(name="safe-shutdown")
     public HttpResponse doSafeExit(StaplerRequest req) throws IOException {
         checkPermission(ADMINISTER);
         isQuietingDown = true;
