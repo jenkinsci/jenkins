@@ -140,7 +140,7 @@ public class CLIRegisterer extends ExtensionFinder {
                                     List<MethodBinder> binders = new ArrayList<MethodBinder>();
 
                                     while (!chains.isEmpty())
-                                        binders.add(new MethodBinder(chains.pop(),parser));
+                                        binders.add(new MethodBinder(chains.pop(),this,parser));
 
                                     // authentication
                                     CliAuthenticator authenticator = Jenkins.getInstance().getSecurityRealm().createCliAuthenticator(this);
