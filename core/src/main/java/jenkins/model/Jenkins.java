@@ -2052,6 +2052,7 @@ public class Jenkins extends AbstractCIBase implements ModifiableItemGroup<TopLe
      */
     public Item getItem(String relativeName, ItemGroup context) {
         if (context==null)  context = this;
+        if (relativeName==null) return null;
 
         if (relativeName.startsWith("/"))   // absolute
             return getItemByFullName(relativeName);
