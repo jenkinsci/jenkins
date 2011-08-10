@@ -392,7 +392,16 @@ public class SlaveComputer extends Computer {
     public HttpResponse doDoDisconnect(@QueryParameter String offlineMessage) throws IOException, ServletException {
         if (channel!=null) {
             //does nothing in case computer is already disconnected
-            checkPermission(Hudson.ADMINISTER);
+            // Starts
+            //Fix: 
+        	//Aim: Non-Admin user with CONFIGURE/DELETE permission can disconnect slave.
+        	//checkPermission(Hudson.ADMINISTER);
+        	try{
+        		checkPermission(Hudson.MasterComputer.CONFIGURE);
+        	}catch(Exception e){
+        		checkPermission(Hudson.MasterComputer.DELETE);
+        	}
+        	// Ends
             offlineMessage = Util.fixEmptyAndTrim(offlineMessage);
             disconnect(OfflineCause.create(Messages._SlaveComputer_DisconnectedBy(
                     Hudson.getAuthentication().getName(),

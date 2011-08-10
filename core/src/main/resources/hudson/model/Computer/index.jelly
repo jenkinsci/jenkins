@@ -27,7 +27,7 @@ THE SOFTWARE.
     <st:include page="sidepanel.jelly" />
     <l:main-panel>
       <!-- temporarily offline switch -->
-      <l:isAdmin>
+      <l:hasPermissions>
       <div style="float:right">
         <j:choose>
           <j:when test="${it.temporarilyOffline}">
@@ -42,7 +42,7 @@ THE SOFTWARE.
           </j:otherwise>
         </j:choose>
       </div>
-      </l:isAdmin>
+      </l:hasPermissions>
 
       <h1>
         <img src="${imagesURL}/48x48/${it.icon}" width="48" height="48" alt=""/>

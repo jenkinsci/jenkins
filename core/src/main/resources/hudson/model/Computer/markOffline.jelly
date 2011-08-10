@@ -26,7 +26,7 @@ THE SOFTWARE.
   <l:layout title="${%title(it.displayName)}">
     <st:include page="sidepanel.jelly" />
     <l:main-panel>
-      <l:isAdmin>
+      <l:hasPermissions>
         <h2>${%title(it.displayName)}</h2>
         <p>
           ${%blurb}
@@ -37,7 +37,7 @@ THE SOFTWARE.
             <f:submit value="${%submit}"  />
           </p>
         </form>
-      </l:isAdmin>
+      </l:hasPermissions>
     </l:main-panel>
   </l:layout>
 </j:jelly>
