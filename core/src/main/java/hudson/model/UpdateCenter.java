@@ -729,6 +729,11 @@ public class UpdateCenter extends AbstractModelObject implements Saveable {
          */
         public final UpdateSite site;
 
+        /**
+         * If this job fails, set to the error.
+         */
+        protected Throwable error;
+
         protected UpdateCenterJob(UpdateSite site) {
             this.site = site;
         }
@@ -750,6 +755,10 @@ public class UpdateCenter extends AbstractModelObject implements Saveable {
             LOGGER.fine("Scheduling "+this+" to installerService");
             jobs.add(this);
             return installerService.submit(this,this);
+        }
+
+        public Throwable getError() {
+            return error;
         }
     }
 
@@ -789,10 +798,10 @@ public class UpdateCenter extends AbstractModelObject implements Saveable {
             status = new Running();
             try {
                 Jenkins.getInstance().safeRestart();
-            }
-            catch (RestartNotSupportedException exception) {
+            } catch (RestartNotSupportedException exception) {
                 // ignore if restart is not allowed
                 status = new Failure();
+                error = exception;
             }
         }
         
@@ -853,8 +862,10 @@ public class UpdateCenter extends AbstractModelObject implements Saveable {
             } catch (UnknownHostException e) {
                 statuses.add(Messages.UpdateCenter_Status_UnknownHostException(e.getMessage()));
                 addStatus(e);
+                error = e;
             } catch (IOException e) {
                 statuses.add(Functions.printThrowable(e));
+                error = e;
             }
         }
 
@@ -926,6 +937,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable {
             } catch (Throwable e) {
                 LOGGER.log(Level.SEVERE, "Failed to install "+getName(),e);
                 status = new Failure(e);
+                error = e;
             }
         }
 
@@ -1113,6 +1125,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable {
             } catch (Throwable e) {
                 LOGGER.log(Level.SEVERE, "Failed to downgrade "+getName(),e);
                 status = new Failure(e);
+                error = e;
             }
         }
 
@@ -1208,6 +1221,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable {
             } catch (Throwable e) {
                 LOGGER.log(Level.SEVERE, "Failed to downgrade "+getName(),e);
                 status = new Failure(e);
+                error = e;
             }
         }
 

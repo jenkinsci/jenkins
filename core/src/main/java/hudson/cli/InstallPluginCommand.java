@@ -25,6 +25,7 @@ package hudson.cli;
 
 import hudson.Extension;
 import hudson.FilePath;
+import hudson.util.IOException2;
 import jenkins.model.Jenkins;
 import hudson.model.UpdateSite;
 import hudson.model.UpdateSite.Data;
@@ -100,7 +101,9 @@ public class InstallPluginCommand extends CLICommand {
             UpdateSite.Plugin p = h.getUpdateCenter().getPlugin(source);
             if (p!=null) {
                 stdout.println(Messages.InstallPluginCommand_InstallingFromUpdateCenter(source));
-                p.deploy().get();
+                Throwable e = p.deploy().get().getError();
+                if (e!=null)
+                    throw new IOException2("Failed to install plugin "+source,e);
                 continue;
             }
 
