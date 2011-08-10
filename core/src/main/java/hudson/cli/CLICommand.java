@@ -51,8 +51,11 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintStream;
 import java.lang.reflect.Type;
+import java.nio.charset.Charset;
+import java.nio.charset.UnsupportedCharsetException;
 import java.util.List;
 import java.util.Locale;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
@@ -298,6 +301,24 @@ public abstract class CLICommand implements ExtensionPoint, Cloneable {
 
         public String call() throws IOException {
             return System.getProperty(name);
+        }
+
+        private static final long serialVersionUID = 1L;
+    }
+
+    protected Charset getClientCharset() throws IOException, InterruptedException {
+        String charsetName = channel.call(new GetCharset());
+        try {
+            return Charset.forName(charsetName);
+        } catch (UnsupportedCharsetException e) {
+            LOGGER.log(Level.FINE,"Server doesn't have charset "+charsetName);
+            return Charset.defaultCharset();
+        }
+    }
+
+    private static final class GetCharset implements Callable<String, IOException> {
+        public String call() throws IOException {
+            return Charset.defaultCharset().name();
         }
 
         private static final long serialVersionUID = 1L;
